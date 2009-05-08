@@ -13,7 +13,7 @@ from PyQt4  import QtGui
 from PyQt4.QtGui import QPrinter
 
 
-from ete_dev.coretype import tree
+from pygenomics.coretype import tree
 DEBUG = 1
 
 import layouts 

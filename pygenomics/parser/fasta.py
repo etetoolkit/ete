@@ -6,7 +6,7 @@ def read_fasta(source, obj=None):
     """ Reads a collection of sequences econded in FASTA format.""" 
 
     if obj is None:
-	from ete_dev.coretype import seqgroup
+	from pygenomics.coretype import seqgroup
 	SC = seqgroup.SeqGroup()
     else:
 	SC = obj

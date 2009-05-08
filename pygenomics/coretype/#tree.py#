@@ -1,7 +1,7 @@
 import os
 import random
 
-from ete_dev.parser.newick import read_newick, write_newick
+from .parser.newick import read_newick, write_newick
 
 __all__ = ["Tree", "TreeNode"]
 
@@ -727,14 +727,14 @@ class TreeNode(object):
     else:
         treeview.show_tree(self,layout)
 
-  def render_image(self, width, height, file_name, _layout="basic"):
+  def render_image(self, w, h, file_name, _layout="basic"):
     """ Renders the tree structure into an image file. """
     try:
         from ete_dev import treeview
     except ImportError,e: 
         print "treeview could not be loaded. Visualization is disabled."
     else:
-        treeview.render_tree(self, width, height, file_name, _layout)
+        treeview.render_tree(self, w, h, file_name, _layout)
 
   # # EXPERIMENTAL FEATURES
   def _asciiArt(self, char1='-', show_internal=False, compact=False):

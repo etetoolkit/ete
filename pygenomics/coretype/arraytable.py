@@ -25,7 +25,7 @@ class ArrayTable(object):
 	# If matrix file is supplied
         if matrix_file is not None:
 	    if path.exits(matrix_file):
-		from ete_dev.parser import arraytableIO
+		from pygenomics.parser import arraytableIO
 		arraytableIO.read_arraytable(matrix_file, \
 						 mtype=mtype, \
 						 arraytable_object = self)

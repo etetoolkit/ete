@@ -1,7 +1,7 @@
 import os
 import random
 
-from ete_dev.parser.newick import read_newick, write_newick
+from pygenomics.parser.newick import read_newick, write_newick
 
 __all__ = ["Tree", "TreeNode"]
 

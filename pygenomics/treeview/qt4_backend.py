@@ -11,7 +11,7 @@ import numpy
 from PyQt4  import QtCore
 from PyQt4  import QtGui 
 
-from ete_dev.coretype import tree
+from pygenomics.coretype import tree
 DEBUG = 1
 
 import layouts 

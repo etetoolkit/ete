@@ -2,8 +2,8 @@ import sys
 import numpy
 
 import clusterdist as AT
-from ete_dev.coretype.tree import TreeNode
-from ete_dev.coretype import arraytable
+from pygenomics.coretype.tree import TreeNode
+from pygenomics.coretype import arraytable
 
 __all__ = ["ClusterNode", "ClusterTree"]
 
