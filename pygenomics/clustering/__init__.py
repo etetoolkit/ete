@@ -1,5 +1,5 @@
-import sys
-from clustertree import ClusterNode
+from clustertree import *
+
 
 
 def read_newick_file_as_clustering(treefile, arrayfile):

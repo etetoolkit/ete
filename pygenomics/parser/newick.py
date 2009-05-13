@@ -38,7 +38,7 @@ def read_newick(newick, root_node=None):
   """
 
   if root_node is None:
-    from ete_dev.coretype.tree import TreeNode
+    from pygenomics.coretype.tree import TreeNode
     root_node = TreeNode()
 
   if type(newick) == str:

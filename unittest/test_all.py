@@ -2,10 +2,14 @@
 
 import unittest
 import random 
+import sys
 
-from ete_dev.coretype import tree
-from ete_dev.coretype import seqgroup
-from ete_dev.coretype import arraytable
+sys.path.append("./")
+
+
+from pygenomics.coretype import tree
+from pygenomics.coretype import seqgroup
+from pygenomics.coretype import arraytable
 
 # test datasets 
 nw_simple1 = '((A, (B,C)),D);'

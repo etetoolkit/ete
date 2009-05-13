@@ -1,9 +1,10 @@
 import sys
+import os
 import numpy
 
 import clusterdist as AT
-from ete_dev.coretype.tree import TreeNode
-from ete_dev.coretype import arraytable
+from pygenomics.coretype.tree import TreeNode
+from pygenomics.coretype import arraytable as _arraytable
 
 __all__ = ["ClusterNode", "ClusterTree"]
 
@@ -34,12 +35,8 @@ class ClusterNode(TreeNode):
         self.add_feature("mean_std", None)
 
 	# Initialize tree with array data
-	if arraytable is not None:
-	    if type(arraytbl) == str and os.path.exists(arraytbl):
-		A = arraytable.ArrayTable(arraytbl)
-		self.link_to_arraytable(A)
-	    elif type(arraytbl) == arraytable.ArrayTable:
-		self.link_to_arraytable(arraytbl)
+	if arraytbl is not None:
+	    self.link_to_arraytable(arraytbl)
 
     def link_to_arraytable(self, arraytbl):
 	""" Allows to link a given arraytable object to the tree
@@ -50,6 +47,15 @@ class ClusterNode(TreeNode):
 	in arraytable.
 	
 	"""
+	
+
+	# Initialize tree with array data
+
+	if type(arraytbl) == str:
+	    array = _arraytable.ArrayTable(arraytbl)
+	else:
+	    array = arraytbl
+
 	missing_leaves = []
 	for n in self.iter_leaves():
 	    if n.name in array.rowNames:
@@ -61,7 +67,8 @@ class ClusterNode(TreeNode):
 	    print >>sys.stderr, """%d leaf names (from a total of %d)
                   could not been mapped to the matrix row names!""" % \
 		( len(missing_leaves), len(all_leaves) )
-	return missing_leaves
+
+	self.arraytable = array # Caution. Do not overwrite module name
 
     def get_profile(self):
 	""" Returns the associated profile of this node and its
@@ -77,7 +84,7 @@ class ClusterNode(TreeNode):
 	if self._avg_profile is not None:
 	    return self._avg_profile, self._std_profile
 	else:
-	    self._calculate_avg_profiles()
+	    self.get_avg_profiles()
 	    return self._avg_profile, self._std_profile
 
     def iter_leaf_profiles(self):
@@ -119,11 +126,11 @@ class ClusterNode(TreeNode):
         
         # Calculates average vectors
         if  self._avg_profile is None:
-            self._calculate_avg_profile()
+            self.get_avg_profile()
             
         for st in sisters:
             if st._avg_profile is None:
-                st._calculate_avg_profile()
+                st.get_avg_profile()
         
         # Calculates silhouette
 	silhouette = []
@@ -139,7 +146,7 @@ class ClusterNode(TreeNode):
 		    # Centroid Diameter
 		    a = fdist(i._avg_profile, self._avg_profile)*2 
 		    # Centroid Linkage
-		    b = self.fdist(i._avg_profile, st._avg_profile) 
+		    b = fdist(i._avg_profile, st._avg_profile) 
 		    if (b-a) == 0.0:
 			s = 0.0
 		    else:
@@ -153,7 +160,8 @@ class ClusterNode(TreeNode):
         self.intercluster_d, std = AT.safe_mean(inter_dist)
         return self.silhouette, self.intracluster_d, self.intercluster_d
 
-    def _calculate_avg_profile(self):
+
+    def get_avg_profile(self):
 	""" This internal function updates the mean profile
 	associated to an internal node. """
 
@@ -164,6 +172,10 @@ class ClusterNode(TreeNode):
 		self._avg_profile, self._std_profile = AT.safe_mean_vector(leaf_vectors)
 	    else:
 		self._avg_profile, self._std_profile = None, None
+	    return self._avg_profile, self._std_profile
+	else: 
+	    return self._avg_profile, [0.0]*len(self._avg_profile)
+
 
 # cosmetic alias
 ClusterTree = ClusterNode

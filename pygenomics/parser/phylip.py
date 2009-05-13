@@ -4,7 +4,7 @@ from sys import stderr as STDERR
 
 def read_phylip(source, interleaved=True, obj=None):
     if obj is None:
-	from ete_dev.coretype import SeqGroup
+	from pygenomics.coretype import SeqGroup
 	SG = SeqGroup()
     else:
 	SG = obj 

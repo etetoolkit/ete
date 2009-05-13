@@ -349,7 +349,7 @@ class ProfileFace(Face):
 
     def draw_bar_profile(self):
         # Calculate vector
-        mean_vector , deviation_vector = self.node.calculate_mean_profile()
+        mean_vector , deviation_vector = self.node.get_avg_profile()
         # If no vector, skip
         if mean_vector is None:
             print self.node.name
@@ -437,7 +437,7 @@ class ProfileFace(Face):
 
     def draw_centered_bar_profile(self):
         # Calculate vector
-        mean_vector , deviation_vector = self.node.calculate_mean_profile()
+        mean_vector , deviation_vector = self.node.get_avg_profile()
         # If no vector, skip
         if mean_vector is None:
             print self.node.name
@@ -540,7 +540,7 @@ class ProfileFace(Face):
 
     def draw_line_profile(self):
         # Calculate vector
-        mean_vector , deviation_vector = self.node.calculate_mean_profile()
+        mean_vector , deviation_vector = self.node.get_avg_profile()
         if mean_vector is None:
             print self.node.name
             return
@@ -626,7 +626,7 @@ class ProfileFace(Face):
 
     def draw_heatmap_profile_old(self):
         # Calculate vector
-        mean_vector , deviation_vector = self.node.calculate_mean_profile()
+        mean_vector , deviation_vector = self.node.get_avg_profile()
         # If no vector, skip
         if mean_vector is None:
             print self.node.name
@@ -678,7 +678,7 @@ class ProfileFace(Face):
 
     def draw_heatmap_profile(self):
         # Calculate vector
-        vector , deviation = self.node.calculate_mean_profile()
+        vector , deviation = self.node.get_avg_profile()
         # If no vector, skip
         if vector is None:
             print self.node.name
@@ -705,7 +705,7 @@ class ProfileFace(Face):
         y  = self.ymargin
 	y_step = self.height 
 	for leaf in leaves:
-	    mean_vector , deviation_vector = leaf.calculate_mean_profile()
+	    mean_vector , deviation_vector = leaf.get_avg_profile()
 	    # Draw heatmap
 	    for pos in xrange(vlength):
 		# first and second X pixel positions

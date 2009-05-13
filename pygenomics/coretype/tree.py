@@ -1,7 +1,7 @@
 import os
 import random
 
-from ete_dev.parser.newick import read_newick, write_newick
+from pygenomics.parser.newick import read_newick, write_newick
 
 __all__ = ["Tree", "TreeNode"]
 
@@ -719,7 +719,7 @@ class TreeNode(object):
     """ Begins an interative session to visualize this node
     structure."""
     try:
-        from ete_dev import treeview
+        from pygenomics import treeview
     except ImportError, e: 
         print "'treeview' module could not be loaded.\nThis is the error catched:\n",e
         print "\n\n"
@@ -730,7 +730,7 @@ class TreeNode(object):
   def render_image(self, w, h, file_name, _layout="basic"):
     """ Renders the tree structure into an image file. """
     try:
-        from ete_dev import treeview
+        from pygenomics import treeview
     except ImportError,e: 
         print "treeview could not be loaded. Visualization is disabled."
     else:

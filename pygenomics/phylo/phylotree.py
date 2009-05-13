@@ -8,7 +8,7 @@ import sys
 import os
 import re
 
-from ete_dev.coretype import tree
+from pygenomics.coretype import tree
 import reconcile
 
 __all__ = ["EvolEvent", "PhyloNode", "PhyloTree"]

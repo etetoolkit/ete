@@ -45,8 +45,8 @@ def cluster_heatmap(node):
         node.img_style["fgcolor"] = "#3333FF"
         node.img_style["size"] =  0
 
-        matrix_max = numpy.max(node.array.matrix)
-        matrix_min = numpy.min(node.array.matrix)
+        matrix_max = numpy.max(node.arraytable.matrix)
+        matrix_min = numpy.min(node.arraytable.matrix)
         matrix_avg = matrix_min+((matrix_max-matrix_min)/2)
         ProfileFace = faces.ProfileFace(\
                                             matrix_max,\
@@ -66,8 +66,8 @@ def cluster_cbars(node):
         # Color and style
         node.img_style["fgcolor"] = "#3333FF"
         node.img_style["size"] =  4
-        matrix_max = numpy.max(node.array.matrix)
-        matrix_min = numpy.min(node.array.matrix)
+        matrix_max = numpy.max(node.arraytable.matrix)
+        matrix_min = numpy.min(node.arraytable.matrix)
         matrix_avg = matrix_min+((matrix_max-matrix_min)/2)
         ProfileFace = faces.ProfileFace(\
                                             matrix_max,\
@@ -91,16 +91,16 @@ def cluster_lines(node):
         # Color and style
         node.img_style["fgcolor"] = "#3333FF"
         node.img_style["size"] = 4
-        matrix_max = numpy.max(node.array.matrix)
-        matrix_min = numpy.min(node.array.matrix)
+        matrix_max = numpy.max(node.arraytable.matrix)
+        matrix_min = numpy.min(node.arraytable.matrix)
         matrix_avg = matrix_min+((matrix_max-matrix_min)/2)
         ProfileFace = faces.ProfileFace(\
-                                            matrix_max,\
-                                            matrix_min,\
-                                            matrix_avg,\
-                                            200,\
-                                            50,\
-                                            "lines")
+          matrix_max,\
+            matrix_min,\
+            matrix_avg,\
+            200,\
+            50,\
+            "lines")
 
         if node.is_leaf():
             nameFace = faces.AttrFace("name",fsize=6 )
@@ -116,26 +116,29 @@ def cluster_bars(node):
         # Color and style
         node.img_style["fgcolor"] = "#3333FF"
         node.img_style["size"] = 4
-        matrix_max = numpy.max(node.array.matrix)
-        matrix_min = numpy.min(node.array.matrix)
-        matrix_avg = matrix_min+((matrix_max-matrix_min)/2)
-        ProfileFace = faces.ProfileFace(\
-                                            matrix_max,\
-                                            matrix_min,\
-                                            matrix_avg,\
-                                            200,\
-                                            40,\
-                                            "bars")
+     
         if node.is_leaf():
-            nameFace = faces.AttrFace("name",fsize=6 )
-            faces.add_face(node, 1, nameFace, aligned=True ) 
-            faces.add_face(node,0, ProfileFace, aligned=True )
+          matrix_max = numpy.max(node.arraytable.matrix)
+          matrix_min = numpy.min(node.arraytable.matrix)
+          matrix_avg = matrix_min+((matrix_max-matrix_min)/2)
+          ProfileFace = faces.ProfileFace(\
+            matrix_max,\
+              matrix_min,\
+              matrix_avg,\
+              200,\
+              40,\
+              "bars")
+          nameFace = faces.AttrFace("name",fsize=6 )
+          faces.add_face(node, 1, nameFace, aligned=True ) 
+          faces.add_face(node,0, ProfileFace, aligned=True )
 
 def large(node):
         # Color and style
         node.img_style["fgcolor"] = "#3333FF"
         node.img_style["size"] = 0
        
+
+# Labels to show in qt application menu
 layout_functions = {
         "Basic": basic, 
         "Functional analysis": functest, 

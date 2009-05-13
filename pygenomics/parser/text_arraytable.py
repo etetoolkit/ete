@@ -11,7 +11,7 @@ def read_arraytable(matrix_file, mtype="float", arraytable_object = None):
     """ Reads a text tab-delimited matrix from file """
 
     if arraytable_object is None:
-	from ete_dev.coretype import arraytable
+	from pygenomics.coretype import arraytable
 	A = arraytable.ArrayTable()
     else:
 	A = arraytable_object

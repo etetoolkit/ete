@@ -13,7 +13,7 @@ from PyQt4  import QtGui
 from PyQt4.QtGui import QPrinter
 
 
-from ete_dev.coretype import tree
+from pygenomics.coretype import tree
 DEBUG = 1
 
 import layouts 
@@ -57,7 +57,7 @@ def logger(level,*msg):
     return
 
 
-def show_tree(t,style="basic"):
+def show_tree(t, style="basic"):
     """ Interactively shows a tree."""
     global _QApp
    
