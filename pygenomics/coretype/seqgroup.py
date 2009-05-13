@@ -1,3 +1,5 @@
+# This is a flag used to build ete2 standalone package.
+in_ete_pkg=True
 """
 The 'seqgroup' module provides methods and classes to operate with
 Multiple Sequence Files, including Multiple Sequence Alignments.

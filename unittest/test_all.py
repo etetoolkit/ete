@@ -1,11 +1,12 @@
 #! /usr/bin/env python
+# This is a flag used to build ete2 standalone package.
+in_ete_pkg=True
 
 import unittest
 import random 
 import sys
 
 sys.path.append("./")
-
 
 from pygenomics.coretype import tree
 from pygenomics.coretype import seqgroup

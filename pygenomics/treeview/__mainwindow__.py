@@ -1,3 +1,5 @@
+# This is a flag used to build ete2 standalone package.
+in_ete_pkg=True
 # -*- coding: utf-8 -*-
 
 # Form implementation generated from reading ui file 'ete_qt4app.ui'

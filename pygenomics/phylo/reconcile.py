@@ -1,3 +1,5 @@
+# This is a flag used to build ete2 standalone package.
+in_ete_pkg=True
 # ########################################################################
 #
 # Copyright (C) 2008 by Jaime Huerta Cepas. All rights reserved.  

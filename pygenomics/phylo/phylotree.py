@@ -1,3 +1,5 @@
+# This is a flag used to build ete2 standalone package.
+in_ete_pkg=True
 """
 This module defines the PhyloNode dataytype to manage phylogenetic
 tree. It inheritates the coretype TreeNode and add some speciall

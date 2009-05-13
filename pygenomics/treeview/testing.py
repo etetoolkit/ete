@@ -1,3 +1,5 @@
+# This is a flag used to build ete2 standalone package.
+in_ete_pkg=True
 #import pil_backend as backend
 import qt4_backend as backend
 import copy

@@ -1,3 +1,5 @@
+# This is a flag used to build ete2 standalone package.
+in_ete_pkg=True
 # svgfig.py copyright (C) 2008 Jim Pivarski <jpivarski@gmail.com>
 # 
 # This program is free software; you can redistribute it and/or
