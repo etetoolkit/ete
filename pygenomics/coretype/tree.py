@@ -452,7 +452,7 @@ class TreeNode(object):
       """ 
       return [n for n in self.traverse(strategy="preorder") if n != self]
 
-  def iter_search_node(self, **conditions):
+  def iter_search_nodes(self, **conditions):
     for n in self.traverse():
       conditions_passed = 0
       for key, value in conditions.iteritems():
@@ -461,9 +461,9 @@ class TreeNode(object):
       if conditions_passed == len(conditions):
         yield n
 
-  def search_node(self, **conditions):
+  def search_nodes(self, **conditions):
     matching_nodes = []
-    for n in self.iter_search_node(**conditions):
+    for n in self.iter_search_nodes(**conditions):
       matching_nodes.append(n)
     return matching_nodes
 

@@ -9,12 +9,31 @@ import os
 import re
 
 from pygenomics.coretype import tree
-import reconcile
 
 __all__ = ["EvolEvent", "PhyloNode", "PhyloTree"]
 
 def _parse_species(name):
     return name[:3]
+
+class EvolEvent:
+    """ Basic evolutionary event. It stores all the information about an
+    event(node) ocurred in a phylogenetic tree. """
+    def __init__(self):
+        self.etype         = None   # 'S=speciation D=duplication'
+        self.seed          = None   # Seed ID used to start the phylogenetic pipeline
+        self.outgroup_spcs = None   # outgroup
+        self.e_newick      = None   # 
+        self.dup_score     = None   # 
+        self.root_age      = None   # estimated time for the outgroup node
+        self.inparalogs    = None   
+        self.outparalogs   = None 
+        self.orthologs     = None 
+        self.famSize       = None
+        self.allseqs       = []     # all ids grouped by this event
+        self.in_seqs       = []
+        self.out_seqs      = []
+	self.branch_supports  = []
+
 
 class PhyloNode(tree.TreeNode):
     """ Re-implementation of the standart TreeNode instance. It adds
@@ -79,11 +98,12 @@ class PhyloNode(tree.TreeNode):
     def get_age(self, species2age):
 	return max([species2age[sp] for sp in self.get_leaf_species()])
 
-    def get_reconciled_tree(self, species_tree):
+    def reconcile(self, species_tree):
 	""" Returns the reconcilied topology with the provided species
 	tree, and a list of evolutionary events inferred from such
 	reconciliation. """
-	return reconcile.get_reconciled_tree(self, species_tree, [])
+	from reconcile import get_reconciled_tree
+	return get_reconciled_tree(self, species_tree, [])
 
     def get_my_evol_events(self):
         """ Returns a list of duplication and speciation events in
@@ -307,24 +327,6 @@ class PhyloNode(tree.TreeNode):
                 pass
         return outgroup_node
 
-class EvolEvent:
-    """ Basic evolutionary event. It stores all the information about an
-    event(node) ocurred in a phylogenetic tree. """
-    def __init__(self):
-        self.etype         = None   # 'S=speciation D=duplication'
-        self.seed          = None   # Seed ID used to start the phylogenetic pipeline
-        self.outgroup_spcs = None   # outgroup
-        self.e_newick      = None   # 
-        self.dup_score     = None   # 
-        self.root_age      = None   # estimated time for the outgroup node
-        self.inparalogs    = None   
-        self.outparalogs   = None 
-        self.orthologs     = None 
-        self.famSize       = None
-        self.allseqs       = []     # all ids grouped by this event
-        self.in_seqs       = []
-        self.out_seqs      = []
-	self.branch_supports  = []
 
 # cosmetic alias
 PhyloTree = PhyloNode

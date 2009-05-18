@@ -1,46 +1,6 @@
-# ########################################################################
-#
-# Copyright (C) 2008 by Jaime Huerta Cepas. All rights reserved.  
-# email: jhcepas@gmail.com
-#
-# This file is part of the Environment for Tree Exploration program (ETE). 
-#  
-# ETE is free software: you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#  
-# ETE is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#  
-# You should have received a copy of the GNU General Public License
-# along with ETE.  If not, see <http://www.gnu.org/licenses/>.
-#
-# ########################################################################
-
 import copy
 
-class EvolEvent:
-    """ Basic evolutionary event. It stores all the information about an
-    event(node) ocurred in a phylogenetic tree. """
-    def __init__(self):
-        self.etype         = None   # 'speciation' or 'duplication'
-        self.seed          = None   # Seed ID used to start the phylogenetic pipeline
-        self.outgroup_spcs = None   # outgroup
-        self.e_newick      = None   # 
-        self.dup_score     = None   # 
-        self.age           = None   # estimated time for this event
-        self.root_age      = None   # estimated time for the outgroup node
-        self.inparalogs    = None   
-        self.outparalogs   = None 
-        self.orthologs     = None 
-        self.famSize       = None
-        self.allseqs       = []     # all ids grouped by this event
-        self.in_seqs       = []
-        self.out_seqs      = []
-
+from pygenomics import EvolEvent
 
 def get_reconciled_tree(node, sptree, events):
     """ Returns the recoliation gene tree with a provided species
@@ -73,8 +33,8 @@ def get_reconciled_tree(node, sptree, events):
 	    newmorphed1, matchnode = _replace_on_template(template, morphed_childs[1])
 	    newnode.add_child(newmorphed0)
 	    newnode.add_child(newmorphed1)
-	    newnode.set_property("evoltype","D")
-	    node.set_property("evoltype","D")
+	    newnode.add_feature("evoltype","D")
+	    node.add_feature("evoltype","D")
 	    e = EvolEvent()
 	    e.etype = "D"
 	    e.inparalogs = node.children[0].get_leaf_names()
@@ -93,8 +53,8 @@ def get_reconciled_tree(node, sptree, events):
 	    template, matchnode = _replace_on_template(template, morphed_childs[0] )
 	    # replaces child1 partition on the template
 	    template, matchnode = _replace_on_template(template, morphed_childs[1])
-	    template.set_property("evoltype","S")
-	    node.set_property("evoltype","S")
+	    template.add_feature("evoltype","S")
+	    node.add_feature("evoltype","S")
 	    e = EvolEvent()
 	    e.etype = "S"
 	    e.inparalogs = node.children[0].get_leaf_names()
@@ -114,7 +74,7 @@ def _replace_on_template(orig_template, node):
     nodespcs = node.get_leaf_species()
     spseed = list(nodespcs)[0]  # any sp name woulbe ok
     # Set an start point
-    subtopo = template.get_leafs_by_name(spseed)[0]
+    subtopo = template.search_nodes(children=[], name=spseed)[0]
     # While subtopo does not cover all child species
     while len(nodespcs - set(subtopo.get_leaf_names() ) )>0:
 	subtopo= subtopo.up
@@ -133,7 +93,7 @@ def _get_expected_topology(t, species):
     if missing_sp:
 	raise KeyError, \
 	    "Follwing species are not contained in species the tree: "+ ','.join(missing_sp)
-    node = t.get_leafs_by_name(list(species)[0])[0]
+    node = t.search_nodes(children=[], name=list(species)[0])[0]
 
     sps = set(species)
     while sps-set(node.get_leaf_names()) != set([]):
@@ -143,12 +103,9 @@ def _get_expected_topology(t, species):
     template._speciesFunction = _get_species_on_TOL
     template.detach()
     for n in [template]+template.get_descendants():
-	n.set_property("evoltype","L")
+	n.add_feature("evoltype","L")
 	n.dist = 1
     return template
 
 def _get_species_on_TOL(name):
     return name
-
-__version__="1.0rev95"
-__author__="Jaime Huerta-Cepas"
