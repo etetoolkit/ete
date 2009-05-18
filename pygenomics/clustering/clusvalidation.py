@@ -1,5 +1,3 @@
-# This is a flag used to build ete2 standalone package.
-in_ete_pkg=True
 silhouette_widthdef silhouette_width(fdist, fasta_aproximation, *clusters):
         """ Calculates the overall average silhouette width of the
         given clusters.

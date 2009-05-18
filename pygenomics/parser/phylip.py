@@ -1,5 +1,3 @@
-# This is a flag used to build ete2 standalone package.
-in_ete_pkg=True
 import os
 import re
 from sys import stderr as STDERR
