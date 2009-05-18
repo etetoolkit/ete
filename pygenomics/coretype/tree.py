@@ -367,6 +367,7 @@ class TreeNode(object):
       print "Max. lenght to root:"
       print "The Farthest descendant node is", max_node.name,\
           "with a branch distance of", max_dist
+
   def write(self, features=[], outfile=None, support=True, dist=True):
       """ Returns the newick representation of this node
       topology. Several arguments control the way in which extra
@@ -451,7 +452,22 @@ class TreeNode(object):
       """ 
       return [n for n in self.traverse(strategy="preorder") if n != self]
 
-  def get_descendants_by_name(self,name):
+  def iter_search_node(self, **conditions):
+    for n in self.traverse():
+      conditions_passed = 0
+      for key, value in conditions.iteritems():
+        if hasattr(n, key) and getattr(n, key) == value:
+          conditions_passed +=1
+      if conditions_passed == len(conditions):
+        yield n
+
+  def search_node(self, **conditions):
+    matching_nodes = []
+    for n in self.iter_search_node(**conditions):
+      matching_nodes.append(n)
+    return matching_nodes
+
+  def get_descendants_by_name(self, name):
     """ Returns a list of nodes marching a given name. """
     return [n for n in self.traverse() if n.name == name]
 
@@ -736,39 +752,43 @@ class TreeNode(object):
     else:
         treeview.render_tree(self, w, h, file_name, _layout)
 
-  # # EXPERIMENTAL FEATURES
   def _asciiArt(self, char1='-', show_internal=False, compact=False):
-      LEN = 10
-      PAD = ' ' * LEN
-      PA = ' ' * (LEN-1)
-      if not self.is_leaf():
-          mids = []
-          result = []
-          for c in self.children:
-              if c is self.children[0]:
-                  char2 = '/'
-              elif c is self.children[-1]:
-                  char2 = '\\'
-              else:
-                  char2 = '-'
-              (clines, mid) = c._asciiArt(char2, show_internal, compact)
-              mids.append(mid+len(result))
-              result.extend(clines)
-              if not compact:
-                  result.append('')
-          if not compact:
-              result.pop()
-          (lo, hi, end) = (mids[0], mids[-1], len(result))
-          prefixes = [PAD] * (lo+1) + [PA+'|'] * (hi-lo-1) + [PAD] * (end-hi)
-          mid = (lo + hi) / 2
-          prefixes[mid] = char1 + '-'*(LEN-2) + prefixes[mid][-1]
-          result = [p+l for (p,l) in zip(prefixes, result)]
-          if show_internal:
-              stem = result[mid]
-              result[mid] = stem[0] + self.name + stem[len(self.name)+1:]
-          return (result, mid)
-      else:
-          return ([char1 + '-' + self.name], 0)
+    """ 
+    Returns the ASCII representation of the tree. Code taken from the
+    PyCogent GPL project.
+    """
+
+    LEN = 10
+    PAD = ' ' * LEN
+    PA = ' ' * (LEN-1)
+    if not self.is_leaf():
+        mids = []
+        result = []
+        for c in self.children:
+            if c is self.children[0]:
+                char2 = '/'
+            elif c is self.children[-1]:
+                char2 = '\\'
+            else:
+                char2 = '-'
+            (clines, mid) = c._asciiArt(char2, show_internal, compact)
+            mids.append(mid+len(result))
+            result.extend(clines)
+            if not compact:
+                result.append('')
+        if not compact:
+            result.pop()
+        (lo, hi, end) = (mids[0], mids[-1], len(result))
+        prefixes = [PAD] * (lo+1) + [PA+'|'] * (hi-lo-1) + [PAD] * (end-hi)
+        mid = (lo + hi) / 2
+        prefixes[mid] = char1 + '-'*(LEN-2) + prefixes[mid][-1]
+        result = [p+l for (p,l) in zip(prefixes, result)]
+        if show_internal:
+            stem = result[mid]
+            result[mid] = stem[0] + self.name + stem[len(self.name)+1:]
+        return (result, mid)
+    else:
+        return ([char1 + '-' + self.name], 0)
 
   def get_ascii(self, show_internal=False, compact=False):
       """Returns a string containing an ascii drawing of the tree.

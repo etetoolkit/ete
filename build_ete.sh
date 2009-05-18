@@ -1,12 +1,9 @@
 #! /bin/sh
 
-
-if [ $# -ne 2 ]
-then
-echo "Not enough arguments. \nuse $0 repos_source outpath"
-exit
+if [ $# -ne 2 ]; then
+    echo "Not enough arguments. \nuse $0 repos_source outpath"
+    exit
 fi
-
 
 REPOSITORY=$1
 BRANCH=2.0
@@ -47,7 +44,13 @@ find $OUTPATH -name *.py| xargs perl -e "s/from pygenomics/from $MODULE_NAME/g" 
 find $OUTPATH/ete2/ -name '*.py' |xargs sed "1 i __VERSION__=\"$VERSION\""  -i
 
 echo $VERSION > $OUTPATH/VERSION
+tar -zcf ./$PKG_NAME.tgz $OUTPATH
 
+echo "Copy pkg. to cgenomics web? [y|n]"
+read COPY
+if [ $COPY == 'y' ]; then
+    scp ./$PKG_NAME.tgz jhuerta@cgenomics:/home/services/web/ete.cgenomics.org/releases/ete2/
+fi
 # Add Copyright and License
 # ...
 
