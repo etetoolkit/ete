@@ -8,6 +8,7 @@ import clusterdist as AT
 from pygenomics.coretype.tree import TreeNode
 from pygenomics.coretype import arraytable as _arraytable
 
+
 __all__ = ["ClusterNode", "ClusterTree"]
 
 class ClusterNode(TreeNode):

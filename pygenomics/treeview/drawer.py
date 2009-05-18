@@ -1,7 +1,5 @@
 # This is a flag used to build ete2 standalone package.
 in_ete_pkg=True
-# This is a flag used to build ete2 standalone package.
-in_ete_pkg=True
 
 import sys
 import time
@@ -16,8 +14,6 @@ import numpy
 from PyQt4  import QtCore
 from PyQt4  import QtGui 
 from PyQt4.QtGui import QPrinter
-
-
 
 from pygenomics.coretype import tree
 DEBUG = 1

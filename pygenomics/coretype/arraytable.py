@@ -26,11 +26,12 @@ class ArrayTable(object):
 
 	# If matrix file is supplied
         if matrix_file is not None:
+
 	    if path.exists(matrix_file):
 		from pygenomics.parser import text_arraytable
 		text_arraytable.read_arraytable(matrix_file, \
-						 mtype=mtype, \
-						 arraytable_object = self)
+						    mtype=mtype, \
+						    arraytable_object = self)
 
     def get_row_vector(self,rowname):
         """ Returns the vector associated to the given row name """
