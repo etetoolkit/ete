@@ -10,7 +10,7 @@ BRANCH=2.0
 REVISION=`cd $REPOSITORY; git log --pretty=format:'' | wc -l;`
 VERSION=$BRANCH\rev$REVISION
 MODULE_NAME=ete2
-PKG_NAME=ete$VERSION
+PKG_NAME=ete-$VERSION
 OUTPATH=$2/$PKG_NAME
 
 
@@ -24,21 +24,20 @@ echo "Module name  : $MODULE_NAME"
 if  [ -e $OUTPATH ]; then
     OVERRIDE='n'
     while [ $OVERRIDE != 'y' ]; do
-	echo "$OUTPATH already exists. Override? [y|n]"
-	read OVERRIDE
+       echo "$OUTPATH already exists. Override? [y|n]"
+       read OVERRIDE
     done
-fi 
-
+fi
 
 rm $OUTPATH/ -rf
 git clone $REPOSITORY $OUTPATH/
 rm $OUTPATH/.git/ -rf
 
-# mv 
+# mv
 mv $OUTPATH/pygenomics $OUTPATH/$MODULE_NAME
 
 # Ccorrect imports
-find $OUTPATH -name *.py| xargs perl -e "s/from pygenomics/from $MODULE_NAME/g" -p -i 
+find $OUTPATH -name *.py| xargs perl -e "s/from pygenomics/from $MODULE_NAME/g" -p -i
 
 # Set VERSION in all modules
 find $OUTPATH/ete2/ -name '*.py' |xargs sed "1 i __VERSION__=\"$VERSION\""  -i
@@ -46,13 +45,11 @@ find $OUTPATH/ete2/ -name '*.py' |xargs sed "1 i __VERSION__=\"$VERSION\""  -i
 echo $VERSION > $OUTPATH/VERSION
 tar -zcf ./$PKG_NAME.tgz $OUTPATH
 
-echo "Copy pkg. to cgenomics web? [y|n]"
+echo "Copy pkg. to cgenomics server? [y|n]"
 read COPY
-if [ $COPY == 'y' ]; then
+if [ $COPY = 'y' ]; then
     scp ./$PKG_NAME.tgz jhuerta@cgenomics:/home/services/web/ete.cgenomics.org/releases/ete2/
     ssh cgenomics  'cd /home/services/web/ete.cgenomics.org/releases/ete2/; sh update_downloads.sh'
 fi
 # Add Copyright and License
 # ...
-
-

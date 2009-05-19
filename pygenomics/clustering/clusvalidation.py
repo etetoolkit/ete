@@ -37,19 +37,19 @@ def silhouette_width(fdist, fasta_aproximation, *clusters):
 	return get_mean_vector(i_values)
 
 # a(i) intracluster distances
-_centroid_diameterdef _centroid_diameter(i, cl, fdist):
+def _centroid_diameter(i, cl, fdist):
     cl_center = get_safe_mean_profile(cl)
     return fdist(i, cl_center)*2
 
 # b(i) intercluster distances
-_centroid_linkagedef _centroid_linkage(i, cl, fdist):
+def _centroid_linkage(i, cl, fdist):
     cl_center = get_safe_mean_profile(cl)
     return fdist(i, cl_center)
 
 # Original function
-_average_distdef _average_dist(i, cl, fdist):
+def _average_dist(i, cl, fdist):
     return numpy.max([fdist(i, j) for j in cl if j != i ])
 
 # Other alternative dist functions
-_max_distdef _max_dist(i, cl, fdist):
+def _max_dist(i, cl, fdist):
     return numpy.max([fdist(i, j) for j in cl if j != i ])
