@@ -25,8 +25,8 @@ def read_arraytable(matrix_file, mtype="float", arraytable_object = None):
 
     for line in open(matrix_file):
 	# Clean up line
-	line   = line.replace("\n","")
-	#line   = line.replace(" ","")
+	line = line.replace("\n","")
+	#line = line.replace(" ","")
 	# Skip empty lines
 	if not line: continue
 	# Get fields in line
@@ -92,16 +92,16 @@ def read_arraytable(matrix_file, mtype="float", arraytable_object = None):
     A._link_names2matrix(vmatrix)
     return A
 
-def write_arraytable(A, fname, colNames=None):
-    if not colNames:
-	colNames = A.colNames
-    matrix = A.get_several_column_vectors(colNames)
+def write_arraytable(A, fname, colnames=[]):
+    if colnames == []:
+	colnames = A.colNames
+    matrix = A.get_several_column_vectors(colnames)
     matrix = matrix.swapaxes(0,1)
     OUT = open(fname,"w")
-    print >>OUT, '\t'.join(["#NAMES"]+colNames)
+    print >>OUT, '\t'.join(["#NAMES"]+colnames)
     counter = 0
     for rname in A.rowNames:
-	print >>OUT, '\t'.join([rname]+matrix[counter].tolist())
+	print >>OUT, '\t'.join(map(str,[rname]+matrix[counter].tolist()))
 	counter +=1
     OUT.close()
 

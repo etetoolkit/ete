@@ -9,6 +9,8 @@ from scipy import stats
 import math
 
 
+from pygenomics.parser.text_arraytable import write_arraytable, read_arraytable
+
 class ArrayTable(object):
     """This object is thought to work with matrix datasets (like
     microarrays). It allows to load the matrix an access easily to row
@@ -26,10 +28,9 @@ class ArrayTable(object):
         if matrix_file is not None:
 
 	    if path.exists(matrix_file):
-		from pygenomics.parser import text_arraytable
-		text_arraytable.read_arraytable(matrix_file, \
-						    mtype=mtype, \
-						    arraytable_object = self)
+		read_arraytable(matrix_file, \
+				    mtype=mtype, \
+				    arraytable_object = self)
 
     def get_row_vector(self,rowname):
         """ Returns the vector associated to the given row name """
@@ -151,6 +152,11 @@ class ArrayTable(object):
 	for rowname in self.rowNames:
 	    self.rowValues[rowname] = self.matrix[i,:]
 	    i+=1
+
+    def write(self, fname, colnames=[]):
+	write_arraytable(self, fname, colnames=colnames)
+
+	
 
 def get_centroid_dist(vcenter,vlist,fdist):
     d = 0.0

@@ -5,16 +5,6 @@ def basic(node):
   if node.is_leaf():
      faces.add_face(node, 0, faces.AttrFace("name","Arial",10,"#24416d",None) )
 
-def functest(node):
-        # Layout 
-        node.collapsed = False
-        if node.is_leaf():
-            faces.add_face(node, 0, faces.AttrFace("name","Arial",16,"green",None) )
-        else:
-            faces.add_face(node, 0, faces.AttrFace("terms_up","Arial",12,"red",None) )
-            faces.add_face(node, 0, faces.AttrFace("terms_down","Arial",12,"blue",None) )
-
-
 def phylogeny(node):
         leaf_color = "#24416d"
         if hasattr(node,"evoltype"):
@@ -141,7 +131,6 @@ def large(node):
 # Labels to show in qt application menu
 layout_functions = {
         "Basic": basic, 
-        "Functional analysis": functest, 
         "Phylogenetic tree": phylogeny, 
         "Clustering heatmap": cluster_heatmap, 
         "Clustering validation (bars)": cluster_bars, 

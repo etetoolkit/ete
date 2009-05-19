@@ -75,6 +75,14 @@ class TreeNode(object):
       setattr(self, pr_name, pr_value)
       self.features.add(pr_name)
 
+  def add_features(self, **features):
+      """ Adds or updates a node's feature. """
+      for fname, fvalue in features.iteritems():
+        setattr(self, fname, fvalue)
+        self.features.add(fname)
+
+
+
   def del_feature(self, pr_name):
       """ Deletes permanently a node's feature. """
       if hasattr(self, pr_name):
