@@ -50,6 +50,7 @@ echo "Copy pkg. to cgenomics web? [y|n]"
 read COPY
 if [ $COPY == 'y' ]; then
     scp ./$PKG_NAME.tgz jhuerta@cgenomics:/home/services/web/ete.cgenomics.org/releases/ete2/
+    ssh cgenomics  'cd /home/services/web/ete.cgenomics.org/releases/ete2/; sh update_downloads.sh'
 fi
 # Add Copyright and License
 # ...

@@ -1,4 +1,4 @@
-silhouette_widthdef silhouette_width(fdist, fasta_aproximation, *clusters):
+def silhouette_width(fdist, fasta_aproximation, *clusters):
         """ Calculates the overall average silhouette width of the
         given clusters.
 
