@@ -1,6 +1,5 @@
 import copy
-
-from pygenomics import EvolEvent
+from evolevents import EvolEvent
 
 def get_reconciled_tree(node, sptree, events):
     """ Returns the recoliation gene tree with a provided species

@@ -270,7 +270,7 @@ class PhylomeDBConnector(object):
       self._SQL.execute(cmd)
       entries = self._SQL.fetchone()
       if entries: 
-          proteomes_string = map(string.strip, entries[0].split(","))
+          proteomes_string = map(strip, entries[0].split(","))
       else:
           proteomes_string = None
       return proteomes_string
