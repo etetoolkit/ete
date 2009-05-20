@@ -42,10 +42,13 @@ def read_newick(newick, root_node=None):
     root_node = TreeNode()
 
   if type(newick) == str:
+    newick = newick.strip()
     if os.path.exists(newick):
       nw = open(newick, 'rU').read()
     else:
       nw = newick
+    if not nw.startswith('(') or not nw.endswith(';'):
+      raise NewickError, 'Unexisting tree file or Malformed newick tree structure.'
     return _read_newick_from_string(nw, root_node)
   else:
     raise NewickError, \
@@ -53,6 +56,7 @@ def read_newick(newick, root_node=None):
 
 def _read_newick_from_string(nw, root_node):
   """ Reads a newick string in the New Hampshire format. """
+
   if nw.count('(') != nw.count(')'):
       raise NewickError, 'Parentheses do not match. Broken tree structure'
 

@@ -358,10 +358,10 @@ class Test_Coretype_Tree(unittest.TestCase):
 
 	# Delete, 
 	t = tree.Tree("(((A, B), C)[&&NHX:name=I], (D, F)[&&NHX:name=J])[&&NHX:name=root];")
-	D = t.get_descendants_by_name("D")[0]
-	F = t.get_descendants_by_name("F")[0]
-	J = t.get_descendants_by_name("J")[0]
-	root = t.get_descendants_by_name("root")[0]
+	D = t.search_nodes(name="D")[0]
+	F = t.search_nodes(name="F")[0]
+	J = t.search_nodes(name="J")[0]
+	root = t.search_nodes(name="root")[0]
 	J.delete()
 	self.assertEqual(J.up, None)
 	self.assertEqual(J in t, False)
@@ -370,10 +370,10 @@ class Test_Coretype_Tree(unittest.TestCase):
 	
         #detach
 	t = tree.Tree("(((A, B)[&&NHX:name=H], C)[&&NHX:name=I], (D, F)[&&NHX:name=J])[&&NHX:name=root];")
-	D = t.get_descendants_by_name("D")[0]
-	F = t.get_descendants_by_name("F")[0]
-	J = t.get_descendants_by_name("J")[0]
-	root = t.get_descendants_by_name("root")[0]
+	D = t.search_nodes(name="D")[0]
+	F = t.search_nodes(name="F")[0]
+	J = t.search_nodes(name="J")[0]
+	root = t.search_nodes(name="root")[0]
 	J.detach()
 	self.assertEqual(J.up, None)
 	self.assertEqual(J in t, False)
@@ -382,10 +382,10 @@ class Test_Coretype_Tree(unittest.TestCase):
 	#prune
 	t1 = tree.Tree("(((A, B), C)[&&NHX:name=I], (D, F)[&&NHX:name=J])[&&NHX:name=root];")
 	t2 = tree.Tree("(((A, B), C)[&&NHX:name=I], (D, F)[&&NHX:name=J])[&&NHX:name=root];")
-	D1 = t1.get_descendants_by_name("D")[0]
-	F2 = t2.get_descendants_by_name("F")[0]
+	D1 = t1.search_nodes(name="D")[0]
+	F2 = t2.search_nodes(name="F")[0]
 
-	root = t.get_descendants_by_name("root")[0]
+	root = t.search_nodes(name="root")[0]
 	t1.prune(["A","C", D1], method="keep")
 	t2.prune(["D",F2,"B"], method="crop")
 	self.assertEqual(set([n.name for n in t1.iter_descendants()]), 	set(["A","C","D","I"]))
@@ -396,9 +396,9 @@ class Test_Coretype_Tree(unittest.TestCase):
 	# get_common_ancestor, get_nodes_by_name
 	# get_descendants_by_name, is_leaf, is_root
 	t = tree.Tree("(((A,B),C)[&&NHX:tag=common],D)[&&NHX:tag=root];")
-	A = t.get_descendants_by_name("A")[0]
-	B = t.get_descendants_by_name("B")[0]
-	C = t.get_descendants_by_name("C")[0]
+	A = t.search_nodes(name="A")[0]
+	B = t.search_nodes(name="B")[0]
+	C = t.search_nodes(name="C")[0]
 
 	self.assertEqual("A", A.name)
 
@@ -434,7 +434,7 @@ class Test_Coretype_Tree(unittest.TestCase):
 
 	# Adding and removing features
 	t = tree.Tree("(((A,B),C)[&&NHX:tag=common],D)[&&NHX:tag=root];")
-	A = t.get_descendants_by_name("A")[0]
+	A = t.search_nodes(name="A")[0]
 
 	# Iterators, get_leaves, get_leaf_names
         t = tree.Tree(nw2_full)
@@ -447,21 +447,21 @@ class Test_Coretype_Tree(unittest.TestCase):
 	self.assert_(t in set([n for n in t.traverse("preorder")]))
 
 	# Swap childs
-	n = t.get_childs()
+	n = t.get_children()
 	t.swap_childs()
 	n.reverse()
-	self.assertEqual(n, t.get_childs())
+	self.assertEqual(n, t.get_children())
 	
 	# Distances: get_distance, get_farthest_node,
 	# get_farthest_descendant, get_midpoint_outgroup
 	t = tree.Tree("(((A:0.1, B:0.01):0.001, C:0.0001):1.0[&&NHX:name=I], (D:0.00001):0.000001[&&NHX:name=J]):2.0[&&NHX:name=root];")
-	A = t.get_descendants_by_name("A")[0]
-	B = t.get_descendants_by_name("B")[0]
-	C = t.get_descendants_by_name("C")[0]
-	D = t.get_descendants_by_name("D")[0]
-	I = t.get_descendants_by_name("I")[0]
-	J = t.get_descendants_by_name("J")[0]
-        root = t.get_descendants_by_name("root")[0]
+	A = t.search_nodes(name="A")[0]
+	B = t.search_nodes(name="B")[0]
+	C = t.search_nodes(name="C")[0]
+	D = t.search_nodes(name="D")[0]
+	I = t.search_nodes(name="I")[0]
+	J = t.search_nodes(name="J")[0]
+        root = t.search_nodes(name="root")[0]
 
 	self.assertEqual(A.get_common_ancestor(I).name, "I")
 	self.assertEqual(A.get_common_ancestor(D).name, "root")

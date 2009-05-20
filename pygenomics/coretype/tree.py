@@ -81,8 +81,6 @@ class TreeNode(object):
         setattr(self, fname, fvalue)
         self.features.add(fname)
 
-
-
   def del_feature(self, pr_name):
       """ Deletes permanently a node's feature. """
       if hasattr(self, pr_name):
@@ -348,7 +346,7 @@ class TreeNode(object):
     """
     if len(self.children)>1:
       self.children.reverse()
-  def get_childs(self):
+  def get_children(self):
       """ Returns an independent list of node's children. """
       return [ch for ch in self.children]
 
@@ -475,13 +473,9 @@ class TreeNode(object):
       matching_nodes.append(n)
     return matching_nodes
 
-  def get_descendants_by_name(self, name):
-    """ Returns a list of nodes marching a given name. """
-    return [n for n in self.traverse() if n.name == name]
-
   def get_leaves_by_name(self,name):
     """ Returns a list of nodes marching a given name. """
-    return [n for n in self.iter_leaves() if n.name == name]
+    return self.search_nodes(name=name, children=[])
 
   def is_leaf(self):
       if self.collapsed or len(self.children)==0:
@@ -675,7 +669,7 @@ class TreeNode(object):
     if len(self.children)>1:
         down_branch_connector = self.__class__()
         down_branch_connector.dist = 0.0
-        for ch in self.get_childs():
+        for ch in self.get_children():
             down_branch_connector.children.append(ch)
             ch.up = down_branch_connector
             self.children.remove(ch)
