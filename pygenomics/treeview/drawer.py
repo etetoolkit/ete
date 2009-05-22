@@ -75,7 +75,7 @@ def logger(level,*msg):
     return
 
 
-def show_tree(t, style="basic"):
+def show_tree(t, style="basic", tree_properties=None):
     """ Interactively shows a tree."""
     global _QApp
    
@@ -85,21 +85,21 @@ def show_tree(t, style="basic"):
     scene  = _TreeScene()
     mainapp = _MainApp(scene)
 
-    scene.initialize_tree_scene(t, style, None, \
-				    tree_properties=tree_properties)
+    scene.initialize_tree_scene(t, style,\
+				    tree_properties = tree_properties)
     scene.draw()
 
     mainapp.show()
     _QApp.exec_()
     
-def render_tree(t, w, h, imgName, style="basic"):
+def render_tree(t, w, h, imgName, style="basic", tree_properties=None):
     """ Render tree image into a PNG file."""
     global _QApp
     if not _QApp:
         _QApp = QtGui.QApplication(["ETE"])
 
     scene  = _TreeScene()
-    scene.initialize_tree_scene(t, style, None, \
+    scene.initialize_tree_scene(t, style, \
 				tree_properties=tree_properties)
     scene.draw()
     scene.save(w, h, imgName)
@@ -752,7 +752,7 @@ class _TreeScene(QtGui.QGraphicsScene):
         self.startNode   = tree        # Node to start drawing
 
         # Load image attributes
-        if not properties:
+        if not tree_properties:
             self.props = TreeImageProperties()
         else:
             self.props = tree_properties
