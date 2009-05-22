@@ -187,20 +187,33 @@ class PhylomeDBConnector(object):
           else:
               return None
 
-  def get_id_by_external(self, external):
-    """ Returns the phylomeID of the given ID"""
 
-    command = 'SELECT species,protid from id_conversion where external="%s"' % (external)
+  def get_id_by_external(self, external):
+    """ Returns the phylomeID of the given external ID"""
+
+    command = 'SELECT species,protid from id_conversion where external_id="%s"' % (external)
     ids = []
     if self._SQL.execute(command):
       matches = self._SQL.fetchall()
       # Build phyprotID
-
       for m in matches:
         phyID = self.get_longest_isoform("%s%07d" % (m[0],m[1]))
         if phyID:
           ids.append( phyID )
     return ids
+  
+  def get_id_tranlations(self, seqid):
+       """ returns all the registered translations of a given seqid """
+
+       cmd = 'SELECT external_db,external_id from id_conversion where species,protid="%s,%s"' % (seqid[:3],int(seqid[3:]))
+       conversion = {}
+       if self._SQL.execute(cmd):
+         extids = self._SQL.fetchall()
+
+       for db, eid in extids:
+         conversion.setdefault(db, []).append(eid)
+       return conversion
+
   def search_id(self, queryID):
       """ Returns a list of phylome protein Ids associated to the
       given external queryID. If queryID is a phylomeDB id, it
