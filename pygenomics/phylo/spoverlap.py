@@ -78,8 +78,10 @@ def get_evol_events_from_leaf(node):
 	event.in_seqs = set([n.name for n in browsed_leaves])
 	event.out_seqs = set([n.name for n in sister_leaves])
 	event.inparalogs  = set([n.name for n in browsed_leaves if n.species == ref_spcs])
+
 	# If species overlap: duplication 
 	if score >0.0 and d > 0.0:
+	    event.node = current.up
 	    event.etype = "D"
 	    event.outparalogs = set([n.name for n in sister_leaves  if n.species == ref_spcs])
 	    event.orthologs   = set([])
@@ -88,6 +90,7 @@ def get_evol_events_from_leaf(node):
 
 	# If NO species overlap: speciation
 	elif score == 0.0:
+	    event.node = current.up
 	    event.etype = "S"
 	    event.orthologs = set([n.name for n in sister_leaves if n.species != ref_spcs])
 	    event.outparalogs = set([])
@@ -176,12 +179,14 @@ def get_evol_events_from_root(node):
 	    event.inparalogs  = set([n.name for n in sideA_leaves])
 	    # If species overlap: duplication 
 	    if score >0.0:
+		event.node = current.up
 		event.etype = "D"
 		event.outparalogs = set([n.name for n in sideB_leaves])
 		event.orthologs   = set([])
 		current.add_feature("evoltype","D")
 	    # If NO species overlap: speciation
 	    else:
+		event.node = current.up
 		event.etype = "S"
 		event.orthologs = set([n.name for n in sideB_leaves])
 		event.outparalogs = set([])

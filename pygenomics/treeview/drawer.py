@@ -22,18 +22,37 @@ __all__ = ["show_tree", "render_tree", "TreeImageProperties"]
 _QApp = None
 
 _MIN_NODE_STYLE = {
-"fgcolor":        "#FFAA55",
-"bgcolor":       "#FFFFFF",
-"vt_line_color":    "#000000",
-"hz_line_color":    "#000000",
-"line_type":     0,
-"vlwidth":       1,
-"hlwidth":       1,
-"size":          4,
-"shape":         "square",
-"faces":         None, 
+"fgcolor": "#FFAA55",
+"bgcolor": "#FFFFFF",
+"vt_line_color": "#000000",
+"hz_line_color": "#000000",
+"line_type": 0,
+"vlwidth": 1,
+"hlwidth": 1,
+"size": 4,
+"shape": "square",
+"faces": None, 
 "draw_descendants": 1, 
 }
+
+
+class TreeImageProperties:
+    def __init__(self):
+        self.branch_pixels_correction   = 0
+        self.force_topology             = False
+        self.draw_branch_length         = False
+        self.align_leaf_faces           = False
+        self.orientation                = 0
+        self.style                      = 0
+        self.general_font_type          = "Verdana"
+        self.branch_length_font_color   = "#222"
+        self.branch_length_font_size    = 6
+        self.branch_support_font_color  = "red"
+        self.branch_support_font_size   = 9 
+        self.tree_width                 = 200  # This is used to scale
+					       # the tree branches
+	self.min_branch_separation      = 1
+
 
 def logger(level,*msg):
     """ Just to manage how to print messages """
@@ -66,7 +85,8 @@ def show_tree(t, style="basic"):
     scene  = _TreeScene()
     mainapp = _MainApp(scene)
 
-    scene.initialize_tree_scene(t, style, None)
+    scene.initialize_tree_scene(t, style, None, \
+				    tree_properties=tree_properties)
     scene.draw()
 
     mainapp.show()
@@ -79,25 +99,11 @@ def render_tree(t, w, h, imgName, style="basic"):
         _QApp = QtGui.QApplication(["ETE"])
 
     scene  = _TreeScene()
-    scene.initialize_tree_scene(t, style, None)
+    scene.initialize_tree_scene(t, style, None, \
+				tree_properties=tree_properties)
     scene.draw()
     scene.save(w, h, imgName)
 
-class TreeImageProperties:
-    def __init__(self):
-        self.branch_pixels_correction   = 0
-        self.force_topology             = False
-        self.draw_branch_length         = False
-        self.align_leaf_faces           = False
-        self.orientation                = 0
-        self.style                      = 0
-        self.general_font_type          = "Verdana"
-        self.branch_length_font_color   = "#222"
-        self.branch_length_font_size    = 6
-        self.branch_support_font_color  = "red"
-        self.branch_support_font_size   = 9 
-        self.tree_width                 = 200
-	self.min_branch_separation      = 1
 
 # #################
 # NON PUBLIC STUFF
@@ -725,7 +731,7 @@ class _MainView(QtGui.QGraphicsView):
         QtGui.QGraphicsView.keyPressEvent(self,e)
 
 class _TreeScene(QtGui.QGraphicsScene):
-    def __init__(self, rootnode=None, style=None, properties=None, *args):
+    def __init__(self, rootnode=None, style=None, *args):
         QtGui.QGraphicsScene.__init__(self,*args)
 
 	self.view = None
@@ -741,7 +747,7 @@ class _TreeScene(QtGui.QGraphicsScene):
         self.mainItem = None        # Qt Item which is parent of all other items
         self.propertiesTable = _PropertiesDialog(self)
 
-    def initialize_tree_scene(self, tree, style, properties):
+    def initialize_tree_scene(self, tree, style, tree_properties):
         self.tree        = tree        # Pointer to original tree
         self.startNode   = tree        # Node to start drawing
 
@@ -749,7 +755,7 @@ class _TreeScene(QtGui.QGraphicsScene):
         if not properties:
             self.props = TreeImageProperties()
         else:
-            self.props = properties
+            self.props = tree_properties
 	    
 	# Validates layout function 
         if type(style) == types.FunctionType or\

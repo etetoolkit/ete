@@ -186,6 +186,7 @@ class PhylomeDBConnector(object):
               return "%s%07d" % (spc,protid)
           else:
               return None
+
   def get_id_by_external(self, external):
     """ Returns the phylomeID of the given ID"""
 

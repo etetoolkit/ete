@@ -495,7 +495,7 @@ class TreeNode(object):
       self.collapse = False
 
   # Distance related functions
-  def get_distance(self, target):
+  def get_distance(self, target, topology_only=False):
       """ 
       Returns the distance from current node to a given target node.
 
@@ -515,7 +515,10 @@ class TreeNode(object):
       for n in [self, target]:
         current = n
         while current != ancestor:
-          dist += current.dist
+          if topology_only:
+            dist += 1
+          else:
+            dist += current.dist
           current = current.up
       return dist
 
