@@ -1131,7 +1131,7 @@ class _TreeScene(QtGui.QGraphicsScene):
         if not node.is_leaf() and node.img_style["draw_descendants"]==1:
             # Corrections ... say something else, don't you think?
             node_height = 0    
-            for ch in node.get_childs():
+            for ch in node.get_children():
                 node_height += ch.fullRegion.height()
             if node.fullRegion.height() >= node_height:
                 y_correction = node.fullRegion.height() - node_height
@@ -1140,7 +1140,7 @@ class _TreeScene(QtGui.QGraphicsScene):
 
             # recursivity: call render function for every child
             next_y = y + y_correction/2
-            for ch in node.get_childs():
+            for ch in node.get_children():
                 dist_to_child = ch.dist * self.scale
                 if orientation == 0:
                     next_x = x+node.nodeRegion.width() 

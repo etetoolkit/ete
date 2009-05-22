@@ -20,7 +20,7 @@ def get_evol_events_from_leaf(node):
     root = node.get_tree_root()
 
     # Checks that is actually rooted
-    outgroups = root.get_childs()
+    outgroups = root.get_children()
     if len(outgroups) != 2:
 	raise "eteError", "Tree is not rooted"
 
@@ -122,7 +122,7 @@ def get_evol_events_from_root(node):
     root = node.get_tree_root()
 
     # Checks that is actually rooted
-    outgroups = root.get_childs()
+    outgroups = root.get_children()
     if len(outgroups) != 2:
 	raise "eteError", "Tree is not rooted"
 
@@ -149,7 +149,7 @@ def get_evol_events_from_root(node):
     all_events = []
     while current: 
 	# Gets childs and appends them to the To_visit list
-	childs = current.get_childs()
+	childs = current.get_children()
 	to_visit += childs
 	if len(childs)>2: 
 	    print >> sys.stderr, "nodes are expected to have two childs."
