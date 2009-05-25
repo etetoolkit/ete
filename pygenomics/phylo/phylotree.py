@@ -9,6 +9,7 @@ import os
 import re
 
 from pygenomics.coretype import tree
+from pygenomics import SeqGroup
 from reconciliation import get_reconciled_tree
 from spoverlap import *
 
@@ -34,7 +35,7 @@ class PhyloNode(tree.TreeNode):
     # changed
     name = property(fget = _get_name, fset = _set_name)
 
-    def __init__(self, newick=None, sequences=None):
+    def __init__(self, newick=None, alignment=None, alg_format="fasta"):
 	# _update names?
 	self._name = "NoName"
 	self._speciesFunction = _parse_species
@@ -46,17 +47,28 @@ class PhyloNode(tree.TreeNode):
 	self.add_feature("lk",0.0)
 	self.add_feature("evolModel","unknown")
 
-	# 
-	# for node in [t]+t.get_descendants():
-	#     node._speciesFunction = speciesFunction
-	#     # To update species name
-	#     node.name = node.name
-	#  
-	# if os.path.exists(algFile):
-	#     aln = readFasta.read_fasta(algFile)
-	#     for node in t.get_leaves():
-	#  	seq_id = aln.name2id[node.name]
-	#  	node.sequence = aln.id2seq[seq_id]
+	# This will be only executed after reading the whole tree,
+	# because the argument 'alignment' is not passed to the
+	# PhyloNode constructor 
+	if alignment:
+	    self.link_to_alignment(alignment, alg_format)
+
+    def link_to_alignment(self, alignment, alg_format="fasta"):
+	missing_seqs = []
+	if type(alignment) == SeqGroup:
+	    alg = alignment
+	else:
+	    alg = SeqGroup(alignment, format=alg_format)
+	# sets the seq of 
+	for l in self.get_leaves():
+	    try:
+		l.sequence = alg.get_seq(l.name)
+	    except KeyError:
+		missing_seqs.append(l.name)
+	if len(missing_seqs)>0:
+	    print >>sys.stderr, \
+		"Warnning: [%d] node names could not be found in the alignment" %\
+		len(missing_seqs)
 
     def get_leaf_species(self):
         """ Returns the set of species covered by its partition. """ 

@@ -1,11 +1,10 @@
 import sys
-import os
-import numpy
+
+from numpy import nan as NaN # Missing values in array are saved as
+			     # NaN values
 
 import clusterdist as AT
-from pygenomics.coretype.tree import TreeNode
-from pygenomics.coretype import arraytable as _arraytable
-
+from pygenomics import TreeNode, ArrayTable
 
 __all__ = ["ClusterNode", "ClusterTree"]
 
@@ -23,7 +22,7 @@ class ClusterNode(TreeNode):
       t3 = Tree( '/home/user/myNewickFile.txt' )
     """
 
-    def __init__(self, newick = None, arraytbl = None):
+    def __init__(self, newick = None, array_table = None):
 	# Initialize basic tree features and loads the newick (if any)
         TreeNode.__init__(self, newick)
 
@@ -36,8 +35,8 @@ class ClusterNode(TreeNode):
         self.add_feature("mean_std", None)
 
 	# Initialize tree with array data
-	if arraytbl is not None:
-	    self.link_to_arraytable(arraytbl)
+	if array_table:
+	    self.link_to_arraytable(array_table)
 
     def link_to_arraytable(self, arraytbl):
 	""" Allows to link a given arraytable object to the tree
@@ -48,28 +47,30 @@ class ClusterNode(TreeNode):
 	in arraytable.
 	
 	"""
-	
 
 	# Initialize tree with array data
 
-	if type(arraytbl) == str:
-	    array = _arraytable.ArrayTable(arraytbl)
-	else:
+	if type(arraytbl) == ArrayTable:
 	    array = arraytbl
+	else:
+	    array = ArrayTable(arraytbl)
 
 	missing_leaves = []
-	for n in self.iter_leaves():
-	    if n.name in array.rowNames:
+	for n in self.traverse():
+	    n.arraytable = array
+	    if n.is_leaf() and n.name in array.rowNames:
 		n._avg_profile = array.get_row_vector(n.name)
-	    else:
+	    elif n.is_leaf():
+		n._avg_profile = [NaN]*len(array.colNames) 
 		missing_leaves.append(n)
 
-	if len(missing_leaves)>0:
-	    print >>sys.stderr, """%d leaf names (from a total of %d)
-                  could not been mapped to the matrix row names!""" % \
-		( len(missing_leaves), len(all_leaves) )
 
-	self.arraytable = array # Caution. Do not overwrite module name
+	if len(missing_leaves)>0:
+	    print >>sys.stderr, \
+		"""[%d] leaf names could not be mapped to the matrix rows.""" %\
+		len(missing_leaves)
+
+	self.arraytable = array
 
     def get_profile(self):
 	""" Returns the associated profile of this node and its
@@ -160,7 +161,6 @@ class ClusterNode(TreeNode):
         self.intracluster_d, std = AT.safe_mean(intra_dist)
         self.intercluster_d, std = AT.safe_mean(inter_dist)
         return self.silhouette, self.intracluster_d, self.intercluster_d
-
 
     def get_avg_profile(self):
 	""" This internal function updates the mean profile

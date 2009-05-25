@@ -35,7 +35,6 @@ _MIN_NODE_STYLE = {
 "draw_descendants": 1, 
 }
 
-
 class TreeImageProperties:
     def __init__(self):
         self.branch_pixels_correction   = 0
@@ -85,24 +84,29 @@ def show_tree(t, style="basic", tree_properties=None):
     scene  = _TreeScene()
     mainapp = _MainApp(scene)
 
-    scene.initialize_tree_scene(t, style,\
-				    tree_properties = tree_properties)
+    if not tree_properties:
+	tree_properties = TreeImageProperties()
+    scene.initialize_tree_scene(t, style, \
+				    tree_properties=tree_properties)
     scene.draw()
 
     mainapp.show()
     _QApp.exec_()
     
-def render_tree(t, w, h, imgName, style="basic", tree_properties=None):
+def render_tree(t, width, height, imgName, style="basic", \
+		    tree_properties = None):
     """ Render tree image into a PNG file."""
     global _QApp
     if not _QApp:
         _QApp = QtGui.QApplication(["ETE"])
 
     scene  = _TreeScene()
-    scene.initialize_tree_scene(t, style, \
+    if not tree_properties:
+	tree_properties = TreeImageProperties()
+    scene.initialize_tree_scene(t, style,
 				tree_properties=tree_properties)
     scene.draw()
-    scene.save(w, h, imgName)
+    scene.save(width, height, imgName)
 
 
 # #################
@@ -110,7 +114,7 @@ def render_tree(t, w, h, imgName, style="basic", tree_properties=None):
 # #################
 
 class _MainApp(QtGui.QMainWindow):
-    def __init__(self,scene,*args):
+    def __init__(self, scene, *args):
         QtGui.QMainWindow.__init__(self, *args)
 	self.scene = scene
 	self.view  = _MainView(scene)
@@ -134,6 +138,33 @@ class _MainApp(QtGui.QMainWindow):
 	self.view.scale(0.8,0.8)
 
     @QtCore.pyqtSignature("")
+    def on_actionZoomInX_triggered(self):
+	self.scene.props.tree_width += 20
+	self.scene.draw()
+
+    @QtCore.pyqtSignature("")
+    def on_actionZoomOutX_triggered(self):
+	self.scene.props.tree_width -= 20
+	self.scene.draw()
+
+    @QtCore.pyqtSignature("")
+    def on_actionZoomInY_triggered(self):
+	if self.scene.props.min_branch_separation < \
+		self.scene.min_real_branch_separation:
+	    self.scene.props.min_branch_separation = \
+		self.scene.min_real_branch_separation
+
+	self.scene.props.min_branch_separation += 5
+	self.scene.draw()
+
+    @QtCore.pyqtSignature("")
+    def on_actionZoomOutY_triggered(self):
+	if self.scene.props.min_branch_separation > 0:
+	    self.scene.props.min_branch_separation -= 5
+	    self.scene.draw()
+
+
+    @QtCore.pyqtSignature("")
     def on_actionZoomIn_triggered(self):
 	if self.scene.highlighter.isVisible():
 	    R = self.scene.highlighter.rect()
@@ -144,6 +175,18 @@ class _MainApp(QtGui.QMainWindow):
 				    R.height(),QtCore.Qt.KeepAspectRatio)
 	else:
 	    self.view.scale(1.2,1.2)
+
+    @QtCore.pyqtSignature("")
+    def on_actionFit2tree_triggered(self):
+	cwidth = self.view.width()
+	fnode, max_dist = self.scene.startNode.get_farthest_leaf(topology_only=\
+	    self.scene.props.force_topology)
+	fixwidth = self.scene.i_width + self.scene.max_w_aligned_face - (self.scene.scale * max_dist)
+	if cwidth > fixwidth:
+	    self.scene.props.tree_width = cwidth - fixwidth
+#	    self.scene.scale =  (cwidth - fixwidth) / max_dist 
+	    self.scene.draw()
+
 
     @QtCore.pyqtSignature("")
     def on_actionKK_triggered(self):
@@ -186,7 +229,7 @@ class _MainApp(QtGui.QMainWindow):
 	    except Exception,e:
 		pass
 	    else:
-		self.scene.initialize_tree_scene(t,"basic",None)
+		self.scene.initialize_tree_scene(t,"basic", TreeImageProperties())
 		self.scene.draw()
 
     @QtCore.pyqtSignature("")
@@ -231,10 +274,14 @@ class _MainApp(QtGui.QMainWindow):
 	    except Exception,e:
 		pass
 	    else:
-		self.scene.initialize_tree_scene(t,"basic",None)
+		self.scene.initialize_tree_scene(t,"basic", TreeImageProperties())
 		self.scene.draw()
 
-	
+
+
+# This function should be reviewed. Probably there are better ways to
+# do de same, or at least less messy ways... So far this is what I
+# have :)
 class _TableItem(QtGui.QItemDelegate):
     def __init__(self, parent=None):
         QtGui.QItemDelegate.__init__(self, parent)
@@ -405,7 +452,6 @@ class _PropertiesDialog(QtGui.QWidget):
 	    for n in self.prop2nodes[name]:
 		typedvalue = type(getattr(n,name))(value)
 		try:
-		    print "CHANGE", name
 		    n.set_property(name,type(getattr(n,name))(value))
 		except:
 		    logger(-1, "Wrong format for attribute:", name)
@@ -572,7 +618,6 @@ class _NodeItem(QtGui.QGraphicsRectItem):
 
     def paste_partition(self):
         if self.scene().buffer_node:
-            print self.scene().buffer_node
             self.node.add_child(self.scene().buffer_node)
             self.scene().set_style_from(self.scene().startNode,self.scene().layout_func)
             self.scene().buffer_node= None
@@ -643,14 +688,12 @@ class _MainView(QtGui.QGraphicsView):
         #self.setViewportUpdateMode(QtGui.QGraphicsView.FullViewportUpdate)
         self.setViewportUpdateMode(QtGui.QGraphicsView.SmartViewportUpdate)
         #self.setViewportUpdateMode(QtGui.QGraphicsView.MinimalViewportUpdate)
-        self.setOptimizationFlag (QtGui.QGraphicsView.DontAdjustForAntialiasing)
+        #self.setOptimizationFlag (QtGui.QGraphicsView.DontAdjustForAntialiasing)
         #self.setOptimizationFlag (QtGui.QGraphicsView.DontSavePainterState)
 
     def resizeEvent(self, e):
 	QtGui.QGraphicsView.resizeEvent(self, e)
 	logger(2, "RESIZE VIEW!!")
-	self.scene().draw()
-	self.update()
 
     def wheelEvent(self,e):
         factor =  (-e.delta() / 360.0) 
@@ -741,6 +784,7 @@ class _TreeScene(QtGui.QGraphicsScene):
         self.startNode   = rootnode    # Node to start drawing
 	self.scale       = 0           # Tree branch scale used to draw
         self.max_w_aligned_face = 0    # Stores the max width of aligned faces 
+        self.min_real_branch_separation = 0 
 
 	# Qt items
 	self.selector = None 
@@ -752,10 +796,7 @@ class _TreeScene(QtGui.QGraphicsScene):
         self.startNode   = tree        # Node to start drawing
 
         # Load image attributes
-        if not tree_properties:
-            self.props = TreeImageProperties()
-        else:
-            self.props = tree_properties
+	self.props = tree_properties
 	    
 	# Validates layout function 
         if type(style) == types.FunctionType or\
@@ -886,7 +927,6 @@ class _TreeScene(QtGui.QGraphicsScene):
 		targetRect = QtCore.QRectF(0, 0, temp_rect.width(), temp_rect.height())
 		self.render(pp, targetRect, temp_rect)
 		ii.saves("%s-%s_%s.png" %(imgName,counter_row,counter_column))
-		print "Created: %s-%s_%s.png" %(imgName,counter_row,counter_column)
 		counter_row += 1
 		
 		missing_height -= chunk_height
@@ -912,10 +952,11 @@ class _TreeScene(QtGui.QGraphicsScene):
         self.highlighter.setParentItem(self.mainItem)
         self.highlighter.setVisible(True)
         self.highlighter.setZValue(2)
+        self.min_real_branch_separation = 0 
 
 	# Get branch scale
-	fnode, max_dist = self.startNode.get_farthest_leaf(\
-	    topology_only=self.props.force_topology)
+	fnode, max_dist = self.startNode.get_farthest_leaf(topology_only=\
+	    self.props.force_topology)
 
 	if max_dist>0:
 	    self.scale =  self.props.tree_width / max_dist
@@ -935,7 +976,6 @@ class _TreeScene(QtGui.QGraphicsScene):
 	if self.view is not None and 0:
 	    cwidth = self.view.width()
 	    fixwidth = self.i_width + self.max_w_aligned_face - (self.scale * max_dist)
-	    print fixwidth, self.view.width()
 	    if cwidth > fixwidth:
 		self.scale =  (cwidth - fixwidth) / max_dist 
 		# Load nodes regions and update their face pixmaps
@@ -956,7 +996,6 @@ class _TreeScene(QtGui.QGraphicsScene):
 
         # size correcton for aligned faces
         self.i_width += self.max_w_aligned_face
-	print self.max_w_aligned_face
         # New pos for tree when inverse orientation
         if self.props.orientation == 1:
             self.startNode._QtItem_.moveBy(self.max_w_aligned_face,0)
@@ -970,7 +1009,6 @@ class _TreeScene(QtGui.QGraphicsScene):
 
         self.setSceneRect(-2,-2,self.i_width+4,self.i_height+50)
         logger(2, "Number of items in scene:", len(self.items()))
-
 
     def add_scale(self,x,y):
 	size = 50
@@ -1044,7 +1082,6 @@ class _TreeScene(QtGui.QGraphicsScene):
                     f.update_pixmap()
                     
                 if node.is_leaf() and f.aligned:
-		    print aligned_f_w
                     aligned_f_w = max(aligned_f_w, f._width())
                     aligned_f_h += f._height()
 	    
@@ -1065,6 +1102,10 @@ class _TreeScene(QtGui.QGraphicsScene):
         node.facesRegion = QtCore.QRectF(0,0,max_w,max_h)
         w = node.dist_xoffset + max_w + node.img_style["size"] 
         h = max(max_h, min_node_height, self.props.min_branch_separation)
+	if self.min_real_branch_separation < h:
+	    self.min_real_branch_separation = h
+	    
+	
         node.nodeRegion = QtCore.QRectF(0,0,w,h)
         # This is the node region covered in total 
         sum_child_h = 0

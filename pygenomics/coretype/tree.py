@@ -177,7 +177,7 @@ class TreeNode(object):
               sister = sisters.pop(0)
           return self.up.remove_child(sister)
 
-  def delete(self):
+  def delete(self, delete_1_child_parents=True):
       """ 
       Deletes node from the tree structure. Notice that this
       method makes 'disapear' the node from the tree structure. This
@@ -201,10 +201,17 @@ class TreeNode(object):
               \ A  
 
       """
-      if self.up:
+      parent = self.up
+      if parent:
           for ch in self.children:
-              self.up.add_child(ch)
-          self.up.remove_child(self)
+              parent.add_child(ch)
+          parent.remove_child(self)
+
+      # Avoids the parents with only one child
+      if delete_1_child_parents and \
+            len(parent.children)<2:
+        parent.delete(delete_1_child_parents=False)
+
 
   def detach(self):
     """ 
@@ -244,7 +251,7 @@ class TreeNode(object):
     EXAMPLES:
     =========
       t = tree.Tree("(((A:0.1, B:0.01):0.001, C:0.0001):1.0[&&NHX:name=I], (D:0.00001):0.000001[&&NHX:name=J]):2.0[&&NHX:name=root];")
-      node_C = t.get_descendants_by_name("C")[0]
+      node_C = t.search_nodes(name="C")[0]
       t.prune(["A","D", node_C], method="keep")
       print t
 
@@ -634,13 +641,14 @@ class TreeNode(object):
 
       charset =  "abcdefghijklmnopqrstuvwxyz"
       prev_size = len(self)
+      if self.is_leaf():
+        size -=1
       while len(self) != size+prev_size:
         try:
           target = random.sample([n for n in self.traverse() \
-                                    if len(n)==1 ], 1)[0]
+                                    if len(n)==1 and n.children!=[] ], 1)[0]
         except ValueError:
-          target = random.sample([n for n in self.traverse() \
-                                 if len(n)==0 ], 1)[0]
+          target = random.sample(self.get_leaves(), 1)[0]
 
         tname = ''.join(random.sample(charset,5))
         tdist = random.random()
@@ -736,7 +744,8 @@ class TreeNode(object):
         else:
             raise TreeError, "Cannot unroot a tree with only two leaves"
 
-  def show(self, layout="basic"):
+  def show(self, layout="basic", \
+             image_properties=None):
     """ Begins an interative session to visualize this node
     structure."""
     try:
@@ -746,16 +755,17 @@ class TreeNode(object):
         print "\n\n"
         print self
     else:
-        treeview.show_tree(self,layout)
+        treeview.show_tree(self,layout,image_properties)
 
-  def render_image(self, w, h, file_name, _layout="basic"):
+  def render_tree(self, w, h, file_name, _layout="basic", \
+                     image_properties=None):
     """ Renders the tree structure into an image file. """
     try:
         from pygenomics import treeview
     except ImportError,e: 
         print "treeview could not be loaded. Visualization is disabled."
     else:
-        treeview.render_tree(self, w, h, file_name, _layout)
+        treeview.render_tree(self, w, h, file_name, _layout, image_properties)
 
   def _asciiArt(self, char1='-', show_internal=False, compact=False):
     """ 

@@ -1,28 +1,5 @@
 #!/usr/bin/env python
 
-# ########################################################################
-#
-# Copyright (C) 2008 by Jaime Huerta Cepas. All rights reserved.  
-# email: jhcepas@gmail.com
-#
-# This file is part of the Environment for Tree Exploration program (ETE). 
-#  
-# ETE is free software: you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#  
-# ETE is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#  
-# You should have received a copy of the GNU General Public License
-# along with ETE.  If not, see <http://www.gnu.org/licenses/>.
-#
-# ########################################################################
-
-
 from PyQt4 import QtCore
 from PyQt4 import QtGui
 import numpy
@@ -203,7 +180,6 @@ class TextFace(Face):
 
     def _height(self):
 	lines = len(self.get_text().split("\n"))
-	print self.get_text(), lines
 	if lines>1:
 	    lines +=1
 	fm = QtGui.QFontMetrics(self.font)
@@ -300,7 +276,7 @@ class ProfileFace(Face):
             self.draw_centered_bar_profile()
 
     def get_color_gradient(self):
-        colors = [QtGui.QColor("white")]
+        colors = []
         if self.colorscheme == 0:
             # Blue and Green
             for a in xrange(100,0,-1):
@@ -344,7 +320,7 @@ class ProfileFace(Face):
             color=QtGui.QColor()
             color.setRgb( 255,0,255 )
             colors.append(color)
-
+	colors.append(QtGui.QColor("white"))
         return colors
 
     def draw_bar_profile(self):
@@ -352,7 +328,6 @@ class ProfileFace(Face):
         mean_vector , deviation_vector = self.node.get_avg_profile()
         # If no vector, skip
         if mean_vector is None:
-            print self.node.name
             return
 
         colors = self.get_color_gradient()
@@ -440,7 +415,6 @@ class ProfileFace(Face):
         mean_vector , deviation_vector = self.node.get_avg_profile()
         # If no vector, skip
         if mean_vector is None:
-            print self.node.name
             return
 
         colors = self.get_color_gradient()
@@ -542,7 +516,6 @@ class ProfileFace(Face):
         # Calculate vector
         mean_vector , deviation_vector = self.node.get_avg_profile()
         if mean_vector is None:
-            print self.node.name
             return
 
         vlength = len(mean_vector)
@@ -624,64 +597,12 @@ class ProfileFace(Face):
                 p.setPen(QtGui.QColor("red"))
                 p.drawLine(x1,dev_down_y1, x2, dev_down_y2)
 
-    def draw_heatmap_profile_old(self):
-        # Calculate vector
-        mean_vector , deviation_vector = self.node.get_avg_profile()
-        # If no vector, skip
-        if mean_vector is None:
-            print self.node.name
-            return
-
-        colors = self.get_color_gradient()
-        
-        vlength = len(mean_vector)
-        # pixels per array position 
-        profile_width = self.width - self.xmargin*2
-        profile_height= self.height - self.ymargin*2 
-
-        x_alpha = float( profile_width / (len(mean_vector)) )
-
-        # Creates a pixmap
-        self.pixmap = QtGui.QPixmap(self.width,self.height)
-        self.pixmap.fill(QtGui.QColor("white"))
-        p = QtGui.QPainter(self.pixmap)
-
-        x2 = self.xmargin
-        y  = self.ymargin
-
-        # Draw heatmap
-        for pos in xrange(vlength):
-            # first and second X pixel positions
-            x1 = x2
-            x2 = x1 + x_alpha
-
-            dev1 =  self.fit_to_scale( deviation_vector[pos]   )
-            mean1 = self.fit_to_scale( mean_vector[pos]        )
-
-            # If nan value, skip
-            if not numpy.isfinite(mean1):
-                continue
-
-	    # Set heatmap color
-            if mean1>self.center_v:
-		color_index = int(abs(((self.center_v-mean1)*100)/(self.max_value-self.center_v)))
-                customColor = colors[100+color_index]
-            elif mean1<self.center_v:
-		color_index = int(abs(((self.center_v-mean1)*100)/(self.min_value-self.center_v)))
-                customColor = colors[100-color_index]
-            else:
-                customColor = colors[0]
-
-            # Fill bar with custom color
-            p.fillRect(x1,y, x_alpha, profile_height, QtGui.QBrush(customColor))
-
 
     def draw_heatmap_profile(self):
         # Calculate vector
         vector , deviation = self.node.get_avg_profile()
         # If no vector, skip
         if vector is None:
-            print self.node.name
             return
 
         colors = self.get_color_gradient()
@@ -713,19 +634,17 @@ class ProfileFace(Face):
 		x2 = x1 + x_alpha
 		dev1 =  self.fit_to_scale( deviation_vector[pos]   )
 		mean1 = self.fit_to_scale( mean_vector[pos]        )
-		# If nan value, skip
-		if not numpy.isfinite(mean1):
-		    continue
-
 		# Set heatmap color
-		if mean1>self.center_v:
+		if not numpy.isfinite(mean1):
+		    customColor = QtGui.QColor("#000000")
+		elif mean1>self.center_v:
 		    color_index = int(abs(((self.center_v-mean1)*100)/(self.max_value-self.center_v)))
 		    customColor = colors[100+color_index]
 		elif mean1<self.center_v:
 		    color_index = int(abs(((self.center_v-mean1)*100)/(self.min_value-self.center_v)))
 		    customColor = colors[100-color_index]
 		else:
-		    customColor = colors[0]
+		    customColor = colors[-1]
 
 		# Fill bar with custom color
 		p.fillRect(x1, y, x_alpha, y_step, QtGui.QBrush(customColor))
@@ -769,7 +688,7 @@ class SequenceFace(Face):
         self.seq  = seq
         self.name = "sequence"
 	self.fsize= fsize
-        self.font = QtGui.QFont("Courier",self.fsize)
+        self.font = QtGui.QFont("Courier", self.fsize)
         self.style = seqtype
 	self.aafg = aafg
 	self.aabg = aabg
@@ -777,33 +696,31 @@ class SequenceFace(Face):
 	self.ntbg = ntbg
 
     def update_pixmap(self):
-        rect = QtGui.QFontMetrics(self.font).boundingRect(0,0,0,0,QtCore.Qt.AlignTop,self.seq)
-        size = rect.width(),rect.height()/2
-        self.pixmap = QtGui.QPixmap(size[0],size[1])
+
+
+	fm = QtGui.QFontMetrics(self.font)
+        height = fm.leading() + fm.overlinePos() + fm.underlinePos()
+        width  = fm.size(QtCore.Qt.AlignTop, self.seq).width()
+
+        self.pixmap = QtGui.QPixmap(width,height)
         self.pixmap.fill()
         p = QtGui.QPainter(self.pixmap)
         x = 0
-        y = rect.height()/2
+        y = height - fm.underlinePos()*2
 
-        rect = QtGui.QFontMetrics(self.font).boundingRect(0,0,0,0,QtCore.Qt.AlignTop,self.seq[0])
 	p.setFont(self.font)
 
         for letter in self.seq:
             letter = letter.upper()
             if self.style=="nt":
-                letter_brush = QtGui.QBrush(QtGui.QColor(self.ntbg[letter]))
-		letter_pen = QtGui.QPen(QtGui.QColor(self.ntfg[letter]))
-            else:
-                letter_brush = QtGui.QBrush(QtGui.QColor(self.aabg[letter]))
-		letter_pen = QtGui.QPen(QtGui.QColor(self.aafg[letter]))
-
+                letter_brush = QtGui.QBrush(QtGui.QColor(self.ntbg.get(letter,"#ffffff" )))
+		letter_pen = QtGui.QPen(QtGui.QColor(self.ntfg.get(letter, "#000000")))
+	    else:
+                letter_brush = QtGui.QBrush(QtGui.QColor(self.aabg.get(letter,"#ffffff" )))
+		letter_pen = QtGui.QPen(QtGui.QColor(self.aafg.get(letter,"#000000" )))
+		
 	    p.setPen(letter_pen)
-            p.fillRect(x,0,rect.width(),rect.height(),letter_brush)
-            p.drawText(x,y,letter)
-            x += rect.width()
+            p.fillRect(x,0,width, height,letter_brush)
+            p.drawText(x, y, letter)
+            x += float(width)/len(self.seq)
         p.end()
-
-
-
-__version__="1.0rev95"
-__author__="Jaime Huerta-Cepas"

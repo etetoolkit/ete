@@ -29,26 +29,29 @@ def phylogeny(node):
                 faces.add_face(node, 1, SequenceFace, aligned=True)
 
 def cluster_heatmap(node):
-        # Extras node info
-        node.collapsed = False
-        # Color and style
-        node.img_style["fgcolor"] = "#3333FF"
-        node.img_style["size"] =  0
+  square_size = 10
+  # Extras node info
+  node.collapsed = False
 
-        matrix_max = numpy.max(node.arraytable.matrix)
-        matrix_min = numpy.min(node.arraytable.matrix)
-        matrix_avg = matrix_min+((matrix_max-matrix_min)/2)
-        ProfileFace = faces.ProfileFace(\
-                                            matrix_max,\
-                                            matrix_min,\
-                                            matrix_avg,\
-                                            200,\
-                                            2,\
-                                            "heatmap")
-        ProfileFace.ymargin=0
-        if node.is_leaf():
-            # Set colors
-            faces.add_face(node,0, ProfileFace, aligned=True )
+  # Color and style
+  node.img_style["fgcolor"] = "#3333FF"
+  node.img_style["size"] =  0
+        
+  ncols = node.arraytable.matrix.shape[1]
+  matrix_max = numpy.max(node.arraytable.matrix)
+  matrix_min = numpy.min(node.arraytable.matrix)
+  matrix_avg = matrix_min+((matrix_max-matrix_min)/2)
+  ProfileFace = faces.ProfileFace(\
+    matrix_max,\
+      matrix_min,\
+      matrix_avg,\
+      square_size*ncols,\
+      square_size,\
+      "heatmap")
+  ProfileFace.ymargin=0
+  if node.is_leaf():
+    # Set colors
+    faces.add_face(node,0, ProfileFace, aligned=True )
           
 def cluster_cbars(node):
         # Extras node info
