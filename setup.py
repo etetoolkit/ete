@@ -5,7 +5,7 @@ ez_setup.use_setuptools()
 python_dependencies = [
     ["numpy", "Error", 0],
     ["scipy", "Error", 0],
-    ["statss", "Error", 0],
+    ["stats", "Error", 0],
     ["MySQLdb", "Error", 0]
 ]
 
@@ -18,9 +18,8 @@ def can_import(mname):
 print "ETE (The python Environment for Tree Exploration)."
 for mname, msg, ex in python_dependencies:
     if not can_import(mname):
-	print "Cannot use", mname, msg
+	print msg, mname, "cannot be imported."
 
-raw_input()
 
 setup(
     name = "ete2",

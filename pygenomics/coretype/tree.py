@@ -177,7 +177,7 @@ class TreeNode(object):
               sister = sisters.pop(0)
           return self.up.remove_child(sister)
 
-  def delete(self, delete_1_child_parents=True):
+  def delete(self, prevent_nondicotomic=True):
       """ 
       Deletes node from the tree structure. Notice that this
       method makes 'disapear' the node from the tree structure. This
@@ -208,9 +208,9 @@ class TreeNode(object):
           parent.remove_child(self)
 
       # Avoids the parents with only one child
-      if delete_1_child_parents and \
+      if prevent_nondicotomic and parent and\
             len(parent.children)<2:
-        parent.delete(delete_1_child_parents=False)
+        parent.delete(prevent_nondicotomic=False)
 
 
   def detach(self):
