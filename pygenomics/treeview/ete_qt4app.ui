@@ -63,6 +63,8 @@
    <addaction name="actionBranchLength"/>
    <addaction name="actionZoomIn"/>
    <addaction name="actionZoomOut"/>
+   <addaction name="actionRenderPDF"/>
+   <addaction name="actionSearchNode"/>
   </widget>
   <action name="actionOpen">
    <property name="text">
@@ -168,6 +170,19 @@
   <action name="actionFit2region">
    <property name="text">
     <string>Fit to selection</string>
+   </property>
+   <property name="shortcut">
+    <string>Space</string>
+   </property>
+  </action>
+  <action name="actionRenderPDF">
+   <property name="text">
+    <string>renderPDF</string>
+   </property>
+  </action>
+  <action name="actionSearchNode">
+   <property name="text">
+    <string>searchNode</string>
    </property>
   </action>
  </widget>

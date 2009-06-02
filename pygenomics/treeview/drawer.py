@@ -13,7 +13,7 @@ from PyQt4  import QtGui
 from PyQt4.QtGui import QPrinter
 
 from pygenomics.coretype import tree
-DEBUG = 1
+DEBUG = 2
 
 import layouts 
 import __mainwindow__
@@ -22,17 +22,17 @@ __all__ = ["show_tree", "render_tree", "TreeImageProperties"]
 _QApp = None
 
 _MIN_NODE_STYLE = {
-"fgcolor": "#FFAA55",
-"bgcolor": "#FFFFFF",
-"vt_line_color": "#000000",
-"hz_line_color": "#000000",
-"line_type": 0,
-"vlwidth": 1,
-"hlwidth": 1,
-"size": 4,
-"shape": "square",
-"faces": None, 
-"draw_descendants": 1, 
+    "fgcolor": "#FFAA55",
+    "bgcolor": "#FFFFFF",
+    "vt_line_color": "#000000",
+    "hz_line_color": "#000000",
+    "line_type": 0,
+    "vlwidth": 1,
+    "hlwidth": 1,
+    "size": 4,
+    "shape": "square",
+    "faces": None, 
+    "draw_descendants": 1, 
 }
 
 class TreeImageProperties:
@@ -178,16 +178,23 @@ class _MainApp(QtGui.QMainWindow):
 
     @QtCore.pyqtSignature("")
     def on_actionFit2tree_triggered(self):
-	cwidth = self.view.width()
-	fnode, max_dist = self.scene.startNode.get_farthest_leaf(topology_only=\
-	    self.scene.props.force_topology)
-	fixwidth = self.scene.i_width + self.scene.max_w_aligned_face - (self.scene.scale * max_dist)
-	if cwidth > fixwidth:
-	    self.scene.props.tree_width = cwidth - fixwidth
-#	    self.scene.scale =  (cwidth - fixwidth) / max_dist 
-	    self.scene.draw()
+	self.view.fitInView(self.scene.sceneRect(), QtCore.Qt.KeepAspectRatio)
+
+    @QtCore.pyqtSignature("")
+    def on_actionFit2region_triggered(self):
+	self.view.fitInView(self.scene.selector.rect(), QtCore.Qt.KeepAspectRatio)
 
 
+    @QtCore.pyqtSignature("")
+    def on_actionSearchNode_triggered(self):
+	text, ok = QtGui.QInputDialog.getText(None,"Search","Search for leaf name:")
+	if ok:
+	    t = text.toAscii()
+	    for l in self.scene.startNode.search_nodes(name=t):
+		self.view.horizontalScrollBar().setValue(l._x)
+		self.view.verticalScrollBar().setValue(l._y)
+		    
+	
     @QtCore.pyqtSignature("")
     def on_actionKK_triggered(self):
 	self.scene.props.draw_branch_length ^= True
@@ -350,6 +357,9 @@ class _PropertiesDialog(QtGui.QWidget):
 	self._mode = 0
         self.layout =  QtGui.QVBoxLayout()
         self.tableView = QtGui.QTableView()
+        self.tableView.verticalHeader().setVisible(False)
+	self.tableView.horizontalHeader().setVisible(False)
+	
 	self.tableView.setVerticalHeader(None)
         self.layout.addWidget(self.tableView)
         self.setLayout(self.layout)
@@ -431,7 +441,7 @@ class _PropertiesDialog(QtGui.QWidget):
     def apply_changes(self):
 	# Apply changes on styles
 	for i1, i2 in self._style_indexes:
-	    if (i2.row(), i2.column()) not in self._edited_indexes: 
+	    if (i2.row(), i2.column()) not in self._edited_indexes:
 		continue
 	    name = str(self.model.data(i1).toString())
 	    value = str(self.model.data(i2).toString())
@@ -450,11 +460,11 @@ class _PropertiesDialog(QtGui.QWidget):
 	    name = str(self.model.data(i1).toString())
 	    value = str(self.model.data(i2).toString())
 	    for n in self.prop2nodes[name]:
-		typedvalue = type(getattr(n,name))(value)
 		try:
-		    n.set_property(name,type(getattr(n,name))(value))
-		except:
+		    setattr(n, name, type(getattr(n,name))(value))
+		except Exception, e:
 		    logger(-1, "Wrong format for attribute:", name)
+		    print e
 		    break
 	self.update_properties(self.node)
         self.scene.draw()
@@ -684,6 +694,8 @@ class _HighlighterItem(QtGui.QGraphicsRectItem):
 class _MainView(QtGui.QGraphicsView):
     def __init__(self,*args):
         QtGui.QGraphicsView.__init__(self,*args)
+	self.setRenderHints(QtGui.QPainter.Antialiasing or QtGui.QPainter.SmoothPixmapTransform )
+
 
         #self.setViewportUpdateMode(QtGui.QGraphicsView.FullViewportUpdate)
         self.setViewportUpdateMode(QtGui.QGraphicsView.SmartViewportUpdate)
@@ -724,7 +736,7 @@ class _MainView(QtGui.QGraphicsView):
 
     def keyPressEvent(self,e):
         key = e.key()
-        logger(2, "****** Pressed key: ", key, QtCore.Qt.LeftArrow)
+        logger(1, "****** Pressed key: ", key, QtCore.Qt.LeftArrow)
         if key == 90: # z
             R = self.scene().selector.rect()
             if R.width()>0 or R.height()>0:
@@ -1350,7 +1362,7 @@ class _TreeScene(QtGui.QGraphicsScene):
                 # If face has to be draw within the node room 
                 else:
                     # Set face position
-                    if orientation ==0:
+		    if orientation ==0:
                         obj.setPos(start_x, start_y)
                     elif orientation ==1:
                         obj.setPos(start_x-f._width(),start_y)
@@ -1365,8 +1377,3 @@ class _TreeScene(QtGui.QGraphicsScene):
                 aligned_start_x -= aligned_start_x
 
 
-
-
-
-__version__="1.0rev95"
-__author__="Jaime Huerta-Cepas"

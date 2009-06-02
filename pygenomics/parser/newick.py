@@ -25,8 +25,8 @@ class NewickError(Exception):
     return repr(self.value)
 
 def read_newick(newick, root_node=None):
-  """ Reads a newick tree either from a string or file, and returns an
-  ETE tree structure. 
+  """ Reads a newick tree from either a string or a file, and returns
+  an ETE tree structure.
 
   A previously existent node object can be passed as the root of the
   tree, which means that all its new children will belong to the same

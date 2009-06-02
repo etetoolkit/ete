@@ -130,7 +130,7 @@ class PhylomeDBConnector(object):
   ========
   An object whose methods can be used to query the database. 
 """
-  def __init__(self, host="cgenomics", \
+  def __init__(self, host="84.88.66.245", \
                  db="phylomeDB", \
                  user="public", \
                  passwd="public", \

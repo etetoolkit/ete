@@ -22,23 +22,27 @@ class PhyloNode(tree.TreeNode):
     """ Re-implementation of the standart TreeNode instance. It adds
     attributes and methods to work with phylogentic trees. """
 
-    def _get_name(self):
-	return self._name
+    def _get_species(self):
+	if self._speciesFunction:
+	    return self._speciesFunction(self.name)
+	else:
+	    return self._species
 
-    def _set_name(self, value):
-	self._name = value
-	if self._speciesFunction is not None:
-	    self.species = self._speciesFunction(self._name)
+    def _set_species(self, value):
+	if self._speciesFunction:
+	    pass
+	else:
+	    self._species = value
 
     # This tweak overwrites the native 'name' attribute to create a
     # property that updates the species code every time name is
     # changed
-    name = property(fget = _get_name, fset = _set_name)
+    species = property(fget = _get_species, fset = _set_species)
 
-    def __init__(self, newick=None, alignment=None, alg_format="fasta"):
+    def __init__(self, newick=None, alignment=None, alg_format="fasta", sp_naming_function=_parse_species):
 	# _update names?
 	self._name = "NoName"
-	self._speciesFunction = _parse_species
+	self._speciesFunction = None
 	# Caution! native __init__ has to be called after defining
 	# _speciesFunction!!
         tree.TreeNode.__init__(self, newick=newick)
@@ -52,6 +56,11 @@ class PhyloNode(tree.TreeNode):
 	# PhyloNode constructor 
 	if alignment:
 	    self.link_to_alignment(alignment, alg_format)
+
+	for n in self.iter_descendants():	
+	    if sp_naming_function:
+		n._speciesFunction = sp_naming_function
+	    
 
     def link_to_alignment(self, alignment, alg_format="fasta"):
 	missing_seqs = []
@@ -70,11 +79,11 @@ class PhyloNode(tree.TreeNode):
 		"Warnning: [%d] node names could not be found in the alignment" %\
 		len(missing_seqs)
 
-    def get_leaf_species(self):
+    def get_species(self):
         """ Returns the set of species covered by its partition. """ 
         return set( [ l.species for l in self.iter_leaves() ])          
 
-    def iter_leaf_species(self):
+    def iter_species(self):
         """ Returns an iterator over the species grouped by this node. """ 
 	spcs = set([])
 	for l in self.iter_leaves():
@@ -87,10 +96,10 @@ class PhyloNode(tree.TreeNode):
 	included in a given list or set of species names."""
 	if type(species) != set:
 	    species = set(species)
-	return self.get_leaf_species().issubset(species)
+	return self.get_species().issubset(species)
 
     def get_age(self, species2age):
-	return max([species2age[sp] for sp in self.get_leaf_species()])
+	return max([species2age[sp] for sp in self.get_species()])
 
     def reconcile(self, species_tree):
 	""" Returns the reconcilied topology with the provided species

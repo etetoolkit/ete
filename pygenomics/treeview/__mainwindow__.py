@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'ete_qt4app.ui'
+# Form implementation generated from reading ui file '/home/jaime/pygenomics/pygenomics/treeview/ete_qt4app.ui'
 #
-# Created: Mon May 25 09:21:42 2009
+# Created: Mon Jun  1 23:46:23 2009
 #      by: PyQt4 UI code generator 4.4.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -66,6 +66,10 @@ class Ui_MainWindow(object):
         self.actionFit2tree.setObjectName("actionFit2tree")
         self.actionFit2region = QtGui.QAction(MainWindow)
         self.actionFit2region.setObjectName("actionFit2region")
+        self.actionRenderPDF = QtGui.QAction(MainWindow)
+        self.actionRenderPDF.setObjectName("actionRenderPDF")
+        self.actionSearchNode = QtGui.QAction(MainWindow)
+        self.actionSearchNode.setObjectName("actionSearchNode")
         self.menuFile.addAction(self.actionOpen)
         self.menuFile.addAction(self.actionPaste_newick)
         self.menuFile.addAction(self.actionSave_image)
@@ -84,6 +88,8 @@ class Ui_MainWindow(object):
         self.toolBar.addAction(self.actionBranchLength)
         self.toolBar.addAction(self.actionZoomIn)
         self.toolBar.addAction(self.actionZoomOut)
+        self.toolBar.addAction(self.actionRenderPDF)
+        self.toolBar.addAction(self.actionSearchNode)
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -115,4 +121,7 @@ class Ui_MainWindow(object):
         self.actionZoomOutY.setText(QtGui.QApplication.translate("MainWindow", "decrease Y scale", None, QtGui.QApplication.UnicodeUTF8))
         self.actionFit2tree.setText(QtGui.QApplication.translate("MainWindow", "Fit to tree", None, QtGui.QApplication.UnicodeUTF8))
         self.actionFit2region.setText(QtGui.QApplication.translate("MainWindow", "Fit to selection", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionFit2region.setShortcut(QtGui.QApplication.translate("MainWindow", "Space", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionRenderPDF.setText(QtGui.QApplication.translate("MainWindow", "renderPDF", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionSearchNode.setText(QtGui.QApplication.translate("MainWindow", "searchNode", None, QtGui.QApplication.UnicodeUTF8))
 

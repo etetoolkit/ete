@@ -68,7 +68,7 @@ def render(start_node, x, y):
 		node._centered_y = abs(node.children[0]._centered_y + node.children[-1]._centered_y)/2
 		node._y = node.children[-1]._y - node._ycorrection
 		y += node._ycorrection * 2
-	    draw_node(D, node)
+	    draw_rooted_node(D, node)
 
 
 def update_node_areas(start_node, scale, props):
@@ -149,7 +149,7 @@ def update_node_areas(start_node, scale, props):
 	# Sets the total room needed for this node
 	node.fullRegion = [w, h]
 
-def draw_node(drawer, node):
+def draw_rooted_node(drawer, node):
     """ This is the central function which draws a node and all its
     features. Is assumes that x and y positions are already set at in
     the node. """
@@ -230,3 +230,24 @@ def draw_node(drawer, node):
 	start_x += stack_w
 	aligned_start_x += aligned_stack_w
 
+
+def draw_circular_node(node):
+    angle_step = mainarc/float(len(starnode))
+    next_angle =
+    for n in node.traverse("preorder"):
+	if n.is_leaf():
+	    next_angle += angle_step
+            a = next_angle
+            x1  =  cx + d*math.cos(a) # inicio de la liene
+            y1  =  cy + d*math.sin(a) # inicio de la liene
+
+            d  +=  (mydist*scale)
+            x2  =  cx + d*math.cos(a) # Fin de la linea
+            y2  =  cy + d*math.sin(a) # Fin de la linea
+
+            x3  =  cx + (self.diam/2)*math.cos(a) #puntox en la circunferencia al que debe apuntar la linea del nodo
+            y3  =  cy + (self.diam/2)*math.sin(a) #puntoy en la circunferencia al que debe apuntar la linea del nodo
+	    
+	    
+    
+    
