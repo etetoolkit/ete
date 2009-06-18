@@ -36,19 +36,80 @@ class TreeNode(object):
       t2 = Tree( '(A:1,(B:1,(C:1,D:1):0.5):0.5);' )  
       t3 = Tree( '/home/user/myNewickFile.txt' )
   """
+
+  def _get_dist(self):
+    return self._dist
+  def _set_dist(self, value):
+    try:
+      self._dist = float(value)
+    except ValueError:
+      raise 
+
+  def _get_support(self):
+    return self._support
+  def _set_support(self, value):
+    try:
+      self._support = float(value)
+    except ValueError:
+      raise
+    
+  def _get_up(self):
+    return self._up
+  def _set_up(self, value):
+    if type(value) == type(self) or value is None:
+      self._up = value
+    else:
+      raise ValueError, "up: wrong type"
+
+  def _get_children(self):
+    return self._children
+  def _set_children(self, value):
+    if type(value) == list and \
+       len(set([type(n)==type(self) for n in value]))<2:
+      self._children = value
+    else:
+      raise ValueError, "children:wrong type"
+
+  dist = property(fget=_get_dist, fset=_set_dist)
+  support = property(fget=_get_support, fset=_set_support)
+  up = property(fget=_get_up, fset=_set_up)
+  children = property(fget=_get_children, fset=_set_children)
+  
   def __init__(self, newick=None):
-    self.children = []
-    self.up = None
+    self._children = []
+    self._up = None
+    self._dist = 1.0
+    self._support = 1.0
+    
     self.features = set([])
     self.collapsed = False
     # Add basic features
-    self.add_feature("dist", 1.0)
-    self.add_feature("name", "NoName")
-    self.add_feature("support", 1.0)
-
+    self.add_features(name="NoName")
+    self.features.update(["dist", "support"])
     # Initialize tree
     if newick is not None:
       read_newick(newick, root_node = self)
+
+  def __and__(self, value):
+    """ This allows to execute tree&'A' to obtain the descendant node
+    A"""
+    value=str(value)
+    try:
+      first_match = self.iter_search_nodes(name=value).next()
+      return first_match
+    except StopIteration:
+      raise ValueError, "Node not found"
+
+  def __add__(self, value):
+    """ This allows to sum two trees."""
+    # Should a make the sum with two copies of the original trees?
+    if type(value) == self.__class__:
+      new_root = self.__class__()
+      new_root.add_child(self)
+      new_root.add_child(value)
+      return new_root
+    else:
+      raise ValueError, "Invalid node type"
 
   def __str__(self):
     """ Print tree in newick format. """
@@ -381,7 +442,7 @@ class TreeNode(object):
       print "The Farthest descendant node is", max_node.name,\
           "with a branch distance of", max_dist
 
-  def write(self, features=[], outfile=None, support=True, dist=True):
+  def write(self, features=None, outfile=None, support=True, dist=True):
       """ Returns the newick representation of this node
       topology. Several arguments control the way in which extra
       data is shown for every node:
@@ -426,21 +487,32 @@ class TreeNode(object):
        print common.name
        
       """
-      targets = set([self])
-      targets.update(target_nodes)
-      nodes_bellow = set([self])
-      current = self
-      prev_node = self
+
+      # Convert node names into node instances
+      target_nodes = _transalte_nodes(self, *target_nodes)
+
+      # If only one node is provided, use self as the second target
+      if type(target_nodes) != list:
+        target_nodes = [target_nodes, self]
+      elif len(target_nodes)==1:
+        target_nodes = tree_nodes.append(self)
+
+      start = target_nodes[-1]
+      targets = set(target_nodes)
+      nodes_bellow = set([start]+start.get_descendants())
+      current = start
+      prev_node = start
       while current is not None:
         # all nodes under current (skip vissited)
         new_nodes = [n for s in current.children for n in s.traverse() \
-                       if s != prev_node]+[current]
+                       if s is not prev_node]+[current]
         nodes_bellow.update(new_nodes)
         if targets.issubset(nodes_bellow):
           break
         else:
           prev_node = current
           current = current.up
+
       return current
 
   def get_leaves(self):
@@ -502,24 +574,36 @@ class TreeNode(object):
       self.collapse = False
 
   # Distance related functions
-  def get_distance(self, target, topology_only=False):
-      """ 
-      Returns the distance from current node to a given target node.
+  def get_distance(self, target, target2=None, topology_only=False):
+      """
+      
+      Returns the distance between two nodes. If only one target is
+      specified, it returns the distance bewtween the target and the
+      current node.
 
       ARGUMENTS:
       ==========
-        'target': a node instance within the same tree structure.
+        'target': a node within the same tree structure.
+
+        'target2': a node within the same tree structure. If
+        not specified, current node is used as target2.
 
       RETURNS:
       ========
-        the distance to the target node
+        the distance between nodes
 
       """
-      ancestor = self.get_common_ancestor(target)
+       
+      if target2 is None:
+        target2 = self
+      target, target2 = _transalte_nodes(self, target, target2)
+    
+      ancestor = target.get_common_ancestor(target2)
       if ancestor is None:
           raise TreeError, "Nodes are not connected"
+      
       dist = 0.0
-      for n in [self, target]:
+      for n in [target2, target]:
         current = n
         while current != ancestor:
           if topology_only:
@@ -627,7 +711,7 @@ class TreeNode(object):
               current = current.up
       return current
 
-  def populate(self, size):
+  def populate(self, size, names_library=[]):
       """ 
       Populates the partition under this node with a given number
       of leaves. Internal nodes are added as required.
@@ -641,19 +725,31 @@ class TreeNode(object):
 
       charset =  "abcdefghijklmnopqrstuvwxyz"
       prev_size = len(self)
+      terminal_nodes = set(self.get_leaves())
+      silly_nodes = set([n for n in self.traverse() \
+                         if len(n)==1 and n.children!=[]])
+      
       if self.is_leaf():
         size -=1
-      while len(self) != size+prev_size:
+      names_library = set(names_library)
+      while len(terminal_nodes) != size+prev_size:
         try:
-          target = random.sample([n for n in self.traverse() \
-                                    if len(n)==1 and n.children!=[] ], 1)[0]
+          target = random.sample(silly_nodes, 1)[0]
+          silly_nodes.remove(target)
         except ValueError:
-          target = random.sample(self.get_leaves(), 1)[0]
+          target = random.sample(terminal_nodes, 1)[0]
+          terminal_nodes.remove(target)
+          silly_nodes.add(target)
+          if target is not self:
+              names_library.add(target.name)
 
-        tname = ''.join(random.sample(charset,5))
+        if len(names_library)>0:
+            tname = names_library.pop()
+        else:
+            tname = ''.join(random.sample(charset,5))
         tdist = random.random()
-        target.add_child( name=tname, dist=tdist )
-
+        new_node = target.add_child( name=tname, dist=tdist )
+        terminal_nodes.add(new_node)
   def set_outgroup(self, outgroup):
     """
     Sets a descendant node as the outgroup of a tree.  This function
@@ -666,8 +762,10 @@ class TreeNode(object):
         structure.
     """
 
+    outgroup = _transalte_nodes(self, outgroup)
+            
     if self == outgroup:
-      return 
+      raise ValueError, "Cannot set myself as outgroup" 
 
     parent_outgroup = outgroup.up
    
@@ -744,7 +842,7 @@ class TreeNode(object):
         else:
             raise TreeError, "Cannot unroot a tree with only two leaves"
 
-  def show(self, layout="basic", \
+  def show(self, layout=None, \
              image_properties=None):
     """ Begins an interative session to visualize this node
     structure."""
@@ -757,7 +855,7 @@ class TreeNode(object):
     else:
         treeview.show_tree(self,layout,image_properties)
 
-  def render_tree(self, w, h, file_name, _layout="basic", \
+  def render_tree(self, w, h, file_name, layout=None, \
                      image_properties=None):
     """ Renders the tree structure into an image file. """
     try:
@@ -765,7 +863,7 @@ class TreeNode(object):
     except ImportError,e: 
         print "treeview could not be loaded. Visualization is disabled."
     else:
-        treeview.render_tree(self, w, h, file_name, _layout, image_properties)
+        treeview.render_tree(self, w, h, file_name, layout, image_properties)
 
   def _asciiArt(self, char1='-', show_internal=False, compact=False):
     """ 
@@ -814,7 +912,29 @@ class TreeNode(object):
       """
       (lines, mid) = self._asciiArt(
               show_internal=show_internal, compact=compact)
-      return '\n'.join(lines)
+      return '\n'+'\n'.join(lines)
+
+
+def _transalte_nodes(root, *nodes):
+  target_nodes = []
+  for n in nodes:
+    if type(n) is str:
+      mnodes = root.search_nodes(name=n)
+      if len(mnodes) == 0:
+        raise ValueError, "Node name not found: "+str(n)
+      elif len(mnodes)>1:
+        raise ValueError, "Ambiguos node name: "+str(n)
+      else:
+        target_nodes.append(mnodes[0])
+    elif type(n) != root.__class__:
+      raise ValueError, "Invalid target node: "+str(n)
+    else:
+      target_nodes.append(n)
+          
+  if len(target_nodes) == 1:
+    return target_nodes[0]
+  else:
+    return target_nodes
 
 ### R bindings 
 def asETE(R_phylo_tree):
@@ -843,5 +963,7 @@ def asRphylo(ETE_tree):
 
 # A cosmetic alias :)
 Tree = TreeNode
+
+
 
 

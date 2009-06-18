@@ -37,13 +37,16 @@ def read_phylip(source, interleaved=True, obj=None):
 	    if not interleaved:
 		# Reads names and sequences
 		if SG.id2name.get(id_counter, None) is None:
-		    m = re.match("^\s*(.{10})(.+)", line)
+		    m = re.match("^(.{10})(.+)", line)
 		    if m:
 			name = m.groups()[0].strip()
 			if name in SG.name2id:
-			    tag = str(len(k for k in SEG.name2id.keys() \
-					      if k.endswith(name)))
+
+			    tag = str(len([k for k in SG.name2id.keys() \
+					      if k.endswith(name)]))
 			    old_name = name
+                            # Tag is in the beginning to avoid being
+                            # cut it by the 10 chars limit
 			    name = tag+"_"+name
 			    print >>STDERR, \
 				"Duplicated entry [%s] was renamed to [%s]" %\
@@ -67,12 +70,13 @@ def read_phylip(source, interleaved=True, obj=None):
 		    m = re.match("^(.{10})(.+)",line)
 		    if m:
 			name = m.groups()[0].strip()
-			seq  =  re.sub("\s","",m.groups()[1])
+
+			seq = re.sub("\s","",m.groups()[1])
 			SG.id2seq[id_counter] = seq
 			SG.id2name[id_counter] = name
 			if name in SG.name2id:
-			    tag = str(len(k for k in SEG.name2id.keys() \
-					      if k.endswith(name)))
+			    tag = str(len([k for k in SG.name2id.keys() \
+					      if k.endswith(name)]))
 			    old_name = name
 			    name = tag+"_"+name
 			    print >>STDERR, \

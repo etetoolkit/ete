@@ -3,10 +3,10 @@ import sys
 from numpy import nan as NaN # Missing values in array are saved as
 			     # NaN values
 
-import clusterdist as AT
+import clusterdist as DistFunction
 from pygenomics import TreeNode, ArrayTable
 
-__all__ = ["ClusterNode", "ClusterTree"]
+__all__ = ["ClusterNode", "ClusterTree", "DistFunction"]
 
 class ClusterNode(TreeNode):
     """ Creates a new Cluster Tree object, which is a collection
@@ -22,21 +22,71 @@ class ClusterNode(TreeNode):
       t3 = Tree( '/home/user/myNewickFile.txt' )
     """
 
-    def __init__(self, newick = None, array_table = None):
+    def _set_forbidden(self, value):
+        raise ValueError, "This attribute can not be manually set."
+
+    def _get_intra(self):
+        if self._silhouette == None:
+            self.get_silhouette()
+        return self._intracluster_dist
+    
+    def _get_inter(self):
+        if self._silhouette == None:
+            self.get_silhouette()
+        return self._intercluster_dist
+
+    def _get_silh(self):
+        if self._silhouette == None:
+            self.get_silhouette()
+        return self._silhouette
+
+    def _get_prof(self):
+        if self._profile is None:
+            self._calculate_avg_profile()
+        return self._profile
+
+    def _get_std(self):
+        if self._std_profile is None:
+            self._calculate_avg_profile()
+        return self._std_profile
+
+    def _set_profile(self, value):
+        self._profile = value
+    
+    intracluster_dist = property(fget=_get_intra, fset=_set_forbidden)
+    intercluster_dist = property(fget=_get_inter, fset=_set_forbidden)
+    silhouette = property(fget=_get_silh, fset=_set_forbidden)
+    profile = property(fget=_get_prof, fset=_set_profile)
+    deviation = property(fget=_get_std, fset=_set_forbidden)
+    
+    def __init__(self, newick = None, text_array = None, \
+                 fdist=DistFunction.spearman_dist):
 	# Initialize basic tree features and loads the newick (if any)
         TreeNode.__init__(self, newick)
+        self._fdist = None
+        self._silhouette = None
+	self._intercluster_dist = None
+	self._intracluster_dist = None
+	self._profile = None
+	self._std_deviation = None
 
 	# Cluster especific features
-        self._avg_profile = None
-        self._std_profile = None
-        self.add_feature("intercluster_d", None)
-        self.add_feature("intracluster_d", None)
-        self.add_feature("silhouette", None)
-        self.add_feature("mean_std", None)
+        self.features.add("intercluster_dist")
+        self.features.add("intracluster_dist")
+        self.features.add("silhouette")
+        self.features.add("profile")
+        self.features.add("deviation")
 
 	# Initialize tree with array data
-	if array_table:
-	    self.link_to_arraytable(array_table)
+	if text_array:
+	    self.link_to_arraytable(text_array)
+
+        if newick:
+            self.set_distance_function(fdist)
+
+    def set_distance_function(self, fn):
+        for n in self.traverse():
+            n._fdist = fn
 
     def link_to_arraytable(self, arraytbl):
 	""" Allows to link a given arraytable object to the tree
@@ -59,9 +109,9 @@ class ClusterNode(TreeNode):
 	for n in self.traverse():
 	    n.arraytable = array
 	    if n.is_leaf() and n.name in array.rowNames:
-		n._avg_profile = array.get_row_vector(n.name)
+		n._profile = array.get_row_vector(n.name)
 	    elif n.is_leaf():
-		n._avg_profile = [NaN]*len(array.colNames) 
+		n._profile = [NaN]*len(array.colNames) 
 		missing_leaves.append(n)
 
 
@@ -71,23 +121,6 @@ class ClusterNode(TreeNode):
 		len(missing_leaves)
 
 	self.arraytable = array
-
-    def get_profile(self):
-	""" Returns the associated profile of this node and its
-	standard deviation.
-
-	If node is a leaf: average profile is the leaf profile
-	itself and standard deviation vector set to 0.
-
-	If node is internal, avg profile is the average of all leaf
-	profiles under the node.
- 
-	"""
-	if self._avg_profile is not None:
-	    return self._avg_profile, self._std_profile
-	else:
-	    self.get_avg_profiles()
-	    return self._avg_profile, self._std_profile
 
     def iter_leaf_profiles(self):
 	""" Returns an iterator over all the profiles associated to
@@ -99,8 +132,8 @@ class ClusterNode(TreeNode):
 	""" Returns the list of all the profiles associated to the
 	leaves under this node."""
 	return [l.get_profile()[0] for l in self.iter_leaves()]
-    
-    def calculate_silhouette(self, fdist=AT.spearman_dist):
+
+    def get_silhouette(self, fdist=None):
         """ Calculates the node's silhouette value by using a given
         distance function. By default, euclidean distance is used. It
         also calculates the deviation profile, mean profile, and
@@ -117,38 +150,40 @@ class ClusterNode(TreeNode):
 	intercluster distances b(i) are calculated as the Average to
 	Centroid Linkage.
 
-
 	** Rousseeuw, P.J. (1987) Silhouettes: A graphical aid to the
 	interpretation and validation of cluster analysis.
 	J. Comput. Appl. Math., 20, 53-65.
 
-	   """
+        """
+
+        if fdist is None:
+            fdist = self._fdist
         
         sisters = self.get_sisters()
         
         # Calculates average vectors
-        if  self._avg_profile is None:
-            self.get_avg_profile()
+        if self._profile is None:
+            self._calculate_avg_profile()
             
         for st in sisters:
-            if st._avg_profile is None:
-                st.get_avg_profile()
-        
+            if st._profile is None:
+                st._calculate_avg_profile()
+                
         # Calculates silhouette
 	silhouette = []
         intra_dist = []
         inter_dist = []
         for st in sisters:
-            if st._avg_profile is None:
+            if st._profile is None:
 		continue
 
             for i in self.iter_leaves():
                 # Skip nodes with nodes without profile
-                if i._avg_profile is not None:
+                if i._profile is not None:
 		    # Centroid Diameter
-		    a = fdist(i._avg_profile, self._avg_profile)*2 
+		    a = fdist(i._profile, self._profile)*2
 		    # Centroid Linkage
-		    b = fdist(i._avg_profile, st._avg_profile) 
+		    b = fdist(i._profile, st._profile) 
 		    if (b-a) == 0.0:
 			s = 0.0
 		    else:
@@ -157,25 +192,25 @@ class ClusterNode(TreeNode):
 		    inter_dist.append(b)
 		    silhouette.append(s)
 
-        self.silhouette, std     = AT.safe_mean(silhouette)
-        self.intracluster_d, std = AT.safe_mean(intra_dist)
-        self.intercluster_d, std = AT.safe_mean(inter_dist)
-        return self.silhouette, self.intracluster_d, self.intercluster_d
+        self._silhouette, std = DistFunction.safe_mean(silhouette)
+        self._intracluster_dist, std = DistFunction.safe_mean(intra_dist)
+        self._intercluster_dist, std = DistFunction.safe_mean(inter_dist)
+        return self.silhouette, self.intracluster_dist, self.intercluster_dist
 
-    def get_avg_profile(self):
+    def _calculate_avg_profile(self):
 	""" This internal function updates the mean profile
 	associated to an internal node. """
 
 	if not self.is_leaf():
-	    leaf_vectors = [n._avg_profile for n in  self.get_leaves() \
-				if n._avg_profile is not None]
+	    leaf_vectors = [n._profile for n in  self.get_leaves() \
+				if n._profile is not None]
 	    if len(leaf_vectors)>0:
-		self._avg_profile, self._std_profile = AT.safe_mean_vector(leaf_vectors)
+		self._profile, self._std_profile = DistFunction.safe_mean_vector(leaf_vectors)
 	    else:
-		self._avg_profile, self._std_profile = None, None
-	    return self._avg_profile, self._std_profile
+		self._profile, self._std_profile = None, None
+	    return self._profile, self._std_profile
 	else: 
-	    return self._avg_profile, [0.0]*len(self._avg_profile)
+	    return self._profile, [0.0]*len(self._profile)
 
 
 # cosmetic alias

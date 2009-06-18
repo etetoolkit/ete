@@ -15,8 +15,8 @@ def get_reconciled_tree(node, sptree, events):
 	# morphed childs are the the reconcialiated childs. We trust
 	# its topology. Remember tree is visited on recursive
 	# post-order
-	sp_child_0 = morphed_childs[0].get_leaf_species()
-	sp_child_1 = morphed_childs[1].get_leaf_species()
+	sp_child_0 = morphed_childs[0].get_species()
+	sp_child_1 = morphed_childs[1].get_species()
 	all_species =  sp_child_1 | sp_child_0
 
 	# If childs represents a duplication (duplicated species)
@@ -70,7 +70,7 @@ def get_reconciled_tree(node, sptree, events):
 def _replace_on_template(orig_template, node):
     template = copy.deepcopy(orig_template)
     # detects partition within topo that matchs child1 species 
-    nodespcs = node.get_leaf_species()
+    nodespcs = node.get_species()
     spseed = list(nodespcs)[0]  # any sp name woulbe ok
     # Set an start point
     subtopo = template.search_nodes(children=[], name=spseed)[0]
@@ -98,7 +98,7 @@ def _get_expected_topology(t, species):
     while sps-set(node.get_leaf_names()) != set([]):
 	node = node.up
     template = copy.deepcopy(node)
-    # to make get_leaf_species() to work
+    # make get_species() to work
     template._speciesFunction = _get_species_on_TOL
     template.detach()
     for n in [template]+template.get_descendants():

@@ -6,9 +6,7 @@ import sys
 
 sys.path.append("./")
 
-from pygenomics.coretype import tree
-from pygenomics.coretype import seqgroup
-from pygenomics.coretype import arraytable
+from pygenomics import *
 
 # test datasets 
 nw_simple1 = '((A, (B,C)),D);'
@@ -243,8 +241,8 @@ class Test_Coretype_SeqGroup(unittest.TestCase):
 	# FASTA IO
 	open("/tmp/ete_test_fasta.txt","w").write(fasta_example)
 	# Test reading from file and from string
-	SEQS = seqgroup.SeqGroup(fasta_example)
-	SEQS2 = seqgroup.SeqGroup("/tmp/ete_test_fasta.txt")
+	SEQS = SeqGroup(fasta_example)
+	SEQS2 = SeqGroup("/tmp/ete_test_fasta.txt")
 
 	# Compare the result is the same
 	self.assertEqual(SEQS.write(), SEQS2.write())
@@ -268,8 +266,8 @@ class Test_Coretype_SeqGroup(unittest.TestCase):
     def test_phylip_parser(self):
 	# PHYLIP INTERLEAVED
 	open("/tmp/ete_test_iphylip.txt","w").write(phylip_interlived)
-	SEQS = seqgroup.SeqGroup("/tmp/ete_test_iphylip.txt", format="iphylip")
-	SEQS2 = seqgroup.SeqGroup(phylip_interlived, format="iphylip")
+	SEQS = SeqGroup("/tmp/ete_test_iphylip.txt", format="iphylip")
+	SEQS2 = SeqGroup(phylip_interlived, format="iphylip")
 	self.assertEqual(SEQS.write(), SEQS2.write())
 	SEQS.write(format="iphylip",  outfile="/tmp/ete_write_file")
 	self.assertEqual(SEQS.write(format="iphylip"), phylip_interlived)
@@ -283,8 +281,8 @@ class Test_Coretype_SeqGroup(unittest.TestCase):
 
 	# PHYLIP SEQUENCIAL FORMAT
 	open("/tmp/ete_test_phylip.txt","w").write(phylip_sequencial)
-	SEQS = seqgroup.SeqGroup("/tmp/ete_test_phylip.txt", format="phylip")
-	SEQS2 = seqgroup.SeqGroup(phylip_sequencial, format="phylip")
+	SEQS = SeqGroup("/tmp/ete_test_phylip.txt", format="phylip")
+	SEQS2 = SeqGroup(phylip_sequencial, format="phylip")
 	self.assertEqual(SEQS.write(), SEQS2.write())
 	SEQS.write(format="phylip",  outfile="/tmp/ete_write_file")
 	self.assertEqual(SEQS.write(format="phylip"), phylip_sequencial)
@@ -297,35 +295,32 @@ class Test_Coretype_SeqGroup(unittest.TestCase):
 	self.assertEqual("CYS1" in SEQS, False)
 	self.assertEqual(SEQS.get_entries(), [e for e in SEQS])
 
-class Test_Coretype_ArrayTable(unittest.TestCase):
-    def test_arraytable_parser(self):
-	pass
 
 class Test_Coretype_Tree(unittest.TestCase):
     def test_tree_read_and_write(self):
 	# Read and write newick tree from file (and support for NHX
 	# format): newick parser
 	open("/tmp/etetemptree.nw","w").write(nw_full)
-	t = tree.Tree("/tmp/etetemptree.nw")
+	t = Tree("/tmp/etetemptree.nw")
 	self.assertEqual(nw_full, t.write(features=["flag","mood"]))
 	self.assertEqual(nw_topo,  t.write(support=False, dist=False))
 	self.assertEqual( nw_dist, t.write(support=False, dist=True))
 
 	# Read and write newick tree from *string* (and support for NHX
 	# format)
-	t = tree.Tree(nw_full)
+	t = Tree(nw_full)
 	self.assertEqual(nw_full, t.write(features=["flag","mood"]))
 	self.assertEqual(nw_topo, t.write(support=False, dist=False))
 	self.assertEqual( nw_dist, t.write(support=False, dist=True))
 
 	# Read complex newick
-	t = tree.Tree(nw2_full)
+	t = Tree(nw2_full)
 	self.assertEqual(nw2_full,  t.write())
 
 	# Read wierd topologies
-	t = tree.Tree(nw_simple5)
+	t = Tree(nw_simple5)
 	self.assertEqual(nw_simple5,  t.write(support=False,dist=False))
-	t = tree.Tree(nw_simple6)
+	t = Tree(nw_simple6)
 	self.assertEqual(nw_simple6,  t.write(support=False,dist=False))
 
     def test_tree_manipulation(self):
@@ -335,10 +330,10 @@ class Test_Coretype_Tree(unittest.TestCase):
 	# Adding and removing nodes (add_child, remove_child,
 	# add_sister, remove_sister). The resulting neiwck tree should
 	# match the nw_tree defined before. 
-	t = tree.Tree()
+	t = Tree()
 	c1 = t.add_child()
 	c2 = t.add_child(dist=0.43)
-	n = tree.TreeNode()
+	n = TreeNode()
 	_n = c1.add_child(n)
 	c3 = _n.add_sister(name="Turtle", dist="1.3")
 	c4 = c2.add_child(name="A", dist="0.3")
@@ -357,7 +352,7 @@ class Test_Coretype_Tree(unittest.TestCase):
 	self.assertEqual(_n, n)
 
 	# Delete, 
-	t = tree.Tree("(((A, B), C)[&&NHX:name=I], (D, F)[&&NHX:name=J])[&&NHX:name=root];")
+	t = Tree("(((A, B), C)[&&NHX:name=I], (D, F)[&&NHX:name=J])[&&NHX:name=root];")
 	D = t.search_nodes(name="D")[0]
 	F = t.search_nodes(name="F")[0]
 	J = t.search_nodes(name="J")[0]
@@ -369,7 +364,7 @@ class Test_Coretype_Tree(unittest.TestCase):
 	self.assertEqual(F.up, root)
 	
         #detach
-	t = tree.Tree("(((A, B)[&&NHX:name=H], C)[&&NHX:name=I], (D, F)[&&NHX:name=J])[&&NHX:name=root];")
+	t = Tree("(((A, B)[&&NHX:name=H], C)[&&NHX:name=I], (D, F)[&&NHX:name=J])[&&NHX:name=root];")
 	D = t.search_nodes(name="D")[0]
 	F = t.search_nodes(name="F")[0]
 	J = t.search_nodes(name="J")[0]
@@ -380,8 +375,8 @@ class Test_Coretype_Tree(unittest.TestCase):
 	self.assertEqual(set([n.name for n in t.iter_descendants()]),set(["A","B","C","I","H"]))
 
 	#prune
-	t1 = tree.Tree("(((A, B), C)[&&NHX:name=I], (D, F)[&&NHX:name=J])[&&NHX:name=root];")
-	t2 = tree.Tree("(((A, B), C)[&&NHX:name=I], (D, F)[&&NHX:name=J])[&&NHX:name=root];")
+	t1 = Tree("(((A, B), C)[&&NHX:name=I], (D, F)[&&NHX:name=J])[&&NHX:name=root];")
+	t2 = Tree("(((A, B), C)[&&NHX:name=I], (D, F)[&&NHX:name=J])[&&NHX:name=root];")
 	D1 = t1.search_nodes(name="D")[0]
 	F2 = t2.search_nodes(name="F")[0]
 
@@ -395,7 +390,7 @@ class Test_Coretype_Tree(unittest.TestCase):
 	# getting nodes, get_childs, get_sisters, get_tree_root,
 	# get_common_ancestor, get_nodes_by_name
 	# get_descendants_by_name, is_leaf, is_root
-	t = tree.Tree("(((A,B),C)[&&NHX:tag=common],D)[&&NHX:tag=root];")
+	t = Tree("(((A,B),C)[&&NHX:tag=common],D)[&&NHX:tag=root];")
 	A = t.search_nodes(name="A")[0]
 	B = t.search_nodes(name="B")[0]
 	C = t.search_nodes(name="C")[0]
@@ -419,7 +414,7 @@ class Test_Coretype_Tree(unittest.TestCase):
 	self.assert_(not A.get_tree_root().is_leaf())	
 
 	# Tree magic python features 
-	t = tree.Tree(nw_dflt)
+	t = Tree(nw_dflt)
 	self.assertEqual(len(t), 20)
 	self.assert_("Ddi0002240" in t)
 	self.assert_(t.children[0] in t)
@@ -427,17 +422,17 @@ class Test_Coretype_Tree(unittest.TestCase):
 	    self.assert_(a.name)
 
 	# Populate 
-	t = tree.Tree(nw_full)
+	t = Tree(nw_full)
 	prev_size= len(t)
 	t.populate(25)
 	self.assertEqual(len(t), prev_size+25)
 
 	# Adding and removing features
-	t = tree.Tree("(((A,B),C)[&&NHX:tag=common],D)[&&NHX:tag=root];")
+	t = Tree("(((A,B),C)[&&NHX:tag=common],D)[&&NHX:tag=root];")
 	A = t.search_nodes(name="A")[0]
 
 	# Iterators, get_leaves, get_leaf_names
-        t = tree.Tree(nw2_full)
+        t = Tree(nw2_full)
 	self.assert_(t.get_leaf_names(), [name for name in  t.iter_leaf_names()]) 
 	self.assert_(t.get_leaves(), [name for name in  t.iter_leaves()]) 
 	self.assert_(t.get_descendants(), [n for n in  t.iter_descendants()]) 
@@ -454,7 +449,7 @@ class Test_Coretype_Tree(unittest.TestCase):
 	
 	# Distances: get_distance, get_farthest_node,
 	# get_farthest_descendant, get_midpoint_outgroup
-	t = tree.Tree("(((A:0.1, B:0.01):0.001, C:0.0001):1.0[&&NHX:name=I], (D:0.00001):0.000001[&&NHX:name=J]):2.0[&&NHX:name=root];")
+	t = Tree("(((A:0.1, B:0.01):0.001, C:0.0001):1.0[&&NHX:name=I], (D:0.00001):0.000001[&&NHX:name=J]):2.0[&&NHX:name=root];")
 	A = t.search_nodes(name="A")[0]
 	B = t.search_nodes(name="B")[0]
 	C = t.search_nodes(name="C")[0]
@@ -479,7 +474,7 @@ class Test_Coretype_Tree(unittest.TestCase):
 	self.assertEqual(I.get_farthest_node(), (D, 1.000011))
 
 	# Test set_outgroup and get_midpoint_outgroup
-	t = tree.Tree(nw2_full)
+	t = Tree(nw2_full)
 	nodes = t.get_descendants()
 	t.set_outgroup(t.get_midpoint_outgroup())
 	o1, o2 = t.children[0], t.children[1]
@@ -508,22 +503,337 @@ class Test_Coretype_Tree(unittest.TestCase):
 	t.get_ascii()
 
 class Test_phylo_module(unittest.TestCase):
-    def test(self):
+
+    # ALL TESTS USE THIS EXAMPLE TREE
+    #
+    #                    /-Dme_001
+    #          /--------|
+    #         |          \-Dme_002
+    #         |
+    #         |                              /-Cfa_001
+    #         |                    /--------|
+    #         |                   |          \-Mms_001
+    #         |                   |
+    #---------|                   |                                        /-Hsa_001
+    #         |                   |                              /--------|
+    #         |          /--------|                    /--------|          \-Hsa_003
+    #         |         |         |                   |         |
+    #         |         |         |          /--------|          \-Ptr_001
+    #         |         |         |         |         |
+    #         |         |         |         |          \-Mmu_001
+    #         |         |          \--------|
+    #          \--------|                   |                    /-Hsa_004
+    #                   |                   |          /--------|
+    #                   |                    \--------|          \-Ptr_004
+    #                   |                             |
+    #                   |                              \-Mmu_004
+    #                   |
+    #                   |          /-Ptr_002
+    #                    \--------|
+    #                             |          /-Hsa_002
+    #                              \--------|
+    #                                        \-Mmu_002
+
+
+    def test_link_alignmets(self):
+        fasta = """
+         >seqA
+         MAEIPDETIQQFMALT---HNIAVQYLSEFGDLNEALNSYYASQTDDIKDRREEAH
+         >seqB
+         MAEIPDATIQQFMALTNVSHNIAVQY--EFGDLNEALNSYYAYQTDDQKDRREEAH
+         >seqC
+         MAEIPDATIQ---ALTNVSHNIAVQYLSEFGDLNEALNSYYASQTDDQPDRREEAH
+         >seqD
+         MAEAPDETIQQFMALTNVSHNIAVQYLSEFGDLNEAL--------------REEAH
+        """
+        # Caution with iphylip string. blank spaces in the beginning are important
+        iphylip = """
+         4 76
+      seqA   MAEIPDETIQ QFMALT---H NIAVQYLSEF GDLNEALNSY YASQTDDIKD RREEAHQFMA
+      seqB   MAEIPDATIQ QFMALTNVSH NIAVQY--EF GDLNEALNSY YAYQTDDQKD RREEAHQFMA
+      seqC   MAEIPDATIQ ---ALTNVSH NIAVQYLSEF GDLNEALNSY YASQTDDQPD RREEAHQFMA
+      seqD   MAEAPDETIQ QFMALTNVSH NIAVQYLSEF GDLNEAL--- ---------- -REEAHQ---
+
+             LTNVSHQFMA LTNVSH
+             LTNVSH---- ------
+             LTNVSH---- ------
+             -------FMA LTNVSH
+        """
+
+        # Loads a tree and link it to an alignment. As usual, 'alignment' can be
+        # the path to a file or the data themselves in text string format
+
+        alg1 = SeqGroup(fasta)
+        alg2 = SeqGroup(iphylip, format="iphylip")
+        
+        t = PhyloTree("(((seqA,seqB),seqC),seqD);", alignment=fasta, alg_format="fasta")
+
+        for l in t.get_leaves():
+            self.assertEqual(l.sequence, alg1.get_seq(l.name))
+
+        # The associated alignment can be changed at any time
+        t.link_to_alignment(alignment=alg2, alg_format="iphylip")
+
+        for l in t.get_leaves():
+            self.assertEqual(l.sequence, alg2.get_seq(l.name))
+    
+    def test_get_sp_overlap_on_all_descendants(self):
+        # Creates a gene phylogeny with several duplication events at
+        # different levels. 
+        t = PhyloTree('((Dme_001,Dme_002),(((Cfa_001,Mms_001),((((Hsa_001,Hsa_003),Ptr_001),Mmu_001),((Hsa_004,Ptr_004),Mmu_004))),(Ptr_002,(Hsa_002,Mmu_002))));')
+
+        # Scans the tree using the species overlap algorithm and detect all
+        # speciation and duplication events
+        events = t.get_descendant_evol_events()
+
+        # Check that all duplications are detected
+        dup1 = t.get_common_ancestor("Hsa_001", "Hsa_004")
+        self.assertEqual(dup1.evoltype, "D")
+       
+        dup2 = t.get_common_ancestor("Dme_001", "Dme_002")
+        self.assertEqual(dup2.evoltype, "D")
+
+        dup3 = t.get_common_ancestor("Hsa_001", "Hsa_002")
+        self.assertEqual(dup3.evoltype, "D")
+
+        dup4 = t.get_common_ancestor("Hsa_001", "Hsa_003")
+        self.assertEqual(dup4.evoltype, "D")
+
+
+        # All other nodes should be speciation
+        for node in t.traverse():
+            if not node.is_leaf() and \
+                   node not in set([dup1, dup2, dup3, dup4]):
+                self.assertEqual(node.evoltype, "S")
+
+        # Check events
+        for e in events:
+            self.assertEqual(e.node.evoltype, e.etype)
+
+        # Check orthology/paralogy prediction
+        orthologs = set()
+        for e in events:
+            if e.node == dup1:
+                self.assertEqual(e.inparalogs, set(['Ptr_001', 'Hsa_001', 'Mmu_001', 'Hsa_003']))
+                self.assertEqual(e.outparalogs, set(['Mmu_004', 'Ptr_004', 'Hsa_004']))
+                self.assertEqual(e.orthologs, set())
+                self.assertEqual(e.outparalogs, e.out_seqs)
+                self.assertEqual(e.inparalogs, e.in_seqs)
+            elif e.node == dup2:
+                self.assertEqual(e.inparalogs, set(['Dme_001']))
+                self.assertEqual(e.outparalogs, set(['Dme_002']))
+                self.assertEqual(e.orthologs, set())
+                self.assertEqual(e.outparalogs, e.out_seqs)
+                self.assertEqual(e.inparalogs, e.in_seqs)
+            elif e.node == dup3:
+                self.assertEqual(e.inparalogs, set(['Hsa_003', 'Cfa_001', 'Ptr_001', 'Hsa_001', 'Ptr_004', 'Hsa_004', 'Mmu_004', 'Mmu_001', 'Mms_001']))
+                self.assertEqual(e.outparalogs, set(['Hsa_002', 'Ptr_002', 'Mmu_002']))
+                self.assertEqual(e.orthologs, set())
+                self.assertEqual(e.outparalogs, e.out_seqs)
+                self.assertEqual(e.inparalogs, e.in_seqs)
+            elif e.node == dup4:
+                self.assertEqual(e.inparalogs, set(['Hsa_001']))
+                self.assertEqual(e.outparalogs, set(['Hsa_003']))
+                self.assertEqual(e.orthologs, set())
+                self.assertEqual(e.outparalogs, e.out_seqs)
+                self.assertEqual(e.inparalogs, e.in_seqs)
+            else:
+
+                key1 = list(e.inparalogs)
+                key2 = list(e.orthologs)
+                key1.sort()
+                key2.sort()
+                orthologs.add(tuple(sorted([tuple(key1), tuple(key2)])))
+
+        orthologies = [
+            [set(['Dme_001', 'Dme_002']), set(['Ptr_001', 'Cfa_001', 'Hsa_002', 'Hsa_003', 'Ptr_002', 'Hsa_001', 'Ptr_004', 'Hsa_004', 'Mmu_004', 'Mmu_001', 'Mms_001', 'Mmu_002'])],
+            [set(['Mms_001', 'Cfa_001']), set(['Hsa_003', 'Ptr_001', 'Hsa_001', 'Ptr_004', 'Hsa_004', 'Mmu_004', 'Mmu_001'])],
+            [set(['Ptr_002']), set(['Hsa_002', 'Mmu_002'])],
+            [set(['Cfa_001']), set(['Mms_001'])],
+            [set(['Hsa_002']), set(['Mmu_002'])],
+            [set(['Hsa_003', 'Hsa_001', 'Ptr_001']), set(['Mmu_001'])],
+            [set(['Ptr_004', 'Hsa_004']), set(['Mmu_004'])],
+            [set(['Hsa_003', 'Hsa_001']), set(['Ptr_001'])],
+            [set(['Hsa_004']), set(['Ptr_004'])]
+            ]
+        expected_orthologs = set()
+        for l1,l2 in orthologies:
+            key1 = list(l1)
+            key2 = list(l2)
+            key1.sort()
+            key2.sort()
+            expected_orthologs.add(tuple(sorted([tuple(key1), tuple(key2)])))
+
+        # Are all orthologies as expected
+        self.assertEqual(expected_orthologs, orthologs)
+
+    def test_get_sp_overlap_on_a_seed(self):
+        # Creates a gene phylogeny with several duplication events at
+        # different levels. 
+        t = PhyloTree('((Dme_001,Dme_002),(((Cfa_001,Mms_001),((((Hsa_001,Hsa_003),Ptr_001),Mmu_001),((Hsa_004,Ptr_004),Mmu_004))),(Ptr_002,(Hsa_002,Mmu_002))));')
+
+        # Scans the tree using the species overlap algorithm
+        seed = t.search_nodes(name="Hsa_001")[0]
+        events = seed.get_my_evol_events()
+
+        # Check that duplications are detected 
+        dup1 = t.get_common_ancestor("Hsa_001", "Hsa_004")
+        self.assertEqual(dup1.evoltype, "D")
+
+        # This duplication is not in the seed path
+        dup2 = t.get_common_ancestor("Dme_001", "Dme_002")
+	self.assert_(not hasattr(dup2, "evoltype"))
+
+        dup3 = t.get_common_ancestor("Hsa_001", "Hsa_002")
+        self.assertEqual(dup3.evoltype, "D")
+
+        dup4 = t.get_common_ancestor("Hsa_001", "Hsa_003")
+        self.assertEqual(dup4.evoltype, "D")
+
+        # All other nodes should be speciation
+        node = seed
+        while node:
+            if not node.is_leaf() and \
+                   node not in set([dup1, dup2, dup3, dup4]):
+                self.assertEqual(node.evoltype, "S")
+            node = node.up
+
+        # Check events
+        for e in events:
+            self.assertEqual(e.node.evoltype, e.etype)
+
+        # Check orthology/paralogy prediction
+        orthologs = set()
+        for e in events:
+            if e.node == dup1:
+                self.assertEqual(e.inparalogs, set(['Hsa_001', 'Hsa_003']))
+                self.assertEqual(e.outparalogs, set(['Hsa_004']))
+                self.assertEqual(e.orthologs, set())
+                self.assertEqual(e.in_seqs, set(['Ptr_001', 'Hsa_001', 'Mmu_001', 'Hsa_003']))
+                self.assertEqual(e.out_seqs, set(['Mmu_004', 'Ptr_004', 'Hsa_004']))
+            elif e.node == dup3:
+                self.assertEqual(e.inparalogs, set(['Hsa_003', 'Hsa_001',  'Hsa_004' ]))
+                self.assertEqual(e.outparalogs, set(['Hsa_002']))
+                self.assertEqual(e.orthologs, set())
+                self.assertEqual(e.in_seqs, set(['Hsa_003', 'Cfa_001', 'Ptr_001', 'Hsa_001', 'Ptr_004', 'Hsa_004', 'Mmu_004', 'Mmu_001', 'Mms_001']))
+                self.assertEqual(e.out_seqs, set(['Hsa_002', 'Ptr_002', 'Mmu_002']))
+            elif e.node == dup4:
+                self.assertEqual(e.inparalogs, set(['Hsa_001']))
+                self.assertEqual(e.outparalogs, set(['Hsa_003']))
+                self.assertEqual(e.orthologs, set())
+                self.assertEqual(e.in_seqs, set(['Hsa_001']))
+                self.assertEqual(e.out_seqs, set(['Hsa_003']))
+            else:
+
+                key1 = list(e.inparalogs)
+                key2 = list(e.orthologs)
+                key1.sort()
+                key2.sort()
+                orthologs.add(tuple(sorted([tuple(key1), tuple(key2)])))
+
+
+        orthologies = [
+            [set(['Dme_001', 'Dme_002']), set([ 'Hsa_002', 'Hsa_003', 'Hsa_001',  'Hsa_004' ])],
+            [set(['Mms_001', 'Cfa_001']), set(['Hsa_003',  'Hsa_001', 'Hsa_004'])],
+            [set(['Hsa_003', 'Hsa_001']), set(['Mmu_001'])],
+            [set(['Hsa_003', 'Hsa_001']), set(['Ptr_001'])],
+            ]
+        expected_orthologs = set()
+        for l1,l2 in orthologies:
+            key1 = list(l1)
+            key2 = list(l2)
+            key1.sort()
+            key2.sort()
+            expected_orthologs.add(tuple(sorted([tuple(key1), tuple(key2)])))
+        
+        # Are all orthologies as expected
+        self.assertEqual(expected_orthologs, orthologs)
+
+    def test_reconciliation(self):
+        gene_tree_nw = '((Dme_001,Dme_002),(((Cfa_001,Mms_001),((Hsa_001,Ptr_001),Mmu_001)),(Ptr_002,(Hsa_002,Mmu_002))));'
+        species_tree_nw = "((((Hsa, Ptr), Mmu), (Mms, Cfa)), Dme);"
+
+        genetree = PhyloTree(gene_tree_nw)
+        sptree = PhyloTree(species_tree_nw)
+
+        recon_tree, events = genetree.reconcile(sptree)
+
+        # Check that reconcilied tree nodes have the correct lables:
+        # gene loss, duplication, etc.
+        expected_recon = "((Dme_001:1.000000,Dme_002:1.000000)1.000000:1.000000[&&NHX:evoltype=D],(((Cfa_001:1.000000,Mms_001:1.000000)1.000000:1.000000[&&NHX:evoltype=S],((Hsa_001:1.000000,Ptr_001:1.000000)1.000000:1.000000[&&NHX:evoltype=S],Mmu_001:1.000000)1.000000:1.000000[&&NHX:evoltype=S])1.000000:1.000000[&&NHX:evoltype=S],((Mms:1.000000[&&NHX:evoltype=L],Cfa:1.000000[&&NHX:evoltype=L])1.000000:1.000000[&&NHX:evoltype=L],(((Hsa:1.000000[&&NHX:evoltype=L],Ptr_002:1.000000)1.000000:1.000000[&&NHX:evoltype=L],Mmu:1.000000[&&NHX:evoltype=L])1.000000:1.000000[&&NHX:evoltype=L],((Ptr:1.000000[&&NHX:evoltype=L],Hsa_002:1.000000)1.000000:1.000000[&&NHX:evoltype=L],Mmu_002:1.000000)1.000000:1.000000[&&NHX:evoltype=S])1.000000:1.000000[&&NHX:evoltype=D])1.000000:1.000000[&&NHX:evoltype=L])1.000000:1.000000[&&NHX:evoltype=D])[&&NHX:evoltype=S];"
+        self.assertEqual(recon_tree.write(["evoltype"]), expected_recon)
+
+    def test_miscelaneus(self):
+        # Creates a gene phylogeny with several duplication events at
+        # different levels. 
+        t = PhyloTree('((Dme_001,Dme_002),(((Cfa_001,Mms_001),((((Hsa_001,Hsa_003),Ptr_001),Mmu_001),((Hsa_004,Ptr_004),Mmu_004))),(Ptr_002,(Hsa_002,Mmu_002))));')
+
+        # Create a dictionary with relative ages for the species present in
+        # the phylogenetic tree.  Note that ages are only relative numbers to
+        # define which species are older, and that different species can
+        # belong to the same age. 
+        sp2age = {
+          'Hsa': 1, # Homo sapiens (Hominids)
+          'Ptr': 2, # P. troglodytes (primates)
+          'Mmu': 2, # Macaca mulata (primates)
+          'Mms': 3, # Mus musculus (mammals)
+          'Cfa': 3, # Canis familiaris (mammals)
+          'Dme': 4  # Drosophila melanogaster (metazoa)
+        }
+
+
+        # Check that dup ages are correct
+        dup1 = t.get_common_ancestor("Hsa_001", "Hsa_004")
+        self.assertEqual(dup1.get_age(sp2age), 2)
+        dup2 = t.get_common_ancestor("Dme_001", "Dme_002")
+        self.assertEqual(dup2.get_age(sp2age), 4)
+        dup3 = t.get_common_ancestor("Hsa_001", "Hsa_002")
+        self.assertEqual(dup3.get_age(sp2age), 3)
+        dup4 = t.get_common_ancestor("Hsa_001", "Hsa_003")
+        self.assertEqual(dup4.get_age(sp2age), 1)
+
+        # Check is_monophyletic tests
+        self.assert_(dup1.is_monophyletic(["Hsa", "Ptr", "Mmu"]))
+        self.assert_(not dup1.is_monophyletic(["Hsa", "Ptr"]))
+        self.assert_(not dup1.is_monophyletic(["Hsa", "Ptr", "Mms"]))
+        
+        # Check rooting options
+        expected_root = t.search_nodes(name="Dme_002")[0]
+        expected_root.dist += 2.3
+        self.assertEqual(t.get_farthest_oldest_leaf(sp2age), expected_root)
+       
+
+        # Check get species functions
+        self.assertEqual(t.get_species(), set(sp2age.keys()))
+        self.assertEqual(set([sp for sp in t.iter_species()]), set(sp2age.keys()))
+
+
+class Test_Coretype_ArrayTable(unittest.TestCase):
+    def test_arraytable_parser(self):
 	pass
+
+
 
 class Test_R_bindings(unittest.TestCase):
     def test_ape(self):
+        try:
+            import rpy2.robjects as robjects
+        except ImportError:
+            print "\nNo rpy2 support. Skipping.\n"
+            return 
+        
         # R 
-	t1 = tree.Tree(nw_simple1)
-	t2 = tree.Tree(nw_simple2)
-	import rpy2.robjects as robjects
+	t1 = Tree(nw_simple1)
+	t2 = Tree(nw_simple2)
+        
+
 	R = robjects.r
 	R.library("ape")
-	CONS =  R["consensus"]([tree.asRphylo(t1), \
-				    tree.asRphylo(t1), \
-				    tree.asRphylo(t1), \
-				    tree.asRphylo(t1), \
-				    tree.asRphylo(t2)])
+	CONS =  R["consensus"]([asRphylo(t1), \
+				    asRphylo(t1), \
+				    asRphylo(t1), \
+				    asRphylo(t1), \
+				    asRphylo(t2)])
 	t = tree.asETE(CONS)
 
 if __name__ == '__main__':

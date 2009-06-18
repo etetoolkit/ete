@@ -23,18 +23,25 @@ def read_arraytable(matrix_file, mtype="float", arraytable_object = None):
     row_dup_flag = False
     col_dup_flag = False
 
-    for line in open(matrix_file):
+    # if matrix_file has many lines, tries to read it as the matrix
+    # itself.
+    if len(matrix_file.split("\n"))>1:
+        matrix_data = matrix_file.split("\n")
+    else:
+        matrix_data = open(matrix_file)
+
+    for line in matrix_data:
 	# Clean up line
-	line = line.replace("\n","")
+	line = line.strip("\n")
 	#line = line.replace(" ","")
 	# Skip empty lines
-	if not line: continue
+	if not line:
+            continue
 	# Get fields in line
 	fields = line.split("\t")
 	# Read column names
 	if line[0]=='#' and re.match("#NAMES",fields[0],re.IGNORECASE): 
 	    counter = 0
-
 	    for colname in fields[1:]:
 		colname = colname.strip()
 

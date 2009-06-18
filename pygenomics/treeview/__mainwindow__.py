@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file '/home/jaime/pygenomics/pygenomics/treeview/ete_qt4app.ui'
 #
-# Created: Mon Jun  1 23:46:23 2009
+# Created: Sun Jun  7 22:17:55 2009
 #      by: PyQt4 UI code generator 4.4.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -28,6 +28,7 @@ class Ui_MainWindow(object):
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
         self.toolBar = QtGui.QToolBar(MainWindow)
+        self.toolBar.setEnabled(True)
         self.toolBar.setObjectName("toolBar")
         MainWindow.addToolBar(QtCore.Qt.LeftToolBarArea, self.toolBar)
         self.actionOpen = QtGui.QAction(MainWindow)
@@ -70,11 +71,13 @@ class Ui_MainWindow(object):
         self.actionRenderPDF.setObjectName("actionRenderPDF")
         self.actionSearchNode = QtGui.QAction(MainWindow)
         self.actionSearchNode.setObjectName("actionSearchNode")
+        self.actionClearSearch = QtGui.QAction(MainWindow)
+        self.actionClearSearch.setObjectName("actionClearSearch")
         self.menuFile.addAction(self.actionOpen)
         self.menuFile.addAction(self.actionPaste_newick)
+        self.menuFile.addAction(self.actionSave_newick)
         self.menuFile.addAction(self.actionSave_image)
         self.menuFile.addAction(self.actionSave_region)
-        self.menuFile.addAction(self.actionSave_newick)
         self.menuAbout.addAction(self.actionETE)
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuAbout.menuAction())
@@ -90,6 +93,7 @@ class Ui_MainWindow(object):
         self.toolBar.addAction(self.actionZoomOut)
         self.toolBar.addAction(self.actionRenderPDF)
         self.toolBar.addAction(self.actionSearchNode)
+        self.toolBar.addAction(self.actionClearSearch)
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -99,10 +103,13 @@ class Ui_MainWindow(object):
         self.menuFile.setTitle(QtGui.QApplication.translate("MainWindow", "File", None, QtGui.QApplication.UnicodeUTF8))
         self.menuAbout.setTitle(QtGui.QApplication.translate("MainWindow", "About", None, QtGui.QApplication.UnicodeUTF8))
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionOpen.setText(QtGui.QApplication.translate("MainWindow", "Open", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionOpen.setText(QtGui.QApplication.translate("MainWindow", "Open Tree", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionOpen.setShortcut(QtGui.QApplication.translate("MainWindow", "Ctrl+O", None, QtGui.QApplication.UnicodeUTF8))
         self.actionPaste_newick.setText(QtGui.QApplication.translate("MainWindow", "Paste newick", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionSave_image.setText(QtGui.QApplication.translate("MainWindow", "Save tree image", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionSave_region.setText(QtGui.QApplication.translate("MainWindow", "Save selection as image", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionPaste_newick.setShortcut(QtGui.QApplication.translate("MainWindow", "Ctrl+P", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionSave_image.setText(QtGui.QApplication.translate("MainWindow", "Save Image", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionSave_region.setText(QtGui.QApplication.translate("MainWindow", "Save region", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionSave_region.setShortcut(QtGui.QApplication.translate("MainWindow", "Ctrl+A", None, QtGui.QApplication.UnicodeUTF8))
         self.actionBranchLength.setText(QtGui.QApplication.translate("MainWindow", "Show branch lenghts", None, QtGui.QApplication.UnicodeUTF8))
         self.actionBranchLength.setShortcut(QtGui.QApplication.translate("MainWindow", "L", None, QtGui.QApplication.UnicodeUTF8))
         self.actionZoomIn.setText(QtGui.QApplication.translate("MainWindow", "Zoom in", None, QtGui.QApplication.UnicodeUTF8))
@@ -120,8 +127,11 @@ class Ui_MainWindow(object):
         self.actionZoomInY.setText(QtGui.QApplication.translate("MainWindow", "increase Y scale", None, QtGui.QApplication.UnicodeUTF8))
         self.actionZoomOutY.setText(QtGui.QApplication.translate("MainWindow", "decrease Y scale", None, QtGui.QApplication.UnicodeUTF8))
         self.actionFit2tree.setText(QtGui.QApplication.translate("MainWindow", "Fit to tree", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionFit2tree.setShortcut(QtGui.QApplication.translate("MainWindow", "W", None, QtGui.QApplication.UnicodeUTF8))
         self.actionFit2region.setText(QtGui.QApplication.translate("MainWindow", "Fit to selection", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionFit2region.setShortcut(QtGui.QApplication.translate("MainWindow", "Space", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionFit2region.setShortcut(QtGui.QApplication.translate("MainWindow", "R", None, QtGui.QApplication.UnicodeUTF8))
         self.actionRenderPDF.setText(QtGui.QApplication.translate("MainWindow", "renderPDF", None, QtGui.QApplication.UnicodeUTF8))
         self.actionSearchNode.setText(QtGui.QApplication.translate("MainWindow", "searchNode", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionSearchNode.setShortcut(QtGui.QApplication.translate("MainWindow", "Ctrl+S", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionClearSearch.setText(QtGui.QApplication.translate("MainWindow", "clearSearch", None, QtGui.QApplication.UnicodeUTF8))
 

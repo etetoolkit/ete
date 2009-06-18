@@ -16,6 +16,9 @@ class ArrayTable(object):
     microarrays). It allows to load the matrix an access easily to row
     and column vectors. """
 
+    def __str__(self):
+        return str(self.matrix)
+
     def __init__(self, matrix_file=None, mtype="float"):
         self.colNames  = []
         self.rowNames  = []
@@ -26,11 +29,9 @@ class ArrayTable(object):
 
 	# If matrix file is supplied
         if matrix_file is not None:
-
-	    if path.exists(matrix_file):
-		read_arraytable(matrix_file, \
-				    mtype=mtype, \
-				    arraytable_object = self)
+            read_arraytable(matrix_file, \
+                            mtype=mtype, \
+                            arraytable_object = self)
 
     def get_row_vector(self,rowname):
         """ Returns the vector associated to the given row name """

@@ -210,18 +210,23 @@ def write_newick(node, features=[], support=True, dist=True, \
     newick += ";"
   return newick
 
-def _get_features_string(self,features=[]):
+def _get_features_string(self, features=[]):
     """ Generates the extended newick string NHX with extra data about
     a node. """
     string = ""
-    if len(features)>0:
-	for pr in features:
-	    if hasattr(self, pr):
-              value = re.sub("["+_ILEGAL_NEWICK_CHARS+"]", "_", \
-                               getattr(self,pr))
-              if string != "": 
-                string +=":"
-              string +="%s=%s"  %(pr, value)
-	if string != "":
-	    string = "[&&NHX:"+string+"]"
+    if features is None:
+      features = []
+    elif features == []:
+      features = self.features
+    
+    for pr in features:
+        if hasattr(self, pr):
+          value = re.sub("["+_ILEGAL_NEWICK_CHARS+"]", "_", \
+                           str(getattr(self, pr)))
+          if string != "": 
+            string +=":"
+          string +="%s=%s"  %(pr, str(value))
+    if string != "":
+        string = "[&&NHX:"+string+"]"
+            
     return string

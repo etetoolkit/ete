@@ -8,8 +8,7 @@ import sys
 import os
 import re
 
-from pygenomics.coretype import tree
-from pygenomics import SeqGroup
+from pygenomics import TreeNode, SeqGroup
 from reconciliation import get_reconciled_tree
 from spoverlap import *
 
@@ -18,7 +17,7 @@ __all__ = ["PhyloNode", "PhyloTree"]
 def _parse_species(name):
     return name[:3]
 
-class PhyloNode(tree.TreeNode):
+class PhyloNode(TreeNode):
     """ Re-implementation of the standart TreeNode instance. It adds
     attributes and methods to work with phylogentic trees. """
 
@@ -39,28 +38,29 @@ class PhyloNode(tree.TreeNode):
     # changed
     species = property(fget = _get_species, fset = _set_species)
 
-    def __init__(self, newick=None, alignment=None, alg_format="fasta", sp_naming_function=_parse_species):
+    def __init__(self, newick=None, alignment=None, alg_format="fasta", \
+                 sp_naming_function=_parse_species):
 	# _update names?
 	self._name = "NoName"
+        self._species = "Unknown"
 	self._speciesFunction = None
-	# Caution! native __init__ has to be called after defining
-	# _speciesFunction!!
-        tree.TreeNode.__init__(self, newick=newick)
-
-	self.add_feature("species","Unknown")
-	self.add_feature("lk",0.0)
-	self.add_feature("evolModel","unknown")
-
+	# Caution! native __init__ has to be called after setting
+	# _speciesFunction to None!!
+        TreeNode.__init__(self, newick=newick)
+        
 	# This will be only executed after reading the whole tree,
 	# because the argument 'alignment' is not passed to the
-	# PhyloNode constructor 
+	# PhyloNode constructor during parsing
 	if alignment:
 	    self.link_to_alignment(alignment, alg_format)
+        if newick:
+            self.set_species_naming_function(sp_naming_function)
 
-	for n in self.iter_descendants():	
-	    if sp_naming_function:
-		n._speciesFunction = sp_naming_function
-	    
+    def set_species_naming_function(self, fn):
+        for n in self.iter_leaves():
+            n.features.add("species")
+	    if fn:
+		n._speciesFunction = fn
 
     def link_to_alignment(self, alignment, alg_format="fasta"):
 	missing_seqs = []
@@ -71,8 +71,9 @@ class PhyloNode(tree.TreeNode):
 	# sets the seq of 
 	for l in self.get_leaves():
 	    try:
-		l.sequence = alg.get_seq(l.name)
+                l.add_feature("sequence",alg.get_seq(l.name))
 	    except KeyError:
+                l.add_feature("sequence","")
 		missing_seqs.append(l.name)
 	if len(missing_seqs)>0:
 	    print >>sys.stderr, \
@@ -97,16 +98,13 @@ class PhyloNode(tree.TreeNode):
 	if type(species) != set:
 	    species = set(species)
 	return self.get_species().issubset(species)
-
     def get_age(self, species2age):
 	return max([species2age[sp] for sp in self.get_species()])
-
     def reconcile(self, species_tree):
 	""" Returns the reconcilied topology with the provided species
 	tree, and a list of evolutionary events inferred from such
 	reconciliation. """
 	return get_reconciled_tree(self, species_tree, [])
-
     def get_my_evol_events(self):
         """ Returns a list of duplication and speciation events in
         which the current node has been involved. Scanned nodes are

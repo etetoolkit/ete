@@ -12,7 +12,15 @@ from PyQt4  import QtCore
 from PyQt4  import QtGui 
 from PyQt4.QtGui import QPrinter
 
-from pygenomics.coretype import tree
+try:
+    from PyQt4 import QtOpenGL
+    #USE_GL = True
+    USE_GL = False # Temporarily disabled
+except ImportError:
+    USE_GL = False
+
+
+from pygenomics import Tree, PhyloTree, ClusterTree
 DEBUG = 2
 
 import layouts 
@@ -37,7 +45,6 @@ _MIN_NODE_STYLE = {
 
 class TreeImageProperties:
     def __init__(self):
-        self.branch_pixels_correction   = 0
         self.force_topology             = False
         self.draw_branch_length         = False
         self.align_leaf_faces           = False
@@ -74,15 +81,25 @@ def logger(level,*msg):
     return
 
 
-def show_tree(t, style="basic", tree_properties=None):
+def show_tree(t, style=None, tree_properties=None):
     """ Interactively shows a tree."""
     global _QApp
-   
+
+    if not style:
+        if t.__class__ == PhyloTree:
+            style = "phylogeny"
+        elif t.__class__ == ClusterTree:
+            style = "large"
+        else:
+            style = "basic"
+        
+  
     if not _QApp:
         _QApp = QtGui.QApplication(["ETE"])
 
     scene  = _TreeScene()
     mainapp = _MainApp(scene)
+
 
     if not tree_properties:
 	tree_properties = TreeImageProperties()
@@ -93,9 +110,19 @@ def show_tree(t, style="basic", tree_properties=None):
     mainapp.show()
     _QApp.exec_()
     
-def render_tree(t, width, height, imgName, style="basic", \
+def render_tree(t, width, height, imgName, style=None, \
 		    tree_properties = None):
     """ Render tree image into a PNG file."""
+
+    if not style:
+        if t.__class__ == PhyloTree:
+            style = "phylogeny"
+        elif t.__class__ == ClusterTree:
+            style = "large"
+        else:
+            style = "basic"
+
+    
     global _QApp
     if not _QApp:
         _QApp = QtGui.QApplication(["ETE"])
@@ -137,6 +164,12 @@ class _MainApp(QtGui.QMainWindow):
     def on_actionZoomOut_triggered(self):
 	self.view.scale(0.8,0.8)
 
+
+    @QtCore.pyqtSignature("")
+    def on_actionZoomIn_triggered(self):
+	self.view.scale(1.2,1.2)
+
+
     @QtCore.pyqtSignature("")
     def on_actionZoomInX_triggered(self):
 	self.scene.props.tree_width += 20
@@ -164,17 +197,6 @@ class _MainApp(QtGui.QMainWindow):
 	    self.scene.draw()
 
 
-    @QtCore.pyqtSignature("")
-    def on_actionZoomIn_triggered(self):
-	if self.scene.highlighter.isVisible():
-	    R = self.scene.highlighter.rect()
-	else:
-	    R = self.scene.selector.rect()
-	if R.width()>0 or R.height()>0:
-	    self.view.fitInView(R.x(),R.y(),R.width(),\
-				    R.height(),QtCore.Qt.KeepAspectRatio)
-	else:
-	    self.view.scale(1.2,1.2)
 
     @QtCore.pyqtSignature("")
     def on_actionFit2tree_triggered(self):
@@ -182,24 +204,41 @@ class _MainApp(QtGui.QMainWindow):
 
     @QtCore.pyqtSignature("")
     def on_actionFit2region_triggered(self):
-	self.view.fitInView(self.scene.selector.rect(), QtCore.Qt.KeepAspectRatio)
+	if self.scene.highlighter.isVisible():
+	    R = self.scene.highlighter.rect()
+	else:
+	    R = self.scene.selector.rect()
+
+	if R.width()>0 or R.height()>0:
+	    self.view.fitInView(R.x(),R.y(),R.width(),\
+				    R.height(),QtCore.Qt.KeepAspectRatio)
 
 
     @QtCore.pyqtSignature("")
     def on_actionSearchNode_triggered(self):
 	text, ok = QtGui.QInputDialog.getText(None,"Search","Search for leaf name:")
 	if ok:
-	    t = text.toAscii()
-	    for l in self.scene.startNode.search_nodes(name=t):
-		self.view.horizontalScrollBar().setValue(l._x)
-		self.view.verticalScrollBar().setValue(l._y)
+
+	    kk = dir(text)
+	    kk.sort()
+	    print '\n'.join(kk)
+	    print type(text)
+	    print type(text.__str__())
+	    txt = text.__str__()
+
+	    for l in self.scene.startNode.get_leaves():
+		if re.match(txt, l.name):
+		    r = QtGui.QGraphicsRectItem(l._QtItem_)
+		    r.setRect( l.fullRegion)
+#		    r.setPos(l._x, l._y)
+		    r.setZValue(-1)
+		    r.setPen(QtGui.QColor("orange"))
+		    r.setBrush(QtGui.QColor("orange"))
+		    self.scene.addItem(r)
+		    self.view.horizontalScrollBar().setValue(l._x)
+		    self.view.verticalScrollBar().setValue(l._y)
 		    
 	
-    @QtCore.pyqtSignature("")
-    def on_actionKK_triggered(self):
-	self.scene.props.draw_branch_length ^= True
-	self.scene.draw()
-
     @QtCore.pyqtSignature("")
     def on_actionBranchLength_triggered(self):
 	self.scene.props.draw_branch_length ^= True
@@ -207,8 +246,6 @@ class _MainApp(QtGui.QMainWindow):
 
     @QtCore.pyqtSignature("")
     def on_actionForceTopology_triggered(self):
-	#pixels, ok = QtGui.QInputDialog.getInteger(None,"Force branch length","Number of extra pixels:",0,0,100)
-	#if ok:
 	self.scene.props.force_topology ^= True
 	self.scene.draw()
 
@@ -229,29 +266,30 @@ class _MainApp(QtGui.QMainWindow):
 
     @QtCore.pyqtSignature("")
     def on_actionOpen_triggered(self):
-	F = QtGui.QFileDialog(self)
-	if F.exec_():
-	    try:
-		t = tree.Tree(str(F.selectedFiles()[0]))
-	    except Exception,e:
-		pass
-	    else:
-		self.scene.initialize_tree_scene(t,"basic", TreeImageProperties())
-		self.scene.draw()
+	fname = QtGui.QFileDialog.getOpenFileName(self ,"Open File",
+                                                 "/home",
+                                                 "Newick (*.nh *.nhx *.nw )")
+	try:
+	    t = Tree(str(fname))
+	except Exception, e:
+	    print e
+	else:
+	    self.scene.initialize_tree_scene(t, "basic", TreeImageProperties())
+	    self.scene.draw()
 
     @QtCore.pyqtSignature("")
     def on_actionSave_newick_triggered(self):
-	F = QtGui.QFileDialog(self)
-	if F.exec_():
-	    try:
-		fname = F.selectedFiles()[0]
-		nw = self.scene.startNode.get_newick()
-		OUT = open(fname,"w")
-	    except Exception,e:
-		print e
-	    else:
-		OUT.write(nw)
-		OUT.close()
+	fname = QtGui.QFileDialog.getSaveFileName(self ,"Save File",
+                                                 "/home",
+                                                 "Newick (*.nh *.nhx *.nw )")
+	nw = self.scene.startNode.write()
+	try:
+	    OUT = open(fname,"w")
+	except Exception, e:
+	    print e
+	else:
+	    OUT.write(nw)
+	    OUT.close()
 
     @QtCore.pyqtSignature("")
     def on_actionSave_image_triggered(self):
@@ -271,15 +309,16 @@ class _MainApp(QtGui.QMainWindow):
 	    imgName = str(F.selectedFiles()[0])
 	    self.scene.save(imgName, self.scene.selector.rect() )
 
+    @QtCore.pyqtSignature("")
     def on_actionPaste_newick_triggered(self):
         text,ok = QtGui.QInputDialog.getText(self,\
 						 "Paste Newick",\
 						 "Newick:")
 	if ok:
 	    try:
-		t = readNewick.read_newick_string(str(text))
+		t = Tree(str(text))
 	    except Exception,e:
-		pass
+		print e
 	    else:
 		self.scene.initialize_tree_scene(t,"basic", TreeImageProperties())
 		self.scene.draw()
@@ -694,14 +733,22 @@ class _HighlighterItem(QtGui.QGraphicsRectItem):
 class _MainView(QtGui.QGraphicsView):
     def __init__(self,*args):
         QtGui.QGraphicsView.__init__(self,*args)
-	self.setRenderHints(QtGui.QPainter.Antialiasing or QtGui.QPainter.SmoothPixmapTransform )
-
 
         #self.setViewportUpdateMode(QtGui.QGraphicsView.FullViewportUpdate)
-        self.setViewportUpdateMode(QtGui.QGraphicsView.SmartViewportUpdate)
         #self.setViewportUpdateMode(QtGui.QGraphicsView.MinimalViewportUpdate)
         #self.setOptimizationFlag (QtGui.QGraphicsView.DontAdjustForAntialiasing)
         #self.setOptimizationFlag (QtGui.QGraphicsView.DontSavePainterState)
+
+	if USE_GL:
+	    F = QtOpenGL.QGLFormat()
+	    F.setSampleBuffers(True)
+	    print F.sampleBuffers()
+	    self.setViewport(QtOpenGL.QGLWidget(F))
+	    self.setRenderHints(QtGui.QPainter.Antialiasing)
+	else:
+	    self.setRenderHints(QtGui.QPainter.Antialiasing or QtGui.QPainter.SmoothPixmapTransform )
+	    self.setViewportUpdateMode(QtGui.QGraphicsView.SmartViewportUpdate)
+
 
     def resizeEvent(self, e):
 	QtGui.QGraphicsView.resizeEvent(self, e)
@@ -737,41 +784,7 @@ class _MainView(QtGui.QGraphicsView):
     def keyPressEvent(self,e):
         key = e.key()
         logger(1, "****** Pressed key: ", key, QtCore.Qt.LeftArrow)
-        if key == 90: # z
-            R = self.scene().selector.rect()
-            if R.width()>0 or R.height()>0:
-                self.fitInView(R.x(),R.y(),R.width(),R.height(),QtCore.Qt.KeepAspectRatio)
-            else:
-                self.scale(1.2,1.2)
-        elif key == 73: # I
-            self.scene().props.orientation ^= 1
-            self.scene().draw()
-        elif key == 49: # 1
-            self.scene().props.style ^= 1
-            self.scene().draw()
-
-        elif key == 65: # 1
-            self.scene().props.align_leaf_faces ^= 1
-            self.scene().draw()
-
-        elif key == 83 and (e.modifiers() & QtCore.Qt.ControlModifier): # Ctrl+S
-            text,ok = QtGui.QInputDialog.getText(None,"Search","Search for leaf name:")
-            if ok:
-                for l in self.scene().startNode.get_leaves():
-                    t = text.toStdString()
-
-                    if re.search(t,l.name):
-                        self.horizontalScrollBar().setValue(l._x)
-                        self.verticalScrollBar().setValue(l._y)
-
-        elif key == 68: # d
-            self.scene().props.draw_branch_length ^= 1
-            self.scene().draw()
-
-        elif key == 88: # x
-            self.scale(0.8,0.8)
-
-        elif key  == QtCore.Qt.Key_Left:
+        if key  == QtCore.Qt.Key_Left:
             self.horizontalScrollBar().setValue(self.horizontalScrollBar().value()-20 )
             self.update()
         elif key  == QtCore.Qt.Key_Right:
@@ -806,6 +819,7 @@ class _TreeScene(QtGui.QGraphicsScene):
     def initialize_tree_scene(self, tree, style, tree_properties):
         self.tree        = tree        # Pointer to original tree
         self.startNode   = tree        # Node to start drawing
+        self.max_w_aligned_face = 0    # Stores the max width of aligned faces 
 
         # Load image attributes
 	self.props = tree_properties
@@ -984,27 +998,11 @@ class _TreeScene(QtGui.QGraphicsScene):
         self.i_height = self.startNode.fullRegion.height()
 
 
-	# Adjust tree to window?
-	if self.view is not None and 0:
-	    cwidth = self.view.width()
-	    fixwidth = self.i_width + self.max_w_aligned_face - (self.scale * max_dist)
-	    if cwidth > fixwidth:
-		self.scale =  (cwidth - fixwidth) / max_dist 
-		# Load nodes regions and update their face pixmaps
-		t1 = time.time()
-		self.update_node_areas(self.startNode)
-		logger(2, "Ellapsed time for updating node areas:",time.time()-t1)
-		# Get picture dimensions
-		self.i_width  = self.startNode.fullRegion.width() + self.max_w_aligned_face
-		self.i_height = self.startNode.fullRegion.height()
-
-	mem_size = ((self.i_width*self.i_height*4)/1024)/1024
-        logger(1, "IMAGE dimension=",self.i_width,"x",self.i_height,"~mem cosumption: %0.2f Mb" %mem_size)
+        logger(1, "IMAGE dimension=",self.i_width,"x",self.i_height)
         # Render tree on scene
         t2 = time.time()
         self.render_node(self.startNode,0,0)
         logger(2, "Time for rendering", time.time()-t2)
-
 
         # size correcton for aligned faces
         self.i_width += self.max_w_aligned_face

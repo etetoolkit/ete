@@ -173,20 +173,20 @@ def get_evol_events_from_root(node):
 	    # event.seed      = leafName
 	    # event.e_newick  = current.up.get_newick()  # high mem usage!!
 	    event.dup_score = score
-	    event.outgroup_spcs  = smaller_outg.get_leaf_species()
+	    event.outgroup_spcs  = smaller_outg.get_species()
 	    event.in_seqs = set([n.name for n in sideA_leaves])
 	    event.out_seqs = set([n.name for n in sideB_leaves])
 	    event.inparalogs  = set([n.name for n in sideA_leaves])
 	    # If species overlap: duplication 
 	    if score >0.0:
-		event.node = current.up
+		event.node = current
 		event.etype = "D"
 		event.outparalogs = set([n.name for n in sideB_leaves])
 		event.orthologs   = set([])
 		current.add_feature("evoltype","D")
 	    # If NO species overlap: speciation
 	    else:
-		event.node = current.up
+		event.node = current
 		event.etype = "S"
 		event.orthologs = set([n.name for n in sideB_leaves])
 		event.outparalogs = set([])
