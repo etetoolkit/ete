@@ -6,7 +6,7 @@ ez_setup.use_setuptools()
 python_dependencies = [
     ["numpy", "Numpy is required for the ArrayTable class among others", 0],
     ["scipy", "Scipy is required for the ArrayTable class among others", 0],
-    ["MySQLdb", "MySQLdb is required for the PhylomeDB access API", 0]
+    ["MySQLdb", "MySQLdb is required for the PhylomeDB access API", 0],
     ["PyQt4", "PyQt4 is required for tree visualization", 0]
 ]
 
