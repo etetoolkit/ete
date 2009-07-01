@@ -233,7 +233,7 @@ def draw_rooted_node(drawer, node):
 
 def draw_circular_node(node):
     angle_step = mainarc/float(len(starnode))
-    next_angle =
+    next_angle = a
     for n in node.traverse("preorder"):
 	if n.is_leaf():
 	    next_angle += angle_step

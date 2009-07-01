@@ -111,7 +111,7 @@ def show_tree(t, style=None, tree_properties=None):
     _QApp.exec_()
     
 def render_tree(t, width, height, imgName, style=None, \
-		    tree_properties = None):
+		    tree_properties = None, header=None):
     """ Render tree image into a PNG file."""
 
     if not style:
@@ -133,7 +133,7 @@ def render_tree(t, width, height, imgName, style=None, \
     scene.initialize_tree_scene(t, style,
 				tree_properties=tree_properties)
     scene.draw()
-    scene.save(width, height, imgName)
+    scene.save(width, height, imgName, header=header)
 
 
 # #################
@@ -398,7 +398,6 @@ class _PropertiesDialog(QtGui.QWidget):
         self.tableView = QtGui.QTableView()
         self.tableView.verticalHeader().setVisible(False)
 	self.tableView.horizontalHeader().setVisible(False)
-	
 	self.tableView.setVerticalHeader(None)
         self.layout.addWidget(self.tableView)
         self.setLayout(self.layout)
@@ -879,7 +878,7 @@ class _TreeScene(QtGui.QGraphicsScene):
         logger(2, "Double click")
         QtGui.QGraphicsScene.mouseDoubleClickEvent(self,e)
 
-    def save(self, w, h, imgName):
+    def save(self, w, h, imgName, header=None):
 	ext = imgName.split(".")[-1].upper()
 	if ext == "PDF" or ext == "PS":
 	    format = QPrinter.PostScriptFormat if ext == "PS" else QPrinter.PdfFormat
@@ -895,11 +894,17 @@ class _TreeScene(QtGui.QGraphicsScene):
 	    # print pageTopLeft.x(), pageTopLeft.y()
 	    # print  printer.paperRect().height(),  printer.pageRect().height()
 	    topleft =  pageTopLeft - paperTopLeft
-	    targetRect =  QtCore.QRectF(topleft.x(), topleft.y()*2, w, h)
 
 	    printer.setFullPage(True);
 	    printer.setOutputFileName(imgName);
 	    pp = QtGui.QPainter(printer)
+	    if header:
+		pp.setFont(QtGui.QFont("Verdana",12))
+		#pp.setPen(QtGui.QColor("blue"))
+		pp.drawText(topleft.x(),20, header)
+		targetRect =  QtCore.QRectF(topleft.x(), 20 + (topleft.y()*2), w, h)
+	    else:
+		targetRect =  QtCore.QRectF(topleft.x(), topleft.y()*2, w, h)
 	    self.render(pp, targetRect, self.sceneRect())
 	    pp.end()
 	    return 
@@ -1072,7 +1077,7 @@ class _TreeScene(QtGui.QGraphicsScene):
         # horizontal line drawn using the branch length and scale.
 
 	if self.props.force_topology:
-	    node.dist_xoffset = self.scale
+	    node.dist_xoffset = 60#self.scale
 	else:
 	    node.dist_xoffset = float(node.dist * self.scale) 
 

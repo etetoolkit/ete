@@ -856,14 +856,14 @@ class TreeNode(object):
         treeview.show_tree(self,layout,image_properties)
 
   def render_tree(self, w, h, file_name, layout=None, \
-                     image_properties=None):
+                     image_properties=None, header=None):
     """ Renders the tree structure into an image file. """
     try:
         from pygenomics import treeview
     except ImportError,e: 
         print "treeview could not be loaded. Visualization is disabled."
     else:
-        treeview.render_tree(self, w, h, file_name, layout, image_properties)
+        treeview.render_tree(self, w, h, file_name, layout, image_properties, header=header)
 
   def _asciiArt(self, char1='-', show_internal=False, compact=False):
     """ 

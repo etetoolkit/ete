@@ -7,6 +7,7 @@ import sys
 sys.path.append("./")
 
 from pygenomics import *
+from pygenomics.coretype.tree import asRphylo, asETE
 
 # test datasets 
 nw_simple1 = '((A, (B,C)),D);'
