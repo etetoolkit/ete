@@ -20,7 +20,7 @@ except ImportError:
     USE_GL = False
 
 
-from pygenomics import Tree, PhyloTree, ClusterTree
+from ete2 import Tree, PhyloTree, ClusterTree
 DEBUG = 2
 
 import layouts 

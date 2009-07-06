@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 import sys
-from pygenomics import PhyloTree
+from ete2 import PhyloTree
 
 print """ 
 This scripts reads an example gene tree and infer the evolutionary

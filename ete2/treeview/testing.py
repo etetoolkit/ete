@@ -1,7 +1,7 @@
 #import pil_backend as backend
 import qt4_backend as backend
 import copy
-from pygenomics.treeview import layouts, TreeImageProperties, faces
+from ete2.treeview import layouts, TreeImageProperties, faces
 import numpy
 
 _MIN_NODE_STYLE = {

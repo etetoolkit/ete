@@ -13,7 +13,7 @@ minutes.
 import os
 import sys 
 from string import strip
-from pygenomics import TreeNode
+from ete2 import TreeNode
 
 # This sets Unbuffered stdout/auto-flush
 sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)

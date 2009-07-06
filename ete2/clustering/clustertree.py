@@ -4,7 +4,7 @@ from numpy import nan as NaN # Missing values in array are saved as
 			     # NaN values
 
 import clusterdist as DistFunction
-from pygenomics import TreeNode, ArrayTable
+from ete2 import TreeNode, ArrayTable
 
 __all__ = ["ClusterNode", "ClusterTree", "DistFunction"]
 

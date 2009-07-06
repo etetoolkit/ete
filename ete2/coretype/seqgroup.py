@@ -6,8 +6,8 @@ Currently, Fasta, Phylip sequencial and Phylip interleaved formats are
 supported.
 """
 
-from pygenomics.parser.fasta import read_fasta, write_fasta
-from pygenomics.parser.phylip import read_phylip, write_phylip
+from ete2.parser.fasta import read_fasta, write_fasta
+from ete2.parser.phylip import read_phylip, write_phylip
 
 __all__ = ["SeqGroup"]
 

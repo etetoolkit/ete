@@ -35,7 +35,7 @@ except ImportError:
           ===============================================================
       """
 
-from pygenomics.phylo import PhyloTree
+from ete2.phylo import PhyloTree
 
 __all__ = ["PhylomeDBConnector"]
 

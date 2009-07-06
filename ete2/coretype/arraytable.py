@@ -9,7 +9,7 @@ from scipy import stats
 import math
 
 
-from pygenomics.parser.text_arraytable import write_arraytable, read_arraytable
+from ete2.parser.text_arraytable import write_arraytable, read_arraytable
 
 class ArrayTable(object):
     """This object is thought to work with matrix datasets (like

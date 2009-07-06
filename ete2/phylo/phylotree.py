@@ -8,7 +8,7 @@ import sys
 import os
 import re
 
-from pygenomics import TreeNode, SeqGroup
+from ete2 import TreeNode, SeqGroup
 from reconciliation import get_reconciled_tree
 from spoverlap import *
 
