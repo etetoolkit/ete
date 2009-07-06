@@ -37,7 +37,7 @@ rm $OUTPATH/.git/ -rf
 mv $OUTPATH/pygenomics $OUTPATH/$MODULE_NAME
 
 # Ccorrect imports
-find $OUTPATH -name *.py| xargs perl -e "s/from pygenomics/from $MODULE_NAME/g" -p -i
+find $OUTPATH -name '*.py'| xargs perl -e "s/from pygenomics/from $MODULE_NAME/g" -p -i
 
 # Set VERSION in all modules
 find $OUTPATH/ete2/ -name '*.py' |xargs sed "1 i __VERSION__=\"$VERSION\""  -i

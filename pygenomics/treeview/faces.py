@@ -60,7 +60,6 @@ aabgcolors = {
 '-':"#FFFFFF", 
 }
 
-
 ntfgcolors = {
 'A':'#000000',	  
 'G':'#000000',	  
@@ -86,6 +85,8 @@ ntbgcolors = {
 ' ':"#FFFFFF"
 
 }
+
+__all__ = ["add_face", "Face", "TextFace", "AttrFace", "ImgFace", "ProfileFace", "ValidationFace", "SequenceFace"]
 
 try:
     import psyco

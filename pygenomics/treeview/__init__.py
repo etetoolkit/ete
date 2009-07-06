@@ -21,6 +21,8 @@
 # ########################################################################
 
 from drawer import *
+from faces import *
+from layouts import *
 
 __version__="1.0rev95"
 __author__="Jaime Huerta-Cepas"
