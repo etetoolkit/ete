@@ -38,10 +38,10 @@ def read_fasta(source, obj=None):
 
             # Checks for duplicated seq names
 	    if seq_name in names:
-		tag = str(len(k for k in SEG.name2id.keys() if k.endswith(name)))
-		old_name = name
-		name = tag+"_"+name
-		print >>STDERR, "Duplicated entry [%s] was renamed to [%s]" %(old_name, name)
+		tag = str(len([k for k in SC.name2id.keys() if k.endswith(seq_name)]))
+		old_name = seq_name
+		seq_name = tag+"_"+seq_name
+		print >>STDERR, "Duplicated entry [%s] was renamed to [%s]" %(old_name, seq_name)
 		
             # stores seq_name
             SC.id2seq[seq_id] = ""
