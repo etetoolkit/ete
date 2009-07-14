@@ -34,13 +34,16 @@ git clone $REPOSITORY $OUTPATH/
 rm $OUTPATH/.git/ -rf
 
 # mv
-mv $OUTPATH/pygenomics $OUTPATH/$MODULE_NAME
+#mv $OUTPATH/pygenomics $OUTPATH/$MODULE_NAME
 
 # Ccorrect imports
 #find $OUTPATH -name '*.py'| xargs perl -e "s/from pygenomics/from $MODULE_NAME/g" -p -i
 
+
 # Set VERSION in all modules
 find $OUTPATH/ete2/ -name '*.py' |xargs sed "1 i __VERSION__=\"$VERSION\""  -i
+#find $OUTPATH/ete2/ -name '*.py' |xargs sed "1 i #__DISCLAMER___"  -i
+
 
 echo $VERSION > $OUTPATH/VERSION
 tar -zcf ./$PKG_NAME.tgz $OUTPATH
