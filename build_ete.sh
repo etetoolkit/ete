@@ -19,12 +19,28 @@ echo "Output pkg   : $OUTPATH"
 echo "Pkg. Version : $VERSION"
 echo "Module name  : $MODULE_NAME"
 
+echo "Last commited changes in package:"
+echo "----------------------------------"
+cd $REPOSITORY; git log --pretty=format:"%cr %s" |head
+cd ..
+echo 
+echo
+
+
+# Continue?
+if  [ -e $OUTPATH ]; then
+    OVERRIDE='n'
+    while [ $OVERRIDE != 'y' ]; do
+       echo "Go ahead? [y|Ctrl-C]"
+       read OVERRIDE
+    done
+fi
 
 # removes repository info
 if  [ -e $OUTPATH ]; then
     OVERRIDE='n'
     while [ $OVERRIDE != 'y' ]; do
-       echo "$OUTPATH already exists. Override? [y|n]"
+       echo "$OUTPATH already exists. Override? [y|Ctrl-C]"
        read OVERRIDE
     done
 fi
@@ -32,6 +48,11 @@ fi
 rm $OUTPATH/ -rf
 git clone $REPOSITORY $OUTPATH/
 rm $OUTPATH/.git/ -rf
+
+cd $OUTPATH/
+python unittest/test_all.py
+cd ..
+
 
 # mv
 #mv $OUTPATH/pygenomics $OUTPATH/$MODULE_NAME
@@ -48,7 +69,7 @@ find $OUTPATH/ete2/ -name '*.py' |xargs sed "1 i __VERSION__=\"$VERSION\""  -i
 echo $VERSION > $OUTPATH/VERSION
 tar -zcf ./$PKG_NAME.tgz $OUTPATH
 
-echo "Copy pkg. to cgenomics server? [y|n]"
+echo "Copy pkg. to cgenomics server? [y|Ctrl-C]"
 read COPY
 if [ $COPY = 'y' ]; then
     scp ./$PKG_NAME.tgz jhuerta@cgenomics:/home/services/web/ete.cgenomics.org/releases/ete2/

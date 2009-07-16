@@ -94,21 +94,26 @@ class ArrayTable(object):
         grouped_array = self.__class__()
         grouped_matrix = []
         colNames = []
+	alltnames = set([])
         for gname,tnames in groups.iteritems():
             all_vectors=[]
             for tn in tnames:
                 if tn not in self.colValues: 
-                    logger(0, tn,"not found in original dataset. Skipped")
-                    continue
-                vector = self.get_column_vector(tn).astype(int)
+                    raise ValueError, str(tn)+" column not found."
+		if tn in alltnames:
+		    raise ValueError, str(tn)+" duplicated column name for merging"
+		alltnames.add(tn)
+                vector = self.get_column_vector(tn).astype(float)
                 all_vectors.append(vector)
             # Store the group vector = max expression of all items in group
-            if len(all_vectors)>0:
-                grouped_matrix.append(grouping_f(all_vectors))
-                # store group name
-                colNames.append(gname)
-            else:
-                logger(0, gname, "is missing. Skipped")
+	    grouped_matrix.append(grouping_f(all_vectors))
+	    # store group name
+	    colNames.append(gname)
+
+	for cname in self.colNames:
+	    if cname not in alltnames:
+		grouped_matrix.append(self.get_column_vector(cname))
+		colNames.append(cname)
 
         grouped_array.rowNames= self.rowNames
         grouped_array.colNames= colNames

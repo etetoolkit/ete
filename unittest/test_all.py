@@ -3,10 +3,13 @@
 import unittest
 import random 
 import sys
+import numpy
 
-sys.path.append("./")
+# With this, I make sure that I'm testing the devel branch
+sys.path.insert(0, "../")
 
-from ete2 import *
+
+from  ete2 import *
 from ete2.coretype.tree import asRphylo, asETE
 
 # test datasets 
@@ -809,10 +812,71 @@ class Test_phylo_module(unittest.TestCase):
         self.assertEqual(set([sp for sp in t.iter_species()]), set(sp2age.keys()))
 
 
+# Do not modify this dataset
+expression = '#Names\tcol1\tcol2\tcol3\tcol4\tcol5\tcol6\tcol7\nA\t-1.23\t-0.81\t1.79\t0.78\t-0.42\t-0.69\t0.58\nB\t-1.76\t-0.94\t1.16\t0.36\t0.41\t-0.35\t1.12\nC\t-2.19\t0.13\t0.65\t-0.51\t0.52\t1.04\t0.36\nD\t-1.22\t-0.98\t0.79\t-0.76\t-0.29\t1.54\t0.93\nE\t-1.47\t-0.83\t0.85\t0.07\t-0.81\t1.53\t0.65\nF\t-1.04\t-1.11\t0.87\t-0.14\t-0.80\t1.74\t0.48\nG\t-1.57\t-1.17\t1.29\t0.23\t-0.20\t1.17\t0.26\nH\t-1.53\t-1.25\t0.59\t-0.30\t0.32\t1.41\t0.77\n'
+
 class Test_Coretype_ArrayTable(unittest.TestCase):
     def test_arraytable_parser(self):
-	pass
+        A = ArrayTable(expression)
+	self.assertEqual(A.get_row_vector("A").tolist(), \
+			     [-1.23, -0.81, 1.79, 0.78,-0.42,-0.69, 0.58])
+	self.assertEqual(A.get_several_row_vectors(["A","C"]).tolist(), \
+			     [[-1.23, -0.81, 1.79, 0.78, -0.42, -0.69, 0.58],
+			 [-2.19, 0.13, 0.65, -0.51, 0.52, 1.04, 0.36]])
 
+	self.assertEqual(A.get_several_column_vectors(["col2", "col7"]).tolist(), \
+			     [[-0.81000000000000005, -0.93999999999999995,\
+				0.13, -0.97999999999999998, -0.82999999999999996,\
+				    -1.1100000000000001, -1.1699999999999999,\
+				    -1.25],
+			      [0.57999999999999996, 1.1200000000000001, \
+				   0.35999999999999999, 0.93000000000000005, \
+				   0.65000000000000002, 0.47999999999999998, \
+				   0.26000000000000001, 0.77000000000000002]])
+
+
+ 	self.assertEqual(A.get_column_vector("col4").tolist(), \
+			     [0.78000000000000003, 0.35999999999999999, \
+				  -0.51000000000000001, -0.76000000000000001, \
+				  0.070000000000000007, -0.14000000000000001, \
+				  0.23000000000000001, -0.29999999999999999])
+
+	A.remove_column("col4")
+	self.assert_(A.get_column_vector("col4") is None )
+
+	Abis = A.merge_columns({"merged1": \
+				    ["col1", "col2"],\
+				    "merged2": \
+				    ["col5", "col6"]}, \
+				   "mean")
+
+
+	#self.assert_((Abis.get_column_vector("merged1")==numpy.array([-1.02, -1.35, -1.03, -1.1, -1.15, -1.075, -1.37, -1.39, ])).all()==True )
+
+	# Continue this......
+		 
+
+class Test_ClusterTree(unittest.TestCase):
+    def test_clustertree(self):
+
+	t = ClusterTree("(((A,B),(C,(D,E))),(F,(G,H)));", text_array=expression)
+        # Now we can ask the expression profile of a single gene
+        node = t.get_common_ancestor("C", "D", "E")
+        self.assertEqual((t&"A").profile.tolist(), \
+			     [-1.23, -0.81, 1.79, 0.78,-0.42,-0.69, 0.58])
+        print node.profile
+	print node.deviation
+	print node.silhouette
+	print node.intracluster_dist
+	print node.intercluster_dist
+
+	# t.set_distance_function(self, )
+
+
+class Test_Treeview(unittest.TestCase):
+    def test_rendering(self):
+	pass
+    
 
 
 class Test_R_bindings(unittest.TestCase):

@@ -68,7 +68,7 @@ class ClusterNode(TreeNode):
 	self._intercluster_dist = None
 	self._intracluster_dist = None
 	self._profile = None
-	self._std_deviation = None
+	self._std_profile = None
 
 	# Cluster especific features
         self.features.add("intercluster_dist")
@@ -210,6 +210,7 @@ class ClusterNode(TreeNode):
 		self._profile, self._std_profile = None, None
 	    return self._profile, self._std_profile
 	else: 
+	    self._std_profile = [0.0]*len(self._profile)
 	    return self._profile, [0.0]*len(self._profile)
 
 
