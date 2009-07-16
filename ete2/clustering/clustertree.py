@@ -85,8 +85,26 @@ class ClusterNode(TreeNode):
             self.set_distance_function(fdist)
 
     def set_distance_function(self, fn):
+	""" Sets the distance function used to calculate cluster
+	distances and silouette indexex.
+	
+	ARGUMENTS:
+
+          fn: a pointer to python function acepting two arrays (numpy) as
+	  arguments.
+
+	EXAMPLE:
+	
+	  # A simple euclidean distance
+	  my_dist_fn = lambda x,y: abs(x-y)
+   	  tree.set_distance_function(my_dist_fn)
+
+	  """
         for n in self.traverse():
             n._fdist = fn
+	    self._silhouette = None
+	    self._intercluster_dist = None
+	    self._intracluster_dist = None
 
     def link_to_arraytable(self, arraytbl):
 	""" Allows to link a given arraytable object to the tree

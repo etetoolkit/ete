@@ -870,7 +870,7 @@ class Test_ClusterTree(unittest.TestCase):
 	print node.intracluster_dist
 	print node.intercluster_dist
 
-	# t.set_distance_function(self, )
+	t.set_distance_function(self, )
 
 
 class Test_Treeview(unittest.TestCase):

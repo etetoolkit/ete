@@ -326,7 +326,8 @@ class ProfileFace(Face):
 
     def draw_bar_profile(self):
         # Calculate vector
-        mean_vector , deviation_vector = self.node.get_avg_profile()
+        mean_vector = self.node.profile 
+	deviation_vector = self.node.deviation 
         # If no vector, skip
         if mean_vector is None:
             return
@@ -413,7 +414,8 @@ class ProfileFace(Face):
 
     def draw_centered_bar_profile(self):
         # Calculate vector
-        mean_vector , deviation_vector = self.node.get_avg_profile()
+        mean_vector  = self.node.profile
+	deviation_vector = self.node.deviation
         # If no vector, skip
         if mean_vector is None:
             return
@@ -515,7 +517,8 @@ class ProfileFace(Face):
 
     def draw_line_profile(self):
         # Calculate vector
-        mean_vector , deviation_vector = self.node.get_avg_profile()
+        mean_vector = self.node.profile
+	deviation_vector = self.node.deviation
         if mean_vector is None:
             return
 
@@ -601,7 +604,8 @@ class ProfileFace(Face):
 
     def draw_heatmap_profile(self):
         # Calculate vector
-        vector , deviation = self.node.get_avg_profile()
+        vector = self.node.profile
+	deviation = self.node.deviation
         # If no vector, skip
         if vector is None:
             return
@@ -627,7 +631,8 @@ class ProfileFace(Face):
         y  = self.ymargin
 	y_step = self.height 
 	for leaf in leaves:
-	    mean_vector , deviation_vector = leaf.get_avg_profile()
+	    mean_vector = leaf.profile
+	    deviation_vector = leaf.deviation 
 	    # Draw heatmap
 	    for pos in xrange(vlength):
 		# first and second X pixel positions

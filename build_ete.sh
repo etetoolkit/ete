@@ -13,7 +13,6 @@ MODULE_NAME=ete2
 PKG_NAME=ete-$VERSION
 OUTPATH=$2/$PKG_NAME
 
-
 echo "Source repos : $REPOSITORY"
 echo "Output pkg   : $OUTPATH"
 echo "Pkg. Version : $VERSION"
@@ -25,7 +24,6 @@ cd $REPOSITORY; git log --pretty=format:"%cr %s" |head
 cd ..
 echo 
 echo
-
 
 # Continue?
 if  [ -e $OUTPATH ]; then
