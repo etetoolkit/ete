@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /Usr-/bin/env python
 """ 
 'phylomedb' provides an access API to the data stored in the
 phylogenetic database PhylomeDB *[1].
@@ -238,11 +238,11 @@ class PhylomeDBConnector(object):
               for spc_code, protid  in self._SQL.fetchall():
                   phyID = self.get_longest_isoform("%s%07d" % (spc_code,protid))
                   phyID_matches.append( phyID )
-          else:
-              # Last checks if id is in the id conversion table
-              hits = self.get_id_by_external(queryID)
-              if hits: 
-                  phyID_matches += hits
+
+          # Last checks if id is in the id conversion table and adds the resulting mathes
+          hits = self.get_id_by_external(queryID)
+          if hits: 
+            phyID_matches.extend(hits)
 
       return phyID_matches
  
