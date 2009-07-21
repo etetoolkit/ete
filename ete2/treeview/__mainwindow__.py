@@ -20,6 +20,7 @@
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
 # #END_LICENSE#############################################################
+
 # -*- coding: utf-8 -*-
 
 # Form implementation generated from reading ui file '/home/jaime/pygenomics/pygenomics/treeview/ete_qt4app.ui'

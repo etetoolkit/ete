@@ -20,7 +20,7 @@
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
 # #END_LICENSE#############################################################
-#!python
+
 """Bootstrap setuptools installation
 
 If you want to use setuptools in your package's setup.py, just include this

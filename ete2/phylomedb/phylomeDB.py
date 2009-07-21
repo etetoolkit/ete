@@ -20,7 +20,7 @@
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
 # #END_LICENSE#############################################################
-#! /Usr-/bin/env python
+
 """ 
 'phylomedb' provides an access API to the data stored in the
 phylogenetic database PhylomeDB *[1].

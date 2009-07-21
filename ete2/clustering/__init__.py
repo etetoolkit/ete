@@ -22,8 +22,6 @@
 # #END_LICENSE#############################################################
 from clustertree import *
 
-
-
 def read_newick_file_as_clustering(treefile, arrayfile):
     """ Reads a newick clustering result and the array used to
     generate it. """

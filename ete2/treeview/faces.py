@@ -20,7 +20,6 @@
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
 # #END_LICENSE#############################################################
-#!/usr/bin/env python
 
 from PyQt4 import QtCore
 from PyQt4 import QtGui
