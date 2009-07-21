@@ -1,3 +1,25 @@
+# #START_LICENSE###########################################################
+#
+# Copyright (C) 2009 by Jaime Huerta Cepas. All rights reserved.  
+# email: jhcepas@gmail.com
+#
+# This file is part of the Environment for Tree Exploration program (ETE). 
+# http://ete.cgenomics.org
+#  
+# ETE is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#  
+# ETE is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#  
+# You should have received a copy of the GNU General Public License
+# along with ETE.  If not, see <http://www.gnu.org/licenses/>.
+#
+# #END_LICENSE#############################################################
 import re
 import os 
 
@@ -38,7 +60,7 @@ def read_newick(newick, root_node=None):
   """
 
   if root_node is None:
-    from ete2.coretype.tree import TreeNode
+    from ete_dev.coretype.tree import TreeNode
     root_node = TreeNode()
 
   if type(newick) == str:
@@ -181,12 +203,15 @@ def write_newick(node, features=[], support=True, dist=True, \
                    _is_root=True):
   """ Recursively reads a tree structure and returns its NHX
   representation. """
+
   newick = ""
   if not node.children:
+    safe_name = re.sub("["+_ILEGAL_NEWICK_CHARS+"]", "_", \
+                           str(getattr(node, "name")))
     if dist:
-        newick += "%s:%0.6f" % (node.name, node.dist)
+        newick += "%s:%0.6f" % (safe_name, node.dist)
     else:
-        newick += "%s" % (node.name)
+        newick += "%s" % (safe_name)
     newick += _get_features_string(node, features)
     return newick
   else:

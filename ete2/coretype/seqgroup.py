@@ -1,3 +1,25 @@
+# #START_LICENSE###########################################################
+#
+# Copyright (C) 2009 by Jaime Huerta Cepas. All rights reserved.  
+# email: jhcepas@gmail.com
+#
+# This file is part of the Environment for Tree Exploration program (ETE). 
+# http://ete.cgenomics.org
+#  
+# ETE is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#  
+# ETE is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#  
+# You should have received a copy of the GNU General Public License
+# along with ETE.  If not, see <http://www.gnu.org/licenses/>.
+#
+# #END_LICENSE#############################################################
 """
 The 'seqgroup' module provides methods and classes to operate with
 Multiple Sequence Files, including Multiple Sequence Alignments.
@@ -6,8 +28,8 @@ Currently, Fasta, Phylip sequencial and Phylip interleaved formats are
 supported.
 """
 
-from ete2.parser.fasta import read_fasta, write_fasta
-from ete2.parser.phylip import read_phylip, write_phylip
+from ete_dev.parser.fasta import read_fasta, write_fasta
+from ete_dev.parser.phylip import read_phylip, write_phylip
 
 __all__ = ["SeqGroup"]
 

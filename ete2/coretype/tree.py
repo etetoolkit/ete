@@ -1,7 +1,29 @@
+# #START_LICENSE###########################################################
+#
+# Copyright (C) 2009 by Jaime Huerta Cepas. All rights reserved.  
+# email: jhcepas@gmail.com
+#
+# This file is part of the Environment for Tree Exploration program (ETE). 
+# http://ete.cgenomics.org
+#  
+# ETE is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#  
+# ETE is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#  
+# You should have received a copy of the GNU General Public License
+# along with ETE.  If not, see <http://www.gnu.org/licenses/>.
+#
+# #END_LICENSE#############################################################
 import os
 import random
-
-from ete2.parser.newick import read_newick, write_newick
+ 
+from ete_dev.parser.newick import read_newick, write_newick
 
 __all__ = ["Tree", "TreeNode"]
 
@@ -532,7 +554,7 @@ class TreeNode(object):
       """ 
       Returns the list of all nodes (leaves and internal) under
       this node. 
-
+      re buil
       See iter_descendants method.
       """ 
       return [n for n in self.traverse(strategy="preorder") if n != self]
@@ -847,7 +869,7 @@ class TreeNode(object):
     """ Begins an interative session to visualize this node
     structure."""
     try:
-        from ete2 import treeview
+        from ete_dev import treeview
     except ImportError, e: 
         print "'treeview' module could not be loaded.\nThis is the error catched:\n",e
         print "\n\n"
@@ -859,7 +881,7 @@ class TreeNode(object):
                      image_properties=None, header=None):
     """ Renders the tree structure into an image file. """
     try:
-        from ete2 import treeview
+        from ete_dev import treeview
     except ImportError,e: 
         print "treeview could not be loaded. Visualization is disabled."
     else:

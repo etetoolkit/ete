@@ -1,10 +1,32 @@
+# #START_LICENSE###########################################################
+#
+# Copyright (C) 2009 by Jaime Huerta Cepas. All rights reserved.  
+# email: jhcepas@gmail.com
+#
+# This file is part of the Environment for Tree Exploration program (ETE). 
+# http://ete.cgenomics.org
+#  
+# ETE is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#  
+# ETE is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#  
+# You should have received a copy of the GNU General Public License
+# along with ETE.  If not, see <http://www.gnu.org/licenses/>.
+#
+# #END_LICENSE#############################################################
 #!/usr/bin/env python 
 
 print """ 
 This program reads the NCBI taxonomy database (text file format) and
-reconstruct the whole taxonomy tree of life. Once loaded, the progrmas
+reconstructs the whole taxonomy tree of life. Once loaded, the program
 allows you to look up for the specific subtree of a given taxid, or
-save the tree in newick format.
+save the whole tree using the newick format.
 
 Note that reconstructing the from the raw NCBI format may take some
 minutes.
@@ -13,7 +35,9 @@ minutes.
 import os
 import sys 
 from string import strip
-from ete2 import TreeNode
+from ete_dev import TreeNode, Tree
+
+sys.path.insert(0, "/home/jaime/_Devel/ete2/")
 
 # This sets Unbuffered stdout/auto-flush
 sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
@@ -104,11 +128,36 @@ while taxid!='':
 	print "taxid not found"
     print 
 
+
+# Check
+#target_node=id2node["9443"]
+#all_names = set()
+#old = target_node
+#while target_node:
+#    current_names = set(target_node.get_leaf_names())
+#    try:
+# 	Tree(target_node.write())
+#    except Exception, e:
+# 	print >>open("out", "w"), '\n'.join (current_names - all_names)
+# 	target_node.remove(old)
+# 	print >>open("out.nw", "w"), target_node.write()
+# 	print target_node.name
+# 	sys.exit()
+#    else:
+# 	old = target_node
+# 	target_node = target_node.up
+# 	all_names.update(current_names)
+# 
+
+
+
 save = None
 while save!='y' and save!='n':
     save = raw_input("Do you want to save the tree using the newick format?[y|n]").strip().lower()
 if save=='y':
     print "Saving tree. This may take some minutes..."
-    open("tree.nw", "w").write( t.write(features=["name","taxid"]) )
+#  open("tree.nw", "w").write( t.write(features=["name","taxid"]) )   
+    open("tree.nw", "w").write( t.write())
+
     print "tree.nw has been created."
 
