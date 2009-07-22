@@ -1,3 +1,5 @@
+#! /usr/bin/env python 
+
 # #START_LICENSE###########################################################
 #
 # Copyright (C) 2009 by Jaime Huerta Cepas. All rights reserved.  

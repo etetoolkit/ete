@@ -71,7 +71,7 @@ class TreeImageProperties:
         self.draw_branch_length         = False
         self.align_leaf_faces           = False
         self.orientation                = 0
-        self.style                      = 0
+        self.style                      = 0 # 0 = Normal, 1 = Diagonal lines
         self.general_font_type          = "Verdana"
         self.branch_length_font_color   = "#222"
         self.branch_length_font_size    = 6
@@ -178,19 +178,21 @@ class _MainApp(QtGui.QMainWindow):
 
     @QtCore.pyqtSignature("")
     def on_actionETE_triggered(self):
-
+	try:
+	    __VERSION__ 
+	except:
+	    __VERSION__= "devel. branch"
 	QtGui.QMessageBox.information(self, "About ETE",\
-                           "Environment for Tree Exploration.\nby Jaime Huerta-Cepas\n%s\n" % __version__)
+                           "Environment for Tree Exploration.\nversion: %s\nhttp://ete.cgenomics.org\n\nby Jaime Huerta-Cepas\njhcepas@gmail.com" % __VERSION__)
+
 
     @QtCore.pyqtSignature("")
     def on_actionZoomOut_triggered(self):
-	self.view.scale(0.8,0.8)
-
+	self.view.safe_scale(0.8,0.8)
 
     @QtCore.pyqtSignature("")
     def on_actionZoomIn_triggered(self):
-	self.view.scale(1.2,1.2)
-
+	self.view.safe_scale(1.2,1.2)
 
     @QtCore.pyqtSignature("")
     def on_actionZoomInX_triggered(self):
@@ -199,8 +201,9 @@ class _MainApp(QtGui.QMainWindow):
 
     @QtCore.pyqtSignature("")
     def on_actionZoomOutX_triggered(self):
-	self.scene.props.tree_width -= 20
-	self.scene.draw()
+	if self.scene.props.tree_width >20:
+	    self.scene.props.tree_width -= 20
+	    self.scene.draw()
 
     @QtCore.pyqtSignature("")
     def on_actionZoomInY_triggered(self):
@@ -208,17 +211,14 @@ class _MainApp(QtGui.QMainWindow):
 		self.scene.min_real_branch_separation:
 	    self.scene.props.min_branch_separation = \
 		self.scene.min_real_branch_separation
-
 	self.scene.props.min_branch_separation += 5
 	self.scene.draw()
 
     @QtCore.pyqtSignature("")
     def on_actionZoomOutY_triggered(self):
-	if self.scene.props.min_branch_separation > 0:
+	if self.scene.props.min_branch_separation > 5:
 	    self.scene.props.min_branch_separation -= 5
 	    self.scene.draw()
-
-
 
     @QtCore.pyqtSignature("")
     def on_actionFit2tree_triggered(self):
@@ -230,37 +230,35 @@ class _MainApp(QtGui.QMainWindow):
 	    R = self.scene.highlighter.rect()
 	else:
 	    R = self.scene.selector.rect()
+	if R.width()>0 and R.height()>0:
 
-	if R.width()>0 or R.height()>0:
-	    self.view.fitInView(R.x(),R.y(),R.width(),\
-				    R.height(),QtCore.Qt.KeepAspectRatio)
 
+	    self.view.fitInView(R.x(), R.y(), R.width(),\
+				    R.height(), QtCore.Qt.KeepAspectRatio)
 
     @QtCore.pyqtSignature("")
     def on_actionSearchNode_triggered(self):
 	text, ok = QtGui.QInputDialog.getText(None,"Search","Search for leaf name:")
 	if ok:
-
 	    kk = dir(text)
-	    kk.sort()
-	    print '\n'.join(kk)
-	    print type(text)
-	    print type(text.__str__())
 	    txt = text.__str__()
-
 	    for l in self.scene.startNode.get_leaves():
 		if re.match(txt, l.name):
 		    r = QtGui.QGraphicsRectItem(l._QtItem_)
-		    r.setRect( l.fullRegion)
-#		    r.setPos(l._x, l._y)
+		    r.setRect(l.fullRegion)
+		    # Don't know yet why do I have to add 2 pixels :S
+		    r.moveBy(0, 2+(-l.fullRegion.height()-2)/2.0) 
 		    r.setZValue(-1)
-		    r.setPen(QtGui.QColor("orange"))
-		    r.setBrush(QtGui.QColor("orange"))
-		    self.scene.addItem(r)
+		    r.setPen(QtGui.QColor("yellow"))
+		    r.setBrush(QtGui.QColor("yellow"))
 		    self.view.horizontalScrollBar().setValue(l._x)
 		    self.view.verticalScrollBar().setValue(l._y)
-		    
-	
+
+    @QtCore.pyqtSignature("")
+    def on_actionClear_search_triggered(self):
+	# This could be much more efficient
+	self.scene.draw()
+
     @QtCore.pyqtSignature("")
     def on_actionBranchLength_triggered(self):
 	self.scene.props.draw_branch_length ^= True
@@ -314,18 +312,17 @@ class _MainApp(QtGui.QMainWindow):
 	    OUT.close()
 
     @QtCore.pyqtSignature("")
-    def on_actionSave_image_triggered(self):
+    def on_actionRenderPDF_triggered(self):
 	F = QtGui.QFileDialog(self)
 	if F.exec_():
 	    imgName = str(F.selectedFiles()[0])
+	    if not imgName.endswith(".pdf"):
+		imgName += ".pdf"
 	    self.scene.save(500,500,imgName)
 
+    # Not linked yet
     @QtCore.pyqtSignature("")
     def on_actionSave_region_triggered(self):
-	dim = self.scene.selector.rect()
-	if (dim.height() * dim.width() )*4 / 1024 / 1024 > 1000: 
-	    print "Image too large"
-	    return
 	F = QtGui.QFileDialog(self)
 	if F.exec_():
 	    imgName = str(F.selectedFiles()[0])
@@ -344,7 +341,6 @@ class _MainApp(QtGui.QMainWindow):
 	    else:
 		self.scene.initialize_tree_scene(t,"basic", TreeImageProperties())
 		self.scene.draw()
-
 
 
 # This function should be reviewed. Probably there are better ways to
@@ -646,12 +642,11 @@ class _NodeItem(QtGui.QGraphicsRectItem):
         else:
             contextMenu.addAction( "Collapse"         , self.toggle_collapse)
         contextMenu.addAction( "Set as outgroup"      , self.set_as_outgroup)
-        contextMenu.addAction( "Swap branches"        , self.node.swap_childs)
-        contextMenu.addAction( "Delete node"          , self.node.delete)
-        contextMenu.addAction( "Delete partition"     , self.node.detach)
+        contextMenu.addAction( "Swap branches"        , self.swap_branches)
+        contextMenu.addAction( "Delete node"          , self.delete_node)
+        contextMenu.addAction( "Delete partition"     , self.detach_node)
         contextMenu.addAction( "Add childs"           , self.add_childs)
         contextMenu.addAction( "Populate partition"   , self.populate_partition)
-
 	if self.node.up is not None and\
 		self.scene().startNode == self.node:
 	    contextMenu.addAction( "Back to parent", self.back_to_parent_node)
@@ -660,9 +655,34 @@ class _NodeItem(QtGui.QGraphicsRectItem):
 
         if self.scene().buffer_node:
             contextMenu.addAction( "Paste partition"  , self.paste_partition)
+
+
         contextMenu.addAction( "Cut partition"        , self.cut_partition)
-        if contextMenu.exec_( QtGui.QCursor.pos() ):
-	    self.scene().draw()
+        contextMenu.addAction( "Show newick"        , self.show_newick)
+	contextMenu.exec_(QtGui.QCursor.pos())
+
+    def show_newick(self):
+	dialog = QtGui.QDialog()
+	dialog.setMinimumHeight(300)
+	text =  QtGui.QTextEdit(dialog)
+	text.setMinimumWidth(300)
+	text.setMinimumHeight(300)
+	text.setText(self.node.write())
+	text.setReadOnly(True)
+	dialog.exec_()	
+	return False
+
+    def delete_node(self):
+	self.node.delete
+	self.scene().draw()
+
+    def detach_node(self):
+	self.node.detach()
+    	self.scene().draw()
+
+    def swap_branches(self):
+	self.node.swap_childs()
+    	self.scene().draw()
 
     def add_childs(self):
         n,ok = QtGui.QInputDialog.getInteger(None,"Add childs","Number of childs to add:",1,1)
@@ -678,31 +698,38 @@ class _NodeItem(QtGui.QGraphicsRectItem):
     def set_as_outgroup(self):
         self.scene().startNode.set_outgroup(self.node)
         self.scene().set_style_from(self.scene().startNode, self.scene().layout_func)
-        
+	self.scene().draw()
+
     def toggle_collapse(self):
         self.node.collapsed ^= True
-
+	self.scene().draw()
+        
     def cut_partition(self):
         self.scene().buffer_node = self.node
         self.node.detach()
+	self.scene().draw()
 
     def paste_partition(self):
         if self.scene().buffer_node:
             self.node.add_child(self.scene().buffer_node)
             self.scene().set_style_from(self.scene().startNode,self.scene().layout_func)
             self.scene().buffer_node= None
-
+	    self.scene().draw()
+	    
     def populate_partition(self):
-        n,ok = QtGui.QInputDialog.getInteger(None,"Populate partition","Number of nodes to add:",2,1)
+        n, ok = QtGui.QInputDialog.getInteger(None,"Populate partition","Number of nodes to add:",2,1)
         if ok:
             self.node.populate(n)
             self.scene().set_style_from(self.scene().startNode,self.scene().layout_func)
+	    self.scene().draw()
 
     def set_start_node(self):
         self.scene().startNode = self.node
+	self.scene().draw()
 
     def back_to_parent_node(self):
         self.scene().startNode = self.node.up
+	self.scene().draw()
 
 
 class _SelectorItem(QtGui.QGraphicsRectItem):
@@ -775,19 +802,44 @@ class _MainView(QtGui.QGraphicsView):
 	QtGui.QGraphicsView.resizeEvent(self, e)
 	logger(2, "RESIZE VIEW!!")
 
+
+    def safe_scale(self, xfactor, yfactor):
+	self.setTransformationAnchor(self.AnchorUnderMouse)
+	
+	xscale = self.matrix().m11()
+	yscale = self.matrix().m22()
+	srect = self.sceneRect()
+
+	if (xfactor>1 and xscale>200000) or \
+		(yfactor>1 and yscale>200000):
+	    QtGui.QMessageBox.information(self, "!",\
+					      "Ey! I'm not an electron microscope!")
+	    return 
+
+	# Do not allow to reduce scale to a value producing height or with smaller than 20 pixels
+	# No restrictions to zoomin
+	if (yfactor<1 and  srect.width() * yscale < 20):
+	    pass
+	elif (xfactor<1 and  srect.width() * xscale < 20):
+	    pass
+	else: 
+	    self.scale(xfactor, yfactor)
+
+
     def wheelEvent(self,e):
         factor =  (-e.delta() / 360.0) 
+
         # Ctrl+Shift -> Zoom in X
         if  (e.modifiers() & QtCore.Qt.ControlModifier) and (e.modifiers() & QtCore.Qt.ShiftModifier):
-            self.scale(1+factor,1)
+            self.safe_scale(1+factor, 1)
+
         # Ctrl+Alt -> Zomm in Y 
         elif  (e.modifiers() & QtCore.Qt.ControlModifier) and (e.modifiers() & QtCore.Qt.AltModifier):
-            self.scale(1,1+factor)
+            self.safe_scale(1,1+factor)
+
         # Ctrl -> Zoom X,Y
         elif e.modifiers() & QtCore.Qt.ControlModifier:
-            s_pos = self.mapToScene(e.pos().x(), e.pos().y())
-            self.scale(1-factor,1-factor)
-            self.centerOn(e.pos().x()*(1-factor), e.pos().y()*(1-factor))
+	    self.safe_scale(1-factor, 1-factor)
 
         # Shift -> Horizontal scroll
         elif e.modifiers() &  QtCore.Qt.ShiftModifier:
@@ -831,6 +883,8 @@ class _TreeScene(QtGui.QGraphicsScene):
 	self.scale       = 0           # Tree branch scale used to draw
         self.max_w_aligned_face = 0    # Stores the max width of aligned faces 
         self.min_real_branch_separation = 0 
+	self.selectors  = []
+	
 
 	# Qt items
 	self.selector = None 
@@ -902,6 +956,10 @@ class _TreeScene(QtGui.QGraphicsScene):
 
     def save(self, w, h, imgName, header=None):
 	ext = imgName.split(".")[-1].upper()
+	
+	# auto adjust size
+
+
 	if ext == "PDF" or ext == "PS":
 	    format = QPrinter.PostScriptFormat if ext == "PS" else QPrinter.PdfFormat
 	    printer = QPrinter() 
@@ -911,7 +969,7 @@ class _TreeScene(QtGui.QGraphicsScene):
 	    
 	    pageTopLeft = printer.pageRect().topLeft()
 	    paperTopLeft = printer.paperRect().topLeft()
-
+	    # For PS -> problems with margins
 	    # print paperTopLeft.x(), paperTopLeft.y()    
 	    # print pageTopLeft.x(), pageTopLeft.y()
 	    # print  printer.paperRect().height(),  printer.pageRect().height()
@@ -922,7 +980,6 @@ class _TreeScene(QtGui.QGraphicsScene):
 	    pp = QtGui.QPainter(printer)
 	    if header:
 		pp.setFont(QtGui.QFont("Verdana",12))
-		#pp.setPen(QtGui.QColor("blue"))
 		pp.drawText(topleft.x(),20, header)
 		targetRect =  QtCore.QRectF(topleft.x(), 20 + (topleft.y()*2), w, h)
 	    else:
@@ -936,7 +993,6 @@ class _TreeScene(QtGui.QGraphicsScene):
 				 h, \
 				 QtGui.QImage.Format_ARGB32)
 	    pp = QtGui.QPainter(ii)
-
 	    pp.setRenderHint(QtGui.QPainter.Antialiasing )
 	    pp.setRenderHint(QtGui.QPainter.TextAntialiasing)
 	    pp.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
@@ -944,7 +1000,7 @@ class _TreeScene(QtGui.QGraphicsScene):
 	    pp.end()
 	    ii.save(imgName)
 
-
+    # Undocummented and untested
     def save_by_chunks(self,imgName="img.out",rect=None):
 	max_width = 10000
 	max_height = 10000
@@ -1003,7 +1059,7 @@ class _TreeScene(QtGui.QGraphicsScene):
 
         self.highlighter   = _HighlighterItem()
         self.highlighter.setParentItem(self.mainItem)
-        self.highlighter.setVisible(True)
+        self.highlighter.setVisible(False)
         self.highlighter.setZValue(2)
         self.min_real_branch_separation = 0 
 

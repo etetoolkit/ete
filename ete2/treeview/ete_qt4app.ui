@@ -1,212 +1,236 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<ui version="4.0">
+<ui version="4.0" >
  <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow">
-  <property name="geometry">
+ <widget class="QMainWindow" name="MainWindow" >
+  <property name="geometry" >
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>728</width>
-    <height>707</height>
+    <width>1199</width>
+    <height>719</height>
    </rect>
   </property>
-  <property name="windowTitle">
+  <property name="windowTitle" >
    <string>MainWindow</string>
   </property>
-  <widget class="QWidget" name="centralwidget"/>
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
+  <widget class="QWidget" name="centralwidget" >
+   <property name="geometry" >
+    <rect>
+     <x>153</x>
+     <y>24</y>
+     <width>1046</width>
+     <height>671</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QMenuBar" name="menubar" >
+   <property name="geometry" >
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>728</width>
-     <height>20</height>
+     <width>1199</width>
+     <height>24</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuFile">
-    <property name="title">
+   <widget class="QMenu" name="menuFile" >
+    <property name="title" >
      <string>File</string>
     </property>
-    <addaction name="actionOpen"/>
-    <addaction name="actionPaste_newick"/>
-    <addaction name="actionSave_newick"/>
-    <addaction name="actionSave_image"/>
-    <addaction name="actionSave_region"/>
+    <addaction name="actionOpen" />
+    <addaction name="actionPaste_newick" />
+    <addaction name="actionSave_newick" />
+    <addaction name="actionRenderPDF" />
    </widget>
-   <widget class="QMenu" name="menuAbout">
-    <property name="title">
+   <widget class="QMenu" name="menuAbout" >
+    <property name="title" >
      <string>About</string>
     </property>
-    <addaction name="actionETE"/>
+    <addaction name="actionETE" />
    </widget>
-   <addaction name="menuFile"/>
-   <addaction name="menuAbout"/>
+   <addaction name="menuFile" />
+   <addaction name="menuAbout" />
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
-  <widget class="QToolBar" name="toolBar">
-   <property name="enabled">
+  <widget class="QStatusBar" name="statusbar" >
+   <property name="geometry" >
+    <rect>
+     <x>0</x>
+     <y>695</y>
+     <width>1199</width>
+     <height>24</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QToolBar" name="toolBar" >
+   <property name="enabled" >
     <bool>true</bool>
    </property>
-   <property name="windowTitle">
+   <property name="geometry" >
+    <rect>
+     <x>0</x>
+     <y>24</y>
+     <width>153</width>
+     <height>671</height>
+    </rect>
+   </property>
+   <property name="windowTitle" >
     <string>toolBar</string>
    </property>
-   <attribute name="toolBarArea">
+   <attribute name="toolBarArea" >
     <enum>LeftToolBarArea</enum>
    </attribute>
-   <attribute name="toolBarBreak">
+   <attribute name="toolBarBreak" >
     <bool>false</bool>
    </attribute>
-   <addaction name="actionZoomInX"/>
-   <addaction name="actionZoomOutX"/>
-   <addaction name="actionZoomInY"/>
-   <addaction name="actionZoomOutY"/>
-   <addaction name="actionFit2tree"/>
-   <addaction name="actionFit2region"/>
-   <addaction name="actionForceTopology"/>
-   <addaction name="actionBranchLength"/>
-   <addaction name="actionZoomIn"/>
-   <addaction name="actionZoomOut"/>
-   <addaction name="actionRenderPDF"/>
-   <addaction name="actionSearchNode"/>
-   <addaction name="actionClearSearch"/>
+   <addaction name="actionZoomIn" />
+   <addaction name="actionZoomOut" />
+   <addaction name="actionFit2tree" />
+   <addaction name="actionFit2region" />
+   <addaction name="actionZoomInX" />
+   <addaction name="actionZoomOutX" />
+   <addaction name="actionZoomInY" />
+   <addaction name="actionZoomOutY" />
+   <addaction name="actionSearchNode" />
+   <addaction name="actionClear_search" />
+   <addaction name="actionForceTopology" />
+   <addaction name="actionBranchLength" />
+   <addaction name="actionRenderPDF" />
   </widget>
-  <action name="actionOpen">
-   <property name="text">
+  <action name="actionOpen" >
+   <property name="text" >
     <string>Open Tree</string>
    </property>
-   <property name="shortcut">
+   <property name="shortcut" >
     <string>Ctrl+O</string>
    </property>
   </action>
-  <action name="actionPaste_newick">
-   <property name="text">
+  <action name="actionPaste_newick" >
+   <property name="text" >
     <string>Paste newick</string>
    </property>
-   <property name="shortcut">
+   <property name="shortcut" >
     <string>Ctrl+P</string>
    </property>
   </action>
-  <action name="actionSave_image">
-   <property name="text">
+  <action name="actionSave_image" >
+   <property name="text" >
     <string>Save Image</string>
    </property>
   </action>
-  <action name="actionSave_region">
-   <property name="text">
+  <action name="actionSave_region" >
+   <property name="text" >
     <string>Save region</string>
    </property>
-   <property name="shortcut">
+   <property name="shortcut" >
     <string>Ctrl+A</string>
    </property>
   </action>
-  <action name="actionBranchLength">
-   <property name="checkable">
+  <action name="actionBranchLength" >
+   <property name="checkable" >
     <bool>true</bool>
    </property>
-   <property name="text">
+   <property name="text" >
     <string>Show branch lenghts</string>
    </property>
-   <property name="shortcut">
+   <property name="shortcut" >
     <string>L</string>
    </property>
   </action>
-  <action name="actionZoomIn">
-   <property name="text">
+  <action name="actionZoomIn" >
+   <property name="text" >
     <string>Zoom in</string>
    </property>
-   <property name="shortcut">
+   <property name="shortcut" >
     <string>Z</string>
    </property>
   </action>
-  <action name="actionZoomOut">
-   <property name="text">
+  <action name="actionZoomOut" >
+   <property name="text" >
     <string>Zoom out</string>
    </property>
-   <property name="shortcut">
+   <property name="shortcut" >
     <string>X</string>
    </property>
   </action>
-  <action name="actionETE">
-   <property name="text">
+  <action name="actionETE" >
+   <property name="text" >
     <string>ETE</string>
    </property>
   </action>
-  <action name="actionForceTopology">
-   <property name="checkable">
+  <action name="actionForceTopology" >
+   <property name="checkable" >
     <bool>true</bool>
    </property>
-   <property name="text">
+   <property name="text" >
     <string>Force showing topology</string>
    </property>
-   <property name="toolTip">
+   <property name="toolTip" >
     <string>Allows to see topology by setting assuming all branch lenghts are 1.0</string>
    </property>
-   <property name="shortcut">
+   <property name="shortcut" >
     <string>T</string>
    </property>
   </action>
-  <action name="actionSave_newick">
-   <property name="text">
-    <string>Save newick</string>
+  <action name="actionSave_newick" >
+   <property name="text" >
+    <string>Save as newick</string>
    </property>
   </action>
-  <action name="actionBranchSupport">
-   <property name="text">
+  <action name="actionBranchSupport" >
+   <property name="text" >
     <string>Show branch support</string>
    </property>
   </action>
-  <action name="actionZoomInX">
-   <property name="text">
+  <action name="actionZoomInX" >
+   <property name="text" >
     <string>Increase X scale</string>
    </property>
   </action>
-  <action name="actionZoomOutX">
-   <property name="text">
-    <string>decrease X scale</string>
+  <action name="actionZoomOutX" >
+   <property name="text" >
+    <string>Decrease X scale</string>
    </property>
   </action>
-  <action name="actionZoomInY">
-   <property name="text">
-    <string>increase Y scale</string>
+  <action name="actionZoomInY" >
+   <property name="text" >
+    <string>Increase Y scale</string>
    </property>
   </action>
-  <action name="actionZoomOutY">
-   <property name="text">
-    <string>decrease Y scale</string>
+  <action name="actionZoomOutY" >
+   <property name="text" >
+    <string>Decrease Y scale</string>
    </property>
   </action>
-  <action name="actionFit2tree">
-   <property name="text">
+  <action name="actionFit2tree" >
+   <property name="text" >
     <string>Fit to tree</string>
    </property>
-   <property name="shortcut">
+   <property name="shortcut" >
     <string>W</string>
    </property>
   </action>
-  <action name="actionFit2region">
-   <property name="text">
+  <action name="actionFit2region" >
+   <property name="text" >
     <string>Fit to selection</string>
    </property>
-   <property name="shortcut">
+   <property name="shortcut" >
     <string>R</string>
    </property>
   </action>
-  <action name="actionRenderPDF">
-   <property name="text">
-    <string>renderPDF</string>
+  <action name="actionRenderPDF" >
+   <property name="text" >
+    <string>Render PDF image</string>
    </property>
   </action>
-  <action name="actionSearchNode">
-   <property name="text">
-    <string>searchNode</string>
+  <action name="actionSearchNode" >
+   <property name="text" >
+    <string>Search</string>
    </property>
-   <property name="shortcut">
+   <property name="shortcut" >
     <string>Ctrl+S</string>
    </property>
   </action>
-  <action name="actionClearSearch">
-   <property name="text">
-    <string>clearSearch</string>
+  <action name="actionClear_search" >
+   <property name="text" >
+    <string>Clear search</string>
    </property>
   </action>
  </widget>
