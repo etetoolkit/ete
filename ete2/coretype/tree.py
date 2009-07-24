@@ -511,7 +511,7 @@ class TreeNode(object):
       """
 
       # Convert node names into node instances
-      target_nodes = _transalte_nodes(self, *target_nodes)
+      target_nodes = _translate_nodes(self, *target_nodes)
 
       # If only one node is provided, use self as the second target
       if type(target_nodes) != list:
@@ -618,7 +618,7 @@ class TreeNode(object):
        
       if target2 is None:
         target2 = self
-      target, target2 = _transalte_nodes(self, target, target2)
+      target, target2 = _translate_nodes(self, target, target2)
     
       ancestor = target.get_common_ancestor(target2)
       if ancestor is None:
@@ -784,7 +784,7 @@ class TreeNode(object):
         structure.
     """
 
-    outgroup = _transalte_nodes(self, outgroup)
+    outgroup = _translate_nodes(self, outgroup)
             
     if self == outgroup:
       raise ValueError, "Cannot set myself as outgroup" 
@@ -937,7 +937,7 @@ class TreeNode(object):
       return '\n'+'\n'.join(lines)
 
 
-def _transalte_nodes(root, *nodes):
+def _translate_nodes(root, *nodes):
   target_nodes = []
   for n in nodes:
     if type(n) is str:

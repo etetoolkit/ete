@@ -15,9 +15,9 @@
   <widget class="QWidget" name="centralwidget" >
    <property name="geometry" >
     <rect>
-     <x>153</x>
+     <x>123</x>
      <y>24</y>
-     <width>1046</width>
+     <width>1076</width>
      <height>671</height>
     </rect>
    </property>
@@ -67,7 +67,7 @@
     <rect>
      <x>0</x>
      <y>24</y>
-     <width>153</width>
+     <width>123</width>
      <height>671</height>
     </rect>
    </property>
@@ -128,7 +128,7 @@
     <bool>true</bool>
    </property>
    <property name="text" >
-    <string>Show branch lenghts</string>
+    <string>Show branch info</string>
    </property>
    <property name="shortcut" >
     <string>L</string>
@@ -160,7 +160,7 @@
     <bool>true</bool>
    </property>
    <property name="text" >
-    <string>Force showing topology</string>
+    <string>Force topology</string>
    </property>
    <property name="toolTip" >
     <string>Allows to see topology by setting assuming all branch lenghts are 1.0</string>

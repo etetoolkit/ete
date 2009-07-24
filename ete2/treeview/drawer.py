@@ -185,7 +185,6 @@ class _MainApp(QtGui.QMainWindow):
 	QtGui.QMessageBox.information(self, "About ETE",\
                            "Environment for Tree Exploration.\nversion: %s\nhttp://ete.cgenomics.org\n\nby Jaime Huerta-Cepas\njhcepas@gmail.com" % __VERSION__)
 
-
     @QtCore.pyqtSignature("")
     def on_actionZoomOut_triggered(self):
 	self.view.safe_scale(0.8,0.8)

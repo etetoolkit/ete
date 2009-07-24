@@ -891,9 +891,12 @@ class Test_ClusterTree(unittest.TestCase):
 	print node.silhouette
 	print node.intracluster_dist
 	print node.intercluster_dist
-
-	t.set_distance_function(self, )
-
+	
+	from ete2.clustering import clustvalidation 
+	c1 = t.get_common_ancestor("A", "B")
+	c2 = t.get_common_ancestor("C", "D", "E")
+	c3 = t.get_common_ancestor("F", "G", "H")
+	print t.get_dunn([c1, c2, c3])
 
 class Test_Treeview(unittest.TestCase):
     def test_rendering(self):

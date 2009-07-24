@@ -25,10 +25,11 @@ import sys
 from numpy import nan as NaN # Missing values in array are saved as
 			     # NaN values
 
-import clusterdist as DistFunction
+import clustvalidation
+from ete_dev.coretype.tree import _translate_nodes
 from ete_dev import TreeNode, ArrayTable
 
-__all__ = ["ClusterNode", "ClusterTree", "DistFunction"]
+__all__ = ["ClusterNode", "ClusterTree"]
 
 class ClusterNode(TreeNode):
     """ Creates a new Cluster Tree object, which is a collection
@@ -82,7 +83,7 @@ class ClusterNode(TreeNode):
     deviation = property(fget=_get_std, fset=_set_forbidden)
     
     def __init__(self, newick = None, text_array = None, \
-                 fdist=DistFunction.spearman_dist):
+                 fdist=clustvalidation.spearman_dist):
 	# Initialize basic tree features and loads the newick (if any)
         TreeNode.__init__(self, newick)
         self._fdist = None
@@ -180,78 +181,76 @@ class ClusterNode(TreeNode):
         inter/intra-cluster distances. 
 
 	It sets the following features into the analyzed node:
-	   - node.intracluster_d
-	   - node.intercluster_d
+	   - node.intracluster
+	   - node.intercluster
 	   - node.silhouete 
 
-	intracluster distances a(i) are calculated as the centroid
-	distance.
+	intracluster distances a(i) are calculated as the Centroid
+	Diameter
 
-	intercluster distances b(i) are calculated as the Average to
-	Centroid Linkage.
+	intercluster distances b(i) are calculated as the Centroid linkage distance
 
 	** Rousseeuw, P.J. (1987) Silhouettes: A graphical aid to the
 	interpretation and validation of cluster analysis.
 	J. Comput. Appl. Math., 20, 53-65.
 
         """
+	if fdist is None:
+	    fdist = self._fdist
 
-        if fdist is None:
-            fdist = self._fdist
-        
-        sisters = self.get_sisters()
-        
-        # Calculates average vectors
-        if self._profile is None:
-            self._calculate_avg_profile()
-            
-        for st in sisters:
-            if st._profile is None:
-                st._calculate_avg_profile()
-                
-        # Calculates silhouette
-	silhouette = []
-        intra_dist = []
-        inter_dist = []
-        for st in sisters:
-            if st._profile is None:
-		continue
+	# Updates internal values
+        self._silhouette, self._intracluster_dist, self._intercluster_dist = \
+	    clustvalidation.get_silhouette_width(fdist, self)
+	# And returns them
+	return self._silhouette, self._intracluster_dist, self._intercluster_dist
 
-            for i in self.iter_leaves():
-                # Skip nodes with nodes without profile
-                if i._profile is not None:
-		    # Centroid Diameter
-		    a = fdist(i._profile, self._profile)*2
-		    # Centroid Linkage
-		    b = fdist(i._profile, st._profile) 
-		    if (b-a) == 0.0:
-			s = 0.0
-		    else:
-			s =  (b-a) / max(a,b)
-		    intra_dist.append(a)
-		    inter_dist.append(b)
-		    silhouette.append(s)
+    def get_silhouette(self, fdist=None):
+        """ Calculates the node's silhouette value by using a given
+        distance function. By default, euclidean distance is used. It
+        also calculates the deviation profile, mean profile, and
+        inter/intra-cluster distances. 
 
-        self._silhouette, std = DistFunction.safe_mean(silhouette)
-        self._intracluster_dist, std = DistFunction.safe_mean(intra_dist)
-        self._intercluster_dist, std = DistFunction.safe_mean(inter_dist)
-        return self.silhouette, self.intracluster_dist, self.intercluster_dist
+	It sets the following features into the analyzed node:
+	   - node.intracluster
+	   - node.intercluster
+	   - node.silhouete 
+
+	intracluster distances a(i) are calculated as the Centroid
+	Diameter
+
+	intercluster distances b(i) are calculated as the Centroid linkage distance
+
+	** Rousseeuw, P.J. (1987) Silhouettes: A graphical aid to the
+	interpretation and validation of cluster analysis.
+	J. Comput. Appl. Math., 20, 53-65.
+
+        """
+	if fdist is None:
+	    fdist = self._fdist
+
+	# Updates internal values
+        self._silhouette, self._intracluster_dist, self._intercluster_dist = \
+	    clustvalidation.get_silhouette_width(fdist, self)
+	# And returns them
+	return self._silhouette, self._intracluster_dist, self._intercluster_dist
+
+    def get_dunn(self, clusters, fdist=None):
+        """ Calculates the Dunn index for the given set of descendant
+        nodes.
+        """
+
+	if fdist is None:
+	    fdist = self._fdist
+	nodes = _translate_nodes(self, *clusters)
+	return clustvalidation.get_dunn_index(fdist, *nodes)
 
     def _calculate_avg_profile(self):
 	""" This internal function updates the mean profile
 	associated to an internal node. """
 
-	if not self.is_leaf():
-	    leaf_vectors = [n._profile for n in  self.get_leaves() \
-				if n._profile is not None]
-	    if len(leaf_vectors)>0:
-		self._profile, self._std_profile = DistFunction.safe_mean_vector(leaf_vectors)
-	    else:
-		self._profile, self._std_profile = None, None
-	    return self._profile, self._std_profile
-	else: 
-	    self._std_profile = [0.0]*len(self._profile)
-	    return self._profile, [0.0]*len(self._profile)
+	# Updates internal values
+	self._profile, self._std_profile = clustvalidation.get_avg_profile(self)
+
 
 
 # cosmetic alias
