@@ -97,7 +97,7 @@ class TreeNode(object):
   up = property(fget=_get_up, fset=_set_up)
   children = property(fget=_get_children, fset=_set_children)
   
-  def __init__(self, newick=None):
+  def __init__(self, newick=None, format=0):
     self._children = []
     self._up = None
     self._dist = 1.0
@@ -110,7 +110,7 @@ class TreeNode(object):
     self.features.update(["dist", "support"])
     # Initialize tree
     if newick is not None:
-      read_newick(newick, root_node = self)
+      read_newick(newick, root_node = self, format=format)
 
   def __and__(self, value):
     """ This allows to execute tree&'A' to obtain the descendant node
@@ -464,7 +464,7 @@ class TreeNode(object):
       print "The Farthest descendant node is", max_node.name,\
           "with a branch distance of", max_dist
 
-  def write(self, features=None, outfile=None, support=True, dist=True):
+  def write(self, features=None, outfile=None, format=0):
       """ Returns the newick representation of this node
       topology. Several arguments control the way in which extra
       data is shown for every node:
@@ -481,9 +481,7 @@ class TreeNode(object):
            t.get_newick(["species","name"], support=False)
       """
 
-      nw = write_newick(self, features = features, \
-                                   support = support, \
-                                   dist = dist)
+      nw = write_newick(self, features = features, format=format)
       if outfile is not None:
         open(outfile, "w").write(nw)
       else:
@@ -887,7 +885,7 @@ class TreeNode(object):
     else:
         treeview.render_tree(self, w, h, file_name, layout, image_properties, header=header)
 
-  def _asciiArt(self, char1='-', show_internal=False, compact=False):
+  def _asciiArt(self, char1='-', show_internal=True, compact=False):
     """ 
     Returns the ASCII representation of the tree. Code taken from the
     PyCogent GPL project.
@@ -925,7 +923,7 @@ class TreeNode(object):
     else:
         return ([char1 + '-' + self.name], 0)
 
-  def get_ascii(self, show_internal=False, compact=False):
+  def get_ascii(self, show_internal=True, compact=False):
       """Returns a string containing an ascii drawing of the tree.
 
       Arguments:

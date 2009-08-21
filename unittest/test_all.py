@@ -329,15 +329,15 @@ class Test_Coretype_Tree(unittest.TestCase):
 	open("/tmp/etetemptree.nw","w").write(nw_full)
 	t = Tree("/tmp/etetemptree.nw")
 	self.assertEqual(nw_full, t.write(features=["flag","mood"]))
-	self.assertEqual(nw_topo,  t.write(support=False, dist=False))
-	self.assertEqual( nw_dist, t.write(support=False, dist=True))
+	self.assertEqual(nw_topo,  t.write(format=8))
+	self.assertEqual( nw_dist, t.write(format=5))
 
 	# Read and write newick tree from *string* (and support for NHX
 	# format)
 	t = Tree(nw_full)
 	self.assertEqual(nw_full, t.write(features=["flag","mood"]))
-	self.assertEqual(nw_topo, t.write(support=False, dist=False))
-	self.assertEqual( nw_dist, t.write(support=False, dist=True))
+	self.assertEqual(nw_topo, t.write(format=8))
+	self.assertEqual( nw_dist, t.write(format=5))
 
 	# Read complex newick
 	t = Tree(nw2_full)
@@ -345,9 +345,43 @@ class Test_Coretype_Tree(unittest.TestCase):
 
 	# Read wierd topologies
 	t = Tree(nw_simple5)
-	self.assertEqual(nw_simple5,  t.write(support=False,dist=False))
+	self.assertEqual(nw_simple5,  t.write(format=8))
 	t = Tree(nw_simple6)
-	self.assertEqual(nw_simple6,  t.write(support=False,dist=False))
+	self.assertEqual(nw_simple6,  t.write(format=8))
+
+
+    def test_newick_formats(self):
+
+	# 7 (,,(,));                                          no names, no distances 
+	# 6 (A,B,(C,D));                                    leaf names, no distances 
+	# 5 (A,B,(C,D)E)F;                                  all names, no distances
+	# 4 (:0.1,:0.2,(:0.3,:0.4):0.5):0.0;                no names, all distances
+	# 3 (A:0.1,B:0.2,(C:0.3,D:0.4):0.5);                leaf names, all distances 
+	# 2 (A:0.1,B:0.2,(C:0.3,D:0.4)E:0.5)F;              all names, all distances  
+	# 1 ((B:0.2,(C:0.3,D:0.4)0.9:0.5)0.75:0.1)1.0:1.0;  leaf names, all distances, all support
+	# 0 ((,(:0.3,D):0.5)E:0.1)1.0;                      Flexible. Automatic recognition of data.
+
+	from ete_dev.parser.newick import print_supported_formats, NW_FORMAT
+	print_supported_formats()
+	
+	# Let's stress a bit
+	for i in xrange(10):
+	    t = Tree()
+	    t.populate(50)
+	    for f in NW_FORMAT:
+		self.assertEqual(t.write(format=f), Tree(t.write(format=f),format=f).write(format=f))
+
+	nw0 = "((A:0.813705,(E:0.545591,D:0.411772)1.000000:0.137245)1.000000:0.976306,C:0.074268);"
+	nw1 = "((A:0.813705,(E:0.545591,D:0.411772)B:0.137245)A:0.976306,C:0.074268);"
+	nw2 = "((A:0.813705,(E:0.545591,D:0.411772)1.000000:0.137245)1.000000:0.976306,C:0.074268);"
+	nw3 = "((A:0.813705,(E:0.545591,D:0.411772)B:0.137245)A:0.976306,C:0.074268);"
+	nw4 = "((A:0.813705,(E:0.545591,D:0.411772)),C:0.074268);"
+	nw5 = "((A:0.813705,(E:0.545591,D:0.411772):0.137245):0.976306,C:0.074268);"
+	nw6 = "((A:0.813705,(E:0.545591,D:0.411772)B)A,C:0.074268);"
+	nw7 = "((A,(E,D)B)A,C);"
+	nw8 = "((A,(E,D)),C);"
+	nw9 = "((,(,)),);"
+	
 
     def test_tree_manipulation(self):
 	nw_tree = "((NoName:1.000000,Turtle:1.300000)1.000000:1.000000,(A:0.300000,B:2.400000)1.000000:0.430000);"
