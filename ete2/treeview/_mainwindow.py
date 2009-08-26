@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'ete_qt4app.ui'
 #
-# Created: Wed Jul 22 16:45:20 2009
-#      by: PyQt4 UI code generator 4.3.3
+# Created: Wed Aug 26 15:24:03 2009
+#      by: PyQt4 UI code generator 4.5.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,95 +12,115 @@ from PyQt4 import QtCore, QtGui
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(QtCore.QSize(QtCore.QRect(0,0,1199,719).size()).expandedTo(MainWindow.minimumSizeHint()))
-
+        MainWindow.resize(872, 719)
         self.centralwidget = QtGui.QWidget(MainWindow)
-        self.centralwidget.setGeometry(QtCore.QRect(153,24,1046,671))
+        self.centralwidget.setGeometry(QtCore.QRect(0, 58, 872, 637))
         self.centralwidget.setObjectName("centralwidget")
         MainWindow.setCentralWidget(self.centralwidget)
-
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0,0,1199,24))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 872, 24))
         self.menubar.setObjectName("menubar")
-
         self.menuFile = QtGui.QMenu(self.menubar)
         self.menuFile.setObjectName("menuFile")
-
         self.menuAbout = QtGui.QMenu(self.menubar)
         self.menuAbout.setObjectName("menuAbout")
         MainWindow.setMenuBar(self.menubar)
-
         self.statusbar = QtGui.QStatusBar(MainWindow)
-        self.statusbar.setGeometry(QtCore.QRect(0,695,1199,24))
+        self.statusbar.setGeometry(QtCore.QRect(0, 695, 872, 24))
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
-
         self.toolBar = QtGui.QToolBar(MainWindow)
         self.toolBar.setEnabled(True)
-        self.toolBar.setGeometry(QtCore.QRect(0,24,153,671))
+        self.toolBar.setGeometry(QtCore.QRect(0, 24, 872, 34))
         self.toolBar.setObjectName("toolBar")
-        MainWindow.addToolBar(QtCore.Qt.LeftToolBarArea,self.toolBar)
-
+        MainWindow.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
         self.actionOpen = QtGui.QAction(MainWindow)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap("../../../../../iconsets/Human/16x16/actions/fileopen.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionOpen.setIcon(icon)
         self.actionOpen.setObjectName("actionOpen")
-
         self.actionPaste_newick = QtGui.QAction(MainWindow)
         self.actionPaste_newick.setObjectName("actionPaste_newick")
-
         self.actionSave_image = QtGui.QAction(MainWindow)
+        icon1 = QtGui.QIcon()
+        icon1.addPixmap(QtGui.QPixmap("../../../../../iconsets/Human/16x16/actions/filesave.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionSave_image.setIcon(icon1)
         self.actionSave_image.setObjectName("actionSave_image")
-
         self.actionSave_region = QtGui.QAction(MainWindow)
         self.actionSave_region.setObjectName("actionSave_region")
-
         self.actionBranchLength = QtGui.QAction(MainWindow)
         self.actionBranchLength.setCheckable(True)
+        icon2 = QtGui.QIcon()
+        icon2.addPixmap(QtGui.QPixmap("show_dist.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionBranchLength.setIcon(icon2)
         self.actionBranchLength.setObjectName("actionBranchLength")
-
         self.actionZoomIn = QtGui.QAction(MainWindow)
+        icon3 = QtGui.QIcon()
+        icon3.addPixmap(QtGui.QPixmap("zoom_in.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionZoomIn.setIcon(icon3)
         self.actionZoomIn.setObjectName("actionZoomIn")
-
         self.actionZoomOut = QtGui.QAction(MainWindow)
+        icon4 = QtGui.QIcon()
+        icon4.addPixmap(QtGui.QPixmap("zoom_out.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionZoomOut.setIcon(icon4)
         self.actionZoomOut.setObjectName("actionZoomOut")
-
         self.actionETE = QtGui.QAction(MainWindow)
         self.actionETE.setObjectName("actionETE")
-
         self.actionForceTopology = QtGui.QAction(MainWindow)
         self.actionForceTopology.setCheckable(True)
+        icon5 = QtGui.QIcon()
+        icon5.addPixmap(QtGui.QPixmap("force_topo.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionForceTopology.setIcon(icon5)
         self.actionForceTopology.setObjectName("actionForceTopology")
-
         self.actionSave_newick = QtGui.QAction(MainWindow)
         self.actionSave_newick.setObjectName("actionSave_newick")
-
         self.actionBranchSupport = QtGui.QAction(MainWindow)
+        self.actionBranchSupport.setIcon(icon2)
         self.actionBranchSupport.setObjectName("actionBranchSupport")
-
         self.actionZoomInX = QtGui.QAction(MainWindow)
+        icon6 = QtGui.QIcon()
+        icon6.addPixmap(QtGui.QPixmap("x_expand.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionZoomInX.setIcon(icon6)
         self.actionZoomInX.setObjectName("actionZoomInX")
-
         self.actionZoomOutX = QtGui.QAction(MainWindow)
+        icon7 = QtGui.QIcon()
+        icon7.addPixmap(QtGui.QPixmap("x_reduce.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionZoomOutX.setIcon(icon7)
         self.actionZoomOutX.setObjectName("actionZoomOutX")
-
         self.actionZoomInY = QtGui.QAction(MainWindow)
+        icon8 = QtGui.QIcon()
+        icon8.addPixmap(QtGui.QPixmap("y_expand.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionZoomInY.setIcon(icon8)
         self.actionZoomInY.setObjectName("actionZoomInY")
-
         self.actionZoomOutY = QtGui.QAction(MainWindow)
+        icon9 = QtGui.QIcon()
+        icon9.addPixmap(QtGui.QPixmap("y_reduce.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionZoomOutY.setIcon(icon9)
         self.actionZoomOutY.setObjectName("actionZoomOutY")
-
         self.actionFit2tree = QtGui.QAction(MainWindow)
+        icon10 = QtGui.QIcon()
+        icon10.addPixmap(QtGui.QPixmap("fit_tree.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionFit2tree.setIcon(icon10)
         self.actionFit2tree.setObjectName("actionFit2tree")
-
         self.actionFit2region = QtGui.QAction(MainWindow)
+        icon11 = QtGui.QIcon()
+        icon11.addPixmap(QtGui.QPixmap("fit_region.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionFit2region.setIcon(icon11)
         self.actionFit2region.setObjectName("actionFit2region")
-
         self.actionRenderPDF = QtGui.QAction(MainWindow)
+        icon12 = QtGui.QIcon()
+        icon12.addPixmap(QtGui.QPixmap("export_pdf.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionRenderPDF.setIcon(icon12)
         self.actionRenderPDF.setObjectName("actionRenderPDF")
-
         self.actionSearchNode = QtGui.QAction(MainWindow)
+        icon13 = QtGui.QIcon()
+        icon13.addPixmap(QtGui.QPixmap("search.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionSearchNode.setIcon(icon13)
         self.actionSearchNode.setObjectName("actionSearchNode")
-
         self.actionClear_search = QtGui.QAction(MainWindow)
+        icon14 = QtGui.QIcon()
+        icon14.addPixmap(QtGui.QPixmap("clean_search.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionClear_search.setIcon(icon14)
         self.actionClear_search.setObjectName("actionClear_search")
         self.menuFile.addAction(self.actionOpen)
         self.menuFile.addAction(self.actionPaste_newick)
@@ -131,21 +151,21 @@ class Ui_MainWindow(object):
         self.menuFile.setTitle(QtGui.QApplication.translate("MainWindow", "File", None, QtGui.QApplication.UnicodeUTF8))
         self.menuAbout.setTitle(QtGui.QApplication.translate("MainWindow", "About", None, QtGui.QApplication.UnicodeUTF8))
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionOpen.setText(QtGui.QApplication.translate("MainWindow", "Open Tree", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionOpen.setText(QtGui.QApplication.translate("MainWindow", "Open newick tree", None, QtGui.QApplication.UnicodeUTF8))
         self.actionOpen.setShortcut(QtGui.QApplication.translate("MainWindow", "Ctrl+O", None, QtGui.QApplication.UnicodeUTF8))
         self.actionPaste_newick.setText(QtGui.QApplication.translate("MainWindow", "Paste newick", None, QtGui.QApplication.UnicodeUTF8))
         self.actionPaste_newick.setShortcut(QtGui.QApplication.translate("MainWindow", "Ctrl+P", None, QtGui.QApplication.UnicodeUTF8))
         self.actionSave_image.setText(QtGui.QApplication.translate("MainWindow", "Save Image", None, QtGui.QApplication.UnicodeUTF8))
         self.actionSave_region.setText(QtGui.QApplication.translate("MainWindow", "Save region", None, QtGui.QApplication.UnicodeUTF8))
         self.actionSave_region.setShortcut(QtGui.QApplication.translate("MainWindow", "Ctrl+A", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionBranchLength.setText(QtGui.QApplication.translate("MainWindow", "Show branch lenghts", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionBranchLength.setText(QtGui.QApplication.translate("MainWindow", "Show branch info", None, QtGui.QApplication.UnicodeUTF8))
         self.actionBranchLength.setShortcut(QtGui.QApplication.translate("MainWindow", "L", None, QtGui.QApplication.UnicodeUTF8))
         self.actionZoomIn.setText(QtGui.QApplication.translate("MainWindow", "Zoom in", None, QtGui.QApplication.UnicodeUTF8))
         self.actionZoomIn.setShortcut(QtGui.QApplication.translate("MainWindow", "Z", None, QtGui.QApplication.UnicodeUTF8))
         self.actionZoomOut.setText(QtGui.QApplication.translate("MainWindow", "Zoom out", None, QtGui.QApplication.UnicodeUTF8))
         self.actionZoomOut.setShortcut(QtGui.QApplication.translate("MainWindow", "X", None, QtGui.QApplication.UnicodeUTF8))
         self.actionETE.setText(QtGui.QApplication.translate("MainWindow", "ETE", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionForceTopology.setText(QtGui.QApplication.translate("MainWindow", "Force showing topology", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionForceTopology.setText(QtGui.QApplication.translate("MainWindow", "Force topology", None, QtGui.QApplication.UnicodeUTF8))
         self.actionForceTopology.setToolTip(QtGui.QApplication.translate("MainWindow", "Allows to see topology by setting assuming all branch lenghts are 1.0", None, QtGui.QApplication.UnicodeUTF8))
         self.actionForceTopology.setShortcut(QtGui.QApplication.translate("MainWindow", "T", None, QtGui.QApplication.UnicodeUTF8))
         self.actionSave_newick.setText(QtGui.QApplication.translate("MainWindow", "Save as newick", None, QtGui.QApplication.UnicodeUTF8))
