@@ -204,36 +204,6 @@ class ClusterNode(TreeNode):
 	# And returns them
 	return self._silhouette, self._intracluster_dist, self._intercluster_dist
 
-    def get_silhouette(self, fdist=None):
-        """ Calculates the node's silhouette value by using a given
-        distance function. By default, euclidean distance is used. It
-        also calculates the deviation profile, mean profile, and
-        inter/intra-cluster distances. 
-
-	It sets the following features into the analyzed node:
-	   - node.intracluster
-	   - node.intercluster
-	   - node.silhouete 
-
-	intracluster distances a(i) are calculated as the Centroid
-	Diameter
-
-	intercluster distances b(i) are calculated as the Centroid linkage distance
-
-	** Rousseeuw, P.J. (1987) Silhouettes: A graphical aid to the
-	interpretation and validation of cluster analysis.
-	J. Comput. Appl. Math., 20, 53-65.
-
-        """
-	if fdist is None:
-	    fdist = self._fdist
-
-	# Updates internal values
-        self._silhouette, self._intracluster_dist, self._intercluster_dist = \
-	    clustvalidation.get_silhouette_width(fdist, self)
-	# And returns them
-	return self._silhouette, self._intracluster_dist, self._intercluster_dist
-
     def get_dunn(self, clusters, fdist=None):
         """ Calculates the Dunn index for the given set of descendant
         nodes.
@@ -250,7 +220,6 @@ class ClusterNode(TreeNode):
 
 	# Updates internal values
 	self._profile, self._std_profile = clustvalidation.get_avg_profile(self)
-
 
 
 # cosmetic alias

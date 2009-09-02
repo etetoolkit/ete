@@ -5,8 +5,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1199</width>
-    <height>719</height>
+    <width>673</width>
+    <height>493</height>
    </rect>
   </property>
   <property name="windowTitle" >
@@ -15,10 +15,10 @@
   <widget class="QWidget" name="centralwidget" >
    <property name="geometry" >
     <rect>
-     <x>123</x>
-     <y>24</y>
-     <width>1076</width>
-     <height>671</height>
+     <x>0</x>
+     <y>58</y>
+     <width>673</width>
+     <height>411</height>
     </rect>
    </property>
   </widget>
@@ -27,7 +27,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1199</width>
+     <width>673</width>
      <height>24</height>
     </rect>
    </property>
@@ -53,8 +53,8 @@
    <property name="geometry" >
     <rect>
      <x>0</x>
-     <y>695</y>
-     <width>1199</width>
+     <y>469</y>
+     <width>673</width>
      <height>24</height>
     </rect>
    </property>
@@ -67,15 +67,15 @@
     <rect>
      <x>0</x>
      <y>24</y>
-     <width>123</width>
-     <height>671</height>
+     <width>673</width>
+     <height>34</height>
     </rect>
    </property>
    <property name="windowTitle" >
     <string>toolBar</string>
    </property>
    <attribute name="toolBarArea" >
-    <enum>LeftToolBarArea</enum>
+    <enum>TopToolBarArea</enum>
    </attribute>
    <attribute name="toolBarBreak" >
     <bool>false</bool>
@@ -93,10 +93,18 @@
    <addaction name="actionForceTopology" />
    <addaction name="actionBranchLength" />
    <addaction name="actionRenderPDF" />
+   <addaction name="actionShow_newick" />
   </widget>
   <action name="actionOpen" >
+   <property name="icon" >
+    <iconset resource="ete_resources.qrc" >
+     <normaloff>:/ete icons/fileopen.png</normaloff>:/ete icons/fileopen.png</iconset>
+   </property>
    <property name="text" >
-    <string>Open Tree</string>
+    <string>Open newick tree</string>
+   </property>
+   <property name="font" >
+    <font/>
    </property>
    <property name="shortcut" >
     <string>Ctrl+O</string>
@@ -111,6 +119,10 @@
    </property>
   </action>
   <action name="actionSave_image" >
+   <property name="icon" >
+    <iconset resource="ete_resources.qrc" >
+     <normaloff>:/ete icons/filesave.png</normaloff>:/ete icons/filesave.png</iconset>
+   </property>
    <property name="text" >
     <string>Save Image</string>
    </property>
@@ -127,6 +139,10 @@
    <property name="checkable" >
     <bool>true</bool>
    </property>
+   <property name="icon" >
+    <iconset resource="ete_resources.qrc" >
+     <normaloff>:/ete icons/show_dist.png</normaloff>:/ete icons/show_dist.png</iconset>
+   </property>
    <property name="text" >
     <string>Show branch info</string>
    </property>
@@ -135,6 +151,10 @@
    </property>
   </action>
   <action name="actionZoomIn" >
+   <property name="icon" >
+    <iconset resource="ete_resources.qrc" >
+     <normaloff>:/ete icons/zoom_in.png</normaloff>:/ete icons/zoom_in.png</iconset>
+   </property>
    <property name="text" >
     <string>Zoom in</string>
    </property>
@@ -143,6 +163,10 @@
    </property>
   </action>
   <action name="actionZoomOut" >
+   <property name="icon" >
+    <iconset resource="ete_resources.qrc" >
+     <normaloff>:/ete icons/zoom_out.png</normaloff>:/ete icons/zoom_out.png</iconset>
+   </property>
    <property name="text" >
     <string>Zoom out</string>
    </property>
@@ -159,6 +183,10 @@
    <property name="checkable" >
     <bool>true</bool>
    </property>
+   <property name="icon" >
+    <iconset resource="ete_resources.qrc" >
+     <normaloff>:/ete icons/force_topo.png</normaloff>:/ete icons/force_topo.png</iconset>
+   </property>
    <property name="text" >
     <string>Force topology</string>
    </property>
@@ -170,36 +198,55 @@
    </property>
   </action>
   <action name="actionSave_newick" >
+   <property name="icon" >
+    <iconset resource="ete_resources.qrc" >
+     <normaloff>:/ete icons/filesave.png</normaloff>:/ete icons/filesave.png</iconset>
+   </property>
    <property name="text" >
     <string>Save as newick</string>
    </property>
   </action>
-  <action name="actionBranchSupport" >
-   <property name="text" >
-    <string>Show branch support</string>
-   </property>
-  </action>
   <action name="actionZoomInX" >
+   <property name="icon" >
+    <iconset resource="ete_resources.qrc" >
+     <normaloff>:/ete icons/x_expand.png</normaloff>:/ete icons/x_expand.png</iconset>
+   </property>
    <property name="text" >
     <string>Increase X scale</string>
    </property>
   </action>
   <action name="actionZoomOutX" >
+   <property name="icon" >
+    <iconset resource="ete_resources.qrc" >
+     <normaloff>:/ete icons/x_reduce.png</normaloff>:/ete icons/x_reduce.png</iconset>
+   </property>
    <property name="text" >
     <string>Decrease X scale</string>
    </property>
   </action>
   <action name="actionZoomInY" >
+   <property name="icon" >
+    <iconset resource="ete_resources.qrc" >
+     <normaloff>:/ete icons/y_expand.png</normaloff>:/ete icons/y_expand.png</iconset>
+   </property>
    <property name="text" >
     <string>Increase Y scale</string>
    </property>
   </action>
   <action name="actionZoomOutY" >
+   <property name="icon" >
+    <iconset resource="ete_resources.qrc" >
+     <normaloff>:/ete icons/y_reduce.png</normaloff>:/ete icons/y_reduce.png</iconset>
+   </property>
    <property name="text" >
     <string>Decrease Y scale</string>
    </property>
   </action>
   <action name="actionFit2tree" >
+   <property name="icon" >
+    <iconset resource="ete_resources.qrc" >
+     <normaloff>:/ete icons/fit_tree.png</normaloff>:/ete icons/fit_tree.png</iconset>
+   </property>
    <property name="text" >
     <string>Fit to tree</string>
    </property>
@@ -208,6 +255,10 @@
    </property>
   </action>
   <action name="actionFit2region" >
+   <property name="icon" >
+    <iconset resource="ete_resources.qrc" >
+     <normaloff>:/ete icons/fit_region.png</normaloff>:/ete icons/fit_region.png</iconset>
+   </property>
    <property name="text" >
     <string>Fit to selection</string>
    </property>
@@ -216,11 +267,19 @@
    </property>
   </action>
   <action name="actionRenderPDF" >
+   <property name="icon" >
+    <iconset resource="ete_resources.qrc" >
+     <normaloff>:/ete icons/export_pdf.png</normaloff>:/ete icons/export_pdf.png</iconset>
+   </property>
    <property name="text" >
     <string>Render PDF image</string>
    </property>
   </action>
   <action name="actionSearchNode" >
+   <property name="icon" >
+    <iconset resource="ete_resources.qrc" >
+     <normaloff>:/ete icons/search.png</normaloff>:/ete icons/search.png</iconset>
+   </property>
    <property name="text" >
     <string>Search</string>
    </property>
@@ -229,11 +288,43 @@
    </property>
   </action>
   <action name="actionClear_search" >
+   <property name="icon" >
+    <iconset resource="ete_resources.qrc" >
+     <normaloff>:/ete icons/clean_search.png</normaloff>:/ete icons/clean_search.png</iconset>
+   </property>
    <property name="text" >
     <string>Clear search</string>
    </property>
+   <property name="shortcut" >
+    <string>Ctrl+C</string>
+   </property>
+  </action>
+  <action name="actionShow_newick" >
+   <property name="icon" >
+    <iconset resource="ete_resources.qrc" >
+     <normaloff>:/ete icons/show_newick.png</normaloff>:/ete icons/show_newick.png</iconset>
+   </property>
+   <property name="text" >
+    <string>Show newick</string>
+   </property>
+   <property name="shortcut" >
+    <string>N</string>
+   </property>
+  </action>
+  <action name="actionShow_node_attributes_box" >
+   <property name="checkable" >
+    <bool>true</bool>
+   </property>
+   <property name="checked" >
+    <bool>true</bool>
+   </property>
+   <property name="text" >
+    <string>Show node attributes box</string>
+   </property>
   </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="ete_resources.qrc" />
+ </resources>
  <connections/>
 </ui>

@@ -1,0 +1,38 @@
+<ui version="4.0" >
+ <class>OpenNewick</class>
+ <widget class="QDialog" name="OpenNewick" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>569</width>
+    <height>353</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Dialog</string>
+  </property>
+  <widget class="QComboBox" name="comboBox" >
+   <property name="geometry" >
+    <rect>
+     <x>460</x>
+     <y>300</y>
+     <width>81</width>
+     <height>23</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QWidget" native="1" name="widget" >
+   <property name="geometry" >
+    <rect>
+     <x>30</x>
+     <y>10</y>
+     <width>371</width>
+     <height>321</height>
+    </rect>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

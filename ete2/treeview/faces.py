@@ -107,7 +107,7 @@ ntbgcolors = {
 
 }
 
-__all__ = ["add_face", "Face", "TextFace", "AttrFace", "ImgFace", "ProfileFace", "ValidationFace", "SequenceFace"]
+__all__ = ["add_face_to_node", "Face", "TextFace", "AttrFace", "ImgFace", "ProfileFace", "ValidationFace", "SequenceFace"]
 
 try:
     import psyco
@@ -115,16 +115,14 @@ try:
 except:
     pass
 
-def add_face(node, stack_index, F, aligned=False):
-    """ Adds a face to a node's stack. """
+def add_face_to_node(face, node, column, aligned=False):
+    """ Links a node with a given face instance.  """
   
-    if stack_index >= len(node.img_style["faces"]):
-	for i in xrange(len(node.img_style["faces"]), stack_index+1):
+    if column >= len(node.img_style["faces"]):
+	for i in xrange(len(node.img_style["faces"]), column+1):
 	    node.img_style["faces"].append([])
-
-    F.aligned = aligned
-    F.node = node
-    node.img_style["faces"][stack_index].append(F)
+    # None value will be the pointer to a pixmap
+    node.img_style["faces"][column].append([face, aligned, None])
 
 class Face(object):
     """ Standard definition of a face node object.
@@ -140,27 +138,26 @@ class Face(object):
         self.node        = None
         self.type        = "pixmap" 
         self.name        = "unknown"
-        self.xmargin     = 1
+        self.xmargin     = 0
         self.ymargin     = 0
         self.pixmap      = None
-        self.aligned     = False 
+        # self.aligned     = False 
 
     def _size(self):
         if self.pixmap:
-
             return self._width(),self._height()
         else:
             return 0, 0
 
     def _width(self):
         if self.pixmap:
-            return self.pixmap.width() + self.xmargin*2
+            return self.pixmap.width() #+ self.xmargin*2
         else:
             return 0
 
     def _height(self):
         if self.pixmap:
-            return self.pixmap.height() + self.ymargin*2
+            return self.pixmap.height() #+ self.ymargin*2
         else:
             return 0
 
@@ -205,11 +202,11 @@ class TextFace(Face):
 	if lines>1:
 	    lines +=1
 	fm = QtGui.QFontMetrics(self.font)
-        return (lines*fm.leading()) +((fm.overlinePos() + fm.underlinePos())*lines)
+        return (lines*fm.leading()) +((fm.overlinePos() + fm.underlinePos())*lines) #+ self.ymargin*2
 
     def _width(self):
 	fm = QtGui.QFontMetrics(self.font)
-        return fm.size(QtCore.Qt.AlignTop, self.text).width()
+        return fm.size(QtCore.Qt.AlignTop, self.text).width() #+ self.xmargin*2
 
     def get_text(self):
         return self.text

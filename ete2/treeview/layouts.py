@@ -25,7 +25,8 @@ import faces
 
 def basic(node):
   if node.is_leaf():
-     faces.add_face(node, 0, faces.AttrFace("name","Arial",10,"#24416d",None) )
+    node.img_style["size"]=0
+    faces.add_face_to_node(faces.AttrFace("name","Arial",10,"#4f8f0f",None), node, 0 )
 
 def phylogeny(node):
         leaf_color = "#24416d"
@@ -45,10 +46,10 @@ def phylogeny(node):
                     leaf_color = "#999999"
 
         if node.is_leaf():
-            faces.add_face(node, 0, faces.AttrFace("name","Arial",12,leaf_color,None) )
+            faces.add_face_to_node( faces.AttrFace("name","Arial",12,leaf_color,None), node, 0 )
             if hasattr(node,"sequence"):
                 SequenceFace =  faces.SequenceFace(node.sequence,"aa",17)
-                faces.add_face(node, 1, SequenceFace, aligned=True)
+                faces.add_face_to_node(SequenceFace, node, 1, aligned=True)
 
 def cluster_heatmap(node):
   square_size = 10
@@ -73,7 +74,7 @@ def cluster_heatmap(node):
   ProfileFace.ymargin=0
   if node.is_leaf():
     # Set colors
-    faces.add_face(node,0, ProfileFace, aligned=True )
+    faces.add_face_to_node(ProfileFace, node, 0, aligned=True )
           
 def cluster_cbars(node):
         # Extras node info
@@ -94,11 +95,11 @@ def cluster_cbars(node):
 
         if node.is_leaf():
             nameFace = faces.AttrFace("name",fsize=6 )
-            faces.add_face(node, 1, nameFace, aligned=True ) 
-            faces.add_face(node,0, ProfileFace, aligned=True )
+            faces.add_face_to_node(nameFace, node, 1, aligned=True ) 
+            faces.add_face_to_node(ProfileFace, node, 0,  aligned=True )
         else:
             # Set custom faces
-            faces.add_face(node,0, ProfileFace, aligned=True )
+            faces.add_face_to_node(ProfileFace, node, 0, aligned=True )
 
 def cluster_lines(node):
         # Extras node info
@@ -119,11 +120,11 @@ def cluster_lines(node):
 
         if node.is_leaf():
             nameFace = faces.AttrFace("name",fsize=6 )
-            faces.add_face(node, 1, nameFace, aligned=True ) 
-            faces.add_face(node,0, ProfileFace, aligned=True )
+            faces.add_face_to_node(nameFace, node, 1,  aligned=True ) 
+            faces.add_face_to_node(ProfileFace, node, 0, aligned=True )
         else:
             # Set custom faces
-            faces.add_face(node,0, ProfileFace, aligned=True )
+            faces.add_face_to_node(ProfileFace, node, 0, aligned=True )
 
 def cluster_bars(node):
         # Extras node info
@@ -144,8 +145,8 @@ def cluster_bars(node):
               40,\
               "bars")
           nameFace = faces.AttrFace("name",fsize=6 )
-          faces.add_face(node, 1, nameFace, aligned=True ) 
-          faces.add_face(node,0, ProfileFace, aligned=True )
+          faces.add_face_to_node(nameFace, node, 1, aligned=True ) 
+          faces.add_face_to_node(ProfileFace, node, 0, aligned=True )
 
 def large(node):
         # Color and style

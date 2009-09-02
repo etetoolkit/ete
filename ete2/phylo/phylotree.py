@@ -85,22 +85,31 @@ class PhyloNode(TreeNode):
 		n._speciesFunction = fn
 
     def link_to_alignment(self, alignment, alg_format="fasta"):
-	missing_seqs = []
+	missing_leaves = []
+	missing_internal = []
 	if type(alignment) == SeqGroup:
 	    alg = alignment
 	else:
 	    alg = SeqGroup(alignment, format=alg_format)
 	# sets the seq of 
-	for l in self.get_leaves():
+	for n in self.traverse():
 	    try:
-                l.add_feature("sequence",alg.get_seq(l.name))
+                n.add_feature("sequence",alg.get_seq(n.name))
 	    except KeyError:
-                l.add_feature("sequence","")
-		missing_seqs.append(l.name)
-	if len(missing_seqs)>0:
+		if n.is_leaf():
+		    missing_leaves.append(n.name)
+		else:
+		    missing_internal.append(n.name)
+	if len(missing_leaves)>0:
 	    print >>sys.stderr, \
-		"Warnning: [%d] node names could not be found in the alignment" %\
-		len(missing_seqs)
+		"Warnning: [%d] terminal nodes could not be found in the alignment." %\
+		len(missing_leaves)
+	# Show warning of not associated internal nodes. 
+	# if len(missing_internal)>0:
+	#     print >>sys.stderr, \
+	#  	"Warnning: [%d] internal nodes could not be found in the alignment." %\
+	#  	len(missing_leaves)
+
 
     def get_species(self):
         """ Returns the set of species covered by its partition. """ 

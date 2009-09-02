@@ -329,14 +329,14 @@ class Test_Coretype_Tree(unittest.TestCase):
 	open("/tmp/etetemptree.nw","w").write(nw_full)
 	t = Tree("/tmp/etetemptree.nw")
 	self.assertEqual(nw_full, t.write(features=["flag","mood"]))
-	self.assertEqual(nw_topo,  t.write(format=8))
+	self.assertEqual(nw_topo,  t.write(format=9))
 	self.assertEqual( nw_dist, t.write(format=5))
 
 	# Read and write newick tree from *string* (and support for NHX
 	# format)
 	t = Tree(nw_full)
 	self.assertEqual(nw_full, t.write(features=["flag","mood"]))
-	self.assertEqual(nw_topo, t.write(format=8))
+	self.assertEqual(nw_topo, t.write(format=9))
 	self.assertEqual( nw_dist, t.write(format=5))
 
 	# Read complex newick
@@ -345,21 +345,12 @@ class Test_Coretype_Tree(unittest.TestCase):
 
 	# Read wierd topologies
 	t = Tree(nw_simple5)
-	self.assertEqual(nw_simple5,  t.write(format=8))
+	self.assertEqual(nw_simple5,  t.write(format=9))
 	t = Tree(nw_simple6)
-	self.assertEqual(nw_simple6,  t.write(format=8))
+	self.assertEqual(nw_simple6,  t.write(format=9))
 
 
     def test_newick_formats(self):
-
-	# 7 (,,(,));                                          no names, no distances 
-	# 6 (A,B,(C,D));                                    leaf names, no distances 
-	# 5 (A,B,(C,D)E)F;                                  all names, no distances
-	# 4 (:0.1,:0.2,(:0.3,:0.4):0.5):0.0;                no names, all distances
-	# 3 (A:0.1,B:0.2,(C:0.3,D:0.4):0.5);                leaf names, all distances 
-	# 2 (A:0.1,B:0.2,(C:0.3,D:0.4)E:0.5)F;              all names, all distances  
-	# 1 ((B:0.2,(C:0.3,D:0.4)0.9:0.5)0.75:0.1)1.0:1.0;  leaf names, all distances, all support
-	# 0 ((,(:0.3,D):0.5)E:0.1)1.0;                      Flexible. Automatic recognition of data.
 
 	from ete_dev.parser.newick import print_supported_formats, NW_FORMAT
 	print_supported_formats()

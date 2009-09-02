@@ -25,6 +25,9 @@ import random
  
 from ete_dev.parser.newick import read_newick, write_newick
 
+DEFAULT_COMPACT = False
+DEFAULT_SHOWINTERNAL = False
+
 __all__ = ["Tree", "TreeNode"]
 
 class TreeError(Exception): 
@@ -135,7 +138,8 @@ class TreeNode(object):
 
   def __str__(self):
     """ Print tree in newick format. """
-    return self.get_ascii()
+    return self.get_ascii(compact=DEFAULT_COMPACT, \
+                            show_internal=DEFAULT_SHOWINTERNAL)
 
   def __contains__(self, item):
     """ Check if item belongs to this node. The 'item' argument must
@@ -192,6 +196,12 @@ class TreeNode(object):
       """
       if child is None:
         child = self.__class__()        
+
+      # This prevents from circular connections, but it would take too
+      # much time to check it every time a node is creted.
+      #
+      # if self in child:
+      #  raise ValueError, "child is an ancestor of current node"
 
       if name is not None:
         try:
@@ -484,6 +494,7 @@ class TreeNode(object):
       nw = write_newick(self, features = features, format=format)
       if outfile is not None:
         open(outfile, "w").write(nw)
+        return nw
       else:
         return nw
 
@@ -731,7 +742,7 @@ class TreeNode(object):
               current = current.up
       return current
 
-  def populate(self, size, names_library=[]):
+  def populate(self, size, names_library=[], reuse_names=True):
       """ 
       Populates the partition under this node with a given number
       of leaves. Internal nodes are added as required.
@@ -762,9 +773,13 @@ class TreeNode(object):
           silly_nodes.add(target)
           if target is not self:
               names_library.add(target.name)
+              target.name = "NoName"
 
         if len(names_library)>0:
-            tname = names_library.pop()
+            tname = random.sample(names_library,1)[0]
+            if not reuse_names:
+              names_library.remove(tname)
+
         else:
             tname = ''.join(random.sample(charset,5))
         tdist = random.random()
@@ -875,7 +890,7 @@ class TreeNode(object):
     else:
         treeview.show_tree(self,layout,image_properties)
 
-  def render_tree(self, w, h, file_name, layout=None, \
+  def render(self, file_name, layout=None, w=None, h=None, \
                      image_properties=None, header=None):
     """ Renders the tree structure into an image file. """
     try:
@@ -883,7 +898,9 @@ class TreeNode(object):
     except ImportError,e: 
         print "treeview could not be loaded. Visualization is disabled."
     else:
-        treeview.render_tree(self, w, h, file_name, layout, image_properties, header=header)
+        treeview.render_tree(self, file_name, w=w, h=h, style=layout, \
+                               img_properties=image_properties, \
+                               header=header)
 
   def _asciiArt(self, char1='-', show_internal=True, compact=False):
     """ 

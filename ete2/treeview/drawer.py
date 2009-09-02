@@ -43,24 +43,24 @@ except ImportError:
 
 
 from ete_dev import Tree, PhyloTree, ClusterTree
-DEBUG = 2
+DEBUG = 0
 
 import layouts 
-import __mainwindow__
+import _mainwindow, _search_dialog, _show_newick, _open_newick, _about
 
 __all__ = ["show_tree", "render_tree", "TreeImageProperties"]
 _QApp = None
 
 _MIN_NODE_STYLE = {
-    "fgcolor": "#FFAA55",
+    "fgcolor": "#0030c1",
     "bgcolor": "#FFFFFF",
     "vt_line_color": "#000000",
     "hz_line_color": "#000000",
     "line_type": 0,
     "vlwidth": 1,
     "hlwidth": 1,
-    "size": 4,
-    "shape": "square",
+    "size":6,
+    "shape": "sphere",
     "faces": None, 
     "draw_descendants": 1, 
 }
@@ -93,13 +93,14 @@ def logger(level,*msg):
         print >>sys.stderr,"* Warning:   ", " ".join(msg)
     # info
     elif level == 1:
-        print >>sys.stdout,"* Info:      ", " ".join(msg)
+	if DEBUG == 1:
+	    print >>sys.stdout,"* Info:      ", " ".join(msg)
     # debug
     elif level == 2:
         if DEBUG == 1:
             print >>sys.stderr,"* Debug:     ", " ".join(msg)
     else:
-        print >>sys.stderr,"* NoCategory:", " ".join(msg)
+	print >>sys.stderr,"* ", " ".join(msg)
     return
 
 
@@ -132,8 +133,8 @@ def show_tree(t, style=None, tree_properties=None):
     mainapp.show()
     _QApp.exec_()
     
-def render_tree(t, width, height, imgName, style=None, \
-		    tree_properties = None, header=None):
+def render_tree(t, imgName, w=None, h=None, style=None, \
+		    img_properties = None, header=None):
     """ Render tree image into a PNG file."""
 
     if not style:
@@ -150,17 +151,56 @@ def render_tree(t, width, height, imgName, style=None, \
         _QApp = QtGui.QApplication(["ETE"])
 
     scene  = _TreeScene()
-    if not tree_properties:
-	tree_properties = TreeImageProperties()
+    if not img_properties:
+	img_properties = TreeImageProperties()
     scene.initialize_tree_scene(t, style,
-				tree_properties=tree_properties)
+				tree_properties=img_properties)
     scene.draw()
-    scene.save(width, height, imgName, header=header)
+    scene.save(imgName, w=w, h=h, header=header)
 
 
 # #################
 # NON PUBLIC STUFF
 # #################
+
+
+
+
+class NewickDialog(QtGui.QDialog):
+    def __init__(self, node, *args):
+	QtGui.QDialog.__init__(self, *args)
+	self.node = node
+
+    def update_newick(self):
+	f= int(self._conf.nwFormat.currentText())
+	self._conf.features_list.selectAll()
+	if self._conf.useAllFeatures.isChecked():
+	    features = []
+	elif self._conf.features_list.count()==0:
+	    features = None
+	else:
+	    features = set()
+	    for i in self._conf.features_list.selectedItems():
+		features.add(str(i.text()))
+
+	nw = self.node.write(format=f, features=features)
+	self._conf.newickBox.setText(nw)
+
+    def add_feature(self):
+	aName = str(self._conf.attrName.text()).strip()
+	if aName != '':
+	    self._conf.features_list.addItem( aName)
+	    self.update_newick()
+    def del_feature(self):
+	r = self._conf.features_list.currentRow()
+	self._conf.features_list.takeItem(r)
+	self.update_newick()
+
+    def set_custom_features(self):
+	state = self._conf.useAllFeatures.isChecked()
+	self._conf.features_list.setDisabled(state)
+	self._conf.attrName.setDisabled(state)
+	self.update_newick()
 
 class _MainApp(QtGui.QMainWindow):
     def __init__(self, scene, *args):
@@ -168,7 +208,7 @@ class _MainApp(QtGui.QMainWindow):
 	self.scene = scene
 	self.view  = _MainView(scene)
 	scene.view = self.view 
-	__mainwindow__.Ui_MainWindow().setupUi(self)
+	_mainwindow.Ui_MainWindow().setupUi(self)
         scene.view = self.view
         self.view.centerOn(0,0)
         splitter = QtGui.QSplitter()
@@ -176,14 +216,27 @@ class _MainApp(QtGui.QMainWindow):
         splitter.addWidget(scene.propertiesTable)
         self.setCentralWidget(splitter)
 
+	# I create a single dialog to keep the last search options
+	self.searchDialog =  QtGui.QDialog()
+	# Don't know if this is the best way to set up the dialog and
+	# its variables
+	self.searchDialog._conf = _search_dialog.Ui_Dialog()
+	self.searchDialog._conf.setupUi(self.searchDialog)
+
+
     @QtCore.pyqtSignature("")
     def on_actionETE_triggered(self):
 	try:
 	    __VERSION__ 
 	except:
-	    __VERSION__= "devel. branch"
-	QtGui.QMessageBox.information(self, "About ETE",\
-                           "Environment for Tree Exploration.\nversion: %s\nhttp://ete.cgenomics.org\n\nby Jaime Huerta-Cepas\njhcepas@gmail.com" % __VERSION__)
+	    __VERSION__= "developmnet branch"
+
+    	d = QtGui.QDialog()
+	d._conf = _about.Ui_About()
+	d._conf.setupUi(d)
+	d._conf.version.setText("Version: %s" %__VERSION__)
+	d._conf.version.setAlignment(QtCore.Qt.AlignHCenter)
+	d.exec_()
 
     @QtCore.pyqtSignature("")
     def on_actionZoomOut_triggered(self):
@@ -237,26 +290,50 @@ class _MainApp(QtGui.QMainWindow):
 
     @QtCore.pyqtSignature("")
     def on_actionSearchNode_triggered(self):
-	text, ok = QtGui.QInputDialog.getText(None,"Search","Search for leaf name:")
+	ok = self.searchDialog.exec_()
 	if ok:
-	    kk = dir(text)
-	    txt = text.__str__()
-	    for l in self.scene.startNode.get_leaves():
-		if re.match(txt, l.name):
-		    r = QtGui.QGraphicsRectItem(l._QtItem_)
-		    r.setRect(l.fullRegion)
-		    # Don't know yet why do I have to add 2 pixels :S
-		    r.moveBy(0, 2+(-l.fullRegion.height()-2)/2.0) 
-		    r.setZValue(-1)
-		    r.setPen(QtGui.QColor("yellow"))
-		    r.setBrush(QtGui.QColor("yellow"))
-		    self.view.horizontalScrollBar().setValue(l._x)
-		    self.view.verticalScrollBar().setValue(l._y)
+	    setup = self.searchDialog._conf 
+	    mType = setup.attrType.currentIndex()
+	    aName = str(setup.attrName.text())
+	    if mType >= 2 and mType <=6:
+		try:
+		    aValue =  float(setup.attrValue.text())
+		except ValueError:
+		    QtGui.QMessageBox.information(self, "!",\
+					      "A numeric value is expected")
+		    return
+	    elif mType == 7:
+		aValue = re.compile(str(setup.attrValue.text()))
+	    elif mType == 0 or mType == 1:
+		aValue =  str(setup.attrValue.text())
+
+	    if mType == 0 or mType == 2:
+		cmpFn = lambda x,y: x == y
+	    elif mType == 1:
+		cmpFn = lambda x,y: y in x
+	    elif mType == 3:
+		cmpFn = lambda x,y: x >= y
+	    elif mType == 4:
+		cmpFn = lambda x,y: x > y
+	    elif mType == 5:
+		cmpFn = lambda x,y: x <= y
+	    elif mType == 6:
+		cmpFn = lambda x,y: x < y
+	    elif mType == 7:
+		cmpFn = lambda x,y: re.search(y, x)
+
+	    for n in self.scene.startNode.traverse():
+		if setup.leaves_only.isChecked() and not n.is_leaf():
+		    continue
+		if hasattr(n, aName) \
+			and cmpFn(getattr(n, aName), aValue ):
+		    self.scene.highlight_node(n)
 
     @QtCore.pyqtSignature("")
     def on_actionClear_search_triggered(self):
 	# This could be much more efficient
-	self.scene.draw()
+	for n in self.scene._highlighted_nodes.keys():
+	    self.scene.unhighlight_node(n)
 
     @QtCore.pyqtSignature("")
     def on_actionBranchLength_triggered(self):
@@ -267,6 +344,14 @@ class _MainApp(QtGui.QMainWindow):
     def on_actionForceTopology_triggered(self):
 	self.scene.props.force_topology ^= True
 	self.scene.draw()
+
+    @QtCore.pyqtSignature("")
+    def on_actionShow_newick_triggered(self):
+	d = NewickDialog(self.scene.startNode)
+	d._conf = _show_newick.Ui_Newick()
+	d._conf.setupUi(d)
+	d.update_newick()
+	d.exec_()
 
     @QtCore.pyqtSignature("")
     def on_actionChange_orientation_triggered(self):
@@ -285,9 +370,19 @@ class _MainApp(QtGui.QMainWindow):
 
     @QtCore.pyqtSignature("")
     def on_actionOpen_triggered(self):
+
+	d = QtGui.QFileDialog()
+	d._conf = _open_newick.Ui_OpenNewick()
+	d._conf.setupUi(d)
+	d.exec_()
+	return
+
+
 	fname = QtGui.QFileDialog.getOpenFileName(self ,"Open File",
                                                  "/home",
-                                                 "Newick (*.nh *.nhx *.nw )")
+                                                 )
+
+
 	try:
 	    t = Tree(str(fname))
 	except Exception, e:
@@ -351,6 +446,7 @@ class _TableItem(QtGui.QItemDelegate):
 	self.propdialog = parent
 
     def paint(self, painter, option, index):
+	self.propdialog.tableView.setRowHeight(index.row(), 18)
         QtGui.QItemDelegate.paint(self, painter, option, index)
         
     def createEditor(self, parent, option, index):
@@ -418,6 +514,8 @@ class _PropertiesDialog(QtGui.QWidget):
 	self.tableView.setVerticalHeader(None)
         self.layout.addWidget(self.tableView)
         self.setLayout(self.layout)
+	self.tableView.setGeometry ( 0, 0, 200,200 )
+
 
     def update_properties(self, node):
 	self.node = node
@@ -633,6 +731,7 @@ class _NodeItem(QtGui.QGraphicsRectItem):
             self.showActionPopup()
         elif e.button() == QtCore.Qt.LeftButton:
 	    self.scene().propertiesTable.update_properties(self.node)
+	    
 
     def showActionPopup(self):
         contextMenu = QtGui.QMenu()
@@ -640,6 +739,7 @@ class _NodeItem(QtGui.QGraphicsRectItem):
             contextMenu.addAction( "Expand"           , self.toggle_collapse)
         else:
             contextMenu.addAction( "Collapse"         , self.toggle_collapse)
+
         contextMenu.addAction( "Set as outgroup"      , self.set_as_outgroup)
         contextMenu.addAction( "Swap branches"        , self.swap_branches)
         contextMenu.addAction( "Delete node"          , self.delete_node)
@@ -655,20 +755,16 @@ class _NodeItem(QtGui.QGraphicsRectItem):
         if self.scene().buffer_node:
             contextMenu.addAction( "Paste partition"  , self.paste_partition)
 
-
         contextMenu.addAction( "Cut partition"        , self.cut_partition)
         contextMenu.addAction( "Show newick"        , self.show_newick)
 	contextMenu.exec_(QtGui.QCursor.pos())
 
     def show_newick(self):
-	dialog = QtGui.QDialog()
-	dialog.setMinimumHeight(300)
-	text =  QtGui.QTextEdit(dialog)
-	text.setMinimumWidth(300)
-	text.setMinimumHeight(300)
-	text.setText(self.node.write())
-	text.setReadOnly(True)
-	dialog.exec_()	
+	d = NewickDialog(self.node)
+	d._conf = _show_newick.Ui_Newick()
+	d._conf.setupUi(d)
+	d.update_newick()
+	d.exec_()
 	return False
 
     def delete_node(self):
@@ -812,7 +908,7 @@ class _MainView(QtGui.QGraphicsView):
 	if (xfactor>1 and xscale>200000) or \
 		(yfactor>1 and yscale>200000):
 	    QtGui.QMessageBox.information(self, "!",\
-					      "Ey! I'm not an electron microscope!")
+					      "Hey! Have you ever thought about buying an electron microscope?")
 	    return 
 
 	# Do not allow to reduce scale to a value producing height or with smaller than 20 pixels
@@ -883,7 +979,7 @@ class _TreeScene(QtGui.QGraphicsScene):
         self.max_w_aligned_face = 0    # Stores the max width of aligned faces 
         self.min_real_branch_separation = 0 
 	self.selectors  = []
-	
+	self._highlighted_nodes = {}
 
 	# Qt items
 	self.selector = None 
@@ -915,6 +1011,28 @@ class _TreeScene(QtGui.QGraphicsScene):
         self.set_style_from(self.startNode,self.layout_func)
 
 	self.propertiesTable.update_properties(self.startNode)
+
+    def highlight_node(self, n):
+	self.unhighlight_node(n)
+	r = QtGui.QGraphicsRectItem(self.mainItem)
+	self._highlighted_nodes[n] = r
+	r.setRect(0, 0, 5 ,5)
+	r.setPos(n.scene_pos)
+	# Don't know yet why do I have to add 2 pixels :/
+	r.moveBy(0,0) 
+	r.setZValue(-1)
+	r.setPen(QtGui.QColor("yellow"))
+	r.setBrush(QtGui.QColor("yellow"))
+	# self.view.horizontalScrollBar().setValue(n._x)
+	# self.view.verticalScrollBar().setValue(n._y)
+
+    def unhighlight_node(self, n):
+	if n in self._highlighted_nodes and \
+		self._highlighted_nodes[n] is not None:
+	    print self._highlighted_nodes[n]
+	    self.removeItem(self._highlighted_nodes[n])
+	    del self._highlighted_nodes[n]
+
 
     def mousePressEvent(self,e):
         logger(2, "Press en view")
@@ -953,16 +1071,25 @@ class _TreeScene(QtGui.QGraphicsScene):
         logger(2, "Double click")
         QtGui.QGraphicsScene.mouseDoubleClickEvent(self,e)
 
-    def save(self, w, h, imgName, header=None):
+    def save(self, imgName, w=None, h=None, header=None, dpi=150):
 	ext = imgName.split(".")[-1].upper()
 	
-	# auto adjust size
+	root = self.startNode
+	aspect_ratio = root.fullRegion.height() / root.fullRegion.width()
 
+	# auto adjust size
+	if w is None and h is None:
+	    w = dpi * 7
+	    h = w * aspect_ratio
+	elif h is None: 
+	    h = w * aspect_ratio
+	elif w is None:
+	    w = h / aspect_ratio
 
 	if ext == "PDF" or ext == "PS":
 	    format = QPrinter.PostScriptFormat if ext == "PS" else QPrinter.PdfFormat
 	    printer = QPrinter() 
-	    printer.setResolution(100)
+	    printer.setResolution(dpi)
 	    printer.setOutputFormat(format)
 	    printer.setPageSize(QPrinter.A4)
 	    
@@ -1047,6 +1174,10 @@ class _TreeScene(QtGui.QGraphicsScene):
         if self.mainItem:
             self.removeItem(self.mainItem)
 	    
+	#Clean_highlighting rects 
+	for n in self._highlighted_nodes:
+	    self._highlighted_nodes[n] = None
+
 	# Recreates main parent and add it to scene
         self.mainItem = QtGui.QGraphicsRectItem()
 	self.addItem(self.mainItem)
@@ -1098,6 +1229,10 @@ class _TreeScene(QtGui.QGraphicsScene):
 	#border = self.addRect(0,0, self.sceneRect().width(), self.sceneRect().height())
         #border.setParentItem(self.mainItem)
 	self.add_scale(1 ,self.i_height+4)
+
+	#Re-establish node marks
+	for n in self._highlighted_nodes:
+	    self.highlight_node(n)
 
         self.setSceneRect(-2,-2,self.i_width+4,self.i_height+50)
         logger(2, "Number of items in scene:", len(self.items()))
@@ -1168,27 +1303,32 @@ class _TreeScene(QtGui.QGraphicsScene):
             stack_w = 0
             aligned_f_w = 0
             aligned_f_h = 0
-            for f in stack:
+            for face in stack:
+		f, aligned, pixmap = face
+		if aligned and not node.is_leaf():
+		    continue
+		# Sets the working node from which required info will
+		# be retrived. Thus, same face can be used for many nodes.
+		f.node = node
                 # If pixmap face, updates image
                 if f.type == "pixmap":
-                    f.update_pixmap()
-                    
-                if node.is_leaf() and f.aligned:
-                    aligned_f_w = max(aligned_f_w, f._width())
-                    aligned_f_h += f._height()
-	    
-                else:
-                    stack_w = max(stack_w, f._width())
-                    stack_h += f._height()
+		    f.update_pixmap() # using current working node
+		    face[2] = f.pixmap
+
+                if node.is_leaf() and aligned:
+                    aligned_f_w = max(aligned_f_w, f._width()) #+ f.xmargin*2
+                    aligned_f_h += f._height() #+ f.ymargin * 2
+		else:
+                    stack_w = max(stack_w, f._width()) #+ f.xmargin*2
+                    stack_h += f._height() #+ f.ymargin*2
 
             max_aligned_w += aligned_f_w
             max_w += stack_w
-            max_h = numpy.max([aligned_f_h,stack_h,max_h])
+            max_h = numpy.max([aligned_f_h, stack_h, max_h])
 
         # Updates the max width spend by aligned faces
         if max_aligned_w > self.max_w_aligned_face:
             self.max_w_aligned_face = max_aligned_w
-
             
         # Dist a and faces region
         node.facesRegion = QtCore.QRectF(0,0,max_w,max_h)
@@ -1196,23 +1336,85 @@ class _TreeScene(QtGui.QGraphicsScene):
         h = max(max_h, min_node_height, self.props.min_branch_separation)
 	if self.min_real_branch_separation < h:
 	    self.min_real_branch_separation = h
-	    
-	
+
         node.nodeRegion = QtCore.QRectF(0,0,w,h)
-        # This is the node region covered in total 
-        sum_child_h = 0
-        max_child_w = 0
-        # Get width and height covered by childs
-        for ch_r in child_rects:
-            sum_child_h += ch_r.height()
-            if ch_r.width()>max_child_w:
-                max_child_w = ch_r.width()
-        # takes max height: childs or faces
-        if sum_child_h > h:
-            h = sum_child_h
-        w += max_child_w
+
+	# This piece of code fixes an old and annoying bug by which nodes with
+	# faces larger than the sum of child node region were badly
+	# drawn (badly centered and using space from other nodes)
+	if not node.is_leaf():
+	    max_child_w = 0
+	    sum_child_h = 0
+	    # y correction is used to fix cases in which the height of
+	    # parent nodes is greater than the sum of child
+	    # heights. Then, an y offset is calculated as the missing
+	    # amount of pixels. This correction is used by the render
+	    # algorithm to draw child 'y_correction" pixels bellow the
+	    # expected position.
+	    node._y_correction = 0 
+	    for ch in node.children:
+		# Updates the max width used by childs
+		if ch.fullRegion.width()>max_child_w:
+		    max_child_w = ch.fullRegion.width()
+		# Stores the 'y' center of the first child node
+		if ch == node.children[0]:
+		    start1 = ch.__center
+	        # And the 'y' center of the last child node
+		elif ch == node.children[-1]:
+		    start2 = sum_child_h + ch.__center
+		sum_child_h += ch.fullRegion.height()
+
+	    # Knowing the centers of first and last child nodes, we
+	    # know the center of current node. This center splits the
+	    # current node space into two unequal pieces: above and
+	    # bellow.
+	    above =  (start1 +((start2 - start1)/2.0))
+	    bellow = sum_child_h - above
+	    newh = 0
+
+	    # Current node faces will be drawn centered to the node
+	    # position, so half of the faces space should fit in the
+	    # above region, and the other half in the bellow region.
+	    # If not, the height of current node is increased to
+	    # reserve the required space.
+	    # 
+	    # The space is missing in the above region, an y offset is
+	    # set to permit child nodes to be drawn a bit more down
+	    # than expected.
+	    if above < (h/2):
+		newh = sum_child_h + ((h/2.0) - above) 
+		node._y_correction = ((h/2.0) - above) 
+		node.add_feature("_add_above", float((h/2) - above))
+	    if bellow < h/2:
+		if newh >0:
+		    newh +=  ((h/2.0) - bellow)
+		else:
+		    newh = sum_child_h + ((h/2) - bellow)
+		    node.add_feature("_add_bellow", float((h/2.0) - bellow))
+
+	    # If current node faces do not exceed the sum of child
+	    # heights, then current node height is the sum of child
+	    # heights
+	    if newh == 0:
+		newh = sum_child_h
+	    h = newh
+	    # Increases node width the max child width
+	    w += max_child_w
+	    # And stores current node center, which is the center
+	    # calculated using the child node centers + the
+	    # y_correction (if any)
+	    node.__center = (start1 +((start2 - start1)/2.0)) + node._y_correction
+	else:
+	    node.__center = h/2
+	    node._y_correction = 0
+
+        # This is the node total region covered by the node
+	node.fullRegion = QtCore.QRectF(0,0,w,h)   
+
         # Sets the total room needed for this node
-        node.fullRegion = QtCore.QRectF(0,0,w,h)
+	node.add_feature("_height", int(node.fullRegion.height()))
+	node.add_feature("_y_correction", float(node._y_correction))
+
         return node.fullRegion
 
     def rotate_node(self,node,angle,x=None,y=None):
@@ -1244,6 +1446,8 @@ class _TreeScene(QtGui.QGraphicsScene):
         # parent node item
         if node==self.startNode:
             node._QtItem_.setParentItem(self.mainItem)
+	    scene_pos = node._QtItem_.pos()
+	    node.scene_pos = scene_pos
 
         # node x,y starting positions
         node._x = x
@@ -1263,16 +1467,18 @@ class _TreeScene(QtGui.QGraphicsScene):
         # Draw node and lines
         if not node.is_leaf() and node.img_style["draw_descendants"]==1:
             # Corrections ... say something else, don't you think?
-            node_height = 0    
-            for ch in node.get_children():
-                node_height += ch.fullRegion.height()
-            if node.fullRegion.height() >= node_height:
-                y_correction = node.fullRegion.height() - node_height
-            else:
-                y_correction = 0
+#            node_height = 0    
+#            for ch in node.get_children():
+#                node_height += ch.fullRegion.height()
 
+#            if node.fullRegion.height() >= node_height:
+#                y_correction = node.fullRegion.height() - node_height
+#            else:
+#		y_correction = 0
+
+#	    y_correction = node._y_correction
             # recursivity: call render function for every child
-            next_y = y + y_correction/2
+            next_y = y + node._y_correction#/2
             for ch in node.get_children():
                 dist_to_child = ch.dist * self.scale
                 if orientation == 0:
@@ -1282,8 +1488,9 @@ class _TreeScene(QtGui.QGraphicsScene):
 
                 self.render_node(ch,next_x, next_y,level+1)
                 next_y += ch.fullRegion.height()
-
-            node._centered_y = (node.children[0]._centered_y + node.children[-1]._centered_y)/2
+	    
+            node._centered_y = ((node.children[0]._centered_y + node.children[-1]._centered_y)/2)
+	    node.add_feature("_center2", float(node._centered_y-next_y))
             # Draw an internal node. Take global pos. 
 
             # Place node at the correct pos in Scene
@@ -1294,6 +1501,7 @@ class _TreeScene(QtGui.QGraphicsScene):
                 node._QtItem_.setPos(x-node.dist_xoffset-node.img_style["size"],node._centered_y-node.img_style["size"]/2)
             for ch in node.children:
                 scene_pos = ch._QtItem_.pos()
+		ch.scene_pos = scene_pos
                 ch._QtItem_.setParentItem(node._QtItem_)
                 ch._QtItem_.setPos(node._QtItem_.mapFromScene(scene_pos) )
 
@@ -1388,7 +1596,6 @@ class _TreeScene(QtGui.QGraphicsScene):
         elif orientation==1:
             start_x = 0
             aligned_start_x = node._QtItem_.mapFromScene(0,0).x()
-
         
         for stack in node.img_style["faces"]:
             # get each stack's height and width
@@ -1398,25 +1605,34 @@ class _TreeScene(QtGui.QGraphicsScene):
             aligned_stack_h = 0
             # Extract height and width of al faces in this stack
             # Get max width and cumulated height
-            for f in stack:
-                if node.is_leaf() and f.aligned:
-                    aligned_stack_w = max(aligned_stack_w , f._width())
-                    aligned_stack_h += f._height()
+            for f, aligned, pixmap in stack:
+		if aligned and not node.is_leaf():
+		    continue
+		f.node = node
+                if node.is_leaf() and aligned:
+                    aligned_stack_w = max(aligned_stack_w , f._width()) #+ f.xmargin*2
+                    aligned_stack_h += f._height() #+ f.ymargin*2
                 else:
-                    stack_w = max(stack_w ,f._width() )
-                    stack_h += f._height()
+                    stack_w = max(stack_w ,f._width() )  #+f.xmargin*2
+                    stack_h += f._height() #+f.ymargin*2
 
             # Creates a GGraphicsItem object for each face
             cumulated_y         = 0
             cumulated_aligned_y = 0
-            for f in stack:
-                # add each face of this stack into the correct position We
-                # hace middle_y, so start_y is set to place face at such
-                # middle_y possition.
-                if node.is_leaf() and f.aligned:
-                    start_y = cumulated_aligned_y + (-aligned_stack_h/2)+r
+            for j, face in enumerate(stack):
+		f, aligned, pixmap = face
+		if aligned and not node.is_leaf():
+		    continue
+		f.node = node
+                # add each face of this stack into the correct position. 
+                if node.is_leaf() and aligned:
+                    start_y = cumulated_aligned_y + (-aligned_stack_h/2)+r #+ f.ymargin
                 else:
-                    start_y = cumulated_y + (-stack_h/2)+r
+		    start_y = cumulated_y - (stack_h/2) +r #+ f.ymargin
+
+
+
+
                 # If face is text type, add it as an QGraphicsTextItem
                 if f.type == "text":
 		    obj = _TextItem(f, node, f.get_text())
@@ -1426,19 +1642,20 @@ class _TreeScene(QtGui.QGraphicsScene):
 		    obj.setAcceptsHoverEvents(True)
 #		    start_y += f._height()
                 else:
-                    obj = _FaceItem(f,node,f.pixmap)
+		    # Loads the pre-generated pixmap
+                    obj = _FaceItem(f, node, pixmap)
 		    obj.setAcceptsHoverEvents(True)
                     obj.setParentItem(node._QtItem_)
 
                 # If face is aligned and node is terminal, place face
                 # at aligned margin
-                if node.is_leaf() and f.aligned:
+                if node.is_leaf() and aligned:
                     # Set face position
                     if orientation ==0:
-                        obj.setPos(aligned_start_x, start_y)
+                        obj.setPos(aligned_start_x + f.xmargin, start_y)# + f.ymargin)
                     elif orientation ==1:
-                        obj.setPos(aligned_start_x-f._width(),start_y)
-                    cumulated_aligned_y += f._height()
+                        obj.setPos(aligned_start_x-f._width() - f.xmargin , start_y)# + f.ymargin)
+                    cumulated_aligned_y += f._height()# + f.ymargin*2
                 # If face has to be draw within the node room 
                 else:
                     # Set face position
