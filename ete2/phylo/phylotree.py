@@ -136,7 +136,8 @@ class PhyloNode(TreeNode):
 	tree, and a list of evolutionary events inferred from such
 	reconciliation. """
 	return get_reconciled_tree(self, species_tree, [])
-    def get_my_evol_events(self):
+
+    def get_my_evol_events(self, sos_thr=0.0):
         """ Returns a list of duplication and speciation events in
         which the current node has been involved. Scanned nodes are
         also labeled internally as dup=True|False. You can access this
@@ -150,9 +151,9 @@ class PhyloNode(TreeNode):
         "The Human Phylome." Huerta-Cepas J, Dopazo H, Dopazo J, Gabaldon
         T. Genome Biol. 2007;8(6):R109.
         """
-	return get_evol_events_from_leaf(self)
+	return get_evol_events_from_leaf(self, sos_thr=sos_thr)
 
-    def get_descendant_evol_events(self):
+    def get_descendant_evol_events(self, sos_thr=0.0):
         """ Returns a list of **all** duplication and speciation
         events detected after this node. Nodes are assumed to be
         duplications when a species overlap is found between its child
@@ -161,8 +162,7 @@ class PhyloNode(TreeNode):
         "The Human Phylome." Huerta-Cepas J, Dopazo H, Dopazo J, Gabaldon
         T. Genome Biol. 2007;8(6):R109.
         """
-	return get_evol_events_from_root(self)
-
+	return get_evol_events_from_root(self, sos_thr=sos_thr)
 
     def get_farthest_oldest_leaf(self, species2age):
         """ Returns the farthest oldest leafnode to the current

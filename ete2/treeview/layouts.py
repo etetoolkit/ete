@@ -25,33 +25,40 @@ import faces
 
 def basic(node):
   if node.is_leaf():
-    node.img_style["size"]=0
+    node.img_style["size"]=1
+    node.img_style["shape"] = "circle"
     faces.add_face_to_node(faces.AttrFace("name","Arial",10,"#4f8f0f",None), node, 0 )
 
 def phylogeny(node):
-        leaf_color = "#24416d"
+        leaf_color = "#000000"
+        node.img_style["shape"] = "circle"
         if hasattr(node,"evoltype"):
                 if node.evoltype == 'D':
-                    node.img_style["fgcolor"] = "#0000FF"
-                    node.img_style["hz_line_color"] = "#0000FF"
-                    node.img_style["vt_line_color"] = "#0000FF"
+                    node.img_style["fgcolor"] = "#1d176e"
+                    node.img_style["hz_line_color"] = "#1d176e"
+                    node.img_style["vt_line_color"] = "#1d176e"
                 elif node.evoltype == 'S':
                     node.img_style["fgcolor"] = "#FF0000"
                     node.img_style["line_color"] = "#FF0000"
                 elif node.evoltype == 'L':
-                    node.img_style["fgcolor"] = "#999999"
-                    node.img_style["vt_line_color"] = "#999999"
-                    node.img_style["hz_line_color"] = "#999999"
+                    node.img_style["fgcolor"] = "#777777"
+                    node.img_style["vt_line_color"] = "#777777"
+                    node.img_style["hz_line_color"] = "#777777"
                     node.img_style["line_type"] = 1
-                    leaf_color = "#999999"
-
+                    leaf_color = "#777777"
+               
         if node.is_leaf():
-            faces.add_face_to_node( faces.AttrFace("name","Arial",12,leaf_color,None), node, 0 )
-            if hasattr(node,"sequence"):
-                SequenceFace =  faces.SequenceFace(node.sequence,"aa",17)
-                faces.add_face_to_node(SequenceFace, node, 1, aligned=True)
+          node.img_style["shape"] = "square"
+          node.img_style["size"] = 4
+          node.img_style["fgcolor"] = leaf_color
+          faces.add_face_to_node( faces.AttrFace("name","Arial",11,leaf_color,None), node, 0 )
+          if hasattr(node,"sequence"):
+            SequenceFace =  faces.SequenceFace(node.sequence,"aa",13)
+            faces.add_face_to_node(SequenceFace, node, 1, aligned=True)
+        else:
+          node.img_style["size"] = 6
 
-def cluster_heatmap(node):
+def heatmap(node):
   square_size = 10
   # Extras node info
   node.collapsed = False
@@ -158,7 +165,7 @@ def large(node):
 layout_functions = {
         "Basic": basic, 
         "Phylogenetic tree": phylogeny, 
-        "Clustering heatmap": cluster_heatmap, 
+        "Clustering heatmap": heatmap, 
         "Clustering validation (bars)": cluster_bars, 
         "Clustering validation (profiles)": cluster_cbars, 
         "Very large topology": large

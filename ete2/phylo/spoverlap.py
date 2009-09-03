@@ -24,7 +24,7 @@ from evolevents import EvolEvent
 
 __all__ = ["get_evol_events_from_leaf", "get_evol_events_from_root"]
 
-def get_evol_events_from_leaf(node):
+def get_evol_events_from_leaf(node, sos_thr=0.0):
     """ Returns a list of duplication and speciation events in
     which the current node has been involved. Scanned nodes are
     also labeled internally as dup=True|False. You can access this
@@ -94,7 +94,7 @@ def get_evol_events_from_leaf(node):
 	event.fam_size   = fSize
 	event.seed      = node.name
 	# event.e_newick  = current.up.get_newick()  # high mem usage!!
-	event.dup_score = score
+	event.sos = score
 	event.outgroup  = smaller_outg.name
 	# event.allseqs   = set(current.up.get_leaf_names())
 	event.in_seqs = set([n.name for n in browsed_leaves])
@@ -102,7 +102,7 @@ def get_evol_events_from_leaf(node):
 	event.inparalogs  = set([n.name for n in browsed_leaves if n.species == ref_spcs])
 
 	# If species overlap: duplication 
-	if score >0.0 and d > 0.0:
+	if score >sos_thr and d > 0.0:
 	    event.node = current.up
 	    event.etype = "D"
 	    event.outparalogs = set([n.name for n in sister_leaves  if n.species == ref_spcs])
@@ -111,7 +111,7 @@ def get_evol_events_from_leaf(node):
 	    all_events.append(event)
 
 	# If NO species overlap: speciation
-	elif score == 0.0:
+	elif score == sos_thr:
 	    event.node = current.up
 	    event.etype = "S"
 	    event.orthologs = set([n.name for n in sister_leaves if n.species != ref_spcs])
@@ -127,10 +127,9 @@ def get_evol_events_from_leaf(node):
 	sister_leaves  = set([])
 	# And keep ascending
 	current = current.up
-
     return all_events
 
-def get_evol_events_from_root(node):
+def get_evol_events_from_root(node, sos_thr):
     """ Returns a list of **all** duplication and speciation
     events detected after this node. Nodes are assumed to be
     duplications when a species overlap is found between its child
@@ -194,13 +193,13 @@ def get_evol_events_from_root(node):
 	    event.branch_supports = [current.support, current.children[0].support, current.children[1].support]
 	    # event.seed      = leafName
 	    # event.e_newick  = current.up.get_newick()  # high mem usage!!
-	    event.dup_score = score
+	    event.sos = score
 	    event.outgroup_spcs  = smaller_outg.get_species()
 	    event.in_seqs = set([n.name for n in sideA_leaves])
 	    event.out_seqs = set([n.name for n in sideB_leaves])
 	    event.inparalogs  = set([n.name for n in sideA_leaves])
 	    # If species overlap: duplication 
-	    if score >0.0:
+	    if score >sos_thr:
 		event.node = current
 		event.etype = "D"
 		event.outparalogs = set([n.name for n in sideB_leaves])

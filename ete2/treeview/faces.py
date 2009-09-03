@@ -198,15 +198,34 @@ class TextFace(Face):
         self.font    = QtGui.QFont(ftype,fsize)
 
     def _height(self):
-	lines = len(self.get_text().split("\n"))
-	if lines>1:
-	    lines +=1
 	fm = QtGui.QFontMetrics(self.font)
-        return (lines*fm.leading()) +((fm.overlinePos() + fm.underlinePos())*lines) #+ self.ymargin*2
+	h =  fm.boundingRect(QtCore.QRect(), \
+				 QtCore.Qt.AlignLeft, \
+				 self.get_text()).height() 
+	return h
+        # Other buggy alternatives
+	# fm = QtGui.QFontMetrics(self.font)
+	# h = 0
+	# for l in lines:
+	#     if l == lines[0]:
+	#  	h+=fm.tightBoundingRect(l).height()
+	#     else:
+	#  	h+=fm.height()
+	# return h #+ ((len(lines)-1)*fm.leading())
+	#  
+	# lines = len(self.get_text().split("\n"))
+	# return lines*fm.height() + (lines-1 * fm.leading())
+	#  
+	# h =  fm.boundingRect(QtCore.QRect(), \
+	#  			 QtCore.Qt.AlignLeft, \
+	#  			 self.get_text()).height() 
+	# return h 
+
+
 
     def _width(self):
 	fm = QtGui.QFontMetrics(self.font)
-        return fm.size(QtCore.Qt.AlignTop, self.text).width() #+ self.xmargin*2
+        return fm.size(QtCore.Qt.AlignTop, self.text).width()
 
     def get_text(self):
         return self.text

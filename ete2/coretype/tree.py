@@ -624,12 +624,16 @@ class TreeNode(object):
         the distance between nodes
 
       """
-       
+   
       if target2 is None:
         target2 = self
-      target, target2 = _translate_nodes(self, target, target2)
-    
-      ancestor = target.get_common_ancestor(target2)
+        root = self.get_tree_root()
+      else:
+        # is target node under current node?
+        root = self
+
+      target, target2 = _translate_nodes(root, target, target2)
+      ancestor = root.get_common_ancestor(target, target2)
       if ancestor is None:
           raise TreeError, "Nodes are not connected"
       
@@ -638,7 +642,8 @@ class TreeNode(object):
         current = n
         while current != ancestor:
           if topology_only:
-            dist += 1
+            if  current!=target:
+              dist += 1
           else:
             dist += current.dist
           current = current.up
@@ -662,9 +667,13 @@ class TreeNode(object):
         A tuple = (farthest_node, dist_to_farthest_node)
 
       """
+      # Init fasthest node to current farthest leaf
       farthest_node,farthest_dist = self.get_farthest_leaf(topology_only=topology_only)
       prev    = self
-      cdist   = prev.dist
+      if topology_only:
+        cdist = 0
+      else:
+        cdist = prev.dist             
       current = prev.up
       while current:
           for ch in current.children:
@@ -675,14 +684,17 @@ class TreeNode(object):
                       fnode = ch
                       fdist = 0
                   if topology_only:
-                    fdist += 1.0
+                      fdist += 1.0
                   else:
                     fdist += ch.dist
                   if cdist+fdist > farthest_dist:
                       farthest_dist = cdist + fdist
                       farthest_node = fnode
-          prev    = current
-          cdist  += prev.dist             
+          prev = current
+          if topology_only:
+            cdist += 1
+          else:
+            cdist  += prev.dist             
           current = prev.up
       return farthest_node, farthest_dist
 
@@ -712,7 +724,7 @@ class TreeNode(object):
         for ch in self.children:
             node, d = ch.get_farthest_leaf(topology_only=topology_only)
             if topology_only:
-              d += 1.0
+                d += 1.0
             else:
               d += ch.dist
             if d>=max_dist:

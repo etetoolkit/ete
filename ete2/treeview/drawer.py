@@ -63,6 +63,7 @@ _MIN_NODE_STYLE = {
     "shape": "sphere",
     "faces": None, 
     "draw_descendants": 1, 
+    "ymargin": 0
 }
 
 class TreeImageProperties:
@@ -80,7 +81,6 @@ class TreeImageProperties:
         self.tree_width                 = 200  # This is used to scale
 					       # the tree branches
 	self.min_branch_separation      = 1
-
 
 def logger(level,*msg):
     """ Just to manage how to print messages """
@@ -103,7 +103,6 @@ def logger(level,*msg):
 	print >>sys.stderr,"* ", " ".join(msg)
     return
 
-
 def show_tree(t, style=None, tree_properties=None):
     """ Interactively shows a tree."""
     global _QApp
@@ -114,8 +113,7 @@ def show_tree(t, style=None, tree_properties=None):
         elif t.__class__ == ClusterTree:
             style = "large"
         else:
-            style = "basic"
-        
+	    style = "basic"
   
     if not _QApp:
         _QApp = QtGui.QApplication(["ETE"])
@@ -412,11 +410,12 @@ class _MainApp(QtGui.QMainWindow):
 	    imgName = str(F.selectedFiles()[0])
 	    if not imgName.endswith(".pdf"):
 		imgName += ".pdf"
-	    self.scene.save(500,500,imgName)
+	    self.scene.save(imgName)
 
     # Not linked yet
     @QtCore.pyqtSignature("")
     def on_actionSave_region_triggered(self):
+	return
 	F = QtGui.QFileDialog(self)
 	if F.exec_():
 	    imgName = str(F.selectedFiles()[0])
@@ -708,6 +707,11 @@ class _NodeItem(QtGui.QGraphicsRectItem):
 	    p.drawEllipse(self.rect())
 	elif self.node.img_style["shape"] == "square":
 	    p.fillRect(self.rect(),QtGui.QBrush(QtGui.QColor(self.node.img_style["fgcolor"])))
+	elif self.node.img_style["shape"] == "circle":
+	    p.setBrush(QtGui.QBrush(QtGui.QColor(self.node.img_style["fgcolor"])))
+	    p.setPen(QtGui.QPen(QtGui.QColor(self.node.img_style["fgcolor"])))
+	    p.drawEllipse(self.rect())
+
 
     def hoverEnterEvent (self,e):
 	R = self.node.fullRegion.getRect()
@@ -1079,7 +1083,7 @@ class _TreeScene(QtGui.QGraphicsScene):
 
 	# auto adjust size
 	if w is None and h is None:
-	    w = dpi * 7
+	    w = dpi * 6.4
 	    h = w * aspect_ratio
 	elif h is None: 
 	    h = w * aspect_ratio
@@ -1325,15 +1329,15 @@ class _TreeScene(QtGui.QGraphicsScene):
             max_aligned_w += aligned_f_w
             max_w += stack_w
             max_h = numpy.max([aligned_f_h, stack_h, max_h])
-
+	max_w +=1
         # Updates the max width spend by aligned faces
         if max_aligned_w > self.max_w_aligned_face:
             self.max_w_aligned_face = max_aligned_w
             
-        # Dist a and faces region
+        # Dist and faces region
         node.facesRegion = QtCore.QRectF(0,0,max_w,max_h)
-        w = node.dist_xoffset + max_w + node.img_style["size"] 
-        h = max(max_h, min_node_height, self.props.min_branch_separation)
+        w = node.dist_xoffset + max_w + node.img_style["size"]
+        h = max(max_h, min_node_height, self.props.min_branch_separation) + node.img_style["ymargin"]*2
 	if self.min_real_branch_separation < h:
 	    self.min_real_branch_separation = h
 
@@ -1352,6 +1356,7 @@ class _TreeScene(QtGui.QGraphicsScene):
 	    # algorithm to draw child 'y_correction" pixels bellow the
 	    # expected position.
 	    node._y_correction = 0 
+	    start2 = 0
 	    for ch in node.children:
 		# Updates the max width used by childs
 		if ch.fullRegion.width()>max_child_w:
@@ -1384,13 +1389,11 @@ class _TreeScene(QtGui.QGraphicsScene):
 	    if above < (h/2):
 		newh = sum_child_h + ((h/2.0) - above) 
 		node._y_correction = ((h/2.0) - above) 
-		node.add_feature("_add_above", float((h/2) - above))
 	    if bellow < h/2:
 		if newh >0:
 		    newh +=  ((h/2.0) - bellow)
 		else:
 		    newh = sum_child_h + ((h/2) - bellow)
-		    node.add_feature("_add_bellow", float((h/2.0) - bellow))
 
 	    # If current node faces do not exceed the sum of child
 	    # heights, then current node height is the sum of child
@@ -1412,9 +1415,6 @@ class _TreeScene(QtGui.QGraphicsScene):
 	node.fullRegion = QtCore.QRectF(0,0,w,h)   
 
         # Sets the total room needed for this node
-	node.add_feature("_height", int(node.fullRegion.height()))
-	node.add_feature("_y_correction", float(node._y_correction))
-
         return node.fullRegion
 
     def rotate_node(self,node,angle,x=None,y=None):
@@ -1490,7 +1490,6 @@ class _TreeScene(QtGui.QGraphicsScene):
                 next_y += ch.fullRegion.height()
 	    
             node._centered_y = ((node.children[0]._centered_y + node.children[-1]._centered_y)/2)
-	    node.add_feature("_center2", float(node._centered_y-next_y))
             # Draw an internal node. Take global pos. 
 
             # Place node at the correct pos in Scene
@@ -1623,6 +1622,7 @@ class _TreeScene(QtGui.QGraphicsScene):
 		f, aligned, pixmap = face
 		if aligned and not node.is_leaf():
 		    continue
+		# Sets the face's working node 
 		f.node = node
                 # add each face of this stack into the correct position. 
                 if node.is_leaf() and aligned:
@@ -1630,17 +1630,18 @@ class _TreeScene(QtGui.QGraphicsScene):
                 else:
 		    start_y = cumulated_y - (stack_h/2) +r #+ f.ymargin
 
-
-
-
                 # If face is text type, add it as an QGraphicsTextItem
                 if f.type == "text":
 		    obj = _TextItem(f, node, f.get_text())
-                    obj.setParentItem(node._QtItem_)
+		    obj.setFont(f.font)
                     obj.setBrush(QtGui.QBrush(f.fgcolor))
-                    obj.setFont(f.font)
+                    obj.setParentItem(node._QtItem_)
 		    obj.setAcceptsHoverEvents(True)
-#		    start_y += f._height()
+		    # Marks the y starting point
+		    # start_y -= f._height()/2
+		    # obj2 = QtGui.QGraphicsEllipseItem(0,0,1,1)
+                    # obj2.setBrush(QtGui.QBrush(QtGui.QColor("red")))
+                    # obj2.setParentItem(obj)
                 else:
 		    # Loads the pre-generated pixmap
                     obj = _FaceItem(f, node, pixmap)
