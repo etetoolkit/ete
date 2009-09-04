@@ -27,10 +27,6 @@ import random
 import sys
 import numpy
 
-# With this, I make sure that I'm testing the devel branch
-sys.path.insert(0, "../")
-
-
 from ete_dev import *
 from ete_dev.coretype.tree import asRphylo, asETE
 
@@ -917,7 +913,7 @@ class Test_ClusterTree(unittest.TestCase):
 	print node.intracluster_dist
 	print node.intercluster_dist
 	
-	from ete2.clustering import clustvalidation 
+	from ete_dev.clustering import clustvalidation 
 	c1 = t.get_common_ancestor("A", "B")
 	c2 = t.get_common_ancestor("C", "D", "E")
 	c3 = t.get_common_ancestor("F", "G", "H")

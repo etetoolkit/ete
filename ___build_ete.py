@@ -89,20 +89,20 @@ def ask_path(string, default_path):
 #Creates a release clone
 RELEASES_BASE_PATH = "/tmp"
 BRANCH_NAME = "2.0"
-RELEASE_NAME = BRANCH_NAME+"rev"+commands.getoutput("git log --pretty=format:'' | wc -l").strip()
+VERSION = BRANCH_NAME+"rev"+commands.getoutput("git log --pretty=format:'' | wc -l").strip()
 MODULE_NAME = "ete2"
+RELEASE_NAME = "ete"+VERSION
 RELEASE_PATH = os.path.join(RELEASES_BASE_PATH, RELEASE_NAME)
 RELEASE_MODULE_PATH = os.path.join(RELEASE_PATH, "ete2")
 DOC_PATH = os.path.join(RELEASE_PATH, "doc")
 
 print "================================="
 print
+print "VERSION", VERSION
 print "RELEASE:", RELEASE_NAME
 print "RELEASE_PATH:", RELEASE_PATH
 print
 print "================================="
-
-
 
 if os.path.exists(RELEASE_PATH):
     print RELEASE_PATH, "exists"
@@ -116,22 +116,39 @@ if os.path.exists(RELEASE_PATH):
 print "Creating a repository clone in ", RELEASE_PATH
 _ex("git clone . %s" %RELEASE_PATH)
 
-# Correct imports. I use ete_dev for development, but ete2 is the
-# correct name for stable releases
-print "*** Fixing imports..."
-_ex('find %s -name \'*.py\'| xargs perl -e "s/from ete_dev/from %s/g" -p -i' %\
-	      (RELEASE_PATH, MODULE_NAME) )
-
 
 # Set VERSION in all modules
 print "*** Setting VERSION in all python files"
-_ex('find %s -name \'*.py\' |xargs sed "1 i __VERSION__=\"%s\""  -i' %\
+_ex('find %s -name \'*.py\' |xargs sed "1 i __VERSION__=\"%s\"  -i' %\
 	      (RELEASE_MODULE_PATH, RELEASE_NAME))
+
+# Set VERSION in all modules
+print "*** Generating VERSION file"
+_ex('echo %s > %s/VERSION' %\
+	      (VERSION, RELEASE_PATH))
+
 
 # Check LICENSE disclamer and add it or modify it if necessary 
 print  "*** Setting LICENSE in all python files"
 _ex('find %s -name \'*.py\' -exec  python ___put_disclamer.py {} \;' %\
 	(RELEASE_MODULE_PATH))
+
+# Correct imports. I use ete_dev for development, but ete2 is the
+# correct name for stable releases. First I install the module using a
+# different name just to test it
+print "*** Fixing imports..."
+_ex('find %s -name \'*.py\'| xargs perl -e "s/from ete_dev/from ete2_test/g" -p -i' %\
+	      (RELEASE_PATH) )
+
+_ex('mv %s %s/ete_test' %(RELEASE_MODULE_PATH, RELEASE_PATH))
+_ex('cd %s; python setup.py build' %(RELEASE_PATH))
+
+_ex('export PYTHONPATH="%s/build/lib/"; python %s/unittest/test_all.py' %\
+	      (RELEASE_PATH, RELEASE_PATH))
+
+sys.exit()
+_ex('find %s -name \'*.py\'| xargs perl -e "s/from ete_dev/from %s/g" -p -i' %\
+	      (RELEASE_PATH, MODULE_NAME) )
 
 sys.exit()
 # Unitests ---> Search for problems
