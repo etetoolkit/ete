@@ -12,7 +12,8 @@ species2age = {'Aga': 8, 'Ago': 9, 'Ame': 8, 'Ath': 10, 'Bta': 3, 'Cal': 9, 'Cbr
 	     'Ncr': 9, 'Pfa': 10, 'Pte': 10, 'Ptr': 2, 'Pyo': 10, 'Rno': 3, 'Sce': 9,\
 	     'Spb': 9, 'Tni': 6, 'Xtr': 5, 'Yli': 9 	 } 
 # Iterator over each sequence in the human proteme
-for seqid in p.get_seed_ids(PHYLOME_ID):
+for i, seqid in enumerate(p.get_seed_ids(PHYLOME_ID)): 
+    if i>2: break # Just process the first 2 ids
     winner_model, lks, t = p.get_best_tree(seqid, PHYLOME_ID)
     # If tree was sucsesfully reconstructed, runs the species overalp algorithm
     if t and seqid in t:

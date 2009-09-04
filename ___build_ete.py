@@ -7,9 +7,17 @@ import commands
 from optparse import OptionParser
 
 parser = OptionParser()
-parser.add_option("-c", "--chroot", dest="chroot", \
-		      action="store", type="string", default='',\
-		      help="Path to a pre-existent installation of the ete metapackage. Do not create the chroot environment from scratch. It uses the provided path. Useful to just update config or add new users.")
+parser.add_option("-e", "--examples", dest="test_examples", \
+		      action="store_true", \
+		      help="Test tutorial examples before building package")
+
+parser.add_option("-u", "--unitest", dest="unitest", \
+		      action="store_true", \
+		      help="Runs all unitests before building package")
+
+parser.add_option("-d", "--doc", dest="doc", \
+		      action="store_true", \
+		      help="Generates documentation files")
 
 parser.add_option("-v", "--verbose", dest="verbose", \
 		      action="store_true", \
@@ -18,7 +26,6 @@ parser.add_option("-v", "--verbose", dest="verbose", \
 parser.add_option("-q", "--quite", dest="simulate", \
 		      action="store_true", \
 		      help="Do not actually do anything. ")
-
 
 (options, args) = parser.parse_args()
 
@@ -50,11 +57,15 @@ def print_in_columns(header, *values):
     for i in xrange(nrows):
 	print '\t'.join([str(get(i,list(l))).ljust(c2longest[c]) for c,l in enumerate(values)])
 
-def _ex(cmd):
+def _ex(cmd, interrupt=True):
     if options.verbose or options.simulate: 
 	print "***", cmd
     if not options.simulate:
-	return  os.system(cmd)
+	s = os.system(cmd)
+	if s != 0 and interrupt:
+	    sys.exit(s)
+	else:
+	    return s
     else:
 	return 0
 
@@ -119,7 +130,7 @@ _ex("git clone . %s" %RELEASE_PATH)
 
 # Set VERSION in all modules
 print "*** Setting VERSION in all python files"
-_ex('find %s -name \'*.py\' |xargs sed "1 i __VERSION__=\"%s\"  -i' %\
+_ex('find %s -name \'*.py\' |xargs sed \'1 i __VERSION__=\"%s\" \' -i' %\
 	      (RELEASE_MODULE_PATH, RELEASE_NAME))
 
 # Set VERSION in all modules
@@ -133,6 +144,8 @@ print  "*** Setting LICENSE in all python files"
 _ex('find %s -name \'*.py\' -exec  python ___put_disclamer.py {} \;' %\
 	(RELEASE_MODULE_PATH))
 
+
+
 # Correct imports. I use ete_dev for development, but ete2 is the
 # correct name for stable releases. First I install the module using a
 # different name just to test it
@@ -140,24 +153,92 @@ print "*** Fixing imports..."
 _ex('find %s -name \'*.py\'| xargs perl -e "s/from ete_dev/from ete2_test/g" -p -i' %\
 	      (RELEASE_PATH) )
 
-_ex('mv %s %s/ete_test' %(RELEASE_MODULE_PATH, RELEASE_PATH))
+_ex('mv %s %s/ete2_test' %(RELEASE_MODULE_PATH, RELEASE_PATH))
 _ex('cd %s; python setup.py build' %(RELEASE_PATH))
 
-_ex('export PYTHONPATH="%s/build/lib/"; python %s/unittest/test_all.py' %\
-	      (RELEASE_PATH, RELEASE_PATH))
+if options.unitest:
+    _ex('export PYTHONPATH="%s/build/lib/"; python %s/unittest/test_all.py' %\
+	    (RELEASE_PATH, RELEASE_PATH))
 
-sys.exit()
-_ex('find %s -name \'*.py\'| xargs perl -e "s/from ete_dev/from %s/g" -p -i' %\
+if options.test_examples:
+    # Check tutorial examples
+    for filename in os.listdir("%s/doc/tutorial/examples/" %RELEASE_PATH):
+	error_examples = []
+	if filename.endswith(".py"):
+	    print "Testing", filename
+	    s = _ex('export PYTHONPATH="%s/build/lib/"; python %s/doc/tutorial/examples/%s;' %\
+		    (RELEASE_PATH, RELEASE_PATH, filename), interrupt=False)
+	    if s != 0:
+		error_examples.append(filename)
+    print len(error_examples), "examples caused problems", error_examples
+
+
+# Re-establish module name
+_ex('mv %s/ete2_test %s' %(RELEASE_PATH, RELEASE_MODULE_PATH))
+_ex('find %s -name \'*.py\'| xargs perl -e "s/from ete2_test/from %s/g" -p -i' %\
 	      (RELEASE_PATH, MODULE_NAME) )
-
-sys.exit()
-# Unitests ---> Search for problems
-print "*** Running unittest..."
-# python $OUTPATH/unittest/test_all.py
+_ex('cd %s; python setup.py build' %(RELEASE_PATH))
 
 # Generate reference guide 
-print "*** Creating reference guide"
-_ex("epydoc %s -n %s  --inheritance grouped --name ete2 -o %s/reference_guide/" %\
-	      (RELEASE_NAME, DOC_PATH))
+if options.doc:
+    print "*** Creating reference guide"
+    _ex('export PYTHONPATH="%s/build/lib/"; epydoc %s -n %s --exclude PyQt4  --inheritance grouped --name ete2 -o %s/doc/%s_html' %\
+		  (RELEASE_PATH, RELEASE_MODULE_PATH, RELEASE_NAME, RELEASE_PATH, RELEASE_NAME))
+    _ex('export PYTHONPATH="%s/build/lib/"; epydoc %s -n %s  --exclude PyQt4 --pdf --inheritance grouped --name ete2 -o %s/doc/latex_guide' %\
+		  (RELEASE_PATH, RELEASE_MODULE_PATH, RELEASE_NAME, RELEASE_PATH))
+    _ex("cp %s/doc/latex_guide/api.pdf %s/doc/%s.pdf " %\
+		  (RELEASE_PATH, RELEASE_PATH, RELEASE_NAME))
+
+    print "*** Generating tutorial PDF..."
+    _ex("cd %s/doc/tutorial/; lyx ete_tutorial.lyx -e pdf2" %\
+	     (RELEASE_PATH) )
+    _ex("cp %s/doc/tutorial/ete_tutorial.pdf %s/doc/%s_tutorial.pdf " %\
+		  (RELEASE_PATH, RELEASE_PATH, RELEASE_NAME))
+
+    # Clean intermediate files
+    _ex("rm %s/doc/latex_guide -r" %\
+	    (RELEASE_PATH))
+    _ex("rm %s/doc/tutorial -r" %\
+	    (RELEASE_PATH))
 
 
+# Clean from internal files
+_ex("rm %s/.git -r" %\
+	(RELEASE_PATH))
+_ex('rm %s/build/ -r' %(RELEASE_PATH))
+_ex('rm %s/___* -r' %(RELEASE_PATH))
+
+# Creates tar ball
+print "Creating tar gz.."
+_ex('cd %s/..; tar -zcf %s.tgz %s/' %\
+	(RELEASE_PATH, RELEASE_NAME, RELEASE_NAME))
+
+#echo "Copy reference guide to cgenomics server? [y|n]"
+#read COPY
+#if [ $COPY = 'y' ]; then
+#    echo "*** Copying reference guide... "
+#    scp $OUTPATH/doc/html/* jhuerta@cgenomics:/home/services/web/ete.cgenomics.org/reference_ete2/
+#fi
+# 
+#echo "Copy pkg. to cgenomics server? [y|n]"
+#read COPY
+#if [ $COPY = 'y' ]; then
+#    echo "*** Copying package to main server... "
+#    scp releases/$PKG_NAME.tgz jhuerta@cgenomics:/home/services/web/ete.cgenomics.org/releases/ete2/
+#    ssh cgenomics  'cd /home/services/web/ete.cgenomics.org/releases/ete2/; sh update_downloads.sh'
+#fi
+# 
+#echo "Update meta-pkg installation? [y|n]"
+#read COPY
+#if [ $COPY = 'y' ]; then
+#    echo "*** updating in chrootr... "
+#    sudo chroot etepkg_CheckBeforeRm /usr/bin/easy_install -f http://ete.cgenomics.org/releases/ete2 ete  
+#fi
+# 
+# 
+#echo "Regenerate ETE meta-pkg installation pkg? [y|n]"
+#read COPY
+#if [ $COPY = 'y' ]; then
+#    create_metapkg.sh
+#fi
+# 
