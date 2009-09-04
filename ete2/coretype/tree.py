@@ -920,7 +920,7 @@ class TreeNode(object):
     PyCogent GPL project.
     """
 
-    LEN = 10
+    LEN = 5
     PAD = ' ' * LEN
     PA = ' ' * (LEN-1)
     if not self.is_leaf():
