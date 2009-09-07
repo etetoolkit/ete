@@ -98,8 +98,14 @@ def ask_path(string, default_path):
 #Check repo is commited
 
 #Creates a release clone
-RELEASES_BASE_PATH = "/tmp"
 BRANCH_NAME = "2.0"
+SERVER="jhuerta@cgenomics"
+SERVER_RELEASES_PATH = "/home/services/web/ete.cgenomics.org/releases/ete2"
+SERVER_DOC_PATH = "/home/services/web/ete.cgenomics.org/releases/ete2/doc"
+SERVER_METAPKG_PATH = "/home/services/web/ete.cgenomics.org/releases/ete2/metapkg"
+METAPKG_JAIL_PATH = "/home/jhuerta/_Devel/ete_metapackage/ete_CheckBeforeRm"
+METAPKG_PATH = "/home/jhuerta/_Devel/ete_metapackage"
+RELEASES_BASE_PATH = "/tmp"
 VERSION = BRANCH_NAME+"rev"+commands.getoutput("git log --pretty=format:'' | wc -l").strip()
 MODULE_NAME = "ete2"
 RELEASE_NAME = "ete"+VERSION
@@ -192,7 +198,14 @@ if options.doc:
     print "*** Generating tutorial PDF..."
     _ex("cd %s/doc/tutorial/; lyx ete_tutorial.lyx -e pdf2" %\
 	     (RELEASE_PATH) )
+
+    _ex("cd %s/doc/tutorial/; tar -zcf ete_tutorial_examples.tar.gz examples/*.py;" %\
+	     (RELEASE_PATH) )
+
     _ex("cp %s/doc/tutorial/ete_tutorial.pdf %s/doc/%s_tutorial.pdf " %\
+		  (RELEASE_PATH, RELEASE_PATH, RELEASE_NAME))
+
+    _ex("cp %s/doc/tutorial/ete_tutorial_examples.tar.gz %s/doc/%s_tutorial_examples.tar.gz " %\
 		  (RELEASE_PATH, RELEASE_PATH, RELEASE_NAME))
 
     # Clean intermediate files
@@ -210,35 +223,43 @@ _ex('rm %s/___* -r' %(RELEASE_PATH))
 
 # Creates tar ball
 print "Creating tar gz.."
-_ex('cd %s/..; tar -zcf %s.tgz %s/' %\
+_ex('cd %s/..; tar -zcf %s.tar.gz %s/' %\
 	(RELEASE_PATH, RELEASE_NAME, RELEASE_NAME))
 
-#echo "Copy reference guide to cgenomics server? [y|n]"
-#read COPY
-#if [ $COPY = 'y' ]; then
-#    echo "*** Copying reference guide... "
-#    scp $OUTPATH/doc/html/* jhuerta@cgenomics:/home/services/web/ete.cgenomics.org/reference_ete2/
-#fi
-# 
-#echo "Copy pkg. to cgenomics server? [y|n]"
-#read COPY
-#if [ $COPY = 'y' ]; then
-#    echo "*** Copying package to main server... "
-#    scp releases/$PKG_NAME.tgz jhuerta@cgenomics:/home/services/web/ete.cgenomics.org/releases/ete2/
-#    ssh cgenomics  'cd /home/services/web/ete.cgenomics.org/releases/ete2/; sh update_downloads.sh'
-#fi
-# 
-#echo "Update meta-pkg installation? [y|n]"
-#read COPY
-#if [ $COPY = 'y' ]; then
-#    echo "*** updating in chrootr... "
-#    sudo chroot etepkg_CheckBeforeRm /usr/bin/easy_install -f http://ete.cgenomics.org/releases/ete2 ete  
-#fi
-# 
-# 
-#echo "Regenerate ETE meta-pkg installation pkg? [y|n]"
-#read COPY
-#if [ $COPY = 'y' ]; then
-#    create_metapkg.sh
-#fi
-# 
+release= ask("Copy release to main server?", ["y","n"])
+if release=="y":
+    print "Copying release..."
+    _ex("scp %s/%s.tar.gz %s" %\
+	    (RELEASES_BASE_PATH, RELEASE_NAME, SERVER+":"+SERVER_RELEASES_PATH))
+    print "Updating releases table..."
+    _ex("ssh %s 'cd %s; sh update_downloads.sh'" %(SERVER, SERVER_RELEASES_PATH))
+
+if options.doc:
+    copydoc= ask("Update documentation?", ["y","n"])
+    if copydoc=="y":
+	print "Copying tutorial..."
+	_ex("scp %s/doc/%s_tutorial.pdf %s/ete_tutorial.pdf" %\
+		(RELEASE_PATH, RELEASE_NAME,  SERVER+":"+SERVER_DOC_PATH))
+	print "Copying tutorial examples..."
+	_ex("scp %s/doc/%s_tutorial_examples.tar.gz %s/ete_tutorial_examples.tar.gz" %(RELEASE_PATH, RELEASE_NAME, SERVER+":"+SERVER_DOC_PATH))
+	print "Copying guide PDF..."
+	_ex("scp %s/doc/%s.pdf %s/ete_guide.pdf" %\
+		(RELEASE_PATH, RELEASE_NAME,  SERVER+":"+SERVER_DOC_PATH))
+	print "Copying guide html..."
+	_ex("rsync -r %s/doc/%s_html/ %s/html/" %\
+		(RELEASE_PATH, RELEASE_NAME, SERVER+":"+SERVER_DOC_PATH))
+
+
+updatemeta= ask("Update metapkg?", ["y","n"])
+if updatemeta=="y":
+    print "Updating metapkg..."
+    _ex("sudo cp -a %s/%s.tar.gz %s/root/" %\
+	    (RELEASES_BASE_PATH, RELEASE_NAME, METAPKG_JAIL_PATH))
+    print "Updating ete in chroot"
+    _ex("sudo chroot %s easy_install /root/%s.tar.gz" %\
+	    (METAPKG_JAIL_PATH, RELEASE_NAME))
+    _ex("cd %s/..; sudo tar -zcf ete_metapkg.tar.gz %s" %\
+	    (METAPKG_PATH, METAPKG_PATH))
+    print "Copying metapkg to main server"
+    _ex("scp %s/../ete_metapkg.tar.gz %s" %\
+	    (METAPKG_PATH,  SERVER+":"+SERVER_METAPKG_PATH))

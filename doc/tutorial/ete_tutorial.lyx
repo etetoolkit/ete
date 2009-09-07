@@ -285,12 +285,12 @@ target "http://ete.cgenomics.org/"
 
 .
  In addition, examples used in this tutorial and documentation updates can
- be downloed from the same web site.
+ be downloaded from the same web site.
  
 \end_layout
 
 \begin_layout Chapter
-Working With Tree Data Strutures
+Working With Tree Data Structures
 \end_layout
 
 \begin_layout Standard
@@ -421,7 +421,7 @@ When a tree is loaded, a pointer to the top-most node is returned.
  Internal an terminal nodes (all hanging from the master node) represent
  different partitions of the tree, and therefore can be used to access or
  manipulate all the possible sub-trees within a general tree structure.
- Thus, once a tree is loaded, it can be splited in different subparts that
+ Thus, once a tree is loaded, it can be split in different subparts that
  will function as independent trees instances.
  
 \end_layout
@@ -1129,13 +1129,13 @@ Some Basis on ETE's trees
 \begin_layout Standard
 Once loaded into the Environment for Tree Exploration, trees can be manipulated
  as normal python objects.
- Given that a tree is actually a collection of nodes conected in a hierarchical
+ Given that a tree is actually a collection of nodes connected in a hierarchical
  way, what you usually see as a tree will be the root node instance from
  which the tree structure is hanging.
  However, every node within a ETE's tree structure can be also considered
  a subtree.
  This means, for example, that all the operational methods that we will
- review in the following sections are avaiable at any possible level within
+ review in the following sections are available at any possible level within
  a tree.
  Moreover, this feature will allow you to separate large trees into smaller
  partitions, or concatenate several trees into a single structure.
@@ -1498,8 +1498,8 @@ end{CodeEnv}
 \end_layout
 
 \begin_layout Standard
-A limitation of this method is that you cannot use complex conditional statments
- to find specific nodes.
+A limitation of this method is that you cannot use complex conditional statement
+s to find specific nodes.
  However you can user traversing methods to meet your custom filters.
  A possible general strategy would look like this:
 \end_layout
@@ -1674,8 +1674,8 @@ iter_search_nodes()
 \series default
  will return one match in each iteration.
  In practice, this makes no differences in the final result, but it may
- increase the performance of loop funcions (i.e.
- in case of finding a match which interrups the loop).
+ increase the performance of loop functions (i.e.
+ in case of finding a match which interrupts the loop).
 \end_layout
 
 \begin_layout Standard
@@ -1733,7 +1733,7 @@ Although newick standard was only thought to contain branch lengths and
  Extra information can be regarded as a single numeric value, a text label
  or even as a reference to a more complex python structure (i.e.
  lists, dictionaries or any other python object).
- Thus, for example, with ETE it is possible to have fully anotated trees.
+ Thus, for example, with ETE it is possible to have fully annotated trees.
  The methods 
 \series bold
 add feature()
@@ -1746,7 +1746,7 @@ add feature()
 \series bold
  del_feature()
 \series default
- are preared to handle the task of adding and deleting information to a
+ are prepared to handle the task of adding and deleting information to a
  given node.
  
 \end_layout
@@ -1799,8 +1799,8 @@ end{CodeEnv}
 \end_layout
 
 \begin_layout Standard
-Unfortunatelly, newick format does not support adding extra features to
- a tree.
+Unfortunately, newick format does not support adding extra features to a
+ tree.
  Because of this drawback, several improved formats haven been (or are being)
  developed to read and write tree based information.
  Some of these new formats are based in a completely new standard (PhyloXML,
@@ -1851,14 +1851,14 @@ add_feature()
 \end_inset
 
  method.
- Consecuently, you can access the information by using the normal ETE's
+ Consequently, you can access the information by using the normal ETE's
  feature notation: 
 \series bold
 node.featurename
 \series default
 .
- Similarily, features added to a tree can be included within the normal
- newick representation using the NHX notation.
+ Similarly, features added to a tree can be included within the normal newick
+ representation using the NHX notation.
  For this, you can call the 
 \series bold
 write() 
@@ -2141,9 +2141,9 @@ method using another tree node as a first argument.
  two structures.
  But caution!!, this kind of operations may result into circular tree structures
  if add an node's ancestor as a new node's child.
- Some basic checks are internally perfomed by the ETE topology related methods,
- however, a fully qualified check of this issue would affect seriosly to
- the performance of the program.
+ Some basic checks are internally performed by the ETE topology related
+ methods, however, a fully qualified check of this issue would affect seriously
+ to the performance of the program.
  For this reason, users should take care about not creating circular structures
  by mistake.
  
@@ -2203,8 +2203,8 @@ Tree rooting is understood as the technique by with a given tree is conceptually
  of trees, since it will determine the evolutionary relationships among
  the species involved.
  The concept of rooted trees is different than just having a root node,
- which is always necesary to handle a tree data structure.
- Usually, the way in which a tree is differenciated between rooted and unrooted,
+ which is always necessary to handle a tree data structure.
+ Usually, the way in which a tree is differentiated between rooted and unrooted,
  is by counting the number of branches of the current root node.
  Thus, if the root node has more than two child branches, the tree is considered
  unrooted.
@@ -2240,7 +2240,7 @@ In order to root an unrooted tree or re-root a tree structure, ETE implements
 set_outgroup()
 \series default
  method, which is present in any tree node instance.
- Similarily, the 
+ Similarly, the 
 \series bold
 unroot()
 \series default
@@ -2337,7 +2337,7 @@ The branch length between one node an its parent is encoded as the
 \series bold
 node.dist
 \series default
- atrribute.
+ attribute.
  Together with tree topology, branch lengths define the relationships among
  nodes.
  
@@ -2370,7 +2370,7 @@ get_farthest_node()
  tree structure.
  Alternatively, 
 \series bold
-get_fasthest_leaf()
+get_farthest_leaf()
 \series default
  will return the most distant descendant (always a leaf).
  If more than one node matches the farthest distance, the first occurrence
@@ -2570,7 +2570,7 @@ ETE's tree drawing engine is fully integrated with a built-in graphical
  Thus, ETE allows to render tree structures directly on an interactive interface
  that can be used to explore and manipulate trees node's properties and
  topology.
- The GUI is based on Qt4 , a cross plattaform and open source application
+ The GUI is based on Qt4 , a cross platform and open source application
  and UI framework which allows to handle, virtually, images of any size.
  Of course, this will depend on you computer and graphical card performance.
 \end_layout
@@ -2695,8 +2695,8 @@ name "fig:GUI tree manipulation"
 \end_layout
 
 \begin_layout Standard
-The GUI allow many opertations to be performed graphically, however it does
- not implement all the posibilities of the programming toolkit.
+The GUI allow many operations to be performed graphically, however it does
+ not implement all the possibilities of the programming toolkit.
  These are some of the allowed GUI options: 
 \end_layout
 
@@ -2704,7 +2704,7 @@ The GUI allow many opertations to be performed graphically, however it does
 \begin_inset Float figure
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \align center
@@ -2739,7 +2739,7 @@ A)
 \series default
  Manipulate tree topology (add/remove nodes, populate partitions, cut and
  paste nodes).
- Browse tree topology (expand and collapsa partitions).
+ Browse tree topology (expand and collapse partitions).
  
 \series bold
 C)
@@ -2760,7 +2760,7 @@ E)
 \series bold
  F) 
 \series default
-Show branch lenghts and support strict tree topology
+Show branch lengths, support values and force strict tree topology
 \series bold
 .
  G) 
@@ -2804,8 +2804,8 @@ render()
 show()
 \series default
 .
- The only requiered argument is the file name, which will determine the
- final format of the file (.pdf or .png).
+ The only required argument is the file name, which will determine the final
+ format of the file (.pdf or .png).
  By default, the resulting image is scaled to 7 inches, approximately the
  width of an A4 paper.
  However, you can change this by setting a custom width and height.
@@ -2887,7 +2887,7 @@ style
 ' is a set of special node attributes that are used by the drawing algorithm
  to set the colours, and general aspect of nodes and branches.
  Styles are internally encoded as python dictionaries.
- Each node has its own style dictionary, which is accesible as 
+ Each node has its own style dictionary, which is accessible as 
 \series bold
 node.img_style
 \series default
@@ -3282,8 +3282,8 @@ The complexity of faces may go from simple text tags to complete plots showing
 \shape italic
 on the fly
 \shape default
-, any way of producing external images could be easly connected to the drawing
- engine.
+, any way of producing external images could be easily connected to the
+ drawing engine.
  For instance, the statistical framework R could be used to analyze a given
  node's property, and to generate a plot that can be used as a node's face.
  
@@ -3475,13 +3475,13 @@ argument
 \series bold
  
 \series default
-when caling the 
+when calling the 
 \series bold
 add_face_to_node()
 \series default
  method.
- By knowing this rules, you can eassly fill virtual node grids with any
- external image or text label and the algorithm will take care of possitioning.
+ By knowing this rules, you can easily fill virtual node grids with any
+ external image or text label and the algorithm will take care of positioning.
  Note that
 \series bold
  add_face_to_node()
@@ -3510,7 +3510,7 @@ status collapsed
 \begin_inset Caption
 
 \begin_layout Plain Layout
-Scheme of node's faces possitioning.
+Scheme of node's faces positioning.
  Green boxes represent non-aligned faces.
  Red boxes are aligned faces (only applicable for terminal nodes)
 \begin_inset CommandInset label
@@ -3548,7 +3548,7 @@ Layout functions
  are the key component of the tree drawing customization.
  Any python function accepting a node instance as a first argument can be
  used as a layout function.
- Essentialy, such function will be called just before drawing each tree
+ Essentially, such function will be called just before drawing each tree
  node, so you can use it perform any operation prior to render nodes.
  In practice, layout functions are used to define the set of rules that
  control nodes style attributes and the faces that will be linked to them.
@@ -3889,8 +3889,8 @@ alg_format
 Unaligned Sequences
 \series default
 , you may also associate sequences of different lengths with tree nodes.
- Alternatively to this method, MSAs can be directly pased to the PhyloTree
- construtor and sequences will be automatically linked with terminal nodes:
+ Alternatively to this method, MSAs can be directly passed to the PhyloTree
+ constructor and sequences will be automatically linked with terminal nodes:
  i.e.) 
 \series bold
 PhyloTree(
@@ -4235,8 +4235,8 @@ name "sec:Using-Taxonomic-Data"
 PhyloTree instances allow to deal with leaf names and species names separately.
  This is useful when working with molecular phylogenies, in which leaves
  are usually encoded using sequence names but species names.
- You could easly solve this by annotating each terminal node according to
- its originary species.
+ You could easily solve this by annotating each terminal node according
+ to its source species.
  However, PhyloTree instances can automatically deal with this issue.
  Thus, when a phylogenetic tree is loaded, species names (codes, key names
  or fingerprints) are automatically derived from the 
@@ -4294,7 +4294,7 @@ parts of the tree.
 \end_layout
 
 \begin_layout Standard
-In both cases, posible values are 
+In both cases, possible values are 
 \series bold
 None 
 \series default
@@ -4362,7 +4362,7 @@ Nodes in molecular phylogenies can be interpreted as evolutionary events.
  They can represent the duplication of an ancestral sequence or the speciation
  event that separated the evolution of two ancestral sequences.
  In any case, because nodes represent ancestral events, they can be located
- at a given momment in the evolution.
+ at a given moment in the evolution.
  This is, we can date evolutionary events.
  
 \end_layout
@@ -4391,8 +4391,8 @@ Jaime Huerta-Cepas and Toni Gabaldon, 2009, submmited
 In brief, the relative age of any evolutionary event can be established
  by detecting the oldest taxonomic group affected by such event.
  Given that in phylogenies nodes are events, this is something that can
- be easly evaluated by looking at the species under each node.
- Althouth this task can be done manually, ETE implements a method to automatize
+ be easily evaluated by looking at the species under each node.
+ Although this task can be done manually, ETE implements a method to automatize
  the process.
  Thus, by defining a python dictionary containing the conversion between
  
@@ -4416,7 +4416,7 @@ method, found in every node, can be used to this end.
 \end_layout
 
 \begin_layout LyX-Code
-# We consider only the following taxonomic levles
+# We consider only the following taxonomic levels
 \end_layout
 
 \begin_layout LyX-Code
@@ -4538,7 +4538,7 @@ Takifugu
 \begin_layout Standard
 In which each number refers to a taxonomic group, and older taxonomic groups
  have higher values.
- Then, any internal node could be easly mapped to an evolutionary period
+ Then, any internal node could be easily mapped to an evolutionary period
  by executing: 
 \series bold
 node.get_date(vertebrates_taxa_levels)
@@ -4643,7 +4643,7 @@ get_farthest_oldest_leaf()
 
 \begin_layout Plain Layout
 must be passed as single argument.
- Age conversion dictionary has only to containg the relative age of species.
+ Age conversion dictionary has only to containing the relative age of species.
  
 \end_layout
 
@@ -4745,7 +4745,7 @@ L
  (lost linage)
 \series default
 .
- Additionaly, a list of all the detected events is returned.
+ Additionally, a list of all the detected events is returned.
  Each event is a python object of type 
 \series bold
 EvolEvent
@@ -4832,7 +4832,7 @@ to
  out_seqs
 \family default
 .
- Similarily, if an event represents a speciation, 
+ Similarly, if an event represents a speciation, 
 \family typewriter
 in_seqs
 \series bold
@@ -4937,7 +4937,7 @@ Tree reconciliation algorithm uses a predefined species tree to infer the
 \series bold
 node.reconcile()
 \series default
- method, which requieres a species tree as its first argument.
+ method, which requires a species tree as its first argument.
  The species tree (another PhyloTree instance) must contain the topology
  of the species represented in the gene tree.
  Moreover, leaf names in the species tree must match the species names in
@@ -5064,8 +5064,8 @@ status collapsed
 \begin_inset Caption
 
 \begin_layout Plain Layout
-A reconcilied tree showing duplication events (blue nodes), speciation (red
- nodes), gene losses (grey dashed lines) and the original sequences used
+A reconciled tree showing duplication events (blue nodes), speciation (red
+ nodes), gene losses (gray dashed lines) and the original sequences used
  to reconstruct the phylogeny.
 \end_layout
 
@@ -5128,7 +5128,7 @@ text_arraytable
  argument of PhyloTree constructor.
  Once this is done, the 
 \series bold
-node.profile, node.deviation, node.silhoutte, node.dunn, node.intracluster_dist
+node.profile, node.deviation, node.silhouette, node.dunn, node.intracluster_dist
  and node.intercluster_dist
 \series default
  attributes will are automatically available.
@@ -5142,7 +5142,7 @@ get_leaf_profiles()
 \series default
 , 
 \series bold
-get_silhoutte()
+get_silhouette()
 \series default
  and 
 \series bold
@@ -5306,7 +5306,7 @@ Performing a Cluster Validation Analysis
 \end_layout
 
 \begin_layout Standard
-If associted matrix represents the dataset used to produce a given tree,
+If associated matrix represents the dataset used to produce a given tree,
  clustering validation values can be used to assess the quality of partitions.
  To do so, you will need to set the distance function that was used to calculate
  distances among items (leaf nodes).
@@ -5394,9 +5394,9 @@ status collapsed
 
 \begin_layout Plain Layout
 Image resulting from a microarray clustering validation analysis.
- Red bubbles represent a bad silhoutte index (S<0), while green represents
+ Red bubbles represent a bad silhouette index (S<0), while green represents
  good silhouette index (S>0).
- Size of bubbles is proportional to the Silhouete index.
+ Size of bubbles is proportional to the Silhouette index.
  Internal nodes are drawn with the average expression profile grouped by
  their partitions.
  Leaf node profiles are shown as a heatmap.
@@ -5448,8 +5448,11 @@ Basis of the phylomeDB API usage
 \begin_layout Standard
 In order to explore the database resources, you have to create a connector
  to the database, which will be used to query it.
- To do so, you must use the PhylomeDBConnector class and specify the parameters
- of the DB connection.
+ To do so, you must use the 
+\series bold
+PhylomeDBConnector
+\series default
+ class and specify the parameters of the DB connection.
 \end_layout
 
 \begin_layout Standard
