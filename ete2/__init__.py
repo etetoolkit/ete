@@ -21,27 +21,28 @@
 #
 # #END_LICENSE#############################################################
 from coretype import *
-from phylo import *
+
+try:
+    from phylo import *
+except ImportError, e: 
+    print "Phylogeny module could not be loaded"
+    print e
 
 try:
     from clustering import *
-except ImportError: 
+except ImportError, e: 
     print "Clustering module could not be loaded."
-    print 
-    print "***" e 
-    print
+    print e
+
 try:
     from phylomedb import *
-except ImportError: 
+except ImportError, e: 
     print "PhylomeDB API could not be loaded."
-    print 
-    print "***" e 
-    print
+    print e
 
 try:
     from treeview import *
-except ImportError: 
+except ImportError, e: 
     print "tree visualization  module could not be loaded."
-    print 
-    print "***" e 
-    print
+    print e 
+

@@ -20,6 +20,10 @@
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
 # #END_LICENSE#############################################################
-from tree import *
-from arraytable import *
 from seqgroup import *
+from tree import *
+try:
+    from arraytable import *
+except ImportError, e:
+    print "Clustering module could not be loaded"
+    print e

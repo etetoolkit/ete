@@ -24,9 +24,12 @@
 # #END_LICENSE#############################################################
 import sys
 import ez_setup
-ez_setup.use_setuptools()
 
-from setuptools import setup, find_packages
+try:
+    from setuptools import setup, find_packages
+except ImportError:
+    ez_setup.use_setuptools()
+    from setuptools import setup, find_packages
 
 python_dependencies = [
     ["numpy", "Numpy is required for the ArrayTable class among others", 0],

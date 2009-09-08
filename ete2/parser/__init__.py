@@ -20,3 +20,13 @@
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
 # #END_LICENSE#############################################################
+from fasta import *
+from newick import *
+from phylip import *
+try: 
+    from text_arraytable import *
+except ImportError, e:
+    print "text_arraytable parser could not be loaded"
+    print e
+  
+

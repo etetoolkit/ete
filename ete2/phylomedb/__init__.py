@@ -87,5 +87,3 @@ _humanv1 = {
 }
 species_ages["human_phylome"] = _humanv1
 
-__version__="1.0rev95-dev"
-__author__="Jaime Huerta-Cepas"
