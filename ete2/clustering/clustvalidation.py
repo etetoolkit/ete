@@ -21,8 +21,12 @@
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
 # #END_LICENSE#############################################################
-import numpy
-from scipy import stats
+import sys
+try:
+    import numpy
+    from scipy import stats
+except ImportError, e:
+    print >>sys.stderr, "Cluster validation module could not be loaded"
 
 def safe_mean(values):
     """ Returns mean value discarding non finite values """

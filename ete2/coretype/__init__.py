@@ -22,8 +22,4 @@
 # #END_LICENSE#############################################################
 from seqgroup import *
 from tree import *
-try:
-    from arraytable import *
-except ImportError, e:
-    print "Clustering module could not be loaded"
-    print e
+from arraytable import *

@@ -40,22 +40,15 @@ PhylomeDBConnector class.
       provides the alignments, phylogentic trees and tree-based
       orthology predictions for every single encoded protein.
 """ 
-
+import sys
 import re
 from string import strip
 
-__all__ = ["PhylomeDBConnector"]
-
 try:
   import MySQLdb
-except ImportError:
-  raise ImportError, \
-      """
-          ===============================================================
-          MySQLdb module is not present.
-          PhylomeDB extension cannot be used without such python package.
-          ===============================================================
-      """
+except ImportError, e:
+  print >>sys.stderr, " MySQLdb module could not be loaded"
+  print e
 
 from ete_dev.phylo import PhyloTree
 

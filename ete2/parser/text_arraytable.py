@@ -25,7 +25,12 @@
 import re
 import sys
 
-import numpy
+try:
+    import numpy
+except ImportError, e:
+    print "arraytable could not be loaded."
+    print e
+
 
 __all__ = ['read_arraytable', 'write_arraytable']
 

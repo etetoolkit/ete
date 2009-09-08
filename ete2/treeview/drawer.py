@@ -29,10 +29,16 @@ import types
 import copy
 import string 
 
-import numpy
-from PyQt4  import QtCore
-from PyQt4  import QtGui 
-from PyQt4.QtGui import QPrinter
+try:
+    import numpy
+    from PyQt4  import QtCore
+    from PyQt4  import QtGui 
+    from PyQt4.QtGui import QPrinter
+    import layouts 
+    import _mainwindow, _search_dialog, _show_newick, _open_newick, _about
+except ImportError, e:
+    print >>sys.stderr,"Treeview module cannot be loaded"
+    print e
 
 try:
     from PyQt4 import QtOpenGL
@@ -44,10 +50,6 @@ except ImportError:
 
 from ete_dev import Tree, PhyloTree, ClusterTree
 DEBUG = 0
-
-import layouts 
-import _mainwindow, _search_dialog, _show_newick, _open_newick, _about
-
 __all__ = ["show_tree", "render_tree", "TreeImageProperties"]
 _QApp = None
 

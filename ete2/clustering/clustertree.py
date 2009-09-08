@@ -22,8 +22,12 @@
 # #END_LICENSE#############################################################
 import sys
 
-from numpy import nan as NaN # Missing values in array are saved as
+try:
+    from numpy import nan as NaN # Missing values in array are saved as
 			     # NaN values
+except ImportError, e: 
+    print >>sys.stderr, "Clustering module could not be loaded"
+    print e
 
 import clustvalidation
 from ete_dev.coretype.tree import _translate_nodes

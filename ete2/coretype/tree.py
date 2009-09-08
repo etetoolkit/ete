@@ -22,13 +22,13 @@
 # #END_LICENSE#############################################################
 import os
 import random
- 
+
+__all__ = ["Tree", "TreeNode"]
+
 from ete_dev.parser.newick import read_newick, write_newick
 
 DEFAULT_COMPACT = False
 DEFAULT_SHOWINTERNAL = False
-
-__all__ = ["Tree", "TreeNode"]
 
 class TreeError(Exception): 
   """Exception class designed for tree."""
