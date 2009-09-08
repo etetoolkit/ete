@@ -20,6 +20,3 @@
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
 # #END_LICENSE#############################################################
-
-__version__="1.0rev95"
-__author__="Jaime Huerta-Cepas"

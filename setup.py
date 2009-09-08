@@ -24,8 +24,9 @@
 # #END_LICENSE#############################################################
 import sys
 import ez_setup
-from setuptools import setup, find_packages
 ez_setup.use_setuptools()
+
+from setuptools import setup, find_packages
 
 python_dependencies = [
     ["numpy", "Numpy is required for the ArrayTable class among others", 0],
@@ -46,16 +47,16 @@ def ask(string,valid_values,default=-1,case_sensitive=False):
     if not case_sensitive:
         valid_values = [value.lower() for value in valid_values]
     while v not in valid_values:
-        v = raw_input("%s [%s]" % (string,l2s(valid_values,sep=",") ))
+        v = raw_input("%s [%s]" % (string,','.join(valid_values)))
         if v == '' and default>=0:
             v = valid_values[default]
         if not case_sensitive:
             v = v.lower()
     return v
 
-
-
-print "ETE (The python Environment for Tree Exploration)."
+print 
+print "Installing ETE (The python Environment for Tree Exploration)."
+print
 print "Checking dependencies..."
 for mname, msg, ex in python_dependencies:
     if not can_import(mname):
@@ -64,7 +65,6 @@ for mname, msg, ex in python_dependencies:
 	con = ask( "Do you want to continue with the installation?", ["y", "n"])
 	if con == "n":
 	    sys.exit()
-
 
 # SETUP
 setup(
@@ -87,7 +87,6 @@ setup(
     description = "A python Environment for Tree Exploration",
     license = "GPLv3",
     keywords = "bioinformatics phylogeny phylogenomics genomics ete tree clustering phylogenetics",
-    url = "http://ete.cgenomics.org",   # project home page, if any
+    url = "http://ete.cgenomics.org",  
 )
-
 

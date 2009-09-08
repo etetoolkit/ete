@@ -15,9 +15,9 @@ parser.add_option("-u", "--unitest", dest="unitest", \
 		      action="store_true", \
 		      help="Runs all unitests before building package")
 
-parser.add_option("-d", "--doc", dest="doc", \
+parser.add_option("-d", "--nodoc", dest="nodoc", \
 		      action="store_true", \
-		      help="Generates documentation files")
+		      help="Skip processing documentation files")
 
 parser.add_option("-v", "--verbose", dest="verbose", \
 		      action="store_true", \
@@ -103,12 +103,12 @@ SERVER="jhuerta@cgenomics"
 SERVER_RELEASES_PATH = "/home/services/web/ete.cgenomics.org/releases/ete2"
 SERVER_DOC_PATH = "/home/services/web/ete.cgenomics.org/releases/ete2/doc"
 SERVER_METAPKG_PATH = "/home/services/web/ete.cgenomics.org/releases/ete2/metapkg"
-METAPKG_JAIL_PATH = "/home/jhuerta/_Devel/ete_metapackage/ete_CheckBeforeRm"
+METAPKG_JAIL_PATH = "/home/jhuerta/_Devel/ete_metapackage/etepkg_CheckBeforeRm"
 METAPKG_PATH = "/home/jhuerta/_Devel/ete_metapackage"
 RELEASES_BASE_PATH = "/tmp"
 VERSION = BRANCH_NAME+"rev"+commands.getoutput("git log --pretty=format:'' | wc -l").strip()
 MODULE_NAME = "ete2"
-RELEASE_NAME = "ete"+VERSION
+RELEASE_NAME = "ete-"+VERSION
 RELEASE_PATH = os.path.join(RELEASES_BASE_PATH, RELEASE_NAME)
 RELEASE_MODULE_PATH = os.path.join(RELEASE_PATH, "ete2")
 DOC_PATH = os.path.join(RELEASE_PATH, "doc")
@@ -186,7 +186,7 @@ _ex('find %s -name \'*.py\'| xargs perl -e "s/from ete2_test/from %s/g" -p -i' %
 _ex('cd %s; python setup.py build' %(RELEASE_PATH))
 
 # Generate reference guide 
-if options.doc:
+if not options.nodoc:
     print "*** Creating reference guide"
     _ex('export PYTHONPATH="%s/build/lib/"; epydoc %s -n %s --exclude PyQt4  --inheritance grouped --name ete2 -o %s/doc/%s_html' %\
 		  (RELEASE_PATH, RELEASE_MODULE_PATH, RELEASE_NAME, RELEASE_PATH, RELEASE_NAME))
@@ -234,7 +234,7 @@ if release=="y":
     print "Updating releases table..."
     _ex("ssh %s 'cd %s; sh update_downloads.sh'" %(SERVER, SERVER_RELEASES_PATH))
 
-if options.doc:
+if not options.nodoc:
     copydoc= ask("Update documentation?", ["y","n"])
     if copydoc=="y":
 	print "Copying tutorial..."
