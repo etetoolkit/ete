@@ -41,7 +41,7 @@ except ImportError, e:
 try:
     from treeview.drawer import *
     from treeview import faces
-    from treeview import layout
+    from treeview import layouts
 except ImportError, e:
   print >>stderr, "Treeview module could not be loaded"
   print e
