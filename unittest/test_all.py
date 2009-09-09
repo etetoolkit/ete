@@ -945,7 +945,7 @@ class Test_R_bindings(unittest.TestCase):
 				    asRphylo(t1), \
 				    asRphylo(t1), \
 				    asRphylo(t2)])
-	t = tree.asETE(CONS)
+	t = asETE(CONS)
 
 if __name__ == '__main__':
     unittest.main()
