@@ -894,26 +894,26 @@ class TreeNode(object):
     """ Begins an interative session to visualize this node
     structure."""
     try:
-        from ete_dev import treeview
+        from ete_dev.treeview import drawer
     except ImportError, e: 
         print "'treeview' module could not be loaded.\n",e
         print "\n\n"
         print self
     else:
-        treeview.show_tree(self,layout,image_properties)
+        drawer.show_tree(self,layout,image_properties)
 
   def render(self, file_name, layout=None, w=None, h=None, \
                      image_properties=None, header=None):
     """ Renders the tree structure into an image file. """
     try:
-        from ete_dev import treeview
+        from ete_dev.treeview import drawer
     except ImportError, e: 
         print "'treeview' module could not be loaded.\n",e
         print "\n\n"
         print self
         print e
     else:
-        treeview.render_tree(self, file_name, w=w, h=h, style=layout, \
+        drawer.render_tree(self, file_name, w=w, h=h, style=layout, \
                                img_properties=image_properties, \
                                header=header)
 
