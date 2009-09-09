@@ -20,16 +20,9 @@
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
 # #END_LICENSE#############################################################
-
-import sys
-try:
-    from PyQt4 import QtCore
-    from PyQt4 import QtGui
-    import numpy
-except ImportError, e: 
-    print >>sys.stderr, "faces module could not be loaded"
-    print e
-
+from PyQt4 import QtCore
+from PyQt4 import QtGui
+import numpy
 
 aafgcolors = {
 'A':"#000000" ,

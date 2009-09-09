@@ -896,7 +896,7 @@ class TreeNode(object):
     try:
         from ete_dev import treeview
     except ImportError, e: 
-        print "'treeview' module could not be loaded.\nThis is the error catched:\n",e
+        print "'treeview' module could not be loaded.\n",e
         print "\n\n"
         print self
     else:
@@ -907,8 +907,11 @@ class TreeNode(object):
     """ Renders the tree structure into an image file. """
     try:
         from ete_dev import treeview
-    except ImportError,e: 
-        print "treeview could not be loaded. Visualization is disabled."
+    except ImportError, e: 
+        print "'treeview' module could not be loaded.\n",e
+        print "\n\n"
+        print self
+        print e
     else:
         treeview.render_tree(self, file_name, w=w, h=h, style=layout, \
                                img_properties=image_properties, \

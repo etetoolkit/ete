@@ -20,13 +20,7 @@
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
 # #END_LICENSE#############################################################
-import sys
-try:
-  import numpy
-except ImportError, e: 
-  print e
-  print >>sys.stderr, "Some layouts will not be available." 
-
+import numpy
 import faces
 
 def basic(node):

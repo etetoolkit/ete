@@ -32,7 +32,7 @@ import re
 
 from ete_dev import TreeNode, SeqGroup
 from reconciliation import get_reconciled_tree
-from spoverlap import *
+import spoverlap
 
 __all__ = ["PhyloNode", "PhyloTree"]
 
@@ -151,7 +151,7 @@ class PhyloNode(TreeNode):
         "The Human Phylome." Huerta-Cepas J, Dopazo H, Dopazo J, Gabaldon
         T. Genome Biol. 2007;8(6):R109.
         """
-	return get_evol_events_from_leaf(self, sos_thr=sos_thr)
+	return spoverlap.get_evol_events_from_leaf(self, sos_thr=sos_thr)
 
     def get_descendant_evol_events(self, sos_thr=0.0):
         """ Returns a list of **all** duplication and speciation
@@ -162,7 +162,7 @@ class PhyloNode(TreeNode):
         "The Human Phylome." Huerta-Cepas J, Dopazo H, Dopazo J, Gabaldon
         T. Genome Biol. 2007;8(6):R109.
         """
-	return get_evol_events_from_root(self, sos_thr=sos_thr)
+	return spoverlap.get_evol_events_from_root(self, sos_thr=sos_thr)
 
     def get_farthest_oldest_leaf(self, species2age):
         """ Returns the farthest oldest leafnode to the current

@@ -20,16 +20,9 @@
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
 # #END_LICENSE#############################################################
-import sys
-
-try:
-    from numpy import nan as NaN # Missing values in array are saved as
-			     # NaN values
-except ImportError, e: 
-    print >>sys.stderr, "Clustering module could not be loaded"
-    print e
-
+from sys import stderr
 import clustvalidation
+from numpy import nan as NaN # Missing values are saved as NaN values
 from ete_dev.coretype.tree import _translate_nodes
 from ete_dev import TreeNode, ArrayTable
 
@@ -161,7 +154,7 @@ class ClusterNode(TreeNode):
 
 
 	if len(missing_leaves)>0:
-	    print >>sys.stderr, \
+	    print >>stderr, \
 		"""[%d] leaf names could not be mapped to the matrix rows.""" %\
 		len(missing_leaves)
 

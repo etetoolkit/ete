@@ -20,7 +20,3 @@
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
 # #END_LICENSE#############################################################
-
-from drawer import *
-from faces import *
-from layouts import *

@@ -23,13 +23,8 @@
 #! /usr/bin/env python
 
 import re
-import sys
-
-try:
-    import numpy
-except ImportError, e:
-    print "arraytable could not be loaded."
-    print e
+from sys import stderr
+import numpy
 
 
 __all__ = ['read_arraytable', 'write_arraytable']
@@ -81,7 +76,7 @@ def read_arraytable(matrix_file, mtype="float", arraytable_object = None):
 		A.colValues[colname] = None
 		A.colNames.append(colname)
 	    if col_dup_flag:
-		print >> sys.stderr, "Duplicated column names were renamed."
+		print >>stderr, "Duplicated column names were renamed."
 
 	# Skip comments
 	elif line[0]=='#': 
@@ -117,7 +112,7 @@ def read_arraytable(matrix_file, mtype="float", arraytable_object = None):
 	    raise ValueError, "Column names are required."
 
     if row_dup_flag:
-	print >> sys.stderr, "Duplicated row names were renamed."
+	print >>stderr, "Duplicated row names were renamed."
 
     # Convert all read lines into a numpy matrix
     vmatrix = numpy.array(temp_matrix).astype(A.mtype)

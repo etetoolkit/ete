@@ -26,14 +26,11 @@ import re
 import math
 from os import path
 
-try:
-    import numpy
-    from scipy import stats
-    from ete_dev.parser.text_arraytable import write_arraytable, read_arraytable
-except ImportError, e:
-    print >>sys.stderr, " ArrayTable could not be loaded."
-    print e
+import numpy
+from scipy import stats
+from ete_dev.parser.text_arraytable import write_arraytable, read_arraytable
 
+__all__ = ["ArrayTable"]
 
 class ArrayTable(object):
     """This object is thought to work with matrix datasets (like

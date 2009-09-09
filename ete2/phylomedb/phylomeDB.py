@@ -40,19 +40,12 @@ PhylomeDBConnector class.
       provides the alignments, phylogentic trees and tree-based
       orthology predictions for every single encoded protein.
 """ 
-import sys
 import re
 from string import strip
-
-try:
-  import MySQLdb
-except ImportError, e:
-  print >>sys.stderr, " MySQLdb module could not be loaded"
-  print e
-
+import MySQLdb
 from ete_dev.phylo import PhyloTree
 
-__all__ = ["PhylomeDBConnector"]
+__all__ = ["PhylomeDBConnector", "ROOTED_PHYLOMES"]
 
 # This dictionary sets the default age dictionary (if any) must be
 # used to root certain phylome trees.

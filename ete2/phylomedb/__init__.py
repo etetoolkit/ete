@@ -21,8 +21,6 @@
 #
 # #END_LICENSE#############################################################
 
-from phylomeDB import *
-
 species_ages = {}
 
 _humanv1 = { 

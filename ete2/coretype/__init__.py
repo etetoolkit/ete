@@ -20,6 +20,3 @@
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
 # #END_LICENSE#############################################################
-from seqgroup import *
-from tree import *
-from arraytable import *

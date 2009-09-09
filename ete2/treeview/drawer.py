@@ -20,7 +20,7 @@
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
 # #END_LICENSE#############################################################
-import sys
+from sys import stderr, stdout
 import time
 import re
 import math
@@ -28,17 +28,12 @@ import random
 import types
 import copy
 import string 
-
-try:
-    import numpy
-    from PyQt4  import QtCore
-    from PyQt4  import QtGui 
-    from PyQt4.QtGui import QPrinter
-    import layouts 
-    import _mainwindow, _search_dialog, _show_newick, _open_newick, _about
-except ImportError, e:
-    print >>sys.stderr,"Treeview module cannot be loaded"
-    print e
+import numpy
+from PyQt4  import QtCore
+from PyQt4  import QtGui 
+from PyQt4.QtGui import QPrinter
+import layouts 
+import _mainwindow, _search_dialog, _show_newick, _open_newick, _about
 
 try:
     from PyQt4 import QtOpenGL
@@ -47,10 +42,11 @@ try:
 except ImportError:
     USE_GL = False
 
-
 from ete_dev import Tree, PhyloTree, ClusterTree
-DEBUG = 0
+
 __all__ = ["show_tree", "render_tree", "TreeImageProperties"]
+
+DEBUG = 0
 _QApp = None
 
 _MIN_NODE_STYLE = {
@@ -89,20 +85,20 @@ def logger(level,*msg):
     msg = map(str, msg)
     # critrical error
     if level == -1:
-        print >>sys.stderr,"* Error:     ", " ".join(msg)
+        print >>stderr,"* Error:     ", " ".join(msg)
     # warning
     elif level == 0:
-        print >>sys.stderr,"* Warning:   ", " ".join(msg)
+        print >>stderr,"* Warning:   ", " ".join(msg)
     # info
     elif level == 1:
 	if DEBUG == 1:
-	    print >>sys.stdout,"* Info:      ", " ".join(msg)
+	    print >>stdout,"* Info:      ", " ".join(msg)
     # debug
     elif level == 2:
         if DEBUG == 1:
-            print >>sys.stderr,"* Debug:     ", " ".join(msg)
+            print >>stderr,"* Debug:     ", " ".join(msg)
     else:
-	print >>sys.stderr,"* ", " ".join(msg)
+	print >>stderr,"* ", " ".join(msg)
     return
 
 def show_tree(t, style=None, tree_properties=None):
