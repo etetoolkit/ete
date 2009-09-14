@@ -18,8 +18,7 @@ t = Tree(nw)
 # t.populate(8, ["Dme", "Dre", "Hsa", "Ptr", "Cfa", "Mms"])
 
 # Set the path in which images are located
-img_path = "/home/jhuerta/_Devel/ete2/examples/img_phylogeny/"
-
+img_path = "./"
 # Create faces based on external images
 humanFace = faces.ImgFace(img_path+"human.png")
 mouseFace = faces.ImgFace(img_path+"mouse.png")

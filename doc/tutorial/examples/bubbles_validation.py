@@ -3,7 +3,7 @@ from ete_dev import ClusterTree,  faces
 # To operate with numbersd bub efficiently 
 import numpy
 
-PATH = "/home/jhuerta/_Devel/ete2/examples/bubbles_clustering_validation/"
+PATH = "./"
 # Loads tree and array 
 t = ClusterTree(PATH+"diauxic.nw", PATH+"diauxic.array")
 
