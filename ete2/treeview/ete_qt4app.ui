@@ -39,6 +39,7 @@
     <addaction name="actionPaste_newick" />
     <addaction name="actionSave_newick" />
     <addaction name="actionRenderPDF" />
+    <addaction name="actionRender_selected_region" />
    </widget>
    <widget class="QMenu" name="menuAbout" >
     <property name="title" >
@@ -320,6 +321,18 @@
    </property>
    <property name="text" >
     <string>Show node attributes box</string>
+   </property>
+  </action>
+  <action name="actionRender_selected_region" >
+   <property name="icon" >
+    <iconset resource="ete_resources.qrc" >
+     <normaloff>:/ete icons/export_pdf.png</normaloff>:/ete icons/export_pdf.png</iconset>
+   </property>
+   <property name="text" >
+    <string>Render selected region</string>
+   </property>
+   <property name="shortcutContext" >
+    <enum>Qt::WidgetShortcut</enum>
    </property>
   </action>
  </widget>

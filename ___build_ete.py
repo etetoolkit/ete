@@ -199,7 +199,7 @@ if not options.nodoc:
     _ex("cd %s/doc/tutorial/; lyx ete_tutorial.lyx -e pdf2" %\
 	     (RELEASE_PATH) )
 
-    _ex("cd %s/doc/tutorial/; tar -zcf ete_tutorial_examples.tar.gz examples/*.py;" %\
+    _ex("cd %s/doc/tutorial/; tar -zcf ete_tutorial_examples.tar.gz examples/" %\
 	     (RELEASE_PATH) )
 
     _ex("cp %s/doc/tutorial/ete_tutorial.pdf %s/doc/%s_tutorial.pdf " %\

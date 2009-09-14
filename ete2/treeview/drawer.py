@@ -410,14 +410,20 @@ class _MainApp(QtGui.QMainWindow):
 		imgName += ".pdf"
 	    self.scene.save(imgName)
 
-    # Not linked yet
+
     @QtCore.pyqtSignature("")
-    def on_actionSave_region_triggered(self):
-	return
+    def on_actionRender_selected_region_triggered(self):
+	if not self.scene.selector.isVisible():
+	    return QtGui.QMessageBox.information(self, "!",\
+					      "You must select a region first")
+
 	F = QtGui.QFileDialog(self)
 	if F.exec_():
 	    imgName = str(F.selectedFiles()[0])
-	    self.scene.save(imgName, self.scene.selector.rect() )
+	    if not imgName.endswith(".pdf"):
+		imgName += ".pdf"
+	    self.scene.save(imgName, take_region=True)
+
 
     @QtCore.pyqtSignature("")
     def on_actionPaste_newick_triggered(self):
@@ -770,7 +776,7 @@ class _NodeItem(QtGui.QGraphicsRectItem):
 	return False
 
     def delete_node(self):
-	self.node.delete
+	self.node.delete()
 	self.scene().draw()
 
     def detach_node(self):
@@ -1073,8 +1079,10 @@ class _TreeScene(QtGui.QGraphicsScene):
         logger(2, "Double click")
         QtGui.QGraphicsScene.mouseDoubleClickEvent(self,e)
 
-    def save(self, imgName, w=None, h=None, header=None, dpi=150):
+    def save(self, imgName, w=None, h=None, header=None, \
+		 dpi=150, take_region=False):
 	ext = imgName.split(".")[-1].upper()
+ 
 	
 	root = self.startNode
 	aspect_ratio = root.fullRegion.height() / root.fullRegion.width()
@@ -1112,7 +1120,11 @@ class _TreeScene(QtGui.QGraphicsScene):
 		targetRect =  QtCore.QRectF(topleft.x(), 20 + (topleft.y()*2), w, h)
 	    else:
 		targetRect =  QtCore.QRectF(topleft.x(), topleft.y()*2, w, h)
-	    self.render(pp, targetRect, self.sceneRect())
+
+	    if take_region:
+		self.render(pp, targetRect, self.selector.rect())
+	    else:
+		self.render(pp, targetRect, self.sceneRect())
 	    pp.end()
 	    return 
 	else: 
@@ -1124,7 +1136,10 @@ class _TreeScene(QtGui.QGraphicsScene):
 	    pp.setRenderHint(QtGui.QPainter.Antialiasing )
 	    pp.setRenderHint(QtGui.QPainter.TextAntialiasing)
 	    pp.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
-	    self.render(pp, targetRect, self.sceneRect())
+	    if take_region:
+		self.render(pp, targetRect, self.selector.rect())
+	    else:
+		self.render(pp, targetRect, self.sceneRect())
 	    pp.end()
 	    ii.save(imgName)
 
@@ -1184,9 +1199,9 @@ class _TreeScene(QtGui.QGraphicsScene):
         self.mainItem = QtGui.QGraphicsRectItem()
 	self.addItem(self.mainItem)
 	# Recreates selector item (used to zoom etc...)
-        self.selector   = _SelectorItem()
+        self.selector = _SelectorItem()
         self.selector.setParentItem(self.mainItem)
-        self.selector.setVisible(True)
+        self.selector.setVisible(False)
         self.selector.setZValue(2)
 
         self.highlighter   = _HighlighterItem()

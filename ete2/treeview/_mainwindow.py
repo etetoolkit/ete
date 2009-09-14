@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ete_qt4app.ui'
 #
-# Created: Wed Sep  2 16:54:14 2009
+# Created: Mon Sep 14 11:11:49 2009
 #      by: PyQt4 UI code generator 4.5.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -129,10 +129,15 @@ class Ui_MainWindow(object):
         self.actionShow_node_attributes_box.setCheckable(True)
         self.actionShow_node_attributes_box.setChecked(True)
         self.actionShow_node_attributes_box.setObjectName("actionShow_node_attributes_box")
+        self.actionRender_selected_region = QtGui.QAction(MainWindow)
+        self.actionRender_selected_region.setIcon(icon12)
+        self.actionRender_selected_region.setShortcutContext(QtCore.Qt.WidgetShortcut)
+        self.actionRender_selected_region.setObjectName("actionRender_selected_region")
         self.menuFile.addAction(self.actionOpen)
         self.menuFile.addAction(self.actionPaste_newick)
         self.menuFile.addAction(self.actionSave_newick)
         self.menuFile.addAction(self.actionRenderPDF)
+        self.menuFile.addAction(self.actionRender_selected_region)
         self.menuAbout.addAction(self.actionETE)
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuAbout.menuAction())
@@ -193,5 +198,6 @@ class Ui_MainWindow(object):
         self.actionShow_newick.setText(QtGui.QApplication.translate("MainWindow", "Show newick", None, QtGui.QApplication.UnicodeUTF8))
         self.actionShow_newick.setShortcut(QtGui.QApplication.translate("MainWindow", "N", None, QtGui.QApplication.UnicodeUTF8))
         self.actionShow_node_attributes_box.setText(QtGui.QApplication.translate("MainWindow", "Show node attributes box", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionRender_selected_region.setText(QtGui.QApplication.translate("MainWindow", "Render selected region", None, QtGui.QApplication.UnicodeUTF8))
 
 import ete_resources_rc
