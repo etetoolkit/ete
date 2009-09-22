@@ -101,7 +101,7 @@ def logger(level,*msg):
 	print >>stderr,"* ", " ".join(msg)
     return
 
-def show_tree(t, style=None, tree_properties=None):
+def show_tree(t, style=None, img_properties=None):
     """ Interactively shows a tree."""
     global _QApp
 
@@ -120,10 +120,10 @@ def show_tree(t, style=None, tree_properties=None):
     mainapp = _MainApp(scene)
 
 
-    if not tree_properties:
-	tree_properties = TreeImageProperties()
+    if not img_properties:
+	img_properties = TreeImageProperties()
     scene.initialize_tree_scene(t, style, \
-				    tree_properties=tree_properties)
+				    tree_properties=img_properties)
     scene.draw()
 
     mainapp.show()
@@ -1122,7 +1122,9 @@ class _TreeScene(QtGui.QGraphicsScene):
 		targetRect =  QtCore.QRectF(topleft.x(), topleft.y()*2, w, h)
 
 	    if take_region:
+		self.selector.setVisible(False)
 		self.render(pp, targetRect, self.selector.rect())
+		self.selector.setVisible(True)
 	    else:
 		self.render(pp, targetRect, self.sceneRect())
 	    pp.end()
@@ -1137,7 +1139,9 @@ class _TreeScene(QtGui.QGraphicsScene):
 	    pp.setRenderHint(QtGui.QPainter.TextAntialiasing)
 	    pp.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
 	    if take_region:
+		self.selector.setVisible(False)
 		self.render(pp, targetRect, self.selector.rect())
+		self.selector.setVisible(True)
 	    else:
 		self.render(pp, targetRect, self.sceneRect())
 	    pp.end()

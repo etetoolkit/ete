@@ -324,10 +324,9 @@ class ProfileFace(Face):
                 color=QtGui.QColor()
                 color.setRgb( 200-2*a,200-2*a,255 )
                 colors.append(color)
-
-            color=QtGui.QColor()
-            color.setRgb( 0,255,255 )
-            colors.append(color)
+#            color=QtGui.QColor()
+#            color.setRgb( 0,255,255 )
+#            colors.append(color)
 
         elif self.colorscheme == 1:
             for a in xrange(100,0,-1):
@@ -339,10 +338,9 @@ class ProfileFace(Face):
                 color=QtGui.QColor()
                 color.setRgb( 255,200-2*a,200-2*a )
                 colors.append(color)
-
-            color=QtGui.QColor()
-            color.setRgb(255,255,0 )
-            colors.append(color)
+#            color=QtGui.QColor()
+#            color.setRgb(255,255,0 )
+#            colors.append(color)
 
         else:
             # Blue and Red
@@ -354,10 +352,11 @@ class ProfileFace(Face):
                 color=QtGui.QColor()
                 color.setRgb( 255,200-2*a,200-2*a )
                 colors.append(color)
-            color=QtGui.QColor()
-            color.setRgb( 255,0,255 )
-            colors.append(color)
+#            color=QtGui.QColor()
+#            color.setRgb( 255,0,255 )
+#            colors.append(color)
 	colors.append(QtGui.QColor("white"))
+
         return colors
 
     def draw_bar_profile(self):

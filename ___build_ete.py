@@ -211,10 +211,10 @@ if not options.nodoc:
     # Clean intermediate files
     _ex("rm %s/doc/latex_guide -r" %\
 	    (RELEASE_PATH))
-    _ex("rm %s/doc/tutorial -r" %\
-	    (RELEASE_PATH))
 
-
+# Clean raw tutorial
+_ex("rm %s/doc/tutorial -r" %\
+	(RELEASE_PATH))
 # Clean from internal files
 _ex("rm %s/.git -r" %\
 	(RELEASE_PATH))
@@ -258,8 +258,8 @@ if updatemeta=="y":
     print "Updating ete in chroot"
     _ex("sudo chroot %s easy_install /root/%s.tar.gz" %\
 	    (METAPKG_JAIL_PATH, RELEASE_NAME))
-    _ex("cd %s/..; sudo tar -zcf ete_metapkg.tar.gz %s" %\
-	    (METAPKG_PATH, METAPKG_PATH))
+    _ex("cd %s/..; sudo tar -zcf ete_metapkg.tar.gz ete_metapackage/" %\
+	    (METAPKG_PATH))
     print "Copying metapkg to main server"
     _ex("scp %s/../ete_metapkg.tar.gz %s" %\
 	    (METAPKG_PATH,  SERVER+":"+SERVER_METAPKG_PATH))
