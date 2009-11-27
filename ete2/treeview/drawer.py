@@ -916,7 +916,7 @@ class _MainView(QtGui.QGraphicsView):
 	if (xfactor>1 and xscale>200000) or \
 		(yfactor>1 and yscale>200000):
 	    QtGui.QMessageBox.information(self, "!",\
-					      "Hey! Have you ever thought about buying an electron microscope?")
+					      "Hey! I'm not an electron microscope?")
 	    return 
 
 	# Do not allow to reduce scale to a value producing height or with smaller than 20 pixels
