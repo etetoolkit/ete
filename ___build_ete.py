@@ -160,9 +160,11 @@ _ex('find %s -name \'*.py\'| xargs perl -e "s/from ete_dev/from ete2_test/g" -p 
 	      (RELEASE_PATH) )
 
 _ex('mv %s %s/ete2_test' %(RELEASE_MODULE_PATH, RELEASE_PATH))
-_ex('cd %s; python setup.py build' %(RELEASE_PATH))
+_ex('cd %s; python setup.py build --build-lib=build/lib' %(RELEASE_PATH))
 
 if options.unitest:
+    print 'export PYTHONPATH="%s/build/lib/"; python %s/unittest/test_all.py' %\
+	    (RELEASE_PATH, RELEASE_PATH)
     _ex('export PYTHONPATH="%s/build/lib/"; python %s/unittest/test_all.py' %\
 	    (RELEASE_PATH, RELEASE_PATH))
 
