@@ -1091,6 +1091,10 @@ class _TreeScene(QtGui.QGraphicsScene):
 	if w is None and h is None:
 	    w = dpi * 6.4
 	    h = w * aspect_ratio
+	    if h>dpi * 11:
+		h = dpi * 11
+		w = h / aspect_ratio
+		
 	elif h is None: 
 	    h = w * aspect_ratio
 	elif w is None:
