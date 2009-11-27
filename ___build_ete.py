@@ -258,6 +258,7 @@ if updatemeta=="y":
     print "Updating ete in chroot"
     _ex("sudo chroot %s easy_install /root/%s.tar.gz" %\
 	    (METAPKG_JAIL_PATH, RELEASE_NAME))
+    # cd is important to avoid the full path when uncompressing
     _ex("cd %s/..; sudo tar -zcf ete_metapkg.tar.gz ete_metapackage/" %\
 	    (METAPKG_PATH))
     print "Copying metapkg to main server"
