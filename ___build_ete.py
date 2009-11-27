@@ -185,14 +185,14 @@ if options.test_examples:
 _ex('mv %s/ete2_test %s' %(RELEASE_PATH, RELEASE_MODULE_PATH))
 _ex('find %s -name \'*.py\'| xargs perl -e "s/from ete2_test/from %s/g" -p -i' %\
 	      (RELEASE_PATH, MODULE_NAME) )
-_ex('cd %s; python setup.py build' %(RELEASE_PATH))
+_ex('cd %s; python setup.py build --build-lib=build/lib' %(RELEASE_PATH))
 
 # Generate reference guide 
 if not options.nodoc:
     print "*** Creating reference guide"
     _ex('export PYTHONPATH="%s/build/lib/"; epydoc %s -n %s --exclude PyQt4  --inheritance grouped --name ete2 -o %s/doc/%s_html' %\
 		  (RELEASE_PATH, RELEASE_MODULE_PATH, RELEASE_NAME, RELEASE_PATH, RELEASE_NAME))
-    _ex('export PYTHONPATH="%s/build/lib/"; epydoc %s -n %s  --exclude PyQt4 --pdf --inheritance grouped --name ete2 -o %s/doc/latex_guide' %\
+    _ex('export PYTHONPATH="%s/build/lib/"; epydoc %s -n %s  --exclude PyQt4 --pdf  --name ete2 -o %s/doc/latex_guide' %\
 		  (RELEASE_PATH, RELEASE_MODULE_PATH, RELEASE_NAME, RELEASE_PATH))
     _ex("cp %s/doc/latex_guide/api.pdf %s/doc/%s.pdf " %\
 		  (RELEASE_PATH, RELEASE_PATH, RELEASE_NAME))

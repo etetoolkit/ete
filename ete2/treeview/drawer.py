@@ -101,7 +101,7 @@ def logger(level,*msg):
 	print >>stderr,"* ", " ".join(msg)
     return
 
-def show_tree(t, style=None, img_properties=None):
+def show_tree(t, style=None, img_properties=None, up_faces=[], down_faces=[]):
     """ Interactively shows a tree."""
     global _QApp
 
@@ -116,10 +116,9 @@ def show_tree(t, style=None, img_properties=None):
     if not _QApp:
         _QApp = QtGui.QApplication(["ETE"])
 
-    scene  = _TreeScene()
+    scene  = _TreeScene(up_faces=up_faces, down_faces=down_faces)
     mainapp = _MainApp(scene)
-
-
+    
     if not img_properties:
 	img_properties = TreeImageProperties()
     scene.initialize_tree_scene(t, style, \
@@ -975,10 +974,13 @@ class _MainView(QtGui.QGraphicsView):
         QtGui.QGraphicsView.keyPressEvent(self,e)
 
 class _TreeScene(QtGui.QGraphicsScene):
-    def __init__(self, rootnode=None, style=None, *args):
+    def __init__(self, rootnode=None, style=None, \
+		     down_faces=[], up_faces =[], *args):
         QtGui.QGraphicsScene.__init__(self,*args)
 
 	self.view = None
+	self.down_faces = down_faces
+	self.up_faces = up_faces
 	# Config variables
         self.buffer_node = None        # Used to copy and paste
         self.layout_func = None        # Layout function
@@ -1212,11 +1214,13 @@ class _TreeScene(QtGui.QGraphicsScene):
         self.selector.setVisible(False)
         self.selector.setZValue(2)
 
-        self.highlighter   = _HighlighterItem()
+        self.highlighter = _HighlighterItem()
         self.highlighter.setParentItem(self.mainItem)
         self.highlighter.setVisible(False)
         self.highlighter.setZValue(2)
         self.min_real_branch_separation = 0 
+        self.i_width  = 0 # Total width of the image (updated little by little)
+        self.i_height = 0 # Total height of the image (updated little by little)
 
 	# Get branch scale
 	fnode, max_dist = self.startNode.get_farthest_leaf(topology_only=\
@@ -1231,22 +1235,123 @@ class _TreeScene(QtGui.QGraphicsScene):
         t1 = time.time()
         self.update_node_areas(self.startNode)
         logger(2, "Ellapsed time for updating node areas:",time.time()-t1)
-        # Get picture dimensions
+        # Get picture dimensions (Only main tree is taken into account
+        # at this point)
         self.i_width  = self.startNode.fullRegion.width() 
         self.i_height = self.startNode.fullRegion.height()
 
+	# Calculates the size of down and up faces. These faces are
+	# graphical items added to the main image but not to any
+	# node. They can be seen as header and footer faces.
+
+	down_height_aligned = 0
+	down_width_aligned = 0
+	down_height_normal = 0
+	down_width_normal = 0
+
+	up_height_aligned = 0
+	up_width_aligned = 0
+	up_height_normal = 0
+	up_width_normal = 0
+	for f in self.down_faces:
+	    if f.type == "pixmap":
+		f.update_pixmap()
+	    if f.aligned:
+		down_height_aligned += f._height()
+		down_width_aligned =  max(down_width_aligned, f._width())
+	    else:
+		down_width_normal = max(down_width_normal, f._width())
+		down_height_normal += f._height() 
+
+	for f in self.up_faces:
+	    if f.type == "pixmap":
+		f.update_pixmap()
+	    if f.aligned:
+		up_height_aligned += f._height()
+		up_width_aligned =  max(up_width_aligned, f._width())
+	    else:
+		up_width_normal = max(up_width_normal, f._width())
+		up_height_normal += f._height()
+	
+	#correct width to allocate normal up and down faces
+	width_normal_faces = max(up_width_normal, down_width_normal)
+	if width_normal_faces >self.i_width:
+	    self.i_width = width_normal_faces
+
+	self.start_aligned = self.i_width
+	# Correct hight to allocate up and down faces
+	self.i_height += max(down_height_normal, up_height_aligned) 
+	self.i_height += max(up_height_normal, up_height_aligned) 
+
+	# Correct start y according to the height of up faces
+	start_y = max(up_height_normal, up_height_aligned) 
 
         logger(1, "IMAGE dimension=",self.i_width,"x",self.i_height)
         # Render tree on scene
         t2 = time.time()
-        self.render_node(self.startNode,0,0)
+        self.render_node(self.startNode,0, start_y)
         logger(2, "Time for rendering", time.time()-t2)
 
-        # size correcton for aligned faces
-        self.i_width += self.max_w_aligned_face
+        # size correcton for aligned faces (it takes into account node
+        # faces and also down and up faces)
+        self.i_width += max(self.max_w_aligned_face,\
+				max(up_width_normal, down_width_aligned))
+
         # New pos for tree when inverse orientation
         if self.props.orientation == 1:
             self.startNode._QtItem_.moveBy(self.max_w_aligned_face,0)
+
+
+	# =============================== Draw up and down faces
+	aligned_x_start = self.start_aligned
+	normal_x_start = 0
+	cumulative_h_aligned = 0
+	cumulative_h_normal = 0
+	for f in self.up_faces:
+	    # If face is text type, add it as an QGraphicsTextItem
+	    if f.type == "text":
+		obj = _TextItem(f, None, f.get_text())
+		obj.setFont(f.font)
+		obj.setBrush(QtGui.QBrush(f.fgcolor))
+		obj.setParentItem(self.mainItem)
+	    else:
+		# Loads the pre-generated pixmap
+		obj = _FaceItem(f, None, f.pixmap)
+		obj.setParentItem(self.mainItem)
+	    obj.setAcceptsHoverEvents(False)
+	    if f.aligned:
+		obj.setPos(aligned_x_start+f.xmargin, cumulative_h_aligned+f.ymargin)
+		cumulative_h_aligned += f._height()
+	    else:
+		obj.setPos(normal_x_start+f.xmargin, cumulative_h_normal+f.ymargin)
+		cumulative_h_normal += f._height()
+
+
+	cumulative_h_aligned = 0
+	cumulative_h_normal = 0
+	face_start_x = self.i_height - max(down_height_normal, up_height_aligned) 
+	for f in self.down_faces:
+	    # If face is text type, add it as an QGraphicsTextItem
+	    if f.type == "text":
+		obj = _TextItem(f, None, f.get_text())
+		obj.setFont(f.font)
+		obj.setBrush(QtGui.QBrush(f.fgcolor))
+		obj.setParentItem(self.mainItem)
+	    else:
+		# Loads the pre-generated pixmap
+		obj = _FaceItem(f, None, f.pixmap)
+		obj.setParentItem(self.mainItem)
+	    obj.setAcceptsHoverEvents(False)
+	    if f.aligned:
+		obj.setPos(aligned_x_start+f.xmargin, face_start_x+cumulative_h_aligned+f.ymargin)
+		cumulative_h_aligned += f._height()
+	    else:
+		obj.setPos(normal_x_start+f.xmargin, face_start_x+cumulative_h_normal+f.ymargin)
+		cumulative_h_normal += f._height()
+
+	# ============================
+
+
 
         # Tree border
         #border = self.addRect(0,0,self.i_width, self.i_height)
