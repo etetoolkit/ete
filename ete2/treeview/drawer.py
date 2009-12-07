@@ -1242,13 +1242,13 @@ class _TreeScene(QtGui.QGraphicsScene):
 
 	# Calculates the size of down and up faces. These faces are
 	# graphical items added to the main image but not to any
-	# node. They can be seen as header and footer faces.
+	# node. They can be seen as header and footer faces.  This
+	# code is not very good. I'll try to fix it in the future.
 
 	down_height_aligned = 0
 	down_width_aligned = 0
 	down_height_normal = 0
 	down_width_normal = 0
-
 	up_height_aligned = 0
 	up_width_aligned = 0
 	up_height_normal = 0
@@ -1292,7 +1292,7 @@ class _TreeScene(QtGui.QGraphicsScene):
         self.render_node(self.startNode,0, start_y)
         logger(2, "Time for rendering", time.time()-t2)
 
-        # size correcton for aligned faces (it takes into account node
+        # size correction for aligned faces (it takes into account node
         # faces and also down and up faces)
         self.i_width += max(self.max_w_aligned_face,\
 				max(up_width_normal, down_width_aligned))
@@ -1301,57 +1301,10 @@ class _TreeScene(QtGui.QGraphicsScene):
         if self.props.orientation == 1:
             self.startNode._QtItem_.moveBy(self.max_w_aligned_face,0)
 
-
-	# =============================== Draw up and down faces
-	aligned_x_start = self.start_aligned
-	normal_x_start = 0
-	cumulative_h_aligned = 0
-	cumulative_h_normal = 0
-	for f in self.up_faces:
-	    # If face is text type, add it as an QGraphicsTextItem
-	    if f.type == "text":
-		obj = _TextItem(f, None, f.get_text())
-		obj.setFont(f.font)
-		obj.setBrush(QtGui.QBrush(f.fgcolor))
-		obj.setParentItem(self.mainItem)
-	    else:
-		# Loads the pre-generated pixmap
-		obj = _FaceItem(f, None, f.pixmap)
-		obj.setParentItem(self.mainItem)
-	    obj.setAcceptsHoverEvents(False)
-	    if f.aligned:
-		obj.setPos(aligned_x_start+f.xmargin, cumulative_h_aligned+f.ymargin)
-		cumulative_h_aligned += f._height()
-	    else:
-		obj.setPos(normal_x_start+f.xmargin, cumulative_h_normal+f.ymargin)
-		cumulative_h_normal += f._height()
-
-
-	cumulative_h_aligned = 0
-	cumulative_h_normal = 0
-	face_start_x = self.i_height - max(down_height_normal, up_height_aligned) 
-	for f in self.down_faces:
-	    # If face is text type, add it as an QGraphicsTextItem
-	    if f.type == "text":
-		obj = _TextItem(f, None, f.get_text())
-		obj.setFont(f.font)
-		obj.setBrush(QtGui.QBrush(f.fgcolor))
-		obj.setParentItem(self.mainItem)
-	    else:
-		# Loads the pre-generated pixmap
-		obj = _FaceItem(f, None, f.pixmap)
-		obj.setParentItem(self.mainItem)
-	    obj.setAcceptsHoverEvents(False)
-	    if f.aligned:
-		obj.setPos(aligned_x_start+f.xmargin, face_start_x+cumulative_h_aligned+f.ymargin)
-		cumulative_h_aligned += f._height()
-	    else:
-		obj.setPos(normal_x_start+f.xmargin, face_start_x+cumulative_h_normal+f.ymargin)
-		cumulative_h_normal += f._height()
-
-	# ============================
-
-
+	# Draw up and down faces
+	self.add_extra_faces(self.up_faces, 0,0, self.start_aligned, 0)
+	down_y = self.i_height - max(down_height_normal, up_height_aligned) 
+	self.add_extra_faces(self.down_faces, 0, down_y, self.start_aligned, down_y)
 
         # Tree border
         #border = self.addRect(0,0,self.i_width, self.i_height)
@@ -1366,6 +1319,37 @@ class _TreeScene(QtGui.QGraphicsScene):
 
         self.setSceneRect(-2,-2,self.i_width+4,self.i_height+50)
         logger(2, "Number of items in scene:", len(self.items()))
+
+    def add_extra_faces(self, faces, x, y, aligned_x, aligned_y):
+	aligned_x_start = aligned_x
+	normal_x_start = x
+
+	aligned_y_start = aligned_y
+	normal_y_start = y
+
+	cumulative_h_aligned = 0
+	cumulative_h_normal = 0
+	for f in faces:
+	    # If face is text type, add it as an QGraphicsTextItem
+	    if f.type == "text":
+		obj = _TextItem(f, None, f.get_text())
+		obj.setFont(f.font)
+		obj.setBrush(QtGui.QBrush(f.fgcolor))
+		obj.setParentItem(self.mainItem)
+	    else:
+		# Loads the pre-generated pixmap
+		obj = _FaceItem(f, None, f.pixmap)
+		obj.setParentItem(self.mainItem)
+	    obj.setAcceptsHoverEvents(False)
+	    if f.aligned:
+		obj.setPos(aligned_x_start+f.xmargin, aligned_y_start +\
+			   cumulative_h_aligned+f.ymargin)
+		cumulative_h_aligned += f._height()
+	    else:
+		obj.setPos(normal_x_start+f.xmargin, normal_y_start +\
+			       cumulative_h_normal+f.ymargin)
+		cumulative_h_normal += f._height()
+
 
     def add_scale(self,x,y):
 	size = 50
