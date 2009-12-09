@@ -904,7 +904,8 @@ class TreeNode(object):
                            up_faces=up_faces, down_faces=down_faces)
 
   def render(self, file_name, layout=None, w=None, h=None, \
-                     img_properties=None, header=None):
+             img_properties=None, header=None, \
+             up_faces=[], down_faces=[]):
     """ Renders the tree structure into an image file. """
     try:
         from ete_dev.treeview import drawer
@@ -915,8 +916,9 @@ class TreeNode(object):
         print e
     else:
         drawer.render_tree(self, file_name, w=w, h=h, style=layout, \
-                               img_properties=img_properties, \
-                               header=header)
+                           img_properties=img_properties, \
+                           header=header, up_faces=up_faces, \
+                           down_faces=down_faces)
 
   def _asciiArt(self, char1='-', show_internal=True, compact=False):
     """ 

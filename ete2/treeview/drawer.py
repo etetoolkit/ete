@@ -111,7 +111,7 @@ def show_tree(t, style=None, img_properties=None, up_faces=[], down_faces=[]):
         elif t.__class__ == ClusterTree:
             style = "large"
         else:
-	    style = "basic"
+            style = "basic"
   
     if not _QApp:
         _QApp = QtGui.QApplication(["ETE"])
@@ -120,7 +120,7 @@ def show_tree(t, style=None, img_properties=None, up_faces=[], down_faces=[]):
     mainapp = _MainApp(scene)
     
     if not img_properties:
-	img_properties = TreeImageProperties()
+        img_properties = TreeImageProperties()
     scene.initialize_tree_scene(t, style, \
 				    tree_properties=img_properties)
     scene.draw()
@@ -129,8 +129,9 @@ def show_tree(t, style=None, img_properties=None, up_faces=[], down_faces=[]):
     _QApp.exec_()
     
 def render_tree(t, imgName, w=None, h=None, style=None, \
-		    img_properties = None, header=None):
+		    img_properties = None, up_faces=[], down_faces=[], header=None):
     """ Render tree image into a PNG file."""
+    global _QApp
 
     if not style:
         if t.__class__ == PhyloTree:
@@ -140,16 +141,15 @@ def render_tree(t, imgName, w=None, h=None, style=None, \
         else:
             style = "basic"
 
-    
-    global _QApp
     if not _QApp:
         _QApp = QtGui.QApplication(["ETE"])
 
-    scene  = _TreeScene()
+    scene  = _TreeScene(up_faces=up_faces, down_faces=down_faces)
+
     if not img_properties:
-	img_properties = TreeImageProperties()
-    scene.initialize_tree_scene(t, style,
-				tree_properties=img_properties)
+        img_properties = TreeImageProperties()
+    scene.initialize_tree_scene(t, style,\
+                                    tree_properties=img_properties)
     scene.draw()
     scene.save(imgName, w=w, h=h, header=header)
 
@@ -1002,17 +1002,17 @@ class _TreeScene(QtGui.QGraphicsScene):
         self.max_w_aligned_face = 0    # Stores the max width of aligned faces 
 
         # Load image attributes
-	self.props = tree_properties
+        self.props = tree_properties
 	    
-	# Validates layout function 
+        # Validates layout function 
         if type(style) == types.FunctionType or\
                 type(style) == types.MethodType:
             self.layout_func = style
         else:
             try:
                 self.layout_func = getattr(layouts,style)
-            except: 
-               raise ValueError, "Required layout is not a function pointer nor a valid layout name."
+            except:
+                raise ValueError, "Required layout is not a function pointer nor a valid layout name."
 
 	# Set the scene background 
         self.setBackgroundBrush(QtGui.QColor("white"))
@@ -1535,7 +1535,7 @@ class _TreeScene(QtGui.QGraphicsScene):
         else:
             node._QtItem_.rotate(angle)
 
-    def render_node(self,node , x, y,level=0):
+    def render_node(self,node , x, y,level=0 ):
 	""" Traverse the tree structure and render each node using the
 	regions, sizes, and faces previously loaded. """
 

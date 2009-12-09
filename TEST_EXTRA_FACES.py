@@ -29,5 +29,6 @@ n = t.get_leaves()[5]
 flist= [A1,A2,N1,N2]
 # Puedes pasar la lista de faces arriba o debajo del arbol cuando
 # llamas a show().
-t.show(ly, up_faces=flist, down_faces=flist)
+#t.show(ly, up_faces=flist, down_faces=flist)
 
+t.render('lolo.pdf',ly, up_faces=flist, down_faces=flist)
