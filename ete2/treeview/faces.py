@@ -178,9 +178,11 @@ class HistFace(Face):
             sys.exit('ERROR: value and color arrays differ in length!!!\n')
         self.values = values
         self.colors = colors
-        self.fsize = fsize
-        self.font = QtGui.QFont("Courier", self.fsize)
+        self.fsize  = fsize
+        self.font   = QtGui.QFont("Courier", self.fsize)
         self.height = height
+        self.header = header
+        self.mean   = mean
 
     def update_pixmap(self):
         
@@ -192,6 +194,7 @@ class HistFace(Face):
         p = QtGui.QPainter(self.pixmap)
         x = 0
         y = height - fm.underlinePos()*2
+        posX = x - 8
 
         for i in range (0, len (self.values)):
             val = self.values[i]
@@ -208,85 +211,73 @@ class HistFace(Face):
             line = QtGui.QGraphicsLineItem(self.mainItem)
             line.setPen(customPen)
             sep = float (width) / len(vals)
-            posX = x - 8
-            for val in vals:
-                posX += sep
-                if col =='red':
-                    name = QtGui.QGraphicsSimpleTextItem("+")
-                    name.setParentItem(self.mainItem)
-                    name.setPos(posX,y-5)
-                    name = QtGui.QGraphicsSimpleTextItem("+")
-                    name.setParentItem(self.mainItem)
-                    name.setPos(posX,y+1)
-                if col =='orange':
-                    name = QtGui.QGraphicsSimpleTextItem("+")
-                    name.setParentItem(self.mainItem)
-                    name.setPos(posX,y-5)
-                if col =='blue':
-                    name = QtGui.QGraphicsSimpleTextItem("-")
-                    name.setParentItem(self.mainItem)
-                    name.setPos(posX,y-5)
-                    name = QtGui.QGraphicsSimpleTextItem("-")
-                    name.setParentItem(self.mainItem)
-                    name.setPos(posX,y+1)
-                if col =='cyan':
-                    name = QtGui.QGraphicsSimpleTextItem("-")
-                    name.setParentItem(self.mainItem)
-                    name.setPos(posX,y-5)
+            posX += sep
+            if col =='red':
+                name = QtGui.QGraphicsSimpleTextItem("+")
+                name.setParentItem(self.mainItem)
+                name.setPos(posX,y-5)
+                name = QtGui.QGraphicsSimpleTextItem("+")
+                name.setParentItem(self.mainItem)
+                name.setPos(posX,y+1)
+            if col =='orange':
+                name = QtGui.QGraphicsSimpleTextItem("+")
+                name.setParentItem(self.mainItem)
+                name.setPos(posX,y-5)
+            if col =='blue':
+                name = QtGui.QGraphicsSimpleTextItem("-")
+                name.setParentItem(self.mainItem)
+                name.setPos(posX,y-5)
+                name = QtGui.QGraphicsSimpleTextItem("-")
+                name.setParentItem(self.mainItem)
+                name.setPos(posX,y+1)
+            if col =='cyan':
+                name = QtGui.QGraphicsSimpleTextItem("-")
+                name.setParentItem(self.mainItem)
+                name.setPos(posX,y-5)
 
 
 
-                customPen  = QtGui.QPen(QtGui.QColor(val[0]),1)
-                if abs(val[1]*50) < 100:
-                    line = QtGui.QGraphicsLineItem(self.mainItem)
-                    line.setPen(customPen)
-                    line.setLine(posX,y,posX,y+val[1]*50)
+            customPen  = QtGui.QPen(QtGui.QColor(col),1)
+            if abs(val*50) < 100:
+                line = QtGui.QGraphicsLineItem(self.mainItem)
+                line.setPen(customPen)
+                line.setLine(posX,y,posX,y+val*50)
 
-                    line = QtGui.QGraphicsLineItem(self.mainItem)
-                    line.setPen(customPen)
-                    line.setLine(posX+6,y,posX+6,y+val[1]*50)
+                line = QtGui.QGraphicsLineItem(self.mainItem)
+                line.setPen(customPen)
+                line.setLine(posX+6,y,posX+6,y+val*50)
 
-                    line = QtGui.QGraphicsLineItem(self.mainItem)
-                    line.setPen(customPen)
-                    line.setLine(posX+6,y+val[1]*50,posX,y+val[1]*50)
-                else:
-                    line = QtGui.QGraphicsLineItem(self.mainItem)
-                    line.setPen(customPen)
-                    line.setLine(posX,y,posX,y-100)
-                    line = QtGui.QGraphicsLineItem(self.mainItem)
-                    line.setPen(customPen)
-                    line.setLine(posX+6,y,posX+6,y-100)
+                line = QtGui.QGraphicsLineItem(self.mainItem)
+                line.setPen(customPen)
+                line.setLine(posX+6,y+val*50,posX,y+val*50)
+            else:
+                line = QtGui.QGraphicsLineItem(self.mainItem)
+                line.setPen(customPen)
+                line.setLine(posX,y,posX,y-100)
+                line = QtGui.QGraphicsLineItem(self.mainItem)
+                line.setPen(customPen)
+                line.setLine(posX+6,y,posX+6,y-100)
 
-                    line = QtGui.QGraphicsLineItem(self.mainItem)
-                    line.setPen(customPen)
-                    line.setLine(posX,y-110,posX,y-105)
-                    line = QtGui.QGraphicsLineItem(self.mainItem)
-                    line.setPen(customPen)
-                    line.setLine(posX+6,y-110,posX+6,y-105)
+                line = QtGui.QGraphicsLineItem(self.mainItem)
+                line.setPen(customPen)
+                line.setLine(posX,y-110,posX,y-105)
+                line = QtGui.QGraphicsLineItem(self.mainItem)
+                line.setPen(customPen)
+                line.setLine(posX+6,y-110,posX+6,y-105)
 
-                    line = QtGui.QGraphicsLineItem(self.mainItem)
-                    line.setPen(customPen)
-                    line.setLine(posX+6,y-110,posX,y-110)
-            y = y+125
+                line = QtGui.QGraphicsLineItem(self.mainItem)
+                line.setPen(customPen)
+                line.setLine(posX+6,y-110,posX,y-110)
 
-        name = QtGui.QGraphicsSimpleTextItem("Omega Bayesian")
+        name = QtGui.QGraphicsSimpleTextItem(self.header)
         name.setParentItem(self.mainItem)
-        name.setPos(x-start-120,y-275)
+        name.setPos(x-120,y-275)
         name = QtGui.QGraphicsSimpleTextItem("0")
         name.setParentItem(self.mainItem)
-        name.setPos(x-start-15,y-255)
-        name = QtGui.QGraphicsSimpleTextItem("1")
+        name.setPos(x-15,y-255)
+        name = QtGui.QGraphicsSimpleTextItem(self.mean)
         name.setParentItem(self.mainItem)
-        name.setPos(x-start-15,y-305)
-        name = QtGui.QGraphicsSimpleTextItem("Omega SLR")
-        name.setParentItem(self.mainItem)
-        name.setPos(x-start-120,y-150)
-        name = QtGui.QGraphicsSimpleTextItem("0")
-        name.setParentItem(self.mainItem)
-        name.setPos(x-start-15,y-135)
-        name = QtGui.QGraphicsSimpleTextItem("1")
-        name.setParentItem(self.mainItem)
-        name.setPos(x-start-15,y-185)
+        name.setPos(x-15,y-305)
 
 
 
