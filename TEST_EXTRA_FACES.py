@@ -6,6 +6,7 @@
 
 from ete_dev import Tree, faces, layouts
 from ete_dev.treeview import drawer
+from HistFace import HistFace
 import re
     
 def ly(node):
@@ -26,7 +27,7 @@ string = 'aaaaaaaaaaaaaaaaaaaaaaaaiiiiiiiipppppppppppppaaa'
 
 values = len (re.sub('[^a]','',string))*[1] + len (re.sub('[^i]','',string))*[0.5]+len (re.sub('[^p]','',string))*[2.2]
 
-AH1 = faces.HistFace(values=values,header='bonjour coucou',mean=1)
+AH1 = HistFace(values=values,header='bonjour coucou',mean=1)
 
 AH1.aligned = 80
 
