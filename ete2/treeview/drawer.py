@@ -1207,7 +1207,7 @@ class _TreeScene(QtGui.QGraphicsScene):
 
 	# Recreates main parent and add it to scene
         self.mainItem = QtGui.QGraphicsRectItem()
-	self.addItem(self.mainItem)
+        self.addItem(self.mainItem)
 	# Recreates selector item (used to zoom etc...)
         self.selector = _SelectorItem()
         self.selector.setParentItem(self.mainItem)

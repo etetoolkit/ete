@@ -170,115 +170,87 @@ class Face(object):
 
 class HistFace(Face):
 
-
-    def __init__(self, values, colors = [], header = '', mean = 0, fsize = 10, height = 120):
+    def __init__(self, values, colors = [], header = '', mean = 0, \
+                 fsize=10, height = 120):
         Face.__init__(self)
         if colors == []: colors = ['grey']*len (values)
         if len (colors) != len (values):
             sys.exit('ERROR: value and color arrays differ in length!!!\n')
-        self.values = values
+        self.values = map (lambda x: float (x)/max (values) * (height-20),values)
+        self.mean = (height-20)/2
         self.colors = colors
-        self.fsize  = fsize
+        # don't why font size have to be readjusted compared to sequence face... don't understand
+        self.fsize  = int ((float (fsize)/6)*8)
         self.font   = QtGui.QFont("Courier", self.fsize)
         self.height = height
         self.header = header
-        self.mean   = mean
 
     def update_pixmap(self):
         
         fm = QtGui.QFontMetrics(self.font)
         height = self.height
-        width = fm.size(QtCore.Qt.AlignTop, ' '*len (self.values)).width()
+        width  = fm.size(QtCore.Qt.AlignTop, 'A'*len (self.values)).width()
         self.pixmap = QtGui.QPixmap(width,height)
         self.pixmap.fill()
         p = QtGui.QPainter(self.pixmap)
         x = 0
         y = height - fm.underlinePos()*2
-        posX = x - 8
+        customPen = QtGui.QPen(QtGui.QColor("black"),1)
+        p.setPen(customPen)
+        p.drawLine(x,y,x+width,y)
+        customPen.setStyle(QtCore.Qt.DashLine)
+        p.setPen(customPen)
+        p.drawLine(x,y-self.mean,x+width,y-self.mean)
+        customPen.setStyle(QtCore.Qt.SolidLine)
+        p.setPen(customPen)
+        sep = float (width) / len(self.values)
+        posX = x - sep
+        p.setPen(QtGui.QColor("black"))
+        p.setFont(QtGui.QFont("Arial",10))
+        p.drawText(x,y-mean/2,self.header)
+        p.drawText(x,y,"0")
+        p.drawText(x,y-mean,str (float (max (self.values))/2))
 
         for i in range (0, len (self.values)):
             val = self.values[i]
             col = self.colors[i]
-            customPen = QtGui.QPen(QtGui.QColor("black"),1)
-            line = QtGui.QGraphicsLineItem(self.mainItem)
-            line.setPen(customPen)
-            line.setLine(x,y,x+width,y)
-            customPen.setStyle(QtCore.Qt.DashLine)
-            line = QtGui.QGraphicsLineItem(self.mainItem)
-            line.setPen(customPen)
-            line.setLine(x,y-50,x+width,y-50)
-            customPen.setStyle(QtCore.Qt.SolidLine)
-            line = QtGui.QGraphicsLineItem(self.mainItem)
-            line.setPen(customPen)
-            sep = float (width) / len(vals)
             posX += sep
-            if col =='red':
-                name = QtGui.QGraphicsSimpleTextItem("+")
-                name.setParentItem(self.mainItem)
-                name.setPos(posX,y-5)
-                name = QtGui.QGraphicsSimpleTextItem("+")
-                name.setParentItem(self.mainItem)
-                name.setPos(posX,y+1)
-            if col =='orange':
-                name = QtGui.QGraphicsSimpleTextItem("+")
-                name.setParentItem(self.mainItem)
-                name.setPos(posX,y-5)
-            if col =='blue':
-                name = QtGui.QGraphicsSimpleTextItem("-")
-                name.setParentItem(self.mainItem)
-                name.setPos(posX,y-5)
-                name = QtGui.QGraphicsSimpleTextItem("-")
-                name.setParentItem(self.mainItem)
-                name.setPos(posX,y+1)
-            if col =='cyan':
-                name = QtGui.QGraphicsSimpleTextItem("-")
-                name.setParentItem(self.mainItem)
-                name.setPos(posX,y-5)
-
-
-
             customPen  = QtGui.QPen(QtGui.QColor(col),1)
-            if abs(val*50) < 100:
-                line = QtGui.QGraphicsLineItem(self.mainItem)
-                line.setPen(customPen)
-                line.setLine(posX,y,posX,y+val*50)
-
-                line = QtGui.QGraphicsLineItem(self.mainItem)
-                line.setPen(customPen)
-                line.setLine(posX+6,y,posX+6,y+val*50)
-
-                line = QtGui.QGraphicsLineItem(self.mainItem)
-                line.setPen(customPen)
-                line.setLine(posX+6,y+val*50,posX,y+val*50)
+            p.setPen(customPen)
+            if abs(val*50) < (self.height-20):
+                p.drawLine(posX,y,posX,y-val*50)
+                p.drawLine(posX+6,y,posX+6,y-val*50)
+                p.drawLine(posX+6,y-val*50,posX,y-val*50)
             else:
-                line = QtGui.QGraphicsLineItem(self.mainItem)
-                line.setPen(customPen)
-                line.setLine(posX,y,posX,y-100)
-                line = QtGui.QGraphicsLineItem(self.mainItem)
-                line.setPen(customPen)
-                line.setLine(posX+6,y,posX+6,y-100)
+                p.drawLine(posX,y,posX,y-100)
+                p.drawLine(posX+6,y,posX+6,y-100)
+                p.drawLine(posX,y-110,posX,y-105)
+                p.drawLine(posX+6,y-110,posX+6,y-105)
+                p.drawLine(posX+6,y-110,posX,y-110)
 
-                line = QtGui.QGraphicsLineItem(self.mainItem)
-                line.setPen(customPen)
-                line.setLine(posX,y-110,posX,y-105)
-                line = QtGui.QGraphicsLineItem(self.mainItem)
-                line.setPen(customPen)
-                line.setLine(posX+6,y-110,posX+6,y-105)
 
-                line = QtGui.QGraphicsLineItem(self.mainItem)
-                line.setPen(customPen)
-                line.setLine(posX+6,y-110,posX,y-110)
-
-        name = QtGui.QGraphicsSimpleTextItem(self.header)
-        name.setParentItem(self.mainItem)
-        name.setPos(x-120,y-275)
-        name = QtGui.QGraphicsSimpleTextItem("0")
-        name.setParentItem(self.mainItem)
-        name.setPos(x-15,y-255)
-        name = QtGui.QGraphicsSimpleTextItem(self.mean)
-        name.setParentItem(self.mainItem)
-        name.setPos(x-15,y-305)
-
+            #if col =='grey':
+            #    name = QtGui.QGraphicsSimpleTextItem("+")
+            #    name.setText("+")
+            #    name.setPos(posX,y-5)
+            #    name = QtGui.QGraphicsSimpleTextItem("+")
+            #    name.setPos(posX,y+1)
+            #    
+            #if col =='orange':
+            #    name = QtGui.QGraphicsSimpleTextItem("+")
+            #    name.setParentItem(self.mainItem)
+            #    name.setPos(posX,y-5)
+            #if col =='blue':
+            #    name = QtGui.QGraphicsSimpleTextItem("-")
+            #    name.setParentItem(self.mainItem)
+            #    name.setPos(posX,y-5)
+            #    name = QtGui.QGraphicsSimpleTextItem("-")
+            #    name.setParentItem(self.mainItem)
+            #    name.setPos(posX,y+1)
+            #if col =='cyan':
+            #    name = QtGui.QGraphicsSimpleTextItem("-")
+            #    name.setParentItem(self.mainItem)
+            #    name.setPos(posX,y-5)
 
 
 class TextFace(Face):
@@ -312,11 +284,11 @@ class TextFace(Face):
         self.font    = QtGui.QFont(ftype,fsize)
 
     def _height(self):
-	fm = QtGui.QFontMetrics(self.font)
-	h =  fm.boundingRect(QtCore.QRect(), \
-				 QtCore.Qt.AlignLeft, \
-				 self.get_text()).height() 
-	return h
+        fm = QtGui.QFontMetrics(self.font)
+        h =  fm.boundingRect(QtCore.QRect(), \
+                             QtCore.Qt.AlignLeft, \
+                             self.get_text()).height() 
+        return h
         # Other buggy alternatives
 	# fm = QtGui.QFontMetrics(self.font)
 	# h = 0
@@ -338,7 +310,7 @@ class TextFace(Face):
 
 
     def _width(self):
-	fm = QtGui.QFontMetrics(self.font)
+        fm = QtGui.QFontMetrics(self.font)
         return fm.size(QtCore.Qt.AlignTop, self.text).width()
 
     def get_text(self):
@@ -360,13 +332,13 @@ class AttrFace(TextFace):
 
     def __init__(self, attr, ftype="Verdana", fsize=10, fgcolor="#000000", bgcolor=None, penwidth=0):
         Face.__init__(self)
-	TextFace.__init__(self, "", ftype, fsize, fgcolor, bgcolor, penwidth)
+        TextFace.__init__(self, "", ftype, fsize, fgcolor, bgcolor, penwidth)
         self.attr     = attr
         self.type     = "text" 
 
     def _width(self):
         text = str(getattr(self.node, self.attr))
-	fm = QtGui.QFontMetrics(self.font)
+        fm = QtGui.QFontMetrics(self.font)
         return fm.size(QtCore.Qt.AlignTop,text).width()
 
     def get_text(self):
@@ -668,7 +640,7 @@ class ProfileFace(Face):
     def draw_line_profile(self):
         # Calculate vector
         mean_vector = self.node.profile
-	deviation_vector = self.node.deviation
+        deviation_vector = self.node.deviation
         if mean_vector is None:
             return
 
@@ -841,15 +813,15 @@ class SequenceFace(Face):
 
     def __init__(self, seq, seqtype, fsize=10, aafg=aafgcolors,  aabg=aabgcolors, ntfg=ntfgcolors, ntbg=ntbgcolors):
         Face.__init__(self)
-        self.seq  = seq
-        self.name = "sequence"
-        self.fsize= fsize
-        self.font = QtGui.QFont("Courier", self.fsize)
+        self.seq   = seq
+        self.name  = "sequence"
+        self.fsize = fsize
+        self.font  = QtGui.QFont("Courier", self.fsize)
         self.style = seqtype
-        self.aafg = aafg
-        self.aabg = aabg
-        self.ntfg = ntfg
-        self.ntbg = ntbg
+        self.aafg  = aafg
+        self.aabg  = aabg
+        self.ntfg  = ntfg
+        self.ntbg  = ntbg
 
     def update_pixmap(self):
 
