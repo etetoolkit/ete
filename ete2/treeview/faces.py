@@ -167,19 +167,22 @@ class Face(object):
 	pass
 
 
-
 class HistFace(Face):
 
     def __init__(self, values, colors = [], header = '', mean = 0, \
                  fsize=10, height = 120):
+
         Face.__init__(self)
         if colors == []: colors = ['grey']*len (values)
         if len (colors) != len (values):
             sys.exit('ERROR: value and color arrays differ in length!!!\n')
-        self.values = map (lambda x: float (x)/max (values) * (height-20),values)
         self.mean = (height-20)/2
+        if mean == 0: self.max = max (values)
+        else:         self.max = mean*2
+        self.values = map (lambda x: \
+                           float (x)/self.max * (height-20),values)
         self.colors = colors
-        # don't why font size have to be readjusted compared to sequence face... don't understand
+        # don't know why font size have to be readjusted compared to sequence face... don't understand :|
         self.fsize  = int ((float (fsize)/6)*8)
         self.font   = QtGui.QFont("Courier", self.fsize)
         self.height = height
@@ -195,21 +198,21 @@ class HistFace(Face):
         p = QtGui.QPainter(self.pixmap)
         x = 0
         y = height - fm.underlinePos()*2
+
         customPen = QtGui.QPen(QtGui.QColor("black"),1)
         p.setPen(customPen)
         p.drawLine(x,y,x+width,y)
         customPen.setStyle(QtCore.Qt.DashLine)
         p.setPen(customPen)
         p.drawLine(x,y-self.mean,x+width,y-self.mean)
+
         customPen.setStyle(QtCore.Qt.SolidLine)
         p.setPen(customPen)
         sep = float (width) / len(self.values)
         posX = x - sep
         p.setPen(QtGui.QColor("black"))
-        p.setFont(QtGui.QFont("Arial",10))
-        p.drawText(x,y-mean/2,self.header)
-        p.drawText(x,y,"0")
-        p.drawText(x,y-mean,str (float (max (self.values))/2))
+        p.setFont(QtGui.QFont("Arial",7))
+        p.drawText(x,y-height+10,self.header)
 
         for i in range (0, len (self.values)):
             val = self.values[i]
@@ -217,17 +220,16 @@ class HistFace(Face):
             posX += sep
             customPen  = QtGui.QPen(QtGui.QColor(col),1)
             p.setPen(customPen)
-            if abs(val*50) < (self.height-20):
-                p.drawLine(posX,y,posX,y-val*50)
-                p.drawLine(posX+6,y,posX+6,y-val*50)
-                p.drawLine(posX+6,y-val*50,posX,y-val*50)
+            if abs(val) <= (self.height-20):
+                p.drawLine(posX,y,posX,y-val)
+                p.drawLine(posX+6,y,posX+6,y-val)
+                p.drawLine(posX+6,y-val,posX,y-val)
             else:
-                p.drawLine(posX,y,posX,y-100)
-                p.drawLine(posX+6,y,posX+6,y-100)
-                p.drawLine(posX,y-110,posX,y-105)
-                p.drawLine(posX+6,y-110,posX+6,y-105)
-                p.drawLine(posX+6,y-110,posX,y-110)
-
+                p.drawLine(posX,y,posX,y-(self.height-20))
+                p.drawLine(posX+6,y,posX+6,y-(self.height-20))
+                p.drawLine(posX,y-(self.height-10),posX,y-(self.height-15))
+                p.drawLine(posX+6,y-(self.height-10),posX+6,y-(self.height-15))
+                p.drawLine(posX+6,y-(self.height-10),posX,y-(self.height-10))
 
             #if col =='grey':
             #    name = QtGui.QGraphicsSimpleTextItem("+")

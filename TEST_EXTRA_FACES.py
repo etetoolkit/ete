@@ -26,7 +26,7 @@ string = 'aaaaaaaaaaaaaaaaaaaaaaaaiiiiiiiipppppppppppppaaa'
 
 values = len (re.sub('[^a]','',string))*[1] + len (re.sub('[^i]','',string))*[0.5]+len (re.sub('[^p]','',string))*[2.2]
 
-AH1 = faces.HistFace(values=values)
+AH1 = faces.HistFace(values=values,header='bonjour'*30,mean=1)
 
 AH1.aligned = True
 
@@ -40,6 +40,6 @@ n = t.get_leaves()[-1]
 flist= [A1,A2,N1,N2]
 # Puedes pasar la lista de faces arriba o debajo del arbol cuando
 # llamas a show().
-t.show(ly, down_faces=[AH1])
+t.show(ly, down_faces=[AH1,AH1])
 
-#t.render('lolo.pdf',ly, up_faces=flist, down_faces=flist)
+#t.render('lolo.pdf',ly, down_faces=[AH1], up_faces=[AH1])
