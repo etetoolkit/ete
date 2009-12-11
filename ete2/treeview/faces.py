@@ -166,6 +166,8 @@ class Face(object):
     def update_pixmap(self):
         pass
 
+
+
 class TextFace(Face):
     """ Creates a new text face object.
 
@@ -199,8 +201,8 @@ class TextFace(Face):
     def _height(self):
         fm = QtGui.QFontMetrics(self.font)
         h =  fm.boundingRect(QtCore.QRect(), \
-                                 QtCore.Qt.AlignLeft, \
-                                 self.get_text()).height()
+                             QtCore.Qt.AlignLeft, \
+                             self.get_text()).height() 
         return h
         # Other buggy alternatives
         # fm = QtGui.QFontMetrics(self.font)
@@ -726,15 +728,15 @@ class SequenceFace(Face):
 
     def __init__(self, seq, seqtype, fsize=10, aafg=aafgcolors,  aabg=aabgcolors, ntfg=ntfgcolors, ntbg=ntbgcolors):
         Face.__init__(self)
-        self.seq  = seq
-        self.name = "sequence"
-        self.fsize= fsize
-        self.font = QtGui.QFont("Courier", self.fsize)
+        self.seq   = seq
+        self.name  = "sequence"
+        self.fsize = fsize
+        self.font  = QtGui.QFont("Courier", self.fsize)
         self.style = seqtype
-        self.aafg = aafg
-        self.aabg = aabg
-        self.ntfg = ntfg
-        self.ntbg = ntbg
+        self.aafg  = aafg
+        self.aabg  = aabg
+        self.ntfg  = ntfg
+        self.ntbg  = ntbg
 
     def update_pixmap(self):
 
