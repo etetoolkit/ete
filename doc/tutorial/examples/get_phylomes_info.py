@@ -23,5 +23,5 @@ idmatches = p.search_id("ENSG00000146556")
 # are always reconstructed using the longest isoform associated to a
 # gene.
 #
-print p.search_id("Hsa0000125") 
+print p.search_id("Hsa0000125")
 # ['Hsa0000122']

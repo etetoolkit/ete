@@ -8,9 +8,9 @@ nw = """
 ,Mmu_001),((Hsa_004,Ptr_004),Mmu_004))),(Ptr_002,(Hsa_002,Mmu_002))));
 """
 t = PhyloTree(nw)
-print "Original tree:", 
+print "Original tree:",
 print t
-# 
+#
 #             /-Dme_001
 #   /--------|
 #  |          \-Dme_002
@@ -41,7 +41,7 @@ print t
 # Create a dictionary with relative ages for the species present in
 # the phylogenetic tree.  Note that ages are only relative numbers to
 # define which species are older, and that different species can
-# belong to the same age. 
+# belong to the same age.
 species2age = {
   'Hsa': 1, # Homo sapiens (Hominids)
   'Ptr': 2, # P. troglodytes (primates)
@@ -50,7 +50,7 @@ species2age = {
   'Cfa': 3, # Canis familiaris (mammals)
   'Dme': 4  # Drosophila melanogaster (metazoa)
 }
-# We can translate each number to its correspondig taxonomic number 
+# We can translate each number to its correspondig taxonomic number
 age2name = {
   1:"hominids",
   2:"primates",
@@ -64,9 +64,8 @@ print "The duplication event leading to the human sequences Hsa_001 and "+\
     "Hsa_004 is dated at: ", age2name[event1.get_age(species2age)]
 print "The duplication event leading to the human sequences Hsa_001 and "+\
     "Hsa_002 is dated at: ", age2name[event2.get_age(species2age)]
-# The duplication event leading to the human sequences Hsa_001 and Hsa_004 
+# The duplication event leading to the human sequences Hsa_001 and Hsa_004
 # is dated at:  primates
 #
-# The duplication event leading to the human sequences Hsa_001 and Hsa_002 
+# The duplication event leading to the human sequences Hsa_001 and Hsa_002
 # is dated at:  mammals
-

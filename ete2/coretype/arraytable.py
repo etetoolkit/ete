@@ -1,21 +1,21 @@
 # #START_LICENSE###########################################################
 #
-# Copyright (C) 2009 by Jaime Huerta Cepas. All rights reserved.  
+# Copyright (C) 2009 by Jaime Huerta Cepas. All rights reserved.
 # email: jhcepas@gmail.com
 #
-# This file is part of the Environment for Tree Exploration program (ETE). 
+# This file is part of the Environment for Tree Exploration program (ETE).
 # http://ete.cgenomics.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
@@ -48,7 +48,7 @@ class ArrayTable(object):
         self.matrix   = None
         self.mtype = None
 
-	# If matrix file is supplied
+        # If matrix file is supplied
         if matrix_file is not None:
             read_arraytable(matrix_file, \
                             mtype=mtype, \
@@ -56,27 +56,27 @@ class ArrayTable(object):
 
     def get_row_vector(self,rowname):
         """ Returns the vector associated to the given row name """
-	return self.rowValues.get(rowname,None)
+        return self.rowValues.get(rowname,None)
 
 
     def get_column_vector(self,colname):
         """ Returns the vector associated to the given column name """
-	return self.colValues.get(colname,None)
+        return self.colValues.get(colname,None)
 
 
     def get_several_column_vectors(self,colnames):
         """ Returns a list of vectors associated to several column names """
-	vectors = [self.colValues[cname] for cname in colnames]
-	return numpy.array(vectors)
-        
+        vectors = [self.colValues[cname] for cname in colnames]
+        return numpy.array(vectors)
+
     def get_several_row_vectors(self,rownames):
         """ Returns a list vectors associated to several row names """
-	vectors = [self.rowValues[rname] for rname in rownames]
-	return numpy.array(vectors)
+        vectors = [self.rowValues[rname] for rname in rownames]
+        return numpy.array(vectors)
 
     def remove_column(self,colname):
         """Removes the given column form the current dataset """
-        col_value = self.colValues.pop(colname, None) 
+        col_value = self.colValues.pop(colname, None)
         if col_value != None:
             new_indexes = range(len(self.colNames))
             index = self.colNames.index(colname)
@@ -88,20 +88,20 @@ class ArrayTable(object):
 
     def merge_columns(self, groups, grouping_criterion):
         """ Returns a new ArrayTable object in which columns are
-        merged according to a given criterion. 
+        merged according to a given criterion.
 
-	'groups' argument must be a dictionary in which keys are the
+        'groups' argument must be a dictionary in which keys are the
         new column names, and each value is the list of current
         column names to be merged.
 
-	'grouping_criterion' must be 'min', 'max' or 'mean', and
-	defines how numeric values will be merged.
+        'grouping_criterion' must be 'min', 'max' or 'mean', and
+        defines how numeric values will be merged.
 
-	Example: 
+        Example:
            my_groups = {'NewColumn':['column5', 'column6']}
-	   new_Array = Array.merge_columns(my_groups, 'max')
+           new_Array = Array.merge_columns(my_groups, 'max')
 
-	"""
+        """
 
         if grouping_criterion == "max":
             grouping_f = get_max_vector
@@ -115,26 +115,26 @@ class ArrayTable(object):
         grouped_array = self.__class__()
         grouped_matrix = []
         colNames = []
-	alltnames = set([])
+        alltnames = set([])
         for gname,tnames in groups.iteritems():
             all_vectors=[]
             for tn in tnames:
-                if tn not in self.colValues: 
+                if tn not in self.colValues:
                     raise ValueError, str(tn)+" column not found."
-		if tn in alltnames:
-		    raise ValueError, str(tn)+" duplicated column name for merging"
-		alltnames.add(tn)
+                if tn in alltnames:
+                    raise ValueError, str(tn)+" duplicated column name for merging"
+                alltnames.add(tn)
                 vector = self.get_column_vector(tn).astype(float)
                 all_vectors.append(vector)
             # Store the group vector = max expression of all items in group
-	    grouped_matrix.append(grouping_f(all_vectors))
-	    # store group name
-	    colNames.append(gname)
+            grouped_matrix.append(grouping_f(all_vectors))
+            # store group name
+            colNames.append(gname)
 
-	for cname in self.colNames:
-	    if cname not in alltnames:
-		grouped_matrix.append(self.get_column_vector(cname))
-		colNames.append(cname)
+        for cname in self.colNames:
+            if cname not in alltnames:
+                grouped_matrix.append(self.get_column_vector(cname))
+                colNames.append(cname)
 
         grouped_array.rowNames= self.rowNames
         grouped_array.colNames= colNames
@@ -143,7 +143,7 @@ class ArrayTable(object):
         return grouped_array
 
     def transpose(self):
-	""" Returns a new ArrayTable in which current matrix is transposed. """
+        """ Returns a new ArrayTable in which current matrix is transposed. """
 
         transposedA = self.__class__()
         transposedM = self.matrix.transpose()
@@ -159,31 +159,31 @@ class ArrayTable(object):
         return transposedA
 
     def _link_names2matrix(self, m):
-	""" Synchronize curent column and row names to the given matrix"""
-	if len(self.rowNames) != m.shape[0]:
-	    raise 'ValueError' , "Expecting matrix with  %d rows" % m.size[0]
+        """ Synchronize curent column and row names to the given matrix"""
+        if len(self.rowNames) != m.shape[0]:
+            raise 'ValueError' , "Expecting matrix with  %d rows" % m.size[0]
 
-	if len(self.colNames) != m.shape[1]:
-	    raise 'ValueError' , "Expecting matrix with  %d columns" % m.size[1]
+        if len(self.colNames) != m.shape[1]:
+            raise 'ValueError' , "Expecting matrix with  %d columns" % m.size[1]
 
-	self.matrix = m
-	self.colValues.clear()
-	self.rowValues.clear()
-	# link columns names to vectors
-	i = 0
-	for colname in self.colNames:
-	    self.colValues[colname] = self.matrix[:,i]
-	    i+=1
-	# link row names to vectors
-	i = 0
-	for rowname in self.rowNames:
-	    self.rowValues[rowname] = self.matrix[i,:]
-	    i+=1
+        self.matrix = m
+        self.colValues.clear()
+        self.rowValues.clear()
+        # link columns names to vectors
+        i = 0
+        for colname in self.colNames:
+            self.colValues[colname] = self.matrix[:,i]
+            i+=1
+        # link row names to vectors
+        i = 0
+        for rowname in self.rowNames:
+            self.rowValues[rowname] = self.matrix[i,:]
+            i+=1
 
     def write(self, fname, colnames=[]):
-	write_arraytable(self, fname, colnames=colnames)
+        write_arraytable(self, fname, colnames=colnames)
 
-	
+
 
 def get_centroid_dist(vcenter,vlist,fdist):
     d = 0.0
@@ -214,10 +214,10 @@ def safe_mean_vector(vectors):
         return vectors[0], numpy.zeros(len(vectors[0]))
     # Takes the vector length form the first item
     length = len(vectors[0])
-    
+
     safe_mean = []
     safe_std  = []
-    
+
     for pos in xrange(length):
         pos_mean = []
         for v in vectors:
@@ -232,19 +232,19 @@ def safe_mean_vector(vectors):
 # ####################
 
 def pearson_dist(v1,v2):
-    if (v1 == v2).all(): 
+    if (v1 == v2).all():
         return 0.0
     else:
         return 1.0 - stats.pearsonr(v1,v2)[0]
 
 def spearman_dist(v1,v2):
-    if (v1 == v2).all(): 
+    if (v1 == v2).all():
         return 0.0
     else:
         return 1.0 - stats.spearmanr(v1,v2)[0]
 
 def euclidean_dist(v1,v2):
-    if (v1 == v2).all(): 
+    if (v1 == v2).all():
         return 0.0
     else:
         return math.sqrt( square_euclidean_dist(v1,v2) )
@@ -267,7 +267,7 @@ def get_min_vector(vlist):
 
 
 def square_euclidean_dist(v1,v2):
-    if (v1 == v2).all(): 
+    if (v1 == v2).all():
         return 0.0
     valids  = 0
     distance= 0.0

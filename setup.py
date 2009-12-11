@@ -1,23 +1,23 @@
-#! /usr/bin/env python 
+#! /usr/bin/env python
 
 # #START_LICENSE###########################################################
 #
-# Copyright (C) 2009 by Jaime Huerta Cepas. All rights reserved.  
+# Copyright (C) 2009 by Jaime Huerta Cepas. All rights reserved.
 # email: jhcepas@gmail.com
 #
-# This file is part of the Environment for Tree Exploration program (ETE). 
+# This file is part of the Environment for Tree Exploration program (ETE).
 # http://ete.cgenomics.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
@@ -40,9 +40,9 @@ python_dependencies = [
 
 def can_import(mname):
     try:
-	return __import__(mname)
+        return __import__(mname)
     except:
-	return None
+        return None
 
 def ask(string,valid_values,default=-1,case_sensitive=False):
     """ Asks for a keyborad answer """
@@ -57,17 +57,17 @@ def ask(string,valid_values,default=-1,case_sensitive=False):
             v = v.lower()
     return v
 
-print 
+print
 print "Installing ETE (The python Environment for Tree Exploration)."
 print
 print "Checking dependencies..."
 for mname, msg, ex in python_dependencies:
     if not can_import(mname):
-	print mname, "cannot be imported."
-	print msg
-	con = ask( "Do you want to continue with the installation?", ["y", "n"])
-	if con == "n":
-	    sys.exit()
+        print mname, "cannot be imported."
+        print msg
+        con = ask( "Do you want to continue with the installation?", ["y", "n"])
+        if con == "n":
+            sys.exit()
 
 # SETUP
 setup(
@@ -80,7 +80,7 @@ setup(
     # Project uses reStructuredText, so ensure that the docutils get
     # installed or upgraded on the target machine
     install_requires = [
-	],
+        ],
 
     package_data = {
     },
@@ -90,6 +90,5 @@ setup(
     description = "A python Environment for Tree Exploration",
     license = "GPLv3",
     keywords = "bioinformatics phylogeny phylogenomics genomics ete tree clustering phylogenetics",
-    url = "http://ete.cgenomics.org",  
+    url = "http://ete.cgenomics.org",
 )
-

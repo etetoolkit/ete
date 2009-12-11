@@ -1,7 +1,7 @@
 import random
 from ete_dev import Tree
 # Creates a normal tree
-t = Tree( '((H:0.3,I:0.1):0.5, A:1, (B:0.4,(C:0.5,(J:1.3, (F:1.2, D:0.1):0.5):0.5):0.5):0.5);' ) 
+t = Tree( '((H:0.3,I:0.1):0.5, A:1, (B:0.4,(C:0.5,(J:1.3, (F:1.2, D:0.1):0.5):0.5):0.5):0.5);' )
 print t
 # Let's locate some nodes using the get common ancestor method
 ancestor=t.get_common_ancestor("J", "F", "C")
@@ -22,10 +22,10 @@ ancestor.add_features(nodetype="internal")
 # values)
 for leaf in t.traverse():
     if leaf.name in "AEIOU":
-	leaf.add_features(vowel=True, confidence=random.random())
+        leaf.add_features(vowel=True, confidence=random.random())
     else:
-	leaf.add_features(vowel=False, confidence=random.random())
-# Now we use these information to analyze the tree. 
+        leaf.add_features(vowel=False, confidence=random.random())
+# Now we use these information to analyze the tree.
 print "This tree has", len(t.search_nodes(vowel=True)), "vowel nodes"
 print "Which are", [leaf.name for leaf in t.iter_leaves() if leaf.vowel==True]
 # But features may refer to any kind of data, not only simple
@@ -40,7 +40,7 @@ ancestor.add_feature("long_branch_nodes", matches)
 # Prints the precomputed nodes
 print "These are nodes under ancestor with long branches", \
     [n.name for n in ancestor.long_branch_nodes]
-# We can also use the add_feature() method to dynamically add new features. 
+# We can also use the add_feature() method to dynamically add new features.
 label = raw_input("custom label:")
 value = raw_input("custom label value:")
 ancestor.add_feature(label, value)

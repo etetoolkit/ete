@@ -1,6 +1,6 @@
 from ete2 import Tree
 #Loads a tree
-t = Tree( '((H:1,I:1):0.5, A:1, (B:1,(C:1,D:1):0.5):0.5);' ) 
+t = Tree( '((H:1,I:1):0.5, A:1, (B:1,(C:1,D:1):0.5):0.5);' )
 print t
 #                    /-H
 #          /--------|

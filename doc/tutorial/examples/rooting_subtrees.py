@@ -31,7 +31,7 @@ node1.set_outgroup("H")
 node2.set_outgroup("E")
 print "Tree after rooting each node independently:"
 print t
-# 
+#
 #                              /-F
 #                             |
 #                    /--------|                    /-L

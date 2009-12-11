@@ -12,7 +12,7 @@ t = PhyloTree("(((Hsa_001,Ptr_001),(Cfa_001,Mms_001)),(Dme_001,Dme_002));")
 #         |          /-Dme_001
 #          \--------|
 #                    \-Dme_002
-# 
+#
 # Prints current leaf names and species codes
 print "Deafult mode:"
 for n in t.get_leaves():

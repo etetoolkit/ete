@@ -55,7 +55,7 @@ print t.write(features=["sequence"], format=9)
 # VQYLSEFGDLNEALNSYYASQTDDQPDRREEAHQFMALTNVSH----------]),seqD[&&NHX:sequence=MAEAPD
 # ETIQQFMALTNVSHNIAVQYLSEFGDLNEAL--------------REEAHQ----------FMALTNVSH]);
 #
-# And yes, you can save this newick text and reload it into a PhyloTree instance. 
+# And yes, you can save this newick text and reload it into a PhyloTree instance.
 sametree = PhyloTree(t.write(features=["sequence"]))
 print "Recovered tree with sequence features:"
 print sametree
@@ -68,5 +68,5 @@ print sametree
 #         |
 #          \-seqD
 #
-print "seqA sequence:", (t&"seqA").sequence 
+print "seqA sequence:", (t&"seqA").sequence
 # MAEIPDETIQQFMALT---HNIAVQYLSEFGDLNEALNSYYASQTDDIKDRREEAHQFMALTNVSHQFMALTNVSH

@@ -1,21 +1,21 @@
 # #START_LICENSE###########################################################
 #
-# Copyright (C) 2009 by Jaime Huerta Cepas. All rights reserved.  
+# Copyright (C) 2009 by Jaime Huerta Cepas. All rights reserved.
 # email: jhcepas@gmail.com
 #
-# This file is part of the Environment for Tree Exploration program (ETE). 
+# This file is part of the Environment for Tree Exploration program (ETE).
 # http://ete.cgenomics.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
@@ -23,14 +23,14 @@
 
 
 import unittest
-import random 
+import random
 import sys
 import numpy
 
 from ete_dev import *
 from ete_dev.coretype.tree import asRphylo, asETE
 
-# test datasets 
+# test datasets
 nw_simple1 = '((A, (B,C)),D);'
 nw_simple2 = '((D, (B,C)),A);'
 nw_simple3 = '((B, (A,C)),D);'
@@ -74,7 +74,7 @@ KKEQQGNKSQLEEVKEKLHSIDQEIDELNDKIKKSMSRREMILTQVEAVNIKLEKAKRERFLLEETMVQLISKEEKAKIN
 LKKLDNYQKEAEKSMLRKMTLSTRRDELQQKIRDIGLLPDDSADKYHNMSSSELLKELSSINDKISKMTNVNKRALENFKKFDDKQKDVMKRAKELDESKESIEKLIDKLKKQKVEAVENTFKKVSENFTQLFEKMVPRGTGKLVIHRRENEPSKPSKRQQKKRKRQETEDVHFNDDQDENSSQDSIYSGVSIEVSFNSKKDEQVHVEQLSGGQKTVCAIALILAIQMV
 DPAPFYLFDEIDAALDKQYRTAVAATVKQLSSQAQFICTTFRGDMIAVADRFYRVNFENKISTVVEVTKAEALNFVTGREKNENVI
 
-> Ago0000006 
+> Ago0000006
 MYKLQVVLVPPSIETELPVVGLPAGSLDNSGFAQGHAQPISTSSIAGGRGEFSSGIGNTSANAVYLSGLVGAHIRRARGRKFLHFTKPTNSLYELADEIVEKCAKMYPGLAEEPEIVTLQDVNECDLDPDFVVKDVFNMDNTVRVLLRNDLDEAAGDRTIYMKKRKLNTGAAGVPAAGGSVQAAVLNVAKKRASIKTSALRVSTPLANQIYPPPTKKQVNSDFEDDDVA
 DKSILPPPPPQSPPIRISSGMDQKRINMNDNAVSKSETVDPNKSRQQRLPSGTPMRPVSMVETPNRVSLTGPTVLSESTVSQKSTATPIITNIRITSGMLRIPEPRLSEVEKELKEGPASPAVDLPARPSRIPMKKPYNPSMQQDEDLSSSSSSTEDNVPAVPYENELERSGPTMATRQSSSTIADDQGSPTKKSRFEKNNIGLVELPSPRKSSLEKKVSKLNKGLASD
 KGHEDSTGGITRKDHFSDEESEASQNGSVVVNRPETQREKSFQKSELLKIFNSKRFDLPPRFKNSASEDEPTSSNQSRKKKPYVTVLNKDIDNSSPDPRNIIPRRTQRHAAQKAAQSISSGTSRSNVFSGEEKNKYSEENQGDNIASDDNEGVYVHESNALKKLNVHPLKESVVQDTLTGAQDINNPVSSRTVHPSISEHAVTAAASGTLSSNPEYRVAPIVTPTLMSS
@@ -260,294 +260,294 @@ VKNSWGPQWGMNGYFLIERGKNMCGLAACASYPIPLV
 
 class Test_Coretype_SeqGroup(unittest.TestCase):
     def test_fasta_parser(self):
-	# FASTA IO
-	open("/tmp/ete_test_fasta.txt","w").write(fasta_example)
-	# Test reading from file and from string
-	SEQS = SeqGroup(fasta_example)
-	SEQS2 = SeqGroup("/tmp/ete_test_fasta.txt")
+        # FASTA IO
+        open("/tmp/ete_test_fasta.txt","w").write(fasta_example)
+        # Test reading from file and from string
+        SEQS = SeqGroup(fasta_example)
+        SEQS2 = SeqGroup("/tmp/ete_test_fasta.txt")
 
-	# Compare the result is the same
-	self.assertEqual(SEQS.write(), SEQS2.write())
+        # Compare the result is the same
+        self.assertEqual(SEQS.write(), SEQS2.write())
 
-	# Test writing into file 
-	SEQS.write(format="fasta", outfile="/tmp/ete_fastaIO")
-	self.assertEqual(SEQS.write(), fasta_example_output)
+        # Test writing into file
+        SEQS.write(format="fasta", outfile="/tmp/ete_fastaIO")
+        self.assertEqual(SEQS.write(), fasta_example_output)
 
-	# Test SeqGroup obj integrity
-	self.assertEqual(SEQS.get_seq("Ago0000003"), Ago0000003)
-	self.assertEqual(SEQS2.get_seq("Ago0000003"), Ago0000003)
-	self.assertEqual(len(SEQS), len(SEQS.id2seq))
-	self.assertEqual("Ago0000003" in SEQS, True)
-	self.assertEqual("Ago" in SEQS, False)
-	self.assertEqual(SEQS.get_entries(), [e for e in SEQS])
+        # Test SeqGroup obj integrity
+        self.assertEqual(SEQS.get_seq("Ago0000003"), Ago0000003)
+        self.assertEqual(SEQS2.get_seq("Ago0000003"), Ago0000003)
+        self.assertEqual(len(SEQS), len(SEQS.id2seq))
+        self.assertEqual("Ago0000003" in SEQS, True)
+        self.assertEqual("Ago" in SEQS, False)
+        self.assertEqual(SEQS.get_entries(), [e for e in SEQS])
 
-	# Check that the default  write format is FASTA
-	self.assertEqual(SEQS.__str__(), SEQS.write(format="fasta"))
+        # Check that the default  write format is FASTA
+        self.assertEqual(SEQS.__str__(), SEQS.write(format="fasta"))
 
 
     def test_phylip_parser(self):
-	# PHYLIP INTERLEAVED
-	open("/tmp/ete_test_iphylip.txt","w").write(phylip_interlived)
-	SEQS = SeqGroup("/tmp/ete_test_iphylip.txt", format="iphylip")
-	SEQS2 = SeqGroup(phylip_interlived, format="iphylip")
-	self.assertEqual(SEQS.write(), SEQS2.write())
-	SEQS.write(format="iphylip",  outfile="/tmp/ete_write_file")
-	self.assertEqual(SEQS.write(format="iphylip"), phylip_interlived)
+        # PHYLIP INTERLEAVED
+        open("/tmp/ete_test_iphylip.txt","w").write(phylip_interlived)
+        SEQS = SeqGroup("/tmp/ete_test_iphylip.txt", format="iphylip")
+        SEQS2 = SeqGroup(phylip_interlived, format="iphylip")
+        self.assertEqual(SEQS.write(), SEQS2.write())
+        SEQS.write(format="iphylip",  outfile="/tmp/ete_write_file")
+        self.assertEqual(SEQS.write(format="iphylip"), phylip_interlived)
 
-	# Test SeqGroup obj integrity
-	self.assertEqual(SEQS.get_seq("CYS1_DICDI"), CYS1_DICDI)
-	self.assertEqual(SEQS2.get_seq("CYS1_DICDI"), CYS1_DICDI)
-	self.assertEqual(len(SEQS), len(SEQS.id2seq))
-	self.assertEqual("CYS1_DICDI" in SEQS, True)
-	self.assertEqual(SEQS.get_entries(), [e for e in SEQS])
+        # Test SeqGroup obj integrity
+        self.assertEqual(SEQS.get_seq("CYS1_DICDI"), CYS1_DICDI)
+        self.assertEqual(SEQS2.get_seq("CYS1_DICDI"), CYS1_DICDI)
+        self.assertEqual(len(SEQS), len(SEQS.id2seq))
+        self.assertEqual("CYS1_DICDI" in SEQS, True)
+        self.assertEqual(SEQS.get_entries(), [e for e in SEQS])
 
-	# PHYLIP SEQUENCIAL FORMAT
-	open("/tmp/ete_test_phylip.txt","w").write(phylip_sequencial)
-	SEQS = SeqGroup("/tmp/ete_test_phylip.txt", format="phylip")
-	SEQS2 = SeqGroup(phylip_sequencial, format="phylip")
-	self.assertEqual(SEQS.write(), SEQS2.write())
-	SEQS.write(format="phylip",  outfile="/tmp/ete_write_file")
-	self.assertEqual(SEQS.write(format="phylip"), phylip_sequencial)
+        # PHYLIP SEQUENCIAL FORMAT
+        open("/tmp/ete_test_phylip.txt","w").write(phylip_sequencial)
+        SEQS = SeqGroup("/tmp/ete_test_phylip.txt", format="phylip")
+        SEQS2 = SeqGroup(phylip_sequencial, format="phylip")
+        self.assertEqual(SEQS.write(), SEQS2.write())
+        SEQS.write(format="phylip",  outfile="/tmp/ete_write_file")
+        self.assertEqual(SEQS.write(format="phylip"), phylip_sequencial)
 
-	# Test SeqGroup obj integrity
-	self.assertEqual(SEQS.get_seq("CYS1_DICDI"), CYS1_DICDI)
-	self.assertEqual(SEQS2.get_seq("CYS1_DICDI"), CYS1_DICDI)
-	self.assertEqual(len(SEQS), len(SEQS.id2seq))
-	self.assertEqual("CYS1_DICDI" in SEQS, True)
-	self.assertEqual("CYS1" in SEQS, False)
-	self.assertEqual(SEQS.get_entries(), [e for e in SEQS])
+        # Test SeqGroup obj integrity
+        self.assertEqual(SEQS.get_seq("CYS1_DICDI"), CYS1_DICDI)
+        self.assertEqual(SEQS2.get_seq("CYS1_DICDI"), CYS1_DICDI)
+        self.assertEqual(len(SEQS), len(SEQS.id2seq))
+        self.assertEqual("CYS1_DICDI" in SEQS, True)
+        self.assertEqual("CYS1" in SEQS, False)
+        self.assertEqual(SEQS.get_entries(), [e for e in SEQS])
 
 
 class Test_Coretype_Tree(unittest.TestCase):
     def test_tree_read_and_write(self):
-	# Read and write newick tree from file (and support for NHX
-	# format): newick parser
-	open("/tmp/etetemptree.nw","w").write(nw_full)
-	t = Tree("/tmp/etetemptree.nw")
-	self.assertEqual(nw_full, t.write(features=["flag","mood"]))
-	self.assertEqual(nw_topo,  t.write(format=9))
-	self.assertEqual( nw_dist, t.write(format=5))
+        # Read and write newick tree from file (and support for NHX
+        # format): newick parser
+        open("/tmp/etetemptree.nw","w").write(nw_full)
+        t = Tree("/tmp/etetemptree.nw")
+        self.assertEqual(nw_full, t.write(features=["flag","mood"]))
+        self.assertEqual(nw_topo,  t.write(format=9))
+        self.assertEqual( nw_dist, t.write(format=5))
 
-	# Read and write newick tree from *string* (and support for NHX
-	# format)
-	t = Tree(nw_full)
-	self.assertEqual(nw_full, t.write(features=["flag","mood"]))
-	self.assertEqual(nw_topo, t.write(format=9))
-	self.assertEqual( nw_dist, t.write(format=5))
+        # Read and write newick tree from *string* (and support for NHX
+        # format)
+        t = Tree(nw_full)
+        self.assertEqual(nw_full, t.write(features=["flag","mood"]))
+        self.assertEqual(nw_topo, t.write(format=9))
+        self.assertEqual( nw_dist, t.write(format=5))
 
-	# Read complex newick
-	t = Tree(nw2_full)
-	self.assertEqual(nw2_full,  t.write())
+        # Read complex newick
+        t = Tree(nw2_full)
+        self.assertEqual(nw2_full,  t.write())
 
-	# Read wierd topologies
-	t = Tree(nw_simple5)
-	self.assertEqual(nw_simple5,  t.write(format=9))
-	t = Tree(nw_simple6)
-	self.assertEqual(nw_simple6,  t.write(format=9))
+        # Read wierd topologies
+        t = Tree(nw_simple5)
+        self.assertEqual(nw_simple5,  t.write(format=9))
+        t = Tree(nw_simple6)
+        self.assertEqual(nw_simple6,  t.write(format=9))
 
 
     def test_newick_formats(self):
 
-	from ete_dev.parser.newick import print_supported_formats, NW_FORMAT
-	print_supported_formats()
-	
-	# Let's stress a bit
-	for i in xrange(10):
-	    t = Tree()
-	    t.populate(50)
-	    for f in NW_FORMAT:
-		self.assertEqual(t.write(format=f), Tree(t.write(format=f),format=f).write(format=f))
+        from ete_dev.parser.newick import print_supported_formats, NW_FORMAT
+        print_supported_formats()
 
-	nw0 = "((A:0.813705,(E:0.545591,D:0.411772)1.000000:0.137245)1.000000:0.976306,C:0.074268);"
-	nw1 = "((A:0.813705,(E:0.545591,D:0.411772)B:0.137245)A:0.976306,C:0.074268);"
-	nw2 = "((A:0.813705,(E:0.545591,D:0.411772)1.000000:0.137245)1.000000:0.976306,C:0.074268);"
-	nw3 = "((A:0.813705,(E:0.545591,D:0.411772)B:0.137245)A:0.976306,C:0.074268);"
-	nw4 = "((A:0.813705,(E:0.545591,D:0.411772)),C:0.074268);"
-	nw5 = "((A:0.813705,(E:0.545591,D:0.411772):0.137245):0.976306,C:0.074268);"
-	nw6 = "((A:0.813705,(E:0.545591,D:0.411772)B)A,C:0.074268);"
-	nw7 = "((A,(E,D)B)A,C);"
-	nw8 = "((A,(E,D)),C);"
-	nw9 = "((,(,)),);"
-	
+        # Let's stress a bit
+        for i in xrange(10):
+            t = Tree()
+            t.populate(50)
+            for f in NW_FORMAT:
+                self.assertEqual(t.write(format=f), Tree(t.write(format=f),format=f).write(format=f))
+
+        nw0 = "((A:0.813705,(E:0.545591,D:0.411772)1.000000:0.137245)1.000000:0.976306,C:0.074268);"
+        nw1 = "((A:0.813705,(E:0.545591,D:0.411772)B:0.137245)A:0.976306,C:0.074268);"
+        nw2 = "((A:0.813705,(E:0.545591,D:0.411772)1.000000:0.137245)1.000000:0.976306,C:0.074268);"
+        nw3 = "((A:0.813705,(E:0.545591,D:0.411772)B:0.137245)A:0.976306,C:0.074268);"
+        nw4 = "((A:0.813705,(E:0.545591,D:0.411772)),C:0.074268);"
+        nw5 = "((A:0.813705,(E:0.545591,D:0.411772):0.137245):0.976306,C:0.074268);"
+        nw6 = "((A:0.813705,(E:0.545591,D:0.411772)B)A,C:0.074268);"
+        nw7 = "((A,(E,D)B)A,C);"
+        nw8 = "((A,(E,D)),C);"
+        nw9 = "((,(,)),);"
+
 
     def test_tree_manipulation(self):
-	nw_tree = "((NoName:1.000000,Turtle:1.300000)1.000000:1.000000,(A:0.300000,B:2.400000)1.000000:0.430000);"
+        nw_tree = "((NoName:1.000000,Turtle:1.300000)1.000000:1.000000,(A:0.300000,B:2.400000)1.000000:0.430000);"
 
-	# Manipulate Topologys
-	# Adding and removing nodes (add_child, remove_child,
-	# add_sister, remove_sister). The resulting neiwck tree should
-	# match the nw_tree defined before. 
-	t = Tree()
-	c1 = t.add_child()
-	c2 = t.add_child(dist=0.43)
-	n = TreeNode()
-	_n = c1.add_child(n)
-	c3 = _n.add_sister(name="Turtle", dist="1.3")
-	c4 = c2.add_child(name="A", dist="0.3")
+        # Manipulate Topologys
+        # Adding and removing nodes (add_child, remove_child,
+        # add_sister, remove_sister). The resulting neiwck tree should
+        # match the nw_tree defined before.
+        t = Tree()
+        c1 = t.add_child()
+        c2 = t.add_child(dist=0.43)
+        n = TreeNode()
+        _n = c1.add_child(n)
+        c3 = _n.add_sister(name="Turtle", dist="1.3")
+        c4 = c2.add_child(name="A", dist="0.3")
 
-	c5 = c2.add_child(name="todelete")
-	_c5 = c2.remove_child(c5)
+        c5 = c2.add_child(name="todelete")
+        _c5 = c2.remove_child(c5)
 
-	c6 = c2.add_child(name="todelete")
-	_c6 = c4.remove_sister(c6)
+        c6 = c2.add_child(name="todelete")
+        _c6 = c4.remove_sister(c6)
 
-	c7 = c2.add_child(name="B", dist=2.4)
+        c7 = c2.add_child(name="B", dist=2.4)
 
-	self.assertEqual(nw_tree, t.write())
-	self.assertEqual(_c5, c5)
-	self.assertEqual(_c6, c6)
-	self.assertEqual(_n, n)
+        self.assertEqual(nw_tree, t.write())
+        self.assertEqual(_c5, c5)
+        self.assertEqual(_c6, c6)
+        self.assertEqual(_n, n)
 
-	# Delete, 
-	t = Tree("(((A, B), C)[&&NHX:name=I], (D, F)[&&NHX:name=J])[&&NHX:name=root];")
-	D = t.search_nodes(name="D")[0]
-	F = t.search_nodes(name="F")[0]
-	J = t.search_nodes(name="J")[0]
-	root = t.search_nodes(name="root")[0]
-	J.delete()
-	self.assertEqual(J.up, None)
-	self.assertEqual(J in t, False)
-	self.assertEqual(D.up, root)
-	self.assertEqual(F.up, root)
-	
+        # Delete,
+        t = Tree("(((A, B), C)[&&NHX:name=I], (D, F)[&&NHX:name=J])[&&NHX:name=root];")
+        D = t.search_nodes(name="D")[0]
+        F = t.search_nodes(name="F")[0]
+        J = t.search_nodes(name="J")[0]
+        root = t.search_nodes(name="root")[0]
+        J.delete()
+        self.assertEqual(J.up, None)
+        self.assertEqual(J in t, False)
+        self.assertEqual(D.up, root)
+        self.assertEqual(F.up, root)
+
         #detach
-	t = Tree("(((A, B)[&&NHX:name=H], C)[&&NHX:name=I], (D, F)[&&NHX:name=J])[&&NHX:name=root];")
-	D = t.search_nodes(name="D")[0]
-	F = t.search_nodes(name="F")[0]
-	J = t.search_nodes(name="J")[0]
-	root = t.search_nodes(name="root")[0]
-	J.detach()
-	self.assertEqual(J.up, None)
-	self.assertEqual(J in t, False)
-	self.assertEqual(set([n.name for n in t.iter_descendants()]),set(["A","B","C","I","H"]))
+        t = Tree("(((A, B)[&&NHX:name=H], C)[&&NHX:name=I], (D, F)[&&NHX:name=J])[&&NHX:name=root];")
+        D = t.search_nodes(name="D")[0]
+        F = t.search_nodes(name="F")[0]
+        J = t.search_nodes(name="J")[0]
+        root = t.search_nodes(name="root")[0]
+        J.detach()
+        self.assertEqual(J.up, None)
+        self.assertEqual(J in t, False)
+        self.assertEqual(set([n.name for n in t.iter_descendants()]),set(["A","B","C","I","H"]))
 
-	#prune
-	t1 = Tree("(((A, B), C)[&&NHX:name=I], (D, F)[&&NHX:name=J])[&&NHX:name=root];")
-	t2 = Tree("(((A, B), C)[&&NHX:name=I], (D, F)[&&NHX:name=J])[&&NHX:name=root];")
-	D1 = t1.search_nodes(name="D")[0]
-	F2 = t2.search_nodes(name="F")[0]
+        #prune
+        t1 = Tree("(((A, B), C)[&&NHX:name=I], (D, F)[&&NHX:name=J])[&&NHX:name=root];")
+        t2 = Tree("(((A, B), C)[&&NHX:name=I], (D, F)[&&NHX:name=J])[&&NHX:name=root];")
+        D1 = t1.search_nodes(name="D")[0]
+        F2 = t2.search_nodes(name="F")[0]
 
-	root = t.search_nodes(name="root")[0]
-	t1.prune(["A","C", D1], method="keep")
-	t2.prune(["D",F2,"B"], method="crop")
-	self.assertEqual(set([n.name for n in t1.iter_descendants()]), 	set(["A","C","D","I"]))
-	self.assertEqual(set([n.name for n in t2.iter_descendants()]), 	set(["I", "A", "C"]))
+        root = t.search_nodes(name="root")[0]
+        t1.prune(["A","C", D1], method="keep")
+        t2.prune(["D",F2,"B"], method="crop")
+        self.assertEqual(set([n.name for n in t1.iter_descendants()]),  set(["A","C","D","I"]))
+        self.assertEqual(set([n.name for n in t2.iter_descendants()]),  set(["I", "A", "C"]))
 
 
-	# getting nodes, get_childs, get_sisters, get_tree_root,
-	# get_common_ancestor, get_nodes_by_name
-	# get_descendants_by_name, is_leaf, is_root
-	t = Tree("(((A,B),C)[&&NHX:tag=common],D)[&&NHX:tag=root];")
-	A = t.search_nodes(name="A")[0]
-	B = t.search_nodes(name="B")[0]
-	C = t.search_nodes(name="C")[0]
+        # getting nodes, get_childs, get_sisters, get_tree_root,
+        # get_common_ancestor, get_nodes_by_name
+        # get_descendants_by_name, is_leaf, is_root
+        t = Tree("(((A,B),C)[&&NHX:tag=common],D)[&&NHX:tag=root];")
+        A = t.search_nodes(name="A")[0]
+        B = t.search_nodes(name="B")[0]
+        C = t.search_nodes(name="C")[0]
 
-	self.assertEqual("A", A.name)
+        self.assertEqual("A", A.name)
 
-	common  = A.get_common_ancestor(C)
-	self.assertEqual("common", common.tag)
+        common  = A.get_common_ancestor(C)
+        self.assertEqual("common", common.tag)
 
-	common  = A.get_common_ancestor(C, B)
-	self.assertEqual("common", common.tag)
+        common  = A.get_common_ancestor(C, B)
+        self.assertEqual("common", common.tag)
 
-	self.assertEqual("root", A.get_tree_root().tag)
-	self.assertEqual("root", B.get_tree_root().tag)
-	self.assertEqual("root", C.get_tree_root().tag)
-	self.assertEqual("root", common.get_tree_root().tag)
+        self.assertEqual("root", A.get_tree_root().tag)
+        self.assertEqual("root", B.get_tree_root().tag)
+        self.assertEqual("root", C.get_tree_root().tag)
+        self.assertEqual("root", common.get_tree_root().tag)
 
-	self.assert_(common.get_tree_root().is_root())
-	self.assert_(not A.is_root())
-	self.assert_(A.is_leaf())
-	self.assert_(not A.get_tree_root().is_leaf())	
+        self.assert_(common.get_tree_root().is_root())
+        self.assert_(not A.is_root())
+        self.assert_(A.is_leaf())
+        self.assert_(not A.get_tree_root().is_leaf())
 
-	# Tree magic python features 
-	t = Tree(nw_dflt)
-	self.assertEqual(len(t), 20)
-	self.assert_("Ddi0002240" in t)
-	self.assert_(t.children[0] in t)
-	for a in t:
-	    self.assert_(a.name)
+        # Tree magic python features
+        t = Tree(nw_dflt)
+        self.assertEqual(len(t), 20)
+        self.assert_("Ddi0002240" in t)
+        self.assert_(t.children[0] in t)
+        for a in t:
+            self.assert_(a.name)
 
-	# Populate 
-	t = Tree(nw_full)
-	prev_size= len(t)
-	t.populate(25)
-	self.assertEqual(len(t), prev_size+25)
+        # Populate
+        t = Tree(nw_full)
+        prev_size= len(t)
+        t.populate(25)
+        self.assertEqual(len(t), prev_size+25)
 
-	# Adding and removing features
-	t = Tree("(((A,B),C)[&&NHX:tag=common],D)[&&NHX:tag=root];")
-	A = t.search_nodes(name="A")[0]
+        # Adding and removing features
+        t = Tree("(((A,B),C)[&&NHX:tag=common],D)[&&NHX:tag=root];")
+        A = t.search_nodes(name="A")[0]
 
-	# Iterators, get_leaves, get_leaf_names
+        # Iterators, get_leaves, get_leaf_names
         t = Tree(nw2_full)
-	self.assert_(t.get_leaf_names(), [name for name in  t.iter_leaf_names()]) 
-	self.assert_(t.get_leaves(), [name for name in  t.iter_leaves()]) 
-	self.assert_(t.get_descendants(), [n for n in  t.iter_descendants()]) 
+        self.assert_(t.get_leaf_names(), [name for name in  t.iter_leaf_names()])
+        self.assert_(t.get_leaves(), [name for name in  t.iter_leaves()])
+        self.assert_(t.get_descendants(), [n for n in  t.iter_descendants()])
 
-	self.assertEqual(set([n for n in t.traverse("preorder")]), \
-			     set([n for n in t.traverse("postorder")]))
-	self.assert_(t in set([n for n in t.traverse("preorder")]))
+        self.assertEqual(set([n for n in t.traverse("preorder")]), \
+                             set([n for n in t.traverse("postorder")]))
+        self.assert_(t in set([n for n in t.traverse("preorder")]))
 
-	# Swap childs
-	n = t.get_children()
-	t.swap_childs()
-	n.reverse()
-	self.assertEqual(n, t.get_children())
-	
-	# Distances: get_distance, get_farthest_node,
-	# get_farthest_descendant, get_midpoint_outgroup
-	t = Tree("(((A:0.1, B:0.01):0.001, C:0.0001):1.0[&&NHX:name=I], (D:0.00001):0.000001[&&NHX:name=J]):2.0[&&NHX:name=root];")
-	A = t.search_nodes(name="A")[0]
-	B = t.search_nodes(name="B")[0]
-	C = t.search_nodes(name="C")[0]
-	D = t.search_nodes(name="D")[0]
-	I = t.search_nodes(name="I")[0]
-	J = t.search_nodes(name="J")[0]
+        # Swap childs
+        n = t.get_children()
+        t.swap_childs()
+        n.reverse()
+        self.assertEqual(n, t.get_children())
+
+        # Distances: get_distance, get_farthest_node,
+        # get_farthest_descendant, get_midpoint_outgroup
+        t = Tree("(((A:0.1, B:0.01):0.001, C:0.0001):1.0[&&NHX:name=I], (D:0.00001):0.000001[&&NHX:name=J]):2.0[&&NHX:name=root];")
+        A = t.search_nodes(name="A")[0]
+        B = t.search_nodes(name="B")[0]
+        C = t.search_nodes(name="C")[0]
+        D = t.search_nodes(name="D")[0]
+        I = t.search_nodes(name="I")[0]
+        J = t.search_nodes(name="J")[0]
         root = t.search_nodes(name="root")[0]
 
-	self.assertEqual(A.get_common_ancestor(I).name, "I")
-	self.assertEqual(A.get_common_ancestor(D).name, "root")
-	self.assertEqual(A.get_distance(I), 0.101)
-	self.assertEqual(A.get_distance(B), 0.11)
-	self.assertEqual(A.get_distance(A), 0)
-	self.assertEqual(I.get_distance(I), 0)
-	self.assertEqual(A.get_distance(root), root.get_distance(A))
+        self.assertEqual(A.get_common_ancestor(I).name, "I")
+        self.assertEqual(A.get_common_ancestor(D).name, "root")
+        self.assertEqual(A.get_distance(I), 0.101)
+        self.assertEqual(A.get_distance(B), 0.11)
+        self.assertEqual(A.get_distance(A), 0)
+        self.assertEqual(I.get_distance(I), 0)
+        self.assertEqual(A.get_distance(root), root.get_distance(A))
 
-	# Get_farthest_node, get_farthest_leaf
-	self.assertEqual(root.get_farthest_leaf(), (A,1.101) )
-	self.assertEqual(root.get_farthest_node(), (A,1.101) )
-	self.assertEqual(A.get_farthest_leaf(), (A, 0.0))
-	self.assertEqual(A.get_farthest_node(), (D, 1.101011))
-	self.assertEqual(I.get_farthest_node(), (D, 1.000011))
+        # Get_farthest_node, get_farthest_leaf
+        self.assertEqual(root.get_farthest_leaf(), (A,1.101) )
+        self.assertEqual(root.get_farthest_node(), (A,1.101) )
+        self.assertEqual(A.get_farthest_leaf(), (A, 0.0))
+        self.assertEqual(A.get_farthest_node(), (D, 1.101011))
+        self.assertEqual(I.get_farthest_node(), (D, 1.000011))
 
-	# Test set_outgroup and get_midpoint_outgroup
-	t = Tree(nw2_full)
-	nodes = t.get_descendants()
-	t.set_outgroup(t.get_midpoint_outgroup())
-	o1, o2 = t.children[0], t.children[1]
-	nw_original = t.write()
-	YGR028W = t.get_leaves_by_name("YGR028W")[0]
-	YGR138C = t.get_leaves_by_name("YGR138C")[0]
-	d1 = YGR138C.get_distance(YGR028W)
-	# Randomizing outgroup test: Can we recover origial state
-	# after many manipulations?
-	for i in xrange(10):
-	    for j in xrange(1000):
-		n = random.sample(nodes, 1)[0]
-		if n is None:
-		    print "NONE"
-		t.set_outgroup(n)
-	    t.set_outgroup(t.get_midpoint_outgroup())
-	    self.assertEqual([t.children[0], t.children[1]], [o1, o2])
-	    #self.assertEqual(t.write(), nw_original)	
-   	d2 = YGR138C.get_distance(YGR028W)
-	self.assertEqual(d1, d2)
+        # Test set_outgroup and get_midpoint_outgroup
+        t = Tree(nw2_full)
+        nodes = t.get_descendants()
+        t.set_outgroup(t.get_midpoint_outgroup())
+        o1, o2 = t.children[0], t.children[1]
+        nw_original = t.write()
+        YGR028W = t.get_leaves_by_name("YGR028W")[0]
+        YGR138C = t.get_leaves_by_name("YGR138C")[0]
+        d1 = YGR138C.get_distance(YGR028W)
+        # Randomizing outgroup test: Can we recover origial state
+        # after many manipulations?
+        for i in xrange(10):
+            for j in xrange(1000):
+                n = random.sample(nodes, 1)[0]
+                if n is None:
+                    print "NONE"
+                t.set_outgroup(n)
+            t.set_outgroup(t.get_midpoint_outgroup())
+            self.assertEqual([t.children[0], t.children[1]], [o1, o2])
+            #self.assertEqual(t.write(), nw_original)
+        d2 = YGR138C.get_distance(YGR028W)
+        self.assertEqual(d1, d2)
 
-	# Test unrooting
-	t.unroot()
+        # Test unrooting
+        t.unroot()
 
-	# Ascii
-	t.get_ascii()
+        # Ascii
+        t.get_ascii()
 
 class Test_phylo_module(unittest.TestCase):
 
@@ -612,7 +612,7 @@ class Test_phylo_module(unittest.TestCase):
 
         alg1 = SeqGroup(fasta)
         alg2 = SeqGroup(iphylip, format="iphylip")
-        
+
         t = PhyloTree("(((seqA,seqB),seqC),seqD);", alignment=fasta, alg_format="fasta")
 
         for l in t.get_leaves():
@@ -623,10 +623,10 @@ class Test_phylo_module(unittest.TestCase):
 
         for l in t.get_leaves():
             self.assertEqual(l.sequence, alg2.get_seq(l.name))
-    
+
     def test_get_sp_overlap_on_all_descendants(self):
         # Creates a gene phylogeny with several duplication events at
-        # different levels. 
+        # different levels.
         t = PhyloTree('((Dme_001,Dme_002),(((Cfa_001,Mms_001),((((Hsa_001,Hsa_003),Ptr_001),Mmu_001),((Hsa_004,Ptr_004),Mmu_004))),(Ptr_002,(Hsa_002,Mmu_002))));')
 
         # Scans the tree using the species overlap algorithm and detect all
@@ -636,7 +636,7 @@ class Test_phylo_module(unittest.TestCase):
         # Check that all duplications are detected
         dup1 = t.get_common_ancestor("Hsa_001", "Hsa_004")
         self.assertEqual(dup1.evoltype, "D")
-       
+
         dup2 = t.get_common_ancestor("Dme_001", "Dme_002")
         self.assertEqual(dup2.evoltype, "D")
 
@@ -716,20 +716,20 @@ class Test_phylo_module(unittest.TestCase):
 
     def test_get_sp_overlap_on_a_seed(self):
         # Creates a gene phylogeny with several duplication events at
-        # different levels. 
+        # different levels.
         t = PhyloTree('((Dme_001,Dme_002),(((Cfa_001,Mms_001),((((Hsa_001,Hsa_003),Ptr_001),Mmu_001),((Hsa_004,Ptr_004),Mmu_004))),(Ptr_002,(Hsa_002,Mmu_002))));')
 
         # Scans the tree using the species overlap algorithm
         seed = t.search_nodes(name="Hsa_001")[0]
         events = seed.get_my_evol_events()
 
-        # Check that duplications are detected 
+        # Check that duplications are detected
         dup1 = t.get_common_ancestor("Hsa_001", "Hsa_004")
         self.assertEqual(dup1.evoltype, "D")
 
         # This duplication is not in the seed path
         dup2 = t.get_common_ancestor("Dme_001", "Dme_002")
-	self.assert_(not hasattr(dup2, "evoltype"))
+        self.assert_(not hasattr(dup2, "evoltype"))
 
         dup3 = t.get_common_ancestor("Hsa_001", "Hsa_002")
         self.assertEqual(dup3.evoltype, "D")
@@ -792,7 +792,7 @@ class Test_phylo_module(unittest.TestCase):
             key1.sort()
             key2.sort()
             expected_orthologs.add(tuple(sorted([tuple(key1), tuple(key2)])))
-        
+
         # Are all orthologies as expected
         self.assertEqual(expected_orthologs, orthologs)
 
@@ -812,13 +812,13 @@ class Test_phylo_module(unittest.TestCase):
 
     def test_miscelaneus(self):
         # Creates a gene phylogeny with several duplication events at
-        # different levels. 
+        # different levels.
         t = PhyloTree('((Dme_001,Dme_002),(((Cfa_001,Mms_001),((((Hsa_001,Hsa_003),Ptr_001),Mmu_001),((Hsa_004,Ptr_004),Mmu_004))),(Ptr_002,(Hsa_002,Mmu_002))));')
 
         # Create a dictionary with relative ages for the species present in
         # the phylogenetic tree.  Note that ages are only relative numbers to
         # define which species are older, and that different species can
-        # belong to the same age. 
+        # belong to the same age.
         sp2age = {
           'Hsa': 1, # Homo sapiens (Hominids)
           'Ptr': 2, # P. troglodytes (primates)
@@ -843,12 +843,12 @@ class Test_phylo_module(unittest.TestCase):
         self.assert_(dup1.is_monophyletic(["Hsa", "Ptr", "Mmu"]))
         self.assert_(not dup1.is_monophyletic(["Hsa", "Ptr"]))
         self.assert_(not dup1.is_monophyletic(["Hsa", "Ptr", "Mms"]))
-        
+
         # Check rooting options
         expected_root = t.search_nodes(name="Dme_002")[0]
         expected_root.dist += 2.3
         self.assertEqual(t.get_farthest_oldest_leaf(sp2age), expected_root)
-       
+
 
         # Check get species functions
         self.assertEqual(t.get_species(), set(sp2age.keys()))
@@ -861,92 +861,92 @@ expression = '#Names\tcol1\tcol2\tcol3\tcol4\tcol5\tcol6\tcol7\nA\t-1.23\t-0.81\
 class Test_Coretype_ArrayTable(unittest.TestCase):
     def test_arraytable_parser(self):
         A = ArrayTable(expression)
-	self.assertEqual(A.get_row_vector("A").tolist(), \
-			     [-1.23, -0.81, 1.79, 0.78,-0.42,-0.69, 0.58])
-	self.assertEqual(A.get_several_row_vectors(["A","C"]).tolist(), \
-			     [[-1.23, -0.81, 1.79, 0.78, -0.42, -0.69, 0.58],
-			 [-2.19, 0.13, 0.65, -0.51, 0.52, 1.04, 0.36]])
+        self.assertEqual(A.get_row_vector("A").tolist(), \
+                             [-1.23, -0.81, 1.79, 0.78,-0.42,-0.69, 0.58])
+        self.assertEqual(A.get_several_row_vectors(["A","C"]).tolist(), \
+                             [[-1.23, -0.81, 1.79, 0.78, -0.42, -0.69, 0.58],
+                         [-2.19, 0.13, 0.65, -0.51, 0.52, 1.04, 0.36]])
 
-	self.assertEqual(A.get_several_column_vectors(["col2", "col7"]).tolist(), \
-			     [[-0.81000000000000005, -0.93999999999999995,\
-				0.13, -0.97999999999999998, -0.82999999999999996,\
-				    -1.1100000000000001, -1.1699999999999999,\
-				    -1.25],
-			      [0.57999999999999996, 1.1200000000000001, \
-				   0.35999999999999999, 0.93000000000000005, \
-				   0.65000000000000002, 0.47999999999999998, \
-				   0.26000000000000001, 0.77000000000000002]])
-
-
- 	self.assertEqual(A.get_column_vector("col4").tolist(), \
-			     [0.78000000000000003, 0.35999999999999999, \
-				  -0.51000000000000001, -0.76000000000000001, \
-				  0.070000000000000007, -0.14000000000000001, \
-				  0.23000000000000001, -0.29999999999999999])
-
-	A.remove_column("col4")
-	self.assert_(A.get_column_vector("col4") is None )
-
-	Abis = A.merge_columns({"merged1": \
-				    ["col1", "col2"],\
-				    "merged2": \
-				    ["col5", "col6"]}, \
-				   "mean")
+        self.assertEqual(A.get_several_column_vectors(["col2", "col7"]).tolist(), \
+                             [[-0.81000000000000005, -0.93999999999999995,\
+                                0.13, -0.97999999999999998, -0.82999999999999996,\
+                                    -1.1100000000000001, -1.1699999999999999,\
+                                    -1.25],
+                              [0.57999999999999996, 1.1200000000000001, \
+                                   0.35999999999999999, 0.93000000000000005, \
+                                   0.65000000000000002, 0.47999999999999998, \
+                                   0.26000000000000001, 0.77000000000000002]])
 
 
-	#self.assert_((Abis.get_column_vector("merged1")==numpy.array([-1.02, -1.35, -1.03, -1.1, -1.15, -1.075, -1.37, -1.39, ])).all()==True )
+        self.assertEqual(A.get_column_vector("col4").tolist(), \
+                             [0.78000000000000003, 0.35999999999999999, \
+                                  -0.51000000000000001, -0.76000000000000001, \
+                                  0.070000000000000007, -0.14000000000000001, \
+                                  0.23000000000000001, -0.29999999999999999])
 
-	# Continue this......
-		 
+        A.remove_column("col4")
+        self.assert_(A.get_column_vector("col4") is None )
+
+        Abis = A.merge_columns({"merged1": \
+                                    ["col1", "col2"],\
+                                    "merged2": \
+                                    ["col5", "col6"]}, \
+                                   "mean")
+
+
+        #self.assert_((Abis.get_column_vector("merged1")==numpy.array([-1.02, -1.35, -1.03, -1.1, -1.15, -1.075, -1.37, -1.39, ])).all()==True )
+
+        # Continue this......
+
 
 class Test_ClusterTree(unittest.TestCase):
     def test_clustertree(self):
 
-	t = ClusterTree("(((A,B),(C,(D,E))),(F,(G,H)));", text_array=expression)
+        t = ClusterTree("(((A,B),(C,(D,E))),(F,(G,H)));", text_array=expression)
         # Now we can ask the expression profile of a single gene
         node = t.get_common_ancestor("C", "D", "E")
         self.assertEqual((t&"A").profile.tolist(), \
-			     [-1.23, -0.81, 1.79, 0.78,-0.42,-0.69, 0.58])
+                             [-1.23, -0.81, 1.79, 0.78,-0.42,-0.69, 0.58])
         print node.profile
-	print node.deviation
-	print node.silhouette
-	print node.intracluster_dist
-	print node.intercluster_dist
-	
-	from ete_dev.clustering import clustvalidation 
-	c1 = t.get_common_ancestor("A", "B")
-	c2 = t.get_common_ancestor("C", "D", "E")
-	c3 = t.get_common_ancestor("F", "G", "H")
-	print t.get_dunn([c1, c2, c3])
+        print node.deviation
+        print node.silhouette
+        print node.intracluster_dist
+        print node.intercluster_dist
+
+        from ete_dev.clustering import clustvalidation
+        c1 = t.get_common_ancestor("A", "B")
+        c2 = t.get_common_ancestor("C", "D", "E")
+        c3 = t.get_common_ancestor("F", "G", "H")
+        print t.get_dunn([c1, c2, c3])
 
 class Test_Treeview(unittest.TestCase):
     def test_rendering(self):
-	pass
-    
+        pass
+
 
 
 class Test_R_bindings(unittest.TestCase):
     def test_ape(self):
-	return # Don't test anything from now
+        return # Don't test anything from now
         try:
             import rpy2.robjects as robjects
         except ImportError:
             print "\nNo rpy2 support. Skipping.\n"
-            return 
-        
-        # R 
-	t1 = Tree(nw_simple1)
-	t2 = Tree(nw_simple2)
-        
+            return
 
-	R = robjects.r
-	R.library("ape")
-	CONS =  R["consensus"]([asRphylo(t1), \
-				    asRphylo(t1), \
-				    asRphylo(t1), \
-				    asRphylo(t1), \
-				    asRphylo(t2)])
-	t = asETE(CONS)
+        # R
+        t1 = Tree(nw_simple1)
+        t2 = Tree(nw_simple2)
+
+
+        R = robjects.r
+        R.library("ape")
+        CONS =  R["consensus"]([asRphylo(t1), \
+                                    asRphylo(t1), \
+                                    asRphylo(t1), \
+                                    asRphylo(t1), \
+                                    asRphylo(t2)])
+        t = asETE(CONS)
 
 if __name__ == '__main__':
     unittest.main()

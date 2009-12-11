@@ -1,21 +1,21 @@
 # #START_LICENSE###########################################################
 #
-# Copyright (C) 2009 by Jaime Huerta Cepas. All rights reserved.  
+# Copyright (C) 2009 by Jaime Huerta Cepas. All rights reserved.
 # email: jhcepas@gmail.com
 #
-# This file is part of the Environment for Tree Exploration program (ETE). 
+# This file is part of the Environment for Tree Exploration program (ETE).
 # http://ete.cgenomics.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
@@ -49,7 +49,7 @@ aafgcolors = {
 'Z':"#000000" ,
 'X':"#000000",
 '.':"#000000",
-'-':"#000000", 
+'-':"#000000",
 }
 
 aabgcolors = {
@@ -77,15 +77,15 @@ aabgcolors = {
 'Z':"#FF69B4" ,
 'X':"#BEA06E",
 '.':"#FFFFFF",
-'-':"#FFFFFF", 
+'-':"#FFFFFF",
 }
 
 ntfgcolors = {
-'A':'#000000',	  
-'G':'#000000',	  
-'I':'#000000',	  
-'C':'#000000',	  
-'T':'#000000',	  
+'A':'#000000',
+'G':'#000000',
+'I':'#000000',
+'C':'#000000',
+'T':'#000000',
 'U':'#000000',
 '.':"#000000",
 '-':"#000000",
@@ -94,11 +94,11 @@ ntfgcolors = {
 }
 
 ntbgcolors = {
-'A':'#A0A0FF',	  
-'G':'#FF7070',	  
-'I':'#80FFFF',	  
-'C':'#FF8C4B',	  
-'T':'#A0FFA0',	  
+'A':'#A0A0FF',
+'G':'#FF7070',
+'I':'#80FFFF',
+'C':'#FF8C4B',
+'T':'#A0FFA0',
 'U':'#FF8080',
 '.':"#FFFFFF",
 '-':"#FFFFFF",
@@ -116,10 +116,10 @@ except:
 
 def add_face_to_node(face, node, column, aligned=False):
     """ Links a node with a given face instance.  """
-  
+
     if column >= len(node.img_style["faces"]):
-	for i in xrange(len(node.img_style["faces"]), column+1):
-	    node.img_style["faces"].append([])
+        for i in xrange(len(node.img_style["faces"]), column+1):
+            node.img_style["faces"].append([])
     # None value will be the pointer to a pixmap
     node.img_style["faces"][column].append([face, aligned, None])
 
@@ -135,12 +135,12 @@ class Face(object):
 
     def __init__(self):
         self.node        = None
-        self.type        = "pixmap" 
+        self.type        = "pixmap"
         self.name        = "unknown"
         self.xmargin     = 0
         self.ymargin     = 0
         self.pixmap      = None
-        # self.aligned     = False 
+        # self.aligned     = False
 
     def _size(self):
         if self.pixmap:
@@ -164,15 +164,15 @@ class Face(object):
         self.pixmap = QtGui.QPixmap(filename)
 
     def update_pixmap(self):
-	pass
+        pass
 
 class TextFace(Face):
-    """ Creates a new text face object. 
+    """ Creates a new text face object.
 
     Arguments description
     ---------------------
     text:     Text to be drawn
-    ftype:    Font type, e.g. Arial, Verdana, Courier, (default="Verdana") 
+    ftype:    Font type, e.g. Arial, Verdana, Courier, (default="Verdana")
     fsize:    Font size, e.g. 10,12,6, (default=10)
     fgcolor:  Foreground font color in RGB name format, e.g. #FF00DD,#000000  (default="#000000")
     bgcolor:  Backgroung font color in RGB name format, e.g. #FFFFFF,#DDDDDD, (default=None)
@@ -197,46 +197,46 @@ class TextFace(Face):
         self.font    = QtGui.QFont(ftype,fsize)
 
     def _height(self):
-	fm = QtGui.QFontMetrics(self.font)
-	h =  fm.boundingRect(QtCore.QRect(), \
-				 QtCore.Qt.AlignLeft, \
-				 self.get_text()).height() 
-	return h
+        fm = QtGui.QFontMetrics(self.font)
+        h =  fm.boundingRect(QtCore.QRect(), \
+                                 QtCore.Qt.AlignLeft, \
+                                 self.get_text()).height()
+        return h
         # Other buggy alternatives
-	# fm = QtGui.QFontMetrics(self.font)
-	# h = 0
-	# for l in lines:
-	#     if l == lines[0]:
-	#  	h+=fm.tightBoundingRect(l).height()
-	#     else:
-	#  	h+=fm.height()
-	# return h #+ ((len(lines)-1)*fm.leading())
-	#  
-	# lines = len(self.get_text().split("\n"))
-	# return lines*fm.height() + (lines-1 * fm.leading())
-	#  
-	# h =  fm.boundingRect(QtCore.QRect(), \
-	#  			 QtCore.Qt.AlignLeft, \
-	#  			 self.get_text()).height() 
-	# return h 
+        # fm = QtGui.QFontMetrics(self.font)
+        # h = 0
+        # for l in lines:
+        #     if l == lines[0]:
+        #       h+=fm.tightBoundingRect(l).height()
+        #     else:
+        #       h+=fm.height()
+        # return h #+ ((len(lines)-1)*fm.leading())
+        #
+        # lines = len(self.get_text().split("\n"))
+        # return lines*fm.height() + (lines-1 * fm.leading())
+        #
+        # h =  fm.boundingRect(QtCore.QRect(), \
+        #                        QtCore.Qt.AlignLeft, \
+        #                        self.get_text()).height()
+        # return h
 
 
 
     def _width(self):
-	fm = QtGui.QFontMetrics(self.font)
+        fm = QtGui.QFontMetrics(self.font)
         return fm.size(QtCore.Qt.AlignTop, self.text).width()
 
     def get_text(self):
         return self.text
 
 class AttrFace(TextFace):
-    """ Creates a new text attribute face object.  
+    """ Creates a new text attribute face object.
 
     Arguments description
     ---------------------
     name:     Face's name
-    attr:     Node's attribute that will be drawn as text 
-    ftype:    Font type, e.g. Arial, Verdana, Courier, (default="Verdana") 
+    attr:     Node's attribute that will be drawn as text
+    ftype:    Font type, e.g. Arial, Verdana, Courier, (default="Verdana")
     fsize:    Font size, e.g. 10,12,6, (default=10)
     fgcolor:  Foreground font color in RGB name format, e.g. #FF00DD,#000000  (default="#000000")
     bgcolor:  Backgroung font color in RGB name format, e.g. #FFFFFF,#DDDDDD, (default=None)
@@ -245,27 +245,27 @@ class AttrFace(TextFace):
 
     def __init__(self, attr, ftype="Verdana", fsize=10, fgcolor="#000000", bgcolor=None, penwidth=0):
         Face.__init__(self)
-	TextFace.__init__(self, "", ftype, fsize, fgcolor, bgcolor, penwidth)
+        TextFace.__init__(self, "", ftype, fsize, fgcolor, bgcolor, penwidth)
         self.attr     = attr
-        self.type     = "text" 
+        self.type     = "text"
 
     def _width(self):
         text = str(getattr(self.node, self.attr))
-	fm = QtGui.QFontMetrics(self.font)
+        fm = QtGui.QFontMetrics(self.font)
         return fm.size(QtCore.Qt.AlignTop,text).width()
 
     def get_text(self):
         return str(getattr(self.node, self.attr))
 
-    
+
 
 class ImgFace(Face):
-    """ Creates a new image face object.  
+    """ Creates a new image face object.
 
     Arguments description
     ---------------------
 
-    img_file: Image file in png,jpg,bmp format 
+    img_file: Image file in png,jpg,bmp format
     """
     def __init__(self,img_file):
         Face.__init__(self)
@@ -273,11 +273,11 @@ class ImgFace(Face):
         self.name = "ImageFile"
 
     def update_pixmap(self):
-	self.load_pixmap_from_file(self.img_file)
+        self.load_pixmap_from_file(self.img_file)
 
 
 class ProfileFace(Face):
-    """ Creates a new vector profile face object.  
+    """ Creates a new vector profile face object.
 
     Arguments description
     ---------------------
@@ -355,27 +355,27 @@ class ProfileFace(Face):
 #            color=QtGui.QColor()
 #            color.setRgb( 255,0,255 )
 #            colors.append(color)
-	colors.append(QtGui.QColor("white"))
+        colors.append(QtGui.QColor("white"))
 
         return colors
 
     def draw_bar_profile(self):
         # Calculate vector
-        mean_vector = self.node.profile 
-	deviation_vector = self.node.deviation 
+        mean_vector = self.node.profile
+        deviation_vector = self.node.deviation
         # If no vector, skip
         if mean_vector is None:
             return
 
         colors = self.get_color_gradient()
-        
+
         vlength = len(mean_vector)
-        # pixels per array position 
+        # pixels per array position
         profile_width = self.width - self.xmargin*2 - 40
-        profile_height= self.height - self.ymargin*2 
+        profile_height= self.height - self.ymargin*2
 
         x_alpha = float( profile_width / (len(mean_vector)) )
-        y_alpha = float ( profile_height / (self.max_value-self.min_value) ) 
+        y_alpha = float ( profile_height / (self.max_value-self.min_value) )
 
         # Creates a pixmap
         self.pixmap = QtGui.QPixmap(self.width,self.height)
@@ -399,14 +399,14 @@ class ProfileFace(Face):
 
         dashedPen = QtGui.QPen(QtGui.QBrush(QtGui.QColor("#ddd")), 0)
         dashedPen.setStyle(QtCore.Qt.DashLine)
-        
+
         # Draw hz grid
         p.setPen(dashedPen)
         p.drawLine(x2+1, mean_line_y, profile_width-2, mean_line_y )
         p.drawLine(x2+1, line2_y, profile_width-2, line2_y )
         p.drawLine(x2+1, line3_y, profile_width-2, line3_y )
 
-        
+
         # Draw bars
         for pos in xrange(vlength):
             # first and second X pixel positions
@@ -420,12 +420,12 @@ class ProfileFace(Face):
             if not numpy.isfinite(mean1):
                 continue
 
-	    # Set heatmap color
+            # Set heatmap color
             if mean1>self.center_v:
-		color_index = int(abs(((self.center_v-mean1)*100)/(self.max_value-self.center_v)))
+                color_index = int(abs(((self.center_v-mean1)*100)/(self.max_value-self.center_v)))
                 customColor = colors[100+color_index]
             elif mean1<self.center_v:
-		color_index = int(abs(((self.center_v-mean1)*100)/(self.min_value-self.center_v)))
+                color_index = int(abs(((self.center_v-mean1)*100)/(self.min_value-self.center_v)))
                 customColor = colors[100-color_index]
             else:
                 customColor = colors[0]
@@ -450,21 +450,21 @@ class ProfileFace(Face):
     def draw_centered_bar_profile(self):
         # Calculate vector
         mean_vector  = self.node.profile
-	deviation_vector = self.node.deviation
+        deviation_vector = self.node.deviation
         # If no vector, skip
         if mean_vector is None:
             return
 
         colors = self.get_color_gradient()
-        
+
         vlength = len(mean_vector)
-        # pixels per array position 
+        # pixels per array position
         profile_width = self.width - self.xmargin*2 - 40
-        profile_height= self.height - self.ymargin*2 
+        profile_height= self.height - self.ymargin*2
 
         x_alpha = float( profile_width / (len(mean_vector)) )
-        y_alpha_up = float ( (profile_height/2) / (self.max_value-self.center_v) ) 
-	y_alpha_down = float ( (profile_height/2) / (self.min_value-self.center_v) ) 
+        y_alpha_up = float ( (profile_height/2) / (self.max_value-self.center_v) )
+        y_alpha_down = float ( (profile_height/2) / (self.min_value-self.center_v) )
 
         # Creates a pixmap
         self.pixmap = QtGui.QPixmap(self.width,self.height)
@@ -489,14 +489,14 @@ class ProfileFace(Face):
 
         dashedPen = QtGui.QPen(QtGui.QBrush(QtGui.QColor("#ddd")), 0)
         dashedPen.setStyle(QtCore.Qt.DashLine)
-        
+
         # Draw hz grid
         p.setPen(dashedPen)
         p.drawLine(x2+1, mean_line_y, profile_width-2, mean_line_y )
         p.drawLine(x2+1, line2_y, profile_width-2, line2_y )
         p.drawLine(x2+1, line3_y, profile_width-2, line3_y )
 
-        
+
         # Draw bars
         for pos in xrange(vlength):
             # first and second X pixel positions
@@ -510,61 +510,61 @@ class ProfileFace(Face):
             if not numpy.isfinite(mean1):
                 continue
 
-	    # Set heatmap color
+            # Set heatmap color
             if mean1>self.center_v:
-		color_index = int(abs(((self.center_v-mean1)*100)/(self.max_value-self.center_v)))
+                color_index = int(abs(((self.center_v-mean1)*100)/(self.max_value-self.center_v)))
                 customColor = colors[100+color_index]
             elif mean1<self.center_v:
-		color_index = int(abs(((self.center_v-mean1)*100)/(self.min_value-self.center_v)))
+                color_index = int(abs(((self.center_v-mean1)*100)/(self.min_value-self.center_v)))
                 customColor = colors[100-color_index]
             else:
                 customColor = colors[0]
 
             # mean bar high
-	    if mean1<self.center_v:
-		mean_y1 = int(abs((mean1 - self.center_v) * y_alpha_down))
-	    else:
-		mean_y1 = int(abs((mean1 - self.center_v) * y_alpha_up))
+            if mean1<self.center_v:
+                mean_y1 = int(abs((mean1 - self.center_v) * y_alpha_down))
+            else:
+                mean_y1 = int(abs((mean1 - self.center_v) * y_alpha_up))
 
             # Draw bar border
             p.setPen(QtGui.QColor("black"))
             #p.drawRect(x1+2,mean_y1, x_alpha-3, profile_height-mean_y1+1)
             # Fill bar with custom color
-	    if mean1<self.center_v:
-		p.fillRect(x1+3, mean_line_y, x_alpha-4, mean_y1, QtGui.QBrush(customColor))
-	    else:
-		p.fillRect(x1+3, mean_line_y-mean_y1, x_alpha-4, mean_y1+1, QtGui.QBrush(customColor))
+            if mean1<self.center_v:
+                p.fillRect(x1+3, mean_line_y, x_alpha-4, mean_y1, QtGui.QBrush(customColor))
+            else:
+                p.fillRect(x1+3, mean_line_y-mean_y1, x_alpha-4, mean_y1+1, QtGui.QBrush(customColor))
 
             # Draw error bars
-	    if dev1 != 0:
-		if mean1<self.center_v:
-		    dev_up_y1   = int((mean1+dev1 - self.center_v) * y_alpha_down)
-		    dev_down_y1 = int((mean1-dev1 - self.center_v) * y_alpha_down)
-		    p.drawLine(x1+x_alpha/2, mean_line_y+dev_up_y1 ,x1+x_alpha/2, mean_line_y+dev_down_y1 )
-		    p.drawLine(x1-1+x_alpha/2, mean_line_y+dev_up_y1 ,x1+1+x_alpha/2, mean_line_y+dev_up_y1 )
-		    p.drawLine(x1-1+x_alpha/2, mean_line_y+dev_down_y1 ,x1+1+x_alpha/2, mean_line_y+dev_down_y1 )
-		else:
-		    dev_up_y1   = int((mean1+dev1 - self.center_v) * y_alpha_up)
-		    dev_down_y1 = int((mean1-dev1 - self.center_v) * y_alpha_up)
-		    p.drawLine(x1+x_alpha/2, mean_line_y-dev_up_y1 ,x1+x_alpha/2, mean_line_y-dev_down_y1 )
-		    p.drawLine(x1-1+x_alpha/2, mean_line_y-dev_up_y1 ,x1+1+x_alpha/2, mean_line_y-dev_up_y1 )
-		    p.drawLine(x1-1+x_alpha/2, mean_line_y-dev_down_y1 ,x1+1+x_alpha/2, mean_line_y-dev_down_y1 )
+            if dev1 != 0:
+                if mean1<self.center_v:
+                    dev_up_y1   = int((mean1+dev1 - self.center_v) * y_alpha_down)
+                    dev_down_y1 = int((mean1-dev1 - self.center_v) * y_alpha_down)
+                    p.drawLine(x1+x_alpha/2, mean_line_y+dev_up_y1 ,x1+x_alpha/2, mean_line_y+dev_down_y1 )
+                    p.drawLine(x1-1+x_alpha/2, mean_line_y+dev_up_y1 ,x1+1+x_alpha/2, mean_line_y+dev_up_y1 )
+                    p.drawLine(x1-1+x_alpha/2, mean_line_y+dev_down_y1 ,x1+1+x_alpha/2, mean_line_y+dev_down_y1 )
+                else:
+                    dev_up_y1   = int((mean1+dev1 - self.center_v) * y_alpha_up)
+                    dev_down_y1 = int((mean1-dev1 - self.center_v) * y_alpha_up)
+                    p.drawLine(x1+x_alpha/2, mean_line_y-dev_up_y1 ,x1+x_alpha/2, mean_line_y-dev_down_y1 )
+                    p.drawLine(x1-1+x_alpha/2, mean_line_y-dev_up_y1 ,x1+1+x_alpha/2, mean_line_y-dev_up_y1 )
+                    p.drawLine(x1-1+x_alpha/2, mean_line_y-dev_down_y1 ,x1+1+x_alpha/2, mean_line_y-dev_down_y1 )
 
     def draw_line_profile(self):
         # Calculate vector
         mean_vector = self.node.profile
-	deviation_vector = self.node.deviation
+        deviation_vector = self.node.deviation
         if mean_vector is None:
             return
 
         vlength = len(mean_vector)
-        # pixels per array position 
+        # pixels per array position
         profile_width = self.width - self.xmargin*2 - 40
-        profile_height= self.height - self.ymargin*2 
+        profile_height= self.height - self.ymargin*2
 
 
         x_alpha = float( profile_width / (len(mean_vector)-1) )
-        y_alpha = float ( profile_height / (self.max_value-self.min_value) ) 
+        y_alpha = float ( profile_height / (self.max_value-self.min_value) )
 
         # Creates a pixmap
         self.pixmap = QtGui.QPixmap(self.width,self.height)
@@ -586,7 +586,7 @@ class ProfileFace(Face):
         p.drawText(self.xmargin+profile_width,y+10,"%0.3f" %self.max_value)
         p.drawText(self.xmargin+profile_width,y+profile_height,"%0.3f" %self.min_value)
         p.drawText(self.xmargin+profile_width,mean_line_y+5,"%0.3f" %self.center_v)
-        
+
         dashedPen = QtGui.QPen(QtGui.QBrush(QtGui.QColor("#ddd")), 0)
         dashedPen.setStyle(QtCore.Qt.DashLine)
 
@@ -595,7 +595,7 @@ class ProfileFace(Face):
         p.drawLine(x2+1, mean_line_y, profile_width-2, mean_line_y )
         p.drawLine(x2+1, line2_y, profile_width-2, line2_y )
         p.drawLine(x2+1, line3_y, profile_width-2, line3_y )
-        
+
         # Draw lines
         for pos in xrange(0,vlength-1):
             dev1 =  self.fit_to_scale( deviation_vector[pos]   )
@@ -624,10 +624,10 @@ class ProfileFace(Face):
             p.drawLine(x1,mean_y1, x2, mean_y2)
 
             if dev1!= 0 and dev2!=0:
-                # First Y postions for deviations 
+                # First Y postions for deviations
                 dev_up_y1   = (mean1+dev1 - self.min_value) * y_alpha
                 dev_down_y1 = (mean1-dev1 - self.min_value) * y_alpha
-                # Second Y postions for deviations 
+                # Second Y postions for deviations
                 dev_up_y2   = (mean2+dev2 - self.min_value) * y_alpha
                 dev_down_y2 = (mean2-dev2 - self.min_value) * y_alpha
                 # Draw red deviation lines
@@ -640,20 +640,20 @@ class ProfileFace(Face):
     def draw_heatmap_profile(self):
         # Calculate vector
         vector = self.node.profile
-	deviation = self.node.deviation
+        deviation = self.node.deviation
         # If no vector, skip
         if vector is None:
             return
 
         colors = self.get_color_gradient()
 
-	leaves = self.node.get_leaves()
-        
+        leaves = self.node.get_leaves()
+
         vlength = len(vector)
-        # pixels per array position 
-	img_height = self.height * len(leaves)
+        # pixels per array position
+        img_height = self.height * len(leaves)
         profile_width = self.width - self.xmargin*2
-        profile_height= img_height - self.ymargin*2 
+        profile_height= img_height - self.ymargin*2
 
         x_alpha = float( profile_width / (len(vector)) )
 
@@ -664,40 +664,40 @@ class ProfileFace(Face):
 
         x2 = self.xmargin
         y  = self.ymargin
-	y_step = self.height 
-	for leaf in leaves:
-	    mean_vector = leaf.profile
-	    deviation_vector = leaf.deviation 
-	    # Draw heatmap
-	    for pos in xrange(vlength):
-		# first and second X pixel positions
-		x1 = x2
-		x2 = x1 + x_alpha
-		dev1 =  self.fit_to_scale( deviation_vector[pos]   )
-		mean1 = self.fit_to_scale( mean_vector[pos]        )
-		# Set heatmap color
-		if not numpy.isfinite(mean1):
-		    customColor = QtGui.QColor("#000000")
-		elif mean1>self.center_v:
-		    color_index = int(abs(((self.center_v-mean1)*100)/(self.max_value-self.center_v)))
-		    customColor = colors[100+color_index]
-		elif mean1<self.center_v:
-		    color_index = int(abs(((self.center_v-mean1)*100)/(self.min_value-self.center_v)))
-		    customColor = colors[100-color_index]
-		else:
-		    customColor = colors[-1]
+        y_step = self.height
+        for leaf in leaves:
+            mean_vector = leaf.profile
+            deviation_vector = leaf.deviation
+            # Draw heatmap
+            for pos in xrange(vlength):
+                # first and second X pixel positions
+                x1 = x2
+                x2 = x1 + x_alpha
+                dev1 =  self.fit_to_scale( deviation_vector[pos]   )
+                mean1 = self.fit_to_scale( mean_vector[pos]        )
+                # Set heatmap color
+                if not numpy.isfinite(mean1):
+                    customColor = QtGui.QColor("#000000")
+                elif mean1>self.center_v:
+                    color_index = int(abs(((self.center_v-mean1)*100)/(self.max_value-self.center_v)))
+                    customColor = colors[100+color_index]
+                elif mean1<self.center_v:
+                    color_index = int(abs(((self.center_v-mean1)*100)/(self.min_value-self.center_v)))
+                    customColor = colors[100-color_index]
+                else:
+                    customColor = colors[-1]
 
-		# Fill bar with custom color
-		p.fillRect(x1, y, x_alpha, y_step, QtGui.QBrush(customColor))
-	    y+= y_step
-	    x2 = self.xmargin
+                # Fill bar with custom color
+                p.fillRect(x1, y, x_alpha, y_step, QtGui.QBrush(customColor))
+            y+= y_step
+            x2 = self.xmargin
 
     def fit_to_scale(self,v):
-        if v<self.min_value: 
+        if v<self.min_value:
             return float(self.min_value)
-        elif v>self.max_value: 
+        elif v>self.max_value:
             return float(self.max_value)
-        else: 
+        else:
             return float(v)
 
 class ValidationFace(Face):
@@ -707,15 +707,15 @@ class ValidationFace(Face):
         Face.__init__(self)
         self.seq  = seq
         self.name = "validation"
-	self.fsize= fsize
+        self.fsize= fsize
         self.font = QtGui.QFont("Courier",self.fsize)
         self.style = seqtype
-          
+
     def update_pixmap(self):
-	pass
+        pass
 
 class SequenceFace(Face):
-    """ Creates a new molecular sequence face object.  
+    """ Creates a new molecular sequence face object.
 
     Arguments description
     ---------------------
@@ -728,18 +728,18 @@ class SequenceFace(Face):
         Face.__init__(self)
         self.seq  = seq
         self.name = "sequence"
-	self.fsize= fsize
+        self.fsize= fsize
         self.font = QtGui.QFont("Courier", self.fsize)
         self.style = seqtype
-	self.aafg = aafg
-	self.aabg = aabg
-	self.ntfg = ntfg
-	self.ntbg = ntbg
+        self.aafg = aafg
+        self.aabg = aabg
+        self.ntfg = ntfg
+        self.ntbg = ntbg
 
     def update_pixmap(self):
 
 
-	fm = QtGui.QFontMetrics(self.font)
+        fm = QtGui.QFontMetrics(self.font)
         height = fm.leading() + fm.overlinePos() + fm.underlinePos()
         width  = fm.size(QtCore.Qt.AlignTop, self.seq).width()
 
@@ -749,18 +749,18 @@ class SequenceFace(Face):
         x = 0
         y = height - fm.underlinePos()*2
 
-	p.setFont(self.font)
+        p.setFont(self.font)
 
         for letter in self.seq:
             letter = letter.upper()
             if self.style=="nt":
                 letter_brush = QtGui.QBrush(QtGui.QColor(self.ntbg.get(letter,"#ffffff" )))
-		letter_pen = QtGui.QPen(QtGui.QColor(self.ntfg.get(letter, "#000000")))
-	    else:
+                letter_pen = QtGui.QPen(QtGui.QColor(self.ntfg.get(letter, "#000000")))
+            else:
                 letter_brush = QtGui.QBrush(QtGui.QColor(self.aabg.get(letter,"#ffffff" )))
-		letter_pen = QtGui.QPen(QtGui.QColor(self.aafg.get(letter,"#000000" )))
-		
-	    p.setPen(letter_pen)
+                letter_pen = QtGui.QPen(QtGui.QColor(self.aafg.get(letter,"#000000" )))
+
+            p.setPen(letter_pen)
             p.fillRect(x,0,width, height,letter_brush)
             p.drawText(x, y, letter)
             x += float(width)/len(self.seq)

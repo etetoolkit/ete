@@ -25,7 +25,7 @@ print matrix
 # G       -1.57   -1.17   1.29    0.23    -0.20   1.17    0.26
 # H       -1.53   -1.25   0.59    -0.30   0.32    1.41    0.77
 #
-# 
+#
 # We load a tree structure whose leaf nodes correspond to rows in the
 # numerical matrix. We use the text_array argument to link the tree
 # with numerical matrix.

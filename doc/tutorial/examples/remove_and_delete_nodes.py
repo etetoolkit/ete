@@ -6,7 +6,7 @@ print "original tree looks like this:"
 # more of control on how tree is printed. Here i print the tree
 # showing internal node names
 print t.get_ascii(show_internal=True)
-# 
+#
 #                                        /-H
 #                              /D-------|
 #                             |          \-K

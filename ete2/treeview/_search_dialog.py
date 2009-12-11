@@ -67,4 +67,3 @@ class Ui_Dialog(object):
         self.attrType.setItemText(7, QtGui.QApplication.translate("Dialog", "matches this regular expression", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("Dialog", "Search nodes with attribute", None, QtGui.QApplication.UnicodeUTF8))
         self.attrName.setText(QtGui.QApplication.translate("Dialog", "name", None, QtGui.QApplication.UnicodeUTF8))
-

@@ -3,7 +3,7 @@ from ete_dev import Tree
 t = Tree('((((H,K),(F,I)G),E),((L,(N,Q)O),(P,S)));')
 print "Original tree looks like this:"
 print t
-# 
+#
 #                                        /-H
 #                              /--------|
 #                             |          \-K
@@ -27,7 +27,7 @@ print t
 t.prune(["H","F","E","Q", "P"])
 print "Pruned tree method=keep"
 print t
-# 
+#
 #                              /-F
 #                    /--------|
 #          /--------|          \-H
@@ -42,7 +42,7 @@ t = Tree('((((H,K),(F,I)G),E),((L,(N,Q)O),(P,S)));')
 print "Pruned tree method=crop"
 t.prune(["H","F","E","Q", "P"], method="crop")
 print t
-# 
+#
 #                              /-L
 #                    /--------|
 #          /--------|          \-N

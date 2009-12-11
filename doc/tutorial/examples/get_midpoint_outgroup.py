@@ -1,10 +1,10 @@
 from ete_dev import Tree
-# generates a random tree 
-t = Tree(); 
-t.populate(15); 
+# generates a random tree
+t = Tree();
+t.populate(15);
 print t
-# 
-# 
+#
+#
 #                    /-qogjl
 #          /--------|
 #         |          \-vxbgp
@@ -68,4 +68,4 @@ print t
 #                   |                              \-buxpw
 #                   |
 #                    \-rkzwd
-# 
+#

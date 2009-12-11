@@ -1,8 +1,8 @@
 from ete_dev import Tree
-t = Tree( '(A:1,(B:1,(C:1,D:1):0.5):0.5);' ) 
+t = Tree( '(A:1,(B:1,(C:1,D:1):0.5):0.5);' )
 # Visit nodes in preorder (this is the default strategy)
-for n in t.traverse(): 
-  print n
+for n in t.traverse():
+    print n
 # It Will visit the nodes in the following order:
 #           /-A
 # ---------|
@@ -25,7 +25,7 @@ for n in t.traverse():
 # --D
 # Visit nodes in postorder
 for n in t.traverse("postorder"):
-  print n
+    print n
 # It Will visit the nodes in the following order:
 # --A
 # --B

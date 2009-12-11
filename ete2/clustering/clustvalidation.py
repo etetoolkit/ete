@@ -1,21 +1,21 @@
 # #START_LICENSE###########################################################
 #
-# Copyright (C) 2009 by Jaime Huerta Cepas. All rights reserved.  
+# Copyright (C) 2009 by Jaime Huerta Cepas. All rights reserved.
 # email: jhcepas@gmail.com
 #
-# This file is part of the Environment for Tree Exploration program (ETE). 
+# This file is part of the Environment for Tree Exploration program (ETE).
 # http://ete.cgenomics.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
@@ -39,10 +39,10 @@ def safe_mean_vector(vectors):
         return vectors[0], numpy.zeros(len(vectors[0]))
     # Takes the vector length form the first item
     length = len(vectors[0])
-    
+
     safe_mean = []
     safe_std  = []
-    
+
     for pos in xrange(length):
         pos_mean = []
         for v in vectors:
@@ -60,24 +60,24 @@ def get_silhouette_width(fdist, cluster):
     intra_dist = []
     inter_dist = []
     for st in sisters:
-	if st.profile is None:
-	    continue
-	for i in cluster.iter_leaves():
-	    # Skip nodes without profile
-	    if i._profile is not None:
-		# item intraclsuterdist -> Centroid Diameter
-		a = fdist(i.profile, cluster.profile)*2
-		# intracluster dist -> Centroid Linkage
-		b = fdist(i.profile, st.profile) 
+        if st.profile is None:
+            continue
+        for i in cluster.iter_leaves():
+            # Skip nodes without profile
+            if i._profile is not None:
+                # item intraclsuterdist -> Centroid Diameter
+                a = fdist(i.profile, cluster.profile)*2
+                # intracluster dist -> Centroid Linkage
+                b = fdist(i.profile, st.profile)
 
-		if (b-a) == 0.0:
-		    s = 0.0
-		else:
-		    s =  (b-a) / max(a,b)
+                if (b-a) == 0.0:
+                    s = 0.0
+                else:
+                    s =  (b-a) / max(a,b)
 
-		intra_dist.append(a)
-		inter_dist.append(b)
-		silhouette.append(s)
+                intra_dist.append(a)
+                inter_dist.append(b)
+                silhouette.append(s)
 
     silhouette, std = safe_mean(silhouette)
     intracluster_dist, std = safe_mean(intra_dist)
@@ -89,20 +89,20 @@ def get_avg_profile(node):
     associated to an internal node. """
 
     if not node.is_leaf():
-	leaf_vectors = [n._profile for n in  node.get_leaves() \
-			    if n._profile is not None]
-	if len(leaf_vectors)>0:
-	    node._profile, node._std_profile = safe_mean_vector(leaf_vectors)
-	else:
-	    node._profile, node._std_profile = None, None
-	return node._profile, node._std_profile
-    else: 
-	node._std_profile = [0.0]*len(node._profile)
-	return node._profile, [0.0]*len(node._profile)
+        leaf_vectors = [n._profile for n in  node.get_leaves() \
+                            if n._profile is not None]
+        if len(leaf_vectors)>0:
+            node._profile, node._std_profile = safe_mean_vector(leaf_vectors)
+        else:
+            node._profile, node._std_profile = None, None
+        return node._profile, node._std_profile
+    else:
+        node._std_profile = [0.0]*len(node._profile)
+        return node._profile, [0.0]*len(node._profile)
 
 
 def get_dunn_index(fdist, *clusters):
-    """ 
+    """
     Returns the Dunn index for the given selection of nodes.
 
     J.C. Dunn. Well separated clusters and optimal fuzzy
@@ -111,30 +111,30 @@ def get_dunn_index(fdist, *clusters):
     """
 
     if len(clusters)<2:
-	raise ValueError, "At least 2 clusters are required"
+        raise ValueError, "At least 2 clusters are required"
 
     intra_dist = []
     for c in clusters:
-	for i in c.get_leaves():
-	    if i is not None:
-		# item intraclsuterdist -> Centroid Diameter
-		a = fdist(i.profile, c.profile)*2
-		intra_dist.append(a)
-    max_a = numpy.max(intra_dist) 
+        for i in c.get_leaves():
+            if i is not None:
+                # item intraclsuterdist -> Centroid Diameter
+                a = fdist(i.profile, c.profile)*2
+                intra_dist.append(a)
+    max_a = numpy.max(intra_dist)
     inter_dist = []
     for i, ci in enumerate(clusters):
-	for cj in clusters[i+1:]:
-	    # intracluster dist -> Centroid Linkage
-	    b = fdist(ci.profile, cj.profile)
-	    inter_dist.append(b)
+        for cj in clusters[i+1:]:
+            # intracluster dist -> Centroid Linkage
+            b = fdist(ci.profile, cj.profile)
+            inter_dist.append(b)
     min_b = numpy.min(inter_dist)
 
     if max_a == 0.0:
-	D = 0.0
+        D = 0.0
     else:
-	D = min_b / max_a
+        D = min_b / max_a
     return D
-   
+
 
 
 # ####################
@@ -142,25 +142,25 @@ def get_dunn_index(fdist, *clusters):
 # ####################
 
 def pearson_dist(v1, v2):
-    if (v1 == v2).all(): 
+    if (v1 == v2).all():
         return 0.0
     else:
         return 1.0 - stats.pearsonr(v1,v2)[0]
 
 def spearman_dist(v1, v2):
-    if (v1 == v2).all(): 
+    if (v1 == v2).all():
         return 0.0
     else:
         return 1.0 - stats.spearmanr(v1,v2)[0]
 
 def euclidean_dist(v1,v2):
-    if (v1 == v2).all(): 
+    if (v1 == v2).all():
         return 0.0
     else:
         return math.sqrt( square_euclidean_dist(v1,v2) )
 
 def square_euclidean_dist(v1,v2):
-    if (v1 == v2).all(): 
+    if (v1 == v2).all():
         return 0.0
     valids  = 0
     distance= 0.0

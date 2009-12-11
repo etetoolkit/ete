@@ -1,7 +1,7 @@
 from ete_dev import PhylomeDBConnector
 # This connects to the main phylomeDB server (default parameters)
 p = PhylomeDBConnector()
-# Obtains the phylomeDB internal ID for my gene of interest 
+# Obtains the phylomeDB internal ID for my gene of interest
 idmatches = p.search_id("ENSG00000146556")
 # Take the only match (several would be possible)
 geneid = idmatches[0]
