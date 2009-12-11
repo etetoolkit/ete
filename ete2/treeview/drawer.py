@@ -1237,7 +1237,7 @@ class _TreeScene(QtGui.QGraphicsScene):
         logger(2, "Ellapsed time for updating node areas:",time.time()-t1)
         # Get picture dimensions (Only main tree is taken into account
         # at this point)
-        self.i_width  = self.startNode.fullRegion.width() 
+        self.i_width  = self.startNode.fullRegion.width()
         self.i_height = self.startNode.fullRegion.height()
 
         # Calculates the size of down and up faces. These faces are
@@ -1245,20 +1245,21 @@ class _TreeScene(QtGui.QGraphicsScene):
         # node. They can be seen as header and footer faces.  This
         # code is not very good. I'll try to fix it in the future.
 
-        down_height_aligned = 0
-        down_width_aligned = 0
-        down_height_normal = 0
-        down_width_normal = 0
-        up_height_aligned = 0
-        up_width_aligned = 0
-        up_height_normal = 0
-        up_width_normal = 0
+        down_height_aligned = 0 #
+        down_width_aligned  =  0 #
+        down_height_normal  =  0  #
+        down_width_normal   =  0   #_____\______
+        up_height_aligned   =  0   #       /
+        up_width_aligned    =  0  #
+        up_height_normal    =  0 #
+        up_width_normal     = 0 #
+        
         for f in self.down_faces:
                 if f.type == "pixmap":
                     f.update_pixmap()
                 if f.aligned:
                     down_height_aligned += f._height()
-                    down_width_aligned =  max(down_width_aligned, f._width())+(f.aligned-1)
+                    down_width_aligned =  max(down_width_aligned, f._width())
                 else:
                     down_width_normal = max(down_width_normal, f._width())
                     down_height_normal += f._height() 
@@ -1268,7 +1269,7 @@ class _TreeScene(QtGui.QGraphicsScene):
                 f.update_pixmap()
             if f.aligned:
                 up_height_aligned += f._height()
-                up_width_aligned =  max(up_width_aligned, f._width())+(f.aligned-1)
+                up_width_aligned =  max(up_width_aligned, f._width())
             else:
                 up_width_normal = max(up_width_normal, f._width())
                 up_height_normal += f._height()
@@ -1303,8 +1304,8 @@ class _TreeScene(QtGui.QGraphicsScene):
 
         # Draw up and down faces
         self.add_extra_faces(self.up_faces, 0,0, self.start_aligned, 0)
-        down_y = self.i_height - max(down_height_normal, up_height_aligned) 
-        self.add_extra_faces(self.down_faces, 0, down_y, self.start_aligned, down_y)
+        down_y = self.i_height - max(down_height_normal, up_height_aligned)
+        self.add_extra_faces(self.down_faces, 0, down_y, self.start_aligned-(f.aligned-1), down_y)
 
         # Tree border
         #border = self.addRect(0,0,self.i_width, self.i_height)

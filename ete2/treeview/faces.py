@@ -177,6 +177,7 @@ class HistFace(Face):
         if len (colors) != len (values):
             sys.exit('ERROR: value and color arrays differ in length!!!\n')
         self.mean = (height-20)/2
+        self.meanVal = mean
         if mean == 0: self.max = max (values)
         else:         self.max = mean*2
         self.values = map (lambda x: \
@@ -192,11 +193,13 @@ class HistFace(Face):
         
         fm = QtGui.QFontMetrics(self.font)
         height = self.height
-        width  = fm.size(QtCore.Qt.AlignTop, 'A'*len (self.values)).width()
+        width  = fm.size(QtCore.Qt.AlignTop, 'A'*len (self.values)).width()+self.aligned
         self.pixmap = QtGui.QPixmap(width,height)
         self.pixmap.fill()
         p = QtGui.QPainter(self.pixmap)
-        x = 0
+        if self.aligned:
+            x = 0+(self.aligned-1)
+        else: x = 0
         y = height - fm.underlinePos()*2
 
         customPen = QtGui.QPen(QtGui.QColor("black"),1)
@@ -208,11 +211,13 @@ class HistFace(Face):
 
         customPen.setStyle(QtCore.Qt.SolidLine)
         p.setPen(customPen)
-        sep = float (width) / len(self.values)
+        sep = float (width-(self.aligned-1)) / len(self.values)
         posX = x - sep
         p.setPen(QtGui.QColor("black"))
         p.setFont(QtGui.QFont("Arial",7))
-        p.drawText(x,y-height+10,self.header)
+        p.drawText(x-self.aligned+1, y-float(height)/4, self.header)
+        p.drawText(x-5, y+2, "0")
+        p.drawText(x-5, y-self.mean+2, str (self.meanVal))
 
         for i in range (0, len (self.values)):
             val = self.values[i]
