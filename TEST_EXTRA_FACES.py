@@ -28,7 +28,7 @@ values = len (re.sub('[^a]','',string))*[1] + len (re.sub('[^i]','',string))*[0.
 
 AH1 = faces.HistFace(values=values,header='bonjour'*30,mean=1)
 
-AH1.aligned = True
+AH1.aligned = -50
 
 A1.aligned=True
 A2.aligned=True
