@@ -1238,18 +1238,18 @@ class _TreeScene(QtGui.QGraphicsScene):
         self.i_height = self.startNode.fullRegion.height()
 
         # Calculates the size of down and up faces. These faces are
-        # graphical items added to the main image but not to any
+        # graphical items added to the main image but not to a
         # node. They can be seen as header and footer faces.  This
         # code is not very good. I'll try to fix it in the future.
 
-        down_height_aligned = 0 #
-        down_width_aligned  =  0 #
-        down_height_normal  =  0  #
-        down_width_normal   =  0   #_____\______
-        up_height_aligned   =  0   #       /
-        up_width_aligned    =  0  #
-        up_height_normal    =  0 #
-        up_width_normal     = 0 #
+        down_height_aligned=0  #
+        down_width_aligned=0    #
+        down_height_normal=0     #
+        down_width_normal=0      #_____\______
+        up_height_aligned=0      #       /
+        up_width_aligned=0      #
+        up_height_normal=0     #
+        up_width_normal=0     #
         
         for f in self.down_faces:
                 if f.type == "pixmap":
@@ -1302,7 +1302,7 @@ class _TreeScene(QtGui.QGraphicsScene):
         # Draw up and down faces
         self.add_extra_faces(self.up_faces, 0,0, self.start_aligned, 0)
         down_y = self.i_height - max(down_height_normal, up_height_aligned)
-        self.add_extra_faces(self.down_faces, 0, down_y, self.start_aligned-(f.aligned-1), down_y)
+        self.add_extra_faces(self.down_faces, 0, down_y, self.start_aligned, down_y)
 
         # Tree border
         #border = self.addRect(0,0,self.i_width, self.i_height)
@@ -1339,15 +1339,15 @@ class _TreeScene(QtGui.QGraphicsScene):
                 obj = _FaceItem(f, None, f.pixmap)
                 obj.setParentItem(self.mainItem)
             obj.setAcceptsHoverEvents(False)
+            y_off = f._y_offset
             if f.aligned:
-                obj.setPos(aligned_x_start+f.xmargin, aligned_y_start +\
-                           cumulative_h_aligned+f.ymargin)
+                obj.setPos(aligned_x_start+f.xmargin+f._x_offset, aligned_y_start +\
+                           cumulative_h_aligned+f.ymargin + f._y_offset)
                 cumulative_h_aligned += f._height()
             else:
-                obj.setPos(normal_x_start+f.xmargin, normal_y_start +\
-                               cumulative_h_normal+f.ymargin)
+                obj.setPos(normal_x_start+f.xmargin +f._x_offset, normal_y_start +\
+                               cumulative_h_normal+f.ymargin+f._y_offset)
                 cumulative_h_normal += f._height()
-
 
     def add_scale(self,x,y):
         size = 50
@@ -1761,9 +1761,9 @@ class _TreeScene(QtGui.QGraphicsScene):
                 if node.is_leaf() and aligned:
                     # Set face position
                     if orientation ==0:
-                        obj.setPos(aligned_start_x + (aligned-1) + f.xmargin, start_y)# + f.ymargin)
+                        obj.setPos(aligned_start_x  + f.xmargin, start_y)# + f.ymargin)
                     elif orientation ==1:
-                        obj.setPos(aligned_start_x-f._width() + (aligned-1) - f.xmargin , start_y)# + f.ymargin)
+                        obj.setPos(aligned_start_x-f._width() - f.xmargin , start_y)# + f.ymargin)
                     cumulated_aligned_y += f._height()# + f.ymargin*2
                 # If face has to be draw within the node room
                 else:

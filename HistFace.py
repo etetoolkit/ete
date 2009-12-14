@@ -104,16 +104,23 @@ class HistFace(faces.Face):
         self.header = header
 
     def update_pixmap(self):
-        
+        scale_x_offset = 5
+        header_font_size = 7
+        # Calculates  header's size
+        header_font = QtGui.QFont("Arial", header_font_size) # could this be modified by the user?
+        fm = QtGui.QFontMetrics(header_font)
+        self._x_offset = -1 * fm.size(QtCore.Qt.AlignTop, self.header).width()
+
+        # Calculates size of main plot
         fm = QtGui.QFontMetrics(self.font)
         height = self.height
-        width  = fm.size(QtCore.Qt.AlignTop, 'A'*len (self.values)).width()+self.aligned
+        width  = fm.size(QtCore.Qt.AlignTop, 'A'*len (self.values)).width()+self._x_offset
         self.pixmap = QtGui.QPixmap(width,height)
         self.pixmap.fill()
         p = QtGui.QPainter(self.pixmap)
-        if self.aligned:
-            x = 0+(self.aligned-1)
-        else: x = 0
+        # Set the start x and y of the main plot (taking into account
+        # header and scale text)
+        x = (-1 * self._x_offset) 
         y = height - fm.underlinePos()*2
 
         customPen = QtGui.QPen(QtGui.QColor("black"),1)
@@ -125,13 +132,14 @@ class HistFace(faces.Face):
 
         customPen.setStyle(QtCore.Qt.SolidLine)
         p.setPen(customPen)
-        sep = float (width-(self.aligned-1)) / len(self.values)
+        sep = float (width) / len(self.values)
         posX = x - sep
+
+        p.setFont(header_font)
         p.setPen(QtGui.QColor("black"))
-        p.setFont(QtGui.QFont("Arial",7))
-        p.drawText(x-self.aligned+1, y-float(height)/4, self.header)
-        p.drawText(x-5, y+2, "0")
-        p.drawText(x-5, y-self.mean+2, str (self.meanVal))
+        p.drawText(x+self._x_offset-scale_x_offset, y-float(height)/4, self.header)
+        p.drawText(x-scale_x_offset, y+2, "0")
+        p.drawText(x-scale_x_offset, y-self.mean+2, str(self.meanVal))
 
         for i in range (0, len (self.values)):
             val = self.values[i]

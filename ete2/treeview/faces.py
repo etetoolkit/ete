@@ -134,13 +134,15 @@ class Face(object):
     """
 
     def __init__(self):
-        self.node        = None
-        self.type        = "pixmap"
-        self.name        = "unknown"
-        self.xmargin     = 0
-        self.ymargin     = 0
-        self.pixmap      = None
-        # self.aligned     = False
+        self.node = None
+        self.type = "pixmap"
+        self.name = "unknown"
+        self.xmargin = 0
+        self.ymargin = 0
+        self.pixmap = None
+        self._x_offset = 0 # Used only in extra faces
+        self._y_offset = 0 # Used only in extra faces
+        self.aligned = False
 
     def _size(self):
         if self.pixmap:
