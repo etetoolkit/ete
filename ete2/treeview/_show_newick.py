@@ -82,4 +82,3 @@ class Ui_Newick(object):
         self.pushButton_2.setText(QtGui.QApplication.translate("Newick", "Del", None, QtGui.QApplication.UnicodeUTF8))
         self.label_3.setText(QtGui.QApplication.translate("Newick", "Node\'s attribute (NHX format)", None, QtGui.QApplication.UnicodeUTF8))
         self.useAllFeatures.setText(QtGui.QApplication.translate("Newick", "Include all attributes in nodes", None, QtGui.QApplication.UnicodeUTF8))
-

@@ -25,4 +25,3 @@ class Ui_OpenNewick(object):
 
     def retranslateUi(self, OpenNewick):
         OpenNewick.setWindowTitle(QtGui.QApplication.translate("OpenNewick", "Dialog", None, QtGui.QApplication.UnicodeUTF8))
-

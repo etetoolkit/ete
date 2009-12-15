@@ -1,6 +1,6 @@
 from ete2 import Tree
 #Loads a tree
-tree = Tree( '((H:1,I:1):0.5, A:1, (B:1,(C:1,D:1):0.5):0.5);' ) 
+tree = Tree( '((H:1,I:1):0.5, A:1, (B:1,(C:1,D:1):0.5):0.5);' )
 print "this is the original tree:"
 print tree
 #                    /-H
@@ -14,7 +14,7 @@ print tree
 #                   |          /-C
 #                    \--------|
 #                              \-D
-# Finds the first common ancestor between B and C. 
+# Finds the first common ancestor between B and C.
 ancestor = tree.get_common_ancestor("D", "C")
 print "The ancestor of C and D is:"
 print ancestor
@@ -36,7 +36,7 @@ sisters = ancestor.get_sisters()
 print "which has has", len(sisters), "sister nodes"
 print "and the first of such sister nodes like this:"
 print sisters[0]
-# 
+#
 #          /-H
 #---------|
 #          \-I

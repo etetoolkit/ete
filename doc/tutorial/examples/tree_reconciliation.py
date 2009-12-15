@@ -27,14 +27,14 @@ print genetree
 #                             |          /-Hsa_002
 #                              \--------|
 #                                        \-Mmu_002
-# 
+#
 # Let's reconcile our genetree with the species tree
 recon_tree, events = genetree.reconcile(sptree)
 # a new "reconcilied tree" is returned. As well as the list of
 # inferred events.
 print "Orthology and Paralogy relationships:"
 for ev in events:
-    if ev.etype == "S": 
+    if ev.etype == "S":
         print 'ORTHOLOGY RELATIONSHIP:', ','.join(ev.inparalogs), "<====>", ','.join(ev.orthologs)
     elif ev.etype == "D":
         print 'PARALOGY RELATIONSHIP:', ','.join(ev.inparalogs), "<====>", ','.join(ev.outparalogs)
