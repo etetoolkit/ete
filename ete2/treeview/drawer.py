@@ -1250,7 +1250,7 @@ class _TreeScene(QtGui.QGraphicsScene):
         up_width_aligned=0      #
         up_height_normal=0     #
         up_width_normal=0     #
-        
+
         for f in self.down_faces:
                 if f.type == "pixmap":
                     f.update_pixmap()
@@ -1260,7 +1260,7 @@ class _TreeScene(QtGui.QGraphicsScene):
                 else:
                     down_width_normal = max(down_width_normal, f._width())
                     down_height_normal += f._height() 
-        
+
         for f in self.up_faces:
             if f.type == "pixmap":
                 f.update_pixmap()
@@ -1275,12 +1275,12 @@ class _TreeScene(QtGui.QGraphicsScene):
         width_normal_faces = max(up_width_normal, down_width_normal)
         if width_normal_faces >self.i_width:
             self.i_width = width_normal_faces
-        
+
         self.start_aligned = self.i_width
         # Correct hight to allocate up and down faces
         self.i_height += max(down_height_normal, up_height_aligned) 
         self.i_height += max(up_height_normal, up_height_aligned) 
-        
+
         # Correct start y according to the height of up faces
         start_y = max(up_height_normal, up_height_aligned) 
 

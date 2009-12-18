@@ -24,13 +24,13 @@ from sys import stderr, stdout
 import time
 import re
 import math
-import random   
+import random
 import types
 import copy
-import string 
+import string
 import numpy
 from PyQt4  import QtCore
-from PyQt4  import QtGui 
+from PyQt4  import QtGui
 from PyQt4.QtGui import QPrinter
 from ete_dev import faces, layouts
 
@@ -84,38 +84,33 @@ class HistFace(faces.Face):
     """
 
     def __init__(self, values, colors = [], header = '', mean = 0, \
-                 fsize=10, height = 120):
+                 fsize=10, height = 100):
 
         faces.Face.__init__(self)
         if colors == []: colors = ['grey']*len (values)
         if len (colors) != len (values):
             sys.exit('ERROR: value and color arrays differ in length!!!\n')
-        self.mean = (height-20)/2
+        self.mean = (height)/2
         self.meanVal = mean
         if mean == 0: self.max = max (values)
         else:         self.max = mean*2
-        self.values = map (lambda x: \
-                           float (x)/self.max * (height-20),values)
+        self.values = map (lambda x: float(x)/self.max*height, values)
         self.colors = colors
-        # don't know why font size have to be readjusted compared to sequence face... don't understand :|
-        self.fsize  = int ((float (fsize)/6)*8)
+        self.fsize  = int ((float (fsize)))
         self.font   = QtGui.QFont("Courier", self.fsize)
-        self.height = height
+        self.height = height+25
         self.header = header
 
     def update_pixmap(self):
         scale_x_offset = 5
-        header_font_size = 7
+        header_font_size = 8
         # Calculates  header's size
-        header_font = QtGui.QFont("Arial", header_font_size) # could this be modified by the user?
-        fm = QtGui.QFontMetrics(header_font)
-        self._x_offset = -1 * fm.size(QtCore.Qt.AlignTop, self.header).width()
-
+        header_font = QtGui.QFont("Arial", header_font_size) # could this be modified by the user?... no... fuckyou user!!!
         # Calculates size of main plot
         fm = QtGui.QFontMetrics(self.font)
         height = self.height
-        width  = fm.size(QtCore.Qt.AlignTop, 'A'*len (self.values)).width()+self._x_offset
-        self.pixmap = QtGui.QPixmap(width,height)
+        width  = fm.size(QtCore.Qt.AlignTop, 'A'*(len (self.values))).width()
+        self.pixmap = QtGui.QPixmap(width+20,height)
         self.pixmap.fill()
         p = QtGui.QPainter(self.pixmap)
         # Set the start x and y of the main plot (taking into account
@@ -137,9 +132,9 @@ class HistFace(faces.Face):
 
         p.setFont(header_font)
         p.setPen(QtGui.QColor("black"))
-        p.drawText(x+self._x_offset-scale_x_offset, y-float(height)/4, self.header)
-        p.drawText(x-scale_x_offset, y+2, "0")
-        p.drawText(x-scale_x_offset, y-self.mean+2, str(self.meanVal))
+        p.drawText(x, y-height+12, self.header)
+        p.drawText(x+width+2, y+2, "0")
+        p.drawText(x+width+2, y-self.mean+2, str(self.meanVal))
 
         for i in range (0, len (self.values)):
             val = self.values[i]
@@ -147,39 +142,17 @@ class HistFace(faces.Face):
             posX += sep
             customPen  = QtGui.QPen(QtGui.QColor(col),1)
             p.setPen(customPen)
-            if abs(val) <= (self.height-20):
+            if abs(val) <= (self.height-25):
                 p.drawLine(posX,y,posX,y-val)
-                p.drawLine(posX+6,y,posX+6,y-val)
-                p.drawLine(posX+6,y-val,posX,y-val)
+                p.drawLine(posX+4,y,posX+4,y-val)
+                p.drawLine(posX+4,y-val,posX,y-val)
             else:
-                p.drawLine(posX,y,posX,y-(self.height-20))
-                p.drawLine(posX+6,y,posX+6,y-(self.height-20))
-                p.drawLine(posX,y-(self.height-10),posX,y-(self.height-15))
-                p.drawLine(posX+6,y-(self.height-10),posX+6,y-(self.height-15))
-                p.drawLine(posX+6,y-(self.height-10),posX,y-(self.height-10))
+                p.drawLine(posX+1,y,posX+1,y-(self.height-25))
+                p.drawLine(posX+4,y,posX+4,y-(self.height-25))
+                p.drawLine(posX+1,y-(self.height-15),posX+1,y-(self.height-20))
+                p.drawLine(posX+4,y-(self.height-15),posX+4,y-(self.height-20))
+                p.drawLine(posX+4,y-(self.height-15),posX+1,y-(self.height-15))
 
-            #if col =='grey':
-            #    name = QtGui.QGraphicsSimpleTextItem("+")
-            #    name.setText("+")
-            #    name.setPos(posX,y-5)
-            #    name = QtGui.QGraphicsSimpleTextItem("+")
-            #    name.setPos(posX,y+1)
-            #    
-            #if col =='orange':
-            #    name = QtGui.QGraphicsSimpleTextItem("+")
-            #    name.setParentItem(self.mainItem)
-            #    name.setPos(posX,y-5)
-            #if col =='blue':
-            #    name = QtGui.QGraphicsSimpleTextItem("-")
-            #    name.setParentItem(self.mainItem)
-            #    name.setPos(posX,y-5)
-            #    name = QtGui.QGraphicsSimpleTextItem("-")
-            #    name.setParentItem(self.mainItem)
-            #    name.setPos(posX,y+1)
-            #if col =='cyan':
-            #    name = QtGui.QGraphicsSimpleTextItem("-")
-            #    name.setParentItem(self.mainItem)
-            #    name.setPos(posX,y-5)
 
 
 class CustomProfileFace(faces.Face):
