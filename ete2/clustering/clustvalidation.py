@@ -21,13 +21,6 @@
 #
 # #END_LICENSE#############################################################
 import numpy
-try:
-    from scipy import stats
-    default_dist = spearman_dist
-    print "'scipy' module is not found in your system."
-    print "Correlation based distances will not be avaliable."
-except ImportError:
-    default_dist = euclidean_dist
 
 def safe_mean(values):
     """ Returns mean value discarding non finite values """
@@ -178,3 +171,12 @@ def square_euclidean_dist(v1,v2):
     if valids==0:
         raise ValueError, "Cannot calculate values"
     return  distance/valids
+
+try:
+    from scipy import stats
+    default_dist = spearman_dist
+    print "'scipy' module is not found in your system."
+    print "Correlation based distances will not be avaliable."
+except ImportError:
+    default_dist = euclidean_dist
+
