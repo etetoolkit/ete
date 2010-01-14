@@ -173,7 +173,7 @@ def get_evol_events_from_root(node, sos_thr):
         childs = current.get_children()
         to_visit += childs
         if len(childs)>2:
-            print >> sys.stderr, "nodes are expected to have two childs."
+            raise "eteError", "nodes are expected to have two childs."
         elif len(childs)==0:
             pass # leaf
         else:

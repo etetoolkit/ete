@@ -20,8 +20,11 @@
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
 # #END_LICENSE#############################################################
-from PyQt4 import QtCore
-from PyQt4 import QtGui
+try:
+    from PyQt4 import QtCore, QtGui
+except:
+    import QtCore, QtGui
+
 import numpy
 
 aafgcolors = {

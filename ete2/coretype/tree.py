@@ -483,12 +483,11 @@ class TreeNode(object):
         (when available) for every node. Extended newick format is
         used to represent data.
 
-        support: [True|False] Shows branch support values.
-
-        dist: [True|False] Shows branch length values.
+        'format' defines the newick standard used to encode the
+        tree. See tutorial for details.
 
         Example:
-             t.get_newick(["species","name"], support=False)
+             t.get_newick(["species","name"], format=1)
         """
 
         nw = write_newick(self, features = features, format=format)

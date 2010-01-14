@@ -29,9 +29,12 @@ import types
 import copy
 import string
 import numpy
-from PyQt4  import QtCore
-from PyQt4  import QtGui
-from PyQt4.QtGui import QPrinter
+try:
+    from PyQt4  import QtCore, QtGui
+    from PyQt4.QtGui import QPrinter
+except ImportError:
+    import QtCore, QtGui
+    from QtGui import QPrinter
 import layouts
 import _mainwindow, _search_dialog, _show_newick, _open_newick, _about
 
@@ -1102,11 +1105,11 @@ class _TreeScene(QtGui.QGraphicsScene):
 
         if ext == "PDF" or ext == "PS":
             format = QPrinter.PostScriptFormat if ext == "PS" else QPrinter.PdfFormat
-            printer = QPrinter()
+            printer = QPrinter(QPrinter.HighResolution)
             printer.setResolution(dpi)
             printer.setOutputFormat(format)
             printer.setPageSize(QPrinter.A4)
-
+            
             pageTopLeft = printer.pageRect().topLeft()
             paperTopLeft = printer.paperRect().topLeft()
             # For PS -> problems with margins
