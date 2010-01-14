@@ -21,6 +21,13 @@
 #
 # #END_LICENSE#############################################################
 import numpy
+try:
+    from scipy import stats
+    default_dist = spearman_dist
+    print "'scipy' module is not found in your system."
+    print "Correlation based distances will not be avaliable."
+except ImportError:
+    default_dist = euclidean_dist
 
 def safe_mean(values):
     """ Returns mean value discarding non finite values """
@@ -140,17 +147,17 @@ def get_dunn_index(fdist, *clusters):
 # distance functions
 # ####################
 
-#  def pearson_dist(v1, v2):
-#      if (v1 == v2).all():
-#          return 0.0
-#      else:
-#          return 1.0 - stats.pearsonr(v1,v2)[0]
-#   
-#  def spearman_dist(v1, v2):
-#      if (v1 == v2).all():
-#          return 0.0
-#      else:
-#          return 1.0 - stats.spearmanr(v1,v2)[0]
+def pearson_dist(v1, v2):
+    if (v1 == v2).all():
+        return 0.0
+    else:
+        return 1.0 - stats.pearsonr(v1,v2)[0]
+ 
+def spearman_dist(v1, v2):
+    if (v1 == v2).all():
+        return 0.0
+    else:
+        return 1.0 - stats.spearmanr(v1,v2)[0]
 
 def euclidean_dist(v1,v2):
     if (v1 == v2).all():

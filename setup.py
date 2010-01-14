@@ -33,6 +33,7 @@ except ImportError:
 
 python_dependencies = [
     ["numpy", "Numpy is required for the ArrayTable and ClusterTree classes.", 0],
+    ["scipy", "Scipy is only required for the clustering validation functions.", 0],
     ["MySQLdb", "MySQLdb is required for the PhylomeDB access API.", 0],
     ["PyQt4", "PyQt4 is required for tree visualization and rendering.", 0]
 ]
