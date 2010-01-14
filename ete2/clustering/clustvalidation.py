@@ -21,7 +21,6 @@
 #
 # #END_LICENSE#############################################################
 import numpy
-from scipy import stats
 
 def safe_mean(values):
     """ Returns mean value discarding non finite values """
@@ -141,17 +140,17 @@ def get_dunn_index(fdist, *clusters):
 # distance functions
 # ####################
 
-def pearson_dist(v1, v2):
-    if (v1 == v2).all():
-        return 0.0
-    else:
-        return 1.0 - stats.pearsonr(v1,v2)[0]
-
-def spearman_dist(v1, v2):
-    if (v1 == v2).all():
-        return 0.0
-    else:
-        return 1.0 - stats.spearmanr(v1,v2)[0]
+#  def pearson_dist(v1, v2):
+#      if (v1 == v2).all():
+#          return 0.0
+#      else:
+#          return 1.0 - stats.pearsonr(v1,v2)[0]
+#   
+#  def spearman_dist(v1, v2):
+#      if (v1 == v2).all():
+#          return 0.0
+#      else:
+#          return 1.0 - stats.spearmanr(v1,v2)[0]
 
 def euclidean_dist(v1,v2):
     if (v1 == v2).all():

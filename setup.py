@@ -32,17 +32,31 @@ except ImportError:
     from setuptools import setup, find_packages
 
 python_dependencies = [
-    ["numpy", "Numpy is required for the ArrayTable class among others", 0],
-    ["scipy", "Scipy is required for the ArrayTable class among others", 0],
-    ["MySQLdb", "MySQLdb is required for the PhylomeDB access API", 0],
-    ["PyQt4", "PyQt4 is required for tree visualization", 0]
+    ["numpy", "Numpy is required for the ArrayTable and ClusterTree classes.", 0],
+    ["MySQLdb", "MySQLdb is required for the PhylomeDB access API.", 0],
+    ["PyQt4", "PyQt4 is required for tree visualization and rendering.", 0]
 ]
 
 def can_import(mname):
-    try:
-        return __import__(mname)
-    except:
-        return None
+    if mname=="PyQt4":
+        try:
+            __import__("PyQt4.QtCore")
+            __import__("PyQt4.QtGui")
+        except ImportError:
+            try:
+                __import__("QtCore")
+                __import__("QtGui")
+            except ImportError:
+                return None
+        else:
+            return True
+    else:
+        try:
+            __import__(mname)
+        except ImportError:
+            return None
+        else:
+            return True
 
 def ask(string,valid_values,default=-1,case_sensitive=False):
     """ Asks for a keyborad answer """
@@ -61,13 +75,17 @@ print
 print "Installing ETE (The python Environment for Tree Exploration)."
 print
 print "Checking dependencies..."
+missing = False
 for mname, msg, ex in python_dependencies:
     if not can_import(mname):
-        print mname, "cannot be imported."
+        print mname, "cannot be found in your python installation."
         print msg
-        con = ask( "Do you want to continue with the installation?", ["y", "n"])
-        if con == "n":
-            sys.exit()
+        missing=True
+if missing:
+    print "\nHowever, you can still install ETE without such funtionalites."
+    con = ask( "Do you want to continue with the installation?", ["y", "n"])
+    if con == "n":
+        sys.exit()
 
 # SETUP
 setup(
