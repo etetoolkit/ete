@@ -110,7 +110,7 @@ class ArrayTable(object):
         elif grouping_criterion == "mean":
             grouping_f = get_mean_vector
         else:
-            raise 'ValueError', "grouping_criterion not supported. Use max|min|mean "
+            raise ValueError, "grouping_criterion not supported. Use max|min|mean "
 
         grouped_array = self.__class__()
         grouped_matrix = []
@@ -161,10 +161,10 @@ class ArrayTable(object):
     def _link_names2matrix(self, m):
         """ Synchronize curent column and row names to the given matrix"""
         if len(self.rowNames) != m.shape[0]:
-            raise 'ValueError' , "Expecting matrix with  %d rows" % m.size[0]
+            raise ValueError , "Expecting matrix with  %d rows" % m.size[0]
 
         if len(self.colNames) != m.shape[1]:
-            raise 'ValueError' , "Expecting matrix with  %d columns" % m.size[1]
+            raise ValueError , "Expecting matrix with  %d columns" % m.size[1]
 
         self.matrix = m
         self.colValues.clear()
