@@ -73,7 +73,7 @@ def ask(string,valid_values,default=-1,case_sensitive=False):
     return v
 
 print
-print "Installing ETE (The python Environment for Tree Exploration)."
+print "Installing ETE (A python Environment for Tree Exploration)."
 print
 print "Checking dependencies..."
 missing = False
