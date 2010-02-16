@@ -423,16 +423,17 @@ class Test_Coretype_Tree(unittest.TestCase):
 
         #prune
         t1 = Tree("(((A, B), C)[&&NHX:name=I], (D, F)[&&NHX:name=J])[&&NHX:name=root];")
-        t2 = Tree("(((A, B), C)[&&NHX:name=I], (D, F)[&&NHX:name=J])[&&NHX:name=root];")
         D1 = t1.search_nodes(name="D")[0]
-        F2 = t2.search_nodes(name="F")[0]
-
         root = t.search_nodes(name="root")[0]
-        t1.prune(["A","C", D1], method="keep")
-        t2.prune(["D",F2,"B"], method="crop")
+        t1.prune(["A","C", D1])
         self.assertEqual(set([n.name for n in t1.iter_descendants()]),  set(["A","C","D","I"]))
-        self.assertEqual(set([n.name for n in t2.iter_descendants()]),  set(["I", "A", "C"]))
-
+        t_fuzzy = Tree("(((A,B), C),(D,E));")
+        orig_nw = t_fuzzy.write()
+        ref_nodes = t_fuzzy.get_leaves()
+        t_fuzzy.populate(1000)
+        t_fuzzy.prune(ref_nodes)
+        self.assertEqual(t_fuzzy.write(),orig_nw)
+       
 
         # getting nodes, get_childs, get_sisters, get_tree_root,
         # get_common_ancestor, get_nodes_by_name

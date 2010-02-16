@@ -355,7 +355,9 @@ class TreeNode(object):
         for node in to_keep:
             if len(node.children) == 1:
                 node.delete()
-
+        if len(self.children)==1:
+            self.children[0].delete()
+                
     def iter_leaves(self):
         """ Returns an iterator over the leaves under this node. """
         for n in self.traverse(strategy="preorder"):
@@ -648,7 +650,7 @@ class TreeNode(object):
         else:
             cdist = prev.dist
         current = prev.up
-        while current:
+        while current is not None:
             for ch in current.children:
                 if ch != prev:
                     if not ch.is_leaf():
@@ -719,7 +721,7 @@ class TreeNode(object):
         middist  = A2B_dist / 2.0
         cdist = 0
         current = nA
-        while current:
+        while current is not None:
             cdist += current.dist
             if cdist > (middist): # Deja de subir cuando se pasa del maximo
                 break
@@ -758,7 +760,7 @@ class TreeNode(object):
                 silly_nodes.add(target)
                 if target is not self:
                     names_library.add(target.name)
-                    target.name = "NoName"
+                    #target.name = "NoName"
 
             if len(names_library)>0:
                 tname = random.sample(names_library,1)[0]
