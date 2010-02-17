@@ -37,7 +37,6 @@ class TreeError(Exception):
     def __str__(self):
         return repr(self.value)
 
-
 class TreeNode(object):
     """ TreeNode (Tree) class is used to store a tree structure. A tree
     consists of a collection of TreeNode instances connected in a
