@@ -813,14 +813,18 @@ class TreeNode(object):
             quien_va_ser_hijo = quien_va_ser_padre.up
             quien_fue_padre = None
             buffered_dist = quien_va_ser_padre.dist
-
+            buffered_support = quien_va_ser_padre.support
+            
             while quien_va_ser_hijo is not self:
                 quien_va_ser_padre.children.append(quien_va_ser_hijo)
                 quien_va_ser_hijo.children.remove(quien_va_ser_padre)
 
                 buffered_dist2 = quien_va_ser_hijo.dist
+                buffered_support2 = quien_va_ser_hijo.support
                 quien_va_ser_hijo.dist = buffered_dist
+                quien_va_ser_hijo.support = buffered_support
                 buffered_dist = buffered_dist2
+                buffered_support = buffered_support2
 
                 quien_va_ser_padre.up = quien_fue_padre
                 quien_fue_padre = quien_va_ser_padre
