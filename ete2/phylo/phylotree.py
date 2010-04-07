@@ -45,7 +45,10 @@ class PhyloNode(TreeNode):
 
     def _get_species(self):
         if self._speciesFunction:
-            return self._speciesFunction(self.name)
+            try:
+                return self._speciesFunction(self.name)
+            except:
+                return self._speciesFunction(self)
         else:
             return self._species
 
@@ -61,14 +64,14 @@ class PhyloNode(TreeNode):
     species = property(fget = _get_species, fset = _set_species)
 
     def __init__(self, newick=None, alignment=None, alg_format="fasta", \
-                 sp_naming_function=_parse_species):
+                 sp_naming_function=_parse_species, format=0):
         # _update names?
         self._name = "NoName"
         self._species = "Unknown"
         self._speciesFunction = None
         # Caution! native __init__ has to be called after setting
         # _speciesFunction to None!!
-        TreeNode.__init__(self, newick=newick)
+        TreeNode.__init__(self, newick=newick, format=format)
 
         # This will be only executed after reading the whole tree,
         # because the argument 'alignment' is not passed to the
