@@ -15,9 +15,13 @@ parser.add_option("-u", "--unitest", dest="unitest", \
                       action="store_true", \
                       help="Runs all unitests before building package")
 
-parser.add_option("-d", "--nodoc", dest="nodoc", \
+parser.add_option("-d", "--doc", dest="doc", \
                       action="store_true", \
-                      help="Skip processing documentation files")
+                      help="Process documentation files")
+
+parser.add_option("-x", "--lyx", dest="lyx", \
+                      action="store_true", \
+                      help="Process lyx based tutorial")
 
 parser.add_option("-v", "--verbose", dest="verbose", \
                       action="store_true", \
@@ -108,7 +112,7 @@ METAPKG_PATH = "/home/jhuerta/_Devel/ete_metapackage"
 RELEASES_BASE_PATH = "/tmp"
 VERSION = BRANCH_NAME+"rev"+commands.getoutput("git log --pretty=format:'' | wc -l").strip()
 MODULE_NAME = "ete2"
-RELEASE_NAME = "ete-"+VERSION
+RELEASE_NAME = MODULE_NAME+"-"+VERSION
 RELEASE_PATH = os.path.join(RELEASES_BASE_PATH, RELEASE_NAME)
 RELEASE_MODULE_PATH = os.path.join(RELEASE_PATH, "ete2")
 DOC_PATH = os.path.join(RELEASE_PATH, "doc")
@@ -139,7 +143,7 @@ print "*** Setting VERSION in all python files"
 _ex('find %s -name \'*.py\' |xargs sed \'1 i __VERSION__=\"%s\" \' -i' %\
               (RELEASE_MODULE_PATH, RELEASE_NAME))
 
-# Set VERSION in all modules
+# Generating VERSION file
 print "*** Generating VERSION file"
 _ex('echo %s > %s/VERSION' %\
               (VERSION, RELEASE_PATH))
@@ -188,15 +192,17 @@ _ex('find %s -name \'*.py\'| xargs perl -e "s/from ete2_test/from %s/g" -p -i' %
 _ex('cd %s; python setup.py build' %(RELEASE_PATH))
 
 # Generate reference guide
-if not options.nodoc:
+if options.doc:
     print "*** Creating reference guide"
-    _ex('export PYTHONPATH="%s/build/lib/"; epydoc %s -n %s --exclude PyQt4  --inheritance grouped --name ete2 -o %s/doc/%s_html' %\
-                  (RELEASE_PATH, RELEASE_MODULE_PATH, RELEASE_NAME, RELEASE_PATH, RELEASE_NAME))
-    _ex('export PYTHONPATH="%s/build/lib/"; epydoc %s -n %s  --exclude PyQt4 --pdf --inheritance grouped --name ete2 -o %s/doc/latex_guide' %\
+    _ex('export PYTHONPATH="%s/build/lib/"; epydoc %s -n %s --exclude PyQt4  --inheritance grouped --name ete2 -o %s/doc/ete_guide_html' %\
                   (RELEASE_PATH, RELEASE_MODULE_PATH, RELEASE_NAME, RELEASE_PATH))
-    _ex("cp %s/doc/latex_guide/api.pdf %s/doc/%s.pdf " %\
-                  (RELEASE_PATH, RELEASE_PATH, RELEASE_NAME))
+    #_ex('export PYTHONPATH="%s/build/lib/"; epydoc %s -n %s  --exclude PyQt4 --pdf --inheritance grouped --name ete2 -o %s/doc/latex_guide' %\
+    #_ex('export PYTHONPATH="%s/build/lib/"; epydoc %s -n %s  --exclude PyQt4  --inheritance grouped --name ete2 -o %s/doc/latex_guide' %\
+    #              (RELEASE_PATH, RELEASE_MODULE_PATH, RELEASE_NAME, RELEASE_PATH))
+    # _ex("cp %s/doc/latex_guide/api.pdf %s/doc/%s.pdf " %\
+    #              (RELEASE_PATH, RELEASE_PATH, RELEASE_NAME))
 
+if options.lyx:
     print "*** Generating tutorial PDF..."
     _ex("cd %s/doc/tutorial/; lyx ete_tutorial.lyx -e pdf2" %\
              (RELEASE_PATH) )
@@ -224,33 +230,39 @@ _ex('rm %s/build/ -r' %(RELEASE_PATH))
 _ex('rm %s/___* -r' %(RELEASE_PATH))
 
 # Creates tar ball
-print "Creating tar gz.."
-_ex('cd %s/..; tar -zcf %s.tar.gz %s/' %\
-        (RELEASE_PATH, RELEASE_NAME, RELEASE_NAME))
+# print "Creating tar gz.."
+# _ex('cd %s/..; tar -zcf %s.tar.gz %s/' %\
+#        (RELEASE_PATH, RELEASE_NAME, RELEASE_NAME))
 
 release= ask("Copy release to main server?", ["y","n"])
 if release=="y":
-    print "Copying release..."
-    _ex("scp %s/%s.tar.gz %s" %\
-            (RELEASES_BASE_PATH, RELEASE_NAME, SERVER+":"+SERVER_RELEASES_PATH))
+    print "Creating and submitting distribution to PyPI"
+    _ex("cd %s; python ./setup.py sdist upload --show-response " %RELEASE_PATH) 
+    print "Copying release to ete server..."
+    _ex("scp %s/dist/%s.tar.gz %s" %\
+            (RELEASE_PATH, RELEASE_NAME, SERVER+":"+SERVER_RELEASES_PATH))
     print "Updating releases table..."
     _ex("ssh %s 'cd %s; sh update_downloads.sh'" %(SERVER, SERVER_RELEASES_PATH))
-    
-if not options.nodoc:
+ 
+
+if options.doc:
     copydoc= ask("Update documentation?", ["y","n"])
     if copydoc=="y":
+        #print "Copying guide PDF..."
+        #_ex("scp %s/doc/%s.pdf %s/ete_guide.pdf" %\
+        #        (RELEASE_PATH, RELEASE_NAME,  SERVER+":"+SERVER_DOC_PATH))
+        print "Copying html guide..."
+        _ex("rsync -r %s/doc/ete_guide_html/ %s/html/" %\
+                (RELEASE_PATH, SERVER+":"+SERVER_DOC_PATH))
+if options.lyx:
+    copytuto= ask("Update tutorial?", ["y","n"])
+    if copytuto=="y":
         print "Copying tutorial..."
         _ex("scp %s/doc/%s_tutorial.pdf %s/ete_tutorial.pdf" %\
                 (RELEASE_PATH, RELEASE_NAME,  SERVER+":"+SERVER_DOC_PATH))
         print "Copying tutorial examples..."
         _ex("scp %s/doc/%s_tutorial_examples.tar.gz %s/ete_tutorial_examples.tar.gz" %(RELEASE_PATH, RELEASE_NAME, SERVER+":"+SERVER_DOC_PATH))
-        print "Copying guide PDF..."
-        _ex("scp %s/doc/%s.pdf %s/ete_guide.pdf" %\
-                (RELEASE_PATH, RELEASE_NAME,  SERVER+":"+SERVER_DOC_PATH))
-        print "Copying guide html..."
-        _ex("rsync -r %s/doc/%s_html/ %s/html/" %\
-                (RELEASE_PATH, RELEASE_NAME, SERVER+":"+SERVER_DOC_PATH))
-
+        
 
 updatemeta= ask("Update metapkg?", ["y","n"])
 if updatemeta=="y":

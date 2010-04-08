@@ -38,6 +38,32 @@ python_dependencies = [
     ["PyQt4", "PyQt4 is required for tree visualization and rendering.", 0]
 ]
 
+DESCRIPTION="""ETE is a python programming toolkit that assists in the automated
+manipulation, analysis and visualization of hierarchical
+trees. Besides a broad set of tree handling options, ETE provides
+specific methods to work on phylogenetics and clustering analyses. ETE
+supports large tree data structures, node annotation, topology
+manipulation and provides a highly customizable visualization
+framework."""
+
+TAGS = [
+    "Development Status :: 6 - Mature",
+    "Environment :: Console",
+    "Environment :: X11 Applications :: Qt",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Other Audience",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU General Public License (GPL)",
+    "Natural Language :: English",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Topic :: Scientific/Engineering :: Visualization",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    ]
+
 def can_import(mname):
     if mname=="PyQt4":
         try:
@@ -91,7 +117,7 @@ if missing:
 # SETUP
 setup(
     name = "ete2",
-    version = open("VERSION").readline(),
+    version = open("VERSION").readline().strip(),
     packages = find_packages(),
 
     requires = [],
@@ -106,8 +132,15 @@ setup(
     # metadata for upload to PyPI
     author = "Jaime Huerta-Cepas",
     author_email = "jhcepas@gmail.com",
-    description = "A python Environment for Tree Exploration",
+    maintainer = "Jaime Huerta-Cepas",
+    maintainer_email = "jhcepas@gmail.com",
+    platforms = "OS Independent",
     license = "GPLv3",
-    keywords = "bioinformatics phylogeny phylogenomics genomics ete tree clustering phylogenetics",
+    description = "A python Environment for Tree Exploration",
+    long_description = DESCRIPTION.replace("\n", " "),
+    classifiers = TAGS,
+    provides = ['ete2'],
+    keywords = "bioinformatics phylogeny evolution phylogenomics genomics tree clustering phylogenetics phylogenetic ete orthology paralogy",
     url = "http://ete.cgenomics.org",
+    download_url = "http://ete.cgenomics.org/releases/ete2/",
 )

@@ -259,7 +259,9 @@ VKNSWGPQWGMNGYFLIERGKNMCGLAACASYPIPLV
 """
 
 class Test_Coretype_SeqGroup(unittest.TestCase):
+    """ Tests core functionality of Alignmnets objects """
     def test_fasta_parser(self):
+        """ test fasta read an write """
         # FASTA IO
         open("/tmp/ete_test_fasta.txt","w").write(fasta_example)
         # Test reading from file and from string
@@ -286,6 +288,7 @@ class Test_Coretype_SeqGroup(unittest.TestCase):
 
 
     def test_phylip_parser(self):
+        """ Tests phylip read and write """
         # PHYLIP INTERLEAVED
         open("/tmp/ete_test_iphylip.txt","w").write(phylip_interlived)
         SEQS = SeqGroup("/tmp/ete_test_iphylip.txt", format="iphylip")
@@ -319,7 +322,9 @@ class Test_Coretype_SeqGroup(unittest.TestCase):
 
 
 class Test_Coretype_Tree(unittest.TestCase):
+    """ Tests tree basics. """
     def test_tree_read_and_write(self):
+        """ Tests newick support """
         # Read and write newick tree from file (and support for NHX
         # format): newick parser
         open("/tmp/etetemptree.nw","w").write(nw_full)
@@ -347,7 +352,7 @@ class Test_Coretype_Tree(unittest.TestCase):
 
 
     def test_newick_formats(self):
-
+        """ tests different newick subformats """
         from ete_dev.parser.newick import print_supported_formats, NW_FORMAT
         print_supported_formats()
 
@@ -371,6 +376,7 @@ class Test_Coretype_Tree(unittest.TestCase):
 
 
     def test_tree_manipulation(self):
+        """ tests operations which modify tree topology """
         nw_tree = "((NoName:1.000000,Turtle:1.300000)1.000000:1.000000,(A:0.300000,B:2.400000)1.000000:0.430000);"
 
         # Manipulate Topologys
@@ -584,6 +590,7 @@ class Test_phylo_module(unittest.TestCase):
 
 
     def test_link_alignmets(self):
+        """ Phylotree can be linked to SeqGroup objects"""
         fasta = """
          >seqA
          MAEIPDETIQQFMALT---HNIAVQYLSEFGDLNEALNSYYASQTDDIKDRREEAH
@@ -626,6 +633,7 @@ class Test_phylo_module(unittest.TestCase):
             self.assertEqual(l.sequence, alg2.get_seq(l.name))
 
     def test_get_sp_overlap_on_all_descendants(self):
+        """ Tests ortholgy prediction using the sp overlap"""
         # Creates a gene phylogeny with several duplication events at
         # different levels.
         t = PhyloTree('((Dme_001,Dme_002),(((Cfa_001,Mms_001),((((Hsa_001,Hsa_003),Ptr_001),Mmu_001),((Hsa_004,Ptr_004),Mmu_004))),(Ptr_002,(Hsa_002,Mmu_002))));')
@@ -716,6 +724,7 @@ class Test_phylo_module(unittest.TestCase):
         self.assertEqual(expected_orthologs, orthologs)
 
     def test_get_sp_overlap_on_a_seed(self):
+        """ Tests ortholgy prediction using sp overlap"""
         # Creates a gene phylogeny with several duplication events at
         # different levels.
         t = PhyloTree('((Dme_001,Dme_002),(((Cfa_001,Mms_001),((((Hsa_001,Hsa_003),Ptr_001),Mmu_001),((Hsa_004,Ptr_004),Mmu_004))),(Ptr_002,(Hsa_002,Mmu_002))));')
@@ -798,6 +807,7 @@ class Test_phylo_module(unittest.TestCase):
         self.assertEqual(expected_orthologs, orthologs)
 
     def test_reconciliation(self):
+        """ Tests ortholgy prediction based on the species reconciliation method"""
         gene_tree_nw = '((Dme_001,Dme_002),(((Cfa_001,Mms_001),((Hsa_001,Ptr_001),Mmu_001)),(Ptr_002,(Hsa_002,Mmu_002))));'
         species_tree_nw = "((((Hsa, Ptr), Mmu), (Mms, Cfa)), Dme);"
 
@@ -812,6 +822,7 @@ class Test_phylo_module(unittest.TestCase):
         self.assertEqual(recon_tree.write(["evoltype"]), expected_recon)
 
     def test_miscelaneus(self):
+        """ Test several things """
         # Creates a gene phylogeny with several duplication events at
         # different levels.
         t = PhyloTree('((Dme_001,Dme_002),(((Cfa_001,Mms_001),((((Hsa_001,Hsa_003),Ptr_001),Mmu_001),((Hsa_004,Ptr_004),Mmu_004))),(Ptr_002,(Hsa_002,Mmu_002))));')
@@ -860,7 +871,9 @@ class Test_phylo_module(unittest.TestCase):
 expression = '#Names\tcol1\tcol2\tcol3\tcol4\tcol5\tcol6\tcol7\nA\t-1.23\t-0.81\t1.79\t0.78\t-0.42\t-0.69\t0.58\nB\t-1.76\t-0.94\t1.16\t0.36\t0.41\t-0.35\t1.12\nC\t-2.19\t0.13\t0.65\t-0.51\t0.52\t1.04\t0.36\nD\t-1.22\t-0.98\t0.79\t-0.76\t-0.29\t1.54\t0.93\nE\t-1.47\t-0.83\t0.85\t0.07\t-0.81\t1.53\t0.65\nF\t-1.04\t-1.11\t0.87\t-0.14\t-0.80\t1.74\t0.48\nG\t-1.57\t-1.17\t1.29\t0.23\t-0.20\t1.17\t0.26\nH\t-1.53\t-1.25\t0.59\t-0.30\t0.32\t1.41\t0.77\n'
 
 class Test_Coretype_ArrayTable(unittest.TestCase):
+    """ Tests reading clustering or phylogenetic profile data"""
     def test_arraytable_parser(self):
+        """ Tests reading numneric tables"""
         A = ArrayTable(expression)
         self.assertEqual(A.get_row_vector("A").tolist(), \
                              [-1.23, -0.81, 1.79, 0.78,-0.42,-0.69, 0.58])
@@ -901,7 +914,9 @@ class Test_Coretype_ArrayTable(unittest.TestCase):
 
 
 class Test_ClusterTree(unittest.TestCase):
+    """ Tests specific methods for trees linked to ArrayTables"""
     def test_clustertree(self):
+        """ Tests tree-ArrayTable association """
 
         t = ClusterTree("(((A,B),(C,(D,E))),(F,(G,H)));", text_array=expression)
         # Now we can ask the expression profile of a single gene
@@ -921,13 +936,17 @@ class Test_ClusterTree(unittest.TestCase):
         print t.get_dunn([c1, c2, c3])
 
 class Test_Treeview(unittest.TestCase):
+    """ Tests visualization stuff """
     def test_rendering(self):
+        """ Nothing yet, sorry """
         pass
 
 
 
 class Test_R_bindings(unittest.TestCase):
+    """ This is experimental """
     def test_ape(self):
+        """ Link to R-ape package """
         return # Don't test anything from now
         try:
             import rpy2.robjects as robjects

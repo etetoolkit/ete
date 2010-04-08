@@ -1,0 +1,6 @@
+include *
+exclude *.pyc
+recursive-include . * *.* 
+recursive-include doc/ete_guide/ * *.*
+recursive-include doc/  * *.*
+recursive-exclude . *.pyc
