@@ -163,9 +163,9 @@ _ex('mv %s %s/ete2_test' %(RELEASE_MODULE_PATH, RELEASE_PATH))
 _ex('cd %s; python setup.py build --build-lib=build/lib' %(RELEASE_PATH))
 
 if options.unitest:
-    print 'export PYTHONPATH="%s/build/lib/"; python %s/unittest/test_all.py' %\
+    print 'export PYTHONPATH="%s/build/lib/"; python %s/test/test_all.py' %\
             (RELEASE_PATH, RELEASE_PATH)
-    _ex('export PYTHONPATH="%s/build/lib/"; python %s/unittest/test_all.py' %\
+    _ex('export PYTHONPATH="%s/build/lib/"; python %s/test/test_all.py' %\
             (RELEASE_PATH, RELEASE_PATH))
 
 if options.test_examples:
@@ -235,7 +235,7 @@ if release=="y":
             (RELEASES_BASE_PATH, RELEASE_NAME, SERVER+":"+SERVER_RELEASES_PATH))
     print "Updating releases table..."
     _ex("ssh %s 'cd %s; sh update_downloads.sh'" %(SERVER, SERVER_RELEASES_PATH))
-
+    
 if not options.nodoc:
     copydoc= ask("Update documentation?", ["y","n"])
     if copydoc=="y":
