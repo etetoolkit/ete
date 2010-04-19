@@ -790,15 +790,19 @@ class TreeNode(object):
 
         parent_outgroup = outgroup.up
 
-        # Down branch connector
+        # Detects (sub)tree root
         n = outgroup
         while n.up is not self:
             n = n.up
 
+        # If outgroup is a child from root, but with more than one
+        # sister nodes, creates a new node to group them
+        print n is self
         self.children.remove(n)
         if len(self.children)>1:
             down_branch_connector = self.__class__()
             down_branch_connector.dist = 0.0
+            down_branch_connector.support = n.support
             for ch in self.get_children():
                 down_branch_connector.children.append(ch)
                 ch.up = down_branch_connector
@@ -809,7 +813,7 @@ class TreeNode(object):
         # Connects down branch to myself or to outgroup
         quien_va_ser_padre = parent_outgroup
         if quien_va_ser_padre is not self:
-            # Parent-child swaping
+            # Parent-child swapping
             quien_va_ser_hijo = quien_va_ser_padre.up
             quien_fue_padre = None
             buffered_dist = quien_va_ser_padre.dist
@@ -837,10 +841,10 @@ class TreeNode(object):
             quien_va_ser_padre.up = quien_fue_padre
 
             down_branch_connector.dist += buffered_dist
-            down_branch_connector.support = buffered_support
             outgroup2 = parent_outgroup
             parent_outgroup.children.remove(outgroup)
             outgroup2.dist = 0
+           
         else:
             outgroup2 = down_branch_connector
 
@@ -850,6 +854,7 @@ class TreeNode(object):
         middist = (outgroup2.dist + outgroup.dist)/2
         outgroup.dist = middist
         outgroup2.dist = middist
+        outgroup2.support = outgroup.support
         self.children.sort()
 
     def unroot(self):
