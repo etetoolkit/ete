@@ -152,7 +152,10 @@ def render_tree(t, imgName, w=None, h=None, style=None, \
     scene.initialize_tree_scene(t, style,
                                 tree_properties=img_properties)
     scene.draw()
-    scene.save(imgName, w=w, h=h, header=header)
+    final_w, final_h = scene.save(imgName, w=w, h=h, header=header)
+    print scene.sceneRect()
+    print final_w, final_h 
+    
 
 
 # #################
@@ -1085,7 +1088,8 @@ class _TreeScene(QtGui.QGraphicsScene):
 
 
         root = self.startNode
-        aspect_ratio = root.fullRegion.height() / root.fullRegion.width()
+        self.sceneRect().height()
+        aspect_ratio = self.sceneRect().height() / self.sceneRect().width()
 
         # auto adjust size
         if w is None and h is None:
@@ -1132,8 +1136,10 @@ class _TreeScene(QtGui.QGraphicsScene):
             else:
                 self.render(pp, targetRect, self.sceneRect())
             pp.end()
-            return
+            return w, h
         else:
+            h,w = self.sceneRect().height(),  self.sceneRect().width()
+            
             targetRect = QtCore.QRectF(0, 0, w, h)
             ii= QtGui.QImage(w, \
                                  h, \
@@ -1147,10 +1153,11 @@ class _TreeScene(QtGui.QGraphicsScene):
                 self.render(pp, targetRect, self.selector.rect())
                 self.selector.setVisible(True)
             else:
-                self.render(pp, targetRect, self.sceneRect())
+                self.render(pp, targetRect, self.sceneRect()) #, QtCore.Qt.IgnoreAspectRatio)
             pp.end()
             ii.save(imgName)
-
+            return w, h
+        
     # Undocummented and untested
     def save_by_chunks(self,imgName="img.out",rect=None):
         max_width = 10000
@@ -1259,7 +1266,7 @@ class _TreeScene(QtGui.QGraphicsScene):
         for n in self._highlighted_nodes:
             self.highlight_node(n)
 
-        self.setSceneRect(-2,-2,self.i_width+4,self.i_height+50)
+        self.setSceneRect(0,0,self.i_width+4,self.i_height+50)
         logger(2, "Number of items in scene:", len(self.items()))
 
     def add_scale(self,x,y):
@@ -1277,7 +1284,7 @@ class _TreeScene(QtGui.QGraphicsScene):
         line2.setLine(x,y+15,x,y+25)
         line3.setLine(size,y+15,size,y+25)
 
-        scale_text = "%0.2f" % float(size/ self.scale)
+        scale_text = "%0.2f" % float(size/self.scale)
         scale = QtGui.QGraphicsSimpleTextItem(scale_text)
         scale.setParentItem(self.mainItem)
         scale.setPos(x,y+20)
@@ -1487,19 +1494,8 @@ class _TreeScene(QtGui.QGraphicsScene):
                 background.setRect(node._x-node.fullRegion.width(),node._y,self.i_width,node.fullRegion.height())
         # Draw node and lines
         if not node.is_leaf() and node.img_style["draw_descendants"]==1:
-            # Corrections ... say something else, don't you think?
-#            node_height = 0
-#            for ch in node.get_children():
-#                node_height += ch.fullRegion.height()
-
-#            if node.fullRegion.height() >= node_height:
-#                y_correction = node.fullRegion.height() - node_height
-#            else:
-#               y_correction = 0
-
-#           y_correction = node._y_correction
             # recursivity: call render function for every child
-            next_y = y + node._y_correction#/2
+            next_y = y + node._y_correction
             for ch in node.get_children():
                 dist_to_child = ch.dist * self.scale
                 if orientation == 0:
@@ -1525,6 +1521,7 @@ class _TreeScene(QtGui.QGraphicsScene):
                 ch._QtItem_.setParentItem(node._QtItem_)
                 ch._QtItem_.setPos(node._QtItem_.mapFromScene(scene_pos) )
 
+                
             # Draws the startNode branch when it is not the absolute root
             if node == self.startNode:
                 y = node._QtItem_.pos().y()+ node.img_style["size"]/2
@@ -1576,7 +1573,6 @@ class _TreeScene(QtGui.QGraphicsScene):
                 node._QtItem_.setPos(x+node.dist_xoffset, node._centered_y-r)
             elif orientation == 1:
                 node._QtItem_.setPos(x-node.dist_xoffset-node.img_style["size"], node._centered_y-r)
-
             self.add_faces(node,orientation)
 
     def add_branch(self,parent_item,x1,y1,x2,y2,dist,support,color,width,line_type):
