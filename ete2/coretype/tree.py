@@ -837,7 +837,7 @@ class TreeNode(object):
             quien_va_ser_padre.up = quien_fue_padre
 
             down_branch_connector.dist += buffered_dist
-
+            down_branch_connector.support = buffered_support
             outgroup2 = parent_outgroup
             parent_outgroup.children.remove(outgroup)
             outgroup2.dist = 0
