@@ -97,7 +97,7 @@ class HistFace(faces.Face):
         self.values = map (lambda x: float(x)/self.max*height, values)
         self.colors = colors
         self.fsize  = int ((float (fsize)))
-        self.font   = QtGui.QFont("Courier", self.fsize)
+        self.font   = QtGui.QFont("Arial", self.fsize)
         self.height = height+25
         self.header = header
 
@@ -109,7 +109,7 @@ class HistFace(faces.Face):
         # Calculates size of main plot
         fm = QtGui.QFontMetrics(self.font)
         height = self.height
-        width  = fm.size(QtCore.Qt.AlignTop, 'A'*(len (self.values))).width()
+        width = fm.size(QtCore.Qt.AlignTop, 'A'*(len (self.values))).width()
         self.pixmap = QtGui.QPixmap(width+20,height)
         self.pixmap.fill()
         p = QtGui.QPainter(self.pixmap)
@@ -152,8 +152,6 @@ class HistFace(faces.Face):
                 p.drawLine(posX+1,y-(self.height-15),posX+1,y-(self.height-20))
                 p.drawLine(posX+4,y-(self.height-15),posX+4,y-(self.height-20))
                 p.drawLine(posX+4,y-(self.height-15),posX+1,y-(self.height-15))
-
-
 
 class CustomProfileFace(faces.Face):
     """ Creates a new vector profile face object.

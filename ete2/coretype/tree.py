@@ -320,67 +320,43 @@ class TreeNode(object):
             self.up = None
         return self
 
-    def prune(self, leaves, method="keep"):
+    def prune(self, nodes):
         """
         Prunes the topology of this node in order to conserve only a
-        selected list of leaf nodes. The algorithm deletes nodes until
-        getting a consistent topology with a subset of nodes. Topology
-        relationships among kept nodes is maintained.
+         selected list of leaf or internal nodes. The algorithm deletes
+		327	nodes until getting a consistent topology with a subset of
+		328	nodes. Topology relationships among kept nodes is maintained.
 
         ARGUMENTS:
         ==========
-          * 'leaves' is a list of node names or node objects that must be 'kept' or
-        'cropped' (depending on the selected method).
-
-          * 'method' can take two values: 'keep' or 'crop'. If 'keep',
-        only leaf nodes NOT PRESENT IN in the 'leaves' list will be removed. By
-        contrast, if 'crop' method is selected, only leaf nodes WITHIN the
-        'leaves' list will be removed.
-
-        RETURNS:
-        ========
-          It returns the set of removed nodes.
+          * 'nodes' is a list of node names or node objects that must be kept.
 
         EXAMPLES:
         =========
-          t = tree.Tree("(((A:0.1, B:0.01):0.001, C:0.0001):1.0[&&NHX:name=I], (D:0.00001):0.000001[&&NHX:name=J]):2.0[&&NHX:name=root];")
+          t = Tree("(((A:0.1, B:0.01):0.001, C:0.0001):1.0[&&NHX:name=I], (D:0.00001):0.000001[&&NHX:name=J]):2.0[&&NHX:name=root];")
           node_C = t.search_nodes(name="C")[0]
-          t.prune(["A","D", node_C], method="keep")
+          t.prune(["A","D", node_C])
           print t
 
         """
-        to_delete = set([])
-        node_instances = set([])
-        for l in leaves:
-            if type(l) == str:
-                node_instances.update(self.get_leaves_by_name(l))
-            elif type(l) == self.__class__:
-                node_instances.add(l)
-
-        nodes_leaves = set(self.get_leaves())
-        if not node_instances.issubset(nodes_leaves):
-            raise TreeError, 'Not all leaves are present in the tree structure'
 
 
-
-        if method == "crop":
-            to_delete = node_instances
-            to_keep = set([])
-        elif method == "keep":
-            to_delete = set(self.get_leaves()) - node_instances
-        else:
-            raise TreeError, \
-                "A valid prunning method ('keep' or 'crop' must be especified."
-
-        for n in to_delete:
-            current = n
-            while current is not None and \
-                  (current == n or len(current.children)==1):
-
-                next = current.up
-                current.delete()
-                current = next
-        return to_delete
+        to_keep = set(_translate_nodes(self, *nodes))
+        to_detach = []
+        for node in self.traverse("postorder"):
+            for c in node.children:
+                if c in to_keep:
+                    to_keep.add(node)
+                    break
+            if node not in to_keep:
+                to_detach.append(node)
+                for c in node.children:
+                    to_detach.remove(c)
+        for node in to_detach:
+            node.detach()
+        for node in to_keep:
+            if len(node.children) == 1:
+                node.delete()
 
     def iter_leaves(self):
         """ Returns an iterator over the leaves under this node. """
