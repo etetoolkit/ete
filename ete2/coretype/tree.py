@@ -797,7 +797,7 @@ class TreeNode(object):
 
         # If outgroup is a child from root, but with more than one
         # sister nodes, creates a new node to group them
-        print n is self
+
         self.children.remove(n)
         if len(self.children)>1:
             down_branch_connector = self.__class__()

@@ -26,6 +26,7 @@ import unittest
 import random
 import sys
 import numpy
+import copy
 
 from ete_dev import *
 from ete_dev.coretype.tree import asRphylo, asETE
@@ -480,7 +481,12 @@ class Test_Coretype_Tree(unittest.TestCase):
         prev_size= len(t)
         t.populate(25)
         self.assertEqual(len(t), prev_size+25)
-
+        for i in xrange(10):
+            t = Tree()
+            t.populate(100, reuse_names=False)
+            # Checks that all names are actually unique 
+            self.assertEqual(len(set(t.get_leaf_names())), 100) 
+       
         # Adding and removing features
         t = Tree("(((A,B),C)[&&NHX:tag=common],D)[&&NHX:tag=root];")
         A = t.search_nodes(name="A")[0]
@@ -529,14 +535,16 @@ class Test_Coretype_Tree(unittest.TestCase):
 
         # Test set_outgroup and get_midpoint_outgroup
         t = Tree(nw2_full)
+        YGR028W = t.get_leaves_by_name("YGR028W")[0]
+        YGR138C = t.get_leaves_by_name("YGR138C")[0]
+        d1 = YGR138C.get_distance(YGR028W)
         nodes = t.get_descendants()
         t.set_outgroup(t.get_midpoint_outgroup())
         o1, o2 = t.children[0], t.children[1]
         nw_original = t.write()
-        YGR028W = t.get_leaves_by_name("YGR028W")[0]
-        YGR138C = t.get_leaves_by_name("YGR138C")[0]
-        d1 = YGR138C.get_distance(YGR028W)
-        # Randomizing outgroup test: Can we recover origial state
+        d2 = YGR138C.get_distance(YGR028W)
+        self.assertEqual(d1, d2)
+        # Randomizing outgroup test: Can we recover original state
         # after many manipulations?
         for i in xrange(10):
             for j in xrange(1000):
@@ -546,13 +554,60 @@ class Test_Coretype_Tree(unittest.TestCase):
                 t.set_outgroup(n)
             t.set_outgroup(t.get_midpoint_outgroup())
             self.assertEqual([t.children[0], t.children[1]], [o1, o2])
-            #self.assertEqual(t.write(), nw_original)
-        d2 = YGR138C.get_distance(YGR028W)
-        self.assertEqual(d1, d2)
-
-        # Test unrooting
+            ##  I need to sort branches first
+            #self.assertEqual(t.write(), nw_original) 
+        d3 = YGR138C.get_distance(YGR028W)
+        self.assertEqual(d1, d3)
+          
+    def test_rooting(self):
+        """ Check branch support and distances after rooting """
+           
+        # Test branch support and distances after rooting
+        SIZE = 35
+        t = Tree()
+        t.populate(SIZE, reuse_names=False)
         t.unroot()
+        for n in t.iter_descendants():
+            if n is not t:
+                n.support = random.random()
+                n.dist = random.random()
+        for n in t.children:
+            n.support = 0.999
+        t2 = copy.deepcopy(t)
+        
+        names = set(t.get_leaf_names())
+        cluster_id2support = {}
+        cluster_id2dist = {}
+        for n in t.traverse():
+            cluster_names = set(n.get_leaf_names())
+            cluster_names2 = names - cluster_names
+            cluster_id = '_'.join(sorted(cluster_names))
+            cluster_id2 = '_'.join(sorted(cluster_names2))
+            cluster_id2support[cluster_id] = n.support
+            cluster_id2support[cluster_id2] = n.support
 
+            cluster_id2dist[cluster_id] = n.dist
+            cluster_id2dist[cluster_id2] = n.dist
+
+            
+        for i in xrange(100):
+            outgroup = random.sample(t2.get_descendants(), 1)[0]
+            t2.set_outgroup(outgroup)
+            for n in t2.traverse():
+                cluster_names = set(n.get_leaf_names())
+                cluster_names2 = names - cluster_names
+                cluster_id = '_'.join(sorted(cluster_names))
+                cluster_id2 = '_'.join(sorted(cluster_names2))
+                self.assertEqual(cluster_id2support.get(cluster_id, None), n.support)
+                self.assertEqual(cluster_id2support.get(cluster_id2, None), n.support)
+                if n.up and n.up.up:
+                    self.assertEqual(cluster_id2dist.get(cluster_id, None), n.dist)
+                    
+                    
+        # Test unrooting
+        t = Tree()
+        t.populate(20)
+        t.unroot()
         # Ascii
         t.get_ascii()
 
