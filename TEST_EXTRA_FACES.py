@@ -34,6 +34,7 @@ for a in range (0,len(SEQ.seq)): values.append(rdm()*3)
 colors = map(lambda x: (x>1.8)*'red'+(x<0.5)*'blue',values)
 
 
+
 AH1 = HistFace(values=values,mean=1.35,colors=colors,header='yo chaud lapin')
 
 profile = numpy.array(values)
@@ -58,7 +59,5 @@ AH1.aligned = True
 n = t.get_leaves()[-1]
 
 t.show(ly, down_faces=[AH2,AH3,AH4],up_faces=[AH1])
-
-
 
 
