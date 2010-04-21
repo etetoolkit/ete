@@ -29,6 +29,33 @@ def basic(node):
         node.img_style["shape"] = "circle"
         faces.add_face_to_node(faces.AttrFace("name","Arial",10,"#4f8f0f",None), node, 0 )
 
+def codeml(node):
+    leaf_color = "#000000"
+    if not node.is_root():
+        node.img_style["shape"] = 'sphere'
+        node.img_style["size"] = (float(node.omega))*6+1
+        if node.w == 3  :node.img_style["fgcolor"] = "#c10000"
+        if node.w == 2.5:node.img_style["fgcolor"] = "#FF5A02"
+        if node.w == 2  :node.img_style["fgcolor"] = "#FFA200"
+        if node.w == 1.5:node.img_style["fgcolor"] = "#E9BF00"
+        if node.w  < 0.2:node.img_style["shape"]   = "square"
+        name = ''
+        D = faces.TextFace(name,"Arial",12,"#000000")
+        faces.add_face_to_node(D, node, 1)
+    else:
+        node.dist = float(0)
+        node.support = float(0)
+    if node.is_leaf():
+        if hasattr(node,"highlight"):
+            faces.add_face_to_node( faces.AttrFace("name","Arial",11,"#ff0000",None), node, 0 )
+        else:
+            faces.add_face_to_node( faces.AttrFace("name","Arial",11,leaf_color,None), node, 0 )
+        if hasattr(node,"extras"):
+            faces.add_face_to_node( faces.AttrFace("extras","Arial",7,"#000000",None), node, 2 )
+        if hasattr(node,"sequence"):
+            SequenceFace =  faces.SequenceFace(node.sequence,"aa",11)
+            faces.add_face_to_node(SequenceFace, node, 1, aligned=True)
+
 def phylogeny(node):
     leaf_color = "#000000"
     node.img_style["shape"] = "circle"

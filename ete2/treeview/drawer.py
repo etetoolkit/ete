@@ -42,7 +42,7 @@ try:
 except ImportError:
     USE_GL = False
 
-from ete_dev import Tree, PhyloTree, ClusterTree
+from ete_dev import Tree, PhyloTree, ClusterTree, CodemlTree
 
 __all__ = ["show_tree", "render_tree", "TreeImageProperties"]
 
@@ -110,6 +110,8 @@ def show_tree(t, style=None, img_properties=None, up_faces=[], down_faces=[]):
             style = "phylogeny"
         elif t.__class__ == ClusterTree:
             style = "large"
+        elif t.__class__ == CodemlTree:
+            style = "codeml"
         else:
             style = "basic"
 

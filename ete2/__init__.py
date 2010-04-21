@@ -24,6 +24,7 @@ from sys import stderr
 from coretype.tree import *
 from coretype.seqgroup import *
 from phylo.phylotree import *
+from codeml.codemltree import *
 try:
     from coretype.arraytable import *
 except ImportError, e:
