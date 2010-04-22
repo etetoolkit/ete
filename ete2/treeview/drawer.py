@@ -106,12 +106,12 @@ def show_tree(t, style=None, img_properties=None, up_faces=[], down_faces=[]):
     global _QApp
 
     if not style:
-        if t.__class__ == PhyloTree:
+        if t.__class__ == CodemlTree:
+            style = "codeml"
+        elif t.__class__ == PhyloTree:
             style = "phylogeny"
         elif t.__class__ == ClusterTree:
             style = "large"
-        elif t.__class__ == CodemlTree:
-            style = "codeml"
         else:
             style = "basic"
 
@@ -136,7 +136,9 @@ def render_tree(t, imgName, w=None, h=None, style=None, \
     global _QApp
 
     if not style:
-        if t.__class__ == PhyloTree:
+        if t.__class__ == CodemlTree:
+            style = "codeml"
+        elif t.__class__ == PhyloTree:
             style = "phylogeny"
         elif t.__class__ == ClusterTree:
             style = "large"

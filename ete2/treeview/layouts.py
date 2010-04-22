@@ -33,12 +33,20 @@ def codeml(node):
     leaf_color = "#000000"
     if not node.is_root():
         node.img_style["shape"] = 'sphere'
-        node.img_style["size"] = (float(node.omega))*6+1
-        if node.w == 3  :node.img_style["fgcolor"] = "#c10000"
-        if node.w == 2.5:node.img_style["fgcolor"] = "#FF5A02"
-        if node.w == 2  :node.img_style["fgcolor"] = "#FFA200"
-        if node.w == 1.5:node.img_style["fgcolor"] = "#E9BF00"
-        if node.w  < 0.2:node.img_style["shape"]   = "square"
+        if (node.w > 900):
+            node.w = 3
+        elif (node.w > 100):
+            node.w = 2.5
+        elif (node.w > 10) :
+            node.w = 2
+        elif (node.w > 1):
+            node.w =1.5
+        node.img_style["size"] = (float(node.w))*6+1
+        if node.w == 3   : node.img_style["fgcolor"] = "#c10000"
+        if node.w == 2.5 : node.img_style["fgcolor"] = "#FF5A02"
+        if node.w == 2   : node.img_style["fgcolor"] = "#FFA200"
+        if node.w == 1.5 : node.img_style["fgcolor"] = "#E9BF00"
+        if node.w  < 0.2 : node.img_style["shape"]   = "square"
         name = ''
         D = faces.TextFace(name,"Arial",12,"#000000")
         faces.add_face_to_node(D, node, 1)
@@ -191,6 +199,7 @@ def large(node):
 # Labels to show in qt application menu
 layout_functions = {
         "Basic": basic,
+        "Codeml tree": codeml,
         "Phylogenetic tree": phylogeny,
         "Clustering heatmap": heatmap,
         "Clustering validation (bars)": cluster_bars,

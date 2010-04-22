@@ -1,34 +1,86 @@
-#!/usr/bin/python
+#!/usr/bin/python env
 #        Author: Francois-Jose Serra
 # Creation Date: 2010/04/20 21:20:31
 #
 # This script is GPL. que pasa?!!
 
-import sys,os,re
-from ete_dev import Tree
+import sys, os, re
+from ete_dev import PhyloTree
 
 sys.path.append('/home/francisco/franciscotools/4_codeml_pipe/')
 from control import label_tree
 
-def main():    
+def main():
+    '''
+    just to test
+    '''
     pamouts = []
     pamouts.append(('/home/francisco/project/patata/dataset/all_1l_2/paml/b_free.6/b_free.6.out','b_free'))
     pamouts.append(('/home/francisco/project/patata/hernan_sol/sol_1l_2/paml/Sol_1_A/A.out','bsA'))
     pamouts.append(('/home/francisco/project/patata/hernan_sol/sol_1l_2/paml/fb/fb.out','fb'))
     pamouts.append(('/home/francisco/project/protamine/dataset/primt-prm1/paml/fb/fb.out','fb'))
     
-    for pamout,m in pamouts:
-        dic = parsePaml(pamout,m)
+    for pamout, mod in pamouts:
+        dic = parse_paml(pamout, mod)
         _readTrees(dic)
 
-def parsePaml(pamout,model):
+def get_sites(path):
+    '''
+    for models M1, M2, M7, M8
+    '''
+    check   = 0
+    vals    = False
+    valsend = False
+    psel    = False
+    lnl     = ''
+    mod     = ''
+    for line in open(path, 'r'):
+        l = line.strip()
+        if l.startswith('lnL = '):
+            lnl = l.split()[-1]
+            if not (vals == False or vals == True):
+                vals['lnL.'+mod] = lnl
+        if l.startswith('dN/dS for site classes'):
+            check = re.sub('.*K=', '', l)
+            check = int (re.sub('\)', '', check))
+            mod = ('M'+str(check-1 if check < 4 else 'M'+str(check-3)))
+        expr = 'Naive' if check % 2 == 0 else 'Bayes'
+        if l.startswith(expr+' Empirical Bayes'):
+            vals = True
+        elif vals == False:
+            continue
+        if re.match('^ *[0-9]* [A-Z*] *', l) == None and \
+               valsend == False:
+            continue
+        psel = re.match('^ *[0-9]* [A-Z*] *', l) == None
+        valsend = True
+        if vals == True:
+            vals = {'aa.'+mod:[], 'w.'+mod:[],  'class.'+mod:[],
+                    'pv.'+mod:[], 'se.'+mod:[], 'lnL.'  +mod:lnl}
+        if psel == False:
+            vals['aa.'+mod].append(l.split()[1])
+            vals['w.' +mod].append(re.sub('\+.*', '', l).split()[-1])
+            if mod == 'M1'or mod == 'M7':
+                vals['se.'+mod].append('')
+            else:
+                vals['se.'+mod].append(l.split()[-1])
+            classes = map (float, re.sub('\(.*', '', l).split()[2:])
+            vals['class.'+mod].append(\
+                '('+\
+                re.sub('\).*', '', re.sub('.*\( *', '', l.strip()))\
+                +'/'+str (len (classes))+')')
+            vals['pv.'+mod].append(str (max (classes)))
+    print [vals[i] for i in range(0, len(vals['pv.'+mod]))]
+    return vals
+
+
+def parse_paml(pamout, model, rst=None):
     '''
     parser function for codeml files, returns a diccionary
     with values of w,dN,dS etc... dependending of the model
     tested.
     '''
     dic = {}
-    nams = {}
     if model.startswith('b_'):
         val = ['w','dN','dS','bL','bLnum']
         for l in open(pamout):
@@ -49,6 +101,7 @@ def parsePaml(pamout,model):
                 chk = False
                 dic['N'], dic['S'] = l.strip().split()[2:4]
     elif model.startswith('M'):
+        if rst==None: dic['rst'] = re.sub('','',pamout)
         val = ['w','dN','dS','bL','bLnum']
         for l in open(pamout):
             if l.startswith('lnL'):
@@ -153,11 +206,11 @@ def parse_rst(path):
     return EB
 
 
-def parse_codemlOut(out, phylo_tree):
-    dS=False
-    dN=False
-    w=False
-    bL=0
+def parse_codeml_out(out, phylo_tree):
+    dS = False
+    dN = False
+    w  = False
+    bL = 0
     for line in open(out,'r').readlines():
         if line.startswith('tree length ='):
             bL=1
