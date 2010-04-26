@@ -25,7 +25,7 @@ import random
 
 __all__ = ["Tree", "TreeNode"]
 
-from ete_dev.parser.newick import read_newick, write_newick
+from ete_test.parser.newick import read_newick, write_newick
 
 DEFAULT_COMPACT = False
 DEFAULT_SHOWINTERNAL = False
@@ -36,7 +36,6 @@ class TreeError(Exception):
         self.value = value
     def __str__(self):
         return repr(self.value)
-
 
 class TreeNode(object):
     """ TreeNode (Tree) class is used to store a tree structure. A tree
@@ -323,9 +322,9 @@ class TreeNode(object):
     def prune(self, nodes):
         """
         Prunes the topology of this node in order to conserve only a
-         selected list of leaf or internal nodes. The algorithm deletes
-		327	nodes until getting a consistent topology with a subset of
-		328	nodes. Topology relationships among kept nodes is maintained.
+        selected list of leaf or internal nodes. The algorithm deletes
+        nodes until getting a consistent topology with a subset of
+        nodes. Topology relationships among kept nodes is maintained.
 
         ARGUMENTS:
         ==========
@@ -337,10 +336,8 @@ class TreeNode(object):
           node_C = t.search_nodes(name="C")[0]
           t.prune(["A","D", node_C])
           print t
-
         """
-
-
+       
         to_keep = set(_translate_nodes(self, *nodes))
         to_detach = []
         for node in self.traverse("postorder"):
@@ -357,7 +354,9 @@ class TreeNode(object):
         for node in to_keep:
             if len(node.children) == 1:
                 node.delete()
-
+        if len(self.children)==1:
+            self.children[0].delete()
+                
     def iter_leaves(self):
         """ Returns an iterator over the leaves under this node. """
         for n in self.traverse(strategy="preorder"):
@@ -459,12 +458,11 @@ class TreeNode(object):
         (when available) for every node. Extended newick format is
         used to represent data.
 
-        support: [True|False] Shows branch support values.
-
-        dist: [True|False] Shows branch length values.
+        'format' defines the newick standard used to encode the
+        tree. See tutorial for details.
 
         Example:
-             t.get_newick(["species","name"], support=False)
+             t.get_newick(["species","name"], format=1)
         """
 
         nw = write_newick(self, features = features, format=format)
@@ -651,7 +649,7 @@ class TreeNode(object):
         else:
             cdist = prev.dist
         current = prev.up
-        while current:
+        while current is not None:
             for ch in current.children:
                 if ch != prev:
                     if not ch.is_leaf():
@@ -722,7 +720,7 @@ class TreeNode(object):
         middist  = A2B_dist / 2.0
         cdist = 0
         current = nA
-        while current:
+        while current is not None:
             cdist += current.dist
             if cdist > (middist): # Deja de subir cuando se pasa del maximo
                 break
@@ -761,7 +759,7 @@ class TreeNode(object):
                 silly_nodes.add(target)
                 if target is not self:
                     names_library.add(target.name)
-                    target.name = "NoName"
+                    #target.name = "NoName"
 
             if len(names_library)>0:
                 tname = random.sample(names_library,1)[0]
@@ -792,15 +790,19 @@ class TreeNode(object):
 
         parent_outgroup = outgroup.up
 
-        # Down branch connector
+        # Detects (sub)tree root
         n = outgroup
         while n.up is not self:
             n = n.up
+
+        # If outgroup is a child from root, but with more than one
+        # sister nodes, creates a new node to group them
 
         self.children.remove(n)
         if len(self.children)>1:
             down_branch_connector = self.__class__()
             down_branch_connector.dist = 0.0
+            down_branch_connector.support = n.support
             for ch in self.get_children():
                 down_branch_connector.children.append(ch)
                 ch.up = down_branch_connector
@@ -811,18 +813,22 @@ class TreeNode(object):
         # Connects down branch to myself or to outgroup
         quien_va_ser_padre = parent_outgroup
         if quien_va_ser_padre is not self:
-            # Parent-child swaping
+            # Parent-child swapping
             quien_va_ser_hijo = quien_va_ser_padre.up
             quien_fue_padre = None
             buffered_dist = quien_va_ser_padre.dist
-
+            buffered_support = quien_va_ser_padre.support
+            
             while quien_va_ser_hijo is not self:
                 quien_va_ser_padre.children.append(quien_va_ser_hijo)
                 quien_va_ser_hijo.children.remove(quien_va_ser_padre)
 
                 buffered_dist2 = quien_va_ser_hijo.dist
+                buffered_support2 = quien_va_ser_hijo.support
                 quien_va_ser_hijo.dist = buffered_dist
+                quien_va_ser_hijo.support = buffered_support
                 buffered_dist = buffered_dist2
+                buffered_support = buffered_support2
 
                 quien_va_ser_padre.up = quien_fue_padre
                 quien_fue_padre = quien_va_ser_padre
@@ -830,17 +836,15 @@ class TreeNode(object):
                 quien_va_ser_padre = quien_va_ser_hijo
                 quien_va_ser_hijo = quien_va_ser_padre.up
 
-
             quien_va_ser_padre.children.append(down_branch_connector)
             down_branch_connector.up = quien_va_ser_padre
             quien_va_ser_padre.up = quien_fue_padre
 
             down_branch_connector.dist += buffered_dist
-
-
             outgroup2 = parent_outgroup
             parent_outgroup.children.remove(outgroup)
             outgroup2.dist = 0
+           
         else:
             outgroup2 = down_branch_connector
 
@@ -850,6 +854,7 @@ class TreeNode(object):
         middist = (outgroup2.dist + outgroup.dist)/2
         outgroup.dist = middist
         outgroup2.dist = middist
+        outgroup2.support = outgroup.support
         self.children.sort()
 
     def unroot(self):
@@ -872,7 +877,7 @@ class TreeNode(object):
         """ Begins an interative session to visualize this node
         structure."""
         try:
-            from ete_dev.treeview import drawer
+            from ete_test.treeview import drawer
         except ImportError, e:
             print "'treeview' module could not be loaded.\n",e
             print "\n\n"
@@ -886,8 +891,8 @@ class TreeNode(object):
                up_faces=[], down_faces=[]):
         """ Renders the tree structure into an image file. """
         try:
-            from ete_dev.treeview import drawer
-        except ImportError, e: 
+            from ete_test.treeview import drawer
+        except ImportError, e:
             print "'treeview' module could not be loaded.\n",e
             print "\n\n"
             print self
@@ -903,6 +908,7 @@ class TreeNode(object):
         Returns the ASCII representation of the tree. Code taken from the
         PyCogent GPL project.
         """
+
         LEN = 5
         PAD = ' ' * LEN
         PA = ' ' * (LEN-1)

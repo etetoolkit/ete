@@ -7,7 +7,10 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt4 import QtCore, QtGui
+try:
+    from PyQt4 import QtCore, QtGui
+except ImportError:
+    import QtCore, QtGui
 
 class Ui_OpenNewick(object):
     def setupUi(self, OpenNewick):

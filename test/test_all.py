@@ -26,9 +26,10 @@ import unittest
 import random
 import sys
 import numpy
+import copy
 
-from ete_dev import *
-from ete_dev.coretype.tree import asRphylo, asETE
+from ete_test import *
+from ete_test.coretype.tree import asRphylo, asETE
 
 # test datasets
 nw_simple1 = '((A, (B,C)),D);'
@@ -259,7 +260,9 @@ VKNSWGPQWGMNGYFLIERGKNMCGLAACASYPIPLV
 """
 
 class Test_Coretype_SeqGroup(unittest.TestCase):
+    """ Tests core functionality of Alignmnets objects """
     def test_fasta_parser(self):
+        """ test fasta read an write """
         # FASTA IO
         open("/tmp/ete_test_fasta.txt","w").write(fasta_example)
         # Test reading from file and from string
@@ -286,6 +289,7 @@ class Test_Coretype_SeqGroup(unittest.TestCase):
 
 
     def test_phylip_parser(self):
+        """ Tests phylip read and write """
         # PHYLIP INTERLEAVED
         open("/tmp/ete_test_iphylip.txt","w").write(phylip_interlived)
         SEQS = SeqGroup("/tmp/ete_test_iphylip.txt", format="iphylip")
@@ -319,7 +323,9 @@ class Test_Coretype_SeqGroup(unittest.TestCase):
 
 
 class Test_Coretype_Tree(unittest.TestCase):
+    """ Tests tree basics. """
     def test_tree_read_and_write(self):
+        """ Tests newick support """
         # Read and write newick tree from file (and support for NHX
         # format): newick parser
         open("/tmp/etetemptree.nw","w").write(nw_full)
@@ -347,8 +353,8 @@ class Test_Coretype_Tree(unittest.TestCase):
 
 
     def test_newick_formats(self):
-
-        from ete_dev.parser.newick import print_supported_formats, NW_FORMAT
+        """ tests different newick subformats """
+        from ete_test.parser.newick import print_supported_formats, NW_FORMAT
         print_supported_formats()
 
         # Let's stress a bit
@@ -371,6 +377,7 @@ class Test_Coretype_Tree(unittest.TestCase):
 
 
     def test_tree_manipulation(self):
+        """ tests operations which modify tree topology """
         nw_tree = "((NoName:1.000000,Turtle:1.300000)1.000000:1.000000,(A:0.300000,B:2.400000)1.000000:0.430000);"
 
         # Manipulate Topologys
@@ -423,16 +430,17 @@ class Test_Coretype_Tree(unittest.TestCase):
 
         #prune
         t1 = Tree("(((A, B), C)[&&NHX:name=I], (D, F)[&&NHX:name=J])[&&NHX:name=root];")
-        t2 = Tree("(((A, B), C)[&&NHX:name=I], (D, F)[&&NHX:name=J])[&&NHX:name=root];")
         D1 = t1.search_nodes(name="D")[0]
-        F2 = t2.search_nodes(name="F")[0]
-
         root = t.search_nodes(name="root")[0]
-        t1.prune(["A","C", D1], method="keep")
-        t2.prune(["D",F2,"B"], method="crop")
+        t1.prune(["A","C", D1])
         self.assertEqual(set([n.name for n in t1.iter_descendants()]),  set(["A","C","D","I"]))
-        self.assertEqual(set([n.name for n in t2.iter_descendants()]),  set(["I", "A", "C"]))
-
+        t_fuzzy = Tree("(((A,B), C),(D,E));")
+        orig_nw = t_fuzzy.write()
+        ref_nodes = t_fuzzy.get_leaves()
+        t_fuzzy.populate(1000)
+        t_fuzzy.prune(ref_nodes)
+        self.assertEqual(t_fuzzy.write(),orig_nw)
+       
 
         # getting nodes, get_childs, get_sisters, get_tree_root,
         # get_common_ancestor, get_nodes_by_name
@@ -473,7 +481,12 @@ class Test_Coretype_Tree(unittest.TestCase):
         prev_size= len(t)
         t.populate(25)
         self.assertEqual(len(t), prev_size+25)
-
+        for i in xrange(10):
+            t = Tree()
+            t.populate(100, reuse_names=False)
+            # Checks that all names are actually unique 
+            self.assertEqual(len(set(t.get_leaf_names())), 100) 
+       
         # Adding and removing features
         t = Tree("(((A,B),C)[&&NHX:tag=common],D)[&&NHX:tag=root];")
         A = t.search_nodes(name="A")[0]
@@ -522,14 +535,16 @@ class Test_Coretype_Tree(unittest.TestCase):
 
         # Test set_outgroup and get_midpoint_outgroup
         t = Tree(nw2_full)
+        YGR028W = t.get_leaves_by_name("YGR028W")[0]
+        YGR138C = t.get_leaves_by_name("YGR138C")[0]
+        d1 = YGR138C.get_distance(YGR028W)
         nodes = t.get_descendants()
         t.set_outgroup(t.get_midpoint_outgroup())
         o1, o2 = t.children[0], t.children[1]
         nw_original = t.write()
-        YGR028W = t.get_leaves_by_name("YGR028W")[0]
-        YGR138C = t.get_leaves_by_name("YGR138C")[0]
-        d1 = YGR138C.get_distance(YGR028W)
-        # Randomizing outgroup test: Can we recover origial state
+        d2 = YGR138C.get_distance(YGR028W)
+        self.assertEqual(d1, d2)
+        # Randomizing outgroup test: Can we recover original state
         # after many manipulations?
         for i in xrange(10):
             for j in xrange(1000):
@@ -539,13 +554,60 @@ class Test_Coretype_Tree(unittest.TestCase):
                 t.set_outgroup(n)
             t.set_outgroup(t.get_midpoint_outgroup())
             self.assertEqual([t.children[0], t.children[1]], [o1, o2])
-            #self.assertEqual(t.write(), nw_original)
-        d2 = YGR138C.get_distance(YGR028W)
-        self.assertEqual(d1, d2)
-
-        # Test unrooting
+            ##  I need to sort branches first
+            #self.assertEqual(t.write(), nw_original) 
+        d3 = YGR138C.get_distance(YGR028W)
+        self.assertEqual(d1, d3)
+          
+    def test_rooting(self):
+        """ Check branch support and distances after rooting """
+           
+        # Test branch support and distances after rooting
+        SIZE = 35
+        t = Tree()
+        t.populate(SIZE, reuse_names=False)
         t.unroot()
+        for n in t.iter_descendants():
+            if n is not t:
+                n.support = random.random()
+                n.dist = random.random()
+        for n in t.children:
+            n.support = 0.999
+        t2 = copy.deepcopy(t)
+        
+        names = set(t.get_leaf_names())
+        cluster_id2support = {}
+        cluster_id2dist = {}
+        for n in t.traverse():
+            cluster_names = set(n.get_leaf_names())
+            cluster_names2 = names - cluster_names
+            cluster_id = '_'.join(sorted(cluster_names))
+            cluster_id2 = '_'.join(sorted(cluster_names2))
+            cluster_id2support[cluster_id] = n.support
+            cluster_id2support[cluster_id2] = n.support
 
+            cluster_id2dist[cluster_id] = n.dist
+            cluster_id2dist[cluster_id2] = n.dist
+
+            
+        for i in xrange(100):
+            outgroup = random.sample(t2.get_descendants(), 1)[0]
+            t2.set_outgroup(outgroup)
+            for n in t2.traverse():
+                cluster_names = set(n.get_leaf_names())
+                cluster_names2 = names - cluster_names
+                cluster_id = '_'.join(sorted(cluster_names))
+                cluster_id2 = '_'.join(sorted(cluster_names2))
+                self.assertEqual(cluster_id2support.get(cluster_id, None), n.support)
+                self.assertEqual(cluster_id2support.get(cluster_id2, None), n.support)
+                if n.up and n.up.up:
+                    self.assertEqual(cluster_id2dist.get(cluster_id, None), n.dist)
+                    
+                    
+        # Test unrooting
+        t = Tree()
+        t.populate(20)
+        t.unroot()
         # Ascii
         t.get_ascii()
 
@@ -583,6 +645,7 @@ class Test_phylo_module(unittest.TestCase):
 
 
     def test_link_alignmets(self):
+        """ Phylotree can be linked to SeqGroup objects"""
         fasta = """
          >seqA
          MAEIPDETIQQFMALT---HNIAVQYLSEFGDLNEALNSYYASQTDDIKDRREEAH
@@ -625,6 +688,7 @@ class Test_phylo_module(unittest.TestCase):
             self.assertEqual(l.sequence, alg2.get_seq(l.name))
 
     def test_get_sp_overlap_on_all_descendants(self):
+        """ Tests ortholgy prediction using the sp overlap"""
         # Creates a gene phylogeny with several duplication events at
         # different levels.
         t = PhyloTree('((Dme_001,Dme_002),(((Cfa_001,Mms_001),((((Hsa_001,Hsa_003),Ptr_001),Mmu_001),((Hsa_004,Ptr_004),Mmu_004))),(Ptr_002,(Hsa_002,Mmu_002))));')
@@ -715,6 +779,7 @@ class Test_phylo_module(unittest.TestCase):
         self.assertEqual(expected_orthologs, orthologs)
 
     def test_get_sp_overlap_on_a_seed(self):
+        """ Tests ortholgy prediction using sp overlap"""
         # Creates a gene phylogeny with several duplication events at
         # different levels.
         t = PhyloTree('((Dme_001,Dme_002),(((Cfa_001,Mms_001),((((Hsa_001,Hsa_003),Ptr_001),Mmu_001),((Hsa_004,Ptr_004),Mmu_004))),(Ptr_002,(Hsa_002,Mmu_002))));')
@@ -797,6 +862,7 @@ class Test_phylo_module(unittest.TestCase):
         self.assertEqual(expected_orthologs, orthologs)
 
     def test_reconciliation(self):
+        """ Tests ortholgy prediction based on the species reconciliation method"""
         gene_tree_nw = '((Dme_001,Dme_002),(((Cfa_001,Mms_001),((Hsa_001,Ptr_001),Mmu_001)),(Ptr_002,(Hsa_002,Mmu_002))));'
         species_tree_nw = "((((Hsa, Ptr), Mmu), (Mms, Cfa)), Dme);"
 
@@ -811,6 +877,7 @@ class Test_phylo_module(unittest.TestCase):
         self.assertEqual(recon_tree.write(["evoltype"]), expected_recon)
 
     def test_miscelaneus(self):
+        """ Test several things """
         # Creates a gene phylogeny with several duplication events at
         # different levels.
         t = PhyloTree('((Dme_001,Dme_002),(((Cfa_001,Mms_001),((((Hsa_001,Hsa_003),Ptr_001),Mmu_001),((Hsa_004,Ptr_004),Mmu_004))),(Ptr_002,(Hsa_002,Mmu_002))));')
@@ -859,7 +926,9 @@ class Test_phylo_module(unittest.TestCase):
 expression = '#Names\tcol1\tcol2\tcol3\tcol4\tcol5\tcol6\tcol7\nA\t-1.23\t-0.81\t1.79\t0.78\t-0.42\t-0.69\t0.58\nB\t-1.76\t-0.94\t1.16\t0.36\t0.41\t-0.35\t1.12\nC\t-2.19\t0.13\t0.65\t-0.51\t0.52\t1.04\t0.36\nD\t-1.22\t-0.98\t0.79\t-0.76\t-0.29\t1.54\t0.93\nE\t-1.47\t-0.83\t0.85\t0.07\t-0.81\t1.53\t0.65\nF\t-1.04\t-1.11\t0.87\t-0.14\t-0.80\t1.74\t0.48\nG\t-1.57\t-1.17\t1.29\t0.23\t-0.20\t1.17\t0.26\nH\t-1.53\t-1.25\t0.59\t-0.30\t0.32\t1.41\t0.77\n'
 
 class Test_Coretype_ArrayTable(unittest.TestCase):
+    """ Tests reading clustering or phylogenetic profile data"""
     def test_arraytable_parser(self):
+        """ Tests reading numneric tables"""
         A = ArrayTable(expression)
         self.assertEqual(A.get_row_vector("A").tolist(), \
                              [-1.23, -0.81, 1.79, 0.78,-0.42,-0.69, 0.58])
@@ -900,7 +969,9 @@ class Test_Coretype_ArrayTable(unittest.TestCase):
 
 
 class Test_ClusterTree(unittest.TestCase):
+    """ Tests specific methods for trees linked to ArrayTables"""
     def test_clustertree(self):
+        """ Tests tree-ArrayTable association """
 
         t = ClusterTree("(((A,B),(C,(D,E))),(F,(G,H)));", text_array=expression)
         # Now we can ask the expression profile of a single gene
@@ -913,20 +984,24 @@ class Test_ClusterTree(unittest.TestCase):
         print node.intracluster_dist
         print node.intercluster_dist
 
-        from ete_dev.clustering import clustvalidation
+        from ete_test.clustering import clustvalidation
         c1 = t.get_common_ancestor("A", "B")
         c2 = t.get_common_ancestor("C", "D", "E")
         c3 = t.get_common_ancestor("F", "G", "H")
         print t.get_dunn([c1, c2, c3])
 
 class Test_Treeview(unittest.TestCase):
+    """ Tests visualization stuff """
     def test_rendering(self):
+        """ Nothing yet, sorry """
         pass
 
 
 
 class Test_R_bindings(unittest.TestCase):
+    """ This is experimental """
     def test_ape(self):
+        """ Link to R-ape package """
         return # Don't test anything from now
         try:
             import rpy2.robjects as robjects

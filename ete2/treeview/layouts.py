@@ -100,7 +100,7 @@ def heatmap(node):
 
     # Color and style
     node.img_style["fgcolor"] = "#3333FF"
-    node.img_style["size"] = 0
+    node.img_style["size"] =  0
 
     ncols = node.arraytable.matrix.shape[1]
     matrix_max = numpy.max(node.arraytable.matrix)

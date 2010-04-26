@@ -20,8 +20,11 @@
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
 # #END_LICENSE#############################################################
-from PyQt4 import QtCore
-from PyQt4 import QtGui
+try:
+    from PyQt4 import QtCore, QtGui
+except:
+    import QtCore, QtGui
+
 import numpy
 
 aafgcolors = {
@@ -134,15 +137,13 @@ class Face(object):
     """
 
     def __init__(self):
-        self.node = None
-        self.type = "pixmap"
-        self.name = "unknown"
-        self.xmargin = 0
-        self.ymargin = 0
-        self.pixmap = None
-        self._x_offset = 0 # Used only in extra faces
-        self._y_offset = 0 # Used only in extra faces
-        self.aligned = False
+        self.node        = None
+        self.type        = "pixmap"
+        self.name        = "unknown"
+        self.xmargin     = 0
+        self.ymargin     = 0
+        self.pixmap      = None
+        # self.aligned     = False
 
     def _size(self):
         if self.pixmap:
@@ -167,8 +168,6 @@ class Face(object):
 
     def update_pixmap(self):
         pass
-
-
 
 class TextFace(Face):
     """ Creates a new text face object.
@@ -203,8 +202,8 @@ class TextFace(Face):
     def _height(self):
         fm = QtGui.QFontMetrics(self.font)
         h =  fm.boundingRect(QtCore.QRect(), \
-                             QtCore.Qt.AlignLeft, \
-                             self.get_text()).height() 
+                                 QtCore.Qt.AlignLeft, \
+                                 self.get_text()).height()
         return h
         # Other buggy alternatives
         # fm = QtGui.QFontMetrics(self.font)
@@ -730,15 +729,15 @@ class SequenceFace(Face):
 
     def __init__(self, seq, seqtype, fsize=10, aafg=aafgcolors,  aabg=aabgcolors, ntfg=ntfgcolors, ntbg=ntbgcolors):
         Face.__init__(self)
-        self.seq   = seq
-        self.name  = "sequence"
-        self.fsize = fsize
-        self.font  = QtGui.QFont("Courier", self.fsize)
+        self.seq  = seq
+        self.name = "sequence"
+        self.fsize= fsize
+        self.font = QtGui.QFont("Courier", self.fsize)
         self.style = seqtype
-        self.aafg  = aafg
-        self.aabg  = aabg
-        self.ntfg  = ntfg
-        self.ntbg  = ntbg
+        self.aafg = aafg
+        self.aabg = aabg
+        self.ntfg = ntfg
+        self.ntbg = ntbg
 
     def update_pixmap(self):
 

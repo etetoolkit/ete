@@ -23,8 +23,8 @@
 from sys import stderr
 import clustvalidation
 from numpy import nan as NaN # Missing values are saved as NaN values
-from ete_dev.coretype.tree import _translate_nodes
-from ete_dev import TreeNode, ArrayTable
+from ete_test.coretype.tree import _translate_nodes
+from ete_test import TreeNode, ArrayTable
 
 __all__ = ["ClusterNode", "ClusterTree"]
 
@@ -80,7 +80,10 @@ class ClusterNode(TreeNode):
     deviation = property(fget=_get_std, fset=_set_forbidden)
 
     def __init__(self, newick = None, text_array = None, \
-                 fdist=clustvalidation.spearman_dist):
+                 fdist=clustvalidation.default_dist):
+        # Default dist is spearman_dist when scipy module is loaded
+        # otherwise, it is set to euclidean_dist.
+
         # Initialize basic tree features and loads the newick (if any)
         TreeNode.__init__(self, newick)
         self._fdist = None

@@ -43,7 +43,7 @@ PhylomeDBConnector class.
 import re
 from string import strip
 import MySQLdb
-from ete_dev import PhyloTree
+from ete_test import PhyloTree
 
 __all__ = ["PhylomeDBConnector", "ROOTED_PHYLOMES"]
 
@@ -188,13 +188,12 @@ class PhylomeDBConnector(object):
         except ValueError:
             raise ValueError, "invalid phylome protein ID"
         else:
-            cmd = ' SELECT species, IF(gene="" OR gene=NULL,%s,protid) FROM proteins WHERE species="%s" AND gene=(SELECT gene FROM proteins WHERE species="%s" AND protid=%s) ORDER BY length(seq) DESC LIMIT 1; ' % (prot_number,spc_code,spc_code,prot_number)
+            cmd = ' SELECT species, IF(gene="" OR gene=NULL,%s,protid) FROM proteins WHERE species="%s" AND (gene,proteome_id)=(SELECT gene, proteome_id FROM proteins WHERE species="%s" AND protid=%s) ORDER BY length(seq) DESC LIMIT 1; ' % (prot_number,spc_code,spc_code,prot_number)
             if self._SQL.execute(cmd):
                 spc,protid = self._SQL.fetchone()
                 return "%s%07d" % (spc,protid)
             else:
                 return None
-
 
     def get_id_by_external(self, external):
         """ Returns the phylomeID of the given external ID"""

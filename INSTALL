@@ -1,0 +1,13 @@
+DEPENDENCIES:
+
+python-scipy (for clustering extension)
+python-numpy (for clustering extension)
+python-mysqldb (for phylomeDB API)
+python-qt4 (for tree visualization)
+
+INSTALL:
+
+./setup.py install 
+
+
+More info at http://ete.cgenomics.org/download

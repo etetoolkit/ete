@@ -28,8 +28,8 @@ Currently, Fasta, Phylip sequencial and Phylip interleaved formats are
 supported.
 """
 
-from ete_dev.parser.fasta import read_fasta, write_fasta
-from ete_dev.parser.phylip import read_phylip, write_phylip
+from ete_test.parser.fasta import read_fasta, write_fasta
+from ete_test.parser.phylip import read_phylip, write_phylip
 
 __all__ = ["SeqGroup"]
 
@@ -90,7 +90,7 @@ class SeqGroup(object):
                 args = self.parsers[format][2]
                 read(sequences, obj=self, **args)
             else:
-                raise "Unsupported format: [%s]" %format
+                raise ValueError, "Unsupported format: [%s]" %format
 
     def write(self, format="fasta", outfile=None):
         """ Returns the text representation of the sequences in the
@@ -103,7 +103,7 @@ class SeqGroup(object):
             args = self.parsers[format][2]
             return write(self, outfile, **args)
         else:
-            raise "Unssupported format: [%s]" %format
+            raise ValueError, "Unssupported format: [%s]" %format
 
     def iter_entries(self):
         """ Returns an iterator over all sequences in the

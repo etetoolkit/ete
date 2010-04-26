@@ -10,9 +10,11 @@ t = ClusterTree(PATH+"diauxic.nw", PATH+"diauxic.array")
 # nodes are linked to the array table
 array =  t.arraytable
 
-# Calculates some values we will use later
-matrix_max = numpy.max(array.matrix)
-matrix_min = numpy.min(array.matrix)
+# Calculates some stats on the matrix
+matrix_dist = [i for r in xrange(len(array.matrix))\
+               for i in array.matrix[r] if numpy.isfinite(i)]
+matrix_max = numpy.max(matrix_dist)
+matrix_min = numpy.min(matrix_dist)
 matrix_avg = matrix_min+((matrix_max-matrix_min)/2)
 
 # Creates a profile face that will represent node's profile as a

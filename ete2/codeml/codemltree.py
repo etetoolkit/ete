@@ -28,8 +28,8 @@ features to the the node instances.
 
 import sys
 
-from ete_dev import PhyloNode, PhyloTree
-from ete_dev.codeml.codemlparser import parse_paml, get_sites
+from ete_test import PhyloNode, PhyloTree
+from ete_test.codeml.codemlparser import parse_paml, get_sites
 
 sys.path.append('/home/francisco/franciscotools/4_codeml_pipe/')
 from control import label_tree
@@ -141,3 +141,13 @@ CodemlTree = CodemlNode
 #git pull ../updatedMainBranch/ master
 ## Solve conflicts 
 #git mergetool --tool=meld
+
+
+#from ete_test import CodemlTree
+#
+#T = CodemlTree('/home/francisco/project/protamine/dataset/primt-prm1/paml/fb/tree')
+#
+#T.link_to_alignment('/home/francisco/project/protamine/dataset/primt-prm1/primt-prm1_ali.pep')
+#
+#T.link_to_evol_model('/home/francisco/project/protamine/dataset/primt-prm1/paml/fb/fb.out','fb')
+
