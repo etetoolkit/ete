@@ -5,7 +5,7 @@
 # This script is GPL. que pasa?!!
 
 import sys, os, re
-from ete_test import PhyloTree
+from ete2 import PhyloTree
 
 sys.path.append('/home/francisco/franciscotools/4_codeml_pipe/')
 from control import label_tree

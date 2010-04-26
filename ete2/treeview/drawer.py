@@ -45,7 +45,7 @@ try:
 except ImportError:
     USE_GL = False
 
-from ete_test import Tree, PhyloTree, ClusterTree, CodemlTree
+from ete2 import Tree, PhyloTree, ClusterTree, CodemlTree
 
 __all__ = ["show_tree", "render_tree", "TreeImageProperties"]
 

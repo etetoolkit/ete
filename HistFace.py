@@ -32,7 +32,7 @@ import numpy
 from PyQt4  import QtCore
 from PyQt4  import QtGui
 from PyQt4.QtGui import QPrinter
-from ete_test import faces, layouts
+from ete2 import faces, layouts
 
 try:
     from PyQt4 import QtOpenGL
@@ -41,7 +41,7 @@ try:
 except ImportError:
     USE_GL = False
 
-from ete_test import Tree, PhyloTree, ClusterTree
+from ete2 import Tree, PhyloTree, ClusterTree
 
 __all__ = ["show_tree", "render_tree", "TreeImageProperties"]
 

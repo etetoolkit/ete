@@ -156,11 +156,11 @@ _ex('find %s -name \'*.py\' -exec  python ___put_disclamer.py {} \;' %\
 
 
 
-# Correct imports. I use ete_test for development, but ete2 is the
+# Correct imports. I use ete2 for development, but ete2 is the
 # correct name for stable releases. First I install the module using a
 # different name just to test it
 print "*** Fixing imports..."
-_ex('find %s -name \'*.py\'| xargs perl -e "s/from ete_test/from ete2_test/g" -p -i' %\
+_ex('find %s -name \'*.py\'| xargs perl -e "s/from ete2/from ete2_test/g" -p -i' %\
               (RELEASE_PATH) )
 
 _ex('mv %s %s/ete2_test' %(RELEASE_MODULE_PATH, RELEASE_PATH))
