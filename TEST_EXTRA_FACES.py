@@ -1,11 +1,11 @@
 # TO RUN THIS SCRIPT:
-# Create a symbolic link "ete_test" pointing to the "ete2" dir.
+# Create a symbolic link "ete2" pointing to the "ete2" dir.
 # Then, execute (within this directory):
 # PYTHONPATH=`pwd` python TEST_EXTRA_FACES.py
 #
 
-from ete_test import Tree, faces, layouts
-from ete_test.treeview import drawer
+from ete2 import Tree, faces, layouts
+from ete2.treeview import drawer
 from HistFace import HistFace, CustomProfileFace
 from PyQt4 import QtCore
 from PyQt4 import QtGui

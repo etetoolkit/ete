@@ -43,7 +43,7 @@ PhylomeDBConnector class.
 import re
 from string import strip
 import MySQLdb
-from ete_test import PhyloTree
+from ete2 import PhyloTree
 
 __all__ = ["PhylomeDBConnector", "ROOTED_PHYLOMES"]
 

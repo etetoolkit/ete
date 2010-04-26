@@ -28,8 +28,8 @@ features to the the node instances.
 
 import sys
 
-from ete_test import PhyloNode, PhyloTree
-from ete_test.codeml.codemlparser import parse_paml, get_sites
+from ete2 import PhyloNode, PhyloTree
+from ete2.codeml.codemlparser import parse_paml, get_sites
 
 sys.path.append('/home/francisco/franciscotools/4_codeml_pipe/')
 from control import label_tree
@@ -143,7 +143,7 @@ CodemlTree = CodemlNode
 #git mergetool --tool=meld
 
 
-#from ete_test import CodemlTree
+#from ete2 import CodemlTree
 #
 #T = CodemlTree('/home/francisco/project/protamine/dataset/primt-prm1/paml/fb/tree')
 #

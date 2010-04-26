@@ -153,7 +153,7 @@ def node2internalformat(node, format):
         return ""
 
 def print_supported_formats():
-    from ete_test.coretype.tree import TreeNode
+    from ete2.coretype.tree import TreeNode
     t = TreeNode()
     t.populate(4, "ABCDEFGHI")
     print t
@@ -178,7 +178,7 @@ def read_newick(newick, root_node=None, format=0):
     """
 
     if root_node is None:
-        from ete_test.coretype.tree import TreeNode
+        from ete2.coretype.tree import TreeNode
         root_node = TreeNode()
 
     if type(newick) == str:
