@@ -142,12 +142,3 @@ CodemlTree = CodemlNode
 ## Solve conflicts 
 #git mergetool --tool=meld
 
-
-#from ete_test import CodemlTree
-#
-#T = CodemlTree('/home/francisco/project/protamine/dataset/primt-prm1/paml/fb/tree')
-#
-#T.link_to_alignment('/home/francisco/project/protamine/dataset/primt-prm1/primt-prm1_ali.pep')
-#
-#T.link_to_evol_model('/home/francisco/project/protamine/dataset/primt-prm1/paml/fb/fb.out','fb')
-
