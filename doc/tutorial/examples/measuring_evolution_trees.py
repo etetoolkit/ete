@@ -24,6 +24,19 @@ T.run_paml(paml_rep,'fb')
 T.show()
 
 ###
+# run site model, and display result
+paml_rep = expldir+'lala/'
+for model in ['M8', 'M7']:
+    T.run_paml(paml_rep,model)
+
+pv = T.get_most_likely('M1', 'M2')
+if pv <= 0.05:
+    print 'most likely model is model M2, there is positive selection'
+else:
+    print 'most likely model is model M1'
+
+
+###
 # mark tree functionality
 T.mark_tree([8,7]) # by default will mark with '#1'
 T.mark_tree([10,5],marks = ['#2','#3'])

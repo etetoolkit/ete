@@ -159,6 +159,30 @@ def translate(sequence):
     return proteinseq
 
 
+def colorize_bay(vals,winner,classes):
+    colors = []
+    for i in range (0, len (vals)):
+        class1 = int(re.sub('\/.*','',re.sub('\(','',classes[i])))
+        class2 = int(re.sub('.*\/','',re.sub('\)','',classes[i])))
+        pv = float (vals[i])
+        if pv < 0.95:
+            colors.append('grey')
+        elif class1 != class2 and class1!=1:
+            colors.append('green')
+        elif class1 == 1:
+            if pv < 0.99:
+                colors.append('cyan')
+            else:
+                colors.append('blue')
+        elif class1==class2 and (winner == 'M2' or winner == 'M8'):
+            if pv < 0.99:
+                colors.append('orange')
+            else:
+                colors.append('red')
+        elif class1==class2:
+            colors.append('grey')
+    return colors
+
 def label_tree(t):
     """ This function sort the branches of a given tree by
     considerening node names. After the tree is sorted, nodes are

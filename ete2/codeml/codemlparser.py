@@ -4,25 +4,11 @@
 #
 # This script is GPL. que pasa?!!
 
-import sys, os, re
+import sys, re
 from ete2 import PhyloTree
 
 sys.path.append('/home/francisco/franciscotools/4_codeml_pipe/')
 from control import label_tree
-
-def main():
-    '''
-    just to test
-    '''
-    pamouts = []
-    pamouts.append(('/home/francisco/project/patata/dataset/all_1l_2/paml/b_free.6/b_free.6.out','b_free'))
-    pamouts.append(('/home/francisco/project/patata/hernan_sol/sol_1l_2/paml/Sol_1_A/A.out','bsA'))
-    pamouts.append(('/home/francisco/project/patata/hernan_sol/sol_1l_2/paml/fb/fb.out','fb'))
-    pamouts.append(('/home/francisco/project/protamine/dataset/primt-prm1/paml/fb/fb.out','fb'))
-    
-    for pamout, mod in pamouts:
-        dic = parse_paml(pamout, mod)
-        _readTrees(dic)
 
 def get_sites(path):
     '''
@@ -40,7 +26,7 @@ def get_sites(path):
             lnl = l.split()[-1]
             if not (vals == False or vals == True):
                 vals['lnL.'+mod] = lnl
-        if l.startswith('dN/dS for site classes'):
+        if l.startswith('dN/dS '):
             check = re.sub('.*K=', '', l)
             check = int (re.sub('\)', '', check))
             mod = ('M'+str(check-1 if check < 4 else 'M'+str(check-3)))
@@ -49,6 +35,8 @@ def get_sites(path):
             vals = True
         elif vals == False:
             continue
+        if l.startswith('Positively '):
+            break
         if re.match('^ *[0-9]* [A-Z*] *', l) == None and \
                valsend == False:
             continue
@@ -70,9 +58,7 @@ def get_sites(path):
                 re.sub('\).*', '', re.sub('.*\( *', '', l.strip()))\
                 +'/'+str (len (classes))+')')
             vals['pv.'+mod].append(str (max (classes)))
-    print [vals[i] for i in range(0, len(vals['pv.'+mod]))]
     return vals
-
 
 def parse_paml(pamout, model, rst=None):
     '''
@@ -82,77 +68,81 @@ def parse_paml(pamout, model, rst=None):
     '''
     dic = {}
     if model.startswith('b_'):
-        val = ['w','dN','dS','bL','bLnum']
-        for l in open(pamout):
-            if l.startswith('lnL'):
-                dic = _getlnL(dic,l)
-            elif l.startswith('(') and l.endswith(');\n'):
-                dic[val.pop()] = l.strip()
+        val = ['w', 'dN', 'dS', 'bL', 'bLnum']
+        for line in open(pamout):
+            if line.startswith('lnL'):
+                dic = _getlnL(dic, line)
+            elif line.startswith('(') and line.endswith(');\n'):
+                dic[val.pop()] = line.strip()
     elif model.startswith('fb'):
-        val = ['w','dN','dS','bL','bLnum']
-        chk=False
-        for l in open(pamout):
-            if l.startswith('lnL'):
-                dic = _getlnL(dic,l)
-            elif l.startswith('(') and l.endswith(');\n'):
-                dic[val.pop()] = l.strip()
-            elif l.startswith('dN & dS for'): chk = True
-            elif '..' in l and chk:
+        val = ['w', 'dN', 'dS', 'bL', 'bLnum']
+        chk = False
+        for line in open(pamout):
+            if line.startswith('lnL'):
+                dic = _getlnL(dic, line)
+            elif line.startswith('(') and line.endswith(');\n'):
+                dic[val.pop()] = line.strip()
+            elif line.startswith('dN & dS for'):
+                chk = True
+            elif '..' in line and chk:
                 chk = False
-                dic['N'], dic['S'] = l.strip().split()[2:4]
+                dic['N'], dic['S'] = line.strip().split()[2:4]
     elif model.startswith('M'):
-        if rst==None: dic['rst'] = re.sub('','',pamout)
-        val = ['w','dN','dS','bL','bLnum']
-        for l in open(pamout):
-            if l.startswith('lnL'):
-                dic = _getlnL(dic,l)
-            elif l.startswith('(') and l.endswith(');\n'):
-                dic[val.pop()] = l.strip()
-            elif l.startswith('p: '):
-                for i in range (0,len (l.strip().split()[1:])):
-                    dic['p'+str(i)]=l.strip().split()[i+1]
-            elif l.startswith('w: '):
-                for i in range (0,len (l.strip().split()[1:])):
-                    dic['w'+str(i)]=l.strip().split()[i+1]
+        if rst == None:
+            dic['rst'] = re.sub('/out$', '/rst', pamout)
+        val = ['w', 'dN', 'dS', 'bL', 'bLnum']
+        for line in open(pamout):
+            if line.startswith('lnL'):
+                dic = _getlnL(dic, line)
+            elif line.startswith('(') and line.endswith(');\n'):
+                dic[val.pop()] = line.strip()
+            elif line.startswith('p: '):
+                for i in range (0,len (line.strip().split()[1:])):
+                    dic['p'+str(i)] = line.strip().split()[i+1]
+            elif line.startswith('w: '):
+                for i in range (0,len (line.strip().split()[1:])):
+                    dic['w'+str(i)] = line.strip().split()[i+1]
     elif model.startswith('bs'):
-        val = ['w','dN','dS','bL','bLnum']
-        for l in open(pamout):
-            if l.startswith('lnL'):
-                dic = _getlnL(dic,l)
-            elif l.startswith('(') and l.endswith(');\n'):
-                dic[val.pop()] = l.strip()
-            elif l.startswith('proportion '):
-                dic['p0' ] = l.strip().split()[1]
-                dic['p1' ] = l.strip().split()[2]
-                dic['p2a'] = l.strip().split()[3]
-                dic['p2b'] = l.strip().split()[4]
-            elif l.startswith('background w '):
-                dic['wbkg0']  = l.strip().split()[2]
-                dic['wbkg1']  = l.strip().split()[3]
-                dic['wbkg2a'] = l.strip().split()[4]
-                dic['wbkg2b'] = l.strip().split()[5]
-            elif l.startswith('foreground w'):
-                dic['wfrg0']  = l.strip().split()[2]
-                dic['wfrg1']  = l.strip().split()[3]
-                dic['wfrg2a'] = l.strip().split()[4]
-                dic['wfrg2b'] = l.strip().split()[5]
+        val = ['w', 'dN', 'dS', 'bL', 'bLnum']
+        for line in open(pamout):
+            if line.startswith('lnL'):
+                dic = _getlnL(dic, line)
+            elif line.startswith('(') and line.endswith(');\n'):
+                dic[val.pop()] = line.strip()
+            elif line.startswith('proportion '):
+                dic['p0' ] = line.strip().split()[1]
+                dic['p1' ] = line.strip().split()[2]
+                dic['p2a'] = line.strip().split()[3]
+                dic['p2b'] = line.strip().split()[4]
+            elif line.startswith('background w '):
+                dic['wbkg0']  = line.strip().split()[2]
+                dic['wbkg1']  = line.strip().split()[3]
+                dic['wbkg2a'] = line.strip().split()[4]
+                dic['wbkg2b'] = line.strip().split()[5]
+            elif line.startswith('foreground w'):
+                dic['wfrg0']  = line.strip().split()[2]
+                dic['wfrg1']  = line.strip().split()[3]
+                dic['wfrg2a'] = line.strip().split()[4]
+                dic['wfrg2b'] = line.strip().split()[5]
     # convert paml tree format to 'normal' newick format.
-    for k in ['w','dN','dS','bL','bLnum']:
-        if not dic.has_key(k): continue
-        if not dic[k].startswith('('): continue
+    for k in ['w', 'dN', 'dS', 'bL', 'bLnum']:
+        if not dic.has_key(k):
+            continue
+        if not dic[k].startswith('('):
+            continue
         dic[k] = _convtree(dic[k])
     return dic
 
-def _getlnL(dic,l):
-    l = l.strip()
-    dic['lnL'] = re.sub('  *.*','', re.sub('.*: *'   ,'', l))
-    dic['lnL'] = re.sub('  *.*','', re.sub('.*: *'   ,'', l))
-    dic['np' ] = re.sub('\).*' ,'', re.sub('.*np: * ','', l))
+def _getlnL(dic, line):
+    line = line.strip()
+    dic['lnL'] = re.sub('  *.*','', re.sub('.*: *'   ,'', line))
+    dic['lnL'] = re.sub('  *.*','', re.sub('.*: *'   ,'', line))
+    dic['np' ] = re.sub('\).*' ,'', re.sub('.*np: * ','', line))
     return dic
     
 
-def _convtree(l):
-    t = re.sub('#[0-9]* #',' #',l)
+def _convtree(line):
+    t = re.sub('#[0-9]* #',' #', line)
     t = re.sub('\'','',t)
     t = re.sub('#',':',t)
     t = re.sub(' : [0-9]*\.[0-9]*','',t)

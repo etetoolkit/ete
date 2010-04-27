@@ -30,7 +30,8 @@ import sys
 
 from ete2 import PhyloNode, PhyloTree
 from ete2.codeml.codemlparser import parse_paml, get_sites
-from ete2.codeml.control import mkdir_p, controlGenerator, translate
+from ete2.codeml.control import mkdir_p, controlGenerator, \
+     translate, colorize_bay
 from ete2.parser.newick import write_newick
 
 sys.path.append('/home/francisco/franciscotools/4_codeml_pipe/')
@@ -57,6 +58,7 @@ class CodemlNode(PhyloNode):
         self._name = "NoName"
         self._species = "Unknown"
         self._speciesFunction = None
+        self.dic = {}
         # Caution! native __init__ has to be called after setting
         # _speciesFunction to None!!
         PhyloNode.__init__(self, newick=newick)
@@ -166,10 +168,11 @@ class CodemlNode(PhyloNode):
             and likelihood
         '''
         dic = parse_paml(path, model)
+        self.dic[model] = dic
         if model == 'fb':
             self._getfreebranch(dic)
-        if model.startswith('M'):
-            get_sites(dic['rst'])
+        elif model.startswith('M'):
+            self.dic[model+'_sites'] = get_sites(dic['rst'])
 
     def write(self, features=None, outfile=None, format=9):
         """ Returns the newick-PAML representation of this node
@@ -194,6 +197,17 @@ class CodemlNode(PhyloNode):
         else:
             return nwk
 
+    def get_most_likely(self, mod1, mod2):
+        '''
+        returns ths pvalue of mod1 being most likely than mod2
+        '''
+        from stats import chisqprob
+        return chisqprob(2*(float(self.dic[mod1]['lnL']) - \
+                            float(self.dic[mod2]['lnL'])),\
+                         df=(int (self.dic[mod1]['np'])-\
+                             int(self.dic[mod2]['np'])))
+
+        
     def _getfreebranch(self, dic):
         '''
         to convert tree strings of paml into tree strings readable
