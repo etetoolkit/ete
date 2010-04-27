@@ -132,7 +132,7 @@ class CodemlNode(PhyloNode):
         hlddir = os.getcwd()
         os.chdir(rep+model)
         os.system('/usr/local/bin/codeml tmp.ctl')
-        os.system('mv rst rst.'+model)
+        #os.system('mv rst rst.'+model)
         os.chdir(hlddir)
         self.link_to_evol_model(rep+model+'/out', model)
 
