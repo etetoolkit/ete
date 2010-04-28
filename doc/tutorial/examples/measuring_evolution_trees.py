@@ -4,9 +4,9 @@
 
 from ete2 import CodemlTree
 
+ETEPATH = '/home/francisco/toolbox/ete/'
 
-
-expldir = '/home/francisco/toolbox/ete/doc/tutorial/examples/'
+expldir = ETEPATH + 'doc/tutorial/examples/'
 algn = expldir+'alignment_measuring_evol.fasta'
 
 ###
@@ -26,15 +26,36 @@ T.show()
 ###
 # run site model, and display result
 paml_rep = expldir+'lala/'
-for model in ['M8', 'M7']:
+for model in ['M1', 'M2']:
     T.run_paml(paml_rep,model)
 
-pv = T.get_most_likely('M1', 'M2')
+pv = T.get_most_likely('M2', 'M1')
 if pv <= 0.05:
-    print 'most likely model is model M2, there is positive selection'
+    print 'most likely model is model M2, there is positive selection',pv
 else:
-    print 'most likely model is model M1'
+    print 'most likely model is model M1',pv
 
+###
+# tengo que encontrar un ejemplo mas bonito pero bueno.... :P
+T.add_histface('M2')
+T.add_histface('M1',down = False)
+
+T.show()
+
+
+###
+# re-run without reeeeeeeeee-run
+T = CodemlTree('(Saguinus_imperator,((Hylobates_lar,(Gorilla_gorilla,(Pan_paniscus,Pan_troglodytes))),(Macaca_fascicularis,Papio_cynocephalus)));')
+T.link_to_alignment(algn)
+
+T.link_to_evol_model(ETEPATH + 'doc/tutorial/examples/lala/fb/out','fb')
+T.link_to_evol_model(ETEPATH + 'doc/tutorial/examples/lala/M1/out','M1')
+T.link_to_evol_model(ETEPATH + 'doc/tutorial/examples/lala/M2/out','M2')
+
+T.add_histface('M2')
+T.add_histface('M1',down = False)
+
+T.show()
 
 ###
 # mark tree functionality

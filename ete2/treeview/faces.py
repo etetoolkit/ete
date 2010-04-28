@@ -143,6 +143,8 @@ class Face(object):
         self.xmargin     = 0
         self.ymargin     = 0
         self.pixmap      = None
+        self._x_offset = 0 # Used only in extra faces
+        self._y_offset = 0 # Used only in extra faces
         # self.aligned     = False
 
     def _size(self):

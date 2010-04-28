@@ -84,7 +84,7 @@ class HistFace(faces.Face):
     """
 
     def __init__(self, values, colors = [], header = '', mean = 0, \
-                 fsize=10, height = 100):
+                 fsize=11, height = 100):
 
         faces.Face.__init__(self)
         if colors == []: colors = ['grey']*len (values)
@@ -97,7 +97,7 @@ class HistFace(faces.Face):
         self.values = map (lambda x: float(x)/self.max*height, values)
         self.colors = colors
         self.fsize  = int ((float (fsize)))
-        self.font   = QtGui.QFont("Arial", self.fsize)
+        self.font   = QtGui.QFont("Courier", self.fsize)
         self.height = height+25
         self.header = header
 

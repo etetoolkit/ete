@@ -30,12 +30,9 @@ import sys
 
 from ete2 import PhyloNode, PhyloTree
 from ete2.codeml.codemlparser import parse_paml, get_sites
-from ete2.codeml.control import mkdir_p, controlGenerator, \
-     translate, colorize_bay
+from ete2.codeml.control import controlGenerator
+from ete2.codeml.utils import mkdir_p, translate, colorize_rst, label_tree
 from ete2.parser.newick import write_newick
-
-sys.path.append('/home/francisco/franciscotools/4_codeml_pipe/')
-from control import label_tree
 
 __all__ = ["CodemlNode", "CodemlTree"]
 
@@ -59,6 +56,8 @@ class CodemlNode(PhyloNode):
         self._species = "Unknown"
         self._speciesFunction = None
         self.dic = {}
+        self.up_faces = []
+        self.down_faces = []
         # Caution! native __init__ has to be called after setting
         # _speciesFunction to None!!
         PhyloNode.__init__(self, newick=newick)
@@ -80,6 +79,13 @@ class CodemlNode(PhyloNode):
         for leaf in self.iter_leaves():
             leaf.nt_sequence = str(leaf.sequence)
             leaf.sequence = translate(leaf.nt_sequence)
+
+    def show(self):
+        '''
+        call super show adding up and down faces
+        '''
+        super(CodemlTree, self).show(up_faces = self.up_faces, \
+                                     down_faces = self.down_faces)
                 
     def run_paml(self, rep, model, gappy=True):
         '''
@@ -174,6 +180,25 @@ class CodemlNode(PhyloNode):
         elif model.startswith('M'):
             self.dic[model+'_sites'] = get_sites(dic['rst'])
 
+    def add_histface(self, mdl, down=True):
+        '''
+        add histogram face for a given site mdl (M1, M2, M7, M8)
+        can choose to put it up or down the tree.
+        '''
+        from HistFace import HistFace
+        hist = HistFace(values = self.dic[mdl + '_sites']['w.' + mdl], \
+                        mean = 1.0, \
+                        colors=colorize_rst(self.dic[mdl+'_sites']['pv.'+mdl], \
+                                            mdl, \
+                                            self.dic[mdl+'_sites']['class.'+mdl]\
+                                            ), header = \
+                        'Omega value for sites under %s model' % (mdl))
+        hist.aligned = True
+        if down:
+            self.down_faces = [hist]
+        else:
+            self.up_faces   = [hist]
+
     def write(self, features=None, outfile=None, format=9):
         """ Returns the newick-PAML representation of this node
         topology. Several arguments control the way in which extra
@@ -206,7 +231,6 @@ class CodemlNode(PhyloNode):
                             float(self.dic[mod2]['lnL'])),\
                          df=(int (self.dic[mod1]['np'])-\
                              int(self.dic[mod2]['np'])))
-
         
     def _getfreebranch(self, dic):
         '''
@@ -249,22 +273,4 @@ class CodemlNode(PhyloNode):
 # cosmetic alias
 CodemlTree = CodemlNode
 
-#git fetch repo-principal"
-#git mergetool --tool=meld
-#(puedes usar otros programas que no sean meld, pero este mola)
-#basicamente lo que tienes que hacer es:
-#cp -r myCodemlRepo/ myUpdatedCodemlRepo/
-#cd myUpdatedCodemlRepo/
 
-
-## Don't mess up your current work
-#cp -r myCodemlRepo/ myUpdatedCodemlRepo/ 
-## Get last master version
-#git clone git://gitorious.org/environment-for-tree-exploration/ete.git \
-#updatedMainBranch
-## Enters the conflic zone
-#cd myUpdatedCodemlRepo/
-## fetch and merge at the same time
-#git pull ../updatedMainBranch/ master
-## Solve conflicts 
-#git mergetool --tool=meld
