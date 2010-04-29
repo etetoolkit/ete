@@ -125,7 +125,6 @@ def show_tree(t, style=None, img_properties=None, up_faces=[], down_faces=[]):
     scene  = _TreeScene(up_faces=up_faces, down_faces=down_faces)
     mainapp = _MainApp(scene)
 
-
     if not img_properties:
         img_properties = TreeImageProperties()
     scene.initialize_tree_scene(t, style, \
@@ -182,7 +181,21 @@ class CodemlDialog(QtGui.QDialog):
         self._conf.newickBox.setText(nw)
 
     def run(self):
-        self.node.run_paml('lala/',self._conf.model.currentText())
+        models = {
+            'M0'            : 'M0'    ,
+            'M1'            : 'M1'    ,
+            'M2'            : 'M2'    ,
+            'M7'            : 'M7'    ,
+            'M8'            : 'M8'    ,
+            'free-branch'   : 'fb'    ,
+            'branch-site.A' : 'bsA'   ,
+            'branch-site.A1': 'bsA1'  ,
+            'branch-free'   : 'b_free',
+            'branch-neut'   : 'b_neut'
+            }
+        model = models[str (self._conf.model.currentText())]
+        self.node.run_paml('/tmp/ete2-codeml/', model)
+        self.close()
 
 class NewickDialog(QtGui.QDialog):
     def __init__(self, node, *args):
@@ -209,6 +222,7 @@ class NewickDialog(QtGui.QDialog):
         if aName != '':
             self._conf.features_list.addItem( aName)
             self.update_newick()
+            
     def del_feature(self):
         r = self._conf.features_list.currentRow()
         self._conf.features_list.takeItem(r)
@@ -832,7 +846,7 @@ class _NodeItem(QtGui.QGraphicsRectItem):
         self.scene().draw()
 
     def add_childs(self):
-        n,ok = QtGui.QInputDialog.getInteger(None,"Add childs","Number of childs to add:",1,1)
+        n,ok = QtgGui.QInputDialog.getInteger(None,"Add childs","Number of childs to add:",1,1)
         if ok:
             for i in xrange(n):
                 ch = self.node.add_child()

@@ -107,7 +107,6 @@ class CodemlNode(PhyloNode):
         WARNING: this functionality needs to create a working directory in "rep"
         WARNING: you need to have codeml in your path
         '''
-
         fullpath = os.path.join(rep, model)
         os.system("mkdir -p %s" %fullpath)
         # write tree file
