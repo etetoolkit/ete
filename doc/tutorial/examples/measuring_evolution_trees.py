@@ -40,12 +40,13 @@ T.add_histface('M1',down = False)
 
 T.show()
 
+
 ###
 # re-run without reeeeeeeeee-run
-T = CodemlTree(expldir + 'measuring_tree.nw')
-T.link_to_alignment(expldir + 'alignment_measuring_evol.fasta')
+T = CodemlTree(TREE_PATH)
+T.link_to_alignment(ALG_PATH)
 
-T.link_to_evol_model(WORKING_PATH + '/out','fb')
+T.link_to_evol_model(WORKING_PATH + '/fb/out','fb')
 T.link_to_evol_model(WORKING_PATH + '/M1/out','M1')
 T.link_to_evol_model(WORKING_PATH + '/M2/out','M2')
 
