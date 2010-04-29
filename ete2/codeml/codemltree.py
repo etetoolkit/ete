@@ -55,7 +55,7 @@ class CodemlNode(PhyloNode):
         self._name = "NoName"
         self._species = "Unknown"
         self._speciesFunction = None
-        self.dic = {}
+        self._dic = {}
         self.up_faces = []
         self.down_faces = []
         # Caution! native __init__ has to be called after setting
@@ -70,6 +70,7 @@ class CodemlNode(PhyloNode):
         if newick:
             self.set_species_naming_function(sp_naming_function)
             label_tree(self)
+        self.mark_tree([])
 
     def link_to_alignment(self, alignment, alg_format="fasta"):
         '''
@@ -175,12 +176,11 @@ class CodemlNode(PhyloNode):
           * Site models (M0, M1, M2, M7, M8) will give evol values by site
             and likelihood
         '''
-        dic = parse_paml(path, model)
-        self.dic[model] = dic
+        self._dic[model] = parse_paml(path, model)
         if model == 'fb':
-            self._getfreebranch(dic)
+            self._getfreebranch()
         elif model.startswith('M'):
-            self.dic[model+'_sites'] = get_sites(dic['rst'])
+            self._dic[model+'_sites'] = get_sites(self._dic[model]['rst'])
 
     def add_histface(self, mdl, down=True):
         '''
@@ -188,13 +188,12 @@ class CodemlNode(PhyloNode):
         can choose to put it up or down the tree.
         '''
         from HistFace import HistFace
-        hist = HistFace(values = self.dic[mdl + '_sites']['w.' + mdl], \
+        ldic = self._dic[mdl + '_sites']
+        hist = HistFace(values = ldic['w.' + mdl], \
                         mean = 1.0, \
-                        colors=colorize_rst(self.dic[mdl+'_sites']['pv.'+mdl], \
-                                            mdl, \
-                                            self.dic[mdl+'_sites']['class.'+mdl]\
-                                            ), header = \
-                        'Omega value for sites under %s model' % (mdl))
+                        colors=colorize_rst(ldic['pv.'+mdl], \
+                                            mdl, ldic['class.'+mdl]), \
+                        header= 'Omega value for sites under %s model' % (mdl))
         hist.aligned = True
         if down:
             self.down_faces = [hist]
@@ -229,12 +228,12 @@ class CodemlNode(PhyloNode):
         returns ths pvalue of mod1 being most likely than mod2
         '''
         from stats import chisqprob
-        return chisqprob(2*(float(self.dic[mod1]['lnL']) - \
-                            float(self.dic[mod2]['lnL'])),\
-                         df=(int (self.dic[mod1]['np'])-\
-                             int(self.dic[mod2]['np'])))
+        return chisqprob(2*(float(self._dic[mod1]['lnL']) - \
+                            float(self._dic[mod2]['lnL'])),\
+                         df=(int (self._dic[mod1]['np'])-\
+                             int(self._dic[mod2]['np'])))
         
-    def _getfreebranch(self, dic):
+    def _getfreebranch(self):
         '''
         to convert tree strings of paml into tree strings readable
         by ETE2_codeml.
@@ -242,17 +241,17 @@ class CodemlNode(PhyloNode):
         #TODO: be abble to undestand how codeml put ids to tree nodes
         '''
         for evol in ['bL', 'dN', 'dS', 'w']:
-            if not dic.has_key(evol):
+            if not self._dic['fb'].has_key(evol):
                 print >> sys.stderr, \
                       "Warning: this file do not cotain info about " \
                       + evol + " parameter"
                 continue
-            if not dic[evol].startswith('('):
+            if not self._dic['fb'][evol].startswith('('):
                 print >> sys.stderr, \
                       "Warning: problem with tree string for "\
                       + evol +" parameter"
                 continue
-            tdic = dic[evol]
+            tdic = self._dic['fb'][evol]
             if evol == 'bL':
                 tree = PhyloTree(tdic)
                 label_tree(tree)

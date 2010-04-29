@@ -36,7 +36,8 @@ except ImportError:
     import QtCore, QtGui
     from QtGui import QPrinter
 import layouts
-import _mainwindow, _search_dialog, _show_newick, _open_newick, _about
+import _mainwindow, _search_dialog, _show_newick, _open_newick, _about, \
+       _show_codeml
 
 try:
     from PyQt4 import QtOpenGL
@@ -169,7 +170,19 @@ def render_tree(t, imgName, w=None, h=None, style=None, \
 # #################
 
 
+class CodemlDialog(QtGui.QDialog):
+    def __init__(self, node, *args):
+        QtGui.QDialog.__init__(self, *args)
+        self.node = node
 
+    def update_model(self):
+        from ete2.codeml.control import controlGenerator
+        model= self._conf.model.currentText()
+        nw = controlGenerator(model)
+        self._conf.newickBox.setText(nw)
+
+    def run(self):
+        self.node.run_paml('lala/',self._conf.model.currentText())
 
 class NewickDialog(QtGui.QDialog):
     def __init__(self, node, *args):
@@ -349,6 +362,14 @@ class _MainApp(QtGui.QMainWindow):
     def on_actionForceTopology_triggered(self):
         self.scene.props.force_topology ^= True
         self.scene.draw()
+
+    @QtCore.pyqtSignature("")
+    def on_actionShow_codeml_triggered(self):
+        d = CodemlDialog(self.scene.startNode)
+        d._conf = _show_codeml.Ui_Codeml()
+        d._conf.setupUi(d)
+        d.update_model()
+        d.exec_()
 
     @QtCore.pyqtSignature("")
     def on_actionShow_newick_triggered(self):
@@ -765,16 +786,30 @@ class _NodeItem(QtGui.QGraphicsRectItem):
         contextMenu.addAction( "Populate partition"   , self.populate_partition)
         if self.node.up is not None and\
                 self.scene().startNode == self.node:
-            contextMenu.addAction( "Back to parent", self.back_to_parent_node)
+            contextMenu.addAction( "Back to parent"   , self.back_to_parent_node)
         else:
-            contextMenu.addAction( "Extract"              , self.set_start_node)
+            contextMenu.addAction( "Extract"          , self.set_start_node)
 
         if self.scene().buffer_node:
             contextMenu.addAction( "Paste partition"  , self.paste_partition)
 
         contextMenu.addAction( "Cut partition"        , self.cut_partition)
-        contextMenu.addAction( "Show newick"        , self.show_newick)
+        contextMenu.addAction( "Show newick"          , self.show_newick)
+        if self.node.__module__.split('.')[1] == 'codeml':
+            contextMenu.addAction( "Mark branch"      , self.set_mark)
+            contextMenu.addAction( "Delete mark"      , self.del_mark)
+
         contextMenu.exec_(QtGui.QCursor.pos())
+
+    def set_mark(self):
+        if self.node.mark != '':
+            mark = ' #' + str(int(self.node.mark.split('#')[1])+1)
+        else:
+            mark = ' #1'
+        self.node.mark = mark
+
+    def del_mark(self):
+        self.node.mark = ''
 
     def show_newick(self):
         d = NewickDialog(self.node)
