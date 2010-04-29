@@ -87,7 +87,8 @@ class CodemlNode(PhyloNode):
         super(CodemlTree, self).show(up_faces = self.up_faces, \
                                      down_faces = self.down_faces)
                 
-    def run_paml(self, rep, model, gappy=True):
+    def run_paml(self, rep, model, gappy=True, \
+                 codeml_path='codeml'):
         '''
         to run paml, needs tree linked to alignment.
         model need to be one of:
@@ -103,6 +104,7 @@ class CodemlNode(PhyloNode):
            * b_neut
 
         WARNING: this functionality needs to create a working directory in "rep"
+        WARNING: you need to have codeml in your path
         '''
         rep += (not rep.endswith('/'))*'/'
         mkdir_p(rep)
@@ -139,7 +141,7 @@ class CodemlNode(PhyloNode):
         import os
         hlddir = os.getcwd()
         os.chdir(rep+model)
-        os.system('/usr/local/bin/codeml tmp.ctl')
+        os.system(codeml_path+' tmp.ctl')
         #os.system('mv rst rst.'+model)
         os.chdir(hlddir)
         self.link_to_evol_model(rep+model+'/out', model)
@@ -268,7 +270,6 @@ class CodemlNode(PhyloNode):
                 for node2 in tree.iter_descendants():
                     if node2.idname == node.idname:
                         node.add_feature(evol, node2.dist)
-
 
 # cosmetic alias
 CodemlTree = CodemlNode

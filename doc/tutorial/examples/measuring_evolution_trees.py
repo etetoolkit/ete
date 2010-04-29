@@ -3,16 +3,21 @@
 # Creation Date: 2010/04/26 17:17:06
 
 from ete2 import CodemlTree
+import sys
 
-ETEPATH = '/home/francisco/toolbox/ete/'
 
-expldir = ETEPATH + 'doc/tutorial/examples/'
-algn = expldir+'alignment_measuring_evol.fasta'
+ETEPATH = filter (lambda x: '/ete' in x, sys.path)[0]
+
+if ETEPATH == []:
+    ETEPATH = '.'
+    sys.stder.write('Warning: ETE not found.\n')
+
+expldir = ETEPATH + '/doc/tutorial/examples/'
 
 ###
 # load tree
-T = CodemlTree('(Saguinus_imperator,((Hylobates_lar,(Gorilla_gorilla,(Pan_paniscus,Pan_troglodytes))),(Macaca_fascicularis,Papio_cynocephalus)));')
-T.link_to_alignment(algn)
+T = CodemlTree(expldir + 'measuring_tree.nw')
+T.link_to_alignment(expldir + 'alignment_measuring_evol.fasta')
 
 T.show()
 
@@ -42,15 +47,14 @@ T.add_histface('M1',down = False)
 
 T.show()
 
-
 ###
 # re-run without reeeeeeeeee-run
-T = CodemlTree('(Saguinus_imperator,((Hylobates_lar,(Gorilla_gorilla,(Pan_paniscus,Pan_troglodytes))),(Macaca_fascicularis,Papio_cynocephalus)));')
-T.link_to_alignment(algn)
+T = CodemlTree(expldir + 'measuring_tree.nw')
+T.link_to_alignment(expldir + 'alignment_measuring_evol.fasta')
 
-T.link_to_evol_model(ETEPATH + 'doc/tutorial/examples/lala/fb/out','fb')
-T.link_to_evol_model(ETEPATH + 'doc/tutorial/examples/lala/M1/out','M1')
-T.link_to_evol_model(ETEPATH + 'doc/tutorial/examples/lala/M2/out','M2')
+T.link_to_evol_model(ETEPATH + '/doc/tutorial/examples/lala/fb/out','fb')
+T.link_to_evol_model(ETEPATH + '/doc/tutorial/examples/lala/M1/out','M1')
+T.link_to_evol_model(ETEPATH + '/doc/tutorial/examples/lala/M2/out','M2')
 
 T.add_histface('M2')
 T.add_histface('M1',down = False)

@@ -1,8 +1,6 @@
 #!/usr/bin/python
 #        Author: Francois-Jose Serra
 # Creation Date: 2009/08/14 13:56:44
-#
-# This script 
 
 
 def controlGenerator(model, inTree='tree', inAlg='algn', \
