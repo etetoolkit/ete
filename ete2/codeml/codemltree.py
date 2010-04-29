@@ -25,14 +25,14 @@ This module defines the PhyloNode dataytype to manage phylogenetic
 tree. It inheritates the coretype TreeNode and add some speciall
 features to the the node instances.
 """
-
+import os
 import sys
 
-from ete2 import PhyloNode, PhyloTree
-from ete2.codeml.codemlparser import parse_paml, get_sites
-from ete2.codeml.control import controlGenerator
-from ete2.codeml.utils import mkdir_p, translate, colorize_rst, label_tree
-from ete2.parser.newick import write_newick
+from ete_dev import PhyloNode, PhyloTree
+from ete_dev.codeml.codemlparser import parse_paml, get_sites
+from ete_dev.codeml.control import controlGenerator
+from ete_dev.codeml.utils import mkdir_p, translate, colorize_rst, label_tree
+from ete_dev.parser.newick import write_newick
 
 __all__ = ["CodemlNode", "CodemlTree"]
 
@@ -107,15 +107,15 @@ class CodemlNode(PhyloNode):
         WARNING: this functionality needs to create a working directory in "rep"
         WARNING: you need to have codeml in your path
         '''
-        rep += (not rep.endswith('/'))*'/'
-        mkdir_p(rep)
-        mkdir_p(rep+model)
+
+        fullpath = os.path.join(rep, model)
+        os.system("mkdir -p %s" %fullpath)
         # write tree file
         if model.startswith('b'):
-            open(rep+model+'/tree','w').write(\
+            open(fullpath+'/tree','w').write(\
                 self.write(format=9))
         else:
-            open(rep+model+'/tree','w').write(\
+            open(fullpath+'/tree','w').write(\
                 super(CodemlTree, self).write(format=9))
         # write algn file
         seqs = []
@@ -131,21 +131,20 @@ class CodemlNode(PhyloNode):
             print >> sys.stderr, \
                   "ERROR: number of sequences different of number of leaves"
             sys.exit()
-        algn = open(rep+model+'/algn','w')
+        algn = open(fullpath+'/algn','w')
         algn.write(' %d %d\n' % (len (seqs), len (seqs[0])))
         for spe in range(len (seqs)):
             algn.write('>%s\n%s\n' % (nams[spe], seqs[spe]))
         algn.close()
-        ctrl = open(rep+model+'/tmp.ctl', 'w')
+        ctrl = open(fullpath+'/tmp.ctl', 'w')
         ctrl.write(controlGenerator(model, gappy=gappy))
         ctrl.close()
-        import os
         hlddir = os.getcwd()
-        os.chdir(rep+model)
+        os.chdir(fullpath)
         os.system(codeml_path+' tmp.ctl')
         #os.system('mv rst rst.'+model)
         os.chdir(hlddir)
-        self.link_to_evol_model(rep+model+'/out', model)
+        self.link_to_evol_model(os.path.join(fullpath,'out'), model)
 
     def mark_tree(self, node_ids, **kargs):
         '''

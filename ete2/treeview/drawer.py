@@ -46,7 +46,7 @@ try:
 except ImportError:
     USE_GL = False
 
-from ete2 import Tree, PhyloTree, ClusterTree, CodemlTree
+from ete_dev import Tree, PhyloTree, ClusterTree, CodemlTree
 
 __all__ = ["show_tree", "render_tree", "TreeImageProperties"]
 
@@ -176,7 +176,7 @@ class CodemlDialog(QtGui.QDialog):
         self.node = node
 
     def update_model(self):
-        from ete2.codeml.control import controlGenerator
+        from ete_dev.codeml.control import controlGenerator
         model= self._conf.model.currentText()
         nw = controlGenerator(model)
         self._conf.newickBox.setText(nw)
