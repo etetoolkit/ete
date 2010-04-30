@@ -173,17 +173,7 @@ class CodemlDialog(QtGui.QDialog):
     def __init__(self, node, *args):
         QtGui.QDialog.__init__(self, *args)
         self.node = node
-
-    def update_model(self):
-        from ete_dev.codeml.control import controlGenerator
-        model= self._conf.model.currentText()
-        nw = controlGenerator(model)
-        self._conf.newickBox.setText(nw)
-        self._conf.workdir.setText(self.node.workdir)
-        self._conf.codemlpath.setText(self.node.codemlpath)
-
-    def run(self):
-        models = {
+        self.models = {
             'M0'            : 'M0'    ,
             'M1'            : 'M1'    ,
             'M2'            : 'M2'    ,
@@ -195,16 +185,29 @@ class CodemlDialog(QtGui.QDialog):
             'branch-free'   : 'b_free',
             'branch-neut'   : 'b_neut'
             }
-        model = models[str (self._conf.model.currentText())]
+        
+    def update_model(self):
+        from ete_dev.codeml.control import controlGenerator
+        model = self.models[str(self._conf.model.currentText())]
+        ctrl_string = controlGenerator(model)
+        self._conf.ctrlBox.setText(ctrl_string)
+        self._conf.workdir.setText(self.node.workdir)
+        self._conf.codemlpath.setText(self.node.codemlpath)
+
+    def run(self):
+        model = self.models[str (self._conf.model.currentText())]
+        print model
         self.node.codemlpath = str(self._conf.codemlpath.text())
         self.node.workdir = str(self._conf.workdir.text())
         if not self.node.workdir.endswith('/'):
             self.node.workdir += '/'
+        ctrl_string = self._conf.ctrlBox.toPlainText()
         if self._conf.useprerun.isChecked():
             self.node.link_to_evol_model(self.node.workdir + model + '/out', \
                                         model)
         else:
-            self.node.run_paml(model)
+            self.node.run_paml(model, \
+                               ctrl_string=ctrl_string)
         self.close()
 
 class NewickDialog(QtGui.QDialog):

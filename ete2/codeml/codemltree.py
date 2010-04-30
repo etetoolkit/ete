@@ -90,7 +90,7 @@ class CodemlNode(PhyloNode):
         super(CodemlTree, self).show(up_faces = self.up_faces, \
                                      down_faces = self.down_faces)
                 
-    def run_paml(self, model, gappy=True):
+    def run_paml(self, model, ctrl_string='', gappy=True):
         '''
         to run paml, needs tree linked to alignment.
         model need to be one of:
@@ -136,8 +136,10 @@ class CodemlNode(PhyloNode):
         for spe in range(len (seqs)):
             algn.write('>%s\n%s\n' % (nams[spe], seqs[spe]))
         algn.close()
+        if ctrl_string == '':
+            ctrl_string = controlGenerator(model, gappy=gappy)
         ctrl = open(fullpath+'/tmp.ctl', 'w')
-        ctrl.write(controlGenerator(model, gappy=gappy))
+        ctrl.write(ctrl_string)
         ctrl.close()
         hlddir = os.getcwd()
         os.chdir(fullpath)

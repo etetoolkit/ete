@@ -4,7 +4,7 @@
 
 
 def controlGenerator(model, inTree='tree', inAlg='algn', \
-                     out='out', gappy=False):
+                     out='out', gappy=True):
     model = model.split('.')[0]
     params = {'seqfile'      : inAlg,
               'treefile'     : inTree,
