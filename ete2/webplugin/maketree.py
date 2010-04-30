@@ -1,6 +1,6 @@
 import ete2, sys, os
-from ete2.treeview import drawer
-from ete2 import faces
+from ete_dev.treeview import drawer
+from ete_dev import faces
 
 store = '/home/services/web/ivan.phylomedb.org/temp/' + sys.argv[1]
 gene = sys.argv[2]
