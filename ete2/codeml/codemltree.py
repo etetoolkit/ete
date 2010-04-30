@@ -58,6 +58,8 @@ class CodemlNode(PhyloNode):
         self._dic = {}
         self.up_faces = []
         self.down_faces = []
+        self.workdir = '/tmp/ete2-codeml/'
+        self.codemlpath = 'codeml'
         # Caution! native __init__ has to be called after setting
         # _speciesFunction to None!!
         PhyloNode.__init__(self, newick=newick)
@@ -88,8 +90,7 @@ class CodemlNode(PhyloNode):
         super(CodemlTree, self).show(up_faces = self.up_faces, \
                                      down_faces = self.down_faces)
                 
-    def run_paml(self, rep, model, gappy=True, \
-                 codeml_path='codeml'):
+    def run_paml(self, model, gappy=True):
         '''
         to run paml, needs tree linked to alignment.
         model need to be one of:
@@ -107,7 +108,7 @@ class CodemlNode(PhyloNode):
         WARNING: this functionality needs to create a working directory in "rep"
         WARNING: you need to have codeml in your path
         '''
-        fullpath = os.path.join(rep, model)
+        fullpath = os.path.join(self.workdir, model)
         os.system("mkdir -p %s" %fullpath)
         # write tree file
         if model.startswith('b'):
@@ -140,7 +141,7 @@ class CodemlNode(PhyloNode):
         ctrl.close()
         hlddir = os.getcwd()
         os.chdir(fullpath)
-        os.system(codeml_path+' tmp.ctl')
+        os.system(self.codemlpath + ' tmp.ctl')
         #os.system('mv rst rst.'+model)
         os.chdir(hlddir)
         self.link_to_evol_model(os.path.join(fullpath,'out'), model)
@@ -175,6 +176,7 @@ class CodemlNode(PhyloNode):
             and likelihood
         '''
         self._dic[model] = parse_paml(path, model)
+        print path
         if model == 'fb':
             self._getfreebranch()
         elif model.startswith('M'):

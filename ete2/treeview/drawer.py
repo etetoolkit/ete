@@ -179,6 +179,8 @@ class CodemlDialog(QtGui.QDialog):
         model= self._conf.model.currentText()
         nw = controlGenerator(model)
         self._conf.newickBox.setText(nw)
+        self._conf.workdir.setText(self.node.workdir)
+        self._conf.codemlpath.setText(self.node.codemlpath)
 
     def run(self):
         models = {
@@ -194,7 +196,15 @@ class CodemlDialog(QtGui.QDialog):
             'branch-neut'   : 'b_neut'
             }
         model = models[str (self._conf.model.currentText())]
-        self.node.run_paml('/tmp/ete2-codeml/', model)
+        self.node.codemlpath = str(self._conf.codemlpath.text())
+        self.node.workdir = str(self._conf.workdir.text())
+        if not self.node.workdir.endswith('/'):
+            self.node.workdir += '/'
+        if self._conf.useprerun.isChecked():
+            self.node.link_to_evol_model(self.node.workdir + model + '/out', \
+                                        model)
+        else:
+            self.node.run_paml(model)
         self.close()
 
 class NewickDialog(QtGui.QDialog):
@@ -303,6 +313,10 @@ class _MainApp(QtGui.QMainWindow):
         if self.scene.props.min_branch_separation > 5:
             self.scene.props.min_branch_separation -= 5
             self.scene.draw()
+
+    @QtCore.pyqtSignature("")
+    def on_actionShow_codeml(self):
+        self.scene.draw()
 
     @QtCore.pyqtSignature("")
     def on_actionFit2tree_triggered(self):
