@@ -56,7 +56,7 @@ def codeml(node):
         if node._w == 1.5 :
             node.img_style["fgcolor"] = "#E9BF00"
         if node._w  < 0.2 :
-            node.img_style["shape"]   = "square"
+            node.img_style["fgcolor"] = "#000000"
         name = ''
         textface = faces.TextFace(name, "Arial", 12, "#000000")
         faces.add_face_to_node(textface, node, 1)

@@ -315,10 +315,6 @@ class _MainApp(QtGui.QMainWindow):
             self.scene.draw()
 
     @QtCore.pyqtSignature("")
-    def on_actionShow_codeml(self):
-        self.scene.draw()
-
-    @QtCore.pyqtSignature("")
     def on_actionFit2tree_triggered(self):
         self.view.fitInView(self.scene.sceneRect(), QtCore.Qt.KeepAspectRatio)
 
@@ -398,6 +394,9 @@ class _MainApp(QtGui.QMainWindow):
         d._conf.setupUi(d)
         d.update_model()
         d.exec_()
+        t = self.scene.startNode
+        self.scene.initialize_tree_scene(t, "codeml", TreeImageProperties())
+        self.scene.draw()
 
     @QtCore.pyqtSignature("")
     def on_actionShow_newick_triggered(self):
