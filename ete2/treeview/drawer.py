@@ -196,18 +196,22 @@ class CodemlDialog(QtGui.QDialog):
 
     def run(self):
         model = self.models[str (self._conf.model.currentText())]
-        print model
         self.node.codemlpath = str(self._conf.codemlpath.text())
         self.node.workdir = str(self._conf.workdir.text())
         if not self.node.workdir.endswith('/'):
             self.node.workdir += '/'
         ctrl_string = self._conf.ctrlBox.toPlainText()
         if self._conf.useprerun.isChecked():
-            self.node.link_to_evol_model(self.node.workdir + model + '/out', \
-                                        model)
+            try:
+                self.node.link_to_evol_model(self.node.workdir + model + '/out', \
+                                             model)
+            except IOError:
+                self.node.link_to_evol_model(re.sub('/$','',self.node.workdir), model)
         else:
             self.node.run_paml(model, \
                                ctrl_string=ctrl_string)
+        if self._conf.display.isChecked():
+            self.node.add_histface(model)
         self.close()
 
 class NewickDialog(QtGui.QDialog):
@@ -400,6 +404,7 @@ class _MainApp(QtGui.QMainWindow):
         t = self.scene.startNode
         self.scene.initialize_tree_scene(t, "codeml", TreeImageProperties())
         self.scene.draw()
+        
 
     @QtCore.pyqtSignature("")
     def on_actionShow_newick_triggered(self):

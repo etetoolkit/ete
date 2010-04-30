@@ -107,6 +107,8 @@ class CodemlNode(PhyloNode):
 
         WARNING: this functionality needs to create a working directory in "rep"
         WARNING: you need to have codeml in your path
+        TODO: add feature lnL to nodes for branch tests. e.g.: "n.add_features"
+        
         '''
         fullpath = os.path.join(self.workdir, model)
         os.system("mkdir -p %s" %fullpath)
@@ -178,7 +180,6 @@ class CodemlNode(PhyloNode):
             and likelihood
         '''
         self._dic[model] = parse_paml(path, model)
-        print path
         if model == 'fb':
             self._getfreebranch()
         elif model.startswith('M'):
