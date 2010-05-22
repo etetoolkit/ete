@@ -20,31 +20,3 @@
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
 # #END_LICENSE#############################################################
-from sys import stderr
-from coretype.tree import *
-from coretype.seqgroup import *
-from phylo.phylotree import *
-
-from webplugin.ete2_server import *
-
-try:
-    from coretype.arraytable import *
-except ImportError, e:
-    print >>stderr, "Clustering module could not be loaded"
-    print e
-else:
-    from clustering.clustertree import *
-
-try:
-    from phylomedb.phylomeDB import *
-except ImportError, e:
-    print >>stderr, " MySQLdb module could not be loaded"
-    print e
-
-try:
-    from treeview.drawer import *
-    from treeview import faces
-    from treeview import layouts
-except ImportError, e:
-    print >>stderr, "Treeview module could not be loaded"
-    print e

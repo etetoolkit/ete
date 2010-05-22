@@ -1,0 +1,25 @@
+Test for webplugin for ete2.
+
+- make this folder as site-dirrectory
+
+       <Directory /home/ivan/ete2-webplugin/webplugin_test/>
+               PythonAutoReload On
+               AddHandler mod_python .py
+               PythonHandler mod_python.publisher
+               PythonDebug On
+
+               DirectoryIndex index.py
+
+               Options Indexes FollowSymLinks MultiViews
+               AllowOverride None
+               Order allow,deny
+               allow from all
+       </Directory>
+
+- make ete2 folder link in python envirinment as 'ete_dev'
+
+    cd /usr/lib/python2.6; sudo ln ~/ete2-webplugin/ete2 -T ete_dev -s
+    
+- change in sitesettings.py the folder paths
+
+- make temp folder 777

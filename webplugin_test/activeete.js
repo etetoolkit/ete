@@ -10,7 +10,6 @@ var loader = new Image();
 var session_id = '';
 loader.src = "http://"+window.location.hostname+"/images/loader.gif"
 
-// AJAX ----
 var xmlHttp = false;
 /*@cc_on @*/
 /*@if (@_jscript_version >= 5)
@@ -34,9 +33,46 @@ try {
 if (!xmlHttp && typeof XMLHttpRequest != "undefined") {
   xmlHttp = new XMLHttpRequest();
 }
-// ----
+
+
+// main functions
+
+function get_map(id, arg, sid){
+    if (id.src.indexOf('loader') == -1){
+	    var url = "http://"+window.location.hostname+"/webplugin/getmap?seqid=" + arg + "&sid="+session_id+"&rnd=" + Math.random();
+	    xmlHttp.open('GET', url, true);
+	    xmlHttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+	    xmlHttp.onreadystatechange = function () { apply_map(arg); };
+	    xmlHttp.send(null);
+	} else {
+	    session_id = sid;
+	    ask_for_new_image(arg);
+	}
+}
+function apply_map(arg){
+	if (xmlHttp.readyState == 4) {
+		var response = xmlHttp.responseText;
+		var script = document.createElement("script");
+		script.type = "text/javascript";
+		script.text = response;
+		document.getElementById('scriptarea_'+arg).innerHTML = '';
+		document.getElementById('scriptarea_'+arg).appendChild(script);
+	}
+}
+
+function ask_for_new_image(id){
+	var newtree = new Image();
+	newtree.src = "http://"+window.location.hostname+"/webplugin/rtree?tree=" + id + "&sid="+session_id+"&rnd=" + Math.random();
+	newtree.onload = replace_img(id,newtree.src);
+}
+function replace_img(id, src){
+	document.getElementById(id).src = src;
+}
+
+
 
 // ONCLICK FUNCTION
+
 function mapcheck(elem, id){
     getScrollXY();
 	var left = 0;
@@ -52,7 +88,6 @@ function mapcheck(elem, id){
 	
 	emptymenu = "<a href=\"javascript:alert('not possible yet')\">Export PDF</a><br><a href=\"javascript:alert('not possible yet')\">Align branch names</a><br><hr><a href=\"javascript:set_rule('style','"+id+"', 'nonodes')\">No node style</a><br><a href=\"javascript:rem_rule('style','"+id+"', 'nonodes')\">Nodes style</a><br><hr><a href=\"javascript:ask_for_new_image('"+id+"');\">Reload tree</a><br><a href=\"javascript:clear_rules('"+id+"');\">Reset</a>";
 	
-	// drawmap(map[id]['texts'], left, top);  // this function can be used to check the map, it drow the text pap on the image after click on the picture
 	text = check(x,y,map[id]['texts']);
 	if (text == 0){
 		node = check(x,y, map[id]['nodes']);
@@ -97,7 +132,7 @@ function check(x,y,map){
 // RULES SYSTEM
 
 function set_rule(rule, seqid, itemid) {
-	var url = 'http://'+window.location.hostname+'/ete2_server/addrule?sid='+session_id+'&seqid=' + seqid + "&itemid=" + itemid + "&rule="+rule;
+	var url = 'http://'+window.location.hostname+'/webplugin/addrule?sid='+session_id+'&seqid=' + seqid + "&itemid=" + itemid + "&rule="+rule;
 	xmlHttp.open('GET', url, true);
 	xmlHttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 	xmlHttp.onreadystatechange = function () { ask_with_new_rules(seqid); };
@@ -105,7 +140,7 @@ function set_rule(rule, seqid, itemid) {
 }
 
 function rem_rule(rule, seqid, itemid) {
-	var url = 'http://'+window.location.hostname+'/ete2_server/addrule?sid='+session_id+'&seqid=' + seqid + "&itemid=" + itemid + "&rule=" + rule + "&remove=1";;
+	var url = 'http://'+window.location.hostname+'/webplugin/addrule?sid='+session_id+'&seqid=' + seqid + "&itemid=" + itemid + "&rule=" + rule + "&remove=1";;
 	xmlHttp.open('GET', url, true);
 	xmlHttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 	xmlHttp.onreadystatechange = function () { ask_with_new_rules(seqid); };
@@ -113,7 +148,7 @@ function rem_rule(rule, seqid, itemid) {
 }
 
 function unic_rule(rule, seqid, itemid) {
-	var url = 'http://'+window.location.hostname+'/ete2_server/addrule?sid='+session_id+'&seqid=' + seqid + "&itemid=" + itemid + "&rule="+rule+"&unic=1";
+	var url = 'http://'+window.location.hostname+'/webplugin/addrule?sid='+session_id+'&seqid=' + seqid + "&itemid=" + itemid + "&rule="+rule+"&unic=1";
 	xmlHttp.open('GET', url, true);
 	xmlHttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 	xmlHttp.onreadystatechange = function () { ask_with_new_rules(seqid); };
@@ -121,7 +156,7 @@ function unic_rule(rule, seqid, itemid) {
 }
 
 function clear_rules(seqid) {
-	var url = 'http://'+window.location.hostname+'/ete2_server/addrule?sid='+session_id+'&seqid=' + seqid + "&clear=1";
+	var url = 'http://'+window.location.hostname+'/webplugin/addrule?sid='+session_id+'&seqid=' + seqid + "&clear=1";
 	xmlHttp.open('GET', url, true);
 	xmlHttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 	xmlHttp.onreadystatechange = function () { ask_with_new_rules(seqid); };
@@ -139,15 +174,7 @@ function ask_with_new_rules(arg){
 	}
 }
 
-// ask for the new image with a modification
-function ask_for_new_image(id){
-	var newtree = new Image();
-	newtree.src = "http://"+window.location.hostname+"/ete2_server/treeimg?seqid=" + id + "&sid="+session_id+"&rnd=" + Math.random();
-	newtree.onload = replace_img(id,newtree.src);
-}
-function replace_img(id, src){
-	document.getElementById(id).src = src;
-}
+
 
 // POPUP MENU FUNCTIONS   ----------------- 
 function hide(id){
@@ -252,9 +279,11 @@ if(isMSIE || isOpera7){
   }
 }
 
+
+
 // get all information about leave ID  ----
 function get_id_info(arg) {
-	var url = 'http://'+window.location.hostname+'/ete2_server/info?dbid=' + arg;
+	var url = 'http://'+window.location.hostname+'/webplugin/info?dbid=' + arg;
 	xmlHttp.open('GET', url, true);
 	xmlHttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 	xmlHttp.onreadystatechange = showinfo;
@@ -269,49 +298,3 @@ function showinfo(){
 	}
 }
 // ----
-
-function get_map(id, arg, sid){
-    if (id.src.indexOf('loader') == -1){
-	    var url = "http://"+window.location.hostname+"/ete2_server/getmap?seqid=" + arg + "&sid="+session_id+"&rnd=" + Math.random();
-	    xmlHttp.open('GET', url, true);
-	    xmlHttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-	    xmlHttp.onreadystatechange = function () { apply_map(arg); };
-	    xmlHttp.send(null);
-	} else {
-	    session_id = sid;
-	    ask_for_new_image(arg);
-	}
-}
-
-function apply_map(arg){
-	if (xmlHttp.readyState == 4) {
-		var response = xmlHttp.responseText;
-		var script = document.createElement("script");
-		script.type = "text/javascript";
-		script.text = response;
-		document.getElementById('scriptarea_'+arg).innerHTML = '';
-		document.getElementById('scriptarea_'+arg).appendChild(script);
-	}
-}
-
-/* not nessesary
-function drawmap(map, l, t){
-	var item = Array();
-	for (var i = 0; i < map.length; i++){
-		item = map[i];
-		var newdiv=document.createElement("div");
-		newdiv.style.position = 'absolute';
-		newdiv.style.top = (parseInt(item[1]) + parseInt(t)) + 'px';
-		newdiv.style.left = (parseInt(item[0]) + parseInt(l)) + 'px';
-		newdiv.style.width = (parseInt(item[2]) - parseInt(item[0])) + 'px';
-		newdiv.style.height = (parseInt(item[3]) - parseInt(item[1])) + 'px';
-		newdiv.style.border = '1px solid red';
-		newdiv.style.zIndex = '100';
-		newdiv.style.fontSize = '10pt';
-		newdiv.style.margin = '0px';
-		newdiv.style.padding = '0px';
-		newdiv.innerHTML = item[4];
-		document.body.appendChild(newdiv);
-	}
-	
-} */
