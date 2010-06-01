@@ -2,6 +2,7 @@
 #!/usr/bin/python
 
 import ete_dev, os
+from ete_dev.webplugin import ete2_server
 from sitesettings import *
 
 header = '''<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
@@ -39,17 +40,18 @@ header = '''<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
 </head><body>'''
 end = "</body></html>"
 
+
 def index(req=None):        
     if req:
         req.content_type = 'text/html'
-    res = ete_dev.form()
+    res = ete2_server.form()
     return header+res+end
 
 def tree(req=None):
     import os, cgi, cgitb; cgitb.enable()
     if req:
         req.content_type = 'text/html'
-    wp = ete_dev.WebPlugin(req, temp_folder=TEMP_FOLDER ,hostname=HOST_NAME)
+    wp = ete2_server.WebPlugin(req, temp_folder=TEMP_FOLDER, hostname=HOST_NAME)
     res = wp.publishTree(req.form['tree'])
     return header+res+end
 

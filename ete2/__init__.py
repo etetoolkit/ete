@@ -25,8 +25,6 @@ from coretype.tree import *
 from coretype.seqgroup import *
 from phylo.phylotree import *
 
-from webplugin.ete2_server import *
-
 try:
     from coretype.arraytable import *
 except ImportError, e:

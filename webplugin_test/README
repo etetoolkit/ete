@@ -20,6 +20,8 @@ Test for webplugin for ete2.
 
     cd /usr/lib/python2.6; sudo ln ~/ete2-webplugin/ete2 -T ete_dev -s
     
-- change in sitesettings.py the folder paths
+- change in "sitesettings.py" the folder paths
 
 - make temp folder 777
+
+- run "xhost +" in console

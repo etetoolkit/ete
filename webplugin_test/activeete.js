@@ -69,8 +69,6 @@ function replace_img(id, src){
 	document.getElementById(id).src = src;
 }
 
-
-
 // ONCLICK FUNCTION
 
 function mapcheck(elem, id){

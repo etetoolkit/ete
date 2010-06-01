@@ -2,10 +2,11 @@
 import sys, os, random
 from sitesettings import *
 
+PHYLOMEDB_POINTER = None
+
 def rtree(req=None, tree=None, sid=None):
     from popen2 import Popen3
     proc = Popen3("python "+SCRIPT_FOLDER+"/maketree.py "+sid+" "+tree)
-    # proc = Popen3("ls "+SCRIPT_FOLDER)
     proc.tochild.close()
     add = '1'
     fromchild = proc.fromchild.readline()
@@ -13,8 +14,7 @@ def rtree(req=None, tree=None, sid=None):
         add = proc.fromchild.readline()
         fromchild += add
     if req:
-        # req.content_type = 'image/png'
-        req.content_type = 'text/plain'
+        req.content_type = 'image/png'
     return fromchild
 
 def getmap(req=None, seqid=None, sid=None):
@@ -28,13 +28,10 @@ def getmap(req=None, seqid=None, sid=None):
         return "alert('no map "+THIS_SESSION_PATH+"');"
     else:
         out = res.readline()
-        # os.remove(THIS_SESSION_PATH+"/"+seqid+".map")
         return out
 
 def addrule(req=None, seqid=None, itemid=None, rule=None, sid=None, unic='0', remove='0', clear='0'):
-
     THIS_SESSION_PATH = TEMP_FOLDER + '/' + sid
-    
     if req:
         req.content_type = 'text/plain'
     done = False
@@ -56,35 +53,39 @@ def addrule(req=None, seqid=None, itemid=None, rule=None, sid=None, unic='0', re
                     pass
                 else:
                     rules.add(item.strip())
-
         if remove == '0':
             rules.add(rule + '\t' + str(itemid))
-        
         RULES = open(THIS_SESSION_PATH+"/"+seqid+".rules", "w")
         sid
         for rule in rules:
             print >> RULES, rule
-    
+
     return 1
-
-
-
-
-
-
-
-
-
 
 def hide_box(title, content, mode='block'):
         output = "<div style='border: 1px solid #777; padding: 4px; margin-top: 10px;'><div style='margin-top: -14px; position: absolute;'><span class='hide_box_title popup_bg'>" + title + "</span><span class='popup_bg popup_interactor' onClick=\"this.parentNode.parentNode.childNodes[1].style.display = 'block'\">Show</span><span class='popup_bg popup_interactor' onClick=\"this.parentNode.parentNode.childNodes[1].style.display = 'none'\">Hide</span></div><div style='padding-top: 4px; display: "+mode+"'>" + content + "</div></div>"
         return output
 
 def info(req=None, dbid=None):
-    # requare any info about DB   id - translation tables can be used etc.
     import os, sys, MySQLdb, ete_dev
     if req:
         req.content_type = 'text/html'
+
+    def get_pointer():
+        global PHYLOMEDB_POINTER
+        if PHYLOMEDB_POINTER is None:
+            PHYLOMEDB_POINTER = ete_dev.PhylomeDBConnector()            
+        return PHYLOMEDB_POINTER
+
+    def close_p():
+        global PHYLOMEDB_POINTER
+        if PHYLOMEDB_POINTER is not None:
+            try:
+                PHYLOMEDB_POINTER._SQL.close()
+                PHYLOMEDB_POINTER._SQLconnection.close()
+                PHYLOMEDB_POINTER = None
+            except:
+                pass
 
     # prepare seq for popup window
     def split_code(code):
