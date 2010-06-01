@@ -8,7 +8,7 @@ var show_seqs = 1, show_go = 1;
 var userpath = '';
 var loader = new Image();
 var session_id = '';
-loader.src = "http://"+window.location.hostname+"/images/loader.gif"
+loader.src = "http://"+window.location.hostname+"/loader.gif"
 
 var xmlHttp = false;
 /*@cc_on @*/
