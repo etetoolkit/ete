@@ -1370,7 +1370,7 @@ class _TreeScene(QtGui.QGraphicsScene):
         # This piece of code fixes an old and annoying bug by which nodes with
         # faces larger than the sum of child node region were badly
         # drawn (badly centered and using space from other nodes)
-        if not node.is_leaf():
+        if not node.is_leaf() and node.img_style["draw_descendants"] == 1:
             max_child_w = 0
             sum_child_h = 0
             # y correction is used to fix cases in which the height of
