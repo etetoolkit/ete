@@ -82,6 +82,8 @@ class TreeImageProperties:
         self.tree_width                 = 200  # This is used to scale
                                                # the tree branches
         self.min_branch_separation      = 1
+        self.search_node_bg = "#cccccc"
+        self.search_node_fg = "#ff0000"
 
 def logger(level,*msg):
     """ Just to manage how to print messages """
@@ -1027,20 +1029,26 @@ class _TreeScene(QtGui.QGraphicsScene):
         self.unhighlight_node(n)
         r = QtGui.QGraphicsRectItem(self.mainItem)
         self._highlighted_nodes[n] = r
-        r.setRect(0, 0, 5 ,5)
-        r.setPos(n.scene_pos)
+
+        R = n.fullRegion.getRect()
+        width = self.i_width-n._x
+        r.setRect(QtCore.QRectF(n._x,n._y,width,R[3]))
+ 
+        #r.setRect(0,0, n.fullRegion.width(), n.fullRegion.height())
+
+        #r.setPos(n.scene_pos)
         # Don't know yet why do I have to add 2 pixels :/
-        r.moveBy(0,0)
+        #r.moveBy(0,0)
         r.setZValue(-1)
-        r.setPen(QtGui.QColor("yellow"))
-        r.setBrush(QtGui.QColor("yellow"))
+        r.setPen(QtGui.QColor(self.props.search_node_fg))
+        r.setBrush(QtGui.QColor(self.props.search_node_bg))
+
         # self.view.horizontalScrollBar().setValue(n._x)
         # self.view.verticalScrollBar().setValue(n._y)
 
     def unhighlight_node(self, n):
         if n in self._highlighted_nodes and \
                 self._highlighted_nodes[n] is not None:
-            print self._highlighted_nodes[n]
             self.removeItem(self._highlighted_nodes[n])
             del self._highlighted_nodes[n]
 
