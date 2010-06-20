@@ -21,6 +21,7 @@
 #
 # #END_LICENSE#############################################################
 import numpy
+from math import sqrt 
 
 def safe_mean(values):
     """ Returns mean value discarding non finite values """
@@ -156,7 +157,7 @@ def euclidean_dist(v1,v2):
     if (v1 == v2).all():
         return 0.0
     else:
-        return math.sqrt( square_euclidean_dist(v1,v2) )
+        return sqrt( square_euclidean_dist(v1,v2) )
 
 def square_euclidean_dist(v1,v2):
     if (v1 == v2).all():
