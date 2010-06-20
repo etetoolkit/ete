@@ -21,6 +21,7 @@
 #
 # #END_LICENSE#############################################################
 from sys import stderr
+import numpy
 import clustvalidation
 from numpy import nan as NaN # Missing values are saved as NaN values
 from ete_dev.coretype.tree import _translate_nodes
@@ -147,6 +148,12 @@ class ClusterNode(TreeNode):
             array = ArrayTable(arraytbl)
 
         missing_leaves = []
+        matrix_values = [i for r in xrange(len(array.matrix))\
+                           for i in array.matrix[r] if numpy.isfinite(i)]
+
+        array._matrix_min = min(matrix_values)
+        array._matrix_max = max(matrix_values)
+
         for n in self.traverse():
             n.arraytable = array
             if n.is_leaf() and n.name in array.rowNames:

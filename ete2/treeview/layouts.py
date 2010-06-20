@@ -68,8 +68,9 @@ def heatmap(node):
     node.img_style["size"] =  0
 
     ncols = node.arraytable.matrix.shape[1]
-    matrix_max = numpy.max(node.arraytable.matrix)
-    matrix_min = numpy.min(node.arraytable.matrix)
+
+    matrix_max = numpy.max(node.arraytable._matrix_max)
+    matrix_min = numpy.min(node.arraytable._matrix_min)
     matrix_avg = matrix_min+((matrix_max-matrix_min)/2)
     ProfileFace = faces.ProfileFace(\
       matrix_max,\
@@ -83,14 +84,17 @@ def heatmap(node):
         # Set colors
         faces.add_face_to_node(ProfileFace, node, 0, aligned=True )
 
+
+
+
 def cluster_cbars(node):
     # Extras node info
     node.collapsed = False
     # Color and style
     node.img_style["fgcolor"] = "#3333FF"
     node.img_style["size"] =  4
-    matrix_max = numpy.max(node.arraytable.matrix)
-    matrix_min = numpy.min(node.arraytable.matrix)
+    matrix_max = numpy.max(node.arraytable._matrix_map)
+    matrix_min = numpy.min(node.arraytable._matrix_min)
     matrix_avg = matrix_min+((matrix_max-matrix_min)/2)
     ProfileFace = faces.ProfileFace(\
                                         matrix_max,\
@@ -114,8 +118,8 @@ def cluster_lines(node):
     # Color and style
     node.img_style["fgcolor"] = "#3333FF"
     node.img_style["size"] = 4
-    matrix_max = numpy.max(node.arraytable.matrix)
-    matrix_min = numpy.min(node.arraytable.matrix)
+    matrix_max = numpy.max(node.arraytable._matrix_max)
+    matrix_min = numpy.min(node.arraytable._matrix_min)
     matrix_avg = matrix_min+((matrix_max-matrix_min)/2)
     ProfileFace = faces.ProfileFace(\
       matrix_max,\
@@ -141,8 +145,8 @@ def cluster_bars(node):
     node.img_style["size"] = 4
 
     if node.is_leaf():
-        matrix_max = numpy.max(node.arraytable.matrix)
-        matrix_min = numpy.min(node.arraytable.matrix)
+        matrix_max = numpy.max(node.arraytable._matrix_max)
+        matrix_min = numpy.min(node.arraytable._matrix_min)
         matrix_avg = matrix_min+((matrix_max-matrix_min)/2)
         ProfileFace = faces.ProfileFace(\
           matrix_max,\
