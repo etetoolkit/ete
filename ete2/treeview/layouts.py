@@ -93,7 +93,7 @@ def cluster_cbars(node):
     # Color and style
     node.img_style["fgcolor"] = "#3333FF"
     node.img_style["size"] =  4
-    matrix_max = numpy.max(node.arraytable._matrix_map)
+    matrix_max = numpy.max(node.arraytable._matrix_max)
     matrix_min = numpy.min(node.arraytable._matrix_min)
     matrix_avg = matrix_min+((matrix_max-matrix_min)/2)
     ProfileFace = faces.ProfileFace(\
