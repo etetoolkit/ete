@@ -174,10 +174,10 @@ def square_euclidean_dist(v1,v2):
     return  distance/valids
 
 try:
-    from scipy import stats
+    import stats
     default_dist = spearman_dist
 except ImportError:
-    print "'scipy' module is not found in your system."
+    print "'stats' module is not found in your system."
     print "Correlation based distances will not be avaliable."
     default_dist = euclidean_dist
 
