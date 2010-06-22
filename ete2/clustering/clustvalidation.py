@@ -145,13 +145,13 @@ def pearson_dist(v1, v2):
     if (v1 == v2).all():
         return 0.0
     else:
-        return 1.0 - stats.pearsonr(v1,v2)[0]
+        return 1.0 - stats.pearsonr(list(v1),list(v2))[0]
  
 def spearman_dist(v1, v2):
     if (v1 == v2).all():
         return 0.0
     else:
-        return 1.0 - stats.spearmanr(v1,v2)[0]
+        return 1.0 - stats.spearmanr(list(v1),list(v2))[0]
 
 def euclidean_dist(v1,v2):
     if (v1 == v2).all():
