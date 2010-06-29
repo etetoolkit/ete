@@ -77,7 +77,7 @@ def can_import(mname):
                 return None
         else:
             return True
-    elif mname =="mysqldb":
+    elif mname =="MySQLdb":
         try:
             import MySQLdb
         except ImportError:
