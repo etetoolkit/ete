@@ -91,6 +91,8 @@ def parse_paml(pamout, model, rst=None):
                 chk = False
                 dic['N'], dic['S'] = line.strip().split()[2:4]
     elif model.startswith('M'):
+        if rst == None:
+            rst = re.sub('out$', 'rst', pamout)
         dic['rst'] = rst
         val = ['w', 'dN', 'dS', 'bL', 'bLnum']
         for line in open(pamout):

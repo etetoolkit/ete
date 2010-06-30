@@ -99,7 +99,7 @@ class CodemlNode(PhyloNode):
         super(CodemlTree, self).render(filename, up_faces = self.up_faces, \
                                        down_faces = self.down_faces, w=w, h=h)
 
-    def run_paml(self, model, ctrl_string='', gappy=True):
+    def run_paml(self, model, ctrl_string='', gappy=True, rst=None):
         '''
         to run paml, needs tree linked to alignment.
         model need to be one of:
