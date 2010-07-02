@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-# #START_LICENSE###########################################################
+#0;115;0c #START_LICENSE###########################################################
 #
 # Copyright (C) 2009 by Jaime Huerta Cepas. All rights reserved.
 # email: jhcepas@gmail.com
@@ -74,14 +74,16 @@ def can_import(mname):
                 __import__("QtCore")
                 __import__("QtGui")
             except ImportError:
-                return None
+                return False
         else:
             return True
-    elif mname =="MySQLdb":
+    elif mname == "MySQLdb":
         try:
             import MySQLdb
         except ImportError:
-            return None
+            return False
+        else:
+            return True
     else:
         try:
             __import__(mname)
