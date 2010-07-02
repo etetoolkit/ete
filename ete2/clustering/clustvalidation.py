@@ -181,4 +181,5 @@ except ImportError:
         default_dist = spearman_dist
     except ImportError:
         default_dist = euclidean_dist
-
+else:
+    default_dist = spearman_dist
