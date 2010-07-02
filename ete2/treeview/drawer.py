@@ -757,7 +757,7 @@ class _NodeItem(QtGui.QGraphicsRectItem):
         contextMenu.addAction( "Swap branches"        , self.swap_branches)
         contextMenu.addAction( "Delete node"          , self.delete_node)
         contextMenu.addAction( "Delete partition"     , self.detach_node)
-        contextMenu.addAction( "Add childs"           , self.add_childs)
+        contextMenu.addAction( "Add children"           , self.add_childs)
         contextMenu.addAction( "Populate partition"   , self.populate_partition)
         if self.node.up is not None and\
                 self.scene().startNode == self.node:
@@ -793,11 +793,12 @@ class _NodeItem(QtGui.QGraphicsRectItem):
         self.scene().draw()
 
     def add_childs(self):
-        n,ok = QtGui.QInputDialog.getInteger(None,"Add childs","Number of childs to add:",1,1)
+        n,ok = QtGui.QInputDialog.getInteger(None,"Add children","Number of children to add:",1,1)
         if ok:
             for i in xrange(n):
                 ch = self.node.add_child()
             self.scene().set_style_from(self.scene().startNode,self.scene().layout_func)
+            self.scene().draw()
 
     def void(self):
         logger(0,"Not implemented yet")
