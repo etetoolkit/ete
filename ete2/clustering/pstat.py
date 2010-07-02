@@ -1,3 +1,7 @@
+# #START_LICENSE###########################################################
+
+# #END_LICENSE#############################################################
+
 # Copyright (c) 1999-2007 Gary Strangman; All Rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
