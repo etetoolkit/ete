@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-# #START_LICENSE###########################################################
+#0;115;0c #START_LICENSE###########################################################
 #
 # Copyright (C) 2009 by Jaime Huerta Cepas. All rights reserved.
 # email: jhcepas@gmail.com
@@ -31,9 +31,9 @@ except ImportError:
     ez_setup.use_setuptools()
     from setuptools import setup, find_packages
 
+#    ["scipy", "Scipy is only required for the clustering validation functions.", 0],
 python_dependencies = [
     ["numpy", "Numpy is required for the ArrayTable and ClusterTree classes.", 0],
-    ["scipy", "Scipy is only required for the clustering validation functions.", 0],
     ["MySQLdb", "MySQLdb is required for the PhylomeDB access API.", 0],
     ["PyQt4", "PyQt4 is required for tree visualization and rendering.", 0]
 ]
@@ -74,7 +74,14 @@ def can_import(mname):
                 __import__("QtCore")
                 __import__("QtGui")
             except ImportError:
-                return None
+                return False
+        else:
+            return True
+    elif mname == "MySQLdb":
+        try:
+            import MySQLdb
+        except ImportError:
+            return False
         else:
             return True
     else:

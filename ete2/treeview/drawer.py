@@ -83,6 +83,8 @@ class TreeImageProperties:
         self.tree_width                 = 200  # This is used to scale
                                                # the tree branches
         self.min_branch_separation      = 1
+        self.search_node_bg = "#cccccc"
+        self.search_node_fg = "#ff0000"
 
 def logger(level,*msg):
     """ Just to manage how to print messages """
@@ -817,7 +819,7 @@ class _NodeItem(QtGui.QGraphicsRectItem):
         contextMenu.addAction( "Swap branches"        , self.swap_branches)
         contextMenu.addAction( "Delete node"          , self.delete_node)
         contextMenu.addAction( "Delete partition"     , self.detach_node)
-        contextMenu.addAction( "Add childs"           , self.add_childs)
+        contextMenu.addAction( "Add children"           , self.add_childs)
         contextMenu.addAction( "Populate partition"   , self.populate_partition)
         if self.node.up is not None and\
                 self.scene().startNode == self.node:
@@ -867,11 +869,12 @@ class _NodeItem(QtGui.QGraphicsRectItem):
         self.scene().draw()
 
     def add_childs(self):
-        n,ok = QtgGui.QInputDialog.getInteger(None,"Add childs","Number of childs to add:",1,1)
+        n,ok = QtGui.QInputDialog.getInteger(None,"Add children","Number of children to add:",1,1)
         if ok:
             for i in xrange(n):
                 ch = self.node.add_child()
             self.scene().set_style_from(self.scene().startNode,self.scene().layout_func)
+            self.scene().draw()
 
     def void(self):
         logger(0,"Not implemented yet")
@@ -1106,20 +1109,26 @@ class _TreeScene(QtGui.QGraphicsScene):
         self.unhighlight_node(n)
         r = QtGui.QGraphicsRectItem(self.mainItem)
         self._highlighted_nodes[n] = r
-        r.setRect(0, 0, 5 ,5)
-        r.setPos(n.scene_pos)
+
+        R = n.fullRegion.getRect()
+        width = self.i_width-n._x
+        r.setRect(QtCore.QRectF(n._x,n._y,width,R[3]))
+ 
+        #r.setRect(0,0, n.fullRegion.width(), n.fullRegion.height())
+
+        #r.setPos(n.scene_pos)
         # Don't know yet why do I have to add 2 pixels :/
-        r.moveBy(0,0)
+        #r.moveBy(0,0)
         r.setZValue(-1)
-        r.setPen(QtGui.QColor("yellow"))
-        r.setBrush(QtGui.QColor("yellow"))
+        r.setPen(QtGui.QColor(self.props.search_node_fg))
+        r.setBrush(QtGui.QColor(self.props.search_node_bg))
+
         # self.view.horizontalScrollBar().setValue(n._x)
         # self.view.verticalScrollBar().setValue(n._y)
 
     def unhighlight_node(self, n):
         if n in self._highlighted_nodes and \
                 self._highlighted_nodes[n] is not None:
-            print self._highlighted_nodes[n]
             self.removeItem(self._highlighted_nodes[n])
             del self._highlighted_nodes[n]
 
@@ -1534,7 +1543,7 @@ class _TreeScene(QtGui.QGraphicsScene):
         # This piece of code fixes an old and annoying bug by which nodes with
         # faces larger than the sum of child node region were badly
         # drawn (badly centered and using space from other nodes)
-        if not node.is_leaf():
+        if not node.is_leaf() and node.img_style["draw_descendants"] == 1:
             max_child_w = 0
             sum_child_h = 0
             # y correction is used to fix cases in which the height of
