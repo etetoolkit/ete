@@ -93,7 +93,7 @@ print re.sub('#','|',re.sub('[0-9a-zA-Z_(),;]',' ',T.write(format=9)))
 print re.sub('#','v',re.sub('[0-9a-zA-Z_(),;]',' ',T.write(format=9)))
 print T.write(format=9)
 
-print '         ---->  more or less, all we have done here is feasable from the GUI, try it...'
+print '\n\n         ---->  more or less, all we have done here is feasable from the GUI, try it...'
 raw_input('hit something to start')
 
 T = CodemlTree(TREE_PATH)

@@ -885,7 +885,7 @@ class Test_phylo_module(unittest.TestCase):
         # Create a dictionary with relative ages for the species present in
         # the phylogenetic tree.  Note that ages are only relative numbers to
         # define which species are older, and that different species can
-        # belong to the same age.
+        # belong to the same age.age
         sp2age = {
           'Hsa': 1, # Homo sapiens (Hominids)
           'Ptr': 2, # P. troglodytes (primates)

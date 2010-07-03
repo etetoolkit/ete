@@ -5,6 +5,7 @@
 # This script is GPL. que pasa?!!
 
 import sys, re
+from os.path import isfile
 
 sys.path.append('/home/francisco/franciscotools/4_codeml_pipe/')
 
@@ -18,6 +19,10 @@ def get_sites(path):
     psel    = False
     lnl     = ''
     mod     = ''
+    if not isfile(path):
+        print >> sys.stderr, \
+              "Error: no rst file found at " + path
+        return None
     for line in open(path, 'r'):
         l = line.strip()
         if l.startswith('lnL = '):
@@ -27,7 +32,7 @@ def get_sites(path):
         if l.startswith('dN/dS '):
             check = re.sub('.*K=', '', l)
             check = int (re.sub('\)', '', check))
-            mod = ('M'+str(check-1 if check < 4 else 'M'+str(check-3)))
+            mod = (('M'+str(check-1) if check < 4 else 'M'+str(check-3)))
         expr = 'Naive' if check % 2 == 0 else 'Bayes'
         if l.startswith(expr+' Empirical Bayes'):
             vals = True
@@ -87,7 +92,8 @@ def parse_paml(pamout, model, rst=None):
                 dic['N'], dic['S'] = line.strip().split()[2:4]
     elif model.startswith('M'):
         if rst == None:
-            dic['rst'] = re.sub('/out$', '/rst', pamout)
+            rst = re.sub('out$', 'rst', pamout)
+        dic['rst'] = rst
         val = ['w', 'dN', 'dS', 'bL', 'bLnum']
         for line in open(pamout):
             if line.startswith('lnL'):
@@ -136,9 +142,9 @@ def _getlnL(dic, line):
     shht pylint
     '''
     line = line.strip()
-    dic['lnL'] = re.sub('  *.*', '', re.sub('.*: *'   , '', line))
-    dic['lnL'] = re.sub('  *.*', '', re.sub('.*: *'   , '', line))
-    dic['np' ] = re.sub('\).*' , '', re.sub('.*np: * ', '', line))
+    dic['lnL'] = re.sub('  *.*', '', re.sub('.*: *'  , '', line))
+    dic['lnL'] = re.sub('  *.*', '', re.sub('.*: *'  , '', line))
+    dic['np' ] = re.sub('\).*' , '', re.sub('.*np: *', '', line))
     return dic
     
 

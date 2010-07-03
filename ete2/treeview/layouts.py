@@ -66,7 +66,8 @@ def codeml(node):
     if node.is_leaf():
         if hasattr(node,"highlight"):
             faces.add_face_to_node(faces.AttrFace("name", "Arial", 11, \
-                                                  "#ff0000", None), node, 0 )
+                                                  node.highlight, None), \
+                                   node, 0 )
         else:
             faces.add_face_to_node( faces.AttrFace("name", "Arial", 11, \
                                                    leaf_color, None), node, 0 )

@@ -47,7 +47,7 @@ class CodemlNode(PhyloNode):
     attributes and methods to work with phylogentic trees. """
 
     def __init__(self, newick=None, alignment=None, alg_format="fasta", \
-                 sp_naming_function=_parse_species):
+                 sp_naming_function=_parse_species, rst=None):
         '''
         freebranch: path to find codeml output of freebranch model.
         '''
@@ -74,14 +74,15 @@ class CodemlNode(PhyloNode):
             label_tree(self)
         self.mark_tree([])
 
-    def link_to_alignment(self, alignment, alg_format="fasta"):
+    def link_to_alignment(self, alignment, alg_format="fasta", nucleotides=True):
         '''
-        same function as for phyloTree, but translate sequences
+        same function as for phyloTree, but translate sequences if nucleotides
         '''
         super(CodemlTree, self).link_to_alignment(alignment, alg_format="fasta")
         for leaf in self.iter_leaves():
             leaf.nt_sequence = str(leaf.sequence)
-            leaf.sequence = translate(leaf.nt_sequence)
+            if nucleotides:
+                leaf.sequence = translate(leaf.nt_sequence)
 
     def show(self):
         '''
@@ -89,8 +90,16 @@ class CodemlNode(PhyloNode):
         '''
         super(CodemlTree, self).show(up_faces = self.up_faces, \
                                      down_faces = self.down_faces)
-                
-    def run_paml(self, model, ctrl_string='', gappy=True):
+
+    def render(self, filename, w=None, h=None, \
+               img_properties=None, header=None):
+        '''
+        call super show adding up and down faces
+        '''
+        super(CodemlTree, self).render(filename, up_faces = self.up_faces, \
+                                       down_faces = self.down_faces, w=w, h=h)
+
+    def run_paml(self, model, ctrl_string='', gappy=True, rst=None):
         '''
         to run paml, needs tree linked to alignment.
         model need to be one of:
@@ -148,7 +157,7 @@ class CodemlNode(PhyloNode):
         os.system(self.codemlpath + ' tmp.ctl')
         #os.system('mv rst rst.'+model)
         os.chdir(hlddir)
-        self.link_to_evol_model(os.path.join(fullpath,'out'), model)
+        self.link_to_evol_model(os.path.join(fullpath,'out'), model, rst)
 
     def mark_tree(self, node_ids, **kargs):
         '''
@@ -172,14 +181,14 @@ class CodemlNode(PhyloNode):
         '''
         return filter(lambda x: x.idname == idname, self.iter_descendants())
 
-    def link_to_evol_model(self, path, model):
+    def link_to_evol_model(self, path, model, rst=None):
         '''
         link CodemlTree to evolutionary model
           * free-branch model ('fb') will append evol values to tree
           * Site models (M0, M1, M2, M7, M8) will give evol values by site
             and likelihood
         '''
-        self._dic[model] = parse_paml(path, model)
+        self._dic[model] = parse_paml(path, model, rst=rst)
         if model == 'fb':
             self._getfreebranch()
         elif model.startswith('M'):
@@ -191,6 +200,10 @@ class CodemlNode(PhyloNode):
         can choose to put it up or down the tree.
         '''
         from HistFace import HistFace
+        if self._dic[mdl + '_sites'] == None:
+            print >> sys.stderr, \
+                  "Warning: model %s not computed." % (mdl)
+            return None
         ldic = self._dic[mdl + '_sites']
         hist = HistFace(values = ldic['w.' + mdl], \
                         mean = 1.0, \
@@ -230,11 +243,14 @@ class CodemlNode(PhyloNode):
         '''
         returns ths pvalue of mod1 being most likely than mod2
         '''
-        from stats import chisqprob
-        return chisqprob(2*(float(self._dic[mod1]['lnL']) - \
-                            float(self._dic[mod2]['lnL'])),\
-                         df=(int (self._dic[mod1]['np'])-\
-                             int(self._dic[mod2]['np'])))
+        if self._dic[mod1].has_key('lnL') and self._dic[mod2].has_key('lnL'):
+            from scipy.stats import chisqprob
+            return chisqprob(2*(float(self._dic[mod1]['lnL']) - \
+                                float(self._dic[mod2]['lnL'])),\
+                             df=(int (self._dic[mod1]['np'])-\
+                                 int(self._dic[mod2]['np'])))
+        else:
+            return 1
         
     def _getfreebranch(self):
         '''
