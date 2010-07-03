@@ -9,7 +9,7 @@ TREE_PATH    = "./measuring_tree.nw"
 ALG_PATH     = "./alignment_measuring_evol.fasta"
 WORKING_PATH = "/tmp/ete2-codeml_example/"
 
-MY_PATH = '/home/francisco/toolbox/ete/doc/tutorial/examples/'
+MY_PATH = '/home/francisco/toolbox/ete2-codeml/doc/tutorial/examples/'
 
 TREE_PATH = MY_PATH + re.sub('\./', '', TREE_PATH)
 ALG_PATH  = MY_PATH + re.sub('\./', '', ALG_PATH )

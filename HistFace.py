@@ -64,7 +64,8 @@ _MIN_NODE_STYLE = {
 }
 
 class HistFace(faces.Face):
-    """ Creates a Histogram object, usually related to a sequence object
+    """
+    Creates a Histogram object, usually related to a sequence object
 
     Argument description
     --------------------
@@ -85,7 +86,6 @@ class HistFace(faces.Face):
 
     def __init__(self, values, colors = [], header = '', mean = 0, \
                  fsize=11, height = 100):
-
         faces.Face.__init__(self)
         if colors == []: colors = ['grey']*len (values)
         if len (colors) != len (values):
