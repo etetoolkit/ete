@@ -1,0 +1,256 @@
+<ui version="4.0" >
+ <class>Newick</class>
+ <widget class="QDialog" name="Newick" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>594</width>
+    <height>397</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Dialog</string>
+  </property>
+  <widget class="QComboBox" name="nwFormat" >
+   <property name="geometry" >
+    <rect>
+     <x>200</x>
+     <y>20</y>
+     <width>51</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <item>
+    <property name="text" >
+     <string>0</string>
+    </property>
+   </item>
+   <item>
+    <property name="text" >
+     <string>1</string>
+    </property>
+   </item>
+   <item>
+    <property name="text" >
+     <string>2</string>
+    </property>
+   </item>
+   <item>
+    <property name="text" >
+     <string>3</string>
+    </property>
+   </item>
+   <item>
+    <property name="text" >
+     <string>4</string>
+    </property>
+   </item>
+   <item>
+    <property name="text" >
+     <string>5</string>
+    </property>
+   </item>
+   <item>
+    <property name="text" >
+     <string>6</string>
+    </property>
+   </item>
+   <item>
+    <property name="text" >
+     <string>7</string>
+    </property>
+   </item>
+   <item>
+    <property name="text" >
+     <string>8</string>
+    </property>
+   </item>
+   <item>
+    <property name="text" >
+     <string>9</string>
+    </property>
+   </item>
+   <item>
+    <property name="text" >
+     <string>100</string>
+    </property>
+   </item>
+  </widget>
+  <widget class="QLabel" name="label" >
+   <property name="geometry" >
+    <rect>
+     <x>100</x>
+     <y>20</y>
+     <width>91</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>Newick format</string>
+   </property>
+  </widget>
+  <widget class="QWidget" name="verticalLayoutWidget" >
+   <property name="geometry" >
+    <rect>
+     <x>300</x>
+     <y>10</y>
+     <width>258</width>
+     <height>361</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout" >
+    <item>
+     <widget class="QTextEdit" name="newickBox" />
+    </item>
+   </layout>
+   <zorder>features_list</zorder>
+   <zorder>newickBox</zorder>
+  </widget>
+  <widget class="QLineEdit" name="attrName" >
+   <property name="geometry" >
+    <rect>
+     <x>20</x>
+     <y>80</y>
+     <width>113</width>
+     <height>25</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pushButton" >
+   <property name="geometry" >
+    <rect>
+     <x>140</x>
+     <y>80</y>
+     <width>51</width>
+     <height>29</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>Add</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pushButton_2" >
+   <property name="geometry" >
+    <rect>
+     <x>200</x>
+     <y>80</y>
+     <width>51</width>
+     <height>29</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>Del</string>
+   </property>
+  </widget>
+  <widget class="QListWidget" name="features_list" >
+   <property name="geometry" >
+    <rect>
+     <x>20</x>
+     <y>120</y>
+     <width>231</width>
+     <height>251</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_3" >
+   <property name="geometry" >
+    <rect>
+     <x>60</x>
+     <y>60</y>
+     <width>191</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>Node's attribute (NHX format)</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="useAllFeatures" >
+   <property name="geometry" >
+    <rect>
+     <x>20</x>
+     <y>370</y>
+     <width>221</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>Include all attributes in nodes</string>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>nwFormat</sender>
+   <signal>activated(QString)</signal>
+   <receiver>Newick</receiver>
+   <slot>update_newick()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>250</x>
+     <y>32</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>99</x>
+     <y>32</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton</sender>
+   <signal>released()</signal>
+   <receiver>Newick</receiver>
+   <slot>add_feature()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>162</x>
+     <y>82</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>271</x>
+     <y>132</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_2</sender>
+   <signal>released()</signal>
+   <receiver>Newick</receiver>
+   <slot>del_feature()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>242</x>
+     <y>98</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>266</x>
+     <y>82</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>useAllFeatures</sender>
+   <signal>released()</signal>
+   <receiver>Newick</receiver>
+   <slot>set_custom_features()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>218</x>
+     <y>383</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>287</x>
+     <y>382</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>update_newick()</slot>
+  <slot>add_feature()</slot>
+  <slot>del_feature()</slot>
+  <slot>set_custom_features()</slot>
+ </slots>
+</ui>
