@@ -5,8 +5,12 @@
 from ete_dev import CodemlTree
 import sys, re
 
-TREE_PATH    = "./measuring_tree.nw"
-ALG_PATH     = "./alignment_measuring_evol.fasta"
+typ = None
+while typ != 'L' and typ != 'S':
+    typ = raw_input("choose kind of example [L]ong or [S]hort, hit [L] or [S]:\n")
+TREE_PATH    = "./measuring_%s_tree.nw" % (typ)
+
+ALG_PATH     = "./alignment_%s_measuring_evol.fasta" % (typ)
 WORKING_PATH = "/tmp/ete2-codeml_example/"
 
 MY_PATH = '/home/francisco/toolbox/ete2-codeml/doc/tutorial/examples/'
@@ -16,6 +20,8 @@ ALG_PATH  = MY_PATH + re.sub('\./', '', ALG_PATH )
 
 ###
 # load tree
+
+
 print '\n         ----> we create a CodemlTree object, and give to him a topology, from'
 print TREE_PATH
 T = CodemlTree(TREE_PATH)
@@ -83,9 +89,13 @@ T.show()
 ###
 # mark tree functionality
 print T.write(format=9)
-name = raw_input('         ====> As you need to mark some branches to run branch\n\
-models, typ the name of one leaf: ')
+name = None
+while name not in T.get_leaf_names():
+    name = raw_input('         ====> As you need to mark some branches to run branch\n\
+    models, typ the name of one leaf: ')
+
 idname = T.get_leaves_by_name(name)[0].idname
+
 print '         ----> you want to mark:',name,'that has this idname: ', idname
 T.mark_tree([idname]) # by default will mark with '#1'
 print 'have a look to the mark: '
