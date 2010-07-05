@@ -24,7 +24,24 @@ ALG_PATH  = MY_PATH + re.sub('\./', '', ALG_PATH )
 
 print '\n         ----> we create a CodemlTree object, and give to him a topology, from'
 print TREE_PATH
-T = CodemlTree(TREE_PATH)
+out = True
+while out == True:
+    try:
+        T = CodemlTree(TREE_PATH)
+        print TREE_PATH
+        out = False
+    except:
+        sys.stderr.write('Bad path for working directory. Enter new path or quit ("Q"):\n')
+        PATH = raw_input('')
+        if PATH.startswith('q') or PATH.startswith('Q'):
+            sys.exit()
+        TREE_PATH    = "./measuring_%s_tree.nw" % (typ)
+        ALG_PATH     = "./alignment_%s_measuring_evol.fasta" % (typ)
+        TREE_PATH = PATH + re.sub('\./', '', TREE_PATH)
+        ALG_PATH  = PATH + re.sub('\./', '', ALG_PATH )
+        print TREE_PATH
+
+
 print T
 print '\n         ----> and an alignment from: \n'+ALG_PATH+'\n\n'
 T.link_to_alignment(ALG_PATH)
@@ -110,3 +127,4 @@ T = CodemlTree(TREE_PATH)
 T.link_to_alignment(ALG_PATH)
 T.workdir = (WORKING_PATH)
 T.show()
+sys.stderr.write('\n\nThe End.\n\n')
