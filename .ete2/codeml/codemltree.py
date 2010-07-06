@@ -102,7 +102,7 @@ class CodemlNode(PhyloNode):
     def run_paml(self, model, ctrl_string='', gappy=True, rst=None):
         '''
         to run paml, needs tree linked to alignment.
-        model need to be one of:
+        model name needs to start by one of:
            * fb
            * M0
            * M1
@@ -114,6 +114,9 @@ class CodemlNode(PhyloNode):
            * b_free
            * b_neut
 
+        e.g.: b_free_lala.vs.lele, will launch one free branch model, and store 
+        it in "WORK_DIR/b_free_lala.vs.lele" directory
+        
         WARNING: this functionality needs to create a working directory in "rep"
         WARNING: you need to have codeml in your path
         TODO: add feature lnL to nodes for branch tests. e.g.: "n.add_features"

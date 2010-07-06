@@ -34,12 +34,12 @@ def controlGenerator(model, inTree='tree', inAlg='algn', \
               'Small_Diff'   : '.5e-6',
               'cleandata'    : int (not gappy),
               'method'       : 0}
-    if model == 'fb':
+    if model.startswith('fb'):
         params['model']       = 1
         params['NSsites']     = 0
         params['omega']       = 0.4
         del(params['fix_blength'])
-    elif model == 'M0':
+    elif model.startswith('M0'):
         params['NSsites']     = 0
         params['kappa']       = .3
         params['omega']       = 1.3
@@ -48,7 +48,7 @@ def controlGenerator(model, inTree='tree', inAlg='algn', \
         del(params['method'])
         del(params['Malpha'])
         del(params['fix_alpha'])
-    elif model == 'M1':
+    elif model.startswith('M1'):
         params['NSsites']     = 1
         params['kappa']       = .3
         params['omega']       = 1.3
@@ -57,7 +57,7 @@ def controlGenerator(model, inTree='tree', inAlg='algn', \
         del(params['method'])
         del(params['Malpha'])
         del(params['fix_alpha'])
-    elif model == 'M2':
+    elif model.startswith('M2'):
         params['NSsites']     = 2
         params['kappa']       = .3
         params['omega']       = 1.3
@@ -66,7 +66,7 @@ def controlGenerator(model, inTree='tree', inAlg='algn', \
         del(params['method'])
         del(params['Malpha'])
         del(params['fix_alpha'])
-    elif model == 'M7':
+    elif model.startswith('M7'):
         params['NSsites']     = 7
         params['kappa']       = .3
         params['omega']       = 1.3
@@ -75,7 +75,7 @@ def controlGenerator(model, inTree='tree', inAlg='algn', \
         del(params['method'])
         del(params['Malpha'])
         del(params['fix_alpha'])
-    elif model == 'M8':
+    elif model.startswith('M8'):
         params['NSsites']     = 8
         params['kappa']       = .3
         params['omega']       = 1.3
@@ -84,26 +84,26 @@ def controlGenerator(model, inTree='tree', inAlg='algn', \
         del(params['method'])
         del(params['Malpha'])
         del(params['fix_alpha'])
-    elif model == 'bsA':
+    elif model.startswith('bsA'):
         params['model']       = 2
         params['NSsites']     = 2
         params['kappa']       = 2
         params['omega']       = 0.7
         del(params['fix_blength'])
-    elif model == 'bsA1':
+    elif model.startswith('bsA1'):
         params['model']       = 2
         params['NSsites']     = 2
         params['kappa']       = 2
         params['fix_omega']   = 1
         params['omega']       = 1.0
         del(params['fix_blength'])
-    elif model == 'b_free':
+    elif model.startswith('b_free'):
         params['model']       = 2
         params['NSsites']     = 0
         params['kappa']       = 2
         params['omega']       = 0.4
         del(params['fix_blength'])
-    elif model == 'b_neut':
+    elif model.startswith('b_neut'):
         params['model']       = 2
         params['NSsites']     = 0
         params['kappa']       = 2
