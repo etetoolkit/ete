@@ -39,10 +39,9 @@ head = '''<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
 </style>
 </head><body background='/bg.gif'>
 <div style='position: absolute; width: 700px; margin-left: -350px; top: 10px; margin-bottom:20px; left: 50%; background: #FFF; padding: 10px; text-align: center'>
-<h3>Preview of <a href=http://ete.cgenomics.org/>ete2</a>-webplugin for phylogenetic tree manipulations</h3>'''
+<h4>Preview of webplugin for python Environment for Tree Exploration (<a href=http://ete.cgenomics.org/>ete2</a>)</h4>'''
 
-end = "</div></body></html>"
-
+end = "<div style='margin-top: 20px; font-size: 8pt'><a href='http://gitorious.org/~jhcepas/environment-for-tree-exploration/ete2-webplugin'>Project</a> | <a href='http://cgenomics.org/'>CGenomics</a> | <a href='http://molpit.ru'>Molpit SFU</a></div></div></body></html>"
 
 
 def index(req=None): 
@@ -70,5 +69,5 @@ def tree(req=None):
         body = "This page used not corretct way."
     else:
         body = wp.publishTree(req.form['tree'])
-        
-    return head+body+end
+        back = "<div><a href='"+HOST_NAME+"'>Draw one more tree</a></div>"
+    return head+body+back+end

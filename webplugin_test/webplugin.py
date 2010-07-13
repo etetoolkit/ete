@@ -219,14 +219,16 @@ def info(req=None, dbid=None):
             output += "</tr></table>"
         return output
 
-    p = get_pointer()
-    # get info about DB id
-    info = p.get_seqid_info(dbid)
-    close_p()
-    # put information in show/hide boxes
-    res =  hide_box('Name', info['name'])
-    res += hide_box('Comments', info['comments'])
-    res += hide_box('Sequence', split_code(info['seq']), mode='none') # mode='none' - hide the box content by default
+    #p = get_pointer()
+    ## get info about DB id
+    #info = p.get_seqid_info(dbid)
+    #close_p()
+    ## put information in show/hide boxes
+    #res =  hide_box('Name', info['name'])
+    #res += hide_box('Comments', info['comments'])
+    #res += hide_box('Sequence', split_code(info['seq']), mode='none') # mode='none' - hide the box content by default
+    
+    res =  hide_box('Example', 'any information about leave with id = ' + dbid + ' in a hide/show box' )
     
     return res # return information to the popup menu in HTML format
 
@@ -276,7 +278,7 @@ class WebPlugin:
         TREE = open(os.path.join(self.sessionFolder, treeid+'.tree'), 'w')
         print >> TREE, tree
         # --- return the spetial action-HTML template for the tree manipulation
-        return treeid+"<br><img src='"+self.hostname+"loader.gif?rnd="+str(random.random())+"' id='"+treeid+"' onClick=\"mapcheck(this,'"+treeid+"')\" onLoad=\"get_map(this, '"+treeid+"', '"+self.sid+"')\"><div id='scriptarea_"+treeid+"'></div>"
+        return "<img src='"+self.hostname+"loader.gif?rnd="+str(random.random())+"' id='"+treeid+"' onClick=\"mapcheck(this,'"+treeid+"')\" onLoad=\"get_map(this, '"+treeid+"', '"+self.sid+"')\"><div id='scriptarea_"+treeid+"'></div>"
 
 
 
