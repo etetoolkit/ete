@@ -134,7 +134,7 @@ actionBox.append(['empty', 'unique', 'style', 'nodes', 'Nodes style', ''])
 actionBox.append(['empty', 'unique', 'style', 'red', 'Red style', ''])
 actionBox.append(['nodes', 'switch', 'collapse', '', 'Collapse', 'Expand'])
 actionBox.append(['nodes', 'unique', 'outgroup', '', 'Make outgroup', ''])
-actionBox.append(['nodes', 'unique', 'delete', '', 'Delete', ''])
+actionBox.append(['nodes', 'switch', 'delete', '', 'Delete', ''])
 
 
 def stylesProcessor(value):
@@ -184,6 +184,11 @@ def rulesProcesor(t): # called from tree generator
 
 
 ### Get info about leave >>> here can be any function of leave ID with HTML return
+
+def get_node_by_id(t,unic_id):
+    for n in t.traverse():
+        if n.unic_id == int(unic_id):
+            return n
 
 def info(req=None, dbid=None):
     import os, sys, MySQLdb, ete_dev
@@ -236,8 +241,6 @@ def info(req=None, dbid=None):
     res =  hide_box('Example', 'any information about leave with id = ' + dbid + ' in a hide/show box' )
     
     return res # return information to the popup menu in HTML format
-
-
 
 
 
@@ -299,7 +302,8 @@ def emptymenu(req=None, id=None):
                 ret += "<a href='javascript:void(0)' onClick=\"unic_rule('"+item[2]+"','"+id+"', '"+item[3]+"')\">"+item[4]+"</a><br>"
             else:
                 ret += "<a href='javascript:void(0)' onClick=\"set_rule('"+item[2]+"','"+id+"', '"+item[3]+"')\">"+item[4]+"</a><br>"
-                ret += "<a href='javascript:void(0)' onClick=\"rem_rule('"+item[2]+"','"+id+"', '"+item[3]+"')\">"+item[5]+"</a><br>"
+                if item[5] != '':
+                    ret += "<a href='javascript:void(0)' onClick=\"rem_rule('"+item[2]+"','"+id+"', '"+item[3]+"')\">"+item[5]+"</a><br>"
     
     return ret+"<a href='javascript:void(0)' onClick=\"ask_for_new_image('"+id+"');\">Reload tree</a><br><a href='javascript:void(0)' onClick=\"clear_rules('"+id+"');\">Reset</a>";
     
@@ -314,7 +318,8 @@ def nodemenu(req=None, id=None, node=None):
                 ret += "<a href='javascript:void(0)' onClick=\"unic_rule('"+item[2]+"','"+id+"', '"+node+"')\">"+item[4]+"</a><br>"
             else:
                 ret += "<a href='javascript:void(0)' onClick=\"set_rule('"+item[2]+"','"+id+"', '"+node+"')\">"+item[4]+"</a><br>"
-                ret += "<a href='javascript:void(0)' onClick=\"rem_rule('"+item[2]+"','"+id+"', '"+node+"')\">"+item[5]+"</a><br>"
+                if item[5] != '':
+                    ret += "<a href='javascript:void(0)' onClick=\"rem_rule('"+item[2]+"','"+id+"', '"+node+"')\">"+item[5]+"</a><br>"
     return ret;
     
     return "<a href=\"javascript:set_rule('collapse', '"+id+"',"+node+")\">Collaplse</a><br><a href=\"javascript:rem_rule('collapse', '"+id+"',"+node+")\">Expand</a><br><a href=\"javascript:unic_rule('root', '"+id+"',"+node+")\">Make outgroup</a>";
@@ -344,13 +349,6 @@ else:
             return "'"+str(int(x))+"'"
         else:
             return "'"+str(x)+"'"
-
-    def get_node_by_id(t,unic_id):
-        a = 1
-        for n in t.traverse():
-            if a == int(unic_id):
-                return n
-            a += 1    
 
     store = TEMP_FOLDER + '/' + sys.argv[1]
     gene = sys.argv[2]
