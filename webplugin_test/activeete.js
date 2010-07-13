@@ -10,6 +10,8 @@ var loader = new Image();
 var session_id = '';
 loader.src = "http://"+window.location.hostname+"/loader.gif"
 
+// AJAX functions
+
 var xmlHttp = false;
 /*@cc_on @*/
 /*@if (@_jscript_version >= 5)
@@ -29,13 +31,29 @@ try {
 	}
 }
 @end @*/
-
 if (!xmlHttp && typeof XMLHttpRequest != "undefined") {
   xmlHttp = new XMLHttpRequest();
 }
+function askByAjax(url, egg, isLed) {
+    var workurl = "http://"+window.location.hostname+"/" + url + "&rnd=" + Math.round(Math.random()*100000);
+	xmlHttp.open('GET', workurl, true);
+	xmlHttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+	xmlHttp.onreadystatechange = function () {
+		if (xmlHttp.readyState == 4) {
+			var response = xmlHttp.responseText; 
+			document.getElementById(egg).innerHTML = response;
+			if (isLed == 1){
+				var newdiv = document.getElementById(egg);
+				led(parseInt(newdiv.style.left), parseInt(newdiv.style.top), parseInt(newdiv.style.left)+newdiv.offsetWidth, parseInt(newdiv.style.top)+newdiv.offsetHeight, "hide('"+newdiv.id+"')");
+			}
+		}
+	}
+	document.getElementById(egg).innerHTML = '';
+	document.getElementById(egg).appendChild(loader);
+	xmlHttp.send(null);
+}
 
-
-// main functions
+// MAIN
 
 function get_map(id, arg, sid){
     if (id.src.indexOf('loader') == -1){
@@ -69,7 +87,18 @@ function replace_img(id, src){
 	document.getElementById(id).src = src;
 }
 
-// ONCLICK FUNCTION
+// COMPARE MAP AND MOUSE POSITION
+
+function check(x,y,map){
+    if (map.length > 0){
+	    var item = Array();
+	    for (var i = 0; i < map.length; i++){
+		    item = map[i];
+		    if (item[1] <= y && y <= item[3] && x >= item[0] && x <= item[2])
+			    return item[4];
+	    } return 0;
+	} else return 0;
+}
 
 function mapcheck(elem, id){
     getScrollXY();
@@ -82,50 +111,43 @@ function mapcheck(elem, id){
 	}
 	var x = mousex - left;
 	var y = mousey - top;
-	// the menu if user click on empty place
-	
-	emptymenu = "<a href=\"javascript:alert('not possible yet')\">Export PDF</a><br><a href=\"javascript:alert('not possible yet')\">Align branch names</a><br><hr><a href=\"javascript:set_rule('style','"+id+"', 'nonodes')\">No node style</a><br><a href=\"javascript:rem_rule('style','"+id+"', 'nonodes')\">Nodes style</a><br><hr><a href=\"javascript:ask_for_new_image('"+id+"');\">Reload tree</a><br><a href=\"javascript:clear_rules('"+id+"');\">Reset</a>";
-	
+
 	text = check(x,y,map[id]['texts']);
 	if (text == 0){
 		node = check(x,y, map[id]['nodes']);
 		if (node == 0){
 		    if(map[id]['faces'] == 'undefined'){
-		        menu_popup(emptymenu);
+		        emptymenu(id);
 		    } else {
-		        menu_popup(emptymenu);
+		        emptymenu(id);
 		        face = check(x,y, map[id]['faces']);
-		        if (face == 0){
-                    menu_popup(emptymenu);
-                } else {
-                    facesmenu = "<a href=\"javascript:alert('not possible yet')\">Hide this</a><br><a href=\"javascript:alert('not possible yet')\">Some action 1</a><br><a href=\"javascript:alert('not possible yet')\">Some action 2</a>";
-                    menu_popup(facesmenu);
-			    }
+		        if (face == 0)
+                    emptymenu(id);
+                else
+                    facesmenu(face);
             }
-		} else {
-		    nodemenu = "<a  href=\"javascript:set_rule('collapse', '"+id+"',"+node+")\">Collaplse</a><br><a href=\"javascript:rem_rule('collapse', '"+id+"',"+node+")\">Expand</a><br><a href=\"javascript:unic_rule('root', '"+id+"',"+node+")\">Make outgroup</a>";
-			menu_popup(nodemenu);
-		}
-	} else {
-		get_id_info(text);
-	}
+		} else nodemenu(id, node);
+	} else get_id_info(text);
 }
 
-// COMPARE MAP AND MOUSE POSITION
-function check(x,y,map){
-    if (map.length > 0){
-	    var item = Array();
-	    for (var i = 0; i < map.length; i++){
-		    item = map[i];
-		    if (item[1] <= y && y <= item[3] && x >= item[0] && x <= item[2]){
-			    return item[4];
-		    }
-	    }
-	    return 0;
-	} else {
-	    return 0;
-	}
+
+function get_id_info(arg) {
+	popup("",arg);
+	askByAjax('webplugin/info?dbid=' + arg, 'p_content_'+popup_counter, 0);
 }
+function facesmenu(id, face) {
+	menu_popup("");
+	askByAjax('webplugin/facesmenu?id='+id+'&face='+face, 'p_'+popup_counter, 1);
+}
+function nodemenu(id, node) {
+	menu_popup("");
+	askByAjax('webplugin/nodemenu?id='+id+'&node='+node, 'p_'+popup_counter, 1);
+}
+function emptymenu(id) {
+	menu_popup("");
+	askByAjax('webplugin/emptymenu?id='+id, 'p_'+popup_counter, 1);
+}
+
 
 // RULES SYSTEM
 
@@ -164,17 +186,22 @@ function clear_rules(seqid) {
 function ask_with_new_rules(arg){
 	if (xmlHttp.readyState == 4) {
 		var response = xmlHttp.responseText;
-		if (response == '1'){
+		if (response == '1')
 		    ask_for_new_image(arg);
-		} else {
+		else
 		    alert(response);
-		}
 	}
 }
 
+// POPUP MENU FUNCTIONS
 
-
-// POPUP MENU FUNCTIONS   ----------------- 
+function addHandler(object, event, handler, useCapture) {
+    if (object.addEventListener)
+        object.addEventListener(event, handler, useCapture);
+    else if (object.attachEvent)
+        object.attachEvent('on' + event, handler);
+    else object['on' + event] = handler;
+}
 function hide(id){
 	document.getElementById(id).style.display = 'none';
 }
@@ -199,33 +226,26 @@ function move(id){
 function top(id){
 	zindex += 1; document.getElementById(id).style.zIndex = zindex;
 }
-function led(x1,y1,x2,y2,id,action){
-	if (y1 > mousey || mousey > y2 || x1 > mousex || mousex > x2 ){
-		setTimeout(action,300);
-	} else {
-		setTimeout('led('+x1+','+y1+','+x2+','+y2+','+id+',"'+action+'")',100);
-	}
+function led(x1,y1,x2,y2,action){
+	if (y1 > mousey || mousey > y2 || x1 > mousex || mousex > x2 )
+		setTimeout(action, 50);
+	else
+		setTimeout('led('+x1+','+y1+','+x2+','+y2+',"'+action+'")', 200);
 }
 function popup(arg, title){
 	popup_counter += 1;
 	var newdiv = document.createElement("div");
 	newdiv.innerHTML = "<div class='popup popup_bg' id='p_"+popup_counter+"' style='width: 350px; position: absolute; top: " + mousey + "px; left: " + mousex + "px; z-index: 100'><table class='popup_title' width='100%' cellpadding=0 cellspacing=0><tr><td style='cursor: text'>"+title+"</td><td onMouseDown=\"move_start('p_"+popup_counter+"')\" onMouseUp=\"move_stop('p_"+popup_counter+"')\" onMouseOver=\"top('p_"+popup_counter+"')\" width=100%></td><td class='popup_interactor' style='float: right' onClick=\"hide('p_"+popup_counter+"')\">[x]</td></tr></table><div style='overflow: auto'><div style='padding: 4px' id='p_content_"+popup_counter+"'>"+arg+"</div></div></div>";
 	document.body.appendChild(newdiv);
-	if (arg == ''){
-	    document.getElementById('p_content_'+popup_counter).appendChild(loader);
-	}
+	if (arg == '') document.getElementById('p_content_'+popup_counter).appendChild(loader);
 }
 function menu_popup(arg){
 	popup_counter += 1;
-	var newdiv=document.createElement("div");
-	var pid = 'p_'+popup_counter;
-	newdiv.innerHTML = "<div class='popup popup_bg' id='"+pid+"' style='position: absolute; top: " + mousey + "px; left: " + mousex + "px; z-index: 100; padding: 4px'>"+arg+"</div>";
+	var newdiv = document.createElement("div");
+	newdiv.innerHTML = "<div class='popup popup_bg' id='p_"+popup_counter+"' style='position: absolute; top: " + mousey + "px; left: " + mousex + "px; z-index: 100; padding: 4px'>"+arg+"</div>";
 	document.body.appendChild(newdiv);
-	
-	var newdiv = document.getElementById(pid);
-	led(parseInt(newdiv.style.left), parseInt(newdiv.style.top), parseInt(newdiv.style.left)+newdiv.offsetWidth, parseInt(newdiv.style.top)+newdiv.offsetHeight, pid.id, "hide('"+pid+"')");
+	if (arg == '') document.getElementById('p_'+popup_counter).appendChild(loader);
 }
-// ------------
 
 
 // CHECK THE BROWSER TYPE
@@ -276,23 +296,3 @@ if(isMSIE || isOpera7){
 	return true
   }
 }
-
-
-
-// get all information about leave ID  ----
-function get_id_info(arg) {
-	var url = 'http://'+window.location.hostname+'/webplugin/info?dbid=' + arg;
-	xmlHttp.open('GET', url, true);
-	xmlHttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-	xmlHttp.onreadystatechange = showinfo;
-	xmlHttp.send(null);
-	popup("",arg);
-}
-function showinfo(){
-	if (xmlHttp.readyState == 4) {
-		var response = xmlHttp.responseText;
-		var id = 'p_content_'+popup_counter;
-		document.getElementById(id).innerHTML  = response;
-	}
-}
-// ----
