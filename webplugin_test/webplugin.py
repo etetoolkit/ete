@@ -134,7 +134,7 @@ actionBox.append(['empty', 'unique', 'style', 'nodes', 'Nodes style', ''])
 actionBox.append(['empty', 'unique', 'style', 'red', 'Red style', ''])
 actionBox.append(['nodes', 'switch', 'collapse', '', 'Collapse', 'Expand'])
 actionBox.append(['nodes', 'unique', 'outgroup', '', 'Make outgroup', ''])
-
+actionBox.append(['nodes', 'unique', 'delete', '', 'Delete', ''])
 
 
 def stylesProcessor(value):
@@ -152,16 +152,21 @@ def collapsProcessor(value, t):
     hotnode.add_features(nodes_inside=len(hotnode.get_leaves()))
     return t
 
-def outgroupProcessor(value, t):               
+def outgroupProcessor(value, t):
     outgroup = get_node_by_id(t, value)
     if t != outgroup:
         t.set_outgroup(outgroup)
+    return t
+    
+def delProcessor(value, t):
+    outgroup = get_node_by_id(t, value)
+    outgroup.delete()
     return t
 
 ruleProcessors.append(['style', stylesProcessor])
 ruleProcessors.append(['collapse', collapsProcessor])
 ruleProcessors.append(['outgroup', outgroupProcessor])
-
+ruleProcessors.append(['delete', delProcessor])
 
 def rulesProcesor(t): # called from tree generator
     mylayout = myphylogeny
