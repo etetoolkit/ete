@@ -84,18 +84,18 @@ def controlGenerator(model, inTree='tree', inAlg='algn', \
         del(params['method'])
         del(params['Malpha'])
         del(params['fix_alpha'])
-    elif model.startswith('bsA'):
-        params['model']       = 2
-        params['NSsites']     = 2
-        params['kappa']       = 2
-        params['omega']       = 0.7
-        del(params['fix_blength'])
     elif model.startswith('bsA1'):
         params['model']       = 2
         params['NSsites']     = 2
         params['kappa']       = 2
         params['fix_omega']   = 1
         params['omega']       = 1.0
+        del(params['fix_blength'])
+    elif model.startswith('bsA'):
+        params['model']       = 2
+        params['NSsites']     = 2
+        params['kappa']       = 2
+        params['omega']       = 0.7
         del(params['fix_blength'])
     elif model.startswith('b_free'):
         params['model']       = 2
