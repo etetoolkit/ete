@@ -21,7 +21,7 @@
 #
 # #END_LICENSE#############################################################
 """
-This module defines the PhyloNode dataytype to manage phylogenetic
+this module defines the PhyloNode dataytype to manage phylogenetic
 tree. It inheritates the coretype TreeNode and add some speciall
 features to the the node instances.
 """
@@ -111,6 +111,8 @@ class CodemlNode(PhyloNode):
            * M8
            * bsA
            * bsA1
+           * bsC
+           * bsD
            * b_free
            * b_neut
 

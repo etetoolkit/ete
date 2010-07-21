@@ -184,6 +184,8 @@ class CodemlDialog(QtGui.QDialog):
             'free-branch'   : 'fb'    ,
             'branch-site.A' : 'bsA'   ,
             'branch-site.A1': 'bsA1'  ,
+            'branch-site.C' : 'bsC'   ,
+            'branch-site.D' : 'bsD'   ,
             'branch-free'   : 'b_free',
             'branch-neut'   : 'b_neut'
             }

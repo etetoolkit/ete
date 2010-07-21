@@ -97,6 +97,18 @@ def controlGenerator(model, inTree='tree', inAlg='algn', \
         params['kappa']       = 2
         params['omega']       = 0.7
         del(params['fix_blength'])
+    elif model.startswith('bsC'):
+        params['model']       = 3
+        params['NSsites']     = 2
+        params['kappa']       = 2
+        params['omega']       = 0.7
+        del(params['fix_blength'])
+    elif model.startswith('bsC'):
+        params['model']       = 3
+        params['NSsites']     = 3
+        params['kappa']       = 2
+        params['omega']       = 0.7
+        del(params['fix_blength'])
     elif model.startswith('b_free'):
         params['model']       = 2
         params['NSsites']     = 0
