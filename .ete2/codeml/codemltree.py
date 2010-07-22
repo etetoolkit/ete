@@ -197,7 +197,12 @@ class CodemlNode(PhyloNode):
           * Site models (M0, M1, M2, M7, M8) will give evol values by site
             and likelihood
         '''
-        self._dic[model] = parse_paml(path, model, rst=rst)
+        self._dic[model] = \
+                         parse_paml(path, model, rst=rst, \
+                                    codon_freq=hasattr (self, '_codon_freq'))
+        if not hasattr (self, '_codon_freq'):
+            self._codon_freq = self._dic[model]['codonFreq']
+            del (self._dic[model]['codonFreq'])
         if model == 'fb':
             self._getfreebranch()
         elif model.startswith('M'):
@@ -211,7 +216,7 @@ class CodemlNode(PhyloNode):
         from HistFace import HistFace
         if self._dic[mdl + '_sites'] == None:
             print >> sys.stderr, \
-                  "Warning: model %s not computed." % (mdl)
+                  "WARNING: model %s not computed." % (mdl)
             return None
         ldic = self._dic[mdl + '_sites']
         hist = HistFace(values = ldic['w.' + mdl], \

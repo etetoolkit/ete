@@ -11,7 +11,7 @@ sys.path.append('/home/francisco/franciscotools/4_codeml_pipe/')
 
 def get_sites(path,ndata=1):
     '''
-    for models M1, M2, M7, M8
+    for models M1, M2, M7, M8, M8a
     '''
     check   = 0
     vals    = False
@@ -61,9 +61,15 @@ def get_sites(path,ndata=1):
                 re.sub('\).*', '', re.sub('.*\( *', '', l.strip()))\
                 +'/'+str (len (classes))+')')
             vals['pv.'+mod].append(str (max (classes)))
+    if vals == True:
+        print >> sys.stderr, \
+              'WARNING: rst file path not specified, site model will not' + \
+              '\n         be linked to site information.'
+        return None
     return vals
 
-def parse_paml(pamout, model, rst=None, ndata=1):
+
+def parse_paml(pamout, model, rst=None, ndata=1, codon_freq=True):
     '''
     parser function for codeml files, returns a diccionary
     with values of w,dN,dS etc... dependending of the model
@@ -81,7 +87,7 @@ def parse_paml(pamout, model, rst=None, ndata=1):
                     continue
                 if copy == True and \
                        line.startswith('Data set '+ str (num+1) + '\n'):
-                    copy = False
+                    break
                 if copy == True:
                     out.write(line)
             out.close()
@@ -89,71 +95,68 @@ def parse_paml(pamout, model, rst=None, ndata=1):
                 print >> sys.stderr, \
                       'WARNING: seems that you have no multiple dataset here...'\
                       + '\n    trying as with only one dataset'
-                return parse_paml (pamout, model, rst=rst, ndata=1)
+                #return parse_paml (pamout, model, rst=rst, ndata=1)
             if model.startswith('M') and rst == None:
                 rst = re.sub('out$', 'rst', pamout)
-            rstout = open (rst + '_' + str(num), 'w')
-            copy = False
-            for line in open(rst):
-                if copy == False and \
-                       re.match('\t' + str (num)+'\n', line) != None:
-                    copy = True
-                    continue
-                if copy == True and \
-                       re.match('\t' + str (num + 1)+'\n', line) != None:
-                    copy = False
-                if copy == True:
-                    rstout.write(line)
-            rstout.close()
-            dic['data_'+str (num)] = \
-                            parse_paml(pamout + '_' + str(num), \
-                                       model, rst=rst + '_' + str (num))
+                rstout = open (rst + '_' + str(num), 'w')
+                copy = False
+                for line in open(rst):
+                    if copy == False and \
+                           re.match('\t' + str (num)+'\n', line) != None:
+                        copy = True
+                        continue
+                    if copy == True and \
+                           re.match('\t' + str (num + 1)+'\n', line) != None:
+                        copy = False
+                    if copy == True:
+                        rstout.write(line)
+                rstout.close()
+                dic['data_'+str (num)] = \
+                                parse_paml(pamout + '_' + str(num), \
+                                           model, rst=rst + '_' + str (num))
+            else:
+                dic['data_'+str (num)] = \
+                                parse_paml(pamout + '_' + str(num), model)
         return dic
     dic = {}
-    if model.startswith('b_'):
-        val = ['w', 'dN', 'dS', 'bL', 'bLnum']
-        for line in open(pamout):
-            if line.startswith('lnL'):
-                dic = _getlnL(dic, line)
-            elif line.startswith('(') and line.endswith(');\n'):
-                dic[val.pop()] = line.strip()
-    elif model.startswith('fb'):
-        val = ['w', 'dN', 'dS', 'bL', 'bLnum']
-        chk = False
-        for line in open(pamout):
-            if line.startswith('lnL'):
-                dic = _getlnL(dic, line)
-            elif line.startswith('(') and line.endswith(');\n'):
-                dic[val.pop()] = line.strip()
-            elif line.startswith('dN & dS for'):
-                chk = True
-            elif '..' in line and chk:
-                chk = False
-                dic['N'], dic['S'] = line.strip().split()[2:4]
-    elif model.startswith('M'):
+    val = ['w', 'dN', 'dS', 'bL', 'bLnum']
+    chk = False
+    if model.startswith('M'):
         if rst == None:
             rst = re.sub('out$', 'rst', pamout)
         dic['rst'] = rst
-        val = ['w', 'dN', 'dS', 'bL', 'bLnum']
-        for line in open(pamout):
-            if line.startswith('lnL'):
-                dic = _getlnL(dic, line)
-            elif line.startswith('(') and line.endswith(');\n'):
-                dic[val.pop()] = line.strip()
-            elif line.startswith('p: '):
+    for line in open(pamout):
+        if line.startswith('lnL'):
+            dic = _getlnL(dic, line)
+        elif line.startswith('(') and line.endswith(');\n'):
+            dic[val.pop()] = line.strip()
+        elif line.startswith('dN & dS for'):
+            chk = True
+        elif '..' in line and chk:
+            chk = False
+            dic['N'], dic['S'] = line.strip().split()[2:4]
+        elif line.startswith('Codon frequencies under model'):
+            codon_freq = True
+            dic['codonFreq'] = []
+            count = 0
+            continue
+        elif codon_freq == True:
+            if line.startswith('  0.'):
+                line = re.sub('  ([0-9.]*)  ([0-9.]*)  ([0-9.]*)  ([0-9.]*)', \
+                              '\\1 \\2 \\3 \\4', line.strip())
+                dic['codonFreq'] += [line.split()]
+            else:
+                codon_freq = False
+                continue
+        if model.startswith('M'):
+            if line.startswith('p: '):
                 for i in range (0, len (line.strip().split()[1:])):
                     dic['p'+str(i)] = line.strip().split()[i+1]
             elif line.startswith('w: '):
                 for i in range (0, len (line.strip().split()[1:])):
                     dic['w'+str(i)] = line.strip().split()[i+1]
-    elif model.startswith('bs'):
-        val = ['w', 'dN', 'dS', 'bL', 'bLnum']
-        for line in open(pamout):
-            if line.startswith('lnL'):
-                dic = _getlnL(dic, line)
-            elif line.startswith('(') and line.endswith(');\n'):
-                dic[val.pop()] = line.strip()
-            elif line.startswith('proportion '):
+        if model.startswith('bs'):
+            if line.startswith('proportion '):
                 dic['p0' ] = line.strip().split()[1]
                 dic['p1' ] = line.strip().split()[2]
                 dic['p2a'] = line.strip().split()[3]
@@ -198,7 +201,4 @@ def _convtree(line):
     t = re.sub(' : [0-9]*\.[0-9]*', '', t)
     t = re.sub(' *: *', ':', t)
     return t
-
-
-
 
