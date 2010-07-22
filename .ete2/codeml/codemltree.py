@@ -126,6 +126,7 @@ class CodemlNode(PhyloNode):
         TODO: add feature lnL to nodes for branch tests. e.g.: "n.add_features"
         TODO: add possibility to avoid local minima of lnL by rerunning with other
         starting values of omega, alpha etc...
+        TODO: Change os.system by something better :P
         
         '''
         fullpath = os.path.join(self.workdir, model)
@@ -163,7 +164,12 @@ class CodemlNode(PhyloNode):
         ctrl.close()
         hlddir = os.getcwd()
         os.chdir(fullpath)
-        os.system(self.codemlpath + ' tmp.ctl')
+        err = os.system(self.codemlpath + ' tmp.ctl')
+        if err != 0:
+            print >> sys.stderr, \
+                  "ERROR: codeml not found!!!\n" + \
+                  "       define your variable CodemlTree.codemlpath"
+            sys.exit()
         #os.system('mv rst rst.'+model)
         os.chdir(hlddir)
         self.link_to_evol_model(os.path.join(fullpath,'out'), model, rst)
