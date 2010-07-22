@@ -109,8 +109,10 @@ class CodemlNode(PhyloNode):
            * M2
            * M7
            * M8
+           * M8a
            * bsA
            * bsA1
+           * bsB
            * bsC
            * bsD
            * b_free
@@ -122,6 +124,8 @@ class CodemlNode(PhyloNode):
         WARNING: this functionality needs to create a working directory in "rep"
         WARNING: you need to have codeml in your path
         TODO: add feature lnL to nodes for branch tests. e.g.: "n.add_features"
+        TODO: add possibility to avoid local minima of lnL by rerunning with other
+        starting values of omega, alpha etc...
         
         '''
         fullpath = os.path.join(self.workdir, model)
@@ -244,19 +248,35 @@ class CodemlNode(PhyloNode):
         else:
             return nwk
 
-    def get_most_likely(self, mod1, mod2):
+    def get_most_likely(self, altn, null):
         '''
         returns ths pvalue of mod1 being most likely than mod2
+        usual comparison are:
+         * altern vs null
+         -------------------
+         * M2     vs M1     -> PS on sites
+         * M8     vs M7     -> PS on sites
+         * bsA    vs bsA1   -> PS on sites on specific branch
+         * bsA    vs M1     -> RX on sites on specific branch
+         * bsD    vs bsC    -> different omegas on clades branches sites
+         * b_free vs b_neut -> PS on branch
+         * b_neut vs M0     -> RX on branch?? not sure :P
         '''
-        if self._dic[mod1].has_key('lnL') and self._dic[mod2].has_key('lnL'):
-            from scipy.stats import chisqprob
-            return chisqprob(2*(float(self._dic[mod1]['lnL']) - \
-                                float(self._dic[mod2]['lnL'])),\
-                             df=(int (self._dic[mod1]['np'])-\
-                                 int(self._dic[mod2]['np'])))
-        else:
-            return 1
-        
+        try:
+            if self._dic[altn].has_key('lnL') and self._dic[null].has_key('lnL'):
+                from scipy.stats import chisqprob
+                return chisqprob(2*(float(self._dic[altn]['lnL']) - \
+                                    float(self._dic[null]['lnL'])),\
+                                 df=(int (self._dic[altn]['np'])-\
+                                     int(self._dic[null]['np'])))
+            else:
+                return 1
+        except KeyError:
+            print >> sys.stderr, \
+                  "at least one of %s or %s, was not calculated\n"\
+                  % (altn, null)
+            sys.exit(self.get_most_likely.func_doc)
+
     def _getfreebranch(self):
         '''
         to convert tree strings of paml into tree strings readable

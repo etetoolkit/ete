@@ -9,7 +9,7 @@ from os.path import isfile
 
 sys.path.append('/home/francisco/franciscotools/4_codeml_pipe/')
 
-def get_sites(path):
+def get_sites(path,ndata=1):
     '''
     for models M1, M2, M7, M8
     '''
@@ -63,12 +63,52 @@ def get_sites(path):
             vals['pv.'+mod].append(str (max (classes)))
     return vals
 
-def parse_paml(pamout, model, rst=None):
+def parse_paml(pamout, model, rst=None, ndata=1):
     '''
     parser function for codeml files, returns a diccionary
     with values of w,dN,dS etc... dependending of the model
     tested.
     '''
+    if ndata != 1:
+        dic = {}
+        for num in range (1, ndata):
+            out = open (pamout + '_' + str(num), 'w')
+            copy = False
+            for line in open (pamout):
+                if copy == False and \
+                       line.startswith('Data set '+ str (num) + '\n'):
+                    copy = True
+                    continue
+                if copy == True and \
+                       line.startswith('Data set '+ str (num+1) + '\n'):
+                    copy = False
+                if copy == True:
+                    out.write(line)
+            out.close()
+            if copy == False:
+                print >> sys.stderr, \
+                      'WARNING: seems that you have no multiple dataset here...'\
+                      + '\n    trying as with only one dataset'
+                return parse_paml (pamout, model, rst=rst, ndata=1)
+            if model.startswith('M') and rst == None:
+                rst = re.sub('out$', 'rst', pamout)
+            rstout = open (rst + '_' + str(num), 'w')
+            copy = False
+            for line in open(rst):
+                if copy == False and \
+                       re.match('\t' + str (num)+'\n', line) != None:
+                    copy = True
+                    continue
+                if copy == True and \
+                       re.match('\t' + str (num + 1)+'\n', line) != None:
+                    copy = False
+                if copy == True:
+                    rstout.write(line)
+            rstout.close()
+            dic['data_'+str (num)] = \
+                            parse_paml(pamout + '_' + str(num), \
+                                       model, rst=rst + '_' + str (num))
+        return dic
     dic = {}
     if model.startswith('b_'):
         val = ['w', 'dN', 'dS', 'bL', 'bLnum']
