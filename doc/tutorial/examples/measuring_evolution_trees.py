@@ -53,21 +53,26 @@ T.show()
 print '\n\n\n         ----> We define now our working directory, that will be created:', \
       WORKING_PATH
 T.workdir = (WORKING_PATH)
-print '\n            ----> and run the free-branch model:'
+print '\n            ----> and run the free-branch model with run_paml function:\n\n%s\n%s\n%s\n'\
+      % ('*'*10 + ' doc ' + '*'*10, T.run_paml.func_doc, '*'*30)
+
 raw_input("         ====> Hit some key to start free-branch computation with codeml...\n")
 T.run_paml('fb')
 T.show()
 
 ###
 # run site model, and display result
-print '\n\n\n         ----> We are now goingn to run sites model M1 and M2:\n\n'
+print '\n\n\n         ----> We are now goingn to run sites model M1 and M2 with run_paml function:\n'
 raw_input("         ====> hit some key to start")
 for model in ['M1', 'M2']:
     T.run_paml(model)
 
 print '\n\n\n            ----> and use the get_most_likely function to compute the LRT between those models:\n'
+print 'get_most_likely function: \n\n'+ '*'*10 + ' doc ' + '*'*10
+print '\n' + T.get_most_likely.func_doc
+print '*'*30
 
-raw_input("         ====> Hit some key to launch LRT")
+raw_input("\n         ====> Hit some key to launch LRT")
 
 pv = T.get_most_likely('M2', 'M1')
 if pv <= 0.05:
@@ -77,7 +82,8 @@ else:
 
 ###
 # tengo que encontrar un ejemplo mas bonito pero bueno.... :P
-print '\n\n\n         ----> We now add histograms to our tree to repesent site models'
+print '\n\n\n         ----> We now add histograms to our tree to repesent site models with add_histface function: \n\n%s\n%s\n%s\n'\
+      % ('*'*10 + ' doc ' + '*'*10,T.add_histface.func_doc,'*'*30)
 raw_input("         ====> Hit some key to display")
 T.add_histface('M2')
 T.add_histface('M1',down = False)
@@ -89,6 +95,9 @@ T.show()
 # re-run without reeeeeeeeee-run
 print '\n\n\n         ----> Now we have runned once those 3 models, we can load again our tree from'
 print '         ----> our tree file and alignment file, and this time load directly oufiles from previous'
+print '               with the function link_to_evol_model \n\n%s\n%s\n%s\n' % ('*'*10 + ' doc ' + '*'*10, \
+                                                                      T.link_to_evol_model.func_doc, \
+                                                                      '*'*30)
 raw_input('runs\n         ====> hit some key to see.')
 T = CodemlTree(TREE_PATH)
 T.link_to_alignment(ALG_PATH)
@@ -109,7 +118,7 @@ print T.write(format=9)
 name = None
 while name not in T.get_leaf_names():
     name = raw_input('         ====> As you need to mark some branches to run branch\n\
-    models, typ the name of one leaf: ')
+    models, type the name of one leaf: ')
 
 idname = T.get_leaves_by_name(name)[0].idname
 
@@ -119,8 +128,34 @@ print 'have a look to the mark: '
 print re.sub('#','|',re.sub('[0-9a-zA-Z_(),;]',' ',T.write(format=9)))
 print re.sub('#','v',re.sub('[0-9a-zA-Z_(),;]',' ',T.write(format=9)))
 print T.write(format=9)
+print '\n You have marked the tree with a command like:  T.mark_tree([%d])\n' % (idname)
+print '\n\n\n         ----> We are now going to run branch-site models bsA and bsA1:\n\n'
+raw_input("         ====> hit some key to start computation with our marked tree")
+for model in ['bsA','bsA1']:
+    print 'running model ' + model
+    T.run_paml(model)
 
-print '\n\n         ---->  more or less, all we have done here is feasable from the GUI, try it...'
+
+print '\n\n\n            ----> again we use the get_most_likely function to compute the LRT between those models:\n'
+raw_input("         ====> Hit some key to launch LRT")
+
+pv = T.get_most_likely('bsA', 'bsA1')
+if pv <= 0.05:
+    print '         ---->   -> most likely model is model bsA, there is positive selection, pval: ',pv
+    print '                         ' + name + ' is under positive selection.'
+else:
+    print '         ---->   -> most likely model is model bsA1, pval of LRT: ',pv
+    print '                         ' + name + ' is not under positive selection.'
+
+
+
+
+
+
+
+
+print '\n\n         ---->  more or less, all we have done here is feasable from the GUI,'
+print '                 try to reload our runs through it....'
 raw_input('hit something to start')
 
 T = CodemlTree(TREE_PATH)
@@ -128,3 +163,6 @@ T.link_to_alignment(ALG_PATH)
 T.workdir = (WORKING_PATH)
 T.show()
 sys.stderr.write('\n\nThe End.\n\n')
+
+
+
