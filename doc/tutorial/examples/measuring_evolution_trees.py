@@ -129,6 +129,9 @@ print re.sub('#','|',re.sub('[0-9a-zA-Z_(),;]',' ',T.write(format=9)))
 print re.sub('#','v',re.sub('[0-9a-zA-Z_(),;]',' ',T.write(format=9)))
 print T.write(format=9)
 print '\n You have marked the tree with a command like:  T.mark_tree([%d])\n' % (idname)
+print '\n%s\n%s\n%s\n' % ('*'*10 + ' doc ' + '*'*10, T.mark_tree.func_doc, \
+                                                                      '*'*30)
+
 print '\n\n\n         ----> We are now going to run branch-site models bsA and bsA1:\n\n'
 raw_input("         ====> hit some key to start computation with our marked tree")
 for model in ['bsA','bsA1']:

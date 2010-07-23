@@ -20,19 +20,12 @@
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
 # #END_LICENSE#############################################################
-from sys import stderr, stdout
-import time
-import re
-import math
-import random
-import types
-import copy
-import string
+
 import numpy
 from PyQt4  import QtCore
 from PyQt4  import QtGui
-from PyQt4.QtGui import QPrinter
-from ete_dev import faces, layouts
+from ete_dev import faces
+
 
 try:
     from PyQt4 import QtOpenGL
@@ -41,7 +34,7 @@ try:
 except ImportError:
     USE_GL = False
 
-from ete_dev import Tree, PhyloTree, ClusterTree
+from ete_dev import Tree, ClusterTree
 
 __all__ = ["show_tree", "render_tree", "TreeImageProperties"]
 
@@ -63,33 +56,37 @@ _MIN_NODE_STYLE = {
     "ymargin": 0
 }
 
-class HistFace(faces.Face):
+class HistFace (faces.Face):
     """
     Creates a Histogram object, usually related to a sequence object
 
     Argument description
     --------------------
     values:  list of vals for each bar of histogram
-    color:   color of each bar, must be of same length, default ['grey']* len (values)
+    color:   color of each bar, must be of same length.
+             default -> ['grey']* len (values)
     header:  title of the histogram
-    mean:    represents tha value you want to represent as mean, hist wan't be higher than twice this value.
-             this value will appear in the Y axe
-    fsize:   relative to fsize of the sequence drawn, both by default = 10
+    mean:    represents tha value you want to represent as mean,
+             hist wan't be higher than twice this value. This value
+             will appear in the Y axe
+    fsize:   relative to fsize of the sequence drawn.
+             Both by default = 10
     height:  of the histogram default 120
 
 
     Others
     ------
-    self.aligned values of False won't align histogram, if you set it to True.
+    self.aligned values of False won't align histogram, if you set
+    it to True.
 
     """
 
-    def __init__(self, values, colors = [], header = '', mean = 0, \
+    def __init__(self, values, colors=[], header='', mean=0, \
                  fsize=11, height = 100):
         faces.Face.__init__(self)
         if colors == []: colors = ['grey']*len (values)
         if len (colors) != len (values):
-            sys.exit('ERROR: value and color arrays differ in length!!!\n')
+            exit('ERROR: value and color arrays differ in length!!!\n')
         self.mean = (height)/2
         self.meanVal = mean
         if mean == 0: self.max = max (values)
@@ -102,15 +99,18 @@ class HistFace(faces.Face):
         self.header = header
 
     def update_pixmap(self):
-        scale_x_offset = 5
+        '''
+        to refresh?
+        '''
         header_font_size = 8
         # Calculates  header's size
-        header_font = QtGui.QFont("Arial", header_font_size) # could this be modified by the user?... no... fuckyou user!!!
+        header_font = QtGui.QFont("Arial", header_font_size) \
+                      # could this be modified by the user?
         # Calculates size of main plot
         fm = QtGui.QFontMetrics(self.font)
         height = self.height
         width = fm.size(QtCore.Qt.AlignTop, 'A'*(len (self.values))).width()
-        self.pixmap = QtGui.QPixmap(width+20,height)
+        self.pixmap = QtGui.QPixmap(width+20, height)
         self.pixmap.fill()
         p = QtGui.QPainter(self.pixmap)
         # Set the start x and y of the main plot (taking into account
@@ -118,12 +118,12 @@ class HistFace(faces.Face):
         x = (-1 * self._x_offset) 
         y = height - fm.underlinePos()*2
 
-        customPen = QtGui.QPen(QtGui.QColor("black"),1)
+        customPen = QtGui.QPen(QtGui.QColor("black"), 1)
         p.setPen(customPen)
-        p.drawLine(x,y,x+width,y)
+        p.drawLine(x, y, x + width, y)
         customPen.setStyle(QtCore.Qt.DashLine)
         p.setPen(customPen)
-        p.drawLine(x,y-self.mean,x+width,y-self.mean)
+        p.drawLine(x, y-self.mean, x+width, y-self.mean)
 
         customPen.setStyle(QtCore.Qt.SolidLine)
         p.setPen(customPen)
@@ -140,20 +140,131 @@ class HistFace(faces.Face):
             val = self.values[i]
             col = self.colors[i]
             posX += sep
-            customPen  = QtGui.QPen(QtGui.QColor(col),1)
+            customPen  = QtGui.QPen (QtGui.QColor (col), 1)
             p.setPen(customPen)
             if abs(val) <= (self.height-25):
-                p.drawLine(posX,y,posX,y-val)
-                p.drawLine(posX+4,y,posX+4,y-val)
-                p.drawLine(posX+4,y-val,posX,y-val)
+                p.drawLine(posX, y, posX, y-val)
+                p.drawLine(posX+4, y, posX+4, y-val)
+                p.drawLine(posX+4, y-val, posX, y-val)
             else:
-                p.drawLine(posX+1,y,posX+1,y-(self.height-25))
-                p.drawLine(posX+4,y,posX+4,y-(self.height-25))
-                p.drawLine(posX+1,y-(self.height-15),posX+1,y-(self.height-20))
-                p.drawLine(posX+4,y-(self.height-15),posX+4,y-(self.height-20))
-                p.drawLine(posX+4,y-(self.height-15),posX+1,y-(self.height-15))
+                p.drawLine(posX+1, y, posX+1, y-(self.height-25))
+                p.drawLine(posX+4, y, posX+4, y-(self.height-25))
+                p.drawLine(posX+1, y-(self.height-15), \
+                           posX+1, y-(self.height-20))
+                p.drawLine(posX+4, y-(self.height-15), \
+                           posX+4, y-(self.height-20))
+                p.drawLine(posX+4, y-(self.height-15), \
+                           posX+1, y-(self.height-15))
 
-class CustomProfileFace(faces.Face):
+
+class HeatFace (faces.Face):
+    """
+    Creates a Heatmap object, usually related to a sequence object
+
+    Argument description
+    --------------------
+    values:  list of vals for each bar of histogram
+    color:   color of each bar, must be of same length.
+             default -> ['grey']* len (values)
+    header:  title of the histogram
+    mean:    represents tha value you want to represent as mean,
+             hist wan't be higher than twice this value. This value
+             will appear in the Y axe
+    fsize:   relative to fsize of the sequence drawn.
+             Both by default = 10
+    height:  of the histogram default 120
+
+
+    Others
+    ------
+    self.aligned values of False won't align histogram, if you set
+    it to True.
+    """
+
+    def __init__(self, values, colors=[], header='', mean=0, \
+                 fsize=11, height = 100):
+        faces.Face.__init__(self)
+        if colors == []: colors = ['grey']*len (values)
+        if len (colors) != len (values):
+            exit('ERROR: value and color arrays differ in length!!!\n')
+        self.mean = (height)/2
+        self.meanVal = mean
+        if mean == 0: self.max = max (values)
+        else:         self.max = mean*2
+        self.values = map (lambda x: float(x)/self.max*height, values)
+        self.colors = colors
+        self.fsize  = int ((float (fsize)))
+        self.font   = QtGui.QFont("Courier", self.fsize)
+        self.height = height+25
+        self.header = header
+
+    def update_pixmap(self):
+        '''
+        to refresh?
+        '''
+        header_font_size = 8
+        # Calculates  header's size
+        header_font = QtGui.QFont("Arial", header_font_size) \
+                      # could this be modified by the user?
+        # Calculates size of main plot
+        fm = QtGui.QFontMetrics(self.font)
+        height = self.height
+        width = fm.size(QtCore.Qt.AlignTop, 'A'*(len (self.values))).width()
+        self.pixmap = QtGui.QPixmap(width+20, height)
+        self.pixmap.fill()
+        p = QtGui.QPainter(self.pixmap)
+        # Set the start x and y of the main plot (taking into account
+        # header and scale text)
+        x = (-1 * self._x_offset) 
+        y = height - fm.underlinePos()*2
+
+        customPen = QtGui.QPen(QtGui.QColor("black"), 1)
+        p.setPen(customPen)
+        p.drawLine(x, y, x + width, y)
+        customPen.setStyle(QtCore.Qt.DashLine)
+        p.setPen(customPen)
+        p.drawLine(x, y-self.mean, x+width, y-self.mean)
+
+        customPen.setStyle(QtCore.Qt.SolidLine)
+        p.setPen(customPen)
+        sep = float (width) / len(self.values)
+        posX = x - sep
+
+        p.setFont(header_font)
+        p.setPen(QtGui.QColor("black"))
+        p.drawText(x, y-height+12, self.header)
+        p.drawText(x+width+2, y+2, "0")
+        p.drawText(x+width+2, y-self.mean+2, str(self.meanVal))
+
+        for i in range (0, len (self.values)):
+            val = self.values[i]
+            col = self.colors[i]
+            posX += sep
+            customPen  = QtGui.QPen (QtGui.QColor (col), 1)
+            p.setPen(customPen)
+            if abs(val) <= (self.height-25):
+                p.drawLine(posX, y, posX, y-val)
+                p.drawLine(posX+4, y, posX+4, y-val)
+                p.drawLine(posX+4, y-val, posX, y-val)
+            else:
+                p.drawLine(posX+1, y, posX+1, y-(self.height-25))
+                p.drawLine(posX+4, y, posX+4, y-(self.height-25))
+                p.drawLine(posX+1, y-(self.height-15), \
+                           posX+1, y-(self.height-20))
+                p.drawLine(posX+4, y-(self.height-15), \
+                           posX+4, y-(self.height-20))
+                p.drawLine(posX+4, y-(self.height-15), \
+                           posX+1, y-(self.height-15))
+
+
+
+
+
+
+
+
+
+class CustomProfileFace (faces.Face):
     """ Creates a new vector profile face object.
 
     Arguments description
@@ -166,7 +277,8 @@ class CustomProfileFace(faces.Face):
     height:   Plot width in pixels. (defaulf=40)
     style:    Plot style: "lines", "bars", "cbars" or "heatmap". (default="lines")
     """
-    def __init__(self,profile,deviation,max_v,min_v,center_v,width=200,height=40,style="lines",colorscheme=2):
+    def __init__(self, profile, deviation, max_v, min_v, center_v, width=200, \
+                 height=40, style="lines", colorscheme=2):
         faces.Face.__init__(self)
 
         self.width  = width
@@ -182,6 +294,9 @@ class CustomProfileFace(faces.Face):
         self.deviation_vector = deviation
         
     def update_pixmap(self):
+        '''
+        to refresh??
+        '''
         if self.style=="lines":
             self.draw_line_profile()
         elif self.style=="bars":
