@@ -203,12 +203,18 @@ class CodemlNode(PhyloNode):
           * Site models (M0, M1, M2, M7, M8) will give evol values by site
             and likelihood
         '''
+        if not os.path.isfile(path):
+            print >> sys.stderr, "ERROR: not a file: "+path
+            return 1
         self._dic[model] = \
                          parse_paml(path, model, rst=rst, \
-                                    codon_freq=hasattr (self, '_codon_freq'))
+                                    codon_freq=\
+                                    not (hasattr (self, '_codon_freq')))
         if not hasattr (self, '_codon_freq'):
             self._codon_freq = self._dic[model]['codonFreq']
+            self._kappa = self._dic[model]['kappa']
             del (self._dic[model]['codonFreq'])
+            del (self._dic[model]['kappa'])
         if model == 'fb':
             self._getfreebranch()
         elif model.startswith('M'):
@@ -261,12 +267,14 @@ class CodemlNode(PhyloNode):
 
     def get_most_likely(self, altn, null):
         '''
-        returns ths pvalue of mod1 being most likely than mod2
+        Returns pvalue of LRT between alternative model and null model.
+        
         usual comparison are:
          * altern vs null
          -------------------
          * M2     vs M1     -> PS on sites
          * M8     vs M7     -> PS on sites
+         * M8     vs M8a    -> RX on sites?? think so....
          * bsA    vs bsA1   -> PS on sites on specific branch
          * bsA    vs M1     -> RX on sites on specific branch
          * bsD    vs bsC    -> different omegas on clades branches sites

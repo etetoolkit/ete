@@ -135,19 +135,18 @@ def parse_paml(pamout, model, rst=None, ndata=1, codon_freq=True):
         elif '..' in line and chk:
             chk = False
             dic['N'], dic['S'] = line.strip().split()[2:4]
-        elif line.startswith('Codon frequencies under model'):
-            codon_freq = True
-            dic['codonFreq'] = []
-            count = 0
-            continue
         elif codon_freq == True:
-            if line.startswith('  0.'):
-                line = re.sub('  ([0-9.]*)  ([0-9.]*)  ([0-9.]*)  ([0-9.]*)', \
-                              '\\1 \\2 \\3 \\4', line.strip())
-                dic['codonFreq'] += [line.split()]
-            else:
-                codon_freq = False
+            if line.startswith('Codon frequencies under model'):
+                dic['codonFreq'] = []
+                count = 0
                 continue
+            if line.startswith('  0.'):
+                    line = re.sub('  ([0-9.]*)  ([0-9.]*)  ([0-9.]*)  ([0-9.]*)', \
+                                  '\\1 \\2 \\3 \\4', line.strip())
+                    dic['codonFreq'] += [line.split()]
+            elif line.startswith('kappa (ts/tv)'):
+                dic['kappa'] = re.sub('kappa .* =  *([0-9.]+)$', \
+                                      '\\1', line.strip())
         if model.startswith('M'):
             if line.startswith('p: '):
                 for i in range (0, len (line.strip().split()[1:])):
