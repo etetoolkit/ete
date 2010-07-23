@@ -217,7 +217,7 @@ class CodemlNode(PhyloNode):
             del (self._dic[model]['kappa'])
         if model == 'fb':
             self._getfreebranch()
-        elif model.startswith('M'):
+        elif model.startswith('M') and model != 'M0':
             self._dic[model+'_sites'] = get_sites(self._dic[model]['rst'])
 
     def add_histface(self, mdl, down=True):

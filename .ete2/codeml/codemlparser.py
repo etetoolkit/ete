@@ -96,7 +96,7 @@ def parse_paml(pamout, model, rst=None, ndata=1, codon_freq=True):
                       'WARNING: seems that you have no multiple dataset here...'\
                       + '\n    trying as with only one dataset'
                 #return parse_paml (pamout, model, rst=rst, ndata=1)
-            if model.startswith('M') and rst == None:
+            if model.startswith('M') and model != 'M0' and rst == None:
                 rst = re.sub('out$', 'rst', pamout)
                 rstout = open (rst + '_' + str(num), 'w')
                 copy = False
@@ -121,7 +121,7 @@ def parse_paml(pamout, model, rst=None, ndata=1, codon_freq=True):
     dic = {}
     val = ['w', 'dN', 'dS', 'bL', 'bLnum']
     chk = False
-    if model.startswith('M'):
+    if model.startswith('M') and model != 'M0':
         if rst == None:
             rst = re.sub('out$', 'rst', pamout)
         dic['rst'] = rst
@@ -148,6 +148,8 @@ def parse_paml(pamout, model, rst=None, ndata=1, codon_freq=True):
                 dic['kappa'] = re.sub('kappa .* =  *([0-9.]+)$', \
                                       '\\1', line.strip())
         if model.startswith('M'):
+            if line.startswith('omega (dN'):
+                line = re.sub('^omega \(dN/dS\) = ', 'w: ', line)
             if line.startswith('p: '):
                 for i in range (0, len (line.strip().split()[1:])):
                     dic['p'+str(i)] = line.strip().split()[i+1]
