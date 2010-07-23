@@ -257,7 +257,7 @@ class CodemlNode(PhyloNode):
              t.get_newick(["species","name"], format=1)
         """
         from re import sub
-        nwk = sub('\[&&NHX:mark=([ #0-9]*)\]', r'\1', \
+        nwk = sub('\[&&NHX:mark=([ #0-9.]*)\]', r'\1', \
                   write_newick(self, features=['mark'],format=format))
         if outfile is not None:
             open(outfile, "w").write(nwk)
