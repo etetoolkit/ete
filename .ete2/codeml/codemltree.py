@@ -177,14 +177,21 @@ class CodemlNode(PhyloNode):
     def mark_tree(self, node_ids, **kargs):
         '''
         function to mark branches on tree in order that paml could interpret it.
-        takes a marks argument that should be a list of #1,#1,#2 etc...
+        takes a "marks" argument that should be a list of #1,#1,#2
+        e.g.: t=Tree.mark_tree([2,3], marks=["#1","#2"])
         '''
+        from re import match
         if kargs.has_key('marks'):
             marks = list(kargs['marks'])
         else:
             marks = ['#1']*len (node_ids)
         for node in self.iter_descendants():
             if node.idname in node_ids:
+                if '.' in marks[node_ids.index(node.idname)] or \
+                       match ('#[0-9][0-9]*', marks[node_ids.index(node.idname)])==None :
+                    print >> sys.stderr, \
+                          'WARNING: marks should be "#" sign directly '+\
+                    'followed by integer\n' + self.mark_tree.func_doc
                 node.add_feature('mark', ' '+marks[node_ids.index(node.idname)])
             elif not 'mark' in node.features:
                 node.add_feature('mark', '')
