@@ -195,9 +195,9 @@ class CodemlNode(PhyloNode):
             marks = ['#1']*len (node_ids)
         for node in self.iter_descendants():
             if node.idname in node_ids:
-                if '.' in marks[node_ids.index(node.idname)] or \
+                if ('.' in marks[node_ids.index(node.idname)] or \
                        match ('#[0-9][0-9]*', \
-                              marks[node_ids.index(node.idname)])==None\
+                              marks[node_ids.index(node.idname)])==None)\
                               and not kargs.has_key('silent'):
                     print >> sys.stderr, \
                           'WARNING: marks should be "#" sign directly '+\
