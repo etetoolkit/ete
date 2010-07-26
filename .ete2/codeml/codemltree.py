@@ -197,7 +197,8 @@ class CodemlNode(PhyloNode):
             if node.idname in node_ids:
                 if '.' in marks[node_ids.index(node.idname)] or \
                        match ('#[0-9][0-9]*', \
-                              marks[node_ids.index(node.idname)])==None :
+                              marks[node_ids.index(node.idname)])==None\
+                              and not kargs.has_key('silent'):
                     print >> sys.stderr, \
                           'WARNING: marks should be "#" sign directly '+\
                     'followed by integer\n' + self.mark_tree.func_doc
@@ -236,7 +237,7 @@ class CodemlNode(PhyloNode):
         elif model.startswith('M') and model != 'M0':
             self._dic[model+'_sites'] = get_sites(self._dic[model]['rst'])
 
-    def add_histface(self, mdl, down=True):
+    def add_histface(self, mdl, down=True, lines=[1.0], col_lines=['grey']):
         '''
         add histogram face for a given site mdl (M1, M2, M7, M8)
         can choose to put it up or down the tree.
@@ -248,7 +249,7 @@ class CodemlNode(PhyloNode):
             return None
         ldic = self._dic[mdl + '_sites']
         hist = HistFace(values = ldic['w.' + mdl], \
-                        mean = 1.0, \
+                        lines = lines, col_lines=col_lines, \
                         colors=colorize_rst(ldic['pv.'+mdl], \
                                             mdl, ldic['class.'+mdl]), \
                         header= 'Omega value for sites under %s model' % (mdl))

@@ -66,9 +66,11 @@ class HistFace (faces.Face):
     color:   color of each bar, must be of same length.
              default -> ['grey']* len (values)
     header:  title of the histogram
-    mean:    represents tha value you want to represent as mean,
-             hist wan't be higher than twice this value. This value
-             will appear in the Y axe
+    lines:   represents tha value you want to represent as dashed
+             lines, the first if this value will be taken as mean.
+             Hist wan't be higher than twice this mean. Values of
+             lines will appear in the Y axe
+    col_lines: color of lines (and corresponding values).
     fsize:   relative to fsize of the sequence drawn.
              Both by default = 10
     height:  of the histogram default 120
@@ -81,22 +83,27 @@ class HistFace (faces.Face):
 
     """
 
-    def __init__(self, values, colors=[], header='', mean=0, \
-                 fsize=11, height = 100):
+    def __init__(self, values, colors=[], header='', \
+                 fsize=11, height = 100, lines=[0.0], \
+                 col_lines = ['black']):
         faces.Face.__init__(self)
         if colors == []: colors = ['grey']*len (values)
         if len (colors) != len (values):
             exit('ERROR: value and color arrays differ in length!!!\n')
         self.mean = (height)/2
-        self.meanVal = mean
-        if mean == 0: self.max = max (values)
-        else:         self.max = mean*2
+        self.meanVal = lines[0]
+        if lines == [0]:
+            self.max = max (values)
+        else:
+            self.max = lines[0]*2
         self.values = map (lambda x: float(x)/self.max*height, values)
         self.colors = colors
         self.fsize  = int ((float (fsize)))
         self.font   = QtGui.QFont("Courier", self.fsize)
         self.height = height+25
         self.header = header
+        self.lines  = lines
+        self.col_lines = col_lines
 
     def update_pixmap(self):
         '''
@@ -121,10 +128,14 @@ class HistFace (faces.Face):
         customPen = QtGui.QPen(QtGui.QColor("black"), 1)
         p.setPen(customPen)
         p.drawLine(x, y, x + width, y)
-        customPen.setStyle(QtCore.Qt.DashLine)
+        for line, col in zip (self.lines, self.col_lines):
+            customPen = QtGui.QPen(QtGui.QColor(col), 1)
+            customPen.setStyle(QtCore.Qt.DashLine)
+            p.setPen(customPen)
+            line = line* self.mean/self.meanVal
+            p.drawLine(x, y-line, x+width, y-line)
+        customPen = QtGui.QPen(QtGui.QColor("black"), 1)
         p.setPen(customPen)
-        p.drawLine(x, y-self.mean, x+width, y-self.mean)
-
         customPen.setStyle(QtCore.Qt.SolidLine)
         p.setPen(customPen)
         sep = float (width) / len(self.values)
@@ -134,8 +145,13 @@ class HistFace (faces.Face):
         p.setPen(QtGui.QColor("black"))
         p.drawText(x, y-height+12, self.header)
         p.drawText(x+width+2, y+2, "0")
-        p.drawText(x+width+2, y-self.mean+2, str(self.meanVal))
-
+        for line, col in zip (self.lines, self.col_lines):
+            customPen = QtGui.QPen(QtGui.QColor(col), 1)
+            p.setPen(customPen)
+            p.drawText(x+width+2, \
+                       y-line* self.mean/self.meanVal+2, str(line))
+        customPen = QtGui.QPen(QtGui.QColor("black"), 1)
+        p.setPen(customPen)
         for i in range (0, len (self.values)):
             val = self.values[i]
             col = self.colors[i]
