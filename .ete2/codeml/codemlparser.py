@@ -32,7 +32,7 @@ def get_sites(path,ndata=1):
         if l.startswith('dN/dS '):
             check = re.sub('.*K=', '', l)
             check = int (re.sub('\)', '', check))
-            mod = (('M'+str(check-1) if check < 4 else 'M'+str(check-3)))
+            mod = (('M'+str(check-1) if check < 4 else 'M'+str(check-1)))
         expr = 'Naive' if check % 2 == 0 else 'Bayes'
         if l.startswith(expr+' Empirical Bayes'):
             vals = True
@@ -148,6 +148,10 @@ def parse_paml(pamout, model, rst=None, ndata=1, codon_freq=True):
                 dic['kappa'] = re.sub('kappa .* =  *([0-9.]+)$', \
                                       '\\1', line.strip())
         if model.startswith('M'):
+            if int(model[1])>6 and 'p=' in line and 'q=' in line:
+                dic['p'], dic['q'] = re.sub(\
+                    '.* p=  *([0-9]+\.[0-9]+) q=  *([0-9]+\.[0-9]+)'\
+                    , '\\1 \\2', line.strip()).split()
             if line.startswith('omega (dN'):
                 line = re.sub('^omega \(dN/dS\) = ', 'w: ', line)
             if line.startswith('p: '):

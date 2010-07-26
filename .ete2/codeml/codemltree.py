@@ -84,7 +84,8 @@ class CodemlNode(PhyloNode):
             if nucleotides:
                 leaf.sequence = translate(leaf.nt_sequence)
 
-    def show(self):
+    def show(self, layout=None, \
+             image_properties=None, up_faces=[], down_faces=[]):
         '''
         call super show adding up and down faces
         '''
@@ -100,6 +101,7 @@ class CodemlNode(PhyloNode):
                                        down_faces = self.down_faces, w=w, h=h)
 
     def run_paml(self, model, ctrl_string='', gappy=True, rst=None):
+        from subprocess import Popen, PIPE
         '''
         to run paml, needs tree linked to alignment.
         model name needs to start by one of:
@@ -126,7 +128,6 @@ class CodemlNode(PhyloNode):
         TODO: add feature lnL to nodes for branch tests. e.g.: "n.add_features"
         TODO: add possibility to avoid local minima of lnL by rerunning with other
         starting values of omega, alpha etc...
-        TODO: Change os.system by something better :P
         
         '''
         fullpath = os.path.join(self.workdir, model)
@@ -141,9 +142,15 @@ class CodemlNode(PhyloNode):
         # write algn file
         seqs = []
         nams = []
-        for leaf in self.iter_leaves():
-            nams.append(leaf.name)
-            seqs.append(leaf.nt_sequence)
+        try:
+            for leaf in self.iter_leaves():
+                nams.append(leaf.name)
+                seqs.append(leaf.nt_sequence)
+        except AttributeError:
+            print >> sys.stderr, \
+            "ERROR: you first need to link your tree to an alignment.\n" + \
+            self.link_to_alignment.func_doc
+            return 1
         if float(sum(map(len, seqs)) != len (seqs)* len(seqs[0])):
             print >> sys.stderr, \
                   "ERROR: sequences of different length"
@@ -164,15 +171,16 @@ class CodemlNode(PhyloNode):
         ctrl.close()
         hlddir = os.getcwd()
         os.chdir(fullpath)
-        err = os.system(self.codemlpath + ' tmp.ctl')
-        if err != 0:
-            print >> sys.stderr, \
+        proc = Popen([self.codemlpath, 'tmp.ctl'], stdout=PIPE)
+        run, err = proc.communicate()
+        if err is not None:
+            print >> stderr, err + \
                   "ERROR: codeml not found!!!\n" + \
                   "       define your variable CodemlTree.codemlpath"
-            sys.exit()
-        #os.system('mv rst rst.'+model)
+            return 1
         os.chdir(hlddir)
         self.link_to_evol_model(os.path.join(fullpath,'out'), model, rst)
+        self._dic[model]['codeml_run'] = run
 
     def mark_tree(self, node_ids, **kargs):
         '''
