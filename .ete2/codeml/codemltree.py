@@ -89,8 +89,8 @@ class CodemlNode(PhyloNode):
         '''
         call super show adding up and down faces
         '''
-        super(CodemlTree, self).show(up_faces = self.up_faces, \
-                                     down_faces = self.down_faces)
+        super(CodemlTree, self).show(layout=layout, up_faces=self.up_faces, \
+                                     down_faces=self.down_faces)
 
     def render(self, filename, w=None, h=None, \
                img_properties=None, header=None):
