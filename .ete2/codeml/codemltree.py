@@ -92,12 +92,13 @@ class CodemlNode(PhyloNode):
         super(CodemlTree, self).show(layout=layout, up_faces=self.up_faces, \
                                      down_faces=self.down_faces)
 
-    def render(self, filename, w=None, h=None, \
+    def render(self, filename, layout=None, w=None, h=None, \
                img_properties=None, header=None):
         '''
         call super show adding up and down faces
         '''
-        super(CodemlTree, self).render(filename, up_faces = self.up_faces, \
+        super(CodemlTree, self).render(filename, layout=layout, \
+                                       up_faces=self.up_faces, \
                                        down_faces = self.down_faces, w=w, h=h)
 
     def run_paml(self, model, ctrl_string='', gappy=True, rst=None):
