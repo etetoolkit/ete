@@ -237,22 +237,39 @@ class CodemlNode(PhyloNode):
         elif model.startswith('M') and model != 'M0':
             self._dic[model+'_sites'] = get_sites(self._dic[model]['rst'])
 
-    def add_histface(self, mdl, down=True, lines=[1.0], col_lines=['grey']):
+    def add_histface(self, mdl, down=True, lines=[1.0], header='', \
+                     col_lines=['grey'], typ='hist',col=None):
         '''
-        add histogram face for a given site mdl (M1, M2, M7, M8)
+        To add histogram face for a given site mdl (M1, M2, M7, M8)
         can choose to put it up or down the tree.
+        2 types are available:
+           * hist: to draw histogram.
+           * line: to draw plot.
+        You can define color scheme by passing a diccionary, default is:
+            col = {'NS' : 'grey',
+                   'RX' : 'green',
+                   'RX+': 'green',
+                   'CN' : 'cyan',
+                   'CN+': 'blue',
+                   'PS' : 'orange',
+                   'PS+': 'red'}
         '''
-        from HistFace import HistFace
+        if typ == 'hist':
+            from HistFace import HistFace as face
+        else:
+            from HistFace import LineFaceBG as face
         if self._dic[mdl + '_sites'] == None:
             print >> sys.stderr, \
                   "WARNING: model %s not computed." % (mdl)
             return None
+        if header == '':
+            header = 'Omega value for sites under %s model' % (mdl)
         ldic = self._dic[mdl + '_sites']
-        hist = HistFace(values = ldic['w.' + mdl], \
-                        lines = lines, col_lines=col_lines, \
-                        colors=colorize_rst(ldic['pv.'+mdl], \
-                                            mdl, ldic['class.'+mdl]), \
-                        header= 'Omega value for sites under %s model' % (mdl))
+        hist = face(values = ldic['w.' + mdl], \
+                    lines = lines, col_lines=col_lines, \
+                    colors=colorize_rst(ldic['pv.'+mdl], \
+                                        mdl, ldic['class.'+mdl], col=col), \
+                    header=header)
         hist.aligned = True
         if down:
             self.down_faces = [hist]
