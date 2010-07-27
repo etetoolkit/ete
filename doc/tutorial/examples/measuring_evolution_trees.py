@@ -84,8 +84,17 @@ else:
 # tengo que encontrar un ejemplo mas bonito pero bueno.... :P
 print '\n\n\n         ----> We now add histograms to our tree to repesent site models with add_histface function: \n\n%s\n%s\n%s\n'\
       % ('*'*10 + ' doc ' + '*'*10,T.add_histface.func_doc,'*'*30)
-raw_input("         ====> Hit some key to display")
-T.add_histface('M2')
+raw_input("         ====> Hit some key to display, two types of histograms...")
+
+col = {'NS' : 'white',
+       'RX' : 'green',
+       'RX+': 'green',
+       'CN' : 'cyan',
+       'CN+': 'blue',
+       'PS' : 'orange',
+       'PS+': 'orange'}
+
+T.add_histface('M2',typ='line', col=col, lines=[0.6,0.3],col_lines=['black','grey'])
 T.add_histface('M1',down = False)
 
 T.show()

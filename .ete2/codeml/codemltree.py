@@ -102,7 +102,6 @@ class CodemlNode(PhyloNode):
                                        down_faces = self.down_faces, w=w, h=h)
 
     def run_paml(self, model, ctrl_string='', gappy=True, rst=None):
-        from subprocess import Popen, PIPE
         '''
         to run paml, needs tree linked to alignment.
         model name needs to start by one of:
@@ -131,6 +130,7 @@ class CodemlNode(PhyloNode):
         starting values of omega, alpha etc...
         
         '''
+        from subprocess import Popen, PIPE
         fullpath = os.path.join(self.workdir, model)
         os.system("mkdir -p %s" %fullpath)
         # write tree file
