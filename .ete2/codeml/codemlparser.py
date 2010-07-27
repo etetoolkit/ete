@@ -162,7 +162,6 @@ def parse_paml(pamout, model, rst=None, ndata=1, codon_freq=True):
                     line = re.sub('([0-9][0-9]*\.[0-9]{5})([0-9].*)', \
                                   '\\1 \\2', line.strip())
                 for i in range (0, len (line.strip().split()[1:])):
-                    if len (line.strip().split()[i+1])> 
                     dic['w'+str(i)] = line.strip().split()[i+1]
         if model.startswith('bs'):
             if line.startswith('proportion '):
