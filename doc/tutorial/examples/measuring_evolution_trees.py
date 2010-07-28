@@ -117,7 +117,7 @@ col = {'NS' : 'white',
        'PS' : 'orange',
        'PS+': 'tomato'}
 
-T.add_histface('M2',typ='line', col=col, lines=[1.0,0.3],col_lines=['black','grey'])
+T.add_histface('M2',typ='error', col=col, lines=[1.0,0.3],col_lines=['black','grey'])
 T.add_histface('M1',typ='line', col=col, lines=[1.0,0.3],col_lines=['black','grey'], down = False)
 
 T.show()

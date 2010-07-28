@@ -242,7 +242,7 @@ class CodemlNode(PhyloNode):
                                                   ndata=ndata)
 
     def add_histface(self, mdl, down=True, lines=[1.0], header='', \
-                     col_lines=['grey'], typ='hist',col=None):
+                     col_lines=['grey'], typ='hist',col=None, extras=['']):
         '''
         To add histogram face for a given site mdl (M1, M2, M7, M8)
         can choose to put it up or down the tree.
@@ -260,8 +260,10 @@ class CodemlNode(PhyloNode):
         '''
         if typ == 'hist':
             from HistFace import HistFace as face
-        else:
+        elif typ == 'line':
             from HistFace import LineFaceBG as face
+        elif typ == 'error':
+            from HistFace import ErrorLineFace as face
         if self._dic[mdl + '_sites'] == None:
             print >> sys.stderr, \
                   "WARNING: model %s not computed." % (mdl)
@@ -273,7 +275,7 @@ class CodemlNode(PhyloNode):
                     lines = lines, col_lines=col_lines, \
                     colors=colorize_rst(ldic['pv.'+mdl], \
                                         mdl, ldic['class.'+mdl], col=col), \
-                    header=header)
+                    header=header, errors=ldic['se.'+mdl], extras=extras)
         hist.aligned = True
         if down:
             self.down_faces = [hist]

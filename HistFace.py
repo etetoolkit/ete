@@ -21,7 +21,6 @@
 #
 # #END_LICENSE#############################################################
 
-import numpy
 from PyQt4  import QtCore
 from PyQt4  import QtGui
 from ete_dev import faces
@@ -33,8 +32,6 @@ try:
     USE_GL = False # Temporarily disabled
 except ImportError:
     USE_GL = False
-
-from ete_dev import Tree, ClusterTree
 
 __all__ = ["show_tree", "render_tree", "TreeImageProperties"]
 
@@ -83,9 +80,9 @@ class HistFace (faces.Face):
 
     """
 
-    def __init__(self, values, colors=[], header='', \
+    def __init__(self, values, errors, colors=[], header='', \
                  fsize=11, height = 100, lines=[0.0], \
-                 col_lines = ['black']):
+                 col_lines = ['black'], extras=['']):
         faces.Face.__init__(self)
         if colors == []: colors = ['grey']*len (values)
         if len (colors) != len (values):
@@ -202,9 +199,9 @@ class LineFaceBG (faces.Face):
 
     """
 
-    def __init__(self, values, colors=['white'], header='', \
+    def __init__(self, values, errors, colors=['white'], header='', \
                  fsize=11, height = 100, lines=[0.0], \
-                 col_lines = ['black']):
+                 col_lines = ['black'], extras=['']):
         faces.Face.__init__(self)
         if colors == []: colors = ['grey']*len (values)
         if len (colors) != len (values):
@@ -216,7 +213,7 @@ class LineFaceBG (faces.Face):
         else:
             self.max = lines[0]*2
         self.values = map (lambda x: float(x)/self.max*height, values)
-        if colors==['white']:
+        if colors == ['white']:
             colors = colors*len(values)
         self.colors = colors
         self.fsize  = int ((float (fsize)))
@@ -264,14 +261,17 @@ class LineFaceBG (faces.Face):
             customPen  = QtGui.QPen (QtGui.QColor (bgcol), 1)
             p.setBrush(QtGui.QColor(bgcol))
             p.setPen(customPen)
-            p.drawRect(posX, y-(self.height-25), 4+self.fsize/2, (self.height-25))
+            p.drawRect(posX, y-(self.height-25), 4+self.fsize/2, \
+                       (self.height-25))
             customPen  = QtGui.QPen (QtGui.QColor ("red"), 1.2)
             p.setPen(customPen)
             if abs(val) <= (self.height-25):
-                p.drawLine(posX+2+self.fsize/4, y-val, posX-sep+2+self.fsize/4, prev)
+                p.drawLine(posX+2+self.fsize/4, y-val, \
+                           posX-sep+2+self.fsize/4, prev)
                 prev = y-val
             else:
-                p.drawLine(posX+2+self.fsize/4, y-(self.height-25), posX-sep+2+self.fsize/4, prev)
+                p.drawLine(posX+2+self.fsize/4, y-(self.height-25), \
+                           posX-sep+2+self.fsize/4, prev)
                 prev = y-(self.height-25)
         customPen = QtGui.QPen(QtGui.QColor("black"), 1)
         p.setPen(customPen)
@@ -285,6 +285,171 @@ class LineFaceBG (faces.Face):
         p.setPen(QtGui.QColor("black"))
         p.drawText(x, y-height+12, self.header)
         p.drawText(x+width+2, y+2, "0")
+        for line, col in zip (self.lines, self.col_lines):
+            customPen = QtGui.QPen(QtGui.QColor(col), 1)
+            p.setPen(customPen)
+            p.drawText(x+width+2, \
+                       y-line* self.mean/self.meanVal+2, str(line))
+
+
+
+
+
+
+
+class ErrorLineFace (faces.Face):
+    """
+    Creates a Histogram object, usually related to a sequence object
+
+    Argument description
+    --------------------
+    values:  list of vals for each bar of histogram
+    color:   color of each bar, must be of same length.
+             default -> ['grey']* len (values)
+    header:  title of the histogram
+    lines:   represents tha value you want to represent as dashed
+             lines, the first if this value will be taken as mean.
+             Hist wan't be higher than twice this mean. Values of
+             lines will appear in the Y axe
+    col_lines: color of lines (and corresponding values).
+    fsize:   relative to fsize of the sequence drawn.
+             Both by default = 10
+    height:  of the histogram default 120
+
+
+    Others
+    ------
+    self.aligned values of False won't align histogram, if you set
+    it to True.
+
+    """
+
+    def __init__(self, values, errors, colors=['white'], header='', \
+                 fsize=11, height = 100, lines=[0.0], \
+                 col_lines = ['black'],num=True, extras=['']):
+        faces.Face.__init__(self)
+        if colors == []: colors = ['grey']*len (values)
+        if len (colors) != len (values):
+            exit('ERROR: value and color arrays differ in length!!!\n')
+        self.mean = (height)/2
+        self.meanVal = lines[0]
+        if lines == [0]:
+            self.max = max (values)
+        else:
+            self.max = lines[0]*2
+        self.values = map (lambda x: float(x)/self.max*height, values)
+        self.errors = map (lambda x: float(x)/self.max*height, errors)
+        if colors == ['white']:
+            colors = colors*len(values)
+        self.colors = colors
+        self.fsize  = int ((float (fsize)))
+        self.font   = QtGui.QFont("Courier", self.fsize)
+        self.height = height+25
+        self.header = header
+        self.lines  = lines
+        self.col_lines = col_lines
+        self.num = num
+        self.extras = extras
+
+    def update_pixmap(self):
+        '''
+        to refresh?
+        '''
+        header_font_size = 8
+        # Calculates  header's size
+        header_font = QtGui.QFont("Arial", header_font_size) \
+                      # could this be modified by the user?
+        # Calculates size of main plot
+        fm = QtGui.QFontMetrics(self.font)
+        if self.extras != ['']:
+            self.height += 10
+        height = self.height
+        width = fm.size(QtCore.Qt.AlignTop, 'A'*(len (self.values))).width()
+        self.pixmap = QtGui.QPixmap(width+20, height)
+        self.pixmap.fill()
+        p = QtGui.QPainter(self.pixmap)
+        # Set the start x and y of the main plot (taking into account
+        # header and scale text)
+        x = (-1 * self._x_offset)
+        y = height - fm.underlinePos()*2
+        if self.num:
+            y -= 8
+            height -= 8
+        if self.extras != ['']:
+            self.height -= 10
+        customPen = QtGui.QPen(QtGui.QColor("black"), 1)
+        p.setPen(customPen)
+        customPen.setStyle(QtCore.Qt.SolidLine)
+        p.setPen(customPen)
+        sep = float (width) / len(self.values)
+        posX = x - sep
+
+        p.setFont(header_font)
+        customPen = QtGui.QPen(QtGui.QColor("black"), 1)
+        p.setPen(customPen)
+        prev = y-self.values[0]
+        for i in range (0, len (self.values)):
+            val = self.values[i]
+            err = self.errors[i]
+            bgcol = self.colors[i]
+            posX += sep
+            customPen  = QtGui.QPen (QtGui.QColor (bgcol), 1)
+            p.setBrush(QtGui.QColor(bgcol))
+            p.setPen(customPen)
+            p.drawRect(posX, y-(self.height-25), 4+self.fsize/2, \
+                       (self.height-25))
+            customPen  = QtGui.QPen (QtGui.QColor ("red"), 1.2)
+            p.setPen(customPen)
+            if abs(val) <= (self.height-25):
+                p.drawLine(posX+self.fsize/4, y-val, \
+                           posX-sep+4+self.fsize/4, prev)
+                prev = y-val
+            else:
+                p.drawLine(posX+self.fsize/4, y-(self.height-25), \
+                           posX-sep+4+self.fsize/4, prev)
+                prev = y-(self.height-25)
+            customPen  = QtGui.QPen (QtGui.QColor ("grey" if bgcol == "white" \
+                                                   else "white"), 1.2)
+            p.setPen(customPen)
+            if abs(val) <= (self.height-25):
+                if (abs(val+err)) > (self.height-25):
+                    p.drawRect(posX+1+self.fsize/4, y-val, 2, \
+                               -((self.height-25)-val))
+                else:
+                    p.drawRect(posX+1+self.fsize/4, y-val, 2, -err)
+                if (abs(val-err)) > (self.height-25):
+                    p.drawRect(posX+1+self.fsize/4, y-val, 2, \
+                               ((self.height-25)-val))
+                else:
+                    p.drawRect(posX+1+self.fsize/4, y-val, 2, \
+                               err if err<val else val)
+            elif (val-err)<(self.height-25):
+                p.drawRect(posX+1+self.fsize/4, y-(self.height-25), 2, \
+                           (self.height-25)-(val-(err if err<val else val)))
+        customPen = QtGui.QPen(QtGui.QColor("black"), 1)
+        p.setPen(customPen)
+        p.drawLine(x, y, x + width, y)
+        for line, col in zip (self.lines, self.col_lines):
+            customPen = QtGui.QPen(QtGui.QColor(col), 1)
+            customPen.setStyle(QtCore.Qt.DashLine)
+            p.setPen(customPen)
+            line = line* self.mean/self.meanVal
+            p.drawLine(x, y-line, x+width, y-line)
+        p.setPen(QtGui.QColor("black"))
+        p.drawText(x, y-height+12, self.header)
+        p.setFont(QtGui.QFont("Arial", 7))
+        p.drawText(x+width+2, y+2, "0")
+        if self.extras != ['']:
+            posX = x - sep
+            for i in range (0, len (self.values)):
+                posX += sep
+                p.drawText(posX, 20, str(self.extras[i]))
+        if self.num:
+            posX = x - sep
+            for i in range (0, len (self.values)):
+                posX += sep
+                if (i+1)%5 == 0 or i==0:
+                    p.drawText(posX, y+10, str(i+1))
         for line, col in zip (self.lines, self.col_lines):
             customPen = QtGui.QPen(QtGui.QColor(col), 1)
             p.setPen(customPen)
