@@ -1,4 +1,4 @@
-from ete_dev import Tree
+from ete2 import Tree
 # Loads a tree. Note that we use format 1 to read internal node names
 t = Tree('((((H,K)D,(F,I)G)B,E)A,((L,(N,Q)O)J,(P,S)M)C);', format=1)
 print "original tree looks like this:"

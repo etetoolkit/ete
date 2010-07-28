@@ -30,7 +30,7 @@ import sys
 import os
 import re
 
-from ete_dev import TreeNode, SeqGroup
+from ete2 import TreeNode, SeqGroup
 from reconciliation import get_reconciled_tree
 import spoverlap
 

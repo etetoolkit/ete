@@ -4,8 +4,8 @@
 # PYTHONPATH=`pwd` python TEST_EXTRA_FACES.py
 #
 
-from ete_dev import Tree, faces, layouts
-from ete_dev.treeview import drawer
+from ete2 import Tree, faces, layouts
+from ete2.treeview import drawer
 from HistFace import HistFace, CustomProfileFace
 from PyQt4 import QtCore
 from PyQt4 import QtGui
