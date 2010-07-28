@@ -1,4 +1,4 @@
-from ete_dev import PhyloTree
+fromete2 import PhyloTree
 fasta_txt = """
  >seqA
  MAEIPDETIQQFMALT---HNIAVQYLSEFGDLNEALNSYYASQTDDIKDRREEAH

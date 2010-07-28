@@ -23,7 +23,7 @@
 
 from PyQt4  import QtCore
 from PyQt4  import QtGui
-from ete_dev import faces
+fromete2 import faces
 
 
 try:

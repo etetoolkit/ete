@@ -1,4 +1,4 @@
-from ete_dev import Tree
+fromete2 import Tree
 t = Tree( '(A:1,(B:1,(C:1,D:1):0.5):0.5);' )
 # Visit nodes in preorder (this is the default strategy)
 for n in t.traverse():

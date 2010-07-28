@@ -1,4 +1,4 @@
-from ete_dev import Tree
+fromete2 import Tree
 
 # Loads a tree with branch lenght information. Note that if no
 # distance info is provided in the newick, it will be initialized with

@@ -1,4 +1,4 @@
-from ete_dev import ClusterTree
+fromete2 import ClusterTree
 
 # Example of a minimalistic numerical matrix. It is encoded as a text
 # string for convenience, but it usally be loaded from a text file.

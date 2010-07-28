@@ -1,4 +1,4 @@
-from ete_dev import Tree
+fromete2 import Tree
 # Let's create simple tree
 t = Tree('((((H,K),(F,I)G),E),((L,(N,Q)O),(P,S)));')
 print "Original tree looks like this:"

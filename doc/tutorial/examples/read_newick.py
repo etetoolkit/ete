@@ -1,4 +1,4 @@
-from ete_dev import Tree
+fromete2 import Tree
 # Loads a tree structure from a newick string. The returned variable
 # 't' is the root node for the tree.
 t = Tree('(A:1,(B:1,(E:1,D:1):0.5):0.5);' )

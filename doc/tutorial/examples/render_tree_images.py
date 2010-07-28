@@ -1,4 +1,4 @@
-from ete_dev import Tree
+fromete2 import Tree
 t = Tree()
 # Generate a random tree with 50 leaves
 t.populate(50)

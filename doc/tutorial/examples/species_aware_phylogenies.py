@@ -1,4 +1,4 @@
-from ete_dev import PhyloTree
+fromete2 import PhyloTree
 # Reads a phylogenetic tree (using default species name encoding)
 t = PhyloTree("(((Hsa_001,Ptr_001),(Cfa_001,Mms_001)),(Dme_001,Dme_002));")
 #                              /-Hsa_001
