@@ -5,7 +5,7 @@
 from re import sub
 
 def controlGenerator(model, inTree='tree', inAlg='algn', \
-                     out='out', gappy=True, omega=0.7, ndata='*10'):
+                     out='out', gappy=True, omega=0.7, ndata=1):
     '''
     "omega" stands for starting value of omega, in the computation. Qs
     Zihen Yang says, it is good to try with different starting values.
@@ -27,7 +27,7 @@ def controlGenerator(model, inTree='tree', inAlg='algn', \
               'Mgene'        : 0,
               'fix_kappa'    : 0,
               'kappa'        : 2,
-              'ndata'        : ndata,
+              'ndata'        : '*10' if ndata==1 else ndata,
               'fix_omega'    : 0,
               'omega'        : omega,
               'fix_alpha'    : 1,

@@ -101,7 +101,8 @@ class CodemlNode(PhyloNode):
                                        up_faces=self.up_faces, \
                                        down_faces = self.down_faces, w=w, h=h)
 
-    def run_paml(self, model, ctrl_string='', gappy=True, rst=None):
+    def run_paml(self, model, ctrl_string='', gappy=True, rst=None, \
+                 ndata=1, keep=True):
         '''
         to run paml, needs tree linked to alignment.
         model name needs to start by one of:
@@ -166,7 +167,7 @@ class CodemlNode(PhyloNode):
             algn.write('>%s\n%s\n' % (nams[spe], seqs[spe]))
         algn.close()
         if ctrl_string == '':
-            ctrl_string = controlGenerator(model, gappy=gappy)
+            ctrl_string = controlGenerator(model, gappy=gappy, ndata=ndata)
         ctrl = open(fullpath+'/tmp.ctl', 'w')
         ctrl.write(ctrl_string)
         ctrl.close()
@@ -180,8 +181,9 @@ class CodemlNode(PhyloNode):
                   "       define your variable CodemlTree.codemlpath"
             return 1
         os.chdir(hlddir)
-        self.link_to_evol_model(os.path.join(fullpath,'out'), model, rst)
-        self._dic[model]['codeml_run'] = run
+        if keep:
+            self.link_to_evol_model(os.path.join(fullpath,'out'), model, rst)
+            self._dic[model]['codeml_run'] = run
 
     def mark_tree(self, node_ids, **kargs):
         '''
@@ -214,7 +216,7 @@ class CodemlNode(PhyloNode):
         '''
         return filter(lambda x: x.idname == idname, self.iter_descendants())
 
-    def link_to_evol_model(self, path, model, rst=None):
+    def link_to_evol_model(self, path, model, rst=None, ndata=1):
         '''
         link CodemlTree to evolutionary model
           * free-branch model ('fb') will append evol values to tree
@@ -226,7 +228,7 @@ class CodemlNode(PhyloNode):
             return 1
         self._dic[model] = \
                          parse_paml(path, model, rst=rst, \
-                                    codon_freq=\
+                                    ndata=ndata, codon_freq=\
                                     not (hasattr (self, '_codon_freq')))
         if not hasattr (self, '_codon_freq'):
             self._codon_freq = self._dic[model]['codonFreq']
@@ -236,7 +238,8 @@ class CodemlNode(PhyloNode):
         if model == 'fb':
             self._getfreebranch()
         elif model.startswith('M') and model != 'M0':
-            self._dic[model+'_sites'] = get_sites(self._dic[model]['rst'])
+            self._dic[model+'_sites'] = get_sites(self._dic[model]['rst'], \
+                                                  ndata=ndata)
 
     def add_histface(self, mdl, down=True, lines=[1.0], header='', \
                      col_lines=['grey'], typ='hist',col=None):

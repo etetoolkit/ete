@@ -65,6 +65,7 @@ T.show()
 print '\n\n\n         ----> We are now goingn to run sites model M1 and M2 with run_paml function:\n'
 raw_input("         ====> hit some key to start")
 for model in ['M1', 'M2']:
+    print 'running model ' + model
     T.run_paml(model)
 
 print '\n\n\n            ----> and use the get_most_likely function to compute the LRT between those models:\n'
@@ -84,17 +85,9 @@ else:
 # tengo que encontrar un ejemplo mas bonito pero bueno.... :P
 print '\n\n\n         ----> We now add histograms to our tree to repesent site models with add_histface function: \n\n%s\n%s\n%s\n'\
       % ('*'*10 + ' doc ' + '*'*10,T.add_histface.func_doc,'*'*30)
-raw_input("         ====> Hit some key to display, two types of histograms...")
+raw_input("         ====> Hit some key to display, histograms...")
 
-col = {'NS' : 'white',
-       'RX' : 'green',
-       'RX+': 'green',
-       'CN' : 'cyan',
-       'CN+': 'blue',
-       'PS' : 'orange',
-       'PS+': 'orange'}
-
-T.add_histface('M2',typ='line', col=col, lines=[0.6,0.3],col_lines=['black','grey'])
+T.add_histface('M2')
 T.add_histface('M1',down = False)
 
 T.show()
@@ -107,7 +100,7 @@ print '         ----> our tree file and alignment file, and this time load direc
 print '               with the function link_to_evol_model \n\n%s\n%s\n%s\n' % ('*'*10 + ' doc ' + '*'*10, \
                                                                       T.link_to_evol_model.func_doc, \
                                                                       '*'*30)
-raw_input('runs\n         ====> hit some key to see.')
+raw_input('runs\n         ====> hit some key to see (here histograms will be replaced by another kind of representation).')
 T = CodemlTree(TREE_PATH)
 T.link_to_alignment(ALG_PATH)
 T.workdir = (WORKING_PATH)
@@ -116,8 +109,16 @@ T.link_to_evol_model(T.workdir + '/fb/out','fb')
 T.link_to_evol_model(T.workdir + '/M1/out','M1')
 T.link_to_evol_model(T.workdir + '/M2/out','M2')
 
-T.add_histface('M2')
-T.add_histface('M1',down = False)
+col = {'NS' : 'white',
+       'RX' : 'green',
+       'RX+': 'green',
+       'CN' : 'cyan',
+       'CN+': 'blue',
+       'PS' : 'orange',
+       'PS+': 'tomato'}
+
+T.add_histface('M2',typ='line', col=col, lines=[1.0,0.3],col_lines=['black','grey'])
+T.add_histface('M1',typ='line', col=col, lines=[1.0,0.3],col_lines=['black','grey'], down = False)
 
 T.show()
 
