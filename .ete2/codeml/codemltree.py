@@ -74,7 +74,7 @@ class CodemlNode(PhyloNode):
             label_tree(self)
         self.mark_tree([])
 
-    def link_to_alignment(self, alignment, alg_format="fasta", nucleotides=True):
+    def link_to_alignment(self, alignment, alg_format="fasta", nucleotides=True, ndata=1):
         '''
         same function as for phyloTree, but translate sequences if nucleotides
         '''
@@ -102,7 +102,7 @@ class CodemlNode(PhyloNode):
                                        down_faces = self.down_faces, w=w, h=h)
 
     def run_paml(self, model, ctrl_string='', gappy=True, rst=None, \
-                 ndata=1, keep=True):
+                 ndata=1, keep=True, paml=False):
         '''
         to run paml, needs tree linked to alignment.
         model name needs to start by one of:
@@ -142,30 +142,7 @@ class CodemlNode(PhyloNode):
             open(fullpath+'/tree','w').write(\
                 super(CodemlTree, self).write(format=9))
         # write algn file
-        seqs = []
-        nams = []
-        try:
-            for leaf in self.iter_leaves():
-                nams.append(leaf.name)
-                seqs.append(leaf.nt_sequence)
-        except AttributeError:
-            print >> sys.stderr, \
-            "ERROR: you first need to link your tree to an alignment.\n" + \
-            self.link_to_alignment.func_doc
-            return 1
-        if float(sum(map(len, seqs)) != len (seqs)* len(seqs[0])):
-            print >> sys.stderr, \
-                  "ERROR: sequences of different length"
-            sys.exit()
-        if len (self) != len (seqs):
-            print >> sys.stderr, \
-                  "ERROR: number of sequences different of number of leaves"
-            sys.exit()
-        algn = open(fullpath+'/algn','w')
-        algn.write(' %d %d\n' % (len (seqs), len (seqs[0])))
-        for spe in range(len (seqs)):
-            algn.write('>%s\n%s\n' % (nams[spe], seqs[spe]))
-        algn.close()
+        self._write_ali(fullpath, paml)
         if ctrl_string == '':
             ctrl_string = controlGenerator(model, gappy=gappy, ndata=ndata)
         ctrl = open(fullpath+'/tmp.ctl', 'w')
@@ -184,6 +161,41 @@ class CodemlNode(PhyloNode):
         if keep:
             self.link_to_evol_model(os.path.join(fullpath,'out'), model, rst)
             self._dic[model]['codeml_run'] = run
+
+    def _write_ali(self, fullpath, paml=False):
+        '''
+        just to write alignment
+        '''
+        if not paml:
+            seqs = []
+            nams = []
+            try:
+                for leaf in self.iter_leaves():
+                    nams.append(leaf.name)
+                    seqs.append(leaf.nt_sequence)
+            except AttributeError:
+                print >> sys.stderr, \
+                "ERROR: you first need to link your tree to an alignment.\n" + \
+                self.link_to_alignment.func_doc
+                return 1
+            if float(sum(map(len, seqs)) != len (seqs)* len(seqs[0])):
+                print >> sys.stderr, \
+                      "ERROR: sequences of different length"
+                sys.exit()
+            if len (self) != len (seqs):
+                print >> sys.stderr, \
+                      "ERROR: number of sequences different of number of leaves"
+                sys.exit()
+            algn = open(fullpath+'/algn','w')
+            algn.write(' %d %d\n' % (len (seqs), len (seqs[0])))
+            for spe in range(len (seqs)):
+                algn.write('>%s\n%s\n' % (nams[spe], seqs[spe]))
+            algn.close()
+        else:
+            algn = open(fullpath+'/algn','w')
+            for line in open(paml, 'r'):
+                algn.write(line)
+            algn.close()
 
     def mark_tree(self, node_ids, **kargs):
         '''

@@ -174,31 +174,8 @@ class HistFace (faces.Face):
 
 class LineFaceBG (faces.Face):
     """
-    Creates a Histogram object, usually related to a sequence object
-
-    Argument description
-    --------------------
-    values:  list of vals for each bar of histogram
-    color:   color of each bar, must be of same length.
-             default -> ['grey']* len (values)
-    header:  title of the histogram
-    lines:   represents tha value you want to represent as dashed
-             lines, the first if this value will be taken as mean.
-             Hist wan't be higher than twice this mean. Values of
-             lines will appear in the Y axe
-    col_lines: color of lines (and corresponding values).
-    fsize:   relative to fsize of the sequence drawn.
-             Both by default = 10
-    height:  of the histogram default 120
-
-
-    Others
-    ------
-    self.aligned values of False won't align histogram, if you set
-    it to True.
-
+    DEPRECATED!!!
     """
-
     def __init__(self, values, errors, colors=['white'], header='', \
                  fsize=11, height = 100, lines=[0.0], \
                  col_lines = ['black'], extras=['']):
@@ -242,14 +219,12 @@ class LineFaceBG (faces.Face):
         # header and scale text)
         x = (-1 * self._x_offset) 
         y = height - fm.underlinePos()*2
-
         customPen = QtGui.QPen(QtGui.QColor("black"), 1)
         p.setPen(customPen)
         customPen.setStyle(QtCore.Qt.SolidLine)
         p.setPen(customPen)
         sep = float (width) / len(self.values)
         posX = x - sep
-
         p.setFont(header_font)
         customPen = QtGui.QPen(QtGui.QColor("black"), 1)
         p.setPen(customPen)
@@ -338,7 +313,7 @@ class ErrorLineFace (faces.Face):
         else:
             self.max = lines[0]*2
         self.values = map (lambda x: float(x)/self.max*height, values)
-        self.errors = map (lambda x: float(x)/self.max*height, errors)
+        self.errors = map (lambda x: float('0'+x)/self.max*height, errors)
         if colors == ['white']:
             colors = colors*len(values)
         self.colors = colors
@@ -349,7 +324,10 @@ class ErrorLineFace (faces.Face):
         self.lines  = lines
         self.col_lines = col_lines
         self.num = num
-        self.extras = extras
+        if len (extras) == len (values):
+            self.extras = extras
+        else:
+            self.extras = ['']
 
     def update_pixmap(self):
         '''
@@ -383,7 +361,6 @@ class ErrorLineFace (faces.Face):
         p.setPen(customPen)
         sep = float (width) / len(self.values)
         posX = x - sep
-
         p.setFont(header_font)
         customPen = QtGui.QPen(QtGui.QColor("black"), 1)
         p.setPen(customPen)
@@ -443,7 +420,8 @@ class ErrorLineFace (faces.Face):
             posX = x - sep
             for i in range (0, len (self.values)):
                 posX += sep
-                p.drawText(posX, 20, str(self.extras[i]))
+                p.drawText(1+posX-(len(self.extras[i])-1), 20,\
+                           str(self.extras[i]))
         if self.num:
             posX = x - sep
             for i in range (0, len (self.values)):
@@ -455,3 +433,8 @@ class ErrorLineFace (faces.Face):
             p.setPen(customPen)
             p.drawText(x+width+2, \
                        y-line* self.mean/self.meanVal+2, str(line))
+
+
+
+
+
