@@ -1,4 +1,4 @@
-fromete2 import Tree
+from ete_dev import Tree
 #Loads a tree
 tree = Tree( '((H:1,I:1):0.5, A:1, (B:1,(C:1,D:1):0.5):0.5);' )
 print "this is the original tree:"

@@ -1,5 +1,5 @@
 # Import Tree instance and faces module
-fromete2 import Tree, faces
+from ete_dev import Tree, faces
 
 # Loads an example tree
 nw = """

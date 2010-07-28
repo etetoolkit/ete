@@ -1,4 +1,4 @@
-fromete2 import Tree
+from ete_dev import Tree
 t = Tree() # Creates an empty tree
 A = t.add_child(name="A") # Adds a new child to the current tree root
                            # and returns it

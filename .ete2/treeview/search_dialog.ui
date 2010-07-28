@@ -1,0 +1,187 @@
+<ui version="4.0" >
+ <author>Jaime Huerta Cepas</author>
+ <class>Dialog</class>
+ <widget class="QDialog" name="Dialog" >
+  <property name="windowModality" >
+   <enum>Qt::ApplicationModal</enum>
+  </property>
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>424</width>
+    <height>160</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Dialog</string>
+  </property>
+  <widget class="QDialogButtonBox" name="buttonBox" >
+   <property name="geometry" >
+    <rect>
+     <x>140</x>
+     <y>120</y>
+     <width>171</width>
+     <height>32</height>
+    </rect>
+   </property>
+   <property name="orientation" >
+    <enum>Qt::Horizontal</enum>
+   </property>
+   <property name="standardButtons" >
+    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+   </property>
+   <property name="centerButtons" >
+    <bool>true</bool>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="leaves_only" >
+   <property name="windowModality" >
+    <enum>Qt::NonModal</enum>
+   </property>
+   <property name="geometry" >
+    <rect>
+     <x>30</x>
+     <y>80</y>
+     <width>181</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>Search only for leaf nodes</string>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="attrType" >
+   <property name="geometry" >
+    <rect>
+     <x>80</x>
+     <y>40</y>
+     <width>181</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <item>
+    <property name="text" >
+     <string>is</string>
+    </property>
+   </item>
+   <item>
+    <property name="text" >
+     <string>contains</string>
+    </property>
+   </item>
+   <item>
+    <property name="text" >
+     <string>== </string>
+    </property>
+   </item>
+   <item>
+    <property name="text" >
+     <string>>=</string>
+    </property>
+   </item>
+   <item>
+    <property name="text" >
+     <string>></string>
+    </property>
+   </item>
+   <item>
+    <property name="text" >
+     <string>&lt;=</string>
+    </property>
+   </item>
+   <item>
+    <property name="text" >
+     <string>&lt;</string>
+    </property>
+   </item>
+   <item>
+    <property name="text" >
+     <string>matches this regular expression</string>
+    </property>
+   </item>
+  </widget>
+  <widget class="QLabel" name="label" >
+   <property name="geometry" >
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>181</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>Search nodes with attribute</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="attrName" >
+   <property name="geometry" >
+    <rect>
+     <x>270</x>
+     <y>10</y>
+     <width>113</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>name</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="attrValue" >
+   <property name="geometry" >
+    <rect>
+     <x>270</x>
+     <y>40</y>
+     <width>113</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string/>
+   </property>
+  </widget>
+ </widget>
+ <tabstops>
+  <tabstop>attrName</tabstop>
+  <tabstop>attrType</tabstop>
+  <tabstop>attrValue</tabstop>
+  <tabstop>leaves_only</tabstop>
+  <tabstop>buttonBox</tabstop>
+ </tabstops>
+ <includes/>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>Dialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>198</x>
+     <y>134</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>157</x>
+     <y>159</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>Dialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>266</x>
+     <y>140</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>286</x>
+     <y>159</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

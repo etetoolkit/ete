@@ -28,8 +28,8 @@ import sys
 import numpy
 import copy
 
-fromete2 import *
-fromete2.coretype.tree import asRphylo, asETE
+from ete_dev import *
+from ete_dev.coretype.tree import asRphylo, asETE
 
 # test datasets
 nw_simple1 = '((A, (B,C)),D);'
@@ -370,7 +370,7 @@ class Test_Coretype_Tree(unittest.TestCase):
 
     def test_newick_formats(self):
         """ tests different newick subformats """
-        fromete2.parser.newick import print_supported_formats, NW_FORMAT
+        from ete_dev.parser.newick import print_supported_formats, NW_FORMAT
         print_supported_formats()
 
         # Let's stress a bit
@@ -1000,7 +1000,7 @@ class Test_ClusterTree(unittest.TestCase):
         print node.intracluster_dist
         print node.intercluster_dist
 
-        fromete2.clustering import clustvalidation
+        from ete_dev.clustering import clustvalidation
         c1 = t.get_common_ancestor("A", "B")
         c2 = t.get_common_ancestor("C", "D", "E")
         c3 = t.get_common_ancestor("F", "G", "H")

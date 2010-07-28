@@ -2,7 +2,7 @@
 #        Author: Francois-Jose Serra
 # Creation Date: 2010/04/26 17:17:06
 
-fromete2 import CodemlTree
+from ete_dev import CodemlTree
 import sys, re
 
 typ = None
