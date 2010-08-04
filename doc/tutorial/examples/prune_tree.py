@@ -25,7 +25,7 @@ print t
 #                              \-S
 # Prune the tree in order to keep only some leaf nodes.
 t.prune(["H","F","E","Q", "P"])
-print "Pruned tree method=keep"
+print "Pruned tree"
 print t
 #
 #                              /-F
@@ -38,17 +38,3 @@ print t
 #          \--------|
 #                    \-P
 # Let's re-create the same tree again
-t = Tree('((((H,K),(F,I)G),E),((L,(N,Q)O),(P,S)));')
-print "Pruned tree method=crop"
-t.prune(["H","F","E","Q", "P"], method="crop")
-print t
-#
-#                              /-L
-#                    /--------|
-#          /--------|          \-N
-#         |         |
-#---------|          \-S
-#         |
-#         |          /-K
-#          \--------|
-#                    \-I

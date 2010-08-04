@@ -90,7 +90,7 @@ class SeqGroup(object):
                 args = self.parsers[format][2]
                 read(sequences, obj=self, **args)
             else:
-                raise "Unsupported format: [%s]" %format
+                raise ValueError, "Unsupported format: [%s]" %format
 
     def write(self, format="fasta", outfile=None):
         """ Returns the text representation of the sequences in the
@@ -103,7 +103,7 @@ class SeqGroup(object):
             args = self.parsers[format][2]
             return write(self, outfile, **args)
         else:
-            raise "Unssupported format: [%s]" %format
+            raise ValueError, "Unssupported format: [%s]" %format
 
     def iter_entries(self):
         """ Returns an iterator over all sequences in the
@@ -123,3 +123,24 @@ class SeqGroup(object):
         comments = [self.id2comment.get(x, []) for x in  keys]
         names = map(lambda x: self.id2name[x], keys)
         return zip(names, seqs, comments)
+
+    def set_seq(self, name, seq, comments = []):
+        """Updates or creates the sequence of "name" """
+        name = name.strip()
+        seq = seq.replace(" ", "")
+        seq = seq.replace("\t", "")
+        seq = seq.replace("\n", "")
+        seq = seq.replace("\r", "")
+        seqid = self.name2id.get(name, None)
+        if not seqid:
+            for i in xrange(len(self.id2seq)):
+                if i not in self.id2seq:
+                    seqid = i
+                    break
+            if not seqid:
+                seqid = i+1
+
+        self.name2id[name] = seqid
+        self.id2name[seqid] = name
+        self.id2comment[seqid] = comments
+        self.id2seq[seqid] = seq

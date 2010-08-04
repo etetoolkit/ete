@@ -189,7 +189,8 @@ def read_newick(newick, root_node=None, format=0):
             nw = newick
         nw = nw.strip()
         if not nw.startswith('(') or not nw.endswith(';'):
-            raise NewickError, 'Unexisting tree file or Malformed newick tree structure.'
+            raise NewickError, \
+            'Unexisting tree file or Malformed newick tree structure.'
         return _read_newick_from_string(nw, root_node, format)
     else:
         raise NewickError, \

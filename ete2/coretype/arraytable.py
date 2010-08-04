@@ -27,7 +27,6 @@ import math
 from os import path
 
 import numpy
-from scipy import stats
 from ete_dev.parser.text_arraytable import write_arraytable, read_arraytable
 
 __all__ = ["ArrayTable"]
@@ -110,7 +109,7 @@ class ArrayTable(object):
         elif grouping_criterion == "mean":
             grouping_f = get_mean_vector
         else:
-            raise 'ValueError', "grouping_criterion not supported. Use max|min|mean "
+            raise ValueError, "grouping_criterion not supported. Use max|min|mean "
 
         grouped_array = self.__class__()
         grouped_matrix = []
@@ -161,10 +160,10 @@ class ArrayTable(object):
     def _link_names2matrix(self, m):
         """ Synchronize curent column and row names to the given matrix"""
         if len(self.rowNames) != m.shape[0]:
-            raise 'ValueError' , "Expecting matrix with  %d rows" % m.size[0]
+            raise ValueError , "Expecting matrix with  %d rows" % m.size[0]
 
         if len(self.colNames) != m.shape[1]:
-            raise 'ValueError' , "Expecting matrix with  %d columns" % m.size[1]
+            raise ValueError , "Expecting matrix with  %d columns" % m.size[1]
 
         self.matrix = m
         self.colValues.clear()
@@ -227,28 +226,6 @@ def safe_mean_vector(vectors):
         safe_std.append(numpy.std(pos_mean))
     return safe_mean, safe_std
 
-# ####################
-# distance functions
-# ####################
-
-def pearson_dist(v1,v2):
-    if (v1 == v2).all():
-        return 0.0
-    else:
-        return 1.0 - stats.pearsonr(v1,v2)[0]
-
-def spearman_dist(v1,v2):
-    if (v1 == v2).all():
-        return 0.0
-    else:
-        return 1.0 - stats.spearmanr(v1,v2)[0]
-
-def euclidean_dist(v1,v2):
-    if (v1 == v2).all():
-        return 0.0
-    else:
-        return math.sqrt( square_euclidean_dist(v1,v2) )
-
 def get_mean_vector(vlist):
     a = numpy.array(vlist)
     return numpy.mean(a,0)
@@ -264,21 +241,3 @@ def get_max_vector(vlist):
 def get_min_vector(vlist):
     a = numpy.array(vlist)
     return numpy.min(a,0)
-
-
-def square_euclidean_dist(v1,v2):
-    if (v1 == v2).all():
-        return 0.0
-    valids  = 0
-    distance= 0.0
-    for i in xrange(len(v1)):
-        if numpy.isfinite(v1[i]) and numpy.isfinite(v2[i]):
-            valids += 1
-            d = v1[i]-v2[i]
-            distance += d*d
-    if valids==0:
-        raise ValueError, "Cannot calculate values"
-    return  distance/valids
-
-__version__="1.0rev95"
-__author__="Jaime Huerta-Cepas"
