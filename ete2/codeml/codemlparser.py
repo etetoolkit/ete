@@ -69,7 +69,7 @@ def get_sites(path,ndata=1):
     return vals
 
 
-def parse_paml(pamout, model, rst=None, ndata=1, codon_freq=True):
+def parse_paml(pamout, model, rst='rst', ndata=1, codon_freq=True):
     '''
     parser function for codeml files, returns a diccionary
     with values of w,dN,dS etc... dependending of the model
@@ -96,8 +96,8 @@ def parse_paml(pamout, model, rst=None, ndata=1, codon_freq=True):
                       'WARNING: seems that you have no multiple dataset here...'\
                       + '\n    trying as with only one dataset'
                 #return parse_paml (pamout, model, rst=rst, ndata=1)
-            if model.startswith('M') and model != 'M0' and rst == None:
-                rst = re.sub('out$', 'rst', pamout)
+            if model.startswith('M') and model != 'M0' and rst!=None:
+                rst = rst if rst != rst else re.sub('out$', 'rst', pamout)
                 rstout = open (rst + '_' + str(num), 'w')
                 copy = False
                 for line in open(rst):
@@ -121,8 +121,8 @@ def parse_paml(pamout, model, rst=None, ndata=1, codon_freq=True):
     dic = {}
     val = ['w', 'dN', 'dS', 'bL', 'bLnum']
     chk = False
-    if model.startswith('M') and model != 'M0':
-        if rst == None:
+    if model.startswith('M') and model != 'M0' and rst!=None:
+        if rst == 'rst':
             rst = re.sub('out$', 'rst', pamout)
         dic['rst'] = rst
     for line in open(pamout):

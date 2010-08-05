@@ -228,14 +228,14 @@ class CodemlNode(PhyloNode):
         '''
         return filter(lambda x: x.idname == idname, self.iter_descendants())
 
-    def link_to_evol_model(self, path, model, rst=None, ndata=1):
+    def link_to_evol_model(self, path, model, rst='rst', ndata=1):
         '''
         link CodemlTree to evolutionary model
           * free-branch model ('fb') will append evol values to tree
           * Site models (M0, M1, M2, M7, M8) will give evol values by site
             and likelihood
         rst parameter stands for the path were is your rst file, in case it
-        is not "conventional"... if rst=False, skip parsing it.
+        is not "conventional"... if rst=None, skip parsing it.
         '''
         if not os.path.isfile(path):
             print >> sys.stderr, "ERROR: not a file: "+path
@@ -251,7 +251,7 @@ class CodemlNode(PhyloNode):
             del (self._dic[model]['kappa'])
         if model == 'fb':
             self._getfreebranch()
-        elif model.startswith('M') and model != 'M0' and rst != False:
+        elif self._dic[model].has_key('rst'):
             self._dic[model+'_sites'] = get_sites(self._dic[model]['rst'], \
                                                   ndata=ndata)
 
