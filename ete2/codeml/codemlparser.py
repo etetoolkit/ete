@@ -152,7 +152,8 @@ def parse_paml(pamout, model, rst='rst', ndata=1, codon_freq=True):
                 dic['p'], dic['q'] = re.sub(\
                     '.*p=  *([0-9]+\.[0-9]+)  *q=  *([0-9]+\.[0-9]+)'\
                     , '\\1 \\2', line.strip()).split()
-            if line.startswith('omega (dN'):
+            if line.startswith('omega (dN'): # than we are in M0....
+                dic['p0'] = '1.0'
                 line = re.sub('^omega \(dN/dS\) = ', 'w: ', line)
             if line.startswith('p: '):
                 for i in range (0, len (line.strip().split()[1:])):
