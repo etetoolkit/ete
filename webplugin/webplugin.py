@@ -11,7 +11,42 @@
 # /var/www/jquery-1.4.2.min.js
 #
 #
-# you can customize the plugin by modifying the last part of this file
+# My apache config para el sitio "default":
+#
+# <VirtualHost *:80>
+#         ServerAdmin webmaster@localhost
+#  
+#         DocumentRoot /var/www
+#         <Directory />
+#         	Options +FollowSymLinks
+#         	AllowOverride None
+#         </Directory>
+#  
+#  
+#         <Directory /var/www/wsgi/>
+#         	Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch
+#          	SetHandler wsgi-script
+#         	Order allow,deny
+#         	Allow from all
+#                 AddHandler wsgi-script .py  
+#         </Directory>
+#  
+#         ErrorLog /var/log/apache2/error.log
+#  
+#         # Possible values include: debug, info, notice, warn, error, crit,
+#         # alert, emerg.
+#         LogLevel warn
+#  
+#         CustomLog /var/log/apache2/access.log combined
+#  
+#  
+# </VirtualHost>
+#
+#
+#
+#
+# You can customize the plugin by modifying the last part of this
+# file. This is the whole idea!! enjoy, this a very draft version.
 # 
 
 
