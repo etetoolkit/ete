@@ -81,14 +81,34 @@ if pv <= 0.05:
 else:
     print '         ---->   -> most likely model is model M1, pval: ',pv
 
+raw_input("         ====> Hit some key...")
+
 ###
 # tengo que encontrar un ejemplo mas bonito pero bueno.... :P
+
 print '\n\n\n         ----> We now add histograms to our tree to repesent site models with add_histface function: \n\n%s\n%s\n%s\n'\
       % ('*'*10 + ' doc ' + '*'*10,T.add_histface.func_doc,'*'*30)
-raw_input("         ====> Hit some key to display, histograms...")
+print 'Upper face is an histogram representing values of omega for each column in the alignment,'
+print '\
+Colors represent significantly conserved sites (cyan to blue), neutral sites (greens), or under \n\
+positive selection (orange to red). \n\
+Lower face also represents values of omega (red line) and bars represent the error of the estimation.\n\
+Also significance of belonging to one class of site can be painted in background (here lightgrey for\n\
+evrething significant)\n\
+Both representation are done according to BEB estimation of M2, M1 or M7 estimation can also be \n\
+drawn but should not be used.\n'
+raw_input("         ====> Hit some key to display, histograms of omegas BEB from M2 model...")
 
-T.add_histface('M2')
-T.add_histface('M1',down = False)
+col = {'NS' : 'white',
+       'RX' : 'lightgrey',
+       'RX+': 'lightgrey',
+       'CN' : 'lightgrey',
+       'CN+': 'lightgrey',
+       'PS' : 'lightgrey',
+       'PS+': 'lightgrey'}
+
+T.add_histface('M2', down=False)
+T.add_histface('M2',typ='error', col=col, lines=[1.0,0.3],col_lines=['black','grey'])
 
 T.show()
 
@@ -100,25 +120,18 @@ print '         ----> our tree file and alignment file, and this time load direc
 print '               with the function link_to_evol_model \n\n%s\n%s\n%s\n' % ('*'*10 + ' doc ' + '*'*10, \
                                                                       T.link_to_evol_model.func_doc, \
                                                                       '*'*30)
-raw_input('runs\n         ====> hit some key to see (here histograms will be replaced by another kind of representation).')
-T = CodemlTree(TREE_PATH)
-T.link_to_alignment(ALG_PATH)
+raw_input('runs\n         ====> hit some key to see...')
+T = CodemlTree (TREE_PATH)
+T.link_to_alignment (ALG_PATH)
 T.workdir = (WORKING_PATH)
 
 T.link_to_evol_model(T.workdir + '/fb/out','fb')
 T.link_to_evol_model(T.workdir + '/M1/out','M1')
 T.link_to_evol_model(T.workdir + '/M2/out','M2')
 
-col = {'NS' : 'white',
-       'RX' : 'green',
-       'RX+': 'green',
-       'CN' : 'cyan',
-       'CN+': 'blue',
-       'PS' : 'orange',
-       'PS+': 'tomato'}
 
+T.add_histface('M2', down=False)
 T.add_histface('M2',typ='error', col=col, lines=[1.0,0.3],col_lines=['black','grey'])
-T.add_histface('M1',typ='error', col=col, lines=[1.0,0.3],col_lines=['black','grey'], down = False)
 
 T.show()
 

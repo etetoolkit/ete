@@ -101,7 +101,7 @@ class CodemlNode(PhyloNode):
                                        up_faces=self.up_faces, \
                                        down_faces = self.down_faces, w=w, h=h)
 
-    def run_paml(self, model, ctrl_string='', gappy=True, rst=None, \
+    def run_paml(self, model, ctrl_string='', gappy=True, rst='rst', \
                  ndata=1, keep=True, paml=False):
         '''
         to run paml, needs tree linked to alignment.
@@ -159,7 +159,7 @@ class CodemlNode(PhyloNode):
             return 1
         os.chdir(hlddir)
         if keep:
-            self.link_to_evol_model(os.path.join(fullpath,'out'), model, rst)
+            self.link_to_evol_model(os.path.join(fullpath,'out'), model, rst=rst)
             self._dic[model]['codeml_run'] = run
 
     def _write_ali(self, fullpath, paml=False):

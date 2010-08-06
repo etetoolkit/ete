@@ -97,7 +97,7 @@ def parse_paml(pamout, model, rst='rst', ndata=1, codon_freq=True):
                       + '\n    trying as with only one dataset'
                 #return parse_paml (pamout, model, rst=rst, ndata=1)
             if model.startswith('M') and model != 'M0' and rst!=None:
-                rst = rst if rst != rst else re.sub('out$', 'rst', pamout)
+                rst = rst if rst != 'rst' else re.sub('out$', 'rst', pamout)
                 rstout = open (rst + '_' + str(num), 'w')
                 copy = False
                 for line in open(rst):
