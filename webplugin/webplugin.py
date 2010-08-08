@@ -55,9 +55,8 @@ import time
 import hashlib
 import urlparse
 
-from ete_dev import Tree, PhyloTree
-from ete_dev.treeview import drawer
-__VERSION__ =  "ete_dev"
+from ete2 import Tree, PhyloTree,  __VERSION__
+from ete2.treeview import drawer
 
 CONFIG = {}
 
