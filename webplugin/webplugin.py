@@ -15,6 +15,10 @@
 #
 # <VirtualHost *:80>
 #         ServerAdmin webmaster@localhost
+
+#        WSGIDaemonProcess site-1 user=www-data group=www-data processes=1 threads=1
+#        WSGIProcessGroup site-1
+
 #  
 #         DocumentRoot /var/www
 #         <Directory />
@@ -55,9 +59,9 @@ import time
 import hashlib
 import urlparse
 
-from ete2 import Tree, PhyloTree,  __VERSION__
+from ete2 import Tree, PhyloTree
 from ete2.treeview import drawer
-
+__VERSION__ = "etedev"
 CONFIG = {}
 
 class WebTreeApplication(object):
@@ -124,6 +128,7 @@ class WebTreeApplication(object):
         """ This function is executed when the application is called
         by the WSGI apache module. It is, therefore, in charge of
         answering web requests."""
+        environ['wsgi.multithread']  = False
 
         path = environ['PATH_INFO'].split("/")
         start_response('202 OK', [('content-type', 'text/plain')])
@@ -194,8 +199,8 @@ def render_tree(t, img_path, layout=None):
     #############  should be changed in future ########
     t.render(img_path, layout = layout)
     w, h =  t._QtItem_.scene().sceneRect().width(), t._QtItem_.scene().sceneRect().height()
-    drawer._QApp.quit()
-    drawer._QApp = None
+    #drawer._QApp.quit()
+    #drawer._QApp = None
     
     t.render(img_path, w=w, h=h, layout = layout)
     #bdata = open(img_path, 'rb').read()
@@ -228,8 +233,8 @@ def render_tree(t, img_path, layout=None):
                     face_list.append([x1,y1,x2,y2, nid, None])
 
     img_map = {"nodes": node_list, "faces": face_list, "text": text_list }
-    drawer._QApp.quit()
-    drawer._QApp = None
+    #drawer._QApp.quit()
+    #drawer._QApp = None
 
     return img_map
 
