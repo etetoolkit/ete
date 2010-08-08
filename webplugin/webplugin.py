@@ -53,9 +53,11 @@
 import os
 import time
 import hashlib
-import urlparse 
-from ete2 import Tree, PhyloTree, __VERSION__
-from ete2.treeview import drawer
+import urlparse
+
+from ete_dev import Tree, PhyloTree
+from ete_dev.treeview import drawer
+__VERSION__ =  "ete_dev"
 
 CONFIG = {}
 
@@ -193,6 +195,9 @@ def render_tree(t, img_path, layout=None):
     #############  should be changed in future ########
     t.render(img_path, layout = layout)
     w, h =  t._QtItem_.scene().sceneRect().width(), t._QtItem_.scene().sceneRect().height()
+    drawer._QApp.quit()
+    drawer._QApp = None
+    
     t.render(img_path, w=w, h=h, layout = layout)
     #bdata = open(img_path, 'rb').read()
     # os.remove(store+"/"+gene+".png")
@@ -224,6 +229,9 @@ def render_tree(t, img_path, layout=None):
                     face_list.append([x1,y1,x2,y2, nid, None])
 
     img_map = {"nodes": node_list, "faces": face_list, "text": text_list }
+    drawer._QApp.quit()
+    drawer._QApp = None
+
     return img_map
 
 
