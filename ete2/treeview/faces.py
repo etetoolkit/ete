@@ -117,14 +117,29 @@ try:
 except:
     pass
 
-def add_face_to_node(face, node, column, aligned=False):
-    """ Links a node with a given face instance.  """
+FACE_POSITIONS = set(["rightside", "aligned", "branchup", "branchdown"])
 
-    if column >= len(node.img_style["faces"]):
-        for i in xrange(len(node.img_style["faces"]), column+1):
-            node.img_style["faces"].append([])
+def add_face_to_node(face, node, column, aligned=False, position="rightside"):
+    """ Links a node with a given face instance.  """
+    if position == "rightside":
+        if column >= len(node.img_style["faces"]):
+            for i in xrange(len(node.img_style["faces"]), column+1):
+                node.img_style["faces"].append([])
+        node.img_style["faces"][column].append([face, aligned, None])
+
+    # NEW APPROACH
+    node.img_style.setdefault("faces_", {})
+    if position not in FACE_POSITIONS:
+        raise (ValueError, "Incorrect position") 
+    if aligned:
+        position = "aligned"
+    node.img_style["faces_"].setdefault(position, [])
+    if column >= len(node.img_style["faces_"][position]):
+        for i in xrange(len(node.img_style["faces_"][position]), column+1):
+            node.img_style["faces_"][position].append([])
     # None value will be the pointer to a pixmap
-    node.img_style["faces"][column].append([face, aligned, None])
+    node.img_style["faces_"][position][column].append(face)
+    return 
 
 class Face(object):
     """ Standard definition of a face node object.

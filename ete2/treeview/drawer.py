@@ -21,6 +21,7 @@
 #
 # #END_LICENSE#############################################################
 from sys import stderr, stdout
+import math
 import time
 import re
 import math
@@ -63,6 +64,7 @@ _MIN_NODE_STYLE = {
     "size":6,
     "shape": "sphere",
     "faces": None,
+    "faces_": None, # A dist must be initialized by node
     "draw_descendants": 1,
     "ymargin": 0
 }
@@ -443,6 +445,147 @@ class _MainApp(QtGui.QMainWindow):
                 self.scene.draw()
 
 
+class _NodeItem(QtGui.QGraphicsRectItem):
+    def __init__(self, node):
+        self.node = node
+        self.radius = node.img_style["size"]/2
+        QtGui.QGraphicsRectItem.__init__(self,0,0,self.radius*2,self.radius*2)
+
+    def paint(self, p, option, widget):
+        QtGui.QGraphicsRectItem.paint(self, p, option, widget)
+        if self.node.img_style["shape"] == "sphere":
+            r = self.radius
+            gradient = QtGui.QRadialGradient(r, r, r,(r*2)/3,(r*2)/3)
+            gradient.setColorAt(0.05, QtCore.Qt.white);
+            gradient.setColorAt(0.9, QtGui.QColor(self.node.img_style["fgcolor"]));
+            p.setBrush(QtGui.QBrush(gradient))
+            p.setPen(QtCore.Qt.NoPen)
+            p.drawEllipse(self.rect())
+        elif self.node.img_style["shape"] == "square":
+            p.fillRect(self.rect(),QtGui.QBrush(QtGui.QColor(self.node.img_style["fgcolor"])))
+        elif self.node.img_style["shape"] == "circle":
+            p.setBrush(QtGui.QBrush(QtGui.QColor(self.node.img_style["fgcolor"])))
+            p.setPen(QtGui.QPen(QtGui.QColor(self.node.img_style["fgcolor"])))
+            p.drawEllipse(self.rect())
+
+    def hoverEnterEvent (self,e):
+        R = self.node.fullRegion.getRect()
+        if self.scene().props.orientation == 0:
+            width = self.scene().i_width-self.node._x
+            self.scene().highlighter.setRect(QtCore.QRectF(self.node._x,self.node._y,width,R[3]))
+        elif self.scene().props.orientation == 1:
+            width = self.node._x-self.scene().i_width
+            self.scene().highlighter.setRect(QtCore.QRectF(width,self.node._y,width,R[3]))
+        self.scene().highlighter.setVisible(True)
+
+    def hoverLeaveEvent (self,e):
+        self.scene().highlighter.setVisible(False)
+
+    def mousePressEvent(self,e):
+        logger(2,"Pressed in scene", e.button)
+
+    def mouseReleaseEvent(self,e):
+        logger(2,"released in scene", e.button)
+        if e.button() == QtCore.Qt.RightButton:
+            self.showActionPopup()
+        elif e.button() == QtCore.Qt.LeftButton:
+            self.scene().propertiesTable.update_properties(self.node)
+
+
+    def showActionPopup(self):
+        contextMenu = QtGui.QMenu()
+        if self.node.collapsed:
+            contextMenu.addAction( "Expand"           , self.toggle_collapse)
+        else:
+            contextMenu.addAction( "Collapse"         , self.toggle_collapse)
+
+        contextMenu.addAction( "Set as outgroup"      , self.set_as_outgroup)
+        contextMenu.addAction( "Swap branches"        , self.swap_branches)
+        contextMenu.addAction( "Delete node"          , self.delete_node)
+        contextMenu.addAction( "Delete partition"     , self.detach_node)
+        contextMenu.addAction( "Add childs"           , self.add_childs)
+        contextMenu.addAction( "Populate partition"   , self.populate_partition)
+        if self.node.up is not None and\
+                self.scene().startNode == self.node:
+            contextMenu.addAction( "Back to parent", self.back_to_parent_node)
+        else:
+            contextMenu.addAction( "Extract"              , self.set_start_node)
+
+        if self.scene().buffer_node:
+            contextMenu.addAction( "Paste partition"  , self.paste_partition)
+
+        contextMenu.addAction( "Cut partition"        , self.cut_partition)
+        contextMenu.addAction( "Show newick"        , self.show_newick)
+        contextMenu.exec_(QtGui.QCursor.pos())
+
+    def show_newick(self):
+        d = NewickDialog(self.node)
+        d._conf = _show_newick.Ui_Newick()
+        d._conf.setupUi(d)
+        d.update_newick()
+        d.exec_()
+        return False
+
+    def delete_node(self):
+        self.node.delete()
+        self.scene().draw()
+
+    def detach_node(self):
+        self.node.detach()
+        self.scene().draw()
+
+    def swap_branches(self):
+        self.node.swap_childs()
+        self.scene().draw()
+
+    def add_childs(self):
+        n,ok = QtGui.QInputDialog.getInteger(None,"Add childs","Number of childs to add:",1,1)
+        if ok:
+            for i in xrange(n):
+                ch = self.node.add_child()
+            self.scene().set_style_from(self.scene().startNode,self.scene().layout_func)
+
+    def void(self):
+        logger(0,"Not implemented yet")
+        return True
+
+    def set_as_outgroup(self):
+        self.scene().startNode.set_outgroup(self.node)
+        self.scene().set_style_from(self.scene().startNode, self.scene().layout_func)
+        self.scene().draw()
+
+    def toggle_collapse(self):
+        self.node.collapsed ^= True
+        self.scene().draw()
+
+    def cut_partition(self):
+        self.scene().buffer_node = self.node
+        self.node.detach()
+        self.scene().draw()
+
+    def paste_partition(self):
+        if self.scene().buffer_node:
+            self.node.add_child(self.scene().buffer_node)
+            self.scene().set_style_from(self.scene().startNode,self.scene().layout_func)
+            self.scene().buffer_node= None
+            self.scene().draw()
+
+    def populate_partition(self):
+        n, ok = QtGui.QInputDialog.getInteger(None,"Populate partition","Number of nodes to add:",2,1)
+        if ok:
+            self.node.populate(n)
+            self.scene().set_style_from(self.scene().startNode,self.scene().layout_func)
+            self.scene().draw()
+
+    def set_start_node(self):
+        self.scene().startNode = self.node
+        self.scene().draw()
+
+    def back_to_parent_node(self):
+        self.scene().startNode = self.node.up
+        self.scene().draw()
+
+
 # This function should be reviewed. Probably there are better ways to
 # do de same, or at least less messy ways... So far this is what I
 # have :)
@@ -629,6 +772,20 @@ class _PropertiesDialog(QtGui.QWidget):
         self.scene.draw()
         return
 
+
+class _ArcItem(QtGui.QGraphicsRectItem):
+    def __init__(self, angle_start, angle_span, radius, *args):
+        QtGui.QGraphicsRectItem.__init__(self, 0, 0, radius, radius)
+        self.angle_start = angle_span
+        self.angle_span = angle_span
+        self.radius = radius
+
+    def paint(self, painter, option, index):
+        rect = QtCore.QRectF(-self.radius, -self.radius, self.radius*2, self.radius*2);
+        painter.setPen(self.pen())
+        painter.drawArc(rect, self.angle_start, self.angle_span*16)
+        painter.drawRect(rect)
+
 class _TextItem(QtGui.QGraphicsSimpleTextItem):
     """ Manage faces on Scene"""
     def __init__(self,face,node,*args):
@@ -663,6 +820,68 @@ class _TextItem(QtGui.QGraphicsSimpleTextItem):
             self.scene().propertiesTable.update_properties(self.node)
 
 
+class _FaceGroup(QtGui.QGraphicsItem): # I resisted to name this FaceBook :) 
+    def __init__(self, faces, *args):
+        QtGui.QGraphicsItem.__init__(self, *args)
+
+        self.column2faces = {}
+        for c, column_faces in enumerate(faces):
+            self.column2faces[c] = column_faces
+
+        self.w = 0
+        self.h = 0
+        # updates the size of this grid
+        self.update_columns_size()
+
+    def paint(self, painter, option, index):
+        return
+
+    def boundingRect(self):
+        return QtCore.QRectF(0,0, self.w, self.h)
+
+    def get_size():
+        return self.w, self.h
+
+    def update_columns_size(self):
+        self.column2size = {}
+        for c, faces in self.column2faces.iteritems():
+            height = 0
+            width = 0
+            for f in faces:
+                if f.type == "pixmap": 
+                    f.update_pixmap()
+                height += f._height()
+                width = max(width, f._width())
+            self.column2size[c] = (width, height)
+        self.w = sum([0]+[size[0] for size in self.column2size.itervalues()])
+        self.h = max([0]+[size[1] for size in self.column2size.itervalues()])
+
+    def render(self):
+        x = 0
+        for c, faces in self.column2faces.iteritems():
+            w, h = self.column2size[c]
+            # Starting y position. Center columns
+            y = (self.h / 2) - (h/2)
+            for f in faces:
+                if f.type == "text":
+                    obj = _TextItem(f, f.node, f.get_text())
+                    obj.setFont(f.font)
+                    obj.setBrush(QtGui.QBrush(f.fgcolor))
+                    obj.setParentItem(self)
+                    obj.setAcceptsHoverEvents(True)
+                else:
+                    # Loads the pre-generated pixmap
+                    obj = _FaceItem(f, node, pixmap)
+                    obj.setAcceptsHoverEvents(True)
+                    obj.setParentItem(self)
+                obj.setPos(x, y)
+                # Y position is incremented by the height of last face
+                # in column
+                y += f._height()
+            # X position is incremented by the max width of the last
+            # processed column.
+            x += w
+
 class _FaceItem(QtGui.QGraphicsPixmapItem):
     """ Manage faces on Scene"""
     def __init__(self,face,node,*args):
@@ -673,7 +892,6 @@ class _FaceItem(QtGui.QGraphicsPixmapItem):
     def hoverEnterEvent (self,e):
 #       if self.scene().selector.isVisible():
 #           self.scene().mouseMoveEvent(e)
-
         R = self.node.fullRegion.getRect()
         if self.scene().props.orientation == 0:
             width = self.scene().i_width-self.node._x
@@ -696,14 +914,23 @@ class _FaceItem(QtGui.QGraphicsPixmapItem):
         elif e.button() == QtCore.Qt.LeftButton:
             self.scene().propertiesTable.update_properties(self.node)
 
+class _PartitionItem(QtGui.QGraphicsItem):
+    def __init__(self, node, *args):
+        QtGui.QGraphicsItem.__init__(self, *args)
+        self.node = node
+    def paint(self, painter, option, index):
+        return
+    def boundingRect(self):
+        return None
 
-class _NodeItem(QtGui.QGraphicsRectItem):
-    def __init__(self,node):
+class _NodeItem2(QtGui.QGraphicsRectItem):
+    def __init__(self, node):
         self.node = node
         self.radius = node.img_style["size"]/2
         QtGui.QGraphicsRectItem.__init__(self,0,0,self.radius*2,self.radius*2)
 
     def paint(self, p, option, widget):
+        QtGui.QGraphicsRectItem.paint(self, p, option, widget)
         if self.node.img_style["shape"] == "sphere":
             r = self.radius
             gradient = QtGui.QRadialGradient(r, r, r,(r*2)/3,(r*2)/3)
@@ -718,7 +945,6 @@ class _NodeItem(QtGui.QGraphicsRectItem):
             p.setBrush(QtGui.QBrush(QtGui.QColor(self.node.img_style["fgcolor"])))
             p.setPen(QtGui.QPen(QtGui.QColor(self.node.img_style["fgcolor"])))
             p.drawEllipse(self.rect())
-
 
     def hoverEnterEvent (self,e):
         R = self.node.fullRegion.getRect()
@@ -992,6 +1218,9 @@ class _TreeScene(QtGui.QGraphicsScene):
         self.selectors  = []
         self._highlighted_nodes = {}
 
+        self.node2faces = {}
+        self.node2item = {}
+
         # Qt items
         self.selector = None
         self.mainItem = None        # Qt Item which is parent of all other items
@@ -1202,6 +1431,9 @@ class _TreeScene(QtGui.QGraphicsScene):
         if self.mainItem:
             self.removeItem(self.mainItem)
 
+        self.node2faces = {}
+        self.node2item = {}
+
         #Clean_highlighting rects
         for n in self._highlighted_nodes:
             self._highlighted_nodes[n] = None
@@ -1238,12 +1470,11 @@ class _TreeScene(QtGui.QGraphicsScene):
         self.i_width  = self.startNode.fullRegion.width()
         self.i_height = self.startNode.fullRegion.height()
 
+        # Place aligned faces
+        # ...
 
-        logger(1, "IMAGE dimension=",self.i_width,"x",self.i_height)
-        # Render tree on scene
-        t2 = time.time()
-        self.render_node(self.startNode,0,0)
-        logger(2, "Time for rendering", time.time()-t2)
+        # Place tree around faces
+        # ...
 
         # size correcton for aligned faces
         self.i_width += self.max_w_aligned_face
@@ -1256,6 +1487,9 @@ class _TreeScene(QtGui.QGraphicsScene):
         #border = self.addRect(0,0,self.i_width-self.max_w_aligned_face,self.i_height)
         #border = self.addRect(0,0, self.sceneRect().width(), self.sceneRect().height())
         #border.setParentItem(self.mainItem)
+
+
+        # Draw scale
         self.add_scale(1 ,self.i_height+4)
 
         #Re-establish node marks
@@ -1297,149 +1531,348 @@ class _TreeScene(QtGui.QGraphicsScene):
         for n in [node]+node.get_descendants():
             n.img_style = copy.copy(_MIN_NODE_STYLE)
             n.img_style["faces"] = []
+            n.img_style["faces_"] = {}
             layout_func(n)
 
-    def update_node_areas(self,node):
-        """ This recursive function scans all nodes hunging from the given
-        root node and calculates the coordinates and room necessary to
-        draw a rectangular tree. IT reads the face content of each
-        node, which ones have to be drawn, and how much room they
-        use. """
-        child_rects = []
-        # First, go for childs
-        if not node.is_leaf() and node.img_style["draw_descendants"]==1:
-            for ch in node.children:
-                # Recursivity
-                rect = self.update_node_areas(ch)
-                child_rects.append(rect)
 
-        # This is the node region covered by column faces and the
-        # horizontal line drawn using the branch length and scale.
 
-        if self.props.force_topology:
-            node.dist_xoffset = 60#self.scale
-        else:
-            node.dist_xoffset = float(node.dist * self.scale)
 
-        min_node_height = max(node.img_style["size"], node.img_style["hlwidth"]*2)
-        max_w         = 0
-        max_aligned_w = 0
-        max_h         = 0
-        # Each stack is drawn as a different column
-        for stack in node.img_style["faces"]:
-            stack_h = 0
-            stack_w = 0
-            aligned_f_w = 0
-            aligned_f_h = 0
-            for face in stack:
-                f, aligned, pixmap = face
-                if aligned and not node.is_leaf():
-                    continue
-                # Sets the working node from which required info will
-                # be retrived. Thus, same face can be used for many nodes.
-                f.node = node
-                # If pixmap face, updates image
-                if f.type == "pixmap":
-                    f.update_pixmap() # using current working node
-                    face[2] = f.pixmap
 
-                if node.is_leaf() and aligned:
-                    aligned_f_w = max(aligned_f_w, f._width()) #+ f.xmargin*2
-                    aligned_f_h += f._height() #+ f.ymargin * 2
-                else:
-                    stack_w = max(stack_w, f._width()) #+ f.xmargin*2
-                    stack_h += f._height() #+ f.ymargin*2
+    def update_node_faces(self, node):
+        # Organize all faces of this node in FaceGroups objects
+        # (tables of faces)
+        faceblock = {}
+        self.node2faces[node] = faceblock
+        for position in ["rightside", "aligned", "branchup", "branchdown"] :
+            if position in node.img_style["faces_"]:
+                # The value of this is expected to be list of columns of faces
+                # c2f = [ [f1, f2, f3], 
+                #         [f4, f4]
+                #       ]
+                if position=="aligned" and not node.is_leaf():
+                    faceblock[position] = _FaceGroup([])
+                    continue # aligned on internal node don't make sense
+                faceblock[position] = _FaceGroup(node.img_style["faces_"][position])
+            else:
+                faceblock[position] = _FaceGroup([])
+        return faceblock
 
-            max_aligned_w += aligned_f_w
-            max_w += stack_w
-            max_h = numpy.max([aligned_f_h, stack_h, max_h])
-        max_w +=1
-        # Updates the max width spend by aligned faces
-        if max_aligned_w > self.max_w_aligned_face:
-            self.max_w_aligned_face = max_aligned_w
 
-        # Dist and faces region
-        node.facesRegion = QtCore.QRectF(0,0,max_w,max_h)
-        w = node.dist_xoffset + max_w + node.img_style["size"]
-        h = max(max_h, min_node_height, self.props.min_branch_separation) + node.img_style["ymargin"]*2
-        if self.min_real_branch_separation < h:
-            self.min_real_branch_separation = h
+    def update_node_areas_rectangular(self,root_node):
+        """ """
+        ## General scheme on how nodes size are handled
+        ## |==========================================================================================================================|
+        ## |                                                fullRegion                                                                |       
+        ## |             nodeRegion                  |================================================================================|
+        ## |                                         |                                fullRegion                                     || 
+        ## |                                         |        nodeRegion                     |=======================================||
+        ## |                                         |                                       |         fullRegion                   |||
+        ## |                                         |                                       |         nodeRegion                   ||| 
+        ## |                                         |                         |             | xdist_offset | nodesize | facesRegion|||
+        ## |                                         | xdist_offset | nodesize |facesRegion  |=======================================||
+        ## |                                         |                         |             |=======================================||
+        ## |                                         |                                       |             fullRegion                ||
+        ## |                                         |                                       |             nodeRegion                ||
+        ## | branchup_faces  |          |            |                                       | xdist_offset | nodesize | facesRegion ||
+        ## | xdist_offset    | nodesize |facesRegion |                                       |=======================================||
+        ## | branchdown_faces|          |            |================================================================================|
+        ## |                                         |=======================================|                                        |
+        ## |                                         |             fullRegion                |                                        |
+        ## |                                         |        nodeRegion                     |                                        |
+        ## |                                         | xdist_offset | nodesize | facesRegion |                                        |
+        ## |                                         |=======================================|                                        |
+        ## |==========================================================================================================================|
+        ##
+        ## Rendering means to created QGraphicsItem that represent all
+        ## node features. For this, I use an iterative function that
+        ## creates a rectangleItem for each node in which all its
+        ## features are included. The same tree node hierarchy is
+        ## maintained for setting the parents items of partitions.
+        ## Once a node has its partitionItem, elements are added to
+        ## such partitionItem, and are positioned relative to the
+        ## coordinate system of the parent.
+        ## 
+        ## A node partition contains the branch to its parent, the
+        ## node circle, faces and the vertical line connecting childs
 
-        node.nodeRegion = QtCore.QRectF(0,0,w,h)
+        n2i = self.node2item = {}
+        visited = set()
+        nodeStack = []
+        nodeStack.append(root_node)
+        while nodeStack:
+            node = nodeStack[-1]
+            finished = True
+            if node.img_style["draw_descendants"]:
+                for c in node.children:
+                    if c not in visited:
+                        nodeStack.append(c)
+                        finished = False
+            # Here you have the preorder position of the node. 
+            # node.visited_preorder
+            if not finished:
+                continue
 
-        # This piece of code fixes an old and annoying bug by which nodes with
-        # faces larger than the sum of child node region were badly
-        # drawn (badly centered and using space from other nodes)
-        if not node.is_leaf():
-            max_child_w = 0
-            sum_child_h = 0
-            # y correction is used to fix cases in which the height of
-            # parent nodes is greater than the sum of child
-            # heights. Then, an y offset is calculated as the missing
-            # amount of pixels. This correction is used by the render
-            # algorithm to draw child 'y_correction" pixels bellow the
-            # expected position.
-            node._y_correction = 0
-            start2 = 0
-            for ch in node.children:
-                # Updates the max width used by childs
-                if ch.fullRegion.width()>max_child_w:
-                    max_child_w = ch.fullRegion.width()
-                # Stores the 'y' center of the first child node
-                if ch == node.children[0]:
-                    start1 = ch.__center
-                # And the 'y' center of the last child node
-                elif ch == node.children[-1]:
-                    start2 = sum_child_h + ch.__center
-                sum_child_h += ch.fullRegion.height()
+            # Here you have the postorder position of the node. Now is
+            # when I want to visit the node
+            nodeStack.pop(-1)
+            visited.add(node)
 
-            # Knowing the centers of first and last child nodes, we
-            # know the center of current node. This center splits the
-            # current node space into two unequal pieces: above and
-            # bellow.
-            above =  (start1 +((start2 - start1)/2.0))
-            bellow = sum_child_h - above
-            newh = 0
+            # Branch length converted to pixels
+            if self.props.force_topology:
+                node.dist_xoffset = 60
+            else:
+                node.dist_xoffset = float(node.dist * self.scale)
 
-            # Current node faces will be drawn centered to the node
-            # position, so half of the faces space should fit in the
-            # above region, and the other half in the bellow region.
-            # If not, the height of current node is increased to
-            # reserve the required space.
-            #
-            # The space is missing in the above region, an y offset is
-            # set to permit child nodes to be drawn a bit more down
-            # than expected.
-            if above < (h/2):
-                newh = sum_child_h + ((h/2.0) - above)
-                node._y_correction = ((h/2.0) - above)
-            if bellow < h/2:
-                if newh >0:
-                    newh +=  ((h/2.0) - bellow)
-                else:
-                    newh = sum_child_h + ((h/2) - bellow)
+            # Organize faces by groups
+            faceblock = self.update_node_faces(node)
 
-            # If current node faces do not exceed the sum of child
-            # heights, then current node height is the sum of child
-            # heights
-            if newh == 0:
-                newh = sum_child_h
-            h = newh
-            # Increases node width the max child width
-            w += max_child_w
-            # And stores current node center, which is the center
-            # calculated using the child node centers + the
-            # y_correction (if any)
-            node.__center = (start1 +((start2 - start1)/2.0)) + node._y_correction
-        else:
-            node.__center = h/2
-            node._y_correction = 0
+            # Total height required by the node
+            h = node.__img_height__ = max(node.img_style["size"] + faceblock["branchup"].h + faceblock["branchdown"].h, 
+                                          node.img_style["hlwidth"] + faceblock["branchup"].h + faceblock["branchdown"].h, 
+                                          faceblock["rightside"].h, 
+                                          faceblock["aligned"].h, 
+                                          self.props.min_branch_separation,
+                                          )    
 
-        # This is the node total region covered by the node
-        node.fullRegion = QtCore.QRectF(0,0,w,h)
+            # Total width required by the node
+            w = node.__img_width__ = sum([max(node.dist_xoffset + node.img_style["size"], 
+                                              faceblock["branchup"].w + node.img_style["size"],
+                                              faceblock["branchdown"].w + node.img_style["size"],
+                                              ), 
+                                          faceblock["rightside"].w]
+                                         )
 
-        # Sets the total room needed for this node
-        return node.fullRegion
+            # Updates the max width spend by aligned faces
+            if faceblock["aligned"].w > self.max_w_aligned_face:
+                self.max_w_aligned_face = faceblock["aligned"].w
+
+            # Rightside faces region
+            node.facesRegion = QtCore.QRectF(0, 0, faceblock["rightside"].w, faceblock["rightside"].h)
+
+            # Node region 
+            node.nodeRegion = QtCore.QRectF(0, 0, w, h)
+            if self.min_real_branch_separation < h:
+                self.min_real_branch_separation = h
+
+            if not node.is_leaf() and node.img_style["draw_descendants"]:
+                widths, heights = zip(*[[c.fullRegion.width(),c.fullRegion.height()] \
+                                          for c in node.children])
+                w += max(widths)
+                h = max(node.nodeRegion.height(), sum(heights))
+
+            # This is the node total region covered by the node
+            node.fullRegion = QtCore.QRectF(0, 0, w, h)
+            
+            
+
+            # ------------------ RENDERING ---------------------------
+            # Creates a rectItem representing the node partition. Its
+            # size was calculate in update_node_areas. This partition
+            # groups all its child partitions
+            partition = self.node2item[node] = \
+                QtGui.QGraphicsRectItem(0, 0, node.fullRegion.width(), node.fullRegion.height())
+
+            # Draw grid (partition)
+            #color = QtGui.QColor("#cccfff")
+            color = QtGui.QColor("#ffffff")
+            #partition.setBrush(color)
+            partition.setPen(color)
+
+            if node.is_leaf() or not node.img_style["draw_descendants"]:
+                # Leafs will be processed from parents
+                partition.center = self.get_partition_center(node)
+                continue
+            else:
+                parent_partition = partition
+                # set position of child partitions
+                x = node.nodeRegion.width()
+                y = 0
+                all_childs_height = sum([c.fullRegion.height() for c in node.children])
+                if node.fullRegion.height() > all_childs_height:
+                    y += ((node.fullRegion.height() - all_childs_height))/2
+                for c in node.children:
+                    cpart = n2i[c]
+                    # Sets x and y position of child within parent
+                    # partition
+                    cpart.setParentItem(parent_partition)
+                    cpart.start_y = y 
+                    cpart.start_x = x
+                    cpart.setPos(x, y)
+                    # Increment y for the next child within partition
+                    y += c.fullRegion.height()
+                    self.render_node_partition(c, cpart)
+
+                partition.center = self.get_partition_center(node)
+
+        # Render root node and set its positions
+        partition = n2i[root_node]
+        partition.setParentItem(self.mainItem)
+        partition.center = self.get_partition_center(root_node)
+        self.render_node_partition(root_node, partition)
+        
+
+    def update_node_areas(self,root_node):
+        """ """
+        ## General scheme on how nodes size are handled
+        ## |==========================================================================================================================|
+        ## |                                                fullRegion                                                                |       
+        ## |             nodeRegion                  |================================================================================|
+        ## |                                         |                                fullRegion                                     || 
+        ## |                                         |        nodeRegion                     |=======================================||
+        ## |                                         |                                       |         fullRegion                   |||
+        ## |                                         |                                       |         nodeRegion                   ||| 
+        ## |                                         |                         |             | xdist_offset | nodesize | facesRegion|||
+        ## |                                         | xdist_offset | nodesize |facesRegion  |=======================================||
+        ## |                                         |                         |             |=======================================||
+        ## |                                         |                                       |             fullRegion                ||
+        ## |                                         |                                       |             nodeRegion                ||
+        ## | branchup_faces  |          |            |                                       | xdist_offset | nodesize | facesRegion ||
+        ## | xdist_offset    | nodesize |facesRegion |                                       |=======================================||
+        ## | branchdown_faces|          |            |================================================================================|
+        ## |                                         |=======================================|                                        |
+        ## |                                         |             fullRegion                |                                        |
+        ## |                                         |        nodeRegion                     |                                        |
+        ## |                                         | xdist_offset | nodesize | facesRegion |                                        |
+        ## |                                         |=======================================|                                        |
+        ## |==========================================================================================================================|
+        ##
+        ## Rendering means to created QGraphicsItem that represent all
+        ## node features. For this, I use an iterative function that
+        ## creates a rectangleItem for each node in which all its
+        ## features are included. The same tree node hierarchy is
+        ## maintained for setting the parents items of partitions.
+        ## Once a node has its partitionItem, elements are added to
+        ## such partitionItem, and are positioned relative to the
+        ## coordinate system of the parent.
+        ## 
+        ## A node partition contains the branch to its parent, the
+        ## node circle, faces and the vertical line connecting childs
+        center_item = QtGui.QGraphicsRectItem(0,0,3,3)
+        center_item.setPen(QtGui.QColor("#ff0000"))
+        center_item.setBrush(QtGui.QColor("#ff0000"))
+        n2a = {}
+        angle_step = 360./len(root_node)
+        next_angle = 0
+        n2i = self.node2item = {}
+        visited = set()
+        nodeStack = []
+        nodeStack.append(root_node)
+        while nodeStack:
+            node = nodeStack[-1]
+            finished = True
+            if node.img_style["draw_descendants"]:
+                for c in node.children:
+                    if c not in visited:
+                        nodeStack.append(c)
+                        finished = False
+
+            ## Here you have the preorder position of the node. 
+            # ... node.before_go_for_childs = blah ...
+            if not finished:
+                continue
+
+            # Here you have the postorder position of the node. Now is
+            # when I want to visit the node
+            nodeStack.pop(-1)
+            visited.add(node)
+
+            # Branch length converted to pixels
+            if self.props.force_topology:
+                node.dist_xoffset = 60
+            else:
+                node.dist_xoffset = float(node.dist * self.scale)
+
+            # Organize faces by groups
+            faceblock = self.update_node_faces(node)
+
+            # Total height required by the node
+            h = node.__img_height__ = max(node.img_style["size"] + faceblock["branchup"].h + faceblock["branchdown"].h, 
+                                          node.img_style["hlwidth"] + faceblock["branchup"].h + faceblock["branchdown"].h, 
+                                          faceblock["rightside"].h, 
+                                          faceblock["aligned"].h, 
+                                          self.props.min_branch_separation,
+                                          )    
+
+            # Total width required by the node
+            w = node.__img_width__ = sum([max(node.dist_xoffset + node.img_style["size"], 
+                                              faceblock["branchup"].w + node.img_style["size"],
+                                              faceblock["branchdown"].w + node.img_style["size"],
+                                              ), 
+                                          faceblock["rightside"].w]
+                                         )
+
+            # Updates the max width spend by aligned faces
+            if faceblock["aligned"].w > self.max_w_aligned_face:
+                self.max_w_aligned_face = faceblock["aligned"].w
+
+            # Rightside faces region
+            node.facesRegion = QtCore.QRectF(0, 0, faceblock["rightside"].w, faceblock["rightside"].h)
+
+            # Node region 
+            node.nodeRegion = QtCore.QRectF(0, 0, w, h)
+            if self.min_real_branch_separation < h:
+                self.min_real_branch_separation = h
+
+            if not node.is_leaf() and node.img_style["draw_descendants"]:
+                widths, heights = zip(*[[c.fullRegion.width(),c.fullRegion.height()] \
+                                          for c in node.children])
+                w += max(widths)
+                h = max(node.nodeRegion.height(), sum(heights))
+
+            # This is the node total region covered by the node
+            node.fullRegion = QtCore.QRectF(0, 0, w, h)
+            
+            # ------------------ RENDERING ---------------------------
+            # Creates a rectItem representing the node partition. Its
+            # size was calculate in update_node_areas. This partition
+            # groups all its child partitions
+           
+            partition = self.node2item[node] = \
+                QtGui.QGraphicsRectItem(0, 0, node.fullRegion.width(), node.fullRegion.height())
+
+            # Draw grid (partition)
+            #color = QtGui.QColor("#cccfff")
+            color = QtGui.QColor("#ffffff")
+            #partition.setBrush(color)
+            partition.setPen(color)
+
+            if node.is_leaf() or not node.img_style["draw_descendants"]:
+                # Leafs will be processed from parents
+                partition.angle = next_angle
+                partition.angle_start = next_angle
+                partition.angle_span = partition.angle_start + angle_step
+                next_angle+= angle_step
+            else:
+                p1 = n2i[node.children[0]]
+                p2 = n2i[node.children[-1]]
+                partition.angle = p2.angle_start + p2.angle_span - p1.angle_start
+                partition.angle_start = p1.angle_start - (p1.angle_span/2)
+                partition.angle_span = p2.angle_start - (p2.angle_span/2) - partition.angle_start
+    
+            #partition.setParentItem(center_item)
+            b = node.nodeRegion.height()
+            a = node.nodeRegion.width()
+            A = partition.angle
+            radius = math.sqrt( (b/2*math.atan(A))**2 + a**2  + (b/2)**2 )
+            print radius, partition.angle_start
+
+            arc = _ArcItem(partition.angle_start, partition.angle_span, radius)
+
+            n2a[node] = arc            
+
+            for c in node.children:
+                cpart = n2i[c]
+                cpart.setParentItem(arc)
+                carc = n2a[c]
+                carc.setParentItem(arc)
+                self.render_node_partition(node, cpart )
+            
+        arc.setParentItem(center_item)
+        arc.setPen(QtGui.QColor("#0000ff"))
+        center_item.setParentItem(self.mainItem)
+        center_item.setPos(200,200)
+        # Render root node and set its positions
+        
 
     def rotate_node(self,node,angle,x=None,y=None):
         if x and y:
@@ -1449,7 +1882,68 @@ class _TreeScene(QtGui.QGraphicsScene):
         else:
             node._QtItem_.rotate(angle)
 
-    def render_node(self,node , x, y,level=0):
+    def get_partition_center(self, n):
+        down = self.node2faces[n]["branchdown"].h
+        up = self.node2faces[n]["branchup"].h
+
+        if n.is_leaf() or not n.img_style["draw_descendants"]:
+            center = n.fullRegion.height()/2
+        else:
+            first_child_part = self.node2item[n.children[0]]
+            last_child_part = self.node2item[n.children[-1]]
+            c1 = first_child_part.start_y + first_child_part.center
+            c2 = last_child_part.start_y + last_child_part.center
+            center = c1+ (c2-c1)/2
+
+        if up > center:
+            center = up
+        elif down > n.fullRegion.height()-center:
+            center = n.fullRegion.height()-down
+        return center
+            
+    def render_node_partition(self, node, partition):
+        # Draw partition components 
+        # Draw node balls in the partition centers
+        ball_size = node.img_style["size"] 
+        ball_start_x = node.nodeRegion.width() - node.facesRegion.width() - ball_size
+        node_ball = _NodeItem(node)
+        node_ball.setParentItem(partition)            
+        node_ball.setPos(ball_start_x, partition.center-(ball_size/2))
+        # Hz line
+        hz_line = QtGui.QGraphicsLineItem(partition)
+        hz_line.setLine(0, partition.center, 
+                        node.dist_xoffset, partition.center)
+
+        # Add rightside faces to child 
+        fblock = self.node2faces[node]["rightside"]
+        fblock.setParentItem(partition)
+        fblock.render()
+        fblock.setPos(node.nodeRegion.width()-node.facesRegion.width(), \
+                              partition.center-node.facesRegion.height()/2)
+                
+        # Add branchdown faces to child 
+        fblock = self.node2faces[node]["branchdown"]
+        fblock.setParentItem(partition)
+        fblock.render()
+        fblock.setPos(0, partition.center)
+        
+        # Add branchup faces to child 
+        fblock = self.node2faces[node]["branchup"]
+        fblock.setParentItem(partition)
+        fblock.render()
+        fblock.setPos(0, partition.center-fblock.h )
+
+        if not node.is_leaf() and node.img_style["draw_descendants"]==1:
+            vt_line = QtGui.QGraphicsLineItem(partition)
+            first_child_part = self.node2item[node.children[0]]
+            last_child_part = self.node2item[node.children[-1]]
+            c1 = first_child_part.start_y + first_child_part.center
+            c2 = last_child_part.start_y + last_child_part.center
+            vt_line.setLine(node.nodeRegion.width(), c1,\
+                                node.nodeRegion.width(), c2 )            
+
+
+    def render_node2(self,node , x, y,level=0):
         """ Traverse the tree structure and render each node using the
         regions, sizes, and faces previously loaded. """
 
@@ -1608,92 +2102,20 @@ class _TreeScene(QtGui.QGraphicsScene):
                     offset = rect.height()
                 b_length.setTransform(QtGui.QTransform().translate(0, y1-offset).rotate(angle).translate(0,-y1));
 
-    def add_faces(self,node,orientation):
-        # sphere radius
-        r = node.img_style["size"]/2
+    def add_faces(self, node, orientation):
+        for fblock in  node.__faces__.values():
+            fblock.setParentItem(node._QtItem_)
 
-        # ...
         if orientation==0:
             aligned_start_x = node._QtItem_.mapFromScene(self.i_width,0).x()
             start_x = node.img_style["size"]
         elif orientation==1:
             start_x = 0
             aligned_start_x = node._QtItem_.mapFromScene(0,0).x()
+        
+        node.__faces__["aligned"].render()
+        node.__faces__["aligned"].setPos(aligned_start_x, 0)
+        node.__faces__["rightside"].render()
+        node.__faces__["rightside"].setPos(start_x, -node.nodeRegion.height())
 
-        for stack in node.img_style["faces"]:
-            # get each stack's height and width
-            stack_h         = 0
-            stack_w         = 0
-            aligned_stack_w = 0
-            aligned_stack_h = 0
-            # Extract height and width of al faces in this stack
-            # Get max width and cumulated height
-            for f, aligned, pixmap in stack:
-                if aligned and not node.is_leaf():
-                    continue
-                f.node = node
-                if node.is_leaf() and aligned:
-                    aligned_stack_w = max(aligned_stack_w , f._width()) #+ f.xmargin*2
-                    aligned_stack_h += f._height() #+ f.ymargin*2
-                else:
-                    stack_w = max(stack_w ,f._width() )  #+f.xmargin*2
-                    stack_h += f._height() #+f.ymargin*2
 
-            # Creates a GGraphicsItem object for each face
-            cumulated_y         = 0
-            cumulated_aligned_y = 0
-            for j, face in enumerate(stack):
-                f, aligned, pixmap = face
-                if aligned and not node.is_leaf():
-                    continue
-                # Sets the face's working node
-                f.node = node
-                # add each face of this stack into the correct position.
-                if node.is_leaf() and aligned:
-                    start_y = cumulated_aligned_y + (-aligned_stack_h/2)+r #+ f.ymargin
-                else:
-                    start_y = cumulated_y - (stack_h/2) +r #+ f.ymargin
-
-                # If face is text type, add it as an QGraphicsTextItem
-                if f.type == "text":
-                    obj = _TextItem(f, node, f.get_text())
-                    obj.setFont(f.font)
-                    obj.setBrush(QtGui.QBrush(f.fgcolor))
-                    obj.setParentItem(node._QtItem_)
-                    obj.setAcceptsHoverEvents(True)
-                    # Marks the y starting point
-                    # start_y -= f._height()/2
-                    # obj2 = QtGui.QGraphicsEllipseItem(0,0,1,1)
-                    # obj2.setBrush(QtGui.QBrush(QtGui.QColor("red")))
-                    # obj2.setParentItem(obj)
-                else:
-                    # Loads the pre-generated pixmap
-                    obj = _FaceItem(f, node, pixmap)
-                    obj.setAcceptsHoverEvents(True)
-                    obj.setParentItem(node._QtItem_)
-
-                # If face is aligned and node is terminal, place face
-                # at aligned margin
-                if node.is_leaf() and aligned:
-                    # Set face position
-                    if orientation ==0:
-                        obj.setPos(aligned_start_x + f.xmargin, start_y)# + f.ymargin)
-                    elif orientation ==1:
-                        obj.setPos(aligned_start_x-f._width() - f.xmargin , start_y)# + f.ymargin)
-                    cumulated_aligned_y += f._height()# + f.ymargin*2
-                # If face has to be draw within the node room
-                else:
-                    # Set face position
-                    if orientation ==0:
-                        obj.setPos(start_x, start_y)
-                    elif orientation ==1:
-                        obj.setPos(start_x-f._width(),start_y)
-                    cumulated_y += f._height()
-
-            # next stack will start with this x_offset
-            if orientation == 0:
-                start_x += stack_w
-                aligned_start_x += aligned_stack_w
-            elif orientation ==1:
-                start_x -= stack_w
-                aligned_start_x -= aligned_start_x
