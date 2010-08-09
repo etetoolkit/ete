@@ -21,6 +21,7 @@
 #
 # #END_LICENSE#############################################################
 from sys import stderr
+import numpy
 import clustvalidation
 from numpy import nan as NaN # Missing values are saved as NaN values
 from ete_dev.coretype.tree import _translate_nodes
@@ -109,7 +110,7 @@ class ClusterNode(TreeNode):
 
     def set_distance_function(self, fn):
         """ Sets the distance function used to calculate cluster
-        distances and silouette indexex.
+        distances and silouette index.
 
         ARGUMENTS:
 
@@ -125,9 +126,9 @@ class ClusterNode(TreeNode):
           """
         for n in self.traverse():
             n._fdist = fn
-            self._silhouette = None
-            self._intercluster_dist = None
-            self._intracluster_dist = None
+            n._silhouette = None
+            n._intercluster_dist = None
+            n._intracluster_dist = None
 
     def link_to_arraytable(self, arraytbl):
         """ Allows to link a given arraytable object to the tree
@@ -147,6 +148,12 @@ class ClusterNode(TreeNode):
             array = ArrayTable(arraytbl)
 
         missing_leaves = []
+        matrix_values = [i for r in xrange(len(array.matrix))\
+                           for i in array.matrix[r] if numpy.isfinite(i)]
+
+        array._matrix_min = min(matrix_values)
+        array._matrix_max = max(matrix_values)
+
         for n in self.traverse():
             n.arraytable = array
             if n.is_leaf() and n.name in array.rowNames:

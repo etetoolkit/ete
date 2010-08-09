@@ -321,6 +321,22 @@ class Test_Coretype_SeqGroup(unittest.TestCase):
         self.assertEqual("CYS1" in SEQS, False)
         self.assertEqual(SEQS.get_entries(), [e for e in SEQS])
 
+    def test_alg_from_scratch(self):
+
+        alg = SeqGroup(phylip_sequencial, format="phylip")
+     
+        random_seq = alg.get_seq("CATH_HUMAN")
+ 
+        # Add a new sequence to the alg
+        alg.set_seq("randomseq", random_seq.replace("A","X"))
+
+        self.assertEqual(alg.get_seq("randomseq"), random_seq.replace("A","X"))
+  
+        # Exports the alignment to different formats
+        alg.write(format ="fasta")
+        alg.write(format ="iphylip")
+        alg.write(format ="phylip")
+ 
 
 class Test_Coretype_Tree(unittest.TestCase):
     """ Tests tree basics. """

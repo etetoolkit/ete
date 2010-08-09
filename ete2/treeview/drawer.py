@@ -84,6 +84,8 @@ class TreeImageProperties:
         self.tree_width                 = 200  # This is used to scale
                                                # the tree branches
         self.min_branch_separation      = 1
+        self.search_node_bg = "#cccccc"
+        self.search_node_fg = "#ff0000"
 
 def logger(level,*msg):
     """ Just to manage how to print messages """
@@ -981,7 +983,7 @@ class _NodeItem2(QtGui.QGraphicsRectItem):
         contextMenu.addAction( "Swap branches"        , self.swap_branches)
         contextMenu.addAction( "Delete node"          , self.delete_node)
         contextMenu.addAction( "Delete partition"     , self.detach_node)
-        contextMenu.addAction( "Add childs"           , self.add_childs)
+        contextMenu.addAction( "Add children"           , self.add_childs)
         contextMenu.addAction( "Populate partition"   , self.populate_partition)
         if self.node.up is not None and\
                 self.scene().startNode == self.node:
@@ -1017,11 +1019,12 @@ class _NodeItem2(QtGui.QGraphicsRectItem):
         self.scene().draw()
 
     def add_childs(self):
-        n,ok = QtGui.QInputDialog.getInteger(None,"Add childs","Number of childs to add:",1,1)
+        n,ok = QtGui.QInputDialog.getInteger(None,"Add children","Number of children to add:",1,1)
         if ok:
             for i in xrange(n):
                 ch = self.node.add_child()
             self.scene().set_style_from(self.scene().startNode,self.scene().layout_func)
+            self.scene().draw()
 
     def void(self):
         logger(0,"Not implemented yet")
@@ -1256,20 +1259,26 @@ class _TreeScene(QtGui.QGraphicsScene):
         self.unhighlight_node(n)
         r = QtGui.QGraphicsRectItem(self.mainItem)
         self._highlighted_nodes[n] = r
-        r.setRect(0, 0, 5 ,5)
-        r.setPos(n.scene_pos)
+
+        R = n.fullRegion.getRect()
+        width = self.i_width-n._x
+        r.setRect(QtCore.QRectF(n._x,n._y,width,R[3]))
+ 
+        #r.setRect(0,0, n.fullRegion.width(), n.fullRegion.height())
+
+        #r.setPos(n.scene_pos)
         # Don't know yet why do I have to add 2 pixels :/
-        r.moveBy(0,0)
+        #r.moveBy(0,0)
         r.setZValue(-1)
-        r.setPen(QtGui.QColor("yellow"))
-        r.setBrush(QtGui.QColor("yellow"))
+        r.setPen(QtGui.QColor(self.props.search_node_fg))
+        r.setBrush(QtGui.QColor(self.props.search_node_bg))
+
         # self.view.horizontalScrollBar().setValue(n._x)
         # self.view.verticalScrollBar().setValue(n._y)
 
     def unhighlight_node(self, n):
         if n in self._highlighted_nodes and \
                 self._highlighted_nodes[n] is not None:
-            print self._highlighted_nodes[n]
             self.removeItem(self._highlighted_nodes[n])
             del self._highlighted_nodes[n]
 
@@ -1536,6 +1545,127 @@ class _TreeScene(QtGui.QGraphicsScene):
 
 
 
+<<<<<<< HEAD:ete2/treeview/drawer.py
+=======
+        if self.props.force_topology:
+            node.dist_xoffset = 60#self.scale
+        else:
+            node.dist_xoffset = float(node.dist * self.scale)
+
+        min_node_height = max(node.img_style["size"], node.img_style["hlwidth"]*2)
+        max_w         = 0
+        max_aligned_w = 0
+        max_h         = 0
+        # Each stack is drawn as a different column
+        for stack in node.img_style["faces"]:
+            stack_h = 0
+            stack_w = 0
+            aligned_f_w = 0
+            aligned_f_h = 0
+            for face in stack:
+                f, aligned, pixmap = face
+                if aligned and not node.is_leaf():
+                    continue
+                # Sets the working node from which required info will
+                # be retrived. Thus, same face can be used for many nodes.
+                f.node = node
+                # If pixmap face, updates image
+                if f.type == "pixmap":
+                    f.update_pixmap() # using current working node
+                    face[2] = f.pixmap
+
+                if node.is_leaf() and aligned:
+                    aligned_f_w = max(aligned_f_w, f._width()) #+ f.xmargin*2
+                    aligned_f_h += f._height() #+ f.ymargin * 2
+                else:
+                    stack_w = max(stack_w, f._width()) #+ f.xmargin*2
+                    stack_h += f._height() #+ f.ymargin*2
+
+            max_aligned_w += aligned_f_w
+            max_w += stack_w
+            max_h = numpy.max([aligned_f_h, stack_h, max_h])
+        max_w +=1
+        # Updates the max width spend by aligned faces
+        if max_aligned_w > self.max_w_aligned_face:
+            self.max_w_aligned_face = max_aligned_w
+
+        # Dist and faces region
+        node.facesRegion = QtCore.QRectF(0,0,max_w,max_h)
+        w = node.dist_xoffset + max_w + node.img_style["size"]
+        h = max(max_h, min_node_height, self.props.min_branch_separation) + node.img_style["ymargin"]*2
+        if self.min_real_branch_separation < h:
+            self.min_real_branch_separation = h
+
+        node.nodeRegion = QtCore.QRectF(0,0,w,h)
+
+        # This piece of code fixes an old and annoying bug by which nodes with
+        # faces larger than the sum of child node region were badly
+        # drawn (badly centered and using space from other nodes)
+        if not node.is_leaf() and node.img_style["draw_descendants"] == 1:
+            max_child_w = 0
+            sum_child_h = 0
+            # y correction is used to fix cases in which the height of
+            # parent nodes is greater than the sum of child
+            # heights. Then, an y offset is calculated as the missing
+            # amount of pixels. This correction is used by the render
+            # algorithm to draw child 'y_correction" pixels bellow the
+            # expected position.
+            node._y_correction = 0
+            start2 = 0
+            for ch in node.children:
+                # Updates the max width used by childs
+                if ch.fullRegion.width()>max_child_w:
+                    max_child_w = ch.fullRegion.width()
+                # Stores the 'y' center of the first child node
+                if ch == node.children[0]:
+                    start1 = ch.__center
+                # And the 'y' center of the last child node
+                elif ch == node.children[-1]:
+                    start2 = sum_child_h + ch.__center
+                sum_child_h += ch.fullRegion.height()
+
+            # Knowing the centers of first and last child nodes, we
+            # know the center of current node. This center splits the
+            # current node space into two unequal pieces: above and
+            # bellow.
+            above =  (start1 +((start2 - start1)/2.0))
+            bellow = sum_child_h - above
+            newh = 0
+
+            # Current node faces will be drawn centered to the node
+            # position, so half of the faces space should fit in the
+            # above region, and the other half in the bellow region.
+            # If not, the height of current node is increased to
+            # reserve the required space.
+            #
+            # The space is missing in the above region, an y offset is
+            # set to permit child nodes to be drawn a bit more down
+            # than expected.
+            if above < (h/2):
+                newh = sum_child_h + ((h/2.0) - above)
+                node._y_correction = ((h/2.0) - above)
+            if bellow < h/2:
+                if newh >0:
+                    newh +=  ((h/2.0) - bellow)
+                else:
+                    newh = sum_child_h + ((h/2) - bellow)
+
+            # If current node faces do not exceed the sum of child
+            # heights, then current node height is the sum of child
+            # heights
+            if newh == 0:
+                newh = sum_child_h
+            h = newh
+            # Increases node width the max child width
+            w += max_child_w
+            # And stores current node center, which is the center
+            # calculated using the child node centers + the
+            # y_correction (if any)
+            node.__center = (start1 +((start2 - start1)/2.0)) + node._y_correction
+        else:
+            node.__center = h/2
+            node._y_correction = 0
+>>>>>>> 51273ac735b1b4698784437a4512bb639631e885:ete2/treeview/drawer.py
 
 
     def update_node_faces(self, node):
