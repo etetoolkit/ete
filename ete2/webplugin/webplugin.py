@@ -80,9 +80,9 @@ class WebTreeApplication(object):
     def set_layout_fn(self, layout_fn):
         self._layout = layout_fn
 
-    def _get_html_map(self, img_map, treeid):
+    def _get_html_map(self, img_map, treeid, mapid):
 
-        html_map = '<MAP NAME="imgmap_%s" class="ete_tree_img">' %(treeid)
+        html_map = '<MAP NAME="%s" class="ete_tree_img">' %(mapid)
         if img_map["nodes"]:
             for x1, y1, x2, y2, nodeid, text in img_map["nodes"]:
                 html_map += """ <AREA SHAPE="rect" COORDS="%s,%s,%s,%s" onClick='show_context_menu("%s", "node", "%s");' href="#">""" %\
@@ -118,11 +118,12 @@ class WebTreeApplication(object):
                 self._treeid2layout[treeid] = handler
 
         layout_fn = self._treeid2layout.get(treeid, self._layout)
+        mapid = "img_map_"+str(time.time())
         img_map = render_tree(t, img_path, layout_fn)
-        html_map = self._get_html_map(img_map, treeid)
+        html_map = self._get_html_map(img_map, treeid, mapid)
         ete_publi = '</br><a href="http://ete.cgenomics.org" style="font-size:7pt;" target="_blank" > %s </a>' %(__VERSION__)
         open(tree_path, "w").write(t.write(features=[]))
-        return html_map+"""<img class="ete_tree_img" src="%s" USEMAP="#imgmap_%s" onLoad='javascript:bind_popup();' onclick='javascript:show_context_menu("%s", "layout", "void", "void");' >""" %(img_url, treeid, treeid) + ete_publi
+        return html_map+"""<img class="ete_tree_img" src="%s" USEMAP="#%s" onLoad='javascript:bind_popup();' onclick='javascript:show_context_menu("%s", "layout", "void", "void");' >""" %(img_url, mapid, treeid) + ete_publi
 
     # WSGI web application 
     def __call__(self, environ, start_response):

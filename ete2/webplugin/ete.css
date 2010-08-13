@@ -7,13 +7,11 @@
     padding: 0px;
 }
 #popup ul{
-    border: 0px;
     margin: 0px;
     padding: 0px;
 }
 #popup li{
     font-size: 10pt;
-    border: 0px 0px 1px 1px solid #777;
     margin: 0px;
     padding: 0px;
     list-style-type: none;
