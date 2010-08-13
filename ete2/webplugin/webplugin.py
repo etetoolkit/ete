@@ -85,11 +85,11 @@ class WebTreeApplication(object):
         html_map = '<MAP NAME="%s" class="ete_tree_img">' %(mapid)
         if img_map["nodes"]:
             for x1, y1, x2, y2, nodeid, text in img_map["nodes"]:
-                html_map += """ <AREA SHAPE="rect" COORDS="%s,%s,%s,%s" onClick='show_context_menu("%s", "node", "%s");' href="#">""" %\
+                html_map += """ <AREA SHAPE="rect" COORDS="%s,%s,%s,%s" onClick='show_context_menu("%s", "node", "%s");' href="javascript:void(0);">""" %\
                     (x1, y1, x2, y2, treeid, nodeid)
         if img_map["faces"]:
             for x1, y1, x2, y2, nodeid, text in img_map["faces"]:
-                html_map += """ <AREA SHAPE="rect" COORDS="%s,%s,%s,%s" onClick='show_context_menu("%s", "face", "%s", "%s");' href='#'>""" %\
+                html_map += """ <AREA SHAPE="rect" COORDS="%s,%s,%s,%s" onClick='show_context_menu("%s", "face", "%s", "%s");' href=javascript:void(0);>""" %\
                     (x1,y1,x2,y2, treeid, nodeid, text)
         html_map += '</MAP>'
         return html_map
@@ -224,7 +224,7 @@ def render_tree(t, img_path, layout=None):
                 x1, y1 = pos.x()+5, pos.y()
                 if isinstance(item, drawer._TextItem):
                     x2, y2 = x1+item.face._width(), y1+item.face._height()
-                    face_list.append([x1,y1,x2,y2, nid, str(item.text())])
+                    face_list.append([x1,y1,x2,y2, nid, str(item.face.get_text())])
                 elif isinstance(item, drawer._FaceItem):
                     x2, y2 = x1+item.face._width(), y1+item.face._height()
                     face_list.append([x1,y1,x2,y2, nid, None])

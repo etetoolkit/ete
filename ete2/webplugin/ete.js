@@ -5,24 +5,17 @@ var ete_webplugin_URL = "http://jaime.phylomedb.org/wsgi/webplugin.py";
 var tree2recipient = new Array();
 function draw_tree(newick, recipient, treeid){
   tree2recipient[treeid]=recipient;
+  $(recipient).html('<img src="loader.gif">');
   $(recipient).load(ete_webplugin_URL+'/draw', {"tree": newick, "treeid": treeid});
     }
 function show_context_menu(treeid, atype, nodeid, textface, e){
   $("#popup").html('<img src="loader.gif">');
-  $('#popup').load(ete_webplugin_URL+'/get_menu', {"treeid": treeid, "atype": atype, "nid": nodeid, "textface": textface}, function(response, status, xhr) {
-                      if (status == "error") {
-                        var msg = "Sorry but there was an error: ";
-                        $("#error").html(msg + xhr.status + " " + xhr.statusText);
-                          }}
+  $('#popup').load(ete_webplugin_URL+'/get_menu', {"treeid": treeid, "atype": atype, "nid": nodeid, "textface": textface}
                   );}
 function run_action(treeid, atype, nodeid, aindex){
   var recipient = tree2recipient[treeid];
   $(recipient).html('<img src="loader.gif">');
-  $(recipient).load(ete_webplugin_URL+'/action', {"treeid": treeid, "atype": atype, "nid": nodeid, "aindex": aindex}, function(response, status, xhr) {
-                      if (status == "error") {
-                        var msg = "Sorry but there was an error: ";
-                        $("#error").html(msg + xhr.status + " " + xhr.statusText);
-                          }}
+  $(recipient).load(ete_webplugin_URL+'/action', {"treeid": treeid, "atype": atype, "nid": nodeid, "aindex": aindex}
                    );}
 
 function random_tid(){
