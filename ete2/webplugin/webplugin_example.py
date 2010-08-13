@@ -49,6 +49,7 @@
 # from ete2.webplugin  import WebTreeApplication
 import sys
 sys.path.append("/var/www/ete2-webplugin/ete2/webplugin")
+import webplugin; reload(webplugin) # While debuging...
 from webplugin import WebTreeApplication, CONFIG
 
 # USER PART. You can modify this part
@@ -63,6 +64,7 @@ CONFIG["temp_url"] = "http://localhost/tmp/"
 CONFIG["DISPLAY"] = ":0"
 
 # My custom functionality for the plugin
+PLUGIN_URL = "http://localhost/wsgi/webplugin_example.py"
 name_face = faces.AttrFace("name", fsize=12)
 text_face = faces.TextFace("__ ETE__", fsize=12)
 
@@ -112,9 +114,7 @@ def my_layout2(node):
 
     if node.is_leaf():
         faces.add_face_to_node(name_face, node, 0, False)
-
-
-        
+       
 
 def link_to_my_page(action_index, nodeid, treeid, text):
     return """<a href="#"> Example link 1: %s </a><br> """ %(text)
@@ -135,3 +135,36 @@ application.register_action("notused", "face", None, link_to_my_other_page)
 application.register_action("default", "layout", None, None)
 application.register_action("green", "layout", my_layout1, None)
 application.register_action("grey", "layout", my_layout2, None)
+
+
+# You can also extend the WSGI web application 
+def my_custom_app_extension(environ, start_response, queries):
+    path = environ['PATH_INFO'].split("/")                      
+    if path[1]=="action1":
+        start_response('202 OK', [('content-type', 'text/html')])
+        text = queries.get("text", [None])[0]        
+        if text:
+            return ["ACTION1. You have clicked on<b>%s</b>" %text]
+        else:
+            return ["ACTION1. Mande?" %text]
+        
+    if path[1]=="action2":
+        start_response('202 OK', [('content-type', 'text/html')])
+        text = queries.get("text", [None])[0]        
+        if text:
+            return ["ACTION2. You have clicked on<b>%s</b>" %text]
+        else:
+            return ["ACTION2. Mande?" %text]
+
+
+def link_to_action1(action_index, nodeid, treeid, text):
+    return """<a href="%s/action1/?text=%s "> Action 1: %s </a><br> """ %(PLUGIN_URL, text, text)
+
+def link_to_action2(action_index, nodeid, treeid, text):
+    return """<a href="%s/action2/?text=%s "> Action 2: %s </a><br> """ %(PLUGIN_URL, text, text)
+
+application.register_action("notused", "face", None, link_to_action1)
+application.register_action("notused", "face", None, link_to_action2)
+
+# IF no ETE plugin arguments are handled, the query is passed to your WSGI handler
+application.register_external_app_handler(my_custom_app_extension)

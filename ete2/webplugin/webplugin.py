@@ -67,6 +67,9 @@ class WebTreeApplication(object):
         self._treeid2layout = {}
         self._external_app_handler = None
 
+    def register_external_app_handler(self, handler):
+        self._external_app_handler = handler
+
     def register_action(self, name, target, handler, refresh):
         if target not in self.actions: 
             raise ValueError("Invalid target for action:", target)
