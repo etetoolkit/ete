@@ -53,7 +53,8 @@ import webplugin; reload(webplugin) # While debuging...
 from webplugin import WebTreeApplication, CONFIG
 
 # USER PART. You can modify this part
-from ete2 import PhyloTree, faces
+sys.path.append("/var/www/ete2-webplugin")
+from ete_dev import PhyloTree, faces
 
 application = WebTreeApplication()
 # Set your temporal dir to allow web user to generate files
@@ -77,7 +78,7 @@ def my_collapse(node):
     node.add_feature("bsize", 50)
 
 def set_red(node):
-    node.add_feature("fgcolor", "#ff0000")
+    node.add_feature("fgcolor", "#f00000")
 
 def set_as_root(node):
     node.get_tree_root().set_outgroup(node)
@@ -89,7 +90,7 @@ def my_layout1(node):
     if hasattr(node, "fgcolor"):
         node.img_style["fgcolor"]= node.fgcolor
     else:
-        node.img_style["fgcolor"]= "#00ff00"
+        node.img_style["fgcolor"]= "#1F1F9C"
     if hasattr(node, "bsize"):
         node.img_style["size"]= int(node.bsize)
     else:
@@ -123,6 +124,7 @@ def link_to_my_other_page(action_index, nodeid, treeid, text):
     return """<a href="#"> Example link 2: %s </a><br> """ %(text)
 
 application.set_tree_loader(my_tree_loader)
+application.set_default_layout_fn(my_layout1)
 
 # register_action(action_name, target_type=node|face|style, action_handler, html_generator_handler )
 application.register_action("collapse node", "node", my_collapse, None)
@@ -132,8 +134,7 @@ application.register_action("set red", "node", set_red, None)
 application.register_action("notused", "face", None, link_to_my_page)
 application.register_action("notused", "face", None, link_to_my_other_page)
 
-application.register_action("default", "layout", None, None)
-application.register_action("green", "layout", my_layout1, None)
+application.register_action("default", "layout", my_layout1, None)
 application.register_action("grey", "layout", my_layout2, None)
 
 
@@ -157,14 +158,28 @@ def my_custom_app_extension(environ, start_response, queries):
             return ["ACTION2. Mande?" %text]
 
 
-def link_to_action1(action_index, nodeid, treeid, text):
+def link_to_action1(action_index, treeid, nodeid, text):
     return """<a href="%s/action1/?text=%s "> Action 1: %s </a><br> """ %(PLUGIN_URL, text, text)
 
-def link_to_action2(action_index, nodeid, treeid, text):
+def link_to_action2(action_index, treeid, nodeid, text):
     return """<a href="%s/action2/?text=%s "> Action 2: %s </a><br> """ %(PLUGIN_URL, text, text)
+
+def search_form(action_index, treeid, nodeid, text):
+    return """Search:<input type="text" id="ete_search_node"></input> 
+<input onClick='run_action("%s", "%s", "%s", "%s", $("#ete_search_node").val() );' type="submit" value="go!"> """ %\
+        (treeid, "search", "", action_index)
+
+def search_by_name(tree, search_term):
+    for n in tree.traverse(): 
+        if search_term in n.name: 
+            n.add_feature("bsize", 50)
+            n.add_feature("fgcolor", "#BB8C2B")
+
 
 application.register_action("notused", "face", None, link_to_action1)
 application.register_action("notused", "face", None, link_to_action2)
+
+application.register_action("search", "search", search_by_name, search_form)
 
 # IF no ETE plugin arguments are handled, the query is passed to your WSGI handler
 application.register_external_app_handler(my_custom_app_extension)

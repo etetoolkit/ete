@@ -55,14 +55,13 @@ import time
 import hashlib
 import cgi
 
-from ete2 import Tree, PhyloTree, __VERSION__
-from ete2.treeview import drawer
+__VERSION__ = "ete_dev"
 CONFIG = {}
 
 class WebTreeApplication(object):
     def __init__(self):
-        self.TreeConstructor = Tree
-        self.actions = {"node": [], "layout": [], "face": []}
+        self.TreeConstructor = None
+        self.actions = {"node": [], "layout": [], "face": [], "tree": [], "search": []}
         self._layout = None
         self._treeid2layout = {}
         self._external_app_handler = None
@@ -77,11 +76,11 @@ class WebTreeApplication(object):
 
     def set_tree_loader(self, TreeConstructor):
         self._tree = TreeConstructor
-    def set_layout_fn(self, layout_fn):
+
+    def set_default_layout_fn(self, layout_fn):
         self._layout = layout_fn
 
     def _get_html_map(self, img_map, treeid, mapid):
-
         html_map = '<MAP NAME="%s" class="ete_tree_img">' %(mapid)
         if img_map["nodes"]:
             for x1, y1, x2, y2, nodeid, text in img_map["nodes"]:
@@ -89,8 +88,8 @@ class WebTreeApplication(object):
                     (x1, y1, x2, y2, treeid, nodeid)
         if img_map["faces"]:
             for x1, y1, x2, y2, nodeid, text in img_map["faces"]:
-                html_map += """ <AREA SHAPE="rect" COORDS="%s,%s,%s,%s" onClick='show_context_menu("%s", "face", "%s", "%s");' href=javascript:void(0);>""" %\
-                    (x1,y1,x2,y2, treeid, nodeid, text)
+                html_map += """ <AREA SHAPE="rect" COORDS="%s,%s,%s,%s" onClick='show_context_menu("%s", "face", "%s", "%s");' href=javascript:void('%s');>""" %\
+                    (x1,y1,x2,y2, treeid, nodeid, text, text)
         html_map += '</MAP>'
         return html_map
 
@@ -107,13 +106,17 @@ class WebTreeApplication(object):
             t = self._tree(tree_path)
         else:
             t = self._tree(tree)
-        
+       
         if pre_drawing_action:
             atype, handler, arguments = pre_drawing_action
-            if atype == "node" and handler:
+            if atype in set(["node", "face"]) and len(arguments)==1 and handler:
                 nid = arguments[0]
                 node = get_node_by_id(t, nid)
                 handler(node)
+            elif atype == "tree":
+                handler(t)
+            elif atype == "search":
+                handler(t, arguments[0])
             elif atype == "layout":
                 self._treeid2layout[treeid] = handler
 
@@ -146,7 +149,6 @@ class WebTreeApplication(object):
                 treeid = str(queries["treeid"][0])
                 tree = str(queries["tree"][0])
                 return self._get_tree(tree=tree, treeid=treeid)
-
             else:
                 return "No tree found"
         elif method == "get_menu": 
@@ -154,28 +156,39 @@ class WebTreeApplication(object):
             nodeid = str(queries["nid"][0])
             textface = str(queries["textface"][0])
             treeid = str(queries["treeid"][0])
-            html = '<ul>'
-            for aindex, (action, handler, html_generator) in enumerate(self.actions.get(atype, [])):
-                if html_generator: 
-                    html += html_generator(aindex, treeid, nodeid, textface)
-                else:
-                    html += """<li> <a  href='javascript:void(["%s", "%s", "%s", "%s"])' onClick='run_action("%s", "%s", "%s", "%s");'> %s </a></li> """ %\
-                        (treeid, atype, nodeid, aindex, treeid, atype, nodeid, aindex, action)
+            html = """<div onClick='hide_popup();' style='text-align:right;' id="close_popup">[X]</div><ul>"""
+            groups = [ ["node", "face"], 
+                       ["layout", "tree", "search"]]
+                      
+            for items in groups:
+                if atype not in items:
+                    continue
+                for i in items:
+                    for aindex, (action, handler, html_generator) in enumerate(self.actions[i]):
+                        if html_generator: 
+                            html += html_generator(aindex, treeid, nodeid, textface)
+                        else:
+                            html += """<li> <a  href='javascript:void(["%s", "%s", "%s", "%s"])' onClick='run_action("%s", "%s", "%s", "%s");'> %s </a></li> """ %\
+                                (treeid, atype, nodeid, aindex, treeid, atype, nodeid, aindex, action)
             html += '</ul>'
             return html
 
         elif method == "action":
             atype = str(queries["atype"][0])
-            nid = str(queries["nid"][0])
+            nid = queries.get("nid", [None])[0]
+            search_term = queries.get("search_term", [None])[0]
             treeid = str(queries["treeid"][0])
             aindex = int(str(queries["aindex"][0]))
             name, handler, html_generator = self.actions[atype][aindex]
-            if atype in set(["node","face"]):
+
+            if atype in set(["node","face", "tree", "layout"]):
                 return self._get_tree(treeid=treeid, pre_drawing_action=[atype, handler, [nid]])
-            elif atype == "layout":
-                return self._get_tree(treeid=treeid, pre_drawing_action=[atype, handler, []])
+            elif atype in set(["search"]):
+                return self._get_tree(treeid=treeid, pre_drawing_action=[atype, handler, [search_term]])
+
             return "Bad guy"
-                
+
+               
         elif self._external_app_handler:
             return self._external_app_handler(environ, start_response, queries)
         else:
@@ -189,17 +202,10 @@ def get_node_by_id(t, nid):
             return n
 
 def render_tree(t, img_path, layout=None):
-    def prep(x):
-        # prepare int variables for storing in the map
-        if type(x).__name__=='int':
-            return "'"+str(x)+"'"
-        elif type(x).__name__=='float':
-            return "'"+str(int(x))+"'"
-        else:
-            return "'"+str(x)+"'"
     os.environ["DISPLAY"]=CONFIG["DISPLAY"]
     #############  should be changed in future ########
-    t.render(img_path, layout = layout)
+    return t.render(img_path, layout = layout)
+
     w, h =  t._QtItem_.scene().sceneRect().width(), t._QtItem_.scene().sceneRect().height()
     t.render(img_path, w=w, h=h, layout = layout)
     ###################################################

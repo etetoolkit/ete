@@ -12,11 +12,12 @@ function show_context_menu(treeid, atype, nodeid, textface, e){
   $("#popup").html('<img src="loader.gif">');
   $('#popup').load(ete_webplugin_URL+'/get_menu', {"treeid": treeid, "atype": atype, "nid": nodeid, "textface": textface}
                   );}
-function run_action(treeid, atype, nodeid, aindex){
+function run_action(treeid, atype, nodeid, aindex, search_term){
   var recipient = tree2recipient[treeid];
   $(recipient).html('<img src="loader.gif">');
-  $(recipient).load(ete_webplugin_URL+'/action', {"treeid": treeid, "atype": atype, "nid": nodeid, "aindex": aindex}
-                   );}
+  $(recipient).load(ete_webplugin_URL+'/action', {"treeid": treeid, "atype": atype, "nid": nodeid, "aindex": aindex, "search_term": search_term}
+                   );
+}
 
 function random_tid(){
   var date = new Date;
@@ -25,17 +26,17 @@ function random_tid(){
 
 function bind_popup(){
 $(".ete_tree_img").bind('click',function(e){
-                          $("#popup").css('left',e.pageX-5 );
-                          $("#popup").css('top',e.pageY-5 );
+                          $("#popup").css('left',e.pageX-2 );
+                          $("#popup").css('top',e.pageY-2 );
                           $("#popup").css('position',"absolute" );
                           $("#popup").css('background-color',"#fff" );
                           $("#popup").show();
                             });
 }
+function hide_popup(){
+  $('#popup').hide();
+}
 
 $(document).ready(function(){
-    $('#popup').hide();
-    $('#popup').click(function() {
-        $('#popup').hide();
-      });
-  });
+  hide_popup();
+});

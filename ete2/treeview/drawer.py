@@ -156,19 +156,12 @@ def render_tree(t, imgName, w=None, h=None, style=None, \
         img_properties = TreeImageProperties()
     scene.initialize_tree_scene(t, style,
                                 tree_properties=img_properties)
-    scene.draw()
+    imgmap = scene.draw()
     final_w, final_h = scene.save(imgName, w=w, h=h, header=header)
+    return imgmap
     # print scene.sceneRect()
     # print final_w, final_h
     
-
-
-# #################
-# NON PUBLIC STUFF
-# #################
-
-
-
 
 class NewickDialog(QtGui.QDialog):
     def __init__(self, node, *args):
@@ -1151,7 +1144,6 @@ class _TreeScene(QtGui.QGraphicsScene):
             return w, h
         else:
             h,w = self.sceneRect().height(),  self.sceneRect().width()
-            
             targetRect = QtCore.QRectF(0, 0, w, h)
             ii= QtGui.QImage(w, \
                                  h, \
@@ -1280,6 +1272,29 @@ class _TreeScene(QtGui.QGraphicsScene):
 
         self.setSceneRect(0,0,self.i_width+4,self.i_height+50)
         logger(2, "Number of items in scene:", len(self.items()))
+        # prepare the map lists
+        node_list = []
+        text_list = []
+        face_list = []
+        for nid, n in enumerate(self.startNode.traverse()):
+            if not hasattr(n, "_QtItem_"): 
+                continue
+            n.add_feature("_nid", str(nid))
+            node_coords =  n._QtItem_.mapToScene(0,0)
+            x1, y1 = node_coords.x(), node_coords.y()
+            x2, y2 = x1 + n._QtItem_.rect().width(), y1 + n._QtItem_.rect().height()
+            node_list.append([x1,y1,x2,y2, nid, None])
+            for item in n._QtItem_.childItems():
+                pos = item.mapToScene(0,0)
+                x1, y1 = pos.x()+5, pos.y()
+                rect = item.boundingRect()
+                x2, y2 = x1+rect.width(), y1+rect.height()
+                if isinstance(item, _TextItem):
+                    face_list.append([x1,y1,x2,y2, nid, str(item.text())])
+                elif isinstance(item, _FaceItem):
+                    face_list.append([x1,y1,x2,y2, nid, None])
+        return {"nodes": node_list, "faces": face_list, "text": text_list }
+        
 
     def add_scale(self,x,y):
         size = 50

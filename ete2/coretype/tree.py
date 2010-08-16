@@ -896,7 +896,7 @@ class TreeNode(object):
             print self
             print e
         else:
-            drawer.render_tree(self, file_name, w=w, h=h, style=layout, \
+            return drawer.render_tree(self, file_name, w=w, h=h, style=layout, \
                                    img_properties=img_properties, \
                                    header=header)
 

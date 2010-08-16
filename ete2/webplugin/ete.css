@@ -18,3 +18,10 @@
     padding-left: 2px;
     padding-right: 2px;
 }
+#close_popup{
+    margin: 0px;
+    padding: 0px;
+    font-size: 10pt;
+    font-weight:bold;
+}
+
