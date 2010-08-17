@@ -73,9 +73,17 @@ def my_tree_loader(tree):
     t = PhyloTree(tree)
     return t
 
-def my_collapse(node):
-    node.add_feature("collapsed", 1)
+def collapse(node):
+    node.add_feature("hide", 1)
     node.add_feature("bsize", 50)
+
+def expand(node):
+    node.add_feature("hide", 0)
+    try: 
+        node.del_feature("bsize")
+    except KeyError: 
+        pass
+
 
 def set_red(node):
     node.add_feature("fgcolor", "#f00000")
@@ -84,8 +92,8 @@ def set_as_root(node):
     node.get_tree_root().set_outgroup(node)
 
 def my_layout1(node):
-    if hasattr(node, "collapsed"):
-        if node.collapsed == 1:
+    if hasattr(node, "hide"):
+        if node.hide == 1:
             node.img_style["draw_descendants"]= False
     if hasattr(node, "fgcolor"):
         node.img_style["fgcolor"]= node.fgcolor
@@ -101,8 +109,8 @@ def my_layout1(node):
     faces.add_face_to_node(text_face, node, 1, False)
 
 def my_layout2(node):
-    if hasattr(node, "collapsed"):
-        if node.collapsed == 1:
+    if hasattr(node, "hide"):
+        if node.hide == 1:
             node.img_style["draw_descendants"]= False
     if hasattr(node, "fgcolor"):
         node.img_style["fgcolor"]= node.fgcolor
@@ -126,16 +134,35 @@ def link_to_my_other_page(action_index, nodeid, treeid, text):
 application.set_tree_loader(my_tree_loader)
 application.set_default_layout_fn(my_layout1)
 
-# register_action(action_name, target_type=node|face|style, action_handler, html_generator_handler )
-application.register_action("collapse node", "node", my_collapse, None)
-application.register_action("set as root", "node", set_as_root, None)
-application.register_action("set red", "node", set_red, None)
+# register_action(action_name, target_type=node|face|layout, action_handler, action_checker,  html_generator_handler )
+#
+# The algorithm works as follows: 
+#
+# 1. load the tree and get the map
+# 2. for each node and face in the tree, browses all registered actions and run the action_checker function
+# 3. if checker(node) returns True, the action will be associated to the context menu of node or face, otherwise it will be hidden
+# 4. it uses html_generator function to get the HTML to be shown in the menu
+# 5. if action is activated (clicked), action_handler is called
+# 
+# action_checker = None : Show allways
+# html_generator = None : Autogenerate html and link to action
+#
 
-application.register_action("notused", "face", None, link_to_my_page)
-application.register_action("notused", "face", None, link_to_my_other_page)
+can_expand = lambda node: hasattr(node, "hide") and node.hide==True
+can_collapse = lambda node: not hasattr(node, "hide") or node.hide==False
+is_leaf = lambda node: node.is_leaf()
 
-application.register_action("default", "layout", my_layout1, None)
-application.register_action("grey", "layout", my_layout2, None)
+application.register_action("collapse node", "node", collapse, can_collapse, None)
+application.register_action("Expand node", "node", expand, can_expand, None)
+
+application.register_action("set as root", "node", set_as_root, None, None)
+application.register_action("set red", "node", set_red, None, None)
+
+application.register_action("notused", "face", None, None, link_to_my_page)
+application.register_action("notused", "face", None, is_leaf, link_to_my_other_page)
+
+application.register_action("default", "layout", my_layout1, None, None)
+application.register_action("grey", "layout", my_layout2, None, None)
 
 
 # You can also extend the WSGI web application 
@@ -176,10 +203,10 @@ def search_by_name(tree, search_term):
             n.add_feature("fgcolor", "#BB8C2B")
 
 
-application.register_action("notused", "face", None, link_to_action1)
-application.register_action("notused", "face", None, link_to_action2)
+application.register_action("notused", "face", None, is_leaf, link_to_action1)
+application.register_action("notused", "face", None, is_leaf, link_to_action2)
 
-application.register_action("search", "search", search_by_name, search_form)
+application.register_action("search", "search", search_by_name, None, search_form)
 
 # IF no ETE plugin arguments are handled, the query is passed to your WSGI handler
 application.register_external_app_handler(my_custom_app_extension)

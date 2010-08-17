@@ -8,14 +8,14 @@ function draw_tree(newick, recipient, treeid){
   $(recipient).html('<img src="loader.gif">');
   $(recipient).load(ete_webplugin_URL+'/draw', {"tree": newick, "treeid": treeid});
     }
-function show_context_menu(treeid, atype, nodeid, textface, e){
+function show_context_menu(treeid, nodeid, actions, textface){
   $("#popup").html('<img src="loader.gif">');
-  $('#popup').load(ete_webplugin_URL+'/get_menu', {"treeid": treeid, "atype": atype, "nid": nodeid, "textface": textface}
+  $('#popup').load(ete_webplugin_URL+'/get_menu', {"treeid": treeid, "show_actions": actions, "nid": nodeid, "textface": textface}
                   );}
-function run_action(treeid, atype, nodeid, aindex, search_term){
+function run_action(treeid, nodeid, aindex, search_term){
   var recipient = tree2recipient[treeid];
   $(recipient).html('<img src="loader.gif">');
-  $(recipient).load(ete_webplugin_URL+'/action', {"treeid": treeid, "atype": atype, "nid": nodeid, "aindex": aindex, "search_term": search_term}
+  $(recipient).load(ete_webplugin_URL+'/action', {"treeid": treeid, "nid": nodeid, "aindex": aindex, "search_term": search_term}
                    );
 }
 
