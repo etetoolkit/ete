@@ -1,27 +1,68 @@
-#popup {
-    font-family: Arial;
-    font-size: 10pt;
-    border: 1px solid #777;
-    background: #EEE;
-    margin: 0px;
-    padding: 0px;
-}
-#popup ul{
-    margin: 0px;
-    padding: 0px;
-}
-#popup li{
-    font-size: 10pt;
-    margin: 0px;
-    padding: 0px;
-    list-style-type: none;
-    padding-left: 2px;
-    padding-right: 2px;
-}
-#close_popup{
-    margin: 0px;
-    padding: 0px;
-    font-size: 10pt;
-    font-weight:bold;
+#popup 
+{
+  font-family: Arial;
+  font-size: 10pt;
+  border: 1px solid #777;
+  margin: 0px;
+  padding: 0px;
+  }
+#popup ul
+{
+  margin: 0px;
+           padding: 0px;
+  }
+#popup li 
+{
+  font-size: 10pt;
+  margin: 0px;
+  margin-left: 4px;
+  padding: 0px;
+  list-style-type: none;
+  padding-left: 2px;
+  padding-right: 2px;
+  border-bottom: 1px solid #ccc;
+  }
+
+#popup a 
+{
+  color: #565B53;
+  text-decoration:none;  
 }
 
+#popup a:hover 
+{
+  color: #000000;
+  text-decoration:none;  
+}
+
+#close_popup
+{
+  margin-bottom: 4px;
+  padding-right: 2px;
+  padding-left: 2px;
+  background-color:#EEE;
+  border-bottom: 1px solid #ccc;
+  padding: 0px;
+  font-size: 10pt;
+  font-weight:bold;
+  }
+
+#close_popup img
+{
+  float:right;
+  
+  }
+
+.ete_popup_header
+{ 
+  margin-right: 6px;
+  font-size: 13pt;
+  color: #565B53;
+  font-weight:none;
+}
+
+.ete_popup_item
+{ 
+  color: #565B53;
+  border-bottom: 1px solid #ccc;
+ }

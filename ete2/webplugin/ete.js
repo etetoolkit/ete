@@ -9,6 +9,10 @@ function draw_tree(newick, recipient, treeid){
   $(recipient).load(ete_webplugin_URL+'/draw', {"tree": newick, "treeid": treeid});
     }
 function show_context_menu(treeid, nodeid, actions, textface){
+  if ( textface==undefined ){
+    var textface = "";
+    }
+
   $("#popup").html('<img src="loader.gif">');
   $('#popup').load(ete_webplugin_URL+'/get_menu', {"treeid": treeid, "show_actions": actions, "nid": nodeid, "textface": textface}
                   );}
@@ -30,6 +34,7 @@ $(".ete_tree_img").bind('click',function(e){
                           $("#popup").css('top',e.pageY-2 );
                           $("#popup").css('position',"absolute" );
                           $("#popup").css('background-color',"#fff" );
+                          $("#popup").draggable();
                           $("#popup").show();
                             });
 }

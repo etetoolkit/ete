@@ -67,6 +67,8 @@ class WebTreeApplication(object):
         self._layout = None
         self._treeid2layout = {}
         self._external_app_handler = None
+        self._treeid2tree = {}
+        self._treeid2index = {}
 
     def register_external_app_handler(self, handler):
         self._external_app_handler = handler
@@ -103,25 +105,47 @@ class WebTreeApplication(object):
         html_map += '</MAP>'
         return html_map+str(len(img_map["nodes"]))
 
+    def _load_tree_from_path(self, treeid):
+        tree_path = os.path.join(CONFIG["temp_dir"], treeid+".nw")
+        t = self._treeid2tree[treeid] = self._tree(tree_path)
+        tree_index  = self._treeid2index[treeid] = {}
+        for n in t.traverse():
+            if hasattr("_nid", n):
+                tree_index[n._nid] = n
+        return t, tree_index
+
+    def _dump_tree_to_file(self, t, treeid):
+        tree_path = os.path.join(CONFIG["temp_dir"], treeid+".nw")
+        open(tree_path, "w").write(t.write(features=[]))
+
     def _get_tree(self, tree=None, treeid=None, pre_drawing_action=None):
         if not treeid:
             treeid = hashlib.md5(str(time.time())).hexdigest()
 
-        tree_path = os.path.join(CONFIG["temp_dir"], treeid+".nw")
-        img_path = os.path.join(CONFIG["temp_dir"], treeid+".png")
-        tree_url = os.path.join(CONFIG["temp_url"], treeid+".nw")
+        #tree_path = os.path.join(CONFIG["temp_dir"], treeid+".nw")
         img_url = os.path.join(CONFIG["temp_url"], treeid+".png?"+str(time.time()))
+        img_path = os.path.join(CONFIG["temp_dir"], treeid+".png")
 
-        if not tree:
-            t = self._tree(tree_path)
+        debug_track = str(self._treeid2tree.get(treeid, None)) 
+        debug_cache = "NOP"
+        if not tree and self._treeid2tree.get(treeid, None):
+            t = self._treeid2tree[treeid]
+            tree_index = self._treeid2index[treeid]
+            debug_cache = "SI"
+        elif not tree:
+            t, tree_index = self._load_tree_from_path(treeid)
         else:
             t = self._tree(tree)
-       
+            self._treeid2tree[treeid] = t
+            tree_index = self._treeid2index[treeid] = {}
+
         if pre_drawing_action:
             atype, handler, arguments = pre_drawing_action
             if atype in set(["node", "face"]) and len(arguments)==1 and handler:
                 nid = arguments[0]
-                node = get_node_by_id(t, nid)
+                #node = get_node_by_id(t, nid)
+                #return [nid, str(type(nid)).replace("<",""), cache]
+                node = tree_index.get(str(nid), None)
                 handler(node)
             elif atype == "tree":
                 handler(t)
@@ -134,6 +158,10 @@ class WebTreeApplication(object):
         mapid = "img_map_"+str(time.time())
         img_map = render_tree(t, img_path, layout_fn)
         html_map = self._get_html_map(img_map, treeid, mapid, t)
+        for n in t.traverse():
+            tree_index[str(n._nid)]=n
+            self._treeid2index[treeid][str(n._nid)]=n
+        debug_track+= str(self._treeid2index.get(treeid, None))+debug_cache
 
         tree_actions = []
         for aindex, (action, target, handler, checker, html_generator) in enumerate(self.actions):
@@ -141,8 +169,8 @@ class WebTreeApplication(object):
                 tree_actions.append(aindex)
         
         ete_publi = '</br><a href="http://ete.cgenomics.org" style="font-size:7pt;" target="_blank" > %s </a>' %(__VERSION__)
-        open(tree_path, "w").write(t.write(features=[]))
-        return html_map+"""<img class="ete_tree_img" src="%s" USEMAP="#%s" onLoad='javascript:bind_popup();' onclick='javascript:show_context_menu("%s", "void", "%s");' >""" %\
+        self._dump_tree_to_file(t, treeid)
+        return html_map+"""<img class="ete_tree_img" src="%s" USEMAP="#%s" onLoad='javascript:bind_popup();' onclick='javascript:show_context_menu("%s", "", "%s");' >""" %\
             (img_url, mapid, treeid, ','.join(map(str, tree_actions))) \
             + ete_publi
 
@@ -178,11 +206,24 @@ class WebTreeApplication(object):
                 return "No tree found"
 
         elif method == "get_menu": 
-            html = """<div onClick='hide_popup();' style='text-align:right;' id="close_popup">[X]</div><ul>"""
+            if nodeid: 
+                if treeid not in self._treeid2tree:
+                    t, tree_index = self._load_tree_from_path(treeid)
+                else:
+                    tree_index = self._treeid2index[treeid]
+                node = tree_index[nodeid]
+            else:
+                node = None
+
+            if textface: 
+                header = str(textface).strip()
+            else:
+                header = "Menu"
+            html = """<div id="close_popup"><span class="ete_popup_header">%s</span><img onClick='hide_popup();' src="close.png"></div><ul>"""%header
             for i in map(int, actions.split(",")): 
                 aname, target, handler, checker, html_generator = self.actions[i]
                 if html_generator: 
-                    html += html_generator(i, treeid, nodeid, textface)
+                    html += html_generator(i, treeid, nodeid, textface, node)
                 else:
                     html += """<li> <a  href='javascript:void(0)' onClick='run_action("%s", "%s", "%s");'> %s </a></li> """ %\
                         (treeid, nodeid, i, aname)
@@ -211,37 +252,4 @@ def get_node_by_id(t, nid):
 
 def render_tree(t, img_path, layout=None):
     os.environ["DISPLAY"]=CONFIG["DISPLAY"]
-    #############  should be changed in future ########
     return t.render(img_path, layout = layout)
-
-    w, h =  t._QtItem_.scene().sceneRect().width(), t._QtItem_.scene().sceneRect().height()
-    t.render(img_path, w=w, h=h, layout = layout)
-    ###################################################
-        
-    # prepare the map lists
-    node_list = []
-    text_list = []
-    face_list = []
-
-    for nid, n in enumerate(t.traverse()):
-        n.add_feature("_nid", str(nid))
-        try:
-            node_coords =  n._QtItem_.mapToScene(0,0)
-        except AttributeError:
-            pass
-        else:
-            x1, y1 = node_coords.x(), node_coords.y()
-            x2, y2 = x1 + n._QtItem_.rect().width()*2, y1 + n._QtItem_.rect().height()*2
-            node_list.append([x1,y1,x2,y2, nid, None])
-            for item in n._QtItem_.childItems():
-                pos = item.mapToScene(0,0)
-                x1, y1 = pos.x()+5, pos.y()
-                if isinstance(item, drawer._TextItem):
-                    x2, y2 = x1+item.face._width(), y1+item.face._height()
-                    face_list.append([x1,y1,x2,y2, nid, str(item.face.get_text())])
-                elif isinstance(item, drawer._FaceItem):
-                    x2, y2 = x1+item.face._width(), y1+item.face._height()
-                    face_list.append([x1,y1,x2,y2, nid, None])
-
-    img_map = {"nodes": node_list, "faces": face_list, "text": text_list }
-    return img_map

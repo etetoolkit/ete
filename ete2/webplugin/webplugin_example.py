@@ -125,10 +125,10 @@ def my_layout2(node):
         faces.add_face_to_node(name_face, node, 0, False)
        
 
-def link_to_my_page(action_index, nodeid, treeid, text):
-    return """<a href="#"> Example link 1: %s </a><br> """ %(text)
+def link_to_my_page(action_index, nodeid, treeid, text, node):
+    return """<a href="#"> Example link 1: %s </a><br> """ %(node.name)
 
-def link_to_my_other_page(action_index, nodeid, treeid, text):
+def link_to_my_other_page(action_index, nodeid, treeid, text, node):
     return """<a href="#"> Example link 2: %s </a><br> """ %(text)
 
 application.set_tree_loader(my_tree_loader)
@@ -185,16 +185,16 @@ def my_custom_app_extension(environ, start_response, queries):
             return ["ACTION2. Mande?" %text]
 
 
-def link_to_action1(action_index, treeid, nodeid, text):
+def link_to_action1(action_index, treeid, nodeid, text, node):
     return """<a href="%s/action1/?text=%s "> Action 1: %s </a><br> """ %(PLUGIN_URL, text, text)
 
-def link_to_action2(action_index, treeid, nodeid, text):
+def link_to_action2(action_index, treeid, nodeid, text, node):
     return """<a href="%s/action2/?text=%s "> Action 2: %s </a><br> """ %(PLUGIN_URL, text, text)
 
-def search_form(action_index, treeid, nodeid, text):
+def search_form(action_index, treeid, nodeid, text, node):
     return """Search:<input type="text" id="ete_search_node"></input> 
-<input onClick='run_action("%s", "%s", "%s", "%s", $("#ete_search_node").val() );' type="submit" value="go!"> """ %\
-        (treeid, "search", "", action_index)
+<input onClick='run_action("%s", "%s", "%s",  $("#ete_search_node").val() );' type="submit" value="go!"> """ %\
+        (treeid, "void", action_index)
 
 def search_by_name(tree, search_term):
     for n in tree.traverse(): 
