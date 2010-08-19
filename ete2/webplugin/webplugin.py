@@ -110,8 +110,8 @@ class WebTreeApplication(object):
         t = self._treeid2tree[treeid] = self._tree(tree_path)
         tree_index  = self._treeid2index[treeid] = {}
         for n in t.traverse():
-            if hasattr("_nid", n):
-                tree_index[n._nid] = n
+            if hasattr(n, "_nid"):
+                tree_index[str(n._nid)] = n
         return t, tree_index
 
     def _dump_tree_to_file(self, t, treeid):
@@ -159,7 +159,6 @@ class WebTreeApplication(object):
         img_map = render_tree(t, img_path, layout_fn)
         html_map = self._get_html_map(img_map, treeid, mapid, t)
         for n in t.traverse():
-            tree_index[str(n._nid)]=n
             self._treeid2index[treeid][str(n._nid)]=n
         debug_track+= str(self._treeid2index.get(treeid, None))+debug_cache
 
