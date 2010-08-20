@@ -160,6 +160,10 @@ class WebTreeApplication(object):
         html_map = self._get_html_map(img_map, treeid, mapid, t)
         for n in t.traverse():
             self._treeid2index[treeid][str(n._nid)]=n
+            if hasattr(n, "_QtItem_"):
+                n._QtItem_ = None
+                delattr(n, "_QtItem_")
+
         debug_track+= str(self._treeid2index.get(treeid, None))+debug_cache
 
         tree_actions = []
