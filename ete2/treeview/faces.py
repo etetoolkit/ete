@@ -237,28 +237,34 @@ class AttrFace(TextFace):
 
     Arguments description
     ---------------------
-    name:     Face's name
     attr:     Node's attribute that will be drawn as text
     ftype:    Font type, e.g. Arial, Verdana, Courier, (default="Verdana")
     fsize:    Font size, e.g. 10,12,6, (default=10)
     fgcolor:  Foreground font color in RGB name format, e.g. #FF00DD,#000000  (default="#000000")
     bgcolor:  Backgroung font color in RGB name format, e.g. #FFFFFF,#DDDDDD, (default=None)
     penwidth: Penwdith used to draw the text. (default is 0)
+    text_prefix: text_rendered before attribute value
+    text_suffix: text_rendered after attribute value
     """
 
-    def __init__(self, attr, ftype="Verdana", fsize=10, fgcolor="#000000", bgcolor=None, penwidth=0):
+    def __init__(self, attr, ftype="Verdana", fsize=10, fgcolor="#000000", \
+                     bgcolor=None, penwidth=0, text_prefix="", text_suffix=""):
         Face.__init__(self)
         TextFace.__init__(self, "", ftype, fsize, fgcolor, bgcolor, penwidth)
         self.attr     = attr
         self.type     = "text"
+        self.text_prefix = text_prefix
+        self.text_suffix = text_suffix
 
     def _width(self):
-        text = str(getattr(self.node, self.attr))
+        text = self.get_text()
         fm = QtGui.QFontMetrics(self.font)
         return fm.size(QtCore.Qt.AlignTop,text).width()
 
     def get_text(self):
-        return str(getattr(self.node, self.attr))
+        return ''.join(map(str, [self.text_prefix, \
+                                     getattr(self.node, self.attr), \
+                                     self.text_suffix]))
 
 
 

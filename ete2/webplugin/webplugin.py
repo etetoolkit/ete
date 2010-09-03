@@ -103,7 +103,7 @@ class WebTreeApplication(object):
                 html_map += """ <AREA SHAPE="rect" COORDS="%s,%s,%s,%s" onClick='show_context_menu("%s", "%s", "%s", "%s");' href=javascript:void('%s');>""" %\
                     (x1,y1,x2,y2, treeid, nodeid, ','.join(map(str, nid2actions.get(nodeid,[])+nid2face_actions.get(nodeid,[])  )), text, text)
         html_map += '</MAP>'
-        return html_map+str(len(img_map["nodes"]))
+        return html_map
 
     def _load_tree_from_path(self, treeid):
         tree_path = os.path.join(CONFIG["temp_dir"], treeid+".nw")

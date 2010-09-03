@@ -113,7 +113,7 @@ def _get_expected_topology(t, species):
     missing_sp = set(species) - set(t.get_leaf_names())
     if missing_sp:
         raise KeyError, \
-            "Follwing species are not contained in species the tree: "+ ','.join(missing_sp)
+            "Follwing species are not contained in the species tree: "+ ','.join(missing_sp)
     node = t.search_nodes(children=[], name=list(species)[0])[0]
 
     sps = set(species)
