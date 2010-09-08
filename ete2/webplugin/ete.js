@@ -24,8 +24,7 @@ function run_action(treeid, nodeid, aindex, search_term){
 }
 
 function random_tid(){
-  var date = new Date;
-  return date.getTime();
+    return Math.ceil(Math.random()*10000000);
 }
 
 function bind_popup(){
@@ -34,7 +33,9 @@ $(".ete_tree_img").bind('click',function(e){
                           $("#popup").css('top',e.pageY-2 );
                           $("#popup").css('position',"absolute" );
                           $("#popup").css('background-color',"#fff" );
-                          $("#popup").draggable();
+                          //  $("#popup").draggable({ handle: '#ete_draggable_header' });
+                          $("#popup").draggable({ cancel: 'span,li' });
+
                           $("#popup").show();
                             });
 }

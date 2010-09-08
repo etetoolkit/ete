@@ -82,7 +82,7 @@ class WebTreeApplication(object):
         self._layout = layout_fn
 
     def _get_html_map(self, img_map, treeid, mapid, tree):
-        # Scans for node-enabled actions. 
+        # Scans for node-enabled actions.
         nid2actions = {}
         nid2face_actions = {}
         for n in tree.traverse():
@@ -95,12 +95,12 @@ class WebTreeApplication(object):
         html_map = '<MAP NAME="%s" class="ete_tree_img">' %(mapid)
         if img_map["nodes"]:
             for x1, y1, x2, y2, nodeid, text in img_map["nodes"]:
-                html_map += """ <AREA SHAPE="rect" COORDS="%s,%s,%s,%s" onClick='show_context_menu("%s", "%s", "%s");' href='javascript:void("%s");'>""" %\
-                    (x1, y1, x2, y2, treeid, nodeid, ','.join(map(str, nid2actions.get(nodeid,[]))), str(len(self.actions)) )
+                html_map += """ <AREA SHAPE="rect" COORDS="%s,%s,%s,%s" onClick='show_context_menu("%s", "%s", "%s");' href="javascript:void('%s');">""" %\
+                    (int(x1), int(y1), int(x2), int(y2), treeid, nodeid, ','.join(map(str, nid2actions.get(nodeid,[]))), str(nodeid) )
         if img_map["faces"]:
             for x1, y1, x2, y2, nodeid, text in img_map["faces"]:
-                html_map += """ <AREA SHAPE="rect" COORDS="%s,%s,%s,%s" onClick='show_context_menu("%s", "%s", "%s", "%s");' href=javascript:void('%s');>""" %\
-                    (x1,y1,x2,y2, treeid, nodeid, ','.join(map(str, nid2actions.get(nodeid,[])+nid2face_actions.get(nodeid,[])  )), text, text)
+                html_map += """ <AREA SHAPE="rect" COORDS="%s,%s,%s,%s" onClick='show_context_menu("%s", "%s", "%s", "%s");' href="javascript:void('%s');">""" %\
+                    (int(x1),int(y1),int(x2),int(y2), treeid, nodeid, ','.join(map(str, nid2actions.get(nodeid,[])+nid2face_actions.get(nodeid,[])  )), text, text)
         html_map += '</MAP>'
         return html_map
 
@@ -227,13 +227,14 @@ class WebTreeApplication(object):
                 header = str(textface).strip()
             else:
                 header = "Menu"
-            html = """<div id="close_popup"><span class="ete_popup_header">%s</span><img onClick='hide_popup();' src="close.png"></div><ul>"""%header
+            html = """<div id="ete_popup_header"><span id="ete_popup_header_text">%s</span><img onClick='hide_popup();' src="close.png"></div><ul>""" %\
+                (header)
             for i in map(int, actions.split(",")): 
                 aname, target, handler, checker, html_generator = self.actions[i]
                 if html_generator: 
                     html += html_generator(i, treeid, nodeid, textface, node)
                 else:
-                    html += """<li> <a  href='javascript:void(0)' onClick='run_action("%s", "%s", "%s");'> %s </a></li> """ %\
+                    html += """<li><a  href='javascript:void(0)' onClick='run_action("%s", "%s", "%s");'> %s </a></li> """ %\
                         (treeid, nodeid, i, aname)
             html += '</ul>'
             return html

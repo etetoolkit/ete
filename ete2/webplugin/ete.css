@@ -35,25 +35,7 @@
   text-decoration:none;  
 }
 
-#close_popup
-{
-  margin-bottom: 4px;
-  padding-right: 2px;
-  padding-left: 2px;
-  background-color:#EEE;
-  border-bottom: 1px solid #ccc;
-  padding: 0px;
-  font-size: 10pt;
-  font-weight:bold;
-  }
-
-#close_popup img
-{
-  float:right;
-  
-  }
-
-.ete_popup_header
+#ete_popup_header_text
 { 
   margin-right: 6px;
   font-size: 13pt;
@@ -66,3 +48,36 @@
   color: #565B53;
   border-bottom: 1px solid #ccc;
  }
+
+#ete_draggable_header{ 
+   cursor: move; 
+   height:6px;
+   background-color: #565B53;
+ }
+
+#ete_popup_header{ 
+  cursor: move; 
+  margin-bottom: 4px;
+  padding-right: 2px;
+  padding-left: 2px;
+  background-color:#EEE;
+  border-bottom: 1px solid #ccc;
+  padding: 0px;
+  font-size: 10pt;
+  font-weight:bold;
+  border-bottom:4px solid #565B53;                 
+ }
+
+
+#ete_popup_header img
+{
+  cursor: auto;
+ float:right;
+
+  }
+#ete_popup_header span
+{
+cursor: auto;
+  }
+
+
