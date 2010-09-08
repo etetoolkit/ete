@@ -52,10 +52,9 @@
 # file. This is the whole idea!! enjoy, this a very draft version.
 import os
 import time
-import hashlib
+from hashlib import md5
 import cgi
 
-__VERSION__ = "ete_dev"
 CONFIG = {}
 
 class WebTreeApplication(object):
@@ -120,7 +119,7 @@ class WebTreeApplication(object):
 
     def _get_tree(self, tree=None, treeid=None, pre_drawing_action=None):
         if not treeid:
-            treeid = hashlib.md5(str(time.time())).hexdigest()
+            treeid = md5(str(time.time())).hexdigest()
 
         #tree_path = os.path.join(CONFIG["temp_dir"], treeid+".nw")
         img_url = os.path.join(CONFIG["temp_url"], treeid+".png?"+str(time.time()))
@@ -170,8 +169,14 @@ class WebTreeApplication(object):
         for aindex, (action, target, handler, checker, html_generator) in enumerate(self.actions):
             if target in self.TREE_TARGET_ACTIONS and (not checker or checker(t)):
                 tree_actions.append(aindex)
-        
-        ete_publi = '</br><a href="http://ete.cgenomics.org" style="font-size:7pt;" target="_blank" > %s </a>' %(__VERSION__)
+
+        try:
+            version_tag = __VERSION__
+        except NameError: 
+            version_tag = "ete_dev"
+
+        ete_publi = '</br><a href="http://ete.cgenomics.org" style="font-size:7pt;" target="_blank" > %s </a>' %\
+            (version_tag)
         self._dump_tree_to_file(t, treeid)
         return html_map+"""<img class="ete_tree_img" src="%s" USEMAP="#%s" onLoad='javascript:bind_popup();' onclick='javascript:show_context_menu("%s", "", "%s");' >""" %\
             (img_url, mapid, treeid, ','.join(map(str, tree_actions))) \
