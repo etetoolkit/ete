@@ -31,16 +31,16 @@
 # publication:
 #
 # [1] ETE: a python Environment for Tree Exploration. Jaime
-# Huerta-Cepas, Joaquín Dopazo and Toni Gabaldón. BMC Bioinformatics
+# Huerta-Cepas, Joaquin Dopazo and Toni Gabaldon. BMC Bioinformatics
 # 2010,:24doi:10.1186/1471-2105-11-24
 #
 # If you use ETE for your analysis, please support its development by
-# citing the program in your publications.
+# citing the program.
 #
-# The ETE package is written and maintained by Jaime Huerta-Cepas
-# (jhcepas -at- gmail.com)
+# The ETE package is currently written and maintained by Jaime Huerta-Cepas
+# (jhcepas@gmail.com)
 #
-# Support and documentation can be found at http://ete.cgenomics.org
+# Documentation can be found at http://ete.cgenomics.org
 #
 # 
 # #END_LICENSE#############################################################
