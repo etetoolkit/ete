@@ -1,24 +1,36 @@
-#!/usr/bin/python env
-#        Author: Francois-Jose Serra
-# Creation Date: 2010/04/20 21:20:31
+# #START_LICENSE###########################################################
 #
-# This script is GPL. que pasa?!!
+# Copyright (C) 2010 by Francois-Jose Serra. All rights reserved.
+# email: francois@barrabin.org
+#
+# you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# this is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# see <http://www.gnu.org/licenses/>.
+#
+# #END_LICENSE#############################################################
 
 import sys, re
 from os.path import isfile
 
 sys.path.append('/home/francisco/franciscotools/4_codeml_pipe/')
 
-def get_sites(path,ndata=1):
+def get_sites(path, model = '', ndata=1):
     '''
-    for models M1, M2, M7, M8, M8a
+    for models M1, M2, M7, M8, M8a but also branch-site models
     '''
     check   = 0
     vals    = False
     valsend = False
     psel    = False
     lnl     = ''
-    mod     = ''
     if not isfile(path):
         print >> sys.stderr, \
               "Error: no rst file found at " + path
@@ -28,12 +40,14 @@ def get_sites(path,ndata=1):
         if l.startswith('lnL = '):
             lnl = l.split()[-1]
             if not (vals == False or vals == True):
-                vals['lnL.'+mod] = lnl
+                vals['lnL.'+model] = lnl
         if l.startswith('dN/dS '):
             check = re.sub('.*K=', '', l)
             check = int (re.sub('\)', '', check))
-            mod = (('M'+str(check-1) if check < 4 else 'M'+str(check-1)))
-        expr = 'Naive' if check % 2 == 0 else 'Bayes'
+            if model == '':
+                model = (('M'+str(check-1) if check < 4 else 'M'+str(check-1)))
+        expr = 'Naive' if re.sub ('\.*', '', model) in \
+               ['M1', 'M7', 'bsD', 'bsA1'] else 'Bayes'
         if l.startswith(expr+' Empirical Bayes'):
             vals = True
         elif vals == False:
@@ -46,21 +60,22 @@ def get_sites(path,ndata=1):
         psel = re.match('^ *[0-9]* [A-Z*] *', l) == None
         valsend = True
         if vals == True:
-            vals = {'aa.'+mod:[], 'w.'+mod:[],  'class.'+mod:[],
-                    'pv.'+mod:[], 'se.'+mod:[], 'lnL.'  +mod:lnl}
+            vals = {'aa.'+model:[], 'w.'+model:[],  'class.'+model:[],
+                    'pv.'+model:[], 'se.'+model:[], 'lnL.'  +model:lnl}
         if psel == False:
-            vals['aa.'+mod].append(l.split()[1])
-            vals['w.' +mod].append(re.sub('\+.*', '', l).split()[-1])
-            if mod == 'M1'or mod == 'M7':
-                vals['se.'+mod].append('')
-            else:
-                vals['se.'+mod].append(l.split()[-1])
+            vals['aa.'+model].append(l.split()[1])
+            if not 'bs' in model:
+                vals['w.' +model].append(re.sub('\+.*', '', l).split()[-1])
+            if model == 'M1'or model == 'M7':
+                vals['se.'+model].append('')
+            elif model == 'M2'or model == 'M8' or model == 'M8a':
+                vals['se.'+model].append(l.split()[-1])
             classes = map (float, re.sub('\(.*', '', l).split()[2:])
-            vals['class.'+mod].append(\
+            vals['class.'+model].append(\
                 '('+\
                 re.sub('\).*', '', re.sub('.*\( *', '', l.strip()))\
                 +'/'+str (len (classes))+')')
-            vals['pv.'+mod].append(str (max (classes)))
+            vals['pv.'+model].append(str (max (classes)))
     if vals == True:
         print >> sys.stderr, \
               'WARNING: rst file path not specified, site model will not' + \
