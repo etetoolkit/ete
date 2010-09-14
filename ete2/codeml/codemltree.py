@@ -28,11 +28,11 @@ features to the the node instances.
 import os
 import sys
 
-from ete2 import PhyloNode, PhyloTree
-from ete2.codeml.codemlparser import parse_paml, get_sites
-from ete2.codeml.control import controlGenerator
-from ete2.codeml.utils import mkdir_p, translate, colorize_rst, label_tree
-from ete2.parser.newick import write_newick
+from ete_dev import PhyloNode, PhyloTree
+from ete_dev.codeml.codemlparser import parse_paml, get_sites
+from ete_dev.codeml.control import controlGenerator
+from ete_dev.codeml.utils import mkdir_p, translate, colorize_rst, label_tree
+from ete_dev.parser.newick import write_newick
 
 __all__ = ["CodemlNode", "CodemlTree"]
 

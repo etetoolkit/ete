@@ -1,4 +1,4 @@
-from ete2 import Tree
+from ete_dev import Tree
 tree = Tree( '(A:1,(B:1,(C:1,D:1):0.5):0.5);' )
 # Prints the name of every leaf under the tree root
 print "Leaf names:"

@@ -25,7 +25,7 @@ import random
 
 __all__ = ["Tree", "TreeNode"]
 
-from ete2.parser.newick import read_newick, write_newick
+from ete_dev.parser.newick import read_newick, write_newick
 
 DEFAULT_COMPACT = False
 DEFAULT_SHOWINTERNAL = False
@@ -877,7 +877,7 @@ class TreeNode(object):
         """ Begins an interative session to visualize this node
         structure."""
         try:
-            from ete2.treeview import drawer
+            from ete_dev.treeview import drawer
         except ImportError, e:
             print "'treeview' module could not be loaded.\n",e
             print "\n\n"
@@ -891,7 +891,7 @@ class TreeNode(object):
                up_faces=[], down_faces=[]):
         """ Renders the tree structure into an image file. """
         try:
-            from ete2.treeview import drawer
+            from ete_dev.treeview import drawer
         except ImportError, e:
             print "'treeview' module could not be loaded.\n",e
             print "\n\n"

@@ -1,4 +1,4 @@
-from ete2 import Tree
+from ete_dev import Tree
 # Loads a basic tree
 t = Tree( '(A:0.2,(B:0.4,(C:1.1,D:0.45):0.5):0.1);' )
 print t
