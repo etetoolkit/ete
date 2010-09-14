@@ -138,7 +138,6 @@ def parse_paml(pamout, model, rst='rst', ndata=1, codon_freq=True):
         elif codon_freq == True:
             if line.startswith('Codon frequencies under model'):
                 dic['codonFreq'] = []
-                count = 0
                 continue
             if line.startswith('  0.'):
                     line = re.sub('  ([0-9.]*)  ([0-9.]*)  ([0-9.]*)  ([0-9.]*)', \
@@ -159,27 +158,24 @@ def parse_paml(pamout, model, rst='rst', ndata=1, codon_freq=True):
                 for i in range (0, len (line.strip().split()[1:])):
                     dic['p'+str(i)] = line.strip().split()[i+1]
             elif line.startswith('w: '):
-                while re.match('.*[0-9][0-9]*\.[0-9]{5}[0-9].*',line)!=None:
+                while re.match('.*[0-9][0-9]*\.[0-9]{5}[0-9].*', line)!=None:
                     line = re.sub('([0-9][0-9]*\.[0-9]{5})([0-9].*)', \
                                   '\\1 \\2', line.strip())
                 for i in range (0, len (line.strip().split()[1:])):
                     dic['w'+str(i)] = line.strip().split()[i+1]
         if model.startswith('bs'):
-            if line.startswith('proportion '):
-                dic['p0' ] = line.strip().split()[1]
-                dic['p1' ] = line.strip().split()[2]
-                dic['p2a'] = line.strip().split()[3]
-                dic['p2b'] = line.strip().split()[4]
+            vals = []
+            if line.startswith ('site class'):
+                vals = line.strip().split()[1:]
+            elif line.startswith ('proportion '):
+                for n, val in enumerate (vals):
+                    dic['p'    + val] = line.strip().split() [n+1]
             elif line.startswith('background w '):
-                dic['wbkg0']  = line.strip().split()[2]
-                dic['wbkg1']  = line.strip().split()[3]
-                dic['wbkg2a'] = line.strip().split()[4]
-                dic['wbkg2b'] = line.strip().split()[5]
+                for n, val in enumerate (vals):
+                    dic['wbkg' + val] = line.strip().split() [n+1]
             elif line.startswith('foreground w'):
-                dic['wfrg0']  = line.strip().split()[2]
-                dic['wfrg1']  = line.strip().split()[3]
-                dic['wfrg2a'] = line.strip().split()[4]
-                dic['wfrg2b'] = line.strip().split()[5]
+                for n, val in enumerate (vals):
+                    dic['wfrg' + val] = line.strip().split() [n+1]
     # convert paml tree format to 'normal' newick format.
     for k in ['w', 'dN', 'dS', 'bL', 'bLnum']:
         if not dic.has_key(k):
