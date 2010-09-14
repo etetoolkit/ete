@@ -331,7 +331,8 @@ class CodemlNode(PhyloNode):
          * M8     vs M8a    -> RX on sites?? think so....
          * bsA    vs bsA1   -> PS on sites on specific branch
          * bsA    vs M1     -> RX on sites on specific branch
-         * bsD    vs bsC    -> different omegas on clades branches sites
+         * bsC    vs M1     -> different omegas on clades branches sites
+         * bsD    vs M3     -> different omegas on clades branches sites
          * b_free vs b_neut -> PS on branch
          * b_neut vs M0     -> RX on branch?? not sure :P
         '''

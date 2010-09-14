@@ -62,6 +62,13 @@ def controlGenerator(model, inTree='tree', inAlg='algn', \
         del(params['method'])
         del(params['Malpha'])
         del(params['fix_alpha'])
+    elif model.startswith('M3'):
+        params['NSsites']     = 3
+        params['omega']       = omega
+        del(params['alpha'])
+        del(params['method'])
+        del(params['Malpha'])
+        del(params['fix_alpha'])
     elif model.startswith('M7'):
         params['NSsites']     = 7
         del(params['alpha'])
