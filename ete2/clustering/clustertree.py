@@ -24,8 +24,8 @@ from sys import stderr
 import numpy
 import clustvalidation
 from numpy import nan as NaN # Missing values are saved as NaN values
-from ete2.coretype.tree import _translate_nodes
-from ete2 import TreeNode, ArrayTable
+from ete_dev.coretype.tree import _translate_nodes
+from ete_dev import TreeNode, ArrayTable
 
 __all__ = ["ClusterNode", "ClusterTree"]
 

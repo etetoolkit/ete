@@ -1,4 +1,4 @@
-from ete2 import PhyloTree, PhylomeDBConnector, SeqGroup
+from ete_dev import PhyloTree, PhylomeDBConnector, SeqGroup
 
 p = PhylomeDBConnector()
 w,x, t =  p.get_best_tree("Hsa0000001", 1)

@@ -1,4 +1,4 @@
-from ete2 import PhyloTree
+from ete_dev import PhyloTree
 
 # Loads a gene tree and its corresponding species tree. Note that
 # species names in sptree are the 3 firs letters of leaf nodes in

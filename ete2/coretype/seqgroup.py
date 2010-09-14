@@ -28,8 +28,8 @@ Currently, Fasta, Phylip sequencial and Phylip interleaved formats are
 supported.
 """
 
-from ete2.parser.fasta import read_fasta, write_fasta
-from ete2.parser.phylip import read_phylip, write_phylip
+from ete_dev.parser.fasta import read_fasta, write_fasta
+from ete_dev.parser.phylip import read_phylip, write_phylip
 
 __all__ = ["SeqGroup"]
 

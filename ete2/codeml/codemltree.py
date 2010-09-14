@@ -26,13 +26,13 @@ tree. It inheritates the coretype TreeNode and add some speciall
 features to the the node instances.
 """
 import os
-import sys
+from sys import stderr
 
-from ete2 import PhyloNode, PhyloTree
-from ete2.codeml.codemlparser import parse_paml, get_sites
-from ete2.codeml.control import controlGenerator
-from ete2.codeml.utils import mkdir_p, translate, colorize_rst, label_tree
-from ete2.parser.newick import write_newick
+from ete_dev import PhyloNode, PhyloTree
+from ete_dev.codeml.codemlparser import parse_paml, get_sites
+from ete_dev.codeml.model import Model, AVAIL
+from ete_dev.codeml.utils import mkdir_p, translate, colorize_rst, label_tree
+from ete_dev.parser.newick import write_newick
 
 __all__ = ["CodemlNode", "CodemlTree"]
 
@@ -101,53 +101,24 @@ class CodemlNode(PhyloNode):
                                        up_faces=self.up_faces, \
                                        down_faces = self.down_faces, w=w, h=h)
 
-    def run_paml(self, model, ctrl_string='', gappy=True, rst='rst', \
-                 ndata=1, keep=True, paml=False):
-        '''
-        to run paml, needs tree linked to alignment.
-        model name needs to start by one of:
-           * fb
-           * M0
-           * M1
-           * M2
-           * M7
-           * M8
-           * M8a
-           * bsA
-           * bsA1
-           * bsB
-           * bsC
-           * bsD
-           * b_free
-           * b_neut
+    def run_paml(self, model, ctrl_string='', rst='rst', \
+                 keep=True, paml=False, **kwargs):
+        ''' To compute evolutionnary models with paml '''
 
-        e.g.: b_free_lala.vs.lele, will launch one free branch model, and store 
-        it in "WORK_DIR/b_free_lala.vs.lele" directory
-        
-        WARNING: this functionality needs to create a working directory in "rep"
-        WARNING: you need to have codeml in your path
-        TODO: add feature lnL to nodes for branch tests. e.g.: "n.add_features"
-        TODO: add possibility to avoid local minima of lnL by rerunning with other
-        starting values of omega, alpha etc...
-        
-        '''
         from subprocess import Popen, PIPE
         fullpath = os.path.join(self.workdir, model)
         os.system("mkdir -p %s" %fullpath)
+        model = Model(model, **kwargs)
         # write tree file
-        if model.startswith('b'):
-            open(fullpath+'/tree','w').write(\
-                self.write(format=9))
-        else:
-            open(fullpath+'/tree','w').write(\
-                super(CodemlTree, self).write(format=9))
+        self.write(fullpath+'/tree', format= 9 if model.allow_mark else 10)
         # write algn file
         self._write_ali(fullpath, paml)
+        ## MODEL MODEL MDE
         if ctrl_string == '':
-            ctrl_string = controlGenerator(model, gappy=gappy, ndata=ndata)
-        ctrl = open(fullpath+'/tmp.ctl', 'w')
-        ctrl.write(ctrl_string)
-        ctrl.close()
+            ctrl_string = model.get_ctrl_string(fullpath+'/tmp.ctl')
+        else:
+            open(fullpath+'/tmp.ctl', 'w').write (ctrl_string)
+        
         hlddir = os.getcwd()
         os.chdir(fullpath)
         proc = Popen([self.codemlpath, 'tmp.ctl'], stdout=PIPE)
@@ -160,7 +131,27 @@ class CodemlNode(PhyloNode):
         os.chdir(hlddir)
         if keep:
             self.link_to_evol_model(os.path.join(fullpath,'out'), model, rst=rst)
-            self._dic[model]['codeml_run'] = run
+            self._dic[model.name]['codeml_run'] = run
+
+    run_paml.__doc__ += '''
+    to run paml, needs tree linked to alignment.
+    model name needs to start by one of:
+    
+%s
+        
+    e.g.: b_free_lala.vs.lele, will launch one free branch model, and store 
+    it in "WORK_DIR/b_free_lala.vs.lele" directory
+    
+    WARNING: this functionality needs to create a working directory in "rep"
+    WARNING: you need to have codeml in your path
+    TODO: add feature lnL to nodes for branch tests. e.g.: "n.add_features"
+    TODO: add possibility to avoid local minima of lnL by rerunning with other
+    starting values of omega, alpha etc...
+    ''' % '\n'.join (map (lambda x: \
+        '           * %-9s model of %-18s at  %-12s level.' % \
+        ('"%s"' % (x), AVAIL[x]['evol'], AVAIL[x]['typ']), \
+        sorted (sorted (AVAIL.keys()), cmp=lambda x, y : \
+        cmp(AVAIL[x]['typ'], AVAIL[y]['typ']), reverse=True)))
 
     def _write_ali(self, fullpath, paml=False):
         '''
@@ -174,18 +165,18 @@ class CodemlNode(PhyloNode):
                     nams.append(leaf.name)
                     seqs.append(leaf.nt_sequence)
             except AttributeError:
-                print >> sys.stderr, \
+                print >> stderr, \
                 "ERROR: you first need to link your tree to an alignment.\n" + \
                 self.link_to_alignment.func_doc
                 return 1
             if float(sum(map(len, seqs)) != len (seqs)* len(seqs[0])):
-                print >> sys.stderr, \
+                print >> stderr, \
                       "ERROR: sequences of different length"
-                sys.exit()
+                exit()
             if len (self) != len (seqs):
-                print >> sys.stderr, \
+                print >> stderr, \
                       "ERROR: number of sequences different of number of leaves"
-                sys.exit()
+                exit()
             algn = open(fullpath+'/algn','w')
             algn.write(' %d %d\n' % (len (seqs), len (seqs[0])))
             for spe in range(len (seqs)):
@@ -214,7 +205,7 @@ class CodemlNode(PhyloNode):
                        match ('#[0-9][0-9]*', \
                               marks[node_ids.index(node.idname)])==None)\
                               and not kargs.has_key('silent'):
-                    print >> sys.stderr, \
+                    print >> stderr, \
                           'WARNING: marks should be "#" sign directly '+\
                     'followed by integer\n' + self.mark_tree.func_doc
                 node.add_feature('mark', ' '+marks[node_ids.index(node.idname)])
@@ -238,22 +229,23 @@ class CodemlNode(PhyloNode):
         is not "conventional"... if rst=None, skip parsing it.
         '''
         if not os.path.isfile(path):
-            print >> sys.stderr, "ERROR: not a file: "+path
+            print >> stderr, "ERROR: not a file: "+path
             return 1
-        self._dic[model] = \
+        self._dic[model.name] = \
                          parse_paml(path, model, rst=rst, \
-                                    ndata=ndata, codon_freq=\
+                                    codon_freq=\
                                     not (hasattr (self, '_codon_freq')))
         if not hasattr (self, '_codon_freq'):
-            self._codon_freq = self._dic[model]['codonFreq']
-            self._kappa = self._dic[model]['kappa']
-            del (self._dic[model]['codonFreq'])
-            del (self._dic[model]['kappa'])
-        if model == 'fb':
+            self._codon_freq = self._dic[model.name]['codonFreq']
+            self._kappa = self._dic[model.name]['kappa']
+            del (self._dic[model.name]['codonFreq'])
+            del (self._dic[model.name]['kappa'])
+        if model.name == 'fb':
             self._getfreebranch()
-        elif self._dic[model].has_key('rst'):
-            self._dic[model+'_sites'] = get_sites(self._dic[model]['rst'], \
-                                                  ndata=ndata)
+        elif self._dic[model.name].has_key('rst'):
+            self._dic[model.name+'_sites'] = \
+                                           get_sites (\
+                self._dic[model.name]['rst'], ndata=ndata)
 
     def add_histface(self, mdl, down=True, lines=[1.0], header='', \
                      col_lines=['grey'], typ='hist',col=None, extras=['']):
@@ -279,7 +271,7 @@ class CodemlNode(PhyloNode):
         elif typ == 'error':
             from HistFace import ErrorLineFace as face
         if self._dic[mdl + '_sites'] == None:
-            print >> sys.stderr, \
+            print >> stderr, \
                   "WARNING: model %s not computed." % (mdl)
             return None
         if header == '':
@@ -296,7 +288,7 @@ class CodemlNode(PhyloNode):
         else:
             self.up_faces   = [hist]
 
-    def write(self, features=None, outfile=None, format=9):
+    def write(self, features=None, outfile=None, format=10):
         """ Returns the newick-PAML representation of this node
         topology. Several arguments control the way in which extra
         data is shown for every node:
@@ -311,8 +303,12 @@ class CodemlNode(PhyloNode):
              t.get_newick(["species","name"], format=1)
         """
         from re import sub
-        nwk = sub('\[&&NHX:mark=([ #0-9.]*)\]', r'\1', \
-                  write_newick(self, features=['mark'],format=format))
+        if int (format)==10:
+            stderr.write('here')
+            nwk = sub('\[&&NHX:mark=([ #0-9.]*)\]', r'\1', \
+                      write_newick(self, features=['mark'],format=9))
+        else:
+            nwk = write_newick(self, features=features,format=format)
         if outfile is not None:
             open(outfile, "w").write(nwk)
             return nwk
@@ -345,10 +341,10 @@ class CodemlNode(PhyloNode):
             else:
                 return 1
         except KeyError:
-            print >> sys.stderr, \
+            print >> stderr, \
                   "at least one of %s or %s, was not calculated\n"\
                   % (altn, null)
-            sys.exit(self.get_most_likely.func_doc)
+            exit(self.get_most_likely.func_doc)
 
     def _getfreebranch(self):
         '''
@@ -359,12 +355,12 @@ class CodemlNode(PhyloNode):
         '''
         for evol in ['bL', 'dN', 'dS', 'w']:
             if not self._dic['fb'].has_key(evol):
-                print >> sys.stderr, \
+                print >> stderr, \
                       "Warning: this file do not cotain info about " \
                       + evol + " parameter"
                 continue
             if not self._dic['fb'][evol].startswith('('):
-                print >> sys.stderr, \
+                print >> stderr, \
                       "Warning: problem with tree string for "\
                       + evol +" parameter"
                 continue
@@ -372,8 +368,8 @@ class CodemlNode(PhyloNode):
             if evol == 'bL':
                 tree = PhyloTree(tdic)
                 label_tree(tree)
-                if not tree.write(format=9) == self.write(format=9):
-                    print >> sys.stderr, \
+                if not tree.write(format=9) == self.write(format=10):
+                    print >> stderr, \
                           "ERROR: CodemlTree and tree used in "+\
                           "codeml do not match"
                     print tree.write(), self.write()
