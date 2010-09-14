@@ -46,7 +46,7 @@ def get_sites(path, model = '', ndata=1):
             check = int (re.sub('\)', '', check))
             if model == '':
                 model = (('M'+str(check-1) if check < 4 else 'M'+str(check-1)))
-        expr = 'Naive' if re.sub ('\.*', '', model) in \
+        expr = 'Naive' if re.sub ('\..*', '', model) in \
                ['M1', 'M7', 'bsD', 'bsA1'] else 'Bayes'
         if l.startswith(expr+' Empirical Bayes'):
             vals = True
