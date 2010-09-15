@@ -179,18 +179,17 @@ def parse_paml(pamout, model, rst='rst', ndata=1, codon_freq=True):
                 for i in range (0, len (line.strip().split()[1:])):
                     dic['w'+str(i)] = line.strip().split()[i+1]
         if model.startswith('bs'):
-            vals = []
             if line.startswith ('site class'):
-                vals = line.strip().split()[1:]
+                vals = line.strip().split()[2:]
             elif line.startswith ('proportion '):
-                for n, val in enumerate (vals):
-                    dic['p'    + val] = line.strip().split() [n+1]
+                for n, v in enumerate (vals):
+                    dic['p'    + v] = line.strip().split() [n+1]
             elif line.startswith('background w '):
-                for n, val in enumerate (vals):
-                    dic['wbkg' + val] = line.strip().split() [n+1]
+                for n, v in enumerate (vals):
+                    dic['wbkg' + v] = line.strip().split() [n+1]
             elif line.startswith('foreground w'):
-                for n, val in enumerate (vals):
-                    dic['wfrg' + val] = line.strip().split() [n+1]
+                for n, v in enumerate (vals):
+                    dic['wfrg' + v] = line.strip().split() [n+1]
     # convert paml tree format to 'normal' newick format.
     for k in ['w', 'dN', 'dS', 'bL', 'bLnum']:
         if not dic.has_key(k):
