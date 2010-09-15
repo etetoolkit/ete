@@ -1,0 +1,582 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--                                                             -->
+<!-- phyloXML                                                    -->
+<!--                                                             -->
+<!-- schema in XMLSchema                                         -->
+<!--                                                             -->
+<!-- License: The phyloXML XML Schema Definition is              -->
+<!--          dual-licensed under the LGPL or Ruby's             -->
+<!--          License.                                           -->
+<!--          You can redistribute and/or modify                 -->
+<!--          it under either the terms of the LGPL,             -->
+<!--          or Ruby's License.                                 -->
+<!--          see: http://www.ruby-lang.org/en/about/license.txt -->
+<!--                                                             -->
+<!-- Copyright (c) 2008-2009 Christian M Zmasek                  -->
+<!--                                                             -->
+<!-- www.phyloxml.org                                            -->
+<!-- Version: 1.10                                               -->
+<!-- Last modified: 2009.11.21 by Christian M Zmasek             -->
+<!--                                                             -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:phy="http://www.phyloxml.org"
+   targetNamespace="http://www.phyloxml.org" elementFormDefault="qualified" attributeFormDefault="unqualified">
+   <xs:annotation>
+      <xs:documentation> phyloXML is an XML language to describe evolutionary trees and associated data. Version: 1.10.
+         License: dual-licensed under the LGPL or Ruby's License. Copyright (c) 2008-2009 Christian M Zmasek.</xs:documentation>
+   </xs:annotation>
+   <!-- phyloxml is the root element:-->
+   <xs:element name="phyloxml" type="phy:Phyloxml"/>
+   <!-- phyloXML definition:-->
+   <xs:complexType name="Phyloxml">
+      <xs:annotation>
+         <xs:documentation> 'phyloxml' is the name of the root element. Phyloxml contains an arbitrary number of
+            'phylogeny' elements (each representing one phylogeny) possibly followed by elements from other namespaces.
+         </xs:documentation>
+      </xs:annotation>
+      <xs:sequence maxOccurs="unbounded">
+         <xs:element name="phylogeny" type="phy:Phylogeny" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" namespace="##other"/>
+      </xs:sequence>
+   </xs:complexType>
+   <!-- Phylogeny:-->
+   <xs:complexType name="Phylogeny">
+      <xs:annotation>
+         <xs:documentation> Element Phylogeny is used to represent a phylogeny. The required attribute 'rooted' is used
+            to indicate whether the phylogeny is rooted or not. The attribute 'rerootable' can be used to indicate that
+            the phylogeny is not allowed to be rooted differently (i.e. because it is associated with root dependent
+            data, such as gene duplications). The attribute 'type' can be used to indicate the type of phylogeny (i.e.
+            'gene tree'). It is recommended to use the attribute 'branch_length_unit' if the phylogeny has branch
+            lengths. Element clade is used in a recursive manner to describe the topology of a phylogenetic
+         tree.</xs:documentation>
+      </xs:annotation>
+      <xs:sequence>
+         <xs:element name="name" type="xs:token" minOccurs="0"/>
+         <xs:element name="id" type="phy:Id" minOccurs="0"/>
+         <xs:element name="description" type="xs:token" minOccurs="0"/>
+         <xs:element name="date" type="xs:dateTime" minOccurs="0"/>
+         <xs:element name="confidence" type="phy:Confidence" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element name="clade" type="phy:Clade" minOccurs="0"/>
+         <xs:element name="clade_relation" type="phy:CladeRelation" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element name="sequence_relation" type="phy:SequenceRelation" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element name="property" type="phy:Property" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" namespace="##other"/>
+      </xs:sequence>
+      <xs:attribute name="rooted" type="xs:boolean" use="required"/>
+      <xs:attribute name="rerootable" type="xs:boolean"/>
+      <xs:attribute name="branch_length_unit" type="xs:token"/>
+      <xs:attribute name="type" type="xs:token"/>
+   </xs:complexType>
+   <!-- Clade:-->
+   <xs:complexType name="Clade">
+      <xs:annotation>
+         <xs:documentation> Element Clade is used in a recursive manner to describe the topology of a phylogenetic tree.
+            The parent branch length of a clade can be described either with the 'branch_length' element or the
+            'branch_length' attribute (it is not recommended to use both at the same time, though). Usage of the
+            'branch_length' attribute allows for a less verbose description. Element 'confidence' is used to indicate
+            the support for a clade/parent branch. Element 'events' is used to describe such events as gene-duplications
+            at the root node/parent branch of a clade. Element 'width' is the branch width for this clade (including
+            parent branch). Both 'color' and 'width' elements apply for the whole clade unless overwritten in-sub
+            clades. Attribute 'id_source' is used to link other elements to a clade (on the xml-level).
+         </xs:documentation>
+      </xs:annotation>
+      <xs:sequence>
+         <xs:element name="name" type="xs:token" minOccurs="0"/>
+         <xs:element name="branch_length" type="xs:double" minOccurs="0"/>
+         <xs:element name="confidence" type="phy:Confidence" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element name="width" type="xs:double" minOccurs="0"/>
+         <xs:element name="color" type="phy:BranchColor" minOccurs="0"/>
+         <xs:element name="node_id" type="phy:Id" minOccurs="0"/>
+         <xs:element name="taxonomy" type="phy:Taxonomy" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element name="sequence" type="phy:Sequence" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element name="events" type="phy:Events" minOccurs="0"/>
+         <xs:element name="binary_characters" type="phy:BinaryCharacters" minOccurs="0"/>
+         <xs:element name="distribution" type="phy:Distribution" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element name="date" type="phy:Date" minOccurs="0"/>
+         <xs:element name="reference" type="phy:Reference" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element name="property" type="phy:Property" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element name="clade" type="phy:Clade" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" namespace="##other"/>
+      </xs:sequence>
+      <xs:attribute name="branch_length" type="xs:double"/>
+      <xs:attribute name="id_source" type="phy:id_source"/>
+   </xs:complexType>
+   <!-- Taxonomy:-->
+   <xs:complexType name="Taxonomy">
+      <xs:annotation>
+         <xs:documentation> Element Taxonomy is used to describe taxonomic information for a clade. Element 'code' is
+            intended to store UniProt/Swiss-Prot style organism codes (e.g. 'APLCA' for the California sea hare 'Aplysia
+            californica') or other styles of mnemonics (e.g. 'Aca'). Element 'authority' is used to keep the authority,
+            such as 'J. G. Cooper, 1863', associated with the 'scientific_name'. Element 'id' is used for a unique
+            identifier of a taxon (for example '6500' with 'ncbi_taxonomy' as 'provider' for the California sea hare).
+            Attribute 'id_source' is used to link other elements to a taxonomy (on the xml-level).</xs:documentation>
+      </xs:annotation>
+      <xs:sequence>
+         <xs:element name="id" type="phy:Id" minOccurs="0"/>
+         <xs:element name="code" type="phy:TaxonomyCode" minOccurs="0"/>
+         <xs:element name="scientific_name" type="xs:token" minOccurs="0"/>
+         <xs:element name="authority" type="xs:token" minOccurs="0"/>
+         <xs:element name="common_name" type="xs:token" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element name="synonym" type="xs:token" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element name="rank" type="phy:Rank" minOccurs="0"/>
+         <xs:element name="uri" type="phy:Uri" minOccurs="0"/>
+         <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" namespace="##other"/>
+      </xs:sequence>
+      <xs:attribute name="id_source" type="phy:id_source"/>
+   </xs:complexType>
+   <xs:simpleType name="TaxonomyCode">
+      <xs:restriction base="xs:token">
+         <xs:pattern value="[a-zA-Z0-9_]{2,10}"/>
+      </xs:restriction>
+   </xs:simpleType>
+   <xs:simpleType name="Rank">
+      <xs:restriction base="xs:token">
+         <xs:enumeration value="domain"/>
+         <xs:enumeration value="kingdom"/>
+         <xs:enumeration value="subkingdom"/>
+         <xs:enumeration value="branch"/>
+         <xs:enumeration value="infrakingdom"/>
+         <xs:enumeration value="superphylum"/>
+         <xs:enumeration value="phylum"/>
+         <xs:enumeration value="subphylum"/>
+         <xs:enumeration value="infraphylum"/>
+         <xs:enumeration value="microphylum"/>
+         <xs:enumeration value="superdivision"/>
+         <xs:enumeration value="division"/>
+         <xs:enumeration value="subdivision"/>
+         <xs:enumeration value="infradivision"/>
+         <xs:enumeration value="superclass"/>
+         <xs:enumeration value="class"/>
+         <xs:enumeration value="subclass"/>
+         <xs:enumeration value="infraclass"/>
+         <xs:enumeration value="superlegion"/>
+         <xs:enumeration value="legion"/>
+         <xs:enumeration value="sublegion"/>
+         <xs:enumeration value="infralegion"/>
+         <xs:enumeration value="supercohort"/>
+         <xs:enumeration value="cohort"/>
+         <xs:enumeration value="subcohort"/>
+         <xs:enumeration value="infracohort"/>
+         <xs:enumeration value="superorder"/>
+         <xs:enumeration value="order"/>
+         <xs:enumeration value="suborder"/>
+         <xs:enumeration value="superfamily"/>
+         <xs:enumeration value="family"/>
+         <xs:enumeration value="subfamily"/>
+         <xs:enumeration value="supertribe"/>
+         <xs:enumeration value="tribe"/>
+         <xs:enumeration value="subtribe"/>
+         <xs:enumeration value="infratribe"/>
+         <xs:enumeration value="genus"/>
+         <xs:enumeration value="subgenus"/>
+         <xs:enumeration value="superspecies"/>
+         <xs:enumeration value="species"/>
+         <xs:enumeration value="subspecies"/>
+         <xs:enumeration value="variety"/>
+         <xs:enumeration value="subvariety"/>
+         <xs:enumeration value="form"/>
+         <xs:enumeration value="subform"/>
+         <xs:enumeration value="cultivar"/>
+         <xs:enumeration value="unknown"/>
+         <xs:enumeration value="other"/>
+      </xs:restriction>
+   </xs:simpleType>
+   <!-- Sequence:-->
+   <xs:complexType name="Sequence">
+      <xs:annotation>
+         <xs:documentation> Element Sequence is used to represent a molecular sequence (Protein, DNA, RNA) associated
+            with a node. 'symbol' is a short (maximal ten characters) symbol of the sequence (e.g. 'ACTM') whereas
+            'name' is used for the full name (e.g. 'muscle Actin'). 'location' is used for the location of a sequence on
+            a genome/chromosome. The actual sequence can be stored with the 'mol_seq' element. Attribute 'type' is used
+            to indicate the type of sequence ('dna', 'rna', or 'protein'). One intended use for 'id_ref' is to link a
+            sequence to a taxonomy (via the taxonomy's 'id_source') in case of multiple sequences and taxonomies per
+            node. </xs:documentation>
+      </xs:annotation>
+      <xs:sequence>
+         <xs:element name="symbol" type="phy:SequenceSymbol" minOccurs="0"/>
+         <xs:element name="accession" type="phy:Accession" minOccurs="0"/>
+         <xs:element name="name" type="xs:token" minOccurs="0"/>
+         <xs:element name="location" type="xs:token" minOccurs="0"/>
+         <xs:element name="mol_seq" type="phy:MolSeq" minOccurs="0"/>
+         <xs:element name="uri" type="phy:Uri" minOccurs="0"/>
+         <xs:element name="annotation" type="phy:Annotation" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element name="domain_architecture" type="phy:DomainArchitecture" minOccurs="0"/>
+         <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" namespace="##other"/>
+      </xs:sequence>
+      <xs:attribute name="type" type="phy:SequenceType"/>
+      <xs:attribute name="id_source" type="phy:id_source"/>
+      <xs:attribute name="id_ref" type="phy:id_ref"/>
+   </xs:complexType>
+   <xs:simpleType name="SequenceSymbol">
+      <xs:restriction base="xs:token">
+         <xs:pattern value="\S{1,20}"/>
+      </xs:restriction>
+   </xs:simpleType>
+   <xs:complexType name="MolSeq">
+      <xs:annotation>
+         <xs:documentation> Element 'mol_seq' is used to store molecular sequences. The 'is_aligned' attribute is used
+            to indicated that this molecular sequence is aligned with all other sequences in the same phylogeny for
+            which 'is aligned' is true as well (which, in most cases, means that gaps were introduced, and that all
+            sequences for which 'is aligned' is true must have the same length).</xs:documentation>
+      </xs:annotation>
+      <xs:simpleContent>
+         <xs:extension base="phy:MolSeqChars">
+            <xs:attribute name="is_aligned" type="xs:boolean"/>
+         </xs:extension>
+      </xs:simpleContent>
+   </xs:complexType>
+   <xs:simpleType name="MolSeqChars">
+      <xs:restriction base="xs:token">
+         <xs:pattern value="[a-zA-Z\.\-\?\*_]+"/>
+      </xs:restriction>
+   </xs:simpleType>
+   <xs:simpleType name="SequenceType">
+      <xs:restriction base="xs:token">
+         <xs:enumeration value="rna"/>
+         <xs:enumeration value="dna"/>
+         <xs:enumeration value="protein"/>
+      </xs:restriction>
+   </xs:simpleType>
+   <!-- Accession:-->
+   <xs:complexType name="Accession">
+      <xs:annotation>
+         <xs:documentation> Element Accession is used to capture the local part in a sequence identifier (e.g. 'P17304'
+            in 'UniProtKB:P17304', in which case the 'source' attribute would be 'UniProtKB'). </xs:documentation>
+      </xs:annotation>
+      <xs:simpleContent>
+         <xs:extension base="xs:token">
+            <xs:attribute name="source" type="xs:token" use="required"/>
+         </xs:extension>
+      </xs:simpleContent>
+   </xs:complexType>
+   <!-- DomainArchitecture: -->
+   <xs:complexType name="DomainArchitecture">
+      <xs:annotation>
+         <xs:documentation> This is used describe the domain architecture of a protein. Attribute 'length' is the total
+            length of the protein</xs:documentation>
+      </xs:annotation>
+      <xs:sequence>
+         <xs:element name="domain" type="phy:ProteinDomain" minOccurs="1" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attribute name="length" type="xs:nonNegativeInteger"/>
+   </xs:complexType>
+   <xs:complexType name="ProteinDomain">
+      <xs:annotation>
+         <xs:documentation> To represent an individual domain in a domain architecture. The name/unique identifier is
+            described via the 'id' attribute. 'confidence' can be used to store (i.e.) E-values.</xs:documentation>
+      </xs:annotation>
+      <xs:simpleContent>
+         <xs:extension base="xs:token">
+            <xs:attribute name="from" type="xs:nonNegativeInteger" use="required"/>
+            <xs:attribute name="to" type="xs:nonNegativeInteger" use="required"/>
+            <xs:attribute name="confidence" type="xs:double"/>
+            <xs:attribute name="id" type="xs:token"/>
+         </xs:extension>
+      </xs:simpleContent>
+   </xs:complexType>
+   <!-- Events:-->
+   <xs:complexType name="Events">
+      <xs:annotation>
+         <xs:documentation> Events at the root node of a clade (e.g. one gene duplication). </xs:documentation>
+      </xs:annotation>
+      <xs:sequence>
+         <xs:element name="type" type="phy:EventType" minOccurs="0"/>
+         <xs:element name="duplications" type="xs:nonNegativeInteger" minOccurs="0"/>
+         <xs:element name="speciations" type="xs:nonNegativeInteger" minOccurs="0"/>
+         <xs:element name="losses" type="xs:nonNegativeInteger" minOccurs="0"/>
+         <xs:element name="confidence" type="phy:Confidence" minOccurs="0"/>
+      </xs:sequence>
+   </xs:complexType>
+   <xs:simpleType name="EventType">
+      <xs:restriction base="xs:token">
+         <xs:enumeration value="transfer"/>
+         <xs:enumeration value="fusion"/>
+         <xs:enumeration value="speciation_or_duplication"/>
+         <xs:enumeration value="other"/>
+         <xs:enumeration value="mixed"/>
+         <xs:enumeration value="unassigned"/>
+      </xs:restriction>
+   </xs:simpleType>
+   <!--BinaryCharacters:-->
+   <xs:complexType name="BinaryCharacters">
+      <xs:annotation>
+         <xs:documentation> The names and/or counts of binary characters present, gained, and lost at the root of a
+            clade. </xs:documentation>
+      </xs:annotation>
+      <xs:sequence>
+         <xs:element name="gained" type="phy:BinaryCharacterList" minOccurs="0"/>
+         <xs:element name="lost" type="phy:BinaryCharacterList" minOccurs="0"/>
+         <xs:element name="present" type="phy:BinaryCharacterList" minOccurs="0"/>
+         <xs:element name="absent" type="phy:BinaryCharacterList" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="type" type="xs:token"/>
+      <xs:attribute name="gained_count" type="xs:nonNegativeInteger"/>
+      <xs:attribute name="lost_count" type="xs:nonNegativeInteger"/>
+      <xs:attribute name="present_count" type="xs:nonNegativeInteger"/>
+      <xs:attribute name="absent_count" type="xs:nonNegativeInteger"/>
+   </xs:complexType>
+   <xs:complexType name="BinaryCharacterList">
+      <xs:sequence>
+         <xs:element name="bc" type="xs:token" maxOccurs="unbounded"/>
+      </xs:sequence>
+   </xs:complexType>
+   <!-- Reference:-->
+   <xs:complexType name="Reference">
+      <xs:annotation>
+         <xs:documentation> A literature reference for a clade. It is recommended to use the 'doi' attribute instead of
+            the free text 'desc' element whenever possible. </xs:documentation>
+      </xs:annotation>
+      <xs:sequence>
+         <xs:element name="desc" type="xs:token" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="doi" type="phy:Doi"/>
+   </xs:complexType>
+   <xs:simpleType name="Doi">
+      <xs:restriction base="xs:token">
+         <xs:pattern value="[a-zA-Z0-9_\.]+/\S+"/>
+      </xs:restriction>
+   </xs:simpleType>
+   <!-- Annotation:-->
+   <xs:complexType name="Annotation">
+      <xs:annotation>
+         <xs:documentation> The annotation of a molecular sequence. It is recommended to annotate by using the optional
+            'ref' attribute (some examples of acceptable values for the ref attribute: 'GO:0008270',
+            'KEGG:Tetrachloroethene degradation', 'EC:1.1.1.1'). Optional element 'desc' allows for a free text
+            description. Optional element 'confidence' is used to state the type and value of support for a annotation.
+            Similarly, optional attribute 'evidence' is used to describe the evidence for a annotation as free text
+            (e.g. 'experimental'). Optional element 'property' allows for further, typed and referenced annotations from
+            external resources.</xs:documentation>
+      </xs:annotation>
+      <xs:sequence>
+         <xs:element name="desc" type="xs:token" minOccurs="0"/>
+         <xs:element name="confidence" type="phy:Confidence" minOccurs="0"/>
+         <xs:element name="property" type="phy:Property" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element name="uri" type="phy:Uri" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="ref" type="phy:ref"/>
+      <xs:attribute name="source" type="xs:token"/>
+      <xs:attribute name="evidence" type="xs:token"/>
+      <xs:attribute name="type" type="xs:token"/>
+   </xs:complexType>
+   <!-- Property:-->
+   <xs:complexType name="Property" mixed="true">
+      <xs:annotation>
+         <xs:documentation> Property allows for typed and referenced properties from external resources to be attached
+            to 'Phylogeny', 'Clade', and 'Annotation'. The value of a property is its mixed (free text) content.
+            Attribute 'datatype' indicates the type of a property and is limited to xsd-datatypes (e.g. 'xsd:string',
+            'xsd:boolean', 'xsd:integer', 'xsd:decimal', 'xsd:float', 'xsd:double', 'xsd:date', 'xsd:anyURI'). Attribute
+            'applies_to' indicates the item to which a property applies to (e.g. 'node' for the parent node of a clade,
+            'parent_branch' for the parent branch of a clade). Attribute 'id_ref' allows to attached a property
+            specifically to one element (on the xml-level). Optional attribute 'unit' is used to indicate the unit of
+            the property. An example: &lt;property datatype="xsd:integer" ref="NOAA:depth" applies_to="clade"
+            unit="METRIC:m"&gt; 200 &lt;/property&gt; </xs:documentation>
+      </xs:annotation>
+      <xs:attribute name="ref" type="phy:ref" use="required"/>
+      <xs:attribute name="unit" type="phy:ref"/>
+      <xs:attribute name="datatype" type="phy:PropertyDataType" use="required"/>
+      <xs:attribute name="applies_to" type="phy:AppliesTo" use="required"/>
+      <xs:attribute name="id_ref" type="phy:id_ref"/>
+   </xs:complexType>
+   <xs:simpleType name="ref">
+      <xs:restriction base="xs:token">
+         <xs:pattern value="[a-zA-Z0-9_]+:[a-zA-Z0-9_\.\-\s]+"/>
+      </xs:restriction>
+   </xs:simpleType>
+   <xs:simpleType name="AppliesTo">
+      <xs:restriction base="xs:token">
+         <xs:enumeration value="phylogeny"/>
+         <xs:enumeration value="clade"/>
+         <xs:enumeration value="node"/>
+         <xs:enumeration value="annotation"/>
+         <xs:enumeration value="parent_branch"/>
+         <xs:enumeration value="other"/>
+      </xs:restriction>
+   </xs:simpleType>
+   <xs:simpleType name="PropertyDataType">
+      <xs:restriction base="xs:token">
+         <xs:enumeration value="xsd:string"/>
+         <xs:enumeration value="xsd:boolean"/>
+         <xs:enumeration value="xsd:decimal"/>
+         <xs:enumeration value="xsd:float"/>
+         <xs:enumeration value="xsd:double"/>
+         <xs:enumeration value="xsd:duration"/>
+         <xs:enumeration value="xsd:dateTime"/>
+         <xs:enumeration value="xsd:time"/>
+         <xs:enumeration value="xsd:date"/>
+         <xs:enumeration value="xsd:gYearMonth"/>
+         <xs:enumeration value="xsd:gYear"/>
+         <xs:enumeration value="xsd:gMonthDay"/>
+         <xs:enumeration value="xsd:gDay"/>
+         <xs:enumeration value="xsd:gMonth"/>
+         <xs:enumeration value="xsd:hexBinary"/>
+         <xs:enumeration value="xsd:base64Binary"/>
+         <xs:enumeration value="xsd:anyURI"/>
+         <xs:enumeration value="xsd:normalizedString"/>
+         <xs:enumeration value="xsd:token"/>
+         <xs:enumeration value="xsd:integer"/>
+         <xs:enumeration value="xsd:nonPositiveInteger"/>
+         <xs:enumeration value="xsd:negativeInteger"/>
+         <xs:enumeration value="xsd:long"/>
+         <xs:enumeration value="xsd:int"/>
+         <xs:enumeration value="xsd:short"/>
+         <xs:enumeration value="xsd:byte"/>
+         <xs:enumeration value="xsd:nonNegativeInteger"/>
+         <xs:enumeration value="xsd:unsignedLong"/>
+         <xs:enumeration value="xsd:unsignedInt"/>
+         <xs:enumeration value="xsd:unsignedShort"/>
+         <xs:enumeration value="xsd:unsignedByte"/>
+         <xs:enumeration value="xsd:positiveInteger"/>
+      </xs:restriction>
+   </xs:simpleType>
+   <!--Uri-->
+   <xs:complexType name="Uri">
+      <xs:annotation>
+         <xs:documentation> A uniform resource identifier. In general, this is expected to be an URL (for example, to
+            link to an image on a website, in which case the 'type' attribute might be 'image' and 'desc' might be
+            'image of a California sea hare'). </xs:documentation>
+      </xs:annotation>
+      <xs:simpleContent>
+         <xs:extension base="xs:anyURI">
+            <xs:attribute name="desc" type="xs:token"/>
+            <xs:attribute name="type" type="xs:token"/>
+         </xs:extension>
+      </xs:simpleContent>
+   </xs:complexType>
+   <!-- Confidence:-->
+   <xs:complexType name="Confidence">
+      <xs:annotation>
+         <xs:documentation> A general purpose confidence element. For example this can be used to express the bootstrap
+            support value of a clade (in which case the 'type' attribute is 'bootstrap').</xs:documentation>
+      </xs:annotation>
+      <xs:simpleContent>
+         <xs:extension base="xs:double">
+            <xs:attribute name="type" type="xs:token" use="required"/>
+         </xs:extension>
+      </xs:simpleContent>
+   </xs:complexType>
+   <!-- Identifier:-->
+   <xs:complexType name="Id">
+      <xs:annotation>
+         <xs:documentation> A general purpose identifier element. Allows to indicate the provider (or authority) of an
+            identifier. </xs:documentation>
+      </xs:annotation>
+      <xs:simpleContent>
+         <xs:extension base="xs:token">
+            <xs:attribute name="provider" type="xs:token"/>
+         </xs:extension>
+      </xs:simpleContent>
+   </xs:complexType>
+   <!-- Distribution:-->
+   <xs:complexType name="Distribution">
+      <xs:annotation>
+         <xs:documentation> The geographic distribution of the items of a clade (species, sequences), intended for
+            phylogeographic applications. The location can be described either by free text in the 'desc' element and/or
+            by the coordinates of one or more 'Points' (similar to the 'Point' element in Google's KML format) or by
+            'Polygons'. </xs:documentation>
+      </xs:annotation>
+      <xs:sequence>
+         <xs:element name="desc" type="xs:token" minOccurs="0"/>
+         <xs:element name="point" type="phy:Point" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element name="polygon" type="phy:Polygon" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+   </xs:complexType>
+   <xs:complexType name="Point">
+      <xs:annotation>
+         <xs:documentation> The coordinates of a point with an optional altitude (used by element 'Distribution').
+            Required attributes are the 'geodetic_datum' used to indicate the geodetic datum (also called 'map datum',
+            for example Google's KML uses 'WGS84'). Attribute 'alt_unit' is the unit for the altitude (e.g. 'meter').
+         </xs:documentation>
+      </xs:annotation>
+      <xs:sequence>
+         <xs:element name="lat" type="xs:decimal"/>
+         <xs:element name="long" type="xs:decimal"/>
+         <xs:element name="alt" type="xs:decimal" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="geodetic_datum" type="xs:token" use="required"/>
+      <xs:attribute name="alt_unit" type="xs:token"/>
+   </xs:complexType>
+   <xs:complexType name="Polygon">
+      <xs:annotation>
+         <xs:documentation> A polygon defined by a list of 'Points' (used by element 'Distribution').
+         </xs:documentation>
+      </xs:annotation>
+      <xs:sequence>
+         <xs:element name="point" type="phy:Point" minOccurs="3" maxOccurs="unbounded"/>
+      </xs:sequence>
+   </xs:complexType>
+   <!-- Date:-->
+   <xs:complexType name="Date">
+      <xs:annotation>
+         <xs:documentation> A date associated with a clade/node. Its value can be numerical by using the 'value' element
+            and/or free text with the 'desc' element' (e.g. 'Silurian'). If a numerical value is used, it is recommended
+            to employ the 'unit' attribute to indicate the type of the numerical value (e.g. 'mya' for 'million years
+            ago'). The elements 'minimum' and 'maximum' are used the indicate a range/confidence
+         interval</xs:documentation>
+      </xs:annotation>
+      <xs:sequence>
+         <xs:element name="desc" type="xs:token" minOccurs="0"/>
+         <xs:element name="value" type="xs:decimal" minOccurs="0"/>
+         <xs:element name="minimum" type="xs:decimal" minOccurs="0"/>
+         <xs:element name="maximum" type="xs:decimal" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="unit" type="xs:token"/>
+   </xs:complexType>
+   <!-- BranchColor:-->
+   <xs:complexType name="BranchColor">
+      <xs:annotation>
+         <xs:documentation> This indicates the color of a clade when rendered (the color applies to the whole clade
+            unless overwritten by the color(s) of sub clades).</xs:documentation>
+      </xs:annotation>
+      <xs:sequence>
+         <xs:element name="red" type="xs:unsignedByte"/>
+         <xs:element name="green" type="xs:unsignedByte"/>
+         <xs:element name="blue" type="xs:unsignedByte"/>
+      </xs:sequence>
+   </xs:complexType>
+   <!-- SequenceRelation:-->
+   <xs:complexType name="SequenceRelation">
+      <xs:annotation>
+         <xs:documentation> This is used to express a typed relationship between two sequences. For example it could be
+            used to describe an orthology (in which case attribute 'type' is 'orthology'). </xs:documentation>
+      </xs:annotation>
+      <xs:sequence>
+         <xs:element name="confidence" type="phy:Confidence" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="id_ref_0" type="phy:id_ref" use="required"/>
+      <xs:attribute name="id_ref_1" type="phy:id_ref" use="required"/>
+      <xs:attribute name="distance" type="xs:double"/>
+      <xs:attribute name="type" type="phy:SequenceRelationType" use="required"/>
+   </xs:complexType>
+   <xs:simpleType name="SequenceRelationType">
+      <xs:restriction base="xs:token">
+         <xs:enumeration value="orthology"/>
+         <xs:enumeration value="one_to_one_orthology"/>
+         <xs:enumeration value="super_orthology"/>
+         <xs:enumeration value="paralogy"/>
+         <xs:enumeration value="ultra_paralogy"/>
+         <xs:enumeration value="xenology"/>
+         <xs:enumeration value="unknown"/>
+         <xs:enumeration value="other"/>
+      </xs:restriction>
+   </xs:simpleType>
+   <!-- CladeRelation:-->
+   <xs:complexType name="CladeRelation">
+      <xs:annotation>
+         <xs:documentation> This is used to express a typed relationship between two clades. For example it could be
+            used to describe multiple parents of a clade.</xs:documentation>
+      </xs:annotation>
+      <xs:sequence>
+         <xs:element name="confidence" type="phy:Confidence" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="id_ref_0" type="phy:id_ref" use="required"/>
+      <xs:attribute name="id_ref_1" type="phy:id_ref" use="required"/>
+      <xs:attribute name="distance" type="xs:double"/>
+      <xs:attribute name="type" type="xs:token" use="required"/>
+   </xs:complexType>
+   <!-- Used to link elements together on the xml level:-->
+   <xs:simpleType name="id_source">
+      <xs:restriction base="xs:ID"/>
+   </xs:simpleType>
+   <xs:simpleType name="id_ref">
+      <xs:restriction base="xs:IDREF"/>
+   </xs:simpleType>
+</xs:schema>

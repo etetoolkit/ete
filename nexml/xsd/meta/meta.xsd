@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema 
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+    targetNamespace="http://www.nexml.org/2009"
+    xmlns="http://www.nexml.org/2009"
+    elementFormDefault="qualified">
+    <xs:annotation>
+        <xs:documentation>
+            This module defines subclasses of the dictionaries
+            defined in the <a href="../annotations">annotations</a>
+            module. The subclasses are used to attach metadata about
+            revision control status of a file (the RCS* types), 
+            <a href="http://dublincore.org/">dublin core</a> metadata
+            and common web formats (XHTML, RSS).            
+        </xs:documentation>
+    </xs:annotation>
+    <xs:include schemaLocation="annotations.xsd"/>  
+
+    <!-- a simple key/value pair, where key 
+    *must* be <key>date</key>, and value
+    must be of the pattern 
+    <string>$Date: [svn date here]$</string> -->
+    <xs:simpleType name="DateKey">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="date"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="DateVal">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="$Date: .*$"/>
+        </xs:restriction>
+    </xs:simpleType> 
+    <!--xs:complexType name="RCSDate">
+        <xs:annotation>
+            <xs:documentation>
+                a simple key/value pair, where key 
+                <em>must</em> be /^date$/, and value
+                must be of the pattern 
+                /^$Date: .*\$$/
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="Dict">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="key" type="DateKey" minOccurs="1" maxOccurs="1"/>
+                    <xs:element name="string" type="DateVal" minOccurs="1" maxOccurs="1"/>
+                </xs:sequence>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType-->       
+
+    <!-- same thing for svn $Rev: $ -->
+    <xs:simpleType name="RevKey">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="rev"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="RevVal">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="$Rev: .*$"/>
+        </xs:restriction>
+    </xs:simpleType>  
+    <!--xs:complexType name="RCSRev">
+        <xs:annotation>
+            <xs:documentation>
+                a simple key/value pair, where key 
+                <em>must</em> be /^rev$/, and value
+                must be of the pattern 
+                /^$Rev: .*\$$/
+            </xs:documentation>
+        </xs:annotation>        
+        <xs:complexContent>
+            <xs:restriction base="Dict">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="key" type="RevKey" minOccurs="1" maxOccurs="1"/>
+                    <xs:element name="string" type="RevVal" minOccurs="1" maxOccurs="1"/>                  
+                </xs:sequence>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType--> 
+
+    <!-- same thing for svn $Author: $ -->
+    <xs:simpleType name="AuthorKey">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="author"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="AuthorVal">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="$Author: .*$"/>
+        </xs:restriction>
+    </xs:simpleType>    
+    <!--xs:complexType name="RCSAuthor">
+        <xs:annotation>
+            <xs:documentation>
+                a simple key/value pair, where key 
+                <em>must</em> be /^author$/, and value
+                must be of the pattern 
+                /^$Author: .*\$$/
+            </xs:documentation>
+        </xs:annotation>        
+        <xs:complexContent>
+            <xs:restriction base="Dict">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="key" type="AuthorKey" minOccurs="1" maxOccurs="1"/>
+                    <xs:element name="string" type="AuthorVal" minOccurs="1" maxOccurs="1"/>                  
+                </xs:sequence>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType-->     
+
+    <!-- same thing for svn $URL: $ -->
+    <xs:simpleType name="URLKey">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="url"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="URLVal">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="$URL: .*$"/>
+        </xs:restriction>
+    </xs:simpleType> 
+    <!--xs:complexType name="RCSURL">
+        <xs:annotation>
+            <xs:documentation>
+                a simple key/value pair, where key 
+                <em>must</em> be /^url$/, and value
+                must be of the pattern 
+                /^$URL: .*\$$/
+            </xs:documentation>
+        </xs:annotation>         
+        <xs:complexContent>
+            <xs:restriction base="Dict">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="key" type="URLKey" minOccurs="1" maxOccurs="1"/>
+                    <xs:element name="string" type="URLVal" minOccurs="1" maxOccurs="1"/>                  
+                </xs:sequence>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType-->        
+
+    <!-- same thing for svn $Id: $ -->
+    <xs:simpleType name="IdKey">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="id"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="IdVal">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="$Id: .*$"/>
+        </xs:restriction>
+    </xs:simpleType> 
+    <!--xs:complexType name="RCSId">
+        <xs:annotation>
+            <xs:documentation>
+                a simple key/value pair, where key 
+                <em>must</em> be /^id$/, and value
+                must be of the pattern 
+                /^$Id: .*\$$/
+            </xs:documentation>
+        </xs:annotation>         
+        <xs:complexContent>
+            <xs:restriction base="Dict">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="key" type="IdKey" minOccurs="1" maxOccurs="1"/>
+                    <xs:element name="string" type="IdVal" minOccurs="1" maxOccurs="1"/>                  
+                </xs:sequence>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType-->        
+
+    <!-- same thing for svn $Header: $ -->
+    <xs:simpleType name="HeaderKey">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="header"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="HeaderVal">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="$Header: .*$"/>
+        </xs:restriction>
+    </xs:simpleType>  
+    <!--xs:complexType name="RCSHeader">
+        <xs:annotation>
+            <xs:documentation>
+                a simple key/value pair, where key 
+                <em>must</em> be /^header$/, and value
+                must be of the pattern 
+                /^$Header: .*\$$/
+            </xs:documentation>
+        </xs:annotation>         
+        <xs:complexContent>
+            <xs:restriction base="Dict">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="key" type="HeaderKey" minOccurs="1" maxOccurs="1"/>
+                    <xs:element name="string" type="HeaderVal" minOccurs="1" maxOccurs="1"/>                  
+                </xs:sequence>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType-->
+
+    <!-- this is just syntax sugar to indicate that 
+        the elements within the <any> tag are
+        Dublin Core metadata -->
+    <xs:simpleType name="DCKey">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="dublincore"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="DCAny">
+        <xs:complexContent>
+            <xs:extension base="Base">
+                <xs:sequence>
+                    <xs:any 
+                        namespace="http://purl.org/dc/elements/1.1/ http://purl.org/dc/terms/ http://www.w3.org/1999/02/22-rdf-syntax-ns#" 
+                        processContents="lax" 
+                        minOccurs="0" 
+                        maxOccurs="unbounded"/>
+                </xs:sequence>                
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    <!--xs:complexType name="DC">
+        <xs:complexContent>
+            <xs:restriction base="Dict">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="key" type="DCKey" minOccurs="1" maxOccurs="1"/>
+                    <xs:element name="any" type="DCAny" minOccurs="1" maxOccurs="1"/>                                     
+                </xs:sequence>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType-->
+    
+    <!-- this is a wrapper around XHTML -->
+    <xs:simpleType name="XHTMLKey">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="xhtml"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="XHTMLAny">
+        <xs:complexContent>
+            <xs:extension base="Base">
+                <xs:sequence>
+                    <xs:any 
+                        namespace="http://www.w3.org/1999/xhtml" 
+                        processContents="lax" 
+                        minOccurs="0" 
+                        maxOccurs="unbounded"/>
+                </xs:sequence>                
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    <!--xs:complexType name="XHTML">
+        <xs:complexContent>
+            <xs:restriction base="Dict">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="key" type="XHTMLKey" minOccurs="1" maxOccurs="1"/>
+                    <xs:element name="any" type="XHTMLAny"/>                                      
+                </xs:sequence>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType-->    
+
+    <!-- this is a wrapper around RSS -->
+    <xs:simpleType name="RSSKey">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="rss"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="RSSAny">
+        <xs:complexContent>
+            <xs:extension base="Base">
+                <xs:sequence>
+                    <xs:any 
+                        namespace="http://www.w3.org/1999/02/22-rdf-syntax-ns#" 
+                        processContents="lax" 
+                        minOccurs="0" 
+                        maxOccurs="unbounded"/>
+                </xs:sequence>                  
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    <!--xs:complexType name="RSS">
+        <xs:complexContent>
+            <xs:restriction base="Dict">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="key" type="RSSKey" minOccurs="1" maxOccurs="1"/>
+                    <xs:element name="any" type="RSSAny" form="unqualified"/>                 
+                </xs:sequence>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType--> 
+
+</xs:schema>

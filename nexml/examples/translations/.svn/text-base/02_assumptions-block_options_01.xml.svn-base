@@ -1,0 +1,362 @@
+<nex:nexml 
+	generator="Bio::Phylo::Project v.0.17_RC9_841" 
+	version="0.8" 
+	xmlns:nex="http://www.nexml.org/1.0" 
+	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns" 
+	xmlns:xml="http://www.w3.org/XML/1998/namespace" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xsi:schemaLocation="http://www.nexml.org/1.0 ../../xsd/nexml.xsd"
+	xmlns="http://www.nexml.org/1.0">
+  <otus id="otus4">
+    <otu id="otu5" label="'Homo sapiens'"/>
+    <otu id="otu7" label="Pan_paniscus"/>
+    <otu id="otu9" label="Gorilla_gorilla"/>
+    <otu id="otu11" label="Pongo_pigmaeus"/>
+  </otus>
+  <characters id="characters1" otus="otus4" xsi:type="nex:RnaCells">
+    <format>
+      <states id="states3">
+        <state id="s1" symbol="A"/>
+        <state id="s2" symbol="C"/>
+        <state id="s3" symbol="G"/>
+        <state id="s4" symbol="U"/>
+        <uncertain_state_set id="s5" symbol="K">
+          <member state="s3"/>
+          <member state="s4"/>
+        </uncertain_state_set>
+        <uncertain_state_set id="s6" symbol="M">
+          <member state="s1"/>
+          <member state="s2"/>
+        </uncertain_state_set>
+        <uncertain_state_set id="s7" symbol="R">
+          <member state="s1"/>
+          <member state="s3"/>
+        </uncertain_state_set>
+        <uncertain_state_set id="s8" symbol="S">
+          <member state="s2"/>
+          <member state="s3"/>
+        </uncertain_state_set>
+        <uncertain_state_set id="s9" symbol="W">
+          <member state="s1"/>
+          <member state="s4"/>
+        </uncertain_state_set>
+        <uncertain_state_set id="s10" symbol="Y">
+          <member state="s2"/>
+          <member state="s4"/>
+        </uncertain_state_set>
+        <uncertain_state_set id="s11" symbol="B">
+          <member state="s2"/>
+          <member state="s3"/>
+          <member state="s4"/>
+        </uncertain_state_set>
+        <uncertain_state_set id="s12" symbol="D">
+          <member state="s1"/>
+          <member state="s3"/>
+          <member state="s4"/>
+        </uncertain_state_set>
+        <uncertain_state_set id="s13" symbol="H">
+          <member state="s1"/>
+          <member state="s2"/>
+          <member state="s4"/>
+        </uncertain_state_set>
+        <uncertain_state_set id="s14" symbol="V">
+          <member state="s1"/>
+          <member state="s2"/>
+          <member state="s3"/>
+        </uncertain_state_set>
+        <uncertain_state_set id="s15" symbol="N">
+          <member state="s3"/>
+          <member state="s1"/>
+          <member state="s4"/>
+          <member state="s2"/>
+        </uncertain_state_set>
+        <uncertain_state_set id="s16" symbol="X">
+          <member state="s3"/>
+          <member state="s1"/>
+          <member state="s4"/>
+          <member state="s2"/>
+        </uncertain_state_set>
+        <uncertain_state_set id="s17" symbol="-"/>
+        <uncertain_state_set id="s18" symbol="?">
+          <member state="s1"/>
+          <member state="s2"/>
+          <member state="s3"/>
+          <member state="s4"/>
+          <member state="s5"/>
+          <member state="s6"/>
+          <member state="s7"/>
+          <member state="s8"/>
+          <member state="s9"/>
+          <member state="s10"/>
+          <member state="s11"/>
+          <member state="s12"/>
+          <member state="s13"/>
+          <member state="s14"/>
+          <member state="s15"/>
+          <member state="s16"/>
+          <member state="s17"/>
+        </uncertain_state_set>
+      </states>
+      <char id="c1" states="states3"/>
+      <char id="c2" states="states3"/>
+      <char id="c3" states="states3"/>
+      <char id="c4" states="states3"/>
+      <char id="c5" states="states3"/>
+      <char id="c6" states="states3"/>
+      <char id="c7" states="states3"/>
+      <char id="c8" states="states3"/>
+      <char id="c9" states="states3"/>
+      <char id="c10" states="states3"/>
+      <char id="c11" states="states3"/>
+      <char id="c12" states="states3"/>
+      <char id="c13" states="states3"/>
+      <char id="c14" states="states3"/>
+      <char id="c15" states="states3"/>
+      <char id="c16" states="states3"/>
+      <char id="c17" states="states3"/>
+      <char id="c18" states="states3"/>
+      <char id="c19" states="states3"/>
+      <char id="c20" states="states3"/>
+      <char id="c21" states="states3"/>
+      <char id="c22" states="states3"/>
+      <char id="c23" states="states3"/>
+      <char id="c24" states="states3"/>
+      <char id="c25" states="states3"/>
+      <char id="c26" states="states3"/>
+      <char id="c27" states="states3"/>
+      <char id="c28" states="states3"/>
+      <char id="c29" states="states3"/>
+      <char id="c30" states="states3"/>
+      <char id="c31" states="states3"/>
+      <char id="c32" states="states3"/>
+      <char id="c33" states="states3"/>
+      <char id="c34" states="states3"/>
+      <char id="c35" states="states3"/>
+      <char id="c36" states="states3"/>
+      <char id="c37" states="states3"/>
+      <char id="c38" states="states3"/>
+      <char id="c39" states="states3"/>
+      <char id="c40" states="states3"/>
+      <char id="c41" states="states3"/>
+      <char id="c42" states="states3"/>
+      <char id="c43" states="states3"/>
+      <char id="c44" states="states3"/>
+      <char id="c45" states="states3"/>
+      <char id="c46" states="states3"/>
+      <char id="c47" states="states3"/>
+      <char id="c48" states="states3"/>
+      <char id="c49" states="states3"/>
+      <char id="c50" states="states3"/>
+    </format>
+    <matrix>
+      <row id="row2" label="'Homo sapiens'" otu="otu5">
+        <cell char="c1" state="s1"/>
+        <cell char="c2" state="s3"/>
+        <cell char="c3" state="s4"/>
+        <cell char="c4" state="s2"/>
+        <cell char="c5" state="s3"/>
+        <cell char="c6" state="s1"/>
+        <cell char="c7" state="s3"/>
+        <cell char="c8" state="s4"/>
+        <cell char="c9" state="s2"/>
+        <cell char="c10" state="s17"/>
+        <cell char="c11" state="s17"/>
+        <cell char="c12" state="s17"/>
+        <cell char="c13" state="s3"/>
+        <cell char="c14" state="s2"/>
+        <cell char="c15" state="s1"/>
+        <cell char="c16" state="s3"/>
+        <cell char="c17" state="s1"/>
+        <cell char="c18" state="s1"/>
+        <cell char="c19" state="s1"/>
+        <cell char="c20" state="s2"/>
+        <cell char="c21" state="s3"/>
+        <cell char="c22" state="s2"/>
+        <cell char="c23" state="s1"/>
+        <cell char="c24" state="s4"/>
+        <cell char="c25" state="s3"/>
+        <cell char="c26" state="s1"/>
+        <cell char="c27" state="s2"/>
+        <cell char="c28" state="s17"/>
+        <cell char="c29" state="s3"/>
+        <cell char="c30" state="s1"/>
+        <cell char="c31" state="s2"/>
+        <cell char="c32" state="s2"/>
+        <cell char="c33" state="s1"/>
+        <cell char="c34" state="s2"/>
+        <cell char="c35" state="s1"/>
+        <cell char="c36" state="s4"/>
+        <cell char="c37" state="s4"/>
+        <cell char="c38" state="s4"/>
+        <cell char="c39" state="s4"/>
+        <cell char="c40" state="s17"/>
+        <cell char="c41" state="s2"/>
+        <cell char="c42" state="s2"/>
+        <cell char="c43" state="s4"/>
+        <cell char="c44" state="s4"/>
+        <cell char="c45" state="s3"/>
+        <cell char="c46" state="s2"/>
+        <cell char="c47" state="s1"/>
+        <cell char="c48" state="s1"/>
+        <cell char="c49" state="s1"/>
+        <cell char="c50" state="s3"/>
+      </row>
+      <row id="row6" label="Pan_paniscus" otu="otu7">
+        <cell char="c1" state="s1"/>
+        <cell char="c2" state="s3"/>
+        <cell char="c3" state="s4"/>
+        <cell char="c4" state="s2"/>
+        <cell char="c5" state="s3"/>
+        <cell char="c6" state="s2"/>
+        <cell char="c7" state="s3"/>
+        <cell char="c8" state="s4"/>
+        <cell char="c9" state="s2"/>
+        <cell char="c10" state="s3"/>
+        <cell char="c11" state="s17"/>
+        <cell char="c12" state="s17"/>
+        <cell char="c13" state="s3"/>
+        <cell char="c14" state="s2"/>
+        <cell char="c15" state="s1"/>
+        <cell char="c16" state="s3"/>
+        <cell char="c17" state="s1"/>
+        <cell char="c18" state="s1"/>
+        <cell char="c19" state="s1"/>
+        <cell char="c20" state="s2"/>
+        <cell char="c21" state="s3"/>
+        <cell char="c22" state="s2"/>
+        <cell char="c23" state="s1"/>
+        <cell char="c24" state="s4"/>
+        <cell char="c25" state="s3"/>
+        <cell char="c26" state="s1"/>
+        <cell char="c27" state="s2"/>
+        <cell char="c28" state="s3"/>
+        <cell char="c29" state="s3"/>
+        <cell char="c30" state="s1"/>
+        <cell char="c31" state="s2"/>
+        <cell char="c32" state="s2"/>
+        <cell char="c33" state="s1"/>
+        <cell char="c34" state="s2"/>
+        <cell char="c35" state="s1"/>
+        <cell char="c36" state="s4"/>
+        <cell char="c37" state="s2"/>
+        <cell char="c38" state="s1"/>
+        <cell char="c39" state="s4"/>
+        <cell char="c40" state="s17"/>
+        <cell char="c41" state="s2"/>
+        <cell char="c42" state="s2"/>
+        <cell char="c43" state="s4"/>
+        <cell char="c44" state="s4"/>
+        <cell char="c45" state="s3"/>
+        <cell char="c46" state="s2"/>
+        <cell char="c47" state="s1"/>
+        <cell char="c48" state="s1"/>
+        <cell char="c49" state="s1"/>
+        <cell char="c50" state="s3"/>
+      </row>
+      <row id="row8" label="Gorilla_gorilla" otu="otu9">
+        <cell char="c1" state="s1"/>
+        <cell char="c2" state="s3"/>
+        <cell char="c3" state="s4"/>
+        <cell char="c4" state="s2"/>
+        <cell char="c5" state="s3"/>
+        <cell char="c6" state="s2"/>
+        <cell char="c7" state="s3"/>
+        <cell char="c8" state="s4"/>
+        <cell char="c9" state="s2"/>
+        <cell char="c10" state="s3"/>
+        <cell char="c11" state="s17"/>
+        <cell char="c12" state="s17"/>
+        <cell char="c13" state="s3"/>
+        <cell char="c14" state="s2"/>
+        <cell char="c15" state="s1"/>
+        <cell char="c16" state="s3"/>
+        <cell char="c17" state="s1"/>
+        <cell char="c18" state="s4"/>
+        <cell char="c19" state="s1"/>
+        <cell char="c20" state="s2"/>
+        <cell char="c21" state="s3"/>
+        <cell char="c22" state="s2"/>
+        <cell char="c23" state="s1"/>
+        <cell char="c24" state="s4"/>
+        <cell char="c25" state="s2"/>
+        <cell char="c26" state="s1"/>
+        <cell char="c27" state="s2"/>
+        <cell char="c28" state="s3"/>
+        <cell char="c29" state="s3"/>
+        <cell char="c30" state="s1"/>
+        <cell char="c31" state="s2"/>
+        <cell char="c32" state="s17"/>
+        <cell char="c33" state="s1"/>
+        <cell char="c34" state="s2"/>
+        <cell char="c35" state="s1"/>
+        <cell char="c36" state="s4"/>
+        <cell char="c37" state="s2"/>
+        <cell char="c38" state="s1"/>
+        <cell char="c39" state="s4"/>
+        <cell char="c40" state="s2"/>
+        <cell char="c41" state="s2"/>
+        <cell char="c42" state="s2"/>
+        <cell char="c43" state="s4"/>
+        <cell char="c44" state="s2"/>
+        <cell char="c45" state="s3"/>
+        <cell char="c46" state="s2"/>
+        <cell char="c47" state="s1"/>
+        <cell char="c48" state="s3"/>
+        <cell char="c49" state="s1"/>
+        <cell char="c50" state="s3"/>
+      </row>
+      <row id="row10" label="Pongo_pigmaeus" otu="otu11">
+        <cell char="c1" state="s1"/>
+        <cell char="c2" state="s3"/>
+        <cell char="c3" state="s4"/>
+        <cell char="c4" state="s2"/>
+        <cell char="c5" state="s3"/>
+        <cell char="c6" state="s2"/>
+        <cell char="c7" state="s3"/>
+        <cell char="c8" state="s4"/>
+        <cell char="c9" state="s2"/>
+        <cell char="c10" state="s3"/>
+        <cell char="c11" state="s1"/>
+        <cell char="c12" state="s1"/>
+        <cell char="c13" state="s3"/>
+        <cell char="c14" state="s2"/>
+        <cell char="c15" state="s1"/>
+        <cell char="c16" state="s3"/>
+        <cell char="c17" state="s1"/>
+        <cell char="c18" state="s17"/>
+        <cell char="c19" state="s17"/>
+        <cell char="c20" state="s2"/>
+        <cell char="c21" state="s3"/>
+        <cell char="c22" state="s2"/>
+        <cell char="c23" state="s1"/>
+        <cell char="c24" state="s4"/>
+        <cell char="c25" state="s3"/>
+        <cell char="c26" state="s1"/>
+        <cell char="c27" state="s2"/>
+        <cell char="c28" state="s3"/>
+        <cell char="c29" state="s3"/>
+        <cell char="c30" state="s1"/>
+        <cell char="c31" state="s2"/>
+        <cell char="c32" state="s2"/>
+        <cell char="c33" state="s1"/>
+        <cell char="c34" state="s2"/>
+        <cell char="c35" state="s1"/>
+        <cell char="c36" state="s4"/>
+        <cell char="c37" state="s2"/>
+        <cell char="c38" state="s1"/>
+        <cell char="c39" state="s4"/>
+        <cell char="c40" state="s2"/>
+        <cell char="c41" state="s2"/>
+        <cell char="c42" state="s2"/>
+        <cell char="c43" state="s4"/>
+        <cell char="c44" state="s4"/>
+        <cell char="c45" state="s3"/>
+        <cell char="c46" state="s2"/>
+        <cell char="c47" state="s1"/>
+        <cell char="c48" state="s3"/>
+        <cell char="c49" state="s1"/>
+        <cell char="c50" state="s3"/>
+      </row>
+    </matrix>
+  </characters>
+</nex:nexml>

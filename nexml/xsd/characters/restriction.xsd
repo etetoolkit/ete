@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema 
+	xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+	targetNamespace="http://www.nexml.org/2009"
+    xmlns="http://www.nexml.org/2009"
+    xmlns:xml="http://www.w3.org/XML/1998/namespace"
+    elementFormDefault="qualified">
+    <xs:include schemaLocation="abstractcharacters.xsd"/>
+    
+    <!--
+    <xs:import namespace="http://www.w3.org/XML/1998/namespace"
+        schemaLocation="http://www.w3.org/2001/xml.xsd"/>-->
+    <xs:annotation>
+        <xs:documentation>
+            This module defines concrete subclasses for the 
+            <a href="../abstract">abstract</a> character matrix components 
+            that all character matrices must implement. The subclasses
+            defined here apply to restriction site data. In a verbose notation, 
+            this data is represented as the "state" attribute of the &lt;cell&gt; 
+            element, whose value-space is limited to 0 or 1. In a compact 
+            notation, the same data is represented as a sequence of tokens (whitespace is allowed but has no meaning).
+        </xs:documentation>
+    </xs:annotation>     
+    <xs:simpleType name="RestrictionToken">
+        <xs:restriction base="xs:integer">
+            <xs:minInclusive value="0"/>
+            <xs:maxInclusive value="1"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <!--
+        A restriction site matrix only has presence (1) or absence (0), so
+        state definitions and ambiguity mappings are omitted.
+        
+    <xs:complexType name="StandardMapping">
+        <xs:annotation>
+            <xs:documentation>A standard character ambiguity mapping.</xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractMapping"/>            
+        </xs:complexContent>
+    </xs:complexType>
+    -->
+    <xs:complexType name="RestrictionState">
+        <xs:annotation>
+            <xs:documentation> This is a concrete implementation of the state element, which requires
+                a symbol element, in this case restricted to integers, and optional mapping
+                elements to refer to other states. </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractState">
+                <xs:sequence minOccurs="1" maxOccurs="1"/>
+                <xs:attribute name="symbol" type="RestrictionToken" use="required"/>                
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="RestrictionStates">
+        <xs:annotation>
+            <xs:documentation>
+                A container for a set of states.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractStates">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="meta" minOccurs="0" maxOccurs="unbounded" type="Meta"/>
+                    <xs:element name="state" type="RestrictionState" minOccurs="2" maxOccurs="2"/>
+                </xs:sequence>
+            </xs:restriction>
+        </xs:complexContent>        
+    </xs:complexType>
+
+    <xs:complexType name="RestrictionChar">
+        <xs:annotation>
+            <xs:documentation> 
+                A concrete implementation of the char element, 
+                which only requires a unique identifier.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractChar">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="meta" minOccurs="0" maxOccurs="unbounded" type="Meta"/>
+                </xs:sequence>    
+                <xs:attribute name="tokens" type="MSTokenLength" use="prohibited"/>            
+                <xs:attribute name="states" type="xs:IDREF" use="required"/>
+                <xs:attribute name="codon" type="CodonPosition" use="prohibited"/>
+                <xs:attribute name="id" type="xs:ID" use="required"/>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="RestrictionFormat" abstract="false">
+        <xs:annotation>
+            <xs:documentation> The RestrictionFormat class is the container of restriction column definitions.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractFormat">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="states" type="RestrictionStates" minOccurs="1" maxOccurs="unbounded"/>
+                    <xs:element name="char" type="RestrictionChar" minOccurs="1" maxOccurs="unbounded"/>
+                </xs:sequence>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="RestrictionObs" abstract="false">
+        <xs:annotation>
+            <xs:documentation> 
+                This is a single cell in a matrix containing a 
+                restriction site observation.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractObs">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="meta" minOccurs="0" maxOccurs="unbounded" type="Meta"/>
+                </xs:sequence>
+                <xs:attribute name="char" use="required" type="xs:IDREF"/>
+                <xs:attribute name="state" use="required" type="xs:IDREF"/>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:simpleType name="RestrictionSeq">
+        <xs:annotation>
+            <xs:documentation> 
+                This is a simple type that specifies a 
+                sequence of restriction site characters.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[01\s]*"></xs:pattern>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:complexType name="RestrictionMatrixSeqRow" abstract="false">
+        <xs:annotation>
+            <xs:documentation>
+                This is a row in a matrix of restriction 
+                site data as character sequences. 
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractSeqRow">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="meta" minOccurs="0" maxOccurs="unbounded" type="Meta"/>
+                    <xs:element name="seq" minOccurs="1" maxOccurs="1" type="RestrictionSeq"/>
+                </xs:sequence>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="RestrictionMatrixObsRow" abstract="false">
+        <xs:annotation>
+            <xs:documentation> 
+                This is a row in a matrix of restriction 
+                site data as granular obervations. 
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractObsRow">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="meta" minOccurs="0" maxOccurs="unbounded" type="Meta"/>
+                    <xs:element name="cell" minOccurs="1" maxOccurs="unbounded" type="RestrictionObs"/>
+                </xs:sequence>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="RestrictionSeqMatrix" abstract="false">
+        <xs:annotation>
+            <xs:documentation>
+                A matrix of rows with seq strings of type restriction.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractSeqMatrix">
+                <xs:sequence minOccurs="1" maxOccurs="1">                    
+                    <xs:element name="row" minOccurs="1" maxOccurs="unbounded" type="RestrictionMatrixSeqRow"/>
+                </xs:sequence>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="RestrictionObsMatrix" abstract="false">
+        <xs:annotation>
+            <xs:documentation>
+                A matrix of rows with single character observations.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractObsMatrix">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="row" minOccurs="1" maxOccurs="unbounded" type="RestrictionMatrixObsRow"/>
+                </xs:sequence>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="RestrictionSeqs" abstract="false">
+        <xs:annotation>
+            <xs:documentation>
+                A restriction site characters block 
+                consisting of sequences preceded by metadata.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractSeqs">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="meta" minOccurs="0" maxOccurs="unbounded" type="Meta"/>
+                    <xs:element name="format" minOccurs="1" maxOccurs="1" type="RestrictionFormat"/>
+                    <xs:element name="matrix" minOccurs="1" maxOccurs="1" type="RestrictionSeqMatrix"/>
+                </xs:sequence>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="RestrictionCells" abstract="false">
+        <xs:annotation>
+            <xs:documentation>
+                A standard characters block consisting 
+                of granular cells preceded by metadata.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractCells">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="meta" minOccurs="0" maxOccurs="unbounded" type="Meta"/>
+                    <xs:element name="format" minOccurs="1" maxOccurs="1" type="RestrictionFormat"/>
+                    <xs:element name="matrix" minOccurs="1" maxOccurs="1" type="RestrictionObsMatrix"/>                   
+                </xs:sequence>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>
+    
+</xs:schema>

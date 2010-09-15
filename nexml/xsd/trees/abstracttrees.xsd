@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:sawsdl="http://www.w3.org/ns/sawsdl"
+    targetNamespace="http://www.nexml.org/2009" xmlns="http://www.nexml.org/2009"
+    elementFormDefault="qualified">
+    <xs:annotation>
+        <xs:documentation>
+            This module defines abstract superclasses for tree components.
+            Nexml defines trees as a sequence of nodes, zero or one root edge
+            and a sequence of edges. There are different concrete instances
+            of edges, namely those with lengths formatted as integers, and
+            lengths formatted as floating point numbers.
+            <br/><br/>
+            In addition, there are different types of trees: those where nodes
+            have an in-degree of 1 - true trees - and those with in-degree that
+            can exceed 1 - networks.
+        </xs:documentation>
+    </xs:annotation>
+
+    <xs:include schemaLocation="../abstract.xsd"/>
+
+    <xs:complexType name="AbstractNode" abstract="true"
+        sawsdl:modelReference="http://evolutionaryontology-dev.nescent.org/cdao.owl#Node">
+        <xs:annotation>
+            <xs:documentation>
+                The AbstractNode superclass is what concrete nodes inherit
+                from by restriction. It represents a node element much like
+                that of GraphML, i.e. an element that is connected into a 
+                tree by edge elements.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="OptionalTaxonLinked">
+                <xs:attribute name="root" type="xs:boolean" default="false" use="optional"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="AbstractEdge" abstract="true"
+        sawsdl:modelReference="http://evolutionaryontology-dev.nescent.org/cdao.owl#Edge">
+        <xs:annotation>
+            <xs:documentation>
+                The AbstractEdge superclass is what concrete edges inherit
+                from by restriction. It represents an edge element much like
+                that of GraphML, i.e. an element that connects node elements.
+            </xs:documentation>
+            <xs:appinfo>Edge</xs:appinfo>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="IDTagged">
+                <xs:attribute name="source" type="xs:IDREF" use="required"/>
+                <xs:attribute name="target" type="xs:IDREF" use="required"/>
+                <xs:attribute name="length" type="xs:anySimpleType" use="optional"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="AbstractRootEdge" abstract="true">
+        <xs:annotation>
+            <xs:documentation>
+                The AbstractRootEdge complex type is a superclass for the
+                edge that leads into a root, i.e. an edge with only a target
+                attribute, but no source attribute. This type of edge is
+                used for coalescent trees, where the initial lineage has
+                a certain length before things start splitting up.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="IDTagged">
+                <xs:attribute name="target" type="xs:IDREF" use="required"/>
+                <xs:attribute name="length" type="xs:anySimpleType" use="optional"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="AbstractTree" abstract="true"
+        sawsdl:modelReference="http://evolutionaryontology-dev.nescent.org/cdao.owl#Tree">
+        <xs:annotation>
+            <xs:documentation>
+                The AbstractTree superclass is what a concrete tree inherits
+                from.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent mixed="true">
+            <xs:extension base="IDTagged">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="node" type="AbstractNode" minOccurs="1" maxOccurs="unbounded"/>
+                    <xs:element name="rootedge" type="AbstractRootEdge" minOccurs="0" maxOccurs="1"/>
+                    <xs:element name="edge" type="AbstractEdge" minOccurs="1" maxOccurs="unbounded"
+                    />
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="AbstractNetwork" abstract="true"
+        sawsdl:modelReference="http://evolutionaryontology-dev.nescent.org/cdao.owl#Network">
+        <xs:annotation>
+            <xs:documentation>
+                The AbstractNetwork superclass is what a concrete network inherits
+                from.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent mixed="true">
+            <xs:extension base="IDTagged">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="node" type="AbstractNode" minOccurs="1" maxOccurs="unbounded"/>
+                    <xs:element name="edge" type="AbstractEdge" minOccurs="1" maxOccurs="unbounded"
+                    />
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="AbstractTrees" abstract="true">
+        <xs:annotation>
+            <xs:documentation>
+                The AbstractTrees superclass is what concrete trees inherit
+                from.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent mixed="true">
+            <xs:extension base="IDTagged">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:choice minOccurs="0" maxOccurs="unbounded">
+                        <xs:element name="network" type="AbstractNetwork" minOccurs="1"
+                            maxOccurs="unbounded"/>
+                        <xs:element name="tree" type="AbstractTree" minOccurs="1"
+                            maxOccurs="unbounded"/>
+                    </xs:choice>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+</xs:schema>

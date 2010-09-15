@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nex:nexml xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+	xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance"
+	generator="org.nexml.model.impl.DocumentImpl" version="0.8"
+	xmlns:nex="http://www.nexml.org/1.0">
+	<otus xmlns:msq="http://mesquiteproject.org#"
+		about="#ace16de90-d373-4678-91af-97c665df464b"
+		id="ace16de90-d373-4678-91af-97c665df464b" label="Taxa"
+		xmlns="http://www.nexml.org/1.0">
+		<meta content="rvos@interchange.ubc.ca121c96b127d3"
+			datatype="xsd:string" id="a1b4ff94e-9dce-4380-8ed2-cf5d1c889e6f"
+			property="msq:taxaUID" xsi:type="nex:LiteralMeta" />
+		<otu xmlns:cdao="http://evolutionaryontology.org#"
+			about="#a28621561-dad8-4264-a54e-38e8ecbebe36"
+			id="a28621561-dad8-4264-a54e-38e8ecbebe36" label="taxon 1">
+			<meta
+				href="http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=9597"
+				id="a1f0c5e63-48a5-4227-a0a4-b4e14221590d"
+				rel="cdao:has_External_Reference" xsi:type="nex:ResourceMeta" />
+			<meta content="0" datatype="xsd:integer"
+				id="ab78d28a6-35b4-4c42-92c6-b26a2f80e47a" property="msq:taxonUID"
+				xsi:type="nex:LiteralMeta" />
+		</otu>
+		<otu xmlns:cdao="http://evolutionaryontology.org#"
+			about="#a122804bc-4b47-49e8-b016-5ac9b85c72aa"
+			id="a122804bc-4b47-49e8-b016-5ac9b85c72aa" label="taxon 2">
+			<meta
+				href="http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=9598"
+				id="af3fe8eed-4b5b-4aa7-b298-f4195534bf5a"
+				rel="cdao:has_External_Reference" xsi:type="nex:ResourceMeta" />
+			<meta content="1" datatype="xsd:integer"
+				id="a4a383f8c-c90d-481a-a48c-8bb1c8bb7d2a" property="msq:taxonUID"
+				xsi:type="nex:LiteralMeta" />
+		</otu>
+		<otu xmlns:cdao="http://evolutionaryontology.org#"
+			about="#a5c40b73f-6cb8-405d-9531-b0d2360d7d2b"
+			id="a5c40b73f-6cb8-405d-9531-b0d2360d7d2b" label="taxon 3">
+			<meta
+				href="http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=9606"
+				id="ae35c6a21-20c1-47ab-a5f0-333f68cfec07"
+				rel="cdao:has_External_Reference" xsi:type="nex:ResourceMeta" />
+			<meta content="2" datatype="xsd:integer"
+				id="a4bc7c663-af48-4314-8a15-692381a9a523" property="msq:taxonUID"
+				xsi:type="nex:LiteralMeta" />
+		</otu>
+	</otus>
+	<trees id="a15003a3b-fc0e-4a3b-a3ac-efa3402e96b0"
+		label="Simulated Trees" otus="ace16de90-d373-4678-91af-97c665df464b"
+		xmlns="http://www.nexml.org/1.0">
+		<tree xmlns:msq="http://mesquiteproject.org#"
+			about="#a868dae4c-a7a7-47b6-ab86-5c31d87cee3f"
+			id="a868dae4c-a7a7-47b6-ab86-5c31d87cee3f"
+			label="Tree # 1 simulated by Uniform speciation (Yule)"
+			xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			xsi:type="nex:FloatTree">
+			<meta content="13" datatype="xsd:long"
+				id="a6e2c22d0-2369-4ef5-94ce-cae1f5864c34" property="msq:treeUID"
+				xsi:type="nex:LiteralMeta" />
+			<meta content="2" datatype="xsd:integer"
+				id="a0f6aabde-8022-4a90-a6fd-d76402b6c8dc"
+				property="msq:treePolytomyAssumption" xsi:type="nex:LiteralMeta" />
+			<node id="adff2a8ee-6adc-4f17-b3cc-3aa835efbd19" label="" />
+			<node id="a4166f039-b9cb-41f9-bac9-a5bf36b92a4f"
+				label="taxon 3" otu="a5c40b73f-6cb8-405d-9531-b0d2360d7d2b" />
+			<node id="a5068b3b6-fe92-4963-9865-6674ec67938d" label="" />
+			<node id="ac08dd060-fc18-4a21-a2b9-fcd312c7e4b2"
+				label="taxon 2" otu="a122804bc-4b47-49e8-b016-5ac9b85c72aa" />
+			<node id="ace73a15f-c81f-4a22-b212-3d1e98fb97f9"
+				label="taxon 1" otu="a28621561-dad8-4264-a54e-38e8ecbebe36" />
+			<edge id="a499dd5e7-ab9e-49d2-8e4f-7581dec5ceac"
+				length="10.0" source="adff2a8ee-6adc-4f17-b3cc-3aa835efbd19"
+				target="a4166f039-b9cb-41f9-bac9-a5bf36b92a4f" />
+			<edge id="a4a948791-b64a-4285-8a36-6f394b22b3dd"
+				length="3.1643765725844055"
+				source="adff2a8ee-6adc-4f17-b3cc-3aa835efbd19"
+				target="a5068b3b6-fe92-4963-9865-6674ec67938d" />
+			<edge id="a9a967a46-6160-4a8c-8fa1-d1db67f550f3"
+				length="6.835623427415595"
+				source="a5068b3b6-fe92-4963-9865-6674ec67938d"
+				target="ac08dd060-fc18-4a21-a2b9-fcd312c7e4b2" />
+			<edge id="ae8f8e20b-73c4-45a6-8368-3794f26acb96"
+				length="6.835623427415595"
+				source="a5068b3b6-fe92-4963-9865-6674ec67938d"
+				target="ace73a15f-c81f-4a22-b212-3d1e98fb97f9" />
+		</tree>
+	</trees>
+</nex:nexml>

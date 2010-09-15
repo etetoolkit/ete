@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.nexml.org/2009"
+    xmlns="http://www.nexml.org/2009" elementFormDefault="qualified">
+    <xs:annotation>
+        <xs:documentation>
+            This module defines the complex type for a set of trees,
+            analogous to the "trees" block in NEXUS files. The module
+            includes the modules that define concrete instances of
+            <a href="../tree">tree</a> objects and of <a href="../network">network</a>
+            objects.
+        </xs:documentation>
+    </xs:annotation>
+
+    <xs:include schemaLocation="tree.xsd"/>
+    <xs:include schemaLocation="network.xsd"/>
+
+    <xs:complexType name="Trees" abstract="false" mixed="true">
+        <xs:annotation>
+            <xs:documentation>
+                A concrete container for tree objects.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent mixed="true">
+            <xs:extension base="TaxaLinked">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:choice minOccurs="0" maxOccurs="unbounded">
+                        <xs:element name="network" type="AbstractNetwork" minOccurs="1"
+                            maxOccurs="unbounded"/>
+                        <xs:element name="tree" type="AbstractTree" minOccurs="1"
+                            maxOccurs="unbounded"/>
+                    </xs:choice>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+</xs:schema>

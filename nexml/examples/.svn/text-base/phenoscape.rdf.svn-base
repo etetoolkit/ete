@@ -1,0 +1,14 @@
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:h="http://www.w3.org/1999/xhtml">
+  <rdf:Description rdf:about="#aaa0ec8a9-7b38-411f-9c4d-f4a47bcffac3">
+    <cdao:has_External_Reference xmlns:cdao="http://evolutionaryontology.org#" rdf:resource="http://purl.org/obo/owl/TTO#TTO_1030115"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="#aaa0ec8a9-7b38-411f-9c4d-f4a47bcffac3">
+    <cdao:hasSpecimen xmlns:cdao="http://evolutionaryontology.org#" rdf:nodeID="INSIDE_id57743"/>
+  </rdf:Description>
+  <rdf:Description rdf:nodeID="INSIDE_id57743">
+    <dc:collectionID xmlns:dc="http://I-GUESS-THIS-SHOULD-BE-DARWINCORE.org#" rdf:resource="http://purl.org/obo/owl/COLLECTION#COLLECTION_0000194"/>
+  </rdf:Description>
+  <rdf:Description rdf:nodeID="INSIDE_id57743">
+    <dc:catalogNumber xmlns:dc="http://I-GUESS-THIS-SHOULD-BE-DARWINCORE.org#" rdf:datatype="http://www.w3.org/2001/XMLSchema#string">12345</dc:catalogNumber>
+  </rdf:Description>
+</rdf:RDF>

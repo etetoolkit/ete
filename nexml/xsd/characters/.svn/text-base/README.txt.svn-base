@@ -1,0 +1,1 @@
+This directory contains schema fragments for character data of various types.

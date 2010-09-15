@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema 
+	xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+	targetNamespace="http://www.nexml.org/2009"
+    xmlns="http://www.nexml.org/2009"
+    elementFormDefault="qualified">
+    <xs:annotation>
+        <xs:documentation>
+            This module aggregates the subclass definitions for the different
+            datatypes "<a href="../continuous">continuous</a>",
+            "<a href="../dna">dna</a>", "<a href="../protein">protein</a>",
+            "<a href="../restriction">restriction</a>", "<a href="../rna">rna</a>"
+            and "<a href="../standard">standard</a>".
+        </xs:documentation>
+    </xs:annotation>
+    <xs:include schemaLocation="continuous.xsd"/>
+    <xs:include schemaLocation="dna.xsd"/>    
+    <xs:include schemaLocation="protein.xsd"/>
+    <xs:include schemaLocation="restriction.xsd"/>
+    <xs:include schemaLocation="rna.xsd"/>
+    <xs:include schemaLocation="standard.xsd"/>
+</xs:schema>

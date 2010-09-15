@@ -1,0 +1,135 @@
+#NEXUS
+[written Thu Mar 05 19:43:38 PST 2009 by Mesquite  version 2.5+ (build j89) at Eupoa/192.168.1.100 (Rutger Vos)]
+
+BEGIN TAXA;
+	TITLE 'Taxa_Block';
+	DIMENSIONS NTAX=3;
+	TAXLABELS
+		taxon_1 taxon_2 taxon_3 
+	;
+
+END;
+
+
+BEGIN CHARACTERS;
+	TITLE  Character_Matrix;
+[! Simulated Matrices on Current Tree:  Matrix #1; Simulator: Evolve Continuous Characters; most recent tree: Tree # 1 simulated by Uniform speciation (Yule) [seed for matrix sim. 1236310957718]
+     Evolve Continuous Characters:  Markovian evolution using model: Brownian default (rate 1.0)
+     Tree of context:  Tree(s) used from Tree Window 1 showing Simulated Trees. Last tree used: Tree # 1 simulated by Uniform speciation (Yule)  [tree: (2:10.0,(1:3.8959289541671236,3:3.8959289541671236):6.104071045832878);] 
+]
+	DIMENSIONS  NCHAR=3;
+	FORMAT DATATYPE = CONTINUOUS ITEMS = ( )  GAP = - MISSING = ?;
+	MATRIX
+	taxon_1   -3.235002086913893 -2.1606791576338282 0.5452034711331655
+	taxon_2   -0.7490086283816584 -1.04861533378001 0.26961886769531074
+	taxon_3   1.7426420779300011 -0.9587319012298505 -3.158228641255374
+
+;
+	IDS rvos@interchange.ubc.ca11fd9e046a18 rvos@interchange.ubc.ca11fd9e046a19 rvos@interchange.ubc.ca11fd9e046a110 ;
+	BLOCKID rvos@interchange.ubc.ca11fd9e046a10;
+
+
+END;
+BEGIN ASSUMPTIONS;
+	TYPESET * UNTITLED   =  Squared:  1 -  3;
+
+END;
+
+BEGIN MESQUITECHARMODELS;
+	ProbModelSet * UNTITLED   =  Brownian_default:  1 -  3;
+END;
+
+Begin MESQUITE;
+		MESQUITESCRIPTVERSION 2;
+		TITLE AUTO;
+		tell ProjectCoordinator;
+		getEmployee #mesquite.minimal.ManageTaxa.ManageTaxa;
+		tell It;
+			setID 0 8434441258060530871;
+		endTell;
+		getEmployee #mesquite.charMatrices.ManageCharacters.ManageCharacters;
+		tell It;
+			setID 0 5441654007367179311 rvos@interchange.ubc.ca11fd9e046a10;
+			checksum 0 2086030286 rvos@interchange.ubc.ca11fd9e046a10;
+		endTell;
+		getWindow;
+		tell It;
+			setResourcesState false false 100;
+			setPopoutState 400;
+			setExplanationSize 0;
+			setAnnotationSize 0;
+			setFontIncAnnot 0;
+			setFontIncExp 0;
+			setSize 1058 679;
+			setLocation 8 22;
+			setFont SanSerif;
+			setFontSize 10;
+		endTell;
+		getEmployee  #mesquite.charMatrices.BasicDataWindowCoord.BasicDataWindowCoord;
+		tell It;
+			showDataWindow #5441654007367179311 #mesquite.charMatrices.BasicDataWindowMaker.BasicDataWindowMaker;
+			tell It;
+				getWindow;
+				tell It;
+					setExplanationSize 30;
+					setAnnotationSize 20;
+					setFontIncAnnot 0;
+					setFontIncExp 0;
+					setSize 958 612;
+					setLocation 8 22;
+					setFont SanSerif;
+					setFontSize 10;
+					getToolPalette;
+					tell It;
+					endTell;
+					setActive;
+					setTool mesquite.charMatrices.BasicDataWindowMaker.BasicDataWindow.arrow;
+					colorCells  #mesquite.charMatrices.NoColor.NoColor;
+					colorRowNames  #mesquite.charMatrices.TaxonGroupColor.TaxonGroupColor;
+					colorColumnNames  #mesquite.charMatrices.CharGroupColor.CharGroupColor;
+					colorText  #mesquite.charMatrices.NoColor.NoColor;
+					setBackground White;
+					toggleShowNames on;
+					toggleShowTaxonNames on;
+					toggleTight off;
+					toggleThinRows off;
+					toggleShowChanges on;
+					toggleSeparateLines off;
+					toggleShowStates on;
+					toggleAutoWCharNames on;
+					toggleShowDefaultCharNames off;
+					toggleConstrainCW on;
+					toggleBirdsEye off;
+					toggleAllowAutosize on;
+					toggleColorsPanel off;
+					toggleLinkedScrolling on;
+					toggleScrollLinkedTables off;
+				endTell;
+				showWindow;
+				getWindow;
+				tell It;
+					forceAutosize;
+				endTell;
+				getEmployee #mesquite.charMatrices.ColorCells.ColorCells;
+				tell It;
+					setColor Red;
+					removeColor off;
+				endTell;
+				getEmployee #mesquite.charMatrices.AnnotPanel.AnnotPanel;
+				tell It;
+					togglePanel off;
+				endTell;
+				getEmployee #mesquite.charMatrices.CharReferenceStrip.CharReferenceStrip;
+				tell It;
+					showStrip off;
+				endTell;
+				getEmployee #mesquite.cont.ItemsEditorForInfoPanel.ItemsEditorForInfoPanel;
+				tell It;
+					panelOpen false;
+				endTell;
+			endTell;
+		endTell;
+		endTell;
+end;
+
+

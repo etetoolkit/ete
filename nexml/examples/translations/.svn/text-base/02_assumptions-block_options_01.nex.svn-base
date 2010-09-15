@@ -1,0 +1,24 @@
+#NEXUS
+[TITLE: Four Anthropoidea]
+
+begin data;
+  dimensions ntax=4 nchar=50;
+  format interleave datatype=RNA missing=N gap=-;
+  
+  matrix
+    'Homo sapiens'      AGUCGAGUC---GCAGAAACGCAUGAC-GAC
+    Pan_paniscus        AGUCGCGUCG--GCAGAAACGCAUGACGGAC
+    Gorilla_gorilla     AGUCGCGUCG--GCAGAUACGCAUCACGGAC
+    Pongo_pigmaeus      AGUCGCGUCGAAGCAGA--CGCAUGACGGAC
+
+    'Homo sapiens'      CACAUUUU-CCUUGCAAAG
+    Pan_paniscus        CACAUCAU-CCUUGCAAAG
+    Gorilla_gorilla     -ACAUCAUCCCUCGCAGAG
+    Pongo_pigmaeus      CACAUCAUCCCUUGCAGAG
+  ;
+
+endblock;
+
+begin assumptions;
+  options deftype=unord;
+endblock;

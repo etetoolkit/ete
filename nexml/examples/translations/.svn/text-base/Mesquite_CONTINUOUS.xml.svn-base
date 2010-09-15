@@ -1,0 +1,39 @@
+<nex:nexml 
+    generator="Bio::Phylo::Project v.0.17_RC9_841" 
+    version="0.8" 
+    xmlns:nex="http://www.nexml.org/1.0" 
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns" 
+    xmlns:xml="http://www.w3.org/XML/1998/namespace" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:schemaLocation="http://www.nexml.org/1.0 ../../xsd/nexml.xsd"
+    xmlns="http://www.nexml.org/1.0">
+  <otus id="otus1" label="'Taxa_Block'">
+    <otu id="otu2" label="taxon_1"/>
+    <otu id="otu3" label="taxon_2"/>
+    <otu id="otu4" label="taxon_3"/>
+  </otus>
+  <characters id="characters5" label="Character_Matrix" otus="otus1" xsi:type="nex:ContinuousCells">
+    <format>
+      <char id="c1"/>
+      <char id="c2"/>
+      <char id="c3"/>
+    </format>
+    <matrix>
+      <row id="row6" label="taxon_1" otu="otu2">
+        <cell char="c1" state="-3.235002086913893"/>
+        <cell char="c2" state="-2.1606791576338282"/>
+        <cell char="c3" state="0.5452034711331655"/>
+      </row>
+      <row id="row8" label="taxon_2" otu="otu3">
+        <cell char="c1" state="-0.7490086283816584"/>
+        <cell char="c2" state="-1.04861533378001"/>
+        <cell char="c3" state="0.26961886769531074"/>
+      </row>
+      <row id="row9" label="taxon_3" otu="otu4">
+        <cell char="c1" state="1.7426420779300011"/>
+        <cell char="c2" state="-0.9587319012298505"/>
+        <cell char="c3" state="-3.158228641255374"/>
+      </row>
+    </matrix>
+  </characters>
+</nex:nexml>

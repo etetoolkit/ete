@@ -1,0 +1,497 @@
+<nex:nexml 
+	generator="Bio::Phylo::Project v.0.17_RC9_1175" 
+	version="0.8" 
+	xmlns="http://www.nexml.org/1.0" 
+	xmlns:nex="http://www.nexml.org/1.0" 
+	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" 
+	xmlns:xml="http://www.w3.org/XML/1998/namespace" 
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema#" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:cdao="http://www.evolutionaryontology.org/cdao.owl#"
+	xsi:schemaLocation="http://www.nexml.org/1.0 http://www.nexml.org/1.0/nexml.xsd">
+  <otus id="otus1" label="TaxonLabelSet11564">
+    <otu id="otu2" label="Tympanoctomys_barrerae" about="#otu2">
+		<meta id="dict33" rel="cdao:has_External_Reference" 
+			href="http://www.cbif.gc.ca/pls/itisca/taxa_xml.upwards?p_tsn=584785" 
+			xsi:type="nex:ResourceMeta"/>
+    </otu>
+    <otu id="otu3" label="Spalacopus_cyanus" about="#otu3">
+		<meta id="dict32" rel="cdao:has_External_Reference" 
+			href="http://www.cbif.gc.ca/pls/itisca/taxa_xml.upwards?p_tsn=584786" 
+			xsi:type="nex:ResourceMeta"/>
+    </otu>
+    <otu id="otu4" label="Octodontomys_gliroides" about="#otu4">
+		<meta id="dict31" rel="cdao:has_External_Reference" 
+			href="http://www.cbif.gc.ca/pls/itisca/taxa_xml.upwards?p_tsn=584783" 
+			xsi:type="nex:ResourceMeta"/>
+    </otu>
+    <otu id="otu5" label="Octodon_degus" about="#otu5">
+		<meta id="dict31" rel="cdao:has_External_Reference" 
+			href="http://www.cbif.gc.ca/pls/itisca/taxa_xml.upwards?p_tsn=584781" 
+			xsi:type="nex:ResourceMeta"/>
+    </otu>
+    <otu id="otu6" label="Ctenomys_tucumanus" about="#otu6">
+		<meta id="dict30" rel="cdao:has_External_Reference" 
+			href="http://www.cbif.gc.ca/pls/itisca/taxa_xml.upwards?p_tsn=584776" 
+			xsi:type="nex:ResourceMeta"/>
+    </otu>
+    <otu id="otu7" label="Ctenomys_tuconax" about="#otu7">
+		<meta id="dict29" rel="cdao:has_External_Reference" 
+			href="http://www.cbif.gc.ca/pls/itisca/taxa_xml.upwards?p_tsn=584775" 
+			xsi:type="nex:ResourceMeta"/>
+    </otu>
+    <otu id="otu8" label="Ctenomys_torquatus" about="#otu8">
+		<meta id="dict28" rel="cdao:has_External_Reference" 
+			href="http://www.cbif.gc.ca/pls/itisca/taxa_xml.upwards?p_tsn=584774" 
+			xsi:type="nex:ResourceMeta"/>        
+    </otu>
+    <otu id="otu9" label="Ctenomys_talarum" about="#otu9">
+		<meta id="dict27" rel="cdao:has_External_Reference" 
+			href="http://www.cbif.gc.ca/pls/itisca/taxa_xml.upwards?p_tsn=584773" 
+			xsi:type="nex:ResourceMeta"/>        
+    </otu>
+    <otu id="otu10" label="Ctenomys_steinbachi" about="#otu10">
+		<meta id="dict26" rel="cdao:has_External_Reference" 
+			href="http://www.cbif.gc.ca/pls/itisca/taxa_xml.upwards?p_tsn=584772" 
+			xsi:type="nex:ResourceMeta"/>
+    </otu>
+    <otu id="otu11" label="Ctenomys_sp.ITA" about="#otu11">
+		<meta id="dict25" rel="cdao:has_External_Reference" 
+			href="http://example.org/Ctenomys_sp.ITA" 
+			xsi:type="nex:ResourceMeta"/>        
+    </otu>
+    <otu id="otu12" label="Ctenomys_sp._MONTE" about="#otu12">
+		<meta id="dict24" rel="cdao:has_External_Reference" 
+			href="http://example.org/Ctenomys_sp._MONTE" 
+			xsi:type="nex:ResourceMeta"/>        
+    </otu>
+    <otu id="otu13" label="Ctenomys_sp._MINUT" about="#otu13">
+		<meta id="dict23" rel="cdao:has_External_Reference" 
+			href="http://example.org/Ctenomys_sp._MINUT" 
+			xsi:type="nex:ResourceMeta"/>        
+    </otu>
+    <otu id="otu14" label="Ctenomys_sp._LLATHU" about="#otu14">
+		<meta id="dict22" rel="cdao:has_External_Reference" 
+			href="http://example.org/Ctenomys_sp._LLATHU" 
+			xsi:type="nex:ResourceMeta"/>
+    </otu>
+    <otu id="otu15" label="Ctenomys_rionegrensis" about="#otu15">
+		<meta id="dict21" rel="cdao:has_External_Reference" 
+			href="http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=88126" 
+			xsi:type="nex:ResourceMeta"/>        
+    </otu>
+    <otu id="otu16" label="Ctenomys_porteousi" about="#otu16">
+		<meta id="dict20" rel="cdao:has_External_Reference" 
+			href="http://www.cbif.gc.ca/pls/itisca/taxa_xml.upwards?p_tsn=584768" 
+			xsi:type="nex:ResourceMeta"/>
+    </otu>
+    <otu id="otu17" label="Ctenomys_pearsoni" about="#otu17">
+		<meta id="dict19" rel="cdao:has_External_Reference" 
+			href="http://www.cbif.gc.ca/pls/itisca/taxa_xml.upwards?p_tsn=584764" 
+			xsi:type="nex:ResourceMeta"/>        
+    </otu>
+    <otu id="otu18" label="Ctenomys_opimus" about="#otu18">
+		<meta id="dict18" rel="cdao:has_External_Reference" 
+			href="http://www.cbif.gc.ca/pls/itisca/taxa_xml.upwards?p_tsn=584763" 
+			xsi:type="nex:ResourceMeta"/>        
+    </otu>
+    <otu id="otu19" label="Ctenomys_mendocinus" about="#otu19">
+		<meta id="dict17" rel="cdao:has_External_Reference" 
+			href="http://www.cbif.gc.ca/pls/itisca/taxa_xml.upwards?p_tsn=584759" 
+			xsi:type="nex:ResourceMeta"/>        
+    </otu>
+    <otu id="otu20" label="Ctenomys_maulinus" about="#otu20">
+		<meta id="dict16" rel="cdao:has_External_Reference" 
+			href="http://www.cbif.gc.ca/pls/itisca/taxa_xml.upwards?p_tsn=584758" 
+			xsi:type="nex:ResourceMeta"/>        
+    </otu>
+    <otu id="otu21" label="Ctenomys_magellanicus" about="#otu21">
+		<meta id="dict15" rel="cdao:has_External_Reference" 
+			href="http://www.cbif.gc.ca/pls/itisca/taxa_xml.upwards?p_tsn=584757" 
+			xsi:type="nex:ResourceMeta"/>        
+    </otu>
+    <otu id="otu22" label="Ctenomys_lewisi" about="#otu22">
+		<meta id="dict14" rel="cdao:has_External_Reference" 
+			href="http://www.cbif.gc.ca/pls/itisca/taxa_xml.upwards?p_tsn=584756" 
+			xsi:type="nex:ResourceMeta"/>        
+    </otu>
+    <otu id="otu23" label="Ctenomys_sociabilis" about="#otu23">
+		<meta id="dict13" rel="cdao:has_External_Reference" 
+			href="http://www.cbif.gc.ca/pls/itisca/taxa_xml.upwards?p_tsn=584771" 
+			xsi:type="nex:ResourceMeta"/>
+    </otu>
+    <otu id="otu24" label="Ctenomys_latro" about="#otu24">
+		<meta id="dict12" rel="cdao:has_External_Reference" 
+			href="http://www.cbif.gc.ca/pls/itisca/taxa_xml.upwards?p_tsn=584754" 
+			xsi:type="nex:ResourceMeta"/>        
+    </otu>
+    <otu id="otu25" label="Ctenomys_haigi" about="#otu25">
+		<meta id="dict11" rel="cdao:has_External_Reference" 
+			href="http://www.cbif.gc.ca/pls/itisca/taxa_xml.upwards?p_tsn=584752" 
+			xsi:type="nex:ResourceMeta"/>
+    </otu>
+    <otu id="otu26" label="Ctenomys_goodfellowi" about="#otu26">
+		<meta id="dict10" rel="cdao:has_External_Reference" 
+			href="http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=61868" 
+			xsi:type="nex:ResourceMeta"/>
+    </otu>
+    <otu id="otu27" label="Ctenomys_fulvus" about="#otu27">
+		<meta id="dict9" rel="cdao:has_External_Reference" 
+			href="http://www.cbif.gc.ca/pls/itisca/taxa_xml.upwards?p_tsn=584751" 
+			xsi:type="nex:ResourceMeta"/>
+    </otu>
+    <otu id="otu28" label="Ctenomys_frater" about="#otu28">
+		<meta id="dict8" rel="cdao:has_External_Reference" 
+			href="http://www.cbif.gc.ca/pls/itisca/taxa_xml.upwards?p_tsn=584750" 
+			xsi:type="nex:ResourceMeta"/>
+    </otu>
+    <otu id="otu29" label="Ctenomys_flamarioni" about="#otu29">
+		<meta id="dict7" rel="cdao:has_External_Reference" 
+			href="http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=88124" 
+			xsi:type="nex:ResourceMeta"/>        
+    </otu>
+    <otu id="otu30" label="Ctenomys_coyhaiquensis" about="#otu30">
+		<meta id="dict6" rel="cdao:has_External_Reference" 
+			href="http://www.uniprot.org/taxonomy/77911" 
+			xsi:type="nex:ResourceMeta"/>        
+    </otu>
+    <otu id="otu31" label="Ctenomys_conoveri" about="#otu31">
+		<meta id="dict5" rel="cdao:has_External_Reference" 
+			href="http://www.cbif.gc.ca/pls/itisca/taxa_xml.upwards?p_tsn=584747" 
+			xsi:type="nex:ResourceMeta"/>        
+    </otu>
+    <otu id="otu32" label="Ctenomys_boliviensis_ROBO" about="#otu32">
+		<meta id="dict4" rel="cdao:has_External_Reference" 
+			href="http://www.cbif.gc.ca/pls/itisca/taxa_xml.upwards?p_tsn=584626" 
+			xsi:type="nex:ResourceMeta"/>        
+    </otu>
+    <otu id="otu33" label="Ctenomys_boliviensis" about="#otu33">
+		<meta id="dict3" rel="cdao:has_External_Reference" 
+			href="http://www.cbif.gc.ca/pls/itisca/taxa_xml.upwards?p_tsn=584743" 
+			xsi:type="nex:ResourceMeta"/>
+    </otu>
+    <otu id="otu34" label="Ctenomys_australis" about="#otu34">
+      	<meta id="dict2" rel="cdao:has_External_Reference" 
+			href="http://www.cbif.gc.ca/pls/itisca/taxa_xml.upwards?p_tsn=584741" 
+			xsi:type="nex:ResourceMeta"/>        
+    </otu>
+    <otu id="otu35" label="Ctenomys_argentinus" about="#otu35">
+		<meta id="dict1" rel="cdao:has_External_Reference" 
+			href="http://www.cbif.gc.ca/pls/itisca/taxa_xml.upwards?p_tsn=584740" 
+			xsi:type="nex:ResourceMeta"/>    
+    </otu>
+  </otus>
+  <trees id="trees72" label="Tb6917" otus="otus1">
+    <tree id="tree74" label="Fig._3" xsi:type="nex:IntTree">
+      <node id="node75" root="true"/>
+      <node id="node76"/>
+      <node id="node135"/>
+      <node id="node77"/>
+      <node id="node134" label="Ctenomys_sociabilis" otu="otu23"/>
+      <node id="node136" label="Tympanoctomys_barrerae" otu="otu2"/>
+      <node id="node137"/>
+      <node id="node78"/>
+      <node id="node89"/>
+      <node id="node138"/>
+      <node id="node141" label="Octodontomys_gliroides" otu="otu4"/>
+      <node id="node79"/>
+      <node id="node84"/>
+      <node id="node90"/>
+      <node id="node111"/>
+      <node id="node139" label="Octodon_degus" otu="otu5"/>
+      <node id="node140" label="Spalacopus_cyanus" otu="otu3"/>
+      <node id="node80"/>
+      <node id="node83" label="Ctenomys_tucumanus" otu="otu6"/>
+      <node id="node85"/>
+      <node id="node88" label="Ctenomys_magellanicus" otu="otu21"/>
+      <node id="node91"/>
+      <node id="node106"/>
+      <node id="node112"/>
+      <node id="node125"/>
+      <node id="node81" label="Ctenomys_latro" otu="otu24"/>
+      <node id="node82" label="Ctenomys_argentinus" otu="otu35"/>
+      <node id="node86" label="Ctenomys_haigi" otu="otu25"/>
+      <node id="node87" label="Ctenomys_coyhaiquensis" otu="otu30"/>
+      <node id="node92"/>
+      <node id="node95"/>
+      <node id="node107"/>
+      <node id="node110" label="Ctenomys_maulinus" otu="otu20"/>
+      <node id="node113"/>
+      <node id="node120"/>
+      <node id="node126"/>
+      <node id="node133" label="Ctenomys_tuconax" otu="otu7"/>
+      <node id="node93" label="Ctenomys_pearsoni" otu="otu17"/>
+      <node id="node94" label="Ctenomys_torquatus" otu="otu8"/>
+      <node id="node96"/>
+      <node id="node105" label="Ctenomys_talarum" otu="otu9"/>
+      <node id="node108" label="Ctenomys_fulvus" otu="otu27"/>
+      <node id="node109" label="Ctenomys_opimus" otu="otu18"/>
+      <node id="node114"/>
+      <node id="node119" label="Ctenomys_steinbachi" otu="otu10"/>
+      <node id="node121"/>
+      <node id="node124" label="Ctenomys_sp.ITA" otu="otu11"/>
+      <node id="node127"/>
+      <node id="node130"/>
+      <node id="node97"/>
+      <node id="node104" label="Ctenomys_rionegrensis" otu="otu15"/>
+      <node id="node115"/>
+      <node id="node118" label="Ctenomys_boliviensis_ROBO" otu="otu32"/>
+      <node id="node122" label="Ctenomys_sp._MONTE" otu="otu12"/>
+      <node id="node123" label="Ctenomys_sp._MINUT" otu="otu13"/>
+      <node id="node128" label="Ctenomys_lewisi" otu="otu22"/>
+      <node id="node129" label="Ctenomys_frater" otu="otu28"/>
+      <node id="node131" label="Ctenomys_sp._LLATHU" otu="otu14"/>
+      <node id="node132" label="Ctenomys_conoveri" otu="otu31"/>
+      <node id="node98"/>
+      <node id="node103" label="Ctenomys_flamarioni" otu="otu29"/>
+      <node id="node116" label="Ctenomys_boliviensis" otu="otu33"/>
+      <node id="node117" label="Ctenomys_goodfellowi" otu="otu26"/>
+      <node id="node99"/>
+      <node id="node102" label="Ctenomys_porteousi" otu="otu16"/>
+      <node id="node100" label="Ctenomys_australis" otu="otu34"/>
+      <node id="node101" label="Ctenomys_mendocinus" otu="otu19"/>
+      <edge id="edge76" source="node75" target="node76"/>
+      <edge id="edge135" source="node75" target="node135"/>
+      <edge id="edge77" source="node76" target="node77"/>
+      <edge id="edge134" source="node76" target="node134"/>
+      <edge id="edge136" source="node135" target="node136"/>
+      <edge id="edge137" source="node135" target="node137"/>
+      <edge id="edge78" source="node77" target="node78"/>
+      <edge id="edge89" source="node77" target="node89"/>
+      <edge id="edge138" source="node137" target="node138"/>
+      <edge id="edge141" source="node137" target="node141"/>
+      <edge id="edge79" source="node78" target="node79"/>
+      <edge id="edge84" source="node78" target="node84"/>
+      <edge id="edge90" source="node89" target="node90"/>
+      <edge id="edge111" source="node89" target="node111"/>
+      <edge id="edge139" source="node138" target="node139"/>
+      <edge id="edge140" source="node138" target="node140"/>
+      <edge id="edge80" source="node79" target="node80"/>
+      <edge id="edge83" source="node79" target="node83"/>
+      <edge id="edge85" source="node84" target="node85"/>
+      <edge id="edge88" source="node84" target="node88"/>
+      <edge id="edge91" source="node90" target="node91"/>
+      <edge id="edge106" source="node90" target="node106"/>
+      <edge id="edge112" source="node111" target="node112"/>
+      <edge id="edge125" source="node111" target="node125"/>
+      <edge id="edge81" source="node80" target="node81"/>
+      <edge id="edge82" source="node80" target="node82"/>
+      <edge id="edge86" source="node85" target="node86"/>
+      <edge id="edge87" source="node85" target="node87"/>
+      <edge id="edge92" source="node91" target="node92"/>
+      <edge id="edge95" source="node91" target="node95"/>
+      <edge id="edge107" source="node106" target="node107"/>
+      <edge id="edge110" source="node106" target="node110"/>
+      <edge id="edge113" source="node112" target="node113"/>
+      <edge id="edge120" source="node112" target="node120"/>
+      <edge id="edge126" source="node125" target="node126"/>
+      <edge id="edge133" source="node125" target="node133"/>
+      <edge id="edge93" source="node92" target="node93"/>
+      <edge id="edge94" source="node92" target="node94"/>
+      <edge id="edge96" source="node95" target="node96"/>
+      <edge id="edge105" source="node95" target="node105"/>
+      <edge id="edge108" source="node107" target="node108"/>
+      <edge id="edge109" source="node107" target="node109"/>
+      <edge id="edge114" source="node113" target="node114"/>
+      <edge id="edge119" source="node113" target="node119"/>
+      <edge id="edge121" source="node120" target="node121"/>
+      <edge id="edge124" source="node120" target="node124"/>
+      <edge id="edge127" source="node126" target="node127"/>
+      <edge id="edge130" source="node126" target="node130"/>
+      <edge id="edge97" source="node96" target="node97"/>
+      <edge id="edge104" source="node96" target="node104"/>
+      <edge id="edge115" source="node114" target="node115"/>
+      <edge id="edge118" source="node114" target="node118"/>
+      <edge id="edge122" source="node121" target="node122"/>
+      <edge id="edge123" source="node121" target="node123"/>
+      <edge id="edge128" source="node127" target="node128"/>
+      <edge id="edge129" source="node127" target="node129"/>
+      <edge id="edge131" source="node130" target="node131"/>
+      <edge id="edge132" source="node130" target="node132"/>
+      <edge id="edge98" source="node97" target="node98"/>
+      <edge id="edge103" source="node97" target="node103"/>
+      <edge id="edge116" source="node115" target="node116"/>
+      <edge id="edge117" source="node115" target="node117"/>
+      <edge id="edge99" source="node98" target="node99"/>
+      <edge id="edge102" source="node98" target="node102"/>
+      <edge id="edge100" source="node99" target="node100"/>
+      <edge id="edge101" source="node99" target="node101"/>
+    </tree>
+  </trees>
+  <characters id="characters36" label="'sociality&amp;life_history'" otus="otus1" xsi:type="nex:StandardCells">
+    <format id="format142">
+      <states id="states38">
+        <state id="s1" symbol="0">
+    	<!--
+		<meta id="set1state0" rel="TERM_HERE" 
+			href="http://example.org/terms/#state0" 
+			xsi:type="nex:ResourceMeta"/>        
+		-->          
+        </state>
+        <state id="s2" symbol="1">
+    	<!--
+		<meta id="set1state1" rel="TERM_HERE" 
+			href="http://example.org/terms/#state1" 
+			xsi:type="nex:ResourceMeta"/>        
+		-->                  
+        </state>
+      </states>
+      <states id="states39">
+        <state id="st1" symbol="0">
+    	<!--
+		<meta id="set2state0" rel="TERM_HERE" 
+			href="http://example.org/terms/#state0" 
+			xsi:type="nex:ResourceMeta"/>        
+		-->                  
+        </state>
+        <state id="st2" symbol="1">
+    	<!--
+		<meta id="set2state1" rel="TERM_HERE" 
+			href="http://example.org/terms/#state1" 
+			xsi:type="nex:ResourceMeta"/>        
+		-->                          
+        </state>
+      </states>
+      <char id="c1" states="states38"/>
+      <char id="c2" states="states39"/>
+    </format>
+    <matrix id="matrix144">
+      <row id="row37" label="Tympanoctomys_barrerae" otu="otu2">
+        <cell char="c1" id="cell143" state="s1"/>
+        <cell char="c2" id="cell144" state="st1"/>
+      </row>
+      <row id="row39" label="Spalacopus_cyanus" otu="otu3">
+        <cell char="c1" id="cell145" state="s2"/>
+        <cell char="c2" id="cell146" state="st1"/>
+      </row>
+      <row id="row40" label="Octodontomys_gliroides" otu="otu4">
+        <cell char="c1" id="cell147" state="s1"/>
+        <cell char="c2" id="cell148" state="st1"/>
+      </row>
+      <row id="row41" label="Octodon_degus" otu="otu5">
+        <cell char="c1" id="cell149" state="s2"/>
+        <cell char="c2" id="cell150" state="st1"/>
+      </row>
+      <row id="row42" label="Ctenomys_tucumanus" otu="otu6">
+        <cell char="c1" id="cell151" state="s1"/>
+        <cell char="c2" id="cell152" state="st2"/>
+      </row>
+      <row id="row43" label="Ctenomys_tuconax" otu="otu7">
+        <cell char="c1" id="cell153" state="s1"/>
+        <cell char="c2" id="cell154" state="st2"/>
+      </row>
+      <row id="row44" label="Ctenomys_torquatus" otu="otu8">
+        <cell char="c1" id="cell155" state="s1"/>
+        <cell char="c2" id="cell156" state="st2"/>
+      </row>
+      <row id="row45" label="Ctenomys_talarum" otu="otu9">
+        <cell char="c1" id="cell157" state="s1"/>
+        <cell char="c2" id="cell158" state="st2"/>
+      </row>
+      <row id="row46" label="Ctenomys_steinbachi" otu="otu10">
+        <cell char="c1" id="cell159" state="s1"/>
+        <cell char="c2" id="cell160" state="st2"/>
+      </row>
+      <row id="row47" label="Ctenomys_sp.ITA" otu="otu11">
+        <cell char="c1" id="cell161" state="s1"/>
+        <cell char="c2" id="cell162" state="st2"/>
+      </row>
+      <row id="row48" label="Ctenomys_sp._MONTE" otu="otu12">
+        <cell char="c1" id="cell163" state="s1"/>
+        <cell char="c2" id="cell164" state="st2"/>
+      </row>
+      <row id="row49" label="Ctenomys_sp._MINUT" otu="otu13">
+        <cell char="c1" id="cell165" state="s1"/>
+        <cell char="c2" id="cell166" state="st2"/>
+      </row>
+      <row id="row50" label="Ctenomys_sp._LLATHU" otu="otu14">
+        <cell char="c1" id="cell167" state="s1"/>
+        <cell char="c2" id="cell168" state="st2"/>
+      </row>
+      <row id="row51" label="Ctenomys_rionegrensis" otu="otu15">
+        <cell char="c1" id="cell169" state="s1"/>
+        <cell char="c2" id="cell170" state="st2"/>
+      </row>
+      <row id="row52" label="Ctenomys_porteousi" otu="otu16">
+        <cell char="c1" id="cell171" state="s1"/>
+        <cell char="c2" id="cell172" state="st2"/>
+      </row>
+      <row id="row53" label="Ctenomys_pearsoni" otu="otu17">
+        <cell char="c1" id="cell173" state="s2"/>
+        <cell char="c2" id="cell174" state="st2"/>
+      </row>
+      <row id="row54" label="Ctenomys_opimus" otu="otu18">
+        <cell char="c1" id="cell175" state="s1"/>
+        <cell char="c2" id="cell176" state="st2"/>
+      </row>
+      <row id="row55" label="Ctenomys_mendocinus" otu="otu19">
+        <cell char="c1" id="cell177" state="s1"/>
+        <cell char="c2" id="cell178" state="st2"/>
+      </row>
+      <row id="row56" label="Ctenomys_maulinus" otu="otu20">
+        <cell char="c1" id="cell179" state="s1"/>
+        <cell char="c2" id="cell180" state="st2"/>
+      </row>
+      <row id="row57" label="Ctenomys_magellanicus" otu="otu21">
+        <cell char="c1" id="cell181" state="s1"/>
+        <cell char="c2" id="cell182" state="st2"/>
+      </row>
+      <row id="row58" label="Ctenomys_lewisi" otu="otu22">
+        <cell char="c1" id="cell183" state="s1"/>
+        <cell char="c2" id="cell184" state="st2"/>
+      </row>
+      <row id="row59" label="Ctenomys_sociabilis" otu="otu23">
+        <cell char="c1" id="cell185" state="s2"/>
+        <cell char="c2" id="cell186" state="st2"/>
+      </row>
+      <row id="row60" label="Ctenomys_latro" otu="otu24">
+        <cell char="c1" id="cell187" state="s1"/>
+        <cell char="c2" id="cell188" state="st2"/>
+      </row>
+      <row id="row61" label="Ctenomys_haigi" otu="otu25">
+        <cell char="c1" id="cell189" state="s1"/>
+        <cell char="c2" id="cell190" state="st2"/>
+      </row>
+      <row id="row62" label="Ctenomys_goodfellowi" otu="otu26">
+        <cell char="c1" id="cell191" state="s1"/>
+        <cell char="c2" id="cell192" state="st2"/>
+      </row>
+      <row id="row63" label="Ctenomys_fulvus" otu="otu27">
+        <cell char="c1" id="cell193" state="s1"/>
+        <cell char="c2" id="cell194" state="st2"/>
+      </row>
+      <row id="row64" label="Ctenomys_frater" otu="otu28">
+        <cell char="c1" id="cell195" state="s1"/>
+        <cell char="c2" id="cell196" state="st2"/>
+      </row>
+      <row id="row65" label="Ctenomys_flamarioni" otu="otu29">
+        <cell char="c1" id="cell197" state="s1"/>
+        <cell char="c2" id="cell198" state="st2"/>
+      </row>
+      <row id="row66" label="Ctenomys_coyhaiquensis" otu="otu30">
+        <cell char="c1" id="cell199" state="s1"/>
+        <cell char="c2" id="cell200" state="st2"/>
+      </row>
+      <row id="row67" label="Ctenomys_conoveri" otu="otu31">
+        <cell char="c1" id="cell201" state="s1"/>
+        <cell char="c2" id="cell202" state="st2"/>
+      </row>
+      <row id="row68" label="Ctenomys_boliviensis_ROBO" otu="otu32">
+        <cell char="c1" id="cell203" state="s1"/>
+        <cell char="c2" id="cell204" state="st2"/>
+      </row>
+      <row id="row69" label="Ctenomys_boliviensis" otu="otu33">
+        <cell char="c1" id="cell205" state="s1"/>
+        <cell char="c2" id="cell206" state="st2"/>
+      </row>
+      <row id="row70" label="Ctenomys_australis" otu="otu34">
+        <cell char="c1" id="cell207" state="s1"/>
+        <cell char="c2" id="cell208" state="st2"/>
+      </row>
+      <row id="row71" label="Ctenomys_argentinus" otu="otu35">
+        <cell char="c1" id="cell209" state="s1"/>
+        <cell char="c2" id="cell210" state="st2"/>
+      </row>
+    </matrix>
+  </characters>
+</nex:nexml>

@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema 
+	xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+	targetNamespace="http://www.nexml.org/2009"
+    xmlns="http://www.nexml.org/2009"
+    xmlns:sawsdl="http://www.w3.org/ns/sawsdl" 
+    xmlns:xml="http://www.w3.org/XML/1998/namespace"
+    elementFormDefault="qualified">
+    <xs:include schemaLocation="abstractcharacters.xsd"/>
+    
+    <xs:annotation>
+        <xs:documentation>
+            This module defines concrete subclasses for the 
+            <a href="../abstract">abstract</a> character matrix components 
+            that all character matrices must implement. The subclasses
+            defined here apply to "standard" categorical character data, such as
+            counts of morpholical features. In a verbose notation, this data
+            is represented as the "state" attribute of the &lt;cell&gt; 
+            element. In a compact notation, the same data is represented as
+            a sequence of space-separated integers.
+        </xs:documentation>
+    </xs:annotation>    
+    
+    <xs:simpleType name="StandardToken">
+        <xs:restriction base="xs:integer"/>
+    </xs:simpleType>
+    
+    <xs:complexType name="StandardMapping">
+        <xs:annotation>
+            <xs:documentation>A standard character ambiguity mapping.</xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractMapping"/>            
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="StandardState">
+        <xs:annotation>
+            <xs:documentation> This is a concrete implementation of the state element, which requires
+                a symbol element, in this case restricted to integers, and optional mapping
+                elements to refer to other states. </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractState">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="meta" minOccurs="0" maxOccurs="unbounded" type="Meta"/>
+                </xs:sequence>
+                <xs:attribute name="symbol" type="StandardToken" use="required"/>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="StandardUncertainStateSet">
+        <xs:annotation>
+            <xs:documentation> 
+                The AbstractState type is the superclass for a state definition.
+                The element encloses a required AbstractSymbol element that in restricted concrete
+                subclasses must be of a sensible type such as a single IUPAC character. It may
+                enclose zero or more AbstractMapping elements to resolve ambiguities.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractUncertainStateSet">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="member" type="StandardMapping" minOccurs="0" maxOccurs="unbounded"/>
+                </xs:sequence>
+                <xs:attribute name="symbol" type="xs:string" use="required"/>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>    
+    
+    <xs:complexType name="StandardPolymorphicStateSet">
+        <xs:annotation>
+            <xs:documentation> 
+                The AbstractState type is the superclass for a state definition.
+                The element encloses a required AbstractSymbol element that in restricted concrete
+                subclasses must be of a sensible type such as a single IUPAC character. It may
+                enclose zero or more AbstractMapping elements to resolve ambiguities.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractPolymorphicStateSet">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="member" type="StandardMapping" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element name="uncertain_state_set" type="StandardUncertainStateSet" minOccurs="0" maxOccurs="unbounded"/>
+                </xs:sequence>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>     
+    
+    
+    <xs:complexType name="StandardStates">
+        <xs:annotation>
+            <xs:documentation>
+                A container for a set of states.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractStates">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="meta" minOccurs="0" maxOccurs="unbounded" type="Meta"/>
+                    <xs:element name="state" type="StandardState" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element name="polymorphic_state_set" type="StandardPolymorphicStateSet" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element name="uncertain_state_set" type="StandardUncertainStateSet" minOccurs="0" maxOccurs="unbounded"/>                    
+                </xs:sequence>
+            </xs:restriction>
+        </xs:complexContent>        
+    </xs:complexType>
+    
+    <xs:complexType name="StandardChar" sawsdl:modelReference="http://evolutionaryontology-dev.nescent.org/cdao.owl#StandardCharacter">
+        <xs:annotation>
+            <xs:documentation> A concrete implementation of the char element, which requires
+                a states attribute to refer to a set of defined states </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractChar">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="meta" minOccurs="0" maxOccurs="unbounded" type="Meta"/>
+                </xs:sequence>       
+                <xs:attribute name="tokens" type="MSTokenLength" use="prohibited"/>         
+                <xs:attribute name="states" type="xs:IDREF" use="required"/>
+                <xs:attribute name="codon" type="CodonPosition" use="prohibited"/>
+                <xs:attribute name="id" type="xs:ID" use="required"/>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="StandardFormat" abstract="false">
+        <xs:annotation>
+            <xs:documentation> The StandardFormat class is the container of standard column definitions.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractFormat">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="states" type="StandardStates" minOccurs="1" maxOccurs="unbounded"/>
+                    <xs:element name="char" type="StandardChar" minOccurs="1" maxOccurs="unbounded"/>
+                </xs:sequence>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="StandardObs" abstract="false" sawsdl:modelReference="http://evolutionaryontology-dev.nescent.org/cdao.owl#StandardStateDatum">
+        <xs:annotation>
+            <xs:documentation> This is a single cell in a matrix containing a standard
+                observation. </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractObs">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="meta" minOccurs="0" maxOccurs="unbounded" type="Meta"/>
+                </xs:sequence>
+                <xs:attribute name="char" use="required" type="xs:IDREF"/>
+                <xs:attribute name="state" use="required" type="xs:IDREF"/>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:simpleType name="StandardSeq">
+        <xs:annotation>
+            <xs:documentation> This is a simple type that specifies a sequence of standard characters.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="AbstractTokenList">
+            <xs:pattern value="[0-9\-\?]+(\s[0-9\-\?]+)*"></xs:pattern>
+        </xs:restriction>
+    </xs:simpleType>    
+    
+    <xs:complexType name="StandardMatrixSeqRow" abstract="false">
+        <xs:annotation>
+            <xs:documentation> This is a row in a matrix of standard data as character sequences. </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractSeqRow">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="meta" minOccurs="0" maxOccurs="unbounded" type="Meta"/>
+                    <xs:element name="seq" minOccurs="1" maxOccurs="1" type="StandardSeq"/>
+                </xs:sequence>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="StandardMatrixObsRow" abstract="false">
+        <xs:annotation>
+            <xs:documentation> This is a row in a matrix of standard data as granular obervations. </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractObsRow">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="meta" minOccurs="0" maxOccurs="unbounded" type="Meta"/>
+                    <xs:element name="cell" minOccurs="1" maxOccurs="unbounded" type="StandardObs"/>
+                </xs:sequence>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="StandardSeqMatrix" abstract="false">
+        <xs:annotation>
+            <xs:documentation>
+                A matrix of rows with seq strings of type standard.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractSeqMatrix">
+                <xs:sequence minOccurs="1" maxOccurs="1">                    
+                    <xs:element name="row" minOccurs="1" maxOccurs="unbounded" type="StandardMatrixSeqRow"/>
+                </xs:sequence>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="StandardObsMatrix" abstract="false">
+        <xs:annotation>
+            <xs:documentation>
+                A matrix of rows with single character observations.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractObsMatrix">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="row" minOccurs="1" maxOccurs="unbounded" type="StandardMatrixObsRow"/>
+                </xs:sequence>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="StandardSeqs" abstract="false">
+        <xs:annotation>
+            <xs:documentation>
+                A standard characters block consisting of sequences preceded by metadata.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractSeqs">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="meta" minOccurs="0" maxOccurs="unbounded" type="Meta"/>
+                    <xs:element name="format" minOccurs="1" maxOccurs="1" type="StandardFormat"/>
+                    <xs:element name="matrix" minOccurs="1" maxOccurs="1" type="StandardSeqMatrix"/>
+                </xs:sequence>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="StandardCells" abstract="false">
+        <xs:annotation>
+            <xs:documentation>
+                A standard characters block consisting of granular cells preceded by metadata.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractCells">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="meta" minOccurs="0" maxOccurs="unbounded" type="Meta"/>
+                    <xs:element name="format" minOccurs="1" maxOccurs="1" type="StandardFormat"/>
+                    <xs:element name="matrix" minOccurs="1" maxOccurs="1" type="StandardObsMatrix"/>                   
+                </xs:sequence>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>
+    
+</xs:schema>

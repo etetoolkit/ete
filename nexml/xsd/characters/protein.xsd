@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+	targetNamespace="http://www.nexml.org/2009"
+	xmlns:sawsdl="http://www.w3.org/ns/sawsdl"
+    xmlns="http://www.nexml.org/2009"
+    xmlns:xml="http://www.w3.org/XML/1998/namespace"
+    elementFormDefault="qualified">
+    <xs:include schemaLocation="abstractcharacters.xsd"/>
+    
+    <xs:annotation>
+        <xs:documentation>
+            This module defines concrete subclasses for the 
+            <a href="../abstract">abstract</a> character matrix components 
+            that all character matrices must implement. The subclasses
+            defined here apply to amino acid character data. In a verbose notation, 
+            this data is represented as the "state" attribute of the &lt;cell&gt; 
+            element, whose value-space is limited to the IUPAC single character
+            nucleotide symbols. In a compact notation, the same data 
+            is represented as a sequence of tokens (whitespace is allowed but has no meaning).
+        </xs:documentation>
+    </xs:annotation>  
+       
+    <xs:simpleType name="AAToken">
+        <xs:annotation>
+            <xs:documentation>
+                The AAToken simple type is a restriction of AbstractSymbol 
+                that defines an IUPAC single character amino acid symbol.
+            </xs:documentation>
+            <xs:appinfo>AminoAcid</xs:appinfo>
+        </xs:annotation>
+        <xs:restriction base="AbstractSymbol">
+            <xs:pattern value="[\*\-\?ABCDEFGHIKLMNPQRSTUVWXYZ]"/>
+            <xs:length value="1"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:complexType name="AAChar" sawsdl:modelReference="http://evolutionaryontology-dev.nescent.org/cdao.owl#AminoAcidResidueCharacter">
+        <xs:annotation>
+            <xs:documentation> 
+                A concrete implementation of the AbstractChar element. In this implementation
+                there is no reference to explicitly defined states, as we use the IUPAC standard.
+                There must be an identifier ("id") that is of type xs:nonNegativeInteger to 
+                define the column number.
+            </xs:documentation>
+            <xs:appinfo>Amino_Acid_Character</xs:appinfo>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractChar">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="meta" minOccurs="0" maxOccurs="unbounded" type="Meta"/>
+                </xs:sequence>      
+                <xs:attribute name="tokens" type="MSTokenLength" use="prohibited"/>                          
+                <xs:attribute name="states" type="xs:IDREF" use="required"/>
+                <xs:attribute name="codon" type="CodonPosition" use="prohibited"/>
+                <xs:attribute name="id" type="xs:ID" use="required"/>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="AAFormat" abstract="false">
+        <xs:annotation>
+            <xs:documentation> The AAFormat class is the container of amino acid column definitions.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractFormat">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="states" type="AAStates" minOccurs="1" maxOccurs="unbounded"/>                
+                    <xs:element name="char" type="AAChar" minOccurs="1" maxOccurs="unbounded"/>
+                </xs:sequence>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="AAStates">
+        <xs:annotation>
+            <xs:documentation>
+                A container for a set of states.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractStates">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="meta" minOccurs="0" maxOccurs="unbounded" type="Meta"/>
+                    <xs:element name="state" type="AAState" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element name="polymorphic_state_set" type="AAPolymorphicStateSet" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element name="uncertain_state_set" type="AAUncertainStateSet" minOccurs="0" maxOccurs="unbounded"/>                    
+                </xs:sequence>
+            </xs:restriction>
+        </xs:complexContent>        
+    </xs:complexType>   
+    
+    <xs:complexType name="AAPolymorphicStateSet">
+        <xs:annotation>
+            <xs:documentation> 
+                The AbstractState type is the superclass for a state definition.
+                The element encloses a required AbstractSymbol element that in restricted concrete
+                subclasses must be of a sensible type such as a single IUPAC character. It may
+                enclose zero or more AbstractMapping elements to resolve ambiguities.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractPolymorphicStateSet">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="member" type="AAMapping" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element name="uncertain_state_set" type="AAUncertainStateSet" minOccurs="0" maxOccurs="unbounded"/>
+                </xs:sequence>
+                <xs:attribute name="symbol" type="AAToken" use="required"></xs:attribute>                
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>   
+    
+    <xs:complexType name="AAUncertainStateSet">
+        <xs:annotation>
+            <xs:documentation> 
+                The AbstractState type is the superclass for a state definition.
+                The element encloses a required AbstractSymbol element that in restricted concrete
+                subclasses must be of a sensible type such as a single IUPAC character. It may
+                enclose zero or more AbstractMapping elements to resolve ambiguities.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractUncertainStateSet">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="member" type="AAMapping" minOccurs="0" maxOccurs="unbounded"/>
+                </xs:sequence>
+                <xs:attribute name="symbol" type="AAToken" use="required"></xs:attribute>                
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>        
+    
+    <xs:complexType name="AAMapping">
+        <xs:annotation>
+            <xs:documentation>An IUPAC ambiguity mapping.</xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractMapping"/>            
+        </xs:complexContent>
+    </xs:complexType>    
+    
+    <xs:complexType name="AAState">
+        <xs:annotation>
+            <xs:documentation> 
+                This is a concrete implementation of the state element, which requires
+                a symbol element, in this case restricted to DNAToken, i.e. a single IUPAC nucleotide
+                symbol, and optional mapping elements to refer to other states.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractState">
+                <xs:sequence minOccurs="1" maxOccurs="1"/>
+                <xs:attribute name="symbol" type="AAToken" use="required"></xs:attribute>                
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>     
+    
+    <xs:complexType name="AAObs" abstract="false" sawsdl:modelReference="http://evolutionaryontology-dev.nescent.org/cdao.owl#AminoAcidResidueStateDatum">
+        <xs:annotation>
+            <xs:documentation> 
+            	This is a single cell in a matrix containing
+            	an amino acid observation. 
+            </xs:documentation>
+            <xs:appinfo>Amino_Acid_State_Datum</xs:appinfo>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractObs">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="meta" minOccurs="0" maxOccurs="unbounded" type="Meta"/>
+                </xs:sequence>
+                <xs:attribute name="char" use="required" type="xs:IDREF"/>
+                <xs:attribute name="state" use="required" type="xs:IDREF"/>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:simpleType name="AASeq">
+        <xs:annotation>
+            <xs:documentation> 
+            	This is a simple type that specifies a sequence of amino acid characters,
+                following IUPAC single character symbols for aa (and ambiguities).
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="AbstractSeq">
+            <xs:pattern value="[\*\-\?ABCDEFGHIKLMNPQRSTUVWXYZ\s]*"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:complexType name="AAMatrixSeqRow" abstract="false">
+        <xs:annotation>
+            <xs:documentation> This is a row in a matrix of amino acid data containing raw sequence data. </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractSeqRow">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="meta" minOccurs="0" maxOccurs="unbounded" type="Meta"/>
+                    <xs:element name="seq" minOccurs="1" maxOccurs="1" type="AASeq"/>
+                </xs:sequence>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="AAMatrixObsRow" abstract="false">
+        <xs:annotation>
+            <xs:documentation> This is a row in a matrix of amino acid data containing granular observations. </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractObsRow">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="meta" minOccurs="0" maxOccurs="unbounded" type="Meta"/>
+                    <xs:element name="cell" minOccurs="1" maxOccurs="unbounded" type="AAObs"/>
+                </xs:sequence>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="AASeqMatrix" abstract="false">
+        <xs:annotation>
+            <xs:documentation>
+                A matrix of rows with amino acid data as sequence strings.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractSeqMatrix">
+                <xs:sequence minOccurs="1" maxOccurs="1">                    
+                    <xs:element name="row" minOccurs="1" maxOccurs="unbounded" type="AAMatrixSeqRow"/>
+                </xs:sequence>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="AAObsMatrix" abstract="false">
+        <xs:annotation>
+            <xs:documentation>
+                A matrix of rows with single character observations.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractObsMatrix">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="row" minOccurs="1" maxOccurs="unbounded" type="AAMatrixObsRow"/>
+                </xs:sequence>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="ProteinSeqs" abstract="false">
+        <xs:annotation>
+            <xs:documentation>
+                An amino acid characters block consisting of sequences preceded by metadata.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractSeqs">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="meta" minOccurs="0" maxOccurs="unbounded" type="Meta"/>
+                    <xs:element name="format" minOccurs="1" maxOccurs="1" type="AAFormat"/>
+                    <xs:element name="matrix" minOccurs="1" maxOccurs="1" type="AASeqMatrix"/>
+                </xs:sequence>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="ProteinCells" abstract="false">
+        <xs:annotation>
+            <xs:documentation>
+                An amino acid characters block consisting of granular cells preceded by metadata.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractCells">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="meta" minOccurs="0" maxOccurs="unbounded" type="Meta"/>
+                    <xs:element name="format" minOccurs="1" maxOccurs="1" type="AAFormat"/>
+                    <xs:element name="matrix" minOccurs="1" maxOccurs="1" type="AAObsMatrix"/>                   
+                </xs:sequence>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>
+    
+</xs:schema>

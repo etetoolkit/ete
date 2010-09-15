@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.nexml.org/2009"
+	xmlns:xml="http://www.w3.org/XML/1998/namespace" xmlns="http://www.nexml.org/2009"
+	xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sawsdl="http://www.w3.org/ns/sawsdl"
+	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	xmlns:xhtml="http://www.w3.org/1999/xhtml/datatypes/" elementFormDefault="qualified">
+
+	<!-- <xs:annotation>
+		<xs:documentation>
+			This module defines annotations that can be attached to
+			(almost) any nexml element. The markup for these annotations 
+			allows embedding of RDFa-compliant metadata.
+		</xs:documentation>
+	</xs:annotation>
+-->
+	<xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="../external/xml.xsd"/>
+	<xs:import namespace="http://www.w3.org/1999/xlink" schemaLocation="../external/xlink.xsd"/>
+	<xs:import namespace="http://www.w3.org/ns/sawsdl" schemaLocation="../external/sawsdl.xsd"/>
+	<xs:import namespace="http://www.w3.org/1999/xhtml/datatypes/"
+		schemaLocation="../external/xhtml-datatypes-1.xsd"/>
+
+	<xs:complexType name="Base" abstract="true">
+		<xs:annotation>
+			<xs:documentation>
+				The base type for all complexType definitions in the
+				nexml schema. This type allows a number of special
+				attributes:
+				<ul>
+					<li>xml:lang - for languages codes</li>
+					<li>
+						xml:base - see
+						<a href="http://www.w3.org/TR/xmlbase/">
+							http://www.w3.org/TR/xmlbase/
+						</a>
+					</li>
+					<li>
+						xml:id - see
+						<a href="http://www.w3.org/TR/xml-id/">
+							http://www.w3.org/TR/xml-id/
+						</a>
+					</li>
+					<li>xml:space - for whitespace handling</li>
+					<li>xlink:href - for links</li>
+					<li>class - for class membership</li>
+				</ul>
+				Also see http://www.w3.org/2001/xml.xsd for more
+				information on the xml and xlink attributes.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence/>
+		<!-- <xs:attributeGroup ref="xml:specialAttrs" /> -->
+		<xs:attribute name="class" type="xs:IDREFS" use="optional"/>
+		<xs:attribute name="id" type="xs:ID" use="optional"/>
+		<xs:anyAttribute namespace="##any" processContents="skip"/>
+	</xs:complexType>
+
+	<xs:complexType name="Meta" abstract="true" mixed="true">
+		<xs:complexContent>
+			<xs:extension base="Base"> </xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="ResourceMeta" abstract="false" mixed="true">
+		<xs:annotation>
+			<xs:documentation>
+				Metadata annotations in which the object is a resource. If this element contains meta elements 
+				as children, then the object of this annotation is a "blank node".
+			</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="Meta">
+				<xs:sequence>
+					<xs:element name="meta" type="Meta" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+				<xs:attribute name="href" type="xhtml:URI" use="optional"/>
+				<xs:attribute name="rel" type="xs:QName" use="required"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="LiteralMeta" mixed="true" abstract="false">
+		<xs:annotation>
+			<xs:documentation>
+				Metadata annotations in which the object is a literal value. If the @content attribute is used, 
+				then the element should contain no children.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent mixed="true">
+			<xs:extension base="Meta">
+				<xs:sequence>
+					<xs:any minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+				<xs:attribute name="property" type="xs:QName" use="required"/>
+				<xs:attribute name="datatype" type="xs:QName" use="optional"/>
+				<xs:attribute name="content" type="xs:string"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+</xs:schema>

@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema 
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    targetNamespace="http://www.nexml.org/2009"
+    xmlns="http://www.nexml.org/2009"
+    elementFormDefault="qualified">
+    <xs:annotation>
+        <xs:documentation>
+            This module defines the components of trees, graphs 
+            where edges have an in-degree that of 1. The
+            types defined in this module are concrete implementations
+            that inherit from the abstract types in the <a href="../abstract">
+                abstract trees module</a>.<br /><br /> 
+            Depending on the concrete subclass, edges in trees either
+            have lengths formatted as integers or lengths formatted as
+            floating point numbers.
+        </xs:documentation>
+    </xs:annotation>    
+    
+    <xs:include schemaLocation="abstracttrees.xsd"/>
+    
+    <xs:complexType name="TreeNode" abstract="false">
+        <xs:annotation>
+            <xs:documentation>
+                A concrete node implementation.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractNode">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="meta" type="Meta" minOccurs="0" maxOccurs="unbounded"/>
+                </xs:sequence>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <!--
+    <xs:complexType name="TreeEdge" abstract="false">
+        <xs:annotation>
+            <xs:documentation>
+                A concrete edge implementation, no length type specified.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="AbstractEdge"/>            
+        </xs:complexContent>
+    </xs:complexType> 
+    -->
+    <xs:complexType name="TreeFloatEdge" abstract="false">
+        <xs:annotation>
+            <xs:documentation>
+                A concrete edge implementation, with float length.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractEdge">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="meta" type="Meta" minOccurs="0" maxOccurs="unbounded"/>
+                </xs:sequence>                
+                <xs:attribute name="length" type="xs:float"/>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="TreeFloatRootEdge" abstract="false">
+        <xs:annotation>
+            <xs:documentation>
+                A concrete root edge implementation, with float length.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractRootEdge">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="meta" type="Meta" minOccurs="0" maxOccurs="unbounded"/>
+                </xs:sequence>                
+                <xs:attribute name="length" type="xs:float"/>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>    
+
+    <xs:complexType name="TreeIntEdge" abstract="false">
+        <xs:annotation>
+            <xs:documentation>
+                A concrete edge implementation, with int length.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractEdge">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="meta" type="Meta" minOccurs="0" maxOccurs="unbounded"/>
+                </xs:sequence>                
+                <xs:attribute name="length" type="xs:integer"/>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>    
+    
+    <xs:complexType name="TreeIntRootEdge" abstract="false">
+        <xs:annotation>
+            <xs:documentation>
+                A concrete root edge implementation, with int length.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractRootEdge">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="meta" type="Meta" minOccurs="0" maxOccurs="unbounded"/>
+                </xs:sequence>                
+                <xs:attribute name="length" type="xs:integer"/>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>    
+            
+    <xs:complexType name="FloatTree" abstract="false">
+        <xs:annotation>
+            <xs:documentation>
+                A concrete tree implementation, with floating point edge lengths.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractTree">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                	<xs:element name="meta" type="Meta" minOccurs="0" maxOccurs="unbounded"/>                	
+                    <xs:element minOccurs="1" maxOccurs="unbounded" name="node" type="TreeNode"/>
+                    <xs:element minOccurs="0" maxOccurs="1" name="rootedge" type="TreeFloatRootEdge"/>
+                    <xs:element minOccurs="1" maxOccurs="unbounded" name="edge" type="TreeFloatEdge"/>
+                </xs:sequence>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>   
+    
+    <xs:complexType name="IntTree" abstract="false">
+        <xs:annotation>
+            <xs:documentation>
+                A concrete tree implementation, with integer edge lengths.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractTree">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+					<xs:element name="meta" type="Meta" minOccurs="0" maxOccurs="unbounded"/>                
+                    <xs:element minOccurs="1" maxOccurs="unbounded" name="node" type="TreeNode"/>
+                    <xs:element minOccurs="0" maxOccurs="1" name="rootedge" type="TreeIntRootEdge"/>
+                    <xs:element minOccurs="1" maxOccurs="unbounded" name="edge" type="TreeIntEdge"/>
+                </xs:sequence>
+            </xs:restriction>
+        </xs:complexContent>
+    </xs:complexType>       
+
+</xs:schema>

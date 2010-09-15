@@ -1,0 +1,361 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:sawsdl="http://www.w3.org/ns/sawsdl"
+    targetNamespace="http://www.nexml.org/2009" xmlns="http://www.nexml.org/2009"
+    elementFormDefault="qualified">
+    <xs:annotation>
+        <xs:documentation>
+            This module defines the abstract superclasses for the components
+            that go into character matrices. In nexml instance documents, the
+            &lt;characters&gt; element structure forms the concrete instance of 
+            the complex types defined here. The concrete structure consists of
+            zero or one &lt;format&gt; structures that define allowed states,
+            their symbols and ambiguity mappings, and the matrix columns they
+            apply to. This is then followed by a &lt;matrix&gt; element that
+            contains rows that either consist of granular cells with individual
+            states, or of compact sequences.
+        </xs:documentation>
+    </xs:annotation>
+
+    <xs:include schemaLocation="../abstract.xsd"/>
+
+    <xs:complexType name="AbstractMapping" abstract="true">
+        <xs:annotation>
+            <xs:documentation>
+                The AbstractMapping type is the superclass for an ambiguity mapping. In an instance
+                document, a subclass of this type will look like &lt;member state="st1"/&gt;, i.e.
+                an element called "member" with an attribute called "state" whose value is an
+                id reference that refers to an element that subclasses AbstractState. The purpose
+                of AbstractMapping is to specify which other states may be implied, e.g. a nucleotide
+                symbol "N" would have mappings to "A", "C", "G" and "T". 
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="Base">
+                <xs:attribute name="state" use="required" type="xs:IDREF"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:simpleType name="AbstractSymbol">
+        <xs:annotation>
+            <xs:documentation>
+                AbstractSymbol is a simple type, i.e. a string token. Concrete subclasses of character
+                blocks will restrict AbstractSymbol to something sensible such as a regular expression
+                of IUPAC symbols, a range of integer values, and so on.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:whiteSpace value="preserve"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="AbstractState" abstract="true">
+        <xs:annotation>
+            <xs:documentation> 
+                The AbstractState type is the superclass for a state definition.
+                The element encloses a required AbstractSymbol element that in restricted concrete
+                subclasses must be of a sensible type such as a single IUPAC character. It may
+                enclose zero or more AbstractMapping elements to resolve ambiguities.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent mixed="true">
+            <xs:extension base="IDTagged">
+                <xs:sequence minOccurs="1" maxOccurs="1"> </xs:sequence>
+                <xs:attribute name="symbol" type="xs:anySimpleType" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="AbstractUncertainStateSet" abstract="true" mixed="true">
+        <xs:annotation>
+            <xs:documentation> 
+                The AbstractState type is the superclass for a state definition.
+                The element encloses a required AbstractSymbol element that in restricted concrete
+                subclasses must be of a sensible type such as a single IUPAC character. It may
+                enclose zero or more AbstractMapping elements to resolve ambiguities.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent mixed="true">
+            <xs:extension base="AbstractState">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="member" type="AbstractMapping" minOccurs="0"
+                        maxOccurs="unbounded"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="AbstractPolymorphicStateSet" abstract="true" mixed="true">
+        <xs:annotation>
+            <xs:documentation> 
+                The AbstractState type is the superclass for a state definition.
+                The element encloses a required AbstractSymbol element that in restricted concrete
+                subclasses must be of a sensible type such as a single IUPAC character. It may
+                enclose zero or more AbstractMapping elements to resolve ambiguities.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent mixed="true">
+            <xs:extension base="AbstractUncertainStateSet">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="uncertain_state_set" type="AbstractUncertainStateSet"
+                        minOccurs="0" maxOccurs="unbounded"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <!-- TODO place constraint on symbol unicity -->
+    <xs:complexType name="AbstractStates" abstract="true">
+        <xs:annotation>
+            <xs:documentation>
+                A container for a set of AbstractState elements.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent mixed="true">
+            <xs:extension base="IDTagged">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="state" type="AbstractState" minOccurs="0"
+                        maxOccurs="unbounded"/>
+                    <xs:element name="polymorphic_state_set" type="AbstractPolymorphicStateSet"
+                        minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element name="uncertain_state_set" type="AbstractUncertainStateSet"
+                        minOccurs="0" maxOccurs="unbounded"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:simpleType name="CodonPosition">
+        <xs:annotation>
+            <xs:documentation>
+                The CodonPosition type is an integer with value 1, 2 or 3, used in DNA and RNA.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:nonNegativeInteger">
+            <xs:minInclusive value="1"/>
+            <xs:maxInclusive value="3"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="MSTokenLength">
+        <xs:annotation>
+            <xs:documentation>
+                The MSTokenLength simple type is used to specify, per column, how many
+                tokens may occur in a multistate single observation matrix. For example,
+                in a matrix where every cell holds a vector of two continuous values
+                (say, mean and standard deviation of a measurement), the column definition
+                provides a hint to this effect, by setting the attribute tokens="2"
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:positiveInteger"/>
+    </xs:simpleType>
+
+    <xs:complexType name="AbstractChar" abstract="true"
+        sawsdl:modelReference="http://evolutionaryontology-dev.nescent.org/cdao.owl#Character">
+        <xs:annotation>
+            <xs:documentation> 
+                The AbstractChar type is the superclass for a column definition, which may
+                have a "states" attribute that refers to an AbstractStates element, a codon attribute
+                of type CodonPosition and an id attribute that may be an actual id (e.g. for categorical
+                matrices where observations explicitly refer to a column definition) or an integer for
+                sequence matrices.
+            </xs:documentation>
+            <xs:appinfo>Character</xs:appinfo>
+        </xs:annotation>
+        <xs:complexContent mixed="true">
+            <xs:extension base="IDTagged">
+                <xs:sequence minOccurs="1" maxOccurs="1"/>
+                <xs:attribute name="tokens" type="MSTokenLength" use="optional"/>
+                <xs:attribute name="states" type="xs:IDREF" use="optional"/>
+                <xs:attribute name="codon" type="CodonPosition" use="optional"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="AbstractFormat" abstract="true" mixed="true">
+        <xs:annotation>
+            <xs:documentation> 
+                The AbstractFormat type is the superclass for the element
+                that defines the allowed characters and states in a matrix, and their ambiguity mapping.
+                It may enclose AbstractStates elements that define states and their mappings, and 
+                AbstractChar elements that specify which AbstractStates apply to which matrix columns.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent mixed="true">
+            <xs:extension base="Annotated">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="states" minOccurs="0" maxOccurs="unbounded"
+                        type="AbstractStates"/>
+                    <xs:element name="char" minOccurs="0" maxOccurs="unbounded" type="AbstractChar"
+                    />
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="AbstractObs" abstract="true">
+        <xs:annotation>
+            <xs:documentation> 
+                The AbstractObs type is the superclass for single observations, i.e. cells
+                in a matrix. A concrete instance of AbstractObs has a "char" attribute that
+                either refers to an explicitly defined character (e.g. in categorical matrices)
+                or to a column number, and a "state" attribute that either holds a reference to 
+                an explicitly defined state, or a raw state value (e.g. a nucleotide, a continuous
+                value).  
+            </xs:documentation>
+            <xs:appinfo>Character_State_Datum</xs:appinfo>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="Labelled">
+                <xs:attribute name="char" use="required" type="xs:anySimpleType"/>
+                <xs:attribute name="state" use="required" type="xs:anySimpleType"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:simpleType name="AbstractSeq">
+        <xs:annotation>
+            <xs:documentation> 
+                AbstractSeq is a simple type based on xs:string. Concrete subclasses
+                must restrict this type to something more sensible, such as a regular expression for
+                IUPAC single character symbols, or whitespace separated integers.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string"/>
+    </xs:simpleType>
+
+    <xs:simpleType name="AbstractTokenList">
+        <xs:annotation>
+            <xs:documentation>
+                AbstractTokenList is a simple type superclass for a compact character
+                data representations that consist of space-separated lists of tokens. 
+                Examples of this are continuous character data (where the compact 
+                representation is a list of space-separated floating point numbers) and
+                standard categorical data (which is represented as integers, which can be
+                &gt; 9, and hence need to be space-separated).
+            </xs:documentation>
+        </xs:annotation>
+        <xs:list itemType="xs:double"/>
+    </xs:simpleType>
+
+    <xs:complexType name="AbstractSeqRow" abstract="true">
+        <xs:annotation>
+            <xs:documentation>
+                The AbstractSeqRow represents a single row in a matrix. The row
+                must refer to a previously declared taxon element by its id attribute (and must have
+                an id itself, may have a label, and may have dictionary attachments). The row
+                contains a single seq element with raw character data.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent mixed="true">
+            <xs:extension base="TaxonLinked">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="seq" minOccurs="1" maxOccurs="1" type="xs:anySimpleType"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="AbstractObsRow" abstract="true" mixed="true">
+        <xs:annotation>
+            <xs:documentation> 
+                The AbstractObsRow represents a single row in a matrix. The row
+                must refer to a previously declared taxon element by its id attribute (and must have
+                an id itself, may have a label, and may have dictionary attachments). The row
+                contains multiple obs elements.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent mixed="true">
+            <xs:extension base="TaxonLinked">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="cell" minOccurs="1" maxOccurs="unbounded" type="AbstractObs"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="AbstractSeqMatrix" abstract="true" mixed="true">
+        <xs:annotation>
+            <xs:documentation> 
+                The AbstractSeqMatrix super class is the abstract type for a
+                &lt;matrix&gt; element that contains rows which hold raw character sequences. 
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent mixed="true">
+            <xs:extension base="Annotated">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="row" minOccurs="1" maxOccurs="unbounded" type="AbstractSeqRow"
+                    />
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="AbstractObsMatrix" abstract="true" mixed="true">
+        <xs:annotation>
+            <xs:documentation>                
+                The AbstractObsMatrix super class is the abstract type for a
+                &lt;matrix&gt; element that contains rows which hold granular state observations.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent mixed="true">
+            <xs:extension base="Annotated">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="row" minOccurs="1" maxOccurs="unbounded" type="AbstractObsRow"
+                    />
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="AbstractBlock" abstract="true"
+        sawsdl:modelReference="http://evolutionaryontology-dev.nescent.org/cdao.owl#CharacterStateDataMatrix">
+        <xs:annotation>
+            <xs:documentation>
+                The AbstractBlock is the superclass for blocks that contain
+                an element structure of type AbstractFormat.
+            </xs:documentation>
+            <xs:appinfo>Character_State_Data_Matrix</xs:appinfo>
+        </xs:annotation>
+        <xs:complexContent mixed="true">
+            <xs:extension base="TaxaLinked">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="format" minOccurs="0" maxOccurs="1" type="AbstractFormat"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="AbstractSeqs" abstract="true" mixed="true">
+        <xs:annotation>
+            <xs:documentation> 
+                The AbstractSeqBlock type is the superclass for character blocks that
+                consist of raw character sequences.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent mixed="true">
+            <xs:extension base="AbstractBlock">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="matrix" minOccurs="1" maxOccurs="1" type="AbstractSeqMatrix"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="AbstractCells" abstract="true">
+        <xs:annotation>
+            <xs:documentation> 
+                The AbstractSeqBlock type is the superclass for character blocks that
+                consist of granular character state observations. 
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent mixed="true">
+            <xs:extension base="AbstractBlock">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="matrix" minOccurs="1" maxOccurs="1" type="AbstractObsMatrix"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+</xs:schema>
