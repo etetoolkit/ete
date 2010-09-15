@@ -354,7 +354,7 @@ class TreeNode(object):
         for node in to_keep:
             if len(node.children) == 1:
                 node.delete()
-        if len(self.children)==1:
+        if len(self.children)==1 and self.children[0] not in to_keep:
             self.children[0].delete()
                 
     def iter_leaves(self):
