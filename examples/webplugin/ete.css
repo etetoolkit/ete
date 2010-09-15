@@ -21,6 +21,7 @@
   padding-left: 2px;
   padding-right: 2px;
   border-bottom: 1px solid #ccc;
+  background-image: none;      
   }
 
 #popup a 
@@ -37,22 +38,16 @@
 
 #ete_popup_header_text
 { 
-  margin-right: 6px;
-  font-size: 13pt;
+  margin-right: 10px;
+  margin-left: 6px;
+  font-size: 12pt;
   color: #565B53;
-  font-weight:none;
 }
 
 .ete_popup_item
 { 
   color: #565B53;
   border-bottom: 1px solid #ccc;
- }
-
-#ete_draggable_header{ 
-   cursor: move; 
-   height:6px;
-   background-color: #565B53;
  }
 
 #ete_popup_header{ 
@@ -65,7 +60,7 @@
   padding: 0px;
   font-size: 10pt;
   font-weight:bold;
-  border-bottom:4px solid #565B53;                 
+  border-bottom:6px solid #565B53;                 
  }
 
 

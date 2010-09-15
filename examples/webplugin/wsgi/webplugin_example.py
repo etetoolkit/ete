@@ -1,71 +1,22 @@
-# You should place this file in a WSGI apache enabled directory
-#
-# This structure worked for me
-# 
-# /var/www/wsgi/webplugin_example.py 
-# /var/www/tmp/                    # 777 
-# /var/www/webplugin_example.html
-# /var/www/jquery-1.4.2.min.js
-# /var/www/ete.js
-# /var/www/ete.css
-
-# My apache config para el sitio "default":
-#
-# <VirtualHost *:80>
-#         ServerAdmin webmaster@localhost
-
-#        WSGIDaemonProcess site-1 user=www-data group=www-data processes=1 threads=1
-#        WSGIProcessGroup site-1
-
-#  
-#         DocumentRoot /var/www
-#         <Directory />
-#         	Options +FollowSymLinks
-#         	AllowOverride None
-#         </Directory>
-#  
-#  
-#         <Directory /var/www/wsgi/>
-#         	Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch
-#          	SetHandler wsgi-script
-#         	Order allow,deny
-#         	Allow from all
-#                 AddHandler wsgi-script .py  
-#         </Directory>
-#  
-#         ErrorLog /var/log/apache2/error.log
-#  
-#         # Possible values include: debug, info, notice, warn, error, crit,
-#         # alert, emerg.
-#         LogLevel warn
-#  
-#         CustomLog /var/log/apache2/access.log combined
-#  
-#  
-# </VirtualHost>
-#
-
 # Final import should be like this
 # from ete2.webplugin  import WebTreeApplication
 import sys
-sys.path.append("/var/www/ete2-webplugin/ete2/webplugin")
-import webplugin; reload(webplugin) # While debuging...
-from webplugin import WebTreeApplication, CONFIG
+sys.path.insert(0, "/home/jhuerta/_Devel/ete2-webplugin/")
+from ete_dev import WebTreeApplication
 
 # USER PART. You can modify this part
-sys.path.append("/var/www/ete2-webplugin")
 from ete_dev import PhyloTree, faces
 
 application = WebTreeApplication()
 # Set your temporal dir to allow web user to generate files
-CONFIG["temp_dir"] = "/var/www/tmp/"
-CONFIG["temp_url"] = "http://localhost/tmp/"
+application.CONFIG["temp_dir"] = "/var/www/ete.loc/tmp/"
+application.CONFIG["temp_url"] = "/tmp/"
 # Set the DISPLAY port that ete should use to draw pictures. web user
 # (i.e. www-data must have permission on the device)
-CONFIG["DISPLAY"] = ":0"
+application.CONFIG["DISPLAY"] = ":0"
 
 # My custom functionality for the plugin
-PLUGIN_URL = "http://localhost/wsgi/webplugin_example.py"
+PLUGIN_URL = "/wsgi/webplugin_example.py"
 name_face = faces.AttrFace("name", fsize=12)
 text_face = faces.TextFace("__ ETE__", fsize=12)
 
@@ -83,7 +34,6 @@ def expand(node):
         node.del_feature("bsize")
     except KeyError: 
         pass
-
 
 def set_red(node):
     node.add_feature("fgcolor", "#f00000")

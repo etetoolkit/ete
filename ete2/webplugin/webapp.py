@@ -1,61 +1,9 @@
-#!/usr/bin/python
-
-#
-# You should place this file in a WSGI apache enabled directory
-#
-# This structure worked for me
-# 
-# /var/www/wsgi/webplugin_example.py 
-# /var/www/tmp/                    # 777 
-# /var/www/webplugin_example.html
-# /var/www/jquery-1.4.2.min.js
-# /var/www/ete.js
-# /var/www/ete.css
-#
-
-# My apache config para el sitio "default":
-#
-# <VirtualHost *:80>
-#         ServerAdmin webmaster@localhost
-
-#        WSGIDaemonProcess site-1 user=www-data group=www-data processes=1 threads=1
-#        WSGIProcessGroup site-1
-
-#  
-#         DocumentRoot /var/www
-#         <Directory />
-#         	Options +FollowSymLinks
-#         	AllowOverride None
-#         </Directory>
-#  
-#  
-#         <Directory /var/www/wsgi/>
-#         	Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch
-#          	SetHandler wsgi-script
-#         	Order allow,deny
-#         	Allow from all
-#                 AddHandler wsgi-script .py  
-#         </Directory>
-#  
-#         ErrorLog /var/log/apache2/error.log
-#  
-#         # Possible values include: debug, info, notice, warn, error, crit,
-#         # alert, emerg.
-#         LogLevel warn
-#  
-#         CustomLog /var/log/apache2/access.log combined
-#  
-#  
-# </VirtualHost>
-#
-# You can customize the plugin by modifying the last part of this
-# file. This is the whole idea!! enjoy, this a very draft version.
 import os
 import time
-from hashlib import md5
 import cgi
+from hashlib import md5
 
-CONFIG = {}
+ALL = ["WebTreeApplication"]
 
 class WebTreeApplication(object):
     def __init__(self):
@@ -68,6 +16,11 @@ class WebTreeApplication(object):
         self._external_app_handler = None
         self._treeid2tree = {}
         self._treeid2index = {}
+        self.CONFIG = {
+            "temp_dir":"/var/www/tmp",
+            "temp_url":"http://localhost/tmp",
+            "DISPLAY" :":0"
+            }
 
     def register_external_app_handler(self, handler):
         self._external_app_handler = handler
@@ -105,7 +58,7 @@ class WebTreeApplication(object):
         return html_map
 
     def _load_tree_from_path(self, treeid):
-        tree_path = os.path.join(CONFIG["temp_dir"], treeid+".nw")
+        tree_path = os.path.join(self.CONFIG["temp_dir"], treeid+".nw")
         t = self._treeid2tree[treeid] = self._tree(tree_path)
         tree_index  = self._treeid2index[treeid] = {}
         for n in t.traverse():
@@ -114,16 +67,15 @@ class WebTreeApplication(object):
         return t, tree_index
 
     def _dump_tree_to_file(self, t, treeid):
-        tree_path = os.path.join(CONFIG["temp_dir"], treeid+".nw")
+        tree_path = os.path.join(self.CONFIG["temp_dir"], treeid+".nw")
         open(tree_path, "w").write(t.write(features=[]))
 
     def _get_tree(self, tree=None, treeid=None, pre_drawing_action=None):
         if not treeid:
             treeid = md5(str(time.time())).hexdigest()
 
-        #tree_path = os.path.join(CONFIG["temp_dir"], treeid+".nw")
-        img_url = os.path.join(CONFIG["temp_url"], treeid+".png?"+str(time.time()))
-        img_path = os.path.join(CONFIG["temp_dir"], treeid+".png")
+        img_url = os.path.join(self.CONFIG["temp_url"], treeid+".png?"+str(time.time()))
+        img_path = os.path.join(self.CONFIG["temp_dir"], treeid+".png")
 
         debug_track = str(self._treeid2tree.get(treeid, None)) 
         debug_cache = "NOP"
@@ -155,7 +107,7 @@ class WebTreeApplication(object):
 
         layout_fn = self._treeid2layout.get(treeid, self._layout)
         mapid = "img_map_"+str(time.time())
-        img_map = render_tree(t, img_path, layout_fn)
+        img_map = render_tree(t, img_path, self.CONFIG["DISPLAY"], layout_fn)
         html_map = self._get_html_map(img_map, treeid, mapid, t)
         for n in t.traverse():
             self._treeid2index[treeid][str(n._nid)]=n
@@ -175,12 +127,14 @@ class WebTreeApplication(object):
         except NameError: 
             version_tag = "ete_dev"
 
-        ete_publi = '</br><a href="http://ete.cgenomics.org" style="font-size:7pt;" target="_blank" > %s </a>' %\
-            (version_tag)
         self._dump_tree_to_file(t, treeid)
-        return html_map+"""<img class="ete_tree_img" src="%s" USEMAP="#%s" onLoad='javascript:bind_popup();' onclick='javascript:show_context_menu("%s", "", "%s");' >""" %\
-            (img_url, mapid, treeid, ','.join(map(str, tree_actions))) \
-            + ete_publi
+
+        ete_publi = '<div style="margin:0px;padding:0px;text-align:left;"><a href="http://ete.cgenomics.org" style="font-size:7pt;" target="_blank" >%s</a></div>' %\
+            (version_tag)
+        img_html = """<img class="ete_tree_img" src="%s" USEMAP="#%s" onLoad='javascript:bind_popup();' onclick='javascript:show_context_menu("%s", "", "%s");' >""" %\
+            (img_url, mapid, treeid, ','.join(map(str, tree_actions)))
+
+        return html_map+ "<div>"+ img_html + ete_publi + "</div>"
 
     # WSGI web application 
     def __call__(self, environ, start_response):
@@ -259,6 +213,6 @@ def get_node_by_id(t, nid):
         if n._nid == nid:
             return n
 
-def render_tree(t, img_path, layout=None):
-    os.environ["DISPLAY"]=CONFIG["DISPLAY"]
+def render_tree(t, img_path, display, layout=None):
+    os.environ["DISPLAY"]=display
     return t.render(img_path, layout = layout)

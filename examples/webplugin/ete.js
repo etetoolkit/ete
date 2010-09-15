@@ -33,9 +33,7 @@ $(".ete_tree_img").bind('click',function(e){
                           $("#popup").css('top',e.pageY-2 );
                           $("#popup").css('position',"absolute" );
                           $("#popup").css('background-color',"#fff" );
-                          //  $("#popup").draggable({ handle: '#ete_draggable_header' });
                           $("#popup").draggable({ cancel: 'span,li' });
-
                           $("#popup").show();
                             });
 }
