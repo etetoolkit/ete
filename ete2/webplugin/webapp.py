@@ -12,18 +12,23 @@ class WebTreeApplication(object):
         self.TREE_TARGET_ACTIONS = ["layout", "search", "tree"]
         self.actions = []
         self._layout = None
+        self._custom_tree_renderer = None
         self._treeid2layout = {}
         self._external_app_handler = None
         self._treeid2tree = {}
         self._treeid2index = {}
+        self.queries = {}
         self.CONFIG = {
-            "temp_dir":"/var/www/tmp",
-            "temp_url":"http://localhost/tmp",
-            "DISPLAY" :":0"
+            "temp_dir":"/var/www/webplugin/",
+            "temp_url":"http://localhost/webplugin/tmp",
+            "DISPLAY" :":0" # Used by ete to render images
             }
 
-    def register_external_app_handler(self, handler):
+    def set_external_app_handler(self, handler):
         self._external_app_handler = handler
+
+    def set_external_tree_renderer(self, handler):
+        self._custom_tree_renderer = handler
 
     def register_action(self, name, target, handler, checker, html_generator):
         self.actions.append([name, target, handler, checker, html_generator])
@@ -70,19 +75,16 @@ class WebTreeApplication(object):
         tree_path = os.path.join(self.CONFIG["temp_dir"], treeid+".nw")
         open(tree_path, "w").write(t.write(features=[]))
 
-    def _get_tree(self, tree=None, treeid=None, pre_drawing_action=None):
+    def _get_tree_img(self, tree=None, treeid=None, pre_drawing_action=None):
         if not treeid:
             treeid = md5(str(time.time())).hexdigest()
 
         img_url = os.path.join(self.CONFIG["temp_url"], treeid+".png?"+str(time.time()))
         img_path = os.path.join(self.CONFIG["temp_dir"], treeid+".png")
 
-        debug_track = str(self._treeid2tree.get(treeid, None)) 
-        debug_cache = "NOP"
         if not tree and self._treeid2tree.get(treeid, None):
             t = self._treeid2tree[treeid]
             tree_index = self._treeid2index[treeid]
-            debug_cache = "SI"
         elif not tree:
             t, tree_index = self._load_tree_from_path(treeid)
         else:
@@ -94,8 +96,6 @@ class WebTreeApplication(object):
             atype, handler, arguments = pre_drawing_action
             if atype in set(["node", "face"]) and len(arguments)==1 and handler:
                 nid = arguments[0]
-                #node = get_node_by_id(t, nid)
-                #return [nid, str(type(nid)).replace("<",""), cache]
                 node = tree_index.get(str(nid), None)
                 handler(node)
             elif atype == "tree":
@@ -107,15 +107,13 @@ class WebTreeApplication(object):
 
         layout_fn = self._treeid2layout.get(treeid, self._layout)
         mapid = "img_map_"+str(time.time())
-        img_map = render_tree(t, img_path, self.CONFIG["DISPLAY"], layout_fn)
+        img_map = _render_tree(t, img_path, self.CONFIG["DISPLAY"], layout_fn)
         html_map = self._get_html_map(img_map, treeid, mapid, t)
         for n in t.traverse():
             self._treeid2index[treeid][str(n._nid)]=n
             if hasattr(n, "_QtItem_"):
                 n._QtItem_ = None
                 delattr(n, "_QtItem_")
-
-        debug_track+= str(self._treeid2index.get(treeid, None))+debug_cache
 
         tree_actions = []
         for aindex, (action, target, handler, checker, html_generator) in enumerate(self.actions):
@@ -144,28 +142,30 @@ class WebTreeApplication(object):
         path = environ['PATH_INFO'].split("/")
         start_response('202 OK', [('content-type', 'text/plain')])
         if environ['REQUEST_METHOD'].upper() == 'GET' and  environ['QUERY_STRING']:
-            queries = cgi.parse_qs(environ['QUERY_STRING'])
+            self.queries = cgi.parse_qs(environ['QUERY_STRING'])
         elif environ['REQUEST_METHOD'].upper() == 'POST' and environ['wsgi.input']:
-            queries = cgi.parse_qs(environ['wsgi.input'].read())
+            self.queries = cgi.parse_qs(environ['wsgi.input'].read())
         else:
-            queries = {}
-
+            self.queries = {}
+            
         method = path[1]
-        treeid = queries.get("treeid", [None])[0]
-        nodeid = queries.get("nid", [None])[0]
-        textface = queries.get("textface", [None])[0]
-        actions = queries.get("show_actions", [None])[0]
-        tree = queries.get("tree", [None])[0]
-        search_term = queries.get("search_term", [None])[0]
-        aindex = queries.get("aindex", [None])[0]
+        treeid = self.queries.get("treeid", [None])[0]
+        nodeid = self.queries.get("nid", [None])[0]
+        textface = self.queries.get("textface", [None])[0]
+        actions = self.queries.get("show_actions", [None])[0]
+        tree = self.queries.get("tree", [None])[0]
+        search_term = self.queries.get("search_term", [None])[0]
+        aindex = self.queries.get("aindex", [None])[0]
 
         if method == "draw":
-            if "tree" in queries and "treeid" in queries:
-                treeid = str(queries["treeid"][0])
-                tree = str(queries["tree"][0])
-                return self._get_tree(tree=tree, treeid=treeid)
+            if self._custom_tree_renderer:
+                return self._custom_tree_renderer(self)
+            elif "tree" in self.queries and "treeid" in self.queries:
+                treeid = str(self.queries["treeid"][0])
+                tree = str(self.queries["tree"][0])
+                return self._get_tree_img(tree=tree, treeid=treeid)
             else:
-                return "No tree found"
+                return "No tree to draw"
 
         elif method == "get_menu": 
             if nodeid: 
@@ -181,7 +181,7 @@ class WebTreeApplication(object):
                 header = str(textface).strip()
             else:
                 header = "Menu"
-            html = """<div id="ete_popup_header"><span id="ete_popup_header_text">%s</span><img onClick='hide_popup();' src="close.png"></div><ul>""" %\
+            html = """<div id="ete_popup_header"><span id="ete_popup_header_text">%s</span><div id="ete_close_popup" onClick='hide_popup();'></div></div><ul>""" %\
                 (header)
             for i in map(int, actions.split(",")): 
                 aname, target, handler, checker, html_generator = self.actions[i]
@@ -196,23 +196,16 @@ class WebTreeApplication(object):
         elif method == "action":
             aname, target, handler, checker, html_generator = self.actions[int(aindex)]
             if target in set(["node","face", "tree", "layout"]):
-                return self._get_tree(treeid=treeid, pre_drawing_action=[target, handler, [nodeid]])
+                return self._get_tree_img(treeid=treeid, pre_drawing_action=[target, handler, [nodeid]])
             elif target in set(["search"]):
-                return self._get_tree(treeid=treeid, pre_drawing_action=[target, handler, [search_term]])
+                return self._get_tree_img(treeid=treeid, pre_drawing_action=[target, handler, [search_term]])
             return "Bad guy"
                
         elif self._external_app_handler:
-            return self._external_app_handler(environ, start_response, queries)
+            return self._external_app_handler(environ, start_response, self.queries)
         else:
-            return  '\n'.join(map(str, environ.items())) + str(queries) + '\t\n'.join(environ['wsgi.input'])
+            return  '\n'.join(map(str, environ.items())) + str(self.queries) + '\t\n'.join(environ['wsgi.input'])
 
-### Get info about leave >>> here can be any function of leave ID with HTML return
-def get_node_by_id(t, nid):
-    nid = str(nid)
-    for n in t.traverse():
-        if n._nid == nid:
-            return n
-
-def render_tree(t, img_path, display, layout=None):
+def _render_tree(t, img_path, display, layout=None):
     os.environ["DISPLAY"]=display
     return t.render(img_path, layout = layout)

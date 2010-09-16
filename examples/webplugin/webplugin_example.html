@@ -4,15 +4,15 @@
     <title>ETE2 - webplugin demonstration</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <!-- Import scripts in this specific order -->
-    <script src="jquery-1.4.2.min.js"></script>
-    <script src="jquery-ui-1.8.4.custom.min.js"></script>
-    <script src="ete.js"></script>
+    <script src="webplugin/jquery-1.4.2.min.js"></script>
+    <script src="webplugin/jquery-ui-1.8.4.custom.min.js"></script>
+    <script src="webplugin/ete.js"></script>
     <script>
        /* YOU MUST SET THIS VARIABLE */
-       var ete_webplugin_URL = "/wsgi/webplugin_example.py"
+       var ete_webplugin_URL = "/webplugin/wsgi/webplugin_example.py"
     </script> 
 
-    <link rel="stylesheet" type="text/css" href="ete.css" >
+    <link rel="stylesheet" type="text/css" href="webplugin/ete.css" >
   </head>
   <body>
     <!-- This layer must be called "popup" -->
@@ -25,9 +25,8 @@
     <div style='text-align: left;'>
       Paste a tree in newick format and press "Draw tree":<br>
       <textarea  id="tree" style='width: 700px; height: 200px'>
-        (((Cne0002749_Q55RA0:0.690320,(Spb0001902_Q9UT81:1.025930,(Ror0013884_RO3G_13885.1:0.170852,Ror0013238_RO3G_13239.1:0.357725)0.979000:0.234774)0.895000
-        :0.183391)0.356000:0.062227,(Ani0001497_XP_681497.1:0.316441,(Sno0010817_SNU11204.1:0.389108,(Ncr0001064_NCU01100.2:0.468292,Bci0007963_BC1G_07963.1:0.385452
-        )0.991000:0.174607)0.909000:0.102127)0.996000:0.197614)0.743000:0.057995,(Yli0002312_Q6C5V3:0.675110,(Cal0009431_orf19.2549:0.551718,(Sce0006786_YBL058W:0.450450,Ago0005524_NP_983160.1:0.321873)1.000000:0.298585)0.999850:0.421397)0.999850:0.057995);
+      ((aname,bname,(cname,dname)), (ename,fname));
+
       </textarea><br>
       <!-- This is the most important part. We start tree visualization by calling draw_tree function. 
            draw_tree(newick, container, tree_id)
