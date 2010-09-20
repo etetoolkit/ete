@@ -1,3 +1,4 @@
+from sys import stderr
 import os
 import time
 import cgi
@@ -9,7 +10,7 @@ class WebTreeApplication(object):
     def __init__(self):
         self.TreeConstructor = None
         self.NODE_TARGET_ACTIONS = ["node", "face"]
-        self.TREE_TARGET_ACTIONS = ["layout", "search", "tree"]
+        self.TREE_TARGET_ACTIONS = ["layout", "search"]
         self.actions = []
         self._layout = None
         self._custom_tree_renderer = None
@@ -62,35 +63,51 @@ class WebTreeApplication(object):
         html_map += '</MAP>'
         return html_map
 
+    def _load_tree(self, treeid, tree=None):
+        # if a tree is given, it overwrites previous versions
+        if tree:
+            t = self._tree(tree)
+            self._treeid2tree[treeid] = t
+            self._load_tree_index(treeid)
+
+        # if no tree is given, and not in memmory, it tries to loaded
+        # from previous sessions
+        if treeid not in self._treeid2tree:
+            self._load_tree_from_path(treeid)
+
+        # Returns True if tree and indexes are loaded
+        return (treeid in self._treeid2tree) and (treeid in self._treeid2index)
+
     def _load_tree_from_path(self, treeid):
         tree_path = os.path.join(self.CONFIG["temp_dir"], treeid+".nw")
-        t = self._treeid2tree[treeid] = self._tree(tree_path)
-        tree_index  = self._treeid2index[treeid] = {}
-        for n in t.traverse():
-            if hasattr(n, "_nid"):
-                tree_index[str(n._nid)] = n
-        return t, tree_index
+        if os.path.exists(tree_path):
+            t = self._treeid2tree[treeid] = self._tree(tree_path)
+            self._load_tree_index(treeid)
+            return True
+        else:
+            return False
+
+    def _load_tree_index(self, treeid):
+        if not self._treeid2index.get(treeid, {}):
+            tree_index = self._treeid2index[treeid] = {}
+            t = self._treeid2tree[treeid] 
+            for n in t.traverse():
+                if hasattr(n, "_nid"):
+                    tree_index[str(n._nid)] = n
+            return True
+        else:
+            return False
 
     def _dump_tree_to_file(self, t, treeid):
         tree_path = os.path.join(self.CONFIG["temp_dir"], treeid+".nw")
         open(tree_path, "w").write(t.write(features=[]))
 
-    def _get_tree_img(self, tree=None, treeid=None, pre_drawing_action=None):
-        if not treeid:
-            treeid = md5(str(time.time())).hexdigest()
-
+    def _get_tree_img(self, treeid, pre_drawing_action=None):
         img_url = os.path.join(self.CONFIG["temp_url"], treeid+".png?"+str(time.time()))
         img_path = os.path.join(self.CONFIG["temp_dir"], treeid+".png")
 
-        if not tree and self._treeid2tree.get(treeid, None):
-            t = self._treeid2tree[treeid]
-            tree_index = self._treeid2index[treeid]
-        elif not tree:
-            t, tree_index = self._load_tree_from_path(treeid)
-        else:
-            t = self._tree(tree)
-            self._treeid2tree[treeid] = t
-            tree_index = self._treeid2index[treeid] = {}
+        t = self._treeid2tree[treeid]
+        tree_index = self._treeid2index[treeid]
 
         if pre_drawing_action:
             atype, handler, arguments = pre_drawing_action
@@ -99,7 +116,7 @@ class WebTreeApplication(object):
                 node = tree_index.get(str(nid), None)
                 handler(node)
             elif atype == "tree":
-                handler(t)
+                handler(t, arguments[0])
             elif atype == "search":
                 handler(t, arguments[0])
             elif atype == "layout":
@@ -132,7 +149,8 @@ class WebTreeApplication(object):
         img_html = """<img class="ete_tree_img" src="%s" USEMAP="#%s" onLoad='javascript:bind_popup();' onclick='javascript:show_context_menu("%s", "", "%s");' >""" %\
             (img_url, mapid, treeid, ','.join(map(str, tree_actions)))
 
-        return html_map+ "<div>"+ img_html + ete_publi + "</div>"
+        tree_div_id = "ETE_tree_"+str(treeid)
+        return html_map+ '<div id="%s" >'%tree_div_id + img_html + ete_publi + "</div>"
 
     # WSGI web application 
     def __call__(self, environ, start_response):
@@ -158,21 +176,27 @@ class WebTreeApplication(object):
         aindex = self.queries.get("aindex", [None])[0]
 
         if method == "draw":
+            # if not treeid is given, generate one 
+            if not treeid:
+                treeid = md5(str(time.time())).hexdigest()
+
+            if not self._load_tree(treeid, tree):
+                return "draw: Cannot load the tree: %s" %treeid
+
             if self._custom_tree_renderer:
-                return self._custom_tree_renderer(self)
-            elif "tree" in self.queries and "treeid" in self.queries:
-                treeid = str(self.queries["treeid"][0])
-                tree = str(self.queries["tree"][0])
-                return self._get_tree_img(tree=tree, treeid=treeid)
+                t = self._treeid2tree[treeid]
+                return self._custom_tree_renderer(t, treeid, self)
+            elif t and treeid: 
+                return self._get_tree_img(treeid=treeid)
             else:
                 return "No tree to draw"
 
         elif method == "get_menu": 
-            if nodeid: 
-                if treeid not in self._treeid2tree:
-                    t, tree_index = self._load_tree_from_path(treeid)
-                else:
-                    tree_index = self._treeid2index[treeid]
+            if not self._load_tree(treeid):
+                return "get_menu: Cannot load the tree: %s" %treeid
+            
+            if nodeid:
+                tree_index = self._treeid2index[treeid]
                 node = tree_index[nodeid]
             else:
                 node = None
@@ -194,11 +218,21 @@ class WebTreeApplication(object):
             return html
 
         elif method == "action":
-            aname, target, handler, checker, html_generator = self.actions[int(aindex)]
-            if target in set(["node","face", "tree", "layout"]):
+            if not self._load_tree(treeid):
+                return "action: Cannot load the tree: %s" %treeid
+
+            if aindex is None:
+                # just refresh tree
+                return self._get_tree_img(treeid=treeid)
+            else:
+                aname, target, handler, checker, html_generator = self.actions[int(aindex)]
+
+            if target in set(["node", "face", "layout"]):
                 return self._get_tree_img(treeid=treeid, pre_drawing_action=[target, handler, [nodeid]])
             elif target in set(["search"]):
                 return self._get_tree_img(treeid=treeid, pre_drawing_action=[target, handler, [search_term]])
+            elif target in set(["refresh"]):
+                return self._get_tree_img(treeid=treeid)
             return "Bad guy"
                
         elif self._external_app_handler:
