@@ -1,4 +1,6 @@
 import sys
+import re
+from string import strip
 
 sys.path.insert(0, "/home/services/software/ete2-webplugin/")
 from ete_dev import WebTreeApplication # Required to use the webplugin
@@ -27,11 +29,13 @@ def example_app(environ, start_response, queries):
         return "Tachan!!"
 
 # ==============================================================================
+# TREE LOADER
+#
 # This is my tree loading functions. I want the WebTreeApplication to
 # is this method to load the trees
 # ==============================================================================
 
-# Custom Tree loader 
+# Custom Tree loader
 def extract_species_code(name):
     return str(name).split("_")[-1].strip()
 
@@ -42,6 +46,8 @@ def my_tree_loader(tree):
     return t
 
 # ==============================================================================
+# CUSTOM LAYOUTS
+#
 # This are my layout functions. I want the WebTreeApplication to use
 # them for rendering trees
 # ==============================================================================
@@ -116,7 +122,7 @@ def main_layout(node):
 
 
 # ==============================================================================
-# Checker function definitions: 
+# Checker function definitions:
 #
 # All checker actions must receive a node instance as unique argument
 # and return True (node passes the filters) or False (node does not
@@ -124,17 +130,17 @@ def main_layout(node):
 #
 # ==============================================================================
 
-can_expand = lambda node: hasattr(node, "hide") and node.hide==True
-can_collapse = lambda node: not hasattr(node, "hide") or node.hide==False
+can_expand = lambda node: not node.is_leaf() and (hasattr(node, "hide") and node.hide==True)
+can_collapse = lambda node: not node.is_leaf() and (not hasattr(node, "hide") or node.hide==False)
 is_leaf = lambda node: node.is_leaf()
 is_not_leaf = lambda node: not node.is_leaf()
 
 # ==============================================================================
-# Handler function definitions: 
+# Handler function definitions:
 #
 # All action handler functions must receive a node instance as unique
 # argument. Returns are ignored.
-# 
+#
 # Note that there is a special action handler designed for searches
 # within the tree. Handler receives node and searched term.
 #
@@ -174,7 +180,7 @@ def phylomedb_clean_layout(node):
     node.img_style["size"]=0
 
 def search_by_feature(tree, search_term):
-    ''' Special action ''' 
+    ''' Special action '''
     attr, term = search_term.split("::")
     if not term:
         return None
@@ -196,14 +202,14 @@ def search_by_feature(tree, search_term):
 
 
 # ==============================================================================
-# HTML generators 
+# HTML generators
 #
 # Actions will be automatically added to the popup menus and attached
 # to the action handler function. However, if just want to add
 # informative items to the popup menu or external actions not
 # associated to any handler, you can overwrite the default html
 # generator of each action.
-# 
+#
 # html generators receive all information attached to the node and
 # action in 5 arguments:
 #
@@ -217,11 +223,11 @@ def search_by_feature(tree, search_term):
 # action (only applicable to text faces actions)
 #
 # * node: node instance in which action will be executed.
-# 
-# 
+#
+#
 # Html generator should return a text string encoding a html list
 # item:
-# 
+#
 # Example: return "<li> my text </li>"
 #
 # ==============================================================================
@@ -239,7 +245,7 @@ def branch_info(aindex, nodeid, treeid, text, node):
         (node.dist, node.support)
 
 def search_in_ensmbl(aindex, nodeid, treeid, text, node):
-    return '''<li> 
+    return '''<li>
               <a target="_blank" href="http://www.ensembl.org/common/Search/Results?species=all;idx=;q=%s">
               <img src=""> Search in ensembl: %s >
               </a>
@@ -247,25 +253,204 @@ def search_in_ensmbl(aindex, nodeid, treeid, text, node):
             (node.name, node.name)
 
 def external_links_divider(aindex, nodeid, treeid, text, node):
-    ''' Used to show a separator in the popup menu''' 
+    ''' Used to show a separator in the popup menu'''
     if node.is_leaf():
         return """<li
         style="background:#eee;font-size:8pt;"><b>External
         links</b></li>"""
-    else: 
+    else:
         return ""
 
 def topology_action_divider(aindex, nodeid, treeid, text, node):
     return """<li style="background:#eee;"><b>Tree node actions</b></li>"""
 
+# ==============================================================================
+# TREE RENDERER
+#
+# By default, ETE will render the tree as a png image and will return
+# a simplistic HTML code to show the image and interact with
+# it. However, it is possible to wrap such functionality to preprocess
+# trees in a particular way, read extra parameters from the URL query
+# and/or produce enriched HTML applications.
+#
+# Tree renderer wrappers receive the tree object, its id, and the WSGI
+# application object. They MUST call the
+# application._get_tree_img(tree) method and return the a HTML
+# string.
+#
+# A simplistic wrapper that emulates the default WebTreeApplication
+# behaviour would be:
+#
+# def tree_renderer(tree, treeid, application):
+#    html = application._get_tree_img(treeid = treeid)
+#    return html
+#
+# ==============================================================================
+def tree_renderer(tree, treeid, application):
+    # The following part controls the features that are attched to
+    # leaf nodes and that will be shown in the tree image. Node styles
+    # are set it here, and faces are also created. The idea is the
+    # following: user can pass feature names using the URL argument
+    # "tree_features". If the feature is handled by our function and
+    # it is available in nodes, a face will be created and added to
+    # the global variable LEAVE_FACES. Remember that our layout
+    # function uses such variable to add faces to nodes during
+    # rendering.
+
+    # Extracts from URL query the features that must be drawn in the tree 
+    asked_features = application.queries.get("show_features", ["name"])[0].split(",")
+    print >>sys.stderr, asked_features
+    def update_features_avail(feature_key, name, col, fsize, fcolor, prefix, suffix):
+        text_features_avail.setdefault(feature_key, [name, 0, col, fsize, fcolor, prefix, suffix])
+        text_features_avail[feature_key][1] += 1
+
+    tree.add_feature("fgcolor", "#833DB4")
+    tree.add_feature("shape", "sphere")
+    tree.add_feature("bsize", "8")
+    tree.dist = 0
+
+    # This are the features that I wanto to convert into image
+    # faces. I use an automatic function to do this. Each element in
+    # the dictionary is a list that contains the information about how
+    # to create a textFace with the feature.
+    leaves = tree.get_leaves()
+    formated_features =  {
+        # feature_name: ["Description", face column position, text_size, color, text_prefix, text_suffix ]
+        "name": ["Leaf name", len(leaves), 0, 12, "#000000", "", ""],
+        "spname": ["Species name", len(leaves), 1, 12, "#f00000", " Species:", ""],
+        }
+
+    # populates the global LEAVE_FACES variable
+    global LEAVE_FACES
+    LEAVE_FACES = []
+    unknown_faces_pos = 2
+    for fkey in asked_features:
+        if fkey in formated_features:
+            name, total, pos, size, color, prefix, suffix = formated_features[fkey]
+            f = faces.AttrFace(fkey, ftype="Arial", fsize=size, fgcolor=color, text_prefix=prefix, text_suffix=suffix)
+            LEAVE_FACES.append([f, fkey, pos])
+        else:
+            # If the feature has no associated format, let's add something standard
+            prefix = " %s: " %fkey
+            f = faces.AttrFace(fkey, ftype="Arial", fsize=10, fgcolor="#666666", text_prefix=prefix, text_suffix="")
+            LEAVE_FACES.append([f, fkey, unknown_faces_pos])
+            unknown_faces_pos += 1
+
+    text_features_avail = {}
+    for l in leaves:
+        for f in l.features: 
+            if not f.startswith("_"):
+                text_features_avail.setdefault(f, 0)
+                text_features_avail[f] = text_features_avail[f] + 1 
+
+    html_features = """
+      <div id="tree_features_box">
+      <div class="tree_box_header">Available tree features
+      <img src="/webplugin/close.png" onclick='$(this).closest("#tree_features_box").hide();'>
+      </div>
+      <form action='javascript: set_tree_features("", "", "");'>
+      <table>
+      """
+
+    for fkey, counter in text_features_avail.iteritems():
+        if fkey in asked_features:
+            tag = "CHECKED"
+        else:
+            tag = ""
+
+        fname = formated_features.get(fkey, [fkey])[0]
+
+        #html_features = "<tr>"
+        html_features += '<INPUT NAME="tree_feature_selector" TYPE=CHECKBOX %s VALUE="%s">%s (%s/%s leaves)</input><br> ' %\
+            (tag, fkey, fname, counter, len(leaves))
+ #       html_features += '<td><INPUT size=7 type="text"></td> <td><input size=7 type="text"></td> <td><input size=7 type="text"></td>  <td><input size=1 type="text"></td><br>'
+        #html_features += "</tr>"
+
+    html_features += "</table>"
+
+    html_features += """<input type="submit" value="Refresh" 
+                        onclick='javascript:
+                                // This piece of js code extracts the checked features from menu and redraw the tree sending such information
+                                var allVals = [];
+                                $(this).parent().children("input[name=tree_feature_selector]").each(function(){
+                                if ($(this).is(":checked")){
+                                    allVals.push($(this).val());
+                                }});
+                                draw_tree("%s", "", "#img1", {"show_features": allVals.join(",")} );'
+                       > 
+                       </form></div>""" %(treeid)
+
+    features_button = """
+     <li><a href="#" onclick='show_box(event, $(this).closest("#tree_panel").children("#tree_features_box"));'>
+     <img width=16 height=16 src="webplugin/icon_tools.png" alt="Select Tree features">
+     </a></li>"""
+
+    download_button = """
+     <li><a href="/webplugin/tmp/%s.png" target="_blank">
+     <img width=16 height=16 src="webplugin/icon_attachment.png" alt="Download tree image">
+     </a></li>""" %(treeid)
+
+    search_button = """
+      <li><a href="#" onclick='javascript:
+          var box = $(this).closest("#tree_panel").children("#search_in_tree_box");
+          show_box(event, box); '>
+      <img width=16 height=16 src="webplugin/icon_search.png" alt="Search in tree">
+      </a></li>"""
+
+    clean_search_button = """
+      <li><a href="#" onclick='run_action("%s", "", %s, "clean::clean");'>
+      <img width=16 height=16 src="webplugin/icon_cancel_search.png" alt="Clear search results">
+      </a></li>""" %\
+        (treeid, 0)
+
+    buttons = '<div id="ete_tree_buttons">' +\
+        features_button + search_button + clean_search_button + download_button +\
+        '</div>'
+
+    search_select = '<select id="ete_search_target">'
+    for fkey in text_features_avail:
+        search_select += '<option value="%s">%s</option>' %(fkey,fkey)
+    search_select += '</select>'
+
+    search_form = """
+     <div id="search_in_tree_box">
+     <div class="tree_box_header"> Search in Tree
+     <img src="webplugin/close.png" onclick='$(this).closest("#search_in_tree_box").hide();'>
+     </div>
+     <form onsubmit='javascript:
+                     search_in_tree("%s", "%s",
+                                    $(this).closest("form").children("#ete_search_term").val(),
+                                    $(this).closest("form").children("#ete_search_target").val());'
+          action="javascript:void(0);">
+     %s
+     <input id="ete_search_term" type="text" value=""'></input>
+     <br><i>(Searches are not case sensitive and accept Perl regular expressions)</i>
+     <br>
+     </form>
+     <i> (Press ENTER to initiate the search)</i>
+     </div>
+     """ %\
+        (treeid, 0, search_select) # 0 is the action index associated
+                                   # to the search functionality. This
+                                   # means that this action is the
+                                   # first to be registered in WebApplication.
+
+
+    tree_panel_html = '<div id="tree_panel">' + search_form + html_features + buttons + '</div>'
+
+    # Now we render the tree into image and get the HTML that handles it
+    tree_html = application._get_tree_img(treeid = treeid)
+
+    # Let's return enriched HTML
+    return tree_panel_html + tree_html
 
 # ==============================================================================
 #
 # Main WSGI Application
-# 
+#
 # ==============================================================================
 
-# Create a basic ETE WebTreeApplication 
+# Create a basic ETE WebTreeApplication
 application = WebTreeApplication()
 
 # Set your temporal dir to allow web user to generate files. This two
@@ -274,13 +459,13 @@ application = WebTreeApplication()
 # directory. Note that the referred directory must be writable by the
 # webserver.
 application.CONFIG["temp_dir"] = "/home/services/web/ete.cgenomics.org/webplugin/tmp/"
-application.CONFIG["temp_url"] = "/webplugin/tmp/" # Relative to web site Document Root 
+application.CONFIG["temp_url"] = "/webplugin/tmp/" # Relative to web site Document Root
 
 # Set the DISPLAY port that ETE should use to draw pictures. You will
 # need a X server installed in your server and allow webserver user to
 # access the display. If the X server is started by a different user
 # and www-data (usally the apache user) cannot access display, try
-# modifiying DISPLAY permisions by executing "xhost +" 
+# modifiying DISPLAY permisions by executing "xhost +"
 application.CONFIG["DISPLAY"] = ":0" # This is the most common
                                      # configuration
 
@@ -295,34 +480,10 @@ application.set_tree_loader(my_tree_loader)
 # And our layout as the default one to render trees
 application.set_default_layout_fn(main_layout)
 
-# ==============================================================================
-# By default, ETE will render the tree as a png image and will return
-# a simplistic HTML code to show the image and interact with
-# it. However, it is possible to wrap such functionality to preprocess
-# trees in a particular way, read extra parameters from the URL query
-# and/or produce enriched HTML applications.
-#
-# Tree renderer wrappers receive the application object, must call the
-# application._get_tree_img() method and return the code as a text
-# string.
-#
-# A simplistic wrapper that emulates the default WebTreeApplication
-# behaviour would be:
-# 
-# def tree_renderer(application):
-#     tree = application.queries["tree"]
-#     treeid = application.queries["treeid"]
-#     html = application._get_tree_img(tree = tree, treeid = treeid)
-#     return html 
-#
-# ==============================================================================
-def tree_renderer(application):
-    tree = application.queries["tree"][0]
-    treeid = application.queries["treeid"][0]
-    html = application._get_tree_img(tree = tree, treeid = treeid)
-    return "HOLA"+html 
-
+# I want to make up how tree image in shown using a custrom tree
+# renderer that adds much more HTML code
 application.set_external_tree_renderer(tree_renderer)
+
 
 # ==============================================================================
 # ADD CUSTOM ACTIONS TO THE APPLICATION
@@ -330,8 +491,8 @@ application.set_external_tree_renderer(tree_renderer)
 # The function "register_action" allows to attach functionality to
 # nodes in the image. All registered accions will be shown in the
 # popup menu bound to the nodes and faces in the web image.
-# 
-# 
+#
+#
 # register_action(action_name, target_type=["node"|"face"|"layout"|"search"], \
 #                 action_handler, action_checker, html_generator_handler)
 #
@@ -346,19 +507,19 @@ application.set_external_tree_renderer(tree_renderer)
 #
 # 3. If action_checker(node) returns True, the action will be attached
 # to the context menu of that specific node or face, otherwise it will
-# be hidden. 
+# be hidden.
 #
 # 4. When a click is done on a specific node, popup menus will be
 # built using their active actions. For this, ETE will use the
 # html_generator function associated to each function if
 # available. Otherwise, a popup entry will be added automatically.
-# 
+#
 # 5. When a certain action is pressed in the popup menus, the
 # action_handler function attached to the action will be executed over
 # its corresponding node, and the tree image will be refreshed.
 #
 # Special values:
-# 
+#
 #  action_checker = None : It will be interpreted as "Show allways"
 #  html_generator = None : Autogenerate html and link to action
 #  action_handler = None : Action will be ignored
@@ -383,142 +544,4 @@ application.register_action("divider", "face", None, None, external_links_divide
 
 application.register_action("Default layout", "layout", main_layout, None, None)
 application.register_action("Clean layout", "layout", main_layout, None, None)
-
-def render_tree(application, tree):
-    ''' By default, trees are rendered as images an returned using a
-    very simplistic HTML layout.
-    This function allows to read 
-    '''
-
-    # START NODE FEATURE MANAGEMENT
-    # The following part controls the features that are attched to
-    # leaf nodes and that will be shown in the tree image
-    def update_features_avail(feature_key, name, col, fsize, fcolor, prefix, suffix):
-        text_features_avail.setdefault(feature_key, [name, 0, col, fsize, fcolor, prefix, suffix])
-        text_features_avail[feature_key][1] += 1
-
-    seed_node.add_feature("fgcolor", "#833DB4")
-    seed_node.add_feature("shape", "sphere")
-    seed_node.add_feature("bsize", "8")
-
-    text_features_avail =  {
-        "name": ["PhylomeDB name", len(leaves), 0, 12, "#000000", "", ""],
-        "spname": ["Species name", len(leaves), 1, 11, "#444444", " (", ")"],
-        "taxid": ["Taxon id", len(leaves), 2, 11, "#9E6D6D", " Taxid:", ""],
-        "oname": ["Original name (prot/gene)", len(leaves), 6, 10, "#564343", " (name:", ")"],
-        "copies": ["Number of copies in proteome", len(leaves), 8, 10, "#000000", " (copies:", ")"],
-        }
-
-    for l in t.get_leaves():
-        l.add_feature("spname", tree_info["seq"][l.name]["sps_name"])
-        l.add_feature("taxid", tree_info["seq"][l.name]["taxid"])
-        l.add_feature("ntrees", tree_info["seq"][l.name]["trees"])
-        l.add_feature("ncollat", tree_info["seq"][l.name]["collateral"])
-        l.add_feature("oname", tree_info["seq"][l.name]["protein"] +\
-                          "/"+tree_info["seq"][l.name]["gene"])
-        l.add_feature("copies", str(tree_info["seq"][l.name]["copy"]))
-
-        if "external" in tree_info["seq"][l.name]:
-            id_conversion = tree_info["seq"][l.name]["external"]
-            if "Swiss-Prot.2010.09" in id_conversion:
-                l.add_feature("uniprot_name", id_conversion["Swiss-Prot.2010.09"][0])
-                update_features_avail("uniprot_name", "SwissProt name", 3, 10, "#EE2E24", " Swisprot: ", "" )
-            if "Ensembl.v59" in id_conversion:
-                l.add_feature("ensembl_name", id_conversion["Ensembl.v59"][0])
-                update_features_avail("ensembl_name", "Ensembl name", 4, 10, "#5689DF", " Ensembl: ", "")
-            if "TrEMBL.2010.09" in id_conversion:
-                l.add_feature("trembl_name", id_conversion["TrEMBL.2010.09"][0])
-                update_features_avail("trembl_name", "Trembl name", 5, 10, "#207A7A", " TrEMBL: ", "")
-
-    LEAVE_FACES = []
-    asked_features = set(map(strip, tree_features.split(",")))
-    for fkey in asked_features:
-        if fkey in text_features_avail:
-            name, total, pos, size, color, prefix, suffix = text_features_avail[fkey]
-            f = faces.AttrFace(fkey, ftype="Arial", fsize=size, fgcolor=color, text_prefix=prefix, text_suffix=suffix)
-            LEAVE_FACES.append([f, fkey, pos])
-
-    html_features = """
-     <div id="tree_features_box" style="display:none">
-     <div class="tree_box_header">Available tree features
-     <img src="sites/default/files/images/close.png" onclick='$("#tree_features_box").hide();'>
-     </div>
-     <form action='javascript: set_tree_features("%s", "%s", "%s");'>""" %\
-        (seqid, phyid, method)
-    for fkey, values in text_features_avail.iteritems():
-        if fkey in asked_features:
-            tag = "CHECKED"
-        else:
-            tag = ""
-        html_features += '<INPUT NAME="tree_feature_selector" TYPE=CHECKBOX %s VALUE="%s">%s (%s/%s leaves)<br> ' %\
-            (tag, fkey, values[0], values[1], len(leaves))
-    html_features += '<input type="submit" value="Refresh"> </form></div>'
-
-    # END OF NODE FEATURE MANAGEMENT
-    # Draw tree and get img map
-    html_tree = '<div id="phylomedb_tree_img">'+application._get_tree(tree=t.write(features=[]), treeid=treeid)+'</div>'
-    link_to_alg = '<span class="phylomedb_button"><a href="%s&seqid=%s&phyid=%s&alg_type=clean">See alignments</a></span>' %(SEARCH_ALG_URL, target_seedid, target_phyid)
-    link_to_data = """<span class="phylomedb_button"><a href="#" onClick='download_data("%s", "%s");'>Download data.tar.gz</a></span>""" %(target_seedid, target_phyid)
-
-    features_button = """
-     <li><a href="#" onclick='show_tree_box(event, "#tree_features_box");'>
-     <img width=16 height=16 src="sites/default/files/images/icon_tools.png" alt="Select Tree features">
-     </a></li>"""
-
-    download_img_button = """
-     <li><a href="/tmp/%s.png" target="_blank">
-     <img width=16 height=16 src="sites/default/files/images/icon_attachment.png" alt="Download tree image">
-     </a></li>""" %(treeid)
-
-    search_button = """
-      <li><a href="#" onclick='show_tree_box(event, "#search_in_tree_box"); $("#ete_search_term").focus();'>
-      <img width=16 height=16 src="sites/default/files/images/icon_search.png" alt="Search in tree">
-      </a></li>"""
-    clean_search_button = """
-      <li><a href="#" onclick='run_action("%s", "", %s, "clean::clean");'>
-      <img width=16 height=16 src="sites/default/files/images/icon_cancel_search.png" alt="Clear search results">
-      </a></li>""" %\
-        (treeid, 0)
-    pdf_button = """
-      <li><a href="#" target="_blank">
-      <img width=16 height=16 src="sites/default/files/images/icon_pdf.gif" alt="Download pdf">
-      </a></li>""" 
-
-    
-
-
-    search_select = '<select id="ete_search_target">'
-    for fkey, values in text_features_avail.iteritems():
-        search_select += '<option value="%s">%s</option>' %(fkey,values[0])
-    search_select += '</select>'
-    """<input id="ete_search_term" type="text" value="Search in tree" onClick='$(this).val("")'></input>"""
-    search_form = """
-     <div id="search_in_tree_box">
-     <div class="tree_box_header"> Search in Tree
-     <img src="sites/default/files/images/close.png" onclick='$("#search_in_tree_box").hide();'>
-     </div>
-     <form id="search_tree_form" action='javascript: $("#search_in_tree_box").hide(); search_in_tree("%s", "%s")';>
-     %s
-     <input id="ete_search_term" type="text" value="" onClick='$(this).val("")'></input>
-     <br><i>(Searches are not case sensitive and accept Perl regular expressions)</i>
-     <br>
-     </form>
-     <i> (Press ENTER to initiate the search)</i>
-     </div>
-     """ %\
-        (treeid, 0, search_select) # 0 is the action index. Search node should be
-                    # registered always as the first action
-
-    selector_panel = '<div id="tree_selector_panel">'+html_seeds + html_methods + html_collats + link_to_alg + link_to_data + '</div><br>'
-
-    tree_actions_layer = '<div id="tree_actions_bar">' + features_button + search_button + clean_search_button + download_img_button + "</div>"
-
-    tree_legend = """
-      <div id="phylomedb_tree_legend">
-       <span style="color:#f00;background-color:#f00;font-size:6pt;">#</span> Speciation events.<br>
-       <span style="color:#009; background-color:#009;font-size:6pt;">#</span> Duplication events. <br>
-       <span style="color:#833DB4; background-color:#833DB4;font-size:6pt;">#</span> Tree seed. 
-      </div> """
-    return   selector_panel + tree_actions_layer + html_tree+ tree_legend + html_features + search_form + getOrthologsHtml(t, target_seedid)[0]
-
 

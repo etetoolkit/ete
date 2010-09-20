@@ -103,7 +103,7 @@ cursor: auto;
 display:none;
 z-index:100;
 border: 1px dotted #555;
-text-align:left;
+text-align:left; 
 background-color: #fff;
 }
 #search_in_tree_box{
