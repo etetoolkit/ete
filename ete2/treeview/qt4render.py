@@ -300,7 +300,6 @@ class _PartitionItem(QtGui.QGraphicsRectItem):
         self.node = node
 
     def paint(self, painter, option, index):
-        return
         return QtGui.QGraphicsRectItem.paint(self, painter, option, index)
 
 class _SelectorItem(QtGui.QGraphicsRectItem):
@@ -575,7 +574,7 @@ class _TreeScene(QtGui.QGraphicsScene):
         # Place aligned faces
         # ...
 
-        # Place faces  around tree
+        # Place faces around tree
         # ...
 
         # size correcton for aligned faces
@@ -807,7 +806,6 @@ class _TreeScene(QtGui.QGraphicsScene):
         partition.center = self.get_partition_center(root_node)
         self.render_node_partition(root_node, partition)
         for part in self.node2item.values():
-            print part.mapToScene(part.rect()).boundingRect()
             # save absolute position in scene (used for maps and
             # highlighting)
             abs_pos = part.mapToScene(0, 0)
@@ -972,6 +970,14 @@ class _TreeScene(QtGui.QGraphicsScene):
         return center
             
     def render_node_partition(self, node, partition):
+
+        if node.img_style["bgcolor"].upper() not in set(["#FFFFFF", "white"]): 
+            color = QtGui.QColor(node.img_style["bgcolor"])
+            partition.setBrush(color)
+            partition.setPen(color)
+        else:
+            partition.setPen(QtGui.QColor("#FFFFFF"))
+
         # Draw partition components 
         # Draw node balls in the partition centers
         ball_size = node.img_style["size"] 
@@ -1012,7 +1018,29 @@ class _TreeScene(QtGui.QGraphicsScene):
             c1 = first_child_part.start_y + first_child_part.center
             c2 = last_child_part.start_y + last_child_part.center
             vt_line.setLine(node.nodeRegion.width(), c1,\
-                                node.nodeRegion.width(), c2 )            
+                                node.nodeRegion.width(), c2)            
+
+        # STYLES
+        line_pen = QtGui.QPen(QtGui.QColor(node.img_style["hz_line_color"])) 
+        line_pen.setWidth(node.img_style["hlwidth"])
+        if node.img_style["line_type"] == 0:
+            line_pen.setStyle(QtCore.Qt.SolidLine)
+        elif node.img_style["line_type"] == 1:
+            line_pen.setStyle(QtCore.Qt.DashLine)
+        hz_line.setPen(line_pen)
+
+        try:
+            line_pen = QtGui.QPen(QtGui.QColor(node.img_style["vt_line_color"])) 
+            line_pen.setWidth(node.img_style["vlwidth"])
+            if node.img_style["line_type"] == 0:
+                line_pen.setStyle(QtCore.Qt.SolidLine)
+            elif node.img_style["line_type"] == 1:
+                line_pen.setStyle(QtCore.Qt.DashLine)
+            vt_line.setPen(line_pen)
+        except UnboundLocalError:
+            pass
+
+
 
 
     def render_node_OLD(self,node , x, y,level=0):
