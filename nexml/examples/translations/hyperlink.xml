@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<nex:nexml xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-	xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
-	xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance"
-	generator="org.nexml.model.impl.DocumentImpl" version="0.8"
-	xmlns:nex="http://www.nexml.org/1.0">
+<nex:nexml 
+	generator="Bio::Phylo::Project v.0.17_RC9_841" 
+	version="0.9" 
+	xmlns:nex="http://www.nexml.org/2009" 
+	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns" 
+	xmlns:xml="http://www.w3.org/XML/1998/namespace" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xsi:schemaLocation="http://www.nexml.org/2009 ../../xsd/nexml.xsd"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns="http://www.nexml.org/2009">
 	<otus xmlns:msq="http://mesquiteproject.org#"
 		about="#ace16de90-d373-4678-91af-97c665df464b"
 		id="ace16de90-d373-4678-91af-97c665df464b" label="Taxa"
-		xmlns="http://www.nexml.org/1.0">
+		xmlns="http://www.nexml.org/2009">
 		<meta content="rvos@interchange.ubc.ca121c96b127d3"
 			datatype="xsd:string" id="a1b4ff94e-9dce-4380-8ed2-cf5d1c889e6f"
 			property="msq:taxaUID" xsi:type="nex:LiteralMeta" />
@@ -47,7 +52,7 @@
 	</otus>
 	<trees id="a15003a3b-fc0e-4a3b-a3ac-efa3402e96b0"
 		label="Simulated Trees" otus="ace16de90-d373-4678-91af-97c665df464b"
-		xmlns="http://www.nexml.org/1.0">
+		xmlns="http://www.nexml.org/2009">
 		<tree xmlns:msq="http://mesquiteproject.org#"
 			about="#a868dae4c-a7a7-47b6-ab86-5c31d87cee3f"
 			id="a868dae4c-a7a7-47b6-ab86-5c31d87cee3f"

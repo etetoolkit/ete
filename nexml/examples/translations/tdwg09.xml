@@ -1,14 +1,14 @@
 <nex:nexml 
 	generator="Bio::Phylo::Project v.0.17_RC9_1175" 
-	version="0.8" 
-	xmlns="http://www.nexml.org/1.0" 
-	xmlns:nex="http://www.nexml.org/1.0" 
+	version="0.9" 
+	xmlns="http://www.nexml.org/2009" 
+	xmlns:nex="http://www.nexml.org/2009" 
 	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" 
 	xmlns:xml="http://www.w3.org/XML/1998/namespace" 
 	xmlns:xsd="http://www.w3.org/2001/XMLSchema#" 
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:cdao="http://www.evolutionaryontology.org/cdao.owl#"
-	xsi:schemaLocation="http://www.nexml.org/1.0 http://www.nexml.org/1.0/nexml.xsd">
+	xsi:schemaLocation="http://www.nexml.org/2009 ../../xsd/nexml.xsd">
   <otus id="otus1" label="TaxonLabelSet11564">
     <otu id="otu2" label="Tympanoctomys_barrerae" about="#otu2">
 		<meta id="dict33" rel="cdao:has_External_Reference" 
@@ -26,7 +26,7 @@
 			xsi:type="nex:ResourceMeta"/>
     </otu>
     <otu id="otu5" label="Octodon_degus" about="#otu5">
-		<meta id="dict31" rel="cdao:has_External_Reference" 
+		<meta id="dict31a" rel="cdao:has_External_Reference" 
 			href="http://www.cbif.gc.ca/pls/itisca/taxa_xml.upwards?p_tsn=584781" 
 			xsi:type="nex:ResourceMeta"/>
     </otu>

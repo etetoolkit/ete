@@ -1,8 +1,8 @@
 <nex:nexml generator="Bio::Phylo::Project v.0.17_RC9_841"
-	version="0.8" xmlns="http://www.nexml.org/1.0" xmlns:nex="http://www.nexml.org/1.0"
+	version="0.9" xmlns="http://www.nexml.org/2009" xmlns:nex="http://www.nexml.org/2009"
 	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns" xmlns:xml="http://www.w3.org/XML/1998/namespace"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.nexml.org/1.0 ../xsd/nexml.xsd">
+	xsi:schemaLocation="http://www.nexml.org/2009 ../xsd/nexml.xsd">
 	<otus id="otus1">
 		<otu id="otu2" label="S. acanthias" /> <!-- Squalus acanthias, spiny dogfish, NCBI 7797 -->
 		<otu id="otu3" label="S. glaucus" />

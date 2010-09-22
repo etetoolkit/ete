@@ -1,12 +1,12 @@
 <nex:nexml 
 	generator="Bio::Phylo::Project v.0.17_RC9_841" 
-	version="0.8" 
-	xmlns:nex="http://www.nexml.org/1.0" 
+	version="0.9" 
+	xmlns:nex="http://www.nexml.org/2009" 
 	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns" 
 	xmlns:xml="http://www.w3.org/XML/1998/namespace" 
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-	xsi:schemaLocation="http://www.nexml.org/1.0 ../../xsd/nexml.xsd"
-	xmlns="http://www.nexml.org/1.0">
+	xsi:schemaLocation="http://www.nexml.org/2009 ../../xsd/nexml.xsd"
+	xmlns="http://www.nexml.org/2009">
   <otus id="otus4">
     <otu id="otu5" label="'Homo sapiens'"/>
     <otu id="otu7" label="Pan_paniscus"/>

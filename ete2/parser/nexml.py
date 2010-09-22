@@ -1,7 +1,7 @@
 import sys
 
 import _nexml as supermod
-from _nexml import MixedContainer, AbstractNode, AbstractEdge
+from _nexml import MixedContainer, AbstractNode, AbstractEdge, LiteralMeta
 
 from ete_dev import PhyloTree
 
@@ -74,55 +74,117 @@ class AbstractTreeSub(supermod.AbstractTree, PhyloTree):
     def build(self, node):
         super(AbstractTreeSub, self).build(node)
 
-        nodeid2node = {}
+        rootid = set([e.source for e in self.edge]) - set([e.target for e in self.edge])
+
+        nodeid2node = {rootid.pop(): self}
         for edge in self.edge:
             child = nodeid2node.setdefault(edge.target, self.__class__() )
             parent = nodeid2node.setdefault(edge.source, self.__class__() )
             child.name = edge.target
             parent.name = edge.source
-            child.dist = float(edge.length)
-            if edge.id:
-                child.add_feature("edgeid", edge.id)
+
+            if edge.length is not None:
+                child.dist = float(edge.length)
+
+            if edge.id is not None:
+                child.add_feature("nexml_edge_id", edge.id)
+
+            if edge.label is not None:
+                child.add_feature("nexml_edge_label", edge.id)
+
             parent.add_child(child)
 
-        for nname, n in nodeid2node.iteritems():
-            if not n.up: 
-                self.dist = n.dist
-                self.name = n.name
-                for c in n.children:
-                    self.add_child(c)
-                nodeid2node[nname] = self
-                n.children = []
-                del n
+        for xmlnode in self.node:
+            if xmlnode.id not in nodeid2node: 
+                print >>sys.stderr, "unused node", xmlnode.id
+                continue
 
-        for node in self.node:
-            nodeid2node[node.label].label = node.label
-            if node.otu: 
-                print node.otu
-                nodeid2node[node.label].name = node.otu
-        t = parent.get_tree_root()
-        print t
-        self.export(sys.stderr, 0)
-        print len(self.content_)
+            ete_node = nodeid2node[xmlnode.id]
+            if xmlnode.id is not None:
+                ete_node.add_feature("nexml_node_id", xmlnode.id)
+                
+            if xmlnode.label is not None:
+                ete_node.add_feature("nexml_node_label", xmlnode.label)
+
+            if xmlnode.otu: 
+                ete_node.add_feature("nexml_node_otu", xmlnode.otu)
+
+            meta_content = []
+            print "META CONTENT", xmlnode.meta
+            for meta in xmlnode.meta:
+                metaid = meta.id
+                prop = meta.anyAttributes_.get("property", None)
+                content = meta.anyAttributes_.get("content", None)
+                datatype = meta.anyAttributes_.get("datatype", None)
+                meta_content.append([metaid, prop, content, datatype])
+
+            ete_node.add_feature("nexml_meta_content", meta_content) 
+            print meta_content
+
+        rootid = set([e.source for e in self.edge]) - set([e.target for e in self.edge])
+        print rootid
 
     def exportChildren(self, outfile, level, namespace_='', name_='AbstractTree'):
         self.content_ = []
         for n in self.traverse():
             # ETE tree NeXML conversion
             if n.is_leaf(): 
-                otu = n.name
+                node_otu = n.name
             else:
-                otu = None
-            label = getattr(n, "label", n.name) 
-            meta = getattr(n, "meta", None) 
-            nodeid = getattr(n, "id", None) 
-            root = getattr(n, "root", None) 
-            about = getattr(n, "about", None) 
+                node_otu = None
+            node_label = getattr(n, "nexml_node_label", n.name) 
+            node_meta = getattr(n, "nexml_meta_content", []) 
+            nodeid = getattr(n, "nexml_node_id", None) 
+            node_root = getattr(n, "nexml_node_root", None) 
+            node_about = getattr(n, "nexml_node_about", None) 
+            edgeid = getattr(n, "nexml_edge_id", None) 
+            edge_label = getattr(n, "nexml_edge_label", None) 
+            edge_length = getattr(n, "nexml_edge_length", None) 
+            edge_about = getattr(n, "nexml_edge_about", None) 
+            edge_meta = getattr(n, "nexml_edge_meta", []) 
 
-            new_node = AbstractNode(id=nodeid, about=about, meta=meta, label=label, otu=otu, root=root)
-            obj = self.mixedclass_(MixedContainer.CategoryComplex,
+            edge_source = getattr(n.up, "nexml_node_id", None) 
+            
+            edge_target = nodeid
+            if n.up:
+                print n.up.name, n.name, edge_source, edge_target
+
+                
+            # Nodes
+            node_meta_objs = []
+            node_containers = []
+            for metaid, prop, content, datatype in node_meta:
+                m = LiteralMeta(id=metaid, datatype=datatype, content=content, property=prop)
+                node_containers.append( m.mixedclass_(MixedContainer.CategoryComplex,
+                                                 MixedContainer.TypeNone, 'meta', m))
+                node_meta_objs.append(m)
+
+            new_node = AbstractNode(id=nodeid, about=node_about, meta=node_meta_objs, label=node_label, otu=node_otu, root=node_root)
+            new_node.content_.extend(node_containers)
+            node_obj = self.mixedclass_(MixedContainer.CategoryComplex,
                 MixedContainer.TypeNone, 'node', new_node)
-            self.content_.append(obj)
+
+            # Nodes children
+            self.content_.append(node_obj)
+            
+            # Edges
+            if edge_source: 
+                print "EDGE", edge_source, edge_target
+                edge_meta_objs = []
+                edge_containers = []
+                for metaid, prop, content, datatype in edge_meta:
+                    m = LiteralMeta(id=metaid, datatype=datatype, content=content, property=prop)
+                    edge_containers.append( m.mixedclass_(MixedContainer.CategoryComplex,
+                                                     MixedContainer.TypeNone, 'meta', m))
+                    edge_meta_objs.append(m)
+
+                new_edge = AbstractEdge(id=edgeid, about=edge_about, meta=edge_meta_objs, label=edge_label, source=edge_source, length=edge_length, target=edge_target)
+                new_node.content_.extend(edge_containers)
+                edge_obj = self.mixedclass_(MixedContainer.CategoryComplex,
+                    MixedContainer.TypeNone, 'edge', new_edge)
+
+                # Nodes children
+                self.content_.append(edge_obj)
             
         for item_ in self.content_:
             item_.export(outfile, level, item_.name, namespace_)

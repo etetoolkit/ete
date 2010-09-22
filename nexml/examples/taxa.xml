@@ -36,35 +36,14 @@
 		  that child elements may contain links to other resources.
 		  http://en.wikipedia.org/wiki/XLink
 -->
-<nex:Nexml 
-	version="0.8"
+<nex:nexml 
+	version="0.9"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.nexml.org/1.0 ../xsd/nexml.xsd"
-	xmlns:nex="http://www.nexml.org/1.0"
 	generator="mesquite"
 	xmlns:xlink="http://www.w3.org/1999/xlink"
-	xmlns="http://www.nexml.org/1.0">
-<otus>
-		<otu id="t1"/>
-</otus>
-	<!--
-		Dictionary attachments are permitted as first children
-		of the root element - and most other elements. This 
-		dictionary is of the subclass RCSid (Revision Control System 
-		identifier), which is limited to a single 'key' element 
-		enclosing the string 'id', and a single 'string' element 
-		enclosing a string matching the regular expression 
-		/$Id: .*$/, which is used to record the subversion (or cvs) 
-		Id keyword. The rationale for this is that this might be 
-		information of interest to some software, so it's better 
-		to have this in a known location rather than somewhere in a 
-		comment. This is just an example of how dictionaries might
-		be used. I'm using it because this example file *is* under
-		svn, and I find these Id keywords useful metadata.	
-	-->
-    <Dict id="dict1">
-    	<string id="id">$Id: taxa.xml 201 2007-11-12 13:03:38Z rutgeraldo $</string>
-    </Dict>
+	xmlns:nex="http://www.nexml.org/2009"
+	xmlns="http://www.nexml.org/2009"
+	xsi:schemaLocation="http://www.nexml.org/2009 ../xsd/nexml.xsd">
 	<!--
 		The taxa element is analogous to the taxa block in nexus
 		files. Like all elements that capture things that might
@@ -87,7 +66,6 @@
 		label="My taxa block" 
 		xml:base="http://example.org/" 
 		xml:id="taxa1" 
-		class="taxset1" 
 		xml:lang="EN" 
 		xlink:href="#taxa1">
 		<!--  
@@ -102,4 +80,4 @@
 		<otu id="t4"/>
 		<otu id="t5"/>
 	</otus>
-</nex:Nexml>
+</nex:nexml>
