@@ -117,12 +117,66 @@ class PhylomeDB3Connector(object):
   ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
 
   ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+  def check_input_parameter(self, **kargs):
+    """ Check the different input parameters
+    """
+
+    ## Define the available checks
+    valid_keys = set(["phylome_id", "single_id", "list_id", "code", "string", \
+      "boolean"])
+
+    ## Check that all input keys have associated an verification clause
+    for key in kargs:
+      if not key in valid_keys:
+        raise NameError("Invalid key")
+
+    ## Check phylome id format. It should be an integer positive number
+    if "phylome_id" in kargs:
+      try:
+        int(kargs["phylome_id"])
+      except:
+        return False
+      if int(kargs["phylome_id"]) < 1:
+        return False
+
+    ## Check if a unique protid has been given as an input parameter
+    if "single_id" in kargs:
+      protid = self.parser_ids(kargs["single_id"])
+      if not protid or type(kargs["single_id"]) != str:
+        return False
+
+    ## Check if at least one protid has been given as an input parameter
+    if "list_id" in kargs:
+      if not self.parser_ids(kargs["list_id"]):
+        return False
+
+    ## check if a single string has been given as an input parameter
+    if "code" in kargs:
+      if not kargs["code"] or type(kargs["code"]) != str:
+        return False
+
+    ## check if an input parameter is different of None and then, if it is
+    ## an string or not
+    if "string" in kargs:
+      if kargs["string"] != None and type(kargs["string"]) != str:
+        return False
+
+    ## check if an input parameter is an boolean or not
+    if "boolean" in kargs:
+      if type(kargs["boolean"]) != bool:
+        return False
+
+    ## Return true if and only if all input parameters are well-constructed
+    return True
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
   def get_conversion_protein(self, code):
     """ Returns the conversion between old phylome id codes and the new ones
     """
 
     # Check if the code is well-constructed
-    if not code or type(code) != str:
+    if not self.check_input_parameter(code = code):
       raise NameError("Check your input data")
 
     # Check whether the input code is a valid former phylomeDB id or not
@@ -149,22 +203,23 @@ class PhylomeDB3Connector(object):
     """ Returns the longest isoform for a given id
     """
 
-    protid = self.parser_ids(id)
-    # Check if it is an unique code that follow the phylomeDB code structure
-    if not type(id) == str or not protid:
+    # Check if the code is well-constructed
+    if not self.check_input_parameter(single_id = id):
       raise NameError("Check your input data")
+    protid = self.parser_ids(id)
 
     # Look for different isoforms asocciated to the same gene/protein
-    cmd = 'SELECT p.protid, s.code, p.version FROM protein AS p, species AS s, '
-    cmd += 'isoform AS i WHERE (i.longest = p.protid AND i.version = p.version '
-    cmd += 'AND p.taxid = s.taxid AND i.isoform = %s)' % protid
+    cmd =  'SELECT distinct p.protid, s.code, p.version FROM protein AS p, sp'
+    cmd += 'ecies AS s, isoform AS i WHERE (i.longest = p.protid AND i.version'
+    cmd += ' = p.version AND p.taxid = s.taxid AND i.isoform = %s)' % protid
 
     # Return the longest available isoforms for each proteome where the id is
     # already register
     isoforms = {}
     if self._SQL.execute(cmd):
-      for protid, code, version in self._SQL.fetchall():
-        isoforms[version] = ("Phy%s_%s") % (protid, code)
+      for id, code, version in self._SQL.fetchall():
+        protid = ("Phy%s_%s") % (id, code)
+        isoforms.setdefault(code, {}).setdefault(int(version), []).append(protid)
     return isoforms
   ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
 
@@ -175,8 +230,8 @@ class PhylomeDB3Connector(object):
         id or an external id.
     """
 
-    # Check if id is valid to be searched.
-    if not id or type(id) != str:
+    # Check if the code is well-constructed
+    if not self.check_input_parameter(code = id):
       raise NameError("Check your input data")
 
     # To avoid weird queries which makes create slow or invalid MYSQL queries
@@ -195,7 +250,8 @@ class PhylomeDB3Connector(object):
     if phylomeDB_matches == {}:
       if re.match(QUERY_OLD_REGEXP_FILTER, query):
         currentID = self.get_conversion_protein(query)
-        if currentID: phylomeDB_matches.update(self.get_longest_isoform(currentID))
+        if currentID:
+          phylomeDB_matches.update(self.get_longest_isoform(currentID))
 
       # Third, check if the query can be mapped using other sources
       if re.match(QUERY_GEN_REGEXP_FILTER, query) and phylomeDB_matches == {}:
@@ -223,7 +279,7 @@ class PhylomeDB3Connector(object):
     """
 
     # Check if the code is well-constructed
-    if not external or type(external) != str:
+    if not self.check_input_parameter(code = external):
       raise NameError("Check your input data")
 
     ## Look at external_db table for any available conversion
@@ -256,10 +312,10 @@ class PhylomeDB3Connector(object):
     """ Returns all the registered translations of a given protid
     """
 
-    protid = self.parser_ids(id)
     # Check if the code is well-constructed
-    if not protid or type(id) != str:
+    if not self.check_input_parameter(single_id = id):
       raise NameError("Check your input data")
+    protid = self.parser_ids(id)
 
     ## Look at the external_id table for any possible translation from phylomeDB
     ## ids to external ones
@@ -300,10 +356,10 @@ class PhylomeDB3Connector(object):
         sequences to the seed protein
     """
 
-    protid = self.parser_ids(protid)
-    ## Check if the code is well-constructed
-    if not protid:
+    # Check if the code is well-constructed
+    if not self.check_input_parameter(list_id = protid):
       raise NameError("Check your input data")
+    protid = self.parser_ids(protid)
 
     ## Recover the tree's seed protein and the phylome id where the sequence is
     ## among the homolog sequences
@@ -326,18 +382,10 @@ class PhylomeDB3Connector(object):
         available trees for the protid in the given phylome_id
     """
 
+    # Check if the code is well-constructed
+    if not self.check_input_parameter(single_id = id, phylome_id = phylome_id):
+      raise NameError("Check your input data")
     protid = self.parser_ids(id)
-    ## Check if the code is well-constructed
-    if not protid or type(id) != str:
-      raise NameError("Check your input protid code")
-
-    ## Check if the phylome_id code is an integer greater than 0
-    try:
-      int(phylome_id)
-    except:
-      raise NameError("Check your input phylome id")
-    if int(phylome_id) < 1:
-      raise NameError("Check your input phylome id")
 
     ## Recover the information associated to the input id for the input phylome.
     ## Depending on if the method is defined or not, the function returns only
@@ -361,21 +409,11 @@ class PhylomeDB3Connector(object):
         asociated to a tuple (protein, phylome) identifiers.
     """
 
+    # Check if the code is well-constructed
+    if not self.check_input_parameter(single_id = id, phylome_id = phylome_id,\
+      string = method):
+      raise NameError("Check your input data")
     protid = self.parser_ids(id)
-    ## Check if the code is well-constructed
-    if not protid or type(id) != str:
-      raise NameError("Check your input protid code")
-
-    ## Check if the phylome_id code is an integer greater than 0
-    try:
-      int(phylome_id)
-    except:
-      raise NameError("Check your input phylome id")
-    if int(phylome_id) < 1:
-      raise NameError("Check your input phylome id")
-
-    if method != None and type(method) != str:
-      raise NameError("Check your input method selection")
 
     ## Look for the protid in the given phylome and recover, if the method is
     ## not defined, the best tree for that protein id in that phylome
@@ -401,7 +439,7 @@ class PhylomeDB3Connector(object):
     cmd += 'phylome_id = %s)' % (phylome_id)
 
     ## Define the ids set to get the available information associated to them
-    ids = '%s' % protid
+    ids = protid
     if self._SQL.execute(cmd):
       ids = ",".join([protid] + ['"%s"' % id[0] for id in self._SQL.fetchall()])
 
@@ -419,10 +457,11 @@ class PhylomeDB3Connector(object):
     cmd += 'taxid AND ph.phylome_id = %s AND pc.phylome_id = ph.' % (phylome_id)
     cmd += 'phylome_id AND pc.version = p.version) GROUP BY p.protid'
 
-    ## Store the information
+    ## Store the information. For those sequences with more than one copy, the
+    ## sequence identifier is saved for an extended search.
     if self._SQL.execute(cmd):
+      extended = []
       for entry in self._SQL.fetchall():
-
         code = ("Phy%s_%s") % (entry[0], entry[3])
         proteome = ("%s.%s") % (entry[3], entry[2])
         info.setdefault("seq", {}).setdefault(code, {})
@@ -431,12 +470,39 @@ class PhylomeDB3Connector(object):
         info["seq"][code].setdefault("taxid", entry[1])
         info["seq"][code].setdefault("proteome", proteome)
         info["seq"][code].setdefault("sps_name", entry[4])
-        info["seq"][code].setdefault("protein", entry[5] if entry[5] else "")
-        info["seq"][code].setdefault("gene", entry[6] if entry[6] else "")
-        info["seq"][code].setdefault("copy", entry[7]  if entry[7] else "")
+        info["seq"][code].setdefault("protein", set())
+        if entry[5]:
+          info["seq"][code]["protein"].add(entry[5])
+        info["seq"][code].setdefault("gene", set())
+        if entry[6]:
+          info["seq"][code]["gene"].add(entry[5])
+        copy = int(entry[7]) if entry[7] else 0
+        info["seq"][code].setdefault("copy", copy)
         info["seq"][code].setdefault("trees", entry[8])
         info["seq"][code].setdefault("collateral", entry[9])
         info["seq"][code].setdefault("external", {})
+
+        if info["seq"][code]["copy"] > 1:
+          extended.append(entry[0])
+
+      ## Look for alternative protein or/and gene names for those sequences with
+      ## more that one copy
+      if extended:
+        ext = ",".join(['"%s"' % id for id in extended])
+
+        cmd =  'SELECT p.protid, s.code, p.prot_name, p.gene_name FROM protein '
+        cmd += 'AS p, species AS s, %s AS ph, %s AS pc WHERE' % (ph_tbl, pc_tbl)
+        cmd += '(p.protid IN (%s) AND p.taxid = s.taxid AND ph.phylome_' % (ext)
+        cmd += 'id = %s AND ph.phylome_id = pc.phylome_id AND p.' % (phylome_id)
+        cmd += 'taxid = pc.taxid AND pc.version = p.version)'
+
+        if self._SQL.execute(cmd):
+          for entry in self._SQL.fetchall():
+            code = ("Phy%s_%s") % (entry[0], entry[1])
+            if entry[2]:
+              info["seq"][code]["protein"].add(entry[2])
+            if entry[3]:
+              info["seq"][code]["gene"].add(entry[3])
 
     ## Get the external ids associated to each sequence in the tree.
     cmd = 'SELECT distinct p.protid, s.code, e.external_db, e.external_id FROM '
@@ -447,6 +513,8 @@ class PhylomeDB3Connector(object):
       for protid, code, db, id in self._SQL.fetchall():
         code = ("Phy%s_%s") % (protid, code)
         info["seq"][code]["external"].setdefault(db, []).append(id)
+
+    ## Return all available information for the homolog sequences in the tree
     return info
   ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
 
@@ -455,13 +523,10 @@ class PhylomeDB3Connector(object):
     """ Returns all available tress for a given protid grouped by phylomes
     """
 
+    # Check if the code is well-constructed
+    if not self.check_input_parameter(list_id = id, boolean = collateral):
+      raise NameError("Check your input data")
     protid = self.parser_ids(id)
-    ## Check if the code is well-constructed
-    if not protid:
-      raise NameError("Check your input protid code")
-
-    if type(collateral) != bool:
-      raise NameError("Check your input collateral flag parameter")
 
     tr_tbl = self._trees_table
     ## Recover all trees where the input protid has been used as seed
@@ -505,13 +570,9 @@ class PhylomeDB3Connector(object):
     """ Retuns the trees number for each method in a given phylome
     """
 
-    ## Check if the phylome_id code is an integer greater than 0
-    try:
-      int(phylome_id)
-    except:
-      raise NameError("Check your input phylome id")
-    if int(phylome_id) < 1:
-      raise NameError("Check your input phylome id")
+    # Check if the code is well-constructed
+    if not self.check_input_parameter(phylome_id = phylome_id):
+      raise NameError("Check your input data")
 
     cmd =  'SELECT method, count(*) FROM %s WHERE phylome' % (self._trees_table)
     cmd += '_id = %s GROUP BY method' % (phylome_id)
@@ -528,13 +589,9 @@ class PhylomeDB3Connector(object):
     """ Returns all trees available for a given phylome
     """
 
-    ## Check if the phylome_id code is an integer greater than 0
-    try:
-      int(phylome_id)
-    except:
-      raise NameError("Check your input phylome id")
-    if int(phylome_id) < 1:
-      raise NameError("Check your input phylome id")
+    # Check if the code is well-constructed
+    if not self.check_input_parameter(phylome_id = phylome_id):
+      raise NameError("Check your input data")
 
     ## Get all available trees for a given phylome id
     cmd = 'SELECT protid, code, method, lk, newick FROM %s' %(self._trees_table)
@@ -552,3 +609,561 @@ class PhylomeDB3Connector(object):
     return trees
   ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
 
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+  def get_seq_info_msf(self, id, phylome_id):
+    """ Returns all available information for the different homologs sequences
+        associated to a given seed protid and phylome id
+    """
+
+    ## Check the input parameters
+    if not self.check_input_parameter(single_id = id, phylome_id = phylome_id):
+      raise NameError("Check your input parameters")
+    protid = self.parser_ids(id)
+
+    ## Select as well the homolog sequences for the seed protein in the input
+    ## phylome
+    cmd =  'SELECT friend_id FROM seed_friend WHERE (protid = %s ' % (protid)
+    cmd += 'AND phylome_id = %s)' % (phylome_id)
+
+    ## Define the ids set to get the available information associated to them
+    ids = None
+    if self._SQL.execute(cmd):
+      ids = ",".join([protid] + ['"%s"' % id[0] for id in self._SQL.fetchall()])
+
+    ## Return an empty dictionary for those cases where there is not available
+    ## information for the input protein id in the input phylome
+    if not ids:
+      return {}
+
+    ph_tbl, pc_tbl = self._phylomes_table, self._phylomes_content_table
+    ## Get the available information fot all of these ids
+    cmd =  'SELECT p.protid, s.code, prot_name, gene_name, p.comments, seq, '
+    cmd += 'length(seq), MAX(copy) FROM protein AS p, unique_protein AS u, '
+    cmd += 'species AS s, %s AS ph, %s AS pc WHERE (p.protid' % (ph_tbl, pc_tbl)
+    cmd += ' IN (%s) AND p.taxid = s.taxid AND p.protid = u.protid AND ' % (ids)
+    cmd += 'p.taxid = pc.taxid AND ph.phylome_id = %s AND pc.' %(phylome_id)
+    cmd += 'phylome_id = ph.phylome_id AND pc.version = p.version) GROUP BY '
+    cmd += 'p.protid'
+
+    info = {}
+    ## Store normal results and add for an extended search those sequences with
+    ## more than one copy
+    if self._SQL.execute(cmd):
+      extended = []
+      for entry in self._SQL.fetchall():
+        code = ("Phy%s_%s") % (entry[0], entry[1])
+        info.setdefault(code, {}).setdefault("seq", entry[5])
+        info[code].setdefault("comments", entry[4])
+        info[code].setdefault("seq_leng", entry[6])
+        info[code].setdefault("external", {})
+
+        copy = int(entry[7]) if entry[7] else 0
+        info[code].setdefault("copy", copy)
+
+        info[code].setdefault("protein", set())
+        if entry[2]:
+          info[code]["protein"].add(entry[2])
+        info[code].setdefault("gene", set())
+        if entry[3]:
+          info[code]["gene"].add(entry[3])
+
+        if info[code]["copy"] > 1:
+          extended.append(entry[0])
+
+      ## Look for alternative protein or/and gene names for those sequences with
+      ## more that one copy
+      if extended:
+        ext = ",".join(['"%s"' % id for id in extended])
+
+        cmd =  'SELECT p.protid, s.code, p.prot_name, p.gene_name FROM protein '
+        cmd += 'AS p, species AS s, %s AS ph, %s AS pc WHERE' % (ph_tbl, pc_tbl)
+        cmd += '(p.protid IN (%s) AND p.taxid = s.taxid AND ph.phylome_' % (ext)
+        cmd += 'id = %s AND ph.phylome_id = pc.phylome_id AND p.' % (phylome_id)
+        cmd += 'taxid = pc.taxid AND pc.version = p.version)'
+
+        if self._SQL.execute(cmd):
+          for entry in self._SQL.fetchall():
+            code = ("Phy%s_%s") % (entry[0], entry[1])
+            if entry[2]:
+              info[code]["protein"].add(entry[2])
+            if entry[3]:
+              info[code]["gene"].add(entry[3])
+
+    ## Recover external references for each homolog sequences
+    cmd =  'SELECT distinct p.protid, s.code, e.external_db, e.external_id FROM'
+    cmd += ' protein AS p, external_id AS e, species AS s WHERE (e.protid = p.'
+    cmd += 'protid AND p.protid IN (%s) AND p.taxid = s.taxid)' % ids
+
+    if self._SQL.execute(cmd):
+      for protid,code,db,id in self._SQL.fetchall():
+        code = ("Phy%s_%s") % (protid, code)
+        info[code]["external"].setdefault(db, []).append(id)
+
+    ## Return the available information
+    return info
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+  def get_algs(self, id, phylome_id):
+    """ Given a protID, it returns a tuple with the raw_alg, clean_alg and the
+        number of seqs included.
+    """
+
+    # Check if the code is well-constructed
+    if not self.check_input_parameter(single_id = id, phylome_id = phylome_id):
+      raise NameError("Check your input data")
+    protid = self.parser_ids(id)
+
+    ## Get the raw and clean aligs for the input protid in the input phylome
+    cmd =  'SELECT raw_alg, clean_alg, seqnumber FROM %s ' % (self._algs_table)
+    cmd += 'WHERE (phylome_id = %s AND protid = %s)' % (phylome_id, protid)
+
+    alg = {}
+    ## Return the MySQL result in the proper data structure
+    if self._SQL.execute(cmd):
+      alg["raw_alg"], alg["clean_alg"], alg["seqnumber"] = self._SQL.fetchone()
+    return alg
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+  def get_raw_alg(self, id, phylome_id):
+    """ Given a protein identifier, it returns the raw alignment for that id
+         in the input phylome
+    """
+
+    # Check if the code is well-constructed
+    if not self.check_input_parameter(single_id = id, phylome_id = phylome_id):
+      raise NameError("Check your input data")
+    protid = self.parser_ids(id)
+
+    ## Ask for the raw alignment for a given protein in the input phylome
+    cmd =  'SELECT raw_alg FROM %s WHERE (phylome_id = ' % (self._algs_table)
+    cmd += '%s AND protid = %s)' % (phylome_id, protid)
+
+    if self._SQL.execute(cmd):
+      return self._SQL.fetchone()[0]
+    return ""
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+  def get_clean_alg(self, id, phylome_id):
+    """ Given a protein identifier, it returns the clean alignment for that id
+         in the input phylome
+    """
+
+    # Check if the code is well-constructed
+    if not self.check_input_parameter(single_id = id, phylome_id = phylome_id):
+      raise NameError("Check your input data")
+    protid = self.parser_ids(id)
+
+    ## Ask for the raw alignment for a given protein in the input phylome
+    cmd =  'SELECT clean_alg FROM %s WHERE (phylome_id = ' % (self._algs_table)
+    cmd += '%s AND protid = %s)' % (phylome_id, protid)
+
+    if self._SQL.execute(cmd):
+      return self._SQL.fetchone()[0]
+    return ""
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+  def count_algs(self, phylome_id):
+    """ Returns how many alignments are for a given phylome
+    """
+
+    # Check if the code is well-constructed
+    if not self.check_input_parameter(phylome_id = phylome_id):
+      raise NameError("Check your input data")
+
+    al_tbl = self._algs_table
+    cmd = 'SELECT count(*) FROM %s WHERE phylome_id = %s' % (al_tbl, phylome_id)
+
+    if self._SQL.execute(cmd):
+      return  int(self._SQL.fetchone()[0])
+    return 0
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+  def get_phylome_algs(self, phylome_id):
+    """ Returns all trees available for a given phylome
+    """
+
+    # Check if the code is well-constructed
+    if not self.check_input_parameter(phylome_id = phylome_id):
+      raise NameError("Check your input data")
+
+    cmd = 'SELECT protid, code, raw_alg, clean_alg FROM %s ' % self._algs_table
+    cmd += 'AS a, species AS s, %s AS ph WHERE (ph.' % self._phylomes_table
+    cmd += 'phylome_id = %s AND ph.phylome_id = a.phylome_id AND ' % phylome_id
+    cmd += 'ph.seed_taxid = s.taxid)'
+
+    algs = {}
+    if self._SQL.execute(cmd):
+      for protid, code, raw, clean in self._SQL.fetchall():
+        id = ("Phy%s_%s") % (protid, code)
+        algs.setdefault(id, {})["raw_alg"] = raw
+        algs.setdefault(id, {})["clean_alg"] = clean
+    return algs
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+  def get_proteomes_in_phylome(self, phylome_id):
+    """ Returns a list of proteomes associated to a given phylome_id
+    """
+
+    cmd = 'SELECT s.taxid, code, pc.version, s.name, source, date FROM species '
+    cmd += 'AS s, phylome_content AS pc, %s AS ph, genome' %self._phylomes_table
+    cmd += ' AS g WHERE (ph.phylome_id = %s AND ph.phylome_id = ' % phylome_id
+    cmd += 'pc.phylome_id AND pc.taxid = s.taxid AND pc.taxid = g.taxid AND pc.'
+    cmd += 'version = g.version)'
+
+    proteomes = []
+    if self._SQL.execute(cmd):
+      proteomes = [ map(str, proteome) for proteome in self._SQL.fetchall()]
+    return proteomes
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+  def get_species(self):
+    """ Returns all current registered species in the database
+    """
+
+    cmd = 'SELECT taxid, code, name FROM species'
+
+    species = {}
+    if self._SQL.execute(cmd):
+      for sps in self._SQL.fetchall():
+        species[sps[1]] = {}
+        species[sps[1]]["taxid"] = sps[0]
+        species[sps[1]]["code"]  = sps[1]
+        species[sps[1]]["name"]  = sps[2]
+    return species
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+  def get_species_info(self, taxid = None, code = None):
+    """ Returns all information on a given species/code
+    """
+
+    cmd = 'SELECT taxid, code, name FROM species AS s WHERE ('
+    if taxid:
+      cmd += 'taxid = %s' % taxid
+      cmd += '' if code else ')'
+
+    if code:
+      cmd += ' AND ' if taxid else ""
+      cmd += 'code = "%s")' % code
+
+    species = {}
+    if self._SQL.execute(cmd):
+      info = self._SQL.fetchone()
+      species["taxid"] = info[0]
+      species["code"]  = info[1]
+      species["name"]  = info[2]
+    return species
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+  def get_genomes(self):
+    """ Returns all current available genomes/proteomes"""
+
+    cmd = 'SELECT g.taxid, code, version, name, source, DATE(date) FROM genome '
+    cmd += 'AS g, species AS s WHERE s.taxid = g.taxid'
+
+    genomes = []
+    if self._SQL.execute(cmd):
+      genomes = [ map(str, genome) for genome in self._SQL.fetchall()]
+    return genomes
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+  def get_genome_info(self, genome):
+    """ Returns all available information about a registered genome/proteome
+    """
+
+    genome = genome.split(".")
+    if len(genome) != 2:
+      return {}
+
+    cmd = 'SELECT g.taxid, code, version, s.name, DATE(date), source, comments '
+    cmd += 'FROM genome AS g, species AS s WHERE (s.taxid = g.taxid AND code '
+    cmd += '= "%s" AND version = %s)' % (genome[0], genome[1])
+
+    info = {}
+    if self._SQL.execute(cmd):
+      genome = self._SQL.fetchone()
+      info["genome_id"] = ("%s.%s") % (genome[1], genome[2])
+      info["species"]   = genome[3]
+      info["taxid"]     = genome[0]
+      info["version"]   = genome[2]
+      info["date"]      = genome[4]
+      info["source"]    = genome[5]
+      info["comments"]  = genome[6]
+    return info
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+  def get_genomes_by_species(self, taxid):
+    """ Returns the longest isoform for a given query
+    """
+
+    # Look for different isoforms asocciated to the same gene/protein
+    cmd = 'SELECT taxid, version FROM genome WHERE taxid = %s ' % taxid
+
+    genomes = {}
+    if self._SQL.execute(cmd):
+      for taxid, version in self._SQL.fetchall():
+        genomes.setdefault(taxid, []).append(version)
+    return genomes
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+  def get_phylomes(self):
+    """ Returns all current available phylomes
+    """
+
+    cmd = 'SELECT phylome_id, seed_taxid, s.name, code, seed_version, DATE(ts),'
+    cmd += ' ph.name, comments FROM species AS s, %s AS ' % self._phylomes_table
+    cmd += 'ph WHERE (ph.seed_taxid = s.taxid)'
+
+    phylomes = {}
+    if self._SQL.execute(cmd):
+      for entry in self._SQL.fetchall():
+        phylomes[entry[0]] = {}
+        phylomes[entry[0]]["seed_taxid"]    = entry[1]
+        phylomes[entry[0]]["seed_species"]  = entry[2]
+        phylomes[entry[0]]["seed_proteome"] = ("%s.%s") % (entry[3], entry[4])
+        phylomes[entry[0]]["date"]          = entry[5]
+        phylomes[entry[0]]["name"]          = entry[6]
+        phylomes[entry[0]]["comments"]      = entry[7]
+    return phylomes
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+  def get_phylome_info(self, phylome_id):
+    """ Returns available information on a given phylome
+    """
+
+    cmd =  'SELECT seed_taxid, code, seed_version, DATE(ts), ph.name, comments,'
+    cmd += 's.name FROM species AS s, %s AS ph WHERE ' % self._phylomes_table
+    cmd += '(ph.phylome_id = %s AND ph.seed_taxid = s.taxid)' % phylome_id
+
+    info = {}
+    if self._SQL.execute(cmd):
+      phylome = self._SQL.fetchone()
+      info["id"] = phylome_id
+      info["seed_taxid"]    = phylome[0]
+      info["seed_species"]  = phylome[6]
+      info["seed_version"]  = phylome[2]
+      info["seed_proteome"] = ("%s.%s") % (phylome[1], phylome[2])
+      info["date"]          = phylome[3]
+      info["name"]          = phylome[4]
+      info["comments"]      = phylome[5]
+    return info
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+  def get_seqid_info(self, protid):
+    """ Returns available information about a given protid
+    """
+    cmd = 'SELECT p.protid, p.taxid, version, code, name, prot_name, gene_name,'
+    cmd += ' comments, seq, MAX(copy) FROM protein AS p, unique_protein AS u, '
+    cmd += 'species AS s WHERE (p.protid = %s AND ' % self.parser_ids(protid)
+    cmd += 'p.protid = u.protid AND s.taxid = p.taxid) GROUP BY version'
+
+    info = {}
+    if self._SQL.execute(cmd):
+      for entry in self._SQL.fetchall():
+        if not entry[0]: break
+        proteome = ("%s.%s") % (entry[3], entry[2])
+        info.setdefault("protid", ("Phy%s_%s") % (entry[0], entry[3]))
+        info.setdefault("species", entry[4])
+        info.setdefault("taxid", entry[1])
+        info.setdefault("proteome", []).append(proteome)
+        info.setdefault("seq", entry[8])
+        info.setdefault("name", {}).setdefault(proteome, entry[5])
+        info.setdefault("gene", {}).setdefault(proteome, entry[6])
+        info.setdefault("comments", {}).setdefault(proteome, entry[7])
+        info.setdefault("copy_number", {}).setdefault(proteome, entry[9])
+      if info: info["isoforms"] = self.get_all_isoforms(info["protid"])
+      if info: info["external"] = self.get_id_translations(info["protid"])
+    return info
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+  def get_all_isoforms(self, protid):
+    """ Returns the longest isoform for a given query
+    """
+
+    # Look for different isoforms asocciated to the same gene/protein
+    target = self.parser_ids(protid)
+    cmd = 'SELECT isoform, longest FROM isoform WHERE (isoform = %s ' % target
+    cmd += 'OR longest = %s)' % target
+
+    isoforms = {}
+    if self._SQL.execute(cmd):
+      ids = reduce(list.__add__, [[p1, p2] for p1, p2 in self._SQL.fetchall()])
+      ids = self.parser_ids(ids)
+
+      cmd = 'SELECT p.protid, code, length(u.seq) FROM protein AS p, species '
+      cmd += 'AS s, unique_protein AS u WHERE (p.protid IN (%s) AND p.' % ids
+      cmd += 'protid = u.protid AND p.taxid = s.taxid)'
+
+      if self._SQL.execute(cmd):
+        for id, species, len in self._SQL.fetchall():
+          code = ("Phy%s_%s") % (id, species)
+          if protid != code: isoforms[code] = len
+    return isoforms
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+
+ ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+  def get_seqids_in_genome(self, taxid, version, filter_isoforms = True):
+    """ Returns all sequences of a given proteome
+    """
+
+    if filter_isoforms:
+      cmd =  'SELECT p.protid, code, MAX(copy), md5 FROM protein AS p, species '
+      cmd += 'AS s, unique_protein AS u, isoform AS i WHERE (p.taxid = '
+      cmd += '%s AND p.version = %s AND p.protid = i.isoform' % (taxid, version)
+      cmd += ' AND i.version = %s AND i.longest = p.protid AND p.' % version
+      cmd += 'taxid = s.taxid AND p.protid = u.protid) GROUP BY p.protid'
+    else:
+      cmd =  'SELECT p.protid, code, MAX(copy), md5 FROM protein AS p, species '
+      cmd += 'AS s, unique_protein AS u WHERE (p.taxid = %s AND p.' % taxid
+      cmd += 'version = %s AND p.taxid = s.taxid AND p.protid ' % version
+      cmd += '= u.protid) GROUP BY p.protid'
+
+    sequences = {}
+    if self._SQL.execute(cmd):
+      for protid, code, copy, md5 in self._SQL.fetchall():
+        sequences.setdefault(md5, {})
+        sequences[md5]["protid"] = ("Phy%s_%s") % (protid, code)
+        sequences[md5]["copy"] = int(copy)
+    return sequences
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+
+ ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+  def get_seqs_in_genome(self, taxid, version, filter_isoforms = True):
+    """ Returns all sequences of a given proteome
+    """
+
+    if filter_isoforms:
+      cmd =  'SELECT p.protid, code, prot_name, gene_name, comments, seq FROM '
+      cmd += 'protein AS p, species AS s, unique_protein AS u, isoform AS i '
+      cmd += 'WHERE (p.taxid = %s AND p.version = %s AND p.' % (taxid, version)
+      cmd += 'protid = i.isoform AND i.version = %s AND i.longest = ' % version
+      cmd += 'p.protid AND p.taxid = s.taxid AND p.protid = u.protid) GROUP BY '
+      cmd += 'p.protid'
+    else:
+      cmd =  'SELECT p.protid, code, prot_name, gene_name, comments, seq FROM '
+      cmd += 'protein AS p, species AS s, unique_protein AS u WHERE (p.taxid = '
+      cmd += '%s AND p.version = %s AND p.taxid = s.taxid ' % (taxid, version)
+      cmd += 'AND p.protid = u.protid) GROUP BY p.protid'
+
+    sequences = {}
+    if self._SQL.execute(cmd):
+      for id, code, protein, gene, comments, seq in self._SQL.fetchall():
+        protid = ("Phy%s_%s") % (id, code)
+        sequences.setdefault(protid, {})
+        sequences[protid]["protein"] = protein
+        sequences[protid]["gene"] = gene
+        sequences[protid]["comments"] = comments
+        sequences[protid]["seq"] = seq
+    return sequences
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+  def get_seed_ids_in_phylome(self, phylome_id, start = 0, offset = -1):
+    """
+    """
+
+    cmd = 'SELECT count(p.protid) FROM protein AS p, %s ' % self._phylomes_table
+    cmd += 'AS ph WHERE (ph.phylome_id = %s AND ph.seed_taxid = ' % phylome_id
+    cmd += 'p.taxid AND ph.seed_version = p.version)'
+
+    if self._SQL.execute(cmd):
+      upper_limit = (self._SQL.fetchone()[0])
+
+    cmd = 'SELECT p.protid, code, p.comments, gene_name, prot_name, MAX(copy), '
+    cmd += 'length(seq) FROM protein AS p, %s AS ph, ' % self._phylomes_table
+    cmd += 'unique_protein AS u, species AS s WHERE (ph.phylome_id = '
+    cmd += '%s AND ph.seed_taxid = p.taxid AND ph.seed_version = ' % phylome_id
+    cmd += 'p.version AND p.protid = u.protid AND p.taxid = s.taxid) GROUP BY '
+    cmd += 'protid ORDER BY gene_name DESC, length(seq) ASC'
+    cmd += ' LIMIT %d,%d' % (start, offset) if offset != -1 else ''
+
+    seqs, link = {}, {}
+    if self._SQL.execute(cmd):
+      for entry in self._SQL.fetchall():
+        code = ("Phy%s_%s") % (entry[0], entry[1])
+
+        link.setdefault(entry[0], code)
+        seqs.setdefault(code, {})
+
+        seqs[code]["algs"] = 0
+        seqs[code]["trees"] = 0
+        seqs[code]["comments"] = entry[2]
+        seqs[code]["gene_name"] = entry[3]
+        seqs[code]["prot_name"] = entry[4]
+        seqs[code]["seq_length"] = entry[6]
+        seqs[code]["copy_number"] = entry[5]
+
+    ids = self.parser_ids(seqs.keys())
+    cmd = 'SELECT t.protid, count(method) FROM %s AS t ' % self._trees_table
+    cmd += 'WHERE (t.protid IN (%s) AND t.phylome_id = %s)' % (ids, phylome_id)
+    cmd += ' GROUP BY t.protid'
+
+    if self._SQL.execute(cmd):
+      for entry in self._SQL.fetchall():
+        seqs[link[entry[0]]]["trees"] = int(entry[1])
+
+    cmd  = 'SELECT a.protid, raw_alg IS NOT NULL, clean_alg IS NOT NULL FROM '
+    cmd += '%s AS a WHERE (a.protid IN (%s) AND a.' % (self._algs_table, ids)
+    cmd += 'phylome_id = %s) GROUP BY a.protid' % phylome_id
+
+    if self._SQL.execute(cmd):
+      for entry in self._SQL.fetchall():
+        if entry[1] != '0':
+          seqs[link[entry[0]]]["algs"] += 1
+        if entry[2] != '0':
+          seqs[link[entry[0]]]["algs"] += 1
+
+    return seqs, upper_limit
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+  def get_phylomes_for_seed_ids(self, seed_ids):
+
+    ids = self.parser_ids(seed_ids)
+
+    cmd =  'SELECT t.protid, s.code, t.phylome_id, ph.name FROM species AS s, '
+    cmd += '%s AS t, %s AS ph WHERE' % (self._trees_table, self._phylomes_table)
+    cmd += ' (t.protid IN (%s) AND t.phylome_id = ph.phylome_id AND ph.' % ids
+    cmd += 'seed_taxid = s.taxid) GROUP BY t.protid, ph.phylome_id'
+
+    phylomes = {}
+    if self._SQL.execute(cmd):
+      for protid, code, phylome_id, name in self._SQL.fetchall():
+        code = ("Phy%s_%s") % (protid, code)
+        phylomes.setdefault(code, []).append((phylome_id, name))
+    return phylomes
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+  def get_seed_ids(self, phylome_id, filter_isoforms = True):
+    """ Returns the ids for the seed proteins in a given phylome filtering by the
+        longest isoforms and the copy number variation of each protein as well
+    """
+
+    cmd =  'SELECT seed_taxid, seed_version FROM %s ' % self._phylomes_table
+    cmd += 'WHERE phylome_id = %s' % phylome_id
+
+    seeds = {}
+    if self._SQL.execute(cmd):
+      taxid, version = self._SQL.fetchone()
+      seeds = self.get_seqids_in_genome(taxid, version, filter_isoforms)
+    return seeds
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
