@@ -70,6 +70,37 @@ class TestPhylomeDB3Connector(unittest.TestCase):
     self.assertRaises(NameError, self.connection.get_conversion_protein, {})
     self.assertRaises(NameError, self.connection.get_conversion_protein, -125e5)
 
+  def test_check_parameters(self):
+    """ OTHER: Make sure all input parameters are valid for the API functions
+    """
+
+    ## Normal Cases
+    self.assertEqual(self.connection.check_input_parameter(str_number = 7, \
+      single_id = "Phy0007XA1_HUMAN"), True)
+
+    self.assertEqual(self.connection.check_input_parameter(str_number = 7, \
+      list_id = "Phy0007XA1_HUMAN"), True)
+
+    self.assertEqual(self.connection.check_input_parameter(code = "test_api", \
+      list_id = ["Phy0007XA1_HUMAN", "Phy0129129"]), True)
+
+    self.assertEqual(self.connection.check_input_parameter(code = "test_api", \
+      single_id = ["Phy0007XA1_HUMAN", "Phy0129129"]), False)
+
+    self.assertEqual(self.connection.check_input_parameter(code = "test_api", \
+      string = None), True)
+
+    self.assertEqual(self.connection.check_input_parameter(code = "test_api", \
+      boolean = None), False)
+
+    self.assertEqual(self.connection.check_input_parameter(boolean = True), True)
+
+    self.assertEqual(self.connection.check_input_parameter(string = []), False)
+
+    ## Non-compatible cases
+    self.assertRaises(NameError, self.connection.check_input_parameter, \
+      bool = True)
+
   def test_parser_ids(self):
     """ TREES: Make sure that ids are being well-parsed
     """
@@ -706,6 +737,85 @@ class TestPhylomeDB3Connector(unittest.TestCase):
     self.assertRaises(NameError, self.connection.get_phylome_algs, [])
     self.assertRaises(NameError, self.connection.get_phylome_algs, None)
 
+  def test_species_in_db(self):
+    """ INFO:  Recover information about the species in the database
+    """
+
+    ## Normal Cases
+    ## Impossible to test his function since the result depends on the current
+    ## state of the database
+    #~ expected = {}
+    #~ self.assertEqual(self.connection.get_species(), expected)
+
+    expected = {'code': 'HUMAN', 'taxid': 9606L, 'name': 'Homo sapiens'}
+    self.assertEqual(self.connection.get_species_info(taxid = 9606), expected)
+
+    expected = {'code': 'HUMAN', 'taxid': 9606L, 'name': 'Homo sapiens'}
+    self.assertEqual(self.connection.get_species_info(code = "HUMAN"), expected)
+
+    expected = {}
+    self.assertEqual(self.connection.get_species_info(code = "HUMAN", taxid = \
+      1292), expected)
+
+    ## Unexpected cases
+    self.assertRaises(NameError, self.connection.get_species_info, taxid = \
+      "YEAST")
+
+    self.assertRaises(NameError, self.connection.get_species_info, code = \
+      "My species")
+
+    self.assertRaises(NameError, self.connection.get_species_info, code = -3)
+
+    self.assertRaises(NameError, self.connection.get_species_info, code = [])
+
+    self.assertRaises(NameError, self.connection.get_species_info, code = None,\
+      taxid = None)
+
+  def test_genomes_in_db(self):
+    """ INFO:  Recover information about the proteomes/genomes in the database
+    """
+
+    ## Normal Cases
+    ## Impossible to test his function since the result depends on the current
+    ## state of the database
+    #~ expected = {}
+    #~ self.assertEqual(self.connection.get_genomes(), expected)
+
+    expected = {'taxid': 9606L, 'comments': '-', 'source': 'ensembl',
+                'version': 3L, 'date': None, 'genome_id': 'HUMAN.3',
+                'species': 'Homo sapiens'}
+    self.assertEqual(self.connection.get_genome_info("HUMAN.3"), expected)
+
+    expected = {}
+    self.assertEqual(self.connection.get_genome_info("HUMAN.18"), expected)
+
+    expected = {4932L: [1L, 2L, 3L]}
+    self.assertEqual(self.connection.get_genomes_by_species(4932), expected)
+
+    expected = {}
+    self.assertEqual(self.connection.get_genomes_by_species(4878887), expected)
+
+
+    ## Unexpected cases
+    self.assertRaises(NameError, self.connection.get_genome_info, \
+      "My.Test.Species")
+
+    self.assertRaises(NameError, self.connection.get_genome_info, \
+      "My Test.Species")
+
+    self.assertRaises(NameError, self.connection.get_genomes_by_species, \
+      "AnotherTest")
+
+    self.assertRaises(NameError, self.connection.get_genomes_by_species, "Four")
+
+    ## Non-valid cases
+    self.assertRaises(NameError, self.connection.get_genome_info, [])
+
+    self.assertRaises(NameError, self.connection.get_genome_info, "")
+
+    self.assertRaises(NameError, self.connection.get_genomes_by_species, None)
+
+    self.assertRaises(NameError, self.connection.get_genomes_by_species, -787)
 ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ****
 
 ## ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** *****

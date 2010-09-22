@@ -122,21 +122,29 @@ class PhylomeDB3Connector(object):
     """
 
     ## Define the available checks
-    valid_keys = set(["phylome_id", "single_id", "list_id", "code", "string", \
-      "boolean"])
+    valid_keys = set(["str_number", "single_id", "list_id", "code", "string", \
+      "boolean", "number"])
 
     ## Check that all input keys have associated an verification clause
     for key in kargs:
       if not key in valid_keys:
         raise NameError("Invalid key")
 
+    ## Check number. It should be either None or an integer positive number
+    if "number" in kargs:
+      if kargs["number"]:
+        try:    int(kargs["number"])
+        except: return False
+        if int(kargs["number"]) < 1:
+          return False
+
     ## Check phylome id format. It should be an integer positive number
-    if "phylome_id" in kargs:
+    if "str_number" in kargs:
       try:
-        int(kargs["phylome_id"])
+        int(kargs["str_number"])
       except:
         return False
-      if int(kargs["phylome_id"]) < 1:
+      if int(kargs["str_number"]) < 1:
         return False
 
     ## Check if a unique protid has been given as an input parameter
@@ -159,6 +167,8 @@ class PhylomeDB3Connector(object):
     ## an string or not
     if "string" in kargs:
       if kargs["string"] != None and type(kargs["string"]) != str:
+        return False
+      if kargs["string"] != None and len(kargs["string"].split()) > 1:
         return False
 
     ## check if an input parameter is an boolean or not
@@ -203,7 +213,7 @@ class PhylomeDB3Connector(object):
     """ Returns the longest isoform for a given id
     """
 
-    # Check if the code is well-constructed
+    # Check if the id is well-constructed
     if not self.check_input_parameter(single_id = id):
       raise NameError("Check your input data")
     protid = self.parser_ids(id)
@@ -230,7 +240,7 @@ class PhylomeDB3Connector(object):
         id or an external id.
     """
 
-    # Check if the code is well-constructed
+    # Check if the id is well-constructed
     if not self.check_input_parameter(code = id):
       raise NameError("Check your input data")
 
@@ -278,7 +288,7 @@ class PhylomeDB3Connector(object):
     """ Returns the protein id associated to a given external id
     """
 
-    # Check if the code is well-constructed
+    # Check if the external code is well-constructed
     if not self.check_input_parameter(code = external):
       raise NameError("Check your input data")
 
@@ -312,7 +322,7 @@ class PhylomeDB3Connector(object):
     """ Returns all the registered translations of a given protid
     """
 
-    # Check if the code is well-constructed
+    # Check if the id is well-constructed
     if not self.check_input_parameter(single_id = id):
       raise NameError("Check your input data")
     protid = self.parser_ids(id)
@@ -356,7 +366,7 @@ class PhylomeDB3Connector(object):
         sequences to the seed protein
     """
 
-    # Check if the code is well-constructed
+    # Check if the protid is well-constructed
     if not self.check_input_parameter(list_id = protid):
       raise NameError("Check your input data")
     protid = self.parser_ids(protid)
@@ -382,8 +392,8 @@ class PhylomeDB3Connector(object):
         available trees for the protid in the given phylome_id
     """
 
-    # Check if the code is well-constructed
-    if not self.check_input_parameter(single_id = id, phylome_id = phylome_id):
+    # Check if the input parameters are well-constructed
+    if not self.check_input_parameter(single_id = id, str_number = phylome_id):
       raise NameError("Check your input data")
     protid = self.parser_ids(id)
 
@@ -409,8 +419,8 @@ class PhylomeDB3Connector(object):
         asociated to a tuple (protein, phylome) identifiers.
     """
 
-    # Check if the code is well-constructed
-    if not self.check_input_parameter(single_id = id, phylome_id = phylome_id,\
+    # Check if the input parameters are well-constructed
+    if not self.check_input_parameter(single_id = id, str_number = phylome_id,\
       string = method):
       raise NameError("Check your input data")
     protid = self.parser_ids(id)
@@ -523,7 +533,7 @@ class PhylomeDB3Connector(object):
     """ Returns all available tress for a given protid grouped by phylomes
     """
 
-    # Check if the code is well-constructed
+    # Check if the input parameters are well-constructed
     if not self.check_input_parameter(list_id = id, boolean = collateral):
       raise NameError("Check your input data")
     protid = self.parser_ids(id)
@@ -570,8 +580,8 @@ class PhylomeDB3Connector(object):
     """ Retuns the trees number for each method in a given phylome
     """
 
-    # Check if the code is well-constructed
-    if not self.check_input_parameter(phylome_id = phylome_id):
+    # Check if the phylome id is well-constructed
+    if not self.check_input_parameter(str_number = phylome_id):
       raise NameError("Check your input data")
 
     cmd =  'SELECT method, count(*) FROM %s WHERE phylome' % (self._trees_table)
@@ -589,8 +599,8 @@ class PhylomeDB3Connector(object):
     """ Returns all trees available for a given phylome
     """
 
-    # Check if the code is well-constructed
-    if not self.check_input_parameter(phylome_id = phylome_id):
+    # Check if the phylome id code is well-constructed
+    if not self.check_input_parameter(str_number = phylome_id):
       raise NameError("Check your input data")
 
     ## Get all available trees for a given phylome id
@@ -616,7 +626,7 @@ class PhylomeDB3Connector(object):
     """
 
     ## Check the input parameters
-    if not self.check_input_parameter(single_id = id, phylome_id = phylome_id):
+    if not self.check_input_parameter(single_id = id, str_number = phylome_id):
       raise NameError("Check your input parameters")
     protid = self.parser_ids(id)
 
@@ -709,8 +719,8 @@ class PhylomeDB3Connector(object):
         number of seqs included.
     """
 
-    # Check if the code is well-constructed
-    if not self.check_input_parameter(single_id = id, phylome_id = phylome_id):
+    # Check if the phylome id code is well-constructed
+    if not self.check_input_parameter(single_id = id, str_number = phylome_id):
       raise NameError("Check your input data")
     protid = self.parser_ids(id)
 
@@ -731,8 +741,8 @@ class PhylomeDB3Connector(object):
          in the input phylome
     """
 
-    # Check if the code is well-constructed
-    if not self.check_input_parameter(single_id = id, phylome_id = phylome_id):
+    # Check if the input parameters are well-constructed
+    if not self.check_input_parameter(single_id = id, str_number = phylome_id):
       raise NameError("Check your input data")
     protid = self.parser_ids(id)
 
@@ -751,8 +761,8 @@ class PhylomeDB3Connector(object):
          in the input phylome
     """
 
-    # Check if the code is well-constructed
-    if not self.check_input_parameter(single_id = id, phylome_id = phylome_id):
+    # Check if the input parameters are well-constructed
+    if not self.check_input_parameter(single_id = id, str_number = phylome_id):
       raise NameError("Check your input data")
     protid = self.parser_ids(id)
 
@@ -770,8 +780,8 @@ class PhylomeDB3Connector(object):
     """ Returns how many alignments are for a given phylome
     """
 
-    # Check if the code is well-constructed
-    if not self.check_input_parameter(phylome_id = phylome_id):
+    # Check if the phylomedb id code is well-constructed
+    if not self.check_input_parameter(str_number = phylome_id):
       raise NameError("Check your input data")
 
     al_tbl = self._algs_table
@@ -787,8 +797,8 @@ class PhylomeDB3Connector(object):
     """ Returns all trees available for a given phylome
     """
 
-    # Check if the code is well-constructed
-    if not self.check_input_parameter(phylome_id = phylome_id):
+    # Check if the phylome id code is well-constructed
+    if not self.check_input_parameter(str_number = phylome_id):
       raise NameError("Check your input data")
 
     cmd = 'SELECT protid, code, raw_alg, clean_alg FROM %s ' % self._algs_table
@@ -806,40 +816,18 @@ class PhylomeDB3Connector(object):
   ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
 
   ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
-  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
-  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
-
-  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
-  def get_proteomes_in_phylome(self, phylome_id):
-    """ Returns a list of proteomes associated to a given phylome_id
-    """
-
-    cmd = 'SELECT s.taxid, code, pc.version, s.name, source, date FROM species '
-    cmd += 'AS s, phylome_content AS pc, %s AS ph, genome' %self._phylomes_table
-    cmd += ' AS g WHERE (ph.phylome_id = %s AND ph.phylome_id = ' % phylome_id
-    cmd += 'pc.phylome_id AND pc.taxid = s.taxid AND pc.taxid = g.taxid AND pc.'
-    cmd += 'version = g.version)'
-
-    proteomes = []
-    if self._SQL.execute(cmd):
-      proteomes = [ map(str, proteome) for proteome in self._SQL.fetchall()]
-    return proteomes
-  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
-
-  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
   def get_species(self):
     """ Returns all current registered species in the database
     """
 
-    cmd = 'SELECT taxid, code, name FROM species'
-
     species = {}
-    if self._SQL.execute(cmd):
-      for sps in self._SQL.fetchall():
-        species[sps[1]] = {}
-        species[sps[1]]["taxid"] = sps[0]
-        species[sps[1]]["code"]  = sps[1]
-        species[sps[1]]["name"]  = sps[2]
+    ## Returns all species that have been registered in the database
+    if self._SQL.execute('SELECT taxid, code, name FROM species'):
+      for taxid, code, name in self._SQL.fetchall():
+        species.setdefault(code, {})["taxid"] = taxid
+        species[code]["code"]  = code
+        species[code]["name"]  = name
+
     return species
   ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
 
@@ -848,6 +836,15 @@ class PhylomeDB3Connector(object):
     """ Returns all information on a given species/code
     """
 
+    # Check if the input parameters is well-constructed
+    if not self.check_input_parameter(number = taxid, string = code):
+      raise NameError("Check your input data")
+
+    if not taxid and not code:
+      raise NameError("Define at least one input parameter")
+
+    ## Depending on the input parameters, the search in the database is perfomed
+    ## using either species taxid, or species code or both of them.
     cmd = 'SELECT taxid, code, name FROM species AS s WHERE ('
     if taxid:
       cmd += 'taxid = %s' % taxid
@@ -858,18 +855,18 @@ class PhylomeDB3Connector(object):
       cmd += 'code = "%s")' % code
 
     species = {}
+    ## Return the retrieved information
     if self._SQL.execute(cmd):
-      info = self._SQL.fetchone()
-      species["taxid"] = info[0]
-      species["code"]  = info[1]
-      species["name"]  = info[2]
+      species["taxid"], species["code"], species["name"] = self._SQL.fetchone()
     return species
   ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
 
   ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
   def get_genomes(self):
-    """ Returns all current available genomes/proteomes"""
+    """ Returns all current available genomes/proteomes
+    """
 
+    ## Complete information about each genome adding species information
     cmd = 'SELECT g.taxid, code, version, name, source, DATE(date) FROM genome '
     cmd += 'AS g, species AS s WHERE s.taxid = g.taxid'
 
@@ -884,40 +881,56 @@ class PhylomeDB3Connector(object):
     """ Returns all available information about a registered genome/proteome
     """
 
-    genome = genome.split(".")
-    if len(genome) != 2:
-      return {}
+    # Check if the input parameter is well-constructed
+    if not self.check_input_parameter(string = genome):
+      raise NameError("Check your input data")
 
+    try:
+      code, version = genome.split(".")
+    except:
+      raise NameError("A proteome/genome should be 'species_code.version'")
+
+    ## If the genome is well-defined, ask for its associated information
     cmd = 'SELECT g.taxid, code, version, s.name, DATE(date), source, comments '
-    cmd += 'FROM genome AS g, species AS s WHERE (s.taxid = g.taxid AND code '
-    cmd += '= "%s" AND version = %s)' % (genome[0], genome[1])
+    cmd += 'FROM genome AS g, species AS s WHERE (s.taxid = g.taxid AND code = '
+    cmd += '"%s" AND version = %s)' % (code, version)
 
     info = {}
+    ## Return the available information in a dictionary defined for that
     if self._SQL.execute(cmd):
-      genome = self._SQL.fetchone()
-      info["genome_id"] = ("%s.%s") % (genome[1], genome[2])
-      info["species"]   = genome[3]
-      info["taxid"]     = genome[0]
-      info["version"]   = genome[2]
-      info["date"]      = genome[4]
-      info["source"]    = genome[5]
-      info["comments"]  = genome[6]
+      taxid, code, version, name, date, source, comments  = self._SQL.fetchone()
+      info["date"]      = date
+      info["taxid"]     = taxid
+      info["source"]    = source
+      info["version"]   = version
+      info["species"]   = name
+      info["comments"]  = comments
+      info["genome_id"] = ("%s.%s") % (code, version)
     return info
   ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
 
   ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
   def get_genomes_by_species(self, taxid):
-    """ Returns the longest isoform for a given query
+    """ Returns the different proteome/genome versions, if exists, for a given
+        species
     """
 
-    # Look for different isoforms asocciated to the same gene/protein
-    cmd = 'SELECT taxid, version FROM genome WHERE taxid = %s ' % taxid
+    # Check if the input parameter is well-constructed
+    if not self.check_input_parameter(str_number = taxid):
+      raise NameError("Check your input data")
+
+    # Look for the different versions of the input taxid
+    cmd = 'SELECT taxid, version FROM genome WHERE taxid = %s ' % (taxid)
 
     genomes = {}
     if self._SQL.execute(cmd):
       for taxid, version in self._SQL.fetchall():
         genomes.setdefault(taxid, []).append(version)
     return genomes
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
   ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
 
   ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
@@ -963,6 +976,30 @@ class PhylomeDB3Connector(object):
       info["name"]          = phylome[4]
       info["comments"]      = phylome[5]
     return info
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+  def get_proteomes_in_phylome(self, phylome_id):
+    """ Returns a list of proteomes associated to a given phylome_id
+    """
+
+    # Check if the input parameter is well-constructed
+    if not self.check_input_parameter(str_number = phylome_id):
+      raise NameError("Check your input data")
+
+    ph_tbl, pc_tbl = self._phylomes_table, self._phylome_content_table
+    ## Retrieve all available information for those proteomes associated to the
+    ## input phylome
+    cmd = 'SELECT s.taxid, code, pc.version, s.name, source, date FROM species '
+    cmd += 'AS s, %s AS ph, %s AS pc, genome AS g WHERE (ph.' % (ph_tbl, pc_tbl)
+    cmd += 'phylome_id = %s AND ph.phylome_id = pc.phylome_id ' % (phylome_id)
+    cmd += 'AND pc.taxid = s.taxid AND pc.taxid = g.taxid AND pc.version = g.'
+    cmd += 'version)'
+
+    proteomes = []
+    if self._SQL.execute(cmd):
+      proteomes = [ map(str, proteome) for proteome in self._SQL.fetchall()]
+    return proteomes
   ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
 
   ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
