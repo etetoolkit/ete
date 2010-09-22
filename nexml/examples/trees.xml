@@ -26,7 +26,7 @@
 			* the trees element contains one or more tree/network
 			  elements, which are the same structure as
 			  GraphML documents (http://graphml.graphdrawing.org/),
-			  with the following extentions:
+			  with the following extensions:
 			  	- there are two subclasses (xsi:type="nex:Tree" and
 			  	  xsi:type="nex:Network"), which only differ in the
 			  	  constrained in-degree of node elements (one for 
@@ -67,6 +67,7 @@
 			<edge source="n4" target="n6" id="e6" length="0.3243"/>
 			<edge source="n7" target="n8" id="e7" length="0.32443"/>
 			<edge source="n7" target="n9" id="e8" length="0.2342"/>
+			<edge source="n7" target="n10" id="e9" length="0.2342"/>
 		</tree>
 		<!--  
 			A tree with int edges.
