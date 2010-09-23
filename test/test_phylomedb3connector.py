@@ -48,8 +48,6 @@ class TestPhylomeDB3Connector(unittest.TestCase):
     """
     self.connection = PhylomeDB3Connector(host, dbase, user, pasw, port)
 
-
-
   def test_get_conversion_ids(self):
     """ TREES: Make sure that the conversion between old and current phylomeDB
         codes is working well
