@@ -435,7 +435,7 @@ class PhylomeDB3Connector(object):
     info = {}
     if self._SQL.execute(cmd):
       newick, tree_method, lk = self._SQL.fetchone()
-      info.setdefault("tree", {})["newick"] = PhyloTree(newick)
+      info.setdefault("tree", {})["tree"] = PhyloTree(newick)
       info.setdefault("tree", {})["method"] = tree_method
       info.setdefault("tree", {})["best"] = True if not method else False
       info.setdefault("tree", {})["lk"] = lk
@@ -1186,9 +1186,9 @@ class PhylomeDB3Connector(object):
     cmd =  'SELECT p.protid, code, p.comments, gene_name, prot_name, MAX(copy),'
     cmd += ' length(seq) FROM protein AS p, %s AS ph, unique_protein' % (ph_tbl)
     cmd += ' AS u, species AS s WHERE (ph.phylome_id = %s AND ph' % (phylome_id)
-    cmd += '.seed_taxid = p.taxid AND ph.seed_version = p.version = AND p.'
-    cmd += 'protid = u.protid AND p.taxid = s.taxid) GROUP BY p.protid ORDER BY'
-    cmd += ' gene_name DESC, length(seq) ASC'
+    cmd += '.seed_taxid = p.taxid AND ph.seed_version = p.version AND p.protid '
+    cmd += '= u.protid AND p.taxid = s.taxid) GROUP BY p.protid ORDER BY gene_'
+    cmd += 'name DESC, length(seq) ASC'
     cmd += ' LIMIT %d,%d' % (start, offset) if offset else ''
 
     seqs, link = {}, {}
@@ -1196,7 +1196,7 @@ class PhylomeDB3Connector(object):
     ## one copy in order to extended their information such as alternative gene
     ## or protein names, comments, etc
     if self._SQL.execute(cmd):
-      extendend = []
+      extended = []
       for id, code, comments, gene, prot, copy, length in self._SQL.fetchall():
         protid = ("Phy%s_%s") % (id, code)
 
