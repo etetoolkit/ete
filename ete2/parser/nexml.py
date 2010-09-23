@@ -66,13 +66,13 @@ ExternalEncoding = 'ascii'
 #
 # Data representation classes
 #
-class AbstractTreeSub(supermod.AbstractTree, PhyloTree):
+class PhyloXMLTree(supermod.AbstractTree, PhyloTree):
     def __init__(self, classxx=None, id=None, about=None, meta=None, label=None, node=None, rootedge=None, edge=None, valueOf_=None, mixedclass_=None, content_=None):
-        super(AbstractTreeSub, self).__init__(classxx, id, about, meta, label, node, rootedge, edge, valueOf_, mixedclass_, content_, )
+        super(PhyloXMLTree, self).__init__(classxx, id, about, meta, label, node, rootedge, edge, valueOf_, mixedclass_, content_, )
         super(PhyloTree, self).__init__()
 
     def build(self, node):
-        super(AbstractTreeSub, self).build(node)
+        super(PhyloXMLTree, self).build(node)
 
         rootid = set([e.source for e in self.edge]) - set([e.target for e in self.edge])
 
@@ -112,7 +112,7 @@ class AbstractTreeSub(supermod.AbstractTree, PhyloTree):
             meta_content = []
             print "META CONTENT", xmlnode.meta
             for meta in xmlnode.meta:
-                metaid = meta.id
+                print globals()
                 prop = meta.anyAttributes_.get("property", None)
                 content = meta.anyAttributes_.get("content", None)
                 datatype = meta.anyAttributes_.get("datatype", None)
@@ -142,14 +142,12 @@ class AbstractTreeSub(supermod.AbstractTree, PhyloTree):
             edge_length = getattr(n, "nexml_edge_length", None) 
             edge_about = getattr(n, "nexml_edge_about", None) 
             edge_meta = getattr(n, "nexml_edge_meta", []) 
-
             edge_source = getattr(n.up, "nexml_node_id", None) 
             
             edge_target = nodeid
             if n.up:
                 print n.up.name, n.name, edge_source, edge_target
-
-                
+               
             # Nodes
             node_meta_objs = []
             node_containers = []
@@ -169,7 +167,6 @@ class AbstractTreeSub(supermod.AbstractTree, PhyloTree):
             
             # Edges
             if edge_source: 
-                print "EDGE", edge_source, edge_target
                 edge_meta_objs = []
                 edge_containers = []
                 for metaid, prop, content, datatype in edge_meta:
@@ -191,7 +188,7 @@ class AbstractTreeSub(supermod.AbstractTree, PhyloTree):
 
         # super(AbstractTreeSub, self).exportChildren(outfile, level, namespace_, name_)
 
-supermod.AbstractTree.subclass = AbstractTreeSub
+supermod.AbstractTree.subclass = PhyloXMLTree
 # end class AbstractTreeSub
 
 
