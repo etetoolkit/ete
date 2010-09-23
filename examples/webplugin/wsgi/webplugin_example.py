@@ -349,7 +349,7 @@ def tree_renderer(tree, treeid, application):
       <img src="/webplugin/close.png" onclick='$(this).closest("#tree_features_box").hide();'>
       </div>
       <form action='javascript: set_tree_features("", "", "");'>
-      <table>
+
       """
 
     for fkey, counter in text_features_avail.iteritems():
@@ -366,8 +366,6 @@ def tree_renderer(tree, treeid, application):
  #       html_features += '<td><INPUT size=7 type="text"></td> <td><input size=7 type="text"></td> <td><input size=7 type="text"></td>  <td><input size=1 type="text"></td><br>'
         #html_features += "</tr>"
 
-    html_features += "</table>"
-
     html_features += """<input type="submit" value="Refresh" 
                         onclick='javascript:
                                 // This piece of js code extracts the checked features from menu and redraw the tree sending such information
@@ -382,24 +380,24 @@ def tree_renderer(tree, treeid, application):
 
     features_button = """
      <li><a href="#" onclick='show_box(event, $(this).closest("#tree_panel").children("#tree_features_box"));'>
-     <img width=16 height=16 src="webplugin/icon_tools.png" alt="Select Tree features">
+     <img width=16 height=16 src="/webplugin/icon_tools.png" alt="Select Tree features">
      </a></li>"""
 
     download_button = """
      <li><a href="/webplugin/tmp/%s.png" target="_blank">
-     <img width=16 height=16 src="webplugin/icon_attachment.png" alt="Download tree image">
+     <img width=16 height=16 src="/webplugin/icon_attachment.png" alt="Download tree image">
      </a></li>""" %(treeid)
 
     search_button = """
       <li><a href="#" onclick='javascript:
           var box = $(this).closest("#tree_panel").children("#search_in_tree_box");
           show_box(event, box); '>
-      <img width=16 height=16 src="webplugin/icon_search.png" alt="Search in tree">
+      <img width=16 height=16 src="/webplugin/icon_search.png" alt="Search in tree">
       </a></li>"""
 
     clean_search_button = """
       <li><a href="#" onclick='run_action("%s", "", %s, "clean::clean");'>
-      <img width=16 height=16 src="webplugin/icon_cancel_search.png" alt="Clear search results">
+      <img width=16 height=16 src="/webplugin/icon_cancel_search.png" alt="Clear search results">
       </a></li>""" %\
         (treeid, 0)
 
@@ -415,7 +413,7 @@ def tree_renderer(tree, treeid, application):
     search_form = """
      <div id="search_in_tree_box">
      <div class="tree_box_header"> Search in Tree
-     <img src="webplugin/close.png" onclick='$(this).closest("#search_in_tree_box").hide();'>
+     <img src="/webplugin/close.png" onclick='$(this).closest("#search_in_tree_box").hide();'>
      </div>
      <form onsubmit='javascript:
                      search_in_tree("%s", "%s",
