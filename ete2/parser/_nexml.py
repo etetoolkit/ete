@@ -1,3 +1,10 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*- 
+
+#
+# Generated Thu Sep 23 19:16:39 2010 by generateDS.py version 2.2a.
+#
+
 import sys
 import getopt
 import re as re_
@@ -305,21 +312,21 @@ class Base(GeneratedsSuper):
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def get_anyAttributes_(self): return self.anyAttributes_
     def set_anyAttributes_(self, anyAttributes_): self.anyAttributes_ = anyAttributes_
-    def export(self, outfile, level, namespace_='', name_='Base', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='Base', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='Base')
         outfile.write('>')
         self.exportChildren(outfile, level + 1, namespace_, name_)
         outfile.write('</%s%s>\n' % (namespace_, name_))
-    def exportAttributes(self, outfile, level, namespace_='', name_='Base'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='Base'):
         for name, value in self.anyAttributes_.items():
             outfile.write(' %s=%s' % (name, quote_attrib(value), ))
         if self.classxx is not None:
             outfile.write(' class=%s' % (self.gds_format_string(quote_attrib(self.classxx).encode(ExternalEncoding), input_name='class'), ))
         if self.id is not None:
             outfile.write(' id=%s' % (self.gds_format_string(quote_attrib(self.id).encode(ExternalEncoding), input_name='id'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='Base'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='Base'):
         pass
     def hasContent_(self):
         if (
@@ -328,7 +335,7 @@ class Base(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='Base'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='Base'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -401,7 +408,7 @@ class Meta(Base):
     factory = staticmethod(factory)
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='Meta', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='Meta', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='Meta')
@@ -410,9 +417,9 @@ class Meta(Base):
         outfile.write('>')
         self.exportChildren(outfile, level + 1, namespace_, name_)
         outfile.write('</%s%s>\n' % (namespace_, name_))
-    def exportAttributes(self, outfile, level, namespace_='', name_='Meta'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='Meta'):
         super(Meta, self).exportAttributes(outfile, level, namespace_, name_='Meta')
-    def exportChildren(self, outfile, level, namespace_='', name_='Meta'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='Meta'):
         super(Meta, self).exportChildren(outfile, level, namespace_, name_)
         pass
     def hasContent_(self):
@@ -423,7 +430,7 @@ class Meta(Base):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='Meta'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='Meta'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -496,7 +503,7 @@ class ResourceMeta(Meta):
     def set_rel(self, rel): self.rel = rel
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='ResourceMeta', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='ResourceMeta', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='ResourceMeta')
@@ -509,12 +516,12 @@ class ResourceMeta(Meta):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='ResourceMeta'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='ResourceMeta'):
         super(ResourceMeta, self).exportAttributes(outfile, level, namespace_, name_='ResourceMeta')
         if self.href is not None:
             outfile.write(' href=%s' % (quote_attrib(self.href), ))
         outfile.write(' rel=%s' % (quote_attrib(self.rel), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='ResourceMeta'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='ResourceMeta'):
         super(ResourceMeta, self).exportChildren(outfile, level, namespace_, name_)
         for item_ in self.content_:
             item_.export(outfile, level, item_.name, namespace_)
@@ -527,7 +534,7 @@ class ResourceMeta(Meta):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='ResourceMeta'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='ResourceMeta'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -624,7 +631,7 @@ class LiteralMeta(Meta):
     def set_property(self, property): self.property = property
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='LiteralMeta', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='LiteralMeta', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='LiteralMeta')
@@ -633,14 +640,14 @@ class LiteralMeta(Meta):
         outfile.write('>')
         self.exportChildren(outfile, level + 1, namespace_, name_)
         outfile.write('</%s%s>\n' % (namespace_, name_))
-    def exportAttributes(self, outfile, level, namespace_='', name_='LiteralMeta'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='LiteralMeta'):
         super(LiteralMeta, self).exportAttributes(outfile, level, namespace_, name_='LiteralMeta')
         if self.datatype is not None:
             outfile.write(' datatype=%s' % (quote_attrib(self.datatype), ))
         if self.content is not None:
             outfile.write(' content=%s' % (self.gds_format_string(quote_attrib(self.content).encode(ExternalEncoding), input_name='content'), ))
         outfile.write(' property=%s' % (quote_attrib(self.property), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='LiteralMeta'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='LiteralMeta'):
         super(LiteralMeta, self).exportChildren(outfile, level, namespace_, name_)
         pass
     def hasContent_(self):
@@ -651,7 +658,7 @@ class LiteralMeta(Meta):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='LiteralMeta'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='LiteralMeta'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -723,7 +730,7 @@ class attrExtensions(GeneratedsSuper):
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def get_anyAttributes_(self): return self.anyAttributes_
     def set_anyAttributes_(self, anyAttributes_): self.anyAttributes_ = anyAttributes_
-    def export(self, outfile, level, namespace_='', name_='attrExtensions', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='attrExtensions', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='attrExtensions')
@@ -734,11 +741,11 @@ class attrExtensions(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='attrExtensions'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='attrExtensions'):
         for name, value in self.anyAttributes_.items():
             outfile.write(' %s=%s' % (name, quote_attrib(value), ))
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='attrExtensions'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='attrExtensions'):
         pass
     def hasContent_(self):
         if (
@@ -747,7 +754,7 @@ class attrExtensions(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='attrExtensions'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='attrExtensions'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -810,7 +817,7 @@ class ContinuousChar(GeneratedsSuper):
     def validate_CodonPosition(self, value):
         # Validate type CodonPosition, a restriction on xs:nonNegativeInteger.
         pass
-    def export(self, outfile, level, namespace_='', name_='ContinuousChar', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='ContinuousChar', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='ContinuousChar')
@@ -821,11 +828,11 @@ class ContinuousChar(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='ContinuousChar'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='ContinuousChar'):
         outfile.write(' states=%s' % (self.gds_format_string(quote_attrib(self.states).encode(ExternalEncoding), input_name='states'), ))
         outfile.write(' tokens=%s' % (quote_attrib(self.tokens), ))
         outfile.write(' codon=%s' % (quote_attrib(self.codon), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='ContinuousChar'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='ContinuousChar'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
@@ -835,7 +842,7 @@ class ContinuousChar(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='ContinuousChar'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='ContinuousChar'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -917,7 +924,7 @@ class ContinuousFormat(GeneratedsSuper):
     def set_char(self, char): self.char = char
     def add_char(self, value): self.char.append(value)
     def insert_char(self, index, value): self.char[index] = value
-    def export(self, outfile, level, namespace_='', name_='ContinuousFormat', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='ContinuousFormat', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='ContinuousFormat')
@@ -928,9 +935,9 @@ class ContinuousFormat(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='ContinuousFormat'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='ContinuousFormat'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='ContinuousFormat'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='ContinuousFormat'):
         for char_ in self.char:
             char_.export(outfile, level, namespace_, name_='char')
     def hasContent_(self):
@@ -940,7 +947,7 @@ class ContinuousFormat(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='ContinuousFormat'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='ContinuousFormat'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -1004,7 +1011,7 @@ class ContinuousObs(GeneratedsSuper):
     def validate_ContinuousToken(self, value):
         # Validate type ContinuousToken, a restriction on xs:float.
         pass
-    def export(self, outfile, level, namespace_='', name_='ContinuousObs', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='ContinuousObs', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='ContinuousObs')
@@ -1015,10 +1022,10 @@ class ContinuousObs(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='ContinuousObs'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='ContinuousObs'):
         outfile.write(' char=%s' % (self.gds_format_string(quote_attrib(self.char).encode(ExternalEncoding), input_name='char'), ))
         outfile.write(' state=%s' % (quote_attrib(self.state), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='ContinuousObs'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='ContinuousObs'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
@@ -1028,7 +1035,7 @@ class ContinuousObs(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='ContinuousObs'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='ContinuousObs'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -1107,7 +1114,7 @@ class ContinuousMatrixSeqRow(GeneratedsSuper):
     def validate_seq(self, value):
         # validate type seq
         pass
-    def export(self, outfile, level, namespace_='', name_='ContinuousMatrixSeqRow', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='ContinuousMatrixSeqRow', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='ContinuousMatrixSeqRow')
@@ -1118,9 +1125,9 @@ class ContinuousMatrixSeqRow(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='ContinuousMatrixSeqRow'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='ContinuousMatrixSeqRow'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='ContinuousMatrixSeqRow'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='ContinuousMatrixSeqRow'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
         if self.seq is not None:
@@ -1134,7 +1141,7 @@ class ContinuousMatrixSeqRow(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='ContinuousMatrixSeqRow'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='ContinuousMatrixSeqRow'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -1210,7 +1217,7 @@ class ContinuousMatrixObsRow(GeneratedsSuper):
     def set_cell(self, cell): self.cell = cell
     def add_cell(self, value): self.cell.append(value)
     def insert_cell(self, index, value): self.cell[index] = value
-    def export(self, outfile, level, namespace_='', name_='ContinuousMatrixObsRow', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='ContinuousMatrixObsRow', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='ContinuousMatrixObsRow')
@@ -1221,9 +1228,9 @@ class ContinuousMatrixObsRow(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='ContinuousMatrixObsRow'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='ContinuousMatrixObsRow'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='ContinuousMatrixObsRow'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='ContinuousMatrixObsRow'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
         for cell_ in self.cell:
@@ -1236,7 +1243,7 @@ class ContinuousMatrixObsRow(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='ContinuousMatrixObsRow'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='ContinuousMatrixObsRow'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -1312,7 +1319,7 @@ class ContinuousSeqMatrix(GeneratedsSuper):
     def set_row(self, row): self.row = row
     def add_row(self, value): self.row.append(value)
     def insert_row(self, index, value): self.row[index] = value
-    def export(self, outfile, level, namespace_='', name_='ContinuousSeqMatrix', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='ContinuousSeqMatrix', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='ContinuousSeqMatrix')
@@ -1323,9 +1330,9 @@ class ContinuousSeqMatrix(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='ContinuousSeqMatrix'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='ContinuousSeqMatrix'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='ContinuousSeqMatrix'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='ContinuousSeqMatrix'):
         for row_ in self.row:
             row_.export(outfile, level, namespace_, name_='row')
     def hasContent_(self):
@@ -1335,7 +1342,7 @@ class ContinuousSeqMatrix(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='ContinuousSeqMatrix'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='ContinuousSeqMatrix'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -1389,7 +1396,7 @@ class ContinuousObsMatrix(GeneratedsSuper):
     def set_row(self, row): self.row = row
     def add_row(self, value): self.row.append(value)
     def insert_row(self, index, value): self.row[index] = value
-    def export(self, outfile, level, namespace_='', name_='ContinuousObsMatrix', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='ContinuousObsMatrix', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='ContinuousObsMatrix')
@@ -1400,9 +1407,9 @@ class ContinuousObsMatrix(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='ContinuousObsMatrix'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='ContinuousObsMatrix'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='ContinuousObsMatrix'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='ContinuousObsMatrix'):
         for row_ in self.row:
             row_.export(outfile, level, namespace_, name_='row')
     def hasContent_(self):
@@ -1412,7 +1419,7 @@ class ContinuousObsMatrix(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='ContinuousObsMatrix'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='ContinuousObsMatrix'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -1473,7 +1480,7 @@ class ContinuousSeqs(GeneratedsSuper):
     def set_format(self, format): self.format = format
     def get_matrix(self): return self.matrix
     def set_matrix(self, matrix): self.matrix = matrix
-    def export(self, outfile, level, namespace_='', name_='ContinuousSeqs', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='ContinuousSeqs', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='ContinuousSeqs')
@@ -1484,9 +1491,9 @@ class ContinuousSeqs(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='ContinuousSeqs'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='ContinuousSeqs'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='ContinuousSeqs'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='ContinuousSeqs'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
         if self.format:
@@ -1502,7 +1509,7 @@ class ContinuousSeqs(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='ContinuousSeqs'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='ContinuousSeqs'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -1589,7 +1596,7 @@ class ContinuousCells(GeneratedsSuper):
     def set_format(self, format): self.format = format
     def get_matrix(self): return self.matrix
     def set_matrix(self, matrix): self.matrix = matrix
-    def export(self, outfile, level, namespace_='', name_='ContinuousCells', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='ContinuousCells', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='ContinuousCells')
@@ -1600,9 +1607,9 @@ class ContinuousCells(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='ContinuousCells'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='ContinuousCells'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='ContinuousCells'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='ContinuousCells'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
         if self.format:
@@ -1618,7 +1625,7 @@ class ContinuousCells(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='ContinuousCells'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='ContinuousCells'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -1713,7 +1720,7 @@ class AbstractMapping(Base):
     def set_state(self, state): self.state = state
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='AbstractMapping', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractMapping', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='AbstractMapping')
@@ -1722,10 +1729,10 @@ class AbstractMapping(Base):
         outfile.write('>')
         self.exportChildren(outfile, level + 1, namespace_, name_)
         outfile.write('</%s%s>\n' % (namespace_, name_))
-    def exportAttributes(self, outfile, level, namespace_='', name_='AbstractMapping'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractMapping'):
         super(AbstractMapping, self).exportAttributes(outfile, level, namespace_, name_='AbstractMapping')
         outfile.write(' state=%s' % (self.gds_format_string(quote_attrib(self.state).encode(ExternalEncoding), input_name='state'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='AbstractMapping'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractMapping'):
         super(AbstractMapping, self).exportChildren(outfile, level, namespace_, name_)
         pass
     def hasContent_(self):
@@ -1736,7 +1743,7 @@ class AbstractMapping(Base):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='AbstractMapping'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='AbstractMapping'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -1790,7 +1797,7 @@ class DNAMapping(GeneratedsSuper):
     factory = staticmethod(factory)
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='DNAMapping', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='DNAMapping', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='DNAMapping')
@@ -1801,9 +1808,9 @@ class DNAMapping(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='DNAMapping'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='DNAMapping'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='DNAMapping'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='DNAMapping'):
         pass
     def hasContent_(self):
         if (
@@ -1812,7 +1819,7 @@ class DNAMapping(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='DNAMapping'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='DNAMapping'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -1858,7 +1865,7 @@ class DNAState(GeneratedsSuper):
         pass
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='DNAState', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='DNAState', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='DNAState')
@@ -1869,9 +1876,9 @@ class DNAState(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='DNAState'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='DNAState'):
         outfile.write(' symbol=%s' % (quote_attrib(self.symbol), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='DNAState'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='DNAState'):
         pass
     def hasContent_(self):
         if (
@@ -1880,7 +1887,7 @@ class DNAState(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='DNAState'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='DNAState'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -1938,7 +1945,7 @@ class DNAUncertainStateSet(GeneratedsSuper):
     def validate_DNAToken(self, value):
         # Validate type DNAToken, a restriction on AbstractSymbol.
         pass
-    def export(self, outfile, level, namespace_='', name_='DNAUncertainStateSet', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='DNAUncertainStateSet', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='DNAUncertainStateSet')
@@ -1949,9 +1956,9 @@ class DNAUncertainStateSet(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='DNAUncertainStateSet'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='DNAUncertainStateSet'):
         outfile.write(' symbol=%s' % (quote_attrib(self.symbol), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='DNAUncertainStateSet'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='DNAUncertainStateSet'):
         for member_ in self.member:
             member_.export(outfile, level, namespace_, name_='member')
     def hasContent_(self):
@@ -1961,7 +1968,7 @@ class DNAUncertainStateSet(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='DNAUncertainStateSet'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='DNAUncertainStateSet'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -2039,7 +2046,7 @@ class DNAPolymorphicStateSet(GeneratedsSuper):
     def validate_DNAToken(self, value):
         # Validate type DNAToken, a restriction on AbstractSymbol.
         pass
-    def export(self, outfile, level, namespace_='', name_='DNAPolymorphicStateSet', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='DNAPolymorphicStateSet', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='DNAPolymorphicStateSet')
@@ -2050,9 +2057,9 @@ class DNAPolymorphicStateSet(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='DNAPolymorphicStateSet'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='DNAPolymorphicStateSet'):
         outfile.write(' symbol=%s' % (quote_attrib(self.symbol), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='DNAPolymorphicStateSet'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='DNAPolymorphicStateSet'):
         for member_ in self.member:
             member_.export(outfile, level, namespace_, name_='member')
         for uncertain_state_set_ in self.uncertain_state_set:
@@ -2065,7 +2072,7 @@ class DNAPolymorphicStateSet(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='DNAPolymorphicStateSet'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='DNAPolymorphicStateSet'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -2165,7 +2172,7 @@ class DNAStates(GeneratedsSuper):
     def set_uncertain_state_set(self, uncertain_state_set): self.uncertain_state_set = uncertain_state_set
     def add_uncertain_state_set(self, value): self.uncertain_state_set.append(value)
     def insert_uncertain_state_set(self, index, value): self.uncertain_state_set[index] = value
-    def export(self, outfile, level, namespace_='', name_='DNAStates', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='DNAStates', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='DNAStates')
@@ -2176,9 +2183,9 @@ class DNAStates(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='DNAStates'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='DNAStates'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='DNAStates'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='DNAStates'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
         for state_ in self.state:
@@ -2197,7 +2204,7 @@ class DNAStates(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='DNAStates'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='DNAStates'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -2328,7 +2335,7 @@ class DNAChar(GeneratedsSuper):
         pass
     def get_id(self): return self.id
     def set_id(self, id): self.id = id
-    def export(self, outfile, level, namespace_='', name_='DNAChar', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='DNAChar', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='DNAChar')
@@ -2339,13 +2346,13 @@ class DNAChar(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='DNAChar'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='DNAChar'):
         outfile.write(' tokens=%s' % (quote_attrib(self.tokens), ))
         outfile.write(' states=%s' % (self.gds_format_string(quote_attrib(self.states).encode(ExternalEncoding), input_name='states'), ))
         if self.codon is not None:
             outfile.write(' codon=%s' % (quote_attrib(self.codon), ))
         outfile.write(' id=%s' % (self.gds_format_string(quote_attrib(self.id).encode(ExternalEncoding), input_name='id'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='DNAChar'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='DNAChar'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
@@ -2355,7 +2362,7 @@ class DNAChar(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='DNAChar'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='DNAChar'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -2451,7 +2458,7 @@ class DNAFormat(GeneratedsSuper):
     def set_char(self, char): self.char = char
     def add_char(self, value): self.char.append(value)
     def insert_char(self, index, value): self.char[index] = value
-    def export(self, outfile, level, namespace_='', name_='DNAFormat', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='DNAFormat', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='DNAFormat')
@@ -2462,9 +2469,9 @@ class DNAFormat(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='DNAFormat'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='DNAFormat'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='DNAFormat'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='DNAFormat'):
         for states_ in self.states:
             states_.export(outfile, level, namespace_, name_='states')
         for char_ in self.char:
@@ -2477,7 +2484,7 @@ class DNAFormat(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='DNAFormat'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='DNAFormat'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -2554,7 +2561,7 @@ class DNAObs(GeneratedsSuper):
     def set_char(self, char): self.char = char
     def get_state(self): return self.state
     def set_state(self, state): self.state = state
-    def export(self, outfile, level, namespace_='', name_='DNAObs', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='DNAObs', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='DNAObs')
@@ -2565,10 +2572,10 @@ class DNAObs(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='DNAObs'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='DNAObs'):
         outfile.write(' char=%s' % (self.gds_format_string(quote_attrib(self.char).encode(ExternalEncoding), input_name='char'), ))
         outfile.write(' state=%s' % (self.gds_format_string(quote_attrib(self.state).encode(ExternalEncoding), input_name='state'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='DNAObs'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='DNAObs'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
@@ -2578,7 +2585,7 @@ class DNAObs(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='DNAObs'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='DNAObs'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -2656,7 +2663,7 @@ class DNAMatrixSeqRow(GeneratedsSuper):
     def validate_seq(self, value):
         # validate type seq
         pass
-    def export(self, outfile, level, namespace_='', name_='DNAMatrixSeqRow', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='DNAMatrixSeqRow', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='DNAMatrixSeqRow')
@@ -2667,9 +2674,9 @@ class DNAMatrixSeqRow(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='DNAMatrixSeqRow'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='DNAMatrixSeqRow'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='DNAMatrixSeqRow'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='DNAMatrixSeqRow'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
         if self.seq is not None:
@@ -2683,7 +2690,7 @@ class DNAMatrixSeqRow(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='DNAMatrixSeqRow'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='DNAMatrixSeqRow'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -2759,7 +2766,7 @@ class DNAMatrixObsRow(GeneratedsSuper):
     def set_cell(self, cell): self.cell = cell
     def add_cell(self, value): self.cell.append(value)
     def insert_cell(self, index, value): self.cell[index] = value
-    def export(self, outfile, level, namespace_='', name_='DNAMatrixObsRow', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='DNAMatrixObsRow', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='DNAMatrixObsRow')
@@ -2770,9 +2777,9 @@ class DNAMatrixObsRow(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='DNAMatrixObsRow'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='DNAMatrixObsRow'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='DNAMatrixObsRow'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='DNAMatrixObsRow'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
         for cell_ in self.cell:
@@ -2785,7 +2792,7 @@ class DNAMatrixObsRow(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='DNAMatrixObsRow'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='DNAMatrixObsRow'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -2861,7 +2868,7 @@ class DNASeqMatrix(GeneratedsSuper):
     def set_row(self, row): self.row = row
     def add_row(self, value): self.row.append(value)
     def insert_row(self, index, value): self.row[index] = value
-    def export(self, outfile, level, namespace_='', name_='DNASeqMatrix', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='DNASeqMatrix', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='DNASeqMatrix')
@@ -2872,9 +2879,9 @@ class DNASeqMatrix(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='DNASeqMatrix'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='DNASeqMatrix'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='DNASeqMatrix'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='DNASeqMatrix'):
         for row_ in self.row:
             row_.export(outfile, level, namespace_, name_='row')
     def hasContent_(self):
@@ -2884,7 +2891,7 @@ class DNASeqMatrix(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='DNASeqMatrix'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='DNASeqMatrix'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -2938,7 +2945,7 @@ class DNAObsMatrix(GeneratedsSuper):
     def set_row(self, row): self.row = row
     def add_row(self, value): self.row.append(value)
     def insert_row(self, index, value): self.row[index] = value
-    def export(self, outfile, level, namespace_='', name_='DNAObsMatrix', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='DNAObsMatrix', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='DNAObsMatrix')
@@ -2949,9 +2956,9 @@ class DNAObsMatrix(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='DNAObsMatrix'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='DNAObsMatrix'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='DNAObsMatrix'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='DNAObsMatrix'):
         for row_ in self.row:
             row_.export(outfile, level, namespace_, name_='row')
     def hasContent_(self):
@@ -2961,7 +2968,7 @@ class DNAObsMatrix(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='DNAObsMatrix'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='DNAObsMatrix'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -3021,7 +3028,7 @@ class DnaSeqs(GeneratedsSuper):
     def set_format(self, format): self.format = format
     def get_matrix(self): return self.matrix
     def set_matrix(self, matrix): self.matrix = matrix
-    def export(self, outfile, level, namespace_='', name_='DnaSeqs', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='DnaSeqs', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='DnaSeqs')
@@ -3032,9 +3039,9 @@ class DnaSeqs(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='DnaSeqs'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='DnaSeqs'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='DnaSeqs'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='DnaSeqs'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
         if self.format:
@@ -3050,7 +3057,7 @@ class DnaSeqs(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='DnaSeqs'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='DnaSeqs'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -3137,7 +3144,7 @@ class DnaCells(GeneratedsSuper):
     def set_format(self, format): self.format = format
     def get_matrix(self): return self.matrix
     def set_matrix(self, matrix): self.matrix = matrix
-    def export(self, outfile, level, namespace_='', name_='DnaCells', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='DnaCells', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='DnaCells')
@@ -3148,9 +3155,9 @@ class DnaCells(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='DnaCells'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='DnaCells'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='DnaCells'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='DnaCells'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
         if self.format:
@@ -3166,7 +3173,7 @@ class DnaCells(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='DnaCells'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='DnaCells'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -3268,7 +3275,7 @@ class AAChar(GeneratedsSuper):
         pass
     def get_id(self): return self.id
     def set_id(self, id): self.id = id
-    def export(self, outfile, level, namespace_='', name_='AAChar', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='AAChar', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='AAChar')
@@ -3279,12 +3286,12 @@ class AAChar(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='AAChar'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='AAChar'):
         outfile.write(' tokens=%s' % (quote_attrib(self.tokens), ))
         outfile.write(' states=%s' % (self.gds_format_string(quote_attrib(self.states).encode(ExternalEncoding), input_name='states'), ))
         outfile.write(' codon=%s' % (quote_attrib(self.codon), ))
         outfile.write(' id=%s' % (self.gds_format_string(quote_attrib(self.id).encode(ExternalEncoding), input_name='id'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='AAChar'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='AAChar'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
@@ -3294,7 +3301,7 @@ class AAChar(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='AAChar'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='AAChar'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -3391,7 +3398,7 @@ class AAFormat(GeneratedsSuper):
     def set_char(self, char): self.char = char
     def add_char(self, value): self.char.append(value)
     def insert_char(self, index, value): self.char[index] = value
-    def export(self, outfile, level, namespace_='', name_='AAFormat', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='AAFormat', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='AAFormat')
@@ -3402,9 +3409,9 @@ class AAFormat(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='AAFormat'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='AAFormat'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='AAFormat'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='AAFormat'):
         for states_ in self.states:
             states_.export(outfile, level, namespace_, name_='states')
         for char_ in self.char:
@@ -3417,7 +3424,7 @@ class AAFormat(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='AAFormat'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='AAFormat'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -3511,7 +3518,7 @@ class AAStates(GeneratedsSuper):
     def set_uncertain_state_set(self, uncertain_state_set): self.uncertain_state_set = uncertain_state_set
     def add_uncertain_state_set(self, value): self.uncertain_state_set.append(value)
     def insert_uncertain_state_set(self, index, value): self.uncertain_state_set[index] = value
-    def export(self, outfile, level, namespace_='', name_='AAStates', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='AAStates', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='AAStates')
@@ -3522,9 +3529,9 @@ class AAStates(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='AAStates'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='AAStates'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='AAStates'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='AAStates'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
         for state_ in self.state:
@@ -3543,7 +3550,7 @@ class AAStates(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='AAStates'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='AAStates'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -3669,7 +3676,7 @@ class AAPolymorphicStateSet(GeneratedsSuper):
     def validate_AAToken(self, value):
         # Validate type AAToken, a restriction on AbstractSymbol.
         pass
-    def export(self, outfile, level, namespace_='', name_='AAPolymorphicStateSet', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='AAPolymorphicStateSet', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='AAPolymorphicStateSet')
@@ -3680,9 +3687,9 @@ class AAPolymorphicStateSet(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='AAPolymorphicStateSet'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='AAPolymorphicStateSet'):
         outfile.write(' symbol=%s' % (quote_attrib(self.symbol), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='AAPolymorphicStateSet'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='AAPolymorphicStateSet'):
         for member_ in self.member:
             member_.export(outfile, level, namespace_, name_='member')
         for uncertain_state_set_ in self.uncertain_state_set:
@@ -3695,7 +3702,7 @@ class AAPolymorphicStateSet(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='AAPolymorphicStateSet'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='AAPolymorphicStateSet'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -3781,7 +3788,7 @@ class AAUncertainStateSet(GeneratedsSuper):
     def validate_AAToken(self, value):
         # Validate type AAToken, a restriction on AbstractSymbol.
         pass
-    def export(self, outfile, level, namespace_='', name_='AAUncertainStateSet', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='AAUncertainStateSet', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='AAUncertainStateSet')
@@ -3792,9 +3799,9 @@ class AAUncertainStateSet(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='AAUncertainStateSet'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='AAUncertainStateSet'):
         outfile.write(' symbol=%s' % (quote_attrib(self.symbol), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='AAUncertainStateSet'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='AAUncertainStateSet'):
         for member_ in self.member:
             member_.export(outfile, level, namespace_, name_='member')
     def hasContent_(self):
@@ -3804,7 +3811,7 @@ class AAUncertainStateSet(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='AAUncertainStateSet'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='AAUncertainStateSet'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -3859,7 +3866,7 @@ class AAMapping(GeneratedsSuper):
     factory = staticmethod(factory)
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='AAMapping', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='AAMapping', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='AAMapping')
@@ -3870,9 +3877,9 @@ class AAMapping(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='AAMapping'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='AAMapping'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='AAMapping'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='AAMapping'):
         pass
     def hasContent_(self):
         if (
@@ -3881,7 +3888,7 @@ class AAMapping(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='AAMapping'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='AAMapping'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -3927,7 +3934,7 @@ class AAState(GeneratedsSuper):
         pass
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='AAState', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='AAState', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='AAState')
@@ -3938,9 +3945,9 @@ class AAState(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='AAState'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='AAState'):
         outfile.write(' symbol=%s' % (quote_attrib(self.symbol), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='AAState'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='AAState'):
         pass
     def hasContent_(self):
         if (
@@ -3949,7 +3956,7 @@ class AAState(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='AAState'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='AAState'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -4004,7 +4011,7 @@ class AAObs(GeneratedsSuper):
     def set_char(self, char): self.char = char
     def get_state(self): return self.state
     def set_state(self, state): self.state = state
-    def export(self, outfile, level, namespace_='', name_='AAObs', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='AAObs', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='AAObs')
@@ -4015,10 +4022,10 @@ class AAObs(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='AAObs'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='AAObs'):
         outfile.write(' char=%s' % (self.gds_format_string(quote_attrib(self.char).encode(ExternalEncoding), input_name='char'), ))
         outfile.write(' state=%s' % (self.gds_format_string(quote_attrib(self.state).encode(ExternalEncoding), input_name='state'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='AAObs'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='AAObs'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
@@ -4028,7 +4035,7 @@ class AAObs(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='AAObs'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='AAObs'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -4107,7 +4114,7 @@ class AAMatrixSeqRow(GeneratedsSuper):
     def validate_seq(self, value):
         # validate type seq
         pass
-    def export(self, outfile, level, namespace_='', name_='AAMatrixSeqRow', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='AAMatrixSeqRow', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='AAMatrixSeqRow')
@@ -4118,9 +4125,9 @@ class AAMatrixSeqRow(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='AAMatrixSeqRow'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='AAMatrixSeqRow'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='AAMatrixSeqRow'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='AAMatrixSeqRow'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
         if self.seq is not None:
@@ -4134,7 +4141,7 @@ class AAMatrixSeqRow(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='AAMatrixSeqRow'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='AAMatrixSeqRow'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -4210,7 +4217,7 @@ class AAMatrixObsRow(GeneratedsSuper):
     def set_cell(self, cell): self.cell = cell
     def add_cell(self, value): self.cell.append(value)
     def insert_cell(self, index, value): self.cell[index] = value
-    def export(self, outfile, level, namespace_='', name_='AAMatrixObsRow', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='AAMatrixObsRow', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='AAMatrixObsRow')
@@ -4221,9 +4228,9 @@ class AAMatrixObsRow(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='AAMatrixObsRow'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='AAMatrixObsRow'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='AAMatrixObsRow'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='AAMatrixObsRow'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
         for cell_ in self.cell:
@@ -4236,7 +4243,7 @@ class AAMatrixObsRow(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='AAMatrixObsRow'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='AAMatrixObsRow'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -4312,7 +4319,7 @@ class AASeqMatrix(GeneratedsSuper):
     def set_row(self, row): self.row = row
     def add_row(self, value): self.row.append(value)
     def insert_row(self, index, value): self.row[index] = value
-    def export(self, outfile, level, namespace_='', name_='AASeqMatrix', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='AASeqMatrix', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='AASeqMatrix')
@@ -4323,9 +4330,9 @@ class AASeqMatrix(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='AASeqMatrix'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='AASeqMatrix'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='AASeqMatrix'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='AASeqMatrix'):
         for row_ in self.row:
             row_.export(outfile, level, namespace_, name_='row')
     def hasContent_(self):
@@ -4335,7 +4342,7 @@ class AASeqMatrix(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='AASeqMatrix'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='AASeqMatrix'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -4389,7 +4396,7 @@ class AAObsMatrix(GeneratedsSuper):
     def set_row(self, row): self.row = row
     def add_row(self, value): self.row.append(value)
     def insert_row(self, index, value): self.row[index] = value
-    def export(self, outfile, level, namespace_='', name_='AAObsMatrix', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='AAObsMatrix', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='AAObsMatrix')
@@ -4400,9 +4407,9 @@ class AAObsMatrix(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='AAObsMatrix'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='AAObsMatrix'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='AAObsMatrix'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='AAObsMatrix'):
         for row_ in self.row:
             row_.export(outfile, level, namespace_, name_='row')
     def hasContent_(self):
@@ -4412,7 +4419,7 @@ class AAObsMatrix(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='AAObsMatrix'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='AAObsMatrix'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -4473,7 +4480,7 @@ class ProteinSeqs(GeneratedsSuper):
     def set_format(self, format): self.format = format
     def get_matrix(self): return self.matrix
     def set_matrix(self, matrix): self.matrix = matrix
-    def export(self, outfile, level, namespace_='', name_='ProteinSeqs', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='ProteinSeqs', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='ProteinSeqs')
@@ -4484,9 +4491,9 @@ class ProteinSeqs(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='ProteinSeqs'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='ProteinSeqs'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='ProteinSeqs'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='ProteinSeqs'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
         if self.format:
@@ -4502,7 +4509,7 @@ class ProteinSeqs(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='ProteinSeqs'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='ProteinSeqs'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -4589,7 +4596,7 @@ class ProteinCells(GeneratedsSuper):
     def set_format(self, format): self.format = format
     def get_matrix(self): return self.matrix
     def set_matrix(self, matrix): self.matrix = matrix
-    def export(self, outfile, level, namespace_='', name_='ProteinCells', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='ProteinCells', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='ProteinCells')
@@ -4600,9 +4607,9 @@ class ProteinCells(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='ProteinCells'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='ProteinCells'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='ProteinCells'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='ProteinCells'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
         if self.format:
@@ -4618,7 +4625,7 @@ class ProteinCells(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='ProteinCells'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='ProteinCells'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -4701,7 +4708,7 @@ class RestrictionState(GeneratedsSuper):
         pass
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='RestrictionState', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='RestrictionState', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='RestrictionState')
@@ -4712,9 +4719,9 @@ class RestrictionState(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='RestrictionState'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='RestrictionState'):
         outfile.write(' symbol=%s' % (quote_attrib(self.symbol), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='RestrictionState'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='RestrictionState'):
         pass
     def hasContent_(self):
         if (
@@ -4723,7 +4730,7 @@ class RestrictionState(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='RestrictionState'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='RestrictionState'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -4779,7 +4786,7 @@ class RestrictionStates(GeneratedsSuper):
     def set_state(self, state): self.state = state
     def add_state(self, value): self.state.append(value)
     def insert_state(self, index, value): self.state[index] = value
-    def export(self, outfile, level, namespace_='', name_='RestrictionStates', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='RestrictionStates', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='RestrictionStates')
@@ -4790,9 +4797,9 @@ class RestrictionStates(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='RestrictionStates'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='RestrictionStates'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='RestrictionStates'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='RestrictionStates'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
         for state_ in self.state:
@@ -4805,7 +4812,7 @@ class RestrictionStates(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='RestrictionStates'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='RestrictionStates'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -4900,7 +4907,7 @@ class RestrictionChar(GeneratedsSuper):
         pass
     def get_id(self): return self.id
     def set_id(self, id): self.id = id
-    def export(self, outfile, level, namespace_='', name_='RestrictionChar', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='RestrictionChar', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='RestrictionChar')
@@ -4911,12 +4918,12 @@ class RestrictionChar(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='RestrictionChar'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='RestrictionChar'):
         outfile.write(' tokens=%s' % (quote_attrib(self.tokens), ))
         outfile.write(' states=%s' % (self.gds_format_string(quote_attrib(self.states).encode(ExternalEncoding), input_name='states'), ))
         outfile.write(' codon=%s' % (quote_attrib(self.codon), ))
         outfile.write(' id=%s' % (self.gds_format_string(quote_attrib(self.id).encode(ExternalEncoding), input_name='id'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='RestrictionChar'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='RestrictionChar'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
@@ -4926,7 +4933,7 @@ class RestrictionChar(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='RestrictionChar'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='RestrictionChar'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -5023,7 +5030,7 @@ class RestrictionFormat(GeneratedsSuper):
     def set_char(self, char): self.char = char
     def add_char(self, value): self.char.append(value)
     def insert_char(self, index, value): self.char[index] = value
-    def export(self, outfile, level, namespace_='', name_='RestrictionFormat', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='RestrictionFormat', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='RestrictionFormat')
@@ -5034,9 +5041,9 @@ class RestrictionFormat(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='RestrictionFormat'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='RestrictionFormat'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='RestrictionFormat'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='RestrictionFormat'):
         for states_ in self.states:
             states_.export(outfile, level, namespace_, name_='states')
         for char_ in self.char:
@@ -5049,7 +5056,7 @@ class RestrictionFormat(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='RestrictionFormat'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='RestrictionFormat'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -5126,7 +5133,7 @@ class RestrictionObs(GeneratedsSuper):
     def set_char(self, char): self.char = char
     def get_state(self): return self.state
     def set_state(self, state): self.state = state
-    def export(self, outfile, level, namespace_='', name_='RestrictionObs', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='RestrictionObs', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='RestrictionObs')
@@ -5137,10 +5144,10 @@ class RestrictionObs(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='RestrictionObs'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='RestrictionObs'):
         outfile.write(' char=%s' % (self.gds_format_string(quote_attrib(self.char).encode(ExternalEncoding), input_name='char'), ))
         outfile.write(' state=%s' % (self.gds_format_string(quote_attrib(self.state).encode(ExternalEncoding), input_name='state'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='RestrictionObs'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='RestrictionObs'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
@@ -5150,7 +5157,7 @@ class RestrictionObs(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='RestrictionObs'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='RestrictionObs'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -5229,7 +5236,7 @@ class RestrictionMatrixSeqRow(GeneratedsSuper):
     def validate_seq(self, value):
         # validate type seq
         pass
-    def export(self, outfile, level, namespace_='', name_='RestrictionMatrixSeqRow', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='RestrictionMatrixSeqRow', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='RestrictionMatrixSeqRow')
@@ -5240,9 +5247,9 @@ class RestrictionMatrixSeqRow(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='RestrictionMatrixSeqRow'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='RestrictionMatrixSeqRow'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='RestrictionMatrixSeqRow'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='RestrictionMatrixSeqRow'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
         if self.seq is not None:
@@ -5256,7 +5263,7 @@ class RestrictionMatrixSeqRow(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='RestrictionMatrixSeqRow'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='RestrictionMatrixSeqRow'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -5332,7 +5339,7 @@ class RestrictionMatrixObsRow(GeneratedsSuper):
     def set_cell(self, cell): self.cell = cell
     def add_cell(self, value): self.cell.append(value)
     def insert_cell(self, index, value): self.cell[index] = value
-    def export(self, outfile, level, namespace_='', name_='RestrictionMatrixObsRow', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='RestrictionMatrixObsRow', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='RestrictionMatrixObsRow')
@@ -5343,9 +5350,9 @@ class RestrictionMatrixObsRow(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='RestrictionMatrixObsRow'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='RestrictionMatrixObsRow'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='RestrictionMatrixObsRow'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='RestrictionMatrixObsRow'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
         for cell_ in self.cell:
@@ -5358,7 +5365,7 @@ class RestrictionMatrixObsRow(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='RestrictionMatrixObsRow'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='RestrictionMatrixObsRow'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -5434,7 +5441,7 @@ class RestrictionSeqMatrix(GeneratedsSuper):
     def set_row(self, row): self.row = row
     def add_row(self, value): self.row.append(value)
     def insert_row(self, index, value): self.row[index] = value
-    def export(self, outfile, level, namespace_='', name_='RestrictionSeqMatrix', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='RestrictionSeqMatrix', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='RestrictionSeqMatrix')
@@ -5445,9 +5452,9 @@ class RestrictionSeqMatrix(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='RestrictionSeqMatrix'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='RestrictionSeqMatrix'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='RestrictionSeqMatrix'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='RestrictionSeqMatrix'):
         for row_ in self.row:
             row_.export(outfile, level, namespace_, name_='row')
     def hasContent_(self):
@@ -5457,7 +5464,7 @@ class RestrictionSeqMatrix(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='RestrictionSeqMatrix'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='RestrictionSeqMatrix'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -5511,7 +5518,7 @@ class RestrictionObsMatrix(GeneratedsSuper):
     def set_row(self, row): self.row = row
     def add_row(self, value): self.row.append(value)
     def insert_row(self, index, value): self.row[index] = value
-    def export(self, outfile, level, namespace_='', name_='RestrictionObsMatrix', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='RestrictionObsMatrix', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='RestrictionObsMatrix')
@@ -5522,9 +5529,9 @@ class RestrictionObsMatrix(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='RestrictionObsMatrix'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='RestrictionObsMatrix'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='RestrictionObsMatrix'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='RestrictionObsMatrix'):
         for row_ in self.row:
             row_.export(outfile, level, namespace_, name_='row')
     def hasContent_(self):
@@ -5534,7 +5541,7 @@ class RestrictionObsMatrix(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='RestrictionObsMatrix'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='RestrictionObsMatrix'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -5595,7 +5602,7 @@ class RestrictionSeqs(GeneratedsSuper):
     def set_format(self, format): self.format = format
     def get_matrix(self): return self.matrix
     def set_matrix(self, matrix): self.matrix = matrix
-    def export(self, outfile, level, namespace_='', name_='RestrictionSeqs', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='RestrictionSeqs', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='RestrictionSeqs')
@@ -5606,9 +5613,9 @@ class RestrictionSeqs(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='RestrictionSeqs'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='RestrictionSeqs'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='RestrictionSeqs'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='RestrictionSeqs'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
         if self.format:
@@ -5624,7 +5631,7 @@ class RestrictionSeqs(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='RestrictionSeqs'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='RestrictionSeqs'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -5711,7 +5718,7 @@ class RestrictionCells(GeneratedsSuper):
     def set_format(self, format): self.format = format
     def get_matrix(self): return self.matrix
     def set_matrix(self, matrix): self.matrix = matrix
-    def export(self, outfile, level, namespace_='', name_='RestrictionCells', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='RestrictionCells', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='RestrictionCells')
@@ -5722,9 +5729,9 @@ class RestrictionCells(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='RestrictionCells'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='RestrictionCells'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='RestrictionCells'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='RestrictionCells'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
         if self.format:
@@ -5740,7 +5747,7 @@ class RestrictionCells(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='RestrictionCells'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='RestrictionCells'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -5815,7 +5822,7 @@ class RNAMapping(GeneratedsSuper):
     factory = staticmethod(factory)
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='RNAMapping', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='RNAMapping', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='RNAMapping')
@@ -5826,9 +5833,9 @@ class RNAMapping(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='RNAMapping'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='RNAMapping'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='RNAMapping'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='RNAMapping'):
         pass
     def hasContent_(self):
         if (
@@ -5837,7 +5844,7 @@ class RNAMapping(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='RNAMapping'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='RNAMapping'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -5883,7 +5890,7 @@ class RNAState(GeneratedsSuper):
         pass
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='RNAState', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='RNAState', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='RNAState')
@@ -5894,9 +5901,9 @@ class RNAState(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='RNAState'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='RNAState'):
         outfile.write(' symbol=%s' % (quote_attrib(self.symbol), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='RNAState'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='RNAState'):
         pass
     def hasContent_(self):
         if (
@@ -5905,7 +5912,7 @@ class RNAState(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='RNAState'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='RNAState'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -5963,7 +5970,7 @@ class RNAUncertainStateSet(GeneratedsSuper):
     def validate_RNAToken(self, value):
         # Validate type RNAToken, a restriction on AbstractSymbol.
         pass
-    def export(self, outfile, level, namespace_='', name_='RNAUncertainStateSet', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='RNAUncertainStateSet', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='RNAUncertainStateSet')
@@ -5974,9 +5981,9 @@ class RNAUncertainStateSet(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='RNAUncertainStateSet'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='RNAUncertainStateSet'):
         outfile.write(' symbol=%s' % (quote_attrib(self.symbol), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='RNAUncertainStateSet'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='RNAUncertainStateSet'):
         for member_ in self.member:
             member_.export(outfile, level, namespace_, name_='member')
     def hasContent_(self):
@@ -5986,7 +5993,7 @@ class RNAUncertainStateSet(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='RNAUncertainStateSet'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='RNAUncertainStateSet'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -6064,7 +6071,7 @@ class RNAPolymorphicStateSet(GeneratedsSuper):
     def validate_RNAToken(self, value):
         # Validate type RNAToken, a restriction on AbstractSymbol.
         pass
-    def export(self, outfile, level, namespace_='', name_='RNAPolymorphicStateSet', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='RNAPolymorphicStateSet', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='RNAPolymorphicStateSet')
@@ -6075,9 +6082,9 @@ class RNAPolymorphicStateSet(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='RNAPolymorphicStateSet'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='RNAPolymorphicStateSet'):
         outfile.write(' symbol=%s' % (quote_attrib(self.symbol), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='RNAPolymorphicStateSet'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='RNAPolymorphicStateSet'):
         for member_ in self.member:
             member_.export(outfile, level, namespace_, name_='member')
         for uncertain_state_set_ in self.uncertain_state_set:
@@ -6090,7 +6097,7 @@ class RNAPolymorphicStateSet(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='RNAPolymorphicStateSet'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='RNAPolymorphicStateSet'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -6190,7 +6197,7 @@ class RNAStates(GeneratedsSuper):
     def set_uncertain_state_set(self, uncertain_state_set): self.uncertain_state_set = uncertain_state_set
     def add_uncertain_state_set(self, value): self.uncertain_state_set.append(value)
     def insert_uncertain_state_set(self, index, value): self.uncertain_state_set[index] = value
-    def export(self, outfile, level, namespace_='', name_='RNAStates', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='RNAStates', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='RNAStates')
@@ -6201,9 +6208,9 @@ class RNAStates(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='RNAStates'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='RNAStates'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='RNAStates'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='RNAStates'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
         for state_ in self.state:
@@ -6222,7 +6229,7 @@ class RNAStates(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='RNAStates'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='RNAStates'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -6353,7 +6360,7 @@ class RNAChar(GeneratedsSuper):
         pass
     def get_id(self): return self.id
     def set_id(self, id): self.id = id
-    def export(self, outfile, level, namespace_='', name_='RNAChar', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='RNAChar', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='RNAChar')
@@ -6364,13 +6371,13 @@ class RNAChar(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='RNAChar'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='RNAChar'):
         outfile.write(' tokens=%s' % (quote_attrib(self.tokens), ))
         outfile.write(' states=%s' % (self.gds_format_string(quote_attrib(self.states).encode(ExternalEncoding), input_name='states'), ))
         if self.codon is not None:
             outfile.write(' codon=%s' % (quote_attrib(self.codon), ))
         outfile.write(' id=%s' % (self.gds_format_string(quote_attrib(self.id).encode(ExternalEncoding), input_name='id'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='RNAChar'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='RNAChar'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
@@ -6380,7 +6387,7 @@ class RNAChar(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='RNAChar'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='RNAChar'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -6476,7 +6483,7 @@ class RNAFormat(GeneratedsSuper):
     def set_char(self, char): self.char = char
     def add_char(self, value): self.char.append(value)
     def insert_char(self, index, value): self.char[index] = value
-    def export(self, outfile, level, namespace_='', name_='RNAFormat', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='RNAFormat', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='RNAFormat')
@@ -6487,9 +6494,9 @@ class RNAFormat(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='RNAFormat'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='RNAFormat'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='RNAFormat'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='RNAFormat'):
         for states_ in self.states:
             states_.export(outfile, level, namespace_, name_='states')
         for char_ in self.char:
@@ -6502,7 +6509,7 @@ class RNAFormat(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='RNAFormat'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='RNAFormat'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -6579,7 +6586,7 @@ class RNAObs(GeneratedsSuper):
     def set_char(self, char): self.char = char
     def get_state(self): return self.state
     def set_state(self, state): self.state = state
-    def export(self, outfile, level, namespace_='', name_='RNAObs', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='RNAObs', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='RNAObs')
@@ -6590,10 +6597,10 @@ class RNAObs(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='RNAObs'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='RNAObs'):
         outfile.write(' char=%s' % (self.gds_format_string(quote_attrib(self.char).encode(ExternalEncoding), input_name='char'), ))
         outfile.write(' state=%s' % (self.gds_format_string(quote_attrib(self.state).encode(ExternalEncoding), input_name='state'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='RNAObs'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='RNAObs'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
@@ -6603,7 +6610,7 @@ class RNAObs(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='RNAObs'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='RNAObs'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -6681,7 +6688,7 @@ class RNAMatrixSeqRow(GeneratedsSuper):
     def validate_seq(self, value):
         # validate type seq
         pass
-    def export(self, outfile, level, namespace_='', name_='RNAMatrixSeqRow', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='RNAMatrixSeqRow', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='RNAMatrixSeqRow')
@@ -6692,9 +6699,9 @@ class RNAMatrixSeqRow(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='RNAMatrixSeqRow'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='RNAMatrixSeqRow'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='RNAMatrixSeqRow'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='RNAMatrixSeqRow'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
         if self.seq is not None:
@@ -6708,7 +6715,7 @@ class RNAMatrixSeqRow(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='RNAMatrixSeqRow'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='RNAMatrixSeqRow'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -6784,7 +6791,7 @@ class RNAMatrixObsRow(GeneratedsSuper):
     def set_cell(self, cell): self.cell = cell
     def add_cell(self, value): self.cell.append(value)
     def insert_cell(self, index, value): self.cell[index] = value
-    def export(self, outfile, level, namespace_='', name_='RNAMatrixObsRow', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='RNAMatrixObsRow', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='RNAMatrixObsRow')
@@ -6795,9 +6802,9 @@ class RNAMatrixObsRow(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='RNAMatrixObsRow'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='RNAMatrixObsRow'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='RNAMatrixObsRow'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='RNAMatrixObsRow'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
         for cell_ in self.cell:
@@ -6810,7 +6817,7 @@ class RNAMatrixObsRow(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='RNAMatrixObsRow'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='RNAMatrixObsRow'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -6886,7 +6893,7 @@ class RNASeqMatrix(GeneratedsSuper):
     def set_row(self, row): self.row = row
     def add_row(self, value): self.row.append(value)
     def insert_row(self, index, value): self.row[index] = value
-    def export(self, outfile, level, namespace_='', name_='RNASeqMatrix', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='RNASeqMatrix', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='RNASeqMatrix')
@@ -6897,9 +6904,9 @@ class RNASeqMatrix(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='RNASeqMatrix'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='RNASeqMatrix'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='RNASeqMatrix'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='RNASeqMatrix'):
         for row_ in self.row:
             row_.export(outfile, level, namespace_, name_='row')
     def hasContent_(self):
@@ -6909,7 +6916,7 @@ class RNASeqMatrix(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='RNASeqMatrix'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='RNASeqMatrix'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -6963,7 +6970,7 @@ class RNAObsMatrix(GeneratedsSuper):
     def set_row(self, row): self.row = row
     def add_row(self, value): self.row.append(value)
     def insert_row(self, index, value): self.row[index] = value
-    def export(self, outfile, level, namespace_='', name_='RNAObsMatrix', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='RNAObsMatrix', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='RNAObsMatrix')
@@ -6974,9 +6981,9 @@ class RNAObsMatrix(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='RNAObsMatrix'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='RNAObsMatrix'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='RNAObsMatrix'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='RNAObsMatrix'):
         for row_ in self.row:
             row_.export(outfile, level, namespace_, name_='row')
     def hasContent_(self):
@@ -6986,7 +6993,7 @@ class RNAObsMatrix(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='RNAObsMatrix'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='RNAObsMatrix'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -7046,7 +7053,7 @@ class RnaSeqs(GeneratedsSuper):
     def set_format(self, format): self.format = format
     def get_matrix(self): return self.matrix
     def set_matrix(self, matrix): self.matrix = matrix
-    def export(self, outfile, level, namespace_='', name_='RnaSeqs', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='RnaSeqs', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='RnaSeqs')
@@ -7057,9 +7064,9 @@ class RnaSeqs(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='RnaSeqs'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='RnaSeqs'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='RnaSeqs'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='RnaSeqs'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
         if self.format:
@@ -7075,7 +7082,7 @@ class RnaSeqs(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='RnaSeqs'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='RnaSeqs'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -7162,7 +7169,7 @@ class RnaCells(GeneratedsSuper):
     def set_format(self, format): self.format = format
     def get_matrix(self): return self.matrix
     def set_matrix(self, matrix): self.matrix = matrix
-    def export(self, outfile, level, namespace_='', name_='RnaCells', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='RnaCells', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='RnaCells')
@@ -7173,9 +7180,9 @@ class RnaCells(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='RnaCells'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='RnaCells'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='RnaCells'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='RnaCells'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
         if self.format:
@@ -7191,7 +7198,7 @@ class RnaCells(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='RnaCells'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='RnaCells'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -7266,7 +7273,7 @@ class StandardMapping(GeneratedsSuper):
     factory = staticmethod(factory)
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='StandardMapping', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardMapping', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='StandardMapping')
@@ -7277,9 +7284,9 @@ class StandardMapping(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='StandardMapping'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardMapping'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='StandardMapping'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardMapping'):
         pass
     def hasContent_(self):
         if (
@@ -7288,7 +7295,7 @@ class StandardMapping(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='StandardMapping'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='StandardMapping'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -7338,7 +7345,7 @@ class StandardState(GeneratedsSuper):
     def validate_StandardToken(self, value):
         # Validate type StandardToken, a restriction on xs:integer.
         pass
-    def export(self, outfile, level, namespace_='', name_='StandardState', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardState', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='StandardState')
@@ -7349,9 +7356,9 @@ class StandardState(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='StandardState'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardState'):
         outfile.write(' symbol=%s' % (quote_attrib(self.symbol), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='StandardState'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardState'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
@@ -7361,7 +7368,7 @@ class StandardState(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='StandardState'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='StandardState'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -7434,7 +7441,7 @@ class StandardUncertainStateSet(GeneratedsSuper):
     def insert_member(self, index, value): self.member[index] = value
     def get_symbol(self): return self.symbol
     def set_symbol(self, symbol): self.symbol = symbol
-    def export(self, outfile, level, namespace_='', name_='StandardUncertainStateSet', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardUncertainStateSet', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='StandardUncertainStateSet')
@@ -7445,9 +7452,9 @@ class StandardUncertainStateSet(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='StandardUncertainStateSet'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardUncertainStateSet'):
         outfile.write(' symbol=%s' % (self.gds_format_string(quote_attrib(self.symbol).encode(ExternalEncoding), input_name='symbol'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='StandardUncertainStateSet'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardUncertainStateSet'):
         for member_ in self.member:
             member_.export(outfile, level, namespace_, name_='member')
     def hasContent_(self):
@@ -7457,7 +7464,7 @@ class StandardUncertainStateSet(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='StandardUncertainStateSet'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='StandardUncertainStateSet'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -7528,7 +7535,7 @@ class StandardPolymorphicStateSet(GeneratedsSuper):
     def set_uncertain_state_set(self, uncertain_state_set): self.uncertain_state_set = uncertain_state_set
     def add_uncertain_state_set(self, value): self.uncertain_state_set.append(value)
     def insert_uncertain_state_set(self, index, value): self.uncertain_state_set[index] = value
-    def export(self, outfile, level, namespace_='', name_='StandardPolymorphicStateSet', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardPolymorphicStateSet', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='StandardPolymorphicStateSet')
@@ -7539,9 +7546,9 @@ class StandardPolymorphicStateSet(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='StandardPolymorphicStateSet'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardPolymorphicStateSet'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='StandardPolymorphicStateSet'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardPolymorphicStateSet'):
         for member_ in self.member:
             member_.export(outfile, level, namespace_, name_='member')
         for uncertain_state_set_ in self.uncertain_state_set:
@@ -7554,7 +7561,7 @@ class StandardPolymorphicStateSet(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='StandardPolymorphicStateSet'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='StandardPolymorphicStateSet'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -7648,7 +7655,7 @@ class StandardStates(GeneratedsSuper):
     def set_uncertain_state_set(self, uncertain_state_set): self.uncertain_state_set = uncertain_state_set
     def add_uncertain_state_set(self, value): self.uncertain_state_set.append(value)
     def insert_uncertain_state_set(self, index, value): self.uncertain_state_set[index] = value
-    def export(self, outfile, level, namespace_='', name_='StandardStates', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardStates', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='StandardStates')
@@ -7659,9 +7666,9 @@ class StandardStates(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='StandardStates'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardStates'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='StandardStates'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardStates'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
         for state_ in self.state:
@@ -7680,7 +7687,7 @@ class StandardStates(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='StandardStates'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='StandardStates'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -7807,7 +7814,7 @@ class StandardChar(GeneratedsSuper):
         pass
     def get_id(self): return self.id
     def set_id(self, id): self.id = id
-    def export(self, outfile, level, namespace_='', name_='StandardChar', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardChar', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='StandardChar')
@@ -7818,12 +7825,12 @@ class StandardChar(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='StandardChar'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardChar'):
         outfile.write(' tokens=%s' % (quote_attrib(self.tokens), ))
         outfile.write(' states=%s' % (self.gds_format_string(quote_attrib(self.states).encode(ExternalEncoding), input_name='states'), ))
         outfile.write(' codon=%s' % (quote_attrib(self.codon), ))
         outfile.write(' id=%s' % (self.gds_format_string(quote_attrib(self.id).encode(ExternalEncoding), input_name='id'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='StandardChar'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardChar'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
@@ -7833,7 +7840,7 @@ class StandardChar(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='StandardChar'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='StandardChar'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -7930,7 +7937,7 @@ class StandardFormat(GeneratedsSuper):
     def set_char(self, char): self.char = char
     def add_char(self, value): self.char.append(value)
     def insert_char(self, index, value): self.char[index] = value
-    def export(self, outfile, level, namespace_='', name_='StandardFormat', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardFormat', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='StandardFormat')
@@ -7941,9 +7948,9 @@ class StandardFormat(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='StandardFormat'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardFormat'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='StandardFormat'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardFormat'):
         for states_ in self.states:
             states_.export(outfile, level, namespace_, name_='states')
         for char_ in self.char:
@@ -7956,7 +7963,7 @@ class StandardFormat(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='StandardFormat'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='StandardFormat'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -8032,7 +8039,7 @@ class StandardObs(GeneratedsSuper):
     def set_char(self, char): self.char = char
     def get_state(self): return self.state
     def set_state(self, state): self.state = state
-    def export(self, outfile, level, namespace_='', name_='StandardObs', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardObs', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='StandardObs')
@@ -8043,10 +8050,10 @@ class StandardObs(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='StandardObs'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardObs'):
         outfile.write(' char=%s' % (self.gds_format_string(quote_attrib(self.char).encode(ExternalEncoding), input_name='char'), ))
         outfile.write(' state=%s' % (self.gds_format_string(quote_attrib(self.state).encode(ExternalEncoding), input_name='state'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='StandardObs'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardObs'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
@@ -8056,7 +8063,7 @@ class StandardObs(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='StandardObs'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='StandardObs'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -8134,7 +8141,7 @@ class StandardMatrixSeqRow(GeneratedsSuper):
     def validate_seq(self, value):
         # validate type seq
         pass
-    def export(self, outfile, level, namespace_='', name_='StandardMatrixSeqRow', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardMatrixSeqRow', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='StandardMatrixSeqRow')
@@ -8145,9 +8152,9 @@ class StandardMatrixSeqRow(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='StandardMatrixSeqRow'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardMatrixSeqRow'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='StandardMatrixSeqRow'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardMatrixSeqRow'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
         if self.seq is not None:
@@ -8161,7 +8168,7 @@ class StandardMatrixSeqRow(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='StandardMatrixSeqRow'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='StandardMatrixSeqRow'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -8236,7 +8243,7 @@ class StandardMatrixObsRow(GeneratedsSuper):
     def set_cell(self, cell): self.cell = cell
     def add_cell(self, value): self.cell.append(value)
     def insert_cell(self, index, value): self.cell[index] = value
-    def export(self, outfile, level, namespace_='', name_='StandardMatrixObsRow', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardMatrixObsRow', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='StandardMatrixObsRow')
@@ -8247,9 +8254,9 @@ class StandardMatrixObsRow(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='StandardMatrixObsRow'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardMatrixObsRow'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='StandardMatrixObsRow'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardMatrixObsRow'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
         for cell_ in self.cell:
@@ -8262,7 +8269,7 @@ class StandardMatrixObsRow(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='StandardMatrixObsRow'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='StandardMatrixObsRow'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -8338,7 +8345,7 @@ class StandardSeqMatrix(GeneratedsSuper):
     def set_row(self, row): self.row = row
     def add_row(self, value): self.row.append(value)
     def insert_row(self, index, value): self.row[index] = value
-    def export(self, outfile, level, namespace_='', name_='StandardSeqMatrix', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardSeqMatrix', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='StandardSeqMatrix')
@@ -8349,9 +8356,9 @@ class StandardSeqMatrix(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='StandardSeqMatrix'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardSeqMatrix'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='StandardSeqMatrix'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardSeqMatrix'):
         for row_ in self.row:
             row_.export(outfile, level, namespace_, name_='row')
     def hasContent_(self):
@@ -8361,7 +8368,7 @@ class StandardSeqMatrix(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='StandardSeqMatrix'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='StandardSeqMatrix'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -8415,7 +8422,7 @@ class StandardObsMatrix(GeneratedsSuper):
     def set_row(self, row): self.row = row
     def add_row(self, value): self.row.append(value)
     def insert_row(self, index, value): self.row[index] = value
-    def export(self, outfile, level, namespace_='', name_='StandardObsMatrix', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardObsMatrix', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='StandardObsMatrix')
@@ -8426,9 +8433,9 @@ class StandardObsMatrix(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='StandardObsMatrix'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardObsMatrix'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='StandardObsMatrix'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardObsMatrix'):
         for row_ in self.row:
             row_.export(outfile, level, namespace_, name_='row')
     def hasContent_(self):
@@ -8438,7 +8445,7 @@ class StandardObsMatrix(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='StandardObsMatrix'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='StandardObsMatrix'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -8499,7 +8506,7 @@ class StandardSeqs(GeneratedsSuper):
     def set_format(self, format): self.format = format
     def get_matrix(self): return self.matrix
     def set_matrix(self, matrix): self.matrix = matrix
-    def export(self, outfile, level, namespace_='', name_='StandardSeqs', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardSeqs', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='StandardSeqs')
@@ -8510,9 +8517,9 @@ class StandardSeqs(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='StandardSeqs'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardSeqs'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='StandardSeqs'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardSeqs'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
         if self.format:
@@ -8528,7 +8535,7 @@ class StandardSeqs(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='StandardSeqs'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='StandardSeqs'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -8615,7 +8622,7 @@ class StandardCells(GeneratedsSuper):
     def set_format(self, format): self.format = format
     def get_matrix(self): return self.matrix
     def set_matrix(self, matrix): self.matrix = matrix
-    def export(self, outfile, level, namespace_='', name_='StandardCells', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardCells', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='StandardCells')
@@ -8626,9 +8633,9 @@ class StandardCells(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='StandardCells'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardCells'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='StandardCells'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='StandardCells'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
         if self.format:
@@ -8644,7 +8651,7 @@ class StandardCells(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='StandardCells'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='StandardCells'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -8724,7 +8731,7 @@ class TreeNode(GeneratedsSuper):
     def set_meta(self, meta): self.meta = meta
     def add_meta(self, value): self.meta.append(value)
     def insert_meta(self, index, value): self.meta[index] = value
-    def export(self, outfile, level, namespace_='', name_='TreeNode', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='TreeNode', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='TreeNode')
@@ -8735,9 +8742,9 @@ class TreeNode(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='TreeNode'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='TreeNode'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='TreeNode'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='TreeNode'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
@@ -8747,7 +8754,7 @@ class TreeNode(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='TreeNode'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='TreeNode'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -8810,7 +8817,7 @@ class TreeFloatEdge(GeneratedsSuper):
     def insert_meta(self, index, value): self.meta[index] = value
     def get_length(self): return self.length
     def set_length(self, length): self.length = length
-    def export(self, outfile, level, namespace_='', name_='TreeFloatEdge', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='TreeFloatEdge', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='TreeFloatEdge')
@@ -8821,10 +8828,10 @@ class TreeFloatEdge(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='TreeFloatEdge'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='TreeFloatEdge'):
         if self.length is not None:
             outfile.write(' length="%s"' % self.gds_format_float(self.length, input_name='length'))
-    def exportChildren(self, outfile, level, namespace_='', name_='TreeFloatEdge'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='TreeFloatEdge'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
@@ -8834,7 +8841,7 @@ class TreeFloatEdge(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='TreeFloatEdge'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='TreeFloatEdge'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -8905,7 +8912,7 @@ class TreeFloatRootEdge(GeneratedsSuper):
     def insert_meta(self, index, value): self.meta[index] = value
     def get_length(self): return self.length
     def set_length(self, length): self.length = length
-    def export(self, outfile, level, namespace_='', name_='TreeFloatRootEdge', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='TreeFloatRootEdge', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='TreeFloatRootEdge')
@@ -8916,10 +8923,10 @@ class TreeFloatRootEdge(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='TreeFloatRootEdge'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='TreeFloatRootEdge'):
         if self.length is not None:
             outfile.write(' length="%s"' % self.gds_format_float(self.length, input_name='length'))
-    def exportChildren(self, outfile, level, namespace_='', name_='TreeFloatRootEdge'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='TreeFloatRootEdge'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
@@ -8929,7 +8936,7 @@ class TreeFloatRootEdge(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='TreeFloatRootEdge'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='TreeFloatRootEdge'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -9000,7 +9007,7 @@ class TreeIntEdge(GeneratedsSuper):
     def insert_meta(self, index, value): self.meta[index] = value
     def get_length(self): return self.length
     def set_length(self, length): self.length = length
-    def export(self, outfile, level, namespace_='', name_='TreeIntEdge', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='TreeIntEdge', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='TreeIntEdge')
@@ -9011,10 +9018,10 @@ class TreeIntEdge(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='TreeIntEdge'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='TreeIntEdge'):
         if self.length is not None:
             outfile.write(' length="%s"' % self.gds_format_integer(self.length, input_name='length'))
-    def exportChildren(self, outfile, level, namespace_='', name_='TreeIntEdge'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='TreeIntEdge'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
@@ -9024,7 +9031,7 @@ class TreeIntEdge(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='TreeIntEdge'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='TreeIntEdge'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -9095,7 +9102,7 @@ class TreeIntRootEdge(GeneratedsSuper):
     def insert_meta(self, index, value): self.meta[index] = value
     def get_length(self): return self.length
     def set_length(self, length): self.length = length
-    def export(self, outfile, level, namespace_='', name_='TreeIntRootEdge', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='TreeIntRootEdge', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='TreeIntRootEdge')
@@ -9106,10 +9113,10 @@ class TreeIntRootEdge(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='TreeIntRootEdge'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='TreeIntRootEdge'):
         if self.length is not None:
             outfile.write(' length="%s"' % self.gds_format_integer(self.length, input_name='length'))
-    def exportChildren(self, outfile, level, namespace_='', name_='TreeIntRootEdge'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='TreeIntRootEdge'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
@@ -9119,7 +9126,7 @@ class TreeIntRootEdge(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='TreeIntRootEdge'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='TreeIntRootEdge'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -9206,7 +9213,7 @@ class FloatTree(GeneratedsSuper):
     def set_edge(self, edge): self.edge = edge
     def add_edge(self, value): self.edge.append(value)
     def insert_edge(self, index, value): self.edge[index] = value
-    def export(self, outfile, level, namespace_='', name_='FloatTree', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='FloatTree', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='FloatTree')
@@ -9217,9 +9224,9 @@ class FloatTree(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='FloatTree'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='FloatTree'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='FloatTree'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='FloatTree'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
         for node_ in self.node:
@@ -9238,7 +9245,7 @@ class FloatTree(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='FloatTree'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='FloatTree'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -9359,7 +9366,7 @@ class IntTree(GeneratedsSuper):
     def set_edge(self, edge): self.edge = edge
     def add_edge(self, value): self.edge.append(value)
     def insert_edge(self, index, value): self.edge[index] = value
-    def export(self, outfile, level, namespace_='', name_='IntTree', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='IntTree', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='IntTree')
@@ -9370,9 +9377,9 @@ class IntTree(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='IntTree'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='IntTree'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='IntTree'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='IntTree'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
         for node_ in self.node:
@@ -9391,7 +9398,7 @@ class IntTree(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='IntTree'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='IntTree'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -9493,7 +9500,7 @@ class NetworkNode(GeneratedsSuper):
     def set_meta(self, meta): self.meta = meta
     def add_meta(self, value): self.meta.append(value)
     def insert_meta(self, index, value): self.meta[index] = value
-    def export(self, outfile, level, namespace_='', name_='NetworkNode', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='NetworkNode', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='NetworkNode')
@@ -9504,9 +9511,9 @@ class NetworkNode(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='NetworkNode'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='NetworkNode'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='NetworkNode'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='NetworkNode'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
@@ -9516,7 +9523,7 @@ class NetworkNode(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='NetworkNode'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='NetworkNode'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -9579,7 +9586,7 @@ class NetworkFloatEdge(GeneratedsSuper):
     def insert_meta(self, index, value): self.meta[index] = value
     def get_length(self): return self.length
     def set_length(self, length): self.length = length
-    def export(self, outfile, level, namespace_='', name_='NetworkFloatEdge', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='NetworkFloatEdge', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='NetworkFloatEdge')
@@ -9590,10 +9597,10 @@ class NetworkFloatEdge(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='NetworkFloatEdge'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='NetworkFloatEdge'):
         if self.length is not None:
             outfile.write(' length="%s"' % self.gds_format_float(self.length, input_name='length'))
-    def exportChildren(self, outfile, level, namespace_='', name_='NetworkFloatEdge'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='NetworkFloatEdge'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
@@ -9603,7 +9610,7 @@ class NetworkFloatEdge(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='NetworkFloatEdge'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='NetworkFloatEdge'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -9674,7 +9681,7 @@ class NetworkIntEdge(GeneratedsSuper):
     def insert_meta(self, index, value): self.meta[index] = value
     def get_length(self): return self.length
     def set_length(self, length): self.length = length
-    def export(self, outfile, level, namespace_='', name_='NetworkIntEdge', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='NetworkIntEdge', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='NetworkIntEdge')
@@ -9685,10 +9692,10 @@ class NetworkIntEdge(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='NetworkIntEdge'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='NetworkIntEdge'):
         if self.length is not None:
             outfile.write(' length="%s"' % self.gds_format_integer(self.length, input_name='length'))
-    def exportChildren(self, outfile, level, namespace_='', name_='NetworkIntEdge'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='NetworkIntEdge'):
         for meta_ in self.get_meta():
             meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
@@ -9698,7 +9705,7 @@ class NetworkIntEdge(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='NetworkIntEdge'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='NetworkIntEdge'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -9774,7 +9781,7 @@ class FloatNetwork(GeneratedsSuper):
     def set_edge(self, edge): self.edge = edge
     def add_edge(self, value): self.edge.append(value)
     def insert_edge(self, index, value): self.edge[index] = value
-    def export(self, outfile, level, namespace_='', name_='FloatNetwork', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='FloatNetwork', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='FloatNetwork')
@@ -9785,9 +9792,9 @@ class FloatNetwork(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='FloatNetwork'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='FloatNetwork'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='FloatNetwork'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='FloatNetwork'):
         for node_ in self.node:
             node_.export(outfile, level, namespace_, name_='node')
         for edge_ in self.edge:
@@ -9800,7 +9807,7 @@ class FloatNetwork(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='FloatNetwork'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='FloatNetwork'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -9878,7 +9885,7 @@ class IntNetwork(GeneratedsSuper):
     def set_edge(self, edge): self.edge = edge
     def add_edge(self, value): self.edge.append(value)
     def insert_edge(self, index, value): self.edge[index] = value
-    def export(self, outfile, level, namespace_='', name_='IntNetwork', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='IntNetwork', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='IntNetwork')
@@ -9889,9 +9896,9 @@ class IntNetwork(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='IntNetwork'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='IntNetwork'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='IntNetwork'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='IntNetwork'):
         for node_ in self.node:
             node_.export(outfile, level, namespace_, name_='node')
         for edge_ in self.edge:
@@ -9904,7 +9911,7 @@ class IntNetwork(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='IntNetwork'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='IntNetwork'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -9991,7 +9998,7 @@ class Annotated(Base):
     def set_about(self, about): self.about = about
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='Annotated', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='Annotated', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='Annotated')
@@ -10004,11 +10011,11 @@ class Annotated(Base):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='Annotated'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='Annotated'):
         super(Annotated, self).exportAttributes(outfile, level, namespace_, name_='Annotated')
         if self.about is not None:
             outfile.write(' about=%s' % (quote_attrib(self.about), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='Annotated'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='Annotated'):
         super(Annotated, self).exportChildren(outfile, level, namespace_, name_)
         for item_ in self.content_:
             item_.export(outfile, level, item_.name, namespace_)
@@ -10021,7 +10028,7 @@ class Annotated(Base):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='Annotated'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='Annotated'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -10080,8 +10087,8 @@ class Nexml(Annotated):
     """The root element for nexml."""
     subclass = None
     superclass = Annotated
-    def __init__(self, classxx=None, id=None, about=None, meta=None, version=None, generator=None, otus=None, characters=None, trees=None):
-        super(Nexml, self).__init__(classxx, id, about, meta, )
+    def __init__(self, classxx=None, id=None, about=None, meta=None, version=None, generator=None, otus=None, characters=None, trees=None, valueOf_=None, mixedclass_=None, content_=None):
+        super(Nexml, self).__init__(classxx, id, about, meta, valueOf_, mixedclass_, content_, )
         self.version = _cast(None, version)
         self.generator = _cast(None, generator)
         if otus is None:
@@ -10096,6 +10103,16 @@ class Nexml(Annotated):
             self.trees = []
         else:
             self.trees = trees
+        self.valueOf_ = valueOf_
+        if mixedclass_ is None:
+            self.mixedclass_ = MixedContainer
+        else:
+            self.mixedclass_ = mixedclass_
+        if content_ is None:
+            self.content_ = []
+        else:
+            self.content_ = content_
+        self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
         if Nexml.subclass:
             return Nexml.subclass(*args_, **kwargs_)
@@ -10121,7 +10138,9 @@ class Nexml(Annotated):
         pass
     def get_generator(self): return self.generator
     def set_generator(self, generator): self.generator = generator
-    def export(self, outfile, level, namespace_='', name_='Nexml', namespacedef_=''):
+    def get_valueOf_(self): return self.valueOf_
+    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='Nexml', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='Nexml')
@@ -10134,30 +10153,27 @@ class Nexml(Annotated):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='Nexml'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='Nexml'):
         super(Nexml, self).exportAttributes(outfile, level, namespace_, name_='Nexml')
         outfile.write(' version=%s' % (quote_attrib(self.version), ))
         if self.generator is not None:
             outfile.write(' generator=%s' % (self.gds_format_string(quote_attrib(self.generator).encode(ExternalEncoding), input_name='generator'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='Nexml'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='Nexml'):
         super(Nexml, self).exportChildren(outfile, level, namespace_, name_)
-        for otus_ in self.otus:
-            otus_.export(outfile, level, namespace_, name_='otus')
-        for characters_ in self.get_characters():
-            characters_.export(outfile, level, namespace_, name_='characters')
-        for trees_ in self.trees:
-            trees_.export(outfile, level, namespace_, name_='trees')
+        for item_ in self.content_:
+            item_.export(outfile, level, item_.name, namespace_)
     def hasContent_(self):
         if (
             self.otus or
             self.characters or
             self.trees or
+            self.valueOf_ or
             super(Nexml, self).hasContent_()
             ):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='Nexml'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='Nexml'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -10173,43 +10189,32 @@ class Nexml(Annotated):
     def exportLiteralChildren(self, outfile, level, name_):
         super(Nexml, self).exportLiteralChildren(outfile, level, name_)
         showIndent(outfile, level)
-        outfile.write('otus=[\n')
-        level += 1
-        for otus_ in self.otus:
-            showIndent(outfile, level)
-            outfile.write('model_.Taxa(\n')
-            otus_.exportLiteral(outfile, level, name_='Taxa')
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        level -= 1
+        outfile.write('content_ = [\n')
+        for item_ in self.content_:
+            item_.exportLiteral(outfile, level, name_)
         showIndent(outfile, level)
         outfile.write('],\n')
         showIndent(outfile, level)
-        outfile.write('characters=[\n')
-        level += 1
-        for characters_ in self.characters:
-            showIndent(outfile, level)
-            outfile.write('model_.AbstractBlock(\n')
-            characters_.exportLiteral(outfile, level, name_='AbstractBlock')
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        level -= 1
+        outfile.write('content_ = [\n')
+        for item_ in self.content_:
+            item_.exportLiteral(outfile, level, name_)
         showIndent(outfile, level)
         outfile.write('],\n')
         showIndent(outfile, level)
-        outfile.write('trees=[\n')
-        level += 1
-        for trees_ in self.trees:
-            showIndent(outfile, level)
-            outfile.write('model_.Trees(\n')
-            trees_.exportLiteral(outfile, level, name_='Trees')
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        level -= 1
+        outfile.write('content_ = [\n')
+        for item_ in self.content_:
+            item_.exportLiteral(outfile, level, name_)
         showIndent(outfile, level)
         outfile.write('],\n')
+        showIndent(outfile, level)
+        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
+        self.valueOf_ = get_all_text_(node)
+        if node.text is not None:
+            obj_ = self.mixedclass_(MixedContainer.CategoryText,
+                MixedContainer.TypeNone, '', node.text)
+            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
@@ -10225,24 +10230,40 @@ class Nexml(Annotated):
             self.generator = value
         super(Nexml, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
-        if nodeName_ == 'otus': 
-            obj_ = Taxa.factory()
-            obj_.build(child_)
-            self.otus.append(obj_)
-        elif nodeName_ == 'characters': 
-            type_name = child_.attrib.get('type')
-            if type_name is not None:
-                class_ = globals()[type_name]
-                obj_ = class_.factory()
-                obj_.build(child_)
-            else:
-                raise NotImplementedError(
-                    'Class not implemented for <characters> element')
-            self.characters.append(obj_)
-        elif nodeName_ == 'trees': 
-            obj_ = Trees.factory()
-            obj_.build(child_)
-            self.trees.append(obj_)
+        if nodeName_ == 'otus':
+            childobj_ = Taxa.factory()
+            childobj_.build(child_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'otus', childobj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_otus'):
+              self.add_otus(obj_.value)
+            elif hasattr(self, 'set_otus'):
+              self.set_otus(obj_.value)
+        elif nodeName_ == 'characters':
+            childobj_ = AbstractBlock.factory()
+            childobj_.build(child_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'characters', childobj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_characters'):
+              self.add_characters(obj_.value)
+            elif hasattr(self, 'set_characters'):
+              self.set_characters(obj_.value)
+        elif nodeName_ == 'trees':
+            childobj_ = Trees.factory()
+            childobj_.build(child_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'trees', childobj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_trees'):
+              self.add_trees(obj_.value)
+            elif hasattr(self, 'set_trees'):
+              self.set_trees(obj_.value)
+        if not from_subclass and child_.tail is not None:
+            obj_ = self.mixedclass_(MixedContainer.CategoryText,
+                MixedContainer.TypeNone, '', child_.tail)
+            self.content_.append(obj_)
         super(Nexml, self).buildChildren(child_, nodeName_, True)
 # end class Nexml
 
@@ -10281,7 +10302,7 @@ class AbstractObsMatrix(Annotated):
     def insert_row(self, index, value): self.row[index] = value
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='AbstractObsMatrix', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractObsMatrix', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='AbstractObsMatrix')
@@ -10294,9 +10315,9 @@ class AbstractObsMatrix(Annotated):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='AbstractObsMatrix'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractObsMatrix'):
         super(AbstractObsMatrix, self).exportAttributes(outfile, level, namespace_, name_='AbstractObsMatrix')
-    def exportChildren(self, outfile, level, namespace_='', name_='AbstractObsMatrix'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractObsMatrix'):
         super(AbstractObsMatrix, self).exportChildren(outfile, level, namespace_, name_)
         for item_ in self.content_:
             item_.export(outfile, level, item_.name, namespace_)
@@ -10309,7 +10330,7 @@ class AbstractObsMatrix(Annotated):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='AbstractObsMatrix'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='AbstractObsMatrix'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -10391,7 +10412,7 @@ class AbstractSeqMatrix(Annotated):
     def insert_row(self, index, value): self.row[index] = value
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='AbstractSeqMatrix', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractSeqMatrix', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='AbstractSeqMatrix')
@@ -10404,9 +10425,9 @@ class AbstractSeqMatrix(Annotated):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='AbstractSeqMatrix'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractSeqMatrix'):
         super(AbstractSeqMatrix, self).exportAttributes(outfile, level, namespace_, name_='AbstractSeqMatrix')
-    def exportChildren(self, outfile, level, namespace_='', name_='AbstractSeqMatrix'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractSeqMatrix'):
         super(AbstractSeqMatrix, self).exportChildren(outfile, level, namespace_, name_)
         for item_ in self.content_:
             item_.export(outfile, level, item_.name, namespace_)
@@ -10419,7 +10440,7 @@ class AbstractSeqMatrix(Annotated):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='AbstractSeqMatrix'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='AbstractSeqMatrix'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -10511,7 +10532,7 @@ class AbstractFormat(Annotated):
     def insert_char(self, index, value): self.char[index] = value
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='AbstractFormat', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractFormat', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='AbstractFormat')
@@ -10524,9 +10545,9 @@ class AbstractFormat(Annotated):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='AbstractFormat'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractFormat'):
         super(AbstractFormat, self).exportAttributes(outfile, level, namespace_, name_='AbstractFormat')
-    def exportChildren(self, outfile, level, namespace_='', name_='AbstractFormat'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractFormat'):
         super(AbstractFormat, self).exportChildren(outfile, level, namespace_, name_)
         for item_ in self.content_:
             item_.export(outfile, level, item_.name, namespace_)
@@ -10540,7 +10561,7 @@ class AbstractFormat(Annotated):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='AbstractFormat'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='AbstractFormat'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -10633,7 +10654,7 @@ class Labelled(Annotated):
     def set_label(self, label): self.label = label
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='Labelled', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='Labelled', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='Labelled')
@@ -10646,11 +10667,11 @@ class Labelled(Annotated):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='Labelled'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='Labelled'):
         super(Labelled, self).exportAttributes(outfile, level, namespace_, name_='Labelled')
         if self.label is not None:
             outfile.write(' label=%s' % (self.gds_format_string(quote_attrib(self.label).encode(ExternalEncoding), input_name='label'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='Labelled'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='Labelled'):
         super(Labelled, self).exportChildren(outfile, level, namespace_, name_)
     def hasContent_(self):
         if (
@@ -10660,7 +10681,7 @@ class Labelled(Annotated):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='Labelled'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='Labelled'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -10736,7 +10757,7 @@ class AbstractObs(Labelled):
     def set_state(self, state): self.state = state
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='AbstractObs', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractObs', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='AbstractObs')
@@ -10749,11 +10770,11 @@ class AbstractObs(Labelled):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='AbstractObs'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractObs'):
         super(AbstractObs, self).exportAttributes(outfile, level, namespace_, name_='AbstractObs')
         outfile.write(' char=%s' % (quote_attrib(self.char), ))
         outfile.write(' state=%s' % (quote_attrib(self.state), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='AbstractObs'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractObs'):
         super(AbstractObs, self).exportChildren(outfile, level, namespace_, name_)
     def hasContent_(self):
         if (
@@ -10763,7 +10784,7 @@ class AbstractObs(Labelled):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='AbstractObs'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='AbstractObs'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -10836,7 +10857,7 @@ class IDTagged(Labelled):
     factory = staticmethod(factory)
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='IDTagged', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='IDTagged', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='IDTagged')
@@ -10849,9 +10870,9 @@ class IDTagged(Labelled):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='IDTagged'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='IDTagged'):
         super(IDTagged, self).exportAttributes(outfile, level, namespace_, name_='IDTagged')
-    def exportChildren(self, outfile, level, namespace_='', name_='IDTagged'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='IDTagged'):
         super(IDTagged, self).exportChildren(outfile, level, namespace_, name_)
     def hasContent_(self):
         if (
@@ -10861,7 +10882,7 @@ class IDTagged(Labelled):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='IDTagged'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='IDTagged'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -10897,12 +10918,22 @@ class IDTagged(Labelled):
 class Taxa(IDTagged):
     subclass = None
     superclass = IDTagged
-    def __init__(self, classxx=None, id=None, about=None, meta=None, label=None, otu=None):
-        super(Taxa, self).__init__(classxx, id, about, meta, label, )
+    def __init__(self, classxx=None, id=None, about=None, meta=None, label=None, otu=None, valueOf_=None, mixedclass_=None, content_=None):
+        super(Taxa, self).__init__(classxx, id, about, meta, label, valueOf_, mixedclass_, content_, )
         if otu is None:
             self.otu = []
         else:
             self.otu = otu
+        self.valueOf_ = valueOf_
+        if mixedclass_ is None:
+            self.mixedclass_ = MixedContainer
+        else:
+            self.mixedclass_ = mixedclass_
+        if content_ is None:
+            self.content_ = []
+        else:
+            self.content_ = content_
+        self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
         if Taxa.subclass:
             return Taxa.subclass(*args_, **kwargs_)
@@ -10913,7 +10944,9 @@ class Taxa(IDTagged):
     def set_otu(self, otu): self.otu = otu
     def add_otu(self, value): self.otu.append(value)
     def insert_otu(self, index, value): self.otu[index] = value
-    def export(self, outfile, level, namespace_='', name_='Taxa', namespacedef_=''):
+    def get_valueOf_(self): return self.valueOf_
+    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='Taxa', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='Taxa')
@@ -10926,21 +10959,22 @@ class Taxa(IDTagged):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='Taxa'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='Taxa'):
         super(Taxa, self).exportAttributes(outfile, level, namespace_, name_='Taxa')
-    def exportChildren(self, outfile, level, namespace_='', name_='Taxa'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='Taxa'):
         super(Taxa, self).exportChildren(outfile, level, namespace_, name_)
-        for otu_ in self.otu:
-            otu_.export(outfile, level, namespace_, name_='otu')
+        for item_ in self.content_:
+            item_.export(outfile, level, item_.name, namespace_)
     def hasContent_(self):
         if (
             self.otu or
+            self.valueOf_ or
             super(Taxa, self).hasContent_()
             ):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='Taxa'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='Taxa'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -10950,29 +10984,40 @@ class Taxa(IDTagged):
     def exportLiteralChildren(self, outfile, level, name_):
         super(Taxa, self).exportLiteralChildren(outfile, level, name_)
         showIndent(outfile, level)
-        outfile.write('otu=[\n')
-        level += 1
-        for otu_ in self.otu:
-            showIndent(outfile, level)
-            outfile.write('model_.Taxon(\n')
-            otu_.exportLiteral(outfile, level, name_='Taxon')
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        level -= 1
+        outfile.write('content_ = [\n')
+        for item_ in self.content_:
+            item_.exportLiteral(outfile, level, name_)
         showIndent(outfile, level)
         outfile.write('],\n')
+        showIndent(outfile, level)
+        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
+        self.valueOf_ = get_all_text_(node)
+        if node.text is not None:
+            obj_ = self.mixedclass_(MixedContainer.CategoryText,
+                MixedContainer.TypeNone, '', node.text)
+            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
         super(Taxa, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
-        if nodeName_ == 'otu': 
-            obj_ = Taxon.factory()
-            obj_.build(child_)
-            self.otu.append(obj_)
+        if nodeName_ == 'otu':
+            childobj_ = Taxon.factory()
+            childobj_.build(child_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'otu', childobj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_otu'):
+              self.add_otu(obj_.value)
+            elif hasattr(self, 'set_otu'):
+              self.set_otu(obj_.value)
+        if not from_subclass and child_.tail is not None:
+            obj_ = self.mixedclass_(MixedContainer.CategoryText,
+                MixedContainer.TypeNone, '', child_.tail)
+            self.content_.append(obj_)
         super(Taxa, self).buildChildren(child_, nodeName_, True)
 # end class Taxa
 
@@ -10980,16 +11025,27 @@ class Taxa(IDTagged):
 class Taxon(IDTagged):
     subclass = None
     superclass = IDTagged
-    def __init__(self, classxx=None, id=None, about=None, meta=None, label=None):
-        super(Taxon, self).__init__(classxx, id, about, meta, label, )
-        pass
+    def __init__(self, classxx=None, id=None, about=None, meta=None, label=None, valueOf_=None, mixedclass_=None, content_=None):
+        super(Taxon, self).__init__(classxx, id, about, meta, label, valueOf_, mixedclass_, content_, )
+        self.valueOf_ = valueOf_
+        if mixedclass_ is None:
+            self.mixedclass_ = MixedContainer
+        else:
+            self.mixedclass_ = mixedclass_
+        if content_ is None:
+            self.content_ = []
+        else:
+            self.content_ = content_
+        self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
         if Taxon.subclass:
             return Taxon.subclass(*args_, **kwargs_)
         else:
             return Taxon(*args_, **kwargs_)
     factory = staticmethod(factory)
-    def export(self, outfile, level, namespace_='', name_='Taxon', namespacedef_=''):
+    def get_valueOf_(self): return self.valueOf_
+    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='Taxon', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='Taxon')
@@ -11002,18 +11058,19 @@ class Taxon(IDTagged):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='Taxon'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='Taxon'):
         super(Taxon, self).exportAttributes(outfile, level, namespace_, name_='Taxon')
-    def exportChildren(self, outfile, level, namespace_='', name_='Taxon'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='Taxon'):
         super(Taxon, self).exportChildren(outfile, level, namespace_, name_)
     def hasContent_(self):
         if (
+            self.valueOf_ or
             super(Taxon, self).hasContent_()
             ):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='Taxon'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='Taxon'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -11022,14 +11079,25 @@ class Taxon(IDTagged):
         super(Taxon, self).exportLiteralAttributes(outfile, level, name_)
     def exportLiteralChildren(self, outfile, level, name_):
         super(Taxon, self).exportLiteralChildren(outfile, level, name_)
+        showIndent(outfile, level)
+        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
+        self.valueOf_ = get_all_text_(node)
+        if node.text is not None:
+            obj_ = self.mixedclass_(MixedContainer.CategoryText,
+                MixedContainer.TypeNone, '', node.text)
+            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
         super(Taxon, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
+        if not from_subclass and child_.tail is not None:
+            obj_ = self.mixedclass_(MixedContainer.CategoryText,
+                MixedContainer.TypeNone, '', child_.tail)
+            self.content_.append(obj_)
         super(Taxon, self).buildChildren(child_, nodeName_, True)
         pass
 # end class Taxon
@@ -11075,7 +11143,7 @@ class AbstractTrees(IDTagged):
     def insert_tree(self, index, value): self.tree[index] = value
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='AbstractTrees', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractTrees', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='AbstractTrees')
@@ -11088,9 +11156,9 @@ class AbstractTrees(IDTagged):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='AbstractTrees'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractTrees'):
         super(AbstractTrees, self).exportAttributes(outfile, level, namespace_, name_='AbstractTrees')
-    def exportChildren(self, outfile, level, namespace_='', name_='AbstractTrees'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractTrees'):
         super(AbstractTrees, self).exportChildren(outfile, level, namespace_, name_)
         for item_ in self.content_:
             item_.export(outfile, level, item_.name, namespace_)
@@ -11104,7 +11172,7 @@ class AbstractTrees(IDTagged):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='AbstractTrees'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='AbstractTrees'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -11209,7 +11277,7 @@ class AbstractNetwork(IDTagged):
     def insert_edge(self, index, value): self.edge[index] = value
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='AbstractNetwork', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractNetwork', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='AbstractNetwork')
@@ -11222,9 +11290,9 @@ class AbstractNetwork(IDTagged):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='AbstractNetwork'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractNetwork'):
         super(AbstractNetwork, self).exportAttributes(outfile, level, namespace_, name_='AbstractNetwork')
-    def exportChildren(self, outfile, level, namespace_='', name_='AbstractNetwork'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractNetwork'):
         super(AbstractNetwork, self).exportChildren(outfile, level, namespace_, name_)
         for item_ in self.content_:
             item_.export(outfile, level, item_.name, namespace_)
@@ -11238,7 +11306,7 @@ class AbstractNetwork(IDTagged):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='AbstractNetwork'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='AbstractNetwork'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -11345,7 +11413,7 @@ class AbstractTree(IDTagged):
     def insert_edge(self, index, value): self.edge[index] = value
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='AbstractTree', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractTree', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='AbstractTree')
@@ -11358,9 +11426,9 @@ class AbstractTree(IDTagged):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='AbstractTree'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractTree'):
         super(AbstractTree, self).exportAttributes(outfile, level, namespace_, name_='AbstractTree')
-    def exportChildren(self, outfile, level, namespace_='', name_='AbstractTree'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractTree'):
         super(AbstractTree, self).exportChildren(outfile, level, namespace_, name_)
         for item_ in self.content_:
             item_.export(outfile, level, item_.name, namespace_)
@@ -11375,7 +11443,7 @@ class AbstractTree(IDTagged):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='AbstractTree'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='AbstractTree'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -11489,7 +11557,7 @@ class AbstractRootEdge(IDTagged):
     def set_target(self, target): self.target = target
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='AbstractRootEdge', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractRootEdge', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='AbstractRootEdge')
@@ -11502,12 +11570,12 @@ class AbstractRootEdge(IDTagged):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='AbstractRootEdge'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractRootEdge'):
         super(AbstractRootEdge, self).exportAttributes(outfile, level, namespace_, name_='AbstractRootEdge')
         if self.length is not None:
             outfile.write(' length=%s' % (quote_attrib(self.length), ))
         outfile.write(' target=%s' % (self.gds_format_string(quote_attrib(self.target).encode(ExternalEncoding), input_name='target'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='AbstractRootEdge'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractRootEdge'):
         super(AbstractRootEdge, self).exportChildren(outfile, level, namespace_, name_)
     def hasContent_(self):
         if (
@@ -11517,7 +11585,7 @@ class AbstractRootEdge(IDTagged):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='AbstractRootEdge'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='AbstractRootEdge'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -11599,7 +11667,7 @@ class AbstractEdge(IDTagged):
     def set_target(self, target): self.target = target
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='AbstractEdge', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractEdge', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='AbstractEdge')
@@ -11612,13 +11680,13 @@ class AbstractEdge(IDTagged):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='AbstractEdge'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractEdge'):
         super(AbstractEdge, self).exportAttributes(outfile, level, namespace_, name_='AbstractEdge')
         outfile.write(' source=%s' % (self.gds_format_string(quote_attrib(self.source).encode(ExternalEncoding), input_name='source'), ))
         if self.length is not None:
             outfile.write(' length=%s' % (quote_attrib(self.length), ))
         outfile.write(' target=%s' % (self.gds_format_string(quote_attrib(self.target).encode(ExternalEncoding), input_name='target'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='AbstractEdge'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractEdge'):
         super(AbstractEdge, self).exportChildren(outfile, level, namespace_, name_)
     def hasContent_(self):
         if (
@@ -11628,7 +11696,7 @@ class AbstractEdge(IDTagged):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='AbstractEdge'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='AbstractEdge'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -11726,7 +11794,7 @@ class AbstractChar(IDTagged):
         pass
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='AbstractChar', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractChar', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='AbstractChar')
@@ -11739,7 +11807,7 @@ class AbstractChar(IDTagged):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='AbstractChar'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractChar'):
         super(AbstractChar, self).exportAttributes(outfile, level, namespace_, name_='AbstractChar')
         if self.tokens is not None:
             outfile.write(' tokens=%s' % (quote_attrib(self.tokens), ))
@@ -11747,7 +11815,7 @@ class AbstractChar(IDTagged):
             outfile.write(' states=%s' % (self.gds_format_string(quote_attrib(self.states).encode(ExternalEncoding), input_name='states'), ))
         if self.codon is not None:
             outfile.write(' codon=%s' % (quote_attrib(self.codon), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='AbstractChar'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractChar'):
         super(AbstractChar, self).exportChildren(outfile, level, namespace_, name_)
     def hasContent_(self):
         if (
@@ -11757,7 +11825,7 @@ class AbstractChar(IDTagged):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='AbstractChar'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='AbstractChar'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -11861,7 +11929,7 @@ class AbstractStates(IDTagged):
     def insert_uncertain_state_set(self, index, value): self.uncertain_state_set[index] = value
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='AbstractStates', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractStates', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='AbstractStates')
@@ -11874,9 +11942,9 @@ class AbstractStates(IDTagged):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='AbstractStates'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractStates'):
         super(AbstractStates, self).exportAttributes(outfile, level, namespace_, name_='AbstractStates')
-    def exportChildren(self, outfile, level, namespace_='', name_='AbstractStates'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractStates'):
         super(AbstractStates, self).exportChildren(outfile, level, namespace_, name_)
         for item_ in self.content_:
             item_.export(outfile, level, item_.name, namespace_)
@@ -11891,7 +11959,7 @@ class AbstractStates(IDTagged):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='AbstractStates'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='AbstractStates'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -12002,7 +12070,7 @@ class AbstractState(IDTagged):
     def set_symbol(self, symbol): self.symbol = symbol
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='AbstractState', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractState', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='AbstractState')
@@ -12015,10 +12083,10 @@ class AbstractState(IDTagged):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='AbstractState'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractState'):
         super(AbstractState, self).exportAttributes(outfile, level, namespace_, name_='AbstractState')
         outfile.write(' symbol=%s' % (quote_attrib(self.symbol), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='AbstractState'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractState'):
         super(AbstractState, self).exportChildren(outfile, level, namespace_, name_)
     def hasContent_(self):
         if (
@@ -12028,7 +12096,7 @@ class AbstractState(IDTagged):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='AbstractState'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='AbstractState'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -12079,16 +12147,27 @@ class Class(IDTagged):
     cascading style sheets."""
     subclass = None
     superclass = IDTagged
-    def __init__(self, classxx=None, id=None, about=None, meta=None, label=None):
-        super(Class, self).__init__(classxx, id, about, meta, label, )
-        pass
+    def __init__(self, classxx=None, id=None, about=None, meta=None, label=None, valueOf_=None, mixedclass_=None, content_=None):
+        super(Class, self).__init__(classxx, id, about, meta, label, valueOf_, mixedclass_, content_, )
+        self.valueOf_ = valueOf_
+        if mixedclass_ is None:
+            self.mixedclass_ = MixedContainer
+        else:
+            self.mixedclass_ = mixedclass_
+        if content_ is None:
+            self.content_ = []
+        else:
+            self.content_ = content_
+        self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
         if Class.subclass:
             return Class.subclass(*args_, **kwargs_)
         else:
             return Class(*args_, **kwargs_)
     factory = staticmethod(factory)
-    def export(self, outfile, level, namespace_='', name_='Class', namespacedef_=''):
+    def get_valueOf_(self): return self.valueOf_
+    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='Class', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='Class')
@@ -12101,18 +12180,19 @@ class Class(IDTagged):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='Class'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='Class'):
         super(Class, self).exportAttributes(outfile, level, namespace_, name_='Class')
-    def exportChildren(self, outfile, level, namespace_='', name_='Class'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='Class'):
         super(Class, self).exportChildren(outfile, level, namespace_, name_)
     def hasContent_(self):
         if (
+            self.valueOf_ or
             super(Class, self).hasContent_()
             ):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='Class'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='Class'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -12121,14 +12201,25 @@ class Class(IDTagged):
         super(Class, self).exportLiteralAttributes(outfile, level, name_)
     def exportLiteralChildren(self, outfile, level, name_):
         super(Class, self).exportLiteralChildren(outfile, level, name_)
+        showIndent(outfile, level)
+        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
+        self.valueOf_ = get_all_text_(node)
+        if node.text is not None:
+            obj_ = self.mixedclass_(MixedContainer.CategoryText,
+                MixedContainer.TypeNone, '', node.text)
+            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
         super(Class, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
+        if not from_subclass and child_.tail is not None:
+            obj_ = self.mixedclass_(MixedContainer.CategoryText,
+                MixedContainer.TypeNone, '', child_.tail)
+            self.content_.append(obj_)
         super(Class, self).buildChildren(child_, nodeName_, True)
         pass
 # end class Class
@@ -12162,7 +12253,7 @@ class TaxaLinked(IDTagged):
     def set_otus(self, otus): self.otus = otus
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='TaxaLinked', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='TaxaLinked', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='TaxaLinked')
@@ -12175,10 +12266,10 @@ class TaxaLinked(IDTagged):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='TaxaLinked'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='TaxaLinked'):
         super(TaxaLinked, self).exportAttributes(outfile, level, namespace_, name_='TaxaLinked')
         outfile.write(' otus=%s' % (self.gds_format_string(quote_attrib(self.otus).encode(ExternalEncoding), input_name='otus'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='TaxaLinked'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='TaxaLinked'):
         super(TaxaLinked, self).exportChildren(outfile, level, namespace_, name_)
     def hasContent_(self):
         if (
@@ -12188,7 +12279,7 @@ class TaxaLinked(IDTagged):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='TaxaLinked'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='TaxaLinked'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -12256,7 +12347,7 @@ class OptionalTaxonLinked(IDTagged):
     def set_otu(self, otu): self.otu = otu
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='OptionalTaxonLinked', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='OptionalTaxonLinked', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='OptionalTaxonLinked')
@@ -12269,11 +12360,11 @@ class OptionalTaxonLinked(IDTagged):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='OptionalTaxonLinked'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='OptionalTaxonLinked'):
         super(OptionalTaxonLinked, self).exportAttributes(outfile, level, namespace_, name_='OptionalTaxonLinked')
         if self.otu is not None:
             outfile.write(' otu=%s' % (self.gds_format_string(quote_attrib(self.otu).encode(ExternalEncoding), input_name='otu'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='OptionalTaxonLinked'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='OptionalTaxonLinked'):
         super(OptionalTaxonLinked, self).exportChildren(outfile, level, namespace_, name_)
     def hasContent_(self):
         if (
@@ -12283,7 +12374,7 @@ class OptionalTaxonLinked(IDTagged):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='OptionalTaxonLinked'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='OptionalTaxonLinked'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -12351,7 +12442,7 @@ class TaxonLinked(IDTagged):
     def set_otu(self, otu): self.otu = otu
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='TaxonLinked', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='TaxonLinked', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='TaxonLinked')
@@ -12364,10 +12455,10 @@ class TaxonLinked(IDTagged):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='TaxonLinked'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='TaxonLinked'):
         super(TaxonLinked, self).exportAttributes(outfile, level, namespace_, name_='TaxonLinked')
         outfile.write(' otu=%s' % (self.gds_format_string(quote_attrib(self.otu).encode(ExternalEncoding), input_name='otu'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='TaxonLinked'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='TaxonLinked'):
         super(TaxonLinked, self).exportChildren(outfile, level, namespace_, name_)
     def hasContent_(self):
         if (
@@ -12377,7 +12468,7 @@ class TaxonLinked(IDTagged):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='TaxonLinked'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='TaxonLinked'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -12425,12 +12516,22 @@ class Segmented(IDTagged):
     to the ID of the class they belong to."""
     subclass = None
     superclass = IDTagged
-    def __init__(self, classxx=None, id=None, about=None, meta=None, label=None):
-        super(Segmented, self).__init__(classxx, id, about, meta, label, )
+    def __init__(self, classxx=None, id=None, about=None, meta=None, label=None, valueOf_=None, mixedclass_=None, content_=None):
+        super(Segmented, self).__init__(classxx, id, about, meta, label, valueOf_, mixedclass_, content_, )
         if classxx is None:
             self.classxx = []
         else:
             self.classxx = classxx
+        self.valueOf_ = valueOf_
+        if mixedclass_ is None:
+            self.mixedclass_ = MixedContainer
+        else:
+            self.mixedclass_ = mixedclass_
+        if content_ is None:
+            self.content_ = []
+        else:
+            self.content_ = content_
+        self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
         if Segmented.subclass:
             return Segmented.subclass(*args_, **kwargs_)
@@ -12441,7 +12542,9 @@ class Segmented(IDTagged):
     def set_class(self, classxx): self.classxx = classxx
     def add_class(self, value): self.classxx.append(value)
     def insert_class(self, index, value): self.classxx[index] = value
-    def export(self, outfile, level, namespace_='', name_='Segmented', namespacedef_=''):
+    def get_valueOf_(self): return self.valueOf_
+    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='Segmented', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='Segmented')
@@ -12454,21 +12557,22 @@ class Segmented(IDTagged):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='Segmented'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='Segmented'):
         super(Segmented, self).exportAttributes(outfile, level, namespace_, name_='Segmented')
-    def exportChildren(self, outfile, level, namespace_='', name_='Segmented'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='Segmented'):
         super(Segmented, self).exportChildren(outfile, level, namespace_, name_)
-        for class_ in self.classxx:
-            class_.export(outfile, level, namespace_, name_='class')
+        for item_ in self.content_:
+            item_.export(outfile, level, item_.name, namespace_)
     def hasContent_(self):
         if (
             self.classxx or
+            self.valueOf_ or
             super(Segmented, self).hasContent_()
             ):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='Segmented'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='Segmented'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -12478,29 +12582,40 @@ class Segmented(IDTagged):
     def exportLiteralChildren(self, outfile, level, name_):
         super(Segmented, self).exportLiteralChildren(outfile, level, name_)
         showIndent(outfile, level)
-        outfile.write('classxx=[\n')
-        level += 1
-        for class_ in self.classxx:
-            showIndent(outfile, level)
-            outfile.write('model_.Class(\n')
-            class_.exportLiteral(outfile, level, name_='Class')
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        level -= 1
+        outfile.write('content_ = [\n')
+        for item_ in self.content_:
+            item_.exportLiteral(outfile, level, name_)
         showIndent(outfile, level)
         outfile.write('],\n')
+        showIndent(outfile, level)
+        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
+        self.valueOf_ = get_all_text_(node)
+        if node.text is not None:
+            obj_ = self.mixedclass_(MixedContainer.CategoryText,
+                MixedContainer.TypeNone, '', node.text)
+            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
         super(Segmented, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
-        if nodeName_ == 'class': 
-            obj_ = Class.factory()
-            obj_.build(child_)
-            self.classxx.append(obj_)
+        if nodeName_ == 'class':
+            childobj_ = Class.factory()
+            childobj_.build(child_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'class', childobj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_class'):
+              self.add_class(obj_.value)
+            elif hasattr(self, 'set_class'):
+              self.set_class(obj_.value)
+        if not from_subclass and child_.tail is not None:
+            obj_ = self.mixedclass_(MixedContainer.CategoryText,
+                MixedContainer.TypeNone, '', child_.tail)
+            self.content_.append(obj_)
         super(Segmented, self).buildChildren(child_, nodeName_, True)
 # end class Segmented
 
@@ -12535,7 +12650,7 @@ class AbstractNode(OptionalTaxonLinked):
     def set_root(self, root): self.root = root
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='AbstractNode', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractNode', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='AbstractNode')
@@ -12548,11 +12663,11 @@ class AbstractNode(OptionalTaxonLinked):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='AbstractNode'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractNode'):
         super(AbstractNode, self).exportAttributes(outfile, level, namespace_, name_='AbstractNode')
         if self.root is not None:
             outfile.write(' root="%s"' % self.gds_format_boolean(self.gds_str_lower(str(self.root)), input_name='root'))
-    def exportChildren(self, outfile, level, namespace_='', name_='AbstractNode'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractNode'):
         super(AbstractNode, self).exportChildren(outfile, level, namespace_, name_)
     def hasContent_(self):
         if (
@@ -12562,7 +12677,7 @@ class AbstractNode(OptionalTaxonLinked):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='AbstractNode'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='AbstractNode'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -12647,7 +12762,7 @@ class Trees(TaxaLinked):
     def insert_tree(self, index, value): self.tree[index] = value
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='Trees', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='Trees', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='Trees')
@@ -12660,9 +12775,9 @@ class Trees(TaxaLinked):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='Trees'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='Trees'):
         super(Trees, self).exportAttributes(outfile, level, namespace_, name_='Trees')
-    def exportChildren(self, outfile, level, namespace_='', name_='Trees'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='Trees'):
         super(Trees, self).exportChildren(outfile, level, namespace_, name_)
         for item_ in self.content_:
             item_.export(outfile, level, item_.name, namespace_)
@@ -12676,7 +12791,7 @@ class Trees(TaxaLinked):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='Trees'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='Trees'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -12768,7 +12883,7 @@ class AbstractBlock(TaxaLinked):
     def set_format(self, format): self.format = format
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='AbstractBlock', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractBlock', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='AbstractBlock')
@@ -12781,9 +12896,9 @@ class AbstractBlock(TaxaLinked):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='AbstractBlock'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractBlock'):
         super(AbstractBlock, self).exportAttributes(outfile, level, namespace_, name_='AbstractBlock')
-    def exportChildren(self, outfile, level, namespace_='', name_='AbstractBlock'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractBlock'):
         super(AbstractBlock, self).exportChildren(outfile, level, namespace_, name_)
         for item_ in self.content_:
             item_.export(outfile, level, item_.name, namespace_)
@@ -12796,7 +12911,7 @@ class AbstractBlock(TaxaLinked):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='AbstractBlock'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='AbstractBlock'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -12879,7 +12994,7 @@ class AbstractObsRow(TaxonLinked):
     def insert_cell(self, index, value): self.cell[index] = value
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='AbstractObsRow', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractObsRow', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='AbstractObsRow')
@@ -12892,9 +13007,9 @@ class AbstractObsRow(TaxonLinked):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='AbstractObsRow'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractObsRow'):
         super(AbstractObsRow, self).exportAttributes(outfile, level, namespace_, name_='AbstractObsRow')
-    def exportChildren(self, outfile, level, namespace_='', name_='AbstractObsRow'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractObsRow'):
         super(AbstractObsRow, self).exportChildren(outfile, level, namespace_, name_)
         for item_ in self.content_:
             item_.export(outfile, level, item_.name, namespace_)
@@ -12907,7 +13022,7 @@ class AbstractObsRow(TaxonLinked):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='AbstractObsRow'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='AbstractObsRow'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -12986,7 +13101,7 @@ class AbstractSeqRow(TaxonLinked):
     def set_seq(self, seq): self.seq = seq
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='AbstractSeqRow', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractSeqRow', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='AbstractSeqRow')
@@ -12999,9 +13114,9 @@ class AbstractSeqRow(TaxonLinked):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='AbstractSeqRow'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractSeqRow'):
         super(AbstractSeqRow, self).exportAttributes(outfile, level, namespace_, name_='AbstractSeqRow')
-    def exportChildren(self, outfile, level, namespace_='', name_='AbstractSeqRow'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractSeqRow'):
         super(AbstractSeqRow, self).exportChildren(outfile, level, namespace_, name_)
         for item_ in self.content_:
             item_.export(outfile, level, item_.name, namespace_)
@@ -13014,7 +13129,7 @@ class AbstractSeqRow(TaxonLinked):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='AbstractSeqRow'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='AbstractSeqRow'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -13093,7 +13208,7 @@ class AbstractUncertainStateSet(AbstractState):
     def insert_member(self, index, value): self.member[index] = value
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='AbstractUncertainStateSet', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractUncertainStateSet', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='AbstractUncertainStateSet')
@@ -13106,9 +13221,9 @@ class AbstractUncertainStateSet(AbstractState):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='AbstractUncertainStateSet'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractUncertainStateSet'):
         super(AbstractUncertainStateSet, self).exportAttributes(outfile, level, namespace_, name_='AbstractUncertainStateSet')
-    def exportChildren(self, outfile, level, namespace_='', name_='AbstractUncertainStateSet'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractUncertainStateSet'):
         super(AbstractUncertainStateSet, self).exportChildren(outfile, level, namespace_, name_)
         for item_ in self.content_:
             item_.export(outfile, level, item_.name, namespace_)
@@ -13121,7 +13236,7 @@ class AbstractUncertainStateSet(AbstractState):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='AbstractUncertainStateSet'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='AbstractUncertainStateSet'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -13197,7 +13312,7 @@ class AbstractCells(AbstractBlock):
     def set_matrix(self, matrix): self.matrix = matrix
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='AbstractCells', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractCells', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='AbstractCells')
@@ -13210,9 +13325,9 @@ class AbstractCells(AbstractBlock):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='AbstractCells'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractCells'):
         super(AbstractCells, self).exportAttributes(outfile, level, namespace_, name_='AbstractCells')
-    def exportChildren(self, outfile, level, namespace_='', name_='AbstractCells'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractCells'):
         super(AbstractCells, self).exportChildren(outfile, level, namespace_, name_)
         for item_ in self.content_:
             item_.export(outfile, level, item_.name, namespace_)
@@ -13225,7 +13340,7 @@ class AbstractCells(AbstractBlock):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='AbstractCells'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='AbstractCells'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -13301,7 +13416,7 @@ class AbstractSeqs(AbstractBlock):
     def set_matrix(self, matrix): self.matrix = matrix
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='AbstractSeqs', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractSeqs', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='AbstractSeqs')
@@ -13314,9 +13429,9 @@ class AbstractSeqs(AbstractBlock):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='AbstractSeqs'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractSeqs'):
         super(AbstractSeqs, self).exportAttributes(outfile, level, namespace_, name_='AbstractSeqs')
-    def exportChildren(self, outfile, level, namespace_='', name_='AbstractSeqs'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractSeqs'):
         super(AbstractSeqs, self).exportChildren(outfile, level, namespace_, name_)
         for item_ in self.content_:
             item_.export(outfile, level, item_.name, namespace_)
@@ -13329,7 +13444,7 @@ class AbstractSeqs(AbstractBlock):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='AbstractSeqs'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='AbstractSeqs'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -13413,7 +13528,7 @@ class AbstractPolymorphicStateSet(AbstractUncertainStateSet):
     def insert_uncertain_state_set(self, index, value): self.uncertain_state_set[index] = value
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='AbstractPolymorphicStateSet', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractPolymorphicStateSet', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='AbstractPolymorphicStateSet')
@@ -13426,9 +13541,9 @@ class AbstractPolymorphicStateSet(AbstractUncertainStateSet):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='', name_='AbstractPolymorphicStateSet'):
+    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractPolymorphicStateSet'):
         super(AbstractPolymorphicStateSet, self).exportAttributes(outfile, level, namespace_, name_='AbstractPolymorphicStateSet')
-    def exportChildren(self, outfile, level, namespace_='', name_='AbstractPolymorphicStateSet'):
+    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractPolymorphicStateSet'):
         super(AbstractPolymorphicStateSet, self).exportChildren(outfile, level, namespace_, name_)
         for item_ in self.content_:
             item_.export(outfile, level, item_.name, namespace_)
@@ -13441,7 +13556,7 @@ class AbstractPolymorphicStateSet(AbstractUncertainStateSet):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='AbstractPolymorphicStateSet'):
+    def exportLiteral(self, outfile=sys.stdout, level=0, name_='AbstractPolymorphicStateSet'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -13550,8 +13665,8 @@ def parseLiteral(inFileName):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-    sys.stdout.write('#from nex2 import *\n\n')
-    sys.stdout.write('import nex2 as model_\n\n')
+    sys.stdout.write('#from last_nexml import *\n\n')
+    sys.stdout.write('import last_nexml as model_\n\n')
     sys.stdout.write('rootObj = model_.rootTag(\n')
     rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
     sys.stdout.write(')\n')
