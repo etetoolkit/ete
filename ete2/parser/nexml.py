@@ -119,7 +119,6 @@ class NexMLTree(PhyloTree):
             self.nexml_tree.export(outfile=outfile, level=level, name_=name_, namespacedef_=namespacedef_)
 
     def exportChildren(self, outfile, level, namespace_='', name_='AbstractTree'):
-
         sorted_nodes = []
         sorted_edges = []
         for n in self.traverse():
@@ -138,8 +137,6 @@ class NexMLTree(PhyloTree):
         self.tree.content_ = sorted_nodes + sorted_edges
         for item_ in self.tree.content_:
             item_.export(outfile, level, item_.name, namespace_)
-
-
 
 class NexMLTree2(supermod.AbstractTree, PhyloTree):
     def __init__(self, classxx=None, id=None, about=None, meta=None, label=None, node=None, rootedge=None, edge=None, valueOf_=None, mixedclass_=None, content_=None):
