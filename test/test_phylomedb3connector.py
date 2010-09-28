@@ -972,12 +972,25 @@ class TestPhylomeDB3Connector(unittest.TestCase):
                 'Phy0008BO3_HUMAN': [(1L, 'Human phylome (1)')]}
     self.assertEqual(self.connection.get_phylomes_for_seed_ids(value), expected)
 
+    ## It is not feasible to test this function since it generates the complete
+    ## ids proteome for the input phylome
+    #~ self.connection.get_seed_ids(1, filter_isoforms = True)
 
-    #print self.connection.get_seed_ids(phylome_id, filter_isoforms = True)
+    ## Unexpected cases
+    val_1, val_2, val_3 = 9606, 1, "True"
+    self.assertRaises(NameError, self.connection.get_seqs_in_genome, *(val_1, \
+      val_2, val_3))
 
+    val_1, val_2, val_3 = 7, 1, "-"
+    self.assertRaises(NameError, self.connection.get_seed_ids_in_phylome, \
+      *(val_1, val_2, val_3))
 
+    value = ["Ccs000C46E", "Xxz0008BO3_HUMAN"]
+    self.assertRaises(NameError, self.connection.get_phylomes_for_seed_ids, \
+      value)
 
-
+    value = 9291291921
+    self.assertRaises(NameError, self.connection.get_seed_ids, value)
 ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ****
 
 ## ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** *****

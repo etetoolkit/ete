@@ -80,10 +80,26 @@ class PhylomeDB3Connector(object):
     self._SQL = self._SQLconnection.cursor()
 
     # Define the different database views depending on the user profile
-    self._trees_table    = "tree"
-    self._phylomes_table = "phylome"
-    self._algs_table     = "alignment"
-    self._phylomes_content_table = "phylome_content"
+    self._trees_table    = "tree_public"
+    self._phylomes_table = "phylome_public"
+    self._algs_table     = "alignment_public"
+    self._phylomes_content_table = "phycontent_public"
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+  def execute_block(self, commands):
+    """ Executes a multi-line MySQL command.
+    """
+
+    for line in commands.split(";"):
+      line = ("%s") % (line.strip())
+      if not line:
+        continue
+      try:
+        self._SQL.execute(line)
+      except:
+        print ("'%s'") % (line)
+        raise NameError("An error ocurred during MySQL operation")
   ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
 
   ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
@@ -1118,7 +1134,7 @@ class PhylomeDB3Connector(object):
     return isoforms
   ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
 
- ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
+  ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
   def get_seqs_in_genome(self, taxid, version, filter_isoforms = True):
     """ Returns all sequences of a given proteome
     """
@@ -1308,11 +1324,30 @@ class PhylomeDB3Connector(object):
     cmd =  'SELECT seed_taxid, seed_version FROM %s ' % (self._phylomes_table)
     cmd += 'WHERE phylome_id = %s' % (phylome_id)
 
-    seeds = {}
+    seeds = []
     ## If the phylome is registred in the database, then, get its proteome
     if self._SQL.execute(cmd):
       taxid, version = self._SQL.fetchone()
-      seeds = self.get_seqids_in_genome(taxid, version, filter_isoforms)
+
+    ## if there is no information about the given phylome code, return an empty
+    ## list. Otherwise, retrieve the protein ids depending on the longest
+    ## isoform flag
+    if not taxid or not version:
+      return seeds
+
+    if filter_isoforms:
+      cmd =  'SELECT p.protid, code FROM protein AS p, species AS s, isoform '
+      cmd += 'AS i WHERE (p.taxid = %s AND p.version = %s ' % (taxid, version)
+      cmd += 'AND p.protid = i.isoform AND p.version = i.version AND i.longest '
+      cmd += '= p.protid AND p.taxid = s.taxid)'
+    else:
+      cmd =  'SELECT p.protid, code FROM protein AS p, species AS s WHERE (p.'
+      cmd += 'taxid = %s AND p.version = %s AND p.taxid = s.' % (taxid, version)
+      cmd += 'taxid)'
+
+    if self._SQL.execute(cmd):
+      for id, code in self._SQL.fetchall():
+        seeds.append(("Phy%s_%s") % (id, code))
 
     return seeds
   ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** **
