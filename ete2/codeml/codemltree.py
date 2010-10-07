@@ -110,7 +110,8 @@ class CodemlNode(PhyloNode):
         os.system("mkdir -p %s" %fullpath)
         model = Model(model, **kwargs)
         # write tree file
-        self.write(fullpath+'/tree', format= 9 if model.allow_mark else 10)
+        self.write (outfile=fullpath+'/tree', \
+                    format = (10 if model.allow_mark else 9))
         # write algn file
         self._write_ali(fullpath, paml)
         ## MODEL MODEL MDE
@@ -130,8 +131,8 @@ class CodemlNode(PhyloNode):
             return 1
         os.chdir(hlddir)
         if keep:
+            self._dic[model.name + '_run'] = run
             self.link_to_evol_model(os.path.join(fullpath,'out'), model, rst=rst)
-            self._dic[model.name]['codeml_run'] = run
 
     run_paml.__doc__ += '''
     to run paml, needs tree linked to alignment.
@@ -228,8 +229,11 @@ class CodemlNode(PhyloNode):
         rst parameter stands for the path were is your rst file, in case it
         is not "conventional"... if rst=None, skip parsing it.
         '''
+        if type (model) == str :
+            model = Model (model)
         if not os.path.isfile(path):
             print >> stderr, "ERROR: not a file: "+path
+            print self._dic[model.name+'_run']
             return 1
         self._dic[model.name] = \
                          parse_paml(path, model, rst=rst, \
@@ -237,7 +241,7 @@ class CodemlNode(PhyloNode):
                                     not (hasattr (self, '_codon_freq')))
         if not hasattr (self, '_codon_freq'):
             self._codon_freq = self._dic[model.name]['codonFreq']
-            self._kappa = self._dic[model.name]['kappa']
+            self._kappa      = self._dic[model.name]['kappa']
             del (self._dic[model.name]['codonFreq'])
             del (self._dic[model.name]['kappa'])
         if model.name == 'fb':
@@ -304,7 +308,6 @@ class CodemlNode(PhyloNode):
         """
         from re import sub
         if int (format)==10:
-            stderr.write('here')
             nwk = sub('\[&&NHX:mark=([ #0-9.]*)\]', r'\1', \
                       write_newick(self, features=['mark'],format=9))
         else:

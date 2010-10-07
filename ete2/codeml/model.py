@@ -4,7 +4,7 @@
 
 from re import sub
 from sys import stderr
-from ete_dev.codeml.control import PARAMS
+from control import PARAMS, AVAIL
 
 class Model:
     '''Evolutionnary model, computed by PAML.
@@ -22,7 +22,7 @@ class Model:
         self.changes     = {}
         self.name, args  = check_name(model)
         for a, b in args.items(): self.__dict__[a] = b
-        self.params = PARAMS
+        self.params = dict (PARAMS.items())
         self.params['seqfile' ] = inAlg
         self.params['treefile'] = inTree
         self.params['outfile' ] = out
@@ -68,105 +68,9 @@ class Model:
         else:
             open (outfile, 'w').write (string)
 
-
 def check_name(model):
     if AVAIL.has_key (sub('\..*', '', model)):
         return model, AVAIL[sub('\..*', '', model)]
-
-
-global AVAIL
-
-AVAIL = {
-    'M0'    :  {'typ': 'null'       , 'evol': 'negative-selection',
-                'allow_mark': False,
-                'changes': [('NSsites'     , 0),
-                            ('alpha'       , '*'),
-                            ('method'      , '*'),
-                            ('Malpha'      , '*'),
-                            ('fix_alpha'   , '*')]},
-    'M1'    :  {'typ': 'site'       , 'evol': 'relaxation',
-                'allow_mark': False,
-                'changes': [('NSsites'     , 1),
-                            ('alpha'       , '*'),
-                            ('method'      , '*'),
-                            ('Malpha'      , '*'),
-                            ('fix_alpha'   , '*')]},
-    'M2'    :  {'typ': 'site'       , 'evol': 'positive-selection',
-                'allow_mark': False,
-                'changes': [('NSsites'     , 2),
-                            ('omega'       , 1.7),
-                            ('alpha'       , '*'),
-                            ('method'      , '*'),
-                            ('Malpha'      , '*'),
-                            ('fix_alpha'   , '*')]},
-    'M7'    :  {'typ': 'site'       , 'evol': 'relaxation',
-                'allow_mark': False, 
-                'changes': [('NSsites'     , 7),
-                            ('alpha'       , '*'),
-                            ('method'      , '*'),
-                            ('Malpha'      , '*'),
-                            ('fix_alpha'   , '*')]},
-    'M8a'   :  {'typ': 'site'       , 'evol': 'relaxation',
-                'allow_mark': False, 
-                'changes': [('NSsites'     , 8),
-                            ('fix_omega'   , 1),
-                            ('omega'       , 1),
-                            ('alpha'       , '*'),
-                            ('method'      , '*'),
-                            ('Malpha'      , '*'),
-                            ('fix_alpha'   , '*')]},
-    'M8'    :  {'typ': 'site'       , 'evol': 'positive-selection',
-                'allow_mark': False, 
-                'changes': [('NSsites'     , 8),
-                            ('omega'       , 1.7),
-                            ('alpha'       , '*'),
-                            ('method'      , '*'),
-                            ('Malpha'      , '*'),
-                            ('fix_alpha'   , '*')]},
-    'fb'    :  {'typ': 'branch'     , 'evol': 'free-ratios',
-                'allow_mark': True , 
-                'changes': [('model'       , 1),
-                            ('NSsites'     , 0)]},
-    'b_free':  {'typ': 'branch'     , 'evol': 'positive-selection',
-                'allow_mark': True , 
-                'changes': [('model'       , 2),
-                            ('NSsites'     , 0)]},
-    'b_neut':  {'typ': 'branch'     , 'evol': 'relaxation',
-                'allow_mark': True , 
-                'changes': [('model'       , 2),
-                            ('NSsites'     , 0),
-                            ('fix_omega'   , 1),
-                            ('omega'       , 1)]},
-    'bsA1'  :  {'typ': 'branch-site', 'evol': 'relaxation',
-                'allow_mark': True , 
-                'changes': [('model'       , 2),
-                            ('NSsites'     , 2),
-                            ('fix_omega'   , 1),
-                            ('omega'       , 1),
-                            ('ncatG'       , '*')]},
-    'bsA'   :  {'typ': 'branch-site', 'evol': 'positive-selection',
-                'allow_mark': True , 
-                'changes': [('model'       , 2),
-                            ('NSsites'     , 2),
-                            ('omega'       , 1.7),
-                            ('ncatG'       , '*')]},
-    'bsB'   :  {'typ': 'branch-site', 'evol': 'positive-selection',
-                'allow_mark': True , 
-                'changes': [('model'       , 2),
-                            ('NSsites'     , 3),
-                            ('omega'       , 1.7),
-                            ('ncatG'       , '*')]},
-    'bsC'   :  {'typ': 'branch-site', 'evol': 'different-ratios',
-                'allow_mark': True , 
-                'changes': [('model'       , 3),
-                            ('NSsites'     , 2),
-                            ('ncatG'       , '*')]},
-    'bsD'   :  {'typ': 'branch-site', 'evol': 'different-ratios',
-                'allow_mark': True , 
-                'changes': [('model'       , 3),
-                            ('NSsites'     , 3),
-                            ('ncatG'       , 2)]}
-    }
 
 
 Model.__doc__ += '\n%s\n' % '\n'.join (map (lambda x: \
