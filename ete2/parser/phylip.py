@@ -145,12 +145,12 @@ def write_phylip(aln, outfile=None, interleaved=True):
             for j in xrange(len(aln)):
                 name =  aln.id2name[j]
                 if len(name)>10:
-                    name = name[:10]
+                    #name = name[:10]
                     show_name_warning = True
 
                 seq = aln.id2seq[j][i:i+width]
                 if j not in visited:
-                    alg_text += "%10s   " %name
+                    alg_text += "%s   " %name
                     visited.add(j)
                 else:
                     alg_text += " "*13
@@ -161,13 +161,13 @@ def write_phylip(aln, outfile=None, interleaved=True):
     else:
         for name, seq, comments in aln.iter_entries():
             if len(name)>10:
-                name = name[:10]
+                #name = name[:10]
                 show_name_warning = True
-            alg_text += "%10s   %s\n%s\n" %\
+            alg_text += "%s %s\n%s\n" %\
                 (name, seq[0:width-13], '\n'.join([seq[k:k+width]  \
                                       for k in xrange(width-13, len(seq), width)]))
     if show_name_warning:
-        print >>STDERR, "Warning! Some seqnames were truncated to 10 characters"
+        print >>STDERR, "Warning! Some seqnames are longer 10 characters"
 
     if outfile is not None:
         OUT = open(outfile, "w")
