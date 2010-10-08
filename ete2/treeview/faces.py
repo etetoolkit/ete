@@ -235,7 +235,7 @@ class TextFace(Face):
         return self.text
 
 class AttrFace(TextFace):
-    """ Creates a new text attribute face object.
+    ''' Creates a new text attribute face object.
 
     Arguments description
     ---------------------
@@ -246,7 +246,7 @@ class AttrFace(TextFace):
     fgcolor:  Foreground font color in RGB name format, e.g. #FF00DD,#000000  (default="#000000")
     bgcolor:  Backgroung font color in RGB name format, e.g. #FFFFFF,#DDDDDD, (default=None)
     penwidth: Penwdith used to draw the text. (default is 0)
-    """
+    '''
 
     def __init__(self, attr, ftype="Verdana", fsize=10, fgcolor="#000000", bgcolor=None, penwidth=0):
         Face.__init__(self)
@@ -261,7 +261,6 @@ class AttrFace(TextFace):
 
     def get_text(self):
         return str(getattr(self.node, self.attr))
-
 
 
 class ImgFace(Face):

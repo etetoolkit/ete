@@ -1173,7 +1173,7 @@ class _TreeScene(QtGui.QGraphicsScene):
         QtGui.QGraphicsScene.mouseDoubleClickEvent(self,e)
 
     def save(self, imgName, w=None, h=None, header=None, \
-                 dpi=150, take_region=False):
+                 dpi=250, take_region=False):
         ext = imgName.split(".")[-1].upper()
 
 
@@ -1198,7 +1198,7 @@ class _TreeScene(QtGui.QGraphicsScene):
             printer = QPrinter(QPrinter.HighResolution)
             printer.setResolution(dpi)
             printer.setOutputFormat(format)
-            printer.setPageSize(QPrinter.A4)
+            #printer.setPageSize(QPrinter.A4)
             
             pageTopLeft = printer.pageRect().topLeft()
             paperTopLeft = printer.paperRect().topLeft()
@@ -1333,14 +1333,14 @@ class _TreeScene(QtGui.QGraphicsScene):
         # node. They can be seen as header and footer faces.  This
         # code is not very good. I'll try to fix it in the future.
 
-        down_height_aligned=0  #
-        down_width_aligned=0    #
-        down_height_normal=0     #
-        down_width_normal=0      #_____\______
-        up_height_aligned=0      #       /
-        up_width_aligned=0      #
-        up_height_normal=0     #
-        up_width_normal=0     #
+        down_height_aligned= 0   #
+        down_width_aligned = 0    #
+        down_height_normal = 0     #
+        down_width_normal  = 0      #_____\______
+        up_height_aligned  = 0      #       /
+        up_width_aligned   = 0     #
+        up_height_normal   = 0    #
+        up_width_normal    = 0   #
 
         for f in self.down_faces:
                 if f.type == "pixmap":

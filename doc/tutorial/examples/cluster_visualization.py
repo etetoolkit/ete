@@ -32,7 +32,7 @@ print matrix
 # with numerical matrix.
 t = ClusterTree("(((A,B),(C,(D,E))),(F,(G,H)));", text_array=matrix)
 # Try the default layout using ProfileFaces
-t.show("heatmap")
-t.show("cluster_cbars")
-t.show("cluster_bars")
-t.show("cluster_lines")
+t.show ("heatmap")
+t.show ("cluster_cbars")
+t.show ("cluster_bars")
+t.show ("cluster_lines")

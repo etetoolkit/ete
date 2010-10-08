@@ -272,12 +272,14 @@ class CodemlNode(PhyloNode):
                    'PS' : 'orange',
                    'PS+': 'red'}
         '''
-        if typ == 'hist':
+        if typ   == 'hist':
             from HistFace import HistFace as face
         elif typ == 'line':
             from HistFace import LineFaceBG as face
         elif typ == 'error':
             from HistFace import ErrorLineFace as face
+        elif typ == 'protamine':
+            from HistFace import ErrorLineProtamineFace as face
         if self._dic[mdl + '_sites'] == None:
             print >> sys.stderr, \
                   "WARNING: model %s not computed." % (mdl)
