@@ -21,7 +21,7 @@
 #
 # #END_LICENSE#############################################################
 import numpy
-import faces
+import faces # relative import should be ete2.treeview.faces :P
 
 def basic(node):
     if node.is_leaf():
@@ -33,6 +33,9 @@ def codeml(node):
     '''
     layout for CodemlTree
     '''
+    if hasattr(node, "collapsed"):
+        if node.collapsed == 1:
+            node.img_style["draw_descendants"]= False
     leaf_color = "#000000"
     if not node.is_root() and 'w' in node.features:
         node.img_style["shape"] = 'sphere'
@@ -63,6 +66,9 @@ def codeml(node):
     else:
         node.dist = float(0)
         node.support = float(0)
+    if hasattr(node,"extras"):
+        faces.add_face_to_node( faces.AttrFace("extras", "Arial", 7, \
+                                               "#000000", None), node, 2 )
     if node.is_leaf():
         if hasattr(node,"highlight"):
             faces.add_face_to_node(faces.AttrFace("name", "Arial", 11, \
@@ -71,9 +77,6 @@ def codeml(node):
         else:
             faces.add_face_to_node( faces.AttrFace("name", "Arial", 11, \
                                                    leaf_color, None), node, 0 )
-        if hasattr(node,"extras"):
-            faces.add_face_to_node( faces.AttrFace("extras", "Arial", 7, \
-                                                   "#000000", None), node, 2 )
         if hasattr(node, "sequence"):
             seqface =  faces.SequenceFace(node.sequence, "aa", 11)
             faces.add_face_to_node(seqface, node, 1, aligned=True)
@@ -132,9 +135,6 @@ def heatmap(node):
     if node.is_leaf():
         # Set colors
         faces.add_face_to_node(ProfileFace, node, 0, aligned=True )
-
-
-
 
 def cluster_cbars(node):
     # Extras node info

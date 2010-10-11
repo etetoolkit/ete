@@ -7,7 +7,8 @@ import sys, re
 
 typ = None
 while typ != 'L' and typ != 'S':
-    typ = raw_input("choose kind of example [L]ong or [S]hort, hit [L] or [S]:\n")
+    typ = raw_input (\
+        "choose kind of example [L]ong or [S]hort, hit [L] or [S]:\n")
 TREE_PATH    = "./measuring_%s_tree.nw" % (typ)
 
 ALG_PATH     = "./alignment_%s_measuring_evol.fasta" % (typ)
@@ -138,7 +139,7 @@ T.show()
 
 ###
 # mark tree functionality
-print T.write(format=9)
+print T.write(format=10)
 name = None
 while name not in T.get_leaf_names():
     name = raw_input('         ====> As you need to mark some branches to run branch\n\
@@ -149,9 +150,9 @@ idname = T.get_leaves_by_name(name)[0].idname
 print '         ----> you want to mark:',name,'that has this idname: ', idname
 T.mark_tree([idname]) # by default will mark with '#1'
 print 'have a look to the mark: '
-print re.sub('#','|',re.sub('[0-9a-zA-Z_(),;]',' ',T.write(format=9)))
-print re.sub('#','v',re.sub('[0-9a-zA-Z_(),;]',' ',T.write(format=9)))
-print T.write(format=9)
+print re.sub('#','|',re.sub('[0-9a-zA-Z_(),;]',' ',T.write(format=10)))
+print re.sub('#','v',re.sub('[0-9a-zA-Z_(),;]',' ',T.write(format=10)))
+print T.write(format=10)
 print '\n You have marked the tree with a command like:  T.mark_tree([%d])\n' % (idname)
 print '\n%s\n%s\n%s\n' % ('*'*10 + ' doc ' + '*'*10, T.mark_tree.func_doc, \
                                                                       '*'*30)

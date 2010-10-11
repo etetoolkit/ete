@@ -90,9 +90,9 @@ def parse_paml(pamout, model, rst='rst', ndata=1, codon_freq=True):
     with values of w,dN,dS etc... dependending of the model
     tested.
     '''
-    if ndata != 1:
+    if not '*' in model.params['ndata']:
         dic = {}
-        for num in range (1, ndata):
+        for num in range (1, int (model.params['ndata'])):
             out = open (pamout + '_' + str(num), 'w')
             copy = False
             for line in open (pamout):
@@ -110,8 +110,7 @@ def parse_paml(pamout, model, rst='rst', ndata=1, codon_freq=True):
                 print >> sys.stderr, \
                       'WARNING: seems that you have no multiple dataset here...'\
                       + '\n    trying as with only one dataset'
-                #return parse_paml (pamout, model, rst=rst, ndata=1)
-            if model.startswith('M') and model != 'M0' and rst!=None:
+            if model.typ == 'site' and rst!=None:
                 rst = rst if rst != 'rst' else re.sub('out$', 'rst', pamout)
                 rstout = open (rst + '_' + str(num), 'w')
                 copy = False
@@ -133,10 +132,11 @@ def parse_paml(pamout, model, rst='rst', ndata=1, codon_freq=True):
                 dic['data_'+str (num)] = \
                                 parse_paml(pamout + '_' + str(num), model)
         return dic
+    # STARTS here. ugly but.... ugly
     dic = {}
     val = ['w', 'dN', 'dS', 'bL', 'bLnum']
     chk = False
-    if model.startswith('M') and model != 'M0' and rst!=None:
+    if model.typ=='site' and rst!=None:
         if rst == 'rst':
             rst = re.sub('out$', 'rst', pamout)
         dic['rst'] = rst
@@ -155,14 +155,14 @@ def parse_paml(pamout, model, rst='rst', ndata=1, codon_freq=True):
                 dic['codonFreq'] = []
                 continue
             if line.startswith('  0.'):
-                    line = re.sub('  ([0-9.]*)  ([0-9.]*)  ([0-9.]*)  ([0-9.]*)', \
-                                  '\\1 \\2 \\3 \\4', line.strip())
-                    dic['codonFreq'] += [line.split()]
+                line = re.sub('  ([0-9.]*)  ([0-9.]*)  ([0-9.]*)  ([0-9.]*)', \
+                              '\\1 \\2 \\3 \\4', line.strip())
+                dic['codonFreq'] += [line.split()]
             elif line.startswith('kappa (ts/tv)'):
                 dic['kappa'] = re.sub('kappa .* =  *([0-9.]+)$', \
                                       '\\1', line.strip())
-        if model.startswith('M'):
-            if int(model[1])>6 and 'p=' in line and 'q=' in line:
+        if model.typ == 'site' or model.typ == 'null':
+            if 'p=' in line and 'q=' in line: # only for M7 and M8
                 dic['p'], dic['q'] = re.sub(\
                     '.*p=  *([0-9]+\.[0-9]+)  *q=  *([0-9]+\.[0-9]+)'\
                     , '\\1 \\2', line.strip()).split()
@@ -178,7 +178,7 @@ def parse_paml(pamout, model, rst='rst', ndata=1, codon_freq=True):
                                   '\\1 \\2', line.strip())
                 for i in range (0, len (line.strip().split()[1:])):
                     dic['w'+str(i)] = line.strip().split()[i+1]
-        if model.startswith('bs'):
+        if model.typ == 'branch-site':
             if line.startswith ('site class'):
                 vals = line.strip().split()[2:]
             elif line.startswith ('proportion '):
