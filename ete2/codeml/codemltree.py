@@ -20,6 +20,7 @@
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
 # #END_LICENSE#############################################################
+
 """
 this module defines the PhyloNode dataytype to manage phylogenetic
 tree. It inheritates the coretype TreeNode and add some speciall
@@ -30,7 +31,7 @@ from sys import stderr
 
 from ete_dev import PhyloNode, PhyloTree
 from ete_dev.codeml.codemlparser import parse_paml, get_sites
-from ete_dev.codeml.model import Model, AVAIL
+from ete_dev.codeml.model import Model, AVAIL, PARAMS
 from ete_dev.codeml.utils import translate, colorize_rst, label_tree
 from ete_dev.parser.newick import write_newick
 
@@ -103,7 +104,8 @@ class CodemlNode(PhyloNode):
 
     def run_paml(self, model, ctrl_string='', rst='rst', \
                  keep=True, paml=False, **kwargs):
-        ''' To compute evolutionnary models with paml '''
+        ''' To compute evolutionnary models with paml
+        extra parameters should be in '''
 
         from subprocess import Popen, PIPE
         fullpath = os.path.join(self.workdir, model)
@@ -132,12 +134,12 @@ class CodemlNode(PhyloNode):
         os.chdir(hlddir)
         if keep:
             self._dic[model.name + '_run'] = run
-            self.link_to_evol_model(os.path.join(fullpath,'out'), model, rst=rst)
+            self.link_to_evol_model (os.path.join(fullpath,'out'),
+                                     model, rst=rst)
 
-    run_paml.__doc__ += '''
+    run_paml.__doc__ += '''%s
     to run paml, needs tree linked to alignment.
     model name needs to start by one of:
-    
 %s
         
     e.g.: b_free_lala.vs.lele, will launch one free branch model, and store 
@@ -148,11 +150,11 @@ class CodemlNode(PhyloNode):
     TODO: add feature lnL to nodes for branch tests. e.g.: "n.add_features"
     TODO: add possibility to avoid local minima of lnL by rerunning with other
     starting values of omega, alpha etc...
-    ''' % '\n'.join (map (lambda x: \
-        '           * %-9s model of %-18s at  %-12s level.' % \
-        ('"%s"' % (x), AVAIL[x]['evol'], AVAIL[x]['typ']), \
-        sorted (sorted (AVAIL.keys()), cmp=lambda x, y : \
-        cmp(AVAIL[x]['typ'], AVAIL[y]['typ']), reverse=True)))
+    ''' % ('['+', '.join (PARAMS.keys())+']\n', '\n'.join (map (lambda x: \
+    '           * %-9s model of %-18s at  %-12s level.' % \
+    ('"%s"' % (x), AVAIL[x]['evol'], AVAIL[x]['typ']), \
+    sorted (sorted (AVAIL.keys()), cmp=lambda x, y : \
+    cmp(AVAIL[x]['typ'], AVAIL[y]['typ']), reverse=True))))
 
     def _write_ali(self, fullpath, paml=False):
         '''
@@ -162,7 +164,7 @@ class CodemlNode(PhyloNode):
             seqs = []
             nams = []
             try:
-                for leaf in self.iter_leaves():
+                for leaf in sorted (self, key=lambda x: x.name):
                     nams.append(leaf.name)
                     seqs.append(leaf.nt_sequence)
             except AttributeError:
@@ -220,6 +222,22 @@ class CodemlNode(PhyloNode):
         '''
         return filter(lambda x: x.idname == idname, self.iter_descendants())
 
+    def _get_paml_labels(self, paml_labels):
+        '''
+        map tree to paml labels
+        '''
+        try:
+            relations = sorted (map (lambda x: map( int, x.split('..')),
+                                     paml_labels.split()),
+                                key=lambda x: x[1])
+        except IndexError:
+            return None
+        for paml_id, leaf in enumerate (sorted (self, key=lambda x: x.name)):
+            leaf.add_feature ('paml_id', paml_id + 1)
+        for rel in relations:
+            node = self.search_nodes(paml_id=rel[1])[0]
+            node.up.add_feature('paml_id', rel[0])
+    
     def link_to_evol_model(self, path, model, rst='rst', ndata=1):
         '''
         link CodemlTree to evolutionary model
@@ -242,8 +260,18 @@ class CodemlNode(PhyloNode):
         if not hasattr (self, '_codon_freq'):
             self._codon_freq = self._dic[model.name]['codonFreq']
             self._kappa      = self._dic[model.name]['kappa']
+            self._get_paml_labels (self._dic[model.name]['paml_labels'])
             del (self._dic[model.name]['codonFreq'])
             del (self._dic[model.name]['kappa'])
+            del (self._dic[model.name]['paml_labels'])
+        if int (model.params['getSE']) == 2:
+            for node in self.iter_descendants():
+                node.add_feature (
+                    model.name + '_SEdN',
+                    self._dic[model.name]['table'][node.paml_id]['SEdN'])
+                node.add_feature (
+                    model.name + '_SEdS',
+                    self._dic[model.name]['table'][node.paml_id]['SEdS'])
         if model.name == 'fb':
             self._getfreebranch()
         elif self._dic[model.name].has_key('rst'):

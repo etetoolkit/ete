@@ -110,7 +110,7 @@ def parse_paml(pamout, model, rst='rst', ndata=1, codon_freq=True):
                 print >> sys.stderr, \
                       'WARNING: seems that you have no multiple dataset here...'\
                       + '\n    trying as with only one dataset'
-            if model.typ == 'site' and rst!=None:
+            if model.typ == 'site' and rst != None:
                 rst = rst if rst != 'rst' else re.sub('out$', 'rst', pamout)
                 rstout = open (rst + '_' + str(num), 'w')
                 copy = False
@@ -136,20 +136,32 @@ def parse_paml(pamout, model, rst='rst', ndata=1, codon_freq=True):
     dic = {}
     val = ['w', 'dN', 'dS', 'bL', 'bLnum']
     chk = False
-    if model.typ=='site' and rst!=None:
+    if model.typ == 'site' and rst != None:
         if rst == 'rst':
             rst = re.sub('out$', 'rst', pamout)
         dic['rst'] = rst
     for line in open(pamout):
         if line.startswith('lnL'):
             dic = _getlnL(dic, line)
+        elif dic.has_key('lnL') and not dic.has_key ('paml_labels'):
+            if re.search ('  *([0-9]+\.\.[0-9]+  *){2}', line):
+                dic ['paml_labels'] = line.strip ()
+            else:
+                dic ['paml_labels'] = None
         elif line.startswith('(') and line.endswith(');\n'):
             dic[val.pop()] = line.strip()
         elif line.startswith('dN & dS for'):
             chk = True
         elif '..' in line and chk:
-            chk = False
-            dic['N'], dic['S'] = line.strip().split()[2:4]
+            vals = line.strip().split()
+            dic.setdefault ('table',  {})
+            dic['table'][int (vals[0].split('..')[1])] = {
+                'SEdN': vals[13] if 'dN' in line else None,
+                'SEdS': vals[18] if 'dS' in line else None}
+            if len (dic['table']) == len (dic ['paml_labels'].split()):
+                dic ['N'] = vals[2]
+                dic ['S'] = vals[3]
+                chk = False
         elif codon_freq == True:
             if line.startswith('Codon frequencies under model'):
                 dic['codonFreq'] = []

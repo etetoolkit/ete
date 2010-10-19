@@ -53,25 +53,28 @@ class Model:
         '''
         string = ''
         for p in ['seqfile', 'treefile', 'outfile']:
-            string += '%15s = %s\n' % (p ,str(self.params[p]))
+            string += '%15s = %s\n' % (p, str(self.params[p]))
         string += '\n'
-        for p in sorted(self.params.keys(), cmp=lambda x,y: \
+        for p in sorted (self.params.keys(), cmp=lambda x, y: \
                         cmp(sub('fix_', '', x.lower()), \
                             sub ('fix_', '', y.lower()))):
             if p in ['seqfile', 'treefile', 'outfile']: continue
             if str(self.params[p]).startswith('*'):
-                string += ' *'+'%13s = %s\n' % (p ,str(self.params[p])[1:])
+                string += ' *'+'%13s = %s\n' % (p, str(self.params[p])[1:])
             else:
-                string += '%15s = %s\n' %(p ,str(self.params[p]))
+                string += '%15s = %s\n' % (p, str (self.params[p]))
         if outfile == None:
             return string
         else:
             open (outfile, 'w').write (string)
 
 def check_name(model):
+    '''
+    check that model name corresponds to opne of the availables
+    TODO: accept personal models
+    '''
     if AVAIL.has_key (sub('\..*', '', model)):
         return model, AVAIL[sub('\..*', '', model)]
-
 
 Model.__doc__ += '\n%s\n' % '\n'.join (map (lambda x: \
         '           * %-9s model of %-18s at  %-12s level.' % \
