@@ -24,6 +24,10 @@ from sys import stderr
 from coretype.tree import *
 from coretype.seqgroup import *
 from phylo.phylotree import *
+
+from phyloxml import PhyloXML
+from nexml import NeXML
+
 try:
     from coretype.arraytable import *
 except ImportError, e:

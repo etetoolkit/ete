@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*- 
 
 #
-# Generated Fri Sep 24 10:48:32 2010 by generateDS.py version 2.2a.
+# Generated Tue Oct 19 18:16:10 2010 by generateDS.py version 2.2a.
 #
 
 import sys
@@ -295,7 +295,7 @@ class Phyloxml(GeneratedsSuper):
     def set_phylogeny(self, phylogeny): self.phylogeny = phylogeny
     def add_phylogeny(self, value): self.phylogeny.append(value)
     def insert_phylogeny(self, index, value): self.phylogeny[index] = value
-    def export(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Phyloxml', namespacedef_=''):
+    def export(self, outfile, level, namespace_='phy:', name_='Phyloxml', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='Phyloxml')
@@ -306,9 +306,9 @@ class Phyloxml(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Phyloxml'):
+    def exportAttributes(self, outfile, level, namespace_='phy:', name_='Phyloxml'):
         pass
-    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Phyloxml'):
+    def exportChildren(self, outfile, level, namespace_='phy:', name_='Phyloxml'):
         for phylogeny_ in self.phylogeny:
             phylogeny_.export(outfile, level, namespace_, name_='phylogeny')
     def hasContent_(self):
@@ -318,7 +318,7 @@ class Phyloxml(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile=sys.stdout, level=0, name_='Phyloxml'):
+    def exportLiteral(self, outfile, level, name_='Phyloxml'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -433,7 +433,7 @@ class Phylogeny(GeneratedsSuper):
     def set_type(self, type_): self.type_ = type_
     def get_rooted(self): return self.rooted
     def set_rooted(self, rooted): self.rooted = rooted
-    def export(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Phylogeny', namespacedef_=''):
+    def export(self, outfile, level, namespace_='phy:', name_='Phylogeny', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='Phylogeny')
@@ -444,7 +444,7 @@ class Phylogeny(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Phylogeny'):
+    def exportAttributes(self, outfile, level, namespace_='phy:', name_='Phylogeny'):
         if self.rerootable is not None:
             outfile.write(' rerootable="%s"' % self.gds_format_boolean(self.gds_str_lower(str(self.rerootable)), input_name='rerootable'))
         if self.branch_length_unit is not None:
@@ -452,7 +452,7 @@ class Phylogeny(GeneratedsSuper):
         if self.type_ is not None:
             outfile.write(' type=%s' % (self.gds_format_string(quote_attrib(self.type_).encode(ExternalEncoding), input_name='type'), ))
         outfile.write(' rooted="%s"' % self.gds_format_boolean(self.gds_str_lower(str(self.rooted)), input_name='rooted'))
-    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Phylogeny'):
+    def exportChildren(self, outfile, level, namespace_='phy:', name_='Phylogeny'):
         if self.name is not None:
             showIndent(outfile, level)
             outfile.write('<%sname>%s</%sname>\n' % (namespace_, self.gds_format_string(quote_xml(self.name).encode(ExternalEncoding), input_name='name'), namespace_))
@@ -489,7 +489,7 @@ class Phylogeny(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile=sys.stdout, level=0, name_='Phylogeny'):
+    def exportLiteral(self, outfile, level, name_='Phylogeny'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -759,7 +759,7 @@ class Clade(GeneratedsSuper):
     def set_id_source(self, id_source): self.id_source = id_source
     def get_branch_length_attr(self): return self.branch_length_attr
     def set_branch_length_attr(self, branch_length_attr): self.branch_length_attr = branch_length_attr
-    def export(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Clade', namespacedef_=''):
+    def export(self, outfile, level, namespace_='phy:', name_='Clade', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='Clade')
@@ -770,12 +770,12 @@ class Clade(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Clade'):
+    def exportAttributes(self, outfile, level, namespace_='phy:', name_='Clade'):
         if self.id_source is not None:
             outfile.write(' id_source=%s' % (quote_attrib(self.id_source), ))
         if self.branch_length_attr is not None:
             outfile.write(' branch_length_attr=%s' % (self.gds_format_string(quote_attrib(self.branch_length_attr).encode(ExternalEncoding), input_name='branch_length_attr'), ))
-    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Clade'):
+    def exportChildren(self, outfile, level, namespace_='phy:', name_='Clade'):
         if self.name is not None:
             showIndent(outfile, level)
             outfile.write('<%sname>%s</%sname>\n' % (namespace_, self.gds_format_string(quote_xml(self.name).encode(ExternalEncoding), input_name='name'), namespace_))
@@ -830,7 +830,7 @@ class Clade(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile=sys.stdout, level=0, name_='Clade'):
+    def exportLiteral(self, outfile, level, name_='Clade'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -1113,7 +1113,7 @@ class Taxonomy(GeneratedsSuper):
     def set_uri(self, uri): self.uri = uri
     def get_id_source(self): return self.id_source
     def set_id_source(self, id_source): self.id_source = id_source
-    def export(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Taxonomy', namespacedef_=''):
+    def export(self, outfile, level, namespace_='phy:', name_='Taxonomy', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='Taxonomy')
@@ -1124,10 +1124,10 @@ class Taxonomy(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Taxonomy'):
+    def exportAttributes(self, outfile, level, namespace_='phy:', name_='Taxonomy'):
         if self.id_source is not None:
             outfile.write(' id_source=%s' % (quote_attrib(self.id_source), ))
-    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Taxonomy'):
+    def exportChildren(self, outfile, level, namespace_='phy:', name_='Taxonomy'):
         if self.id:
             self.id.export(outfile, level, namespace_, name_='id')
         if self.code is not None:
@@ -1164,7 +1164,7 @@ class Taxonomy(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile=sys.stdout, level=0, name_='Taxonomy'):
+    def exportLiteral(self, outfile, level, name_='Taxonomy'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -1324,7 +1324,7 @@ class Sequence(GeneratedsSuper):
     def set_id_ref(self, id_ref): self.id_ref = id_ref
     def get_type(self): return self.type_
     def set_type(self, type_): self.type_ = type_
-    def export(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Sequence', namespacedef_=''):
+    def export(self, outfile, level, namespace_='phy:', name_='Sequence', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='Sequence')
@@ -1335,14 +1335,14 @@ class Sequence(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Sequence'):
+    def exportAttributes(self, outfile, level, namespace_='phy:', name_='Sequence'):
         if self.id_source is not None:
             outfile.write(' id_source=%s' % (quote_attrib(self.id_source), ))
         if self.id_ref is not None:
             outfile.write(' id_ref=%s' % (quote_attrib(self.id_ref), ))
         if self.type_ is not None:
             outfile.write(' type=%s' % (quote_attrib(self.type_), ))
-    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Sequence'):
+    def exportChildren(self, outfile, level, namespace_='phy:', name_='Sequence'):
         if self.symbol is not None:
             showIndent(outfile, level)
             outfile.write('<%ssymbol>%s</%ssymbol>\n' % (namespace_, self.gds_format_string(quote_xml(self.symbol).encode(ExternalEncoding), input_name='symbol'), namespace_))
@@ -1376,7 +1376,7 @@ class Sequence(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile=sys.stdout, level=0, name_='Sequence'):
+    def exportLiteral(self, outfile, level, name_='Sequence'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -1513,7 +1513,7 @@ class MolSeq(GeneratedsSuper):
     def set_is_aligned(self, is_aligned): self.is_aligned = is_aligned
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='MolSeq', namespacedef_=''):
+    def export(self, outfile, level, namespace_='phy:', name_='MolSeq', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='MolSeq')
@@ -1524,10 +1524,10 @@ class MolSeq(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='MolSeq'):
+    def exportAttributes(self, outfile, level, namespace_='phy:', name_='MolSeq'):
         if self.is_aligned is not None:
             outfile.write(' is_aligned="%s"' % self.gds_format_boolean(self.gds_str_lower(str(self.is_aligned)), input_name='is_aligned'))
-    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='MolSeq'):
+    def exportChildren(self, outfile, level, namespace_='phy:', name_='MolSeq'):
         pass
     def hasContent_(self):
         if (
@@ -1536,7 +1536,7 @@ class MolSeq(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile=sys.stdout, level=0, name_='MolSeq'):
+    def exportLiteral(self, outfile, level, name_='MolSeq'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -1588,7 +1588,7 @@ class Accession(GeneratedsSuper):
     def set_source(self, source): self.source = source
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Accession', namespacedef_=''):
+    def export(self, outfile, level, namespace_='phy:', name_='Accession', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='Accession')
@@ -1599,9 +1599,9 @@ class Accession(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Accession'):
+    def exportAttributes(self, outfile, level, namespace_='phy:', name_='Accession'):
         outfile.write(' source=%s' % (self.gds_format_string(quote_attrib(self.source).encode(ExternalEncoding), input_name='source'), ))
-    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Accession'):
+    def exportChildren(self, outfile, level, namespace_='phy:', name_='Accession'):
         pass
     def hasContent_(self):
         if (
@@ -1610,7 +1610,7 @@ class Accession(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile=sys.stdout, level=0, name_='Accession'):
+    def exportLiteral(self, outfile, level, name_='Accession'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -1662,7 +1662,7 @@ class DomainArchitecture(GeneratedsSuper):
     def insert_domain(self, index, value): self.domain[index] = value
     def get_length(self): return self.length
     def set_length(self, length): self.length = length
-    def export(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='DomainArchitecture', namespacedef_=''):
+    def export(self, outfile, level, namespace_='phy:', name_='DomainArchitecture', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='DomainArchitecture')
@@ -1673,10 +1673,10 @@ class DomainArchitecture(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='DomainArchitecture'):
+    def exportAttributes(self, outfile, level, namespace_='phy:', name_='DomainArchitecture'):
         if self.length is not None:
             outfile.write(' length="%s"' % self.gds_format_integer(self.length, input_name='length'))
-    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='DomainArchitecture'):
+    def exportChildren(self, outfile, level, namespace_='phy:', name_='DomainArchitecture'):
         for domain_ in self.domain:
             domain_.export(outfile, level, namespace_, name_='domain')
     def hasContent_(self):
@@ -1686,7 +1686,7 @@ class DomainArchitecture(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile=sys.stdout, level=0, name_='DomainArchitecture'):
+    def exportLiteral(self, outfile, level, name_='DomainArchitecture'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -1759,7 +1759,7 @@ class ProteinDomain(GeneratedsSuper):
     def set_id(self, id): self.id = id
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='ProteinDomain', namespacedef_=''):
+    def export(self, outfile, level, namespace_='phy:', name_='ProteinDomain', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='ProteinDomain')
@@ -1770,14 +1770,14 @@ class ProteinDomain(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='ProteinDomain'):
+    def exportAttributes(self, outfile, level, namespace_='phy:', name_='ProteinDomain'):
         outfile.write(' to="%s"' % self.gds_format_integer(self.to, input_name='to'))
         if self.confidence is not None:
             outfile.write(' confidence="%s"' % self.gds_format_double(self.confidence, input_name='confidence'))
         outfile.write(' from="%s"' % self.gds_format_integer(self.fromxx, input_name='from'))
         if self.id is not None:
             outfile.write(' id=%s' % (self.gds_format_string(quote_attrib(self.id).encode(ExternalEncoding), input_name='id'), ))
-    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='ProteinDomain'):
+    def exportChildren(self, outfile, level, namespace_='phy:', name_='ProteinDomain'):
         pass
     def hasContent_(self):
         if (
@@ -1786,7 +1786,7 @@ class ProteinDomain(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile=sys.stdout, level=0, name_='ProteinDomain'):
+    def exportLiteral(self, outfile, level, name_='ProteinDomain'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -1878,7 +1878,7 @@ class Events(GeneratedsSuper):
     def set_losses(self, losses): self.losses = losses
     def get_confidence(self): return self.confidence
     def set_confidence(self, confidence): self.confidence = confidence
-    def export(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Events', namespacedef_=''):
+    def export(self, outfile, level, namespace_='phy:', name_='Events', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='Events')
@@ -1889,9 +1889,9 @@ class Events(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Events'):
+    def exportAttributes(self, outfile, level, namespace_='phy:', name_='Events'):
         pass
-    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Events'):
+    def exportChildren(self, outfile, level, namespace_='phy:', name_='Events'):
         if self.type_ is not None:
             showIndent(outfile, level)
             outfile.write('<%stype>%s</%stype>\n' % (namespace_, self.gds_format_string(quote_xml(self.type_).encode(ExternalEncoding), input_name='type'), namespace_))
@@ -1917,7 +1917,7 @@ class Events(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile=sys.stdout, level=0, name_='Events'):
+    def exportLiteral(self, outfile, level, name_='Events'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -2028,7 +2028,7 @@ class BinaryCharacters(GeneratedsSuper):
     def set_type(self, type_): self.type_ = type_
     def get_gained_count(self): return self.gained_count
     def set_gained_count(self, gained_count): self.gained_count = gained_count
-    def export(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='BinaryCharacters', namespacedef_=''):
+    def export(self, outfile, level, namespace_='phy:', name_='BinaryCharacters', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='BinaryCharacters')
@@ -2039,7 +2039,7 @@ class BinaryCharacters(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='BinaryCharacters'):
+    def exportAttributes(self, outfile, level, namespace_='phy:', name_='BinaryCharacters'):
         if self.lost_count is not None:
             outfile.write(' lost_count="%s"' % self.gds_format_integer(self.lost_count, input_name='lost_count'))
         if self.absent_count is not None:
@@ -2050,7 +2050,7 @@ class BinaryCharacters(GeneratedsSuper):
             outfile.write(' type=%s' % (self.gds_format_string(quote_attrib(self.type_).encode(ExternalEncoding), input_name='type'), ))
         if self.gained_count is not None:
             outfile.write(' gained_count="%s"' % self.gds_format_integer(self.gained_count, input_name='gained_count'))
-    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='BinaryCharacters'):
+    def exportChildren(self, outfile, level, namespace_='phy:', name_='BinaryCharacters'):
         if self.gained:
             self.gained.export(outfile, level, namespace_, name_='gained')
         if self.lost:
@@ -2069,7 +2069,7 @@ class BinaryCharacters(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile=sys.stdout, level=0, name_='BinaryCharacters'):
+    def exportLiteral(self, outfile, level, name_='BinaryCharacters'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -2200,7 +2200,7 @@ class BinaryCharacterList(GeneratedsSuper):
     def set_bc(self, bc): self.bc = bc
     def add_bc(self, value): self.bc.append(value)
     def insert_bc(self, index, value): self.bc[index] = value
-    def export(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='BinaryCharacterList', namespacedef_=''):
+    def export(self, outfile, level, namespace_='phy:', name_='BinaryCharacterList', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='BinaryCharacterList')
@@ -2211,9 +2211,9 @@ class BinaryCharacterList(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='BinaryCharacterList'):
+    def exportAttributes(self, outfile, level, namespace_='phy:', name_='BinaryCharacterList'):
         pass
-    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='BinaryCharacterList'):
+    def exportChildren(self, outfile, level, namespace_='phy:', name_='BinaryCharacterList'):
         for bc_ in self.bc:
             showIndent(outfile, level)
             outfile.write('<%sbc>%s</%sbc>\n' % (namespace_, self.gds_format_string(quote_xml(bc_).encode(ExternalEncoding), input_name='bc'), namespace_))
@@ -2224,7 +2224,7 @@ class BinaryCharacterList(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile=sys.stdout, level=0, name_='BinaryCharacterList'):
+    def exportLiteral(self, outfile, level, name_='BinaryCharacterList'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -2275,7 +2275,7 @@ class Reference(GeneratedsSuper):
     def set_desc(self, desc): self.desc = desc
     def get_doi(self): return self.doi
     def set_doi(self, doi): self.doi = doi
-    def export(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Reference', namespacedef_=''):
+    def export(self, outfile, level, namespace_='phy:', name_='Reference', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='Reference')
@@ -2286,10 +2286,10 @@ class Reference(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Reference'):
+    def exportAttributes(self, outfile, level, namespace_='phy:', name_='Reference'):
         if self.doi is not None:
             outfile.write(' doi=%s' % (quote_attrib(self.doi), ))
-    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Reference'):
+    def exportChildren(self, outfile, level, namespace_='phy:', name_='Reference'):
         if self.desc is not None:
             showIndent(outfile, level)
             outfile.write('<%sdesc>%s</%sdesc>\n' % (namespace_, self.gds_format_string(quote_xml(self.desc).encode(ExternalEncoding), input_name='desc'), namespace_))
@@ -2300,7 +2300,7 @@ class Reference(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile=sys.stdout, level=0, name_='Reference'):
+    def exportLiteral(self, outfile, level, name_='Reference'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -2381,7 +2381,7 @@ class Annotation(GeneratedsSuper):
     def set_ref(self, ref): self.ref = ref
     def get_evidence(self): return self.evidence
     def set_evidence(self, evidence): self.evidence = evidence
-    def export(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Annotation', namespacedef_=''):
+    def export(self, outfile, level, namespace_='phy:', name_='Annotation', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='Annotation')
@@ -2392,7 +2392,7 @@ class Annotation(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Annotation'):
+    def exportAttributes(self, outfile, level, namespace_='phy:', name_='Annotation'):
         if self.source is not None:
             outfile.write(' source=%s' % (self.gds_format_string(quote_attrib(self.source).encode(ExternalEncoding), input_name='source'), ))
         if self.type_ is not None:
@@ -2401,7 +2401,7 @@ class Annotation(GeneratedsSuper):
             outfile.write(' ref=%s' % (quote_attrib(self.ref), ))
         if self.evidence is not None:
             outfile.write(' evidence=%s' % (self.gds_format_string(quote_attrib(self.evidence).encode(ExternalEncoding), input_name='evidence'), ))
-    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Annotation'):
+    def exportChildren(self, outfile, level, namespace_='phy:', name_='Annotation'):
         if self.desc is not None:
             showIndent(outfile, level)
             outfile.write('<%sdesc>%s</%sdesc>\n' % (namespace_, self.gds_format_string(quote_xml(self.desc).encode(ExternalEncoding), input_name='desc'), namespace_))
@@ -2421,7 +2421,7 @@ class Annotation(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile=sys.stdout, level=0, name_='Annotation'):
+    def exportLiteral(self, outfile, level, name_='Annotation'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -2564,14 +2564,14 @@ class Property(GeneratedsSuper):
     def set_unit(self, unit): self.unit = unit
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Property', namespacedef_=''):
+    def export(self, outfile, level, namespace_='phy:', name_='Property', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='Property')
         outfile.write('>')
         self.exportChildren(outfile, level + 1, namespace_, name_)
         outfile.write('</%s%s>\n' % (namespace_, name_))
-    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Property'):
+    def exportAttributes(self, outfile, level, namespace_='phy:', name_='Property'):
         outfile.write(' datatype=%s' % (quote_attrib(self.datatype), ))
         if self.id_ref is not None:
             outfile.write(' id_ref=%s' % (quote_attrib(self.id_ref), ))
@@ -2579,7 +2579,7 @@ class Property(GeneratedsSuper):
         outfile.write(' applies_to=%s' % (quote_attrib(self.applies_to), ))
         if self.unit is not None:
             outfile.write(' unit=%s' % (quote_attrib(self.unit), ))
-    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Property'):
+    def exportChildren(self, outfile, level, namespace_='phy:', name_='Property'):
         pass
     def hasContent_(self):
         if (
@@ -2588,7 +2588,7 @@ class Property(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile=sys.stdout, level=0, name_='Property'):
+    def exportLiteral(self, outfile, level, name_='Property'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -2675,7 +2675,7 @@ class Uri(GeneratedsSuper):
     def set_desc(self, desc): self.desc = desc
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Uri', namespacedef_=''):
+    def export(self, outfile, level, namespace_='phy:', name_='Uri', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='Uri')
@@ -2686,12 +2686,12 @@ class Uri(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Uri'):
+    def exportAttributes(self, outfile, level, namespace_='phy:', name_='Uri'):
         if self.type_ is not None:
             outfile.write(' type=%s' % (self.gds_format_string(quote_attrib(self.type_).encode(ExternalEncoding), input_name='type'), ))
         if self.desc is not None:
             outfile.write(' desc=%s' % (self.gds_format_string(quote_attrib(self.desc).encode(ExternalEncoding), input_name='desc'), ))
-    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Uri'):
+    def exportChildren(self, outfile, level, namespace_='phy:', name_='Uri'):
         pass
     def hasContent_(self):
         if (
@@ -2700,7 +2700,7 @@ class Uri(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile=sys.stdout, level=0, name_='Uri'):
+    def exportLiteral(self, outfile, level, name_='Uri'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -2756,7 +2756,7 @@ class Confidence(GeneratedsSuper):
     def set_type(self, type_): self.type_ = type_
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Confidence', namespacedef_=''):
+    def export(self, outfile, level, namespace_='phy:', name_='Confidence', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='Confidence')
@@ -2767,9 +2767,9 @@ class Confidence(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Confidence'):
+    def exportAttributes(self, outfile, level, namespace_='phy:', name_='Confidence'):
         outfile.write(' type=%s' % (self.gds_format_string(quote_attrib(self.type_).encode(ExternalEncoding), input_name='type'), ))
-    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Confidence'):
+    def exportChildren(self, outfile, level, namespace_='phy:', name_='Confidence'):
         pass
     def hasContent_(self):
         if (
@@ -2778,7 +2778,7 @@ class Confidence(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile=sys.stdout, level=0, name_='Confidence'):
+    def exportLiteral(self, outfile, level, name_='Confidence'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -2825,7 +2825,7 @@ class Id(GeneratedsSuper):
     def set_provider(self, provider): self.provider = provider
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Id', namespacedef_=''):
+    def export(self, outfile, level, namespace_='phy:', name_='Id', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='Id')
@@ -2836,10 +2836,10 @@ class Id(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Id'):
+    def exportAttributes(self, outfile, level, namespace_='phy:', name_='Id'):
         if self.provider is not None:
             outfile.write(' provider=%s' % (self.gds_format_string(quote_attrib(self.provider).encode(ExternalEncoding), input_name='provider'), ))
-    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Id'):
+    def exportChildren(self, outfile, level, namespace_='phy:', name_='Id'):
         pass
     def hasContent_(self):
         if (
@@ -2848,7 +2848,7 @@ class Id(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile=sys.stdout, level=0, name_='Id'):
+    def exportLiteral(self, outfile, level, name_='Id'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -2912,7 +2912,7 @@ class Distribution(GeneratedsSuper):
     def set_polygon(self, polygon): self.polygon = polygon
     def add_polygon(self, value): self.polygon.append(value)
     def insert_polygon(self, index, value): self.polygon[index] = value
-    def export(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Distribution', namespacedef_=''):
+    def export(self, outfile, level, namespace_='phy:', name_='Distribution', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='Distribution')
@@ -2923,9 +2923,9 @@ class Distribution(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Distribution'):
+    def exportAttributes(self, outfile, level, namespace_='phy:', name_='Distribution'):
         pass
-    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Distribution'):
+    def exportChildren(self, outfile, level, namespace_='phy:', name_='Distribution'):
         if self.desc is not None:
             showIndent(outfile, level)
             outfile.write('<%sdesc>%s</%sdesc>\n' % (namespace_, self.gds_format_string(quote_xml(self.desc).encode(ExternalEncoding), input_name='desc'), namespace_))
@@ -2942,7 +2942,7 @@ class Distribution(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile=sys.stdout, level=0, name_='Distribution'):
+    def exportLiteral(self, outfile, level, name_='Distribution'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -3031,7 +3031,7 @@ class Point(GeneratedsSuper):
     def set_geodetic_datum(self, geodetic_datum): self.geodetic_datum = geodetic_datum
     def get_alt_unit(self): return self.alt_unit
     def set_alt_unit(self, alt_unit): self.alt_unit = alt_unit
-    def export(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Point', namespacedef_=''):
+    def export(self, outfile, level, namespace_='phy:', name_='Point', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='Point')
@@ -3042,11 +3042,11 @@ class Point(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Point'):
+    def exportAttributes(self, outfile, level, namespace_='phy:', name_='Point'):
         outfile.write(' geodetic_datum=%s' % (self.gds_format_string(quote_attrib(self.geodetic_datum).encode(ExternalEncoding), input_name='geodetic_datum'), ))
         if self.alt_unit is not None:
             outfile.write(' alt_unit=%s' % (self.gds_format_string(quote_attrib(self.alt_unit).encode(ExternalEncoding), input_name='alt_unit'), ))
-    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Point'):
+    def exportChildren(self, outfile, level, namespace_='phy:', name_='Point'):
         if self.lat is not None:
             showIndent(outfile, level)
             outfile.write('<%slat>%s</%slat>\n' % (namespace_, self.gds_format_float(self.lat, input_name='lat'), namespace_))
@@ -3065,7 +3065,7 @@ class Point(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile=sys.stdout, level=0, name_='Point'):
+    def exportLiteral(self, outfile, level, name_='Point'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -3148,7 +3148,7 @@ class Polygon(GeneratedsSuper):
     def set_point(self, point): self.point = point
     def add_point(self, value): self.point.append(value)
     def insert_point(self, index, value): self.point[index] = value
-    def export(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Polygon', namespacedef_=''):
+    def export(self, outfile, level, namespace_='phy:', name_='Polygon', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='Polygon')
@@ -3159,9 +3159,9 @@ class Polygon(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Polygon'):
+    def exportAttributes(self, outfile, level, namespace_='phy:', name_='Polygon'):
         pass
-    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Polygon'):
+    def exportChildren(self, outfile, level, namespace_='phy:', name_='Polygon'):
         for point_ in self.point:
             point_.export(outfile, level, namespace_, name_='point')
     def hasContent_(self):
@@ -3171,7 +3171,7 @@ class Polygon(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile=sys.stdout, level=0, name_='Polygon'):
+    def exportLiteral(self, outfile, level, name_='Polygon'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -3238,7 +3238,7 @@ class Date(GeneratedsSuper):
     def set_maximum(self, maximum): self.maximum = maximum
     def get_unit(self): return self.unit
     def set_unit(self, unit): self.unit = unit
-    def export(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Date', namespacedef_=''):
+    def export(self, outfile, level, namespace_='phy:', name_='Date', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='Date')
@@ -3249,10 +3249,10 @@ class Date(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Date'):
+    def exportAttributes(self, outfile, level, namespace_='phy:', name_='Date'):
         if self.unit is not None:
             outfile.write(' unit=%s' % (self.gds_format_string(quote_attrib(self.unit).encode(ExternalEncoding), input_name='unit'), ))
-    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Date'):
+    def exportChildren(self, outfile, level, namespace_='phy:', name_='Date'):
         if self.desc is not None:
             showIndent(outfile, level)
             outfile.write('<%sdesc>%s</%sdesc>\n' % (namespace_, self.gds_format_string(quote_xml(self.desc).encode(ExternalEncoding), input_name='desc'), namespace_))
@@ -3275,7 +3275,7 @@ class Date(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile=sys.stdout, level=0, name_='Date'):
+    def exportLiteral(self, outfile, level, name_='Date'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -3359,7 +3359,7 @@ class BranchColor(GeneratedsSuper):
     def set_green(self, green): self.green = green
     def get_blue(self): return self.blue
     def set_blue(self, blue): self.blue = blue
-    def export(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='BranchColor', namespacedef_=''):
+    def export(self, outfile, level, namespace_='phy:', name_='BranchColor', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='BranchColor')
@@ -3370,9 +3370,9 @@ class BranchColor(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='BranchColor'):
+    def exportAttributes(self, outfile, level, namespace_='phy:', name_='BranchColor'):
         pass
-    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='BranchColor'):
+    def exportChildren(self, outfile, level, namespace_='phy:', name_='BranchColor'):
         if self.red is not None:
             showIndent(outfile, level)
             outfile.write('<%sred>%s</%sred>\n' % (namespace_, self.gds_format_string(quote_xml(self.red).encode(ExternalEncoding), input_name='red'), namespace_))
@@ -3391,7 +3391,7 @@ class BranchColor(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile=sys.stdout, level=0, name_='BranchColor'):
+    def exportLiteral(self, outfile, level, name_='BranchColor'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -3456,7 +3456,7 @@ class SequenceRelation(GeneratedsSuper):
     def set_type(self, type_): self.type_ = type_
     def get_distance(self): return self.distance
     def set_distance(self, distance): self.distance = distance
-    def export(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='SequenceRelation', namespacedef_=''):
+    def export(self, outfile, level, namespace_='phy:', name_='SequenceRelation', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='SequenceRelation')
@@ -3467,13 +3467,13 @@ class SequenceRelation(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='SequenceRelation'):
+    def exportAttributes(self, outfile, level, namespace_='phy:', name_='SequenceRelation'):
         outfile.write(' id_ref_0=%s' % (quote_attrib(self.id_ref_0), ))
         outfile.write(' id_ref_1=%s' % (quote_attrib(self.id_ref_1), ))
         outfile.write(' type=%s' % (quote_attrib(self.type_), ))
         if self.distance is not None:
             outfile.write(' distance="%s"' % self.gds_format_double(self.distance, input_name='distance'))
-    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='SequenceRelation'):
+    def exportChildren(self, outfile, level, namespace_='phy:', name_='SequenceRelation'):
         if self.confidence:
             self.confidence.export(outfile, level, namespace_, name_='confidence')
     def hasContent_(self):
@@ -3483,7 +3483,7 @@ class SequenceRelation(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile=sys.stdout, level=0, name_='SequenceRelation'):
+    def exportLiteral(self, outfile, level, name_='SequenceRelation'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -3569,7 +3569,7 @@ class CladeRelation(GeneratedsSuper):
     def set_type(self, type_): self.type_ = type_
     def get_distance(self): return self.distance
     def set_distance(self, distance): self.distance = distance
-    def export(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='CladeRelation', namespacedef_=''):
+    def export(self, outfile, level, namespace_='phy:', name_='CladeRelation', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='CladeRelation')
@@ -3580,13 +3580,13 @@ class CladeRelation(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='CladeRelation'):
+    def exportAttributes(self, outfile, level, namespace_='phy:', name_='CladeRelation'):
         outfile.write(' id_ref_0=%s' % (quote_attrib(self.id_ref_0), ))
         outfile.write(' id_ref_1=%s' % (quote_attrib(self.id_ref_1), ))
         outfile.write(' type=%s' % (self.gds_format_string(quote_attrib(self.type_).encode(ExternalEncoding), input_name='type'), ))
         if self.distance is not None:
             outfile.write(' distance="%s"' % self.gds_format_double(self.distance, input_name='distance'))
-    def exportChildren(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='CladeRelation'):
+    def exportChildren(self, outfile, level, namespace_='phy:', name_='CladeRelation'):
         if self.confidence:
             self.confidence.export(outfile, level, namespace_, name_='confidence')
     def hasContent_(self):
@@ -3596,7 +3596,7 @@ class CladeRelation(GeneratedsSuper):
             return True
         else:
             return False
-    def exportLiteral(self, outfile=sys.stdout, level=0, name_='CladeRelation'):
+    def exportLiteral(self, outfile, level, name_='CladeRelation'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
@@ -3716,8 +3716,8 @@ def parseLiteral(inFileName):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-    sys.stdout.write('#from _phyloxml import *\n\n')
-    sys.stdout.write('import _phyloxml as model_\n\n')
+    sys.stdout.write('#from phyloxml import *\n\n')
+    sys.stdout.write('import phyloxml as model_\n\n')
     sys.stdout.write('rootObj = model_.rootTag(\n')
     rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
     sys.stdout.write(')\n')
@@ -3736,3 +3736,4 @@ if __name__ == '__main__':
     #import pdb; pdb.set_trace()
     main()
 
+__all__ = ["Phyloxml","Phylogeny","Clade","Taxonomy","Sequence","MolSeq","Accession","DomainArchitecture","ProteinDomain","Events","BinaryCharacters","BinaryCharacterList","Reference","Annotation","Property","Uri","Confidence","Id","Distribution","Point","Polygon","Date","BranchColor","SequenceRelation","CladeRelation"]
