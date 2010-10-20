@@ -83,62 +83,64 @@ def get_sites(path, model = ''):
         return None
     return vals
 
+def divide_data (pamout, model, codon_freq=True):
+    '''
+    for multiple dataset, divide outfile.
+    '''
+    for num in range (1, int (model.params['ndata'])):
+        model.name = model.name + '_' + str(num)
+        out = open (pamout + '_' + str(num), 'w')
+        copy = False
+        for line in open (pamout):
+            if copy == False and \
+                   line.startswith('Data set '+ str (num) + '\n'):
+                copy = True
+                continue
+            if copy == True and \
+                   line.startswith('Data set '+ str (num+1) + '\n'):
+                break
+            if copy == True:
+                out.write(line)
+        out.close()
+        if copy == False:
+            print >> sys.stderr, \
+                  'WARNING: seems that you have no multiple dataset here...'\
+                  + '\n    trying as with only one dataset'
+        if model.typ == 'site':
+            rst = re.sub('out$', 'rst', pamout)
+            rstout = open (rst + '_' + str(num), 'w')
+            copy = False
+            for line in open(rst):
+                if copy == False and \
+                       re.match('\t' + str (num)+'\n', line) != None:
+                    copy = True
+                    continue
+                if copy == True and \
+                       re.match('\t' + str (num + 1)+'\n', line) != None:
+                    copy = False
+                if copy == True:
+                    rstout.write(line)
+            rstout.close()
+            setattr (model, 'data_' + str (num), 
+                     parse_paml (pamout + '_' + str(num), model))
+        else:
+            setattr (model, 'data_' + str (num),
+                     parse_paml (pamout + '_' + str(num), model))
 
-def parse_paml(pamout, model, rst='rst', codon_freq=True):
+def parse_paml (pamout, model, codon_freq=True):
     '''
     parser function for codeml files,
     with values of w,dN,dS etc... dependending of the model
     tested.
     '''
-    if not '*' in model.params['ndata']:
-        for num in range (1, int (model.params['ndata'])):
-            out = open (pamout + '_' + str(num), 'w')
-            copy = False
-            for line in open (pamout):
-                if copy == False and \
-                       line.startswith('Data set '+ str (num) + '\n'):
-                    copy = True
-                    continue
-                if copy == True and \
-                       line.startswith('Data set '+ str (num+1) + '\n'):
-                    break
-                if copy == True:
-                    out.write(line)
-            out.close()
-            if copy == False:
-                print >> sys.stderr, \
-                      'WARNING: seems that you have no multiple dataset here...'\
-                      + '\n    trying as with only one dataset'
-            if model.typ == 'site' and rst != None:
-                rst = rst if rst != 'rst' else re.sub('out$', 'rst', pamout)
-                rstout = open (rst + '_' + str(num), 'w')
-                copy = False
-                for line in open(rst):
-                    if copy == False and \
-                           re.match('\t' + str (num)+'\n', line) != None:
-                        copy = True
-                        continue
-                    if copy == True and \
-                           re.match('\t' + str (num + 1)+'\n', line) != None:
-                        copy = False
-                    if copy == True:
-                        rstout.write(line)
-                rstout.close()
-                setattr (model, 'data_' + str (num), 
-                            parse_paml (pamout + '_' + str(num), \
-                                        model, rst=rst + '_' + str (num)))
-            else:
-                setattr (model, 'data_'+str (num),
-                                parse_paml (pamout + '_' + str(num), model))
+    # if multiple dataset in same file we divide the outfile and model.name+x
+    if not '*' in str (model.params['ndata']):
+        divide_data (pamout, model, codon_freq=True)
         return
     # STARTS here. ugly but.... ugly
     dN, dS = None, None
     chk = False
     labels = []
-    if model.typ == 'site' and rst != None:
-        if rst == 'rst':
-            rst = re.sub('out$', 'rst', pamout)
-        model.rst = rst
     for line in open(pamout):
         line = line.strip()
         if line.startswith('lnL'):
@@ -161,8 +163,8 @@ def parse_paml(pamout, model, rst='rst', codon_freq=True):
             dN = re.sub ('[A-Za-z_:\(\),\-;]*', '', line).split()
             for i in xrange (len (paml_ids)-1):
                 node = model.tree.search_nodes(paml_id=int (paml_ids[i]))[0]
-                node.add_feature ('dN', dN[i])
-                node.add_feature ('dS', dS[i])
+                node.add_feature ('dN', float (dN[i]))
+                node.add_feature ('dS', float (dS[i]))
         elif line.startswith('dN & dS for'):
             chk = True
         elif '..' in line and chk:
@@ -238,6 +240,6 @@ def _get_paml_labels(model, tree, paml_labels, line):
     for lab in paml_labels:
         node = tree.search_nodes(paml_id=int (lab.split('..')[1]))[0]
         if model.typ == 'branch':
-            node.add_feature ('w', w.pop(0))
-        node.add_feature ('bL', bL.pop(0))
+            node.add_feature ('w', float (w.pop(0)))
+        node.add_feature ('bL', float (bL.pop(0)))
 

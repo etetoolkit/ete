@@ -29,7 +29,7 @@ features to the the node instances.
 import os
 from sys import stderr
 
-from ete_dev import PhyloNode, PhyloTree
+from ete_dev import PhyloNode
 from ete_dev.codeml.codemlparser import parse_paml, get_sites
 from ete_dev.codeml.model import Model, AVAIL, PARAMS
 from ete_dev.codeml.utils import translate, colorize_rst, label_tree
@@ -37,7 +37,7 @@ from ete_dev.parser.newick import write_newick
 
 __all__ = ["CodemlNode", "CodemlTree"]
 
-def _parse_species(name):
+def _parse_species (name):
     '''
     just to return specie name from fasta description
     '''
@@ -47,7 +47,7 @@ class CodemlNode(PhyloNode):
     """ Re-implementation of the standart TreeNode instance. It adds
     attributes and methods to work with phylogentic trees. """
 
-    def __init__(self, newick=None, alignment=None, alg_format="fasta", \
+    def __init__ (self, newick=None, alignment=None, alg_format="fasta", \
                  sp_naming_function=_parse_species):
         '''
         freebranch: path to find codeml output of freebranch model.
@@ -100,7 +100,7 @@ class CodemlNode(PhyloNode):
             paml_id += 1
             node.add_feature ('paml_id', paml_id)
     
-    def link_to_alignment(self, alignment, alg_format="fasta",
+    def link_to_alignment (self, alignment, alg_format="fasta",
                           nucleotides=True):
         '''
         same function as for phyloTree, but translate sequences if nucleotides
@@ -111,7 +111,7 @@ class CodemlNode(PhyloNode):
             if nucleotides:
                 leaf.sequence = translate(leaf.nt_sequence)
 
-    def show(self, layout=None,
+    def show (self, layout=None,
              image_properties=None, up_faces=[], down_faces=[]):
         '''
         call super show adding up and down faces
@@ -119,7 +119,7 @@ class CodemlNode(PhyloNode):
         super(CodemlTree, self).show(layout=layout, up_faces=self.up_faces, \
                                      down_faces=self.down_faces)
 
-    def render(self, filename, layout=None, w=None, h=None, \
+    def render (self, filename, layout=None, w=None, h=None, \
                img_properties=None, header=None):
         '''
         call super show adding up and down faces
@@ -128,8 +128,7 @@ class CodemlNode(PhyloNode):
                                        up_faces=self.up_faces, \
                                        down_faces = self.down_faces, w=w, h=h)
 
-    def run_paml(self, model, ctrl_string='', rst='rst', \
-                 keep=True, paml=False, **kwargs):
+    def run_paml (self, model, ctrl_string='', keep=True, paml=False, **kwargs):
         ''' To compute evolutionnary models with paml
         extra parameters should be in '''
 
@@ -161,7 +160,7 @@ class CodemlNode(PhyloNode):
         if keep:
             setattr (model, 'run', run)
             self.link_to_evol_model (os.path.join(fullpath,'out'),
-                                     model, rst=rst)
+                                     model)
 
     run_paml.__doc__ += '''%s
     to run paml, needs tree linked to alignment.
@@ -182,7 +181,7 @@ class CodemlNode(PhyloNode):
     sorted (sorted (AVAIL.keys()), cmp=lambda x, y : \
     cmp(AVAIL[x]['typ'], AVAIL[y]['typ']), reverse=True))))
 
-    def _write_ali(self, fullpath, paml=False):
+    def _write_ali (self, fullpath, paml=False):
         '''
         just to write alignment
         '''
@@ -217,7 +216,7 @@ class CodemlNode(PhyloNode):
                 algn.write(line)
             algn.close()
 
-    def mark_tree(self, node_ids, **kargs):
+    def mark_tree (self, node_ids, **kargs):
         '''
         function to mark branches on tree in order that paml could interpret it.
         takes a "marks" argument that should be a list of #1,#1,#2
@@ -241,7 +240,7 @@ class CodemlNode(PhyloNode):
             elif not 'mark' in node.features:
                 node.add_feature('mark', '')
 
-    def get_descendant_by_idname(self, idname):
+    def get_descendant_by_idname (self, idname):
         '''
         returns node list corresponding to a given idname
         #TODO: perhaps put this in core :P
@@ -257,14 +256,12 @@ class CodemlNode(PhyloNode):
         except KeyError:
             print >> stderr, "Model %s not found." % (modelname)
 
-    def link_to_evol_model(self, path, model, rst='rst'):
+    def link_to_evol_model (self, path, model):
         '''
         link CodemlTree to evolutionary model
           * free-branch model ('fb') will append evol values to tree
           * Site models (M0, M1, M2, M7, M8) will give evol values by site
             and likelihood
-        rst parameter stands for the path were is your rst file, in case it
-        is not "conventional"... if rst=None, skip parsing it.
         '''
         if not hasattr (self, 'paml_id'):
             self._label_as_paml()
@@ -276,26 +273,19 @@ class CodemlNode(PhyloNode):
                 (int (model.name.split('__')[1])
                  +1)  if '__' in model.name else 0)
         self._models[model.name] = model
-        
         if not os.path.isfile(path):
             print >> stderr, "ERROR: not a file: "+path
             print model.run
             return 1
-        parse_paml(path, model, rst=rst)
-        #if not hasattr (self, '_codon_freq'):
-        #    try:
-        #        self._codon_freq = self._dic[model.name]['codonFreq']
-        #        del (self._dic[model.name]['codonFreq'])
-        #    except KeyError:
-        #        pass
-        #    self._kappa      = self._dic[model.name]['kappa']
-        #    del (self._dic[model.name]['kappa'])
-        #    del (self._dic[model.name]['paml_labels'])
-        if hasattr (model, 'rst'):
-            setattr (model, 'sites', get_sites (model.rst))
+        parse_paml(path, model)
+        if model.typ == 'site':
+            setattr (model, 'sites',
+                     get_sites (self.workdir + '/' + model.name + '/rst'))
+        if len (self._models) == 1:
+            self.change_dist_to_evol ('bL')
 
-    def add_histface(self, mdl, down=True, lines=[1.0], header='', \
-                     col_lines=['grey'], typ='hist',col=None, extras=['']):
+    def add_histface (self, mdl, down=True, lines=[1.0], header='', \
+                      col_lines=['grey'], typ='hist',col=None, extras=['']):
         '''
         To add histogram face for a given site mdl (M1, M2, M7, M8)
         can choose to put it up or down the tree.
@@ -326,18 +316,18 @@ class CodemlNode(PhyloNode):
         if header == '':
             header = 'Omega value for sites under %s model' % (mdl)
         ldic = self._models[mdl].sites
-        hist = face(values = ldic['w.' + mdl], \
-                    lines = lines, col_lines=col_lines, \
-                    colors=colorize_rst(ldic['pv.'+mdl], \
-                                        mdl, ldic['class.'+mdl], col=col), \
-                    header=header, errors=ldic['se.'+mdl], extras=extras)
+        hist = face (values = ldic['w.' + mdl], 
+                     lines = lines, col_lines=col_lines,
+                     colors=colorize_rst(ldic['pv.'+mdl],
+                                         mdl, ldic['class.'+mdl], col=col),
+                     header=header, errors=ldic['se.'+mdl], extras=extras)
         hist.aligned = True
         if down:
             self.down_faces = [hist]
         else:
             self.up_faces   = [hist]
 
-    def write(self, features=None, outfile=None, format=10):
+    def write (self, features=None, outfile=None, format=10):
         """ Returns the newick-PAML representation of this node
         topology. Several arguments control the way in which extra
         data is shown for every node:
@@ -363,7 +353,7 @@ class CodemlNode(PhyloNode):
         else:
             return nwk
 
-    def get_most_likely(self, altn, null):
+    def get_most_likely (self, altn, null):
         '''
         Returns pvalue of LRT between alternative model and null model.
         
