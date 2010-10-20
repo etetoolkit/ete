@@ -11,21 +11,18 @@ class Model:
 
     available models are:
     '''
-    def __init__(self, model, inTree='tree', inAlg='algn', \
-                 out='out', **kwargs):
+    def __init__(self, model, tree, **kwargs):
         '''
         "omega" stands for starting value of omega, in the computation. Qs
         Zihen Yang says, it is good to try with different starting values.
         '''
         self.ctrl_string = ''
+        self.tree        = tree
         self.evol        = None
         self.changes     = {}
         self.name, args  = check_name(model)
         for a, b in args.items(): self.__dict__[a] = b
         self.params = dict (PARAMS.items())
-        self.params['seqfile' ] = inAlg
-        self.params['treefile'] = inTree
-        self.params['outfile' ] = out
         for key, arg in kwargs.items():
             if not self.params.has_key(key):
                 print >> stderr, \

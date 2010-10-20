@@ -22,7 +22,7 @@ from os.path import isfile
 
 sys.path.append('/home/francisco/franciscotools/4_codeml_pipe/')
 
-def get_sites(path, model = '', ndata=1):
+def get_sites(path, model = ''):
     '''
     for models M1, M2, M7, M8, M8a but also branch-site models
     '''
@@ -84,14 +84,13 @@ def get_sites(path, model = '', ndata=1):
     return vals
 
 
-def parse_paml(pamout, model, rst='rst', ndata=1, codon_freq=True):
+def parse_paml(pamout, model, rst='rst', codon_freq=True):
     '''
-    parser function for codeml files, returns a diccionary
+    parser function for codeml files,
     with values of w,dN,dS etc... dependending of the model
     tested.
     '''
     if not '*' in model.params['ndata']:
-        dic = {}
         for num in range (1, int (model.params['ndata'])):
             out = open (pamout + '_' + str(num), 'w')
             copy = False
@@ -125,111 +124,120 @@ def parse_paml(pamout, model, rst='rst', ndata=1, codon_freq=True):
                     if copy == True:
                         rstout.write(line)
                 rstout.close()
-                dic['data_'+str (num)] = \
-                                parse_paml(pamout + '_' + str(num), \
-                                           model, rst=rst + '_' + str (num))
+                setattr (model, 'data_' + str (num), 
+                            parse_paml (pamout + '_' + str(num), \
+                                        model, rst=rst + '_' + str (num)))
             else:
-                dic['data_'+str (num)] = \
-                                parse_paml(pamout + '_' + str(num), model)
-        return dic
+                setattr (model, 'data_'+str (num),
+                                parse_paml (pamout + '_' + str(num), model))
+        return
     # STARTS here. ugly but.... ugly
-    dic = {}
-    val = ['w', 'dN', 'dS', 'bL', 'bLnum']
+    dN, dS = None, None
     chk = False
+    labels = []
     if model.typ == 'site' and rst != None:
         if rst == 'rst':
             rst = re.sub('out$', 'rst', pamout)
-        dic['rst'] = rst
+        model.rst = rst
     for line in open(pamout):
+        line = line.strip()
         if line.startswith('lnL'):
-            dic = _getlnL(dic, line)
-        elif dic.has_key('lnL') and not dic.has_key ('paml_labels'):
+            model.lnL = float (re.sub('  *.*', '', re.sub('.*: *'  , '', line)))
+            model.np  = int   (re.sub('\).*' , '', re.sub('.*np: *', '', line)))
+        elif hasattr (model, 'lnL') and labels == []:
             if re.search ('  *([0-9]+\.\.[0-9]+  *){2}', line):
-                dic ['paml_labels'] = line.strip ()
-            else:
-                dic ['paml_labels'] = None
-        elif line.startswith('(') and line.endswith(');\n'):
-            dic[val.pop()] = line.strip()
+                labels = line.split()
+        elif labels != [] and not hasattr (model, 'kappa'):
+            _get_paml_labels (model, model.tree, labels, line)
+            model.kappa = line.split()[len (labels)]
+        elif line.startswith ('dS tree:'):
+            dS, dN = True, True
+        elif dS == True and line.startswith('(') and line.endswith(');'):
+            paml_ids = re.sub ('[A-Za-z_:\(\),\-;]*', '', re.sub (
+                '\[&&NHX:paml_id=([0-9]+)\]', ' \\1',
+                model.tree.write(features=['paml_id'], format=9))).split()
+            dS = re.sub ('[A-Za-z_:\(\),\-;]*', '', line).split()
+        elif dN == True and line.startswith('(') and line.endswith(');'):
+            dN = re.sub ('[A-Za-z_:\(\),\-;]*', '', line).split()
+            for i in xrange (len (paml_ids)-1):
+                node = model.tree.search_nodes(paml_id=int (paml_ids[i]))[0]
+                node.add_feature ('dN', dN[i])
+                node.add_feature ('dS', dS[i])
         elif line.startswith('dN & dS for'):
             chk = True
         elif '..' in line and chk:
-            vals = line.strip().split()
-            dic.setdefault ('table',  {})
-            dic['table'][int (vals[0].split('..')[1])] = {
-                'SEdN': vals[13] if 'dN' in line else None,
-                'SEdS': vals[18] if 'dS' in line else None}
-            if len (dic['table']) == len (dic ['paml_labels'].split()):
-                dic ['N'] = vals[2]
-                dic ['S'] = vals[3]
+            vals = line.split()
+            node = model.tree.search_nodes (
+                paml_id=int (vals[0].split('..')[1]))[0]
+            node.SEdN = vals[13] if 'dN' in line else None
+            node.SEdS = vals[18] if 'dS' in line else None
+            if not hasattr (model.tree, 'N') and not filter(
+                lambda x: not hasattr(x, 'SEdN'), model.tree.get_descendants()):
+                model.tree.N = vals[2]
+                model.tree.S = vals[3]
                 chk = False
-        elif codon_freq == True:
+        elif not hasattr (model.tree, 'codonFreq'):
             if line.startswith('Codon frequencies under model'):
-                dic['codonFreq'] = []
+                model.tree.codonFreq = []
                 continue
             if line.startswith('  0.'):
                 line = re.sub('  ([0-9.]*)  ([0-9.]*)  ([0-9.]*)  ([0-9.]*)', \
-                              '\\1 \\2 \\3 \\4', line.strip())
-                dic['codonFreq'] += [line.split()]
-            elif line.startswith('kappa (ts/tv)'):
-                dic['kappa'] = re.sub('kappa .* =  *([0-9.]+)$', \
-                                      '\\1', line.strip())
+                              '\\1 \\2 \\3 \\4', line)
+                model.tree.codonFreq += [line.split()]
         if model.typ == 'site' or model.typ == 'null':
             if 'p=' in line and 'q=' in line: # only for M7 and M8
-                dic['p'], dic['q'] = re.sub(\
+                model.p, model.q = re.sub(\
                     '.*p=  *([0-9]+\.[0-9]+)  *q=  *([0-9]+\.[0-9]+)'\
-                    , '\\1 \\2', line.strip()).split()
+                    , '\\1 \\2', line).split()
             if line.startswith('omega (dN'): # than we are in M0....
-                dic['p0'] = '1.0'
+                model.p0 = '1.0'
                 line = re.sub('^omega \(dN/dS\) = ', 'w: ', line)
             if line.startswith('p: '):
-                for i in range (0, len (line.strip().split()[1:])):
-                    dic['p'+str(i)] = line.strip().split()[i+1]
+                for i in range (0, len (line.split()[1:])):
+                    setattr (model, 'p'+str(i), line.split()[i+1])
             elif line.startswith('w: '):
                 while re.match('.*[0-9][0-9]*\.[0-9]{5}[0-9].*', line)!=None:
                     line = re.sub('([0-9][0-9]*\.[0-9]{5})([0-9].*)', \
-                                  '\\1 \\2', line.strip())
-                for i in range (0, len (line.strip().split()[1:])):
-                    dic['w'+str(i)] = line.strip().split()[i+1]
+                                  '\\1 \\2', line)
+                for i in range (0, len (line.split()[1:])):
+                    setattr (model, 'w'+str(i), line.split()[i+1])
         if model.typ == 'branch-site':
             if line.startswith ('site class'):
-                vals = line.strip().split()[2:]
+                vals = line.split()[2:]
             elif line.startswith ('proportion '):
                 for n, v in enumerate (vals):
-                    dic['p'    + v] = line.strip().split() [n+1]
+                    setattr (model, 'p' + v, line.split() [n+1])
             elif line.startswith('background w '):
                 for n, v in enumerate (vals):
-                    dic['wbkg' + v] = line.strip().split() [n+1]
+                    setattr (model, 'wbkg' + v, line.split() [n+1])
             elif line.startswith('foreground w'):
                 for n, v in enumerate (vals):
-                    dic['wfrg' + v] = line.strip().split() [n+1]
-    # convert paml tree format to 'normal' newick format.
-    for k in ['w', 'dN', 'dS', 'bL', 'bLnum']:
-        if not dic.has_key(k):
-            continue
-        if not dic[k].startswith('('):
-            continue
-        dic[k] = _convtree(dic[k])
-    return dic
+                    setattr (model, 'wfrg' + v, line.split() [n+1])
 
-def _getlnL(dic, line):
+def _get_paml_labels(model, tree, paml_labels, line):
     '''
-    shht pylint
+    map tree to paml labels, and place w and bL values
     '''
-    line = line.strip()
-    dic['lnL'] = re.sub('  *.*', '', re.sub('.*: *'  , '', line))
-    dic['lnL'] = re.sub('  *.*', '', re.sub('.*: *'  , '', line))
-    dic['np' ] = re.sub('\).*' , '', re.sub('.*np: *', '', line))
-    return dic
-    
-
-def _convtree(line):
-    '''
-    shhht pylint
-    '''
-    t = re.sub('#[0-9]* #', ' #', line)
-    t = re.sub('\'', '', t)
-    t = re.sub('#', ':', t)
-    t = re.sub(' : [0-9]*\.[0-9]*', '', t)
-    t = re.sub(' *: *', ':', t)
-    return t
+    bL = line.split()[:len (paml_labels)]
+    w  = line.split()[len (paml_labels)+1:]
+    try:
+        relations = sorted (map (lambda x: map( int, x.split('..')),
+                                 paml_labels),
+                            key=lambda x: x[1])
+    except IndexError:
+        return
+    # optional just to check that labelling corresponds with paml...
+    for rel in relations:
+        node = tree.search_nodes(paml_id=rel[1])[0]
+        if int (node.up.paml_id) != int (rel[0]):
+            print node
+            print node.up
+            print node.up.paml_id, rel
+            sys.exit('labelling does not correspond!! check')
+    #####
+    for lab in paml_labels:
+        node = tree.search_nodes(paml_id=int (lab.split('..')[1]))[0]
+        if model.typ == 'branch':
+            node.add_feature ('w', w.pop(0))
+        node.add_feature ('bL', bL.pop(0))
 

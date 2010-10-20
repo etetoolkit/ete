@@ -3,6 +3,9 @@
 # Creation Date: 2009/08/14 13:56:44
 
 PARAMS = {
+    'seqfile'      : 'algn',
+    'treefile'     : 'tree',
+    'outfile'      : 'out',
     'noisy'        : 0,
     'verbose'      : 2,
     'runmode'      : 0,

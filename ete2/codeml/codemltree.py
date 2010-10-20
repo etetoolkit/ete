@@ -48,19 +48,18 @@ class CodemlNode(PhyloNode):
     attributes and methods to work with phylogentic trees. """
 
     def __init__(self, newick=None, alignment=None, alg_format="fasta", \
-                 sp_naming_function=_parse_species, rst=None):
+                 sp_naming_function=_parse_species):
         '''
         freebranch: path to find codeml output of freebranch model.
         '''
         # _update names?
         self._name = "NoName"
-        self._species = "Unknown"
         self._speciesFunction = None
-        self._dic = {}
         self.up_faces = []
         self.down_faces = []
         self.workdir = '/tmp/ete2-codeml/'
         self.codemlpath = 'codeml'
+        self._models = {}
         # Caution! native __init__ has to be called after setting
         # _speciesFunction to None!!
         PhyloNode.__init__(self, newick=newick)
@@ -75,7 +74,34 @@ class CodemlNode(PhyloNode):
             label_tree(self)
         self.mark_tree([])
 
-    def link_to_alignment(self, alignment, alg_format="fasta", nucleotides=True, ndata=1):
+    def _label_as_paml (self):
+        '''
+        to label tree as paml
+        WARNING: sorted names in same order that sequence
+        '''
+        paml_id = 1
+        for leaf in sorted (self, key=lambda x: x.name):
+            leaf.add_feature ('paml_id', paml_id)
+            paml_id += 1
+        self.add_feature ('paml_id', paml_id)
+        # left members
+        for node in self.get_descendants()[::2]:
+            if hasattr (node, 'paml_id'):
+                if node.is_leaf() and not node.get_sisters()[0].is_leaf():
+                    paml_id += 1
+                    node.get_sisters()[0].add_feature ('paml_id', paml_id)
+                continue
+            paml_id += 1
+            node.add_feature ('paml_id', paml_id)
+        # right members
+        for node in self.get_descendants()[1::2]:
+            if hasattr (node, 'paml_id'):
+                continue
+            paml_id += 1
+            node.add_feature ('paml_id', paml_id)
+    
+    def link_to_alignment(self, alignment, alg_format="fasta",
+                          nucleotides=True):
         '''
         same function as for phyloTree, but translate sequences if nucleotides
         '''
@@ -85,7 +111,7 @@ class CodemlNode(PhyloNode):
             if nucleotides:
                 leaf.sequence = translate(leaf.nt_sequence)
 
-    def show(self, layout=None, \
+    def show(self, layout=None,
              image_properties=None, up_faces=[], down_faces=[]):
         '''
         call super show adding up and down faces
@@ -110,9 +136,9 @@ class CodemlNode(PhyloNode):
         from subprocess import Popen, PIPE
         fullpath = os.path.join(self.workdir, model)
         os.system("mkdir -p %s" %fullpath)
-        model = Model(model, **kwargs)
+        model = Model(model, self, **kwargs)
         # write tree file
-        self.write (outfile=fullpath+'/tree', \
+        self.write (outfile=fullpath+'/tree', 
                     format = (10 if model.allow_mark else 9))
         # write algn file
         self._write_ali(fullpath, paml)
@@ -121,7 +147,7 @@ class CodemlNode(PhyloNode):
             ctrl_string = model.get_ctrl_string(fullpath+'/tmp.ctl')
         else:
             open(fullpath+'/tmp.ctl', 'w').write (ctrl_string)
-        
+
         hlddir = os.getcwd()
         os.chdir(fullpath)
         proc = Popen([self.codemlpath, 'tmp.ctl'], stdout=PIPE)
@@ -133,7 +159,7 @@ class CodemlNode(PhyloNode):
             return 1
         os.chdir(hlddir)
         if keep:
-            self._dic[model.name + '_run'] = run
+            setattr (model, 'run', run)
             self.link_to_evol_model (os.path.join(fullpath,'out'),
                                      model, rst=rst)
 
@@ -141,7 +167,7 @@ class CodemlNode(PhyloNode):
     to run paml, needs tree linked to alignment.
     model name needs to start by one of:
 %s
-        
+
     e.g.: b_free_lala.vs.lele, will launch one free branch model, and store 
     it in "WORK_DIR/b_free_lala.vs.lele" directory
     
@@ -222,23 +248,16 @@ class CodemlNode(PhyloNode):
         '''
         return filter(lambda x: x.idname == idname, self.iter_descendants())
 
-    def _get_paml_labels(self, paml_labels):
+    def get_evol_model (self, modelname):
         '''
-        map tree to paml labels
+        returns one precomputed model
         '''
         try:
-            relations = sorted (map (lambda x: map( int, x.split('..')),
-                                     paml_labels.split()),
-                                key=lambda x: x[1])
-        except IndexError:
-            return None
-        for paml_id, leaf in enumerate (sorted (self, key=lambda x: x.name)):
-            leaf.add_feature ('paml_id', paml_id + 1)
-        for rel in relations:
-            node = self.search_nodes(paml_id=rel[1])[0]
-            node.up.add_feature('paml_id', rel[0])
-    
-    def link_to_evol_model(self, path, model, rst='rst', ndata=1):
+            return self._models [modelname]
+        except KeyError:
+            print >> stderr, "Model %s not found." % (modelname)
+
+    def link_to_evol_model(self, path, model, rst='rst'):
         '''
         link CodemlTree to evolutionary model
           * free-branch model ('fb') will append evol values to tree
@@ -247,37 +266,33 @@ class CodemlNode(PhyloNode):
         rst parameter stands for the path were is your rst file, in case it
         is not "conventional"... if rst=None, skip parsing it.
         '''
+        if not hasattr (self, 'paml_id'):
+            self._label_as_paml()
         if type (model) == str :
-            model = Model (model)
+            model = Model (model, self)
+        # new entry in _models dict
+        while self._models.has_key (model.name):
+            model.name = model.name.split('__')[0] + str (
+                (int (model.name.split('__')[1])
+                 +1)  if '__' in model.name else 0)
+        self._models[model.name] = model
+        
         if not os.path.isfile(path):
             print >> stderr, "ERROR: not a file: "+path
-            print self._dic[model.name+'_run']
+            print model.run
             return 1
-        self._dic[model.name] = \
-                         parse_paml(path, model, rst=rst, \
-                                    ndata=ndata, codon_freq=\
-                                    not (hasattr (self, '_codon_freq')))
-        if not hasattr (self, '_codon_freq'):
-            self._codon_freq = self._dic[model.name]['codonFreq']
-            self._kappa      = self._dic[model.name]['kappa']
-            self._get_paml_labels (self._dic[model.name]['paml_labels'])
-            del (self._dic[model.name]['codonFreq'])
-            del (self._dic[model.name]['kappa'])
-            del (self._dic[model.name]['paml_labels'])
-        if int (model.params['getSE']) == 2:
-            for node in self.iter_descendants():
-                node.add_feature (
-                    model.name + '_SEdN',
-                    self._dic[model.name]['table'][node.paml_id]['SEdN'])
-                node.add_feature (
-                    model.name + '_SEdS',
-                    self._dic[model.name]['table'][node.paml_id]['SEdS'])
-        if model.name == 'fb':
-            self._getfreebranch()
-        elif self._dic[model.name].has_key('rst'):
-            self._dic[model.name+'_sites'] = \
-                                           get_sites (\
-                self._dic[model.name]['rst'], ndata=ndata)
+        parse_paml(path, model, rst=rst)
+        #if not hasattr (self, '_codon_freq'):
+        #    try:
+        #        self._codon_freq = self._dic[model.name]['codonFreq']
+        #        del (self._dic[model.name]['codonFreq'])
+        #    except KeyError:
+        #        pass
+        #    self._kappa      = self._dic[model.name]['kappa']
+        #    del (self._dic[model.name]['kappa'])
+        #    del (self._dic[model.name]['paml_labels'])
+        if hasattr (model, 'rst'):
+            setattr (model, 'sites', get_sites (model.rst))
 
     def add_histface(self, mdl, down=True, lines=[1.0], header='', \
                      col_lines=['grey'], typ='hist',col=None, extras=['']):
@@ -304,13 +319,13 @@ class CodemlNode(PhyloNode):
             from HistFace import ErrorLineFace as face
         elif typ == 'protamine':
             from HistFace import ErrorLineProtamineFace as face
-        if self._dic[mdl + '_sites'] == None:
+        if self._models[mdl].sites == None:
             print >> stderr, \
                   "WARNING: model %s not computed." % (mdl)
             return None
         if header == '':
             header = 'Omega value for sites under %s model' % (mdl)
-        ldic = self._dic[mdl + '_sites']
+        ldic = self._models[mdl].sites
         hist = face(values = ldic['w.' + mdl], \
                     lines = lines, col_lines=col_lines, \
                     colors=colorize_rst(ldic['pv.'+mdl], \
@@ -366,12 +381,13 @@ class CodemlNode(PhyloNode):
          * b_neut vs M0     -> RX on branch?? not sure :P
         '''
         try:
-            if self._dic[altn].has_key('lnL') and self._dic[null].has_key('lnL'):
+            if hasattr (self._models[altn], 'lnL')\
+                   and hasattr (self._models[null], 'lnL'):
                 from scipy.stats import chisqprob
-                return chisqprob(2*(float(self._dic[altn]['lnL']) - \
-                                    float(self._dic[null]['lnL'])),\
-                                 df=(int (self._dic[altn]['np'])-\
-                                     int(self._dic[null]['np'])))
+                return chisqprob(2*(self._models[altn].lnL - \
+                                    self._models[null].lnL),\
+                                 df=(self._models[altn].np -\
+                                     self._models[null].np))
             else:
                 return 1
         except KeyError:
@@ -380,44 +396,15 @@ class CodemlNode(PhyloNode):
                   % (altn, null)
             exit(self.get_most_likely.func_doc)
 
-    def _getfreebranch(self):
+    def change_dist_to_evol (self, evol):
         '''
-        to convert tree strings of paml into tree strings readable
-        by ETE2_codeml.
-        returns same dic with CodemlTree.
-        #TODO: be abble to undestand how codeml put ids to tree nodes
+        change dist/branch length of the tree to a given evolutionnary
+        varaiable (dN, dS, w or bL), default is bL.
         '''
-        for evol in ['bL', 'dN', 'dS', 'w']:
-            if not self._dic['fb'].has_key(evol):
-                print >> stderr, \
-                      "Warning: this file do not cotain info about " \
-                      + evol + " parameter"
-                continue
-            if not self._dic['fb'][evol].startswith('('):
-                print >> stderr, \
-                      "Warning: problem with tree string for "\
-                      + evol +" parameter"
-                continue
-            tdic = self._dic['fb'][evol]
-            if evol == 'bL':
-                tree = PhyloTree(tdic)
-                label_tree(tree)
-                if not tree.write(format=9) == self.write(format=10):
-                    print >> stderr, \
-                          "ERROR: CodemlTree and tree used in "+\
-                          "codeml do not match"
-                    print tree.write(), self.write()
-                    break
-                self.get_tree_root().dist = 0
-                evol = 'dist'
-            tree = PhyloTree(tdic)
-            label_tree(tree)
-            for node in self.iter_descendants():
-                for node2 in tree.iter_descendants():
-                    if node2.idname == node.idname:
-                        node.add_feature(evol, node2.dist)
+        for node in self.iter_descendants():
+            node.dist = node.__dict__[evol]
+
 
 # cosmetic alias
 CodemlTree = CodemlNode
-
 
