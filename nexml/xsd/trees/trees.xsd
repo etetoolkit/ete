@@ -13,22 +13,22 @@
 
     <xs:include schemaLocation="tree.xsd"/>
     <xs:include schemaLocation="network.xsd"/>
+    <xs:include schemaLocation="../meta/sets.xsd"/>
 
-    <xs:complexType name="Trees" abstract="false" mixed="true">
+    <xs:complexType name="Trees" abstract="false" mixed="false">
         <xs:annotation>
             <xs:documentation>
                 A concrete container for tree objects.
             </xs:documentation>
         </xs:annotation>
-        <xs:complexContent mixed="true">
+        <xs:complexContent mixed="false">
             <xs:extension base="TaxaLinked">
                 <xs:sequence minOccurs="1" maxOccurs="1">
                     <xs:choice minOccurs="0" maxOccurs="unbounded">
-                        <xs:element name="network" type="AbstractNetwork" minOccurs="1"
-                            maxOccurs="unbounded"/>
-                        <xs:element name="tree" type="AbstractTree" minOccurs="1"
-                            maxOccurs="unbounded"/>
+                        <xs:element name="network" type="AbstractNetwork" minOccurs="1" maxOccurs="unbounded"/>
+                        <xs:element name="tree" type="AbstractTree" minOccurs="1" maxOccurs="unbounded"/>
                     </xs:choice>
+                    <xs:element name="set" minOccurs="0" maxOccurs="unbounded" type="TreeAndNetworkSet"/>
                 </xs:sequence>
             </xs:extension>
         </xs:complexContent>

@@ -1,25 +1,25 @@
 K 25
 svn:wc:ra_dav:version-url
 V 50
-/svnroot/nexml/!svn/ver/1299/trunk/nexml/xsd/trees
+/svnroot/nexml/!svn/ver/1381/trunk/nexml/xsd/trees
 END
 trees.xsd
 K 25
 svn:wc:ra_dav:version-url
 V 60
-/svnroot/nexml/!svn/ver/1299/trunk/nexml/xsd/trees/trees.xsd
+/svnroot/nexml/!svn/ver/1381/trunk/nexml/xsd/trees/trees.xsd
 END
 abstracttrees.xsd
 K 25
 svn:wc:ra_dav:version-url
 V 68
-/svnroot/nexml/!svn/ver/1299/trunk/nexml/xsd/trees/abstracttrees.xsd
+/svnroot/nexml/!svn/ver/1381/trunk/nexml/xsd/trees/abstracttrees.xsd
 END
 network.xsd
 K 25
 svn:wc:ra_dav:version-url
 V 62
-/svnroot/nexml/!svn/ver/1298/trunk/nexml/xsd/trees/network.xsd
+/svnroot/nexml/!svn/ver/1381/trunk/nexml/xsd/trees/network.xsd
 END
 README.txt
 K 25
@@ -31,5 +31,5 @@ tree.xsd
 K 25
 svn:wc:ra_dav:version-url
 V 59
-/svnroot/nexml/!svn/ver/1298/trunk/nexml/xsd/trees/tree.xsd
+/svnroot/nexml/!svn/ver/1381/trunk/nexml/xsd/trees/tree.xsd
 END

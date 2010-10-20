@@ -10,9 +10,7 @@
       <a href="../taxa/taxa">OTUs</a>, <a href="../characters/characters">characters</a>, 
       <a href="../trees/trees">trees</a> and <a href="../meta/meta">metadata</a>. The data 
       type definitions in these included schema modules are then used to define element 
-      instances in the child substructures of the &lt;nex:nexml&gt; root element.
-      
-      $Id: $
+      instances in the child substructures of the &lt;nex:nexml&gt; root element.      
     </xs:documentation>
   </xs:annotation>
 
@@ -20,8 +18,6 @@
   <xs:include schemaLocation="characters/characters.xsd"/>
   <xs:include schemaLocation="trees/trees.xsd"/>
   <xs:include schemaLocation="meta/annotations.xsd"/>
-  <!-- xs:include schemaLocation="meta/meta.xsd"/-->
-  <!--<xs:include schemaLocation="models/models.xsd"/>-->
 
   <xs:simpleType name="Nexml1_0">
     <xs:annotation>
@@ -36,25 +32,20 @@
     </xs:restriction>
   </xs:simpleType>
 
-  <xs:complexType name="Nexml" mixed="true">
+  <xs:complexType name="Nexml" mixed="false">
     <xs:annotation>
       <xs:documentation>
         The root element for nexml.
       </xs:documentation>
     </xs:annotation>
-    <xs:complexContent mixed="true">
+    <xs:complexContent mixed="false">
       <xs:extension base="Annotated">
-        <xs:sequence maxOccurs="unbounded" minOccurs="0">
-          <xs:element maxOccurs="unbounded" minOccurs="1" name="otus" type="Taxa"/>
+        <xs:sequence maxOccurs="unbounded" minOccurs="0">          
+          <xs:element maxOccurs="unbounded" minOccurs="1" name="otus" type="Taxa"/>                                          
           <xs:sequence maxOccurs="unbounded" minOccurs="0">
             <xs:choice>
               <xs:element maxOccurs="unbounded" minOccurs="0" name="characters" type="AbstractBlock"/>
-              <xs:element maxOccurs="unbounded" minOccurs="0" name="trees" type="Trees">
-                <xs:key name="tree">
-                  <xs:selector xpath="./tree"/>
-                  <xs:field xpath="@id"/>
-                </xs:key>
-              </xs:element>
+              <xs:element maxOccurs="unbounded" minOccurs="0" name="trees" type="Trees"/>              
             </xs:choice>
           </xs:sequence>
         </xs:sequence>
@@ -65,40 +56,6 @@
   </xs:complexType>
 
   <!-- the root of the document -->
-  <xs:element name="nexml" type="Nexml">
-
-    <!-- keys for child-of-root biodata containers: taxa, characters trees -->
-    <xs:key name="taxa">
-      <xs:selector xpath="./taxa"/>
-      <xs:field xpath="@id"/>
-    </xs:key>
-    <xs:key name="characters">
-      <xs:selector xpath="./characters"/>
-      <xs:field xpath="@id"/>
-    </xs:key>
-    <xs:key name="trees">
-      <xs:selector xpath="./trees"/>
-      <xs:field xpath="@id"/>
-    </xs:key>
-
-    <xs:key name="taxon">
-      <xs:selector xpath="./taxa/taxon"/>
-      <xs:field xpath="@id"/>
-    </xs:key>
-
-    <!-- links to taxon objects: from row to taxon, from node to taxon -->
-    <xs:keyref name="rowTaxonRef" refer="taxon">
-      <xs:selector xpath="./characters/matrix/row"/>
-      <xs:field xpath="@taxon"/>
-    </xs:keyref>
-    <xs:keyref name="listNodeTaxonRef" refer="taxon">
-      <xs:selector xpath="./trees/tree/terminal"/>
-      <xs:field xpath="@taxon"/>
-    </xs:keyref>
-    <xs:keyref name="nestedNodeTaxonRef" refer="taxon">
-      <xs:selector xpath="./trees/tree/root/internal/*/terminal"/>
-      <xs:field xpath="@taxon"/>
-    </xs:keyref>
-
-  </xs:element>
+  <xs:element name="nexml" type="Nexml"/>
+  
 </xs:schema>

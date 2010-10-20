@@ -1,14 +1,14 @@
 10
 
 dir
-1359
+1384
 https://nexml.svn.sourceforge.net/svnroot/nexml/trunk/nexml/xsd/meta
 https://nexml.svn.sourceforge.net/svnroot/nexml
 
 
 
-2010-06-11T13:27:40.361624Z
-1299
+2010-09-28T14:53:41.959903Z
+1382
 rvos
 
 
@@ -26,50 +26,16 @@ rvos
 
 bbd30ece-093f-0410-93e6-90c30f0fd9a7
 
-meta.xsd
-file
-
-
-
-
-2010-09-05T10:36:15.764578Z
-16a6afaefb91246304076a2708e843ab
-2010-06-11T13:27:40.361624Z
-1299
-rvos
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-11492
-
 annotations.xsd
 file
 
 
 
 
-2010-09-05T10:36:15.764578Z
-586ef85abe7121352e99d587f23a036f
-2010-06-11T13:27:40.361624Z
-1299
+2010-10-20T12:36:46.224580Z
+d55fb78ab6f44029548ca79e0230fe9b
+2010-09-28T14:46:26.791978Z
+1381
 rvos
 
 
@@ -92,7 +58,7 @@ rvos
 
 
 
-3777
+3692
 
 README.txt
 file
@@ -127,4 +93,38 @@ rvos
 
 
 107
+
+sets.xsd
+file
+
+
+
+
+2010-10-20T12:36:46.224580Z
+94a90c53708b44e15dd049120a42c7cf
+2010-09-28T14:53:41.959903Z
+1382
+rvos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4289
 

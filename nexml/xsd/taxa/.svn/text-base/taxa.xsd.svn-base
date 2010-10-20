@@ -13,6 +13,7 @@
         </xs:documentation>
     </xs:annotation>
     <xs:include schemaLocation="../abstract.xsd"/>
+    <xs:include schemaLocation="../meta/sets.xsd"/>
     <!-- 
         The following type definitions build up a taxa block  
     -->
@@ -27,13 +28,14 @@
 
     <!-- Otus data type -->
     <xs:complexType name="Taxa">
-        <xs:complexContent mixed="true">
+        <xs:complexContent mixed="false">
             <xs:extension base="IDTagged">
                 <xs:sequence>
                     <xs:element name="otu" type="Taxon" minOccurs="0" maxOccurs="unbounded"/>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
+                    <xs:element name="set" type="TaxonSet" minOccurs="0" maxOccurs="unbounded"/>
+                </xs:sequence>                
+            </xs:extension>            
+        </xs:complexContent>        
     </xs:complexType>
 
 </xs:schema>

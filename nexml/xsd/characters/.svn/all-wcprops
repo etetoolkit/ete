@@ -1,31 +1,31 @@
 K 25
 svn:wc:ra_dav:version-url
 V 55
-/svnroot/nexml/!svn/ver/1299/trunk/nexml/xsd/characters
+/svnroot/nexml/!svn/ver/1381/trunk/nexml/xsd/characters
 END
 dna.xsd
 K 25
 svn:wc:ra_dav:version-url
 V 63
-/svnroot/nexml/!svn/ver/1298/trunk/nexml/xsd/characters/dna.xsd
+/svnroot/nexml/!svn/ver/1381/trunk/nexml/xsd/characters/dna.xsd
 END
 abstractcharacters.xsd
 K 25
 svn:wc:ra_dav:version-url
 V 78
-/svnroot/nexml/!svn/ver/1299/trunk/nexml/xsd/characters/abstractcharacters.xsd
+/svnroot/nexml/!svn/ver/1381/trunk/nexml/xsd/characters/abstractcharacters.xsd
 END
 restriction.xsd
 K 25
 svn:wc:ra_dav:version-url
 V 71
-/svnroot/nexml/!svn/ver/1298/trunk/nexml/xsd/characters/restriction.xsd
+/svnroot/nexml/!svn/ver/1381/trunk/nexml/xsd/characters/restriction.xsd
 END
 continuous.xsd
 K 25
 svn:wc:ra_dav:version-url
 V 70
-/svnroot/nexml/!svn/ver/1298/trunk/nexml/xsd/characters/continuous.xsd
+/svnroot/nexml/!svn/ver/1381/trunk/nexml/xsd/characters/continuous.xsd
 END
 README.txt
 K 25
@@ -37,23 +37,23 @@ characters.xsd
 K 25
 svn:wc:ra_dav:version-url
 V 70
-/svnroot/nexml/!svn/ver/1298/trunk/nexml/xsd/characters/characters.xsd
+/svnroot/nexml/!svn/ver/1366/trunk/nexml/xsd/characters/characters.xsd
 END
 protein.xsd
 K 25
 svn:wc:ra_dav:version-url
 V 67
-/svnroot/nexml/!svn/ver/1298/trunk/nexml/xsd/characters/protein.xsd
+/svnroot/nexml/!svn/ver/1381/trunk/nexml/xsd/characters/protein.xsd
 END
 rna.xsd
 K 25
 svn:wc:ra_dav:version-url
 V 63
-/svnroot/nexml/!svn/ver/1298/trunk/nexml/xsd/characters/rna.xsd
+/svnroot/nexml/!svn/ver/1381/trunk/nexml/xsd/characters/rna.xsd
 END
 standard.xsd
 K 25
 svn:wc:ra_dav:version-url
 V 68
-/svnroot/nexml/!svn/ver/1298/trunk/nexml/xsd/characters/standard.xsd
+/svnroot/nexml/!svn/ver/1381/trunk/nexml/xsd/characters/standard.xsd
 END

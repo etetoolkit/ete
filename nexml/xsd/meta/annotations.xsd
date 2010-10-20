@@ -19,7 +19,7 @@
 	<xs:import namespace="http://www.w3.org/1999/xhtml/datatypes/"
 		schemaLocation="../external/xhtml-datatypes-1.xsd"/>
 
-	<xs:complexType name="Base" abstract="true">
+	<xs:complexType name="Base" abstract="true" mixed="false">
 		<xs:annotation>
 			<xs:documentation>
 				The base type for all complexType definitions in the
@@ -41,16 +41,14 @@
 					</li>
 					<li>xml:space - for whitespace handling</li>
 					<li>xlink:href - for links</li>
-					<li>class - for class membership</li>
 				</ul>
 				Also see http://www.w3.org/2001/xml.xsd for more
 				information on the xml and xlink attributes.
 			</xs:documentation>
 		</xs:annotation>
 		<xs:sequence/>
-		<!-- <xs:attributeGroup ref="xml:specialAttrs" /> -->
-		<xs:attribute name="class" type="xs:IDREFS" use="optional"/>
-		<xs:attribute name="id" type="xs:ID" use="optional"/>
+		<!-- <xs:attributeGroup ref="xml:specialAttrs" /> -->		
+		<!--xs:attribute name="id" type="xs:ID" use="optional"/-->
 		<xs:anyAttribute namespace="##any" processContents="skip"/>
 	</xs:complexType>
 

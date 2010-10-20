@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema 
-    xmlns:xs="http://www.w3.org/2001/XMLSchema" 
-    targetNamespace="http://www.nexml.org/2009"
-    xmlns="http://www.nexml.org/2009" 
-    xmlns:sawsdl="http://www.w3.org/ns/sawsdl" 
-    xmlns:xml="http://www.w3.org/XML/1998/namespace"
-    elementFormDefault="qualified">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.nexml.org/2009"
+    xmlns="http://www.nexml.org/2009" xmlns:sawsdl="http://www.w3.org/ns/sawsdl"
+    xmlns:xml="http://www.w3.org/XML/1998/namespace" elementFormDefault="qualified">
     <xs:annotation>
         <xs:documentation>
             This module defines concrete subclasses for the 
@@ -15,37 +11,37 @@
             length or width measurements. In a verbose notation, this data
             is represented as the "state" attribute of the &lt;cell&gt; 
             element. In a compact notation, the same data is represented as
-            a sequence of space-separated floating point numbers.
+            a sequence of space-separated doubles.
         </xs:documentation>
     </xs:annotation>
-    
+
     <xs:include schemaLocation="abstractcharacters.xsd"/>
 
-    
+
     <xs:simpleType name="ContinuousToken">
-        <xs:restriction base="xs:float"/>
-    </xs:simpleType>   
-    
-    <xs:complexType name="ContinuousChar" sawsdl:modelReference="http://evolutionaryontology-dev.nescent.org/cdao.owl#ContinuousCharacter">
+        <xs:restriction base="xs:double"/>
+    </xs:simpleType>
+
+    <xs:complexType name="ContinuousChar"
+        sawsdl:modelReference="http://evolutionaryontology-dev.nescent.org/cdao.owl#ContinuousCharacter">
         <xs:annotation>
             <xs:documentation> 
                 A concrete implementation of the char element, which requires
                 only an id attribute.
             </xs:documentation>
-            <xs:appinfo>Continuous_Character</xs:appinfo>
         </xs:annotation>
         <xs:complexContent>
             <xs:restriction base="AbstractChar">
                 <xs:sequence minOccurs="1" maxOccurs="1">
                     <xs:element name="meta" minOccurs="0" maxOccurs="unbounded" type="Meta"/>
-                </xs:sequence>                
+                </xs:sequence>
                 <xs:attribute name="states" type="xs:IDREF" use="prohibited"/>
                 <xs:attribute name="codon" type="CodonPosition" use="prohibited"/>
                 <xs:attribute name="tokens" type="MSTokenLength" use="prohibited"/>
             </xs:restriction>
         </xs:complexContent>
     </xs:complexType>
-    
+
     <xs:complexType name="ContinuousFormat" abstract="false">
         <xs:annotation>
             <xs:documentation> 
@@ -55,19 +51,21 @@
         <xs:complexContent>
             <xs:restriction base="AbstractFormat">
                 <xs:sequence minOccurs="1" maxOccurs="1">
-                    <xs:element name="char" type="ContinuousChar" minOccurs="1" maxOccurs="unbounded"/>
+                    <xs:element name="char" type="ContinuousChar" minOccurs="1"
+                        maxOccurs="unbounded"/>
+                    <xs:element name="set" minOccurs="0" maxOccurs="unbounded" type="CharSet"/>
                 </xs:sequence>
             </xs:restriction>
         </xs:complexContent>
     </xs:complexType>
-    
-    <xs:complexType name="ContinuousObs" abstract="false" sawsdl:modelReference="http://evolutionaryontology-dev.nescent.org/cdao.owl#ContinuousStateDatum">
+
+    <xs:complexType name="ContinuousObs" abstract="false"
+        sawsdl:modelReference="http://evolutionaryontology-dev.nescent.org/cdao.owl#ContinuousStateDatum">
         <xs:annotation>
             <xs:documentation> 
                 This is a single cell in a matrix containing a continuous
                 observation. 
             </xs:documentation>
-            <xs:appinfo>Continuous_State_Datum</xs:appinfo>
         </xs:annotation>
         <xs:complexContent>
             <xs:restriction base="AbstractObs">
@@ -79,18 +77,17 @@
             </xs:restriction>
         </xs:complexContent>
     </xs:complexType>
-    
+
     <xs:simpleType name="ContinuousSeq">
         <xs:annotation>
             <xs:documentation> 
                 This is a simple type that specifies 
-                a list of xs:float characters.
+                a list of xs:double characters.
             </xs:documentation>
         </xs:annotation>
-        <!--<xs:list itemType="xs:float"/>-->
-        <xs:restriction base="AbstractTokenList"/>  
+        <xs:restriction base="AbstractTokenList"/>
     </xs:simpleType>
-    
+
     <xs:complexType name="ContinuousMatrixSeqRow" abstract="false">
         <xs:annotation>
             <xs:documentation> 
@@ -106,7 +103,7 @@
             </xs:restriction>
         </xs:complexContent>
     </xs:complexType>
-    
+
     <xs:complexType name="ContinuousMatrixObsRow" abstract="false">
         <xs:annotation>
             <xs:documentation> 
@@ -117,12 +114,14 @@
             <xs:restriction base="AbstractObsRow">
                 <xs:sequence minOccurs="1" maxOccurs="1">
                     <xs:element name="meta" minOccurs="0" maxOccurs="unbounded" type="Meta"/>
-                    <xs:element name="cell" minOccurs="1" maxOccurs="unbounded" type="ContinuousObs"/>
+                    <xs:element name="cell" minOccurs="1" maxOccurs="unbounded" type="ContinuousObs"
+                    />
+                    <xs:element name="set" minOccurs="0" maxOccurs="unbounded" type="CellSet"/>
                 </xs:sequence>
             </xs:restriction>
         </xs:complexContent>
     </xs:complexType>
-    
+
     <xs:complexType name="ContinuousSeqMatrix" abstract="false">
         <xs:annotation>
             <xs:documentation>
@@ -131,13 +130,15 @@
         </xs:annotation>
         <xs:complexContent>
             <xs:restriction base="AbstractSeqMatrix">
-                <xs:sequence minOccurs="1" maxOccurs="1">                    
-                    <xs:element name="row" minOccurs="1" maxOccurs="unbounded" type="ContinuousMatrixSeqRow"/>
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="row" minOccurs="1" maxOccurs="unbounded"
+                        type="ContinuousMatrixSeqRow"/>
+                    <xs:element name="set" minOccurs="0" maxOccurs="unbounded" type="RowSet"/>
                 </xs:sequence>
             </xs:restriction>
         </xs:complexContent>
     </xs:complexType>
-    
+
     <xs:complexType name="ContinuousObsMatrix" abstract="false">
         <xs:annotation>
             <xs:documentation>
@@ -147,12 +148,14 @@
         <xs:complexContent>
             <xs:restriction base="AbstractObsMatrix">
                 <xs:sequence minOccurs="1" maxOccurs="1">
-                    <xs:element name="row" minOccurs="1" maxOccurs="unbounded" type="ContinuousMatrixObsRow"/>
+                    <xs:element name="row" minOccurs="1" maxOccurs="unbounded"
+                        type="ContinuousMatrixObsRow"/>
+                    <xs:element name="set" minOccurs="0" maxOccurs="unbounded" type="RowSet"/>
                 </xs:sequence>
             </xs:restriction>
         </xs:complexContent>
     </xs:complexType>
-    
+
     <xs:complexType name="ContinuousSeqs" abstract="false">
         <xs:annotation>
             <xs:documentation>
@@ -164,12 +167,13 @@
                 <xs:sequence minOccurs="1" maxOccurs="1">
                     <xs:element name="meta" minOccurs="0" maxOccurs="unbounded" type="Meta"/>
                     <xs:element name="format" minOccurs="1" maxOccurs="1" type="ContinuousFormat"/>
-                    <xs:element name="matrix" minOccurs="1" maxOccurs="1" type="ContinuousSeqMatrix"/>
+                    <xs:element name="matrix" minOccurs="1" maxOccurs="1" type="ContinuousSeqMatrix"
+                    />
                 </xs:sequence>
             </xs:restriction>
         </xs:complexContent>
     </xs:complexType>
-    
+
     <xs:complexType name="ContinuousCells" abstract="false">
         <xs:annotation>
             <xs:documentation>
@@ -181,10 +185,11 @@
                 <xs:sequence minOccurs="1" maxOccurs="1">
                     <xs:element name="meta" minOccurs="0" maxOccurs="unbounded" type="Meta"/>
                     <xs:element name="format" minOccurs="1" maxOccurs="1" type="ContinuousFormat"/>
-                    <xs:element name="matrix" minOccurs="1" maxOccurs="1" type="ContinuousObsMatrix"/>                   
+                    <xs:element name="matrix" minOccurs="1" maxOccurs="1" type="ContinuousObsMatrix"
+                    />
                 </xs:sequence>
             </xs:restriction>
         </xs:complexContent>
     </xs:complexType>
-    
+
 </xs:schema>

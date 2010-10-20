@@ -25,14 +25,14 @@
     </xs:annotation>
 
     <!-- an element that can be annotated with RDFa-compliant metadata -->
-    <xs:complexType name="Annotated" abstract="true">
+    <xs:complexType name="Annotated" abstract="true" mixed="false">
         <xs:annotation>
             <xs:documentation>
                   The Annotated complexType is a super class for objects that 
                   optionally have metadata annotations of type Meta.
               </xs:documentation>
         </xs:annotation>
-        <xs:complexContent mixed="true">
+        <xs:complexContent mixed="false">
             <xs:extension base="Base">
                 <xs:sequence>
                     <xs:element name="meta" type="Meta" minOccurs="0" maxOccurs="unbounded"/>
@@ -51,7 +51,7 @@
                 name of type xs:string.
             </xs:documentation>
         </xs:annotation>
-        <xs:complexContent mixed="true">
+        <xs:complexContent mixed="false">
             <xs:extension base="Annotated">
                 <xs:attribute name="label" type="xs:string" use="optional"/>
             </xs:extension>
@@ -59,36 +59,17 @@
     </xs:complexType>
 
     <!-- any element that requires an ID -->
-    <xs:complexType name="IDTagged" abstract="true">
+    <xs:complexType name="IDTagged" abstract="true" mixed="false">
         <xs:annotation>
             <xs:documentation>
                 The IDTagged complexType is a super class for objects that require
                 unique id attributes of type xs:ID. The id must be unique within the XML document.
             </xs:documentation>
         </xs:annotation>
-        <xs:complexContent mixed="true">
+        <xs:complexContent mixed="false">
             <xs:extension base="Labelled">
                 <xs:sequence/>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <!-- elements that enclose "class" elements -->
-    <xs:complexType name="Segmented" abstract="true" mixed="true">
-        <xs:annotation>
-            <xs:documentation>
-                The Segmented complexType is for elements that contain multiple child 
-                elements of the same type, e.g. multiple cells in a row, multiple nodes
-                in a tree, etc. Segmented elements can hold one or more elements of type
-                Class, such that the segments can refer to the ID of the class they belong
-                to.
-            </xs:documentation>
-        </xs:annotation>
-        <xs:complexContent mixed="true">
-            <xs:extension base="IDTagged">
-                <xs:sequence>
-                    <xs:element name="class" type="Class" minOccurs="0" maxOccurs="unbounded"/>
-                </xs:sequence>
+                <xs:attribute name="id" type="xs:ID" use="required"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
@@ -101,7 +82,7 @@
                 require a taxon id reference.
             </xs:documentation>
         </xs:annotation>
-        <xs:complexContent mixed="true">
+        <xs:complexContent mixed="false">
             <xs:extension base="IDTagged">
                 <xs:attribute name="otu" type="xs:IDREF" use="required"/>
             </xs:extension>
@@ -135,24 +116,6 @@
             <xs:extension base="IDTagged">
                 <xs:attribute name="otus" type="xs:IDREF" use="required"/>
             </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <!-- class element -->
-    <xs:complexType name="Class" abstract="false">
-        <xs:annotation>
-            <xs:documentation>
-                Elements of the Class complexType are elements with an ID to which
-                other elements refer using the "class" attribute. The purpose of this 
-                to allow creation of sets, but rather than having a set specify its
-                members (such as character sets in nexus), in nexml the members specify
-                which class(es) they belong to. This is more idiomatic for xml, consider
-                for example the "class" attribute in (X)HTML which works the same way,
-                and is used for example for cascading style sheets.
-            </xs:documentation>
-        </xs:annotation>
-        <xs:complexContent>
-            <xs:extension base="IDTagged"/>
         </xs:complexContent>
     </xs:complexType>
 

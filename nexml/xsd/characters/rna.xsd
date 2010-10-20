@@ -1,13 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema 
-	xmlns:xs="http://www.w3.org/2001/XMLSchema" 
-	targetNamespace="http://www.nexml.org/2009"
-    xmlns="http://www.nexml.org/2009"
-    xmlns:sawsdl="http://www.w3.org/ns/sawsdl"
-    xmlns:xml="http://www.w3.org/XML/1998/namespace"
-    elementFormDefault="qualified">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.nexml.org/2009"
+    xmlns="http://www.nexml.org/2009" xmlns:sawsdl="http://www.w3.org/ns/sawsdl"
+    xmlns:xml="http://www.w3.org/XML/1998/namespace" elementFormDefault="qualified">
     <xs:include schemaLocation="abstractcharacters.xsd"/>
-    
+    <xs:include schemaLocation="../meta/sets.xsd"/>
+
     <!--
     <xs:import namespace="http://www.w3.org/XML/1998/namespace"
         schemaLocation="http://www.w3.org/2001/xml.xsd"/>-->
@@ -17,12 +14,11 @@
             <a href="../abstract">abstract</a> character matrix components 
             that all character matrices must implement. The subclasses
             defined here apply to RNA character data. In a verbose notation, 
-            this data is represented as the "state" attribute of the &lt;cell&gt; 
-            element, whose value-space is limited to the IUPAC single character
-            nucleotide symbols (except T). In a compact notation, the same data 
+            this data is represented as the "state" attribute which references
+            an explicit state definition. In a compact notation, the same data 
             is represented as a sequence of tokens (whitespace is allowed but has no meaning).
         </xs:documentation>
-    </xs:annotation>     
+    </xs:annotation>
     <xs:simpleType name="RNAToken">
         <xs:annotation>
             <xs:documentation>
@@ -35,34 +31,30 @@
             <xs:length value="1"/>
         </xs:restriction>
     </xs:simpleType>
-    <!--
-        
-        The following types would be used if we explicitly defined ambiguity mappings,
-        allowed states, etc. But we don't, because we use the IUPAC symbols anyway. 
-     -->
+
     <xs:complexType name="RNAMapping">
-    	<xs:annotation>
-    		<xs:documentation>
-    			An IUPAC ambiguity mapping.
+        <xs:annotation>
+            <xs:documentation>
+    			An IUPAC RNA ambiguity mapping.
     		</xs:documentation>
-    	</xs:annotation>
-    	<xs:complexContent>
-    		<xs:restriction base="AbstractMapping" />
-    	</xs:complexContent>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:restriction base="AbstractMapping"/>
+        </xs:complexContent>
     </xs:complexType>
 
     <xs:complexType name="RNAState">
         <xs:annotation>
             <xs:documentation> 
                 This is a concrete implementation of the state element, which requires
-                a symbol element, in this case restricted to RNAToken, i.e. a single IUPAC nucleotide
+                a symbol attribute, in this case restricted to RNAToken, i.e. a single IUPAC nucleotide
                 symbol, and optional mapping elements to refer to other states.
             </xs:documentation>
         </xs:annotation>
         <xs:complexContent>
             <xs:restriction base="AbstractState">
                 <xs:sequence minOccurs="1" maxOccurs="1"/>
-                <xs:attribute name="symbol" type="RNAToken" use="required"></xs:attribute>                
+                <xs:attribute name="symbol" type="RNAToken" use="required"/>
             </xs:restriction>
         </xs:complexContent>
     </xs:complexType>
@@ -70,42 +62,38 @@
     <xs:complexType name="RNAUncertainStateSet">
         <xs:annotation>
             <xs:documentation> 
-                The AbstractState type is the superclass for a state definition.
-                The element encloses a required AbstractSymbol element that in restricted concrete
-                subclasses must be of a sensible type such as a single IUPAC character. It may
-                enclose zero or more AbstractMapping elements to resolve ambiguities.
+                The RNAUncertainStateSet describes a single uncertain IUPAC ambiguity mapping.
             </xs:documentation>
         </xs:annotation>
         <xs:complexContent>
             <xs:restriction base="AbstractUncertainStateSet">
                 <xs:sequence minOccurs="1" maxOccurs="1">
-                    <xs:element name="member" type="RNAMapping" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element name="member" type="RNAMapping" minOccurs="0" maxOccurs="unbounded"
+                    />
                 </xs:sequence>
-                <xs:attribute name="symbol" type="RNAToken" use="required"></xs:attribute>                
+                <xs:attribute name="symbol" type="RNAToken" use="required"/>
             </xs:restriction>
         </xs:complexContent>
-    </xs:complexType> 
+    </xs:complexType>
 
-   <xs:complexType name="RNAPolymorphicStateSet">
+    <xs:complexType name="RNAPolymorphicStateSet">
         <xs:annotation>
             <xs:documentation> 
-                The AbstractState type is the superclass for a state definition.
-                The element encloses a required AbstractSymbol element that in restricted concrete
-                subclasses must be of a sensible type such as a single IUPAC character. It may
-                enclose zero or more AbstractMapping elements to resolve ambiguities.
+                The RNAPolymorphicStateSet describes a single polymorphic IUPAC ambiguity mapping.                
             </xs:documentation>
         </xs:annotation>
         <xs:complexContent>
             <xs:restriction base="AbstractPolymorphicStateSet">
                 <xs:sequence minOccurs="1" maxOccurs="1">
                     <xs:element name="member" type="RNAMapping" minOccurs="0" maxOccurs="unbounded"/>
-                    <xs:element name="uncertain_state_set" type="RNAUncertainStateSet" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element name="uncertain_state_set" type="RNAUncertainStateSet" minOccurs="0"
+                        maxOccurs="unbounded"/>
                 </xs:sequence>
-                <xs:attribute name="symbol" type="RNAToken" use="required"></xs:attribute>                
+                <xs:attribute name="symbol" type="RNAToken" use="required"/>
             </xs:restriction>
         </xs:complexContent>
-    </xs:complexType> 
-        
+    </xs:complexType>
+
     <xs:complexType name="RNAStates">
         <xs:annotation>
             <xs:documentation>
@@ -117,35 +105,36 @@
                 <xs:sequence minOccurs="1" maxOccurs="1">
                     <xs:element name="meta" minOccurs="0" maxOccurs="unbounded" type="Meta"/>
                     <xs:element name="state" type="RNAState" minOccurs="0" maxOccurs="unbounded"/>
-                    <xs:element name="polymorphic_state_set" type="RNAPolymorphicStateSet" minOccurs="0" maxOccurs="unbounded"/>
-                    <xs:element name="uncertain_state_set" type="RNAUncertainStateSet" minOccurs="0" maxOccurs="unbounded"/>                    
+                    <xs:element name="polymorphic_state_set" type="RNAPolymorphicStateSet"
+                        minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element name="uncertain_state_set" type="RNAUncertainStateSet" minOccurs="0"
+                        maxOccurs="unbounded"/>
+                    <xs:element name="set" type="StateSet" minOccurs="0" maxOccurs="unbounded"/>
                 </xs:sequence>
             </xs:restriction>
-        </xs:complexContent>        
+        </xs:complexContent>
     </xs:complexType>
-    
-    <xs:complexType name="RNAChar" sawsdl:modelReference="http://evolutionaryontology-dev.nescent.org/cdao.owl#RNAResidueCharacter">
+
+    <xs:complexType name="RNAChar"
+        sawsdl:modelReference="http://evolutionaryontology-dev.nescent.org/cdao.owl#RNAResidueCharacter">
         <xs:annotation>
             <xs:documentation> 
-                A concrete implementation of the AbstractChar element. In this implementation
-                there is no reference to explicitly defined states, as we use the IUPAC standard.
-                There may be a CodonPosition ("codon") attribute, and there must be an identifier
-                ("id") that is of type xs:nonNegativeInteger to define the column number.
+                A concrete implementation of the AbstractChar element, i.e. a single column in an alignment.
             </xs:documentation>
         </xs:annotation>
         <xs:complexContent>
             <xs:restriction base="AbstractChar">
                 <xs:sequence minOccurs="1" maxOccurs="1">
                     <xs:element name="meta" minOccurs="0" maxOccurs="unbounded" type="Meta"/>
-                </xs:sequence>       
-                <xs:attribute name="tokens" type="MSTokenLength" use="prohibited"/>                         
+                </xs:sequence>
+                <xs:attribute name="tokens" type="MSTokenLength" use="prohibited"/>
                 <xs:attribute name="states" type="xs:IDREF" use="required"/>
                 <xs:attribute name="codon" type="CodonPosition" use="optional"/>
                 <xs:attribute name="id" type="xs:ID" use="required"/>
             </xs:restriction>
         </xs:complexContent>
     </xs:complexType>
-    
+
     <xs:complexType name="RNAFormat" abstract="false">
         <xs:annotation>
             <xs:documentation> The RNAFormat class is the container of RNA column definitions.
@@ -156,14 +145,16 @@
                 <xs:sequence minOccurs="1" maxOccurs="1">
                     <xs:element name="states" type="RNAStates" minOccurs="1" maxOccurs="unbounded"/>
                     <xs:element name="char" type="RNAChar" minOccurs="1" maxOccurs="unbounded"/>
+                    <xs:element name="set" minOccurs="0" maxOccurs="unbounded" type="CharSet"/>
                 </xs:sequence>
             </xs:restriction>
         </xs:complexContent>
     </xs:complexType>
-    
-    <xs:complexType name="RNAObs" abstract="false" sawsdl:modelReference="http://evolutionaryontology-dev.nescent.org/cdao.owl#RNAResidueStateDatum">
+
+    <xs:complexType name="RNAObs" abstract="false"
+        sawsdl:modelReference="http://evolutionaryontology-dev.nescent.org/cdao.owl#RNAResidueStateDatum">
         <xs:annotation>
-            <xs:documentation> This is a single cell in a matrix containing a nucleotide
+            <xs:documentation> This is a single cell in a matrix containing an RNA nucleotide
                 observation. </xs:documentation>
         </xs:annotation>
         <xs:complexContent>
@@ -176,7 +167,7 @@
             </xs:restriction>
         </xs:complexContent>
     </xs:complexType>
-    
+
     <xs:simpleType name="RNASeq">
         <xs:annotation>
             <xs:documentation> This is a simple type that specifies a sequence of RNA characters,
@@ -187,7 +178,7 @@
             <xs:pattern value="[\-\?ABCDGHKMNRSUVWXY\s]*"/>
         </xs:restriction>
     </xs:simpleType>
-    
+
     <xs:complexType name="RNAMatrixSeqRow" abstract="false">
         <xs:annotation>
             <xs:documentation> This is a row in a matrix of RNA data containing raw sequence data. </xs:documentation>
@@ -201,7 +192,7 @@
             </xs:restriction>
         </xs:complexContent>
     </xs:complexType>
-    
+
     <xs:complexType name="RNAMatrixObsRow" abstract="false">
         <xs:annotation>
             <xs:documentation> This is a row in a matrix of RNA data containing granular observations. </xs:documentation>
@@ -211,11 +202,12 @@
                 <xs:sequence minOccurs="1" maxOccurs="1">
                     <xs:element name="meta" minOccurs="0" maxOccurs="unbounded" type="Meta"/>
                     <xs:element name="cell" minOccurs="1" maxOccurs="unbounded" type="RNAObs"/>
+                    <xs:element name="set" minOccurs="0" maxOccurs="unbounded" type="CellSet"/>
                 </xs:sequence>
             </xs:restriction>
         </xs:complexContent>
     </xs:complexType>
-    
+
     <xs:complexType name="RNASeqMatrix" abstract="false">
         <xs:annotation>
             <xs:documentation>
@@ -224,13 +216,15 @@
         </xs:annotation>
         <xs:complexContent>
             <xs:restriction base="AbstractSeqMatrix">
-                <xs:sequence minOccurs="1" maxOccurs="1">                    
-                    <xs:element name="row" minOccurs="1" maxOccurs="unbounded" type="RNAMatrixSeqRow"/>
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element name="row" minOccurs="1" maxOccurs="unbounded"
+                        type="RNAMatrixSeqRow"/>
+                    <xs:element name="set" minOccurs="0" maxOccurs="unbounded" type="RowSet"/>
                 </xs:sequence>
             </xs:restriction>
         </xs:complexContent>
     </xs:complexType>
-    
+
     <xs:complexType name="RNAObsMatrix" abstract="false">
         <xs:annotation>
             <xs:documentation>
@@ -240,12 +234,14 @@
         <xs:complexContent>
             <xs:restriction base="AbstractObsMatrix">
                 <xs:sequence minOccurs="1" maxOccurs="1">
-                    <xs:element name="row" minOccurs="1" maxOccurs="unbounded" type="RNAMatrixObsRow"/>
+                    <xs:element name="row" minOccurs="1" maxOccurs="unbounded"
+                        type="RNAMatrixObsRow"/>
+                    <xs:element name="set" minOccurs="0" maxOccurs="unbounded" type="RowSet"/>
                 </xs:sequence>
             </xs:restriction>
         </xs:complexContent>
     </xs:complexType>
-    
+
     <xs:complexType name="RnaSeqs" abstract="false">
         <xs:annotation>
             <xs:documentation>
@@ -262,7 +258,7 @@
             </xs:restriction>
         </xs:complexContent>
     </xs:complexType>
-    
+
     <xs:complexType name="RnaCells" abstract="false">
         <xs:annotation>
             <xs:documentation>
@@ -274,10 +270,10 @@
                 <xs:sequence minOccurs="1" maxOccurs="1">
                     <xs:element name="meta" minOccurs="0" maxOccurs="unbounded" type="Meta"/>
                     <xs:element name="format" minOccurs="0" maxOccurs="1" type="RNAFormat"/>
-                    <xs:element name="matrix" minOccurs="1" maxOccurs="1" type="RNAObsMatrix"/>                   
+                    <xs:element name="matrix" minOccurs="1" maxOccurs="1" type="RNAObsMatrix"/>
                 </xs:sequence>
             </xs:restriction>
         </xs:complexContent>
     </xs:complexType>
-    
+
 </xs:schema>

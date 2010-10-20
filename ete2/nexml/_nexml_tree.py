@@ -1,6 +1,4 @@
 import sys
-
-import _nexml as supermod
 from _nexml import MixedContainer, AbstractTree, AbstractNode, AbstractEdge, LiteralMeta
 
 from ete2 import PhyloTree
@@ -15,7 +13,11 @@ class NexMLTree(PhyloTree):
         self.nexml_tree = nexml_tree
         self.nexml_node = nexml_node
         self.nexml_edge = nexml_edge
+        self.nexml_project = None
 
+    def set_nexml_project(self, nexml_obj):
+        self.nexml_project = nexml_obj
+        
     def build(self, node):
         self.nexml_tree = AbstractTree()
         tree = self.nexml_tree
@@ -76,7 +78,5 @@ class NexMLTree(PhyloTree):
         for item_ in self.tree.content_:
             item_.export(outfile, level, item_.name, namespace_)
 
-
-supermod.AbstractTree.subclass = NexMLTree
 # end class AbstractTreeSub
 

@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema 
-    xmlns:xs="http://www.w3.org/2001/XMLSchema"
-    targetNamespace="http://www.nexml.org/2009"
-    xmlns="http://www.nexml.org/2009"
-    elementFormDefault="qualified">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.nexml.org/2009"
+    xmlns="http://www.nexml.org/2009" elementFormDefault="qualified">
     <xs:annotation>
         <xs:documentation>
             This module defines the components of networks, graphs 
@@ -11,13 +8,13 @@
             types defined in this module are concrete implementations
             that inherit from the abstract types in the <a href="../abstract">
                 abstract trees module
-            </a>. <br /><br /> 
+            </a>. <br/><br/> 
             Depending on the concrete subclass, edges in networks either
             have lengths formatted as integers or lengths formatted as
             floating point numbers.
         </xs:documentation>
     </xs:annotation>
-    
+
     <xs:include schemaLocation="abstracttrees.xsd"/>
 
     <xs:complexType name="NetworkNode" abstract="false">
@@ -56,11 +53,11 @@
             <xs:restriction base="AbstractEdge">
                 <xs:sequence minOccurs="1" maxOccurs="1">
                     <xs:element name="meta" type="Meta" minOccurs="0" maxOccurs="unbounded"/>
-                </xs:sequence>                
-                <xs:attribute name="length" type="xs:float"/>
-            </xs:restriction>            
+                </xs:sequence>
+                <xs:attribute name="length" type="xs:double"/>
+            </xs:restriction>
         </xs:complexContent>
-    </xs:complexType>     
+    </xs:complexType>
 
     <xs:complexType name="NetworkIntEdge" abstract="false">
         <xs:annotation>
@@ -72,12 +69,12 @@
             <xs:restriction base="AbstractEdge">
                 <xs:sequence minOccurs="1" maxOccurs="1">
                     <xs:element name="meta" type="Meta" minOccurs="0" maxOccurs="unbounded"/>
-                </xs:sequence>                   
+                </xs:sequence>
                 <xs:attribute name="length" type="xs:integer"/>
-            </xs:restriction>            
+            </xs:restriction>
         </xs:complexContent>
-    </xs:complexType>         
-            
+    </xs:complexType>
+
     <xs:complexType name="FloatNetwork" abstract="false">
         <xs:annotation>
             <xs:documentation>
@@ -88,12 +85,14 @@
             <xs:restriction base="AbstractNetwork">
                 <xs:sequence minOccurs="1" maxOccurs="1">
                     <xs:element minOccurs="1" maxOccurs="unbounded" name="node" type="NetworkNode"/>
-                    <xs:element minOccurs="1" maxOccurs="unbounded" name="edge" type="NetworkFloatEdge"/>
+                    <xs:element minOccurs="1" maxOccurs="unbounded" name="edge"
+                        type="NetworkFloatEdge"/>
+                    <xs:element name="set" minOccurs="0" maxOccurs="unbounded" type="NodeAndRootEdgeAndEdgeSet"/>
                 </xs:sequence>
             </xs:restriction>
         </xs:complexContent>
-    </xs:complexType>   
-    
+    </xs:complexType>
+
     <xs:complexType name="IntNetwork" abstract="false">
         <xs:annotation>
             <xs:documentation>
@@ -104,10 +103,12 @@
             <xs:restriction base="AbstractNetwork">
                 <xs:sequence minOccurs="1" maxOccurs="1">
                     <xs:element minOccurs="1" maxOccurs="unbounded" name="node" type="NetworkNode"/>
-                    <xs:element minOccurs="1" maxOccurs="unbounded" name="edge" type="NetworkIntEdge"/>
+                    <xs:element minOccurs="1" maxOccurs="unbounded" name="edge"
+                        type="NetworkIntEdge"/>
+                    <xs:element name="set" minOccurs="0" maxOccurs="unbounded" type="NodeAndRootEdgeAndEdgeSet"/>
                 </xs:sequence>
             </xs:restriction>
         </xs:complexContent>
-    </xs:complexType>             
+    </xs:complexType>
 
 </xs:schema>
