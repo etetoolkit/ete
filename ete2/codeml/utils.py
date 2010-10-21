@@ -6,7 +6,7 @@
 import os, re
 import errno
 from hashlib import md5
-
+from ete_dev import Tree
 
 def mkdir_p(path):
     '''
@@ -18,6 +18,34 @@ def mkdir_p(path):
         if exc.errno == errno.EEXIST:
             pass
         else: raise
+
+def get_rooting(tol, seed_species, agename = False):
+    '''
+    returns dict of species age for a given TOL and a given seed
+    '''
+    tol = Tree (tol)
+    try:
+        node = tol.search_nodes (name=seed_species)[0]
+    except IndexError:
+        sys.exit ('ERROR: Seed species not found in tree\n')
+    age = 1
+    ROOTING = {}
+    if agename:
+        age2name = {}
+    while not node.is_root():
+        node = node.up
+        for leaf in node.get_leaf_names():
+            if agename:
+                if node.name == 'NoName':
+                    nam = '. '.join (node.get_leaf_names())
+                else:
+                    nam = node.name
+                age2name.setdefault (age, nam)
+            ROOTING.setdefault (leaf, age)
+        age += 1
+    if agename:
+        return ROOTING, age2name
+    return ROOTING
 
 
 def colorize_rst(vals, winner, classes,col=None):

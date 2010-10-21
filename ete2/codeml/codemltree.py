@@ -80,7 +80,8 @@ class CodemlNode(PhyloNode):
         WARNING: sorted names in same order that sequence
         '''
         paml_id = 1
-        for leaf in sorted (self, key=lambda x: x.name):
+        ## for leaf in sorted (self, key=lambda x: x.name):
+        for leaf in self:
             leaf.add_feature ('paml_id', paml_id)
             paml_id += 1
         self.add_feature ('paml_id', paml_id)
@@ -105,7 +106,7 @@ class CodemlNode(PhyloNode):
         '''
         same function as for phyloTree, but translate sequences if nucleotides
         '''
-        super(CodemlTree, self).link_to_alignment(alignment, alg_format="fasta")
+        super(CodemlTree, self).link_to_alignment(alignment, alg_format=alg_format)
         for leaf in self.iter_leaves():
             leaf.nt_sequence = str(leaf.sequence)
             if nucleotides:
@@ -189,7 +190,8 @@ class CodemlNode(PhyloNode):
             seqs = []
             nams = []
             try:
-                for leaf in sorted (self, key=lambda x: x.name):
+                ## for leaf in sorted (self, key=lambda x: x.name):
+                for leaf in self:
                     nams.append(leaf.name)
                     seqs.append(leaf.nt_sequence)
             except AttributeError:

@@ -524,9 +524,9 @@ class ErrorLineProtamineFace (faces.Face):
         if self.extras  != ['']:
             self.height -= 10
         customPen = QtGui.QPen (QtGui.QColor("red"), 1)
-        hz_line = QtGui.QGraphicsLineItem (self._QtItem_)
-        hz_line.setPen  (customPen)
-        hz_line.setLine (y-20,x+20,y,x+200)
+        #hz_line = QtGui.QGraphicsLineItem (self._QtItem_)
+        #hz_line.setPen  (customPen)
+        #hz_line.setLine (y-20,x+20,y,x+200)
         #hz_line.setLine (0,0,100,30)
         customPen = QtGui.QPen(QtGui.QColor("black"), 1)        
         p.setPen(customPen)
