@@ -76,8 +76,9 @@ class CodemlNode(PhyloNode):
 
     def _label_as_paml (self):
         '''
-        to label tree as paml
+        to label tree as paml, nearly walking man over the tree algorithm
         WARNING: sorted names in same order that sequence
+        WARNING: depends on tree topology conformation, not the same after a swap
         '''
         paml_id = 1
         ## for leaf in sorted (self, key=lambda x: x.name):
@@ -85,21 +86,19 @@ class CodemlNode(PhyloNode):
             leaf.add_feature ('paml_id', paml_id)
             paml_id += 1
         self.add_feature ('paml_id', paml_id)
-        # left members
-        for node in self.get_descendants()[::2]:
-            if hasattr (node, 'paml_id'):
-                if node.is_leaf() and not node.get_sisters()[0].is_leaf():
-                    paml_id += 1
-                    node.get_sisters()[0].add_feature ('paml_id', paml_id)
-                continue
-            paml_id += 1
-            node.add_feature ('paml_id', paml_id)
-        # right members
-        for node in self.get_descendants()[1::2]:
-            if hasattr (node, 'paml_id'):
-                continue
-            paml_id += 1
-            node.add_feature ('paml_id', paml_id)
+        node = self
+        while True:
+            node = node.get_children()[0]
+            if node.is_leaf():
+                node = node.up
+                while hasattr (node.get_children()[1], 'paml_id'):
+                    node = node.up
+                    if not node: break
+                if not node: break
+                node = node.get_children()[1]
+            if not hasattr (node, 'paml_id'):
+                paml_id += 1
+                node.add_feature ('paml_id', paml_id)
     
     def link_to_alignment (self, alignment, alg_format="fasta",
                           nucleotides=True):
