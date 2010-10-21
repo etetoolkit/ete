@@ -173,8 +173,12 @@ def parse_paml (pamout, model, codon_freq=True):
             vals = line.split()
             node = model.tree.search_nodes (
                 paml_id=int (vals[0].split('..')[1]))[0]
-            node.SEdN = vals[13] if 'dN' in line else None
-            node.SEdS = vals[18] if 'dS' in line else None
+            node.add_feature ('SEdN',
+                              float (vals[vals.index ('dN') + 4])\
+                              if 'dN' in line else None)
+            node.add_feature ('SEdS',
+                              float (vals[vals.index ('dS') + 4])\
+                              if 'dS' in line else None)
             if not hasattr (model.tree, 'N') and not filter(
                 lambda x: not hasattr(x, 'SEdN'), model.tree.get_descendants()):
                 model.tree.N = vals[2]
