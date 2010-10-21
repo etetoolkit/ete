@@ -81,8 +81,7 @@ class CodemlNode(PhyloNode):
         WARNING: depends on tree topology conformation, not the same after a swap
         '''
         paml_id = 1
-        ## for leaf in sorted (self, key=lambda x: x.name):
-        for leaf in self:
+        for leaf in sorted (self, key=lambda x: x.name):
             leaf.add_feature ('paml_id', paml_id)
             paml_id += 1
         self.add_feature ('paml_id', paml_id)
@@ -189,8 +188,7 @@ class CodemlNode(PhyloNode):
             seqs = []
             nams = []
             try:
-                ## for leaf in sorted (self, key=lambda x: x.name):
-                for leaf in self:
+                for leaf in sorted (self, key=lambda x: x.name):
                     nams.append(leaf.name)
                     seqs.append(leaf.nt_sequence)
             except AttributeError:

@@ -155,12 +155,14 @@ def parse_paml (pamout, model, codon_freq=True):
         elif line.startswith ('dS tree:'):
             dS, dN = True, True
         elif dS == True and line.startswith('(') and line.endswith(');'):
-            paml_ids = re.sub ('[A-Za-z_:\(\),\-;]*', '', re.sub (
-                '\[&&NHX:paml_id=([0-9]+)\]', ' \\1',
-                model.tree.write(features=['paml_id'], format=9))).split()
-            dS = re.sub ('[A-Za-z_:\(\),\-;]*', '', line).split()
+            paml_ids = re.sub (
+                '[\(\)A-Za-z_:\,\-;0-9]*\[&&NHX:paml_id=([0-9]+)\][;]*', ' \\1',
+                model.tree.write(features=['paml_id'], format=9)).split()
+            dS = re.sub ('[A-Za-z0-9_\,\-;\(\)\.]*\: ([0-9]+\.[0-9]+)[\,\);]*',
+                         ' \\1', line).split()
         elif dN == True and line.startswith('(') and line.endswith(');'):
-            dN = re.sub ('[A-Za-z_:\(\),\-;]*', '', line).split()
+            dN = re.sub ('[A-Za-z0-9_\,\-;\(\)\.]*\: ([0-9]+\.[0-9]+)[\,\);]*',
+                         ' \\1', line).split()
             for i in xrange (len (paml_ids)-1):
                 node = model.tree.search_nodes(paml_id=int (paml_ids[i]))[0]
                 node.add_feature ('dN', float (dN[i]))
