@@ -9,11 +9,14 @@ Welcome to Environment for Tree Exploration's documentation!
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
-   hola
-   tutorial 
    tutorial_about
+   tutorial_trees
+   tutorial_drawing
+   tutorial_phylogeny
+   tutorial_clustering
+   tutorial_phylomedb
    tutorial_xml
 
 Indices and tables

@@ -1,10 +1,14 @@
-**************  
-Phylogenetic XML standards
-**************
+.. automodule:: ete2
+   :members:
 
-==============
+
+************************************  
+Phylogenetic XML standards
+************************************
+
+============================
 Description
-==============
+============================
 
 From version 2.1, ETE provides support for NeXML and PhyloXML
 phylogenetic XML standards, both reading and writing. 
@@ -42,12 +46,12 @@ in given XML file will have a python instance that can be used to set
 or read their attributes.
 
 
---------------
+----------------------------
 Reading Nexml projects
---------------
+----------------------------
 
-You can load an external Nexml project by using the **Nexml** base
-class and the **build_from_file()** method. The automatic parser will
+You can load an external Nexml project by using the :class:`Nexml` base
+class and the :func:`build_from_file` method. The automatic parser will
 read the provided XML file and convert all elements into python
 instances, which :will: be hierarchilly connected to the Nexml root
 object.
@@ -74,11 +78,11 @@ object.
    print tree_1
 
 
---------------
+----------------------------
 Creating Nexml projects
---------------
+----------------------------
 
-**Nexml** base class can also be used to create projects from scractch
+:class:`Nexml` base class can also be used to create projects from scractch
 in a programmatic way. Using the collection of NeXML classes provided
 by the **nexml** module, you can populate an empty project and export
 it as XML. 
@@ -93,9 +97,7 @@ it as XML.
 
 
 You can export your project using NeXML format at any time by using
-the **export()** function
-
-
+the :func:`export` function
 
 
 .. figure:: ./reconcilied_tree.png
@@ -107,3 +109,4 @@ PhyloXML
 
 PhyloXML is a novel standard whose design allows to encode many
 phylogenetic data. 
+
