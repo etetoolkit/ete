@@ -23,14 +23,9 @@ You can cite ETE as:
 Jaime Huerta-Cepas, Joaquín Dopazo and Toni Gabaldón. **ETE: a python
 Environment for Tree Exploration.** *BMC Bioinformatics 2010, 11:24.*
 
-=================
+====================
 About this tutorial
-=================
+====================
 
-This document compiles a set of guided examples about general ETE
-usage. It does not aim to cover exhaustively all available ETE's
-methods and parameters, but to illustrate most important aspects of
-each module. A comprehensive reference guide for programmers can also
-be found at [http://ete.cgenomics.org/]. In addition, examples used in
-this tutorial and documentation updates can be downloaded from the
-same web site.
+This document aims to be a comprehensive guide of ETE. Each chapter is
+dedicated to a different ETE module. 

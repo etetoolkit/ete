@@ -11,239 +11,477 @@ down, not up as they do in nature). A node that has a child is called
 the child's parent node (or ancestor node, or superior). A node has at
 most one parent.
 
-The height of a node is the length of the longest downward path to a leaf from
-that node. The height of the root is the height of the tree. The depth of a node
-is the length of the path to its root (i.e., its root path).
+The height of a node is the length of the longest downward path to a
+leaf from that node. The height of the root is the height of the
+tree. The depth of a node is the length of the path to its root (i.e.,
+its root path).
 
-* The topmost node in a tree is called the root node. Being the topmost node,
-  the root node will not have parents. It is the node at which operations on the
-  tree commonly begin (although some algorithms begin with the leaf nodes and work
-  up ending at the root). All other nodes can be reached from it by following
-  edges or links. Every node in a tree can be seen as the root node of the subtree
-  rooted at that node.
+* The topmost node in a tree is called the root node. Being the
+  topmost node, the root node will not have parents. It is the node at
+  which operations on the tree commonly begin (although some
+  algorithms begin with the leaf nodes and work up ending at the
+  root). All other nodes can be reached from it by following edges or
+  links. Every node in a tree can be seen as the root node of the
+  subtree rooted at that node.
 
-* Nodes at the bottommost level of the tree are called leaf nodes. Since they
-  are at the bottommost level, they do not have any children.
+* Nodes at the bottommost level of the tree are called leaf
+  nodes. Since they are at the bottommost level, they do not have any
+  children.
 
 * An internal node or inner node is any node of a tree that has child nodes and
   is thus not a leaf node.
 
-* A subtree is a portion of a tree data structure that can be viewed as a
-  complete tree in itself. Any node in a tree T, together with all the nodes below
-  it, comprise a subtree of T. The subtree corresponding to the root node is the
-  entire tree; the subtree corresponding to any other node is called a proper
-  subtree (in analogy to the term proper subset).
+* A subtree is a portion of a tree data structure that can be viewed
+  as a complete tree in itself. Any node in a tree T, together with
+  all the nodes below it, comprise a subtree of T. The subtree
+  corresponding to the root node is the entire tree; the subtree
+  corresponding to any other node is called a proper subtree (in
+  analogy to the term proper subset).
 
-In bioinformatics, trees are the result of many analyses, such as phylogenetics
-or clustering. Although each case entails specific considerations, many
-properties remains constant among them. The Environment for Tree Exploration is
-a python toolkit that assists in the automated manipulation, analysis and
-visualization of hierarchical trees. Besides general tree handling options, ETEs
-current version provides specific methods to analyze phylogenetic and clustering
-trees. Moreover a programmable tree drawing engine is implemented that can be
-used to automatize the graphical rendering of trees with customized node-
-specific visualizations.
+In bioinformatics, trees are the result of many analyses, such as
+phylogenetics or clustering. Although each case entails specific
+considerations, many properties remains constant among them. In this
+respect, ETE is a python toolkit that assists in the automated
+manipulation, analysis and visualization of any type of hierarchical
+trees. It provides general methods to handle and visualize tree
+topologies, as well as specific modules to deal with phylogenetic and
+clustering trees.
 
-
-Understanding Tree Topology
-===========================
-
-A tree is a succession of TreeNodes connected in a hierarchical way. Therefore,
-the topology of a tree is defined by the connections of its nodes. Each node
-instance has two basic attributes: **node.up** and **node.children**. Up is a
-pointer to the parent's node, while children is the list of nodes hanging for
-the current node instance. Although it is possible to modify the structure of a
-tree by changing these attributes, we strongly recommend not to do it. Several
-methods are provided to manipulate each node's connections in a safe way (see
-:ref:`sec:modifying-tree-topology`). Other three attributes are always present
-in a tree node instance: i) **node.support**, which stores the branch support of
-the partition defined by a given node (i.e. bootstrap value) ii) **node.dist**,
-which stores the branch length/distance from a given node to its parent iii) and
-**node.name**, which stores the node's name. Thus, a tree is internally encoded
-as a succession of node instances connected in a hierarchical way. Given that
-all nodes in a tree are the same type, any node of the tree contains the same
-basic methods and attributes.
-
-When a tree is loaded, a pointer to the top-most node is returned. This is
-called the tree root, and it exists even if the tree is considered as
-theoretically unrooted. The root node can be considered as the master tree node,
-since it represents the whole tree structure. Internal an terminal nodes (all
-hanging from the master node) represent different partitions of the tree, and
-therefore can be used to access or manipulate all the possible sub-trees within
-a general tree structure. Thus, once a tree is loaded, it can be split in
-different subparts that will function as independent trees instances.
-
-In order to evaluate the basic attributes of a node, you can use the following
-methods:** tree.is_leaf(), **returns True if node has no children;
-**tree.is_root()**, returns True if node has no parent; **len(node)**, returns
-the number of terminal nodes (leaves) under a given internal node; and
-**len(node.children)**, returns the number of node's children. Additionally tree
-node instances can be queried or iterated as normal built-in python objects. For
-example, the following operations are allowed i)** [for leaf in node if
-leaf.dist>0.5]** ii)** if leaf in node: print "true" **iii)** print tree**. The
-following example illustrates some basic things we can do with trees:
 
 
 Reading and Writing Newick Trees
 ================================
 
-The Newick format is the standard representation of trees in computer science.
-It uses nested parentheses to represent hierarchical data structures as text
-strings. The original newick standard is able to encode information about the
-tree topology, branch distances and node names. However different variants of
-this format are used by different programs. ETE supports many of these formats
-both for reading and writing operations. Currently, this is the list of
-supported newick formats:
+The Newick format is one of the most widely used standard
+representation of trees in bioinformatics. It uses nested parentheses
+to represent hierarchical data structures as text strings. The
+original newick standard is able to encode information about the tree
+topology, branch distances and node names. Nevertheless, it is not
+uncommon to find slightly different formats using the newick standard.
 
-Formats labeled as** flexible **allow missing information. For instance, format
-0 will be able to load a newick tree even if they not contain branch support
-information (it will be initialized with the default value), however, format 2
-will rise a parsing error. If you want to control that your newick files
-strictly follow a given pattern you should use **strict** format definitions.
+ETE can read and write many of them: 
+
+.. _sub:newick-formats:
+.. table::
+
+  ======  ============================================== ======================================================================================
+  FORMAT  DESCRIPTION                                         SAMPLE
+  ======  ============================================== ======================================================================================
+  0        flexible with support values                    ((D:0.723274,F:0.567784)1.000000:0.067192,(B:0.279326,H:0.756049)1.000000:0.807788);
+  1        flexible with internal node names               ((D:0.723274,F:0.567784)E:0.067192,(B:0.279326,H:0.756049)B:0.807788);
+  2        all branches + leaf names + internal supports   ((D:0.723274,F:0.567784)1.000000:0.067192,(B:0.279326,H:0.756049)1.000000:0.807788);
+  3        all branches + all names                        ((D:0.723274,F:0.567784)E:0.067192,(B:0.279326,H:0.756049)B:0.807788);
+  4        leaf branches + leaf names                      ((D:0.723274,F:0.567784),(B:0.279326,H:0.756049));
+  5        internal and leaf branches + leaf names         ((D:0.723274,F:0.567784):0.067192,(B:0.279326,H:0.756049):0.807788);
+  6        internal branches + leaf names                  ((D,F):0.067192,(B,H):0.807788);
+  7        leaf branches + all names                       ((D:0.723274,F:0.567784)E,(B:0.279326,H:0.756049)B);
+  8        all names                                       ((D,F)E,(B,H)B);
+  9        leaf names                                      ((D,F),(B,H));
+  100      topology only                                   ((,),(,)); 
+  ======  ============================================== ======================================================================================
+
+Formats labeled as *flexible* allow for missing information. For
+instance, format 0 will be able to load a newick tree even if it does
+not contain branch support information (it will be initialized with
+the default value). However, format 2 would raise an exception.  In
+other words, if you want to control that your newick files strictly
+follow a given pattern you should use **strict** format definitions.
+
 
 Reading newick trees
 -----------------------
 
-In order to load a tree from a newick text string you can use the constructor
-**Tree()**,** **provided by the main module **ete2**. You only need to pass a
-text string containing the newick structure and the format that should be used
-to parse it (0 by default). Alternatively, you can pass the path to a text file
+In order to load a tree from a newick text string you can use the
+constructor :class:`Tree`, provided by the main module
+:mod:`ete2`. You will only need to pass a text string containing
+the newick structure and the format that should be used to parse it (0
+by default). Alternatively, you can pass the path to a text file
 containing the newick string.
+
+::
+ 
+  from ete2 import Tree
+   
+  # Loads a tree structure from a newick string. The returned variable ’t’ is the root node for the tree.
+  t = Tree("(A:1,(B:1,(E:1,D:1):0.5):0.5);" )
+   
+  # Load a tree structure from a newick file.
+  t = Tree("genes_tree.nh")
+   
+  # You can also specify the newick format. For instance, for named internal nodes we will use format 1.
+  t = Tree("(A:1,(B:1,(E:1,D:1)Internal_1:0.5)Internal_2:0.5)Root;", format=1)
+
 
 Writing newick trees
 -----------------------
 
-Any ETE tree can be exported to the newick standard. To do it, you must call the
-method **write(),** present in any Tree node instance, and choose the preferred
-format (0 by default). This method will return the text string representing a
-given tree. You can also specify an output file.
+Any ETE tree instance can be exported using newick notation using the
+:func:`tree.write` method, which is available in any tree node
+instance. It also allows for format selection
+(:ref:`sub:newick-format`), so you can use the same function to
+convert between newick formats.
+
+::
+   
+  from ete2 import Tree
+   
+  # Loads a tree with internal node names
+  t = Tree("(A:1,(B:1,(E:1,D:1)Internal_1:0.5)Internal_2:0.5)Root;", format=1)
+   
+  # And prints its newick using the default format
+   
+  print t.write() # (A:1.000000,(B:1.000000,(E:1.000000,D:1.000000)1.000000:0.500000)1.000000:0.500000);
+   
+  # To print the internal node names you need to change the format:
+   
+  print t.write(format=1) # (A:1.000000,(B:1.000000,(E:1.000000,D:1.000000)Internal_1:0.500000)Internal_2:0.500000);
+   
+  # We can also write into a file
+  t.write(format=1, outfile="new_tree.nw")
 
 
-Some Basis on ETE's trees
+Understanding ETE Trees
+===========================
+
+Any tree topology can be represented as a succession of **nodes**
+connected in a hierarchical way. Thus, for practical reasons, ETE
+makes no distinction between tree and node concepts, as any tree can
+be represented by its root node. This allows to use any internal node
+within a tree as another sub-tree instance.
+
+Once trees are loaded, they can be manipulated as normal python
+objects. Given that a tree is actually a collection of nodes connected
+in a hierarchical way, what you usually see as a tree will be the root
+node instance from which the tree structure is hanging. However, every
+node within a ETE's tree structure can be also considered a
+subtree. This means, for example, that all the operational methods
+that we will review in the following sections are available at any
+possible level within a tree. Moreover, this feature will allow you to
+separate large trees into smaller partitions, or concatenate several
+trees into a single structure. For this reason, you will find that the
+:class:`TreeNode` and :class:`Tree` classes are synonymous.
+
+
+Basic tree attributes
 =========================
 
-Once loaded into the Environment for Tree Exploration, trees can be manipulated
-as normal python objects. Given that a tree is actually a collection of nodes
-connected in a hierarchical way, what you usually see as a tree will be the root
-node instance from which the tree structure is hanging. However, every node
-within a ETE's tree structure can be also considered a subtree. This means, for
-example, that all the operational methods that we will review in the following
-sections are available at any possible level within a tree. Moreover, this
-feature will allow you to separate large trees into smaller partitions, or
-concatenate several trees into a single structure.
+Each tree node has two basic attributes used to establish its position
+in the tree: :attr:`node.up` and :attr:`node.children`.  The first is
+a pointer to parent's node, while the later is a list of children
+nodes.  Although it is possible to modify the structure of a tree by
+changing these attributes, it is strongly recommend not to do
+it. Several methods are provided to manipulate each node's connections
+in a safe way (see :ref:`sec:modifying-tree-topology`).
+
+In addition, three other basic attributes are always present in any
+tree node instance:
+
+
+.. table::
+ 
+   ========================   =============================================================================================  ================
+   Method                      Description                                                                                    Default value       
+   ========================   =============================================================================================  ================ 
+     :attr:`node.dist`        stores the distance from the node to its parent (branch length). Default value = 1.0             1.0      
+     :attr:`node.support`     informs about the reliability of the partition defined by the node (i.e. bootstrap support)      1.0    
+     :attr:`node.name`        Custom node's name.                                                                              NoName      
+   ========================   =============================================================================================  ================ 
+
+In addition, several methods are provided to perform basic operations
+on tree node instances:
+
+
+.. table:: 
+
+  =================================  =============================================================================================
+  Method                              Description
+  =================================  =============================================================================================
+    :func:`node.is_leaf`               returns True if *node* has no children 
+    :func:`node.is_root`               returns True if *node* has no parent
+    :func:`node.get_tree_root`         returns the top-most node within the same tree structure as *node*
+    :attr:`len(node)`                  returns the number of leaves under *node*
+    :attr:`print node`                 prints a text-based representation of the tree topology under *node*
+    :attr:`if node in tree`            returns true if *node* is a leaf under *tree*
+    :attr:`for leaf in node`           iterates over all leaves under *node*
+    :func:`node.show`                  Explore node graphically using a GUI.
+  =================================  =============================================================================================
+
+
+This is an example on how to access such attributes:
+
+:: 
+
+  from ete2 import Tree
+  t = Tree()
+  # We create a random tree topology
+  t.populate(15) 
+  print t
+  print t.children
+  print t.get_children()
+  print t.up
+  print t.name
+  print t.dist
+  print t.is_leaf()
+  print t.get_tree_root()
+  print t.children[0].get_tree_root()
+  print t.children[0].children[0].get_tree_root()
+  # You can also iterate over tree leaves using a simple syntax
+  for leaf in t:
+    print leaf.name
+
+
+Root node on unrooted trees?
+------------------------------
+
+When a tree is loaded from external sources, a pointer to the top-most
+node is returned. This is called the tree root, and **it will exist
+even if the tree is conceptually considered as unrooted**. This is,
+the root node can be considered as the master node, since it
+represents the whole tree structure. Unrooted trees can be identified
+as trees in which master root node has more than two children.
+
+::
+
+  from ete2 import Tree
+  unrooted_tree = Tree( "(A,B,(C,D));" )
+  print unrooted_tree
+  #
+  #     /-A      
+  #    |         
+  #----|--B      
+  #    |           
+  #    |     /-C   
+  #     \---|      
+  #          \-D 
+
+  rooted_tree = Tree( "((A,B).(C,D));" )
+  print rooted_tree                     
+  #
+  #          /-A
+  #     /---|
+  #    |     \-B
+  #----|
+  #    |     /-C
+  #     \---|
+  #          \-D
+
+
 
 
 Browsing trees
-==============
+=================
 
-One of the most basic operations related with tree analysis is tree browsing,
-which is, essentially, the task of visiting nodes within a tree. In order to
-facilitate this, ETE provides a number of methods to search for specific nodes
-or to navigate over the hierarchical structure of a tree.
+One of the most basic operations for tree analysis is *tree
+browsing*. This is, essentially, visiting nodes within a tree. ETE
+provides a number of methods to search for specific nodes or to
+navigate over the hierarchical structure of a tree.
 
 
-Getting leaves, Descendants and Node's Relatives
+Getting Leaves, Descendants and Node's Relatives
 ------------------------------------------------
 
-The list of internal or leaf nodes within a given partition can be obtained by
-using the **get_leaves()** and **get_descendants()** methods. The former will
-return the list of terminal nodes (leaves) under a given internal node, while
-**get_descendants()** will return the list of all nodes (terminal and internal)
-under a given tree node. You can iterate over the returned list of nodes or
-filter those meeting certain properties.
+Any tree instance contains several functions to access its
+descendants. This can be done in a single step (**get_** methods) or
+by iteration (**iter_** methods, recommended when trees are very
+large). Available methods are self explanatory:
 
-In addition, other methods are available to find nodes according to their
-hierarchical relationships, namely: **get_sisters() **,** get_children() **and
-**get_common_ancestor()**. Note that get_children returns an independent list of
-children rather than the **node.children** attribute. This allows you to operate
-with such list without affecting the integrity of the tree. The
-**get_common_ancestor()** method is specially useful for finding internal nodes,
-since it allows to search for the first internal node that connects several leaf
+.. table:: Browsing method
+
+  =======================================  ==================================================================================================
+  method                                   Description
+  =======================================  ==================================================================================================
+  :func:`node.iter_descendants`             Iterates over all descendant nodes excluding the root node tree in postorder way 
+  :func:`node.iter_leaves`                  Iterates only over leaf nodes
+  :func:`node.get_descendants`              Returns the list of nodes under tree
+  :func:`node.get_leaves`                   Returns the list leaf nodes under tree
+  :func:`node.get_leaf_names`               Returns the list leaf names under tree
+  :func:`node.get_children`                 Returns the list of first level children nodes of tree
+  :func:`node.get_sisters`                  Returns the list of sister branches/nodes
+  =======================================  ==================================================================================================
+
+
+Finding nodes by their attributes
+------------------------------------
+
+Both terminal and internal nodes can be located by searching along the
+tree structure. You can find, for instance, all nodes matching a given
+name.  However, any node's attribute can be used as a filter to find
 nodes.
+
+In addition, ETE implements a built-in method to find the **first node
+matching a given name**, which is one of the most common tasks needed
+for tree analysis.  This can be done using a special syntaxis: ``node
+& "name"``. Thus, ``Tree&"A"`` will always return the first leaf node
+whose name is "A" (even if there are mode "A" nodes) in the same tree.
+
+Other methods are also available that restrict search criteria.
+
+.. table:: 
+
+  ==========================================       ==============================================================================================================
+  method                                            Description
+  ==========================================       ==============================================================================================================
+  t.search_nodes(attr=value)                        Returns a list of nodes in which attr is equal to value, i.e. name=A
+  t.iter_search_nodes(attr=value)                   Iterates over all matching nodes matching attr=value. Faster when you only need to get the first occurrence
+  t.get_leaves_by_name(name)                        Returns a list of leaf nodes matching a given name. Only leaves are browsed.
+  t.get_common_ancestor(node1, node2, node3)        Return the first internal node grouping node1, node2 and node3
+  t&"A"                                             Shortcut for t.search_nodes(name="A")[0]
+  ==========================================       ==============================================================================================================
+
+
+A custom list of nodes matching a given name can be easily obtain
+through the :func:`search_node` function.
+
+::
+ 
+   from ete2 import Tree
+   t = Tree( '((H:1,I:1):0.5, A:1, (B:1,(C:1,D:1):0.5):0.5);' )
+   print t
+   #                    /-H
+   #          /--------|
+   #         |          \-I
+   #         |
+   #---------|--A
+   #         |
+   #         |          /-B
+   #          \--------|
+   #                   |          /-C
+   #                    \--------|
+   #                              \-D
+
+   # I get D
+   D = t.search_nodes(name="D")[0]
+
+   # I get all nodes with distance=0.5
+   nodes = t.search_nodes(dist=0.5)
+   print len(nodes), "nodes have distance=0.5"
+
+   # We can limit the search to leaves and node names (faster method).
+   D = t.get_leaves_by_name(name="D")
+   print D
+
+
+Searching for the first common ancestor of a given set of nodes it is
+a handy way of finding internal nodes.
+
+::
+
+  from ete2 import Tree
+  t = Tree( '((H:0.3,I:0.1):0.5, A:1, (B:0.4,(C:0.5,(J:1.3, (F:1.2, D:0.1):0.5):0.5):0.5):0.5);' )
+  print t
+  ancestor = t.get_common_ancestor("C", "J", "B")
+  
+
+
+A limitation of the :func:`search_nodes` method is that you cannot use
+complex conditional statements to find specific nodes.  When search
+criteria is too complex, you may need to create your own search
+function.
+
+:: 
+
+  from ete2 import Tree
+
+  def search_by_size(node, size):
+     ''' Finds nodes with a given number of leaves ''' 
+      matches = []
+      for n in node.traverse(): 
+         if len(n) == size: 
+            matches.append(n)
+      return matches
+
+  t = Tree()
+  t.populate(40)
+  search_by_size(t, size=6) # returns nodes containing 6 leaves
 
 
 Traversing (browsing) trees
 ---------------------------
 
-Often, when processing trees, all nodes need to be visited. This is called tree
-traversing. There are different ways to traverse a tree structure depending on
-the order in which children nodes are visited. ETE implements the two most
-common strategies: **pre- **and** post-order**. The following scheme shows the
-differences in the strategy for visiting nodes (note that in both cases the
-whole tree is browsed):
 
-* preorder
+Often, when processing trees, all nodes need to be visited. This is
+called tree traversing. There are different ways to traverse a tree
+structure depending on the order in which children nodes are
+visited. ETE implements the two most common strategies: **pre-** and
+**post-order**. The following scheme shows the differences in the
+strategy for visiting nodes (note that in both cases the whole tree is
+browsed):
 
-* Visit the root.
+* preorder: 1)Visit the root, 2) Traverse the left subtree , 3) Traverse the right subtree.
+* postorder: 1) Traverse the left subtree , 2) Traverse the right subtree, 3) Visit the root 
 
-* Traverse the left subtree.
 
-* Traverse the right subtree.
+Every node in a tree includes a :func:`traverse` method, which can be
+used to visit, one by one, every node node under the current
+partition. In addition, the :func:`iter_descendants` method can be set
+to use either a post- or a preorder strategy.  The only different
+between :func:`traverse` and :func:`iter_descendants` is that the
+first will include the root node in the iteration.
 
-* postorder
 
-* Traverse the left subtree.
+.. table:: 
 
-* Traverse the right subtree.
+  ==========================================  ==============================================================================================================
+   Method                                       Description
+  ==========================================  ==============================================================================================================
+   :attr:`node.traverse(method)`               Iterates over the whole tree structure, yielding internal and external nodes, as well as the root node
+   :attr:`node.iter_descendants(method)`       Iterates over all descendants except the root node, yielding internal and external nodes. 
+  ==========================================  ==============================================================================================================
 
-* Visit the root.
-
-Every node in a tree includes a **traverse() **method, which can be used to
-visit, one by one, every node node under the current partition.
+**method** can take one of the following values: ``"postorder"`` or ``"preorder"``
 
 Additionally, you can implement your own traversing function using the
-structural attributes of nodes. In the following example, only nodes between a
-given leaf and the tree root are visited.
+structural attributes of nodes. In the following example, only nodes
+between a given leaf and the tree root are visited.
 
-
-.. _sub:finding-nodes-by:
-
-Finding Nodes by Their Attributes
----------------------------------
-
-Both terminal and internal nodes can be located by searching along the tree
-structure. You can find, for instance, all nodes matching a given name. The
-**search_nodes()** method is the most direct way to find specific nodes. Given
-that every node has its own **search_nodes** method, you can start your search
-from different points of the tree. Any node's attribute can be used as a filter
-to find nodes.
-
-A limitation of this method is that you cannot use complex conditional
-statements to find specific nodes. However you can user traversing methods to
-meet your custom filters. A possible general strategy would look like this:
-
-Finally, ETE implements a built-in method to find the **first node matching a
-given name**, which is one of the most common tasks needed for tree analysis.
-This can be done through the operator **&** (AND). Thus, **MyTree&"A" **will
-always return the first node whose name is "A" and that is under the tree
-"MyTree". The syntaxis may seem confusing, but it can be very useful in some
-situations.
+AN EXAMPLE HERE !!!
 
 
 Iterating instead of Getting
 ----------------------------
 
-Methods starting with **get_** are all prepared to return results as a closed
-list of items. This means, for instance, that if you want to process all tree
-leaves and you ask for them using the **get_leaves()** method, the whole tree
-structure will be browsed before returning the final list of terminal nodes.
-This is not a problem in most of the cases, but in large trees, you can speed up
-the browsing process by using iterators.
+As commented previously, methods starting with **get_** are all
+prepared to return results as a closed list of items. This means, for
+instance, that if you want to process all tree leaves and you ask for
+them using the **get_leaves()** method, the whole tree structure will
+be browsed before returning the final list of terminal nodes.  This is
+not a problem in most of the cases, but in large trees, you can speed
+up the browsing process by using iterators.
 
-Most **get_-like** methods have their homologous iterator function. Thus,
-**get_leaves()** can sometimes be substituted by **iter_leaves()**. The same
-occurs with **iter_descendants()** and **iter_search_nodes().**
+Most **get_** methods have their homologous iterator functions. Thus,
+:func:`get_leaves` could be substituted by :func:`iter_leaves`. The same
+occurs with :func:`iter_descendants` and :func:`iter_search_nodes`.
 
-When iterators are used (note that is only applicable for looping), only one
-step is processed at a time. For example, **iter_search_nodes()** will return
-one match in each iteration. In practice, this makes no differences in the final
-result, but it may increase the performance of loop functions (i.e. in case of
-finding a match which interrupts the loop).
+When iterators are used (note that is only applicable for looping),
+only one step is processed at a time. For instance,
+:func:`iter_search_nodes` will return one match in each iteration. In
+practice, this makes no differences in the final result, but it may
+increase the performance of loop functions (i.e. in case of finding a
+match which interrupts the loop).
 
 
-.. _sec:extending-node's-features:
 
-Extending Node's Features
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Node annotation
 =========================
 
 Although newick standard was only thought to contain branch lengths and node

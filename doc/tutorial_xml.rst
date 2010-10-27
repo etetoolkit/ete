@@ -6,12 +6,8 @@
 Phylogenetic XML standards
 ************************************
 
-============================
-Description
-============================
-
-From version 2.1, ETE provides support for NeXML and PhyloXML
-phylogenetic XML standards, both reading and writing. 
+From version 2.1, ETE has support for NeXML and PhyloXML phylogenetic
+XML standards, both reading and writing.
 
 These standards are not limited to phylogenetic tree data, but ETE
 provides handlers to deal with most of their features.
