@@ -133,12 +133,16 @@ def add_face_to_node(face, node, column, aligned=False, position="branch-right")
         raise (ValueError, "Incorrect position") 
     if aligned:
         position = "aligned"
-    node.img_style["faces_"].setdefault(position, [])
-    if column >= len(node.img_style["faces_"][position]):
-        for i in xrange(len(node.img_style["faces_"][position]), column+1):
-            node.img_style["faces_"][position].append([])
-    # None value will be the pointer to a pixmap
-    node.img_style["faces_"][position][column].append(face)
+
+    node.img_style["faces_"].setdefault(position, {})
+    node.img_style["faces_"][position].setdefault(int(column), []).append(face)
+
+    # node.img_style["faces_"].setdefault(position, [])
+    # if column >= len(node.img_style["faces_"][position]):
+    #     for i in xrange(len(node.img_style["faces_"][position]), column+1):
+    #         node.img_style["faces_"][position].append([])
+    # # None value will be the pointer to a pixmap
+    # node.img_style["faces_"][position][column].append(face)
     return 
 
 class Face(object):

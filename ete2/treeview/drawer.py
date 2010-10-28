@@ -9,24 +9,29 @@ __all__ = ["show_tree", "render_tree", "TreeImageProperties"]
 
 _QApp = None
 
-class TreeImageProperties:
+class TreeImageProperties(object):
     def __init__(self):
         self.force_topology             = False
-        self.draw_branch_length         = False
-        self.align_leaf_faces           = False
-        self.orientation                = 0
-        self.style                      = 0 # 0 = Normal, 1 = Diagonal lines
-        self.general_font_type          = "Verdana"
-        self.branch_length_font_color   = "#222"
-        self.branch_length_font_size    = 6
-        self.branch_support_font_color  = "red"
-        self.branch_support_font_size   = 9
         self.tree_width                 = 200  # This is used to scale
                                                # the tree branches
+        self.show_aligned_faces_as_grid = True
+
         self.min_branch_separation      = 1
         self.search_node_bg = "#cccccc"
         self.search_node_fg = "#ff0000"
+        self.draw_guide_lines_to_aligned = False
+        self.header = TreeHeader()
 
+
+class TreeHeader(object):
+    def __init__(self):
+        self.aligned_face_headers = {}
+
+    def add_face_to_aligned_column(self, column, face):
+        self.aligned_face_headers.setdefault(int(column), []).append(face)
+
+    def add_tree_face_header(self, face):
+        pass
 
 def show_tree(t, style=None, img_properties=None):
     """ Interactively shows a tree."""
