@@ -18,6 +18,7 @@ Contents:
    tutorial_clustering
    tutorial_phylomedb
    tutorial_xml
+   tutorial_webplugin
 
 Indices and tables
 ==================
