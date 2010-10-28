@@ -1,6 +1,8 @@
 ********************
 Phylogenetic Trees
 ********************
+.. versionadded:: 2.1
+
 
 Phylogenetic trees are the result of most evolutionary analyses. They represent
 the evolutionary relationships among a set of species or, in molecular biology,

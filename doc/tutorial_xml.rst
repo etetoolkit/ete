@@ -1,15 +1,25 @@
-.. automodule:: ete2
-   :members:
-
-
 ************************************  
 Phylogenetic XML standards
 ************************************
+.. versionadded:: 2.1
 
 From version 2.1, ETE has support for NeXML and PhyloXML phylogenetic
 XML standards, both reading and writing.
 
-These standards are not limited to phylogenetic tree data, but ETE
+These standards provide a way to encode complex phylogenetic data,
+therefore they are not limited to phylogenetic trees. Although ETE is
+focused on allowing transparent interaction with the trees encoded by
+such data formats, it also has basic support for other features. Thus,
+while any phylogenetic tree encoded using NeXML or PhyloXML formats
+will be seen as a normal ETE tree object, other elements (otus information )
+
+, enabling tree drawing,
+browsing and manipulation options.
+
+
+
+
+are not limited to phylogenetic tree data, but ETE
 provides handlers to deal with most of their features.
 
 Consequently, these standards are not treated as simple tree formats

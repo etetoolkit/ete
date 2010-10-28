@@ -72,7 +72,6 @@ Apache server (usually at ``/ete/apache2/sites-available/default``):
    
   </VirtualHost>                             
 
-
 ======================================
 Creating your web tree application
 ======================================
