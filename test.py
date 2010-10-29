@@ -6,18 +6,20 @@ rs2 = faces.TextFace("branch-right2", fsize=20, fgcolor="#009000")
 rs3 = faces.TextFace("branch-right3", fsize=20, fgcolor="#009000")
 bd = faces.TextFace("branch-bottom", fsize=11, fgcolor="#909000")
 ud = faces.TextFace("branch-top", fsize=11, fgcolor="#099000")
-t1 = faces.TextFace("Aligned", fsize=11, fgcolor="#099000")
-t3 = faces.TextFace("pus", fsize=11, fgcolor="#099000")
-t2 = faces.ImgFace("/home/jhuerta/_Devel/test/doc/tutorial/examples/human.png")
+t1 = faces.TextFace("header_up", fsize=11, fgcolor="#099000")
+t2 = faces.TextFace("header_down", fsize=11, fgcolor="#099000")
+
+content = faces.AttrFace("name", fsize=12, fgcolor="#099000")
+image = faces.ImgFace("/home/jhuerta/_Devel/test/doc/tutorial/examples/human.png")
 def mylayout(node):
     # If node is a leaf, add the nodes name and a its scientific
     # name
     node.img_style["size"]=random.sample(range(20),1)[0]
     if node.is_leaf():
-        faces.add_face_to_node(t1, node, column=0, position="aligned")
-        faces.add_face_to_node(t3, node, column=1, position="aligned")
-        faces.add_face_to_node(t2, node, column=2, position="aligned")
-        faces.add_face_to_node(t1, node, column=3, position="aligned")
+        faces.add_face_to_node(content, node, column=0, position="aligned")
+        faces.add_face_to_node(content, node, column=1, position="aligned")
+ 
+        faces.add_face_to_node(content, node, column=3, position="aligned")
         return
         faces.add_face_to_node(t1, node, column=0, position="aligned")
         faces.add_face_to_node(t1, node, column=0, position="aligned")
@@ -58,11 +60,18 @@ def mylayout2(node):
         return
 
 I = TreeImageProperties()
-I.header.add_face_to_aligned_column(0, t2)
-I.header.add_face_to_aligned_column(1, t2)
-I.header.add_face_to_aligned_column(2, t2)
-I.header.add_face_to_aligned_column(3, t2)
+I.aligned_face_header.add_face_to_aligned_column(0, t1)
+I.aligned_face_header.add_face_to_aligned_column(1, t1)
+I.aligned_face_header.add_face_to_aligned_column(2, t1)
+I.aligned_face_header.add_face_to_aligned_column(3, t1)
 
+I.aligned_face_foot.add_face_to_aligned_column(0, t2)
+I.aligned_face_foot.add_face_to_aligned_column(1, t2)
+I.aligned_face_foot.add_face_to_aligned_column(2, t2)
+I.aligned_face_foot.add_face_to_aligned_column(3, t2)
+
+I.draw_image_border = False
+I.draw_aligned_faces_as_grid = False
 t = Tree()
 t.dist = 0
 t.populate(5)

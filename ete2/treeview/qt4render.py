@@ -18,12 +18,10 @@ _MIN_NODE_STYLE = {
     "hlwidth": 1,
     "size":6,
     "shape": "sphere",
-    "faces": None,
-    "faces_": None, # A dist must be initialized by node
+    "faces": None, # A dist must be initialized by node
     "draw_descendants": 1,
     "ymargin": 0
 }
-
 
 class _NodeItem(QtGui.QGraphicsRectItem):
     def __init__(self, node):
@@ -209,7 +207,7 @@ class _FaceGroup(QtGui.QGraphicsItem): # I resisted to name this FaceBook :)
         QtGui.QGraphicsItem.__init__(self, *args, **kargs)
         self.node = node
         self.column2faces = faces
-
+        
         # column_widths is a dictionary of min column size. Can be
         # used to reserve some space to specific columns
         self.set_min_column_widths(column_widths)
@@ -241,6 +239,7 @@ class _FaceGroup(QtGui.QGraphicsItem): # I resisted to name this FaceBook :)
             height = 0
             width = 0
             for f in faces:
+                f.node = self.node
                 if f.type == "pixmap": 
                     f.update_pixmap()
                 height += f._height()
@@ -542,6 +541,67 @@ class _TreeScene(QtGui.QGraphicsScene):
             pp.end()
             ii.save(imgName)
 
+    def draw_tree_surrondings(self):
+        # Prepares and renders aligned face headers. Used to latter
+        # place aligned faces
+        column2max_width = {}
+        aligned_face_headers = {}
+        aligned_header = self.props.aligned_face_header
+        aligned_foot = self.props.aligned_face_foot
+        all_columns = set(aligned_header.keys() + aligned_foot.keys())
+        header_afaces = {}
+        foot_afaces = {}
+        for c in all_columns:
+            if c in aligned_header:
+                faces = aligned_header[c]
+                fb = _FaceGroup({0:faces}, None)
+                fb.setParentItem(self.mainItem)
+                header_afaces[c] = fb
+                column2max_width[c] = fb.w
+                
+            if c in aligned_foot:
+                faces = aligned_foot[c]
+                fb = _FaceGroup({0:faces}, None)
+                fb.setParentItem(self.mainItem)
+                foot_afaces[c] = fb
+                column2max_width[c] = max(column2max_width[c], fb.w)
+
+        # Place aligned faces and calculates the max size of each
+        # column (needed to place column headers)
+        if self.props.draw_aligned_faces_as_grid: 
+            for fb in self.aligned_faces:
+                for c, size in fb.column2size.iteritems():
+                    if size[0] > column2max_width.get(c, 0):
+                        column2max_width[c] = size[0]
+
+        # Place aligned faces
+        for fb in self.aligned_faces:
+            fb.set_min_column_widths(column2max_width)
+            fb.update_columns_size()
+            fb.render()
+            pos = fb.mapFromScene(self.i_width, 0)
+            fb.setPos(pos.x(), fb.y())
+        
+        # Place faces around tree
+        x = self.i_width
+        y = self.i_height
+        for c in column2max_width:
+            fb_up = header_afaces.get(c, None)
+            fb_down = foot_afaces.get(c, None)
+            fb_width = 0
+            if fb_up: 
+                fb_up.render()
+                fb_up.setPos(x, -fb_up.h)
+                fb_width = fb_up.w 
+            if fb_down:
+                fb_down.render()
+                fb_down.setPos(x, y)
+                fb_width = max(fb_down.w, fb_width) 
+            x += column2max_width.get(c, fb_width)
+
+        # updates image size
+        self.i_width += sum(column2max_width.values())
+
     def draw(self):
         # Clean previous items from scene by removing the main parent
         if self.mainItem:
@@ -550,7 +610,6 @@ class _TreeScene(QtGui.QGraphicsScene):
         # Initialize scene 
         self.max_w_aligned_face = 0    # Stores the max width of aligned faces
         self.aligned_faces = []
-        self.aligned_face_headers = []
         self.min_aligned_column_widths = {}
 
         self.min_real_branch_separation = 0
@@ -594,54 +653,13 @@ class _TreeScene(QtGui.QGraphicsScene):
         self.i_width  = self.startNode.fullRegion.width()
         self.i_height = self.startNode.fullRegion.height()
 
-
-        # Prepares and renders aligned face headers. Used to latter
-        # place aligned faces
-        column2max_width = {}
-        aligned_face_headers = {}
-        for c, faces in sorted(self.props.header.aligned_face_headers.iteritems()):
-            fb = _FaceGroup({0:faces}, None)
-            fb.setParentItem(self.mainItem)
-            column2max_width[c] = fb.w
-            aligned_face_headers[c] = fb
-
-        print column2max_width
-        # Place aligned faces and calculates the max size of each
-        # column (needed to place column headers)
-        if self.props.show_aligned_faces_as_grid: 
-            for fb in self.aligned_faces:
-                for c, size in fb.column2size.iteritems():
-                    if size[0] > column2max_width.get(c, 0):
-                        column2max_width[c] = size[0]
-
-        # Place aligned faces
-        for fb in self.aligned_faces:
-            fb.set_min_column_widths(column2max_width)
-            fb.update_columns_size()
-            fb.render()
-            pos = fb.mapFromScene(self.i_width, 0)
-            fb.setPos(pos.x(), fb.y())
-        
-        # Place faces around tree
-        x = self.i_width
-        for c in column2max_width:
-            fb = aligned_face_headers.get(c, None)
-            fb_width = 0
-            if fb: 
-                fb.render()
-                fb.setPos(x ,-fb.h)
-                fb_width = fb.w 
-            x += column2max_width.get(c, fb_width)
-        print column2max_width
-
-        # size correction for aligned faces
-        self.i_width += sum(column2max_width.values())
-
+        self.draw_tree_surrondings()
         # Tree border
-        # border = self.addRect(0,0,self.i_width, self.i_height)
-        # border = self.addRect(0,0,self.i_width-self.max_w_aligned_face,self.i_height)
-        # border = self.addRect(0,0, self.sceneRect().width(), self.sceneRect().height())
-        # border.setParentItem(self.mainItem)
+        if self.props.draw_image_border:
+            border = self.addRect(0,0,self.i_width, self.i_height)
+            border = self.addRect(0,0,self.i_width-self.max_w_aligned_face,self.i_height)
+            border = self.addRect(0,0, self.sceneRect().width(), self.sceneRect().height())
+            border.setParentItem(self.mainItem)
 
         # Draw scale
         self.add_scale(1 ,self.i_height+4)
@@ -651,7 +669,6 @@ class _TreeScene(QtGui.QGraphicsScene):
             self.highlight_node(n)
 
         self.setSceneRect(-2,-2,self.i_width+4,self.i_height+50)
-
 
     def add_scale(self,x,y):
         size = 50
@@ -685,16 +702,17 @@ class _TreeScene(QtGui.QGraphicsScene):
         for n in [node]+node.get_descendants():
             n.img_style = copy.copy(_MIN_NODE_STYLE)
             #n.img_style["faces"] = []
-            n.img_style["faces_"] = {}
+            n.img_style["faces"] = {}
             layout_func(n)
 
     def update_node_faces(self, node):
         # Organize all faces of this node in FaceGroups objects
         # (tables of faces)
         faceblock = {}
+        
         self.node2faces[node] = faceblock
         for position in ["branch-right", "aligned", "branch-top", "branch-bottom"] :
-            if position in node.img_style["faces_"]:
+            if position in node.img_style["faces"]:
                 # The value of this is expected to be list of columns of faces
                 # c2f = [ [f1, f2, f3], 
                 #         [f4, f4]
@@ -702,8 +720,7 @@ class _TreeScene(QtGui.QGraphicsScene):
                 if position=="aligned" and not node.is_leaf():
                     faceblock[position] = _FaceGroup({}, node)
                     continue # aligned on internal node does not make sense
-
-                faceblock[position] = _FaceGroup(node.img_style["faces_"][position], node)
+                faceblock[position] = _FaceGroup(node.img_style["faces"][position], node)
 
             else:
                 faceblock[position] = _FaceGroup({}, node)
@@ -770,13 +787,13 @@ class _TreeScene(QtGui.QGraphicsScene):
 
             # Branch length converted to pixels
             if self.props.force_topology:
-                node.dist_xoffset = 60
+                node.dist_xoffset = float(1.0 * self.scale)
             else:
                 node.dist_xoffset = float(node.dist * self.scale)
 
             # Organize faces by groups
             faceblock = self.update_node_faces(node)
-
+            
             # Total height required by the node
             h = node.__img_height__ = max(node.img_style["size"] + faceblock["branch-top"].h + faceblock["branch-bottom"].h, 
                                           node.img_style["hlwidth"] + faceblock["branch-top"].h + faceblock["branch-bottom"].h, 
@@ -1049,6 +1066,15 @@ class _TreeScene(QtGui.QGraphicsScene):
         hz_line = QtGui.QGraphicsLineItem(partition)
         hz_line.setLine(0, partition.center, 
                         node.dist_xoffset, partition.center)
+        hz_pen = QtGui.QColor(node.img_style["hz_line_color"])
+        hz_line.setPen(hz_pen)
+
+        if self.props.complete_branch_lines:
+            extra_hz_line = QtGui.QGraphicsLineItem(partition)
+            extra_hz_line.setLine(node.dist_xoffset, partition.center, 
+                            ball_start_x, partition.center)
+            color = QtGui.QColor(self.props.extra_branch_line_color)
+            extra_hz_line.setPen(color)
 
         # Attach branch-right faces to child 
         fblock = self.node2faces[node]["branch-right"]
@@ -1075,8 +1101,6 @@ class _TreeScene(QtGui.QGraphicsScene):
             fblock = self.node2faces[node]["aligned"]
             fblock.setParentItem(partition)
             # Rendering is delayed until I know right positions 
-            #fblock.render()
-            #fblock.setPos(0, partition.center-fblock.h/2)
 
         # Vt Line
         if not node.is_leaf() and node.img_style["draw_descendants"]==1:
