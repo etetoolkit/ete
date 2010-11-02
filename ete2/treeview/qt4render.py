@@ -582,6 +582,16 @@ class _TreeScene(QtGui.QGraphicsScene):
             pos = fb.mapFromScene(self.i_width, 0)
             fb.setPos(pos.x(), fb.y())
         
+            if self.props.draw_lines_from_leaves_to_aligned_faces:
+                guideline = QtGui.QGraphicsLineItem()
+                partition = fb.parentItem()
+                guideline.setParentItem(partition)
+                guideline.setLine(partition.rect().width(), partition.center,\
+                                  pos.x(), partition.center )
+                pen = QtGui.QPen()
+                pen.setColor(QtGui.QColor(self.props.line_from_leaves_to_aligned_faces_color))
+                set_pen_style(pen, self.props.line_from_leaves_to_aligned_faces_type)
+                guideline.setPen(pen)
         # Place faces around tree
         x = self.i_width
         y = self.i_height
@@ -720,10 +730,12 @@ class _TreeScene(QtGui.QGraphicsScene):
                 if position=="aligned" and not node.is_leaf():
                     faceblock[position] = _FaceGroup({}, node)
                     continue # aligned on internal node does not make sense
-                faceblock[position] = _FaceGroup(node.img_style["faces"][position], node)
+                else:
+                    faceblock[position] = _FaceGroup(node.img_style["faces"][position], node)
 
             else:
                 faceblock[position] = _FaceGroup({}, node)
+
         return faceblock
 
     def update_node_areas_rectangular(self,root_node):
@@ -793,7 +805,7 @@ class _TreeScene(QtGui.QGraphicsScene):
 
             # Organize faces by groups
             faceblock = self.update_node_faces(node)
-            
+
             # Total height required by the node
             h = node.__img_height__ = max(node.img_style["size"] + faceblock["branch-top"].h + faceblock["branch-bottom"].h, 
                                           node.img_style["hlwidth"] + faceblock["branch-top"].h + faceblock["branch-bottom"].h, 
@@ -814,7 +826,9 @@ class _TreeScene(QtGui.QGraphicsScene):
             if faceblock["aligned"].w > self.max_w_aligned_face:
                 self.max_w_aligned_face = faceblock["aligned"].w
 
-            if "aligned" in faceblock:
+            # This prevents adding empty aligned faces from internal
+            # nodes
+            if faceblock["aligned"].column2faces:
                 self.aligned_faces.append(faceblock["aligned"])
 
             # Rightside faces region
@@ -847,6 +861,10 @@ class _TreeScene(QtGui.QGraphicsScene):
             # color = QtGui.QColor("#ffffff")
             # partition.setBrush(color)
             # partition.setPen(color)
+
+            # Faceblock parents
+            for f in faceblock.values():
+                f.setParentItem(partition)
 
             if node.is_leaf() or not node.img_style["draw_descendants"]:
                 # Leafs will be processed from parents
@@ -973,7 +991,6 @@ class _TreeScene(QtGui.QGraphicsScene):
            
             partition = self.node2item[node] = \
                 _PartitionItem(node, 0, 0, node.fullRegion.width(), node.fullRegion.height())
-                #QtGui.QGraphicsRectItem(0, 0, node.fullRegion.width(), node.fullRegion.height())
 
             # Draw virtual partition grid (for debugging)
             #color = QtGui.QColor("#cccfff")
@@ -1046,9 +1063,10 @@ class _TreeScene(QtGui.QGraphicsScene):
         return center
             
     def render_node_partition(self, node, partition):
-
-        if node.img_style["bgcolor"].upper() not in set(["#FFFFFF", "white"]): 
-            color = QtGui.QColor(node.img_style["bgcolor"])
+        style = node.img_style
+ 
+        if style["bgcolor"].upper() not in set(["#FFFFFF", "white"]): 
+            color = QtGui.QColor(style["bgcolor"])
             partition.setBrush(color)
             partition.setPen(color)
         else:
@@ -1056,7 +1074,7 @@ class _TreeScene(QtGui.QGraphicsScene):
 
         # Draw partition components 
         # Draw node balls in the partition centers
-        ball_size = node.img_style["size"] 
+        ball_size = style["size"] 
         ball_start_x = node.nodeRegion.width() - node.facesRegion.width() - ball_size
         node_ball = _NodeItem(node)
         node_ball.setParentItem(partition)            
@@ -1066,15 +1084,20 @@ class _TreeScene(QtGui.QGraphicsScene):
         hz_line = QtGui.QGraphicsLineItem(partition)
         hz_line.setLine(0, partition.center, 
                         node.dist_xoffset, partition.center)
-        hz_pen = QtGui.QColor(node.img_style["hz_line_color"])
-        hz_line.setPen(hz_pen)
+        # Hz line style
+        color = QtGui.QColor(style["hz_line_color"])
+        pen = QtGui.QPen(color)
+        set_pen_style(pen, style["line_type"])
+        hz_line.setPen(pen)
 
         if self.props.complete_branch_lines:
             extra_hz_line = QtGui.QGraphicsLineItem(partition)
             extra_hz_line.setLine(node.dist_xoffset, partition.center, 
                             ball_start_x, partition.center)
             color = QtGui.QColor(self.props.extra_branch_line_color)
-            extra_hz_line.setPen(color)
+            pen = QtGui.QPen(color)
+            set_pen_style(pen, style["line_type"])
+            extra_hz_line.setPen(pen)
 
         # Attach branch-right faces to child 
         fblock = self.node2faces[node]["branch-right"]
@@ -1103,7 +1126,7 @@ class _TreeScene(QtGui.QGraphicsScene):
             # Rendering is delayed until I know right positions 
 
         # Vt Line
-        if not node.is_leaf() and node.img_style["draw_descendants"]==1:
+        if not node.is_leaf() and style["draw_descendants"]==1:
             vt_line = QtGui.QGraphicsLineItem(partition)
             first_child_part = self.node2item[node.children[0]]
             last_child_part = self.node2item[node.children[-1]]
@@ -1111,203 +1134,18 @@ class _TreeScene(QtGui.QGraphicsScene):
             c2 = last_child_part.start_y + last_child_part.center
             vt_line.setLine(node.nodeRegion.width(), c1,\
                                 node.nodeRegion.width(), c2)            
+            # Vt line style
+            pen = QtGui.QPen(QtGui.QColor(style["vt_line_color"])) 
+            set_pen_style(pen, style["line_type"])
+            vt_line.setPen(pen)
 
-        # STYLES
-        line_pen = QtGui.QPen(QtGui.QColor(node.img_style["hz_line_color"])) 
-        line_pen.setWidth(node.img_style["hlwidth"])
-        if node.img_style["line_type"] == 0:
-            line_pen.setStyle(QtCore.Qt.SolidLine)
-        elif node.img_style["line_type"] == 1:
-            line_pen.setStyle(QtCore.Qt.DashLine)
-        hz_line.setPen(line_pen)
-
-        try:
-            line_pen = QtGui.QPen(QtGui.QColor(node.img_style["vt_line_color"])) 
-            line_pen.setWidth(node.img_style["vlwidth"])
-            if node.img_style["line_type"] == 0:
-                line_pen.setStyle(QtCore.Qt.SolidLine)
-            elif node.img_style["line_type"] == 1:
-                line_pen.setStyle(QtCore.Qt.DashLine)
-            vt_line.setPen(line_pen)
-        except UnboundLocalError:
-            pass
+def set_pen_style(pen, line_style):
+    if line_style == 0:
+        pen.setStyle(QtCore.Qt.SolidLine)
+    elif line_style == 1:
+        pen.setStyle(QtCore.Qt.DashLine)
+    elif line_style == 2:
+        pen.setStyle(QtCore.Qt.DotLine)
 
 
-
-
-    def render_node_OLD(self,node , x, y,level=0):
-        """ Traverse the tree structure and render each node using the
-        regions, sizes, and faces previously loaded. """
-
-        # Node's stuff
-        orientation = self.props.orientation
-        r = node.img_style["size"]/2
-        fh = node.facesRegion.width()
-
-        node._QtItem_ = _NodeItem(node)
-        node._QtItem_.setAcceptsHoverEvents(True)
-
-        # RIGHT TO LEFT
-        if orientation == 1:
-            if node == self.startNode:
-                x = self.i_width-x
-
-        # Add main node QGItem. Each node item has as parent the
-        # parent node item
-        if node==self.startNode:
-            node._QtItem_.setParentItem(self.mainItem)
-            scene_pos = node._QtItem_.pos()
-            node.scene_pos = scene_pos
-
-        # node x,y starting positions
-        node._x = x
-        node._y = y
-
-        # colour rect as node background
-        if  node.img_style["bgcolor"].upper() != "#FFFFFF":
-            background = QtGui.QGraphicsRectItem(self.mainItem)
-            background.setZValue(-1000+level)
-            color = QtGui.QColor(node.img_style["bgcolor"])
-            background.setBrush(color)
-            background.setPen(color)
-            if orientation == 0:
-                background.setRect(node._x,node._y,self.i_width-node._x+self.max_w_aligned_face,node.fullRegion.height())
-            elif orientation == 1:
-                background.setRect(node._x-node.fullRegion.width(),node._y,self.i_width,node.fullRegion.height())
-        # Draw node and lines
-        if not node.is_leaf() and node.img_style["draw_descendants"]==1:
-            # Corrections 
-#            node_height = 0
-#            for ch in node.get_children():
-#                node_height += ch.fullRegion.height()
-
-#            if node.fullRegion.height() >= node_height:
-#                y_correction = node.fullRegion.height() - node_height
-#            else:
-#               y_correction = 0
-
-#           y_correction = node._y_correction
-            # recursivity: call render function for every child
-            next_y = y + node._y_correction#/2
-            for ch in node.get_children():
-                dist_to_child = ch.dist * self.scale
-                if orientation == 0:
-                    next_x = x+node.nodeRegion.width()
-                elif orientation == 1:
-                    next_x = x-node.nodeRegion.width()
-
-                self.render_node(ch, next_x, next_y,level+1)
-                next_y += ch.fullRegion.height()
-
-            node._centered_y = ((node.children[0]._centered_y + node.children[-1]._centered_y)/2)
-            # Draw an internal node. Take global pos.
-
-            # Place node at the correct pos in Scene
-            ch._QtItem_.setParentItem(node._QtItem_)
-            if orientation == 0:
-                node._QtItem_.setPos(x+node.dist_xoffset,node._centered_y-node.img_style["size"]/2)
-            elif orientation == 1:
-                node._QtItem_.setPos(x-node.dist_xoffset-node.img_style["size"],node._centered_y-node.img_style["size"]/2)
-            for ch in node.children:
-                scene_pos = ch._QtItem_.pos()
-                ch.scene_pos = scene_pos
-                ch._QtItem_.setParentItem(node._QtItem_)
-                ch._QtItem_.setPos(node._QtItem_.mapFromScene(scene_pos) )
-
-            # Draws the startNode branch when it is not the absolute root
-            if node == self.startNode:
-                y = node._QtItem_.pos().y()+ node.img_style["size"]/2
-                self.add_branch(self.mainItem,0,y,node.dist_xoffset,y,node.dist,node.support, node.img_style["hz_line_color"], node.img_style["hlwidth"], node.img_style["line_type"])
-
-            # RECTANGULAR STYLE
-            if self.props.style == 0:
-                vt_line = QtGui.QGraphicsLineItem(node._QtItem_)
-                customPen = QtGui.QPen(QtGui.QBrush(QtGui.QColor(node.img_style["vt_line_color"])), node.img_style["vlwidth"])
-                if node.img_style["line_type"]==1:
-                    customPen.setStyle(QtCore.Qt.DashLine)
-                vt_line.setPen(customPen)
-
-                ch1_y = node._QtItem_.mapFromScene(0,node.children[0]._centered_y).y()
-                ch2_y = node._QtItem_.mapFromScene(0,node.children[-1]._centered_y).y()
-
-                # Draw hz lines of childs
-                for ch in node.children:
-                    ch_pos = node._QtItem_.mapFromScene(ch._x, ch._centered_y)
-                    if orientation == 0:
-                        self.add_branch(node._QtItem_,fh+r*2,ch_pos.y(),fh+r*2+ch.dist_xoffset ,ch_pos.y(),ch.dist, ch.support, ch.img_style["hz_line_color"], ch.img_style["hlwidth"], ch.img_style["line_type"])
-                    elif orientation == 1:
-                        self.add_branch(node._QtItem_,-fh,ch_pos.y(),-fh-ch.dist_xoffset ,ch_pos.y(),ch.dist,ch.support,ch.img_style["hz_line_color"], ch.img_style["hlwidth"], ch.img_style["line_type"])
-                # Draw vertical line
-                if orientation == 0:
-                    vt_line.setLine(fh+r*2,ch1_y,fh+(r*2),ch2_y)
-                elif orientation == 1:
-                    vt_line.setLine(-fh,ch1_y,-fh,ch2_y)
-
-            # DIAGONAL STYLE
-            elif self.props.style == 1:
-                # Draw lines from node to childs
-                for ch in node.children:
-                    if orientation == 0:
-                        ch_x = ch._QtItem_.x()
-                        ch_y = ch._QtItem_.y()+ch.img_style["size"]/2
-                        self.add_branch(node._QtItem_,fh+node.img_style["size"],r,ch_x,ch_y,ch.dist,ch.support, ch.img_style["hz_line_color"], 1, ch.img_style["line_type"])
-                    elif orientation == 1:
-                        ch_x = ch._QtItem_.x()
-                        ch_y = ch._QtItem_.y()+ch.img_style["size"]/2
-                        self.add_branch(node._QtItem_,-fh,r,ch_x+(r*2),ch_y,ch.dist,ch.support, ch.img_style["hz_line_color"], 1, ch.img_style["line_type"])
-
-            self.add_faces(node,orientation)
-
-        else:
-            # Draw terminal node
-            node._centered_y = y+node.fullRegion.height()/2
-            if orientation == 0:
-                node._QtItem_.setPos(x+node.dist_xoffset, node._centered_y-r)
-            elif orientation == 1:
-                node._QtItem_.setPos(x-node.dist_xoffset-node.img_style["size"], node._centered_y-r)
-
-            self.add_faces(node,orientation)
-
-    def add_branch(self,parent_item,x1,y1,x2,y2,dist,support,color,width,line_type):
-        hz_line = QtGui.QGraphicsLineItem(parent_item)
-        customPen  = QtGui.QPen(QtGui.QBrush(QtGui.QColor(color)), width)
-        if line_type == 1:
-            customPen.setStyle(QtCore.Qt.DashLine)
-        hz_line.setPen(customPen)
-        hz_line.setLine(x1,y1,x2,y2)
-
-        if self.props.draw_branch_length:
-            distText = "%0.3f" % dist
-            if support is not None:
-                distText += "(%0.2f)" % support
-            font = QtGui.QFont(self.props.general_font_type,self.props.branch_length_font_size)
-            rect = QtGui.QFontMetrics(font).boundingRect(0,0,0,0,QtCore.Qt.AlignTop,distText)
-            b_length = QtGui.QGraphicsSimpleTextItem(distText)
-            b_length.setFont(font)
-            b_length.setBrush(QtGui.QColor(self.props.branch_length_font_color))
-            b_length.setParentItem(hz_line)
-            b_length.setPos(x1,y1)
-            if y1 != y2:
-                offset = 0
-                angle = math.atan((y2-y1)/(x2-x1))*360/ (2*math.pi)
-                if y1>y2:
-                    offset = rect.height()
-                b_length.setTransform(QtGui.QTransform().translate(0, y1-offset).rotate(angle).translate(0,-y1));
-
-    def add_faces(self, node, orientation):
-        for fblock in  node.__faces__.values():
-            fblock.setParentItem(node._QtItem_)
-
-        if orientation==0:
-            aligned_start_x = node._QtItem_.mapFromScene(self.i_width,0).x()
-            start_x = node.img_style["size"]
-        elif orientation==1:
-            start_x = 0
-            aligned_start_x = node._QtItem_.mapFromScene(0,0).x()
-        
-        node.__faces__["aligned"].render()
-        node.__faces__["aligned"].setPos(aligned_start_x, 0)
-        node.__faces__["branch-right"].render()
-        node.__faces__["branch-right"].setPos(start_x, -node.nodeRegion.height())
-
-
+    

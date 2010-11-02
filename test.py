@@ -45,10 +45,7 @@ def mylayout(node):
 
         #faces.add_face_to_node(rs, node, column=1, position="branch-right")
         #faces.add_face_to_node(rs, node, column=1, position="branch-right")
-
-
         #faces.add_face_to_node(t1, node, column=1, position="branch-right")
-
         #faces.add_face_to_node(t1, node, column=1, position="branch-bottom")
         #faces.add_face_to_node(t1, node, column=1, position="branch-bottom")
         #faces.add_face_to_node(t1, node, column=1, position="branch-bottom")
@@ -69,6 +66,8 @@ I.aligned_face_foot.add_face_to_aligned_column(0, t2)
 I.aligned_face_foot.add_face_to_aligned_column(1, t2)
 I.aligned_face_foot.add_face_to_aligned_column(2, t2)
 I.aligned_face_foot.add_face_to_aligned_column(3, t2)
+I.draw_lines_from_leaves_to_aligned_faces = True
+I.line_from_leaves_to_aligned_faces_type = 2
 
 I.draw_image_border = False
 I.draw_aligned_faces_as_grid = False
