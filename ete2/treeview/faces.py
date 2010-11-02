@@ -624,7 +624,7 @@ class ProfileFace(Face):
             mean_y2     = (mean2 - self.min_value) * y_alpha
             # Draw blue mean line
             p.setPen(QtGui.QColor("blue"))
-            p.drawLine(x1,mean_y1, x2, mean_y2)
+            p.drawLine(x1, profile_height-mean_y1, x2, profile_height-mean_y2)
 
             if dev1!= 0 and dev2!=0:
                 # First Y postions for deviations
