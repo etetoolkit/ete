@@ -3,6 +3,7 @@ import re
 from string import strip
 
 sys.path.insert(0, "/home/services/software/ete2-webplugin/")
+sys.path.insert(0, "/home/jhuerta/_Devel/ete/ete2-faces-web/")
 from ete_dev import WebTreeApplication # Required to use the webplugin
 
 from ete_dev import PhyloTree, faces # Required by my custom
@@ -456,7 +457,8 @@ application = WebTreeApplication()
 # your system, and the other the URL to access the same
 # directory. Note that the referred directory must be writable by the
 # webserver.
-application.CONFIG["temp_dir"] = "/home/services/web/ete.cgenomics.org/webplugin/tmp/"
+#application.CONFIG["temp_dir"] = "/home/services/web/ete.cgenomics.org/webplugin/tmp/"
+application.CONFIG["temp_dir"] = "/var/www/webplugin/tmp/"
 application.CONFIG["temp_url"] = "/webplugin/tmp/" # Relative to web site Document Root
 
 # Set the DISPLAY port that ETE should use to draw pictures. You will
