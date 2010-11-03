@@ -354,7 +354,7 @@ class TreeNode(object):
         for node in to_keep:
             if len(node.children) == 1:
                 node.delete()
-        if len(self.children)==1:
+        if len(self.children)==1 and self.children[0] not in to_keep:
             self.children[0].delete()
                 
     def iter_leaves(self):
@@ -896,7 +896,7 @@ class TreeNode(object):
             print self
             print e
         else:
-            drawer.render_tree(self, file_name, w=w, h=h, style=layout, \
+            return drawer.render_tree(self, file_name, w=w, h=h, style=layout, \
                                    img_properties=img_properties, \
                                    header=header)
 

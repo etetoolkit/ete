@@ -143,5 +143,6 @@ def render_tree(t, imgName, w=None, h=None, style=None, \
     scene.initialize_tree_scene(t, style,
                                 tree_properties=img_properties)
     scene.draw()
-    print scene.get_tree_img_map()
+    imgmap = scene.get_tree_img_map()
     scene.save(imgName, w=w, h=h, header=header)
+    return imgmap   

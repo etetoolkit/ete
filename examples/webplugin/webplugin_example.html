@@ -1,0 +1,48 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html>
+  <head>
+    <title>ETE2 - webplugin demonstration</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <!-- Import scripts in this specific order -->
+    <script src="/webplugin/jquery-1.4.2.min.js"></script>
+    <script src="/webplugin/jquery-ui-1.8.4.custom.min.js"></script>
+    <script src="/webplugin/ete.js"></script>
+    <script>
+       /* YOU MUST SET THIS VARIABLE */
+       var ete_webplugin_URL = "/webplugin/wsgi/webplugin_example.py"
+    </script> 
+
+    <link rel="stylesheet" type="text/css" href="/webplugin/ete.css" >
+  </head>
+  <body>
+    <!-- This layer must be called "popup" -->
+    <div id="popup"></div> 
+    <div style='text-align: left;'>
+    <b> Paste a tree in newick format and press "Draw tree":</b><br>
+<div style="float:left; margin-right:15px; ">
+      <textarea  id="tree" style='width: 500px; height: 80px; vertical-align:middle;'>
+      ((holA[&&NHX:species=chimp:confidence=50], holB[&&NHX:species=human:confidence=100]), holC[&&NHX:species=mouse:confidence=88]); 
+      </textarea>
+</div>
+
+<div style="float:right;background-color:#eef;border: 1px dotted
+#aaf;width:350px;"> You can paste trees in newick (NH) and extended
+newick (NHX) formats. Features in NHX format will be parsed as tree
+features so you can add them as node faces to the tree image. features
+whose names starts by "_" will be ignored.</div>
+
+<br>
+<div style="clear:both;" >
+      <!-- This is the most important part. We start tree visualization by calling draw_tree function. 
+           draw_tree(treeid, newick, container)
+       -->
+      <input type='submit' value='Draw tree'  onClick='draw_tree(random_tid(), $("#tree").val(), "#img1") ;'>
+      <input type='button' value='Clear' onClick='$(".ete_image").html("");'>
+</div>
+    </div>
+    <br>
+    <!-- Tree containers -->
+    <div class="ete_image" id="img1"></div><br>
+
+  </body>
+</html>

@@ -20,10 +20,13 @@
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
 # #END_LICENSE#############################################################
+
 from sys import stderr
 from coretype.tree import *
 from coretype.seqgroup import *
 from phylo.phylotree import *
+from webplugin.webapp import *
+
 try:
     from coretype.arraytable import *
 except ImportError, e:
