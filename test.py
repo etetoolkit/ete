@@ -1,4 +1,4 @@
-from ete_dev import Tree, faces, TreeImageProperties
+from ete_dev import Tree, faces, TreeImageProperties, NodeStyleDict
 import random
 
 rs1 = faces.TextFace("branch-right1", fsize=20, fgcolor="#009000")
@@ -8,6 +8,8 @@ bd = faces.TextFace("branch-bottom", fsize=11, fgcolor="#909000")
 ud = faces.TextFace("branch-top", fsize=11, fgcolor="#099000")
 t1 = faces.TextFace("header_up", fsize=11, fgcolor="#099000")
 t2 = faces.TextFace("header_down", fsize=11, fgcolor="#099000")
+
+fixed = faces.TextFace("FIXED", fsize=11, fgcolor="#099000")
 
 content = faces.AttrFace("name", fsize=12, fgcolor="#099000")
 image = faces.ImgFace("/home/jhuerta/_Devel/test/doc/tutorial/examples/human.png")
@@ -74,4 +76,13 @@ I.draw_aligned_faces_as_grid = False
 t = Tree()
 t.dist = 0
 t.populate(5)
+
+
+style = NodeStyleDict()
+style["fgcolor"] = "#ff0000"
+style["size"] = 20
+style.add_fixed_face(fixed, "branch-right", 0)
+t.img_style = style
+
 t.show(mylayout, image_properties=I)
+t.show(mylayout2, image_properties=I)

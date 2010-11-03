@@ -1,3 +1,4 @@
+import re
 from ete_dev import Tree, PhyloTree, ClusterTree
 
 # I currently use qt4 for both rendering and gui
@@ -5,7 +6,7 @@ from PyQt4  import QtGui
 from qt4gui import _MainApp, _PropertiesDialog
 from qt4render import _TreeScene
 
-__all__ = ["show_tree", "render_tree", "TreeImageProperties"]
+__all__ = ["show_tree", "render_tree", "TreeImageProperties", "NodeStyleDict"]
 
 _QApp = None
 
@@ -29,6 +30,64 @@ class TreeImageProperties(object):
         self.aligned_face_foot = FaceHeader()
         self.title = None
         self.botton_line_text = None
+
+class NodeStyleDict(dict):
+    _LINE_TYPE_CHECKER = lambda self, x: x in (0,1,2)
+    _SIZE_CHECKER = lambda self, x: isinstance(x, int)
+    _COLOR_MATCH = re.compile("^#[A-Fa-f\d]{6}$")
+    _COLOR_CHECKER = lambda self, x: re.match(self._COLOR_MATCH, x)
+
+    def __init__(self, *args, **kargs):
+        super(NodeStyleDict, self).__init__(*args, **kargs)
+        super(NodeStyleDict, self).__setitem__("faces", {})
+        self._defaults = [
+            ["fgcolor",          "#0030c1",    self._COLOR_CHECKER                           ],
+            ["bgcolor",          "#FFFFFF",    self._COLOR_CHECKER                           ],
+            ["vt_line_color",    "#000000",    self._COLOR_CHECKER                           ],
+            ["hz_line_color",    "#000000",    self._COLOR_CHECKER                           ],
+            ["line_type",        0,            self._LINE_TYPE_CHECKER                       ], # 0 solid, 1 dashed, 2 dotted
+            ["size",             6,            self._SIZE_CHECKER                            ], # node circle size 
+            ["shape",            "sphere",     lambda x: x in ["sphere", "circle", "square"] ], 
+            ["draw_descendants", True,         lambda x: isinstance(x, bool) or x in (0,1)   ],
+            ["hlwidth",          1,            self._SIZE_CHECKER                            ]
+            ]
+        self._valid_keys = set([i[0] for i in self._defaults]) 
+        self.init()
+        self._block_adding_faces = False
+
+    def init(self):
+        for key, dvalue, checker in self._defaults:
+            if key not in self:
+                self[key] = dvalue
+            elif not checker(self[key]):
+                raise ValueError("'%s' attribute in node style has not a valid value: %s" %\
+                                     (key, self[key]))
+        super(NodeStyleDict, self).__setitem__("_faces", {})
+        # copy fixed faces to the faces dict that will be drawn 
+        for pos, values in self["faces"].iteritems():
+            for col, faces in values.iteritems():
+                self["_faces"].setdefault(pos, {})
+                self["_faces"][pos][col] = list(faces)
+
+    def add_fixed_face(self, face, position, column):
+        if self._block_adding_faces:
+            raise AttributeError("fixed faces cannot be modified while drawing.")
+            
+        from faces import FACE_POSITIONS
+        """ Add faces as a fixed feature of this node style. This
+        faces are always rendered. 
+
+        face: a Face compatible instance
+        Valid positions: %s
+        column: an integer number defining face relative position
+         """ %FACE_POSITIONS
+        self["faces"].setdefault(position, {})
+        self["faces"][position].setdefault(int(column), []).append(face)
+
+    def __setitem__(self, i, y):
+        if i not in self._valid_keys:
+            raise ValueError("'%s' is not a valid key for NodeStyleDict instances" %i)
+        super(NodeStyleDict, self).__setitem__(i, y)
 
 class FaceHeader(dict):
     def add_face_to_aligned_column(self, column, face):

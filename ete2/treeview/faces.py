@@ -121,14 +121,14 @@ FACE_POSITIONS = set(["branch-right", "aligned", "branch-top", "branch-bottom"])
 
 def add_face_to_node(face, node, column, aligned=False, position="branch-right"):
     """ Links a node with a given face instance.  """
-    node.img_style.setdefault("faces", {})
+    node.img_style.setdefault("_faces", {})
     if position not in FACE_POSITIONS:
         raise (ValueError, "Incorrect position") 
     if aligned:
         position = "aligned"
 
-    node.img_style["faces"].setdefault(position, {})
-    node.img_style["faces"][position].setdefault(int(column), []).append(face)
+    node.img_style["_faces"].setdefault(position, {})
+    node.img_style["_faces"][position].setdefault(int(column), []).append(face)
 
 
 class Face(object):
@@ -583,10 +583,10 @@ class ProfileFace(Face):
         y  = self.ymargin
 
         # Mean and quartiles y positions
-        mean_line_y = (self.center_v - self.min_value) * y_alpha
-        line2_y     = ((self.center_v+abs(self.min_value/2)) - self.min_value) * y_alpha
-        line3_y     = ((self.center_v-abs(self.max_value/2)) - self.min_value) * y_alpha
-
+        mean_line_y = y + profile_height/2
+        line2_y     = mean_line_y + profile_height/4
+        line3_y     = mean_line_y - profile_height/4
+        
         # Draw axis and scale
         p.setPen(QtGui.QColor("black"))
         p.drawRect(x2,y,profile_width, profile_height-1)
@@ -624,12 +624,12 @@ class ProfileFace(Face):
                 continue
 
             # First Y postions for mean
-            mean_y1     = (mean1 - self.min_value) * y_alpha
+            mean_y1 = (mean1 - self.min_value) * y_alpha
             # Second Y postions for mean
-            mean_y2     = (mean2 - self.min_value) * y_alpha
+            mean_y2 = (mean2 - self.min_value) * y_alpha
             # Draw blue mean line
             p.setPen(QtGui.QColor("blue"))
-            p.drawLine(x1,mean_y1, x2, mean_y2)
+            p.drawLine(x1, profile_height-mean_y1, x2, profile_height-mean_y2)
 
             if dev1!= 0 and dev2!=0:
                 # First Y postions for deviations

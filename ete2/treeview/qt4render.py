@@ -1,27 +1,11 @@
 import math
 import types
 import copy
-
 from PyQt4  import QtCore, QtGui
 from PyQt4.QtGui import QPrinter
 
 from qt4gui import _PropertiesDialog
 import layouts
-
-_MIN_NODE_STYLE = {
-    "fgcolor": "#0030c1",
-    "bgcolor": "#FFFFFF",
-    "vt_line_color": "#000000",
-    "hz_line_color": "#000000",
-    "line_type": 0,
-    "vlwidth": 1,
-    "hlwidth": 1,
-    "size":6,
-    "shape": "sphere",
-    "faces": None, # A dist must be initialized by node
-    "draw_descendants": 1,
-    "ymargin": 0
-}
 
 class _NodeItem(QtGui.QGraphicsRectItem):
     def __init__(self, node):
@@ -158,8 +142,6 @@ class _NodeItem(QtGui.QGraphicsRectItem):
         self.scene().startNode = self.node.up
         self.scene().draw()
 
-
-
 class _ArcItem(QtGui.QGraphicsRectItem):
     def __init__(self, angle_start, angle_span, radius, *args):
         QtGui.QGraphicsRectItem.__init__(self, 0, 0, radius, radius)
@@ -200,7 +182,6 @@ class _TextItem(QtGui.QGraphicsSimpleTextItem):
             self.node._QtItem_.showActionPopup()
         elif e.button() == QtCore.Qt.LeftButton:
             self.scene().propertiesTable.update_properties(self.node)
-
 
 class _FaceGroup(QtGui.QGraphicsItem): # I resisted to name this FaceBook :) 
     def __init__(self, faces, node, column_widths={}, *args, **kargs):
@@ -283,7 +264,7 @@ class _FaceItem(QtGui.QGraphicsPixmapItem):
         self.node = node
         self.face = face
 
-    def hoverEnterEvent (self,e):
+    def hoverEnterEvent (self, e):
         partition = self.parentItem().parentItem()
         width = partition.mapFromScene(self.scene().i_width, 0).x()
         height = partition.rect().height()
@@ -299,18 +280,20 @@ class _FaceItem(QtGui.QGraphicsPixmapItem):
         pass
 
     def mouseReleaseEvent(self,e):
-        if e.button() == QtCore.Qt.RightButton:
-            self.node._QtItem_.showActionPopup()
-        elif e.button() == QtCore.Qt.LeftButton:
-            self.scene().propertiesTable.update_properties(self.node)
+        if self.node:
+            if e.button() == QtCore.Qt.RightButton:
+                self.node._QtItem_.showActionPopup()
+            elif e.button() == QtCore.Qt.LeftButton:
+                self.scene().propertiesTable.update_properties(self.node)
 
 class _PartitionItem(QtGui.QGraphicsRectItem):
     def __init__(self, node, *args):
         QtGui.QGraphicsRectItem.__init__(self, *args)
         self.node = node
-
+        self.drawbg = False
     def paint(self, painter, option, index):
-        return QtGui.QGraphicsRectItem.paint(self, painter, option, index)
+        if self.drawbg:
+            return QtGui.QGraphicsRectItem.paint(self, painter, option, index)
 
 class _SelectorItem(QtGui.QGraphicsRectItem):
     def __init__(self):
@@ -354,9 +337,6 @@ class _HighlighterItem(QtGui.QGraphicsRectItem):
         p.setPen(self.Color)
         p.drawRect(self.rect().x(),self.rect().y(),self.rect().width(),self.rect().height())
         return
-
-
-
 
 class _TreeScene(QtGui.QGraphicsScene):
     def __init__(self, rootnode=None, style=None, *args):
@@ -709,11 +689,26 @@ class _TreeScene(QtGui.QGraphicsScene):
             warning_text.setParentItem(self.mainItem)
 
     def set_style_from(self,node,layout_func):
-        for n in [node]+node.get_descendants():
-            n.img_style = copy.copy(_MIN_NODE_STYLE)
-            #n.img_style["faces"] = []
-            n.img_style["faces"] = {}
-            layout_func(n)
+        # I import dict at the moment of drawing, otherwise there is a
+        # loop of imports between drawer and qt4render
+        from drawer import NodeStyleDict 
+        for n in node.traverse(): 
+            if not hasattr(n, "img_style"):
+                n.img_style = NodeStyleDict()
+            elif isinstance(n.img_style, NodeStyleDict): 
+                n.img_style.init()
+            else:
+                raise TypeError("img_style attribute in node %s is not of NodeStyleDict type." \
+                                    %n.name)
+            # Adding fixed faces during drawing is not allowed, since
+            # added faces will not be tracked until next execution
+            n.img_style._block_adding_faces = True
+            try:
+                layout_func(n)
+            except Exception:
+                n.img_style._block_adding_faces = False
+                raise
+
 
     def update_node_faces(self, node):
         # Organize all faces of this node in FaceGroups objects
@@ -722,7 +717,7 @@ class _TreeScene(QtGui.QGraphicsScene):
         
         self.node2faces[node] = faceblock
         for position in ["branch-right", "aligned", "branch-top", "branch-bottom"] :
-            if position in node.img_style["faces"]:
+            if position in node.img_style["_faces"]:
                 # The value of this is expected to be list of columns of faces
                 # c2f = [ [f1, f2, f3], 
                 #         [f4, f4]
@@ -731,7 +726,7 @@ class _TreeScene(QtGui.QGraphicsScene):
                     faceblock[position] = _FaceGroup({}, node)
                     continue # aligned on internal node does not make sense
                 else:
-                    faceblock[position] = _FaceGroup(node.img_style["faces"][position], node)
+                    faceblock[position] = _FaceGroup(node.img_style["_faces"][position], node)
 
             else:
                 faceblock[position] = _FaceGroup({}, node)
@@ -782,7 +777,7 @@ class _TreeScene(QtGui.QGraphicsScene):
         while nodeStack:
             node = nodeStack[-1]
             finished = True
-            if node.img_style["draw_descendants"]:
+            if not _leaf(node): # node.img_style["draw_descendants"]:
                 for c in node.children:
                     if c not in visited:
                         nodeStack.append(c)
@@ -839,7 +834,7 @@ class _TreeScene(QtGui.QGraphicsScene):
             if self.min_real_branch_separation < h:
                 self.min_real_branch_separation = h
 
-            if not node.is_leaf() and node.img_style["draw_descendants"]:
+            if not _leaf(node):# node.is_leaf() and node.img_style["draw_descendants"]:
                 widths, heights = zip(*[[c.fullRegion.width(),c.fullRegion.height()] \
                                           for c in node.children])
                 w += max(widths)
@@ -866,7 +861,7 @@ class _TreeScene(QtGui.QGraphicsScene):
             for f in faceblock.values():
                 f.setParentItem(partition)
 
-            if node.is_leaf() or not node.img_style["draw_descendants"]:
+            if _leaf(node): #node.is_leaf() or not node.img_style["draw_descendants"]:
                 # Leafs will be processed from parents
                 partition.center = self.get_partition_center(node)
                 continue
@@ -922,7 +917,7 @@ class _TreeScene(QtGui.QGraphicsScene):
         while nodeStack:
             node = nodeStack[-1]
             finished = True
-            if node.img_style["draw_descendants"]:
+            if not _leaf(node): #node.img_style["draw_descendants"]:
                 for c in node.children:
                     if c not in visited:
                         nodeStack.append(c)
@@ -975,7 +970,7 @@ class _TreeScene(QtGui.QGraphicsScene):
             if self.min_real_branch_separation < h:
                 self.min_real_branch_separation = h
 
-            if not node.is_leaf() and node.img_style["draw_descendants"]:
+            if not _leaf(node): #node.is_leaf() and node.img_style["draw_descendants"]:
                 widths, heights = zip(*[[c.fullRegion.width(),c.fullRegion.height()] \
                                           for c in node.children])
                 w += max(widths)
@@ -1047,7 +1042,7 @@ class _TreeScene(QtGui.QGraphicsScene):
         down = self.node2faces[n]["branch-bottom"].h
         up = self.node2faces[n]["branch-top"].h
 
-        if n.is_leaf() or not n.img_style["draw_descendants"]:
+        if _leaf(n): #n.is_leaf() or not n.img_style["draw_descendants"]:
             center = n.fullRegion.height()/2
         else:
             first_child_part = self.node2item[n.children[0]]
@@ -1069,8 +1064,7 @@ class _TreeScene(QtGui.QGraphicsScene):
             color = QtGui.QColor(style["bgcolor"])
             partition.setBrush(color)
             partition.setPen(color)
-        else:
-            partition.setPen(QtGui.QColor("#FFFFFF"))
+            partition.drawbg = True
 
         # Draw partition components 
         # Draw node balls in the partition centers
@@ -1126,7 +1120,7 @@ class _TreeScene(QtGui.QGraphicsScene):
             # Rendering is delayed until I know right positions 
 
         # Vt Line
-        if not node.is_leaf() and style["draw_descendants"]==1:
+        if not _leaf(node): #node.is_leaf() and style["draw_descendants"]==1:
             vt_line = QtGui.QGraphicsLineItem(partition)
             first_child_part = self.node2item[node.children[0]]
             last_child_part = self.node2item[node.children[-1]]
@@ -1147,5 +1141,11 @@ def set_pen_style(pen, line_style):
     elif line_style == 2:
         pen.setStyle(QtCore.Qt.DotLine)
 
+def _leaf(node):
+    """ Returns true if node is a leaf or if draw_descendants style is
+    set to false """ 
+    if node.is_leaf() or not node.img_style.get("draw_descendants", True):
+        return True
+    return False
 
     
