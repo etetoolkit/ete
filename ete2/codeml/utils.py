@@ -22,12 +22,42 @@ def mkdir_p(path):
 def get_rooting(tol, seed_species, agename = False):
     '''
     returns dict of species age for a given TOL and a given seed
+    usage:
+    tol  = "((((((((Drosophila melanogaster,(Drosophila simulans,Drosophila secchellia)),(Drosophila yakuba,Drosophila erecta))[&&NHX:name=melanogaster subgroup],Drosophila ananassae)[&&NHX:name=melanogaster group],(Drosophila pseudoobscura,Drosophila persimilis)[&&NHX:name=obscura group])[&&NHX:name=Sophophora Old World],Drosophila willistoni)[&&NHX:name=subgenus Sophophora],(Drosophila grimshawi,(Drosophila virilis,Drosophila mojavensis))[&&NHX:name=subgenus Drosophila])[&&NHX:name=genus Drosophila],(Anopheles gambiae,Aedes aegypti)[&&NHX:name=Culicidae])[&&NHX:name=Arthropoda],Caenorhabditis elegans)[&&NHX:name=Animalia];"
+    seed = "Drosophila melanogaster"
+    ROOTING, age2name = get_rooting (tol, seed, True)
+
+    ROOTING == {"Aedes aegypti"           : 7,
+                "Anopheles gambiae"       : 7,
+                "Caenorhabditis elegans"  : 8,
+                "Drosophila ananassae"    : 3,
+                "Drosophila erecta"       : 2,
+                "Drosophila grimshawi"    : 6,
+                "Drosophila melanogaster" : 1,
+                "Drosophila mojavensis"   : 6,
+                "Drosophila persimilis"   : 4,
+                "Drosophila pseudoobscura": 4,
+                "Drosophila secchellia"   : 1,
+                "Drosophila simulans"     : 1,
+                "Drosophila virilis"      : 6,
+                "Drosophila willistoni"   : 5,
+                "Drosophila yakuba"       : 2}
+
+    age2name == {1: "Drosophila melanogaster. Drosophila simulans. Drosophila secchellia",
+                 2: "melanogaster subgroup",
+                 3: "melanogaster group",
+                 4: "Sophophora Old World",
+                 5: "subgenus Sophophora",
+                 6: "genus Drosophila",
+                 7: "Arthropoda",
+                 8: "Animalia"}
     '''
+
     tol = Tree (tol)
     try:
         node = tol.search_nodes (name=seed_species)[0]
     except IndexError:
-        sys.exit ('ERROR: Seed species not found in tree\n')
+        exit ('ERROR: Seed species not found in tree\n')
     age = 1
     ROOTING = {}
     if agename:
@@ -37,7 +67,7 @@ def get_rooting(tol, seed_species, agename = False):
         for leaf in node.get_leaf_names():
             if agename:
                 if node.name == 'NoName':
-                    nam = '. '.join (node.get_leaf_names())
+                    nam = '.'.join (node.get_leaf_names())
                 else:
                     nam = node.name
                 age2name.setdefault (age, nam)
