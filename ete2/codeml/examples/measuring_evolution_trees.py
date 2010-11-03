@@ -2,16 +2,16 @@
 #        Author: Francois-Jose Serra
 # Creation Date: 2010/04/26 17:17:06
 
-from ete_dev import CodemlTree
+from ete_dev.codeml import CodemlTree
 import sys, re
 
 typ = None
 while typ != 'L' and typ != 'S':
     typ = raw_input (\
         "choose kind of example [L]ong or [S]hort, hit [L] or [S]:\n")
-TREE_PATH    = "./measuring_%s_tree.nw" % (typ)
+TREE_PATH    = "data/measuring_%s_tree.nw" % (typ)
 
-ALG_PATH     = "./alignment_%s_measuring_evol.fasta" % (typ)
+ALG_PATH     = "data/alignment_%s_measuring_evol.fasta" % (typ)
 WORKING_PATH = "/tmp/ete2-codeml_example/"
 
 #MY_PATH = '/home/francisco/toolbox/ete2-codeml/doc/tutorial/examples/'

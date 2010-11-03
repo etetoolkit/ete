@@ -23,6 +23,6 @@
 
 from parser.codemlparser import *
 from coretype.codemltree import *
-from coretype.treeview   import *
+from treeview.histface   import *
 
 

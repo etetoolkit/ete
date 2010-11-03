@@ -29,7 +29,7 @@ features to the the node instances.
 import os
 from sys import stderr
 
-from ete_dev import PhyloNode
+from ete_dev import PhyloNode, TreeImageProperties
 from ete_dev.codeml.parser import parse_paml, get_sites
 from model import Model, AVAIL, PARAMS
 from utils import translate, colorize_rst, label_tree
@@ -55,8 +55,7 @@ class CodemlNode(PhyloNode):
         # _update names?
         self._name = "NoName"
         self._speciesFunction = None
-        self.up_faces = []
-        self.down_faces = []
+        self.img_prop = None
         self.workdir = '/tmp/ete2-codeml/'
         self.codemlpath = 'codeml'
         self._models = {}
@@ -110,27 +109,25 @@ class CodemlNode(PhyloNode):
             if nucleotides:
                 leaf.sequence = translate(leaf.nt_sequence)
 
-    def show (self, layout=None,
-             image_properties=None, up_faces=[], down_faces=[]):
+    def show (self, layout=None):
         '''
         call super show adding up and down faces
         '''
-        super(CodemlTree, self).show(layout=layout, up_faces=self.up_faces, \
-                                     down_faces=self.down_faces)
+        super(CodemlTree, self).show(layout=layout,
+                                     image_properties=self.img_prop)
 
     def render (self, filename, layout=None, w=None, h=None, \
                img_properties=None, header=None):
         '''
         call super show adding up and down faces
         '''
-        super(CodemlTree, self).render(filename, layout=layout, \
-                                       up_faces=self.up_faces, \
-                                       down_faces = self.down_faces, w=w, h=h)
+        super(CodemlTree, self).render(filename, layout=layout,
+                                       img_properties=self.img_prop,
+                                       w=w, h=h)
 
     def run_paml (self, model, ctrl_string='', keep=True, paml=False, **kwargs):
         ''' To compute evolutionnary models with paml
         extra parameters should be in '''
-
         from subprocess import Popen, PIPE
         fullpath = os.path.join(self.workdir, model)
         os.system("mkdir -p %s" %fullpath)
@@ -301,13 +298,17 @@ class CodemlNode(PhyloNode):
                    'PS+': 'red'}
         '''
         if typ   == 'hist':
-            from HistFace import HistFace as face
+            from ete_dev.codeml import HistFace as face
         elif typ == 'line':
-            from HistFace import LineFaceBG as face
+            from ete_dev.codeml import LineFaceBG as face
         elif typ == 'error':
-            from HistFace import ErrorLineFace as face
+            from ete_dev.codeml import ErrorLineFace as face
         elif typ == 'protamine':
-            from HistFace import ErrorLineProtamineFace as face
+            from ete_dev.codeml import ErrorLineProtamineFace as face
+        if not self._models.has_key(mdl):
+            print >> stderr, \
+                  "WARNING: model %s not computed." % (mdl)
+            return None
         if self._models[mdl].sites == None:
             print >> stderr, \
                   "WARNING: model %s not computed." % (mdl)
@@ -321,10 +322,11 @@ class CodemlNode(PhyloNode):
                                          mdl, ldic['class.'+mdl], col=col),
                      header=header, errors=ldic['se.'+mdl], extras=extras)
         hist.aligned = True
+        self.img_prop = TreeImageProperties()
         if down:
-            self.down_faces = [hist]
+            self.img_prop.aligned_face_header.add_face_to_aligned_column(0, hist)
         else:
-            self.up_faces   = [hist]
+            self.img_prop.aligned_face_foot.add_face_to_aligned_column(0, hist)
 
     def write (self, features=None, outfile=None, format=10):
         """ Returns the newick-PAML representation of this node
