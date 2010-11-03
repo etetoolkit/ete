@@ -11,7 +11,7 @@ class _NodeItem(QtGui.QGraphicsRectItem):
     def __init__(self, node):
         self.node = node
         self.radius = node.img_style["size"]/2
-        QtGui.QGraphicsRectItem.__init__(self,0,0,self.radius*2,self.radius*2)
+        QtGui.QGraphicsRectItem.__init__(self, 0, 0, self.radius*2, self.radius*2)
 
     def paint(self, p, option, widget):
         #QtGui.QGraphicsRectItem.paint(self, p, option, widget)
@@ -362,6 +362,7 @@ class _TreeScene(QtGui.QGraphicsScene):
         self.selector = None
         self.mainItem = None        # Qt Item which is parent of all other items
         self.propertiesTable = _PropertiesDialog(self)
+        self.border = None
 
     def initialize_tree_scene(self, tree, style, tree_properties):
         self.tree        = tree        # Pointer to original tree
@@ -464,7 +465,6 @@ class _TreeScene(QtGui.QGraphicsScene):
             if h>dpi * 11:
                 h = dpi * 11
                 w = h / aspect_ratio
-
         elif h is None:
             h = w * aspect_ratio
         elif w is None:
@@ -567,14 +567,17 @@ class _TreeScene(QtGui.QGraphicsScene):
                 partition = fb.parentItem()
                 guideline.setParentItem(partition)
                 guideline.setLine(partition.rect().width(), partition.center,\
-                                  pos.x(), partition.center )
+                                  pos.x(), partition.center)
                 pen = QtGui.QPen()
                 pen.setColor(QtGui.QColor(self.props.line_from_leaves_to_aligned_faces_color))
                 set_pen_style(pen, self.props.line_from_leaves_to_aligned_faces_type)
                 guideline.setPen(pen)
+
         # Place faces around tree
         x = self.i_width
         y = self.i_height
+        max_up_height = 0
+        max_down_height = 0
         for c in column2max_width:
             fb_up = header_afaces.get(c, None)
             fb_down = foot_afaces.get(c, None)
@@ -583,20 +586,27 @@ class _TreeScene(QtGui.QGraphicsScene):
                 fb_up.render()
                 fb_up.setPos(x, -fb_up.h)
                 fb_width = fb_up.w 
+                max_up_height = max(max_up_height, fb_up.h)
             if fb_down:
                 fb_down.render()
                 fb_down.setPos(x, y)
                 fb_width = max(fb_down.w, fb_width) 
+                max_down_height = max(max_down_height, fb_down.h)
             x += column2max_width.get(c, fb_width)
 
         # updates image size
         self.i_width += sum(column2max_width.values())
+        self.i_height += max_down_height + max_up_height
+        self.mainItem.moveBy(0, max_up_height)
 
     def draw(self):
         # Clean previous items from scene by removing the main parent
         if self.mainItem:
             self.removeItem(self.mainItem)
-
+            self.mainItem = None            
+        if self.border:
+            self.removeItem(self.border)
+            self.border = None
         # Initialize scene 
         self.max_w_aligned_face = 0    # Stores the max width of aligned faces
         self.aligned_faces = []
@@ -607,6 +617,7 @@ class _TreeScene(QtGui.QGraphicsScene):
         self._highlighted_nodes = {}
         self.node2faces = {}
         self.node2item = {}
+        self.node2ballmap = {}
 
         #Clean_highlighting rects
         for n in self._highlighted_nodes:
@@ -642,53 +653,77 @@ class _TreeScene(QtGui.QGraphicsScene):
         # Get tree picture dimensions
         self.i_width  = self.startNode.fullRegion.width()
         self.i_height = self.startNode.fullRegion.height()
-
         self.draw_tree_surrondings()
-        # Tree border
-        if self.props.draw_image_border:
-            border = self.addRect(0,0,self.i_width, self.i_height)
-            border = self.addRect(0,0,self.i_width-self.max_w_aligned_face,self.i_height)
-            border = self.addRect(0,0, self.sceneRect().width(), self.sceneRect().height())
-            border.setParentItem(self.mainItem)
 
         # Draw scale
-        self.add_scale(1 ,self.i_height+4)
-
+        scaleItem = self.get_scale()
+        scaleItem.setParentItem(self.mainItem)
+        scaleItem.setPos(0, self.i_height)
+        self.i_height += scaleItem.rect().height()
+        
         #Re-establish node marks
         for n in self._highlighted_nodes:
             self.highlight_node(n)
 
-        self.setSceneRect(-2,-2,self.i_width+4,self.i_height+50)
+        self.setSceneRect(-10,-10, self.i_width+10, self.i_height+10)
+        # Tree border
+        if self.props.draw_image_border:
+            self.border = self.addRect(0, 0, self.i_width, self.i_height)
 
-    def add_scale(self,x,y):
-        size = 50
-        customPen  = QtGui.QPen(QtGui.QColor("black"),1)
+    def get_tree_img_map(self):
+        node_list = []
+        face_list = []
+        nid = 0
+        for n, partition in self.node2item.iteritems():
+            n.add_feature("_nid", str(nid))
+            for item in partition.childItems():
+                if isinstance(item, _NodeItem):
+                    pos = item.mapToScene(0,0)
+                    size = item.mapToScene(item.rect().width(), item.rect().height())
+                    node_list.append([pos.x(),pos.y(),size.x(),size.y(), nid, None])
+                elif isinstance(item, _FaceGroup):
+                    for f in item.childItems():
+                        pos = f.mapToScene(0,0)
+                        if isinstance(f, _TextItem):
+                            size = f.mapToScene(f.boundingRect().width(), \
+                                                    f.boundingRect().height())
+                            face_list.append([pos.x(),pos.y(),size.x(),size.y(), nid, str(f.text())])
+                        else:
+                            size = f.mapToScene(f.rect().width(), f.rect().height())
+                            face_list.append([pos.x(),pos.y(),size.x(),size.y(), nid, None])
+            nid += 1
+        return {"nodes": node_list, "faces": face_list}
 
-        line = QtGui.QGraphicsLineItem(self.mainItem)
-        line2 = QtGui.QGraphicsLineItem(self.mainItem)
-        line3 = QtGui.QGraphicsLineItem(self.mainItem)
+    def get_scale(self):
+        length = 50
+        scaleItem = _PartitionItem(None) # Unassociated to nodes
+        scaleItem.setRect(0, 0, 50, 50)
+        customPen = QtGui.QPen(QtGui.QColor("black"), 1)
+        line = QtGui.QGraphicsLineItem(scaleItem)
+        line2 = QtGui.QGraphicsLineItem(scaleItem)
+        line3 = QtGui.QGraphicsLineItem(scaleItem)
         line.setPen(customPen)
         line2.setPen(customPen)
         line3.setPen(customPen)
 
-        line.setLine(x,y+20,size,y+20)
-        line2.setLine(x,y+15,x,y+25)
-        line3.setLine(size,y+15,size,y+25)
-
-        scale_text = "%0.2f" % float(size/ self.scale)
+        line.setLine(0, 5, length, 5)
+        line2.setLine(0, 0, 0, 10)
+        line3.setLine(length, 0, length, 10)
+        scale_text = "%0.2f" % float(length/self.scale)
         scale = QtGui.QGraphicsSimpleTextItem(scale_text)
-        scale.setParentItem(self.mainItem)
-        scale.setPos(x,y+20)
-
+        scale.setParentItem(scaleItem)
+        scale.setPos(0, 10)
+       
         if self.props.force_topology:
             wtext = "Force topology is enabled!\nBranch lengths does not represent original values."
             warning_text = QtGui.QGraphicsSimpleTextItem(wtext)
-            warning_text.setFont( QtGui.QFont("Arial", 8))
+            warning_text.setFont(QtGui.QFont("Arial", 8))
             warning_text.setBrush( QtGui.QBrush(QtGui.QColor("darkred")))
-            warning_text.setPos(x, y+32)
-            warning_text.setParentItem(self.mainItem)
+            warning_text.setPos(0, 32)
+            warning_text.setParentItem(scaleItem)
+        return scaleItem
 
-    def set_style_from(self,node,layout_func):
+    def set_style_from(self, node, layout_func):
         # I import dict at the moment of drawing, otherwise there is a
         # loop of imports between drawer and qt4render
         from drawer import NodeStyleDict 
@@ -709,7 +744,6 @@ class _TreeScene(QtGui.QGraphicsScene):
                 n.img_style._block_adding_faces = False
                 raise
 
-
     def update_node_faces(self, node):
         # Organize all faces of this node in FaceGroups objects
         # (tables of faces)
@@ -727,10 +761,8 @@ class _TreeScene(QtGui.QGraphicsScene):
                     continue # aligned on internal node does not make sense
                 else:
                     faceblock[position] = _FaceGroup(node.img_style["_faces"][position], node)
-
             else:
                 faceblock[position] = _FaceGroup({}, node)
-
         return faceblock
 
     def update_node_areas_rectangular(self,root_node):
@@ -1059,7 +1091,6 @@ class _TreeScene(QtGui.QGraphicsScene):
             
     def render_node_partition(self, node, partition):
         style = node.img_style
- 
         if style["bgcolor"].upper() not in set(["#FFFFFF", "white"]): 
             color = QtGui.QColor(style["bgcolor"])
             partition.setBrush(color)
@@ -1074,6 +1105,9 @@ class _TreeScene(QtGui.QGraphicsScene):
         node_ball.setParentItem(partition)            
         node_ball.setPos(ball_start_x, partition.center-(ball_size/2))
         node_ball.setAcceptsHoverEvents(True)
+
+        self.node2ballmap[node] = node_ball
+
         # Hz line
         hz_line = QtGui.QGraphicsLineItem(partition)
         hz_line.setLine(0, partition.center, 

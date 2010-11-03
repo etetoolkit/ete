@@ -71,7 +71,7 @@ I.aligned_face_foot.add_face_to_aligned_column(3, t2)
 I.draw_lines_from_leaves_to_aligned_faces = True
 I.line_from_leaves_to_aligned_faces_type = 2
 
-I.draw_image_border = False
+I.draw_image_border = True
 I.draw_aligned_faces_as_grid = False
 t = Tree()
 t.dist = 0
