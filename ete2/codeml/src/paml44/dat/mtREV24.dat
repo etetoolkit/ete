@@ -1,0 +1,41 @@
+
+  23.18
+  26.95  13.24
+  17.67   1.90 794.38
+  59.93 103.33  58.94   1.90
+   1.90 220.99 173.56  55.28  75.24
+   9.77   1.90  63.05 583.55   1.90 313.56
+ 120.71  23.03  53.30  56.77  30.71   6.75  28.28
+  13.90 165.23 496.13 113.99 141.49 582.40  49.12   1.90
+  96.49   1.90  27.10   4.34  62.73   8.34   3.31   5.98  12.26
+  25.46  15.58  15.16   1.90  25.65  39.70   1.90   2.41  11.49 329.09
+   8.36 141.40 608.70   2.31   1.90 465.58 313.86  22.73 127.67  19.57  14.88
+ 141.88   1.90  65.41   1.90   6.18  47.37   1.90   1.90  11.97 517.98 537.53  91.37
+   6.37   4.69  15.20   4.98  70.80  19.11   2.67   1.90  48.16  84.67 216.06   6.44  90.82
+  54.31  23.64  73.31  13.43  31.26 137.29  12.83   1.90  60.97  20.63  40.10  50.10  18.84  17.31
+ 387.86   6.04 494.39  69.02 277.05  54.11  54.71 125.93  77.46  47.70  73.61 105.79 111.16  64.29 169.90
+ 480.72   2.08 238.46  28.01 179.97  94.93  14.82  11.17  44.78 368.43 126.40 136.33 528.17  33.85 128.22 597.21
+   1.90  21.95  10.68  19.86  33.60   1.90   1.90  10.92   7.08   1.90  32.44  24.00  21.71   7.84   4.21  38.58   9.99
+   6.48   1.90 191.36  21.21 254.77  38.82  13.12   3.21 670.14  25.01  44.15  51.17  39.96 465.58  16.21  64.92  38.73  26.25
+ 195.06   7.64   1.90   1.90   1.90  19.00  21.14   2.53   1.90 1222.94  91.67   1.90 387.54   6.35   8.23   1.90 204.54   5.37   1.90
+
+
+0.072 0.019 0.039 0.019 0.006 0.025 0.024 0.056 0.028 0.088 0.169
+0.023 0.054 0.061 0.054 0.072 0.086 0.029 0.033 0.043
+
+Ala Arg Asn Asp Cys Gln Glu Gly His Ile Leu Lys Met Phe Pro Ser Thr Trp Tyr Val
+
+
+S_ij = S_ji and PI_i for the mtREV24 model (Adachi and Hasegawa 1996).
+The PI's used to sum to 0.999 and I changed one of the freq from 0.168
+into 0.169 so that the sum is 1.  Prepared by Z. Yang according to
+data sent by Dr M. Hasegawa.  This matrix was obtained from the 12
+mitochondrial proteins encoded by the same strand of the DNA from a
+diverse range of species including bird, fish, frog, lamprey, as well
+as mammals (see Adachi and Hasegawa 1996 for details).  The other
+matrix (mtmam.dat) included in the package is based on the same
+proteins from mammals only.
+
+Adachi, J. and Hasegawa, M. (1996) MOLPHY version 2.3: programs for
+molecular phylogenetics based on maximum likelihood.  Computer Science
+Monographs of Institute of Statistical Mathematics 28:1-150.

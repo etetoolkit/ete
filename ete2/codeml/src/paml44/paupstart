@@ -1,0 +1,3 @@
+begin paup;
+   log start repl=yes;
+end;

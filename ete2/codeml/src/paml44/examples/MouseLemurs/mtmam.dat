@@ -1,0 +1,76 @@
+ 32                                                                         
+  2   4                                                                     
+ 11   0 864                                                                 
+  0 186   0   0                                                             
+  0 246   8  49   0                                                         
+  0   0   0 569   0 274                                                     
+ 78  18  47  79   0   0  22                                                 
+  8 232 458  11 305 550  22   0                                             
+ 75   0  19   0  41   0   0   0   0                                         
+ 21   6   0   0  27  20   0   0  26 232                                     
+  0  50 408   0   0 242 215   0   0   6   4                                 
+ 76   0  21   0   0  22   0   0   0 378 609  59                             
+  0   0   6   5   7   0   0   0   0  57 246   0  11                         
+ 53   9  33   2   0  51   0   0  53   5  43  18   0  17                     
+342   3 446  16 347  30  21 112  20   0  74  65  47  90 202                 
+681   0 110   0 114   0   4   0   1 360  34  50 691   8  78 614             
+  5  16   6   0  65   0   0   0   0   0  12   0  13   0   7  17   0         
+  0   0 156   0 530  54   0   1 1525 16  25  67   0 682   8 107   0  14    
+398   0   0  10   0  33  20   5   0 2220 100  0 832   6   0   0 237   0   0
+
+
+0.0692 0.0184 0.0400 0.0186 0.0065 0.0238 0.0236 0.0557 0.0277 0.0905
+0.1675 0.0221 0.0561 0.0611 0.0536 0.0725 0.0870 0.0293 0.0340 0.0428
+
+ A   R   N   D   C   Q   E   G   H   I   L   K   M   F   P   S   T   W   Y   V
+Ala Arg Asn Asp Cys Gln Glu Gly His Ile Leu Lys Met Phe Pro Ser Thr Trp Tyr Val
+
+
+Symmetrical part of the rate matrix and aa frequencies, estimated from
+the 12 mt proteins (atp6 atp8 cox1 cox2 cox3 cytb nd1 nd2 nd3 nd4 nd4l
+nd5) on the same strand of the mitochondrial DNA (3331 sites).  The
+data are from 20 species of mammals and three close outgroups
+(wallaroo, opossum, and platypus).  The model used is
+REVaa+dGamma(K=8) with the estimated gamma parameter to be 0.37.  The
+first part is S_ij = S_ji, and the second part has the amino acid
+frequencies (PI_i).  The substitution rate from amino acid i to j is
+Q_ij=S_ij*PI_j.
+
+
+The data are from
+
+   Cao, Y. et al. 1998 Conflict amongst individual mitochondrial proteins
+   in resolving the phylogeny of eutherian orders.  Journal of
+   Molecular Evolution 15:1600-1611.
+
+The species are listed below
+
+1 SB17F Homo sapiens (African) # D38112
+2 CHIMP Pan troglodytes (chimpanzee) # D38113
+3 PyGC Pan paniscus (bonobo) # D38116
+4 GORIL Gorilla gorilla (gorilla) # D38114
+5 ORANG Pongo pygmaeus (orangutan) # D38115
+6 Ponpy Pongo pygmaeus abelii (Sumatran orangutan) # X97707
+7 Hylla Hylobates lar (common gibbon) # X99256 (lar gibbon)
+8 Phovi Phoca vitulina (harbor seal) # X63726
+9 Halgr Halichoerus grypus (grey seal) # X72004
+10 Felca Felis catus (cat) # U20753
+11 Equca Equus caballus (horse) # X79547
+12 Rhiun Rhinoceros unicornis (Indian rhinoceros) # X97336
+13 Bosta Bos taurus (cow) # J01394
+14 Balph Balaenoptera physalus (fin whale) # X61145
+15 Balmu Balaenoptera musculus (blue whale) # X72204
+16 Ratno Rattus norvegicus (rat) # X14848
+17 Musmu Mus musculus (mouse) # J01420
+18 Macro Macropus robustus (wallaroo) # Y10524
+19 Didvi Didelphis virginiana (opossum) # Z29573
+20 Ornan Ornithorhynchus anatinus (platypus) # X83427
+
+
+The results are details of the model are published in
+
+   Yang, Z., R. Nielsen, and M. Hasegawa.  1998.  Models of amino acid
+   substitution and applications to Mitochondrial protein evolution, 
+   Molecular Biology and Evolution 15:1600-1611.
+
+Prepared by Z. Yang, April 1998.

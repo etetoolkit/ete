@@ -1,0 +1,47 @@
+
+5
+
+1: DN HQ LI MI ML FI FL YF VM
+2: QR ED EQ HR PA SN TP VI VL
+3: GA KQ KE SG TA TN TS WL VA VF
+4: HN HD PQ PH SP TK TM YH
+0: all others
+
+// end of file.
+Partitioning according to grantham.dat, for table 5 in Yang et al. (1998).
+
+
+
+2
+1: RH RK DE AG AP AS AT AV NI NS NT NY CG CF CS CW CY QL QP GS GW GV IL IM IF IS IT IV LM LF LP LS LW LV MT MV FS FY FV PS PT ST SW SY
+0: all others
+
+// End of File
+
+Prepared by Wa Yang.  This partitions amino acid changes into the
+conserved changes (class 1 above) and radical changes (class 0, which
+includes all the other changes).  This partitioning is based on
+charge.  The list works on universal code.  For mt code (icode = 1),
+some of the pairs specified cannot really change between themselves in
+one step and should be deleted.  I did not check carefully and the
+program simply ignores such pairs.
+
+
+
+
+Notes for file format: The number on the first line is the number of
+substitution types or omega's.  This line is followed by as many lines
+as the number of substitution types.  The last line, not read by the
+program, includes all amino acid pairs not mentioned before.  If the
+specified amino acid pair cannot change between themselves in one step
+(by one codon-position difference), the pair is discarded, with a
+warning message.  To fit the "general" model, assigning an independent
+w ratio for each one-step amino acid pair, put -1 at the start of the
+file, and then the program will ignore the rest of the file and fit
+the general model (see pages 1608-1609 in Yang et al. 1998).
+
+Reference
+
+Yang, Z., R. Nielsen and M. Hasegawa. 1998. Models of amino acid
+substitution and applications to mitochondrial protein evolution. 
+Mol. Biol. Evol. 15:1600-1611.

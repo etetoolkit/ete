@@ -1,0 +1,61 @@
+0          * 0,1:seqs or patters in paml format (mc.paml); 2:paup format (mc.nex)
+113147       * random number seed (odd number)
+8  10000  5  * <# seqs>  <# codons>  <# replicates>
+
+-1           * <tree length, use -1 if tree has absolute branch lengths>
+
+(((a:0.1, b:0.2):0.12, (c:0.3, d:0.4):0.34):0.1234, ((e:0.5, f:0.6):0.56, (g:0.7, h:0.8):0.78):0.5678);
+
+4                 * number of site classes, & frequencies for site classes
+  0.2  0.2  0.3  0.3  * must sum to 1.
+
+(((a #0.1, b #0.1) #0.1, (c #0.1, d #0.1) #0.1) #0.1, ((e #0.1, f #0.1) #0.1, (g #0.1, h #0.1) #0.1) #0.1);
+(((a #1.0, b #1.0) #1.0, (c #1.0, d #1.0) #1.0) #1.0, ((e #1.0, f #1.0) #1.0, (g #1.0, h #1.0) #1.0) #1.0);
+(((a #0.1, b #0.1) #3.0, (c #0.1, d #0.1) #0.1) #0.1, ((e #0.1, f #0.1) #3.0, (g #0.1, h #0.1) #0.1) #0.1);
+(((a #1.0, b #1.0) #3.0, (c #1.0, d #1.0) #1.0) #1.0, ((e #1.0, f #1.0) #3.0, (g #1.0, h #1.0) #1.0) #1.0);
+
+2.5    * kappa
+
+0.01639344 0.01639344 0.01639344 0.01639344 
+0.01639344 0.01639344 0.01639344 0.01639344 
+0.01639344 0.01639344 0          0
+0.01639344 0.01639344 0          0.01639344 
+
+0.01639344 0.01639344 0.01639344 0.01639344 
+0.01639344 0.01639344 0.01639344 0.01639344 
+0.01639344 0.01639344 0.01639344 0.01639344 
+0.01639344 0.01639344 0.01639344 0.01639344 
+
+0.01639344 0.01639344 0.01639344 0.01639344 
+0.01639344 0.01639344 0.01639344 0.01639344 
+0.01639344 0.01639344 0.01639344 0.01639344 
+0.01639344 0.01639344 0.01639344 0.01639344 
+
+0.01639344 0.01639344 0.01639344 0.01639344 
+0.01639344 0.01639344 0.01639344 0.01639344 
+0.01639344 0.01639344 0.01639344 0.01639344 
+0.01639344 0.01639344 0.01639344 0.01639344 
+
+
+//end of file
+
+============================================================================
+MCcodonNSbranches.dat
+Notes for using evolver to simulate codon sequences under the branch model, 
+with different omega's for different branches. 
+
+Change values of parameters, but do not delete them.  You can add
+empty lines, but do not break one line into several lines or merge several 
+lines into one line.
+
+Use : to indicate the branch length in the tree topology.  Use # to
+indicate the omega ratio for the branch.
+
+64 codon freqs are in fixed order TTT, TTC, TTA, TTG, TCT, TCC, ..., GGG.
+Stop codons have frequency 0.
+
+=================!! Check screen output carefully!! ========================
+
+nice trees:
+
+(((a:0.2, b:0.2):0.2, (c:0.2, d:0.2):0.2):0.2, ((e:0.2, f:0.2):0.2, (g:0.2, h:0.2):0.2):0.2);

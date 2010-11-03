@@ -1,0 +1,10 @@
+  5   3
+
+((((1,2),3),4),5);  /  just 3 plausible rooted trees of the 105 possible; this is ((((H,C),Go...
+((((1,3),2),4),5);  /  ((((H,Go),C...
+((((2,3),1),4),5);  /  ((((C,Go),H...
+
+
+
+// end of file
+// Notes: change clock = 1 in baseml.ctl to use those rooted trees.

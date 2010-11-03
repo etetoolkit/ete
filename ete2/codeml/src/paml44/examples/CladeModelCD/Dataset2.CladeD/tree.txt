@@ -1,0 +1,2 @@
+((((Hylobates_EDN #1,(Orang_EDN #1,(Gorilla_EDN #1,(Chimp_EDN #1,Human_EDN #1)#1)#1)#1)#1,(Macaq_EDN #1,(Cercopith_EDN #1,(Macaq2_EDN #1,Papio_EDN #1)#1)#1)#1)#1,(Orang_ECP,((Macaq_ECP,Macaq2_ECP),(Goril_ECP,Chimp_ECP,Human_ECP))))#1,OwlMonkey_EDN #1, Tamarin_EDN #1);
+

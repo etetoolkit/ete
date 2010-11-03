@@ -1,0 +1,6 @@
+begin paup;
+  set autoclose=yes warnreset=no notifybeep=no;
+  set crit=parsimony;
+  hsearch nocollapse swap=none;
+  savetrees fmt=altnex append;
+end;
