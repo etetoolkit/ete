@@ -456,7 +456,8 @@ class _TreeScene(QtGui.QGraphicsScene):
         ext = imgName.split(".")[-1].upper()
 
         root = self.startNode
-        aspect_ratio = root.fullRegion.height() / root.fullRegion.width()
+        #aspect_ratio = root.fullRegion.height() / root.fullRegion.width()
+        aspect_ratio = self.i_height / self.i_width
 
         # auto adjust size
         if w is None and h is None:
@@ -665,7 +666,7 @@ class _TreeScene(QtGui.QGraphicsScene):
         for n in self._highlighted_nodes:
             self.highlight_node(n)
 
-        self.setSceneRect(-10,-10, self.i_width+10, self.i_height+10)
+        self.setSceneRect(0,0, self.i_width, self.i_height)
         # Tree border
         if self.props.draw_image_border:
             self.border = self.addRect(0, 0, self.i_width, self.i_height)

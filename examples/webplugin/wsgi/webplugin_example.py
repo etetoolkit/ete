@@ -2,8 +2,8 @@ import sys
 import re
 from string import strip
 
-sys.path.insert(0, "/home/services/software/ete2-webplugin/")
-sys.path.insert(0, "/home/jhuerta/_Devel/ete/ete2-faces-web/")
+#sys.path.insert(0, "/home/services/software/ete2-webplugin/")
+sys.path.insert(0, "/home/jhuerta/_Devel/ete/ete2-improved-faces/")
 from ete_dev import WebTreeApplication # Required to use the webplugin
 
 from ete_dev import PhyloTree, faces # Required by my custom
