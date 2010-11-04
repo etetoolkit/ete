@@ -6,7 +6,11 @@ from getpass import getpass
 sys.path.append(os.path.join(os.getcwd(), "../ete2/phylomedb/"))
 from phylomeDB3 import PhylomeDB3Connector
 
-host, dbase, user, port, pasw = "", "", "", "", ""
+host = "phylomedb.org"
+dbase = "phylomedb_3"
+user = "public"
+port = 3306
+pasw = "public"
 
 ### ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ****
 searched_1 = {'SYNPW': {1: ['Phy0025Y50_SYNPW']}, 'ACAM1': {1: ['Phy00255BN_ACAM1']}, 'PROMS': {1: ['Phy001GXRH_PROMS'], 2: ['Phy001GXRH_PROMS']}, 'SYNS3': {2: ['Phy0032Y3K_SYNS3']}, 'SYNJA': {1: ['Phy001YFR0_SYNJA'], 2: ['Phy001YFR0_SYNJA']}, 'SYNJB': {1: ['Phy001ML5W_SYNJB'], 2: ['Phy001ML5W_SYNJB'], 3: ['Phy001ML5W_SYNJB']}, 'PROM5': {1: ['Phy0032TSR_PROM5']}, 'PROM4': {1: ['Phy0032PYP_PROM4']}, 'PROM3': {1: ['Phy0025VSW_PROM3']}, 'PROM2': {1: ['Phy0032RRI_PROM2']}, 'PROM1': {1: ['Phy0032VGD_PROM1']}, 'PROM0': {1: ['Phy0025VGZ_PROM0']}, '167539': {1: ['Phy001W7DU_167539'], 2: ['Phy001W7DU_167539']}, 'SYNP2': {1: ['Phy0032ZT8_SYNP2']}, 'SYNP6': {1: ['Phy001NTRH_SYNP6'], 2: ['Phy001NTRH_SYNP6'], 3: ['Phy001NTRH_SYNP6']}, 'SYNR3': {1: ['Phy002602V_SYNR3']}}
