@@ -1,7 +1,7 @@
 import sys
 from _nexml import MixedContainer, AbstractTree, AbstractNode, AbstractEdge, LiteralMeta
 
-from ete2 import PhyloTree
+from ete_dev import PhyloTree
 
 class NexMLTree(PhyloTree):
     ''' Special PhyloTree object with nexml support '''

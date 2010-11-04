@@ -11,7 +11,7 @@ class Nexml(main.Nexml):
     def __init__(self, *args, **kargs):
         main.Nexml.__init__(self, *args, **kargs)
         
-    def load_from_file(self, fname, index_otus=True):
+    def build_from_file(self, fname, index_otus=True):
         doc = main.parsexml_(fname)
         rootNode = doc.getroot()
         rootTag, rootClass = main.get_root_tag(rootNode)

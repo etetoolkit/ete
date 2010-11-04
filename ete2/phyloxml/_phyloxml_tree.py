@@ -9,7 +9,7 @@ and Phylogeny classes.
 
 import sys
 from _phyloxml import Clade, Phylogeny, Tag_pattern_
-from ete2 import PhyloTree
+from ete_dev import PhyloTree
 
 class PhyloXMLTree(PhyloTree):
     ''' PhyloTree object supporting phyloXML format. '''

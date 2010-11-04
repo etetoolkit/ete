@@ -11,7 +11,7 @@ class Phyloxml(main.Phyloxml):
     def __init__(self, *args, **kargs):
         main.Phyloxml.__init__(self, *args, **kargs)
         
-    def load_from_file(self, fname):
+    def build_from_file(self, fname):
         doc = main.parsexml_(fname)
         rootNode = doc.getroot()
         rootTag, rootClass = main.get_root_tag(rootNode)
