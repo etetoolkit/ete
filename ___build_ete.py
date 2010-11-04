@@ -102,7 +102,7 @@ def ask_path(string, default_path):
 #Check repo is commited
 
 #Creates a release clone
-BRANCH_NAME = "2.0"
+BRANCH_NAME = "2.1"
 SERVER="jhuerta@cgenomics"
 SERVER_RELEASES_PATH = "/home/services/web/ete.cgenomics.org/releases/ete2"
 SERVER_DOC_PATH = "/home/services/web/ete.cgenomics.org/releases/ete2/doc"
