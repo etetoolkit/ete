@@ -30,6 +30,7 @@ import copy
 
 from ete_dev import *
 from ete_dev.coretype.tree import asRphylo, asETE
+from test_phylomedb3connector import TestPhylomeDB3Connector
 
 # test datasets
 nw_simple1 = '((A, (B,C)),D);'

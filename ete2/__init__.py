@@ -36,7 +36,7 @@ else:
     from clustering.clustertree import *
 
 try:
-    from phylomedb.phylomeDB import *
+    from phylomedb.phylomeDB3 import *
 except ImportError, e:
     print >>stderr, " MySQLdb module could not be loaded"
     print e
