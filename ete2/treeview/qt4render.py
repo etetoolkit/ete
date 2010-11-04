@@ -545,7 +545,7 @@ class _TreeScene(QtGui.QGraphicsScene):
                 fb = _FaceGroup({0:faces}, None)
                 fb.setParentItem(self.mainItem)
                 foot_afaces[c] = fb
-                column2max_width[c] = max(column2max_width[c], fb.w)
+                column2max_width[c] = max(column2max_width.get(c,0), fb.w)
 
         # Place aligned faces and calculates the max size of each
         # column (needed to place column headers)

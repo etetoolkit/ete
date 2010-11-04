@@ -59,10 +59,10 @@ def mylayout2(node):
         return
 
 I = TreeImageProperties()
-I.aligned_face_header.add_face_to_aligned_column(0, t1)
-I.aligned_face_header.add_face_to_aligned_column(1, t1)
-I.aligned_face_header.add_face_to_aligned_column(2, t1)
-I.aligned_face_header.add_face_to_aligned_column(3, t1)
+#I.aligned_face_header.add_face_to_aligned_column(0, t1)
+#I.aligned_face_header.add_face_to_aligned_column(1, t1)
+#I.aligned_face_header.add_face_to_aligned_column(2, t1)
+#I.aligned_face_header.add_face_to_aligned_column(3, t1)
 
 I.aligned_face_foot.add_face_to_aligned_column(0, t2)
 I.aligned_face_foot.add_face_to_aligned_column(1, t2)
