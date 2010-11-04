@@ -34,9 +34,8 @@ def get_reconciled_tree(node, sptree, events):
             mc, ev = get_reconciled_tree(ch, sptree, events)
             morphed_childs.append(mc)
 
-        # morphed childs are the the reconcialiated childs. We trust
-        # its topology. Remember tree is visited on recursive
-        # post-order
+        # morphed childs are the reconciled children. I trust its
+        # topology. Remember tree is visited on recursive post-order
         sp_child_0 = morphed_childs[0].get_species()
         sp_child_1 = morphed_childs[1].get_species()
         all_species =  sp_child_1 | sp_child_0
@@ -112,8 +111,8 @@ def _replace_on_template(orig_template, node):
 def _get_expected_topology(t, species):
     missing_sp = set(species) - set(t.get_leaf_names())
     if missing_sp:
-        raise KeyError, \
-            "Follwing species are not contained in the species tree: "+ ','.join(missing_sp)
+        raise KeyError("* The following species are not contained in the species tree: "+ ','.join(missing_sp) )
+
     node = t.search_nodes(children=[], name=list(species)[0])[0]
 
     sps = set(species)
@@ -121,7 +120,8 @@ def _get_expected_topology(t, species):
         node = node.up
     template = copy.deepcopy(node)
     # make get_species() to work
-    template._speciesFunction = _get_species_on_TOL
+    #template._speciesFunction = _get_species_on_TOL
+    template.set_species_naming_function(_get_species_on_TOL)
     template.detach()
     for n in [template]+template.get_descendants():
         n.add_feature("evoltype","L")
