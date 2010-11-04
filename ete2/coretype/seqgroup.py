@@ -92,6 +92,9 @@ class SeqGroup(object):
             else:
                 raise ValueError, "Unsupported format: [%s]" %format
 
+    def __repr__(self):
+        return "SeqGroup (%s)" %hex(self.__hash__())
+
     def write(self, format="fasta", outfile=None):
         """ Returns the text representation of the sequences in the
         supplied given format (default=FASTA). If "oufile" argument is

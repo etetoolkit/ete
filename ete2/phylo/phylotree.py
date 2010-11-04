@@ -81,6 +81,9 @@ class PhyloNode(TreeNode):
         if newick:
             self.set_species_naming_function(sp_naming_function)
 
+    def __repr__(self):
+        return "PhyloTree (%s)" %hex(self.__hash__())
+
     def set_species_naming_function(self, fn):
         for n in self.iter_leaves():
             n.features.add("species")

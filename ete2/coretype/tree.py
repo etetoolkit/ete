@@ -114,6 +114,9 @@ class TreeNode(object):
         if newick is not None:
             read_newick(newick, root_node = self, format=format)
 
+    def __repr__(self):
+        return "Tree (%s)" %hex(self.__hash__())
+
     def __and__(self, value):
         """ This allows to execute tree&'A' to obtain the descendant node
         A"""
