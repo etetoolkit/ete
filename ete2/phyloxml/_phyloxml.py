@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*- 
 
 #
-# Generated Tue Oct 19 18:16:10 2010 by generateDS.py version 2.2a.
+# Generated Fri Nov  5 11:56:39 2010 by generateDS.py version 2.2a.
 #
 
 import sys
@@ -211,7 +211,9 @@ class MixedContainer:
         return self.name
     def export(self, outfile, level, name, namespace):
         if self.category == MixedContainer.CategoryText:
-            outfile.write(self.value)
+            # Prevent exporting empty content as empty lines.
+            if self.value.strip(): 
+                outfile.write(self.value)
         elif self.category == MixedContainer.CategorySimple:
             self.exportSimple(outfile, level, name)
         else:    # category == MixedContainer.CategoryComplex
@@ -614,7 +616,7 @@ class Phylogeny(GeneratedsSuper):
     def buildChildren(self, child_, nodeName_, from_subclass=False):
         if nodeName_ == 'name':
             name_ = child_.text
-            self.name = ' '.join(name_.split())
+            name_ = re_.sub("[\n\r\s]+", " ", name_).strip()
             self.name = name_
         elif nodeName_ == 'id': 
             obj_ = Id.factory()
@@ -622,7 +624,7 @@ class Phylogeny(GeneratedsSuper):
             self.set_id(obj_)
         elif nodeName_ == 'description':
             description_ = child_.text
-            self.description = ' '.join(description_.split())
+            description_ = re_.sub("[\n\r\s]+", " ", description_).strip()
             self.description = description_
         elif nodeName_ == 'date':
             date_ = child_.text
@@ -983,7 +985,7 @@ class Clade(GeneratedsSuper):
     def buildChildren(self, child_, nodeName_, from_subclass=False):
         if nodeName_ == 'name':
             name_ = child_.text
-            self.name = ' '.join(name_.split())
+            name_ = re_.sub("[\n\r\s]+", " ", name_).strip()
             self.name = name_
         elif nodeName_ == 'branch_length':
             sval_ = child_.text
@@ -1237,19 +1239,19 @@ class Taxonomy(GeneratedsSuper):
             self.validate_code(self.code)    # validate type code
         elif nodeName_ == 'scientific_name':
             scientific_name_ = child_.text
-            self.scientific_name = ' '.join(scientific_name_.split())
+            scientific_name_ = re_.sub("[\n\r\s]+", " ", scientific_name_).strip()
             self.scientific_name = scientific_name_
         elif nodeName_ == 'authority':
             authority_ = child_.text
-            self.authority = ' '.join(authority_.split())
+            authority_ = re_.sub("[\n\r\s]+", " ", authority_).strip()
             self.authority = authority_
         elif nodeName_ == 'common_name':
             common_name_ = child_.text
-            self.common_name = ' '.join(common_name_.split())
+            common_name_ = re_.sub("[\n\r\s]+", " ", common_name_).strip()
             self.common_name.append(common_name_)
         elif nodeName_ == 'synonym':
             synonym_ = child_.text
-            self.synonym = ' '.join(synonym_.split())
+            synonym_ = re_.sub("[\n\r\s]+", " ", synonym_).strip()
             self.synonym.append(synonym_)
         elif nodeName_ == 'rank':
             rank_ = child_.text
@@ -1466,11 +1468,11 @@ class Sequence(GeneratedsSuper):
             self.set_accession(obj_)
         elif nodeName_ == 'name':
             name_ = child_.text
-            self.name = ' '.join(name_.split())
+            name_ = re_.sub("[\n\r\s]+", " ", name_).strip()
             self.name = name_
         elif nodeName_ == 'location':
             location_ = child_.text
-            self.location = ' '.join(location_.split())
+            location_ = re_.sub("[\n\r\s]+", " ", location_).strip()
             self.location = location_
         elif nodeName_ == 'mol_seq': 
             obj_ = MolSeq.factory()
@@ -2251,7 +2253,7 @@ class BinaryCharacterList(GeneratedsSuper):
     def buildChildren(self, child_, nodeName_, from_subclass=False):
         if nodeName_ == 'bc':
             bc_ = child_.text
-            self.bc = ' '.join(bc_.split())
+            bc_ = re_.sub("[\n\r\s]+", " ", bc_).strip()
             self.bc.append(bc_)
 # end class BinaryCharacterList
 
@@ -2326,7 +2328,7 @@ class Reference(GeneratedsSuper):
     def buildChildren(self, child_, nodeName_, from_subclass=False):
         if nodeName_ == 'desc':
             desc_ = child_.text
-            self.desc = ' '.join(desc_.split())
+            desc_ = re_.sub("[\n\r\s]+", " ", desc_).strip()
             self.desc = desc_
 # end class Reference
 
@@ -2495,7 +2497,7 @@ class Annotation(GeneratedsSuper):
     def buildChildren(self, child_, nodeName_, from_subclass=False):
         if nodeName_ == 'desc':
             desc_ = child_.text
-            self.desc = ' '.join(desc_.split())
+            desc_ = re_.sub("[\n\r\s]+", " ", desc_).strip()
             self.desc = desc_
         elif nodeName_ == 'confidence': 
             obj_ = Confidence.factory()
@@ -2987,7 +2989,7 @@ class Distribution(GeneratedsSuper):
     def buildChildren(self, child_, nodeName_, from_subclass=False):
         if nodeName_ == 'desc':
             desc_ = child_.text
-            self.desc = ' '.join(desc_.split())
+            desc_ = re_.sub("[\n\r\s]+", " ", desc_).strip()
             self.desc = desc_
         elif nodeName_ == 'point': 
             obj_ = Point.factory()
@@ -3311,7 +3313,7 @@ class Date(GeneratedsSuper):
     def buildChildren(self, child_, nodeName_, from_subclass=False):
         if nodeName_ == 'desc':
             desc_ = child_.text
-            self.desc = ' '.join(desc_.split())
+            desc_ = re_.sub("[\n\r\s]+", " ", desc_).strip()
             self.desc = desc_
         elif nodeName_ == 'value':
             sval_ = child_.text
@@ -3716,8 +3718,8 @@ def parseLiteral(inFileName):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-    sys.stdout.write('#from phyloxml import *\n\n')
-    sys.stdout.write('import phyloxml as model_\n\n')
+    sys.stdout.write('#from _phyloxml import *\n\n')
+    sys.stdout.write('import _phyloxml as model_\n\n')
     sys.stdout.write('rootObj = model_.rootTag(\n')
     rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
     sys.stdout.write(')\n')
@@ -3736,4 +3738,31 @@ if __name__ == '__main__':
     #import pdb; pdb.set_trace()
     main()
 
-__all__ = ["Phyloxml","Phylogeny","Clade","Taxonomy","Sequence","MolSeq","Accession","DomainArchitecture","ProteinDomain","Events","BinaryCharacters","BinaryCharacterList","Reference","Annotation","Property","Uri","Confidence","Id","Distribution","Point","Polygon","Date","BranchColor","SequenceRelation","CladeRelation"]
+
+__all__ = [
+    "Accession",
+    "Annotation",
+    "BinaryCharacterList",
+    "BinaryCharacters",
+    "BranchColor",
+    "Clade",
+    "CladeRelation",
+    "Confidence",
+    "Date",
+    "Distribution",
+    "DomainArchitecture",
+    "Events",
+    "Id",
+    "MolSeq",
+    "Phylogeny",
+    "Phyloxml",
+    "Point",
+    "Polygon",
+    "Property",
+    "ProteinDomain",
+    "Reference",
+    "Sequence",
+    "SequenceRelation",
+    "Taxonomy",
+    "Uri"
+    ]

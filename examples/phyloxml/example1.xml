@@ -10,6 +10,7 @@
                 <taxonomy>
                     <id provider="ncbi">6645</id>
                     <scientific_name>Octopus vulgaris</scientific_name>
+                    <synonym>Timor monitor</synonym>
                 </taxonomy>
                 <sequence>
                     <accession source="UniProtKB">P81431</accession>
