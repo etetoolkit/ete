@@ -111,7 +111,7 @@ METAPKG_JAIL_PATH = "/home/jhuerta/_Devel/ete_metapackage/etepkg_CheckBeforeRm"
 METAPKG_PATH = "/home/jhuerta/_Devel/ete_metapackage"
 RELEASES_BASE_PATH = "/tmp"
 VERSION = BRANCH_NAME+"rev"+commands.getoutput("git log --pretty=format:'' | wc -l").strip()
-MODULE_NAME = "ete21beta"
+MODULE_NAME = "ete2"
 RELEASE_NAME = MODULE_NAME+"-"+VERSION
 RELEASE_PATH = os.path.join(RELEASES_BASE_PATH, RELEASE_NAME)
 RELEASE_MODULE_PATH = os.path.join(RELEASE_PATH, "ete2")

@@ -46,8 +46,9 @@ class TestTreeview(unittest.TestCase):
         style.add_fixed_face(self.fixedF, "branch-right", 0)
         t.img_style = style
         
-        t.show(mylayout, image_properties=I)
-        t.show(mylayout2, image_properties=I)
+        t.render("./test.svg", layout=mylayout, img_properties=I)
+        t.show(mylayout, img_properties=I)
+        t.show(mylayout2, img_properties=I)
 
 
 def mylayout(node):

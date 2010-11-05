@@ -876,7 +876,7 @@ class TreeNode(object):
                 raise TreeError, "Cannot unroot a tree with only two leaves"
 
     def show(self, layout=None, \
-               image_properties=None):
+               img_properties=None):
         """ Begins an interative session to visualize this node
         structure."""
         try:
@@ -886,7 +886,7 @@ class TreeNode(object):
             print "\n\n"
             print self
         else:
-            drawer.show_tree(self,layout,image_properties)
+            drawer.show_tree(self, layout=layout, img_properties=img_properties)
 
     def render(self, file_name, layout=None, w=None, h=None, \
                        img_properties=None, header=None):
@@ -899,7 +899,7 @@ class TreeNode(object):
             print self
             print e
         else:
-            return drawer.render_tree(self, file_name, w=w, h=h, style=layout, \
+            return drawer.render_tree(self, file_name, w=w, h=h, layout=layout, \
                                    img_properties=img_properties, \
                                    header=header)
 

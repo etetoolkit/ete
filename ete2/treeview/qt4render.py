@@ -1,7 +1,7 @@
 import math
 import types
 import copy
-from PyQt4  import QtCore, QtGui
+from PyQt4  import QtCore, QtGui, QtSvg
 from PyQt4.QtGui import QPrinter
 
 from qt4gui import _PropertiesDialog
@@ -460,18 +460,35 @@ class _TreeScene(QtGui.QGraphicsScene):
         aspect_ratio = self.i_height / self.i_width
 
         # auto adjust size
-        if w is None and h is None:
+        if w is None and h is None and (ext == "PDF" or ext == "PS"):
             w = dpi * 6.4
             h = w * aspect_ratio
             if h>dpi * 11:
                 h = dpi * 11
                 w = h / aspect_ratio
-        elif h is None:
+        elif w is None and h is None:
+            w = self.i_width
+            h = self.i_height
+        elif h is None :
             h = w * aspect_ratio
         elif w is None:
             w = h / aspect_ratio
 
-        if ext == "PDF" or ext == "PS":
+        if ext == "SVG": 
+            svg = QtSvg.QSvgGenerator()
+            svg.setFileName(imgName)
+            svg.setSize(QtCore.QSize(w, h))
+            svg.setViewBox(QtCore.QRect(0, 0, w, h))
+            #svg.setTitle("SVG Generator Example Drawing")
+            #svg.setDescription("An SVG drawing created by the SVG Generator")
+            
+            pp = QtGui.QPainter()
+            pp.begin(svg)
+            targetRect =  QtCore.QRectF(0, 0, w, h)
+            self.render(pp, targetRect, self.sceneRect())
+            pp.end()
+
+        elif ext == "PDF" or ext == "PS":
             format = QPrinter.PostScriptFormat if ext == "PS" else QPrinter.PdfFormat
             printer = QPrinter(QPrinter.HighResolution)
             printer.setResolution(dpi)
