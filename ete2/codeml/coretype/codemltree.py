@@ -324,9 +324,11 @@ class CodemlNode(PhyloNode):
         hist.aligned = True
         self.img_prop = TreeImageProperties()
         if down:
-            self.img_prop.aligned_face_header.add_face_to_aligned_column(0, hist)
-        else:
+            print 'down'
             self.img_prop.aligned_face_foot.add_face_to_aligned_column(0, hist)
+        else:
+            print 'up'
+            self.img_prop.aligned_face_header.add_face_to_aligned_column(0, hist)
 
     def write (self, features=None, outfile=None, format=10):
         """ Returns the newick-PAML representation of this node
