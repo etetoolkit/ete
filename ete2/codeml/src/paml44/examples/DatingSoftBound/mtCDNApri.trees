@@ -1,0 +1,7 @@
+ 7  1
+
+((((human, (chimpanzee, bonobo)) '>.06<.08', gorilla),
+(orangutan, sumatran)) '>.12<.16', gibbon);
+
+
+//end of file

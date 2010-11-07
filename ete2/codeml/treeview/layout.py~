@@ -1,0 +1,18 @@
+#!/usr/bin/python
+"""
+07 Nov 2010
+
+layout for codeml trees
+"""
+
+__author__  = "Francois-Jose Serra"
+__email__   = "francois@barrabin.org"
+__licence__ = "GPLv3"
+__version__ = "0.0"
+
+
+
+
+
+if __name__ == "__main__":
+    exit(main())

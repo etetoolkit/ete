@@ -1,0 +1,45 @@
+ 35  1
+
+
+(((((((((((M.ravelobensis, (M.sambiranensis, (M.rufus2, (M.tavaratra,
+(M.rufus1, (M.berthae, M.myoxinus)))))), (M.griseorufus, M.murinus)) $2,
+Mirza), Cheirogaleus), Lepilemur), Propithecus),
+(((Hapalemur, Lemur), Eulemur), Varecia)), Daubentonia), (Galago, Loris)), 
+(Callithrix, (Macaca, (Pongo, (Gorilla, (Pan, Homo)) @0.1)) @0.35) $1) @0.77, 
+((Felis, (Canis, Ursus)) @0.55, ((((Physeter, Balaenoptera) @0.37,
+Hippopotamus) @0.56, Bos), (Rhinoceros, Equus) @0.54)));  // all 7 calibrations
+
+// end of file.  The rest of the file are notes.
+
+
+
+
+
+
+
+
+(((((((((((M.ravelobensis, (M.sambiranensis, (M.rufus2, (M.tavaratra,
+(M.rufus1, (M.berthae, M.myoxinus)))))), (M.griseorufus, M.murinus)) $2,
+Mirza), Cheirogaleus), Lepilemur), Propithecus),
+(((Hapalemur, Lemur), Eulemur), Varecia)), Daubentonia), (Galago, Loris)), 
+(Callithrix, (Macaca, (Pongo, (Gorilla, (Pan, Homo)) @0.1)) @0.35) $1) @0.77, 
+((Felis, (Canis, Ursus)), ((((Physeter, Balaenoptera),
+Hippopotamus), Bos), (Rhinoceros, Equus))));  // 3 primate calibrations
+
+
+(((((((((((M.ravelobensis, (M.sambiranensis, (M.rufus2, (M.tavaratra,
+(M.rufus1, (M.berthae, M.myoxinus)))))), (M.griseorufus, M.murinus)) $2,
+Mirza), Cheirogaleus), Lepilemur), Propithecus),
+(((Hapalemur, Lemur), Eulemur), Varecia)), Daubentonia), (Galago, Loris)), 
+(Callithrix, (Macaca, (Pongo, (Gorilla, (Pan, Homo))))) $1), 
+((Felis, (Canis, Ursus)) @0.55, ((((Physeter, Balaenoptera) @0.37,
+Hippopotamus) @0.56, Bos), (Rhinoceros, Equus) @0.54)));  // 4 outgroup calibrations
+
+
+(((((((((((M.ravelobensis, (M.sambiranensis, (M.rufus2, (M.tavaratra,
+(M.rufus1, (M.berthae, M.myoxinus)))))), (M.griseorufus, M.murinus)),
+Mirza), Cheirogaleus), Lepilemur), Propithecus),
+(((Hapalemur, Lemur), Eulemur), Varecia)), Daubentonia), (Galago, Loris)), 
+(Callithrix, (Macaca, (Pongo, (Gorilla, (Pan, Homo)))))), 
+((Felis, (Canis, Ursus)), ((((Physeter, Balaenoptera),
+Hippopotamus), Bos), (Rhinoceros, Equus))));  // rooted tree

@@ -1,0 +1,121 @@
+multiruns
+=========
+
+Commands for compiling the program:
+
+     cl -O2 -Ot -W4 multiruns.c
+     cc -o multiruns -O2 multiruns.c -lm
+
+     multiruns <rstfile1> <rstfile2> ... <lnLColumn> 
+
+Examples for running the progam (comparing three runs with lnL in column 19 in rst1):
+
+     multiruns rst1.a rst1.b rst1.c 19
+     multiruns a/rst1 b/rst1 c/rst1 19
+
+
+March 2003, Ziheng Yang
+September 2005, changed tworuns into multiruns, ziheng yang
+
+This program compares outputs from multiple separate ML runs analyzing
+many data sets (using ndata) to assemble a result file.  Because of local 
+peaks and convergence problems, multiple runs for the same analysis may not 
+generate the same results.  Then we should use the results corresponding to 
+the highest lnL.  This program takes input files which have summary results 
+from multiple runs, one line for each data set.  The program takes one line 
+from each of the input files and compare the first field, which is an index 
+column and should be identical between the input files, and an lnL column.  
+The program decides which run generated the highest lnL, and copy the line 
+from that run into the output file: out.txt.
+
+This is useful when you analyze the same set of simulated replicate data 
+sets multiple times, using different starting values.  For example, codeml 
+may write a line of output in rst1 for each data set, including parameter 
+estimates and lnL.  You can then use this program to compare the rst1 output 
+files from multiple runs to generate one output file.  The program allows the 
+fields to be either numerical or text, but the first (index) and lnL columns
+should be numerical.
+
+A senario is the following.  You simulate 1000 data sets and want to
+analyze them under a particular model using codeml, but you are
+worried that the algorithm may not converge for some data sets.  So
+you run the analysis three times, using different starting values.
+You can use ndata = 1000 in the control file to analyze 1000 data sets
+one by one.  Also codeml might use different starting values
+automatically, but you can watch the initial log likelihood lnL0 for
+the first data set printed on the screen to confirm.  Each of the
+multiple runs generates a file called rst1, with 1000 lines of output,
+like the following.  
+
+
+rst1.a
+
+1       167     81      3.340   0.907   0.022   0.012   -899.000 
+2       143     82      2.459   0.000   0.000   0.037   -825.758 
+3       117     76      2.137   1.000   0.000   0.005   -622.806 
+
+rst1.b
+
+1       167     81      3.340   0.907   0.022   0.012   -890.000 
+2       143     82      3.9     0.000   0.000   0.037   -815.759 
+3       117     76      2.137   1.000   0.000   0.005   -622.806 
+
+rst1.c
+1       167     81      3.340   0.907   0.022   0.012   -890.000 
+2       143     82      2.459   0.000   0.000   0.037   -820.759 
+3       117     76      2.137   1.000   0.000   0.005   -622.806 
+
+
+Column 8 has the lnL, while the other columns on each line are
+estimated branch lengths and kappa, etc.  You then run multiruns as
+follows.
+
+    multiruns rst1.a rst1.b rst1.c 8
+
+The output will be like the following.
+
+Usage:
+        multiruns <file1> <file2> ... <lnLcolumn>
+
+r.a  r.b  r.c    ==>  out.txt
+
+record    1  (+++)   -899.000 (1) -   -890.000 (2) =   -9.000
+record    2  (+++)   -825.758 (1) -   -815.759 (2) =   -9.999
+record    3  (+++)   -622.806 (1) -   -622.806 (1) =    0.000
+record    4  (+++)  -2789.741 (1) -  -2789.741 (1) =    0.000
+
+wrote 5 records into out.txt
+
+The output file out.txt has the following.
+
+1       167     81      3.340   0.907   0.022   0.012   -890.000
+2       143     82      3.9     0.000   0.000   0.037   -815.759
+3       117     76      2.137   1.000   0.000   0.005   -622.806
+4       625     228     3.595   0.891   0.079   0.035   -2789.741
+
+
+A similar senario might be that you have 2000 gene alignments from the
+same set of species and want to analyze them under the same model, in
+which case you can use multiruns to assemble results when you run the
+same model a few times.  
+
+Below are some notes about rst1, produced by codeml (also by baseml).
+I use this file to print out results in simulations and then port the
+results into excel for plotting etc.  The output in this file is
+rather volatile and is basically in the state that it happens to be
+in.  You should open up codeml.c (or baseml.c) in a text editor and
+search for frst1 to view the printf statements that were commented
+out, that is, bracketed inside /* */ and perhapd uncomment them (that
+is, remove /* */) and then recompile.  For example the following block
+in codeml.c prints out all the MLEs of parameters under the model and
+the log likelihood and then flushes the file buffer after the
+iteration is finished for each data set.  If the block is bracketed by
+/* and */, you can remove the multiple lines containing /* and */ and
+recompile.  The same output is printed in the main result file mlc, so
+it should be easy for you to figure out what the results in rst1 mean.
+
+for(i=0; i<com.np; i++) fprintf(frst1,"\t%.5f",x[i]);
+fprintf(frst1,"\t%.3f",-lnL);
+fflush(frst1);
+
+Ziheng Yang

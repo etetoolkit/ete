@@ -1,0 +1,55 @@
+0          * 0,1:seqs or patters in paml format (mc.paml); 2:paup format (mc.nex)
+113147       * random number seed (odd number)
+10 10000 10   * <# seqs>  <# codons>  <# replicates>
+
+3.           * <tree length; see note below; use -1 if tree has absolute branch lengths>
+
+(1: 0.024279, (2: 0.014924, ((((3: 0.002340, 4: 0.002331): 0.002332,
+((5: 0.000000, 6: 0.002331): 0.011696, 7: 0.011725): 0.002356):
+0.001785, 8: 0.028849): 0.034059, 9: 0.020845): 0.012673): 0.027332,
+10: 0.070204);
+
+3            * number of site classes, followed by frequencies and omega's.
+  0.6    0.3   0.1
+  0.1    0.8   3.2
+
+
+1.65560     * kappa
+
+0.016133 0.014626 0.012261 0.019123 
+0.008365 0.007583 0.006357 0.009915 
+0.013290 0.012048 0        0
+0.009947 0.009018 0        0.011790 
+0.019297 0.017494 0.014665 0.022873 
+0.010005 0.009070 0.007604 0.011859
+0.015896 0.014410 0.012080 0.018841 
+0.011898 0.010786 0.009042 0.014102 
+0.030728 0.027857 0.023353 0.036422 
+0.015932 0.014443 0.012108 0.018884 
+0.025312 0.022947 0.019236 0.030002 
+0.018945 0.017175 0.014398 0.022456 
+0.024518 0.022227 0.018633 0.029061
+0.012712 0.011524 0.009661 0.015068 
+0.020196 0.018309 0.015349 0.023938 
+0.015117 0.013704 0.011488 0.017919
+
+//end of file
+
+
+============================================================================
+MCcodonNSsites.dat
+Notes for using evolver to simulate codon sequences under the NSsites model. 
+
+Note that tree length and branch lengths under the codon model are
+measured by the expected number of nucleotide substitutions per codon
+(see Goldman & Yang 1994).  For the site-class model, they are defined
+as averages over all sites.  
+
+Change values of parameters, but do not delete them.  You can add
+empty lines, but do not break one line into several lines.
+
+64 codon freqs are in fixed order TTT, TTC, TTA, TTG, TCT, TCC, ..., GGG, 
+from the F3x4 table from sperm lysin of 25 abalone species
+
+=================!! Check screen output carefully!! ========================
+

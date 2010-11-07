@@ -1,0 +1,92 @@
+ (1) The universal genetic code                  
+ ----------------------------------------------  
+ Phe F TTT | Ser S TCT | Tyr Y TAT | Cys C TGT   
+       TTC |       TCC |       TAC |       TGC   
+ Leu L TTA |       TCA | End * TAA | End * TGA   
+       TTG |       TCG |       TAG | Trp W TGG   
+ ----------------------------------------------  
+ Leu L CTT | Pro P CCT | His H CAT | Arg R CGT   
+       CTC |       CCC |       CAC |       CGC   
+       CTA |       CCA | Gln Q CAA |       CGA   
+       CTG |       CCG |       CAG |       CGG   
+ ----------------------------------------------  
+ Ile I ATT | Thr T ACT | Asn N AAT | Ser S AGT   
+       ATC |       ACC |       AAC |       AGC   
+       ATA |       ACA | Lys K AAA | Arg R AGA   
+ Met M ATG |       ACG |       AAG |       AGG   
+ ----------------------------------------------  
+ Val V GTT | Ala A GCT | Asp D GAT | Gly G GGT   
+       GTC |       GCC |       GAC |       GGC   
+       GTA |       GCA | Glu E GAA |       GGA   
+       GTG |       GCG |       GAG |       GGG   
+ ----------------------------------------------  
+						 
+ (2) The mammalian mitochondrial code            
+ ----------------------------------------------  
+ Phe F TTT | Ser S TCT | Tyr Y TAT | Cys C TGT   
+       TTC |       TCC |       TAC |       TGC   
+ Leu L TTA |       TCA | End * TAA | Trp W TGA   
+       TTG |       TCG |       TAG |       TGG   
+ ----------------------------------------------  
+ Leu L CTT | Pro P CCT | His H CAT | Arg R CGT   
+       CTC |       CCC |       CAC |       CGC   
+       CTA |       CCA | Gln Q CAA |       CGA   
+       CTG |       CCG |       CAG |       CGG   
+ ----------------------------------------------  
+ Ile I ATT | Thr T ACT | Asn N AAT | Ser S AGT   
+       ATC |       ACC |       AAC |       AGC   
+ Met M ATA |       ACA | Lys K AAA | End * AGA   
+       ATG |       ACG |       AAG |       AGG   
+ ----------------------------------------------  
+ Val V GTT | Ala A GCT | Asp D GAT | Gly G GGT   
+       GTC |       GCC |       GAC |       GGC   
+       GTA |       GCA | Glu E GAA |       GGA   
+       GTG |       GCG |       GAG |       GGG   
+ ----------------------------------------------  
+
+
+ (1) The universal genetic code (74 nonempty)
+ Ala A                                             
+ Arg R  0                                          
+ Asn N  0 0                                        
+ Asp D  1 0 1                                      
+ Cys C  0 1 0 0                                    
+ Gln Q  0 1 0 0 0                                  
+ Glu E  1 0 0 1 0 1                                
+ Gly G  1 1 0 1 1 0 1                              
+ His H  0 1 1 1 0 1 0 0                            
+ Ile I  0 1 1 0 0 0 0 0 0                          
+ Leu L  0 1 0 0 0 1 0 0 1 1                        
+ Lys K  0 1 1 0 0 1 1 0 0 1 0                      
+ Met M  0 1 0 0 0 0 0 0 0 1 1 1                    
+ Phe F  0 0 0 0 1 0 0 0 0 1 1 0 0                  
+ Pro P  1 1 0 0 0 1 0 0 1 0 1 0 0 0                
+ Ser S  1 1 1 0 1 0 0 1 0 1 1 0 0 1 1              
+ Thr T  1 1 1 0 0 0 0 0 0 1 0 1 1 0 1 1            
+ Trp W  0 1 0 0 1 0 0 1 0 0 1 0 0 0 0 1 0          
+ Tyr Y  0 0 1 1 1 0 0 0 1 0 0 0 0 1 0 1 0 0        
+ Val V  1 0 0 1 0 0 1 1 0 1 1 0 1 1 0 0 0 0 0
+        A R N D C Q E G H I L K M F P S T W Y V      
+                                                     
+ (2)  The mammalian mitochondrial code (69 nonempty) 
+ Ala A                                              
+ Arg R  0                                          
+ Asn N  0 0                                        
+ Asp D  1 0 1                                      
+ Cys C  0 1 0 0                                    
+ Gln Q  0 1 0 0 0                                  
+ Glu E  1 0 0 1 0 1                                
+ Gly G  1 1 0 1 1 0 1                              
+ His H  0 1 1 1 0 1 0 0                            
+ Ile I  0 0 1 0 0 0 0 0 0                          
+ Leu L  0 1 0 0 0 1 0 0 1 1                        
+ Lys K  0 0 1 0 0 1 1 0 0 0 0                      
+ Met M  0 0 0 0 0 0 0 0 0 1 1 1                    
+ Phe F  0 0 0 0 1 0 0 0 0 1 1 0 0                  
+ Pro P  1 1 0 0 0 1 0 0 1 0 1 0 0 0                
+ Ser S  1 1 1 0 1 0 0 1 0 1 1 0 0 1 1              
+ Thr T  1 0 1 0 0 0 0 0 0 1 0 1 1 0 1 1            
+ Trp W  0 1 0 0 1 0 0 1 0 0 1 0 0 0 0 1 0          
+ Tyr Y  0 0 1 1 1 0 0 0 1 0 0 0 0 1 0 1 0 0        
+ Val V  1 0 0 1 0 0 1 1 0 1 1 0 1 1 0 0 0 0 0
+        A R N D C Q E G H I L K M F P S T W Y V  
