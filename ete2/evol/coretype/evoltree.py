@@ -30,13 +30,13 @@ import os
 from sys import stderr
 
 from ete_dev import PhyloNode, TreeImageProperties
-from ete_dev.codeml import parse_paml, get_sites
-from ete_dev.codeml import codeml_layout
+from ete_dev.evol import parse_paml, get_sites
+from ete_dev.evol import codeml_layout
 from model import Model, AVAIL, PARAMS
 from utils import translate, colorize_rst, label_tree
 from ete_dev.parser.newick import write_newick
 
-__all__ = ["CodemlNode", "CodemlTree"]
+__all__ = ["EvolNode", "EvolTree"]
 
 def _parse_species (name):
     '''
@@ -44,7 +44,7 @@ def _parse_species (name):
     '''
     return name[:3]
 
-class CodemlNode (PhyloNode):
+class EvolNode (PhyloNode):
     """ Re-implementation of the standart TreeNode instance. It adds
     attributes and methods to work with phylogentic trees. """
 
@@ -104,7 +104,7 @@ class CodemlNode (PhyloNode):
         '''
         same function as for phyloTree, but translate sequences if nucleotides
         '''
-        super(CodemlTree, self).link_to_alignment(alignment, alg_format=alg_format)
+        super(EvolTree, self).link_to_alignment(alignment, alg_format=alg_format)
         for leaf in self.iter_leaves():
             leaf.nt_sequence = str(leaf.sequence)
             if nucleotides:
@@ -114,7 +114,7 @@ class CodemlNode (PhyloNode):
         '''
         call super show adding up and down faces
         '''
-        super(CodemlTree, self).show(layout=layout,
+        super(EvolTree, self).show(layout=layout,
                                      img_properties=self.img_prop)
 
     def render (self, filename, layout=codeml_layout, w=None, h=None,
@@ -122,7 +122,7 @@ class CodemlNode (PhyloNode):
         '''
         call super show adding up and down faces
         '''
-        super(CodemlTree, self).render(filename, layout=layout,
+        super(EvolTree, self).render(filename, layout=layout,
                                        img_properties=self.img_prop,
                                        w=w, h=h)
 
@@ -151,7 +151,7 @@ class CodemlNode (PhyloNode):
         if err is not None:
             print >> stderr, err + \
                   "ERROR: codeml not found!!!\n" + \
-                  "       define your variable CodemlTree.codemlpath"
+                  "       define your variable EvolTree.codemlpath"
             return 1
         os.chdir(hlddir)
         if keep:
@@ -255,7 +255,7 @@ class CodemlNode (PhyloNode):
 
     def link_to_evol_model (self, path, model):
         '''
-        link CodemlTree to evolutionary model
+        link EvolTree to evolutionary model
           * free-branch model ('fb') will append evol values to tree
           * Site models (M0, M1, M2, M7, M8) will give evol values by site
             and likelihood
@@ -299,13 +299,13 @@ class CodemlNode (PhyloNode):
                    'PS+': 'red'}
         '''
         if typ   == 'hist':
-            from ete_dev.codeml import HistFace as face
+            from ete_dev.evol import HistFace as face
         elif typ == 'line':
-            from ete_dev.codeml import LineFaceBG as face
+            from ete_dev.evol import LineFaceBG as face
         elif typ == 'error':
-            from ete_dev.codeml import ErrorLineFace as face
+            from ete_dev.evol import ErrorLineFace as face
         elif typ == 'protamine':
-            from ete_dev.codeml import ErrorLineProtamineFace as face
+            from ete_dev.evol import ErrorLineProtamineFace as face
         if not self._models.has_key(mdl):
             print >> stderr, \
                   "WARNING: model %s not computed." % (mdl)
@@ -399,5 +399,5 @@ class CodemlNode (PhyloNode):
 
 
 # cosmetic alias
-CodemlTree = CodemlNode
+EvolTree = EvolNode
 
