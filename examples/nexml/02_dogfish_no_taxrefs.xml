@@ -1,0 +1,94 @@
+<nex:nexml generator="Bio::Phylo::Project v.0.17_RC9_841"
+	version="0.9" xmlns="http://www.nexml.org/2009" xmlns:nex="http://www.nexml.org/2009"
+	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns" xmlns:xml="http://www.w3.org/XML/1998/namespace"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.nexml.org/2009 ../xsd/nexml.xsd">
+	<otus id="otus1">
+		<otu id="otu2" label="S. acanthias" /> <!-- Squalus acanthias, spiny dogfish, NCBI 7797 -->
+		<otu id="otu3" label="S. glaucus" />
+		<!--
+			Squalus glaucus,
+			http://www.zoobank.org/?lsid=urn:lsid:zoobank.org:act:A6AD1B85-C65C-4079-B425-56828418620C
+		-->
+		<otu id="otu4" label="S. cubensis" /> <!-- Cuban dogfish, NCBI 134995 -->
+		<otu id="otu5" label="S. megalops" />  <!-- dogfish, NCBI 335062 -->
+		<otu id="otu6" label="S. grahami" />  <!-- dogfish, NCBI 335029 -->
+		<otu id="otu7" label="S. brevirostris" />  <!--  dogfish, NCBI 436290 -->
+	</otus>
+	<trees id="trees16" otus="otus1">
+		<tree id="tree18" label="'the tree'" xsi:type="nex:IntTree">
+			<node id="node19" root="true" />
+			<node id="node20" label="S. acanthias" otu="otu2" />
+			<node id="node21" />
+			<node id="node22" />
+			<node id="node27" />
+			<node id="node23" />
+			<node id="node26" label="S. megalops" otu="otu5" />
+			<node id="node28" label="S. grahami" otu="otu6" />
+			<node id="node29" label="S. brevirostris" otu="otu7" />
+			<node id="node24" label="S. glaucus" otu="otu3" />
+			<node id="node25" label="S. cubensis" otu="otu4" />
+			<edge id="edge20" length="4" source="node19" target="node20" />
+			<edge id="edge21" length="1" source="node19" target="node21" />
+			<edge id="edge22" length="1" source="node21" target="node22" />
+			<edge id="edge27" length="2" source="node21" target="node27" />
+			<edge id="edge23" length="1" source="node22" target="node23" />
+			<edge id="edge26" length="2" source="node22" target="node26" />
+			<edge id="edge28" length="1" source="node27" target="node28" />
+			<edge id="edge29" length="1" source="node27" target="node29" />
+			<edge id="edge24" length="1" source="node23" target="node24" />
+			<edge id="edge25" length="1" source="node23" target="node25" />
+		</tree>
+	</trees>
+	<characters id="characters8" otus="otus1" xsi:type="nex:StandardCells">
+		<format>
+			<states id="states10">
+				<state id="s1" symbol="0" />
+				<state id="s2" symbol="1" />
+				<state id="s3" symbol="2" />
+				<state id="s4" symbol="3" />
+				<state id="s5" symbol="4" />
+				<state id="s6" symbol="5" />
+				<state id="s7" symbol="6" />
+				<state id="s8" symbol="7" />
+				<state id="s9" symbol="8" />
+				<state id="s10" symbol="9" />
+				<uncertain_state_set id="s11" symbol="-"></uncertain_state_set>
+				<uncertain_state_set id="s12" symbol="?">
+					<member state="s1" />
+					<member state="s2" />
+					<member state="s3" />
+					<member state="s4" />
+					<member state="s5" />
+					<member state="s6" />
+					<member state="s7" />
+					<member state="s8" />
+					<member state="s9" />
+					<member state="s10" />
+					<member state="s11" />
+				</uncertain_state_set>
+			</states>
+			<char id="c1" states="states10" />
+		</format>
+		<matrix>
+			<row id="row9" label="S. acanthias" otu="otu2">
+				<cell char="c1" state="s1" />
+			</row>
+			<row id="row11" label="S. glaucus" otu="otu3">
+				<cell char="c1" state="s3" />
+			</row>
+			<row id="row12" label="S. cubensis" otu="otu4">
+				<cell char="c1" state="s3" />
+			</row>
+			<row id="row13" label="S. megalops" otu="otu5">
+				<cell char="c1" state="s1" />
+			</row>
+			<row id="row14" label="S. grahami" otu="otu6">
+				<cell char="c1" state="s2" />
+			</row>
+			<row id="row15" label="S. brevirostris" otu="otu7">
+				<cell char="c1" state="s1" />
+			</row>
+		</matrix>
+	</characters>
+</nex:nexml>

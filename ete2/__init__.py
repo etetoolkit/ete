@@ -26,6 +26,8 @@ from coretype.tree import *
 from coretype.seqgroup import *
 from phylo.phylotree import *
 from webplugin.webapp import *
+from phyloxml import Phyloxml
+from nexml import Nexml
 
 try:
     from coretype.arraytable import *
@@ -36,7 +38,7 @@ else:
     from clustering.clustertree import *
 
 try:
-    from phylomedb.phylomeDB import *
+    from phylomedb.phylomeDB3 import *
 except ImportError, e:
     print >>stderr, " MySQLdb module could not be loaded"
     print e

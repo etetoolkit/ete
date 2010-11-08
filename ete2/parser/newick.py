@@ -181,7 +181,7 @@ def read_newick(newick, root_node=None, format=0):
         from ete_dev.coretype.tree import TreeNode
         root_node = TreeNode()
 
-    if type(newick) == str:
+    if isinstance(newick, basestring):
 
         if os.path.exists(newick):
             nw = open(newick, 'rU').read()

@@ -36,6 +36,9 @@ class ArrayTable(object):
     microarrays). It allows to load the matrix an access easily to row
     and column vectors. """
 
+    def __repr__(self):
+        return "ArrayTable (%s)" %hex(self.__hash__())
+
     def __str__(self):
         return str(self.matrix)
 

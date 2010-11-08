@@ -93,17 +93,17 @@ class FaceHeader(dict):
     def add_face_to_aligned_column(self, column, face):
         self.setdefault(int(column), []).append(face)
 
-def show_tree(t, style=None, img_properties=None):
+def show_tree(t, layout=None, img_properties=None):
     """ Interactively shows a tree."""
     global _QApp
 
-    if not style:
+    if not layout:
         if t.__class__ == PhyloTree:
-            style = "phylogeny"
+            layout = "phylogeny"
         elif t.__class__ == ClusterTree:
-            style = "large"
+            layout = "large"
         else:
-            style = "basic"
+            layout = "basic"
 
     if not _QApp:
         _QApp = QtGui.QApplication(["ETE"])
@@ -113,24 +113,24 @@ def show_tree(t, style=None, img_properties=None):
 
     if not img_properties:
         img_properties = TreeImageProperties()
-    scene.initialize_tree_scene(t, style, \
+    scene.initialize_tree_scene(t, layout, \
                                     tree_properties=img_properties)
     scene.draw()
 
     mainapp.show()
     _QApp.exec_()
 
-def render_tree(t, imgName, w=None, h=None, style=None, \
+def render_tree(t, imgName, w=None, h=None, layout=None, \
                     img_properties = None, header=None):
     """ Render tree image into a PNG file."""
 
-    if not style:
+    if not layout:
         if t.__class__ == PhyloTree:
-            style = "phylogeny"
+            layout = "phylogeny"
         elif t.__class__ == ClusterTree:
-            style = "large"
+            layout = "large"
         else:
-            style = "basic"
+            layout = "basic"
 
 
     global _QApp
@@ -140,7 +140,7 @@ def render_tree(t, imgName, w=None, h=None, style=None, \
     scene  = _TreeScene()
     if not img_properties:
         img_properties = TreeImageProperties()
-    scene.initialize_tree_scene(t, style,
+    scene.initialize_tree_scene(t, layout,
                                 tree_properties=img_properties)
     scene.draw()
     imgmap = scene.get_tree_img_map()

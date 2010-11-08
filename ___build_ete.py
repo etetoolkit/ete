@@ -102,7 +102,7 @@ def ask_path(string, default_path):
 #Check repo is commited
 
 #Creates a release clone
-BRANCH_NAME = "2.0"
+BRANCH_NAME = "2.1beta"
 SERVER="jhuerta@cgenomics"
 SERVER_RELEASES_PATH = "/home/services/web/ete.cgenomics.org/releases/ete2"
 SERVER_DOC_PATH = "/home/services/web/ete.cgenomics.org/releases/ete2/doc"
@@ -149,9 +149,9 @@ _ex('echo %s > %s/VERSION' %\
               (VERSION, RELEASE_PATH))
 
 
-# Check LICENSE disclamer and add it or modify it if necessary
+# Check LICENSE disclaimer and add it or modify it if necessary
 print  "*** Setting LICENSE in all python files"
-_ex('find %s -name \'*.py\' -exec  python ___put_disclamer.py {} \;' %\
+_ex('find %s -name \'*.py\' -exec  python ___put_disclaimer.py {} \;' %\
         (RELEASE_MODULE_PATH))
 
 

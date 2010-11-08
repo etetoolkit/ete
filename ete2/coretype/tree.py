@@ -114,6 +114,9 @@ class TreeNode(object):
         if newick is not None:
             read_newick(newick, root_node = self, format=format)
 
+    def __repr__(self):
+        return "Tree (%s)" %hex(self.__hash__())
+
     def __and__(self, value):
         """ This allows to execute tree&'A' to obtain the descendant node
         A"""
@@ -873,7 +876,7 @@ class TreeNode(object):
                 raise TreeError, "Cannot unroot a tree with only two leaves"
 
     def show(self, layout=None, \
-               image_properties=None):
+               img_properties=None):
         """ Begins an interative session to visualize this node
         structure."""
         try:
@@ -883,7 +886,7 @@ class TreeNode(object):
             print "\n\n"
             print self
         else:
-            drawer.show_tree(self,layout,image_properties)
+            drawer.show_tree(self, layout=layout, img_properties=img_properties)
 
     def render(self, file_name, layout=None, w=None, h=None, \
                        img_properties=None, header=None):
@@ -896,7 +899,7 @@ class TreeNode(object):
             print self
             print e
         else:
-            return drawer.render_tree(self, file_name, w=w, h=h, style=layout, \
+            return drawer.render_tree(self, file_name, w=w, h=h, layout=layout, \
                                    img_properties=img_properties, \
                                    header=header)
 

@@ -34,12 +34,13 @@ def phylogeny(node):
     node.img_style["shape"] = "circle"
     if hasattr(node,"evoltype"):
         if node.evoltype == 'D':
+            node.img_style["fgcolor"] = "#FF0000"
+            node.img_style["hz_line_color"] = "#FF0000"
+            node.img_style["vt_line_color"] = "#FF0000"
+        elif node.evoltype == 'S':
             node.img_style["fgcolor"] = "#1d176e"
             node.img_style["hz_line_color"] = "#1d176e"
             node.img_style["vt_line_color"] = "#1d176e"
-        elif node.evoltype == 'S':
-            node.img_style["fgcolor"] = "#FF0000"
-            node.img_style["line_color"] = "#FF0000"
         elif node.evoltype == 'L':
             node.img_style["fgcolor"] = "#777777"
             node.img_style["vt_line_color"] = "#777777"

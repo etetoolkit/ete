@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.10/phyloxml.xsd"
+   xmlns="http://www.phyloxml.org">
+   <phylogeny rooted="true">
+      <name>multiple supports</name>
+      <clade>
+         <taxonomy>
+            <id provider="tol">16299</id>
+            <common_name>Hominidae</common_name>
+         </taxonomy>
+         <clade>
+            <confidence type="posterior">0.5</confidence>
+            <confidence type="bootstrap">98</confidence>
+            <confidence type="likelihood">0.8</confidence>
+            <confidence type="bootstrap">23</confidence>
+            <taxonomy>
+               <id provider="tol">16410</id>
+               <scientific_name>Pongo</scientific_name>
+            </taxonomy>
+            <clade>
+               <taxonomy>
+                  <id provider="tol">65353</id>
+                  <scientific_name>Pongo abelii</scientific_name>
+               </taxonomy>
+            </clade>
+            <clade>
+               <taxonomy>
+                  <id provider="tol">65354</id>
+                  <scientific_name>Pongo pygmaeus</scientific_name>
+               </taxonomy>
+            </clade>
+         </clade>
+         <clade>
+            <confidence type="posterior">0.1</confidence>
+            <confidence type="bootstrap">5</confidence>
+            <confidence type="bootstrap">77</confidence>
+            <confidence type="likelihood">0.4</confidence>
+            <taxonomy>
+               <id provider="tol">16411</id>
+            </taxonomy>
+            <clade>
+               <confidence type="posterior">0.64</confidence>
+               <confidence type="bootstrap">95</confidence>
+               <confidence type="bootstrap">45</confidence>
+               <confidence type="likelihood">0.943</confidence>
+               <taxonomy>
+                  <id provider="tol">16412</id>
+               </taxonomy>
+               <clade>
+                  <confidence type="posterior">0.6</confidence>
+                  <confidence type="bootstrap">94</confidence>
+                  <confidence type="bootstrap">26</confidence>
+                  <confidence type="likelihood">0.78</confidence>
+                  <taxonomy>
+                     <id provider="tol">16413</id>
+                     <scientific_name>Pan</scientific_name>
+                  </taxonomy>
+                  <clade>
+                     <taxonomy>
+                        <id provider="tol">26564</id>
+                        <scientific_name>Pan paniscus</scientific_name>
+                     </taxonomy>
+                  </clade>
+                  <clade>
+                     <taxonomy>
+                        <id provider="tol">26565</id>
+                        <scientific_name>Pan troglodytes</scientific_name>
+                     </taxonomy>
+                  </clade>
+               </clade>
+               <clade>
+                  <confidence type="posterior">0.56</confidence>
+                  <confidence type="bootstrap">100</confidence>
+                  <confidence type="likelihood">0.2</confidence>
+                  <confidence type="bootstrap">20</confidence>
+                  <taxonomy>
+                     <id provider="tol">16414</id>
+                  </taxonomy>
+                  <clade>
+                     <taxonomy>
+                        <id provider="tol">16415</id>
+                        <scientific_name>Ardipithecus</scientific_name>
+                     </taxonomy>
+                  </clade>
+                  <clade>
+                     <confidence type="posterior">0.51</confidence>
+                     <confidence type="bootstrap">99</confidence>
+                     <confidence type="likelihood">0.4</confidence>
+                     <confidence type="bootstrap">21</confidence>
+                     <taxonomy>
+                        <id provider="tol">16416</id>
+                     </taxonomy>
+                     <clade>
+                        <taxonomy>
+                           <id provider="tol">16417</id>
+                           <scientific_name>Australopithecus</scientific_name>
+                        </taxonomy>
+                     </clade>
+                     <clade>
+                        <confidence type="bootstrap">21</confidence>
+                        <confidence type="posterior">0.99</confidence>
+                        <confidence type="bootstrap">77</confidence>
+                        <confidence type="likelihood">0.4</confidence>
+                        <taxonomy>
+                           <id provider="tol">16418</id>
+                           <scientific_name>Homo</scientific_name>
+                        </taxonomy>
+                        <clade>
+                           <taxonomy>
+                              <id provider="tol">16421</id>
+                              <scientific_name>Homo sapiens</scientific_name>
+                           </taxonomy>
+                        </clade>
+                        <clade>
+                           <taxonomy>
+                              <id provider="tol">16422</id>
+                              <scientific_name>Homo erectus</scientific_name>
+                           </taxonomy>
+                        </clade>
+                        <clade>
+                           <taxonomy>
+                              <id provider="tol">16423</id>
+                              <scientific_name>Homo ergaster</scientific_name>
+                           </taxonomy>
+                        </clade>
+                        <clade>
+                           <taxonomy>
+                              <id provider="tol">16424</id>
+                              <scientific_name>Homo rudolfensis</scientific_name>
+                           </taxonomy>
+                        </clade>
+                        <clade>
+                           <taxonomy>
+                              <id provider="tol">16425</id>
+                              <scientific_name>Homo habilis</scientific_name>
+                           </taxonomy>
+                        </clade>
+                     </clade>
+                  </clade>
+               </clade>
+            </clade>
+            <clade>
+               <confidence type="posterior">0.9</confidence>
+               <confidence type="bootstrap">20</confidence>
+               <confidence type="likelihood">0.8</confidence>
+               <confidence type="bootstrap">30</confidence>
+               <taxonomy>
+                  <id provider="tol">16419</id>
+                  <scientific_name>Gorilla</scientific_name>
+               </taxonomy>
+               <clade>
+                  <taxonomy>
+                     <id provider="tol">65355</id>
+                     <scientific_name>Gorilla beringei</scientific_name>
+                  </taxonomy>
+               </clade>
+               <clade>
+                  <taxonomy>
+                     <id provider="tol">65356</id>
+                     <scientific_name>Gorilla gorilla</scientific_name>
+                  </taxonomy>
+               </clade>
+            </clade>
+         </clade>
+      </clade>
+   </phylogeny>
+</phyloxml>

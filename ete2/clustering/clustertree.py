@@ -108,6 +108,9 @@ class ClusterNode(TreeNode):
         if newick:
             self.set_distance_function(fdist)
 
+    def __repr__(self):
+        return "ClusterTree (%s)" %hex(self.__hash__())
+
     def set_distance_function(self, fn):
         """ Sets the distance function used to calculate cluster
         distances and silouette index.
