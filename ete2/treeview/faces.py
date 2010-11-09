@@ -622,9 +622,6 @@ class ProfileFace(Face):
             mean_y1     = (mean1 - self.min_value) * y_alpha
             # Second Y postions for mean
             mean_y2     = (mean2 - self.min_value) * y_alpha
-            # Draw blue mean line
-            p.setPen(QtGui.QColor("blue"))
-            p.drawLine(x1, profile_height-mean_y1, x2, profile_height-mean_y2)
 
             if dev1!= 0 and dev2!=0:
                 # First Y postions for deviations
@@ -635,10 +632,12 @@ class ProfileFace(Face):
                 dev_down_y2 = (mean2-dev2 - self.min_value) * y_alpha
                 # Draw red deviation lines
                 p.setPen(QtGui.QColor("red"))
-                p.drawLine(x1,dev_up_y1, x2, dev_up_y2)
-                p.setPen(QtGui.QColor("red"))
-                p.drawLine(x1,dev_down_y1, x2, dev_down_y2)
+                p.drawLine(x1,profile_height-dev_up_y1, x2, profile_height-dev_up_y2)
+                p.drawLine(x1,profile_height-dev_down_y1, x2, profile_height-dev_down_y2)
 
+            # Draw blue mean line
+            p.setPen(QtGui.QColor("blue"))
+            p.drawLine(x1, profile_height-mean_y1, x2, profile_height-mean_y2)
 
     def draw_heatmap_profile(self):
         # Calculate vector
