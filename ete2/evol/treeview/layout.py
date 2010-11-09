@@ -12,7 +12,7 @@ __version__ = "0.0"
 
 from ete_dev import faces
 
-def codeml_layout(node):
+def evol_layout(node):
     '''
     layout for CodemlTree
     '''

@@ -29,12 +29,12 @@ features to the the node instances.
 import os
 from sys import stderr
 
-from ete_dev import PhyloNode, TreeImageProperties
-from ete_dev.evol import parse_paml, get_sites
-from ete_dev.evol import codeml_layout
-from model import Model, AVAIL, PARAMS
-from utils import translate, colorize_rst, label_tree
-from ete_dev.parser.newick import write_newick
+from ete_dev                   import PhyloNode, TreeImageProperties
+from ete_dev.evol.codeml       import parse_paml, get_sites
+from ete_dev.evol              import evol_layout
+from ete_dev.evol.codeml.model import Model, AVAIL, PARAMS
+from utils                     import translate, colorize_rst, label_tree
+from ete_dev.parser.newick     import write_newick
 
 __all__ = ["EvolNode", "EvolTree"]
 
@@ -110,14 +110,14 @@ class EvolNode (PhyloNode):
             if nucleotides:
                 leaf.sequence = translate(leaf.nt_sequence)
 
-    def show (self, layout=codeml_layout):
+    def show (self, layout=evol_layout):
         '''
         call super show adding up and down faces
         '''
         super(EvolTree, self).show(layout=layout,
                                      img_properties=self.img_prop)
 
-    def render (self, filename, layout=codeml_layout, w=None, h=None,
+    def render (self, filename, layout=evol_layout, w=None, h=None,
                img_properties=None, header=None):
         '''
         call super show adding up and down faces
