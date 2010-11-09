@@ -32,7 +32,7 @@ def evol_layout(node):
             node._w = 1.5
         else:
             node._w = node.w
-        node.img_style["size"] = int ((float(node._w))*6+1)
+        node.img_style["size"] = int ((float(node._w))*6+2)
         if node._w == 3   :
             node.img_style["fgcolor"] = "#c10000"
         if node._w == 2.5 :

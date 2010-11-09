@@ -1,21 +1,15 @@
-# #START_LICENSE###########################################################
-#
-# Copyright (C) 2010 by Francois-Jose Serra. All rights reserved.
-# email: francois@barrabin.org
-#
-# you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# this is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# see <http://www.gnu.org/licenses/>.
-#
-# #END_LICENSE#############################################################
+#!/usr/bin/python
+"""
+parser for outfiles of codeml, rst file for sites,
+and main outfile
+TODO: _label_tree_as_paml function should be called only
+if link_to alignmement is runned over... never?
+"""
+
+__author__  = "Francois-Jose Serra"
+__email__   = "francois@barrabin.org"
+__licence__ = "GPLv3"
+__version__ = "0.0"
 
 import sys, re
 from os.path import isfile
@@ -150,7 +144,7 @@ def parse_paml (pamout, model, codon_freq=True):
             if re.search ('  *([0-9]+\.\.[0-9]+  *){2}', line):
                 labels = line.split()
         elif labels != [] and not hasattr (model, 'kappa'):
-            _get_paml_labels (model, model.tree, labels, line)
+            _get_paml_labels (model, model.tree, labels, line, pamout)
             model.kappa = line.split()[len (labels)]
         elif line.startswith ('dS tree:'):
             dS, dN = True, True
@@ -222,7 +216,7 @@ def parse_paml (pamout, model, codon_freq=True):
                 for n, v in enumerate (vals):
                     setattr (model, 'wfrg' + v, line.split() [n+1])
 
-def _get_paml_labels(model, tree, paml_labels, line):
+def _get_paml_labels(model, tree, paml_labels, line, pamout):
     '''
     map tree to paml labels, and place w and bL values
     '''
@@ -236,12 +230,15 @@ def _get_paml_labels(model, tree, paml_labels, line):
         return
     # optional just to check that labelling corresponds with paml...
     for rel in relations:
-        node = tree.search_nodes(paml_id=rel[1])[0]
-        if int (node.up.paml_id) != int (rel[0]):
-            print node
-            print node.up
-            print node.up.paml_id, rel
-            sys.exit('labelling does not correspond!! check')
+        try:
+            node = tree.search_nodes(paml_id=rel[1])[0]
+            if int (node.up.paml_id) != int (rel[0]):
+                print node
+                print node.up
+                print node.up.paml_id, rel
+        except IndexError:
+            print >> sys.stderr, 'labelling does not correspond!! check'
+            get_labels_from_paml(tree, relations, pamout)
     #####
     for lab in paml_labels:
         node = tree.search_nodes(paml_id=int (lab.split('..')[1]))[0]
@@ -249,3 +246,22 @@ def _get_paml_labels(model, tree, paml_labels, line):
             node.add_feature ('w', float (w.pop(0)))
         node.add_feature ('bL', float (bL.pop(0)))
 
+def get_labels_from_paml (tree, relations, pamout):
+    '''
+    in case problem in labelling... and of course it is not my fault...
+    retrieve paml_ids from outfile... from relations line.
+    '''
+    for line in open (pamout, 'r').readlines():
+        # label leaves
+        if re.search ('^#[0-9][0-9]*:', line):
+            nam, paml_id = re.sub ('#([0-9]+): (.*)', '\\2\t\\1',
+                                   line.strip()).split('\t')
+            tree.search_nodes (name=nam)[0].add_feature ('paml_id', int (paml_id))
+        #if line.startswith ('Sums of codon'):
+        #    break
+    print relations
+    tree.show()
+    for rel in relations:
+        tree.search_nodes (paml_id=rel[1])[0].up.add_feature ('paml_id', rel[0])
+    # label internal nodes
+        

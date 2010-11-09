@@ -1,36 +1,21 @@
-# #START_LICENSE###########################################################
-#
-# Copyright (C) 2009 by Jaime Huerta Cepas. All rights reserved.
-# email: jhcepas@gmail.com
-#
-# This file is part of the Environment for Tree Exploration program (ETE).
-# http://ete.cgenomics.org
-#
-# ETE is free software: you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# ETE is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with ETE.  If not, see <http://www.gnu.org/licenses/>.
-#
-# #END_LICENSE#############################################################
+#!/usr/bin/python
+"""
+this module defines the EvolNode dataytype to manage evolutionary
+variables and integrate them within phylogenetic trees. It inheritates
+the coretype PhyloNode and add some speciall features to the the node
+instances.
+"""
 
-"""
-this module defines the PhyloNode dataytype to manage phylogenetic
-tree. It inheritates the coretype TreeNode and add some speciall
-features to the the node instances.
-"""
+__author__  = "Francois-Jose Serra"
+__email__   = "francois@barrabin.org"
+__licence__ = "GPLv3"
+__version__ = "0.0"
+
 import os
 from sys import stderr
 
 from ete_dev                   import PhyloNode, TreeImageProperties
-from ete_dev.evol.codeml       import parse_paml, get_sites
+from ete_dev.evol.parser       import parse_paml, get_sites
 from ete_dev.evol              import evol_layout
 from ete_dev.evol.codeml.model import Model, AVAIL, PARAMS
 from utils                     import translate, colorize_rst, label_tree
@@ -157,7 +142,7 @@ class EvolNode (PhyloNode):
         if keep:
             setattr (model, 'run', run)
             self.link_to_evol_model (os.path.join(fullpath,'out'),
-                                     model)
+                                     model, from_inside=True)
 
     run_paml.__doc__ += '''%s
     to run paml, needs tree linked to alignment.
@@ -253,14 +238,14 @@ class EvolNode (PhyloNode):
         except KeyError:
             print >> stderr, "Model %s not found." % (modelname)
 
-    def link_to_evol_model (self, path, model):
+    def link_to_evol_model (self, path, model, from_inside=False):
         '''
         link EvolTree to evolutionary model
           * free-branch model ('fb') will append evol values to tree
           * Site models (M0, M1, M2, M7, M8) will give evol values by site
             and likelihood
         '''
-        if not hasattr (self, 'paml_id'):
+        if not hasattr (self, 'paml_id') and from_inside:
             self._label_as_paml()
         if type (model) == str :
             model = Model (model, self)
