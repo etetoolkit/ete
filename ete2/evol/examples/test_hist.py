@@ -10,10 +10,10 @@ typ = 'S'
 #    typ = raw_input (\
 #        "choose kind of example [L]ong or [S]hort, hit [L] or [S]:\n")
 
-TREE_PATH    = "data/measuring_%s_tree.nw" % (typ)
+TREE_PATH    = "data/S_example/measuring_%s_tree.nw" % (typ)
 
-ALG_PATH     = "data/alignment_%s_measuring_evol.fasta" % (typ)
-WORKING_PATH = "data/"
+ALG_PATH     = "data/S_example/alignment_%s_measuring_evol.fasta" % (typ)
+WORKING_PATH = "data/S_example/paml/"
 
 MY_PATH = ''
 
