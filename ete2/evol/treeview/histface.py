@@ -310,7 +310,7 @@ class LineFaceBG (faces.Face):
         p = QtGui.QPainter(self.pixmap)
         # Set the start x and y of the main plot (taking into account
         # header and scale text)
-        x = (-1 * self._x_offset) 
+        x = 0 #(-1 * self._x_offset) 
         y = height - fm.underlinePos()*2
         customPen = QtGui.QPen(QtGui.QColor("black"), 1)
         p.setPen(customPen)
@@ -609,7 +609,7 @@ class ErrorLineProtamineFace (faces.Face):
         p = QtGui.QPainter(self.pixmap)
         # Set the start x and y of the main plot (taking into account
         # header and scale text)
-        x = (-1 * self._x_offset)
+        x = 0 #(-1 * self._x_offset)
         y = height - fm.underlinePos()*2
         if self.num:
             y      -= 25 ## 8

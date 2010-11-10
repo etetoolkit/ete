@@ -2,8 +2,9 @@
 #        Author: Francois-Jose Serra
 # Creation Date: 2010/04/26 17:17:06
 
-from ete_dev.evol import EvolTree
+from ete_dev.evol import EvolTree, add_histface
 import sys, re
+from ete_dev import TreeImageProperties
 
 typ = None
 while typ != 'L' and typ != 'S':
@@ -89,7 +90,7 @@ raw_input("         ====> Hit some key...")
 # tengo que encontrar un ejemplo mas bonito pero bueno.... :P
 
 print '\n\n\n         ----> We now add histograms to our tree to repesent site models with add_histface function: \n\n%s\n%s\n%s\n'\
-      % ('*'*10 + ' doc ' + '*'*10,T.add_histface.func_doc,'*'*30)
+      % ('*'*10 + ' doc ' + '*'*10, add_histface.func_doc,'*'*30)
 print 'Upper face is an histogram representing values of omega for each column in the alignment,'
 print '\
 Colors represent significantly conserved sites (cyan to blue), neutral sites (greens), or under \n\
@@ -109,10 +110,14 @@ col = {'NS' : 'white',
        'PS' : 'lightgrey',
        'PS+': 'lightgrey'}
 
-T.add_histface('M2', down=False)
-T.add_histface('M2',typ='error', col=col, lines=[1.0,0.3],col_lines=['black','grey'])
 
-T.show()
+I = TreeImageProperties()
+I.aligned_face_header.add_face_to_aligned_column(1,
+                                                 add_histface (T._models['M2']))
+I.aligned_face_foot.add_face_to_aligned_column(1,
+                                               add_histface (T._models['M2'], typ='protamine', col=col, lines=[1.0,0.3],col_lines=['black','grey']))
+
+T.show (img_properties=I)
 
 
 ###
@@ -132,10 +137,14 @@ T.link_to_evol_model(T.workdir + '/M1/out','M1')
 T.link_to_evol_model(T.workdir + '/M2/out','M2')
 
 
-T.add_histface('M2', down=False)
-T.add_histface('M2',typ='error', col=col, lines=[1.0,0.3],col_lines=['black','grey'])
+I = TreeImageProperties()
+I.aligned_face_header.add_face_to_aligned_column(1,
+                                                 add_histface (T._models['M2']))
+I.aligned_face_foot.add_face_to_aligned_column(1,
+                                               add_histface (T._models['M2'], typ='protamine', col=col, lines=[1.0,0.3],col_lines=['black','grey']))
 
-T.show()
+T.show (img_properties=I)
+
 
 ###
 # mark tree functionality
