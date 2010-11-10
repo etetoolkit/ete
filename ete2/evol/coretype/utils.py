@@ -81,8 +81,7 @@ def get_rooting(tol, seed_species, agename = False):
 
 def label_tree(t):
     """
-    WARNING: deprecated, use sort_tree function of Tree
-    
+    WARNING: deprecated, use sort_tree function of Tree    
     This function sort the branches of a given tree by
     considerening node names. After the tree is sorted, nodes are
     labeled using ascendent numbers.  This can be used to ensure that

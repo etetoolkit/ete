@@ -978,7 +978,14 @@ class TreeNode(object):
         for n in self.traverse(strategy="postorder"):
             n.add_features(_nid=counter)
             counter += 1
-
+        def get_descendant_by_id (idname):
+            '''
+            returns node list corresponding to a given idname
+            '''
+            for n in self.iter_descendants():
+                if n._nid == idname:
+                    return n
+        self.__dict__['get_descendant_by_id'] = get_descendant_by_id
 
 def _translate_nodes(root, *nodes):
     target_nodes = []

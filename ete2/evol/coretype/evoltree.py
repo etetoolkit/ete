@@ -83,13 +83,14 @@ class EvolNode (PhyloNode):
             if not hasattr (node, 'paml_id'):
                 paml_id += 1
                 node.add_feature ('paml_id', paml_id)
-
         def get_descendant_by_pamlid (idname):
             '''
             returns node list corresponding to a given idname
             #TODO: perhaps put this in core :P
             '''
-            return filter(lambda x: x.paml_id == idname, self.iter_descendants())[0]
+            for n in self.iter_descendants():
+                if n.paml_id == idname:
+                    return n
         self.__dict__['get_descendant_by_pamlid'] = get_descendant_by_pamlid
     
     def link_to_alignment (self, alignment, alg_format="fasta",

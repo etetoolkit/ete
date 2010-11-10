@@ -97,6 +97,7 @@ def colorize_rst(vals, winner, classes,col=None):
                 colors.append(col['RX+'])
     return colors
 
+
 def get_histface (mdl, lines=[1.0], header='', \
                   col_lines=['grey'], typ='hist',col=None, extras=[''], col_width=11):
     '''
@@ -134,17 +135,6 @@ def get_histface (mdl, lines=[1.0], header='', \
                 colors=colorize_rst(ldic['pv.'+mdl.name],
                                     mdl.name, ldic['class.'+mdl.name], col=col),
                 header=header, errors=ldic['se.'+mdl.name], extras=extras, col_width=col_width)
-
-    #hist.aligned = True
-    #if tree.img_prop is None:
-    #    self.img_prop = TreeImageProperties()
-    #if down:
-    #    self.img_prop.aligned_face_foot.add_face_to_aligned_column(1, hist)
-    #else:
-    #    self.img_prop.aligned_face_header.add_face_to_aligned_column(1, hist)
-
-
-
 
 class HistFace (faces.Face):
     """
