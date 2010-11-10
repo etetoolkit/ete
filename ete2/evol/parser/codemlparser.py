@@ -101,7 +101,7 @@ def divide_data (pamout, model, codon_freq=True):
                   'WARNING: seems that you have no multiple dataset here...'\
                   + '\n    trying as with only one dataset'
         if model.typ == 'site':
-            rst = re.sub('out$', 'rst', pamout)
+            rst = '/'.join (pamout.split('/')[:-1])+'/rst'
             rstout = open (rst + '_' + str(num), 'w')
             copy = False
             for line in open(rst):
@@ -228,7 +228,7 @@ def _get_paml_labels(model, tree, paml_labels, line, pamout):
                             key=lambda x: x[1])
     except IndexError:
         return
-    # optional just to check that labelling corresponds with paml...
+    # check that labelling corresponds with paml...
     for rel in relations:
         try:
             node = tree.search_nodes(paml_id=rel[1])[0]
@@ -237,7 +237,9 @@ def _get_paml_labels(model, tree, paml_labels, line, pamout):
                 print node.up
                 print node.up.paml_id, rel
         except IndexError:
-            print >> sys.stderr, 'labelling does not correspond!! check'
+            print >> sys.stderr, \
+                  'WARNING: labelling does not correspond!!\n' + \
+                  'Getting them from ' + pamout
             get_labels_from_paml(tree, relations, pamout)
     #####
     for lab in paml_labels:
@@ -257,11 +259,13 @@ def get_labels_from_paml (tree, relations, pamout):
             nam, paml_id = re.sub ('#([0-9]+): (.*)', '\\2\t\\1',
                                    line.strip()).split('\t')
             tree.search_nodes (name=nam)[0].add_feature ('paml_id', int (paml_id))
-        #if line.startswith ('Sums of codon'):
-        #    break
-    print relations
-    tree.show()
-    for rel in relations:
-        tree.search_nodes (paml_id=rel[1])[0].up.add_feature ('paml_id', rel[0])
+        if line.startswith ('Sums of codon'):
+            break
+    tree.add_feature ('paml_id', int (len (tree) + 1))
+    for rel in sorted (relations, key=lambda x: x[0], reverse=True):
+        try:
+            tree.search_nodes (paml_id=rel[1])[0].up.add_feature ('paml_id', rel[0])
+        except IndexError:
+            print 'hoho ', rel
     # label internal nodes
         
