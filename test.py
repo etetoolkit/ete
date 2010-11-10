@@ -59,20 +59,20 @@ def mylayout2(node):
         return
 
 I = TreeImageProperties()
-I.aligned_face_header.add_face_to_aligned_column(0, t1)
+#I.aligned_face_header.add_face_to_aligned_column(0, t1)
 #I.aligned_face_header.add_face_to_aligned_column(1, t1)
 #I.aligned_face_header.add_face_to_aligned_column(2, t1)
 #I.aligned_face_header.add_face_to_aligned_column(3, t1)
-#
+
 I.aligned_face_foot.add_face_to_aligned_column(0, t2)
-#I.aligned_face_foot.add_face_to_aligned_column(1, t2)
-#I.aligned_face_foot.add_face_to_aligned_column(2, t2)
-#I.aligned_face_foot.add_face_to_aligned_column(3, t2)
-#I.draw_lines_from_leaves_to_aligned_faces = True
-#I.line_from_leaves_to_aligned_faces_type = 2
-#
-#I.draw_image_border = True
-#I.draw_aligned_faces_as_grid = False
+I.aligned_face_foot.add_face_to_aligned_column(1, t2)
+I.aligned_face_foot.add_face_to_aligned_column(2, t2)
+I.aligned_face_foot.add_face_to_aligned_column(3, t2)
+I.draw_lines_from_leaves_to_aligned_faces = True
+I.line_from_leaves_to_aligned_faces_type = 2
+
+I.draw_image_border = True
+I.draw_aligned_faces_as_grid = False
 t = Tree()
 t.dist = 0
 t.populate(5)
@@ -80,28 +80,10 @@ t.populate(5)
 
 style = NodeStyleDict()
 style["fgcolor"] = "#ff0000"
+style["bgcolor"] = "#aaaaaa"
 style["size"] = 20
 style.add_fixed_face(fixed, "branch-right", 0)
 t.img_style = style
-
-t.show(mylayout, image_properties=I)
-t.show(mylayout2, image_properties=I)
-
-
-
-t1  = faces.TextFace("header_up", fsize=11, fgcolor="#099000")
-t2  = faces.TextFace("header_down", fsize=11, fgcolor="#099000")
-
-
-
-I = TreeImageProperties()
-I.aligned_face_foot.add_face_to_aligned_column(0, t2)
-t = Tree()
-t.dist = 0
-t.populate(5)
-style = NodeStyleDict()
-style["fgcolor"] = "#ff0000"
-style["size"] = 20
-style.add_fixed_face(fixed, "branch-right", 0)
-t.img_style = style
-t.show(mylayout2, image_properties=I)
+t.render("./test.svg", layout=mylayout, img_properties=I)
+t.show(mylayout, img_properties=I)
+t.show(mylayout2, img_properties=I)
