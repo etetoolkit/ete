@@ -78,53 +78,12 @@ def get_rooting(tol, seed_species, agename = False):
     return ROOTING
 
 
-def colorize_rst(vals, winner, classes,col=None):
-    '''
-    Colorize function, that take in argument a list of values
-    corresponding to a list of classes and returns a list of
-    colors to paint histogram.
-    '''
-    col = {'NS' : 'grey',
-           'RX' : 'green',
-           'RX+': 'green',
-           'CN' : 'cyan',
-           'CN+': 'blue',
-           'PS' : 'orange',
-           'PS+': 'red'} if col==None else col
-    colors = []
-    for i in range (0, len (vals)):
-        class1 = int(re.sub('\/.*', '', re.sub('\(', '', classes[i])))
-        class2 = int(re.sub('.*\/', '', re.sub('\)', '', classes[i])))
-        pval = float (vals[i])
-        if pval < 0.95:
-            colors.append(col['NS'])
-        elif (class1 != class2 and class1 != 1) \
-                 and (winner == 'M2' or winner == 'M8'):
-            if pval < 0.99:
-                colors.append(col['RX'])
-            else:
-                colors.append(col['RX+'])
-        elif class1 == 1:
-            if pval < 0.99:
-                colors.append(col['CN'])
-            else:
-                colors.append(col['CN+'])
-        elif class1 == class2 and (winner == 'M2' or winner == 'M8'):
-            if pval < 0.99:
-                colors.append(col['PS'])
-            else:
-                colors.append(col['PS+'])
-        elif class1 == class2:
-            if pval < 0.99:
-                colors.append(col['RX'])
-            else:
-                colors.append(col['RX+'])
-    return colors
-
-
 
 def label_tree(t):
-    """ This function sort the branches of a given tree by
+    """
+    WARNING: deprecated, use sort_tree function of Tree
+    
+    This function sort the branches of a given tree by
     considerening node names. After the tree is sorted, nodes are
     labeled using ascendent numbers.  This can be used to ensure that
     nodes in a tree with the same node names are always labeled in
@@ -145,6 +104,8 @@ def label_tree(t):
     for n in t.traverse(strategy="postorder"):
         n.add_features(idname=counter)
         counter += 1
+
+
 
 
 def translate(sequence):

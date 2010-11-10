@@ -18,7 +18,7 @@ from ete_dev                   import PhyloNode, TreeImageProperties
 from ete_dev.evol.parser       import parse_paml, get_sites
 from ete_dev.evol              import evol_layout
 from ete_dev.evol.codeml.model import Model, AVAIL, PARAMS
-from utils                     import translate, colorize_rst, label_tree
+from utils                     import translate, label_tree
 from ete_dev.parser.newick     import write_newick
 
 __all__ = ["EvolNode", "EvolTree"]
@@ -95,12 +95,12 @@ class EvolNode (PhyloNode):
             if nucleotides:
                 leaf.sequence = translate(leaf.nt_sequence)
 
-    def show (self, layout=evol_layout):
+    def show (self, layout=evol_layout, img_properties=None):
         '''
         call super show adding up and down faces
         '''
         super(EvolTree, self).show(layout=layout,
-                                     img_properties=self.img_prop)
+                                     img_properties=img_properties)
 
     def render (self, filename, layout=evol_layout, w=None, h=None,
                img_properties=None, header=None):
@@ -108,7 +108,7 @@ class EvolNode (PhyloNode):
         call super show adding up and down faces
         '''
         super(EvolTree, self).render(filename, layout=layout,
-                                       img_properties=self.img_prop,
+                                       img_properties=img_properties,
                                        w=w, h=h)
 
     def run_paml (self, model, ctrl_string='', keep=True, paml=False, **kwargs):
@@ -265,55 +265,6 @@ class EvolNode (PhyloNode):
                      get_sites (self.workdir + '/' + model.name + '/rst'))
         if len (self._models) == 1:
             self.change_dist_to_evol ('bL')
-
-    def add_histface (self, mdl, down=True, lines=[1.0], header='', \
-                      col_lines=['grey'], typ='hist',col=None, extras=['']):
-        '''
-        To add histogram face for a given site mdl (M1, M2, M7, M8)
-        can choose to put it up or down the tree.
-        2 types are available:
-           * hist: to draw histogram.
-           * line: to draw plot.
-        You can define color scheme by passing a diccionary, default is:
-            col = {'NS' : 'grey',
-                   'RX' : 'green',
-                   'RX+': 'green',
-                   'CN' : 'cyan',
-                   'CN+': 'blue',
-                   'PS' : 'orange',
-                   'PS+': 'red'}
-        '''
-        if typ   == 'hist':
-            from ete_dev.evol import HistFace as face
-        elif typ == 'line':
-            from ete_dev.evol import LineFaceBG as face
-        elif typ == 'error':
-            from ete_dev.evol import ErrorLineFace as face
-        elif typ == 'protamine':
-            from ete_dev.evol import ErrorLineProtamineFace as face
-        if not self._models.has_key(mdl):
-            print >> stderr, \
-                  "WARNING: model %s not computed." % (mdl)
-            return None
-        if self._models[mdl].sites == None:
-            print >> stderr, \
-                  "WARNING: model %s not computed." % (mdl)
-            return None
-        if header == '':
-            header = 'Omega value for sites under %s model' % (mdl)
-        ldic = self._models[mdl].sites
-        hist = face (values = ldic['w.' + mdl], 
-                     lines = lines, col_lines=col_lines,
-                     colors=colorize_rst(ldic['pv.'+mdl],
-                                         mdl, ldic['class.'+mdl], col=col),
-                     header=header, errors=ldic['se.'+mdl], extras=extras)
-        hist.aligned = True
-        if self.img_prop is None:
-            self.img_prop = TreeImageProperties()
-        if down:
-            self.img_prop.aligned_face_foot.add_face_to_aligned_column(1, hist)
-        else:
-            self.img_prop.aligned_face_header.add_face_to_aligned_column(1, hist)
 
     def write (self, features=None, outfile=None, format=10):
         """ Returns the newick-PAML representation of this node

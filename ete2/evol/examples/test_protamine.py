@@ -10,8 +10,9 @@ __email__   = "francois@barrabin.org"
 __licence__ = "GPLv3"
 __version__ = "0.0"
 
-from ete_dev.evol import EvolTree
+from ete_dev.evol import EvolTree, add_histface
 from random import random as rnd
+from ete_dev import TreeImageProperties
 
 
 WRKDIR = 'data/protamine/PRM1/'
@@ -26,11 +27,22 @@ def main():
     random_swap(tree)
     tree.link_to_evol_model (WRKDIR + 'paml/fb/fb.out', 'fb')
     check_annotation (tree)
+    tree.link_to_evol_model (WRKDIR + 'paml/M1/M1.out', 'M1')
     tree.link_to_evol_model (WRKDIR + 'paml/M2/M2.out', 'M2')
+    tree.link_to_evol_model (WRKDIR + 'paml/M7/M7.out', 'M7')
+    tree.link_to_evol_model (WRKDIR + 'paml/M8/M8.out', 'M8')
     tree.link_to_alignment  (WRKDIR + 'alignments.fasta_ali')
+    print 'pv of LRT M2 vs M1: ',
+    print tree.get_most_likely ('M2','M1')
+    print 'pv of LRT M8 vs M7: ',
+    print tree.get_most_likely ('M8','M7')
     tree.show ()
-    tree.add_histface ('M2')
-    tree.show ()
+    I = TreeImageProperties()
+    I.aligned_face_header.add_face_to_aligned_column(1,
+                                                     add_histface (tree._models['M2']))
+    #tree.add_histface ('M2')
+    #tree.add_histface ('M8')
+    tree.show (img_properties=I)
 
     print 'The End.'
 
@@ -46,7 +58,6 @@ def check_annotation (tree):
             print 'Error, unable to label with paml ids'
             break
     print 'Labelling ok!'
-
 
 
 if __name__ == "__main__":
