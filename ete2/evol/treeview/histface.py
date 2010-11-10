@@ -197,7 +197,6 @@ class HistFace (faces.Face):
         # Calculates size of main plot
         fm = QtGui.QFontMetrics(self.font)
         height = self.height
-        #width = fm.size(QtCore.Qt.AlignTop, 'A'*(len (self.values))).width()
         width = self.col_width * len(self.values)
         
         self.pixmap = QtGui.QPixmap(width+20, height)
@@ -262,7 +261,7 @@ class LineFaceBG (faces.Face):
     """
     def __init__(self, values, errors, colors=['white'], header='', \
                  fsize=11, height = 100, lines=[0.0], \
-                 col_lines = ['black'], extras=['']):
+                 col_lines = ['black'], extras=[''], col_width=10):
         faces.Face.__init__(self)
         if colors == []: colors = ['grey']*len (values)
         if len (colors) != len (values):
@@ -283,6 +282,7 @@ class LineFaceBG (faces.Face):
         self.header = header
         self.lines  = lines
         self.col_lines = col_lines
+        self.col_width = col_width
 
     def update_pixmap(self):
         '''
@@ -295,7 +295,7 @@ class LineFaceBG (faces.Face):
         # Calculates size of main plot
         fm = QtGui.QFontMetrics(self.font)
         height = self.height
-        width = fm.size(QtCore.Qt.AlignTop, 'A'*(len (self.values))).width()
+        width = self.col_width * len(self.values)
         self.pixmap = QtGui.QPixmap(width+20, height)
         self.pixmap.fill()
         p = QtGui.QPainter(self.pixmap)
@@ -384,7 +384,7 @@ class ErrorLineFace (faces.Face):
 
     def __init__(self, values, errors, colors=['white'], header='', \
                  fsize=11, height = 100, lines=[0.0], \
-                 col_lines = ['black'],num=True, extras=['']):
+                 col_lines = ['black'],num=True, extras=[''], col_width=10):
         faces.Face.__init__(self)
         if colors == []: colors = ['grey']*len (values)
         if len (colors) != len (values):
@@ -411,6 +411,7 @@ class ErrorLineFace (faces.Face):
             self.extras = extras
         else:
             self.extras = ['']
+        self.col_width = col_width
 
     def update_pixmap(self):
         '''
@@ -425,7 +426,7 @@ class ErrorLineFace (faces.Face):
         if self.extras != ['']:
             self.height += 10
         height = self.height
-        width = fm.size(QtCore.Qt.AlignTop, 'A'*(len (self.values))).width()
+        width = self.col_width * len(self.values)
         self.pixmap = QtGui.QPixmap(width+20, height)
         self.pixmap.fill()
         p = QtGui.QPainter(self.pixmap)
@@ -551,7 +552,7 @@ class ErrorLineProtamineFace (faces.Face):
     """
     def __init__(self, values, errors, colors=['white'], header='', \
                  fsize=11, height = 100, lines=[0.0], \
-                 col_lines = ['black'],num=True, extras=['']):
+                 col_lines = ['black'],num=True, extras=[''], col_width=10):
         faces.Face.__init__(self)
         if colors == []: colors = ['grey']*len (values)
         if len (colors) != len (values):
@@ -579,6 +580,7 @@ class ErrorLineProtamineFace (faces.Face):
         else:
             self.extras = ['']
         self._QtItem_ = QtGui.QGraphicsRectItem
+        self.col_width = col_width
 
     def update_pixmap(self):
         '''
@@ -594,7 +596,7 @@ class ErrorLineProtamineFace (faces.Face):
         if self.extras != ['']:
             self.height += 10
         height = self.height
-        width = fm.size(QtCore.Qt.AlignTop, 'A'*(len (self.values))).width()
+        width = self.col_width * len(self.values)
         self.pixmap = QtGui.QPixmap(width+20, height)
         self.pixmap.fill()
         p = QtGui.QPainter(self.pixmap)
