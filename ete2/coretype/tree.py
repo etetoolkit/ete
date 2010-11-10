@@ -43,19 +43,19 @@ class TreeNode(object):
     hierarchical way. Trees can be loaded from the New Hampshire Newick
     format (newick).
 
+    
     CONSTRUCTOR ARGUMENTS:
-    ======================
 
      * newick: Path to the file containing the tree or, alternatively,
        the text string containing the same information.
 
     RETURNS:
-    ========
+    
      The TreeNode object which represents the base (root) of the
     tree.
 
     EXAMPLES:
-    =========
+    
         t1 = Tree() # creates an empty tree
         t2 = Tree( '(A:1,(B:1,(C:1,D:1):0.5):0.5);' )
         t3 = Tree( '/home/user/myNewickFile.txt' )
@@ -183,7 +183,7 @@ class TreeNode(object):
         as an argument, a new node instance will be created.
 
         ARGUMENTS:
-        ==========
+        = = = == = = ===
 
          * 'child': the node instance to be added as a child.
          * 'name': the name that will be given to the child.
@@ -191,7 +191,7 @@ class TreeNode(object):
          * 'support': the support value of child partition.
 
         RETURNS:
-        ========
+        = = = == = = =
 
           The child node instace
 
@@ -258,11 +258,11 @@ class TreeNode(object):
         and returned.
 
         ARGUMENTS:
-        ==========
+        = = = == = = ===
           'sister': A node instance
 
         RETURNS:
-        ========
+        = = = == = = =
           The removed node
 
         """
@@ -280,7 +280,7 @@ class TreeNode(object):
         next available parent.
 
         EXAMPLE:
-        ========
+        = = = == = = =
                 / C
           root-|
                |        / B
@@ -330,11 +330,11 @@ class TreeNode(object):
         nodes. Topology relationships among kept nodes is maintained.
 
         ARGUMENTS:
-        ==========
+        = = = == = = ===
           * 'nodes' is a list of node names or node objects that must be kept.
 
         EXAMPLES:
-        =========
+        = = = == = = ==
           t = Tree("(((A:0.1, B:0.01):0.001, C:0.0001):1.0[&&NHX:name=I], (D:0.00001):0.000001[&&NHX:name=J]):2.0[&&NHX:name=root];")
           node_C = t.search_nodes(name="C")[0]
           t.prune(["A","D", node_C])
@@ -407,7 +407,7 @@ class TreeNode(object):
          node.
 
          ARGUMENTS:
-         ==========
+         = = = == = = ===
 
            'strategy' defines the way in which tree will be
            traversed. Possible values are: "preorder" (first parent and
@@ -487,7 +487,7 @@ class TreeNode(object):
         list of 'target_nodes'.
 
         EXAMPLES:
-        =========
+        = = = == = = ==
          t = tree.Tree("(((A:0.1, B:0.01):0.001, C:0.0001):1.0[&&NHX:name=common], (D:0.00001):0.000001):2.0[&&NHX:name=root];")
          A = t.get_descendants_by_name("A")[0]
          C = t.get_descendants_by_name("C")[0]
@@ -590,14 +590,14 @@ class TreeNode(object):
         current node.
 
         ARGUMENTS:
-        ==========
+        = = = == = = ===
           'target': a node within the same tree structure.
 
           'target2': a node within the same tree structure. If
           not specified, current node is used as target2.
 
         RETURNS:
-        ========
+        = = = == = = =
           the distance between nodes
 
         """
@@ -632,7 +632,7 @@ class TreeNode(object):
         distance to it.
 
         ARGUMENTS:
-        ==========
+        = = = == = = ===
 
           * 'topology_only' [True or False]: defines whether branch node
            distances should be discarded from analysis or not. If
@@ -640,7 +640,7 @@ class TreeNode(object):
            target node) will be used.
 
         RETURNS:
-        ========
+        = = = == = = =
           A tuple = (farthest_node, dist_to_farthest_node)
 
         """
@@ -681,7 +681,7 @@ class TreeNode(object):
         distance to it.
 
         ARGUMENTS:
-        ==========
+        = = = == = = ===
 
           * 'topology_only' [True or False]: defines whether branch node
              distances should be discarded from analysis or not. If
@@ -689,7 +689,7 @@ class TreeNode(object):
              target node) will be used.
 
          RETURNS:
-         ========
+         = = = == = = =
           A tuple = (farthest_node, dist_to_farthest_node)
 
         """
@@ -737,7 +737,7 @@ class TreeNode(object):
         of leaves. Internal nodes are added as required.
 
         ARGUMENTS:
-        ==========
+        = = = == = = ===
 
           * 'size' is the number of leaf nodes to add to the current
             tree structure.
@@ -780,7 +780,7 @@ class TreeNode(object):
         can be used to root a tree or even an internal node.
 
         ARGUMENTS:
-        ==========
+        = = = == = = ===
 
           * 'outgroup' is a leaf or internal node under the current tree
             structure.
@@ -952,6 +952,40 @@ class TreeNode(object):
                 show_internal=show_internal, compact=compact)
         return '\n'+'\n'.join(lines)
 
+
+    def sort_descendants(self):
+        """ This function sort the branches of a given tree by
+        considerening node names. After the tree is sorted, nodes are
+        labeled using ascendent numbers.  This can be used to ensure that
+        nodes in a tree with the same node names are always labeled in
+        the same way.  Note that if duplicated names are present, extra
+        criteria should be added to sort nodes.
+        unique id is stored in _nid
+        """
+        from hashlib import md5
+        for n in self.traverse(strategy="postorder"):
+            if n.is_leaf():
+                key = md5(str(n.name)).hexdigest()
+                n.__idname = key
+            else:
+                key = md5 (str (\
+                    sorted ([c.__idname for c in n.children]))).hexdigest()
+                n.__idname=key
+                children = [[c.__idname, c] for c in n.children]
+                children.sort() # sort list by idname
+                n.children = [item[1] for item in children]
+            counter = 1
+        for n in self.traverse(strategy="postorder"):
+            n.add_features(_nid=counter)
+            counter += 1
+        def get_descendant_by_id (idname):
+            '''
+            returns node list corresponding to a given idname
+            '''
+            for n in self.iter_descendants():
+                if n._nid == idname:
+                    return n
+        self.__dict__['get_descendant_by_id'] = get_descendant_by_id
 
 def _translate_nodes(root, *nodes):
     target_nodes = []

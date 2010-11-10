@@ -22,7 +22,6 @@
 # #END_LICENSE#############################################################
 import os
 import string
-from re import search
 from sys import stderr as STDERR
 
 def read_fasta(source, obj=None):
@@ -75,9 +74,7 @@ def read_fasta(source, obj=None):
 
         else:
             if seq_name is None:
-                if search ('^[0-9]+ [0-9]+$', line):
-                    continue
-                raise Exception, "Error reading sequences: Wrong format."
+                raise Exception, "Error readind sequences: Wrong format."
 
             # removes all white spaces in line
             s = line.strip().replace(" ","")
