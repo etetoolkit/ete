@@ -755,16 +755,14 @@ class SequenceFace(Face):
 
         fm = QtGui.QFontMetrics(self.font)
         height = fm.leading() + fm.overlinePos() + fm.underlinePos()
-        width  = fm.size(QtCore.Qt.AlignTop, self.seq).width()
-
+        #width = fm.size(QtCore.Qt.AlignTop, self.seq).width()
+        width = self.fsize * len(self.seq)
         self.pixmap = QtGui.QPixmap(width,height)
         self.pixmap.fill()
         p = QtGui.QPainter(self.pixmap)
         x = 0
         y = height - fm.underlinePos()*2
-
         p.setFont(self.font)
-
         for letter in self.seq:
             letter = letter.upper()
             if self.style=="nt":
