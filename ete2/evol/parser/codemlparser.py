@@ -2,8 +2,6 @@
 """
 parser for outfiles of codeml, rst file for sites,
 and main outfile
-TODO: _label_tree_as_paml function should be called only
-if link_to alignmement is runned over... never?
 """
 
 __author__  = "Francois-Jose Serra"

@@ -18,7 +18,7 @@ from ete_dev                   import PhyloNode, TreeImageProperties
 from ete_dev.evol.parser       import parse_paml, get_sites
 from ete_dev.evol              import evol_layout
 from ete_dev.evol.codeml.model import Model, AVAIL, PARAMS
-from utils                     import translate, label_tree
+from utils                     import translate
 from ete_dev.parser.newick     import write_newick
 
 __all__ = ["EvolNode", "EvolTree"]
@@ -56,7 +56,7 @@ class EvolNode (PhyloNode):
             self.link_to_alignment(alignment, alg_format)
         if newick:
             self.set_species_naming_function(sp_naming_function)
-            label_tree(self)
+            self.sort_descendants()
         self.mark_tree([])
 
     def _label_as_paml (self):
@@ -86,7 +86,6 @@ class EvolNode (PhyloNode):
         def get_descendant_by_pamlid (idname):
             '''
             returns node list corresponding to a given idname
-            #TODO: perhaps put this in core :P
             '''
             for n in self.iter_descendants():
                 if n.paml_id == idname:
@@ -137,7 +136,6 @@ class EvolNode (PhyloNode):
             ctrl_string = model.get_ctrl_string(fullpath+'/tmp.ctl')
         else:
             open(fullpath+'/tmp.ctl', 'w').write (ctrl_string)
-
         hlddir = os.getcwd()
         os.chdir(fullpath)
         proc = Popen([self.codemlpath, 'tmp.ctl'], stdout=PIPE)
@@ -152,7 +150,6 @@ class EvolNode (PhyloNode):
             setattr (model, 'run', run)
             self.link_to_evol_model (os.path.join(fullpath,'out'),
                                      model)
-
     run_paml.__doc__ += '''%s
     to run paml, needs tree linked to alignment.
     model name needs to start by one of:
@@ -219,24 +216,17 @@ class EvolNode (PhyloNode):
         else:
             marks = ['#1']*len (node_ids)
         for node in self.iter_descendants():
-            if node.idname in node_ids:
-                if ('.' in marks[node_ids.index(node.idname)] or \
+            if node._nid in node_ids:
+                if ('.' in marks[node_ids.index(node._nid)] or \
                        match ('#[0-9][0-9]*', \
-                              marks[node_ids.index(node.idname)])==None)\
+                              marks[node_ids.index(node._nid)])==None)\
                               and not kargs.has_key('silent'):
                     print >> stderr, \
                           'WARNING: marks should be "#" sign directly '+\
                     'followed by integer\n' + self.mark_tree.func_doc
-                node.add_feature('mark', ' '+marks[node_ids.index(node.idname)])
+                node.add_feature('mark', ' '+marks[node_ids.index(node._nid)])
             elif not 'mark' in node.features:
                 node.add_feature('mark', '')
-
-    def get_descendant_by_idname (self, idname):
-        '''
-        returns node list corresponding to a given idname
-        #TODO: perhaps put this in core :P
-        '''
-        return filter(lambda x: x.idname == idname, self.iter_descendants())
 
     def get_evol_model (self, modelname):
         '''
