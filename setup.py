@@ -148,6 +148,6 @@ setup(
     classifiers = TAGS,
     provides = ['ete2'],
     keywords = "bioinformatics phylogeny evolution phylogenomics genomics tree clustering phylogenetics phylogenetic ete orthology paralogy",
-    url = "http://ete.cgenomics.org",
+    url = "http://ete.cgenomics.org", 
     download_url = "http://ete.cgenomics.org/releases/ete2/",
 )

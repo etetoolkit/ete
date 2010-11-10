@@ -156,11 +156,11 @@ _ex('find %s -name \'*.py\' -exec  python ___put_disclaimer.py {} \;' %\
 
 
 
-# Correct imports. I use ete_dev for development, but ete2 is the
+# Correct imports. I use ete2 for development, but ete2 is the
 # correct name for stable releases. First I install the module using a
 # different name just to test it
 print "*** Fixing imports..."
-_ex('find %s -name \'*.py\'| xargs perl -e "s/from ete_dev/from ete2_test/g" -p -i' %\
+_ex('find %s -name \'*.py\'| xargs perl -e "s/from ete_dev/from ete_dev_test/g" -p -i' %\
               (RELEASE_PATH) )
 
 _ex('mv %s %s/ete2_test' %(RELEASE_MODULE_PATH, RELEASE_PATH))
@@ -187,7 +187,7 @@ if options.test_examples:
 
 # Re-establish module name
 _ex('mv %s/ete2_test %s' %(RELEASE_PATH, RELEASE_MODULE_PATH))
-_ex('find %s -name \'*.py\'| xargs perl -e "s/from ete2_test/from %s/g" -p -i' %\
+_ex('find %s -name \'*.py\'| xargs perl -e "s/from ete_dev_test/from %s/g" -p -i' %\
               (RELEASE_PATH, MODULE_NAME) )
 _ex('cd %s; python setup.py build' %(RELEASE_PATH))
 

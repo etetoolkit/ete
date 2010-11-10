@@ -8,4 +8,4 @@ pyuic4 ete_qt4app.ui > _mainwindow.py
 pyuic4 about.ui > _about.py
 
 # test
-python -c 'from ete_dev import Tree; Tree("(A,B,C,(D,E)F,(G,(H,I)J)K);", format=1).show();'
+python -c 'from ete2 import Tree; Tree("(A,B,C,(D,E)F,(G,(H,I)J)K);", format=1).show();'

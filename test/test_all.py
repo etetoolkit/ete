@@ -265,10 +265,10 @@ class Test_Coretype_SeqGroup(unittest.TestCase):
     def test_fasta_parser(self):
         """ test fasta read an write """
         # FASTA IO
-        open("/tmp/ete_test_fasta.txt","w").write(fasta_example)
+        open("/tmp/ete2_fasta.txt","w").write(fasta_example)
         # Test reading from file and from string
         SEQS = SeqGroup(fasta_example)
-        SEQS2 = SeqGroup("/tmp/ete_test_fasta.txt")
+        SEQS2 = SeqGroup("/tmp/ete2_fasta.txt")
 
         # Compare the result is the same
         self.assertEqual(SEQS.write(), SEQS2.write())
@@ -292,8 +292,8 @@ class Test_Coretype_SeqGroup(unittest.TestCase):
     def test_phylip_parser(self):
         """ Tests phylip read and write """
         # PHYLIP INTERLEAVED
-        open("/tmp/ete_test_iphylip.txt","w").write(phylip_interlived)
-        SEQS = SeqGroup("/tmp/ete_test_iphylip.txt", format="iphylip")
+        open("/tmp/ete2_iphylip.txt","w").write(phylip_interlived)
+        SEQS = SeqGroup("/tmp/ete2_iphylip.txt", format="iphylip")
         SEQS2 = SeqGroup(phylip_interlived, format="iphylip")
         self.assertEqual(SEQS.write(), SEQS2.write())
         SEQS.write(format="iphylip",  outfile="/tmp/ete_write_file")
@@ -307,8 +307,8 @@ class Test_Coretype_SeqGroup(unittest.TestCase):
         self.assertEqual(SEQS.get_entries(), [e for e in SEQS])
 
         # PHYLIP SEQUENCIAL FORMAT
-        open("/tmp/ete_test_phylip.txt","w").write(phylip_sequencial)
-        SEQS = SeqGroup("/tmp/ete_test_phylip.txt", format="phylip")
+        open("/tmp/ete2_phylip.txt","w").write(phylip_sequencial)
+        SEQS = SeqGroup("/tmp/ete2_phylip.txt", format="phylip")
         SEQS2 = SeqGroup(phylip_sequencial, format="phylip")
         self.assertEqual(SEQS.write(), SEQS2.write())
         SEQS.write(format="phylip",  outfile="/tmp/ete_write_file")
@@ -902,7 +902,7 @@ class Test_phylo_module(unittest.TestCase):
         # Create a dictionary with relative ages for the species present in
         # the phylogenetic tree.  Note that ages are only relative numbers to
         # define which species are older, and that different species can
-        # belong to the same age.
+        # belong to the same age.age
         sp2age = {
           'Hsa': 1, # Homo sapiens (Hominids)
           'Ptr': 2, # P. troglodytes (primates)

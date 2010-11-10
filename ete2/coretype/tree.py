@@ -45,17 +45,18 @@ class TreeNode(object):
 
     
     CONSTRUCTOR ARGUMENTS:
+    ======================
 
      * newick: Path to the file containing the tree or, alternatively,
        the text string containing the same information.
 
     RETURNS:
-    
+    ========
      The TreeNode object which represents the base (root) of the
     tree.
 
     EXAMPLES:
-    
+    =========
         t1 = Tree() # creates an empty tree
         t2 = Tree( '(A:1,(B:1,(C:1,D:1):0.5):0.5);' )
         t3 = Tree( '/home/user/myNewickFile.txt' )

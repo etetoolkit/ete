@@ -238,7 +238,7 @@ class TextFace(Face):
         return self.text
 
 class AttrFace(TextFace):
-    """ Creates a new text attribute face object.
+    ''' Creates a new text attribute face object.
 
     Arguments description
     ---------------------
