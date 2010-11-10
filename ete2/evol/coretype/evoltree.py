@@ -151,7 +151,7 @@ class EvolNode (PhyloNode):
         if keep:
             setattr (model, 'run', run)
             self.link_to_evol_model (os.path.join(fullpath,'out'),
-                                     model, from_inside=True)
+                                     model)
 
     run_paml.__doc__ += '''%s
     to run paml, needs tree linked to alignment.
@@ -247,14 +247,14 @@ class EvolNode (PhyloNode):
         except KeyError:
             print >> stderr, "Model %s not found." % (modelname)
 
-    def link_to_evol_model (self, path, model, from_inside=False):
+    def link_to_evol_model (self, path, model):
         '''
         link EvolTree to evolutionary model
           * free-branch model ('fb') will append evol values to tree
           * Site models (M0, M1, M2, M7, M8) will give evol values by site
             and likelihood
         '''
-        if not hasattr (self, 'paml_id') and from_inside:
+        if not hasattr (self, 'paml_id'):
             self._label_as_paml()
         if type (model) == str :
             model = Model (model, self)

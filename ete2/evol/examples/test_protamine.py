@@ -10,8 +10,7 @@ __email__   = "francois@barrabin.org"
 __licence__ = "GPLv3"
 __version__ = "0.0"
 
-from ete_dev.evol import EvolTree, add_histface, get_histface, faces
-from ete_dev.evol import EvolTree, add_histface, get_histface
+from ete_dev.evol import EvolTree, get_histface, faces
 from random import random as rnd
 from ete_dev import TreeImageProperties
 

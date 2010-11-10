@@ -216,9 +216,10 @@ def parse_paml (pamout, model, codon_freq=True):
                 for n, v in enumerate (vals):
                     setattr (model, 'wfrg' + v, line.split() [n+1])
 
-def _get_paml_labels(model, tree, paml_labels, line, pamout):
+def _get_paml_labels (model, tree, paml_labels, line, pamout):
     '''
-    map tree to paml labels, and place w and bL values
+     * check paml labels
+     * retrieve w and bL values
     '''
     bL = line.split()[:len (paml_labels)]
     w  = line.split()[len (paml_labels)+1:]
@@ -233,13 +234,15 @@ def _get_paml_labels(model, tree, paml_labels, line, pamout):
         try:
             node = tree.search_nodes(paml_id=rel[1])[0]
             if int (node.up.paml_id) != int (rel[0]):
-                print node
-                print node.up
-                print node.up.paml_id, rel
+                print >> sys.stderr, \
+                      'WARNING: labelling does not correspond!!\n' + \
+                      '         Getting them from ' + pamout
+                get_labels_from_paml(tree, relations, pamout)
+                break
         except IndexError:
             print >> sys.stderr, \
-                  'WARNING: labelling does not correspond!!\n' + \
-                  'Getting them from ' + pamout
+                  'ERROR: labelling does not correspond!!\n' + \
+                  '       Getting them from ' + pamout
             get_labels_from_paml(tree, relations, pamout)
     #####
     for lab in paml_labels:
@@ -262,10 +265,7 @@ def get_labels_from_paml (tree, relations, pamout):
         if line.startswith ('Sums of codon'):
             break
     tree.add_feature ('paml_id', int (len (tree) + 1))
-    for rel in sorted (relations, key=lambda x: x[0], reverse=True):
-        try:
-            tree.search_nodes (paml_id=rel[1])[0].up.add_feature ('paml_id', rel[0])
-        except IndexError:
-            print 'hoho ', rel
-    # label internal nodes
+    for n in tree.traverse(strategy='postorder'):
+        if n.is_root(): continue
+        n.up.paml_id = filter (lambda x: x[1]==n.paml_id, relations)[0][0]
         
