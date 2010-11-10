@@ -185,7 +185,7 @@ class _TextItem(QtGui.QGraphicsSimpleTextItem):
 
 class _FaceGroup(QtGui.QGraphicsItem): # I resisted to name this FaceBook :) 
     def __init__(self, faces, node, column_widths={}, *args, **kargs):
-        QtGui.QGraphicsItem.__init__(self)#, *args, **kargs) # This coused segm. faults
+        QtGui.QGraphicsItem.__init__(self, *args, **kargs)
         self.node = node
         self.column2faces = faces
         

@@ -1,4 +1,13 @@
 #!/usr/bin/python
-#        Author: Francois-Jose Serra
-# Creation Date: 2010/11/03 22:07:47
+"""
+06 Nov 2010
+
+init of evol plugin
+"""
+
+__author__  = "Francois-Jose Serra"
+__email__   = "francois@barrabin.org"
+__licence__ = "GPLv3"
+__version__ = "0.0"
+
 

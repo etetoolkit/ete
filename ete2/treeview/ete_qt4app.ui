@@ -95,7 +95,6 @@
    <addaction name="actionBranchLength" />
    <addaction name="actionRenderPDF" />
    <addaction name="actionShow_newick" />
-   <addaction name="actionShow_codeml" />
   </widget>
   <action name="actionOpen" >
    <property name="icon" >
@@ -311,15 +310,6 @@
    </property>
    <property name="shortcut" >
     <string>N</string>
-   </property>
-  </action>
-  <action name="actionShow_codeml" >
-   <property name="icon" >
-    <iconset resource="ete_resources.qrc" >
-     <normaloff>:/ete icons/show_codeml.png</normaloff>:/ete icons/show_codeml.png</iconset>
-   </property>
-   <property name="text" >
-    <string>Open codeml</string>
    </property>
   </action>
   <action name="actionShow_node_attributes_box" >
