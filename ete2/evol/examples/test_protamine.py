@@ -10,7 +10,7 @@ __email__   = "francois@barrabin.org"
 __licence__ = "GPLv3"
 __version__ = "0.0"
 
-from ete_dev.evol import EvolTree, get_histface, faces
+from ete_dev.evol import EvolTree, faces
 from random import random as rnd
 from ete_dev import TreeImageProperties
 
@@ -38,17 +38,7 @@ def main():
     print tree.get_most_likely ('M8','M7')
 
     
-    letter_w = 11
-    I = TreeImageProperties()
-    I.aligned_face_header.add_face_to_aligned_column(1,\
-                                                         get_histface(tree._models['M2'], \
-                                                                          col_width=letter_w))
-    
-                                                     
-    # tree.show ()
-    #tree.add_histface ('M2')
-    #tree.add_histface ('M8')
-    tree.show (img_properties=I)
+    tree.show (histfaces=['M2'])
 
     print 'The End.'
 

@@ -37,7 +37,7 @@ def main():
     print tree.get_most_likely ('M2','M1')
     print 'pv of LRT M8 vs M7: ',
     print tree.get_most_likely ('M8','M7')
-    tree.get_evol_model('M2').set_histface (up=False, typ='protamine',
+    tree.get_evol_model('M2').set_histface (up=True, typ='error',
                                             lines = [1.0,0.3],
                                             col_lines=['black','grey'])
     tree.show (histfaces=['M2'])
@@ -62,7 +62,7 @@ def main():
     tree.get_evol_model('M8').set_histface (up=False, typ='protamine',
                                             lines = [1.0,0.3],
                                             col_lines=['black','grey'])
-    tree.show(histfaces=['M2'])
+    tree.show(histfaces=['M2', 'M8'])
     tree.mark_tree ([2])
     print tree.write()
     tree.run_model ('bsA.2')

@@ -2,9 +2,8 @@
 #        Author: Francois-Jose Serra
 # Creation Date: 2010/04/26 17:17:06
 
-from ete_dev.evol import EvolTree, get_histface
+from ete_dev.evol import EvolTree
 import sys, re
-from ete_dev import TreeImageProperties
 
 typ = None
 while typ != 'L' and typ != 'S':
@@ -56,20 +55,20 @@ T.show()
 print '\n\n\n         ----> We define now our working directory, that will be created:', \
       WORKING_PATH
 T.workdir = (WORKING_PATH)
-print '\n            ----> and run the free-branch model with run_paml function:\n\n%s\n%s\n%s\n'\
-      % ('*'*10 + ' doc ' + '*'*10, T.run_paml.func_doc, '*'*30)
+print '\n            ----> and run the free-branch model with run_model function:\n\n%s\n%s\n%s\n'\
+      % ('*'*10 + ' doc ' + '*'*10, T.run_model.func_doc, '*'*30)
 
 raw_input("         ====> Hit some key to start free-branch computation with codeml...\n")
-T.run_paml('fb')
+T.run_model('fb')
 T.show()
 
 ###
 # run site model, and display result
-print '\n\n\n         ----> We are now goingn to run sites model M1 and M2 with run_paml function:\n'
+print '\n\n\n         ----> We are now goingn to run sites model M1 and M2 with run_model function:\n'
 raw_input("         ====> hit some key to start")
 for model in ['M1', 'M2']:
     print 'running model ' + model
-    T.run_paml(model)
+    T.run_model(model)
 
 print '\n\n\n            ----> and use the get_most_likely function to compute the LRT between those models:\n'
 print 'get_most_likely function: \n\n'+ '*'*10 + ' doc ' + '*'*10
@@ -90,7 +89,7 @@ raw_input("         ====> Hit some key...")
 # tengo que encontrar un ejemplo mas bonito pero bueno.... :P
 
 print '\n\n\n         ----> We now add histograms to our tree to repesent site models with add_histface function: \n\n%s\n%s\n%s\n'\
-      % ('*'*10 + ' doc ' + '*'*10, get_histface.func_doc,'*'*30)
+      % ('*'*10 + ' doc ' + '*'*10, T.get_evol_model ('M2').set_histface.func_doc,'*'*30)
 print 'Upper face is an histogram representing values of omega for each column in the alignment,'
 print '\
 Colors represent significantly conserved sites (cyan to blue), neutral sites (greens), or under \n\
@@ -111,13 +110,12 @@ col = {'NS' : 'white',
        'PS+': 'lightgrey'}
 
 
-I = TreeImageProperties()
-I.aligned_face_header.add_face_to_aligned_column(1,
-                                                 get_histface (T._models['M2']))
-I.aligned_face_foot.add_face_to_aligned_column(1,
-                                               get_histface (T._models['M2'], typ='protamine', col=col, lines=[1.0,0.3],col_lines=['black','grey']))
 
-T.show (img_properties=I)
+T.get_evol_model ('M2').set_histface (typ='protamine',
+                                      col=col, up = False,
+                                      lines=[1.0,0.3],
+                                      col_lines=['black','grey'])
+T.show (histfaces = ['M1', 'M2'])
 
 
 ###
@@ -136,14 +134,11 @@ T.link_to_evol_model(T.workdir + '/fb/out','fb')
 T.link_to_evol_model(T.workdir + '/M1/out','M1')
 T.link_to_evol_model(T.workdir + '/M2/out','M2')
 
-
-I = TreeImageProperties()
-I.aligned_face_header.add_face_to_aligned_column(1,
-                                                 get_histface (T._models['M2']))
-I.aligned_face_foot.add_face_to_aligned_column(1,
-                                               get_histface (T._models['M2'], typ='protamine', col=col, lines=[1.0,0.3],col_lines=['black','grey']))
-
-T.show (img_properties=I)
+T.get_evol_model ('M2').set_histface (typ='protamine',
+                                      col=col, up = False,
+                                      lines=[1.0,0.3],
+                                      col_lines=['black','grey'])
+T.show (histfaces = ['M1', 'M2'])
 
 
 ###
@@ -154,7 +149,7 @@ while name not in T.get_leaf_names():
     name = raw_input('         ====> As you need to mark some branches to run branch\n\
     models, type the name of one leaf: ')
 
-idname = T.get_leaves_by_name(name)[0].idname
+idname = T.get_leaves_by_name(name)[0]._nid
 
 print '         ----> you want to mark:',name,'that has this idname: ', idname
 T.mark_tree([idname]) # by default will mark with '#1'
@@ -170,7 +165,7 @@ print '\n\n\n         ----> We are now going to run branch-site models bsA and b
 raw_input("         ====> hit some key to start computation with our marked tree")
 for model in ['bsA','bsA1']:
     print 'running model ' + model
-    T.run_paml(model)
+    T.run_model(model)
 
 
 print '\n\n\n            ----> again we use the get_most_likely function to compute the LRT between those models:\n'

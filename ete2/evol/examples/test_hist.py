@@ -2,8 +2,7 @@
 #        Author: Francois-Jose Serra
 # Creation Date: 2010/04/26 17:17:06
 
-from ete_dev.evol import EvolTree, get_histface
-from ete_dev import TreeImageProperties
+from ete_dev.evol import EvolTree
 import sys, re
 
 typ = 'S'
@@ -27,11 +26,8 @@ T.workdir = (WORKING_PATH)
 T.link_to_evol_model(T.workdir + '/fb/out','fb')
 T.link_to_evol_model(T.workdir + '/M1/out','M1')
 T.link_to_evol_model(T.workdir + '/M2/out','M2')
-I = TreeImageProperties()
-I.aligned_face_header.add_face_to_aligned_column(1,
-                                                 get_histface (T._models['M2']))
 
-T.show(img_properties=I)
+T.show(histfaces=['M2'])
 sys.stderr.write('\n\nThe End.\n\n')
 
 
