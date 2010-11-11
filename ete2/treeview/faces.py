@@ -143,12 +143,13 @@ class Face(object):
 
     def __init__(self):
         self.node        = None
-        self.type        = "pixmap"
-        self.name        = "unknown"
-        self.xmargin     = 0
-        self.ymargin     = 0
-        self.pixmap      = None
-        # self.aligned     = False
+        self.type = "pixmap" # pixmap or text
+        self.name = "unknown"
+        self.margin_left = 0
+        self.margin_right = 0
+        self.margin_top = 0
+        self.margin_bottom = 0
+        self.pixmap = None
 
     def _size(self):
         if self.pixmap:
@@ -158,13 +159,13 @@ class Face(object):
 
     def _width(self):
         if self.pixmap:
-            return self.pixmap.width() #+ self.xmargin*2
+            return self.pixmap.width()
         else:
             return 0
 
     def _height(self):
         if self.pixmap:
-            return self.pixmap.height() #+ self.ymargin*2
+            return self.pixmap.height()
         else:
             return 0
 
@@ -311,8 +312,6 @@ class ProfileFace(Face):
         self.max_value = max_v
         self.min_value = min_v
         self.center_v  = center_v
-        self.xmargin = 1
-        self.ymargin = 1
         self.style = style
         self.colorscheme = colorscheme
 
@@ -385,8 +384,8 @@ class ProfileFace(Face):
 
         vlength = len(mean_vector)
         # pixels per array position
-        profile_width = self.width - self.xmargin*2 - 40
-        profile_height= self.height - self.ymargin*2
+        profile_width = self.width  - 40
+        profile_height= self.height 
 
         x_alpha = float( profile_width / (len(mean_vector)) )
         y_alpha = float ( profile_height / (self.max_value-self.min_value) )
@@ -396,8 +395,8 @@ class ProfileFace(Face):
         self.pixmap.fill(QtGui.QColor("white"))
         p = QtGui.QPainter(self.pixmap)
 
-        x2 = self.xmargin
-        y  = self.ymargin
+        x2 = 0 
+        y  = 0
 
         # Mean and quartiles y positions
         mean_line_y = y + profile_height/2
@@ -408,8 +407,8 @@ class ProfileFace(Face):
         p.setPen(QtGui.QColor("black"))
         p.drawRect(x2,y,profile_width, profile_height-1)
         p.setFont(QtGui.QFont("Verdana",8))
-        p.drawText(self.xmargin+profile_width,y+10,"%0.3f" %self.max_value)
-        p.drawText(self.xmargin+profile_width,y+profile_height,"%0.3f" %self.min_value)
+        p.drawText(profile_width,y+10,"%0.3f" %self.max_value)
+        p.drawText(profile_width,y+profile_height,"%0.3f" %self.min_value)
 
         dashedPen = QtGui.QPen(QtGui.QBrush(QtGui.QColor("#ddd")), 0)
         dashedPen.setStyle(QtCore.Qt.DashLine)
@@ -473,8 +472,8 @@ class ProfileFace(Face):
 
         vlength = len(mean_vector)
         # pixels per array position
-        profile_width = self.width - self.xmargin*2 - 40
-        profile_height= self.height - self.ymargin*2
+        profile_width = self.width - 40
+        profile_height= self.height
 
         x_alpha = float( profile_width / (len(mean_vector)) )
         y_alpha_up = float ( (profile_height/2) / (self.max_value-self.center_v) )
@@ -485,8 +484,8 @@ class ProfileFace(Face):
         self.pixmap.fill(QtGui.QColor("white"))
         p = QtGui.QPainter(self.pixmap)
 
-        x2 = self.xmargin
-        y  = self.ymargin
+        x2 = 0
+        y  = 0 
 
         # Mean and quartiles y positions
         mean_line_y = y + profile_height/2
@@ -497,9 +496,9 @@ class ProfileFace(Face):
         p.setPen(QtGui.QColor("black"))
         p.drawRect(x2,y,profile_width, profile_height-1)
         p.setFont(QtGui.QFont("Verdana",8))
-        p.drawText(self.xmargin+profile_width,y+10,"%0.3f" %self.max_value)
-        p.drawText(self.xmargin+profile_width,y+profile_height,"%0.3f" %self.min_value)
-        p.drawText(self.xmargin+profile_width,mean_line_y,"%0.3f" %self.center_v)
+        p.drawText(profile_width,y+10,"%0.3f" %self.max_value)
+        p.drawText(profile_width,y+profile_height,"%0.3f" %self.min_value)
+        p.drawText(profile_width,mean_line_y,"%0.3f" %self.center_v)
 
         dashedPen = QtGui.QPen(QtGui.QBrush(QtGui.QColor("#ddd")), 0)
         dashedPen.setStyle(QtCore.Qt.DashLine)
@@ -573,8 +572,8 @@ class ProfileFace(Face):
 
         vlength = len(mean_vector)
         # pixels per array position
-        profile_width = self.width - self.xmargin*2 - 40
-        profile_height= self.height - self.ymargin*2
+        profile_width = self.width - 40
+        profile_height= self.height 
 
 
         x_alpha = float( profile_width / (len(mean_vector)-1) )
@@ -585,8 +584,8 @@ class ProfileFace(Face):
         self.pixmap.fill(QtGui.QColor("white"))
         p = QtGui.QPainter(self.pixmap)
 
-        x2 = self.xmargin
-        y  = self.ymargin
+        x2 = 0
+        y  = 0
 
         # Mean and quartiles y positions
         mean_line_y = y + profile_height/2
@@ -597,9 +596,9 @@ class ProfileFace(Face):
         p.setPen(QtGui.QColor("black"))
         p.drawRect(x2,y,profile_width, profile_height-1)
         p.setFont(QtGui.QFont("Verdana",8))
-        p.drawText(self.xmargin+profile_width,y+10,"%0.3f" %self.max_value)
-        p.drawText(self.xmargin+profile_width,y+profile_height,"%0.3f" %self.min_value)
-        p.drawText(self.xmargin+profile_width,mean_line_y+5,"%0.3f" %self.center_v)
+        p.drawText(profile_width,y+10,"%0.3f" %self.max_value)
+        p.drawText(profile_width,y+profile_height,"%0.3f" %self.min_value)
+        p.drawText(profile_width,mean_line_y+5,"%0.3f" %self.center_v)
 
         dashedPen = QtGui.QPen(QtGui.QBrush(QtGui.QColor("#ddd")), 0)
         dashedPen.setStyle(QtCore.Qt.DashLine)
@@ -666,8 +665,8 @@ class ProfileFace(Face):
         vlength = len(vector)
         # pixels per array position
         img_height = self.height * len(leaves)
-        profile_width = self.width - self.xmargin*2
-        profile_height= img_height - self.ymargin*2
+        profile_width = self.width 
+        profile_height= img_height 
 
         x_alpha = float( profile_width / (len(vector)) )
 
@@ -676,8 +675,8 @@ class ProfileFace(Face):
         self.pixmap.fill(QtGui.QColor("white"))
         p = QtGui.QPainter(self.pixmap)
 
-        x2 = self.xmargin
-        y  = self.ymargin
+        x2 = 0
+        y  = 0
         y_step = self.height
         for leaf in leaves:
             mean_vector = leaf.profile
@@ -704,7 +703,7 @@ class ProfileFace(Face):
                 # Fill bar with custom color
                 p.fillRect(x1, y, x_alpha, y_step, QtGui.QBrush(customColor))
             y+= y_step
-            x2 = self.xmargin
+            x2 = 0
 
     def fit_to_scale(self,v):
         if v<self.min_value:
