@@ -38,7 +38,6 @@ class _MainApp(QtGui.QMainWindow):
         self.searchDialog._conf = _search_dialog.Ui_Dialog()
         self.searchDialog._conf.setupUi(self.searchDialog)
 
-
     @QtCore.pyqtSignature("")
     def on_actionETE_triggered(self):
         try:
@@ -527,6 +526,8 @@ class _MainView(QtGui.QGraphicsView):
 
     def wheelEvent(self,e):
         factor =  (-e.delta() / 360.0)
+        if abs(factor)>=1:
+            factor = 0.0
 
         # Ctrl+Shift -> Zoom in X
         if  (e.modifiers() & QtCore.Qt.ControlModifier) and (e.modifiers() & QtCore.Qt.ShiftModifier):
