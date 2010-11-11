@@ -14,7 +14,7 @@ __version__ = "0.0"
 from parser.codemlparser import *
 from treeview.histface   import *
 from treeview.layout     import *
-from coretype.evoltree   import *
+from evoltree            import *
 
 
 

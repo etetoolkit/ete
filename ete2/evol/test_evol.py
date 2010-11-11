@@ -12,9 +12,8 @@ __version__ = "0.0"
 
 
 
-from ete_dev.evol import EvolTree, get_histface, faces
+from ete_dev.evol import EvolTree, faces
 from random import random as rnd
-from ete_dev import TreeImageProperties
 
 
 WRKDIR = 'examples/data/protamine/PRM1/'
@@ -40,16 +39,16 @@ def main():
     print tree.get_most_likely ('M8','M7')
 
     letter_w = 11
-    I = TreeImageProperties()
-    I.aligned_face_header.add_face_to_aligned_column(1,
-                                                     get_histface(tree._models['M2']))
-    I.aligned_face_foot.add_face_to_aligned_column(1,
-                                               get_histface (tree._models['M2'],
-                                                             typ='protamine',
-                                                             lines=[1.0,0.3],
-                                                             col_lines=['black',
-                                                                        'grey']))
-    tree.show (img_properties=I)
+    #I = TreeImageProperties()
+    #I.aligned_face_header.add_face_to_aligned_column(1,
+    #                                                 get_histface(tree._models['M2']))
+    #I.aligned_face_foot.add_face_to_aligned_column(1,
+    #                                           get_histface (tree._models['M2'],
+    #                                                         typ='protamine',
+    #                                                         lines=[1.0,0.3],
+    #                                                         col_lines=['black',
+    #                                                                    'grey']))
+    tree.show (histfaces=['M2'])
 
     # run codeml
     TREE_PATH    = "examples/data/S_example/measuring_S_tree.nw"
@@ -59,19 +58,19 @@ def main():
     tree = EvolTree (TREE_PATH)
     tree.link_to_alignment (ALG_PATH)
     tree.workdir = (WORKING_PATH)
-    tree.run_paml ('fb')
-    tree.run_paml ('M1')
-    tree.run_paml ('M2')
-    #tree.run_paml ('M7')
-    #tree.run_paml ('M8')
+    tree.run_model ('fb')
+    tree.run_model ('M1')
+    tree.run_model ('M2')
+    #tree.run_model ('M7')
+    #tree.run_model ('M8')
     print 'pv of LRT M2 vs M1: ',
     print tree.get_most_likely ('M2','M1')
     print 'pv of LRT M8 vs M7: ',
     #print tree.get_most_likely ('M8','M7')
     tree.mark_tree ([2])
     print tree.write()
-    tree.run_paml ('bsA.2')
-    tree.run_paml ('bsA1.2')
+    tree.run_model ('bsA.2')
+    tree.run_model ('bsA1.2')
     print 'pv of LRT bsA vs bsA1: ',
     print tree.get_most_likely ('bsA.2','bsA1.2')
     # clean marks:
@@ -81,19 +80,19 @@ def main():
     print tree.write()
     tree.mark_tree ([2, 3, 4] + [1, 5], marks=['#1']*3 + ['#2']*2)
     print tree.write()
-    tree.run_paml ('bsC.2-3-4_1-5')
-    tree.run_paml ('bsA1.2')
+    tree.run_model ('bsC.2-3-4_1-5')
+    tree.run_model ('bsA1.2')
     print 'pv of LRT bsC vs M1, marking 2 3 4 versus 1 5: ',
     print tree.get_most_likely ('bsC.2-3-4_1-5','M1')
-    tree.run_paml ('b_free.2-3-4_1-5')
-    tree.run_paml ('b_neut.2-3-4_1-5')
+    tree.run_model ('b_free.2-3-4_1-5')
+    tree.run_model ('b_neut.2-3-4_1-5')
     print 'pv of LRT b_free 2 3 4, 1 5 amd outgroup vs 1 5 with omega = 1: ',
     print tree.get_most_likely ('b_free.2-3-4_1-5','b_neut.2-3-4_1-5')
 
-    I = TreeImageProperties()
-    I.aligned_face_header.add_face_to_aligned_column(1,
-                                                     get_histface (tree._models['M2']))
-    tree.show(img_properties=I)
+    #I = TreeImageProperties()
+    #I.aligned_face_header.add_face_to_aligned_column(1,
+    #                                                 get_histface (tree._models['M2']))
+    tree.show(histfaces=['M2'])
     print "The End."
 
 

@@ -1,6 +1,13 @@
 #!/usr/bin/python
-#        Author: Francois-Jose Serra
-# Creation Date: 2009/08/14 13:56:44
+"""
+this module defines the evolutionary Model that can be linked
+to phylogeny, and computed by one of codeml, gerp, slr.
+"""
+
+__author__  = "Francois-Jose Serra"
+__email__   = "francois@barrabin.org"
+__licence__ = "GPLv3"
+__version__ = "0.0"
 
 from re import sub
 from sys import stderr
@@ -35,6 +42,7 @@ class Model:
                and self.params['omega'] < 1:
             self.params['omega'] += 1
         self._change_params()
+        self.histface = None
 
     def _change_params(self):
         '''
@@ -42,6 +50,48 @@ class Model:
         '''
         for key, change in self.changes:
             self.params[key] = change
+
+    def set_histface (self, lines=[1.0], header='',
+                      col_lines=['grey'], typ='hist',
+                      col=None, extras=[''], col_width=11):
+        '''
+        To add histogram face for a given site mdl (M1, M2, M7, M8)
+        can choose to put it up or down the tree.
+        2 types are available:
+           * hist: to draw histogram.
+           * line: to draw plot.
+        You can define color scheme by passing a diccionary, default is:
+            col = {'NS' : 'grey',
+                   'RX' : 'green',
+                   'RX+': 'green',
+                   'CN' : 'cyan',
+                   'CN+': 'blue',
+                   'PS' : 'orange',
+                   'PS+': 'red'}
+        '''
+        from ete_dev.evol import colorize_rst
+        if typ   == 'hist':
+            from ete_dev.evol import HistFace as face
+        elif typ == 'line':
+            from ete_dev.evol import LineFaceBG as face
+        elif typ == 'error':
+            from ete_dev.evol import ErrorLineFace as face
+        elif typ == 'protamine':
+            from ete_dev.evol import ErrorLineProtamineFace as face
+        if self.sites == None:
+            print >> stderr, \
+                  "WARNING: model %s not computed." % (self.name)
+            return None
+        if header == '':
+            header = 'Omega value for sites under %s model' % (self.name)
+        ldic = self.sites
+        self.histface = face(values = ldic['w.' + self.name], 
+                             lines = lines, col_lines=col_lines,
+                             colors=colorize_rst(ldic['pv.'+self.name],
+                                                 self.name, ldic['class.'+self.name],
+                                                 col=col),
+                             header=header, errors=ldic['se.'+self.name],
+                             extras=extras, col_width=col_width)
 
     def get_ctrl_string(self, outfile=None):
         '''

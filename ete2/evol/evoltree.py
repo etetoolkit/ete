@@ -14,12 +14,13 @@ __version__ = "0.0"
 import os
 from sys import stderr
 
-from ete_dev                   import PhyloNode, TreeImageProperties
-from ete_dev.evol.parser       import parse_paml, get_sites
-from ete_dev.evol              import evol_layout
-from ete_dev.evol.codeml.model import Model, AVAIL, PARAMS
-from utils                     import translate
-from ete_dev.parser.newick     import write_newick
+from ete_dev                        import PhyloNode
+from ete_dev.evol.parser            import parse_paml, get_sites
+from ete_dev.evol                   import evol_layout
+from ete_dev.evol.coretype.model    import Model, PARAMS, AVAIL
+from utils                          import translate
+from ete_dev.parser.newick          import write_newick
+from ete_dev                        import TreeImageProperties
 
 __all__ = ["EvolNode", "EvolTree"]
 
@@ -91,43 +92,17 @@ class EvolNode (PhyloNode):
                 if n.paml_id == idname:
                     return n
         self.__dict__['get_descendant_by_pamlid'] = get_descendant_by_pamlid
-    
-    def link_to_alignment (self, alignment, alg_format="fasta",
-                          nucleotides=True):
-        '''
-        same function as for phyloTree, but translate sequences if nucleotides
-        '''
-        super(EvolTree, self).link_to_alignment(alignment, alg_format=alg_format)
-        for leaf in self.iter_leaves():
-            leaf.nt_sequence = str(leaf.sequence)
-            if nucleotides:
-                leaf.sequence = translate(leaf.nt_sequence)
 
-    def show (self, layout=evol_layout, img_properties=None):
-        '''
-        call super show adding up and down faces
-        '''
-        super(EvolTree, self).show(layout=layout,
-                                     img_properties=img_properties)
-
-    def render (self, filename, layout=evol_layout, w=None, h=None,
-               img_properties=None, header=None):
-        '''
-        call super show adding up and down faces
-        '''
-        super(EvolTree, self).render(filename, layout=layout,
-                                       img_properties=img_properties,
-                                       w=w, h=h)
-
-    def run_paml (self, model, ctrl_string='', keep=True, paml=False, **kwargs):
+    def run_model (self, model, ctrl_string='', keep=True,
+                   paml=False, **kwargs):
         ''' To compute evolutionnary models with paml
         extra parameters should be in '''
         from subprocess import Popen, PIPE
-        fullpath = os.path.join(self.workdir, model)
-        os.system("mkdir -p %s" %fullpath)
         model = Model(model, self, **kwargs)
+        fullpath = os.path.join (self.workdir, model.name)
+        os.system("mkdir -p %s" %fullpath)
         # write tree file
-        self.write (outfile=fullpath+'/tree', 
+        self.write (outfile=fullpath+'/self', 
                     format = (10 if model.allow_mark else 9))
         # write algn file
         self._write_ali(fullpath, paml)
@@ -135,7 +110,7 @@ class EvolNode (PhyloNode):
         if ctrl_string == '':
             ctrl_string = model.get_ctrl_string(fullpath+'/tmp.ctl')
         else:
-            open(fullpath+'/tmp.ctl', 'w').write (ctrl_string)
+            open (fullpath+'/tmp.ctl', 'w').write (ctrl_string)
         hlddir = os.getcwd()
         os.chdir(fullpath)
         proc = Popen([self.codemlpath, 'tmp.ctl'], stdout=PIPE)
@@ -150,11 +125,11 @@ class EvolNode (PhyloNode):
             setattr (model, 'run', run)
             self.link_to_evol_model (os.path.join(fullpath,'out'),
                                      model)
-    run_paml.__doc__ += '''%s
+    run_model.__doc__ += '''%s
     to run paml, needs tree linked to alignment.
     model name needs to start by one of:
-%s
-
+    %s
+    
     e.g.: b_free_lala.vs.lele, will launch one free branch model, and store 
     it in "WORK_DIR/b_free_lala.vs.lele" directory
     
@@ -168,6 +143,55 @@ class EvolNode (PhyloNode):
     ('"%s"' % (x), AVAIL[x]['evol'], AVAIL[x]['typ']), \
     sorted (sorted (AVAIL.keys()), cmp=lambda x, y : \
     cmp(AVAIL[x]['typ'], AVAIL[y]['typ']), reverse=True))))
+
+
+    def link_to_alignment (self, alignment, alg_format="fasta",
+                          nucleotides=True):
+        '''
+        same function as for phyloTree, but translate sequences if nucleotides
+        '''
+        super(EvolTree, self).link_to_alignment(alignment, alg_format=alg_format)
+        for leaf in self.iter_leaves():
+            leaf.nt_sequence = str(leaf.sequence)
+            if nucleotides:
+                leaf.sequence = translate(leaf.nt_sequence)
+
+    def show (self, layout=evol_layout, img_properties=None, histfaces=None):
+        '''
+        call super show
+        histface should be a list of models to be displayes as histfaces
+        '''
+        if histfaces:
+            img_properties = TreeImageProperties()
+            for hist in histfaces:
+                try:
+                    mdl = self.get_evol_model (hist)
+                except AttributeError:
+                    print >> stderr, 'model %s not computed' % (hist)
+                if mdl.histface is None:
+                    mdl.set_histface()
+                img_properties.aligned_face_header.add_face_to_aligned_column(1, mdl.histface)
+        super(EvolTree, self).show(layout=layout,
+                                     img_properties=img_properties)
+
+    def render (self, filename, layout=evol_layout, w=None, h=None,
+               img_properties=None, header=None, histfaces=None):
+        '''
+        call super show adding up and down faces
+        '''
+        if histfaces:
+            img_properties = TreeImageProperties()
+            for hist in histfaces:
+                try:
+                    mdl = self.get_evol_model (hist)
+                except AttributeError:
+                    print >> stderr, 'model %s not computed' % (hist)
+                if mdl.histface is None:
+                    mdl.set_histface()
+                img_properties.aligned_face_header.add_face_to_aligned_column(1, mdl.histface)
+        super(EvolTree, self).render(filename, layout=layout,
+                                       img_properties=img_properties,
+                                       w=w, h=h)
 
     def _write_ali (self, fullpath, paml=False):
         '''
@@ -227,14 +251,6 @@ class EvolNode (PhyloNode):
                 node.add_feature('mark', ' '+marks[node_ids.index(node._nid)])
             elif not 'mark' in node.features:
                 node.add_feature('mark', '')
-    def get_evol_model (self, modelname):
-        '''
-        returns one precomputed model
-        '''
-        try:
-            return self._models [modelname]
-        except KeyError:
-            print >> stderr, "Model %s not found." % (modelname)
 
     def link_to_evol_model (self, path, model):
         '''
@@ -263,6 +279,19 @@ class EvolNode (PhyloNode):
                      get_sites (self.workdir + '/' + model.name + '/rst'))
         if len (self._models) == 1:
             self.change_dist_to_evol ('bL')
+
+        def get_evol_model (modelname):
+            '''
+            returns one precomputed model
+            '''
+            try:
+                return self._models [modelname]
+            except KeyError:
+                print >> stderr, "Model %s not found." % (modelname)
+                
+        if not hasattr (self, "get_evol_model"):
+            self.__dict__["get_evol_model"] = get_evol_model
+
 
     def write (self, features=None, outfile=None, format=10):
         """ Returns the newick-PAML representation of this node

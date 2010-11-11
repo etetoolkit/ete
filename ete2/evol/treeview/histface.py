@@ -53,7 +53,6 @@ _MIN_NODE_STYLE = {
     "ymargin": 0
 }
 
-
 def colorize_rst(vals, winner, classes,col=None):
     '''
     Colorize function, that take in argument a list of values
@@ -96,45 +95,6 @@ def colorize_rst(vals, winner, classes,col=None):
             else:
                 colors.append(col['RX+'])
     return colors
-
-
-def get_histface (mdl, lines=[1.0], header='', \
-                  col_lines=['grey'], typ='hist',col=None, extras=[''], col_width=11):
-    '''
-    To add histogram face for a given site mdl (M1, M2, M7, M8)
-    can choose to put it up or down the tree.
-    2 types are available:
-       * hist: to draw histogram.
-       * line: to draw plot.
-    You can define color scheme by passing a diccionary, default is:
-        col = {'NS' : 'grey',
-               'RX' : 'green',
-               'RX+': 'green',
-               'CN' : 'cyan',
-               'CN+': 'blue',
-               'PS' : 'orange',
-               'PS+': 'red'}
-    '''
-    if typ   == 'hist':
-        from ete_dev.evol import HistFace as face
-    elif typ == 'line':
-        from ete_dev.evol import LineFaceBG as face
-    elif typ == 'error':
-        from ete_dev.evol import ErrorLineFace as face
-    elif typ == 'protamine':
-        from ete_dev.evol import ErrorLineProtamineFace as face
-    if mdl.sites == None:
-        print >> stderr, \
-              "WARNING: model %s not computed." % (mdl.name)
-        return None
-    if header == '':
-        header = 'Omega value for sites under %s model' % (mdl.name)
-    ldic = mdl.sites
-    return face(values = ldic['w.' + mdl.name], 
-                lines = lines, col_lines=col_lines,
-                colors=colorize_rst(ldic['pv.'+mdl.name],
-                                    mdl.name, ldic['class.'+mdl.name], col=col),
-                header=header, errors=ldic['se.'+mdl.name], extras=extras, col_width=col_width)
 
 class HistFace (faces.Face):
     """

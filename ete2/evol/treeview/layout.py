@@ -10,7 +10,8 @@ __email__   = "francois@barrabin.org"
 __licence__ = "GPLv3"
 __version__ = "0.0"
 
-from ete_dev import faces
+from ete_dev      import faces
+
 
 def evol_layout(node):
     '''
@@ -63,7 +64,6 @@ def evol_layout(node):
         if hasattr(node, "sequence"):
             seqface =  faces.SequenceFace(node.sequence, "aa", 11)
             faces.add_face_to_node(seqface, node, 1, aligned=True)
-
 
 
 if __name__ == "__main__":
