@@ -43,7 +43,7 @@ class _MainApp(QtGui.QMainWindow):
         try:
             __VERSION__
         except:
-            __VERSION__= "developmnet branch"
+            __VERSION__= "development branch"
 
         d = QtGui.QDialog()
         d._conf = _about.Ui_About()

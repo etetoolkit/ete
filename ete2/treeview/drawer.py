@@ -16,9 +16,9 @@ class TreeImageProperties(object):
         self.tree_width                 = 200  # This is used to scale
                                                # the tree branches
         self.draw_aligned_faces_as_grid = True
-        self.draw_lines_from_leaves_to_aligned_faces = False
-        self.line_from_leaves_to_aligned_faces_type = 2 # 0 solid, 1 dashed, 2 dotted
-        self.line_from_leaves_to_aligned_faces_color = "#CCCCCC"
+        self.draw_guidelines = False
+        self.guideline_type = 2 # 0 solid, 1 dashed, 2 dotted
+        self.guideline_color = "#CCCCCC"
         self.draw_image_border = False
         self.complete_branch_lines = True
         self.extra_branch_line_color = "#cccccc"
@@ -26,8 +26,8 @@ class TreeImageProperties(object):
         self.min_branch_separation = 1 # in pixels
         self.search_node_bg = "#cccccc"
         self.search_node_fg = "#ff0000"
-        self.aligned_face_header = FaceHeader()
-        self.aligned_face_foot = FaceHeader()
+        self.aligned_header = FaceHeader() # aligned face_header
+        self.aligned_foot = FaceHeader()
         self.title = None
         self.botton_line_text = None
 
@@ -90,7 +90,7 @@ class NodeStyleDict(dict):
         super(NodeStyleDict, self).__setitem__(i, y)
 
 class FaceHeader(dict):
-    def add_face_to_aligned_column(self, column, face):
+    def add_face(self, face, column):
         self.setdefault(int(column), []).append(face)
 
 def show_tree(t, layout=None, img_properties=None):

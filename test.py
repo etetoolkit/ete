@@ -2,6 +2,12 @@ from ete_dev import Tree, faces, TreeImageProperties, NodeStyleDict
 import random
 
 rs1 = faces.TextFace("branch-right1", fsize=20, fgcolor="#009000")
+
+rs1.margin_top = 10
+rs1.margin_top = 50
+rs1.margin_left = 40
+rs1.margin_right = 40
+
 rs2 = faces.TextFace("branch-right2", fsize=20, fgcolor="#009000")
 rs3 = faces.TextFace("branch-right3", fsize=20, fgcolor="#009000")
 bd  = faces.TextFace("branch-bottom", fsize=11, fgcolor="#909000")
@@ -43,7 +49,13 @@ def mylayout(node):
         faces.add_face_to_node(ud, node, column=1, position="branch-top")
         faces.add_face_to_node(bd, node, column=1, position="branch-bottom")
         faces.add_face_to_node(bd, node, column=1, position="branch-bottom")
+
+        faces.add_face_to_node(rs2, node, column=1, position="branch-right")
         faces.add_face_to_node(rs1, node, column=1, position="branch-right")
+        faces.add_face_to_node(rs2, node, column=1, position="branch-right")
+        faces.add_face_to_node(rs2, node, column=1, position="branch-right")
+        faces.add_face_to_node(rs2, node, column=1, position="branch-right")
+        faces.add_face_to_node(rs2, node, column=1, position="branch-right")
 
         #faces.add_face_to_node(rs, node, column=1, position="branch-right")
         #faces.add_face_to_node(rs, node, column=1, position="branch-right")
@@ -59,20 +71,20 @@ def mylayout2(node):
         return
 
 I = TreeImageProperties()
-#I.aligned_face_header.add_face_to_aligned_column(0, t1)
-#I.aligned_face_header.add_face_to_aligned_column(1, t1)
-#I.aligned_face_header.add_face_to_aligned_column(2, t1)
-#I.aligned_face_header.add_face_to_aligned_column(3, t1)
+I.aligned_header.add_face(t1, 0)
+I.aligned_header.add_face(t1, 0)
+I.aligned_header.add_face(t1, 0)
+I.aligned_header.add_face(t1, 0)
 
-I.aligned_face_foot.add_face_to_aligned_column(0, t2)
-I.aligned_face_foot.add_face_to_aligned_column(1, t2)
-I.aligned_face_foot.add_face_to_aligned_column(2, t2)
-I.aligned_face_foot.add_face_to_aligned_column(3, t2)
-I.draw_lines_from_leaves_to_aligned_faces = True
-I.line_from_leaves_to_aligned_faces_type = 2
-
+I.aligned_foot.add_face(t2, 0)
+I.aligned_foot.add_face(t2, 1)
+I.aligned_foot.add_face(t2, 2)
+I.aligned_foot.add_face(t2, 3)
+I.draw_guidelines= True
+I.guidelines_type = 2
 I.draw_image_border = True
-I.draw_aligned_faces_as_grid = False
+I.draw_aligned_faces_as_grid = True
+
 t = Tree()
 t.dist = 0
 t.populate(5)
