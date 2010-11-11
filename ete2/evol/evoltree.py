@@ -14,13 +14,13 @@ __version__ = "0.0"
 import os
 from sys import stderr
 
-from ete_dev                        import PhyloNode
-from ete_dev.evol.parser            import parse_paml, get_sites
-from ete_dev.evol                   import evol_layout
-from ete_dev.evol.coretype.model    import Model, PARAMS, AVAIL
-from utils                          import translate
-from ete_dev.parser.newick          import write_newick
-from ete_dev                        import TreeImageProperties
+from ete_dev               import PhyloNode
+from ete_dev.evol.parser   import parse_paml, get_sites
+from ete_dev.evol          import evol_layout
+from ete_dev.evol.model    import Model, PARAMS, AVAIL
+from utils                 import translate
+from ete_dev.parser.newick import write_newick
+from ete_dev               import TreeImageProperties
 
 __all__ = ["EvolNode", "EvolTree"]
 
@@ -170,12 +170,16 @@ class EvolNode (PhyloNode):
                     print >> stderr, 'model %s not computed' % (hist)
                 if mdl.histface is None:
                     mdl.set_histface()
-                img_properties.aligned_face_header.add_face_to_aligned_column(1, mdl.histface)
+                if mdl.histface.up:
+                    img_properties.aligned_face_header.add_face_to_aligned_column(1, mdl.histface)
+                else:
+                    img_properties.aligned_face_foot.add_face_to_aligned_column(1, mdl.histface)
         super(EvolTree, self).show(layout=layout,
                                      img_properties=img_properties)
 
     def render (self, filename, layout=evol_layout, w=None, h=None,
-               img_properties=None, header=None, histfaces=None):
+               img_properties=None, header=None, histfaces=None,
+                up_n_down=None):
         '''
         call super show adding up and down faces
         '''
@@ -188,7 +192,10 @@ class EvolNode (PhyloNode):
                     print >> stderr, 'model %s not computed' % (hist)
                 if mdl.histface is None:
                     mdl.set_histface()
-                img_properties.aligned_face_header.add_face_to_aligned_column(1, mdl.histface)
+                if mdl.histface.up:
+                    img_properties.aligned_face_header.add_face_to_aligned_column(1, mdl.histface)
+                else:
+                    img_properties.aligned_face_foot.add_face_to_aligned_column(1, mdl.histface)
         super(EvolTree, self).render(filename, layout=layout,
                                        img_properties=img_properties,
                                        w=w, h=h)

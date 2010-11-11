@@ -37,17 +37,9 @@ def main():
     print tree.get_most_likely ('M2','M1')
     print 'pv of LRT M8 vs M7: ',
     print tree.get_most_likely ('M8','M7')
-
-    letter_w = 11
-    #I = TreeImageProperties()
-    #I.aligned_face_header.add_face_to_aligned_column(1,
-    #                                                 get_histface(tree._models['M2']))
-    #I.aligned_face_foot.add_face_to_aligned_column(1,
-    #                                           get_histface (tree._models['M2'],
-    #                                                         typ='protamine',
-    #                                                         lines=[1.0,0.3],
-    #                                                         col_lines=['black',
-    #                                                                    'grey']))
+    tree.get_evol_model('M2').set_histface (up=False, typ='protamine',
+                                            lines = [1.0,0.3],
+                                            col_lines=['black','grey'])
     tree.show (histfaces=['M2'])
 
     # run codeml
@@ -61,12 +53,16 @@ def main():
     tree.run_model ('fb')
     tree.run_model ('M1')
     tree.run_model ('M2')
-    #tree.run_model ('M7')
-    #tree.run_model ('M8')
+    tree.run_model ('M7')
+    tree.run_model ('M8')
     print 'pv of LRT M2 vs M1: ',
     print tree.get_most_likely ('M2','M1')
     print 'pv of LRT M8 vs M7: ',
-    #print tree.get_most_likely ('M8','M7')
+    print tree.get_most_likely ('M8','M7')
+    tree.get_evol_model('M8').set_histface (up=False, typ='protamine',
+                                            lines = [1.0,0.3],
+                                            col_lines=['black','grey'])
+    tree.show(histfaces=['M2'])
     tree.mark_tree ([2])
     print tree.write()
     tree.run_model ('bsA.2')
@@ -89,10 +85,6 @@ def main():
     print 'pv of LRT b_free 2 3 4, 1 5 amd outgroup vs 1 5 with omega = 1: ',
     print tree.get_most_likely ('b_free.2-3-4_1-5','b_neut.2-3-4_1-5')
 
-    #I = TreeImageProperties()
-    #I.aligned_face_header.add_face_to_aligned_column(1,
-    #                                                 get_histface (tree._models['M2']))
-    tree.show(histfaces=['M2'])
     print "The End."
 
 

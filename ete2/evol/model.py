@@ -51,7 +51,7 @@ class Model:
         for key, change in self.changes:
             self.params[key] = change
 
-    def set_histface (self, lines=[1.0], header='',
+    def set_histface (self, up = True, lines=[1.0], header='',
                       col_lines=['grey'], typ='hist',
                       col=None, extras=[''], col_width=11):
         '''
@@ -92,6 +92,10 @@ class Model:
                                                  col=col),
                              header=header, errors=ldic['se.'+self.name],
                              extras=extras, col_width=col_width)
+        if up:
+            setattr (self.histface, 'up', True)
+        else:
+            setattr (self.histface, 'up', False)
 
     def get_ctrl_string(self, outfile=None):
         '''

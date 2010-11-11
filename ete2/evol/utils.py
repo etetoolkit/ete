@@ -78,35 +78,6 @@ def get_rooting(tol, seed_species, agename = False):
     return ROOTING
 
 
-
-def label_tree(t):
-    """
-    WARNING: deprecated, use sort_tree function of Tree    
-    This function sort the branches of a given tree by
-    considerening node names. After the tree is sorted, nodes are
-    labeled using ascendent numbers.  This can be used to ensure that
-    nodes in a tree with the same node names are always labeled in
-    the same way.  Note that if duplicated names are present, extra
-    criteria should be added to sort nodes.
-    """
-    for n in t.traverse(strategy="postorder"):
-        if n.is_leaf():
-            key = md5(str(n.name)).hexdigest()
-            n.__idname = key
-        else:
-            key = md5(str(sorted([c.__idname for c in n.children]))).hexdigest()
-            n.__idname=key
-            children = [[c.__idname, c] for c in n.children]
-            children.sort() # sort list by idname
-            n.children = [item[1] for item in children]
-        counter = 1
-    for n in t.traverse(strategy="postorder"):
-        n.add_features(idname=counter)
-        counter += 1
-
-
-
-
 def translate(sequence):
     '''
     little function to translate DNA to protein...
