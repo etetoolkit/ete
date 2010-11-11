@@ -245,7 +245,7 @@ def _get_paml_labels (model, tree, paml_labels, line, pamout):
     #####
     for lab in paml_labels:
         node = tree.search_nodes(paml_id=int (lab.split('..')[1]))[0]
-        if model.typ == 'branch':
+        if model.name == 'fb':
             node.add_feature ('w', float (w.pop(0)))
         node.add_feature ('bL', float (bL.pop(0)))
 

@@ -204,7 +204,7 @@ class EvolNode (PhyloNode):
                 algn.write(line)
             algn.close()
 
-    def mark_tree (self, node_ids, **kargs):
+    def mark_tree (self, node_ids, verbose=False, **kargs):
         '''
         function to mark branches on tree in order that paml could interpret it.
         takes a "marks" argument that should be a list of #1,#1,#2
@@ -220,14 +220,13 @@ class EvolNode (PhyloNode):
                 if ('.' in marks[node_ids.index(node._nid)] or \
                        match ('#[0-9][0-9]*', \
                               marks[node_ids.index(node._nid)])==None)\
-                              and not kargs.has_key('silent'):
+                              and not kargs.has_key('silent') and not verbose:
                     print >> stderr, \
                           'WARNING: marks should be "#" sign directly '+\
                     'followed by integer\n' + self.mark_tree.func_doc
                 node.add_feature('mark', ' '+marks[node_ids.index(node._nid)])
             elif not 'mark' in node.features:
                 node.add_feature('mark', '')
-
     def get_evol_model (self, modelname):
         '''
         returns one precomputed model
