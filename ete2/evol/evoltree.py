@@ -102,7 +102,7 @@ class EvolNode (PhyloNode):
         fullpath = os.path.join (self.workdir, model.name)
         os.system("mkdir -p %s" %fullpath)
         # write tree file
-        self.write (outfile=fullpath+'/self', 
+        self.write (outfile=fullpath+'/tree', 
                     format = (10 if model.allow_mark else 9))
         # write algn file
         self._write_ali(fullpath, paml)
@@ -298,7 +298,6 @@ class EvolNode (PhyloNode):
                 
         if not hasattr (self, "get_evol_model"):
             self.__dict__["get_evol_model"] = get_evol_model
-
 
     def write (self, features=None, outfile=None, format=10):
         """ Returns the newick-PAML representation of this node
