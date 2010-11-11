@@ -4,10 +4,26 @@ import copy
 from PyQt4  import QtCore, QtGui, QtSvg
 from PyQt4.QtGui import QPrinter
 
-from qt4gui import _PropertiesDialog
+from qt4gui import _PropertiesDialog, _NodeActions
+
 import layouts
 
-class _NodeItem(QtGui.QGraphicsRectItem):
+
+class _TextFaceItem(QtGui.QGraphicsSimpleTextItem, _NodeActions):
+    """ Manage faces on Scene"""
+    def __init__(self,face,node,*args):
+        QtGui.QGraphicsSimpleTextItem.__init__(self,*args)
+        self.node = node
+        self.face = face
+
+class _ImgFaceItem(QtGui.QGraphicsPixmapItem, _NodeActions):
+    """ Manage faces on Scene"""
+    def __init__(self, face, node, *args):
+        QtGui.QGraphicsPixmapItem.__init__(self,*args)
+        self.node = node
+        self.face = face
+
+class _NodeItem(QtGui.QGraphicsRectItem, _NodeActions):
     def __init__(self, node):
         self.node = node
         self.radius = node.img_style["size"]/2
@@ -30,118 +46,6 @@ class _NodeItem(QtGui.QGraphicsRectItem):
             p.setPen(QtGui.QPen(QtGui.QColor(self.node.img_style["fgcolor"])))
             p.drawEllipse(self.rect())
 
-    def hoverEnterEvent (self,e):
-        width = self.parentItem().mapFromScene(self.scene().i_width, 0).x()
-        height = self.parentItem().rect().height()
-        self.scene().highlighter.setRect(QtCore.QRectF(0, 0, \
-                                                           width, height))
-        self.scene().highlighter.setParentItem(self.parentItem())
-        self.scene().highlighter.setVisible(True)
-
-    def hoverLeaveEvent (self,e):
-        self.scene().highlighter.setVisible(False)
-
-    def mousePressEvent(self,e):
-        pass
-
-    def mouseReleaseEvent(self,e):
-        if e.button() == QtCore.Qt.RightButton:
-            self.showActionPopup()
-        elif e.button() == QtCore.Qt.LeftButton:
-            self.scene().propertiesTable.update_properties(self.node)
-
-    def showActionPopup(self):
-        contextMenu = QtGui.QMenu()
-        if self.node.collapsed:
-            contextMenu.addAction( "Expand"           , self.toggle_collapse)
-        else:
-            contextMenu.addAction( "Collapse"         , self.toggle_collapse)
-
-        contextMenu.addAction( "Set as outgroup"      , self.set_as_outgroup)
-        contextMenu.addAction( "Swap branches"        , self.swap_branches)
-        contextMenu.addAction( "Delete node"          , self.delete_node)
-        contextMenu.addAction( "Delete partition"     , self.detach_node)
-        contextMenu.addAction( "Add childs"           , self.add_childs)
-        contextMenu.addAction( "Populate partition"   , self.populate_partition)
-        if self.node.up is not None and\
-                self.scene().startNode == self.node:
-            contextMenu.addAction( "Back to parent", self.back_to_parent_node)
-        else:
-            contextMenu.addAction( "Extract"              , self.set_start_node)
-
-        if self.scene().buffer_node:
-            contextMenu.addAction( "Paste partition"  , self.paste_partition)
-
-        contextMenu.addAction( "Cut partition"        , self.cut_partition)
-        contextMenu.addAction( "Show newick"        , self.show_newick)
-        contextMenu.exec_(QtGui.QCursor.pos())
-
-    def show_newick(self):
-        d = NewickDialog(self.node)
-        d._conf = _show_newick.Ui_Newick()
-        d._conf.setupUi(d)
-        d.update_newick()
-        d.exec_()
-        return False
-
-    def delete_node(self):
-        self.node.delete()
-        self.scene().draw()
-
-    def detach_node(self):
-        self.node.detach()
-        self.scene().draw()
-
-    def swap_branches(self):
-        self.node.swap_childs()
-        self.scene().draw()
-
-    def add_childs(self):
-        n,ok = QtGui.QInputDialog.getInteger(None,"Add childs","Number of childs to add:",1,1)
-        if ok:
-            for i in xrange(n):
-                ch = self.node.add_child()
-            self.scene().set_style_from(self.scene().startNode,self.scene().layout_func)
-
-    def void(self):
-        return True
-
-    def set_as_outgroup(self):
-        self.scene().startNode.set_outgroup(self.node)
-        self.scene().set_style_from(self.scene().startNode, self.scene().layout_func)
-        self.scene().draw()
-
-    def toggle_collapse(self):
-        self.node.collapsed ^= True
-        self.scene().draw()
-
-    def cut_partition(self):
-        self.scene().buffer_node = self.node
-        self.node.detach()
-        self.scene().draw()
-
-    def paste_partition(self):
-        if self.scene().buffer_node:
-            self.node.add_child(self.scene().buffer_node)
-            self.scene().set_style_from(self.scene().startNode,self.scene().layout_func)
-            self.scene().buffer_node= None
-            self.scene().draw()
-
-    def populate_partition(self):
-        n, ok = QtGui.QInputDialog.getInteger(None,"Populate partition","Number of nodes to add:",2,1)
-        if ok:
-            self.node.populate(n)
-            self.scene().set_style_from(self.scene().startNode,self.scene().layout_func)
-            self.scene().draw()
-
-    def set_start_node(self):
-        self.scene().startNode = self.node
-        self.scene().draw()
-
-    def back_to_parent_node(self):
-        self.scene().startNode = self.node.up
-        self.scene().draw()
-
 class _ArcItem(QtGui.QGraphicsRectItem):
     def __init__(self, angle_start, angle_span, radius, *args):
         QtGui.QGraphicsRectItem.__init__(self, 0, 0, radius, radius)
@@ -155,33 +59,6 @@ class _ArcItem(QtGui.QGraphicsRectItem):
         painter.drawArc(rect, self.angle_start, self.angle_span*16)
         painter.drawRect(rect)
 
-class _TextItem(QtGui.QGraphicsSimpleTextItem):
-    """ Manage faces on Scene"""
-    def __init__(self,face,node,*args):
-        QtGui.QGraphicsSimpleTextItem.__init__(self,*args)
-        self.node = node
-        self.face = face
-
-    def hoverEnterEvent (self,e):
-        partition = self.parentItem().parentItem()
-        width = partition.mapFromScene(self.scene().i_width, 0).x()
-        height = partition.rect().height()
-        self.scene().highlighter.setRect(QtCore.QRectF(0, 0, \
-                                                           width, height))
-        self.scene().highlighter.setParentItem(partition)
-        self.scene().highlighter.setVisible(True)
-
-    def hoverLeaveEvent (self,e):
-        self.scene().highlighter.setVisible(False)
-
-    def mousePressEvent(self,e):
-        pass
-
-    def mouseReleaseEvent(self,e):
-        if e.button() == QtCore.Qt.RightButton:
-            self.node._QtItem_.showActionPopup()
-        elif e.button() == QtCore.Qt.LeftButton:
-            self.scene().propertiesTable.update_properties(self.node)
 
 class _FaceGroup(QtGui.QGraphicsItem): # I resisted to name this FaceBook :) 
     def __init__(self, faces, node, column_widths={}, *args, **kargs):
@@ -239,14 +116,14 @@ class _FaceGroup(QtGui.QGraphicsItem): # I resisted to name this FaceBook :)
             y = (self.h / 2) - (h/2)
             for f in faces:
                 if f.type == "text":
-                    obj = _TextItem(f, self.node, f.get_text())
+                    obj = _TextFaceItem(f, self.node, f.get_text())
                     obj.setFont(f.font)
                     obj.setBrush(QtGui.QBrush(f.fgcolor))
                     obj.setParentItem(self)
                     obj.setAcceptsHoverEvents(True)
                 else:
                     # Loads the pre-generated pixmap
-                    obj = _FaceItem(f, self.node, f.pixmap)
+                    obj = _ImgFaceItem(f, self.node, f.pixmap)
                     obj.setAcceptsHoverEvents(True)
                     obj.setParentItem(self)
                 obj.setPos(x, y)
@@ -257,43 +134,16 @@ class _FaceGroup(QtGui.QGraphicsItem): # I resisted to name this FaceBook :)
             # processed column.
             x += w
 
-class _FaceItem(QtGui.QGraphicsPixmapItem):
-    """ Manage faces on Scene"""
-    def __init__(self, face, node, *args):
-        QtGui.QGraphicsPixmapItem.__init__(self,*args)
-        self.node = node
-        self.face = face
-
-    def hoverEnterEvent (self, e):
-        partition = self.parentItem().parentItem()
-        width = partition.mapFromScene(self.scene().i_width, 0).x()
-        height = partition.rect().height()
-        self.scene().highlighter.setRect(QtCore.QRectF(0, 0, \
-                                                           width, height))
-        self.scene().highlighter.setParentItem(partition)
-        self.scene().highlighter.setVisible(True)
-
-    def hoverLeaveEvent (self,e):
-        self.scene().highlighter.setVisible(False)
-
-    def mousePressEvent(self,e):
-        pass
-
-    def mouseReleaseEvent(self,e):
-        if self.node:
-            if e.button() == QtCore.Qt.RightButton:
-                self.node._QtItem_.showActionPopup()
-            elif e.button() == QtCore.Qt.LeftButton:
-                self.scene().propertiesTable.update_properties(self.node)
-
 class _PartitionItem(QtGui.QGraphicsRectItem):
     def __init__(self, node, *args):
         QtGui.QGraphicsRectItem.__init__(self, *args)
         self.node = node
         self.drawbg = False
+
     def paint(self, painter, option, index):
         if self.drawbg:
             return QtGui.QGraphicsRectItem.paint(self, painter, option, index)
+
 
 class _SelectorItem(QtGui.QGraphicsRectItem):
     def __init__(self):
@@ -702,7 +552,7 @@ class _TreeScene(QtGui.QGraphicsScene):
                 elif isinstance(item, _FaceGroup):
                     for f in item.childItems():
                         pos = f.mapToScene(0,0)
-                        if isinstance(f, _TextItem):
+                        if isinstance(f, _TextFaceItem):
                             size = f.mapToScene(f.boundingRect().width(), \
                                                     f.boundingRect().height())
                             face_list.append([pos.x(),pos.y(),size.x(),size.y(), nid, str(f.text())])

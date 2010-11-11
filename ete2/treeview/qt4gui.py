@@ -38,7 +38,6 @@ class _MainApp(QtGui.QMainWindow):
         self.searchDialog._conf = _search_dialog.Ui_Dialog()
         self.searchDialog._conf.setupUi(self.searchDialog)
 
-
     @QtCore.pyqtSignature("")
     def on_actionETE_triggered(self):
         try:
@@ -527,6 +526,8 @@ class _MainView(QtGui.QGraphicsView):
 
     def wheelEvent(self,e):
         factor =  (-e.delta() / 360.0)
+        if abs(factor)>=1:
+            factor = 0.0
 
         # Ctrl+Shift -> Zoom in X
         if  (e.modifiers() & QtCore.Qt.ControlModifier) and (e.modifiers() & QtCore.Qt.ShiftModifier):
@@ -569,3 +570,120 @@ class _MainView(QtGui.QGraphicsView):
             self.verticalScrollBar().setValue(self.verticalScrollBar().value()+20 )
             self.update()
         QtGui.QGraphicsView.keyPressEvent(self,e)
+
+
+class _NodeActions(object):
+    """ Used to extend QGraphicsItem features """
+    def hoverEnterEvent (self,e):
+
+        #width = self..mapFromScene(self.scene().i_width, 0).x()
+        #height = self.rect().height()
+        if self.node: 
+            node_partition = self.scene().node2item[self.node]
+            self.scene().highlighter.setRect(node_partition.rect())
+            self.scene().highlighter.setParentItem(node_partition)
+            self.scene().highlighter.setVisible(True)
+
+    def hoverLeaveEvent (self,e):
+        self.scene().highlighter.setVisible(False)
+
+    def mousePressEvent(self,e):
+        pass
+
+    def mouseReleaseEvent(self,e):
+        if e.button() == QtCore.Qt.RightButton:
+            self.showActionPopup()
+        elif e.button() == QtCore.Qt.LeftButton:
+            self.scene().propertiesTable.update_properties(self.node)
+
+    def showActionPopup(self):
+        contextMenu = QtGui.QMenu()
+        if self.node.collapsed:
+            contextMenu.addAction( "Expand"           , self.toggle_collapse)
+        else:
+            contextMenu.addAction( "Collapse"         , self.toggle_collapse)
+
+        contextMenu.addAction( "Set as outgroup"      , self.set_as_outgroup)
+        contextMenu.addAction( "Swap branches"        , self.swap_branches)
+        contextMenu.addAction( "Delete node"          , self.delete_node)
+        contextMenu.addAction( "Delete partition"     , self.detach_node)
+        contextMenu.addAction( "Add childs"           , self.add_childs)
+        contextMenu.addAction( "Populate partition"   , self.populate_partition)
+        if self.node.up is not None and\
+                self.scene().startNode == self.node:
+            contextMenu.addAction( "Back to parent", self.back_to_parent_node)
+        else:
+            contextMenu.addAction( "Extract"              , self.set_start_node)
+
+        if self.scene().buffer_node:
+            contextMenu.addAction( "Paste partition"  , self.paste_partition)
+
+        contextMenu.addAction( "Cut partition"        , self.cut_partition)
+        contextMenu.addAction( "Show newick"        , self.show_newick)
+        contextMenu.exec_(QtGui.QCursor.pos())
+
+    def show_newick(self):
+        d = NewickDialog(self.node)
+        d._conf = _show_newick.Ui_Newick()
+        d._conf.setupUi(d)
+        d.update_newick()
+        d.exec_()
+        return False
+
+    def delete_node(self):
+        self.node.delete()
+        self.scene().draw()
+
+    def detach_node(self):
+        self.node.detach()
+        self.scene().draw()
+
+    def swap_branches(self):
+        self.node.swap_childs()
+        self.scene().draw()
+
+    def add_childs(self):
+        n,ok = QtGui.QInputDialog.getInteger(None,"Add childs","Number of childs to add:",1,1)
+        if ok:
+            for i in xrange(n):
+                ch = self.node.add_child()
+            self.scene().set_style_from(self.scene().startNode,self.scene().layout_func)
+
+    def void(self):
+        return True
+
+    def set_as_outgroup(self):
+        self.scene().startNode.set_outgroup(self.node)
+        self.scene().set_style_from(self.scene().startNode, self.scene().layout_func)
+        self.scene().draw()
+
+    def toggle_collapse(self):
+        self.node.collapsed ^= True
+        self.scene().draw()
+
+    def cut_partition(self):
+        self.scene().buffer_node = self.node
+        self.node.detach()
+        self.scene().draw()
+
+    def paste_partition(self):
+        if self.scene().buffer_node:
+            self.node.add_child(self.scene().buffer_node)
+            self.scene().set_style_from(self.scene().startNode,self.scene().layout_func)
+            self.scene().buffer_node= None
+            self.scene().draw()
+
+    def populate_partition(self):
+        n, ok = QtGui.QInputDialog.getInteger(None,"Populate partition","Number of nodes to add:",2,1)
+        if ok:
+            self.node.populate(n)
+            self.scene().set_style_from(self.scene().startNode,self.scene().layout_func)
+            self.scene().draw()
+
+    def set_start_node(self):
+        self.scene().startNode = self.node
+        self.scene().draw()
+
+    def back_to_parent_node(self):
+        self.scene().startNode = self.node.up
+        self.scene().draw()

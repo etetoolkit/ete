@@ -751,12 +751,11 @@ class SequenceFace(Face):
         self.ntbg = ntbg
 
     def update_pixmap(self):
-
-
         fm = QtGui.QFontMetrics(self.font)
         height = fm.leading() + fm.overlinePos() + fm.underlinePos()
-        #width = fm.size(QtCore.Qt.AlignTop, self.seq).width()
+        #width  = fm.size(QtCore.Qt.AlignTop, self.seq).width()
         width = self.fsize * len(self.seq)
+
         self.pixmap = QtGui.QPixmap(width,height)
         self.pixmap.fill()
         p = QtGui.QPainter(self.pixmap)
