@@ -171,9 +171,9 @@ class EvolNode (PhyloNode):
                 if mdl.histface is None:
                     mdl.set_histface()
                 if mdl.histface.up:
-                    img_properties.aligned_face_header.add_face_to_aligned_column(1, mdl.histface)
+                    img_properties.aligned_header.add_face (mdl.histface, 1)
                 else:
-                    img_properties.aligned_face_foot.add_face_to_aligned_column(1, mdl.histface)
+                    img_properties.aligned_foot.add_face (mdl.histface, 1)
         super(EvolTree, self).show(layout=layout,
                                      img_properties=img_properties)
 
@@ -193,9 +193,9 @@ class EvolNode (PhyloNode):
                 if mdl.histface is None:
                     mdl.set_histface()
                 if mdl.histface.up:
-                    img_properties.aligned_face_header.add_face_to_aligned_column(1, mdl.histface)
+                    img_properties.aligned_header.add_face (mdl.histface, 1)
                 else:
-                    img_properties.aligned_face_foot.add_face_to_aligned_column(1, mdl.histface)
+                    img_properties.aligned_foot.add_face (mdl.histface, 1)
         super(EvolTree, self).render(filename, layout=layout,
                                        img_properties=img_properties,
                                        w=w, h=h)
