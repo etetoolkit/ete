@@ -611,10 +611,10 @@ class ProfileFace(Face):
 
         # Draw lines
         for pos in xrange(0,vlength-1):
-            dev1 =  self.fit_to_scale( deviation_vector[pos]   )
-            dev2 =  self.fit_to_scale( deviation_vector[pos+1] )
-            mean1 = self.fit_to_scale( mean_vector[pos]        )
-            mean2 = self.fit_to_scale( mean_vector[pos+1]      )
+            dev1 =  self.fit_to_scale(mean_vector[pos] + deviation_vector[pos])
+            dev2 =  self.fit_to_scale(mean_vector[pos+1] + deviation_vector[pos+1])
+            mean1 = self.fit_to_scale(mean_vector[pos])
+            mean2 = self.fit_to_scale(mean_vector[pos+1])
             # first and second X pixel positions
             x1 = x2
             x2 = x1 + x_alpha
@@ -632,23 +632,19 @@ class ProfileFace(Face):
             mean_y1 = (mean1 - self.min_value) * y_alpha
             # Second Y postions for mean
             mean_y2 = (mean2 - self.min_value) * y_alpha
+            if dev1!= 0 and dev2!=0:
+                # First Y postions for deviations
+                dev_y1   = (dev1 - self.min_value) * y_alpha
+                # Second Y postions for deviations
+                dev_y2   = (dev2 - self.min_value) * y_alpha
+                # Draw red deviation lines
+                p.setPen(QtGui.QColor("red"))
+                p.drawLine(x1, profile_height-dev_y1, x2, profile_height-dev_y2)
+                p.drawLine(x1, profile_height+dev_y1, x2, profile_height+dev_y2)
             # Draw blue mean line
             p.setPen(QtGui.QColor("blue"))
             p.drawLine(x1, profile_height-mean_y1, x2, profile_height-mean_y2)
-
-            if dev1!= 0 and dev2!=0:
-                # First Y postions for deviations
-                dev_up_y1   = (mean1+dev1 - self.min_value) * y_alpha
-                dev_down_y1 = (mean1-dev1 - self.min_value) * y_alpha
-                # Second Y postions for deviations
-                dev_up_y2   = (mean2+dev2 - self.min_value) * y_alpha
-                dev_down_y2 = (mean2-dev2 - self.min_value) * y_alpha
-                # Draw red deviation lines
-                p.setPen(QtGui.QColor("red"))
-                p.drawLine(x1,dev_up_y1, x2, dev_up_y2)
-                p.setPen(QtGui.QColor("red"))
-                p.drawLine(x1,dev_down_y1, x2, dev_down_y2)
-
+ 
 
     def draw_heatmap_profile(self):
         # Calculate vector
