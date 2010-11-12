@@ -75,7 +75,7 @@ def get_sites(path, model = ''):
         return None
     return vals
 
-def divide_data (pamout, model, codon_freq=True):
+def divide_data (pamout, model):
     '''
     for multiple dataset, divide outfile.
     '''
@@ -119,7 +119,7 @@ def divide_data (pamout, model, codon_freq=True):
             setattr (model, 'data_' + str (num),
                      parse_paml (pamout + '_' + str(num), model))
 
-def parse_paml (pamout, model, codon_freq=True):
+def parse_paml (pamout, model):
     '''
     parser function for codeml files,
     with values of w,dN,dS etc... dependending of the model
@@ -127,7 +127,7 @@ def parse_paml (pamout, model, codon_freq=True):
     '''
     # if multiple dataset in same file we divide the outfile and model.name+x
     if not '*' in str (model.params['ndata']):
-        divide_data (pamout, model, codon_freq=True)
+        divide_data (pamout, model)
         return
     # STARTS here. ugly but.... ugly
     dN, dS = None, None
@@ -259,11 +259,13 @@ def get_labels_from_paml (tree, relations, pamout):
         if re.search ('^#[0-9][0-9]*:', line):
             nam, paml_id = re.sub ('#([0-9]+): (.*)', '\\2\t\\1',
                                    line.strip()).split('\t')
-            tree.search_nodes (name=nam)[0].add_feature ('paml_id', int (paml_id))
+            tree.search_nodes (name=nam)[0].add_feature ('paml_id',
+                                                         int (paml_id))
         if line.startswith ('Sums of codon'):
             break
     tree.add_feature ('paml_id', int (len (tree) + 1))
     for n in tree.traverse(strategy='postorder'):
-        if n.is_root(): continue
+        if n.is_root():
+            continue
         n.up.paml_id = filter (lambda x: x[1]==n.paml_id, relations)[0][0]
         

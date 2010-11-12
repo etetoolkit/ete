@@ -20,12 +20,13 @@
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
 # #END_LICENSE#############################################################
+
 import os
 import string
 from sys import stderr as STDERR
 
-def read_fasta_paml (source, obj=None):
-    """ Reads a collection of sequences econded in FASTA format."""
+def read_paml (source, obj=None):
+    """ Reads a collection of sequences econded in PAML format."""
 
     if obj is None:
         from ete_dev.coretype import seqgroup
@@ -66,9 +67,9 @@ def read_fasta_paml (source, obj=None):
                 print >>STDERR, "Duplicated entry [%s] was renamed to [%s]" %(old_name, seq_name)
 
             # stores seq_name
-            SC.id2seq[seq_id] = ""
-            SC.id2name[seq_id] = seq_name
-            SC.name2id[seq_name] = seq_id
+            SC.id2seq[seq_id]     = ""
+            SC.id2name[seq_id]    = seq_name
+            SC.name2id[seq_name]  = seq_id
             SC.id2comment[seq_id] = seq_header_fields[1:]
             names.add(seq_name)
 
@@ -89,3 +90,22 @@ def read_fasta_paml (source, obj=None):
 
     # Everything ok
     return SC
+
+def write_paml(sequences, outfile = None, seqwidth = 80):
+    """ Writes a SeqGroup python object using PAML format. """
+    text =  ' %d %d\n' % (len (sequences), len (sequences.get_entries()[0][1]))
+    text += '\n'.join([">%s\n%s" %( "\t".join([name]+comment), _seq2str(seq)) for
+                       name, seq, comment in sequences])
+    if outfile is not None:
+        OUT = open(outfile,"w")
+        OUT.write(text)
+        OUT.close()
+    else:
+        return text
+
+def _seq2str(seq, seqwidth = 80):
+    sequence = ""
+    for i in xrange(0,len(seq),seqwidth):
+        sequence+= seq[i:i+seqwidth] + "\n"
+    return sequence
+

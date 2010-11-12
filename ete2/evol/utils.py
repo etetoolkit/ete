@@ -3,21 +3,7 @@
 # Creation Date: 2010/04/22 16:05:46
 
 
-import os, re
-import errno
-from hashlib import md5
 from ete_dev import Tree
-
-def mkdir_p(path):
-    '''
-    equivalent to "mkdir -p"
-    '''
-    try:
-        os.makedirs(path)
-    except OSError, (exc): # Python >2.5
-        if exc.errno == errno.EEXIST:
-            pass
-        else: raise
 
 def get_rooting(tol, seed_species, agename = False):
     '''
