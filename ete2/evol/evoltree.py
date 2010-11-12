@@ -19,7 +19,7 @@ from ete_dev               import SeqGroup
 from ete_dev.evol.parser   import parse_paml, get_sites
 from ete_dev.evol          import evol_layout
 from ete_dev.evol.model    import Model, PARAMS, AVAIL
-from utils                 import translate
+from ete_dev.evol.utils    import translate
 from ete_dev.parser.newick import write_newick
 from ete_dev               import TreeImageProperties
 
@@ -79,8 +79,10 @@ class EvolNode (PhyloNode):
                 node = node.up
                 while hasattr (node.get_children()[1], 'paml_id'):
                     node = node.up
-                    if not node: break
-                if not node: break
+                    if not node:
+                        break
+                if not node:
+                    break
                 node = node.get_children()[1]
             if not hasattr (node, 'paml_id'):
                 paml_id += 1
@@ -105,8 +107,7 @@ class EvolNode (PhyloNode):
             seq_group.name2id [n.name   ] = n.paml_id
         seq_group.write (outfile=fullpath, format='paml')
 
-    def run_model (self, model, ctrl_string='', keep=True,
-                   paml=False, **kwargs):
+    def run_model (self, model, ctrl_string='', keep=True, **kwargs):
         ''' To compute evolutionnary models with paml
         extra parameters should be in '''
         from subprocess import Popen, PIPE
@@ -158,11 +159,12 @@ class EvolNode (PhyloNode):
 
 
     def link_to_alignment (self, alignment, alg_format="paml",
-                          nucleotides=True):
+                           nucleotides=True):
         '''
         same function as for phyloTree, but translate sequences if nucleotides
         '''
-        super(EvolTree, self).link_to_alignment(alignment, alg_format=alg_format)
+        super(EvolTree, self).link_to_alignment(alignment,
+                                                alg_format=alg_format)
         for leaf in self.iter_leaves():
             leaf.nt_sequence = str(leaf.sequence)
             if nucleotides:
@@ -191,8 +193,7 @@ class EvolNode (PhyloNode):
                                      img_properties=img_properties)
 
     def render (self, filename, layout=evol_layout, w=None, h=None,
-               img_properties=None, header=None, histfaces=None,
-                up_n_down=None):
+                img_properties=None, header=None, histfaces=None):
         '''
         call super show adding up and down faces
         '''
@@ -254,7 +255,6 @@ class EvolNode (PhyloNode):
         self._models[model.name] = model
         if not os.path.isfile(path):
             print >> stderr, "ERROR: not a file: "+path
-            print model.run
             return 1
         parse_paml(path, model)
         if model.typ == 'site':

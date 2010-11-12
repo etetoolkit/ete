@@ -9,9 +9,9 @@ __email__   = "francois@barrabin.org"
 __licence__ = "GPLv3"
 __version__ = "0.0"
 
-from re import sub
-from sys import stderr
-from control import PARAMS, AVAIL
+from re                   import sub
+from sys                  import stderr
+from ete_dev.evol.control import PARAMS, AVAIL
 
 class Model:
     '''Evolutionnary model, computed by PAML.
@@ -28,7 +28,8 @@ class Model:
         self.evol        = None
         self.changes     = {}
         self.name, args  = check_name(model)
-        for a, b in args.items(): self.__dict__[a] = b
+        for a, b in args.items():
+            self.__dict__[a] = b
         self.params = dict (PARAMS.items())
         for key, arg in kwargs.items():
             if not self.params.has_key(key):
@@ -51,7 +52,7 @@ class Model:
         for key, change in self.changes:
             self.params[key] = change
 
-    def set_histface (self, up = True, lines=[1.0], header='',
+    def set_histface (self, up=True, lines=[1.0], header='',
                       col_lines=['grey'], typ='hist',
                       col=None, extras=[''], col_width=11):
         '''
@@ -88,7 +89,8 @@ class Model:
         self.histface = face(values = ldic['w.' + self.name], 
                              lines = lines, col_lines=col_lines,
                              colors=colorize_rst(ldic['pv.'+self.name],
-                                                 self.name, ldic['class.'+self.name],
+                                                 self.name,
+                                                 ldic['class.'+self.name],
                                                  col=col),
                              header=header, errors=ldic['se.'+self.name],
                              extras=extras, col_width=col_width)
@@ -109,7 +111,8 @@ class Model:
         for p in sorted (self.params.keys(), cmp=lambda x, y: \
                         cmp(sub('fix_', '', x.lower()), \
                             sub ('fix_', '', y.lower()))):
-            if p in ['seqfile', 'treefile', 'outfile']: continue
+            if p in ['seqfile', 'treefile', 'outfile']:
+                continue
             if str(self.params[p]).startswith('*'):
                 string += ' *'+'%13s = %s\n' % (p, str(self.params[p])[1:])
             else:

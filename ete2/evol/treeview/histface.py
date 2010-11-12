@@ -625,12 +625,14 @@ class ErrorLineProtamineFace (faces.Face):
                                posX+2+self.fsize/4-2, y-val-((self.height-25)))
                 else:
                     p.drawLine(posX+2+self.fsize/4, y-val, #2, \
-                               posX+2+self.fsize/4, y-val +(err if err<val else val))
+                               posX+2+self.fsize/4,
+                               y-val +(err if err<val else val))
             elif abs (val-err) < (self.height-25):
                 p.drawLine(posX+2+self.fsize/4-2, y - self.height+25,
                            posX+2+self.fsize/4+2, y - self.height+25) # 2, -err)
                 p.drawLine(posX+2+self.fsize/4, y-(self.height-25),# 2, \
-                           posX+2+self.fsize/4, y-(self.height-25)-(val-(err if err<val else val)))
+                           posX+2+self.fsize/4,
+                           y-(self.height-25)-(val-(err if err<val else val)))
 
         customPen = QtGui.QPen(QtGui.QColor("black"), 1)
         p.setPen(customPen)
