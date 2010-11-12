@@ -553,8 +553,8 @@ class ErrorLineProtamineFace (faces.Face):
                       # could this be modified by the user?
         # Calculates size of main plot
         fm = QtGui.QFontMetrics(self.font)
-        if self.extras != ['']:
-            self.height += 10
+        #if self.extras != ['']:
+        #    self.height += 10
         height = self.height
         width = self.col_width * len(self.values)
         self.pixmap = QtGui.QPixmap(width+20, height)
@@ -567,8 +567,8 @@ class ErrorLineProtamineFace (faces.Face):
         if self.num:
             y      -= 25 ## 8
             height -= 15 ## 8
-        if self.extras  != ['']:
-            self.height -= 10
+        #if self.extras  != ['']:
+        #    self.height -= 10
         customPen = QtGui.QPen (QtGui.QColor("red"), 1)
         #hz_line = QtGui.QGraphicsLineItem (self._QtItem_)
         #hz_line.setPen  (customPen)
@@ -632,22 +632,6 @@ class ErrorLineProtamineFace (faces.Face):
                 p.drawLine(posX+2+self.fsize/4, y-(self.height-25),# 2, \
                            posX+2+self.fsize/4, y-(self.height-25)-(val-(err if err<val else val)))
 
-            #if abs(val) <= (self.height-25):
-            #    if (abs(val+err)) > (self.height-25):
-            #        p.drawRect(posX+1+self.fsize/4, y-val, 2, \
-            #                   -((self.height-25)-val))
-            #    else:
-            #        p.drawRect(posX+1+self.fsize/4, y-val, 2, -err)
-            #    if (abs(val-err)) > (self.height-25):
-            #        p.drawRect(posX+1+self.fsize/4, y-val, 2, \
-            #                   ((self.height-25)-val))
-            #    else:
-            #        p.drawRect(posX+1+self.fsize/4, y-val, 2, \
-            #                   err if err<val else val)
-            #elif (val-err)<(self.height-25):
-            #    p.drawRect(posX+1+self.fsize/4, y-(self.height-25), 2, \
-            #               (self.height-25)-(val-(err if err<val else val)))
-
         customPen = QtGui.QPen(QtGui.QColor("black"), 1)
         p.setPen(customPen)
         p.drawLine(x, y, x + width, y)
@@ -670,11 +654,11 @@ class ErrorLineProtamineFace (faces.Face):
                 if cr.endswith('.'):
                     p.setFont(QtGui.QFont("Arial", 8, QtGui.QFont.Bold))
                     p.drawText(1+posX-(len(self.extras[i])-1), y+10,\
-                               cr[:-1] ) ## str(self.extras[i]))
+                               str(self.extras[i]))
                     p.setFont(QtGui.QFont("Arial", 7))
                 else:
                     p.drawText(1+posX-(len(self.extras[i])-1), y+10,\
-                               cr) ## str(self.extras[i]))
+                               str(self.extras[i]))
                 if len (str(self.extras[i])) == 1:
                     p.drawLine(posX+2, y+11, posX+4, y+11)
                 if len (str(self.extras[i]))>1:

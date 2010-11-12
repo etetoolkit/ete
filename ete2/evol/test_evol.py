@@ -14,7 +14,8 @@ __version__ = "0.0"
 
 from ete_dev.evol import EvolTree, faces
 from random import random as rnd
-
+from model import Model
+from copy import copy
 
 WRKDIR = 'examples/data/protamine/PRM1/'
 
@@ -37,10 +38,27 @@ def main():
     print tree.get_most_likely ('M2','M1')
     print 'pv of LRT M8 vs M7: ',
     print tree.get_most_likely ('M8','M7')
-    tree.get_evol_model('M2').set_histface (up=True, typ='error',
-                                            lines = [1.0,0.3],
-                                            col_lines=['black','grey'])
-    tree.show (histfaces=['M2'])
+    M2a = copy (tree.get_evol_model('M2'))
+    M2b = copy (tree.get_evol_model('M2'))
+    M2c = copy (tree.get_evol_model('M2'))
+    M2d = copy (tree.get_evol_model('M2'))
+    tree._models['M2.a'] = M2a
+    tree._models['M2.b'] = M2b
+    tree._models['M2.c'] = M2c
+    tree._models['M2.d'] = M2d
+    col = {'NS' : 'grey', 'RX' : 'black',
+           'RX+': 'grey', 'CN' : 'black',
+           'CN+': 'grey', 'PS' : 'black', 'PS+': 'black'}
+    col2 = {'NS' : 'white', 'RX' : 'white',
+            'RX+': 'white', 'CN' : 'white',
+            'CN+': 'white', 'PS' : 'white', 'PS+': 'white'}
+    M2a.set_histface (up=False, typ='line', lines = [1.0,0.3], col_lines=['red','grey'], header='ugliest face')
+    M2b.set_histface (up=False, typ='error', col=col2, lines = [2.5, 1.0, 4.0, 0.5], header = 'Many lines, error boxes, background black',
+                      col_lines=['orange', 'yellow', 'red', 'cyan'])
+    M2c.set_histface (up=False, typ='protamine', lines = [1.0,0.3], col_lines=['black','grey'],
+                      extras=['+','-',' ',' ',' ',':P', ' ',' ']*2+[' ']*(len(tree.get_leaves()[0].sequence)-16))
+    M2d.set_histface (up=False, typ='hist', col=col, lines = [1.0,0.3], col_lines=['black','grey'])
+    tree.show (histfaces=['M2','M2.a', 'M2.b', 'M2.c', 'M2.d'])
 
     # run codeml
     TREE_PATH    = "examples/data/S_example/measuring_S_tree.nw"
@@ -59,8 +77,8 @@ def main():
     print tree.get_most_likely ('M2','M1')
     print 'pv of LRT M8 vs M7: ',
     print tree.get_most_likely ('M8','M7')
-    tree.get_evol_model('M8').set_histface (up=False, typ='protamine',
-                                            lines = [1.0,0.3],
+    tree.get_evol_model('M8').set_histface (up=False, typ='hist',
+                                            lines = [2.0,0.3],
                                             col_lines=['black','grey'])
     tree.show(histfaces=['M2', 'M8'])
     tree.mark_tree ([2])

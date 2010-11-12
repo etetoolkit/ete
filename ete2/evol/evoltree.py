@@ -15,6 +15,7 @@ import os
 from sys import stderr
 
 from ete_dev               import PhyloNode
+from ete_dev               import SeqGroup
 from ete_dev.evol.parser   import parse_paml, get_sites
 from ete_dev.evol          import evol_layout
 from ete_dev.evol.model    import Model, PARAMS, AVAIL
@@ -93,6 +94,18 @@ class EvolNode (PhyloNode):
                     return n
         self.__dict__['get_descendant_by_pamlid'] = get_descendant_by_pamlid
 
+
+    def __write_algn(self, fullpath):
+        """
+        to write algn in paml format
+        """
+        seq_group = SeqGroup ()
+        for n in self:
+            seq_group.id2seq  [n.paml_id] = n.nt_sequence
+            seq_group.id2name [n.paml_id] = n.name
+            seq_group.name2id [n.name   ] = n.paml_id
+        seq_group.write (outfile=fullpath, format='paml')
+
     def run_model (self, model, ctrl_string='', keep=True,
                    paml=False, **kwargs):
         ''' To compute evolutionnary models with paml
@@ -102,10 +115,10 @@ class EvolNode (PhyloNode):
         fullpath = os.path.join (self.workdir, model.name)
         os.system("mkdir -p %s" %fullpath)
         # write tree file
+        self.__write_algn (fullpath + '/algn')
         self.write (outfile=fullpath+'/tree', 
                     format = (10 if model.allow_mark else 9))
         # write algn file
-        self._write_ali(fullpath, paml)
         ## MODEL MODEL MDE
         if ctrl_string == '':
             ctrl_string = model.get_ctrl_string(fullpath+'/tmp.ctl')
@@ -145,7 +158,7 @@ class EvolNode (PhyloNode):
     cmp(AVAIL[x]['typ'], AVAIL[y]['typ']), reverse=True))))
 
 
-    def link_to_alignment (self, alignment, alg_format="fasta",
+    def link_to_alignment (self, alignment, alg_format="paml",
                           nucleotides=True):
         '''
         same function as for phyloTree, but translate sequences if nucleotides
@@ -155,6 +168,7 @@ class EvolNode (PhyloNode):
             leaf.nt_sequence = str(leaf.sequence)
             if nucleotides:
                 leaf.sequence = translate(leaf.nt_sequence)
+        self._label_as_paml()
 
     def show (self, layout=evol_layout, img_properties=None, histfaces=None):
         '''
@@ -200,41 +214,6 @@ class EvolNode (PhyloNode):
                                        img_properties=img_properties,
                                        w=w, h=h)
 
-    def _write_ali (self, fullpath, paml=False):
-        '''
-        just to write alignment
-        '''
-        if not paml:
-            seqs = []
-            nams = []
-            try:
-                for leaf in sorted (self, key=lambda x: x.name):
-                    nams.append(leaf.name)
-                    seqs.append(leaf.nt_sequence)
-            except AttributeError:
-                print >> stderr, \
-                "ERROR: you first need to link your tree to an alignment.\n" + \
-                self.link_to_alignment.func_doc
-                return 1
-            if float(sum(map(len, seqs)) != len (seqs)* len(seqs[0])):
-                print >> stderr, \
-                      "ERROR: sequences of different length"
-                exit()
-            if len (self) != len (seqs):
-                print >> stderr, \
-                      "ERROR: number of sequences different of number of leaves"
-                exit()
-            algn = open(fullpath+'/algn','w')
-            algn.write(' %d %d\n' % (len (seqs), len (seqs[0])))
-            for spe in range(len (seqs)):
-                algn.write('>%s\n%s\n' % (nams[spe], seqs[spe]))
-            algn.close()
-        else:
-            algn = open(fullpath+'/algn','w')
-            for line in open(paml, 'r'):
-                algn.write(line)
-            algn.close()
-
     def mark_tree (self, node_ids, verbose=False, **kargs):
         '''
         function to mark branches on tree in order that paml could interpret it.
@@ -266,8 +245,6 @@ class EvolNode (PhyloNode):
           * Site models (M0, M1, M2, M7, M8) will give evol values by site
             and likelihood
         '''
-        if not hasattr (self, 'paml_id'):
-            self._label_as_paml()
         if type (model) == str :
             model = Model (model, self)
         # new entry in _models dict

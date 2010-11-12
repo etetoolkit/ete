@@ -28,7 +28,8 @@ Currently, Fasta, Phylip sequencial and Phylip interleaved formats are
 supported.
 """
 
-from ete_dev.parser.fasta import read_fasta, write_fasta
+from ete_dev.parser.fasta  import read_fasta, write_fasta
+from ete_dev.parser.paml   import read_paml, write_paml
 from ete_dev.parser.phylip import read_phylip, write_phylip
 
 __all__ = ["SeqGroup"]
@@ -73,9 +74,10 @@ class SeqGroup(object):
 
     def __init__(self, sequences = None , format="fasta"):
         self.parsers = {
-            "fasta": [read_fasta, write_fasta, {}],
-            "phylip": [read_phylip, write_phylip, {"interleaved":False}],
-            "iphylip": [read_phylip, write_phylip, {"interleaved":True}]
+            "fasta"  : [read_fasta , write_fasta , {}                   ],
+            "paml"   : [read_paml  , write_paml  , {}                   ],
+            "phylip" : [read_phylip, write_phylip, {"interleaved":False}],
+            "iphylip": [read_phylip, write_phylip, {"interleaved":True} ]
             }
 
         self.id2name = {}
