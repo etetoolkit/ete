@@ -115,7 +115,7 @@ class TreeNode(object):
             read_newick(newick, root_node = self, format=format)
 
     def __repr__(self):
-        return "Tree (%s)" %hex(self.__hash__())
+        return "Tree node (%s)" %hex(self.__hash__())
 
     def __and__(self, value):
         """ This allows to execute tree&'A' to obtain the descendant node
@@ -495,6 +495,10 @@ class TreeNode(object):
          print common.name
 
         """
+        
+        if len(target_nodes) == 1 and type(target_nodes[0]) \
+                in set([set, tuple, list, frozenset]):
+            target_nodes = target_nodes[0]
 
         # Convert node names into node instances
         target_nodes = _translate_nodes(self, *target_nodes)

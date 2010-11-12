@@ -77,7 +77,7 @@ style["shape"] = "square"
 style["vt_line_color"] = "#ff0000"
 # We add a face to the style. This face will be render in any node
 # associated to the style.
-style.add_fixed_face(fixed, "branch-right", 0)
+#style.add_fixed_face(fixed, "branch-right", 0)
 
 #ETE 2.1 has finally official support for TreeImageProperties, and
 #object that can be used to set different general purpose image properties
@@ -117,7 +117,14 @@ t.dist = 0
 t.populate(5)
 
 # Bind the precomputed style to the root node 
-t.img_style = style
+#t.img_style = style
 # t.render("./test.svg", layout=mylayout, img_properties=I)
 t.show(mylayout, img_properties=I)
+import cPickle
+print style
+cPickle.dump(t, open("test.pkl", "w"))
+print "OK"
+t = cPickle.load(open("test.pkl"))
+print t
+t.show()
 

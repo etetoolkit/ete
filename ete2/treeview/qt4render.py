@@ -11,7 +11,7 @@ import layouts
 
 class _TextFaceItem(QtGui.QGraphicsSimpleTextItem, _NodeActions):
     """ Manage faces on Scene"""
-    def __init__(self,face,node,*args):
+    def __init__(self, face, node, *args):
         QtGui.QGraphicsSimpleTextItem.__init__(self,*args)
         self.node = node
         self.face = face
@@ -118,8 +118,9 @@ class _FaceGroup(QtGui.QGraphicsItem): # I resisted to name this FaceBook :)
             for f in faces:
                 if f.type == "text":
                     obj = _TextFaceItem(f, self.node, f.get_text())
-                    obj.setFont(f.font)
-                    obj.setBrush(QtGui.QBrush(f.fgcolor))
+                    font = QtGui.QFont(f.ftype, f.fsize)
+                    obj.setFont(font)
+                    obj.setBrush(QtGui.QBrush(QtGui.QColor(f.fgcolor)))
                     obj.setParentItem(self)
                     obj.setAcceptsHoverEvents(True)
                 else:
@@ -154,8 +155,8 @@ class _SelectorItem(QtGui.QGraphicsRectItem):
 
     def paint(self, p, option, widget):
         p.setPen(self.Color)
-        p.drawRect(self.rect().x(),self.rect().y(),self.rect().width(),self.rect().height())
-        return
+        p.drawRect(self.rect())
+        return 
         # Draw info text
         font = QtGui.QFont("Arial",13)
         text = "%d selected."  % len(self.get_selected_nodes())
@@ -269,16 +270,16 @@ class _TreeScene(QtGui.QGraphicsScene):
             self.removeItem(self._highlighted_nodes[n])
             del self._highlighted_nodes[n]
 
-
     def mousePressEvent(self,e):
-        self.selector.setRect(e.scenePos().x(),e.scenePos().y(),0,0)
-        self.selector.startPoint = QtCore.QPointF(e.scenePos().x(),e.scenePos().y())
+        pos = self.selector.mapFromScene(e.scenePos())
+        self.selector.setRect(pos.x(),pos.y(),4,4)
+        self.selector.startPoint = QtCore.QPointF(pos.x(), pos.y())
         self.selector.setActive(True)
         self.selector.setVisible(True)
         QtGui.QGraphicsScene.mousePressEvent(self,e)
 
     def mouseReleaseEvent(self,e):
-        curr_pos = e.scenePos()
+        curr_pos = self.selector.mapFromScene(e.scenePos())
         x = min(self.selector.startPoint.x(),curr_pos.x())
         y = min(self.selector.startPoint.y(),curr_pos.y())
         w = max(self.selector.startPoint.x(),curr_pos.x()) - x
@@ -289,7 +290,7 @@ class _TreeScene(QtGui.QGraphicsScene):
         QtGui.QGraphicsScene.mouseReleaseEvent(self,e)
 
     def mouseMoveEvent(self,e):
-        curr_pos = e.scenePos()
+        curr_pos = self.selector.mapFromScene(e.scenePos())
         if self.selector.isActive():
             x = min(self.selector.startPoint.x(),curr_pos.x())
             y = min(self.selector.startPoint.y(),curr_pos.y())
@@ -340,6 +341,7 @@ class _TreeScene(QtGui.QGraphicsScene):
 
         elif ext == "PDF" or ext == "PS":
             format = QPrinter.PostScriptFormat if ext == "PS" else QPrinter.PdfFormat
+
             printer = QPrinter(QPrinter.HighResolution)
             printer.setResolution(dpi)
             printer.setOutputFormat(format)
