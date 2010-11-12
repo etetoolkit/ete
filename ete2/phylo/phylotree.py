@@ -82,7 +82,7 @@ class PhyloNode(TreeNode):
             self.set_species_naming_function(sp_naming_function)
 
     def __repr__(self):
-        return "PhyloTree (%s)" %hex(self.__hash__())
+        return "PhyloTree node (%s)" %hex(self.__hash__())
 
     def set_species_naming_function(self, fn):
         for n in self.iter_leaves():
