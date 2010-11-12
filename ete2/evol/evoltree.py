@@ -16,7 +16,6 @@ from sys import stderr
 
 from ete_dev               import PhyloNode
 from ete_dev               import SeqGroup
-from ete_dev.evol.parser   import parse_paml, get_sites
 from ete_dev.evol          import evol_layout
 from ete_dev.evol.model    import Model, PARAMS, AVAIL
 from ete_dev.evol.utils    import translate
@@ -94,6 +93,8 @@ class EvolNode (PhyloNode):
             for n in self.iter_descendants():
                 if n.paml_id == idname:
                     return n
+            if self.paml_id == idname:
+                return self
         self.__dict__['get_descendant_by_pamlid'] = get_descendant_by_pamlid
 
     def __write_algn(self, fullpath):
@@ -136,8 +137,7 @@ class EvolNode (PhyloNode):
         os.chdir(hlddir)
         if keep:
             setattr (model, 'run', run)
-            self.link_to_evol_model (os.path.join(fullpath,'out'),
-                                     model)
+            self.link_to_evol_model (os.path.join(fullpath,'out'), model)
     run_model.__doc__ += '''%s
     to run paml, needs tree linked to alignment.
     model name needs to start by one of:
@@ -246,7 +246,9 @@ class EvolNode (PhyloNode):
             and likelihood
         '''
         if type (model) == str :
-            model = Model (model, self)
+            model = Model (model, self, path)
+        else:
+            model._load (path)
         # new entry in _models dict
         while self._models.has_key (model.name):
             model.name = model.name.split('__')[0] + str (
@@ -256,10 +258,6 @@ class EvolNode (PhyloNode):
         if not os.path.isfile(path):
             print >> stderr, "ERROR: not a file: "+path
             return 1
-        parse_paml(path, model)
-        if model.typ == 'site':
-            setattr (model, 'sites',
-                     get_sites (self.workdir + '/' + model.name + '/rst'))
         if len (self._models) == 1:
             self.change_dist_to_evol ('bL')
 

@@ -12,13 +12,13 @@ __version__ = "0.0"
 from re                   import sub
 from sys                  import stderr
 from ete_dev.evol.control import PARAMS, AVAIL
+from ete_dev.evol.parser   import parse_paml, get_sites, get_ancestor
 
 class Model:
-    '''Evolutionnary model, computed by PAML.
-
+    '''Evolutionnary model.
     available models are:
     '''
-    def __init__(self, model, tree, **kwargs):
+    def __init__(self, model, tree, path=None, **kwargs):
         '''
         "omega" stands for starting value of omega, in the computation. Qs
         Zihen Yang says, it is good to try with different starting values.
@@ -29,7 +29,7 @@ class Model:
         self.changes     = {}
         self.name, args  = check_name(model)
         for a, b in args.items():
-            self.__dict__[a] = b
+            setattr (self, a, b)
         self.params = dict (PARAMS.items())
         for key, arg in kwargs.items():
             if not self.params.has_key(key):
@@ -44,7 +44,19 @@ class Model:
             self.params['omega'] += 1
         self._change_params()
         self.histface = None
+        if path:
+            self._load (path)
 
+    def _load (self, path):
+        '''
+        parse outfiles and load in model object
+        '''
+        parse_paml (path, self)
+        if self.typ == 'site':
+            setattr (self, 'sites', get_sites (path))
+        if self.typ == 'branch_ancestor':
+            get_ancestor (path, self)
+        
     def _change_params(self):
         '''
         change model specific values
@@ -127,8 +139,8 @@ def check_name(model):
     check that model name corresponds to opne of the availables
     TODO: accept personal models
     '''
-    if AVAIL.has_key (sub('\..*', '', model)):
-        return model, AVAIL[sub('\..*', '', model)]
+    if AVAIL.has_key (sub ('\..*', '', model)):
+        return model, AVAIL [sub ('\..*', '', model)]
 
 Model.__doc__ += '\n%s\n' % '\n'.join (map (lambda x: \
         '           * %-9s model of %-18s at  %-12s level.' % \

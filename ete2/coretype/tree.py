@@ -989,6 +989,8 @@ class TreeNode(object):
             for n in self.iter_descendants():
                 if n._nid == idname:
                     return n
+            if self.paml_id == idname:
+                return self
         self.__dict__['get_descendant_by_id'] = get_descendant_by_id
 
 def _translate_nodes(root, *nodes):

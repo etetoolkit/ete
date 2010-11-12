@@ -14,7 +14,7 @@ from os.path import isfile
 
 sys.path.append('/home/francisco/franciscotools/4_codeml_pipe/')
 
-def get_sites(path, model = ''):
+def get_sites (path, model = ''):
     '''
     for models M1, M2, M7, M8, M8a but also branch-site models
     '''
@@ -27,7 +27,7 @@ def get_sites(path, model = ''):
         print >> sys.stderr, \
               "Error: no rst file found at " + path
         return None
-    for line in open(path, 'r'):
+    for line in open ('/'.join (path.split('/')[:-1])+'/rst'):
         l = line.strip()
         if l.startswith('lnL = '):
             lnl = l.split()[-1]
@@ -75,6 +75,7 @@ def get_sites(path, model = ''):
         return None
     return vals
 
+
 def divide_data (pamout, model):
     '''
     for multiple dataset, divide outfile.
@@ -118,6 +119,25 @@ def divide_data (pamout, model):
         else:
             setattr (model, 'data_' + str (num),
                      parse_paml (pamout + '_' + str(num), model))
+
+def get_ancestor (pamout, model):
+    '''
+    only for fb_ancestor model, retrieves ancestral sequences also
+    from rst file.
+    '''
+    for line in open ('/'.join (pamout.split('/')[:-1])+'/rst'):
+        if line.startswith ('node #'):
+            pamlid, seq = re.sub ('node#([0-9]+)([A-Z]*)\n', '\\1\t\\2',
+                                  re.sub (' ', '', line)).split ('\t')
+            n = model.tree.get_descendant_by_pamlid (int (pamlid))
+            n.add_feature ('nt_sequence', seq)
+        elif line.startswith ('Node #'):
+            pamlid, seq = re.sub ('Node#([0-9]+)([A-Z]*)\n', '\\1\t\\2',
+                                  re.sub (' ', '', line)).split ('\t')
+            n = model.tree.get_descendant_by_pamlid (int (pamlid))
+            n.add_feature ('sequence', seq)
+        elif line.startswith ('Counts of changes at sites'):
+            break
 
 def parse_paml (pamout, model):
     '''
@@ -245,7 +265,7 @@ def _get_paml_labels (model, tree, paml_labels, line, pamout):
     #####
     for lab in paml_labels:
         node = tree.search_nodes(paml_id=int (lab.split('..')[1]))[0]
-        if model.name == 'fb':
+        if model.name.startswith ('fb'):
             node.add_feature ('w', float (w.pop(0)))
         node.add_feature ('bL', float (bL.pop(0)))
 

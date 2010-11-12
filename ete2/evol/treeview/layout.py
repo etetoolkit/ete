@@ -54,16 +54,16 @@ def evol_layout(node):
         faces.add_face_to_node( faces.AttrFace("extras", "Arial", 7, \
                                                "#000000", None), node, 2 )
     if node.is_leaf():
-        if hasattr(node,"highlight"):
+        if hasattr (node,"highlight"):
             faces.add_face_to_node(faces.AttrFace("name", "Arial", 11, \
                                                   node.highlight, None), \
                                    node, 0 )
         else:
             faces.add_face_to_node( faces.AttrFace("name", "Arial", 11, \
                                                    leaf_color, None), node, 0 )
-        if hasattr(node, "sequence"):
-            seqface =  faces.SequenceFace(node.sequence, "aa", 11)
-            faces.add_face_to_node(seqface, node, 1, aligned=True)
+    if hasattr (node, "sequence"):
+        seqface =  faces.SequenceFace(node.sequence, "aa", 11)
+        faces.add_face_to_node(seqface, node, 1, aligned=True)
 
 
 if __name__ == "__main__":
