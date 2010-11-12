@@ -127,7 +127,7 @@ class _FaceGroup(QtGui.QGraphicsItem): # I resisted to name this FaceBook :)
                     obj = _ImgFaceItem(f, self.node, f.pixmap)
                     obj.setAcceptsHoverEvents(True)
                     obj.setParentItem(self)
-                obj.setPos(x+ f.margin_right, y+f.margin_top)
+                obj.setPos(x+ f.margin_left, y+f.margin_top)
                 # Y position is incremented by the height of last face
                 # in column
                 y += f._height() + f.margin_top + f.margin_bottom
@@ -289,7 +289,6 @@ class _TreeScene(QtGui.QGraphicsScene):
         QtGui.QGraphicsScene.mouseReleaseEvent(self,e)
 
     def mouseMoveEvent(self,e):
-
         curr_pos = e.scenePos()
         if self.selector.isActive():
             x = min(self.selector.startPoint.x(),curr_pos.x())
@@ -423,6 +422,7 @@ class _TreeScene(QtGui.QGraphicsScene):
                     if size[0] > column2max_width.get(c, 0):
                         column2max_width[c] = size[0]
 
+
         # Place aligned faces
         for fb in self.aligned_faces:
             fb.set_min_column_widths(column2max_width)
@@ -430,7 +430,7 @@ class _TreeScene(QtGui.QGraphicsScene):
             fb.render()
             pos = fb.mapFromScene(self.i_width, 0)
             fb.setPos(pos.x(), fb.y())
-        
+            
             if self.props.draw_guidelines:
                 guideline = QtGui.QGraphicsLineItem()
                 partition = fb.parentItem()
