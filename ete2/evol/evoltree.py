@@ -94,7 +94,6 @@ class EvolNode (PhyloNode):
                     return n
         self.__dict__['get_descendant_by_pamlid'] = get_descendant_by_pamlid
 
-
     def __write_algn(self, fullpath):
         """
         to write algn in paml format
