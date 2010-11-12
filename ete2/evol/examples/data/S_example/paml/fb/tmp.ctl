@@ -23,7 +23,7 @@
         NSsites = 0
       fix_omega = 0
           omega = 0.7
-   RateAncestor = 0
+   RateAncestor = 1
         runmode = 0
         seqtype = 1
      Small_Diff = 1e-6

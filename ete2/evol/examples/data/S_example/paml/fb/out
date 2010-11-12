@@ -1,5 +1,5 @@
 
-seed used = 861385561
+seed used = 863360473
 
 Before deleting alignment gaps
       4    258
@@ -36,7 +36,7 @@ Papio_cynocephalus    ... ..G ... ..C ..G ..G ..G ... ... ..A ... C.. ... ..A ..
     4    4    1    1    1    2    1    1    3    2    1    1    2    1    1
     1    1    2
 
-CODONML (in paml version 4.4, January 2010)  algn
+CODONML (in paml version 4.4b, July 2010)  algn
 Model: free dN/dS Ratios for branches for branches
 Codon frequency model: F3x4
 ns =   4  ls =  85
@@ -153,45 +153,45 @@ Papio_cynocephalus   0.0287 (0.0204 0.7121) 0.0740 (0.0360 0.4864) 0.0458 (0.046
 
 TREE #  1:  ((2, (1, 3)), 4);   MP score: 53
 This is a rooted tree.  Please check!
-lnL(ntime:  6  np: 13):   -513.049626      +0.000000
+lnL(ntime:  6  np: 13):   -511.782035      +0.000000
    5..6     6..2     6..7     7..1     7..3     5..4  
- 0.317294 0.087537 0.169660 0.109472 0.134130 0.049665 3.564405 0.000100 0.442311 0.000100 0.000100 0.585036 999.000000
+ 0.364226 0.013782 0.193136 0.157436 0.084266 0.073477 3.544248 0.000100 999.000000 0.000100 0.106621 0.566150 999.000000
 
 Note: Branch length is defined as number of nucleotide substitutions per codon (not per neucleotide site).
 
-tree length =   0.86776
+tree length =   0.88632
 
-((2: 0.087537, (1: 0.109472, 3: 0.134130): 0.169660): 0.317294, 4: 0.049665);
+((2: 0.013782, (1: 0.157436, 3: 0.084266): 0.193136): 0.364226, 4: 0.073477);
 
-((Hylobates_lar: 0.087537, (Gorilla_gorilla: 0.109472, Pan_troglodytes: 0.134130): 0.169660): 0.317294, Papio_cynocephalus: 0.049665);
+((Hylobates_lar: 0.013782, (Gorilla_gorilla: 0.157436, Pan_troglodytes: 0.084266): 0.193136): 0.364226, Papio_cynocephalus: 0.073477);
 
 Detailed output identifying parameters
 
-kappa (ts/tv) =  3.56441
+kappa (ts/tv) =  3.54425
 
-w (dN/dS) for branches:  0.00010 0.44231 0.00010 0.00010 0.58504 999.00000
+w (dN/dS) for branches:  0.00010 999.00000 0.00010 0.10662 0.56615 999.00000
 
 dN & dS for each branch
 
  branch          t       N       S   dN/dS      dN      dS  N*dN  S*dS
 
-   5..6      0.317   159.2    95.8  0.0001  0.0000  0.2815   0.0  27.0
-   6..2      0.088   159.2    95.8  0.4423  0.0198  0.0448   3.2   4.3
-   6..7      0.170   159.2    95.8  0.0001  0.0000  0.1505   0.0  14.4
-   7..1      0.109   159.2    95.8  0.0001  0.0000  0.0971   0.0   9.3
-   7..3      0.134   159.2    95.8  0.5850  0.0353  0.0603   5.6   5.8
-   5..4      0.050   159.2    95.8 999.0000  0.0265  0.0000   4.2   0.0
+   5..6      0.364   159.3    95.7  0.0001  0.0000  0.3233   0.0  31.0
+   6..2      0.014   159.3    95.7 999.0000  0.0074  0.0000   1.2   0.0
+   6..7      0.193   159.3    95.7  0.0001  0.0000  0.1714   0.0  16.4
+   7..1      0.157   159.3    95.7  0.1066  0.0127  0.1187   2.0  11.4
+   7..3      0.084   159.3    95.7  0.5662  0.0218  0.0385   3.5   3.7
+   5..4      0.073   159.3    95.7 999.0000  0.0392  0.0000   6.2   0.0
 
-tree length for dN:       0.0817
-tree length for dS:       0.6343
+tree length for dN:       0.0811
+tree length for dS:       0.6520
 
 dS tree:
-((Hylobates_lar: 0.044766, (Gorilla_gorilla: 0.097121, Pan_troglodytes: 0.060344): 0.150519): 0.281497, Papio_cynocephalus: 0.000027);
+((Hylobates_lar: 0.000007, (Gorilla_gorilla: 0.118718, Pan_troglodytes: 0.038528): 0.171440): 0.323311, Papio_cynocephalus: 0.000039);
 dN tree:
-((Hylobates_lar: 0.019801, (Gorilla_gorilla: 0.000010, Pan_troglodytes: 0.035303): 0.000015): 0.000028, Papio_cynocephalus: 0.026500);
+((Hylobates_lar: 0.007351, (Gorilla_gorilla: 0.012658, Pan_troglodytes: 0.021813): 0.000017): 0.000032, Papio_cynocephalus: 0.039193);
 
 w ratios as labels for TreeView:
-((Hylobates_lar '#0.4423' , (Gorilla_gorilla '#0.0001' , Pan_troglodytes '#0.5850' ) '#0.0001' ) '#0.0001' , Papio_cynocephalus '#999.0000' );
+((Hylobates_lar '#999.0000' , (Gorilla_gorilla '#0.1066' , Pan_troglodytes '#0.5662' ) '#0.0001' ) '#0.0001' , Papio_cynocephalus '#999.0000' );
 
 
-Time used:  0:13
+Time used:  0:18
