@@ -196,43 +196,31 @@ class TextFace(Face):
         self.pixmap      = None
         self.type        = "text"
         self.text        = str(text)
-        self.pen         = QtGui.QPen(QtGui.QColor(fgcolor))
-        self.pen.setWidth(penwidth)
-        if not bgcolor:
-            self.bgcolor = QtGui.QColor(None)
-        else:
-            self.bgcolor = QtGui.QColor(bgcolor)
-        self.fgcolor = QtGui.QColor(fgcolor)
-        self.font    = QtGui.QFont(ftype,fsize)
+        self.bgcolor = bgcolor
+        self.fgcolor = fgcolor
+        self.ftype = ftype 
+        self.fsize = fsize
+        self.penwidth = penwidth
+        #self.pen         = QtGui.QPen(QtGui.QColor(fgcolor))
+        #self.pen.setWidth(penwidth)
+        #if not bgcolor:
+        #    self.bgcolor = QtGui.QColor(None)
+        #else:
+        #    self.bgcolor = QtGui.QColor(bgcolor)
+        #self.fgcolor = QtGui.QColor(fgcolor)
+        #self.font    = QtGui.QFont(ftype,fsize)
 
     def _height(self):
-        fm = QtGui.QFontMetrics(self.font)
+        font = QtGui.QFont(self.ftype, self.fsize)
+        fm = QtGui.QFontMetrics(font)
         h =  fm.boundingRect(QtCore.QRect(), \
                                  QtCore.Qt.AlignLeft, \
                                  self.get_text()).height()
         return h
-        # Other buggy alternatives
-        # fm = QtGui.QFontMetrics(self.font)
-        # h = 0
-        # for l in lines:
-        #     if l == lines[0]:
-        #       h+=fm.tightBoundingRect(l).height()
-        #     else:
-        #       h+=fm.height()
-        # return h #+ ((len(lines)-1)*fm.leading())
-        #
-        # lines = len(self.get_text().split("\n"))
-        # return lines*fm.height() + (lines-1 * fm.leading())
-        #
-        # h =  fm.boundingRect(QtCore.QRect(), \
-        #                        QtCore.Qt.AlignLeft, \
-        #                        self.get_text()).height()
-        # return h
-
-
 
     def _width(self):
-        fm = QtGui.QFontMetrics(self.font)
+        font = QtGui.QFont(self.ftype, self.fsize)
+        fm = QtGui.QFontMetrics(font)
         return fm.size(QtCore.Qt.AlignTop, self.text).width()
 
     def get_text(self):
@@ -263,8 +251,9 @@ class AttrFace(TextFace):
         self.text_suffix = text_suffix
 
     def _width(self):
+        font = QtGui.QFont(self.ftype, self.fsize)
         text = self.get_text()
-        fm = QtGui.QFontMetrics(self.font)
+        fm = QtGui.QFontMetrics(font)
         return fm.size(QtCore.Qt.AlignTop,text).width()
 
     def get_text(self):
@@ -709,19 +698,6 @@ class ProfileFace(Face):
         else:
             return float(v)
 
-class ValidationFace(Face):
-    """ Creates a new clustering validation face """
-
-    def __init__(self,fsize=10):
-        Face.__init__(self)
-        self.seq  = seq
-        self.name = "validation"
-        self.fsize= fsize
-        self.font = QtGui.QFont("Courier",self.fsize)
-        self.style = seqtype
-
-    def update_pixmap(self):
-        pass
 
 class SequenceFace(Face):
     """ Creates a new molecular sequence face object.
@@ -738,7 +714,7 @@ class SequenceFace(Face):
         self.seq  = seq
         self.name = "sequence"
         self.fsize= fsize
-        self.font = QtGui.QFont("Courier", self.fsize)
+        self.fsize = fsize
         self.style = seqtype
         self.aafg = aafg
         self.aabg = aabg
@@ -746,7 +722,8 @@ class SequenceFace(Face):
         self.ntbg = ntbg
 
     def update_pixmap(self):
-        fm = QtGui.QFontMetrics(self.font)
+        font = QtGui.QFont("Courier", self.fsize)
+        fm = QtGui.QFontMetrics(font)
         height = fm.leading() + fm.overlinePos() + fm.underlinePos()
         #width  = fm.size(QtCore.Qt.AlignTop, self.seq).width()
         width = self.fsize * len(self.seq)
@@ -757,7 +734,7 @@ class SequenceFace(Face):
         x = 0
         y = height - fm.underlinePos()*2
 
-        p.setFont(self.font)
+        p.setFont(font)
 
         for letter in self.seq:
             letter = letter.upper()

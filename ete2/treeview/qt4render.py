@@ -11,7 +11,7 @@ import layouts
 
 class _TextFaceItem(QtGui.QGraphicsSimpleTextItem, _NodeActions):
     """ Manage faces on Scene"""
-    def __init__(self,face,node,*args):
+    def __init__(self, face, node, *args):
         QtGui.QGraphicsSimpleTextItem.__init__(self,*args)
         self.node = node
         self.face = face
@@ -118,8 +118,9 @@ class _FaceGroup(QtGui.QGraphicsItem): # I resisted to name this FaceBook :)
             for f in faces:
                 if f.type == "text":
                     obj = _TextFaceItem(f, self.node, f.get_text())
-                    obj.setFont(f.font)
-                    obj.setBrush(QtGui.QBrush(f.fgcolor))
+                    font = QtGui.QFont(f.ftype, f.fsize)
+                    obj.setFont(font)
+                    obj.setBrush(QtGui.QBrush(QtGui.QColor(f.fgcolor)))
                     obj.setParentItem(self)
                     obj.setAcceptsHoverEvents(True)
                 else:
@@ -340,6 +341,7 @@ class _TreeScene(QtGui.QGraphicsScene):
 
         elif ext == "PDF" or ext == "PS":
             format = QPrinter.PostScriptFormat if ext == "PS" else QPrinter.PdfFormat
+
             printer = QPrinter(QPrinter.HighResolution)
             printer.setResolution(dpi)
             printer.setOutputFormat(format)
