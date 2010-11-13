@@ -12,10 +12,12 @@ __version__ = "0.0"
 
 
 
-from ete_dev.evol import EvolTree, faces
-from random import random as rnd
-from model import Model
-from copy import copy
+from ete_dev.evol import EvolTree
+from ete_dev.evol.treeview.layout import evol_clean_layout
+from ete_dev      import faces, TreeImageProperties
+from random       import random as rnd
+from model        import Model
+from copy         import copy
 
 WRKDIR = 'examples/data/protamine/PRM1/'
 
@@ -58,7 +60,7 @@ def main():
     M2c.set_histface (up=False, typ='protamine', lines = [1.0,0.3], col_lines=['black','grey'],
                       extras=['+','-',' ',' ',' ',':P', ' ',' ']*2+[' ']*(len(tree.get_leaves()[0].sequence)-16))
     M2d.set_histface (up=False, typ='hist', col=col, lines = [1.0,0.3], col_lines=['black','grey'])
-    tree.show (histfaces=['M2','M2.a', 'M2.b', 'M2.c', 'M2.d'])
+    tree.show (histfaces=['M2','M2.a', 'M2.b', 'M2.c', 'M2.d'], layout=evol_clean_layout)
 
     # run codeml
     TREE_PATH    = "examples/data/S_example/measuring_S_tree.nw"
@@ -69,7 +71,23 @@ def main():
     tree.link_to_alignment (ALG_PATH)
     tree.workdir = (WORKING_PATH)
     tree.run_model ('fb_anc')
-    tree.show()
+
+    I = TreeImageProperties()
+    I.force_topology             = False
+    I.tree_width                 = 200
+    I.draw_aligned_faces_as_grid = True
+    I.draw_guidelines = True
+    I.guideline_type = 2
+    I.guideline_color = "#CCCCCC"
+    I.complete_branch_lines = True
+    for n in sorted (tree.get_descendants()+[tree],
+                     key=lambda x: x.paml_id):
+        if n.is_leaf(): continue
+        anc_face = faces.SequenceFace (n.sequence, 'aa', fsize=11, aabg={})
+        I.aligned_foot.add_face(anc_face, 1)
+        I.aligned_foot.add_face(faces.TextFace('paml_id: #%d '%(n.paml_id)), 0)
+    tree.show(img_properties=I)
+
     tree.run_model ('M1')
     tree.run_model ('M2')
     tree.run_model ('M7')

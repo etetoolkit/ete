@@ -683,3 +683,5 @@ class ErrorLineProtamineFace (faces.Face):
             p.setPen(customPen)
             p.drawText(x+width+2, \
                        y-line* self.mean/self.meanVal+2, str(line))
+
+

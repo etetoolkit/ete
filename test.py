@@ -9,7 +9,7 @@ rs1.margin_top = 50
 rs1.margin_left = 40
 rs1.margin_right = 40
 
-rs2 = faces.TextFace("branch-right2", fsize=20, fgcolor="#009000")
+rs2 = faces.TextFace("branch\nright2", fsize=20, fgcolor="#009000")
 rs3 = faces.TextFace("branch-right3", fsize=20, fgcolor="#009000")
 bd  = faces.TextFace("branch-bottom", fsize=11, fgcolor="#909000")
 ud  = faces.TextFace("branch-top", fsize=11, fgcolor="#099000")
@@ -18,7 +18,7 @@ t2  = faces.TextFace("header_down", fsize=11, fgcolor="#099000")
 
 fixed = faces.TextFace("FIXED", fsize=11, fgcolor="#099000")
 
-content = faces.AttrFace("name", fsize=12, fgcolor="#099000")
+content = faces.AttrFace("nome\nname", fsize=12, fgcolor="#099000")
 image = faces.ImgFace("/home/jhuerta/_Devel/test/doc/tutorial/examples/human.png")
 
 def mylayout(node):
@@ -50,7 +50,7 @@ rs1.margin_top = 50
 rs1.margin_left = 40
 rs1.margin_right = 40
 
-rs2 = faces.TextFace("branch-right2", fsize=20, fgcolor="#009000")
+rs2 = faces.TextFace("branch\nright2", fsize=20, fgcolor="#009000")
 rs3 = faces.TextFace("branch-right3", fsize=20, fgcolor="#009000")
 
 # New face positions (branch-top and branch-bottom)
