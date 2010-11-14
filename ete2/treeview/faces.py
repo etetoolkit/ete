@@ -196,11 +196,11 @@ class TextFace(Face):
         self.pixmap      = None
         self.type        = "text"
         self.text        = str(text)
-        self.bgcolor = bgcolor
-        self.fgcolor = fgcolor
-        self.ftype = ftype 
-        self.fsize = fsize
-        self.penwidth = penwidth
+        self.bgcolor     = bgcolor
+        self.fgcolor     = fgcolor
+        self.ftype       = ftype 
+        self.fsize       = fsize
+        self.penwidth    = penwidth
         #self.pen         = QtGui.QPen(QtGui.QColor(fgcolor))
         #self.pen.setWidth(penwidth)
         #if not bgcolor:
@@ -212,10 +212,10 @@ class TextFace(Face):
 
     def _height(self):
         font = QtGui.QFont(self.ftype, self.fsize)
-        fm = QtGui.QFontMetrics(font)
-        h =  fm.boundingRect(QtCore.QRect(), \
-                                 QtCore.Qt.AlignLeft, \
-                                 self.get_text()).height()
+        fm   = QtGui.QFontMetrics(font)
+        h    =  fm.boundingRect(QtCore.QRect(), \
+                                QtCore.Qt.AlignLeft, \
+                                self.get_text()).height()
         return h
 
     def _width(self):
@@ -711,15 +711,14 @@ class SequenceFace(Face):
 
     def __init__(self, seq, seqtype, fsize=10, aafg=aafgcolors,  aabg=aabgcolors, ntfg=ntfgcolors, ntbg=ntbgcolors):
         Face.__init__(self)
-        self.seq  = seq
-        self.name = "sequence"
-        self.fsize= fsize
+        self.seq   = seq
+        self.name  = "sequence"
         self.fsize = fsize
         self.style = seqtype
-        self.aafg = aafg
-        self.aabg = aabg
-        self.ntfg = ntfg
-        self.ntbg = ntbg
+        self.aafg  = aafg
+        self.aabg  = aabg
+        self.ntfg  = ntfg
+        self.ntbg  = ntbg
 
     def update_pixmap(self):
         font = QtGui.QFont("Courier", self.fsize)
@@ -734,7 +733,7 @@ class SequenceFace(Face):
         x = 0
         y = height - fm.underlinePos()*2
 
-        p.setFont(font)
+        p.setFont (font)
 
         for letter in self.seq:
             letter = letter.upper()
