@@ -25,6 +25,7 @@ def main():
     """
     main function
     """
+    print 'link to already runned data.'
     tree = EvolTree (WRKDIR + 'tree.nw')
     tree.workdir = 'examples/data/protamine/PRM1/paml/'
 
@@ -60,6 +61,7 @@ def main():
     M2c.set_histface (up=False, typ='protamine', lines = [1.0,0.3], col_lines=['black','grey'],
                       extras=['+','-',' ',' ',' ',':P', ' ',' ']*2+[' ']*(len(tree.get_leaves()[0].sequence)-16))
     M2d.set_histface (up=False, typ='hist', col=col, lines = [1.0,0.3], col_lines=['black','grey'])
+    print 'Test histogram faces, in clean layout, (omega in dark red, 100*(dN)/100*(dS), in grey)'
     tree.show (histfaces=['M2','M2.a', 'M2.b', 'M2.c', 'M2.d'], layout=evol_clean_layout)
 
     # run codeml
@@ -86,6 +88,7 @@ def main():
         anc_face = faces.SequenceFace (n.sequence, 'aa', fsize=11, aabg={})
         I.aligned_foot.add_face(anc_face, 1)
         I.aligned_foot.add_face(faces.TextFace('paml_id: #%d '%(n.paml_id)), 0)
+    print 'display result of bs_anc model, with ancestral amino acid sequences.'
     tree.show(img_properties=I)
 
     tree.run_model ('M1')
@@ -126,11 +129,17 @@ def main():
 
 
 def random_swap(tree):
+    '''
+    swap randomly tree, to make sure labelling as paml is well done
+    '''
     for node in tree.iter_descendants():
         if int (rnd()*100)%3:
             node.swap_childs()
     
 def check_annotation (tree):
+    '''
+    check each node is labelled with a paml_id
+    '''
     for node in tree.iter_descendants():
         if not hasattr (node, 'paml_id'):
             print 'Error, unable to label with paml ids'

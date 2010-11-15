@@ -141,7 +141,7 @@ class EvolNode (PhyloNode):
     run_model.__doc__ += '''%s
     to run paml, needs tree linked to alignment.
     model name needs to start by one of:
-    %s
+%s
     
     e.g.: b_free_lala.vs.lele, will launch one free branch model, and store 
     it in "WORK_DIR/b_free_lala.vs.lele" directory
@@ -152,7 +152,7 @@ class EvolNode (PhyloNode):
     TODO: add possibility to avoid local minima of lnL by rerunning with other
     starting values of omega, alpha etc...
     ''' % ('['+', '.join (PARAMS.keys())+']\n', '\n'.join (map (lambda x: \
-    '           * %-9s model of %-18s at  %-12s level.' % \
+    '           * %-9s model of %-18s at  %-15s level.' % \
     ('"%s"' % (x), AVAIL[x]['evol'], AVAIL[x]['typ']), \
     sorted (sorted (AVAIL.keys()), cmp=lambda x, y : \
     cmp(AVAIL[x]['typ'], AVAIL[y]['typ']), reverse=True))))
@@ -316,20 +316,23 @@ class EvolNode (PhyloNode):
          * b_free vs b_neut -> PS on branch
          * b_neut vs M0     -> RX on branch?? not sure :P
         '''
+        altn = self.get_evol_model (altn)
+        null = self.get_evol_model (null)
+        if null.np > altn.np:
+            print >> stderr, \
+                  "first model shoul be the alternative model, change the order\n"
+            return 1.0
         try:
-            if hasattr (self._models[altn], 'lnL')\
-                   and hasattr (self._models[null], 'lnL'):
+            if hasattr (altn, 'lnL') and hasattr (null, 'lnL'):
                 from scipy.stats import chisqprob
-                return chisqprob(2*(self._models[altn].lnL - \
-                                    self._models[null].lnL),\
-                                 df=(self._models[altn].np -\
-                                     self._models[null].np))
+                return chisqprob(2*(altn.lnL - null.lnL),
+                                 df=(altn.np - null.np))
             else:
                 return 1
         except KeyError:
             print >> stderr, \
                   "at least one of %s or %s, was not calculated\n"\
-                  % (altn, null)
+                  % (altn.name, null.name)
             exit(self.get_most_likely.func_doc)
 
     def change_dist_to_evol (self, evol):
