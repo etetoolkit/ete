@@ -204,6 +204,10 @@ def parse_paml (pamout, model):
                 line = re.sub('  ([0-9.]*)  ([0-9.]*)  ([0-9.]*)  ([0-9.]*)', \
                               '\\1 \\2 \\3 \\4', line)
                 model.tree.codonFreq += [line.split()]
+        if model.typ == 'branch':
+            if line.startswith('w (dN'): # than we are in M0....
+                for i, w in enumerate (line.split (': ')[1].split()):
+                    setattr (model, 'w_' + str (i), float (w))
         if model.typ == 'site' or model.typ == 'null':
             if 'p=' in line and 'q=' in line: # only for M7 and M8
                 model.p, model.q = re.sub(\

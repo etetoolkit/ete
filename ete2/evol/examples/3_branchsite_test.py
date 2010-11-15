@@ -12,7 +12,6 @@ __version__ = "0.0"
 
 
 from ete_dev.evol import EvolTree
-import re
 
 
 tree = EvolTree ("data/S_example/measuring_S_tree.nw")
@@ -37,12 +36,11 @@ for leaf in tree:
     # any character after the dot, in model name, is not taken into account
     # for computation. (have a look in /tmp/ete2.../bsA.. directory)
     print 'running model bsA and bsA1'
-    tree.run_model('bsA.'+re.sub (' ', '_', leaf.name))
-    tree.run_model('bsA1.'+re.sub (' ', '_', leaf.name))
+    tree.run_model ('bsA.'+ leaf.name)
+    tree.run_model ('bsA1.' + leaf.name)
     print 'p-value of positive selection for sites on this branch is: '
-    ps = tree.get_most_likely ('bsA.'+re.sub (' ', '_', leaf.name),
-                                     'bsA1.'+re.sub (' ', '_', leaf.name))
-    rx = tree.get_most_likely ('bsA1.'+re.sub (' ', '_', leaf.name), 'M1')
+    ps = tree.get_most_likely ('bsA.' + leaf.name, 'bsA1.'+ leaf.name)
+    rx = tree.get_most_likely ('bsA1.'+ leaf.name), 'M1')
     print str (ps)
     print 'p-value of relaxation for sites on this branch is: '
     print str (rx)
