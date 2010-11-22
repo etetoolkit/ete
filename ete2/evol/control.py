@@ -1,6 +1,13 @@
 #!/usr/bin/python
-#        Author: Francois-Jose Serra
-# Creation Date: 2009/08/14 13:56:44
+"""
+Parameters for running codeml
+"""
+
+__author__  = "Francois-Jose Serra"
+__email__   = "francois@barrabin.org"
+__licence__ = "GPLv3"
+__version__ = "0.0"
+
 
 PARAMS = {
     'seqfile'      : 'algn',
@@ -60,6 +67,17 @@ AVAIL = {
                             ('method'      , '*'),
                             ('Malpha'      , '*'),
                             ('fix_alpha'   , '*')]},
+
+    'M3'    :  {'typ': 'site'       , 'evol': 'discrete',
+                'exec': 'codeml',
+                'allow_mark': False,
+                'changes': [('NSsites'     , 2), # can also be 3 (2 extra parameters)
+                            ('omega'       , .7),
+                            ('model'       , 3),
+                            ('alpha'       , '*'),
+                            ('method'      , '*'),
+                            ('Malpha'      , '*'),
+                            ('fix_alpha'   , '*')]},
     'M7'    :  {'typ': 'site'       , 'evol': 'relaxation',
                 'exec': 'codeml',
                 'allow_mark': False, 
@@ -87,6 +105,7 @@ AVAIL = {
                             ('method'      , '*'),
                             ('Malpha'      , '*'),
                             ('fix_alpha'   , '*')]},
+
     'fb'    :  {'typ': 'branch'     , 'evol': 'free-ratios',
                 'exec': 'codeml',
                 'allow_mark': True , 
@@ -110,6 +129,7 @@ AVAIL = {
                             ('NSsites'     , 0),
                             ('fix_omega'   , 1),
                             ('omega'       , 1)]},
+
     'bsA1'  :  {'typ': 'branch-site', 'evol': 'relaxation',
                 'exec': 'codeml',
                 'allow_mark': True , 

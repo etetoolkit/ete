@@ -6,10 +6,28 @@ the coretype PhyloNode and add some speciall features to the the node
 instances.
 """
 
-__author__  = "Francois-Jose Serra"
-__email__   = "francois@barrabin.org"
-__licence__ = "GPLv3"
-__version__ = "0.0"
+__author__     = "Francois-Jose Serra"
+__email__      = "francois@barrabin.org"
+__licence__    = "GPLv3"
+__version__    = "0.0"
+__references__ = '''
+Yang, Z., Nielsen, R., Goldman, N., & Pedersen, A. M. 2000.
+    Codon-substitution models for heterogeneous selection pressure at amino acid sites.
+    Genetics 155: 431-49.
+    Retrieved from http://www.pubmedcentral.nih.gov/articlerender.fcgi?artid=1461088&tool=pmcentrez&rendertype=abstract
+Yang, Z., & Nielsen, R. 2002.
+    Codon-substitution models for detecting molecular adaptation at individual sites along specific lineages.
+    Molecular biology and evolution 19: 908-17.
+    Retrieved from http://www.ncbi.nlm.nih.gov/pubmed/12032247
+Zhang, J., Nielsen, R., & Yang, Z. 2005.
+    Evaluation of an improved branch-site likelihood method for detecting positive selection at the molecular level.
+    Molecular biology and evolution 22: 2472-9.
+    Retrieved from http://www.ncbi.nlm.nih.gov/pubmed/16107592
+Yang, Z. 2007.
+    PAML 4: phylogenetic analysis by maximum likelihood.
+    Molecular biology and evolution 24: 1586-91.
+    Retrieved from http://www.ncbi.nlm.nih.gov/pubmed/17483113
+'''
 
 import os
 from sys import stderr
@@ -304,17 +322,29 @@ class EvolNode (PhyloNode):
         Returns pvalue of LRT between alternative model and null model.
         
         usual comparison are:
-         * altern vs null
-         -------------------
-         * M2     vs M1     -> PS on sites
+         * altern vs null model
+         ------------------------
+         * M2     vs M1     -> PS on sites (M2 prone to miss some sites)
+                               ref: Yang 2000
+         * M3     vs M0     -> test of variability among sites
          * M8     vs M7     -> PS on sites
+                               ref: Yang 2000
          * M8     vs M8a    -> RX on sites?? think so....
          * bsA    vs bsA1   -> PS on sites on specific branch
+                               ref: Zhang 2005
          * bsA    vs M1     -> RX on sites on specific branch
+                               ref: Zhang 2005
          * bsC    vs M1     -> different omegas on clades branches sites
+                               ref: Yang Nielsen 2002
          * bsD    vs M3     -> different omegas on clades branches sites
-         * b_free vs b_neut -> PS on branch
-         * b_neut vs M0     -> RX on branch?? not sure :P
+                               ref: Yang Nielsen 2002
+         * b_free vs b_neut -> foreground branch not neutral (w != 1)
+                              - RX if P<0.05 (means that w on frg=1)
+                              - PS if P>0.05 and wfrg>1
+                              - CN if P>0.05 and wfrg>1
+                               ref: Yang Nielsen 2002
+         * b_free vs M0     -> different ratio on branches
+                               ref: Yang Nielsen 2002
         '''
         altn = self.get_evol_model (altn)
         null = self.get_evol_model (null)
