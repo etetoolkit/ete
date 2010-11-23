@@ -40,7 +40,7 @@ for leaf in tree:
     tree.run_model ('bsA1.' + leaf.name)
     print 'p-value of positive selection for sites on this branch is: '
     ps = tree.get_most_likely ('bsA.' + leaf.name, 'bsA1.'+ leaf.name)
-    rx = tree.get_most_likely ('bsA1.'+ leaf.name), 'M1')
+    rx = tree.get_most_likely ('bsA1.'+ leaf.name, 'M1')
     print str (ps)
     print 'p-value of relaxation for sites on this branch is: '
     print str (rx)

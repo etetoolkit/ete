@@ -24,6 +24,7 @@
 import os
 import string
 from sys import stderr as STDERR
+from re import search
 
 def read_paml (source, obj=None):
     """ Reads a collection of sequences econded in PAML format."""
@@ -75,9 +76,11 @@ def read_paml (source, obj=None):
 
         else:
             if seq_name is None:
-                if search ('^[0-9]+ [0-9]+$', line):
+                if search ('^[0-9]+  *[0-9]+$', line):
                     continue
-                raise Exception, "Error reading sequences: Wrong format."
+                if line.startswith('\n'):
+                    continue
+                raise Exception, "Error reading sequences: Wrong format.\n"+line
             # removes all white spaces in line
             s = line.strip().replace(" ","")
 

@@ -71,9 +71,9 @@ AVAIL = {
     'M3'    :  {'typ': 'site'       , 'evol': 'discrete',
                 'exec': 'codeml',
                 'allow_mark': False,
-                'changes': [('NSsites'     , 2), # can also be 3 (2 extra parameters)
+                'changes': [('NSsites'     , 3),
                             ('omega'       , .7),
-                            ('model'       , 3),
+                            ('ncatG'       , 3),
                             ('alpha'       , '*'),
                             ('method'      , '*'),
                             ('Malpha'      , '*'),
@@ -157,11 +157,11 @@ AVAIL = {
                 'allow_mark': True , 
                 'changes': [('model'       , 3),
                             ('NSsites'     , 2),
-                            ('ncatG'       , '*')]},
+                            ('ncatG'       , 3)]},
     'bsD'   :  {'typ': 'branch-site', 'evol': 'different-ratios',
                 'exec': 'codeml',
                 'allow_mark': True , 
                 'changes': [('model'       , 3),
                             ('NSsites'     , 3),
-                            ('ncatG'       , 2)]}
+                            ('ncatG'       , 3)]}
     }

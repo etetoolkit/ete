@@ -60,4 +60,14 @@ model2.set_histface (up=False, typ='hist', col=col, lines = [1.0,0.3], col_lines
 tree.show(histfaces=['M2'])
 
 
+print 'running model M7'
+tree.run_model ('M7')
+print 'running model M8'
+tree.run_model ('M8')
+print 'running model M3'
+tree.run_model ('M3')
+
+print '\n\ncomparison of models M7 and M8, pvalue: ' + str(tree.get_most_likely ('M8','M7'))
+
+
 print 'The End.'

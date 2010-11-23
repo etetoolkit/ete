@@ -167,6 +167,8 @@ Yang, Z. 1998
 
 
     tree = EvolTree ('((((Hylobates_EDN,(Orang_EDN,(Gorilla_EDN,(Chimp_EDN,Human_EDN)))),(Macaq_EDN,(Cercopith_EDN,(Macaq2_EDN,Papio_EDN)))),(Orang_ECP,((Macaq_ECP,Macaq2_ECP),(Goril_ECP,Chimp_ECP,Human_ECP)))),OwlMonkey_EDN,Tamarin_EDN);')
+    tree.link_to_alignment ('examples/data/CladeModelOG/ECP_EDN_17.nuc',
+                            alg_format='paml')
     tree.run_model ('fb.17spe')
 
     print "The End."

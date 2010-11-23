@@ -19,6 +19,10 @@ Yang, Z., & Nielsen, R. 2002.
     Codon-substitution models for detecting molecular adaptation at individual sites along specific lineages.
     Molecular biology and evolution 19: 908-17.
     Retrieved from http://www.ncbi.nlm.nih.gov/pubmed/12032247
+Bielawski, J. P., & Yang, Z. 2004.
+    A maximum likelihood method for detecting functional divergence at individual codon sites, with application to gene family evolution.
+    Journal of molecular evolution 59: 121-32.
+    Retrieved from http://www.ncbi.nlm.nih.gov/pubmed/15383915
 Zhang, J., Nielsen, R., & Yang, Z. 2005.
     Evaluation of an improved branch-site likelihood method for detecting positive selection at the molecular level.
     Molecular biology and evolution 22: 2472-9.
@@ -243,7 +247,9 @@ class EvolNode (PhyloNode):
             marks = list(kargs['marks'])
         else:
             marks = ['#1']*len (node_ids)
-        for node in self.iter_descendants():
+        for node in self.traverse():
+            if not hasattr (node, '_nid'):
+                continue
             if node._nid in node_ids:
                 if ('.' in marks[node_ids.index(node._nid)] or \
                        match ('#[0-9][0-9]*', \
@@ -338,6 +344,7 @@ class EvolNode (PhyloNode):
                                ref: Yang Nielsen 2002
          * bsD    vs M3     -> different omegas on clades branches sites
                                ref: Yang Nielsen 2002
+                                    Bielawski 2004
          * b_free vs b_neut -> foreground branch not neutral (w != 1)
                               - RX if P<0.05 (means that w on frg=1)
                               - PS if P>0.05 and wfrg>1

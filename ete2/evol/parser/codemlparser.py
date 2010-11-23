@@ -14,6 +14,67 @@ from os.path import isfile
 
 sys.path.append('/home/francisco/franciscotools/4_codeml_pipe/')
 
+
+
+def _parse_rst (path):
+    '''
+    parse all kind of rst files
+    '''
+    typ     = None
+    classes = {}
+    sites   = {}
+    k       = 0
+    i       = 0
+    for line in open (path):
+        # get number of classes of sites
+        if line.startswith ('dN/dS '):
+            k = int (re.sub ('.* \(K=([0-9]+)\)\n', '\\1', line))
+            continue
+        # get values of omega and proportions
+        if typ is None and \
+           re.match ('^[a-z]+.*(\d+\.\d{5} *){'+ str(k) +'}', line):
+            var = re.sub (':', '', line.split('  ')[0])
+            classes [var] = re.sub ('.*  ' + '(\d+\.\d{5}) *'*k + '\n',
+                                    '\\'+' \\'.join (map (str, xrange(1, k+1))),
+                                     line).strip().split ()
+            continue
+        # parse NEB and BEB tables
+        if '(BEB)' in line :
+            k = int (re.sub ('.*for (\d+) classes .*\n', '\\1', line))
+            typ = 'BEB'
+            sites [typ] = {}
+            continue
+        if '(NEB)' in line :
+            typ = 'NEB'
+            sites [typ] = {}
+            continue
+        # at the end of some BEB/NEB tables:
+        if line.startswith ('Positively '):
+            typ = None
+        # continue if we are not in table
+        if not re.match ('^ *[0-9]+ [A-Z*] ', line) or typ == None:
+            continue
+        # line to list
+        line = re.sub ('[()+-]', '', line.strip ()).split ()
+        # get amino-acid
+        sites [typ].setdefault ('aa', []).append (line[1])
+        # get site class probability
+        for i in xrange (k):
+            sites [typ].setdefault ('p'+str(i), []).append (float (line[2+i]))
+        # get most likely site class
+        sites [typ].setdefault ('class', []).append (int (line [3 + i]))
+        # if there, get omega and error
+        try:
+            sites [typ].setdefault ('w' , []).append (float (line [4 + i]))
+        except IndexError:
+            del (sites [typ]['w'])
+        try:
+            sites [typ].setdefault ('se', []).append (float (line [5 + i]))
+        except IndexError:
+            del (sites [typ]['se'])
+    return classes, sites
+        
+
 def get_sites (path, model = ''):
     '''
     for models M1, M2, M7, M8, M8a but also branch-site models
