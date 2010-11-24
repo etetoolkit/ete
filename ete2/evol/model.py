@@ -108,7 +108,8 @@ class Model:
                                                   self.sites[bayes]['class'],
                                                   col=col),
                               header=header,
-                              errors=self.sites[bayes]['se'],
+                              errors=[] if not self.sites[bayes].has_key ('se') \
+                              else self.sites[bayes]['se'],
                               extras=extras, col_width=col_width)
         if up:
             setattr (self.properties['histface'], 'up', True)

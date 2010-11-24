@@ -380,7 +380,6 @@ class EvolNode (PhyloNode):
         # branch-site outfiles do not give specific branch info
         if model.properties ['typ']=='branch-site':
             return
-        print vars (model)
         for node in self.iter_descendants():
             node.dist = model.results ['values'][node.paml_id][evol]
             if fill:
