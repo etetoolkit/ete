@@ -91,7 +91,6 @@ I.aligned_foot.add_face(t2, 1)
 I.aligned_foot.add_face(t2, 2)
 I.aligned_foot.add_face(t2, 3)
 
-
 t = Tree()
 t.dist = 0
 t.populate(5)
@@ -101,10 +100,10 @@ t.populate(5)
 # t.render("./test.svg", layout=mylayout, img_properties=I)
 t.show(mylayout, img_properties=I)
 import cPickle
-print style
+#print style
 cPickle.dump(t, open("test.pkl", "w"))
-print "OK"
-t = cPickle.load(open("test.pkl"))
-print t
-t.show()
+#print "OK"
+#t = cPickle.load(open("test.pkl"))
+#print t
+#t.show()
 
