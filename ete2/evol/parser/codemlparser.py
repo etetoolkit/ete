@@ -1,6 +1,6 @@
 #!/usr/bin/python
 """
-parser for outfiles of codeml, rst file for sites,
+ugly parsers for outfiles of codeml, rst file for sites,
 and main outfile
 """
 
@@ -10,21 +10,19 @@ __licence__ = "GPLv3"
 __version__ = "0.0"
 
 import sys, re
-from os.path import isfile
+from warnings import warn
 
-sys.path.append('/home/francisco/franciscotools/4_codeml_pipe/')
-
-
-
-def _parse_rst (path):
+def parse_rst (path):
     '''
-    parse all kind of rst files
+    parse rst files from codeml, all site, branch-site models.
+    return 2 dicts "classes" of sites, and values at each site "sites"
     '''
     typ     = None
     classes = {}
     sites   = {}
     k       = 0
     i       = 0
+    path = '/'.join (path.split('/')[:-1]) + '/rst'
     for line in open (path):
         # get number of classes of sites
         if line.startswith ('dN/dS '):
@@ -34,9 +32,7 @@ def _parse_rst (path):
         if typ is None and \
            re.match ('^[a-z]+.*(\d+\.\d{5} *){'+ str(k) +'}', line):
             var = re.sub (':', '', line.split('  ')[0])
-            classes [var] = re.sub ('.*  ' + '(\d+\.\d{5}) *'*k + '\n',
-                                    '\\'+' \\'.join (map (str, xrange(1, k+1))),
-                                     line).strip().split ()
+            classes [var] = re.findall ('\d+\.\d{5}', line)
             continue
         # parse NEB and BEB tables
         if '(BEB)' in line :
@@ -59,8 +55,11 @@ def _parse_rst (path):
         # get amino-acid
         sites [typ].setdefault ('aa', []).append (line[1])
         # get site class probability
+        probs = []
         for i in xrange (k):
+            probs.append (float (line[2+i]))
             sites [typ].setdefault ('p'+str(i), []).append (float (line[2+i]))
+        sites [typ].setdefault ('pv', []).append (max (probs))
         # get most likely site class
         sites [typ].setdefault ('class', []).append (int (line [3 + i]))
         # if there, get omega and error
@@ -72,76 +71,16 @@ def _parse_rst (path):
             sites [typ].setdefault ('se', []).append (float (line [5 + i]))
         except IndexError:
             del (sites [typ]['se'])
-    return classes, sites
-        
 
-def get_sites (path, model = ''):
-    '''
-    for models M1, M2, M7, M8, M8a but also branch-site models
-    '''
-    check   = 0
-    vals    = False
-    valsend = False
-    psel    = False
-    lnl     = ''
-    if not isfile(path):
-        print >> sys.stderr, \
-              "Error: no rst file found at " + path
-        return None
-    for line in open ('/'.join (path.split('/')[:-1])+'/rst'):
-        l = line.strip()
-        if l.startswith('lnL = '):
-            lnl = l.split()[-1]
-            if not (vals == False or vals == True):
-                vals['lnL.'+model] = lnl
-        if l.startswith('dN/dS '):
-            check = re.sub('.*K=', '', l)
-            check = int (re.sub('\)', '', check))
-            if model == '':
-                model = (('M'+str(check-1) if check < 4 else 'M'+str(check-1)))
-        expr = 'Naive' if re.sub ('\..*', '', model) in \
-               ['M1', 'M7', 'bsD', 'bsA1'] else 'Bayes'
-        if l.startswith(expr+' Empirical Bayes'):
-            vals = True
-        elif vals == False:
-            continue
-        if l.startswith('Positively '):
-            break
-        if re.match('^ *[0-9]* [A-Z*] *', l) == None and \
-               valsend == False:
-            continue
-        psel = re.match('^ *[0-9]* [A-Z*] *', l) == None
-        valsend = True
-        if vals == True:
-            vals = {'aa.'+model:[], 'w.'+model:[],  'class.'+model:[],
-                    'pv.'+model:[], 'se.'+model:[], 'lnL.'  +model:lnl}
-        if psel == False:
-            vals['aa.'+model].append(l.split()[1])
-            if not 'bs' in model:
-                vals['w.' +model].append(re.sub('\+.*', '', l).split()[-1])
-            if model == 'M1'or model == 'M7':
-                vals['se.'+model].append('')
-            elif model == 'M2'or model == 'M8' or model == 'M8a':
-                vals['se.'+model].append(l.split()[-1])
-            classes = map (float, re.sub('\(.*', '', l).split()[2:])
-            vals['class.'+model].append(\
-                '('+\
-                re.sub('\).*', '', re.sub('.*\( *', '', l.strip()))\
-                +'/'+str (len (classes))+')')
-            vals['pv.'+model].append(str (max (classes)))
-    if vals == True:
-        print >> sys.stderr, \
-              'WARNING: rst file path not specified, site model will not' + \
-              '\n         be linked to site information.'
-        return None
-    return vals
+    return {'classes': classes,
+            'sites':sites}
 
 
 def divide_data (pamout, model):
     '''
     for multiple dataset, divide outfile.
     '''
-    for num in range (1, int (model.params['ndata'])):
+    for num in range (1, int (model.properties['params']['ndata'])):
         model.name = model.name + '_' + str(num)
         out = open (pamout + '_' + str(num), 'w')
         copy = False
@@ -157,9 +96,8 @@ def divide_data (pamout, model):
                 out.write(line)
         out.close()
         if copy == False:
-            print >> sys.stderr, \
-                  'WARNING: seems that you have no multiple dataset here...'\
-                  + '\n    trying as with only one dataset'
+            warn ('WARNING: seems that you have no multiple dataset here...'\
+                  + '\n    trying as with only one dataset')
         if model.typ == 'site':
             rst = '/'.join (pamout.split('/')[:-1])+'/rst'
             rstout = open (rst + '_' + str(num), 'w')
@@ -181,6 +119,7 @@ def divide_data (pamout, model):
             setattr (model, 'data_' + str (num),
                      parse_paml (pamout + '_' + str(num), model))
 
+
 def get_ancestor (pamout, model):
     '''
     only for fb_ancestor model, retrieves ancestral sequences also
@@ -190,12 +129,12 @@ def get_ancestor (pamout, model):
         if line.startswith ('node #'):
             pamlid, seq = re.sub ('node#([0-9]+)([A-Z]*)\n', '\\1\t\\2',
                                   re.sub (' ', '', line)).split ('\t')
-            n = model.tree.get_descendant_by_pamlid (int (pamlid))
+            n = model._tree.get_descendant_by_pamlid (int (pamlid))
             n.add_feature ('nt_sequence', seq)
         elif line.startswith ('Node #'):
             pamlid, seq = re.sub ('Node#([0-9]+)([A-Z]*)\n', '\\1\t\\2',
                                   re.sub (' ', '', line)).split ('\t')
-            n = model.tree.get_descendant_by_pamlid (int (pamlid))
+            n = model._tree.get_descendant_by_pamlid (int (pamlid))
             n.add_feature ('sequence', seq)
         elif line.startswith ('Counts of changes at sites'):
             break
@@ -207,105 +146,76 @@ def parse_paml (pamout, model):
     tested.
     '''
     # if multiple dataset in same file we divide the outfile and model.name+x
-    if not '*' in str (model.params['ndata']):
+    if not '*' in str (model.properties['params']['ndata']):
         divide_data (pamout, model)
         return
-    # STARTS here. ugly but.... ugly
-    dN, dS = None, None
-    chk = False
-    labels = []
-    for line in open(pamout):
-        line = line.strip()
-        if line.startswith('lnL'):
-            model.lnL = float (re.sub('  *.*', '', re.sub('.*: *'  , '', line)))
-            model.np  = int   (re.sub('\).*' , '', re.sub('.*np: *', '', line)))
-        elif hasattr (model, 'lnL') and labels == []:
-            if re.search ('  *([0-9]+\.\.[0-9]+  *){2}', line):
-                labels = line.split()
-        elif labels != [] and not hasattr (model, 'kappa'):
-            _get_paml_labels (model, model.tree, labels, line, pamout)
-            model.kappa = line.split()[len (labels)]
-        elif line.startswith ('dS tree:'):
-            dS, dN = True, True
-        elif dS == True and line.startswith('(') and line.endswith(');'):
-            paml_ids = re.sub (
-                '[\(\)A-Za-z_:\,\-;0-9]*\[&&NHX:paml_id=([0-9]+)\][;]*', ' \\1',
-                model.tree.write(features=['paml_id'], format=9)).split()
-            dS = re.sub ('[A-Za-z0-9_\,\-;\(\)\.]*\: ([0-9]+\.[0-9]+)[\,\);]*',
-                         ' \\1', line).split()
-        elif dN == True and line.startswith('(') and line.endswith(');'):
-            dN = re.sub ('[A-Za-z0-9_\,\-;\(\)\.]*\: ([0-9]+\.[0-9]+)[\,\);]*',
-                         ' \\1', line).split()
-            for i in xrange (len (paml_ids)-1):
-                node = model.tree.search_nodes(paml_id=int (paml_ids[i]))[0]
-                node.add_feature ('dN', float (dN[i]))
-                node.add_feature ('dS', float (dS[i]))
-        elif line.startswith('dN & dS for'):
-            chk = True
-        elif '..' in line and chk:
-            vals = line.split()
-            node = model.tree.search_nodes (
-                paml_id=int (vals[0].split('..')[1]))[0]
-            node.add_feature ('SEdN',
-                              float (vals[vals.index ('dN') + 4])\
-                              if 'dN' in line else None)
-            node.add_feature ('SEdS',
-                              float (vals[vals.index ('dS') + 4])\
-                              if 'dS' in line else None)
-            if not hasattr (model.tree, 'N') and not filter(
-                lambda x: not hasattr(x, 'SEdN'), model.tree.get_descendants()):
-                model.tree.N = vals[2]
-                model.tree.S = vals[3]
-                chk = False
-        elif not hasattr (model.tree, 'codonFreq'):
-            if line.startswith('Codon frequencies under model'):
-                model.tree.codonFreq = []
+    vars (model)['results'] = {'values': {}}
+    # starts parsing
+    passe = True
+    for line in open (pamout):
+        if line is '\n':
+            continue
+        if line.startswith('Codon frequencies under model'):
+            model.results ['codonFreq'] = []
+            passe = False
+            continue
+        if passe:
+            continue
+        ######################
+        # start serious staff
+        # codon frequency
+        line = line.rstrip()
+        if line.startswith ('  0.'):
+            line = map (float, re.findall ('\d\.\d+', line))
+            model.results ['codonFreq'] += [line]
+            continue
+        # lnL and number of parameters
+        if line.startswith ('lnL'):
+            model.np, model.lnL = re.sub ('.* +np: *(\d+)\): +(-\d+\.\d+).*',
+                                          '\\1 \\2', line).split()
+            model.np  = int   (model.np)
+            model.lnL = float (model.lnL)
+            continue
+        # get labels of internal branches
+        if line.count('..') >= 2:
+            labels = re.findall ('\d+\.\.\d+', line + ' ')
+            _get_paml_labels (model._tree, labels, pamout)
+            continue
+        # retrieve kappa
+        if line.startswith ('kappa '):
+            model.results ['kappa'] = float (re.sub ('.*(\d+\.\d+).*',
+                                                     '\\1', line))
+        # retrieve dS dN t w N S and if present, errors. from summary table
+        if line.count('..') == 1 and line.startswith (' '):
+            if not re.match (' +\d+\.\.\d+ +\d\.\d+ ', line):
                 continue
-            if line.startswith('  0.'):
-                line = re.sub('  ([0-9.]*)  ([0-9.]*)  ([0-9.]*)  ([0-9.]*)', \
-                              '\\1 \\2 \\3 \\4', line)
-                model.tree.codonFreq += [line.split()]
-        if model.typ == 'branch':
-            if line.startswith('w (dN'): # than we are in M0....
-                for i, w in enumerate (line.split (': ')[1].split()):
-                    setattr (model, 'w_' + str (i), float (w))
-        if model.typ == 'site' or model.typ == 'null':
-            if 'p=' in line and 'q=' in line: # only for M7 and M8
-                model.p, model.q = re.sub(\
-                    '.*p=  *([0-9]+\.[0-9]+)  *q=  *([0-9]+\.[0-9]+)'\
-                    , '\\1 \\2', line).split()
-            if line.startswith('omega (dN'): # than we are in M0....
-                model.p0 = '1.0'
-                line = re.sub('^omega \(dN/dS\) = ', 'w: ', line)
-            if line.startswith('p: '):
-                for i in range (0, len (line.split()[1:])):
-                    setattr (model, 'p'+str(i), line.split()[i+1])
-            elif line.startswith('w: '):
-                while re.match('.*[0-9][0-9]*\.[0-9]{5}[0-9].*', line)!=None:
-                    line = re.sub('([0-9][0-9]*\.[0-9]{5})([0-9].*)', \
-                                  '\\1 \\2', line)
-                for i in range (0, len (line.split()[1:])):
-                    setattr (model, 'w'+str(i), line.split()[i+1])
-        if model.typ == 'branch-site':
-            if line.startswith ('site class'):
-                vals = line.split()[2:]
-            elif line.startswith ('proportion '):
-                for n, v in enumerate (vals):
-                    setattr (model, 'p' + v, line.split() [n+1])
-            elif line.startswith('background w '):
-                for n, v in enumerate (vals):
-                    setattr (model, 'wbkg' + v, line.split() [n+1])
-            elif line.startswith('foreground w'):
-                for n, v in enumerate (vals):
-                    setattr (model, 'wfrg' + v, line.split() [n+1])
+            _get_values (model, line)
+            continue
 
-def _get_paml_labels (model, tree, paml_labels, line, pamout):
+def _get_values(model, line):
+    '''
+    just to ligther main parser
+    '''
+    vals = line.split()
+    # store values under paml_id
+    paml_id = int (vals[0].split('..')[1])
+    model.results ['values'][paml_id] = {
+        'bL'  : float (vals [1]),
+        'N'   : float (vals [2]),
+        'S'   : float (vals [3]),
+        'w'   : float (vals [4]),
+        'dN'  : float (vals [5]),
+        'dS'  : float (vals [6]),
+        'SEdN': float (vals[vals.index ('dN') + 4]) \
+        if 'dN' in line else None,
+        'SEdS': float (vals[vals.index ('dS') + 4]) \
+        if 'dS' in line else None
+        }
+
+def _get_paml_labels (tree, paml_labels, pamout):
     '''
      * check paml labels
-     * retrieve w and bL values
     '''
-    bL = line.split()[:len (paml_labels)]
-    w  = line.split()[len (paml_labels)+1:]
     try:
         relations = sorted (map (lambda x: map( int, x.split('..')),
                                  paml_labels),
@@ -317,22 +227,14 @@ def _get_paml_labels (model, tree, paml_labels, line, pamout):
         try:
             node = tree.search_nodes(paml_id=rel[1])[0]
             if int (node.up.paml_id) != int (rel[0]):
-                print >> sys.stderr, \
-                      'WARNING: labelling does not correspond!!\n' + \
-                      '         Getting them from ' + pamout
+                warn ('WARNING: labelling does not correspond!!\n' + \
+                      '         Getting them from ' + pamout)
                 get_labels_from_paml(tree, relations, pamout)
                 break
         except IndexError:
-            print >> sys.stderr, \
-                  'ERROR: labelling does not correspond!!\n' + \
-                  '       Getting them from ' + pamout
+            warn ('ERROR: labelling does not correspond!!\n' + \
+                  '       Getting them from ' + pamout)
             get_labels_from_paml(tree, relations, pamout)
-    #####
-    for lab in paml_labels:
-        node = tree.search_nodes(paml_id=int (lab.split('..')[1]))[0]
-        if model.name.startswith ('fb'):
-            node.add_feature ('w', float (w.pop(0)))
-        node.add_feature ('bL', float (bL.pop(0)))
 
 def get_labels_from_paml (tree, relations, pamout):
     '''
@@ -342,8 +244,8 @@ def get_labels_from_paml (tree, relations, pamout):
     for line in open (pamout, 'r').readlines():
         # label leaves
         if re.search ('^#[0-9][0-9]*:', line):
-            nam, paml_id = re.sub ('#([0-9]+): (.*)', '\\2\t\\1',
-                                   line.strip()).split('\t')
+            nam, paml_id = re.sub ('#([0-9]+): (.*)', '\\2 \\1',
+                                   line.strip()).split()
             tree.search_nodes (name=nam)[0].add_feature ('paml_id',
                                                          int (paml_id))
         if line.startswith ('Sums of codon'):
@@ -353,4 +255,4 @@ def get_labels_from_paml (tree, relations, pamout):
         if n.is_root():
             continue
         n.up.paml_id = filter (lambda x: x[1]==n.paml_id, relations)[0][0]
-        
+

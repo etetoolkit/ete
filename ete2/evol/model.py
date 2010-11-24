@@ -12,7 +12,7 @@ __version__ = "0.0"
 from re                   import sub
 from sys                  import stderr
 from ete_dev.evol.control import PARAMS, AVAIL
-from ete_dev.evol.parser   import parse_paml, get_sites, get_ancestor
+from ete_dev.evol.parser  import parse_paml, parse_rst, get_ancestor
 
 class Model:
     '''Evolutionnary model.
@@ -23,27 +23,25 @@ class Model:
         "omega" stands for starting value of omega, in the computation. Qs
         Zihen Yang says, it is good to try with different starting values.
         '''
-        self.ctrl_string = ''
-        self.tree        = tree
-        self.evol        = None
-        self.changes     = {}
-        self.name, args  = check_name(model)
+        self._tree      = tree
+        self.name, args = check_name(model)
+        self.sites      = None
+        self.classes    = None
+        self.lnL        = None
+        self.np         = None
+        self.properties = {}
         for a, b in args.items():
-            setattr (self, a, b)
-        self.params = dict (PARAMS.items())
+            self.properties [a] = b
+        params = dict (PARAMS.items ())
         for key, arg in kwargs.items():
-            if not self.params.has_key(key):
+            if not params.has_key (key):
                 print >> stderr, \
                       'WARNING: unknown param %s, will not be used'% (key)
                 continue
             if key == 'gappy':
                 arg = not arg
-            self.params[key] = arg
-        if self.evol == 'posistive-selection' \
-               and self.params['omega'] < 1:
-            self.params['omega'] += 1
-        self._change_params()
-        self.histface = None
+            params[key] = arg
+        self._change_params (params)
         if path:
             self._load (path)
 
@@ -52,17 +50,21 @@ class Model:
         parse outfiles and load in model object
         '''
         parse_paml (path, self)
-        if self.typ == 'site':
-            setattr (self, 'sites', get_sites (path))
-        if self.typ == 'branch_ancestor':
+        # parse rst file if site or branch-site model
+        if 'site' in self.properties['typ']:
+            # sites and classes attr
+            for key, val in parse_rst (path).iteritems():
+                setattr (self, key, val)
+        if 'ancestor' in self.properties['typ']:
             get_ancestor (path, self)
         
-    def _change_params(self):
+    def _change_params(self, params):
         '''
         change model specific values
         '''
-        for key, change in self.changes:
-            self.params[key] = change
+        for key, change in self.properties ['changes']:
+            params[key] = change
+        self.properties ['params'] = params
 
     def set_histface (self, up=True, lines=[1.0], header='',
                       col_lines=['grey'], typ='hist',
@@ -97,19 +99,21 @@ class Model:
             return None
         if header == '':
             header = 'Omega value for sites under %s model' % (self.name)
-        ldic = self.sites
-        self.histface = face(values = ldic['w.' + self.name], 
-                             lines = lines, col_lines=col_lines,
-                             colors=colorize_rst(ldic['pv.'+self.name],
-                                                 self.name,
-                                                 ldic['class.'+self.name],
-                                                 col=col),
-                             header=header, errors=ldic['se.'+self.name],
-                             extras=extras, col_width=col_width)
+        typ = 'BEB' if self.sites.has_key ('BEB') else 'NEB'
+        self.properties ['histface'] = \
+                        face (values = self.sites [typ]['w'], 
+                              lines = lines, col_lines=col_lines,
+                              colors=colorize_rst(self.sites [typ]['pv'],
+                                                  self.name,
+                                                  self.sites[typ]['class'],
+                                                  col=col),
+                              header=header,
+                              errors=self.sites[typ]['se'],
+                              extras=extras, col_width=col_width)
         if up:
-            setattr (self.histface, 'up', True)
+            setattr (self.properties['histface'], 'up', True)
         else:
-            setattr (self.histface, 'up', False)
+            setattr (self.properties['histface'], 'up', False)
 
     def get_ctrl_string(self, outfile=None):
         '''
@@ -118,17 +122,19 @@ class Model:
         '''
         string = ''
         for p in ['seqfile', 'treefile', 'outfile']:
-            string += '%15s = %s\n' % (p, str(self.params[p]))
+            string += '%15s = %s\n' % (p, str(self.properties ['params'][p]))
         string += '\n'
-        for p in sorted (self.params.keys(), cmp=lambda x, y: \
-                        cmp(sub('fix_', '', x.lower()), \
+        for p in sorted (self.properties ['params'].keys(), cmp=lambda x, y: \
+                        cmp(sub('fix_', '', x.lower()),
                             sub ('fix_', '', y.lower()))):
             if p in ['seqfile', 'treefile', 'outfile']:
                 continue
-            if str(self.params[p]).startswith('*'):
-                string += ' *'+'%13s = %s\n' % (p, str(self.params[p])[1:])
+            if str(self.properties ['params'][p]).startswith('*'):
+                string += ' *'+'%13s = %s\n' \
+                          % (p, str(self.properties ['params'][p])[1:])
             else:
-                string += '%15s = %s\n' % (p, str (self.params[p]))
+                string += '%15s = %s\n' % (p,
+                                           str (self.properties ['params'][p]))
         if outfile == None:
             return string
         else:
@@ -137,7 +143,6 @@ class Model:
 def check_name(model):
     '''
     check that model name corresponds to opne of the availables
-    TODO: accept personal models
     '''
     if AVAIL.has_key (sub ('\..*', '', model)):
         return model, AVAIL [sub ('\..*', '', model)]

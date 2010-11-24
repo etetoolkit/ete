@@ -34,7 +34,8 @@ Yang, Z. 2007.
 '''
 
 import os
-from sys import stderr
+from sys      import stderr
+from warnings import warn
 
 from ete_dev               import PhyloNode
 from ete_dev               import SeqGroup
@@ -56,7 +57,7 @@ class EvolNode (PhyloNode):
     """ Re-implementation of the standart TreeNode instance. It adds
     attributes and methods to work with phylogentic trees. """
 
-    def __init__ (self, newick=None, alignment=None, alg_format="fasta", \
+    def __init__ (self, newick=None, alignment=None, alg_format="fasta",
                  sp_naming_function=_parse_species):
         '''
         freebranch: path to find codeml output of freebranch model.
@@ -117,7 +118,7 @@ class EvolNode (PhyloNode):
                     return n
             if self.paml_id == idname:
                 return self
-        self.__dict__['get_descendant_by_pamlid'] = get_descendant_by_pamlid
+        vars (self)['get_descendant_by_pamlid'] = get_descendant_by_pamlid
 
     def __write_algn(self, fullpath):
         """
@@ -140,7 +141,7 @@ class EvolNode (PhyloNode):
         # write tree file
         self.__write_algn (fullpath + '/algn')
         self.write (outfile=fullpath+'/tree', 
-                    format = (10 if model.allow_mark else 9))
+                    format = (10 if model.properties['allow_mark'] else 9))
         # write algn file
         ## MODEL MODEL MDE
         if ctrl_string == '':
@@ -152,9 +153,11 @@ class EvolNode (PhyloNode):
         proc = Popen([self.codemlpath, 'tmp.ctl'], stdout=PIPE)
         run, err = proc.communicate()
         if err is not None:
-            print >> stderr, err + \
-                  "ERROR: codeml not found!!!\n" + \
-                  "       define your variable EvolTree.codemlpath"
+            warn ("ERROR: codeml not found!!!\n" + \
+                  "       define your variable EvolTree.codemlpath")
+            return 1
+        if 'error' in run:
+            warn ("ERROR: inside codeml!!\n" + run)
             return 1
         os.chdir(hlddir)
         if keep:
@@ -170,11 +173,9 @@ class EvolNode (PhyloNode):
     
     WARNING: this functionality needs to create a working directory in "rep"
     WARNING: you need to have codeml in your path
-    TODO: add feature lnL to nodes for branch tests. e.g.: "n.add_features"
-    TODO: add possibility to avoid local minima of lnL by rerunning with other
     starting values of omega, alpha etc...
     ''' % ('['+', '.join (PARAMS.keys())+']\n', '\n'.join (map (lambda x: \
-    '           * %-9s model of %-18s at  %-15s level.' % \
+    '           * %-9s %-18s model at  %-15s level.' % \
     ('"%s"' % (x), AVAIL[x]['evol'], AVAIL[x]['typ']), \
     sorted (sorted (AVAIL.keys()), cmp=lambda x, y : \
     cmp(AVAIL[x]['typ'], AVAIL[y]['typ']), reverse=True))))
@@ -204,13 +205,15 @@ class EvolNode (PhyloNode):
                 try:
                     mdl = self.get_evol_model (hist)
                 except AttributeError:
-                    print >> stderr, 'model %s not computed' % (hist)
-                if mdl.histface is None:
+                    warn ('model %s not computed' % (hist))
+                if not mdl.properties.has_key ('histface'):
                     mdl.set_histface()
-                if mdl.histface.up:
-                    img_properties.aligned_header.add_face (mdl.histface, 1)
+                if mdl.properties['histface'].up:
+                    img_properties.aligned_header.add_face (\
+                        mdl.properties['histface'], 1)
                 else:
-                    img_properties.aligned_foot.add_face (mdl.histface, 1)
+                    img_properties.aligned_foot.add_face (\
+                        mdl.properties['histface'], 1)
         super(EvolTree, self).show(layout=layout,
                                      img_properties=img_properties)
 
@@ -225,7 +228,7 @@ class EvolNode (PhyloNode):
                 try:
                     mdl = self.get_evol_model (hist)
                 except AttributeError:
-                    print >> stderr, 'model %s not computed' % (hist)
+                    warn ('model %s not computed' % (hist))
                 if mdl.histface is None:
                     mdl.set_histface()
                 if mdl.histface.up:
@@ -255,9 +258,8 @@ class EvolNode (PhyloNode):
                        match ('#[0-9][0-9]*', \
                               marks[node_ids.index(node._nid)])==None)\
                               and not kargs.has_key('silent') and not verbose:
-                    print >> stderr, \
-                          'WARNING: marks should be "#" sign directly '+\
-                    'followed by integer\n' + self.mark_tree.func_doc
+                    warn ('WARNING: marks should be "#" sign directly '+\
+                          'followed by integer\n' + self.mark_tree.func_doc)
                 node.add_feature('mark', ' '+marks[node_ids.index(node._nid)])
             elif not 'mark' in node.features:
                 node.add_feature('mark', '')
@@ -280,10 +282,10 @@ class EvolNode (PhyloNode):
                  +1)  if '__' in model.name else 0)
         self._models[model.name] = model
         if not os.path.isfile(path):
-            print >> stderr, "ERROR: not a file: "+path
+            warn ("ERROR: not a file: " + path)
             return 1
         if len (self._models) == 1:
-            self.change_dist_to_evol ('bL')
+            self.change_dist_to_evol ('bL', model, fill=True)
 
         def get_evol_model (modelname):
             '''
@@ -292,10 +294,10 @@ class EvolNode (PhyloNode):
             try:
                 return self._models [modelname]
             except KeyError:
-                print >> stderr, "Model %s not found." % (modelname)
+                warn ("Model %s not found." % (modelname))
                 
         if not hasattr (self, "get_evol_model"):
-            self.__dict__["get_evol_model"] = get_evol_model
+            vars (self)["get_evol_model"] = get_evol_model
 
     def write (self, features=None, outfile=None, format=10):
         """ Returns the newick-PAML representation of this node
@@ -356,8 +358,7 @@ class EvolNode (PhyloNode):
         altn = self.get_evol_model (altn)
         null = self.get_evol_model (null)
         if null.np > altn.np:
-            print >> stderr, \
-                  "first model shoul be the alternative model, change the order\n"
+            warn ("first model should be the alternative, change the order")
             return 1.0
         try:
             if hasattr (altn, 'lnL') and hasattr (null, 'lnL'):
@@ -367,18 +368,21 @@ class EvolNode (PhyloNode):
             else:
                 return 1
         except KeyError:
-            print >> stderr, \
-                  "at least one of %s or %s, was not calculated\n"\
-                  % (altn.name, null.name)
-            exit(self.get_most_likely.func_doc)
+            warn ("at least one of %s or %s, was not calculated" % (altn.name,
+                                                                    null.name))
+            exit (self.get_most_likely.func_doc)
 
-    def change_dist_to_evol (self, evol):
+    def change_dist_to_evol (self, evol, model, fill=False):
         '''
         change dist/branch length of the tree to a given evolutionnary
         varaiable (dN, dS, w or bL), default is bL.
         '''
         for node in self.iter_descendants():
-            node.dist = node.__dict__[evol]
+            node.dist = model.results ['values'][node.paml_id][evol]
+            if fill:
+                for e in ['dN', 'dS', 'w', 'bL']:
+                    node.add_feature (e,
+                                      model.results ['values'][node.paml_id][e])
 
 
 # cosmetic alias

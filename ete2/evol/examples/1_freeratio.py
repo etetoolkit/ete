@@ -35,11 +35,11 @@ function run_model:
 '''
 print tree.run_model.__doc__ +'\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++'
 
-tree.run_model ('fb')
+tree.run_model ('fb.example')
 
 raw_input ('free-ratio model runned, all results are store in a Model object.')
 
-fb = tree.get_evol_model('fb')
+fb = tree.get_evol_model('fb.example')
 
 print 'Have a look to the parameters used to run this model on codeml: '
 print fb.get_ctrl_string()

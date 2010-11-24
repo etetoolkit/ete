@@ -129,10 +129,9 @@ def main():
     print '\n\n Now testing Models according to Yang papers:'
     print '----------------------------------------------\n'
     print 'Lysosyme:'
-    tree = EvolTree ('')
+    tree = EvolTree ()
 
-    print ﻿'''
-Yang, Z. 1998
+    print '''Yang, Z. 1998
     Likelihood ratio tests for detecting positive selection and application to primate lysozyme evolution
     Molecular biology and evolution 15: 568-73
     Retrieved from http://www.ncbi.nlm.nih.gov/pubmed/9580986'''

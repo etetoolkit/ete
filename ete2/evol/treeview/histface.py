@@ -68,8 +68,8 @@ def colorize_rst(vals, winner, classes,col=None):
            'PS+': 'red'} if col==None else col
     colors = []
     for i in range (0, len (vals)):
-        class1 = int(sub('\/.*', '', sub('\(', '', classes[i])))
-        class2 = int(sub('.*\/', '', sub('\)', '', classes[i])))
+        class1 = classes[i] #int(sub('\/.*', '', sub('\(', '', classes[i])))
+        class2 = max (classes)# int(sub('.*\/', '', sub('\)', '', classes[i])))
         pval = float (vals[i])
         if pval < 0.95:
             colors.append(col['NS'])
@@ -356,7 +356,7 @@ class ErrorLineFace (faces.Face):
         else:
             self.max = lines[0]*2
         self.values = map (lambda x: float(x)/self.max*height, values)
-        self.errors = map (lambda x: float('0'+x)/self.max*height, errors)
+        self.errors = map (lambda x: float('0'+str (x))/self.max*height, errors)
         if colors == ['white']:
             colors = colors*len(values)
         self.colors = colors
@@ -524,7 +524,7 @@ class ErrorLineProtamineFace (faces.Face):
         else:
             self.max = lines[0]*2
         self.values = map (lambda x: float(x)/self.max*height, values)
-        self.errors = map (lambda x: float('0'+x)/self.max*height, errors)
+        self.errors = map (lambda x: float('0'+str (x))/self.max*height, errors)
         if colors == ['white']:
             colors = colors*len(values)
         self.colors = colors
