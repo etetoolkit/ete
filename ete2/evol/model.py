@@ -99,16 +99,16 @@ class Model:
             return None
         if header == '':
             header = 'Omega value for sites under %s model' % (self.name)
-        typ = 'BEB' if self.sites.has_key ('BEB') else 'NEB'
+        bayes = 'BEB' if self.sites.has_key ('BEB') else 'NEB'
         self.properties ['histface'] = \
-                        face (values = self.sites [typ]['w'], 
+                        face (values = self.sites [bayes]['w'], 
                               lines = lines, col_lines=col_lines,
-                              colors=colorize_rst(self.sites [typ]['pv'],
+                              colors=colorize_rst(self.sites [bayes]['pv'],
                                                   self.name,
-                                                  self.sites[typ]['class'],
+                                                  self.sites[bayes]['class'],
                                                   col=col),
                               header=header,
-                              errors=self.sites[typ]['se'],
+                              errors=self.sites[bayes]['se'],
                               extras=extras, col_width=col_width)
         if up:
             setattr (self.properties['histface'], 'up', True)

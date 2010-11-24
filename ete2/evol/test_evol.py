@@ -17,7 +17,7 @@ from ete_dev.evol.treeview.layout import evol_clean_layout
 from ete_dev      import faces, TreeImageProperties
 from random       import random as rnd
 from model        import Model
-from copy         import copy
+from copy         import deepcopy
 
 WRKDIR = 'examples/data/protamine/PRM1/'
 
@@ -41,10 +41,10 @@ def main():
     print tree.get_most_likely ('M2','M1')
     print 'pv of LRT M8 vs M7: ',
     print tree.get_most_likely ('M8','M7')
-    M2a = copy (tree.get_evol_model('M2'))
-    M2b = copy (tree.get_evol_model('M2'))
-    M2c = copy (tree.get_evol_model('M2'))
-    M2d = copy (tree.get_evol_model('M2'))
+    M2a = deepcopy (tree.get_evol_model('M2'))
+    M2b = deepcopy (tree.get_evol_model('M2'))
+    M2c = deepcopy (tree.get_evol_model('M2'))
+    M2d = deepcopy (tree.get_evol_model('M2'))
     tree._models['M2.a'] = M2a
     tree._models['M2.b'] = M2b
     tree._models['M2.c'] = M2c
@@ -55,6 +55,7 @@ def main():
     col2 = {'NS' : 'white', 'RX' : 'white',
             'RX+': 'white', 'CN' : 'white',
             'CN+': 'white', 'PS' : 'white', 'PS+': 'white'}
+    print tree._models
     M2a.set_histface (up=False, typ='line', lines = [1.0,0.3], col_lines=['red','grey'], header='ugliest face')
     M2b.set_histface (up=False, typ='error', col=col2, lines = [2.5, 1.0, 4.0, 0.5], header = 'Many lines, error boxes, background black',
                       col_lines=['orange', 'yellow', 'red', 'cyan'])
@@ -78,10 +79,10 @@ def main():
     I.force_topology             = False
     I.tree_width                 = 200
     I.draw_aligned_faces_as_grid = True
-    I.draw_guidelines = True
-    I.guideline_type = 2
-    I.guideline_color = "#CCCCCC"
-    I.complete_branch_lines = True
+    I.draw_guidelines            = True
+    I.guideline_type             = 2
+    I.guideline_color            = "#CCCCCC"
+    I.complete_branch_lines      = True
     for n in sorted (tree.get_descendants()+[tree],
                      key=lambda x: x.paml_id):
         if n.is_leaf(): continue
