@@ -9,8 +9,9 @@ __email__   = "francois@barrabin.org"
 __licence__ = "GPLv3"
 __version__ = "0.0"
 
-from re                   import sub
-from sys                  import stderr
+from re       import sub
+from warnings import warn
+
 from ete_dev.evol.control import PARAMS, AVAIL
 from ete_dev.evol.parser  import parse_paml, parse_rst, get_ancestor
 
@@ -21,22 +22,28 @@ class Model:
     def __init__(self, model, tree, path=None, **kwargs):
         '''
         "omega" stands for starting value of omega, in the computation. Qs
-        Zihen Yang says, it is good to try with different starting values.
+        Zihen Yang says, it is good to try with different starting values...
+        model linked to tree by _tree variable
+        results of calculation are stored in dictionnaries:
+           * branches: w dN dS bL by mean of their paml_id
+           * sites   : values at each site.
+           * classes : classes of sites and proportions
+           * stats   : lnL number of parameters kappa value
+                       and codon frequencies stored here.
         '''
         self._tree      = tree
         self.name, args = check_name(model)
         self.sites      = None
         self.classes    = None
-        self.lnL        = None
-        self.np         = None
+        self.branches   = {}
+        self.stats      = {}
         self.properties = {}
         for a, b in args.items():
             self.properties [a] = b
         params = dict (PARAMS.items ())
         for key, arg in kwargs.items():
             if not params.has_key (key):
-                print >> stderr, \
-                      'WARNING: unknown param %s, will not be used'% (key)
+                warn ('WARNING: unknown param %s, will not be used'% (key))
                 continue
             if key == 'gappy':
                 arg = not arg
@@ -57,6 +64,8 @@ class Model:
                 setattr (self, key, val)
         if 'ancestor' in self.properties['typ']:
             get_ancestor (path, self)
+        vars (self) ['lnL'] = self.stats ['lnL']
+        vars (self) ['np']  = self.stats ['np']
         
     def _change_params(self, params):
         '''
@@ -65,7 +74,7 @@ class Model:
         for key, change in self.properties ['changes']:
             params[key] = change
         self.properties ['params'] = params
-
+        
     def set_histface (self, up=True, lines=[1.0], header='',
                       col_lines=['grey'], typ='hist',
                       col=None, extras=[''], col_width=11):
@@ -76,13 +85,13 @@ class Model:
            * hist: to draw histogram.
            * line: to draw plot.
         You can define color scheme by passing a diccionary, default is:
-            col = {'NS' : 'grey',
-                   'RX' : 'green',
-                   'RX+': 'green',
-                   'CN' : 'cyan',
-                   'CN+': 'blue',
+            col = {'NS' : 'grey'  ,
+                   'RX' : 'green' ,
+                   'RX+': 'green' ,
+                   'CN' : 'cyan'  ,
+                   'CN+': 'blue'  ,
                    'PS' : 'orange',
-                   'PS+': 'red'}
+                   'PS+': 'red'    }
         '''
         from ete_dev.evol import colorize_rst
         if typ   == 'hist':
@@ -94,8 +103,7 @@ class Model:
         elif typ == 'protamine':
             from ete_dev.evol import ErrorLineProtamineFace as face
         if self.sites == None:
-            print >> stderr, \
-                  "WARNING: model %s not computed." % (self.name)
+            warn ("WARNING: model %s not computed." % (self.name))
             return None
         if header == '':
             header = 'Omega value for sites under %s model' % (self.name)
@@ -108,13 +116,13 @@ class Model:
                                                   self.sites[bayes]['class'],
                                                   col=col),
                               header=header,
-                              errors=[] if not self.sites[bayes].has_key ('se') \
+                              errors=[] if not self.sites[bayes].has_key ('se')\
                               else self.sites[bayes]['se'],
                               extras=extras, col_width=col_width)
         if up:
-            setattr (self.properties['histface'], 'up', True)
+            setattr (self.properties ['histface'], 'up', True)
         else:
-            setattr (self.properties['histface'], 'up', False)
+            setattr (self.properties ['histface'], 'up', False)
 
     def get_ctrl_string(self, outfile=None):
         '''

@@ -73,10 +73,10 @@ print tree.get_most_likely ('b_free.234', 'b_neut.234')
 
 print 'value of omega in marked branch (frg branch):'
 b_free = tree.get_evol_model ('b_free.234')
-print b_free.results['values'][1]['w']
+print b_free.branches[1]['w']
 
 print 'and value of omega for background: '
-print b_free.results['values'][2]['w']
+print b_free.branches[2]['w']
 
 print 'we will now run 2 branch models over this tree, one letting the omega \nvalue of foregroung species to be free, and the other fixing it at one.'
 

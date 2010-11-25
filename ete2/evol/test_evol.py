@@ -25,6 +25,7 @@ def main():
     """
     main function
     """
+
     print 'link to already runned data.'
     tree = EvolTree (WRKDIR + 'tree.nw')
     tree.workdir = 'examples/data/protamine/PRM1/paml/'

@@ -32,6 +32,8 @@ def parse_rst (path):
         if typ is None and \
            re.match ('^[a-z]+.*(\d+\.\d{5} *){'+ str(k) +'}', line):
             var = re.sub (':', '', line.split('  ')[0])
+            if var.startswith ('p'):
+                var = 'proportions'
             classes [var] = re.findall ('\d+\.\d{5}', line)
             continue
         # parse NEB and BEB tables
@@ -73,7 +75,7 @@ def parse_rst (path):
             del (sites [typ]['se'])
 
     return {'classes': classes,
-            'sites':sites}
+            'sites' :sites}
 
 
 def divide_data (pamout, model):
@@ -149,14 +151,13 @@ def parse_paml (pamout, model):
     if not '*' in str (model.properties['params']['ndata']):
         divide_data (pamout, model)
         return
-    vars (model)['results'] = {'values': {}}
     # starts parsing
     passe = True
     for line in open (pamout):
         if line is '\n':
             continue
         if line.startswith('Codon frequencies under model'):
-            model.results ['codonFreq'] = []
+            model.stats ['codonFreq'] = []
             passe = False
             continue
         if passe:
@@ -167,14 +168,14 @@ def parse_paml (pamout, model):
         line = line.rstrip()
         if line.startswith ('  0.'):
             line = map (float, re.findall ('\d\.\d+', line))
-            model.results ['codonFreq'] += [line]
+            model.stats ['codonFreq'] += [line]
             continue
         # lnL and number of parameters
         if line.startswith ('lnL'):
-            model.np, model.lnL = re.sub ('.* +np: *(\d+)\): +(-\d+\.\d+).*',
-                                          '\\1 \\2', line).split()
-            model.np  = int   (model.np)
-            model.lnL = float (model.lnL)
+            line = re.sub ('.* np: *(\d+)\): +(-\d+\.\d+).*',
+                           '\\1 \\2', line)
+            model.stats ['np' ] = int   (line.split()[0])
+            model.stats ['lnL'] = float (line.split()[1])
             continue
         # get labels of internal branches
         if line.count('..') >= 2:
@@ -183,8 +184,8 @@ def parse_paml (pamout, model):
             continue
         # retrieve kappa
         if line.startswith ('kappa '):
-            model.results ['kappa'] = float (re.sub ('.*(\d+\.\d+).*',
-                                                     '\\1', line))
+            model.stats ['kappa'] = float (re.sub ('.*(\d+\.\d+).*',
+                                                   '\\1', line))
         # retrieve dS dN t w N S and if present, errors. from summary table
         if line.count('..') == 1 and line.startswith (' '):
             if not re.match (' +\d+\.\.\d+ +\d\.\d+ ', line):
@@ -199,17 +200,15 @@ def _get_values(model, line):
     vals = line.split()
     # store values under paml_id
     paml_id = int (vals[0].split('..')[1])
-    model.results ['values'][paml_id] = {
+    model.branches [paml_id] = {
         'bL'  : float (vals [1]),
         'N'   : float (vals [2]),
         'S'   : float (vals [3]),
         'w'   : float (vals [4]),
         'dN'  : float (vals [5]),
         'dS'  : float (vals [6]),
-        'SEdN': float (vals[vals.index ('dN') + 4]) \
-        if 'dN' in line else None,
-        'SEdS': float (vals[vals.index ('dS') + 4]) \
-        if 'dS' in line else None
+        'SEdN': float (vals[vals.index ('dN') + 4]) if 'dN' in line else None,
+        'SEdS': float (vals[vals.index ('dS') + 4]) if 'dS' in line else None
         }
 
 def _get_paml_labels (tree, paml_labels, pamout):

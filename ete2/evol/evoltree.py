@@ -34,12 +34,12 @@ Yang, Z. 2007.
 '''
 
 import os
-from sys      import stderr
 from warnings import warn
 
 from ete_dev               import PhyloNode
 from ete_dev               import SeqGroup
 from ete_dev.evol          import evol_layout
+from ete_dev.evol          import __path__
 from ete_dev.evol.model    import Model, PARAMS, AVAIL
 from ete_dev.evol.utils    import translate
 from ete_dev.parser.newick import write_newick
@@ -67,7 +67,7 @@ class EvolNode (PhyloNode):
         self._speciesFunction = None
         self.img_prop = None
         self.workdir = '/tmp/ete2-codeml/'
-        self.codemlpath = 'codeml'
+        self.codemlpath = __path__[0] + '/bin/codeml'
         self._models = {}
         # Caution! native __init__ has to be called after setting
         # _speciesFunction to None!!
@@ -207,8 +207,8 @@ class EvolNode (PhyloNode):
                 except AttributeError:
                     warn ('model %s not computed' % (hist))
                 if not mdl.properties.has_key ('histface'):
-                    mdl.set_histface()
-                if mdl.properties['histface'].up:
+                    mdl.set_histface ()
+                if mdl.properties ['histface'].up:
                     img_properties.aligned_header.add_face (\
                         mdl.properties['histface'], 1)
                 else:
@@ -378,14 +378,13 @@ class EvolNode (PhyloNode):
         varaiable (dN, dS, w or bL), default is bL.
         '''
         # branch-site outfiles do not give specific branch info
-        if model.properties ['typ']=='branch-site':
+        if not model.branches:
             return
         for node in self.iter_descendants():
-            node.dist = model.results ['values'][node.paml_id][evol]
+            node.dist = model.branches [node.paml_id][evol]
             if fill:
                 for e in ['dN', 'dS', 'w', 'bL']:
-                    node.add_feature (e,
-                                      model.results ['values'][node.paml_id][e])
+                    node.add_feature (e, model.branches [node.paml_id][e])
 
 
 # cosmetic alias
