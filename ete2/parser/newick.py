@@ -28,7 +28,8 @@ __all__ = ["read_newick", "write_newick", "print_supported_formats"]
 # Regular expressions used for reading newick format
 _ILEGAL_NEWICK_CHARS = ":;(),\[\]\t\n\r="
 _NHX_RE = "\[&&NHX:[^\]]*\]"
-_FLOAT_RE = "[+-]?\d+\.?\d*([eE][-+]\d+)?"
+_FLOAT_RE = "[+-]?\d+\.?\d*(?:[eE][-+]\d+)?"
+#_FLOAT_RE = "[+-]?\d+\.?\d*"
 _NAME_RE = "[^():,;\[\]]+"
 
 DEFAULT_DIST = 1.0
@@ -105,7 +106,8 @@ def format_node(node, node_type, format):
         FIRST_PART = ""
     else:
         try:
-            FIRST_PART =  "%0.6f" %(converterFn2(getattr(node, container1)))
+            #FIRST_PART =  "%0.6f" %(converterFn2(getattr(node, container1)))
+            FIRST_PART =  "%g" %(converterFn2(getattr(node, container1)))
         except (ValueError, TypeError):
             FIRST_PART = "?"
 
@@ -120,7 +122,8 @@ def format_node(node, node_type, format):
         SECOND_PART = ""
     else:
         try:
-            SECOND_PART = ":%0.6f" %(converterFn2(getattr(node, container2)))
+            #SECOND_PART = ":%0.6f" %(converterFn2(getattr(node, container2)))
+            SECOND_PART = ":%g" %(converterFn2(getattr(node, container2)))
         except (ValueError, TypeError):
             SECOND_PART = ":?"
 
