@@ -28,7 +28,7 @@ __all__ = ["read_newick", "write_newick", "print_supported_formats"]
 # Regular expressions used for reading newick format
 _ILEGAL_NEWICK_CHARS = ":;(),\[\]\t\n\r="
 _NHX_RE = "\[&&NHX:[^\]]*\]"
-_FLOAT_RE = "[+-]?\d+\.?\d*"
+_FLOAT_RE = "[+-]?\d+\.?\d*([eE][-+]\d+)?"
 _NAME_RE = "[^():,;\[\]]+"
 
 DEFAULT_DIST = 1.0
