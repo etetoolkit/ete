@@ -4,63 +4,52 @@ Phylogenetic XML standards
 .. versionadded:: 2.1
 
 From version 2.1, ETE has support for NeXML and PhyloXML phylogenetic
-XML standards, both reading and writing.
+XML standards, both for reading and writing.
 
-These standards provide a way to encode complex phylogenetic data,
-therefore they are not limited to phylogenetic trees. Although ETE is
-focused on allowing transparent interaction with the trees encoded by
-such data formats, it also has basic support for other features. Thus,
-while any phylogenetic tree encoded using NeXML or PhyloXML formats
-will be seen as a normal ETE tree object, other elements (otus information )
+These standards allow to encode complex phylogenetic data, and they
+are not limited to trees. However, although ETE is mainly focused on
+allowing transparent interaction with the trees encoded in such data
+formats, it also provides basic support for many other features.
 
-, enabling tree drawing,
-browsing and manipulation options.
+Essentially, NexML and PhyloXML formats are internally represented as
+projects. Each XML instance can be loaded into ETE as a python object
+using the corresponding module. Project objects are expected to follow
+the hierarchical structure of the original XML schema. Trees within
+projects will be represented as fully functional ETE tree objects.
 
+Thus, while phylogenetic trees encoded using NeXML or PhyloXML formats
+can be accessed as a normal ETE tree objects, other elements
+(i.e. otus, metadata, annotation.) will be also accessible as basic
+python instances.
 
-
-
-are not limited to phylogenetic tree data, but ETE
-provides handlers to deal with most of their features.
-
-Consequently, these standards are not treated as simple tree formats
-(like newick), but as phylogenetic data projects, containing or not
-phylogenetic trees.  In practice, you will notice that not Nexml nor
-PhyloXML are included as core parser, but as independent ETE modules.
-
-Nexml and PhyloXML modules follow a similar design. A base class
-exists for each standard. 
-
-By creating instances of such classes, you can create empty
-projects. Subsequently, the project can be built using external data
-from xml files, or manually populated.
+NeXML and PhyloXML python parsers are possible thanks to the work of
+Dave Kulhman on the generateDS.py application. 
 
 =============
 Nexml
 =============
 
-NeXML is a novel standard whose design allows to encode many
-phylogenetic data, which is highly integrated with ETE tree
-features. This is, when a NeXML project is loaded, any available tree
-is converted into a ETE tree, thus enabling all drawing, and browsing
-options. Note that, although NeXML tree definition does not follow a
-hierarchical design, tree objects will transparently be perceived as
-hierarchical.
-
-Other available data encoded in the project will be converted into
-Python instances that can also be operated. Thus, each element found
-in given XML file will have a python instance that can be used to set
-or read their attributes.
-
+NeXML(http://nexml.org) is an exchange standard for representing
+phyloinformatic data inspired by the commonly used NEXUS format, but
+more robust and easier to process.
 
 ----------------------------
-Reading Nexml projects
+Reading a Nexml project
 ----------------------------
 
-You can load an external Nexml project by using the :class:`Nexml` base
-class and the :func:`build_from_file` method. The automatic parser will
-read the provided XML file and convert all elements into python
-instances, which :will: be hierarchilly connected to the Nexml root
-object.
+You can load an external Nexml project by using the :class:`Nexml`
+base class and the :func:`build_from_file` method. The automatic
+parser will read the provided XML file and convert all elements into
+python instances, which will be hierarchically connected to the Nexml
+root instance.
+
+Note that all Nexml elements have a python class that represent their
+attributes. Thus, each element in a Nexml file will be loaded as a
+python object that will contain "set" and "get" methods for all their
+attributes.
+
+tree instances are mixed objects containing all ETE tree functionality
+plus Nexml attributes. 
 
 ::
 
@@ -71,9 +60,9 @@ object.
    # Upload content from file
    nexml_project.build_from_file("../nexml_example.xml")
 
-   # All XML elements hang from the root element. get and set methods
+   # All XML elements are within the project instance.
    # exist in each element to access their attributes.
-   print   nexml_projects.get_otus()
+   print nexml_projects.get_otus()
 
    # Trees can be also accesed 
    trees_collections = nexml_projects.get_trees()
@@ -83,28 +72,35 @@ object.
    # And they are seen as normal ETE tree objects
    print tree_1
 
+------------------------------------
+Creating Nexml project from scratch 
+------------------------------------
 
-----------------------------
-Creating Nexml projects
-----------------------------
-
-:class:`Nexml` base class can also be used to create projects from scractch
+:class:`Nexml` base class can also be used to create projects from scratch
 in a programmatic way. Using the collection of NeXML classes provided
 by the **nexml** module, you can populate an empty project and export
 it as XML. 
 
-
 ::
 
-   from ete2 import Nexml
+   from ete2 import Nexml # Root project class 
+   # the module contains all classes representing nexml elements
+   from ete2 import nexml 
+
    # Create an empty Nexml project 
    nexml_project = Nexml()
-   
+   tree_collection = nexml.Trees()
+   nexml_tree = nexml.NexMLTree()
+   nexml_tree.populate(10) # Random tree with 10 leaves
+   tree_collection.add_tree(nexml_tree)
+   nexml_project.add_trees(tree_collection)
 
+--------------------------------------
+Export projects as NeXML format
+--------------------------------------
 
 You can export your project using NeXML format at any time by using
 the :func:`export` function
-
 
 =============
 PhyloXML
@@ -115,7 +111,6 @@ phylogenetic information. In particular, phyloXML is designed to
 describe phylogenetic trees (or networks) and associated data, such as
 taxonomic information, gene names and identifiers, branch lengths,
 support values, and gene duplication and speciation events.
-
 
 ----------------------------------------
 Loading PhyloXML projects from files 

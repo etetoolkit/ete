@@ -1,18 +1,40 @@
 import sys
-from _nexml import MixedContainer, FloatTree
+from _nexml import MixedContainer, FloatTree, TreeFloatEdge, TreeNode
 from ete_dev import PhyloTree
+
+
+class Children(list):
+    def append(self, item):
+        list.append(self, item)
+        #item.up = self.node
+        item.nexml_edge.target = self.node.nexml_node.id
+        item.nexml_edge.source = item.nexml_node.id
 
 class NexMLTree(PhyloTree):
     ''' Special PhyloTree object with nexml support '''
+
     def __repr__(self):
         return "NexML ETE tree <%s>" %hex(hash(self))
 
     def __init__(self, nexml_node=None, nexml_edge=None, nexml_tree=None, **kargs):
         super(NexMLTree, self).__init__(**kargs)
+        self._children = Children()
+        self._children.node = self
+
+        if not nexml_tree:
+            nexml_tree = FloatTree()
+        if not nexml_edge: 
+            nexml_edge = TreeFloatEdge()
+        if not nexml_node:
+            nexml_node = TreeNode()
+
         self.nexml_tree = nexml_tree
         self.nexml_node = nexml_node
         self.nexml_edge = nexml_edge
         self.nexml_project = None
+        self.nexml_node.id = "node_%s" %hash(self)
+        self.nexml_edge.id = "edge_%s" %hash(self)
+        
 
     def set_nexml_project(self, nexml_obj):
         self.nexml_project = nexml_obj
@@ -55,6 +77,10 @@ class NexMLTree(PhyloTree):
 
     def export(self, outfile=sys.stdout, level=0, namespace_='', name_='FloatTree', namespacedef_=''):
         if self.nexml_tree:
+            info = [(n.nexml_edge, n.nexml_node) for n in self.traverse()]
+            self.nexml_node.set_root(True)
+            self.nexml_tree.set_edge([i[0] for i in info])
+            self.nexml_tree.set_node([i[1] for i in info])
             self.nexml_tree.export(outfile=outfile, level=level, name_=name_, namespacedef_=namespacedef_)
 
     def exportChildren(self, outfile, level, namespace_='', name_='FloatTree'):
@@ -78,4 +104,4 @@ class NexMLTree(PhyloTree):
             item_.export(outfile, level, item_.name, namespace_)
 
 # end class AbstractTreeSub
-
+NexMLNode = NexMLTree
