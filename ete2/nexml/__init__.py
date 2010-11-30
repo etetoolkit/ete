@@ -3,6 +3,8 @@ from _nexml import *
 from _nexml_tree import NexMLTree 
 
 main.AbstractTree.subclass = NexMLTree
+main.FloatTree.subclass = NexMLTree
+main.IntTree.subclass = NexMLTree
 
 class Nexml(main.Nexml):
     def __repr__(self):

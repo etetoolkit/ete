@@ -1,6 +1,5 @@
 import sys
-from _nexml import MixedContainer, AbstractTree, AbstractNode, AbstractEdge, LiteralMeta
-
+from _nexml import MixedContainer, FloatTree
 from ete_dev import PhyloTree
 
 class NexMLTree(PhyloTree):
@@ -19,7 +18,7 @@ class NexMLTree(PhyloTree):
         self.nexml_project = nexml_obj
         
     def build(self, node):
-        self.nexml_tree = AbstractTree()
+        self.nexml_tree = FloatTree()
         tree = self.nexml_tree
         tree.build(node)
 
@@ -54,11 +53,11 @@ class NexMLTree(PhyloTree):
             if xmlnode.label is not None:
                 ete_node.name += "(" + xmlnode.label + ")"
 
-    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='AbstractTree', namespacedef_=''):
+    def export(self, outfile=sys.stdout, level=0, namespace_='', name_='FloatTree', namespacedef_=''):
         if self.nexml_tree:
             self.nexml_tree.export(outfile=outfile, level=level, name_=name_, namespacedef_=namespacedef_)
 
-    def exportChildren(self, outfile, level, namespace_='', name_='AbstractTree'):
+    def exportChildren(self, outfile, level, namespace_='', name_='FloatTree'):
         sorted_nodes = []
         sorted_edges = []
         for n in self.traverse():
