@@ -185,7 +185,6 @@ def read_newick(newick, root_node=None, format=0):
         root_node = TreeNode()
 
     if isinstance(newick, basestring):
-
         if os.path.exists(newick):
             nw = open(newick, 'rU').read()
         else:

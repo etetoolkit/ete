@@ -110,6 +110,7 @@ class TreeNode(object):
         # Add basic features
         self.add_features(name="NoName")
         self.features.update(["dist", "support"])
+
         # Initialize tree
         if newick is not None:
             read_newick(newick, root_node = self, format=format)
