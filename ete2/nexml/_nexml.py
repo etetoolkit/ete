@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*- 
 
 #
-# Generated Tue Nov 30 14:49:39 2010 by generateDS.py version 2.2b.
+# Generated Wed Dec  1 15:20:13 2010 by generateDS.py version 2.2b.
 #
 
 import sys
@@ -287,18 +287,9 @@ class Base(GeneratedsSuper):
     and xlink attributes."""
     subclass = None
     superclass = None
-    def __init__(self, valueOf_=None, mixedclass_=None, content_=None):
+    def __init__(self, valueOf_=None):
         self.valueOf_ = valueOf_
         self.anyAttributes_ = {}
-        if mixedclass_ is None:
-            self.mixedclass_ = MixedContainer
-        else:
-            self.mixedclass_ = mixedclass_
-        if content_ is None:
-            self.content_ = []
-        else:
-            self.content_ = content_
-        self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
         if Base.subclass:
             return Base.subclass(*args_, **kwargs_)
@@ -313,9 +304,13 @@ class Base(GeneratedsSuper):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='Base')
-        outfile.write('>')
-        self.exportChildren(outfile, level + 1, namespace_, name_)
-        outfile.write('</%s%s>\n' % (namespace_, name_))
+        if self.hasContent_():
+            outfile.write('>')
+            outfile.write(self.valueOf_)
+            self.exportChildren(outfile, level + 1, namespace_, name_)
+            outfile.write('</%s%s>\n' % (namespace_, name_))
+        else:
+            outfile.write('/>\n')
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='Base'):
         for name, value in self.anyAttributes_.items():
             outfile.write(' %s=%s' % (name, quote_attrib(value), ))
@@ -344,10 +339,6 @@ class Base(GeneratedsSuper):
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         self.valueOf_ = get_all_text_(node)
-        if node.text is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', node.text)
-            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
@@ -357,10 +348,6 @@ class Base(GeneratedsSuper):
             if name not in already_processed:
                 self.anyAttributes_[name] = value
     def buildChildren(self, child_, nodeName_, from_subclass=False):
-        if not from_subclass and child_.tail is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', child_.tail)
-            self.content_.append(obj_)
         pass
 # end class Base
 
@@ -789,18 +776,9 @@ class AbstractMapping(Base):
     "A", "C", "G" and "T"."""
     subclass = None
     superclass = Base
-    def __init__(self, state=None, valueOf_=None, mixedclass_=None, content_=None):
-        super(AbstractMapping, self).__init__(valueOf_, mixedclass_, content_, )
+    def __init__(self, state=None, valueOf_=None):
+        super(AbstractMapping, self).__init__(valueOf_, )
         self.state = _cast(None, state)
-        self.valueOf_ = valueOf_
-        if mixedclass_ is None:
-            self.mixedclass_ = MixedContainer
-        else:
-            self.mixedclass_ = mixedclass_
-        if content_ is None:
-            self.content_ = []
-        else:
-            self.content_ = content_
         self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
         if AbstractMapping.subclass:
@@ -818,9 +796,13 @@ class AbstractMapping(Base):
         self.exportAttributes(outfile, level, [], namespace_, name_='AbstractMapping')
         outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
         outfile.write(' xsi:type="AbstractMapping"')
-        outfile.write('>')
-        self.exportChildren(outfile, level + 1, namespace_, name_)
-        outfile.write('</%s%s>\n' % (namespace_, name_))
+        if self.hasContent_():
+            outfile.write('>')
+            outfile.write(self.valueOf_)
+            self.exportChildren(outfile, level + 1, namespace_, name_)
+            outfile.write('</%s%s>\n' % (namespace_, name_))
+        else:
+            outfile.write('/>\n')
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='AbstractMapping'):
         super(AbstractMapping, self).exportAttributes(outfile, level, already_processed, namespace_, name_='AbstractMapping')
         outfile.write(' state=%s' % (self.gds_format_string(quote_attrib(self.state).encode(ExternalEncoding), input_name='state'), ))
@@ -852,10 +834,6 @@ class AbstractMapping(Base):
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         self.valueOf_ = get_all_text_(node)
-        if node.text is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', node.text)
-            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
@@ -866,10 +844,6 @@ class AbstractMapping(Base):
             self.state = value
         super(AbstractMapping, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
-        if not from_subclass and child_.tail is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', child_.tail)
-            self.content_.append(obj_)
         super(AbstractMapping, self).buildChildren(child_, nodeName_, True)
         pass
 # end class AbstractMapping
@@ -1120,23 +1094,13 @@ class Annotated(Base):
     optionally have metadata annotations of type Meta."""
     subclass = None
     superclass = Base
-    def __init__(self, about=None, meta=None, valueOf_=None, mixedclass_=None, content_=None):
-        super(Annotated, self).__init__(valueOf_, mixedclass_, content_, )
+    def __init__(self, about=None, meta=None):
+        super(Annotated, self).__init__()
         self.about = _cast(None, about)
         if meta is None:
             self.meta = []
         else:
             self.meta = meta
-        self.valueOf_ = valueOf_
-        if mixedclass_ is None:
-            self.mixedclass_ = MixedContainer
-        else:
-            self.mixedclass_ = mixedclass_
-        if content_ is None:
-            self.content_ = []
-        else:
-            self.content_ = content_
-        self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
         if Annotated.subclass:
             return Annotated.subclass(*args_, **kwargs_)
@@ -1149,8 +1113,6 @@ class Annotated(Base):
     def insert_meta(self, index, value): self.meta[index] = value
     def get_about(self): return self.about
     def set_about(self, about): self.about = about
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='Annotated', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -1171,12 +1133,11 @@ class Annotated(Base):
             outfile.write(' about=%s' % (quote_attrib(self.about), ))
     def exportChildren(self, outfile, level, namespace_='', name_='Annotated'):
         super(Annotated, self).exportChildren(outfile, level, namespace_, name_)
-        for item_ in self.content_:
-            item_.export(outfile, level, item_.name, namespace_)
+        for meta_ in self.get_meta():
+            meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
         if (
             self.meta or
-            self.valueOf_ or
             super(Annotated, self).hasContent_()
             ):
             return True
@@ -1195,20 +1156,19 @@ class Annotated(Base):
     def exportLiteralChildren(self, outfile, level, name_):
         super(Annotated, self).exportLiteralChildren(outfile, level, name_)
         showIndent(outfile, level)
-        outfile.write('content_ = [\n')
-        for item_ in self.content_:
-            item_.exportLiteral(outfile, level, name_)
+        outfile.write('meta=[\n')
+        level += 1
+        for meta_ in self.meta:
+            showIndent(outfile, level)
+            outfile.write('model_.Meta(\n')
+            meta_.exportLiteral(outfile, level, name_='Meta')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
-        if node.text is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', node.text)
-            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
@@ -1219,7 +1179,7 @@ class Annotated(Base):
             self.about = value
         super(Annotated, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
-        if nodeName_ == 'meta':
+        if nodeName_ == 'meta': 
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
@@ -1235,17 +1195,7 @@ class Annotated(Base):
             else:
                 raise NotImplementedError(
                     'Class not implemented for <meta> element')
-            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
-                MixedContainer.TypeNone, 'meta', obj_)
-            self.content_.append(obj_)
-            if hasattr(self, 'add_meta'):
-              self.add_meta(obj_.value)
-            elif hasattr(self, 'set_meta'):
-              self.set_meta(obj_.value)
-        if not from_subclass and child_.tail is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', child_.tail)
-            self.content_.append(obj_)
+            self.meta.append(obj_)
         super(Annotated, self).buildChildren(child_, nodeName_, True)
 # end class Annotated
 
@@ -1435,8 +1385,8 @@ class AbstractObsMatrix(Annotated):
     observations."""
     subclass = None
     superclass = Annotated
-    def __init__(self, about=None, meta=None, row=None, set=None, valueOf_=None, mixedclass_=None, content_=None):
-        super(AbstractObsMatrix, self).__init__(about, meta, valueOf_, mixedclass_, content_, )
+    def __init__(self, about=None, meta=None, row=None, set=None):
+        super(AbstractObsMatrix, self).__init__(about, meta, )
         if row is None:
             self.row = []
         else:
@@ -1445,16 +1395,6 @@ class AbstractObsMatrix(Annotated):
             self.set = []
         else:
             self.set = set
-        self.valueOf_ = valueOf_
-        if mixedclass_ is None:
-            self.mixedclass_ = MixedContainer
-        else:
-            self.mixedclass_ = mixedclass_
-        if content_ is None:
-            self.content_ = []
-        else:
-            self.content_ = content_
-        self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
         if AbstractObsMatrix.subclass:
             return AbstractObsMatrix.subclass(*args_, **kwargs_)
@@ -1469,8 +1409,6 @@ class AbstractObsMatrix(Annotated):
     def set_set(self, set): self.set = set
     def add_set(self, value): self.set.append(value)
     def insert_set(self, index, value): self.set[index] = value
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='AbstractObsMatrix', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -1488,13 +1426,14 @@ class AbstractObsMatrix(Annotated):
         super(AbstractObsMatrix, self).exportAttributes(outfile, level, already_processed, namespace_, name_='AbstractObsMatrix')
     def exportChildren(self, outfile, level, namespace_='', name_='AbstractObsMatrix'):
         super(AbstractObsMatrix, self).exportChildren(outfile, level, namespace_, name_)
-        for item_ in self.content_:
-            item_.export(outfile, level, item_.name, namespace_)
+        for row_ in self.get_row():
+            row_.export(outfile, level, namespace_, name_='row')
+        for set_ in self.set:
+            set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.row or
             self.set or
-            self.valueOf_ or
             super(AbstractObsMatrix, self).hasContent_()
             ):
             return True
@@ -1510,33 +1449,38 @@ class AbstractObsMatrix(Annotated):
     def exportLiteralChildren(self, outfile, level, name_):
         super(AbstractObsMatrix, self).exportLiteralChildren(outfile, level, name_)
         showIndent(outfile, level)
-        outfile.write('content_ = [\n')
-        for item_ in self.content_:
-            item_.exportLiteral(outfile, level, name_)
+        outfile.write('row=[\n')
+        level += 1
+        for row_ in self.row:
+            showIndent(outfile, level)
+            outfile.write('model_.AbstractObsRow(\n')
+            row_.exportLiteral(outfile, level, name_='AbstractObsRow')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
         showIndent(outfile, level)
-        outfile.write('content_ = [\n')
-        for item_ in self.content_:
-            item_.exportLiteral(outfile, level, name_)
+        outfile.write('set=[\n')
+        level += 1
+        for set_ in self.set:
+            showIndent(outfile, level)
+            outfile.write('model_.RowSet(\n')
+            set_.exportLiteral(outfile, level, name_='RowSet')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
-        if node.text is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', node.text)
-            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
         super(AbstractObsMatrix, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
-        if nodeName_ == 'row':
+        if nodeName_ == 'row': 
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
@@ -1552,27 +1496,11 @@ class AbstractObsMatrix(Annotated):
             else:
                 raise NotImplementedError(
                     'Class not implemented for <row> element')
-            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
-                MixedContainer.TypeNone, 'row', obj_)
-            self.content_.append(obj_)
-            if hasattr(self, 'add_row'):
-              self.add_row(obj_.value)
-            elif hasattr(self, 'set_row'):
-              self.set_row(obj_.value)
-        elif nodeName_ == 'set':
+            self.row.append(obj_)
+        elif nodeName_ == 'set': 
             obj_ = RowSet.factory()
             obj_.build(child_)
-            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
-                MixedContainer.TypeNone, 'set', obj_)
-            self.content_.append(obj_)
-            if hasattr(self, 'add_set'):
-              self.add_set(obj_.value)
-            elif hasattr(self, 'set_set'):
-              self.set_set(obj_.value)
-        if not from_subclass and child_.tail is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', child_.tail)
-            self.content_.append(obj_)
+            self.set.append(obj_)
         super(AbstractObsMatrix, self).buildChildren(child_, nodeName_, True)
 # end class AbstractObsMatrix
 
@@ -1583,8 +1511,8 @@ class AbstractSeqMatrix(Annotated):
     sequences."""
     subclass = None
     superclass = Annotated
-    def __init__(self, about=None, meta=None, row=None, set=None, valueOf_=None, mixedclass_=None, content_=None):
-        super(AbstractSeqMatrix, self).__init__(about, meta, valueOf_, mixedclass_, content_, )
+    def __init__(self, about=None, meta=None, row=None, set=None):
+        super(AbstractSeqMatrix, self).__init__(about, meta, )
         if row is None:
             self.row = []
         else:
@@ -1593,16 +1521,6 @@ class AbstractSeqMatrix(Annotated):
             self.set = []
         else:
             self.set = set
-        self.valueOf_ = valueOf_
-        if mixedclass_ is None:
-            self.mixedclass_ = MixedContainer
-        else:
-            self.mixedclass_ = mixedclass_
-        if content_ is None:
-            self.content_ = []
-        else:
-            self.content_ = content_
-        self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
         if AbstractSeqMatrix.subclass:
             return AbstractSeqMatrix.subclass(*args_, **kwargs_)
@@ -1617,8 +1535,6 @@ class AbstractSeqMatrix(Annotated):
     def set_set(self, set): self.set = set
     def add_set(self, value): self.set.append(value)
     def insert_set(self, index, value): self.set[index] = value
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='AbstractSeqMatrix', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -1636,13 +1552,14 @@ class AbstractSeqMatrix(Annotated):
         super(AbstractSeqMatrix, self).exportAttributes(outfile, level, already_processed, namespace_, name_='AbstractSeqMatrix')
     def exportChildren(self, outfile, level, namespace_='', name_='AbstractSeqMatrix'):
         super(AbstractSeqMatrix, self).exportChildren(outfile, level, namespace_, name_)
-        for item_ in self.content_:
-            item_.export(outfile, level, item_.name, namespace_)
+        for row_ in self.get_row():
+            row_.export(outfile, level, namespace_, name_='row')
+        for set_ in self.set:
+            set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.row or
             self.set or
-            self.valueOf_ or
             super(AbstractSeqMatrix, self).hasContent_()
             ):
             return True
@@ -1658,33 +1575,38 @@ class AbstractSeqMatrix(Annotated):
     def exportLiteralChildren(self, outfile, level, name_):
         super(AbstractSeqMatrix, self).exportLiteralChildren(outfile, level, name_)
         showIndent(outfile, level)
-        outfile.write('content_ = [\n')
-        for item_ in self.content_:
-            item_.exportLiteral(outfile, level, name_)
+        outfile.write('row=[\n')
+        level += 1
+        for row_ in self.row:
+            showIndent(outfile, level)
+            outfile.write('model_.AbstractSeqRow(\n')
+            row_.exportLiteral(outfile, level, name_='AbstractSeqRow')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
         showIndent(outfile, level)
-        outfile.write('content_ = [\n')
-        for item_ in self.content_:
-            item_.exportLiteral(outfile, level, name_)
+        outfile.write('set=[\n')
+        level += 1
+        for set_ in self.set:
+            showIndent(outfile, level)
+            outfile.write('model_.RowSet(\n')
+            set_.exportLiteral(outfile, level, name_='RowSet')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
-        if node.text is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', node.text)
-            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
         super(AbstractSeqMatrix, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
-        if nodeName_ == 'row':
+        if nodeName_ == 'row': 
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
@@ -1700,27 +1622,11 @@ class AbstractSeqMatrix(Annotated):
             else:
                 raise NotImplementedError(
                     'Class not implemented for <row> element')
-            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
-                MixedContainer.TypeNone, 'row', obj_)
-            self.content_.append(obj_)
-            if hasattr(self, 'add_row'):
-              self.add_row(obj_.value)
-            elif hasattr(self, 'set_row'):
-              self.set_row(obj_.value)
-        elif nodeName_ == 'set':
+            self.row.append(obj_)
+        elif nodeName_ == 'set': 
             obj_ = RowSet.factory()
             obj_.build(child_)
-            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
-                MixedContainer.TypeNone, 'set', obj_)
-            self.content_.append(obj_)
-            if hasattr(self, 'add_set'):
-              self.add_set(obj_.value)
-            elif hasattr(self, 'set_set'):
-              self.set_set(obj_.value)
-        if not from_subclass and child_.tail is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', child_.tail)
-            self.content_.append(obj_)
+            self.set.append(obj_)
         super(AbstractSeqMatrix, self).buildChildren(child_, nodeName_, True)
 # end class AbstractSeqMatrix
 
@@ -1733,8 +1639,8 @@ class AbstractFormat(Annotated):
     specify which AbstractStates apply to which matrix columns."""
     subclass = None
     superclass = Annotated
-    def __init__(self, about=None, meta=None, states=None, char=None, set=None, valueOf_=None, mixedclass_=None, content_=None):
-        super(AbstractFormat, self).__init__(about, meta, valueOf_, mixedclass_, content_, )
+    def __init__(self, about=None, meta=None, states=None, char=None, set=None):
+        super(AbstractFormat, self).__init__(about, meta, )
         if states is None:
             self.states = []
         else:
@@ -1747,16 +1653,6 @@ class AbstractFormat(Annotated):
             self.set = []
         else:
             self.set = set
-        self.valueOf_ = valueOf_
-        if mixedclass_ is None:
-            self.mixedclass_ = MixedContainer
-        else:
-            self.mixedclass_ = mixedclass_
-        if content_ is None:
-            self.content_ = []
-        else:
-            self.content_ = content_
-        self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
         if AbstractFormat.subclass:
             return AbstractFormat.subclass(*args_, **kwargs_)
@@ -1775,8 +1671,6 @@ class AbstractFormat(Annotated):
     def set_set(self, set): self.set = set
     def add_set(self, value): self.set.append(value)
     def insert_set(self, index, value): self.set[index] = value
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='AbstractFormat', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -1794,14 +1688,17 @@ class AbstractFormat(Annotated):
         super(AbstractFormat, self).exportAttributes(outfile, level, already_processed, namespace_, name_='AbstractFormat')
     def exportChildren(self, outfile, level, namespace_='', name_='AbstractFormat'):
         super(AbstractFormat, self).exportChildren(outfile, level, namespace_, name_)
-        for item_ in self.content_:
-            item_.export(outfile, level, item_.name, namespace_)
+        for states_ in self.get_states():
+            states_.export(outfile, level, namespace_, name_='states')
+        for char_ in self.get_char():
+            char_.export(outfile, level, namespace_, name_='char')
+        for set_ in self.set:
+            set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.states or
             self.char or
             self.set or
-            self.valueOf_ or
             super(AbstractFormat, self).hasContent_()
             ):
             return True
@@ -1817,39 +1714,50 @@ class AbstractFormat(Annotated):
     def exportLiteralChildren(self, outfile, level, name_):
         super(AbstractFormat, self).exportLiteralChildren(outfile, level, name_)
         showIndent(outfile, level)
-        outfile.write('content_ = [\n')
-        for item_ in self.content_:
-            item_.exportLiteral(outfile, level, name_)
+        outfile.write('states=[\n')
+        level += 1
+        for states_ in self.states:
+            showIndent(outfile, level)
+            outfile.write('model_.AbstractStates(\n')
+            states_.exportLiteral(outfile, level, name_='AbstractStates')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
         showIndent(outfile, level)
-        outfile.write('content_ = [\n')
-        for item_ in self.content_:
-            item_.exportLiteral(outfile, level, name_)
+        outfile.write('char=[\n')
+        level += 1
+        for char_ in self.char:
+            showIndent(outfile, level)
+            outfile.write('model_.AbstractChar(\n')
+            char_.exportLiteral(outfile, level, name_='AbstractChar')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
         showIndent(outfile, level)
-        outfile.write('content_ = [\n')
-        for item_ in self.content_:
-            item_.exportLiteral(outfile, level, name_)
+        outfile.write('set=[\n')
+        level += 1
+        for set_ in self.set:
+            showIndent(outfile, level)
+            outfile.write('model_.CharSet(\n')
+            set_.exportLiteral(outfile, level, name_='CharSet')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
-        if node.text is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', node.text)
-            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
         super(AbstractFormat, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
-        if nodeName_ == 'states':
+        if nodeName_ == 'states': 
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
@@ -1865,14 +1773,8 @@ class AbstractFormat(Annotated):
             else:
                 raise NotImplementedError(
                     'Class not implemented for <states> element')
-            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
-                MixedContainer.TypeNone, 'states', obj_)
-            self.content_.append(obj_)
-            if hasattr(self, 'add_states'):
-              self.add_states(obj_.value)
-            elif hasattr(self, 'set_states'):
-              self.set_states(obj_.value)
-        elif nodeName_ == 'char':
+            self.states.append(obj_)
+        elif nodeName_ == 'char': 
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
@@ -1888,27 +1790,11 @@ class AbstractFormat(Annotated):
             else:
                 raise NotImplementedError(
                     'Class not implemented for <char> element')
-            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
-                MixedContainer.TypeNone, 'char', obj_)
-            self.content_.append(obj_)
-            if hasattr(self, 'add_char'):
-              self.add_char(obj_.value)
-            elif hasattr(self, 'set_char'):
-              self.set_char(obj_.value)
-        elif nodeName_ == 'set':
+            self.char.append(obj_)
+        elif nodeName_ == 'set': 
             obj_ = CharSet.factory()
             obj_.build(child_)
-            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
-                MixedContainer.TypeNone, 'set', obj_)
-            self.content_.append(obj_)
-            if hasattr(self, 'add_set'):
-              self.add_set(obj_.value)
-            elif hasattr(self, 'set_set'):
-              self.set_set(obj_.value)
-        if not from_subclass and child_.tail is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', child_.tail)
-            self.content_.append(obj_)
+            self.set.append(obj_)
         super(AbstractFormat, self).buildChildren(child_, nodeName_, True)
 # end class AbstractFormat
 
@@ -2235,19 +2121,10 @@ class Labelled(Annotated):
     of type xs:string."""
     subclass = None
     superclass = Annotated
-    def __init__(self, about=None, meta=None, label=None, valueOf_=None, mixedclass_=None, content_=None):
-        super(Labelled, self).__init__(about, meta, valueOf_, mixedclass_, content_, )
+    def __init__(self, about=None, meta=None, label=None):
+        super(Labelled, self).__init__(about, meta, )
         self.label = _cast(None, label)
-        self.valueOf_ = valueOf_
-        if mixedclass_ is None:
-            self.mixedclass_ = MixedContainer
-        else:
-            self.mixedclass_ = mixedclass_
-        if content_ is None:
-            self.content_ = []
-        else:
-            self.content_ = content_
-        self.valueOf_ = valueOf_
+        pass
     def factory(*args_, **kwargs_):
         if Labelled.subclass:
             return Labelled.subclass(*args_, **kwargs_)
@@ -2256,8 +2133,6 @@ class Labelled(Annotated):
     factory = staticmethod(factory)
     def get_label(self): return self.label
     def set_label(self, label): self.label = label
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='Labelled', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -2280,7 +2155,6 @@ class Labelled(Annotated):
         super(Labelled, self).exportChildren(outfile, level, namespace_, name_)
     def hasContent_(self):
         if (
-            self.valueOf_ or
             super(Labelled, self).hasContent_()
             ):
             return True
@@ -2298,15 +2172,8 @@ class Labelled(Annotated):
         super(Labelled, self).exportLiteralAttributes(outfile, level, name_)
     def exportLiteralChildren(self, outfile, level, name_):
         super(Labelled, self).exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
-        if node.text is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', node.text)
-            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
@@ -2317,10 +2184,6 @@ class Labelled(Annotated):
             self.label = value
         super(Labelled, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
-        if not from_subclass and child_.tail is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', child_.tail)
-            self.content_.append(obj_)
         super(Labelled, self).buildChildren(child_, nodeName_, True)
         pass
 # end class Labelled
@@ -4048,20 +3911,11 @@ class AbstractObs(Labelled):
     raw state value (a continuous value)."""
     subclass = None
     superclass = Labelled
-    def __init__(self, about=None, meta=None, label=None, char=None, state=None, valueOf_=None, mixedclass_=None, content_=None):
-        super(AbstractObs, self).__init__(about, meta, label, valueOf_, mixedclass_, content_, )
+    def __init__(self, about=None, meta=None, label=None, char=None, state=None):
+        super(AbstractObs, self).__init__(about, meta, label, )
         self.char = _cast(None, char)
         self.state = _cast(None, state)
-        self.valueOf_ = valueOf_
-        if mixedclass_ is None:
-            self.mixedclass_ = MixedContainer
-        else:
-            self.mixedclass_ = mixedclass_
-        if content_ is None:
-            self.content_ = []
-        else:
-            self.content_ = content_
-        self.valueOf_ = valueOf_
+        pass
     def factory(*args_, **kwargs_):
         if AbstractObs.subclass:
             return AbstractObs.subclass(*args_, **kwargs_)
@@ -4072,8 +3926,6 @@ class AbstractObs(Labelled):
     def set_char(self, char): self.char = char
     def get_state(self): return self.state
     def set_state(self, state): self.state = state
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='AbstractObs', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -4095,7 +3947,6 @@ class AbstractObs(Labelled):
         super(AbstractObs, self).exportChildren(outfile, level, namespace_, name_)
     def hasContent_(self):
         if (
-            self.valueOf_ or
             super(AbstractObs, self).hasContent_()
             ):
             return True
@@ -4116,15 +3967,8 @@ class AbstractObs(Labelled):
         super(AbstractObs, self).exportLiteralAttributes(outfile, level, name_)
     def exportLiteralChildren(self, outfile, level, name_):
         super(AbstractObs, self).exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
-        if node.text is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', node.text)
-            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
@@ -4139,10 +3983,6 @@ class AbstractObs(Labelled):
             self.state = value
         super(AbstractObs, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
-        if not from_subclass and child_.tail is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', child_.tail)
-            self.content_.append(obj_)
         super(AbstractObs, self).buildChildren(child_, nodeName_, True)
         pass
 # end class AbstractObs
@@ -4271,19 +4111,10 @@ class IDTagged(Labelled):
     the XML document."""
     subclass = None
     superclass = Labelled
-    def __init__(self, about=None, meta=None, label=None, id=None, valueOf_=None, mixedclass_=None, content_=None):
-        super(IDTagged, self).__init__(about, meta, label, valueOf_, mixedclass_, content_, )
+    def __init__(self, about=None, meta=None, label=None, id=None):
+        super(IDTagged, self).__init__(about, meta, label, )
         self.id = _cast(None, id)
-        self.valueOf_ = valueOf_
-        if mixedclass_ is None:
-            self.mixedclass_ = MixedContainer
-        else:
-            self.mixedclass_ = mixedclass_
-        if content_ is None:
-            self.content_ = []
-        else:
-            self.content_ = content_
-        self.valueOf_ = valueOf_
+        pass
     def factory(*args_, **kwargs_):
         if IDTagged.subclass:
             return IDTagged.subclass(*args_, **kwargs_)
@@ -4292,8 +4123,6 @@ class IDTagged(Labelled):
     factory = staticmethod(factory)
     def get_id(self): return self.id
     def set_id(self, id): self.id = id
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='IDTagged', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -4314,7 +4143,6 @@ class IDTagged(Labelled):
         super(IDTagged, self).exportChildren(outfile, level, namespace_, name_)
     def hasContent_(self):
         if (
-            self.valueOf_ or
             super(IDTagged, self).hasContent_()
             ):
             return True
@@ -4332,15 +4160,8 @@ class IDTagged(Labelled):
         super(IDTagged, self).exportLiteralAttributes(outfile, level, name_)
     def exportLiteralChildren(self, outfile, level, name_):
         super(IDTagged, self).exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
-        if node.text is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', node.text)
-            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
@@ -4351,10 +4172,6 @@ class IDTagged(Labelled):
             self.id = value
         super(IDTagged, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
-        if not from_subclass and child_.tail is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', child_.tail)
-            self.content_.append(obj_)
         super(IDTagged, self).buildChildren(child_, nodeName_, True)
         pass
 # end class IDTagged
@@ -4532,8 +4349,8 @@ class AbstractTrees(IDTagged):
     """The AbstractTrees superclass is what concrete trees inherit from."""
     subclass = None
     superclass = IDTagged
-    def __init__(self, about=None, meta=None, label=None, id=None, network=None, tree=None, set=None, valueOf_=None, mixedclass_=None, content_=None):
-        super(AbstractTrees, self).__init__(about, meta, label, id, valueOf_, mixedclass_, content_, )
+    def __init__(self, about=None, meta=None, label=None, id=None, network=None, tree=None, set=None):
+        super(AbstractTrees, self).__init__(about, meta, label, id, )
         if network is None:
             self.network = []
         else:
@@ -4546,16 +4363,6 @@ class AbstractTrees(IDTagged):
             self.set = []
         else:
             self.set = set
-        self.valueOf_ = valueOf_
-        if mixedclass_ is None:
-            self.mixedclass_ = MixedContainer
-        else:
-            self.mixedclass_ = mixedclass_
-        if content_ is None:
-            self.content_ = []
-        else:
-            self.content_ = content_
-        self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
         if AbstractTrees.subclass:
             return AbstractTrees.subclass(*args_, **kwargs_)
@@ -4574,8 +4381,6 @@ class AbstractTrees(IDTagged):
     def set_set(self, set): self.set = set
     def add_set(self, value): self.set.append(value)
     def insert_set(self, index, value): self.set[index] = value
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='AbstractTrees', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -4593,14 +4398,17 @@ class AbstractTrees(IDTagged):
         super(AbstractTrees, self).exportAttributes(outfile, level, already_processed, namespace_, name_='AbstractTrees')
     def exportChildren(self, outfile, level, namespace_='', name_='AbstractTrees'):
         super(AbstractTrees, self).exportChildren(outfile, level, namespace_, name_)
-        for item_ in self.content_:
-            item_.export(outfile, level, item_.name, namespace_)
+        for network_ in self.get_network():
+            network_.export(outfile, level, namespace_, name_='network')
+        for tree_ in self.get_tree():
+            tree_.export(outfile, level, namespace_, name_='tree')
+        for set_ in self.set:
+            set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.network or
             self.tree or
             self.set or
-            self.valueOf_ or
             super(AbstractTrees, self).hasContent_()
             ):
             return True
@@ -4616,39 +4424,50 @@ class AbstractTrees(IDTagged):
     def exportLiteralChildren(self, outfile, level, name_):
         super(AbstractTrees, self).exportLiteralChildren(outfile, level, name_)
         showIndent(outfile, level)
-        outfile.write('content_ = [\n')
-        for item_ in self.content_:
-            item_.exportLiteral(outfile, level, name_)
+        outfile.write('network=[\n')
+        level += 1
+        for network_ in self.network:
+            showIndent(outfile, level)
+            outfile.write('model_.AbstractNetwork(\n')
+            network_.exportLiteral(outfile, level, name_='AbstractNetwork')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
         showIndent(outfile, level)
-        outfile.write('content_ = [\n')
-        for item_ in self.content_:
-            item_.exportLiteral(outfile, level, name_)
+        outfile.write('tree=[\n')
+        level += 1
+        for tree_ in self.tree:
+            showIndent(outfile, level)
+            outfile.write('model_.AbstractTree(\n')
+            tree_.exportLiteral(outfile, level, name_='AbstractTree')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
         showIndent(outfile, level)
-        outfile.write('content_ = [\n')
-        for item_ in self.content_:
-            item_.exportLiteral(outfile, level, name_)
+        outfile.write('set=[\n')
+        level += 1
+        for set_ in self.set:
+            showIndent(outfile, level)
+            outfile.write('model_.TreeAndNetworkSet(\n')
+            set_.exportLiteral(outfile, level, name_='TreeAndNetworkSet')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
-        if node.text is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', node.text)
-            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
         super(AbstractTrees, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
-        if nodeName_ == 'network':
+        if nodeName_ == 'network': 
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
@@ -4664,14 +4483,8 @@ class AbstractTrees(IDTagged):
             else:
                 raise NotImplementedError(
                     'Class not implemented for <network> element')
-            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
-                MixedContainer.TypeNone, 'network', obj_)
-            self.content_.append(obj_)
-            if hasattr(self, 'add_network'):
-              self.add_network(obj_.value)
-            elif hasattr(self, 'set_network'):
-              self.set_network(obj_.value)
-        elif nodeName_ == 'tree':
+            self.network.append(obj_)
+        elif nodeName_ == 'tree': 
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
@@ -4687,27 +4500,11 @@ class AbstractTrees(IDTagged):
             else:
                 raise NotImplementedError(
                     'Class not implemented for <tree> element')
-            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
-                MixedContainer.TypeNone, 'tree', obj_)
-            self.content_.append(obj_)
-            if hasattr(self, 'add_tree'):
-              self.add_tree(obj_.value)
-            elif hasattr(self, 'set_tree'):
-              self.set_tree(obj_.value)
-        elif nodeName_ == 'set':
+            self.tree.append(obj_)
+        elif nodeName_ == 'set': 
             obj_ = TreeAndNetworkSet.factory()
             obj_.build(child_)
-            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
-                MixedContainer.TypeNone, 'set', obj_)
-            self.content_.append(obj_)
-            if hasattr(self, 'add_set'):
-              self.add_set(obj_.value)
-            elif hasattr(self, 'set_set'):
-              self.set_set(obj_.value)
-        if not from_subclass and child_.tail is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', child_.tail)
-            self.content_.append(obj_)
+            self.set.append(obj_)
         super(AbstractTrees, self).buildChildren(child_, nodeName_, True)
 # end class AbstractTrees
 
@@ -4717,8 +4514,8 @@ class AbstractNetwork(IDTagged):
     from."""
     subclass = None
     superclass = IDTagged
-    def __init__(self, about=None, meta=None, label=None, id=None, node=None, edge=None, set=None, valueOf_=None, mixedclass_=None, content_=None):
-        super(AbstractNetwork, self).__init__(about, meta, label, id, valueOf_, mixedclass_, content_, )
+    def __init__(self, about=None, meta=None, label=None, id=None, node=None, edge=None, set=None):
+        super(AbstractNetwork, self).__init__(about, meta, label, id, )
         if node is None:
             self.node = []
         else:
@@ -4731,16 +4528,6 @@ class AbstractNetwork(IDTagged):
             self.set = []
         else:
             self.set = set
-        self.valueOf_ = valueOf_
-        if mixedclass_ is None:
-            self.mixedclass_ = MixedContainer
-        else:
-            self.mixedclass_ = mixedclass_
-        if content_ is None:
-            self.content_ = []
-        else:
-            self.content_ = content_
-        self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
         if AbstractNetwork.subclass:
             return AbstractNetwork.subclass(*args_, **kwargs_)
@@ -4759,8 +4546,6 @@ class AbstractNetwork(IDTagged):
     def set_set(self, set): self.set = set
     def add_set(self, value): self.set.append(value)
     def insert_set(self, index, value): self.set[index] = value
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='AbstractNetwork', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -4778,14 +4563,17 @@ class AbstractNetwork(IDTagged):
         super(AbstractNetwork, self).exportAttributes(outfile, level, already_processed, namespace_, name_='AbstractNetwork')
     def exportChildren(self, outfile, level, namespace_='', name_='AbstractNetwork'):
         super(AbstractNetwork, self).exportChildren(outfile, level, namespace_, name_)
-        for item_ in self.content_:
-            item_.export(outfile, level, item_.name, namespace_)
+        for node_ in self.get_node():
+            node_.export(outfile, level, namespace_, name_='node')
+        for edge_ in self.get_edge():
+            edge_.export(outfile, level, namespace_, name_='edge')
+        for set_ in self.set:
+            set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.node or
             self.edge or
             self.set or
-            self.valueOf_ or
             super(AbstractNetwork, self).hasContent_()
             ):
             return True
@@ -4801,39 +4589,50 @@ class AbstractNetwork(IDTagged):
     def exportLiteralChildren(self, outfile, level, name_):
         super(AbstractNetwork, self).exportLiteralChildren(outfile, level, name_)
         showIndent(outfile, level)
-        outfile.write('content_ = [\n')
-        for item_ in self.content_:
-            item_.exportLiteral(outfile, level, name_)
+        outfile.write('node=[\n')
+        level += 1
+        for node_ in self.node:
+            showIndent(outfile, level)
+            outfile.write('model_.AbstractNode(\n')
+            node_.exportLiteral(outfile, level, name_='AbstractNode')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
         showIndent(outfile, level)
-        outfile.write('content_ = [\n')
-        for item_ in self.content_:
-            item_.exportLiteral(outfile, level, name_)
+        outfile.write('edge=[\n')
+        level += 1
+        for edge_ in self.edge:
+            showIndent(outfile, level)
+            outfile.write('model_.AbstractEdge(\n')
+            edge_.exportLiteral(outfile, level, name_='AbstractEdge')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
         showIndent(outfile, level)
-        outfile.write('content_ = [\n')
-        for item_ in self.content_:
-            item_.exportLiteral(outfile, level, name_)
+        outfile.write('set=[\n')
+        level += 1
+        for set_ in self.set:
+            showIndent(outfile, level)
+            outfile.write('model_.NodeAndRootEdgeAndEdgeSet(\n')
+            set_.exportLiteral(outfile, level, name_='NodeAndRootEdgeAndEdgeSet')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
-        if node.text is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', node.text)
-            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
         super(AbstractNetwork, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
-        if nodeName_ == 'node':
+        if nodeName_ == 'node': 
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
@@ -4849,14 +4648,8 @@ class AbstractNetwork(IDTagged):
             else:
                 raise NotImplementedError(
                     'Class not implemented for <node> element')
-            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
-                MixedContainer.TypeNone, 'node', obj_)
-            self.content_.append(obj_)
-            if hasattr(self, 'add_node'):
-              self.add_node(obj_.value)
-            elif hasattr(self, 'set_node'):
-              self.set_node(obj_.value)
-        elif nodeName_ == 'edge':
+            self.node.append(obj_)
+        elif nodeName_ == 'edge': 
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
@@ -4872,27 +4665,11 @@ class AbstractNetwork(IDTagged):
             else:
                 raise NotImplementedError(
                     'Class not implemented for <edge> element')
-            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
-                MixedContainer.TypeNone, 'edge', obj_)
-            self.content_.append(obj_)
-            if hasattr(self, 'add_edge'):
-              self.add_edge(obj_.value)
-            elif hasattr(self, 'set_edge'):
-              self.set_edge(obj_.value)
-        elif nodeName_ == 'set':
+            self.edge.append(obj_)
+        elif nodeName_ == 'set': 
             obj_ = NodeAndRootEdgeAndEdgeSet.factory()
             obj_.build(child_)
-            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
-                MixedContainer.TypeNone, 'set', obj_)
-            self.content_.append(obj_)
-            if hasattr(self, 'add_set'):
-              self.add_set(obj_.value)
-            elif hasattr(self, 'set_set'):
-              self.set_set(obj_.value)
-        if not from_subclass and child_.tail is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', child_.tail)
-            self.content_.append(obj_)
+            self.set.append(obj_)
         super(AbstractNetwork, self).buildChildren(child_, nodeName_, True)
 # end class AbstractNetwork
 
@@ -4901,8 +4678,8 @@ class AbstractTree(IDTagged):
     """The AbstractTree superclass is what a concrete tree inherits from."""
     subclass = None
     superclass = IDTagged
-    def __init__(self, about=None, meta=None, label=None, id=None, node=None, rootedge=None, edge=None, set=None, valueOf_=None, mixedclass_=None, content_=None):
-        super(AbstractTree, self).__init__(about, meta, label, id, valueOf_, mixedclass_, content_, )
+    def __init__(self, about=None, meta=None, label=None, id=None, node=None, rootedge=None, edge=None, set=None):
+        super(AbstractTree, self).__init__(about, meta, label, id, )
         if node is None:
             self.node = []
         else:
@@ -4916,16 +4693,6 @@ class AbstractTree(IDTagged):
             self.set = []
         else:
             self.set = set
-        self.valueOf_ = valueOf_
-        if mixedclass_ is None:
-            self.mixedclass_ = MixedContainer
-        else:
-            self.mixedclass_ = mixedclass_
-        if content_ is None:
-            self.content_ = []
-        else:
-            self.content_ = content_
-        self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
         if AbstractTree.subclass:
             return AbstractTree.subclass(*args_, **kwargs_)
@@ -4946,8 +4713,6 @@ class AbstractTree(IDTagged):
     def set_set(self, set): self.set = set
     def add_set(self, value): self.set.append(value)
     def insert_set(self, index, value): self.set[index] = value
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='AbstractTree', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -4965,15 +4730,19 @@ class AbstractTree(IDTagged):
         super(AbstractTree, self).exportAttributes(outfile, level, already_processed, namespace_, name_='AbstractTree')
     def exportChildren(self, outfile, level, namespace_='', name_='AbstractTree'):
         super(AbstractTree, self).exportChildren(outfile, level, namespace_, name_)
-        for item_ in self.content_:
-            item_.export(outfile, level, item_.name, namespace_)
+        for node_ in self.get_node():
+            node_.export(outfile, level, namespace_, name_='node')
+        rootedge_.export(outfile, level, namespace_, name_='rootedge')
+        for edge_ in self.get_edge():
+            edge_.export(outfile, level, namespace_, name_='edge')
+        for set_ in self.set:
+            set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.node or
             self.rootedge is not None or
             self.edge or
             self.set or
-            self.valueOf_ or
             super(AbstractTree, self).hasContent_()
             ):
             return True
@@ -4989,45 +4758,56 @@ class AbstractTree(IDTagged):
     def exportLiteralChildren(self, outfile, level, name_):
         super(AbstractTree, self).exportLiteralChildren(outfile, level, name_)
         showIndent(outfile, level)
-        outfile.write('content_ = [\n')
-        for item_ in self.content_:
-            item_.exportLiteral(outfile, level, name_)
+        outfile.write('node=[\n')
+        level += 1
+        for node_ in self.node:
+            showIndent(outfile, level)
+            outfile.write('model_.AbstractNode(\n')
+            node_.exportLiteral(outfile, level, name_='AbstractNode')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
+        showIndent(outfile, level)
+        outfile.write('],\n')
+        if self.AbstractRootEdge is not None:
+            showIndent(outfile, level)
+            outfile.write('AbstractRootEdge=model_.AbstractRootEdge(\n')
+            self.AbstractRootEdge.exportLiteral(outfile, level)
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        showIndent(outfile, level)
+        outfile.write('edge=[\n')
+        level += 1
+        for edge_ in self.edge:
+            showIndent(outfile, level)
+            outfile.write('model_.AbstractEdge(\n')
+            edge_.exportLiteral(outfile, level, name_='AbstractEdge')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
         showIndent(outfile, level)
-        outfile.write('content_ = [\n')
-        for item_ in self.content_:
-            item_.exportLiteral(outfile, level, name_)
+        outfile.write('set=[\n')
+        level += 1
+        for set_ in self.set:
+            showIndent(outfile, level)
+            outfile.write('model_.NodeAndRootEdgeAndEdgeSet(\n')
+            set_.exportLiteral(outfile, level, name_='NodeAndRootEdgeAndEdgeSet')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
-        showIndent(outfile, level)
-        outfile.write('content_ = [\n')
-        for item_ in self.content_:
-            item_.exportLiteral(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        showIndent(outfile, level)
-        outfile.write('content_ = [\n')
-        for item_ in self.content_:
-            item_.exportLiteral(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
-        if node.text is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', node.text)
-            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
         super(AbstractTree, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
-        if nodeName_ == 'node':
+        if nodeName_ == 'node': 
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
@@ -5043,14 +4823,8 @@ class AbstractTree(IDTagged):
             else:
                 raise NotImplementedError(
                     'Class not implemented for <node> element')
-            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
-                MixedContainer.TypeNone, 'node', obj_)
-            self.content_.append(obj_)
-            if hasattr(self, 'add_node'):
-              self.add_node(obj_.value)
-            elif hasattr(self, 'set_node'):
-              self.set_node(obj_.value)
-        elif nodeName_ == 'rootedge':
+            self.node.append(obj_)
+        elif nodeName_ == 'rootedge': 
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
@@ -5066,14 +4840,8 @@ class AbstractTree(IDTagged):
             else:
                 raise NotImplementedError(
                     'Class not implemented for <rootedge> element')
-            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
-                MixedContainer.TypeNone, 'rootedge', obj_)
-            self.content_.append(obj_)
-            if hasattr(self, 'add_rootedge'):
-              self.add_rootedge(obj_.value)
-            elif hasattr(self, 'set_rootedge'):
-              self.set_rootedge(obj_.value)
-        elif nodeName_ == 'edge':
+            self.set_rootedge(obj_)
+        elif nodeName_ == 'edge': 
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
@@ -5089,27 +4857,11 @@ class AbstractTree(IDTagged):
             else:
                 raise NotImplementedError(
                     'Class not implemented for <edge> element')
-            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
-                MixedContainer.TypeNone, 'edge', obj_)
-            self.content_.append(obj_)
-            if hasattr(self, 'add_edge'):
-              self.add_edge(obj_.value)
-            elif hasattr(self, 'set_edge'):
-              self.set_edge(obj_.value)
-        elif nodeName_ == 'set':
+            self.edge.append(obj_)
+        elif nodeName_ == 'set': 
             obj_ = NodeAndRootEdgeAndEdgeSet.factory()
             obj_.build(child_)
-            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
-                MixedContainer.TypeNone, 'set', obj_)
-            self.content_.append(obj_)
-            if hasattr(self, 'add_set'):
-              self.add_set(obj_.value)
-            elif hasattr(self, 'set_set'):
-              self.set_set(obj_.value)
-        if not from_subclass and child_.tail is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', child_.tail)
-            self.content_.append(obj_)
+            self.set.append(obj_)
         super(AbstractTree, self).buildChildren(child_, nodeName_, True)
 # end class AbstractTree
 
@@ -5122,20 +4874,11 @@ class AbstractRootEdge(IDTagged):
     before things start splitting up."""
     subclass = None
     superclass = IDTagged
-    def __init__(self, about=None, meta=None, label=None, id=None, length=None, target=None, valueOf_=None, mixedclass_=None, content_=None):
-        super(AbstractRootEdge, self).__init__(about, meta, label, id, valueOf_, mixedclass_, content_, )
+    def __init__(self, about=None, meta=None, label=None, id=None, length=None, target=None):
+        super(AbstractRootEdge, self).__init__(about, meta, label, id, )
         self.length = _cast(None, length)
         self.target = _cast(None, target)
-        self.valueOf_ = valueOf_
-        if mixedclass_ is None:
-            self.mixedclass_ = MixedContainer
-        else:
-            self.mixedclass_ = mixedclass_
-        if content_ is None:
-            self.content_ = []
-        else:
-            self.content_ = content_
-        self.valueOf_ = valueOf_
+        pass
     def factory(*args_, **kwargs_):
         if AbstractRootEdge.subclass:
             return AbstractRootEdge.subclass(*args_, **kwargs_)
@@ -5146,8 +4889,6 @@ class AbstractRootEdge(IDTagged):
     def set_length(self, length): self.length = length
     def get_target(self): return self.target
     def set_target(self, target): self.target = target
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='AbstractRootEdge', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -5171,7 +4912,6 @@ class AbstractRootEdge(IDTagged):
         super(AbstractRootEdge, self).exportChildren(outfile, level, namespace_, name_)
     def hasContent_(self):
         if (
-            self.valueOf_ or
             super(AbstractRootEdge, self).hasContent_()
             ):
             return True
@@ -5192,15 +4932,8 @@ class AbstractRootEdge(IDTagged):
         super(AbstractRootEdge, self).exportLiteralAttributes(outfile, level, name_)
     def exportLiteralChildren(self, outfile, level, name_):
         super(AbstractRootEdge, self).exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
-        if node.text is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', node.text)
-            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
@@ -5215,10 +4948,6 @@ class AbstractRootEdge(IDTagged):
             self.target = value
         super(AbstractRootEdge, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
-        if not from_subclass and child_.tail is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', child_.tail)
-            self.content_.append(obj_)
         super(AbstractRootEdge, self).buildChildren(child_, nodeName_, True)
         pass
 # end class AbstractRootEdge
@@ -5230,21 +4959,12 @@ class AbstractEdge(IDTagged):
     GraphML, i.e. an element that connects node elements."""
     subclass = None
     superclass = IDTagged
-    def __init__(self, about=None, meta=None, label=None, id=None, source=None, length=None, target=None, valueOf_=None, mixedclass_=None, content_=None):
-        super(AbstractEdge, self).__init__(about, meta, label, id, valueOf_, mixedclass_, content_, )
+    def __init__(self, about=None, meta=None, label=None, id=None, source=None, length=None, target=None):
+        super(AbstractEdge, self).__init__(about, meta, label, id, )
         self.source = _cast(None, source)
         self.length = _cast(None, length)
         self.target = _cast(None, target)
-        self.valueOf_ = valueOf_
-        if mixedclass_ is None:
-            self.mixedclass_ = MixedContainer
-        else:
-            self.mixedclass_ = mixedclass_
-        if content_ is None:
-            self.content_ = []
-        else:
-            self.content_ = content_
-        self.valueOf_ = valueOf_
+        pass
     def factory(*args_, **kwargs_):
         if AbstractEdge.subclass:
             return AbstractEdge.subclass(*args_, **kwargs_)
@@ -5257,8 +4977,6 @@ class AbstractEdge(IDTagged):
     def set_length(self, length): self.length = length
     def get_target(self): return self.target
     def set_target(self, target): self.target = target
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='AbstractEdge', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -5283,7 +5001,6 @@ class AbstractEdge(IDTagged):
         super(AbstractEdge, self).exportChildren(outfile, level, namespace_, name_)
     def hasContent_(self):
         if (
-            self.valueOf_ or
             super(AbstractEdge, self).hasContent_()
             ):
             return True
@@ -5307,15 +5024,8 @@ class AbstractEdge(IDTagged):
         super(AbstractEdge, self).exportLiteralAttributes(outfile, level, name_)
     def exportLiteralChildren(self, outfile, level, name_):
         super(AbstractEdge, self).exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
-        if node.text is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', node.text)
-            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
@@ -5334,10 +5044,6 @@ class AbstractEdge(IDTagged):
             self.target = value
         super(AbstractEdge, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
-        if not from_subclass and child_.tail is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', child_.tail)
-            self.content_.append(obj_)
         super(AbstractEdge, self).buildChildren(child_, nodeName_, True)
         pass
 # end class AbstractEdge
@@ -6716,21 +6422,12 @@ class AbstractChar(IDTagged):
     column definition) or an integer for sequence matrices."""
     subclass = None
     superclass = IDTagged
-    def __init__(self, about=None, meta=None, label=None, id=None, tokens=None, states=None, codon=None, valueOf_=None, mixedclass_=None, content_=None):
-        super(AbstractChar, self).__init__(about, meta, label, id, valueOf_, mixedclass_, content_, )
+    def __init__(self, about=None, meta=None, label=None, id=None, tokens=None, states=None, codon=None):
+        super(AbstractChar, self).__init__(about, meta, label, id, )
         self.tokens = _cast(None, tokens)
         self.states = _cast(None, states)
         self.codon = _cast(None, codon)
-        self.valueOf_ = valueOf_
-        if mixedclass_ is None:
-            self.mixedclass_ = MixedContainer
-        else:
-            self.mixedclass_ = mixedclass_
-        if content_ is None:
-            self.content_ = []
-        else:
-            self.content_ = content_
-        self.valueOf_ = valueOf_
+        pass
     def factory(*args_, **kwargs_):
         if AbstractChar.subclass:
             return AbstractChar.subclass(*args_, **kwargs_)
@@ -6749,8 +6446,6 @@ class AbstractChar(IDTagged):
     def validate_CodonPosition(self, value):
         # Validate type CodonPosition, a restriction on xs:nonNegativeInteger.
         pass
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='AbstractChar', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -6779,7 +6474,6 @@ class AbstractChar(IDTagged):
         super(AbstractChar, self).exportChildren(outfile, level, namespace_, name_)
     def hasContent_(self):
         if (
-            self.valueOf_ or
             super(AbstractChar, self).hasContent_()
             ):
             return True
@@ -6803,15 +6497,8 @@ class AbstractChar(IDTagged):
         super(AbstractChar, self).exportLiteralAttributes(outfile, level, name_)
     def exportLiteralChildren(self, outfile, level, name_):
         super(AbstractChar, self).exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
-        if node.text is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', node.text)
-            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
@@ -6832,10 +6519,6 @@ class AbstractChar(IDTagged):
             self.validate_CodonPosition(self.codon)    # validate type CodonPosition
         super(AbstractChar, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
-        if not from_subclass and child_.tail is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', child_.tail)
-            self.content_.append(obj_)
         super(AbstractChar, self).buildChildren(child_, nodeName_, True)
         pass
 # end class AbstractChar
@@ -6845,8 +6528,8 @@ class AbstractStates(IDTagged):
     """A container for a set of AbstractState elements."""
     subclass = None
     superclass = IDTagged
-    def __init__(self, about=None, meta=None, label=None, id=None, state=None, polymorphic_state_set=None, uncertain_state_set=None, set=None, valueOf_=None, mixedclass_=None, content_=None):
-        super(AbstractStates, self).__init__(about, meta, label, id, valueOf_, mixedclass_, content_, )
+    def __init__(self, about=None, meta=None, label=None, id=None, state=None, polymorphic_state_set=None, uncertain_state_set=None, set=None):
+        super(AbstractStates, self).__init__(about, meta, label, id, )
         if state is None:
             self.state = []
         else:
@@ -6863,16 +6546,6 @@ class AbstractStates(IDTagged):
             self.set = []
         else:
             self.set = set
-        self.valueOf_ = valueOf_
-        if mixedclass_ is None:
-            self.mixedclass_ = MixedContainer
-        else:
-            self.mixedclass_ = mixedclass_
-        if content_ is None:
-            self.content_ = []
-        else:
-            self.content_ = content_
-        self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
         if AbstractStates.subclass:
             return AbstractStates.subclass(*args_, **kwargs_)
@@ -6895,8 +6568,6 @@ class AbstractStates(IDTagged):
     def set_set(self, set): self.set = set
     def add_set(self, value): self.set.append(value)
     def insert_set(self, index, value): self.set[index] = value
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='AbstractStates', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -6914,15 +6585,20 @@ class AbstractStates(IDTagged):
         super(AbstractStates, self).exportAttributes(outfile, level, already_processed, namespace_, name_='AbstractStates')
     def exportChildren(self, outfile, level, namespace_='', name_='AbstractStates'):
         super(AbstractStates, self).exportChildren(outfile, level, namespace_, name_)
-        for item_ in self.content_:
-            item_.export(outfile, level, item_.name, namespace_)
+        for state_ in self.get_state():
+            state_.export(outfile, level, namespace_, name_='state')
+        for polymorphic_state_set_ in self.get_polymorphic_state_set():
+            polymorphic_state_set_.export(outfile, level, namespace_, name_='polymorphic_state_set')
+        for uncertain_state_set_ in self.get_uncertain_state_set():
+            uncertain_state_set_.export(outfile, level, namespace_, name_='uncertain_state_set')
+        for set_ in self.set:
+            set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.state or
             self.polymorphic_state_set or
             self.uncertain_state_set or
             self.set or
-            self.valueOf_ or
             super(AbstractStates, self).hasContent_()
             ):
             return True
@@ -6938,45 +6614,62 @@ class AbstractStates(IDTagged):
     def exportLiteralChildren(self, outfile, level, name_):
         super(AbstractStates, self).exportLiteralChildren(outfile, level, name_)
         showIndent(outfile, level)
-        outfile.write('content_ = [\n')
-        for item_ in self.content_:
-            item_.exportLiteral(outfile, level, name_)
+        outfile.write('state=[\n')
+        level += 1
+        for state_ in self.state:
+            showIndent(outfile, level)
+            outfile.write('model_.AbstractState(\n')
+            state_.exportLiteral(outfile, level, name_='AbstractState')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
         showIndent(outfile, level)
-        outfile.write('content_ = [\n')
-        for item_ in self.content_:
-            item_.exportLiteral(outfile, level, name_)
+        outfile.write('polymorphic_state_set=[\n')
+        level += 1
+        for polymorphic_state_set_ in self.polymorphic_state_set:
+            showIndent(outfile, level)
+            outfile.write('model_.AbstractPolymorphicStateSet(\n')
+            polymorphic_state_set_.exportLiteral(outfile, level, name_='AbstractPolymorphicStateSet')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
         showIndent(outfile, level)
-        outfile.write('content_ = [\n')
-        for item_ in self.content_:
-            item_.exportLiteral(outfile, level, name_)
+        outfile.write('uncertain_state_set=[\n')
+        level += 1
+        for uncertain_state_set_ in self.uncertain_state_set:
+            showIndent(outfile, level)
+            outfile.write('model_.AbstractUncertainStateSet(\n')
+            uncertain_state_set_.exportLiteral(outfile, level, name_='AbstractUncertainStateSet')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
         showIndent(outfile, level)
-        outfile.write('content_ = [\n')
-        for item_ in self.content_:
-            item_.exportLiteral(outfile, level, name_)
+        outfile.write('set=[\n')
+        level += 1
+        for set_ in self.set:
+            showIndent(outfile, level)
+            outfile.write('model_.StateSet(\n')
+            set_.exportLiteral(outfile, level, name_='StateSet')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
-        if node.text is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', node.text)
-            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
         super(AbstractStates, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
-        if nodeName_ == 'state':
+        if nodeName_ == 'state': 
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
@@ -6992,14 +6685,8 @@ class AbstractStates(IDTagged):
             else:
                 raise NotImplementedError(
                     'Class not implemented for <state> element')
-            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
-                MixedContainer.TypeNone, 'state', obj_)
-            self.content_.append(obj_)
-            if hasattr(self, 'add_state'):
-              self.add_state(obj_.value)
-            elif hasattr(self, 'set_state'):
-              self.set_state(obj_.value)
-        elif nodeName_ == 'polymorphic_state_set':
+            self.state.append(obj_)
+        elif nodeName_ == 'polymorphic_state_set': 
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
@@ -7015,14 +6702,8 @@ class AbstractStates(IDTagged):
             else:
                 raise NotImplementedError(
                     'Class not implemented for <polymorphic_state_set> element')
-            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
-                MixedContainer.TypeNone, 'polymorphic_state_set', obj_)
-            self.content_.append(obj_)
-            if hasattr(self, 'add_polymorphic_state_set'):
-              self.add_polymorphic_state_set(obj_.value)
-            elif hasattr(self, 'set_polymorphic_state_set'):
-              self.set_polymorphic_state_set(obj_.value)
-        elif nodeName_ == 'uncertain_state_set':
+            self.polymorphic_state_set.append(obj_)
+        elif nodeName_ == 'uncertain_state_set': 
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
@@ -7038,27 +6719,11 @@ class AbstractStates(IDTagged):
             else:
                 raise NotImplementedError(
                     'Class not implemented for <uncertain_state_set> element')
-            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
-                MixedContainer.TypeNone, 'uncertain_state_set', obj_)
-            self.content_.append(obj_)
-            if hasattr(self, 'add_uncertain_state_set'):
-              self.add_uncertain_state_set(obj_.value)
-            elif hasattr(self, 'set_uncertain_state_set'):
-              self.set_uncertain_state_set(obj_.value)
-        elif nodeName_ == 'set':
+            self.uncertain_state_set.append(obj_)
+        elif nodeName_ == 'set': 
             obj_ = StateSet.factory()
             obj_.build(child_)
-            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
-                MixedContainer.TypeNone, 'set', obj_)
-            self.content_.append(obj_)
-            if hasattr(self, 'add_set'):
-              self.add_set(obj_.value)
-            elif hasattr(self, 'set_set'):
-              self.set_set(obj_.value)
-        if not from_subclass and child_.tail is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', child_.tail)
-            self.content_.append(obj_)
+            self.set.append(obj_)
         super(AbstractStates, self).buildChildren(child_, nodeName_, True)
 # end class AbstractStates
 
@@ -7071,19 +6736,10 @@ class AbstractState(IDTagged):
     elements to resolve ambiguities."""
     subclass = None
     superclass = IDTagged
-    def __init__(self, about=None, meta=None, label=None, id=None, symbol=None, valueOf_=None, mixedclass_=None, content_=None):
-        super(AbstractState, self).__init__(about, meta, label, id, valueOf_, mixedclass_, content_, )
+    def __init__(self, about=None, meta=None, label=None, id=None, symbol=None):
+        super(AbstractState, self).__init__(about, meta, label, id, )
         self.symbol = _cast(None, symbol)
-        self.valueOf_ = valueOf_
-        if mixedclass_ is None:
-            self.mixedclass_ = MixedContainer
-        else:
-            self.mixedclass_ = mixedclass_
-        if content_ is None:
-            self.content_ = []
-        else:
-            self.content_ = content_
-        self.valueOf_ = valueOf_
+        pass
     def factory(*args_, **kwargs_):
         if AbstractState.subclass:
             return AbstractState.subclass(*args_, **kwargs_)
@@ -7092,8 +6748,6 @@ class AbstractState(IDTagged):
     factory = staticmethod(factory)
     def get_symbol(self): return self.symbol
     def set_symbol(self, symbol): self.symbol = symbol
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='AbstractState', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -7114,7 +6768,6 @@ class AbstractState(IDTagged):
         super(AbstractState, self).exportChildren(outfile, level, namespace_, name_)
     def hasContent_(self):
         if (
-            self.valueOf_ or
             super(AbstractState, self).hasContent_()
             ):
             return True
@@ -7132,15 +6785,8 @@ class AbstractState(IDTagged):
         super(AbstractState, self).exportLiteralAttributes(outfile, level, name_)
     def exportLiteralChildren(self, outfile, level, name_):
         super(AbstractState, self).exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
-        if node.text is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', node.text)
-            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
@@ -7151,10 +6797,6 @@ class AbstractState(IDTagged):
             self.symbol = value
         super(AbstractState, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
-        if not from_subclass and child_.tail is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', child_.tail)
-            self.content_.append(obj_)
         super(AbstractState, self).buildChildren(child_, nodeName_, True)
         pass
 # end class AbstractState
@@ -7295,26 +6937,15 @@ class ContinuousChar(AbstractChar):
 class AbstractSet(IDTagged):
     subclass = None
     superclass = IDTagged
-    def __init__(self, about=None, meta=None, label=None, id=None, valueOf_=None, mixedclass_=None, content_=None):
-        super(AbstractSet, self).__init__(about, meta, label, id, valueOf_, mixedclass_, content_, )
-        self.valueOf_ = valueOf_
-        if mixedclass_ is None:
-            self.mixedclass_ = MixedContainer
-        else:
-            self.mixedclass_ = mixedclass_
-        if content_ is None:
-            self.content_ = []
-        else:
-            self.content_ = content_
-        self.valueOf_ = valueOf_
+    def __init__(self, about=None, meta=None, label=None, id=None):
+        super(AbstractSet, self).__init__(about, meta, label, id, )
+        pass
     def factory(*args_, **kwargs_):
         if AbstractSet.subclass:
             return AbstractSet.subclass(*args_, **kwargs_)
         else:
             return AbstractSet(*args_, **kwargs_)
     factory = staticmethod(factory)
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='AbstractSet', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -7334,7 +6965,6 @@ class AbstractSet(IDTagged):
         super(AbstractSet, self).exportChildren(outfile, level, namespace_, name_)
     def hasContent_(self):
         if (
-            self.valueOf_ or
             super(AbstractSet, self).hasContent_()
             ):
             return True
@@ -7349,25 +6979,14 @@ class AbstractSet(IDTagged):
         super(AbstractSet, self).exportLiteralAttributes(outfile, level, name_)
     def exportLiteralChildren(self, outfile, level, name_):
         super(AbstractSet, self).exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
-        if node.text is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', node.text)
-            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
         super(AbstractSet, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
-        if not from_subclass and child_.tail is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', child_.tail)
-            self.content_.append(obj_)
         super(AbstractSet, self).buildChildren(child_, nodeName_, True)
         pass
 # end class AbstractSet
@@ -7378,19 +6997,10 @@ class TaxaLinked(IDTagged):
     require an otus id reference."""
     subclass = None
     superclass = IDTagged
-    def __init__(self, about=None, meta=None, label=None, id=None, otus=None, valueOf_=None, mixedclass_=None, content_=None):
-        super(TaxaLinked, self).__init__(about, meta, label, id, valueOf_, mixedclass_, content_, )
+    def __init__(self, about=None, meta=None, label=None, id=None, otus=None):
+        super(TaxaLinked, self).__init__(about, meta, label, id, )
         self.otus = _cast(None, otus)
-        self.valueOf_ = valueOf_
-        if mixedclass_ is None:
-            self.mixedclass_ = MixedContainer
-        else:
-            self.mixedclass_ = mixedclass_
-        if content_ is None:
-            self.content_ = []
-        else:
-            self.content_ = content_
-        self.valueOf_ = valueOf_
+        pass
     def factory(*args_, **kwargs_):
         if TaxaLinked.subclass:
             return TaxaLinked.subclass(*args_, **kwargs_)
@@ -7399,8 +7009,6 @@ class TaxaLinked(IDTagged):
     factory = staticmethod(factory)
     def get_otus(self): return self.otus
     def set_otus(self, otus): self.otus = otus
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='TaxaLinked', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -7421,7 +7029,6 @@ class TaxaLinked(IDTagged):
         super(TaxaLinked, self).exportChildren(outfile, level, namespace_, name_)
     def hasContent_(self):
         if (
-            self.valueOf_ or
             super(TaxaLinked, self).hasContent_()
             ):
             return True
@@ -7439,15 +7046,8 @@ class TaxaLinked(IDTagged):
         super(TaxaLinked, self).exportLiteralAttributes(outfile, level, name_)
     def exportLiteralChildren(self, outfile, level, name_):
         super(TaxaLinked, self).exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
-        if node.text is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', node.text)
-            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
@@ -7458,10 +7058,6 @@ class TaxaLinked(IDTagged):
             self.otus = value
         super(TaxaLinked, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
-        if not from_subclass and child_.tail is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', child_.tail)
-            self.content_.append(obj_)
         super(TaxaLinked, self).buildChildren(child_, nodeName_, True)
         pass
 # end class TaxaLinked
@@ -7472,19 +7068,10 @@ class OptionalTaxonLinked(IDTagged):
     that optionally have an otu id reference."""
     subclass = None
     superclass = IDTagged
-    def __init__(self, about=None, meta=None, label=None, id=None, otu=None, valueOf_=None, mixedclass_=None, content_=None):
-        super(OptionalTaxonLinked, self).__init__(about, meta, label, id, valueOf_, mixedclass_, content_, )
+    def __init__(self, about=None, meta=None, label=None, id=None, otu=None):
+        super(OptionalTaxonLinked, self).__init__(about, meta, label, id, )
         self.otu = _cast(None, otu)
-        self.valueOf_ = valueOf_
-        if mixedclass_ is None:
-            self.mixedclass_ = MixedContainer
-        else:
-            self.mixedclass_ = mixedclass_
-        if content_ is None:
-            self.content_ = []
-        else:
-            self.content_ = content_
-        self.valueOf_ = valueOf_
+        pass
     def factory(*args_, **kwargs_):
         if OptionalTaxonLinked.subclass:
             return OptionalTaxonLinked.subclass(*args_, **kwargs_)
@@ -7493,8 +7080,6 @@ class OptionalTaxonLinked(IDTagged):
     factory = staticmethod(factory)
     def get_otu(self): return self.otu
     def set_otu(self, otu): self.otu = otu
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='OptionalTaxonLinked', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -7517,7 +7102,6 @@ class OptionalTaxonLinked(IDTagged):
         super(OptionalTaxonLinked, self).exportChildren(outfile, level, namespace_, name_)
     def hasContent_(self):
         if (
-            self.valueOf_ or
             super(OptionalTaxonLinked, self).hasContent_()
             ):
             return True
@@ -7535,15 +7119,8 @@ class OptionalTaxonLinked(IDTagged):
         super(OptionalTaxonLinked, self).exportLiteralAttributes(outfile, level, name_)
     def exportLiteralChildren(self, outfile, level, name_):
         super(OptionalTaxonLinked, self).exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
-        if node.text is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', node.text)
-            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
@@ -7554,10 +7131,6 @@ class OptionalTaxonLinked(IDTagged):
             self.otu = value
         super(OptionalTaxonLinked, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
-        if not from_subclass and child_.tail is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', child_.tail)
-            self.content_.append(obj_)
         super(OptionalTaxonLinked, self).buildChildren(child_, nodeName_, True)
         pass
 # end class OptionalTaxonLinked
@@ -7568,19 +7141,10 @@ class TaxonLinked(IDTagged):
     require a taxon id reference."""
     subclass = None
     superclass = IDTagged
-    def __init__(self, about=None, meta=None, label=None, id=None, otu=None, valueOf_=None, mixedclass_=None, content_=None):
-        super(TaxonLinked, self).__init__(about, meta, label, id, valueOf_, mixedclass_, content_, )
+    def __init__(self, about=None, meta=None, label=None, id=None, otu=None):
+        super(TaxonLinked, self).__init__(about, meta, label, id, )
         self.otu = _cast(None, otu)
-        self.valueOf_ = valueOf_
-        if mixedclass_ is None:
-            self.mixedclass_ = MixedContainer
-        else:
-            self.mixedclass_ = mixedclass_
-        if content_ is None:
-            self.content_ = []
-        else:
-            self.content_ = content_
-        self.valueOf_ = valueOf_
+        pass
     def factory(*args_, **kwargs_):
         if TaxonLinked.subclass:
             return TaxonLinked.subclass(*args_, **kwargs_)
@@ -7589,8 +7153,6 @@ class TaxonLinked(IDTagged):
     factory = staticmethod(factory)
     def get_otu(self): return self.otu
     def set_otu(self, otu): self.otu = otu
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='TaxonLinked', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -7611,7 +7173,6 @@ class TaxonLinked(IDTagged):
         super(TaxonLinked, self).exportChildren(outfile, level, namespace_, name_)
     def hasContent_(self):
         if (
-            self.valueOf_ or
             super(TaxonLinked, self).hasContent_()
             ):
             return True
@@ -7629,15 +7190,8 @@ class TaxonLinked(IDTagged):
         super(TaxonLinked, self).exportLiteralAttributes(outfile, level, name_)
     def exportLiteralChildren(self, outfile, level, name_):
         super(TaxonLinked, self).exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
-        if node.text is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', node.text)
-            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
@@ -7648,10 +7202,6 @@ class TaxonLinked(IDTagged):
             self.otu = value
         super(TaxonLinked, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
-        if not from_subclass and child_.tail is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', child_.tail)
-            self.content_.append(obj_)
         super(TaxonLinked, self).buildChildren(child_, nodeName_, True)
         pass
 # end class TaxonLinked
@@ -8140,19 +7690,10 @@ class AbstractNode(OptionalTaxonLinked):
     elements."""
     subclass = None
     superclass = OptionalTaxonLinked
-    def __init__(self, about=None, meta=None, label=None, id=None, otu=None, root=False, valueOf_=None, mixedclass_=None, content_=None):
-        super(AbstractNode, self).__init__(about, meta, label, id, otu, valueOf_, mixedclass_, content_, )
+    def __init__(self, about=None, meta=None, label=None, id=None, otu=None, root=False):
+        super(AbstractNode, self).__init__(about, meta, label, id, otu, )
         self.root = _cast(bool, root)
-        self.valueOf_ = valueOf_
-        if mixedclass_ is None:
-            self.mixedclass_ = MixedContainer
-        else:
-            self.mixedclass_ = mixedclass_
-        if content_ is None:
-            self.content_ = []
-        else:
-            self.content_ = content_
-        self.valueOf_ = valueOf_
+        pass
     def factory(*args_, **kwargs_):
         if AbstractNode.subclass:
             return AbstractNode.subclass(*args_, **kwargs_)
@@ -8161,8 +7702,6 @@ class AbstractNode(OptionalTaxonLinked):
     factory = staticmethod(factory)
     def get_root(self): return self.root
     def set_root(self, root): self.root = root
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='AbstractNode', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -8185,7 +7724,6 @@ class AbstractNode(OptionalTaxonLinked):
         super(AbstractNode, self).exportChildren(outfile, level, namespace_, name_)
     def hasContent_(self):
         if (
-            self.valueOf_ or
             super(AbstractNode, self).hasContent_()
             ):
             return True
@@ -8203,15 +7741,8 @@ class AbstractNode(OptionalTaxonLinked):
         super(AbstractNode, self).exportLiteralAttributes(outfile, level, name_)
     def exportLiteralChildren(self, outfile, level, name_):
         super(AbstractNode, self).exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
-        if node.text is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', node.text)
-            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
@@ -8227,10 +7758,6 @@ class AbstractNode(OptionalTaxonLinked):
                 raise_parse_error(node, 'Bad boolean attribute')
         super(AbstractNode, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
-        if not from_subclass and child_.tail is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', child_.tail)
-            self.content_.append(obj_)
         super(AbstractNode, self).buildChildren(child_, nodeName_, True)
         pass
 # end class AbstractNode
@@ -8331,8 +7858,8 @@ class Trees(TaxaLinked):
     """A concrete container for tree objects."""
     subclass = None
     superclass = TaxaLinked
-    def __init__(self, about=None, meta=None, label=None, id=None, otus=None, network=None, tree=None, set=None, valueOf_=None, mixedclass_=None, content_=None):
-        super(Trees, self).__init__(about, meta, label, id, otus, valueOf_, mixedclass_, content_, )
+    def __init__(self, about=None, meta=None, label=None, id=None, otus=None, network=None, tree=None, set=None):
+        super(Trees, self).__init__(about, meta, label, id, otus, )
         if network is None:
             self.network = []
         else:
@@ -8345,16 +7872,6 @@ class Trees(TaxaLinked):
             self.set = []
         else:
             self.set = set
-        self.valueOf_ = valueOf_
-        if mixedclass_ is None:
-            self.mixedclass_ = MixedContainer
-        else:
-            self.mixedclass_ = mixedclass_
-        if content_ is None:
-            self.content_ = []
-        else:
-            self.content_ = content_
-        self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
         if Trees.subclass:
             return Trees.subclass(*args_, **kwargs_)
@@ -8373,8 +7890,6 @@ class Trees(TaxaLinked):
     def set_set(self, set): self.set = set
     def add_set(self, value): self.set.append(value)
     def insert_set(self, index, value): self.set[index] = value
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='Trees', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -8392,14 +7907,17 @@ class Trees(TaxaLinked):
         super(Trees, self).exportAttributes(outfile, level, already_processed, namespace_, name_='Trees')
     def exportChildren(self, outfile, level, namespace_='', name_='Trees'):
         super(Trees, self).exportChildren(outfile, level, namespace_, name_)
-        for item_ in self.content_:
-            item_.export(outfile, level, item_.name, namespace_)
+        for network_ in self.get_network():
+            network_.export(outfile, level, namespace_, name_='network')
+        for tree_ in self.get_tree():
+            tree_.export(outfile, level, namespace_, name_='tree')
+        for set_ in self.set:
+            set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.network or
             self.tree or
             self.set or
-            self.valueOf_ or
             super(Trees, self).hasContent_()
             ):
             return True
@@ -8415,39 +7933,50 @@ class Trees(TaxaLinked):
     def exportLiteralChildren(self, outfile, level, name_):
         super(Trees, self).exportLiteralChildren(outfile, level, name_)
         showIndent(outfile, level)
-        outfile.write('content_ = [\n')
-        for item_ in self.content_:
-            item_.exportLiteral(outfile, level, name_)
+        outfile.write('network=[\n')
+        level += 1
+        for network_ in self.network:
+            showIndent(outfile, level)
+            outfile.write('model_.AbstractNetwork(\n')
+            network_.exportLiteral(outfile, level, name_='AbstractNetwork')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
         showIndent(outfile, level)
-        outfile.write('content_ = [\n')
-        for item_ in self.content_:
-            item_.exportLiteral(outfile, level, name_)
+        outfile.write('tree=[\n')
+        level += 1
+        for tree_ in self.tree:
+            showIndent(outfile, level)
+            outfile.write('model_.AbstractTree(\n')
+            tree_.exportLiteral(outfile, level, name_='AbstractTree')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
         showIndent(outfile, level)
-        outfile.write('content_ = [\n')
-        for item_ in self.content_:
-            item_.exportLiteral(outfile, level, name_)
+        outfile.write('set=[\n')
+        level += 1
+        for set_ in self.set:
+            showIndent(outfile, level)
+            outfile.write('model_.TreeAndNetworkSet(\n')
+            set_.exportLiteral(outfile, level, name_='TreeAndNetworkSet')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
-        if node.text is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', node.text)
-            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
         super(Trees, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
-        if nodeName_ == 'network':
+        if nodeName_ == 'network': 
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
@@ -8463,14 +7992,8 @@ class Trees(TaxaLinked):
             else:
                 raise NotImplementedError(
                     'Class not implemented for <network> element')
-            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
-                MixedContainer.TypeNone, 'network', obj_)
-            self.content_.append(obj_)
-            if hasattr(self, 'add_network'):
-              self.add_network(obj_.value)
-            elif hasattr(self, 'set_network'):
-              self.set_network(obj_.value)
-        elif nodeName_ == 'tree':
+            self.network.append(obj_)
+        elif nodeName_ == 'tree': 
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
@@ -8486,27 +8009,11 @@ class Trees(TaxaLinked):
             else:
                 raise NotImplementedError(
                     'Class not implemented for <tree> element')
-            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
-                MixedContainer.TypeNone, 'tree', obj_)
-            self.content_.append(obj_)
-            if hasattr(self, 'add_tree'):
-              self.add_tree(obj_.value)
-            elif hasattr(self, 'set_tree'):
-              self.set_tree(obj_.value)
-        elif nodeName_ == 'set':
+            self.tree.append(obj_)
+        elif nodeName_ == 'set': 
             obj_ = TreeAndNetworkSet.factory()
             obj_.build(child_)
-            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
-                MixedContainer.TypeNone, 'set', obj_)
-            self.content_.append(obj_)
-            if hasattr(self, 'add_set'):
-              self.add_set(obj_.value)
-            elif hasattr(self, 'set_set'):
-              self.set_set(obj_.value)
-        if not from_subclass and child_.tail is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', child_.tail)
-            self.content_.append(obj_)
+            self.set.append(obj_)
         super(Trees, self).buildChildren(child_, nodeName_, True)
 # end class Trees
 
@@ -10587,19 +10094,9 @@ class AbstractBlock(TaxaLinked):
     element structure of type AbstractFormat."""
     subclass = None
     superclass = TaxaLinked
-    def __init__(self, about=None, meta=None, label=None, id=None, otus=None, format=None, valueOf_=None, mixedclass_=None, content_=None):
-        super(AbstractBlock, self).__init__(about, meta, label, id, otus, valueOf_, mixedclass_, content_, )
+    def __init__(self, about=None, meta=None, label=None, id=None, otus=None, format=None):
+        super(AbstractBlock, self).__init__(about, meta, label, id, otus, )
         self.format = format
-        self.valueOf_ = valueOf_
-        if mixedclass_ is None:
-            self.mixedclass_ = MixedContainer
-        else:
-            self.mixedclass_ = mixedclass_
-        if content_ is None:
-            self.content_ = []
-        else:
-            self.content_ = content_
-        self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
         if AbstractBlock.subclass:
             return AbstractBlock.subclass(*args_, **kwargs_)
@@ -10608,8 +10105,6 @@ class AbstractBlock(TaxaLinked):
     factory = staticmethod(factory)
     def get_format(self): return self.format
     def set_format(self, format): self.format = format
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='AbstractBlock', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -10627,12 +10122,10 @@ class AbstractBlock(TaxaLinked):
         super(AbstractBlock, self).exportAttributes(outfile, level, already_processed, namespace_, name_='AbstractBlock')
     def exportChildren(self, outfile, level, namespace_='', name_='AbstractBlock'):
         super(AbstractBlock, self).exportChildren(outfile, level, namespace_, name_)
-        for item_ in self.content_:
-            item_.export(outfile, level, item_.name, namespace_)
+        format_.export(outfile, level, namespace_, name_='format')
     def hasContent_(self):
         if (
             self.format is not None or
-            self.valueOf_ or
             super(AbstractBlock, self).hasContent_()
             ):
             return True
@@ -10647,28 +10140,21 @@ class AbstractBlock(TaxaLinked):
         super(AbstractBlock, self).exportLiteralAttributes(outfile, level, name_)
     def exportLiteralChildren(self, outfile, level, name_):
         super(AbstractBlock, self).exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('content_ = [\n')
-        for item_ in self.content_:
-            item_.exportLiteral(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
+        if self.AbstractFormat is not None:
+            showIndent(outfile, level)
+            outfile.write('AbstractFormat=model_.AbstractFormat(\n')
+            self.AbstractFormat.exportLiteral(outfile, level)
+            showIndent(outfile, level)
+            outfile.write('),\n')
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
-        if node.text is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', node.text)
-            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
         super(AbstractBlock, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
-        if nodeName_ == 'format':
+        if nodeName_ == 'format': 
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
@@ -10684,17 +10170,7 @@ class AbstractBlock(TaxaLinked):
             else:
                 raise NotImplementedError(
                     'Class not implemented for <format> element')
-            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
-                MixedContainer.TypeNone, 'format', obj_)
-            self.content_.append(obj_)
-            if hasattr(self, 'add_format'):
-              self.add_format(obj_.value)
-            elif hasattr(self, 'set_format'):
-              self.set_format(obj_.value)
-        if not from_subclass and child_.tail is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', child_.tail)
-            self.content_.append(obj_)
+            self.set_format(obj_)
         super(AbstractBlock, self).buildChildren(child_, nodeName_, True)
 # end class AbstractBlock
 
@@ -10706,8 +10182,8 @@ class AbstractObsRow(TaxonLinked):
     attachments). The row contains multiple cell elements."""
     subclass = None
     superclass = TaxonLinked
-    def __init__(self, about=None, meta=None, label=None, id=None, otu=None, cell=None, set=None, valueOf_=None, mixedclass_=None, content_=None):
-        super(AbstractObsRow, self).__init__(about, meta, label, id, otu, valueOf_, mixedclass_, content_, )
+    def __init__(self, about=None, meta=None, label=None, id=None, otu=None, cell=None, set=None):
+        super(AbstractObsRow, self).__init__(about, meta, label, id, otu, )
         if cell is None:
             self.cell = []
         else:
@@ -10716,16 +10192,6 @@ class AbstractObsRow(TaxonLinked):
             self.set = []
         else:
             self.set = set
-        self.valueOf_ = valueOf_
-        if mixedclass_ is None:
-            self.mixedclass_ = MixedContainer
-        else:
-            self.mixedclass_ = mixedclass_
-        if content_ is None:
-            self.content_ = []
-        else:
-            self.content_ = content_
-        self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
         if AbstractObsRow.subclass:
             return AbstractObsRow.subclass(*args_, **kwargs_)
@@ -10740,8 +10206,6 @@ class AbstractObsRow(TaxonLinked):
     def set_set(self, set): self.set = set
     def add_set(self, value): self.set.append(value)
     def insert_set(self, index, value): self.set[index] = value
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='AbstractObsRow', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -10759,13 +10223,14 @@ class AbstractObsRow(TaxonLinked):
         super(AbstractObsRow, self).exportAttributes(outfile, level, already_processed, namespace_, name_='AbstractObsRow')
     def exportChildren(self, outfile, level, namespace_='', name_='AbstractObsRow'):
         super(AbstractObsRow, self).exportChildren(outfile, level, namespace_, name_)
-        for item_ in self.content_:
-            item_.export(outfile, level, item_.name, namespace_)
+        for cell_ in self.get_cell():
+            cell_.export(outfile, level, namespace_, name_='cell')
+        for set_ in self.set:
+            set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.cell or
             self.set or
-            self.valueOf_ or
             super(AbstractObsRow, self).hasContent_()
             ):
             return True
@@ -10781,33 +10246,38 @@ class AbstractObsRow(TaxonLinked):
     def exportLiteralChildren(self, outfile, level, name_):
         super(AbstractObsRow, self).exportLiteralChildren(outfile, level, name_)
         showIndent(outfile, level)
-        outfile.write('content_ = [\n')
-        for item_ in self.content_:
-            item_.exportLiteral(outfile, level, name_)
+        outfile.write('cell=[\n')
+        level += 1
+        for cell_ in self.cell:
+            showIndent(outfile, level)
+            outfile.write('model_.AbstractObs(\n')
+            cell_.exportLiteral(outfile, level, name_='AbstractObs')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
         showIndent(outfile, level)
-        outfile.write('content_ = [\n')
-        for item_ in self.content_:
-            item_.exportLiteral(outfile, level, name_)
+        outfile.write('set=[\n')
+        level += 1
+        for set_ in self.set:
+            showIndent(outfile, level)
+            outfile.write('model_.CellSet(\n')
+            set_.exportLiteral(outfile, level, name_='CellSet')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
-        if node.text is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', node.text)
-            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
         super(AbstractObsRow, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
-        if nodeName_ == 'cell':
+        if nodeName_ == 'cell': 
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
@@ -10823,27 +10293,11 @@ class AbstractObsRow(TaxonLinked):
             else:
                 raise NotImplementedError(
                     'Class not implemented for <cell> element')
-            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
-                MixedContainer.TypeNone, 'cell', obj_)
-            self.content_.append(obj_)
-            if hasattr(self, 'add_cell'):
-              self.add_cell(obj_.value)
-            elif hasattr(self, 'set_cell'):
-              self.set_cell(obj_.value)
-        elif nodeName_ == 'set':
+            self.cell.append(obj_)
+        elif nodeName_ == 'set': 
             obj_ = CellSet.factory()
             obj_.build(child_)
-            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
-                MixedContainer.TypeNone, 'set', obj_)
-            self.content_.append(obj_)
-            if hasattr(self, 'add_set'):
-              self.add_set(obj_.value)
-            elif hasattr(self, 'set_set'):
-              self.set_set(obj_.value)
-        if not from_subclass and child_.tail is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', child_.tail)
-            self.content_.append(obj_)
+            self.set.append(obj_)
         super(AbstractObsRow, self).buildChildren(child_, nodeName_, True)
 # end class AbstractObsRow
 
@@ -10856,19 +10310,9 @@ class AbstractSeqRow(TaxonLinked):
     character data."""
     subclass = None
     superclass = TaxonLinked
-    def __init__(self, about=None, meta=None, label=None, id=None, otu=None, seq=None, valueOf_=None, mixedclass_=None, content_=None):
-        super(AbstractSeqRow, self).__init__(about, meta, label, id, otu, valueOf_, mixedclass_, content_, )
+    def __init__(self, about=None, meta=None, label=None, id=None, otu=None, seq=None):
+        super(AbstractSeqRow, self).__init__(about, meta, label, id, otu, )
         self.seq = seq
-        self.valueOf_ = valueOf_
-        if mixedclass_ is None:
-            self.mixedclass_ = MixedContainer
-        else:
-            self.mixedclass_ = mixedclass_
-        if content_ is None:
-            self.content_ = []
-        else:
-            self.content_ = content_
-        self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
         if AbstractSeqRow.subclass:
             return AbstractSeqRow.subclass(*args_, **kwargs_)
@@ -10877,8 +10321,6 @@ class AbstractSeqRow(TaxonLinked):
     factory = staticmethod(factory)
     def get_seq(self): return self.seq
     def set_seq(self, seq): self.seq = seq
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='AbstractSeqRow', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -10896,12 +10338,12 @@ class AbstractSeqRow(TaxonLinked):
         super(AbstractSeqRow, self).exportAttributes(outfile, level, already_processed, namespace_, name_='AbstractSeqRow')
     def exportChildren(self, outfile, level, namespace_='', name_='AbstractSeqRow'):
         super(AbstractSeqRow, self).exportChildren(outfile, level, namespace_, name_)
-        for item_ in self.content_:
-            item_.export(outfile, level, item_.name, namespace_)
+        if self.seq is not None:
+            showIndent(outfile, level)
+            outfile.write('<%sseq>%s</%sseq>\n' % (namespace_, self.gds_format_string(quote_xml(self.seq).encode(ExternalEncoding), input_name='seq'), namespace_))
     def hasContent_(self):
         if (
             self.seq is not None or
-            self.valueOf_ or
             super(AbstractSeqRow, self).hasContent_()
             ):
             return True
@@ -10916,36 +10358,20 @@ class AbstractSeqRow(TaxonLinked):
         super(AbstractSeqRow, self).exportLiteralAttributes(outfile, level, name_)
     def exportLiteralChildren(self, outfile, level, name_):
         super(AbstractSeqRow, self).exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('content_ = [\n')
-        for item_ in self.content_:
-            item_.exportLiteral(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
+        if self.seq is not None:
+            showIndent(outfile, level)
+            outfile.write('seq=%s,\n' % quote_python(self.seq).encode(ExternalEncoding))
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
-        if node.text is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', node.text)
-            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
         super(AbstractSeqRow, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
-        if nodeName_ == 'seq' and child_.text is not None:
-            valuestr_ = child_.text
-            obj_ = self.mixedclass_(MixedContainer.CategorySimple,
-                MixedContainer.TypeString, 'seq', valuestr_)
-            self.content_.append(obj_)
-        if not from_subclass and child_.tail is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', child_.tail)
-            self.content_.append(obj_)
+        if nodeName_ == 'seq':
+            seq_ = child_.text
+            self.seq = seq_
         super(AbstractSeqRow, self).buildChildren(child_, nodeName_, True)
 # end class AbstractSeqRow
 
@@ -10959,22 +10385,12 @@ class AbstractUncertainStateSet(AbstractState):
     ambiguities."""
     subclass = None
     superclass = AbstractState
-    def __init__(self, about=None, meta=None, label=None, id=None, symbol=None, member=None, valueOf_=None, mixedclass_=None, content_=None):
-        super(AbstractUncertainStateSet, self).__init__(about, meta, label, id, symbol, valueOf_, mixedclass_, content_, )
+    def __init__(self, about=None, meta=None, label=None, id=None, symbol=None, member=None):
+        super(AbstractUncertainStateSet, self).__init__(about, meta, label, id, symbol, )
         if member is None:
             self.member = []
         else:
             self.member = member
-        self.valueOf_ = valueOf_
-        if mixedclass_ is None:
-            self.mixedclass_ = MixedContainer
-        else:
-            self.mixedclass_ = mixedclass_
-        if content_ is None:
-            self.content_ = []
-        else:
-            self.content_ = content_
-        self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
         if AbstractUncertainStateSet.subclass:
             return AbstractUncertainStateSet.subclass(*args_, **kwargs_)
@@ -10985,8 +10401,6 @@ class AbstractUncertainStateSet(AbstractState):
     def set_member(self, member): self.member = member
     def add_member(self, value): self.member.append(value)
     def insert_member(self, index, value): self.member[index] = value
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='AbstractUncertainStateSet', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -11004,12 +10418,11 @@ class AbstractUncertainStateSet(AbstractState):
         super(AbstractUncertainStateSet, self).exportAttributes(outfile, level, already_processed, namespace_, name_='AbstractUncertainStateSet')
     def exportChildren(self, outfile, level, namespace_='', name_='AbstractUncertainStateSet'):
         super(AbstractUncertainStateSet, self).exportChildren(outfile, level, namespace_, name_)
-        for item_ in self.content_:
-            item_.export(outfile, level, item_.name, namespace_)
+        for member_ in self.get_member():
+            member_.export(outfile, level, namespace_, name_='member')
     def hasContent_(self):
         if (
             self.member or
-            self.valueOf_ or
             super(AbstractUncertainStateSet, self).hasContent_()
             ):
             return True
@@ -11025,27 +10438,26 @@ class AbstractUncertainStateSet(AbstractState):
     def exportLiteralChildren(self, outfile, level, name_):
         super(AbstractUncertainStateSet, self).exportLiteralChildren(outfile, level, name_)
         showIndent(outfile, level)
-        outfile.write('content_ = [\n')
-        for item_ in self.content_:
-            item_.exportLiteral(outfile, level, name_)
+        outfile.write('member=[\n')
+        level += 1
+        for member_ in self.member:
+            showIndent(outfile, level)
+            outfile.write('model_.AbstractMapping(\n')
+            member_.exportLiteral(outfile, level, name_='AbstractMapping')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
-        if node.text is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', node.text)
-            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
         super(AbstractUncertainStateSet, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
-        if nodeName_ == 'member':
+        if nodeName_ == 'member': 
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
@@ -11061,17 +10473,7 @@ class AbstractUncertainStateSet(AbstractState):
             else:
                 raise NotImplementedError(
                     'Class not implemented for <member> element')
-            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
-                MixedContainer.TypeNone, 'member', obj_)
-            self.content_.append(obj_)
-            if hasattr(self, 'add_member'):
-              self.add_member(obj_.value)
-            elif hasattr(self, 'set_member'):
-              self.set_member(obj_.value)
-        if not from_subclass and child_.tail is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', child_.tail)
-            self.content_.append(obj_)
+            self.member.append(obj_)
         super(AbstractUncertainStateSet, self).buildChildren(child_, nodeName_, True)
 # end class AbstractUncertainStateSet
 
@@ -11333,21 +10735,12 @@ class ContinuousMatrixSeqRow(AbstractSeqRow):
 class NodeAndRootEdgeAndEdgeSet(AbstractSet):
     subclass = None
     superclass = AbstractSet
-    def __init__(self, about=None, meta=None, label=None, id=None, node=None, edge=None, rootedge=None, valueOf_=None, mixedclass_=None, content_=None):
-        super(NodeAndRootEdgeAndEdgeSet, self).__init__(about, meta, label, id, valueOf_, mixedclass_, content_, )
+    def __init__(self, about=None, meta=None, label=None, id=None, node=None, edge=None, rootedge=None):
+        super(NodeAndRootEdgeAndEdgeSet, self).__init__(about, meta, label, id, )
         self.node = _cast(None, node)
         self.edge = _cast(None, edge)
         self.rootedge = _cast(None, rootedge)
-        self.valueOf_ = valueOf_
-        if mixedclass_ is None:
-            self.mixedclass_ = MixedContainer
-        else:
-            self.mixedclass_ = mixedclass_
-        if content_ is None:
-            self.content_ = []
-        else:
-            self.content_ = content_
-        self.valueOf_ = valueOf_
+        pass
     def factory(*args_, **kwargs_):
         if NodeAndRootEdgeAndEdgeSet.subclass:
             return NodeAndRootEdgeAndEdgeSet.subclass(*args_, **kwargs_)
@@ -11360,8 +10753,6 @@ class NodeAndRootEdgeAndEdgeSet(AbstractSet):
     def set_edge(self, edge): self.edge = edge
     def get_rootedge(self): return self.rootedge
     def set_rootedge(self, rootedge): self.rootedge = rootedge
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='NodeAndRootEdgeAndEdgeSet', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -11390,7 +10781,6 @@ class NodeAndRootEdgeAndEdgeSet(AbstractSet):
         super(NodeAndRootEdgeAndEdgeSet, self).exportChildren(outfile, level, namespace_, name_)
     def hasContent_(self):
         if (
-            self.valueOf_ or
             super(NodeAndRootEdgeAndEdgeSet, self).hasContent_()
             ):
             return True
@@ -11414,15 +10804,8 @@ class NodeAndRootEdgeAndEdgeSet(AbstractSet):
         super(NodeAndRootEdgeAndEdgeSet, self).exportLiteralAttributes(outfile, level, name_)
     def exportLiteralChildren(self, outfile, level, name_):
         super(NodeAndRootEdgeAndEdgeSet, self).exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
-        if node.text is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', node.text)
-            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
@@ -11441,10 +10824,6 @@ class NodeAndRootEdgeAndEdgeSet(AbstractSet):
             self.rootedge = value
         super(NodeAndRootEdgeAndEdgeSet, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
-        if not from_subclass and child_.tail is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', child_.tail)
-            self.content_.append(obj_)
         super(NodeAndRootEdgeAndEdgeSet, self).buildChildren(child_, nodeName_, True)
         pass
 # end class NodeAndRootEdgeAndEdgeSet
@@ -11453,20 +10832,11 @@ class NodeAndRootEdgeAndEdgeSet(AbstractSet):
 class TreeAndNetworkSet(AbstractSet):
     subclass = None
     superclass = AbstractSet
-    def __init__(self, about=None, meta=None, label=None, id=None, tree=None, network=None, valueOf_=None, mixedclass_=None, content_=None):
-        super(TreeAndNetworkSet, self).__init__(about, meta, label, id, valueOf_, mixedclass_, content_, )
+    def __init__(self, about=None, meta=None, label=None, id=None, tree=None, network=None):
+        super(TreeAndNetworkSet, self).__init__(about, meta, label, id, )
         self.tree = _cast(None, tree)
         self.network = _cast(None, network)
-        self.valueOf_ = valueOf_
-        if mixedclass_ is None:
-            self.mixedclass_ = MixedContainer
-        else:
-            self.mixedclass_ = mixedclass_
-        if content_ is None:
-            self.content_ = []
-        else:
-            self.content_ = content_
-        self.valueOf_ = valueOf_
+        pass
     def factory(*args_, **kwargs_):
         if TreeAndNetworkSet.subclass:
             return TreeAndNetworkSet.subclass(*args_, **kwargs_)
@@ -11477,8 +10847,6 @@ class TreeAndNetworkSet(AbstractSet):
     def set_tree(self, tree): self.tree = tree
     def get_network(self): return self.network
     def set_network(self, network): self.network = network
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='TreeAndNetworkSet', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -11504,7 +10872,6 @@ class TreeAndNetworkSet(AbstractSet):
         super(TreeAndNetworkSet, self).exportChildren(outfile, level, namespace_, name_)
     def hasContent_(self):
         if (
-            self.valueOf_ or
             super(TreeAndNetworkSet, self).hasContent_()
             ):
             return True
@@ -11525,15 +10892,8 @@ class TreeAndNetworkSet(AbstractSet):
         super(TreeAndNetworkSet, self).exportLiteralAttributes(outfile, level, name_)
     def exportLiteralChildren(self, outfile, level, name_):
         super(TreeAndNetworkSet, self).exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
-        if node.text is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', node.text)
-            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
@@ -11548,10 +10908,6 @@ class TreeAndNetworkSet(AbstractSet):
             self.network = value
         super(TreeAndNetworkSet, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
-        if not from_subclass and child_.tail is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', child_.tail)
-            self.content_.append(obj_)
         super(TreeAndNetworkSet, self).buildChildren(child_, nodeName_, True)
         pass
 # end class TreeAndNetworkSet
@@ -11560,19 +10916,10 @@ class TreeAndNetworkSet(AbstractSet):
 class CellSet(AbstractSet):
     subclass = None
     superclass = AbstractSet
-    def __init__(self, about=None, meta=None, label=None, id=None, cell=None, valueOf_=None, mixedclass_=None, content_=None):
-        super(CellSet, self).__init__(about, meta, label, id, valueOf_, mixedclass_, content_, )
+    def __init__(self, about=None, meta=None, label=None, id=None, cell=None):
+        super(CellSet, self).__init__(about, meta, label, id, )
         self.cell = _cast(None, cell)
-        self.valueOf_ = valueOf_
-        if mixedclass_ is None:
-            self.mixedclass_ = MixedContainer
-        else:
-            self.mixedclass_ = mixedclass_
-        if content_ is None:
-            self.content_ = []
-        else:
-            self.content_ = content_
-        self.valueOf_ = valueOf_
+        pass
     def factory(*args_, **kwargs_):
         if CellSet.subclass:
             return CellSet.subclass(*args_, **kwargs_)
@@ -11581,8 +10928,6 @@ class CellSet(AbstractSet):
     factory = staticmethod(factory)
     def get_cell(self): return self.cell
     def set_cell(self, cell): self.cell = cell
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='CellSet', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -11603,7 +10948,6 @@ class CellSet(AbstractSet):
         super(CellSet, self).exportChildren(outfile, level, namespace_, name_)
     def hasContent_(self):
         if (
-            self.valueOf_ or
             super(CellSet, self).hasContent_()
             ):
             return True
@@ -11621,15 +10965,8 @@ class CellSet(AbstractSet):
         super(CellSet, self).exportLiteralAttributes(outfile, level, name_)
     def exportLiteralChildren(self, outfile, level, name_):
         super(CellSet, self).exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
-        if node.text is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', node.text)
-            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
@@ -11640,10 +10977,6 @@ class CellSet(AbstractSet):
             self.cell = value
         super(CellSet, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
-        if not from_subclass and child_.tail is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', child_.tail)
-            self.content_.append(obj_)
         super(CellSet, self).buildChildren(child_, nodeName_, True)
         pass
 # end class CellSet
@@ -11652,19 +10985,10 @@ class CellSet(AbstractSet):
 class RowSet(AbstractSet):
     subclass = None
     superclass = AbstractSet
-    def __init__(self, about=None, meta=None, label=None, id=None, row=None, valueOf_=None, mixedclass_=None, content_=None):
-        super(RowSet, self).__init__(about, meta, label, id, valueOf_, mixedclass_, content_, )
+    def __init__(self, about=None, meta=None, label=None, id=None, row=None):
+        super(RowSet, self).__init__(about, meta, label, id, )
         self.row = _cast(None, row)
-        self.valueOf_ = valueOf_
-        if mixedclass_ is None:
-            self.mixedclass_ = MixedContainer
-        else:
-            self.mixedclass_ = mixedclass_
-        if content_ is None:
-            self.content_ = []
-        else:
-            self.content_ = content_
-        self.valueOf_ = valueOf_
+        pass
     def factory(*args_, **kwargs_):
         if RowSet.subclass:
             return RowSet.subclass(*args_, **kwargs_)
@@ -11673,8 +10997,6 @@ class RowSet(AbstractSet):
     factory = staticmethod(factory)
     def get_row(self): return self.row
     def set_row(self, row): self.row = row
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='RowSet', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -11695,7 +11017,6 @@ class RowSet(AbstractSet):
         super(RowSet, self).exportChildren(outfile, level, namespace_, name_)
     def hasContent_(self):
         if (
-            self.valueOf_ or
             super(RowSet, self).hasContent_()
             ):
             return True
@@ -11713,15 +11034,8 @@ class RowSet(AbstractSet):
         super(RowSet, self).exportLiteralAttributes(outfile, level, name_)
     def exportLiteralChildren(self, outfile, level, name_):
         super(RowSet, self).exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
-        if node.text is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', node.text)
-            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
@@ -11732,10 +11046,6 @@ class RowSet(AbstractSet):
             self.row = value
         super(RowSet, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
-        if not from_subclass and child_.tail is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', child_.tail)
-            self.content_.append(obj_)
         super(RowSet, self).buildChildren(child_, nodeName_, True)
         pass
 # end class RowSet
@@ -11744,19 +11054,10 @@ class RowSet(AbstractSet):
 class CharSet(AbstractSet):
     subclass = None
     superclass = AbstractSet
-    def __init__(self, about=None, meta=None, label=None, id=None, char=None, valueOf_=None, mixedclass_=None, content_=None):
-        super(CharSet, self).__init__(about, meta, label, id, valueOf_, mixedclass_, content_, )
+    def __init__(self, about=None, meta=None, label=None, id=None, char=None):
+        super(CharSet, self).__init__(about, meta, label, id, )
         self.char = _cast(None, char)
-        self.valueOf_ = valueOf_
-        if mixedclass_ is None:
-            self.mixedclass_ = MixedContainer
-        else:
-            self.mixedclass_ = mixedclass_
-        if content_ is None:
-            self.content_ = []
-        else:
-            self.content_ = content_
-        self.valueOf_ = valueOf_
+        pass
     def factory(*args_, **kwargs_):
         if CharSet.subclass:
             return CharSet.subclass(*args_, **kwargs_)
@@ -11765,8 +11066,6 @@ class CharSet(AbstractSet):
     factory = staticmethod(factory)
     def get_char(self): return self.char
     def set_char(self, char): self.char = char
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='CharSet', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -11787,7 +11086,6 @@ class CharSet(AbstractSet):
         super(CharSet, self).exportChildren(outfile, level, namespace_, name_)
     def hasContent_(self):
         if (
-            self.valueOf_ or
             super(CharSet, self).hasContent_()
             ):
             return True
@@ -11805,15 +11103,8 @@ class CharSet(AbstractSet):
         super(CharSet, self).exportLiteralAttributes(outfile, level, name_)
     def exportLiteralChildren(self, outfile, level, name_):
         super(CharSet, self).exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
-        if node.text is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', node.text)
-            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
@@ -11824,10 +11115,6 @@ class CharSet(AbstractSet):
             self.char = value
         super(CharSet, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
-        if not from_subclass and child_.tail is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', child_.tail)
-            self.content_.append(obj_)
         super(CharSet, self).buildChildren(child_, nodeName_, True)
         pass
 # end class CharSet
@@ -11836,21 +11123,12 @@ class CharSet(AbstractSet):
 class StateSet(AbstractSet):
     subclass = None
     superclass = AbstractSet
-    def __init__(self, about=None, meta=None, label=None, id=None, uncertain_state_set=None, state=None, polymorphic_state_set=None, valueOf_=None, mixedclass_=None, content_=None):
-        super(StateSet, self).__init__(about, meta, label, id, valueOf_, mixedclass_, content_, )
+    def __init__(self, about=None, meta=None, label=None, id=None, uncertain_state_set=None, state=None, polymorphic_state_set=None):
+        super(StateSet, self).__init__(about, meta, label, id, )
         self.uncertain_state_set = _cast(None, uncertain_state_set)
         self.state = _cast(None, state)
         self.polymorphic_state_set = _cast(None, polymorphic_state_set)
-        self.valueOf_ = valueOf_
-        if mixedclass_ is None:
-            self.mixedclass_ = MixedContainer
-        else:
-            self.mixedclass_ = mixedclass_
-        if content_ is None:
-            self.content_ = []
-        else:
-            self.content_ = content_
-        self.valueOf_ = valueOf_
+        pass
     def factory(*args_, **kwargs_):
         if StateSet.subclass:
             return StateSet.subclass(*args_, **kwargs_)
@@ -11863,8 +11141,6 @@ class StateSet(AbstractSet):
     def set_state(self, state): self.state = state
     def get_polymorphic_state_set(self): return self.polymorphic_state_set
     def set_polymorphic_state_set(self, polymorphic_state_set): self.polymorphic_state_set = polymorphic_state_set
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='StateSet', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -11893,7 +11169,6 @@ class StateSet(AbstractSet):
         super(StateSet, self).exportChildren(outfile, level, namespace_, name_)
     def hasContent_(self):
         if (
-            self.valueOf_ or
             super(StateSet, self).hasContent_()
             ):
             return True
@@ -11917,15 +11192,8 @@ class StateSet(AbstractSet):
         super(StateSet, self).exportLiteralAttributes(outfile, level, name_)
     def exportLiteralChildren(self, outfile, level, name_):
         super(StateSet, self).exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
-        if node.text is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', node.text)
-            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
@@ -11944,10 +11212,6 @@ class StateSet(AbstractSet):
             self.polymorphic_state_set = value
         super(StateSet, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
-        if not from_subclass and child_.tail is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', child_.tail)
-            self.content_.append(obj_)
         super(StateSet, self).buildChildren(child_, nodeName_, True)
         pass
 # end class StateSet
@@ -11956,19 +11220,10 @@ class StateSet(AbstractSet):
 class TaxonSet(AbstractSet):
     subclass = None
     superclass = AbstractSet
-    def __init__(self, about=None, meta=None, label=None, id=None, otu=None, valueOf_=None, mixedclass_=None, content_=None):
-        super(TaxonSet, self).__init__(about, meta, label, id, valueOf_, mixedclass_, content_, )
+    def __init__(self, about=None, meta=None, label=None, id=None, otu=None):
+        super(TaxonSet, self).__init__(about, meta, label, id, )
         self.otu = _cast(None, otu)
-        self.valueOf_ = valueOf_
-        if mixedclass_ is None:
-            self.mixedclass_ = MixedContainer
-        else:
-            self.mixedclass_ = mixedclass_
-        if content_ is None:
-            self.content_ = []
-        else:
-            self.content_ = content_
-        self.valueOf_ = valueOf_
+        pass
     def factory(*args_, **kwargs_):
         if TaxonSet.subclass:
             return TaxonSet.subclass(*args_, **kwargs_)
@@ -11977,8 +11232,6 @@ class TaxonSet(AbstractSet):
     factory = staticmethod(factory)
     def get_otu(self): return self.otu
     def set_otu(self, otu): self.otu = otu
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='TaxonSet', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -11999,7 +11252,6 @@ class TaxonSet(AbstractSet):
         super(TaxonSet, self).exportChildren(outfile, level, namespace_, name_)
     def hasContent_(self):
         if (
-            self.valueOf_ or
             super(TaxonSet, self).hasContent_()
             ):
             return True
@@ -12017,15 +11269,8 @@ class TaxonSet(AbstractSet):
         super(TaxonSet, self).exportLiteralAttributes(outfile, level, name_)
     def exportLiteralChildren(self, outfile, level, name_):
         super(TaxonSet, self).exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
-        if node.text is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', node.text)
-            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
@@ -12036,10 +11281,6 @@ class TaxonSet(AbstractSet):
             self.otu = value
         super(TaxonSet, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
-        if not from_subclass and child_.tail is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', child_.tail)
-            self.content_.append(obj_)
         super(TaxonSet, self).buildChildren(child_, nodeName_, True)
         pass
 # end class TaxonSet
@@ -13780,19 +13021,9 @@ class AbstractCells(AbstractBlock):
     that consist of granular character state observations."""
     subclass = None
     superclass = AbstractBlock
-    def __init__(self, about=None, meta=None, label=None, id=None, otus=None, format=None, matrix=None, valueOf_=None, mixedclass_=None, content_=None):
-        super(AbstractCells, self).__init__(about, meta, label, id, otus, format, valueOf_, mixedclass_, content_, )
+    def __init__(self, about=None, meta=None, label=None, id=None, otus=None, format=None, matrix=None):
+        super(AbstractCells, self).__init__(about, meta, label, id, otus, format, )
         self.matrix = matrix
-        self.valueOf_ = valueOf_
-        if mixedclass_ is None:
-            self.mixedclass_ = MixedContainer
-        else:
-            self.mixedclass_ = mixedclass_
-        if content_ is None:
-            self.content_ = []
-        else:
-            self.content_ = content_
-        self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
         if AbstractCells.subclass:
             return AbstractCells.subclass(*args_, **kwargs_)
@@ -13801,8 +13032,6 @@ class AbstractCells(AbstractBlock):
     factory = staticmethod(factory)
     def get_matrix(self): return self.matrix
     def set_matrix(self, matrix): self.matrix = matrix
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='AbstractCells', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -13820,12 +13049,10 @@ class AbstractCells(AbstractBlock):
         super(AbstractCells, self).exportAttributes(outfile, level, already_processed, namespace_, name_='AbstractCells')
     def exportChildren(self, outfile, level, namespace_='', name_='AbstractCells'):
         super(AbstractCells, self).exportChildren(outfile, level, namespace_, name_)
-        for item_ in self.content_:
-            item_.export(outfile, level, item_.name, namespace_)
+        matrix_.export(outfile, level, namespace_, name_='matrix')
     def hasContent_(self):
         if (
             self.matrix is not None or
-            self.valueOf_ or
             super(AbstractCells, self).hasContent_()
             ):
             return True
@@ -13840,28 +13067,21 @@ class AbstractCells(AbstractBlock):
         super(AbstractCells, self).exportLiteralAttributes(outfile, level, name_)
     def exportLiteralChildren(self, outfile, level, name_):
         super(AbstractCells, self).exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('content_ = [\n')
-        for item_ in self.content_:
-            item_.exportLiteral(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
+        if self.AbstractObsMatrix is not None:
+            showIndent(outfile, level)
+            outfile.write('AbstractObsMatrix=model_.AbstractObsMatrix(\n')
+            self.AbstractObsMatrix.exportLiteral(outfile, level)
+            showIndent(outfile, level)
+            outfile.write('),\n')
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
-        if node.text is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', node.text)
-            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
         super(AbstractCells, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
-        if nodeName_ == 'matrix':
+        if nodeName_ == 'matrix': 
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
@@ -13877,17 +13097,7 @@ class AbstractCells(AbstractBlock):
             else:
                 raise NotImplementedError(
                     'Class not implemented for <matrix> element')
-            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
-                MixedContainer.TypeNone, 'matrix', obj_)
-            self.content_.append(obj_)
-            if hasattr(self, 'add_matrix'):
-              self.add_matrix(obj_.value)
-            elif hasattr(self, 'set_matrix'):
-              self.set_matrix(obj_.value)
-        if not from_subclass and child_.tail is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', child_.tail)
-            self.content_.append(obj_)
+            self.set_matrix(obj_)
         super(AbstractCells, self).buildChildren(child_, nodeName_, True)
 # end class AbstractCells
 
@@ -13897,19 +13107,9 @@ class AbstractSeqs(AbstractBlock):
     that consist of raw character sequences."""
     subclass = None
     superclass = AbstractBlock
-    def __init__(self, about=None, meta=None, label=None, id=None, otus=None, format=None, matrix=None, valueOf_=None, mixedclass_=None, content_=None):
-        super(AbstractSeqs, self).__init__(about, meta, label, id, otus, format, valueOf_, mixedclass_, content_, )
+    def __init__(self, about=None, meta=None, label=None, id=None, otus=None, format=None, matrix=None):
+        super(AbstractSeqs, self).__init__(about, meta, label, id, otus, format, )
         self.matrix = matrix
-        self.valueOf_ = valueOf_
-        if mixedclass_ is None:
-            self.mixedclass_ = MixedContainer
-        else:
-            self.mixedclass_ = mixedclass_
-        if content_ is None:
-            self.content_ = []
-        else:
-            self.content_ = content_
-        self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
         if AbstractSeqs.subclass:
             return AbstractSeqs.subclass(*args_, **kwargs_)
@@ -13918,8 +13118,6 @@ class AbstractSeqs(AbstractBlock):
     factory = staticmethod(factory)
     def get_matrix(self): return self.matrix
     def set_matrix(self, matrix): self.matrix = matrix
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='AbstractSeqs', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -13937,12 +13135,10 @@ class AbstractSeqs(AbstractBlock):
         super(AbstractSeqs, self).exportAttributes(outfile, level, already_processed, namespace_, name_='AbstractSeqs')
     def exportChildren(self, outfile, level, namespace_='', name_='AbstractSeqs'):
         super(AbstractSeqs, self).exportChildren(outfile, level, namespace_, name_)
-        for item_ in self.content_:
-            item_.export(outfile, level, item_.name, namespace_)
+        matrix_.export(outfile, level, namespace_, name_='matrix')
     def hasContent_(self):
         if (
             self.matrix is not None or
-            self.valueOf_ or
             super(AbstractSeqs, self).hasContent_()
             ):
             return True
@@ -13957,28 +13153,21 @@ class AbstractSeqs(AbstractBlock):
         super(AbstractSeqs, self).exportLiteralAttributes(outfile, level, name_)
     def exportLiteralChildren(self, outfile, level, name_):
         super(AbstractSeqs, self).exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('content_ = [\n')
-        for item_ in self.content_:
-            item_.exportLiteral(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
+        if self.AbstractSeqMatrix is not None:
+            showIndent(outfile, level)
+            outfile.write('AbstractSeqMatrix=model_.AbstractSeqMatrix(\n')
+            self.AbstractSeqMatrix.exportLiteral(outfile, level)
+            showIndent(outfile, level)
+            outfile.write('),\n')
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
-        if node.text is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', node.text)
-            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
         super(AbstractSeqs, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
-        if nodeName_ == 'matrix':
+        if nodeName_ == 'matrix': 
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
@@ -13994,17 +13183,7 @@ class AbstractSeqs(AbstractBlock):
             else:
                 raise NotImplementedError(
                     'Class not implemented for <matrix> element')
-            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
-                MixedContainer.TypeNone, 'matrix', obj_)
-            self.content_.append(obj_)
-            if hasattr(self, 'add_matrix'):
-              self.add_matrix(obj_.value)
-            elif hasattr(self, 'set_matrix'):
-              self.set_matrix(obj_.value)
-        if not from_subclass and child_.tail is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', child_.tail)
-            self.content_.append(obj_)
+            self.set_matrix(obj_)
         super(AbstractSeqs, self).buildChildren(child_, nodeName_, True)
 # end class AbstractSeqs
 
@@ -14018,22 +13197,12 @@ class AbstractPolymorphicStateSet(AbstractUncertainStateSet):
     ambiguities."""
     subclass = None
     superclass = AbstractUncertainStateSet
-    def __init__(self, about=None, meta=None, label=None, id=None, symbol=None, member=None, uncertain_state_set=None, valueOf_=None, mixedclass_=None, content_=None):
-        super(AbstractPolymorphicStateSet, self).__init__(about, meta, label, id, symbol, member, valueOf_, mixedclass_, content_, )
+    def __init__(self, about=None, meta=None, label=None, id=None, symbol=None, member=None, uncertain_state_set=None):
+        super(AbstractPolymorphicStateSet, self).__init__(about, meta, label, id, symbol, member, )
         if uncertain_state_set is None:
             self.uncertain_state_set = []
         else:
             self.uncertain_state_set = uncertain_state_set
-        self.valueOf_ = valueOf_
-        if mixedclass_ is None:
-            self.mixedclass_ = MixedContainer
-        else:
-            self.mixedclass_ = mixedclass_
-        if content_ is None:
-            self.content_ = []
-        else:
-            self.content_ = content_
-        self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
         if AbstractPolymorphicStateSet.subclass:
             return AbstractPolymorphicStateSet.subclass(*args_, **kwargs_)
@@ -14044,8 +13213,6 @@ class AbstractPolymorphicStateSet(AbstractUncertainStateSet):
     def set_uncertain_state_set(self, uncertain_state_set): self.uncertain_state_set = uncertain_state_set
     def add_uncertain_state_set(self, value): self.uncertain_state_set.append(value)
     def insert_uncertain_state_set(self, index, value): self.uncertain_state_set[index] = value
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='AbstractPolymorphicStateSet', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -14063,12 +13230,11 @@ class AbstractPolymorphicStateSet(AbstractUncertainStateSet):
         super(AbstractPolymorphicStateSet, self).exportAttributes(outfile, level, already_processed, namespace_, name_='AbstractPolymorphicStateSet')
     def exportChildren(self, outfile, level, namespace_='', name_='AbstractPolymorphicStateSet'):
         super(AbstractPolymorphicStateSet, self).exportChildren(outfile, level, namespace_, name_)
-        for item_ in self.content_:
-            item_.export(outfile, level, item_.name, namespace_)
+        for uncertain_state_set_ in self.get_uncertain_state_set():
+            uncertain_state_set_.export(outfile, level, namespace_, name_='uncertain_state_set')
     def hasContent_(self):
         if (
             self.uncertain_state_set or
-            self.valueOf_ or
             super(AbstractPolymorphicStateSet, self).hasContent_()
             ):
             return True
@@ -14084,27 +13250,26 @@ class AbstractPolymorphicStateSet(AbstractUncertainStateSet):
     def exportLiteralChildren(self, outfile, level, name_):
         super(AbstractPolymorphicStateSet, self).exportLiteralChildren(outfile, level, name_)
         showIndent(outfile, level)
-        outfile.write('content_ = [\n')
-        for item_ in self.content_:
-            item_.exportLiteral(outfile, level, name_)
+        outfile.write('uncertain_state_set=[\n')
+        level += 1
+        for uncertain_state_set_ in self.uncertain_state_set:
+            showIndent(outfile, level)
+            outfile.write('model_.AbstractUncertainStateSet(\n')
+            uncertain_state_set_.exportLiteral(outfile, level, name_='AbstractUncertainStateSet')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
-        if node.text is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', node.text)
-            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
         super(AbstractPolymorphicStateSet, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, nodeName_, from_subclass=False):
-        if nodeName_ == 'uncertain_state_set':
+        if nodeName_ == 'uncertain_state_set': 
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
@@ -14120,17 +13285,7 @@ class AbstractPolymorphicStateSet(AbstractUncertainStateSet):
             else:
                 raise NotImplementedError(
                     'Class not implemented for <uncertain_state_set> element')
-            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
-                MixedContainer.TypeNone, 'uncertain_state_set', obj_)
-            self.content_.append(obj_)
-            if hasattr(self, 'add_uncertain_state_set'):
-              self.add_uncertain_state_set(obj_.value)
-            elif hasattr(self, 'set_uncertain_state_set'):
-              self.set_uncertain_state_set(obj_.value)
-        if not from_subclass and child_.tail is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', child_.tail)
-            self.content_.append(obj_)
+            self.uncertain_state_set.append(obj_)
         super(AbstractPolymorphicStateSet, self).buildChildren(child_, nodeName_, True)
 # end class AbstractPolymorphicStateSet
 

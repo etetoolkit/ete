@@ -58,7 +58,7 @@ plus Nexml attributes.
    nexml_project = Nexml()
 
    # Upload content from file
-   nexml_project.build_from_file("../nexml_example.xml")
+   nexml_project.build_from_file("nexml_example.xml")
 
    # All XML elements are within the project instance.
    # exist in each element to access their attributes.
@@ -71,6 +71,49 @@ plus Nexml attributes.
 
    # And they are seen as normal ETE tree objects
    print tree_1
+
+In Nexml, a trees are represented as plain lists of nodes and
+edges. ETE will convert such lists into tree topologies, in which
+every node will contain a :attr:`nexml_node` and :attr:`nexml_edge`
+attribute. They will contain all nexml functionality and annotation.
+
+In addition, each tree node has a :attr:`nexml_tree` attribute, which
+can be used to set the nexml properties of the subtree represented by
+each node. 
+
+
+--------------------------------------
+Export projects to XML format
+--------------------------------------
+
+Every NexML object has its own :func:`export` method. By calling it,
+you can obtain the XML representation of any instance contained in the
+Nexml project structure. 
+
+Usually, all you will need is to export the whole project. 
+
+::
+
+   from ete2 import Nexml
+   # Create an empty Nexml project 
+   nexml_project = Nexml()
+
+   # Upload content from file
+   nexml_project.build_from_file("nexml_example.xml")
+
+   # All XML elements are within the project instance.
+   # exist in each element to access their attributes.
+   print nexml_projects.get_otus()
+
+   # Trees can be also accesed 
+   trees_collections = nexml_projects.get_trees()
+   collection_1 = trees_collection[0]
+   tree_1 = collection_1.get_trees()[0]
+
+   nexml_project.export()
+
+
+
 
 ------------------------------------
 Creating Nexml project from scratch 
@@ -95,12 +138,25 @@ it as XML.
    tree_collection.add_tree(nexml_tree)
    nexml_project.add_trees(tree_collection)
 
---------------------------------------
-Export projects as NeXML format
---------------------------------------
 
-You can export your project using NeXML format at any time by using
-the :func:`export` function
+Note that trees can be also read from newick files, allowing the
+conversion between both formats.
+
+::
+
+   from ete2 import Nexml # Root project class 
+   # the module contains all classes representing nexml elements
+   from ete2 import nexml 
+
+   # Create an empty Nexml project 
+   nexml_project = Nexml()
+   tree_collection = nexml.Trees()
+   nexml_tree = nexml.NexMLTree()
+   nexml_tree.populate('(((a:0.9,b:0.5),c:1.3):1.2;') # You can also pass a file name
+   tree_collection.add_tree(nexml_tree)
+   nexml_project.add_trees(tree_collection)
+   
+
 
 =============
 PhyloXML
@@ -143,8 +199,7 @@ split, or copy any part of a tree and it will be exported as a
 separate phyloxml phylogeny instance.
 
 :: 
-
-  
+ 
    from ete2 import Phyloxml
    import random 
 
@@ -162,13 +217,6 @@ separate phyloxml phylogeny instance.
    project.add_phylogeny(random_node)
 
 
-
-
-
-
-
-
-
 ----------------------------------------
 Creating PhyloXML projects from scratch
 ----------------------------------------
@@ -179,26 +227,9 @@ available in the :mod:`phyloxml` module.
 :: 
 
   from ete2 import Phyloxml, phyloxml
-
   # create empty project 
   proj = Phyloxml()
   phylogeny = phyloxml.PhyloxmlTree()
-  proj.add_phylogeny()
-
-
-
-
-
-
-.. automodule:: ete_dev.phyloxml._phyloxml
-   :members:
-
-##   :undoc-members:
-
-# Example of how to add images
-
-.. figure:: ./reconcilied_tree.png
-   :alt: map to buried treasure
-
-
-
+  phylogeny.populate(10)
+  proj.add_phylogeny(phylogeny)
+  
