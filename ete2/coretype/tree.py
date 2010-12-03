@@ -359,7 +359,7 @@ class TreeNode(object):
                 
     def iter_leaves(self):
         """ Returns an iterator over the leaves under this node. """
-        for n in self.traverse(strategy="preorder"):
+        for n in self.traverse(strategy="levelorder"):
             if n.is_leaf():
                 yield n
 
