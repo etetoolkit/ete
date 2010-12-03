@@ -368,7 +368,7 @@ class TreeNode(object):
         for n in self.iter_leaves():
             yield n.name
 
-    def iter_descendants(self, strategy="preorder"):
+    def iter_descendants(self, strategy="levelorder"):
         """ Returns an iterator over descendant nodes. """
         for n in self.traverse(strategy=strategy):
             if n != self:
@@ -390,7 +390,7 @@ class TreeNode(object):
                 yield current
                 current = current.up
 
-    def _iter_descendants_preorder(self):
+    def _iter_descendants_levelorder(self):
         """ Iterator over all desdecendant nodes. """
         tovisit = [self]
         while len(tovisit)>0:
@@ -398,7 +398,19 @@ class TreeNode(object):
             yield current
             tovisit.extend(current.children)
 
-    def traverse(self, strategy="preorder"):
+    def _iter_descendants_preorder(self):
+        """ Iterator over all desdecendant nodes. """
+        to_visit = []
+        node = self
+        while node:
+            yield node
+            to_visit = node.children + to_visit
+            try:
+                node = to_visit.pop(0)
+            except IndexError:
+                node = None
+
+    def traverse(self, strategy="levelorder"):
         """
          Returns an iterator that traverse the tree structure under this
          node.
@@ -413,6 +425,8 @@ class TreeNode(object):
         """
         if strategy=="preorder":
             return self._iter_descendants_preorder()
+        elif strategy=="levelorder":
+            return self._iter_descendants_levelorder()
         elif strategy=="postorder":
             return self._iter_descendants_postorder()
     def swap_childs(self):
@@ -533,14 +547,14 @@ class TreeNode(object):
         """
         return [ n.name for n in self.iter_leaves() ]
 
-    def get_descendants(self, strategy="preorder"):
+    def get_descendants(self, strategy="levelorder"):
         """
         Returns the list of all nodes (leaves and internal) under
         this node.
         re buil
         See iter_descendants method.
         """
-        return [n for n in self.traverse(strategy="preorder") if n != self]
+        return [n for n in self.traverse(strategy=strategy) if n != self]
 
     def iter_search_nodes(self, **conditions):
         for n in self.traverse():
