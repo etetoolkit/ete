@@ -399,15 +399,15 @@ class TreeNode(object):
             tovisit.extend(current.children)
 
     def _iter_descendants_preorder(self):
-        """ Iterator over all desdecendant nodes. """
+        """ Iterator over all descendant nodes. """
         to_visit = []
         node = self
-        while node:
+        while node is not None:
             yield node
             to_visit = node.children + to_visit
             try:
                 node = to_visit.pop(0)
-            except IndexError:
+            except:
                 node = None
 
     def traverse(self, strategy="levelorder"):
@@ -429,6 +429,7 @@ class TreeNode(object):
             return self._iter_descendants_levelorder()
         elif strategy=="postorder":
             return self._iter_descendants_postorder()
+
     def swap_childs(self):
         """
         Swaps current childs order.
