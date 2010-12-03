@@ -38,7 +38,10 @@ class TreeError(Exception):
         return repr(self.value)
 
 class TreeNode(object):
-    """ TreeNode (Tree) class is used to store a tree structure. A tree
+    """ 
+    TreeNode
+    ---------
+    TreeNode (Tree) class is used to store a tree structure. A tree
     consists of a collection of TreeNode instances connected in a
     hierarchical way. Trees can be loaded from the New Hampshire Newick
     format (newick).

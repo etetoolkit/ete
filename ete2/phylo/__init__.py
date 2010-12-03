@@ -20,3 +20,7 @@
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
 # #END_LICENSE#############################################################
+
+from phylotree import *
+from evolevents import * 
+__all__ = phylotree.__all__  + evolevents.__all__ 

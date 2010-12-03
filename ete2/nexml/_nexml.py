@@ -1380,6 +1380,7 @@ class Nexml(Annotated):
 
 
 class AbstractObsMatrix(Annotated):
+
     """The AbstractObsMatrix super class is the abstract type for a
     <matrix> element that contains rows which hold granular state
     observations."""
