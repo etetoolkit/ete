@@ -25,6 +25,10 @@ python instances.
 NeXML and PhyloXML python parsers are possible thanks to the work of
 Dave Kulhman on the generateDS.py application. 
 
+.. module:: ete_dev.nexml
+  :synopsis: Reading and writing support support for the NexML format
+.. moduleauthor:: Jaime Huerta-Cepas
+
 =============
 Nexml
 =============
@@ -38,7 +42,7 @@ Reading a Nexml project
 ----------------------------
 
 You can load an external Nexml project by using the :class:`Nexml`
-base class and the :func:`build_from_file` method. The automatic
+base class and the :func:`Nexml.build_from_file` method. The automatic
 parser will read the provided XML file and convert all elements into
 python instances, which will be hierarchically connected to the Nexml
 root instance.
@@ -156,7 +160,9 @@ conversion between both formats.
    tree_collection.add_tree(nexml_tree)
    nexml_project.add_trees(tree_collection)
    
-
+.. module:: ete_dev.phyloxml
+  :synopsis: Reading and writing support for the PhyloXML format
+.. moduleauthor:: Jaime Huerta-Cepas
 
 =============
 PhyloXML
@@ -222,7 +228,7 @@ Creating PhyloXML projects from scratch
 ----------------------------------------
 
 In order to create new PhyloXML projects, a set of classes is
-available in the :mod:`phyloxml` module.
+available in the :mod:`ete_dev.phyloxml` module.
 
 :: 
 
