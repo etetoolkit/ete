@@ -74,7 +74,7 @@ exclude_trees = ['_build']
 
 # If true, the current module name will be prepended to all description
 # unit titles (such as .. function::).
-#add_module_names = True
+add_module_names = False
 
 # If true, sectionauthor and moduleauthor directives will be shown in the
 # output. They are ignored by default.
@@ -106,16 +106,16 @@ html_theme = 'default'
 html_title = None
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
-html_short_title = ETE doc
+html_short_title = "ETE doc"
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-html_logo = ete_logo.png
+html_logo = "ete_logo.png"
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
-html_favicon = favicon.ico
+html_favicon = "favicon.ico"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
