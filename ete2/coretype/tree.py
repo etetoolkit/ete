@@ -987,6 +987,34 @@ class TreeNode(object):
             n.add_features(_nid=counter)
             counter += 1
 
+    def convert_to_ultrametric(self, tree_length, strategy="balanced"):
+        ''' Converts a tree to ultrametric topology (all leaves must
+        have the same distance to root).'''
+
+        # pre-calculate how many splits remain under each node
+        node2max_depth = {}
+        for node in t.traverse("postorder"):
+            if not node.is_leaf():
+                max_depth = max([node2max_depth[c] for c in node.children]) + 1
+                node2max_depth[node] = max_depth
+            else:
+                node2max_depth[node] = 1
+        node2dist = {self: 0.0}
+        tree_length = float(tree_length)
+        step = tree_length / node2max_depth[t]
+        for node in t.iter_descendants("levelorder"):
+            if strategy == "balanced":
+                node.dist = (tree_length - node2dist[node.up]) / node2max_depth[node]
+                node2dist[node] =  node.dist + node2dist[node.up]
+            elif strategy == "fixed":
+                if not node.is_leaf():
+                    node.dist = step
+                else:
+                    node.dist = tree_length - ((node2dist[node.up]) * step)
+                node2dist[node] = node2dist[node.up] + 1
+            node.dist = node.dist
+
+
 
 def _translate_nodes(root, *nodes):
     target_nodes = []
@@ -1032,6 +1060,9 @@ def asRphylo(ETE_tree):
         return
     R.library("ape")
     return R['read.tree'](text=ETE_tree.write())
+
+
+
 
 
 # A cosmetic alias :)

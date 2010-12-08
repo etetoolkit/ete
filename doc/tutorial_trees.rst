@@ -414,7 +414,15 @@ browsed):
 
 * preorder: 1)Visit the root, 2) Traverse the left subtree , 3) Traverse the right subtree.
 * postorder: 1) Traverse the left subtree , 2) Traverse the right subtree, 3) Visit the root 
+* levelorder (default): every node on a level before is visited going to a lower level 
 
+
+.. note::
+
+    * Preorder traversal sequence: F, B, A, D, C, E, G, I, H (root, left, right)
+    * Inorder traversal sequence: A, B, C, D, E, F, G, H, I (left, root, right); note how this produces a sorted sequence
+    * Postorder traversal sequence: A, C, E, D, B, H, I, G, F (left, right, root)
+    * Level-order traversal sequence: F, B, G, A, D, I, C, E, H
 
 Every node in a tree includes a :func:`TreeNode.traverse` method, which can be
 used to visit, one by one, every node node under the current
@@ -490,17 +498,23 @@ match which interrupts the loop).
 Node annotation
 =========================
 
-Although the newick standard was only thought to contain branch
-lengths and node names information, the truth is that many other
-features are usually required to be linked to the different tree
-nodes. ETE allows to associated any kind of extra information to the
-tree nodes. Extra information can be regarded as a single numeric
-value, a text label or even as a reference to a more complex python
-structure (i.e. lists, dictionaries or any other python object). Thus,
-for example, with ETE it is possible to have fully annotated
-trees. The methods **add feature()**,** add_features()** and**
-del_feature()** are prepared to handle the task of adding and deleting
-information to a given node.
+Every node contains three basic attributes: name, branch length and
+branch support. These three values are encoded in the newick format.
+However, any extra data could be linked to trees. This is called tree
+annotation.
+
+The :func:`TreeNode.add_feature` and :func:`TreeNode.add_features`
+methods allow to add extra attributes (features) to any node.  The
+first allows to add one one feature at a time, while the second can be
+used to add many features with the same call.
+
+::
+ 
+  from ete_dev import Tree
+  t = Tree( "((a,b),c);" )
+  
+
+:func:`TreeNode.del_feature` can be used to delete an attribute.
 
 Once extra features are added, you can access their values at any time
 during the analysis of a tree. To do so, you only need to access to

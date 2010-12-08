@@ -168,7 +168,7 @@ def convert_to_ultrametric(self, tree_length, strategy="balanced"):
     node2dist = {self: 0.0}
     tree_length = float(tree_length)
     step = tree_length / node2max_depth[t]
-    for node in t.iter_descendants("preorder"):
+    for node in t.iter_descendants("levelorder"):
         if strategy == "balanced":
             node.dist = (tree_length - node2dist[node.up]) / node2max_depth[node]
             node2dist[node] =  node.dist + node2dist[node.up]
