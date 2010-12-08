@@ -1008,7 +1008,7 @@ class TreeNode(object):
 
         # pre-calculate how many splits remain under each node
         node2max_depth = {}
-        for node in t.traverse("postorder"):
+        for node in self.traverse("postorder"):
             if not node.is_leaf():
                 max_depth = max([node2max_depth[c] for c in node.children]) + 1
                 node2max_depth[node] = max_depth
@@ -1016,8 +1016,8 @@ class TreeNode(object):
                 node2max_depth[node] = 1
         node2dist = {self: 0.0}
         tree_length = float(tree_length)
-        step = tree_length / node2max_depth[t]
-        for node in t.iter_descendants("levelorder"):
+        step = tree_length / node2max_depth[self]
+        for node in self.iter_descendants("levelorder"):
             if strategy == "balanced":
                 node.dist = (tree_length - node2dist[node.up]) / node2max_depth[node]
                 node2dist[node] =  node.dist + node2dist[node.up]
