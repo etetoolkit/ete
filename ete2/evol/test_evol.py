@@ -38,6 +38,8 @@ def main():
     tree.link_to_evol_model (WRKDIR + 'paml/M7/M7.out', 'M7')
     tree.link_to_evol_model (WRKDIR + 'paml/M8/M8.out', 'M8')
     tree.link_to_alignment  (WRKDIR + 'alignments.fasta_ali')
+    print 'vars of fb model:'
+    print vars (tree.get_evol_model('fb'))
     print 'pv of LRT M2 vs M1: ',
     print tree.get_most_likely ('M2','M1')
     print 'pv of LRT M8 vs M7: ',
