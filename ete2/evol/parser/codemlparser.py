@@ -226,13 +226,13 @@ def _get_paml_labels (tree, paml_labels, pamout):
         try:
             node = tree.search_nodes(paml_id=rel[1])[0]
             if int (node.up.paml_id) != int (rel[0]):
-                warn ('WARNING: labelling does not correspond!!\n' + \
-                      '         Getting them from ' + pamout)
+                #warn ('WARNING: labelling does not correspond!!\n' + \
+                #      '         Getting them from ' + pamout)
                 get_labels_from_paml(tree, relations, pamout)
                 break
         except IndexError:
-            warn ('ERROR: labelling does not correspond!!\n' + \
-                  '       Getting them from ' + pamout)
+            #warn ('ERROR: labelling does not correspond!!\n' + \
+            #      '       Getting them from ' + pamout)
             get_labels_from_paml(tree, relations, pamout)
 
 def get_labels_from_paml (tree, relations, pamout):
