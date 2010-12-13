@@ -635,6 +635,23 @@ class Test_Coretype_Tree(unittest.TestCase):
         # Ascii
         t.get_ascii()
 
+    def test_ultrametric(self):
+        t =  Tree()
+        # Creates a random tree (not ultrametric)
+        t.populate(100)
+
+        # Convert tree to a ultrametric topology in which distance from
+        # leaf to root is always 100. Two strategies are available:
+        # balanced or fixed
+        t.convert_to_ultrametric(200, "balanced")
+
+        # Print distances from all leaves to root. Due to precision issues
+        # with the float type.  Branch lengths may show differences at
+        # high precision levels, that's way I round to 6 decimal
+        # positions.
+        dist = set([round(l.get_distance(t), 6) for l in t.iter_leaves()])
+        self.assertEqual(dist, set([200.0]))
+
 class Test_phylo_module(unittest.TestCase):
 
     # ALL TESTS USE THIS EXAMPLE TREE

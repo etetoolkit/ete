@@ -375,7 +375,7 @@ class TreeNode(object):
         for n in self.iter_leaves():
             yield n.name
 
-    def iter_descendants(self, strategy="preorder"):
+    def iter_descendants(self, strategy="levelorder"):
         """ Returns an iterator over descendant nodes. """
         for n in self.traverse(strategy=strategy):
             if n != self:
@@ -397,7 +397,7 @@ class TreeNode(object):
                 yield current
                 current = current.up
 
-    def _iter_descendants_preorder(self):
+    def _iter_descendants_levelorder(self):
         """ Iterator over all desdecendant nodes. """
         tovisit = [self]
         while len(tovisit)>0:
@@ -405,7 +405,19 @@ class TreeNode(object):
             yield current
             tovisit.extend(current.children)
 
-    def traverse(self, strategy="preorder"):
+    def _iter_descendants_preorder(self):
+        """ Iterator over all descendant nodes. """
+        to_visit = []
+        node = self
+        while node is not None:
+            yield node
+            to_visit = node.children + to_visit
+            try:
+                node = to_visit.pop(0)
+            except:
+                node = None
+
+    def traverse(self, strategy="levelorder"):
         """
          Returns an iterator that traverse the tree structure under this
          node.
@@ -420,8 +432,11 @@ class TreeNode(object):
         """
         if strategy=="preorder":
             return self._iter_descendants_preorder()
+        elif strategy=="levelorder":
+            return self._iter_descendants_levelorder()
         elif strategy=="postorder":
             return self._iter_descendants_postorder()
+
     def swap_childs(self):
         """
         Swaps current childs order.
@@ -544,14 +559,14 @@ class TreeNode(object):
         """
         return [ n.name for n in self.iter_leaves() ]
 
-    def get_descendants(self, strategy="preorder"):
+    def get_descendants(self, strategy="levelorder"):
         """
         Returns the list of all nodes (leaves and internal) under
         this node.
         re buil
         See iter_descendants method.
         """
-        return [n for n in self.traverse(strategy="preorder") if n != self]
+        return [n for n in self.traverse(strategy=strategy) if n != self]
 
     def iter_search_nodes(self, **conditions):
         for n in self.traverse():
@@ -987,6 +1002,34 @@ class TreeNode(object):
             n.add_features(_nid=counter)
             counter += 1
 
+    def convert_to_ultrametric(self, tree_length, strategy="balanced"):
+        ''' Converts a tree to ultrametric topology (all leaves must
+        have the same distance to root).'''
+
+        # pre-calculate how many splits remain under each node
+        node2max_depth = {}
+        for node in self.traverse("postorder"):
+            if not node.is_leaf():
+                max_depth = max([node2max_depth[c] for c in node.children]) + 1
+                node2max_depth[node] = max_depth
+            else:
+                node2max_depth[node] = 1
+        node2dist = {self: 0.0}
+        tree_length = float(tree_length)
+        step = tree_length / node2max_depth[self]
+        for node in self.iter_descendants("levelorder"):
+            if strategy == "balanced":
+                node.dist = (tree_length - node2dist[node.up]) / node2max_depth[node]
+                node2dist[node] =  node.dist + node2dist[node.up]
+            elif strategy == "fixed":
+                if not node.is_leaf():
+                    node.dist = step
+                else:
+                    node.dist = tree_length - ((node2dist[node.up]) * step)
+                node2dist[node] = node2dist[node.up] + 1
+            node.dist = node.dist
+
+
 
 def _translate_nodes(root, *nodes):
     target_nodes = []
@@ -1032,6 +1075,9 @@ def asRphylo(ETE_tree):
         return
     R.library("ape")
     return R['read.tree'](text=ETE_tree.write())
+
+
+
 
 
 # A cosmetic alias :)
