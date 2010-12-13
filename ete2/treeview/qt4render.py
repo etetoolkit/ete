@@ -14,14 +14,14 @@ class _TextFaceItem(QtGui.QGraphicsSimpleTextItem, _NodeActions):
     def __init__(self, face, node, *args):
         QtGui.QGraphicsSimpleTextItem.__init__(self,*args)
         self.node = node
-        self.face = face
+        #self.face = face
 
 class _ImgFaceItem(QtGui.QGraphicsPixmapItem, _NodeActions):
     """ Manage faces on Scene"""
     def __init__(self, face, node, *args):
         QtGui.QGraphicsPixmapItem.__init__(self,*args)
         self.node = node
-        self.face = face
+        #self.face = face
 
 
 class _NodeItem(QtGui.QGraphicsRectItem, _NodeActions):
@@ -116,6 +116,7 @@ class _FaceGroup(QtGui.QGraphicsItem): # I resisted to name this FaceBook :)
             # Starting y position. Center columns
             y = (self.h / 2) - (h/2)
             for f in faces:
+                f.node = self.node
                 if f.type == "text":
                     obj = _TextFaceItem(f, self.node, f.get_text())
                     font = QtGui.QFont(f.ftype, f.fsize)

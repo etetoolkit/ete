@@ -109,7 +109,8 @@ ntbgcolors = {
 
 }
 
-__all__ = ["add_face_to_node", "Face", "TextFace", "AttrFace", "ImgFace", "ProfileFace", "ValidationFace", "SequenceFace"]
+__all__ = ["add_face_to_node", "Face", "TextFace", "AttrFace", "ImgFace",\
+               "ProfileFace", "ValidationFace", "SequenceFace"]
 
 try:
     import psyco

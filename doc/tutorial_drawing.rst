@@ -1,3 +1,9 @@
+.. module:: ete_dev.treeview
+  :synopsis: Display and rendering capabilities: it provides the programmable tree drawing engine and the Graphical User Interface to interact with trees
+.. moduleauthor:: Jaime Huerta-Cepas
+:Author: Jaime Huerta-Cepas
+
+
 ************************************
 The Programmable Tree Drawing Engine
 ************************************
