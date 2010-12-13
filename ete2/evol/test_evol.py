@@ -52,9 +52,9 @@ def main():
     tree._models['M2.b'] = M2b
     tree._models['M2.c'] = M2c
     tree._models['M2.d'] = M2d
-    col = {'NS' : 'grey', 'RX' : 'black',
-           'RX+': 'grey', 'CN' : 'black',
-           'CN+': 'grey', 'PS' : 'black', 'PS+': 'black'}
+    col =  {'NS' : 'grey', 'RX' : 'black',
+            'RX+': 'grey', 'CN' : 'black',
+            'CN+': 'grey', 'PS' : 'black', 'PS+': 'black'}
     col2 = {'NS' : 'white', 'RX' : 'white',
             'RX+': 'white', 'CN' : 'white',
             'CN+': 'white', 'PS' : 'white', 'PS+': 'white'}
