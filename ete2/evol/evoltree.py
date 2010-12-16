@@ -217,7 +217,7 @@ class EvolNode (PhyloNode):
         super(EvolTree, self).show(layout=layout,
                                      img_properties=img_properties)
 
-    def render (self, filename, layout=evol_layout, w=None, h=None,
+    def render (self, file_name, layout=evol_layout, w=None, h=None,
                 img_properties=None, header=None, histfaces=None):
         '''
         call super show adding up and down faces
@@ -235,9 +235,10 @@ class EvolNode (PhyloNode):
                     img_properties.aligned_header.add_face (mdl.histface, 1)
                 else:
                     img_properties.aligned_foot.add_face (mdl.histface, 1)
-        super(EvolTree, self).render(filename, layout=layout,
-                                       img_properties=img_properties,
-                                       w=w, h=h)
+        return super(EvolTree, self).render(file_name, layout=layout,
+                                            img_properties=img_properties,
+                                            w=w, h=h)
+        
 
     def mark_tree (self, node_ids, verbose=False, **kargs):
         '''

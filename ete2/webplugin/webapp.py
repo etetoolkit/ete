@@ -109,6 +109,7 @@ class WebTreeApplication(object):
         t = self._treeid2tree[treeid]
         tree_index = self._treeid2index[treeid]
 
+        self._dump_tree_to_file(t, treeid)
         if pre_drawing_action:
             atype, handler, arguments = pre_drawing_action
             if atype in set(["node", "face"]) and len(arguments)==1 and handler:
