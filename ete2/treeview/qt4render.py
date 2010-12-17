@@ -547,7 +547,7 @@ class _TreeScene(QtGui.QGraphicsScene):
         face_list = []
         nid = 0
         for n, partition in self.node2item.iteritems():
-            n.add_feature("_nid", str(nid))
+            #n.add_feature("_nid", str(nid))
             for item in partition.childItems():
                 if isinstance(item, _NodeItem):
                     pos = item.mapToScene(0,0)
@@ -563,7 +563,8 @@ class _TreeScene(QtGui.QGraphicsScene):
                         else:
                             size = f.mapToScene(f.boundingRect().width(), f.boundingRect().height())
                             face_list.append([pos.x(),pos.y(),size.x(),size.y(), nid, None])
-            nid += 1
+            #nid += 1
+            n.get_tree_root().sort_descendants()
         return {"nodes": node_list, "faces": face_list}
 
     def get_scale(self):
