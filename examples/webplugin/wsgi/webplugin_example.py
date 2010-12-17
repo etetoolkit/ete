@@ -63,9 +63,10 @@ def main_layout(node):
     # the global variable LEAVE_FACES, which is set by the application
     # controler according to the arguments passed through the URL.
     if node.is_leaf():
+
         for f, fkey, pos in LEAVE_FACES:
             if hasattr(node, fkey):
-                faces.add_face_to_node(f, node, pos)
+                faces.add_face_to_node(f, node, column=pos, position="branch-right")
     else:
         # Add special faces on collapsed nodes
         if hasattr(node, "hide") and int(node.hide) == 1:

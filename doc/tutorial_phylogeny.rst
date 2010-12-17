@@ -1,3 +1,9 @@
+.. module:: ete_dev.phylo
+  :synopsis: Extends Tree object: add orthology and paralogy methods, species aware node, links to multiple sequence alignments
+.. moduleauthor:: Jaime Huerta-Cepas
+:Author: Jaime Huerta-Cepas
+
+
 ********************
 Phylogenetic Trees
 ********************
@@ -8,7 +14,7 @@ Phylogenetic trees are the result of most evolutionary analyses. They represent
 the evolutionary relationships among a set of species or, in molecular biology,
 a set of homologous sequences.
 
-The **PhyloTree** class provides a proper way to deal with phylogenetic trees.
+The :class:`PhyloTree` class provides a proper way to deal with phylogenetic trees.
 Thus, while leaves are assumed to represent species (or sequences from a given
 species genome), internal nodes are considered the ancestral states leading to
 current species. A consequence of this is, for instance, that each bifurcation
@@ -21,12 +27,13 @@ that apply only for the analysis of phylogenetic trees.
 Linking Phylogenetic Trees and Multiple Sequence Alignments
 ===========================================================
 
-**PhyloTree** instances allow molecular phylogenies to be linked to the Multiple
-Sequence Alignments (MSA). To associate a MSA with a phylogenetic tree you can
-use the **link_to_alignment()** method present in any PhyloTree instance, which
-receives the path of an MSA file as first argument or, alternatively, a text
-string containing the MSA. Currently, **the following sequence file formats are
-supported: **
+:class:`PhyloTree` instances allow molecular phylogenies to be linked
+to the Multiple Sequence Alignments (MSA). To associate a MSA with a
+phylogenetic tree you can use the **link_to_alignment()** method
+present in any PhyloTree instance, which receives the path of an MSA
+file as first argument or, alternatively, a text string containing the
+MSA. Currently, **the following sequence file formats are supported:
+**
 
 .. % 
 

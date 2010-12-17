@@ -1,4 +1,8 @@
-:Author: Jaime Huerta-Cepas
+.. module:: ete_dev
+  :synopsis: provides main objects and modules
+.. moduleauthor:: Jaime Huerta-Cepas
+
+
 *********************************
 Working With Tree Data Structures
 *********************************
@@ -93,14 +97,14 @@ Reading newick trees
 
 In order to load a tree from a newick text string you can use the
 constructor :class:`Tree`, provided by the main module
-:mod:`ete2`. You will only need to pass a text string containing
+:mod:`ete_dev`. You will only need to pass a text string containing
 the newick structure and the format that should be used to parse it (0
 by default). Alternatively, you can pass the path to a text file
 containing the newick string.
 
 ::
  
-  from ete2 import Tree
+  from ete_dev import Tree
    
   # Loads a tree structure from a newick string. The returned variable ’t’ is the root node for the tree.
   t = Tree("(A:1,(B:1,(E:1,D:1):0.5):0.5);" )
@@ -116,14 +120,14 @@ Writing newick trees
 -----------------------
 
 Any ETE tree instance can be exported using newick notation using the
-:func:`tree.write` method, which is available in any tree node
+:func:`Tree.write` method, which is available in any tree node
 instance. It also allows for format selection
 (:ref:`sub:newick-format`), so you can use the same function to
 convert between newick formats.
 
 ::
    
-  from ete2 import Tree
+  from ete_dev import Tree
    
   # Loads a tree with internal node names
   t = Tree("(A:1,(B:1,(E:1,D:1)Internal_1:0.5)Internal_2:0.5)Root;", format=1)
@@ -166,7 +170,7 @@ Basic tree attributes
 =========================
 
 Each tree node has two basic attributes used to establish its position
-in the tree: :attr:`node.up` and :attr:`node.children`.  The first is
+in the tree: :attr:`TreeNode.up` and :attr:`TreeNode.children`.  The first is
 a pointer to parent's node, while the later is a list of children
 nodes.  Although it is possible to modify the structure of a tree by
 changing these attributes, it is strongly recommend not to do
@@ -179,13 +183,13 @@ tree node instance:
 
 .. table::
  
-   ========================   =============================================================================================  ================
-   Method                      Description                                                                                    Default value       
-   ========================   =============================================================================================  ================ 
-     :attr:`node.dist`        stores the distance from the node to its parent (branch length). Default value = 1.0             1.0      
-     :attr:`node.support`     informs about the reliability of the partition defined by the node (i.e. bootstrap support)      1.0    
-     :attr:`node.name`        Custom node's name.                                                                              NoName      
-   ========================   =============================================================================================  ================ 
+   ==========================     =============================================================================================  ================
+   Method                         Description                                                                                    Default value       
+   ==========================     =============================================================================================  ================ 
+     :attr:`TreeNode.dist`          stores the distance from the node to its parent (branch length). Default value = 1.0             1.0      
+     :attr:`TreeNode.support`       informs about the reliability of the partition defined by the node (i.e. bootstrap support)      1.0    
+     :attr:`TreeNode.name`          Custom node's name.                                                                              NoName      
+   ==========================     =============================================================================================  ================ 
 
 In addition, several methods are provided to perform basic operations
 on tree node instances:
@@ -196,14 +200,14 @@ on tree node instances:
   =================================  =============================================================================================
   Method                              Description
   =================================  =============================================================================================
-    :func:`node.is_leaf`               returns True if *node* has no children 
-    :func:`node.is_root`               returns True if *node* has no parent
-    :func:`node.get_tree_root`         returns the top-most node within the same tree structure as *node*
-    :attr:`len(node)`                  returns the number of leaves under *node*
+    :func:`TreeNode.is_leaf`           returns True if *node* has no children 
+    :func:`TreeNode.is_root`           returns True if *node* has no parent
+    :func:`TreeNode.get_tree_root`     returns the top-most node within the same tree structure as *node*
+    :attr:`len(TreeNode)`              returns the number of leaves under *node*
     :attr:`print node`                 prints a text-based representation of the tree topology under *node*
     :attr:`if node in tree`            returns true if *node* is a leaf under *tree*
     :attr:`for leaf in node`           iterates over all leaves under *node*
-    :func:`node.show`                  Explore node graphically using a GUI.
+    :func:`TreeNode.show`              Explore node graphically using a GUI.
   =================================  =============================================================================================
 
 
@@ -211,7 +215,7 @@ This is an example on how to access such attributes:
 
 :: 
 
-  from ete2 import Tree
+  from ete_dev import Tree
   t = Tree()
   # We create a random tree topology
   t.populate(15) 
@@ -242,7 +246,7 @@ as trees in which master root node has more than two children.
 
 ::
 
-  from ete2 import Tree
+  from ete_dev import Tree
   unrooted_tree = Tree( "(A,B,(C,D));" )
   print unrooted_tree
   #
@@ -290,13 +294,13 @@ large). Available methods are self explanatory:
   =======================================  ==================================================================================================
   method                                   Description
   =======================================  ==================================================================================================
-  :func:`node.iter_descendants`             Iterates over all descendant nodes excluding the root node tree in postorder way 
-  :func:`node.iter_leaves`                  Iterates only over leaf nodes
-  :func:`node.get_descendants`              Returns the list of nodes under tree
-  :func:`node.get_leaves`                   Returns the list leaf nodes under tree
-  :func:`node.get_leaf_names`               Returns the list leaf names under tree
-  :func:`node.get_children`                 Returns the list of first level children nodes of tree
-  :func:`node.get_sisters`                  Returns the list of sister branches/nodes
+  :func:`TreeNode.iter_descendants`             Iterates over all descendant nodes excluding the root node tree in postorder way 
+  :func:`TreeNode.iter_leaves`                  Iterates only over leaf nodes
+  :func:`TreeNode.get_descendants`              Returns the list of nodes under tree
+  :func:`TreeNode.get_leaves`                   Returns the list leaf nodes under tree
+  :func:`TreeNode.get_leaf_names`               Returns the list leaf names under tree
+  :func:`TreeNode.get_children`                 Returns the list of first level children nodes of tree
+  :func:`TreeNode.get_sisters`                  Returns the list of sister branches/nodes
   =======================================  ==================================================================================================
 
 
@@ -330,11 +334,11 @@ Other methods are also available that restrict search criteria.
 
 
 A custom list of nodes matching a given name can be easily obtain
-through the :func:`search_node` function.
+through the :func:`TreeNode.search_node` function.
 
 ::
  
-   from ete2 import Tree
+   from ete_dev import Tree
    t = Tree( '((H:1,I:1):0.5, A:1, (B:1,(C:1,D:1):0.5):0.5);' )
    print t
    #                    /-H
@@ -366,24 +370,24 @@ a handy way of finding internal nodes.
 
 ::
 
-  from ete2 import Tree
+  from ete_dev import Tree
   t = Tree( '((H:0.3,I:0.1):0.5, A:1, (B:0.4,(C:0.5,(J:1.3, (F:1.2, D:0.1):0.5):0.5):0.5):0.5);' )
   print t
   ancestor = t.get_common_ancestor("C", "J", "B")
   
 
 
-A limitation of the :func:`search_nodes` method is that you cannot use
+A limitation of the :func:`TreeNode.search_nodes` method is that you cannot use
 complex conditional statements to find specific nodes.  When search
 criteria is too complex, you may need to create your own search
 function.
 
-:: 
+::
 
-  from ete2 import Tree
+  from ete_dev import Tree
 
   def search_by_size(node, size):
-     ''' Finds nodes with a given number of leaves ''' 
+      "Finds nodes with a given number of leaves"
       matches = []
       for n in node.traverse(): 
          if len(n) == size: 
@@ -392,7 +396,8 @@ function.
 
   t = Tree()
   t.populate(40)
-  search_by_size(t, size=6) # returns nodes containing 6 leaves
+  # returns nodes containing 6 leaves
+  search_by_size(t, size=6) 
 
 
 Traversing (browsing) trees
@@ -409,13 +414,21 @@ browsed):
 
 * preorder: 1)Visit the root, 2) Traverse the left subtree , 3) Traverse the right subtree.
 * postorder: 1) Traverse the left subtree , 2) Traverse the right subtree, 3) Visit the root 
+* levelorder (default): every node on a level before is visited going to a lower level 
 
 
-Every node in a tree includes a :func:`traverse` method, which can be
+.. note::
+
+    * Preorder traversal sequence: F, B, A, D, C, E, G, I, H (root, left, right)
+    * Inorder traversal sequence: A, B, C, D, E, F, G, H, I (left, root, right); note how this produces a sorted sequence
+    * Postorder traversal sequence: A, C, E, D, B, H, I, G, F (left, right, root)
+    * Level-order traversal sequence: F, B, G, A, D, I, C, E, H
+
+Every node in a tree includes a :func:`TreeNode.traverse` method, which can be
 used to visit, one by one, every node node under the current
-partition. In addition, the :func:`iter_descendants` method can be set
+partition. In addition, the :func:`TreeNode.iter_descendants` method can be set
 to use either a post- or a preorder strategy.  The only different
-between :func:`traverse` and :func:`iter_descendants` is that the
+between :func:`TreeNode.traverse` and :func:`TreeNode.iter_descendants` is that the
 first will include the root node in the iteration.
 
 
@@ -434,7 +447,8 @@ Additionally, you can implement your own traversing function using the
 structural attributes of nodes. In the following example, only nodes
 between a given leaf and the tree root are visited.
 
-AN EXAMPLE HERE !!!
+.. warning::
+   Example missing, sorry
 
 
 Iterating instead of Getting
@@ -449,12 +463,12 @@ not a problem in most of the cases, but in large trees, you can speed
 up the browsing process by using iterators.
 
 Most **get_** methods have their homologous iterator functions. Thus,
-:func:`get_leaves` could be substituted by :func:`iter_leaves`. The same
-occurs with :func:`iter_descendants` and :func:`iter_search_nodes`.
+:func:`TreeNode.get_leaves` could be substituted by :func:`TreeNode.iter_leaves`. The same
+occurs with :func:`TreeNode.iter_descendants` and :func:`TreeNode.iter_search_nodes`.
 
 When iterators are used (note that is only applicable for looping),
 only one step is processed at a time. For instance,
-:func:`iter_search_nodes` will return one match in each iteration. In
+:func:`TreeNode.iter_search_nodes` will return one match in each iteration. In
 practice, this makes no differences in the final result, but it may
 increase the performance of loop functions (i.e. in case of finding a
 match which interrupts the loop).
@@ -484,46 +498,64 @@ match which interrupts the loop).
 Node annotation
 =========================
 
-Although newick standard was only thought to contain branch lengths and node
-names information, the truth is that many other features are usually required to
-be linked to the different tree nodes. ETE allows to associated any kind of
-extra information to the tree nodes. Extra information can be regarded as a
-single numeric value, a text label or even as a reference to a more complex
-python structure (i.e. lists, dictionaries or any other python object). Thus,
-for example, with ETE it is possible to have fully annotated trees. The methods
-**add feature()**,** add_features()** and** del_feature()** are prepared to
-handle the task of adding and deleting information to a given node.
+Every node contains three basic attributes: name, branch length and
+branch support. These three values are encoded in the newick format.
+However, any extra data could be linked to trees. This is called tree
+annotation.
 
-Once extra features are added, you can access their values at any time during
-the analysis of a tree. To do so, you only need to access to the
-**node.featurename** attributes. Let's see this with some examples:
+The :func:`TreeNode.add_feature` and :func:`TreeNode.add_features`
+methods allow to add extra attributes (features) to any node.  The
+first allows to add one one feature at a time, while the second can be
+used to add many features with the same call.
 
-Unfortunately, newick format does not support adding extra features to a tree.
-Because of this drawback, several improved formats haven been (or are being)
-developed to read and write tree based information. Some of these new formats
-are based in a completely new standard (PhyloXML, NeXML), while others are
-extensions of the original newick formar (NHX
-http://phylosoft.org/NHX/http://phylosoft.org/NHX/). Currently, ETE includes
-support for the New Hampshire eXtended format (NHX), which uses the original
-newick standard and adds the possibility of saving additional date related to
-each tree node. Here is an example of a extended newick representation in which
-extra information is added to an internal node:
+::
+ 
+  from ete_dev import Tree
+  t = Tree( "((a,b),c);" )
+  
 
-As you can notice, extra node features in the NHX format are enclosed between
-brackets. ETE is able to read and write features using such format, however, the
-encoded information is expected to be text-formattable. In the future, support
-for more advanced formats such as PhyloXML will be included.
+:func:`TreeNode.del_feature` can be used to delete an attribute.
 
-The NHX format is automatically detected when reading a newick file, and the
-detected node features are added using the "**add_feature()**" method.
-Consequently, you can access the information by using the normal ETE's feature
-notation: **node.featurename**. Similarly, features added to a tree can be
-included within the normal newick representation using the NHX notation. For
-this, you can call the **write() **method using the **features **argument, which
-is expected to be a list with the features names that you want to include in the
-newick string. Note that all nodes containing the suplied features will be
-exposed into the newick string. Use an empty features list (**features=[ ]**) to
-include all node's data into the newick string.
+Once extra features are added, you can access their values at any time
+during the analysis of a tree. To do so, you only need to access to
+the ``node.feature_name`` attribute. Let's see this with some
+examples:
+
+.. warning::
+   example missing, sorry
+
+Unfortunately, newick format does not support adding extra features to
+a tree.  Because of this drawback, several improved formats haven been
+(or are being) developed to read and write tree based
+information. Some of these new formats are based in a completely new
+standard (PhyloXML, NeXML), while others are extensions of the
+original newick formar (NHX
+http://phylosoft.org/NHX/http://phylosoft.org/NHX/). Currently, ETE
+includes support for the New Hampshire eXtended format (NHX), which
+uses the original newick standard and adds the possibility of saving
+additional date related to each tree node. Here is an example of a
+extended newick representation in which extra information is added to
+an internal node:
+
+As you can notice, extra node features in the NHX format are enclosed
+between brackets. ETE is able to read and write features using such
+format, however, the encoded information is expected to be dumped as
+plain text.
+
+
+The NHX format is automatically detected when reading a newick file,
+and the detected node features are added using the
+:func:`TreeNode.add_feature` method.  Consequently, you can access the
+information by using the normal ETE's feature notation:
+``node.feature_name``. Similarly, features added to a tree can
+be included within the normal newick representation using the NHX
+notation. For this, you can call the :func:`TreeNode.write` method
+using the :attr:`features` argument, which is expected to be a list
+with the features names that you want to include in the newick
+string. Note that all nodes containing the suplied features will be
+exposed into the newick string. Use an empty features list
+(:attr:`features=[ ]`) to include all node's data into the newick
+string.
 
 
 .. _sec:modifying-tree-topology:
@@ -663,3 +695,5 @@ splits current node into two balanced branches in terms of node distances.
 
 
 .. _cha:the-programmable-tree:
+
+:Author: Jaime Huerta-Cepas

@@ -152,24 +152,22 @@ def parse_paml (pamout, model):
         divide_data (pamout, model)
         return
     # starts parsing
-    passe = True
-    for line in open (pamout):
+    all_lines = open (pamout).readlines()
+    for i, line in enumerate (all_lines):
         if line is '\n':
             continue
+        # codon frequency
         if line.startswith('Codon frequencies under model'):
             model.stats ['codonFreq'] = []
-            passe = False
+            for j in xrange (16):
+                line = map (float, re.findall ('\d\.\d+', all_lines [i+j+1]))
+                model.stats ['codonFreq'] += [line]
             continue
-        if passe:
+        if not model.stats.has_key ('codonFreq'):
             continue
         ######################
         # start serious staff
-        # codon frequency
         line = line.rstrip()
-        if line.startswith ('  0.'):
-            line = map (float, re.findall ('\d\.\d+', line))
-            model.stats ['codonFreq'] += [line]
-            continue
         # lnL and number of parameters
         if line.startswith ('lnL'):
             line = re.sub ('.* np: *(\d+)\): +(-\d+\.\d+).*',
@@ -189,6 +187,8 @@ def parse_paml (pamout, model):
         # retrieve dS dN t w N S and if present, errors. from summary table
         if line.count('..') == 1 and line.startswith (' '):
             if not re.match (' +\d+\.\.\d+ +\d\.\d+ ', line):
+                if re.match (' +( +\d+\.\d+){8}', all_lines [i+1]):
+                    _get_values (model, line.split ()[0]+'  '+all_lines [i+1])
                 continue
             _get_values (model, line)
             continue
@@ -226,13 +226,13 @@ def _get_paml_labels (tree, paml_labels, pamout):
         try:
             node = tree.search_nodes(paml_id=rel[1])[0]
             if int (node.up.paml_id) != int (rel[0]):
-                warn ('WARNING: labelling does not correspond!!\n' + \
-                      '         Getting them from ' + pamout)
+                #warn ('WARNING: labelling does not correspond!!\n' + \
+                #      '         Getting them from ' + pamout)
                 get_labels_from_paml(tree, relations, pamout)
                 break
         except IndexError:
-            warn ('ERROR: labelling does not correspond!!\n' + \
-                  '       Getting them from ' + pamout)
+            #warn ('ERROR: labelling does not correspond!!\n' + \
+            #      '       Getting them from ' + pamout)
             get_labels_from_paml(tree, relations, pamout)
 
 def get_labels_from_paml (tree, relations, pamout):
