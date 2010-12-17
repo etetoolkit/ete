@@ -136,7 +136,6 @@ def render_tree(t, imgName, w=None, h=None, layout=None, \
         else:
             layout = "basic"
 
-
     global _QApp
     if not _QApp:
         _QApp = QtGui.QApplication(["ETE"])
@@ -147,6 +146,7 @@ def render_tree(t, imgName, w=None, h=None, layout=None, \
     scene.initialize_tree_scene(t, layout,
                                 tree_properties=img_properties)
     scene.draw()
+    t.sort_descendants()
     imgmap = scene.get_tree_img_map()
     scene.save(imgName, w=w, h=h, header=header)
     return imgmap   

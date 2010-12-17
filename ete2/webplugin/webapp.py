@@ -100,7 +100,7 @@ class WebTreeApplication(object):
 
     def _dump_tree_to_file(self, t, treeid):
         tree_path = os.path.join(self.CONFIG["temp_dir"], treeid+".nw")
-        open(tree_path, "w").write(t.write(features=[]))
+        open(tree_path, "w").write(t.write(features=[], format=0))
 
     def _get_tree_img(self, treeid, pre_drawing_action=None):
         img_url = os.path.join(self.CONFIG["temp_url"], treeid+".png?"+str(time.time()))
@@ -174,6 +174,7 @@ class WebTreeApplication(object):
         actions = self.queries.get("show_actions", [None])[0]
         tree = self.queries.get("tree", [None])[0]
         search_term = self.queries.get("search_term", [None])[0]
+        run_params = self.queries.get("run_params", [None])[0]
         aindex = self.queries.get("aindex", [None])[0]
 
         if method == "draw":
@@ -224,18 +225,23 @@ class WebTreeApplication(object):
 
             if aindex is None:
                 # just refresh tree
+                stderr.write ('refresh tree\n\n')
                 return self._get_tree_img(treeid=treeid)
-            else:
+            else: 
                 aname, target, handler, checker, html_generator = self.actions[int(aindex)]
-
+                stderr.write (str([aname, target, handler, checker, html_generator, run_params]))
+                stderr.write ('\n\n')
+ 
             if target in set(["node", "face", "layout"]):
                 return self._get_tree_img(treeid=treeid, pre_drawing_action=[target, handler, [nodeid]])
+            elif target in set(["run"]):
+                return self._get_tree_img(treeid=treeid, pre_drawing_action=[target, handler, [run_params]])
             elif target in set(["search"]):
                 return self._get_tree_img(treeid=treeid, pre_drawing_action=[target, handler, [search_term]])
             elif target in set(["refresh"]):
                 return self._get_tree_img(treeid=treeid)
             return "Bad guy"
-               
+
         elif self._external_app_handler:
             return self._external_app_handler(environ, start_response, self.queries)
         else:

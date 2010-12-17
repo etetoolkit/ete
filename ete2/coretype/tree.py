@@ -999,7 +999,7 @@ class TreeNode(object):
                 n.children = [item[1] for item in children]
             counter = 1
         for n in self.traverse(strategy="postorder"):
-            n.add_features(_nid=counter)
+            n.add_features(_nid=str(counter))
             counter += 1
         def get_descendant_by_id (idname):
             '''
