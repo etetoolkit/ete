@@ -989,7 +989,7 @@ class TreeNode(object):
             for n in self.iter_descendants():
                 if n._nid == idname:
                     return n
-            if self.paml_id == idname:
+            if self._nid == idname:
                 return self
         self.__dict__['get_descendant_by_id'] = get_descendant_by_id
 

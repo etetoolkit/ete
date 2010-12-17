@@ -56,7 +56,7 @@ def main():
     col2 = {'NS' : 'white', 'RX' : 'white',
             'RX+': 'white', 'CN' : 'white',
             'CN+': 'white', 'PS' : 'white', 'PS+': 'white'}
-    print tree._models
+
     M2a.set_histface (up=False, typ='line', lines = [1.0,0.3], col_lines=['red','grey'], header='ugliest face')
     M2b.set_histface (up=False, typ='error', col=col2, lines = [2.5, 1.0, 4.0, 0.5], header = 'Many lines, error boxes, background black',
                       col_lines=['orange', 'yellow', 'red', 'cyan'])

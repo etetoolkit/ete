@@ -197,7 +197,7 @@ class WebTreeApplication(object):
             
             if nodeid:
                 tree_index = self._treeid2index[treeid]
-                node = tree_index[nodeid]
+                node = tree_index[str (nodeid)]
             else:
                 node = None
 
