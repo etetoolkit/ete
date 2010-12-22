@@ -19,7 +19,7 @@ class Model:
     '''Evolutionnary model.
     available models are:
     '''
-    def __init__(self, model, tree, path=None, **kwargs):
+    def __init__(self, model_name, tree, path=None, **kwargs):
         '''
         "omega" stands for starting value of omega, in the computation. Qs
         Zihen Yang says, it is good to try with different starting values...
@@ -32,7 +32,7 @@ class Model:
                        and codon frequencies stored here.
         '''
         self._tree      = tree
-        self.name, args = check_name(model)
+        self.name, args = check_name(model_name)
         self.sites      = None
         self.classes    = None
         self.branches   = {}

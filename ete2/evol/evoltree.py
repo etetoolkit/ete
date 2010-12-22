@@ -131,21 +131,21 @@ class EvolNode (PhyloNode):
             seq_group.name2id [n.name   ] = n.paml_id
         seq_group.write (outfile=fullpath, format='paml')
 
-    def run_model (self, model, ctrl_string='', keep=True, **kwargs):
+    def run_model (self, model_name, ctrl_string='', keep=True, **kwargs):
         ''' To compute evolutionnary models with paml
         extra parameters should be in '''
         from subprocess import Popen, PIPE
-        model = Model(model, self, **kwargs)
-        fullpath = os.path.join (self.workdir, model.name)
+        model_obj = Model(model_name, self, **kwargs)
+        fullpath = os.path.join (self.workdir, model_obj.name)
         os.system("mkdir -p %s" %fullpath)
         # write tree file
         self.__write_algn (fullpath + '/algn')
         self.write (outfile=fullpath+'/tree', 
-                    format = (10 if model.properties['allow_mark'] else 9))
+                    format = (10 if model_obj.properties['allow_mark'] else 9))
         # write algn file
         ## MODEL MODEL MDE
         if ctrl_string == '':
-            ctrl_string = model.get_ctrl_string(fullpath+'/tmp.ctl')
+            ctrl_string = model_obj.get_ctrl_string(fullpath+'/tmp.ctl')
         else:
             open (fullpath+'/tmp.ctl', 'w').write (ctrl_string)
         hlddir = os.getcwd()
@@ -161,8 +161,8 @@ class EvolNode (PhyloNode):
             return 1
         os.chdir(hlddir)
         if keep:
-            setattr (model, 'run', run)
-            self.link_to_evol_model (os.path.join(fullpath,'out'), model)
+            setattr (model_obj, 'run', run)
+            self.link_to_evol_model (os.path.join(fullpath,'out'), model_obj)
     run_model.__doc__ += '''%s
     to run paml, needs tree linked to alignment.
     model name needs to start by one of:
