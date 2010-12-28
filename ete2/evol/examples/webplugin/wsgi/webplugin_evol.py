@@ -85,7 +85,10 @@ def main_layout(node):
             faces.add_face_to_node(collapsed_face, node, 0)
         else:
             node.img_style["draw_descendants"]= True
-
+    if '#1' in node.mark:
+        node.img_style['hz_line_color'] = '#ff0000'
+    elif '#' in node.mark:        
+        node.img_style['hz_line_color'] = '#0000ff'
     # Set node aspect. This controls which node features are used to
     # control the style of the tree. You can add or modify this
     # features, as well as their behaviour
@@ -97,25 +100,25 @@ def main_layout(node):
         node.img_style["shape"] = "sphere"
 
     # Evoltype: [D]uplications, [S]peciations or [L]osess.
-    if hasattr(node,"evoltype"):
-        if node.evoltype == 'D':
-            node.img_style["fgcolor"] = "#1d176e"
-            node.img_style["hz_line_color"] = "#1d176e"
-            node.img_style["vt_line_color"] = "#1d176e"
-        elif node.evoltype == 'S':
-            node.img_style["fgcolor"] = "#FF0000"
-            node.img_style["line_color"] = "#FF0000"
-        elif node.evoltype == 'L':
-            node.img_style["fgcolor"] = "#777777"
-            node.img_style["vt_line_color"] = "#777777"
-            node.img_style["hz_line_color"] = "#777777"
-            node.img_style["line_type"] = 1
-    # If no evolutionary information, set a default style
-    else:
-        node.img_style["fgcolor"] = "#000000"
-        node.img_style["vt_line_color"] = "#000000"
-        node.img_style["hz_line_color"] = "#000000"
-        node.img_style["line_type"] = 0
+    #if hasattr(node,"evoltype"):
+    #    if node.evoltype == 'D':
+    #        node.img_style["fgcolor"] = "#1d176e"
+    #        node.img_style["hz_line_color"] = "#1d176e"
+    #        node.img_style["vt_line_color"] = "#1d176e"
+    #    elif node.evoltype == 'S':
+    #        node.img_style["fgcolor"] = "#FF0000"
+    #        node.img_style["line_color"] = "#FF0000"
+    #    elif node.evoltype == 'L':
+    #        node.img_style["fgcolor"] = "#777777"
+    #        node.img_style["vt_line_color"] = "#777777"
+    #        node.img_style["hz_line_color"] = "#777777"
+    #        node.img_style["line_type"] = 1
+    ## If no evolutionary information, set a default style
+    #else:
+    #    node.img_style["fgcolor"] = "#000000"
+    #    node.img_style["vt_line_color"] = "#000000"
+    #    node.img_style["hz_line_color"] = "#000000"
+    #    node.img_style["line_type"] = 0
 
     # Parse node features features and conver them into styles. This
     # must be done like this, since current ete version does not allow
@@ -180,6 +183,13 @@ def set_red(node):
     node.add_feature("fgcolor", "#ff0000")
     node.add_feature("bsize", 40)
     node.add_feature("shape", "sphere")
+
+def mark_branch (node):
+    node.add_feature ('mark', '#1')
+
+def clean_marks (node):
+    for n in node.get_tree_root().traverse():
+        n.mark = ''
 
 def set_bg(node):
     node.add_feature("bgcolor", "#CEDBC4")
@@ -746,6 +756,8 @@ application.register_action ("branch_info", "node", None, None, branch_info)
 application.register_action ("<b>Collapse</b>", "node", collapse, can_collapse, None)
 application.register_action ("Expand", "node", expand, can_expand, None)
 application.register_action ("Highlight background", "node", set_bg, None, None)
+application.register_action ("Mark branch", "node", mark_branch, None, None)
+application.register_action ("Clean marks", "node", clean_marks, None, None)
 application.register_action ("Set as root", "node", set_as_root, None, None)
 application.register_action ("Swap children", "node", swap_branches, is_not_leaf, None)
 application.register_action ("Pay me a compliment", "face", set_red, None, None)
