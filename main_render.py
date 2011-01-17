@@ -2,9 +2,36 @@ import re
 from PyQt4 import QtCore, QtGui
 
 import circular_render as crender
-import face_render as frender
+from face_render import update_node_faces
 import circular_render as crender
+import rect_render as rrender
 from ete_dev import faces
+
+FACE_POSITIONS = set(["branch-right", "aligned", "branch-top", "branch-bottom"])
+
+## General scheme on how nodes size are handled
+## |==========================================================================================================================|
+## |                                                fullRegion                                                                |       
+## |             nodeRegion                  |================================================================================|
+## |                                         |                                fullRegion                                     || 
+## |                                         |        nodeRegion                     |=======================================||
+## |                                         |                                       |         fullRegion                   |||
+## |                                         |                                       |         nodeRegion                   ||| 
+## |                                         |                         |             | xdist_offset | nodesize | facesRegion|||
+## |                                         | xdist_offset | nodesize |facesRegion  |=======================================||
+## |                                         |                         |             |=======================================||
+## |                                         |                                       |             fullRegion                ||
+## |                                         |                                       |             nodeRegion                ||
+## |  branch-top     |          |            |                                       | xdist_offset | nodesize | facesRegion ||
+## | dist_xoffset    | nodesize |facesRegion |                                       |=======================================||
+## |  branch-bottom  |          |            |================================================================================|
+## |                                         |=======================================|                                        |
+## |                                         |             fullRegion                |                                        |
+## |                                         |        nodeRegion                     |                                        |
+## |                                         | xdist_offset | nodesize | facesRegion |                                        |
+## |                                         |=======================================|                                        |
+## |==========================================================================================================================|
+##
 
 _LINE_TYPE_CHECKER = lambda x: x in (0,1,2)
 _SIZE_CHECKER = lambda x: isinstance(x, int)
@@ -19,31 +46,44 @@ class TreeFace(faces.Face):
         self.type = "item"
         self.root_node = tree
         self.tree_partition = None
-        
+
     def update_items(self):
         hide_root = False
         if self.root_node is self.node:
             hide_root = True
-        self.tree_partition = render(self.root_node, {}, {}, "circular", 1, hide_root)
-        #self.tree_partition = QtGui.QGraphicsRectItem(0,0,350,350)
+        self.tree_partition = render(self.root_node, {}, {}, "circular", 2, hide_root)
+
     def _width(self):
         return self.tree_partition.rect().width()
 
     def _height(self):
         return self.tree_partition.rect().height()
 
+class _TextFaceItem(QtGui.QGraphicsSimpleTextItem):
+    """ Manage faces on Scene"""
+    def __init__(self, face, node, *args):
+        QtGui.QGraphicsSimpleTextItem.__init__(self,*args)
+        self.node = node
+
+class _ImgFaceItem(QtGui.QGraphicsPixmapItem):
+    """ Manage faces on Scene"""
+    def __init__(self, face, node, *args):
+        QtGui.QGraphicsPixmapItem.__init__(self,*args)
+        self.node = node
 
 class _NodeItem(QtGui.QGraphicsRectItem):
     def __init__(self, node):
         self.node = node
         self.radius = node.img_style["size"]/2
-        QtGui.QGraphicsRectItem.__init__(self, 0, 0, self.radius*2, self.radius*2)
+        self.diam = self.radius*2
+        QtGui.QGraphicsRectItem.__init__(self, 0, 0, self.diam, self.diam)
 
     def paint(self, p, option, widget):
         #QtGui.QGraphicsRectItem.paint(self, p, option, widget)
         if self.node.img_style["shape"] == "sphere":
             r = self.radius
-            gradient = QtGui.QRadialGradient(r, r, r,(r*2)/3,(r*2)/3)
+            d = self.diam
+            gradient = QtGui.QRadialGradient(r, r, r,(d)/3,(d)/3)
             gradient.setColorAt(0.05, QtCore.Qt.white);
             gradient.setColorAt(0.9, QtGui.QColor(self.node.img_style["fgcolor"]));
             p.setBrush(QtGui.QBrush(gradient))
@@ -66,11 +106,13 @@ class NodeStyleDict(dict):
             ["bgcolor",          "#FFFFFF",    _COLOR_CHECKER                           ],
             ["vt_line_color",    "#000000",    _COLOR_CHECKER                           ],
             ["hz_line_color",    "#000000",    _COLOR_CHECKER                           ],
-            ["line_type",        0,            _LINE_TYPE_CHECKER                       ], # 0 solid, 1 dashed, 2 dotted
+            ["hz_line_type",     0,            _LINE_TYPE_CHECKER                       ], # 0 solid, 1 dashed, 2 dotted
+            ["vt_line_type",     0,            _LINE_TYPE_CHECKER                       ], # 0 solid, 1 dashed, 2 dotted
             ["size",             6,            _SIZE_CHECKER                            ], # node circle size 
             ["shape",            "sphere",     _NODE_TYPE_CHECKER                       ], 
             ["draw_descendants", True,         _BOOL_CHECKER                            ],
-            ["hlwidth",          1,            _SIZE_CHECKER                            ]
+            ["hz_line_width",          0,      _SIZE_CHECKER                            ],
+            ["vt_line_width",          0,      _SIZE_CHECKER                            ]
             ]
         self._valid_keys = set([i[0] for i in self._defaults]) 
         self.init()
@@ -94,7 +136,6 @@ class NodeStyleDict(dict):
         if self._block_adding_faces:
             raise AttributeError("fixed faces cannot be modified while drawing.")
             
-        from faces import FACE_POSITIONS
         """ Add faces as a fixed feature of this node style. This
         faces are always rendered. 
 
@@ -109,6 +150,8 @@ class NodeStyleDict(dict):
         if i not in self._valid_keys:
             raise ValueError("'%s' is not a valid key for NodeStyleDict instances" %i)
         super(NodeStyleDict, self).__setitem__(i, y)
+
+
 
 def render(root_node, n2i, n2f, current_mode, scale, hide_root = False, arc_span=360):
     parent = QtGui.QGraphicsRectItem(0, 0, 0, 0)
@@ -128,7 +171,14 @@ def render(root_node, n2i, n2f, current_mode, scale, hide_root = False, arc_span
         finished = True
 
         if node not in n2i:
-            item = n2i[node] = crender.ArcPartition(parent)
+            if current_mode == "circular":
+                # ArcPartition all hang from a same parent item
+                item = n2i[node] = crender.ArcPartition(parent)
+            elif current_mode == "rect":
+                # RectPartition are nested, so parent will be modified
+                # later on
+                item = n2i[node] = rrender.RectPartition(parent)
+
             if node is root_node and hide_root:
                 empty = QtCore.QRectF(0,0,1,1)
                 item.nodeRegion, item.facesRegion, item.fullRegion = \
@@ -148,26 +198,34 @@ def render(root_node, n2i, n2f, current_mode, scale, hide_root = False, arc_span
                     to_visit.append(c)
                     finished = False
             # :: pre-order code here ::
-
         if not finished:
             continue
         else:
             to_visit.pop(-1)
             visited.add(node)
-        # :: Post-order code ::
+
+        # :: Post-order visits. Leaves are visited before parents ::
         if current_mode == "circular": 
             if _leaf(node):
                 crender.init_circular_leaf_item(node, n2i, last_rotation, rot_step)
                 last_rotation += rot_step
             else:
                 crender.init_circular_node_item(node, n2i)
-            if node is not root_node or not hide_root: 
-                render_node_content(node, n2i, n2f, scale, current_mode)
+
+        elif current_mode == "rect": 
+            if _leaf(node):
+                rrender.init_rect_leaf_item(node, n2i, n2f)
+            else:
+                rrender.init_rect_node_item(node, n2i, n2f)
+
+        if node is not root_node or not hide_root: 
+            render_node_content(node, n2i, n2f, scale, current_mode)
+
     if current_mode == "circular":
         max_r = crender.render_circular(root_node, n2i, rot_step)
-        print max_r
-    parent.moveBy(max_r, max_r)
-    parent.setRect(-max_r, -max_r, max_r*2, max_r*2) 
+        parent.moveBy(max_r, max_r)
+        parent.setRect(-max_r, -max_r, max_r*2, max_r*2) 
+
     return parent
 
 def get_node_size(node, n2f, scale):
@@ -175,11 +233,11 @@ def get_node_size(node, n2f, scale):
     min_branch_separation = 3
 
     # Organize faces by groups
-    faceblock = frender.update_node_faces(node, n2f)
+    faceblock = update_node_faces(node, n2f)
 
     # Total height required by the node
     h = max(node.img_style["size"] + faceblock["branch-top"].h + faceblock["branch-bottom"].h, 
-                                  node.img_style["hlwidth"] + faceblock["branch-top"].h + faceblock["branch-bottom"].h, 
+                                  node.img_style["hz_line_width"] + faceblock["branch-top"].h + faceblock["branch-bottom"].h, 
                                   faceblock["branch-right"].h, 
                                   faceblock["aligned"].h, 
                                   min_branch_separation,
@@ -192,6 +250,7 @@ def get_node_size(node, n2f, scale):
                                       ), 
                                   faceblock["branch-right"].w]
                                  )
+    w += node.img_style["vt_line_width"]
 
     # # Updates the max width spent by aligned faces
     # if faceblock["aligned"].w > self.max_w_aligned_face:
@@ -221,12 +280,8 @@ def get_node_size(node, n2f, scale):
     return nodeRegion, facesRegion, fullRegion
 
 def render_node_content(node, n2i, n2f, scale, mode):
-
-    # render(node, n2i, n2f, node.mode, scale, item)
-
-    #partition = n2i[node]
     style = node.img_style
-    branch_length = float(node.dist * scale)
+
     parent_partition = n2i[node]
     partition = QtGui.QGraphicsRectItem(parent_partition)
     parent_partition.content = partition
@@ -235,16 +290,16 @@ def render_node_content(node, n2i, n2f, scale, mode):
     facesR = parent_partition.facesRegion
     center = parent_partition.center
 
-    # Draws node background
-    #if style["bgcolor"].upper() not in set(["#FFFFFF", "white"]): 
-    #    color = QtGui.QColor(style["bgcolor"])
-    #    partition.setBrush(color)
-    #    partition.setPen(color)
-    #    partition.drawbg = True
+    branch_length = float(node.dist * scale)
+
+    # Whole partition background
+    if style["bgcolor"].upper() not in set(["#FFFFFF", "white"]): 
+        color = QtGui.QColor(style["bgcolor"])
+        parent_partition.setBrush(color)
+        parent_partition.setPen(color)
+        parent_partition.drawbg = True
     
-
-
-    # Draw node points in partition centers
+    # Node points in partition centers
     ball_size = style["size"] 
     ball_start_x = nodeR.width() - facesR.width() - ball_size
     node_ball = _NodeItem(node)
@@ -252,10 +307,14 @@ def render_node_content(node, n2i, n2f, scale, mode):
     node_ball.setPos(ball_start_x, center-(ball_size/2))
     node_ball.setAcceptsHoverEvents(True)
 
+    #node_ball.setGraphicsEffect(QtCore.Qt.QGraphicsDropShadowEffect)
+
     # Branch line to parent
-    color = QtGui.QColor(style["hz_line_color"])
-    pen = QtGui.QPen(color)
-    set_pen_style(pen, style["line_type"])
+    pen = QtGui.QPen()
+    set_pen_style(pen, style["hz_line_type"])
+    pen.setColor(QtGui.QColor(style["hz_line_color"]))
+    pen.setWidth(style["hz_line_width"])
+    pen.setCapStyle(QtCore.Qt.FlatCap)
     hz_line = QtGui.QGraphicsLineItem(partition)
     hz_line.setPen(pen)
     hz_line.setLine(0, center, 
@@ -289,37 +348,26 @@ def render_node_content(node, n2i, n2f, scale, mode):
     fblock.render()
     fblock.setPos(0, center-fblock.h)
 
-    
-    # Vertical Node
-    if 0 and not _leaf(node):
-        first_c = n2i[node.children[0]]
-        last_c = n2i[node.children[-1]]
+    # Vertical line
+    if not _leaf(node):
         if mode == "circular":
-            # Used to BG
-            full_angle = last_c.full_end - first_c.full_start
-            angle_start = last_c.full_end - partition.rotation
-            angle_end = partition.rotation - first_c.full_start
-            partition.set_arc(parent_radius, h/2, parent_radius, r, angle_start, angle_end)
-
-            # Vertical arc Line
-            rot_end = n2i[node.children[-1]].rotation
-            rot_start = n2i[node.children[0]].rotation
-            vt_line = QtGui.QGraphicsPathItem(parent)
-            path = QtGui.QPainterPath()
-            path.arcMoveTo(-r,-r, r * 2, r * 2, 360-rot_start-angle)
-            path.arcTo(-r,-r, r*2, r * 2, 360 - rot_start - angle, angle)
-            vt_line.setPath(path)
-            
-        if mode == "rectangular":
-            vt_line = QtGui.QGraphicsLineItem(partition)
-            c1 = first_c.start_y + first_c.center
-            c2 = last_c.start_y + last_c.center
+            vt_line = QtGui.QGraphicsPathItem()
+        elif mode == "rect":
+            vt_line = QtGui.QGraphicsLineItem(parent_partition)
+            first_child_part = n2i[node.children[0]]
+            last_child_part = n2i[node.children[-1]]
+            c1 = first_child_part.start_y + first_child_part.center
+            c2 = last_child_part.start_y + last_child_part.center
             vt_line.setLine(nodeR.width(), c1,\
                                 nodeR.width(), c2)            
-        # Vt line style
-        pen = QtGui.QPen(QtGui.QColor(style["vt_line_color"])) 
-        set_pen_style(pen, style["line_type"])
+
+        pen = QtGui.QPen()
+        set_pen_style(pen, style["vt_line_type"])
+        pen.setColor(QtGui.QColor(style["vt_line_color"]))
+        pen.setWidth(style["vt_line_width"])
+        pen.setCapStyle(QtCore.Qt.FlatCap)
         vt_line.setPen(pen)
+        parent_partition.vt_line = vt_line
 
     return parent_partition
 
@@ -334,3 +382,4 @@ def set_pen_style(pen, line_style):
         pen.setStyle(QtCore.Qt.DashLine)
     elif line_style == 2:
         pen.setStyle(QtCore.Qt.DotLine)
+

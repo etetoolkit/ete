@@ -19,7 +19,11 @@ class _ImgFaceItem(QtGui.QGraphicsPixmapItem):
 
 class _FaceGroupItem(QtGui.QGraphicsItem): # I resisted to name this FaceBook :) 
     def __init__(self, faces, node, column_widths={}, *args, **kargs):
-        QtGui.QGraphicsItem.__init__(self)#, *args, **kargs) # This coused segm. faults !!#|@#~|#@#
+
+        # This caused seg. faults. in some computers. No idea why.
+        # QtGui.QGraphicsItem.__init__(self, *args, **kargs) 
+        QtGui.QGraphicsItem.__init__(self)  
+
         self.node = node
         self.column2faces = faces
         
@@ -85,7 +89,6 @@ class _FaceGroupItem(QtGui.QGraphicsItem): # I resisted to name this FaceBook :)
                 elif f.type == "item":
                     obj = _ItemFaceItem(f, self.node)
                     f.tree_partition.setParentItem(obj)
-                    print f._height(), "faceheight"
                     obj.setParentItem(self)
                 else:
                     # Loads the pre-generated pixmap
@@ -112,12 +115,17 @@ def update_node_faces(node, n2f):
             # c2f = [ [f1, f2, f3], 
             #         [f4, f4]
             #       ]
-            if position=="aligned" and not node.is_leaf():
+            if position=="aligned" and not _leaf(node):
                 faceblock[position] = _FaceGroupItem({}, node)
-                continue # aligned on internal node does not make sense
+                continue # aligned on internal node does not make sense (yet)
             else:
                 faceblock[position] = _FaceGroupItem(node.img_style["_faces"][position], node)
         else:
             faceblock[position] = _FaceGroupItem({}, node)
     return faceblock
+
+
+def _leaf(node):
+    collapsed = hasattr(node, "img_style") and not node.img_style["draw_descendants"]
+    return collapsed or node.is_leaf()
 

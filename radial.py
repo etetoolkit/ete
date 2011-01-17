@@ -202,26 +202,36 @@ if __name__ == '__main__':
     x.populate(10, names_library="ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz", reuse_names=False)
     for counter, n in enumerate(t.traverse()):
         n.dist = 1#random.random()
-        n.img_style = treeview.drawer.NodeStyleDict()
+        n.img_style = main_render.NodeStyleDict()
         n.img_style["bgcolor"] = random_color(0.3)
-        n.img_style["size"] = 40
+        n.img_style["size"] = 20
+        #n.img_style["vt_line_width"] = 0
+        #n.img_style["hz_line_width"] = 0
         if _leaf(n):
             faces.add_face_to_node(nameF, n,  0)
+
             #x.img_style["draw_descendants"] = False
-    #faces.add_face_to_node(main_render.TreeFace(x), x, 0)
+
+    t2 = Tree()
+    t2.populate(30, names_library="ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz", reuse_names=False)
+    x.img_style.add_fixed_face(main_render.TreeFace(t2), "branch-right",  0)
+    x.img_style["size"] = 40
+
+    #faces.add_face_to_node(faces.TextFace("hola"), x, 0, position="branch-top")
+
     for n in x.traverse():
         n.img_style["fgcolor"] = "#FF0000"
 
-    #faces.add_face_to_node(main_render.TreeFace(x.children[0]), x.children[0], 0)
+    # faces.add_face_to_node(main_render.TreeFace(x.children[0]), x, 0)
 
     print t.get_ascii(show_internal=True)
-        
     # Basic QtApplication
     app = QtGui.QApplication(sys.argv)
     scene = QtGui.QGraphicsScene()
 
     parent = QtGui.QGraphicsRectItem(0, 0, 1, 1)
-    tree_item = main_render.render(t, {}, {}, "circular", scale)
+    tree_item = main_render.render(t, {}, {}, "rect", scale)
+    print tree_item
     #distribute(n, parent)
     #r = distribute_tree(t, parent, scale, arc_span) + 50
     tree_item.setParentItem(parent)

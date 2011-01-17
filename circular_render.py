@@ -2,7 +2,7 @@ import math
 import random
 import colorsys
 from PyQt4 import QtCore, QtGui
-from main_render import render_node_content, _leaf
+from main_render import _leaf
 
 class ArcPartition(QtGui.QGraphicsPathItem):
     def set_arc(self, cxdist, cydist, r1, r2, angle_start, angle_end):
@@ -10,6 +10,7 @@ class ArcPartition(QtGui.QGraphicsPathItem):
         r2 (outer) with center in cxdist,cydist. angle_start and
         angle_end are relative to the starting rotation point equal 0
         degrees """
+
         # Precalculate values
         d1 = r1 * 2
         d2 = r2 * 2
@@ -39,11 +40,6 @@ class ArcPartition(QtGui.QGraphicsPathItem):
         path.lineTo(o1)
         self.setPath(path)
 
-        color = "#DDE8C4"
-        color = random_color()
-        self.setPen(QtGui.QPen(QtGui.QColor("green")))
-        self.setBrush(QtGui.QBrush(QtGui.QColor(color)))
-
 def rotate_and_displace(item, rotation, height, offset):
     """ Rotates and item of a given height over its own axis and moves
     the item offset units in the rotated x axis """
@@ -58,29 +54,25 @@ def get_min_radius(w, h, a, xoffset):
     rectangle (w,h) within and given angle (a)."""
 
     angle = (a * math.pi)/180 # converts to radians
-
-    dg = lambda x: (180 *x) / math.pi
-
-
     b = (xoffset+w) 
     a = h/2
+    off = 0
     if xoffset:
         effective_angle = math.atan(a/xoffset)
+        if effective_angle > angle/2 and angle/2 < math.pi:
+            off = a / math.tan(angle/2)
+            bb = off + w 
+            r = math.sqrt(a**2 + bb**2) 
+            off = max (off, xoffset) - xoffset
+        else:
+            r = math.sqrt(a**2 + b**2) 
     else:
-        r = math.sqrt(a**2 + b**2) 
-        effective_angle = math.asin(a/r)
-        b += w 
-
-    if effective_angle > angle/2 and a/2 < math.pi:
-        print "seno"
-        r =  a / math.sin(angle/2)
-        off = math.cos(angle/2) * r
-    else:
-        print "catetos"
-        r = math.sqrt(a**2 + b**2) 
-        off = b
-    print xoffset, dg(effective_angle), dg(angle/2), r, h
-    return r,0 
+        # It happens on root nodes
+        r1 = math.sqrt(a**2 + b**2) 
+        effective_angle = math.asin(a/r1)
+        r2 = w / math.cos(effective_angle)
+        r = r1+r2
+    return r, off
 
 def render_circular(root_node, n2i, rot_step):
     to_visit = []
@@ -93,7 +85,6 @@ def render_circular(root_node, n2i, rot_step):
             to_visit.extend(node.children)
 
         item = n2i[node]
-
         w = item.nodeRegion.width()
         h = item.nodeRegion.height()
         if node is not root_node:
@@ -105,10 +96,8 @@ def render_circular(root_node, n2i, rot_step):
             angle = rot_step
         else:
             angle = item.angle_span
+            #full_angle = abs(item.full_end - item.full_start)
 
-            full_angle = abs(item.full_end - item.full_start)
-
-        print node.name, "+++++++++++++++"
         r, xoffset = get_min_radius(w, h, angle, parent_radius)
         rotate_and_displace(item, item.rotation, h, parent_radius)
         item.radius = r
@@ -118,27 +107,26 @@ def render_circular(root_node, n2i, rot_step):
             first_c = n2i[node.children[0]]
             last_c = n2i[node.children[-1]]
             # BG
-            # full_angle = last_c.full_end - first_c.full_start
-            # angle_start = last_c.full_end - item.rotation
-            # angle_end = item.rotation - first_c.full_start
-            # item.set_arc(parent_radius, h/2, parent_radius, r, angle_start, angle_end)
-            # item.set_arc(parent_radius, h/2, parent_radius, r, angle_start, angle_end)
+            full_angle = last_c.full_end - first_c.full_start
+            angle_start = last_c.full_end - item.rotation
+            angle_end = item.rotation - first_c.full_start
+            #item.set_arc(parent_radius, h/2, parent_radius, r, angle_start, angle_end)
+            #item.set_arc(parent_radius, h/2, parent_radius, r, angle_start, angle_end)
             # Vertical arc Line
             rot_end = n2i[node.children[-1]].rotation
             rot_start = n2i[node.children[0]].rotation
-            C = QtGui.QGraphicsPathItem(item.parentItem())
+            # C = item.vt_line
+            C = QtGui.QGraphicsPathItem()
+            C.setParentItem(item.parentItem())
             path = QtGui.QPainterPath()
             # Counter clock wise
             path.arcMoveTo(-r, -r, r * 2, r * 2, 360 - rot_start - angle)
             path.arcTo(-r, -r, r*2, r * 2, 360 - rot_start - angle, angle)
             # Faces
             C.setPath(path)
-        #QtGui.QGraphicsRectItem(xoffset - parent_radius, 0, 10, 10, item)
-        # print xoffset - parent_radius
-        print
+
         if hasattr(item, "content"):
-            #item.content.moveBy(xoffset - (parent_radius+w), 0)
-            print xoffset - (parent_radius+w)
+            item.content.moveBy(xoffset, 0)
     return max_r
 
 def init_circular_leaf_item(node, n2i, last_rotation, rot_step):
@@ -159,7 +147,6 @@ def init_circular_node_item(node, n2i):
     item.full_start = first_c.full_start
     item.full_end = last_c.full_end
     item.center = item.nodeRegion.height()/2
-
 
 def random_color(base=0.25):
     s = 0.5#random.random()
