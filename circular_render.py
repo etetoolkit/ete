@@ -2,7 +2,7 @@ import math
 import random
 import colorsys
 from PyQt4 import QtCore, QtGui
-from main_render import render_node_content
+from main_render import render_node_content, _leaf
 
 class ArcPartition(QtGui.QGraphicsPathItem):
     def set_arc(self, cxdist, cydist, r1, r2, angle_start, angle_end):
@@ -58,45 +58,38 @@ def get_min_radius(w, h, a, xoffset):
     rectangle (w,h) within and given angle (a)."""
 
     angle = (a * math.pi)/180 # converts to radians
-    # optimal_angle = angle fitting provided offset and item
-    # dimensions
-    if xoffset:
-        optimal_angle = math.atan((h/2) / xoffset) 
-    else:
-        optimal_angle = 0
 
-    # If available angle is >=180, I don't need to calculate extra
-    # offset. Any item will fit
-    if a/2>=180: #don't fully understand why a/2 ??
-        min_offset = xoffset
+    dg = lambda x: (180 *x) / math.pi
+
+
+    b = (xoffset+w) 
+    a = h/2
+    if xoffset:
+        effective_angle = math.atan(a/xoffset)
     else:
-        min_offset = (h/2) / math.tan(angle / 2)
-   
-    # Returns the optimal angle and x_offset 
-    if optimal_angle < angle and xoffset>min_offset:
-        off = xoffset
-        r = (w + off) / math.cos(optimal_angle) 
-        an = optimal_angle * 2
-    elif optimal_angle < angle:
-        off = min_offset
-        r = (w + off) / math.cos(optimal_angle) 
-        an = optimal_angle * 2
+        r = math.sqrt(a**2 + b**2) 
+        effective_angle = math.asin(a/r)
+        b += w 
+
+    if effective_angle > angle/2 and a/2 < math.pi:
+        print "seno"
+        r =  a / math.sin(angle/2)
+        off = math.cos(angle/2) * r
     else:
-        off = min_offset
-        r = (w + off) / math.cos(angle / 2) 
-        an = angle
-    return r, off, (an * 180) / math.pi
+        print "catetos"
+        r = math.sqrt(a**2 + b**2) 
+        off = b
+    print xoffset, dg(effective_angle), dg(angle/2), r, h
+    return r,0 
 
 def render_circular(root_node, n2i, rot_step):
-    print "PINTANDO ", root_node.name
     to_visit = []
     to_visit.append(root_node)
     max_r = 0
     while to_visit:
         node = to_visit.pop(0)
-        hybrid_node = (node is not root_node) and hasattr(node, "mode") 
 
-        if not _leaf(node) and not hybrid_node:
+        if not _leaf(node):
             to_visit.extend(node.children)
 
         item = n2i[node]
@@ -108,20 +101,20 @@ def render_circular(root_node, n2i, rot_step):
         else:
             parent_radius = 0
 
-        if _leaf(node) or hybrid_node:
+        if _leaf(node):
             angle = rot_step
         else:
             angle = item.angle_span
-            
-        print ".",
-        r, xoffset, best_a = get_min_radius(w, h, angle, parent_radius)
+
+            full_angle = abs(item.full_end - item.full_start)
+
+        print node.name, "+++++++++++++++"
+        r, xoffset = get_min_radius(w, h, angle, parent_radius)
         rotate_and_displace(item, item.rotation, h, parent_radius)
         item.radius = r
         max_r = max(max_r, r)
-        if hybrid_node:
-            print w, h, "HYBRID SIZE", item.radius
 
-        if not _leaf(node) and not hybrid_node:
+        if not _leaf(node):
             first_c = n2i[node.children[0]]
             last_c = n2i[node.children[-1]]
             # BG
@@ -141,10 +134,12 @@ def render_circular(root_node, n2i, rot_step):
             # Faces
             C.setPath(path)
         #QtGui.QGraphicsRectItem(xoffset - parent_radius, 0, 10, 10, item)
-        #faces.moveBy(xoffset - parent_radius + node.dist_xoffset, 0)
-    n2i[root_node].max_r = max_r
-
-
+        # print xoffset - parent_radius
+        print
+        if hasattr(item, "content"):
+            #item.content.moveBy(xoffset - (parent_radius+w), 0)
+            print xoffset - (parent_radius+w)
+    return max_r
 
 def init_circular_leaf_item(node, n2i, last_rotation, rot_step):
     item = n2i[node]
@@ -172,5 +167,3 @@ def random_color(base=0.25):
     R, G, B = map(lambda x: int(100*x), colorsys.hsv_to_rgb(base, s, v))
     return "#%s%s%s" %(hex(R)[2:], hex(G)[2:], hex(B)[2:])
 
-def _leaf(node):
-    return node.is_leaf()

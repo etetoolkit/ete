@@ -1,19 +1,21 @@
 from PyQt4 import QtCore, QtGui
 
+class _ItemFaceItem(QtGui.QGraphicsRectItem):
+    def __init__(self, face, node, *args):
+        QtGui.QGraphicsRectItem.__init__(self,*args)
+        self.node = node
+    def paint(self, painter, option, index):
+        return
+        
 class _TextFaceItem(QtGui.QGraphicsSimpleTextItem):
-    """ Manage faces on Scene"""
-
     def __init__(self, face, node, *args):
         QtGui.QGraphicsSimpleTextItem.__init__(self,*args)
         self.node = node
-        #self.face = face
 
 class _ImgFaceItem(QtGui.QGraphicsPixmapItem):
-    """ Manage faces on Scene"""
     def __init__(self, face, node, *args):
         QtGui.QGraphicsPixmapItem.__init__(self,*args)
         self.node = node
-        #self.face = face
 
 class _FaceGroupItem(QtGui.QGraphicsItem): # I resisted to name this FaceBook :) 
     def __init__(self, faces, node, column_widths={}, *args, **kargs):
@@ -55,6 +57,8 @@ class _FaceGroupItem(QtGui.QGraphicsItem): # I resisted to name this FaceBook :)
                 f.node = self.node
                 if f.type == "pixmap": 
                     f.update_pixmap()
+                elif f.type == "item":
+                    f.update_items()
                 height += f._height() + f.margin_top + f.margin_bottom
                 width = max(width, f._width() + f.margin_right + f.margin_left)
             width = max(width, self.column_widths.get(c, 0))
@@ -78,6 +82,11 @@ class _FaceGroupItem(QtGui.QGraphicsItem): # I resisted to name this FaceBook :)
                     obj.setBrush(QtGui.QBrush(QtGui.QColor(f.fgcolor)))
                     obj.setParentItem(self)
                     obj.setAcceptsHoverEvents(True)
+                elif f.type == "item":
+                    obj = _ItemFaceItem(f, self.node)
+                    f.tree_partition.setParentItem(obj)
+                    print f._height(), "faceheight"
+                    obj.setParentItem(self)
                 else:
                     # Loads the pre-generated pixmap
                     obj = _ImgFaceItem(f, self.node, f.pixmap)
