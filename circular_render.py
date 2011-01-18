@@ -86,7 +86,10 @@ def render_circular(root_node, n2i, rot_step):
 
         item = n2i[node]
         w = item.nodeRegion.width()
-        h = item.nodeRegion.height()
+        #h = item.nodeRegion.height()
+        h = item.effective_height
+
+
         if node is not root_node:
             parent_radius = n2i[node.up].radius
         else:
@@ -127,16 +130,22 @@ def render_circular(root_node, n2i, rot_step):
 
         if hasattr(item, "content"):
             item.content.moveBy(xoffset, 0)
+            extra = QtGui.QGraphicsLineItem(0, item.center, xoffset, item.center, item)
+            extra.setPen(QtGui.QPen(QtGui.QColor("orange")))
+            
+            
     return max_r
 
-def init_circular_leaf_item(node, n2i, last_rotation, rot_step):
+def init_circular_leaf_item(node, n2i, n2f, last_rotation, rot_step):
     item = n2i[node]
     item.rotation = last_rotation
     item.full_start = last_rotation - (rot_step / 2)
     item.full_end = last_rotation + (rot_step / 2)
-    item.center = item.nodeRegion.height() / 2
+    #item.center = item.nodeRegion.height() / 2
+    item.effective_height = get_effective_height(node, n2i, n2f)
+    item.center = item.effective_height/2
 
-def init_circular_node_item(node, n2i):
+def init_circular_node_item(node, n2i, n2f):
     item = n2i[node]
     first_c = n2i[node.children[0]]
     last_c = n2i[node.children[-1]]
@@ -146,11 +155,27 @@ def init_circular_node_item(node, n2i):
     item.rotation = rot_start + ((rot_end - rot_start) / 2)
     item.full_start = first_c.full_start
     item.full_end = last_c.full_end
-    item.center = item.nodeRegion.height()/2
+    #item.center = item.nodeRegion.height()/2
+    item.effective_height = get_effective_height(node, n2i, n2f)
+    item.center = item.effective_height/2
 
 def random_color(base=0.25):
     s = 0.5#random.random()
     v = 0.5+random.random()/2
     R, G, B = map(lambda x: int(100*x), colorsys.hsv_to_rgb(base, s, v))
     return "#%s%s%s" %(hex(R)[2:], hex(G)[2:], hex(B)[2:])
+
+
+def get_effective_height(n, n2i, n2f):
+        down_h = n2f[n]["branch-bottom"].h
+        up_h = n2f[n]["branch-top"].h
+
+        right_h = n2i[n].nodeRegion.height()/2
+        up_h = max(right_h, up_h)
+        down_h = max(right_h, down_h)
+        
+        fullR = n2i[n].fullRegion
+        center = fullR.height()/2
+
+        return max(up_h, down_h)*2
 

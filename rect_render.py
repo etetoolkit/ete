@@ -13,7 +13,7 @@ def get_partition_center(n, n2i, n2f):
         down_h = n2f[n]["branch-bottom"].h
         up_h = n2f[n]["branch-top"].h
 
-        right_h = max(n2f[n]["branch-right"].h, n.img_style["size"]/2) /2
+        right_h = max(n2f[n]["branch-right"].h, n.img_style["size"]) /2
         up_h = max(right_h, up_h)
         down_h = max(right_h, down_h)
         

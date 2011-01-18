@@ -7,6 +7,8 @@ import circular_render as crender
 import rect_render as rrender
 from ete_dev import faces
 
+import random
+
 FACE_POSITIONS = set(["branch-right", "aligned", "branch-top", "branch-bottom"])
 
 ## General scheme on how nodes size are handled
@@ -40,18 +42,96 @@ _COLOR_CHECKER = lambda x: re.match(_COLOR_MATCH, x)
 _NODE_TYPE_CHECKER = lambda x: x in ["sphere", "circle", "square"]
 _BOOL_CHECKER =  lambda x: isinstance(x, bool) or x in (0,1)
 
+
+class TreeImage(object):
+    def __init__(self):
+        # circular or  rect
+        self.mode = "circular"
+
+        # Scale used to convert branch lengths to pixels. None means
+        # that it will be estimated using "tree_with".
+        self.scale = 10
+
+        # Branch lengths, in pixels, from root node to the most
+        # distant leaf. This is used to calculate the scale when this
+        # is not manually set.
+        self.tree_width = 200  
+
+        # Min separation, in pixels, between to adjacent branches
+        self.min_branch_separation = 1 # in pixels
+
+        # Complete lines representing branch lengths to better observe
+        # the topology of trees
+        self.force_topology = False
+
+        # Aligned faces will be drawn in aligned columns
+        self.draw_aligned_faces_as_grid = True
+
+        # Draws guidelines from leaf nodes to aligned faces
+        self.draw_guidelines = False
+        # Type of guidelines 
+        self.guideline_type = 2 # 0 solid, 1 dashed, 2 dotted
+        self.guideline_color = "#CCCCCC"
+
+        # Draws a border around the whole tree
+        self.draw_image_border = False
+
+        # When top-branch and down-branch faces are larger than scaled
+        # branch length, lines are completed
+        self.complete_branch_lines = True
+        self.extra_branch_line_color = "#cccccc"
+
+        # Shows legend (branch length scale)
+        self.show_legend = True
+
+        self.title = None
+        self.botton_line_text = None
+
+        # Circular tree properties
+        self.arc_start = 0 # 0 degrees = 12 o'clock
+        self.arc_span = 360
+
+        self.search_node_bg = "#cccccc"
+        self.search_node_fg = "#ff0000"
+
+        # Initialize aligned face headers
+        self.aligned_header = FaceHeader() # aligned face_header
+        self.aligned_foot = FaceHeader()
+
+class FaceHeader(dict):
+    def add_face(self, face, column):
+        self.setdefault(int(column), []).append(face)
+
 class TreeFace(faces.Face):
-    def __init__(self, tree):
+    def __init__(self, tree, img_properties):
         faces.Face.__init__(self)
         self.type = "item"
         self.root_node = tree
+        self.img = img_properties
         self.tree_partition = None
 
     def update_items(self):
         hide_root = False
         if self.root_node is self.node:
             hide_root = True
-        self.tree_partition = render(self.root_node, {}, {}, "circular", 2, hide_root)
+        self.tree_partition = render(self.root_node, {}, {}, self.img, hide_root)
+
+    def _width(self):
+        return self.tree_partition.rect().width()
+
+    def _height(self):
+        return self.tree_partition.rect().height()
+
+class RandomFace(faces.Face):
+    def __init__(self):
+        faces.Face.__init__(self)
+        self.type = "item"
+
+    def update_items(self):
+        w = random.randint(4, 100)
+        h = random.randint(4, 100)
+        self.tree_partition = QtGui.QGraphicsRectItem(0,0,w, h)
+        self.tree_partition.setBrush(QtGui.QBrush(QtGui.QColor("green")))
 
     def _width(self):
         return self.tree_partition.rect().width()
@@ -152,13 +232,15 @@ class NodeStyleDict(dict):
         super(NodeStyleDict, self).__setitem__(i, y)
 
 
-
-def render(root_node, n2i, n2f, current_mode, scale, hide_root = False, arc_span=360):
+def render(root_node, n2i, n2f, img, hide_root=False):
+    mode = img.mode
+    scale = img.scale
+    arc_span = img.arc_span 
+    last_rotation = -90 + img.arc_start
     parent = QtGui.QGraphicsRectItem(0, 0, 0, 0)
     visited = set()
     to_visit = []
     to_visit.append(root_node)
-    last_rotation = -90 # starts rotation from 12 o'clock
     rot_step = float(arc_span) / len([n for n in root_node.traverse() if _leaf(n)])
     # ::: Precalculate values :::
     while to_visit:
@@ -171,10 +253,10 @@ def render(root_node, n2i, n2f, current_mode, scale, hide_root = False, arc_span
         finished = True
 
         if node not in n2i:
-            if current_mode == "circular":
+            if mode == "circular":
                 # ArcPartition all hang from a same parent item
                 item = n2i[node] = crender.ArcPartition(parent)
-            elif current_mode == "rect":
+            elif mode == "rect":
                 # RectPartition are nested, so parent will be modified
                 # later on
                 item = n2i[node] = rrender.RectPartition(parent)
@@ -205,26 +287,28 @@ def render(root_node, n2i, n2f, current_mode, scale, hide_root = False, arc_span
             visited.add(node)
 
         # :: Post-order visits. Leaves are visited before parents ::
-        if current_mode == "circular": 
+        if mode == "circular": 
             if _leaf(node):
-                crender.init_circular_leaf_item(node, n2i, last_rotation, rot_step)
+                crender.init_circular_leaf_item(node, n2i, n2f, last_rotation, rot_step)
                 last_rotation += rot_step
             else:
-                crender.init_circular_node_item(node, n2i)
+                crender.init_circular_node_item(node, n2i, n2f)
 
-        elif current_mode == "rect": 
+        elif mode == "rect": 
             if _leaf(node):
                 rrender.init_rect_leaf_item(node, n2i, n2f)
             else:
                 rrender.init_rect_node_item(node, n2i, n2f)
 
         if node is not root_node or not hide_root: 
-            render_node_content(node, n2i, n2f, scale, current_mode)
+            render_node_content(node, n2i, n2f, scale, mode)
 
-    if current_mode == "circular":
+    if mode == "circular":
         max_r = crender.render_circular(root_node, n2i, rot_step)
         parent.moveBy(max_r, max_r)
         parent.setRect(-max_r, -max_r, max_r*2, max_r*2) 
+    else:
+        parent.setRect(n2i[root_node].fullRegion)
 
     return parent
 
@@ -236,12 +320,12 @@ def get_node_size(node, n2f, scale):
     faceblock = update_node_faces(node, n2f)
 
     # Total height required by the node
-    h = max(node.img_style["size"] + faceblock["branch-top"].h + faceblock["branch-bottom"].h, 
-                                  node.img_style["hz_line_width"] + faceblock["branch-top"].h + faceblock["branch-bottom"].h, 
-                                  faceblock["branch-right"].h, 
-                                  faceblock["aligned"].h, 
-                                  min_branch_separation,
-                                  )    
+    h = max(node.img_style["size"], 
+            (node.img_style["size"]/2) + node.img_style["hz_line_width"] + faceblock["branch-top"].h + faceblock["branch-bottom"].h, 
+            faceblock["branch-right"].h, 
+            faceblock["aligned"].h, 
+            min_branch_separation,
+            )    
 
     # Total width required by the node
     w = sum([max(branch_length + node.img_style["size"], 
