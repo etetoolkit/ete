@@ -70,9 +70,10 @@ if __name__ == '__main__':
     # Basic QtApplication
     app = QtGui.QApplication(sys.argv)
     scene = QtGui.QGraphicsScene()
-
     parent = QtGui.QGraphicsRectItem(0, 0, 1, 1)
     tree_item = render(main_tree, {}, {}, t2i[main_tree])
+
+
     print tree_item
     #distribute(n, parent)
     #r = distribute_tree(t, parent, scale, arc_span) + 50

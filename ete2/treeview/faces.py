@@ -751,3 +751,41 @@ class SequenceFace(Face):
             p.drawText(x, y, letter)
             x += float(width)/len(self.seq)
         p.end()
+
+class RandomFace(Face):
+    def __init__(self):
+        faces.Face.__init__(self)
+        self.type = "item"
+
+    def update_items(self):
+        import random
+        w = random.randint(4, 100)
+        h = random.randint(4, 100)
+        self.tree_partition = QtGui.QGraphicsRectItem(0,0,w, h)
+        self.tree_partition.setBrush(QtGui.QBrush(QtGui.QColor("green")))
+
+    def _width(self):
+        return self.tree_partition.rect().width()
+
+    def _height(self):
+        return self.tree_partition.rect().height()
+
+class TreeFace(Face):
+    def __init__(self, tree, img_properties):
+        faces.Face.__init__(self)
+        self.type = "item"
+        self.root_node = tree
+        self.img = img_properties
+        self.tree_partition = None
+
+    def update_items(self):
+        hide_root = False
+        if self.root_node is self.node:
+            hide_root = True
+        self.tree_partition = render(self.root_node, {}, {}, self.img, hide_root)
+
+    def _width(self):
+        return self.tree_partition.rect().width()
+
+    def _height(self):
+        return self.tree_partition.rect().height()
