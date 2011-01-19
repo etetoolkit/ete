@@ -88,7 +88,7 @@ class _FaceGroupItem(QtGui.QGraphicsItem): # I resisted to name this FaceBook :)
                     obj.setAcceptsHoverEvents(True)
                 elif f.type == "item":
                     obj = _ItemFaceItem(f, self.node)
-                    f.tree_partition.setParentItem(obj)
+                    f.item.setParentItem(obj)
                     obj.setParentItem(self)
                 else:
                     # Loads the pre-generated pixmap

@@ -20,123 +20,101 @@
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
 # #END_LICENSE#############################################################
-try:
-    from PyQt4 import QtCore, QtGui
-except:
-    import QtCore, QtGui
 
+from PyQt4 import QtCore, QtGui
 import numpy
 
+from main import add_face_to_node
+
 aafgcolors = {
-'A':"#000000" ,
-'R':"#000000" ,
-'N':"#000000" ,
-'D':"#000000" ,
-'C':"#000000" ,
-'Q':"#000000" ,
-'E':"#000000" ,
-'G':"#000000" ,
-'H':"#000000" ,
-'I':"#000000" ,
-'L':"#000000" ,
-'K':"#000000" ,
-'M':"#000000" ,
-'F':"#000000" ,
-'P':"#000000" ,
-'S':"#000000" ,
-'T':"#000000" ,
-'W':"#000000" ,
-'Y':"#000000" ,
-'V':"#000000" ,
-'B':"#000000" ,
-'Z':"#000000" ,
-'X':"#000000",
-'.':"#000000",
-'-':"#000000",
+    'A':"#000000" ,
+    'R':"#000000" ,
+    'N':"#000000" ,
+    'D':"#000000" ,
+    'C':"#000000" ,
+    'Q':"#000000" ,
+    'E':"#000000" ,
+    'G':"#000000" ,
+    'H':"#000000" ,
+    'I':"#000000" ,
+    'L':"#000000" ,
+    'K':"#000000" ,
+    'M':"#000000" ,
+    'F':"#000000" ,
+    'P':"#000000" ,
+    'S':"#000000" ,
+    'T':"#000000" ,
+    'W':"#000000" ,
+    'Y':"#000000" ,
+    'V':"#000000" ,
+    'B':"#000000" ,
+    'Z':"#000000" ,
+    'X':"#000000",
+    '.':"#000000",
+    '-':"#000000",
 }
 
 aabgcolors = {
-'A':"#C8C8C8" ,
-'R':"#145AFF" ,
-'N':"#00DCDC" ,
-'D':"#E60A0A" ,
-'C':"#E6E600" ,
-'Q':"#00DCDC" ,
-'E':"#E60A0A" ,
-'G':"#EBEBEB" ,
-'H':"#8282D2" ,
-'I':"#0F820F" ,
-'L':"#0F820F" ,
-'K':"#145AFF" ,
-'M':"#E6E600" ,
-'F':"#3232AA" ,
-'P':"#DC9682" ,
-'S':"#FA9600" ,
-'T':"#FA9600" ,
-'W':"#B45AB4" ,
-'Y':"#3232AA" ,
-'V':"#0F820F" ,
-'B':"#FF69B4" ,
-'Z':"#FF69B4" ,
-'X':"#BEA06E",
-'.':"#FFFFFF",
-'-':"#FFFFFF",
-}
+    'A':"#C8C8C8" ,
+    'R':"#145AFF" ,
+    'N':"#00DCDC" ,
+    'D':"#E60A0A" ,
+    'C':"#E6E600" ,
+    'Q':"#00DCDC" ,
+    'E':"#E60A0A" ,
+    'G':"#EBEBEB" ,
+    'H':"#8282D2" ,
+    'I':"#0F820F" ,
+    'L':"#0F820F" ,
+    'K':"#145AFF" ,
+    'M':"#E6E600" ,
+    'F':"#3232AA" ,
+    'P':"#DC9682" ,
+    'S':"#FA9600" ,
+    'T':"#FA9600" ,
+    'W':"#B45AB4" ,
+    'Y':"#3232AA" ,
+    'V':"#0F820F" ,
+    'B':"#FF69B4" ,
+    'Z':"#FF69B4" ,
+    'X':"#BEA06E",
+    '.':"#FFFFFF",
+    '-':"#FFFFFF",
+    }
 
 ntfgcolors = {
-'A':'#000000',
-'G':'#000000',
-'I':'#000000',
-'C':'#000000',
-'T':'#000000',
-'U':'#000000',
-'.':"#000000",
-'-':"#000000",
-' ':"#000000"
-
-}
+    'A':'#000000',
+    'G':'#000000',
+    'I':'#000000',
+    'C':'#000000',
+    'T':'#000000',
+    'U':'#000000',
+    '.':"#000000",
+    '-':"#000000",
+    ' ':"#000000"
+    }
 
 ntbgcolors = {
-'A':'#A0A0FF',
-'G':'#FF7070',
-'I':'#80FFFF',
-'C':'#FF8C4B',
-'T':'#A0FFA0',
-'U':'#FF8080',
-'.':"#FFFFFF",
-'-':"#FFFFFF",
-' ':"#FFFFFF"
-
+    'A':'#A0A0FF',
+    'G':'#FF7070',
+    'I':'#80FFFF',
+    'C':'#FF8C4B',
+    'T':'#A0FFA0',
+    'U':'#FF8080',
+    '.':"#FFFFFF",
+    '-':"#FFFFFF",
+    ' ':"#FFFFFF"
 }
 
 __all__ = ["add_face_to_node", "Face", "TextFace", "AttrFace", "ImgFace",\
-               "ProfileFace", "ValidationFace", "SequenceFace"]
-
-try:
-    import psyco
-    pysco.full()
-except:
-    pass
-
-FACE_POSITIONS = set(["branch-right", "aligned", "branch-top", "branch-bottom"])
-
-def add_face_to_node(face, node, column, aligned=False, position="branch-right"):
-    """ Links a node with a given face instance.  """
-    node.img_style.setdefault("_faces", {})
-    if position not in FACE_POSITIONS:
-        raise (ValueError, "Incorrect position") 
-    if aligned:
-        position = "aligned"
-
-    node.img_style["_faces"].setdefault(position, {})
-    node.img_style["_faces"][position].setdefault(int(column), []).append(face)
-
+               "ProfileFace", "ValidationFace", "SequenceFace", "TreeFace",\
+               "RandomFace"]
 
 class Face(object):
     """ Standard definition of a face node object.
 
     This class is not functional and it should only be used to create
-    other faces objects. By inheriting this class, you set all the
+    other face objects. By inheriting this class, you set all the
     essential attributes, however the update_pixmap() function is
     required to be reimplemented for convenience.
 
@@ -144,7 +122,7 @@ class Face(object):
 
     def __init__(self):
         self.node        = None
-        self.type = "pixmap" # pixmap or text
+        self.type = "pixmap" # pixmap, text or item
         self.name = "unknown"
         self.margin_left = 0
         self.margin_right = 0
@@ -776,13 +754,13 @@ class TreeFace(Face):
         self.type = "item"
         self.root_node = tree
         self.img = img_properties
-        self.tree_partition = None
+        self.item = None
 
     def update_items(self):
         hide_root = False
         if self.root_node is self.node:
             hide_root = True
-        self.tree_partition = render(self.root_node, {}, {}, self.img, hide_root)
+        self.item = render(self.root_node, {}, {}, self.img, hide_root)
 
     def _width(self):
         return self.tree_partition.rect().width()
