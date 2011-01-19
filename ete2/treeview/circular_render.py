@@ -2,7 +2,7 @@ import math
 import random
 import colorsys
 from PyQt4 import QtCore, QtGui
-from main_render import _leaf
+from main import _leaf
 
 class ArcPartition(QtGui.QGraphicsPathItem):
     def set_arc(self, cxdist, cydist, r1, r2, angle_start, angle_end):

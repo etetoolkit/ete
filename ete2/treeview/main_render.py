@@ -2,9 +2,11 @@ import re
 from PyQt4 import QtCore, QtGui
 
 from face_render import update_node_faces
-
+from main import _leaf, NodeStyleDict
 import circular_render as crender
 import rect_render as rrender
+
+from qt4gui import _PropertiesDialog
 
 ## | General scheme on how nodes size are handled
 ## |==========================================================================================================================|
@@ -66,11 +68,15 @@ class _NodeItem(QtGui.QGraphicsRectItem):
             p.setPen(QtGui.QPen(QtGui.QColor(self.node.img_style["fgcolor"])))
             p.drawEllipse(self.rect())
 
-def render(root_node, n2i, n2f, img, hide_root=False):
+def render(root_node, img, hide_root=False):
+    n2i = {}
+    n2f = {}
     mode = img.mode
     scale = img.scale
     arc_span = img.arc_span 
     last_rotation = -90 + img.arc_start
+    layout_fn = img._layout_fn 
+
     parent = QtGui.QGraphicsRectItem(0, 0, 0, 0)
     visited = set()
     to_visit = []
@@ -79,14 +85,12 @@ def render(root_node, n2i, n2f, img, hide_root=False):
     # ::: Precalculate values :::
     while to_visit:
         node = to_visit[-1]
-
-        if not hasattr(node, "img_style"):
-            node.img_style = NodeStyleDict()
-        elif isinstance(node.img_style, NodeStyleDict): 
-            node.img_style.init()
         finished = True
 
         if node not in n2i:
+            # Set style according to layout function
+            set_style(node, layout_fn)
+
             if mode == "circular":
                 # ArcPartition all hang from a same parent item
                 item = n2i[node] = crender.ArcPartition(parent)
@@ -294,6 +298,9 @@ class _TreeScene(QtGui.QGraphicsScene):
         QtGui.QGraphicsScene.__init__(self,*args)
 
         self.view = None
+        self.master_item = QtGui.QGraphicsRectItem()
+        
+
         # Config variables
         self.buffer_node = None        # Used to copy and paste
         self.layout_func = None        # Layout function
@@ -491,6 +498,7 @@ class _TreeScene(QtGui.QGraphicsScene):
             ii.save(imgName)
 
     def draw(self):
+
         # Clean previous items from scene by removing the main parent
         if self.mainItem:
             self.removeItem(self.mainItem)
@@ -614,30 +622,6 @@ def get_scale(self):
         warning_text.setParentItem(scaleItem)
     return scaleItem
 
-def set_style_from(self, node, layout_func):
-    # I import dict at the moment of drawing, otherwise there is a
-    # loop of imports between drawer and qt4render
-    from drawer import NodeStyleDict 
-    for n in node.traverse(): 
-        if not hasattr(n, "img_style"):
-            n.img_style = NodeStyleDict()
-        elif isinstance(n.img_style, NodeStyleDict): 
-            n.img_style.init()
-        else:
-            raise TypeError("img_style attribute in node %s is not of NodeStyleDict type." \
-                                %n.name)
-        # Adding fixed faces during drawing is not allowed, since
-        # added faces will not be tracked until next execution
-        n.img_style._block_adding_faces = True
-        try:
-            layout_func(n)
-        except Exception:
-            n.img_style._block_adding_faces = False
-            raise
-def _leaf(node):
-    collapsed = hasattr(node, "img_style") and not node.img_style["draw_descendants"]
-    return collapsed or node.is_leaf()
-
 def set_pen_style(pen, line_style):
     if line_style == 0:
         pen.setStyle(QtCore.Qt.SolidLine)
@@ -645,3 +629,22 @@ def set_pen_style(pen, line_style):
         pen.setStyle(QtCore.Qt.DashLine)
     elif line_style == 2:
         pen.setStyle(QtCore.Qt.DotLine)
+
+def set_style(n, layout_func):
+    # I import dict at the moment of drawing, otherwise there is a
+    # loop of imports between drawer and qt4render
+    if not hasattr(n, "img_style"):
+        n.img_style = NodeStyleDict()
+    elif isinstance(n.img_style, NodeStyleDict): 
+        n.img_style.init()
+    else:
+        raise TypeError("img_style attribute in node %s is not of NodeStyleDict type." \
+                            %n.name)
+    # Adding fixed faces during drawing is not allowed, since
+    # added faces will not be tracked until next execution
+    n.img_style._block_adding_faces = True
+    try:
+        layout_func(n)
+    except Exception:
+        n.img_style._block_adding_faces = False
+        raise
