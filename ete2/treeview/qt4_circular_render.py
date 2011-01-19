@@ -5,19 +5,37 @@ from PyQt4 import QtCore, QtGui
 from main import _leaf
 
 class ArcPartition(QtGui.QGraphicsPathItem):
+    def __init__(self, *args):
+        QtGui.QGraphicsPathItem.__init__(self, *args)
+        self.drawbg = False
+        self.arc_drawn = False
+
     def set_arc(self, cxdist, cydist, r1, r2, angle_start, angle_end):
         """ Draws a 2D arc with two arc lines of length r1 (inner) and
         r2 (outer) with center in cxdist,cydist. angle_start and
         angle_end are relative to the starting rotation point equal 0
         degrees """
+        self.cxdist = cxdist
+        self.cydist = cydist
+        self.r1 = r1
+        self.r2 = r2
+        self.angle_start = angle_start
+        self.angle_end = angle_end
 
+    def draw_arc(self):
+        print "HOLA"
         # Precalculate values
-        d1 = r1 * 2
-        d2 = r2 * 2
-        r1_xstart = -r1 - cxdist
-        r1_ystart = -r1 + cydist
-        r2_xstart = -r2 - cxdist
-        r2_ystart = -r2 + cydist
+        r2 = self.r2[0] # r2 is dynamic, so it changed many time
+                        # during tree traversing. Now I have the final
+                        # value.
+        d1 = self.r1 * 2
+        d2 = r2 * 2 
+        r1_xstart = -self.r1 - self.cxdist
+        r1_ystart = -self.r1 + self.cydist
+        r2_xstart = -r2 - self.cxdist
+        r2_ystart = -r2 + self.cydist
+        angle_start = self.angle_start
+        angle_end = self.angle_start
         angle_span = angle_end + angle_start
 
         path = QtGui.QPainterPath()
@@ -39,6 +57,13 @@ class ArcPartition(QtGui.QGraphicsPathItem):
         # Draws line to the start point of outer arc (straight line)
         path.lineTo(o1)
         self.setPath(path)
+        self.arc_drawn = True
+
+    def paint(self, painter, option, index):
+        if self.drawbg:
+            if not self.arc_drawn:
+                self.draw_arc()
+            return QtGui.QGraphicsPathItem.paint(self, painter, option, index)
 
 def rotate_and_displace(item, rotation, height, offset):
     """ Rotates and item of a given height over its own axis and moves
@@ -77,7 +102,7 @@ def get_min_radius(w, h, a, xoffset):
 def render_circular(root_node, n2i, rot_step):
     to_visit = []
     to_visit.append(root_node)
-    max_r = 0
+    max_r = [0.0]
     while to_visit:
         node = to_visit.pop(0)
 
@@ -86,7 +111,7 @@ def render_circular(root_node, n2i, rot_step):
 
         item = n2i[node]
         w = item.nodeRegion.width()
-        #h = item.nodeRegion.height()
+        #h = item.nodeRegio.height()
         h = item.effective_height
 
 
@@ -99,12 +124,13 @@ def render_circular(root_node, n2i, rot_step):
             angle = rot_step
         else:
             angle = item.angle_span
+            #full_angle = angle
             #full_angle = abs(item.full_end - item.full_start)
 
         r, xoffset = get_min_radius(w, h, angle, parent_radius)
         rotate_and_displace(item, item.rotation, h, parent_radius)
         item.radius = r
-        max_r = max(max_r, r)
+        max_r[0] = max(max_r[0], r)
 
         if not _leaf(node):
             first_c = n2i[node.children[0]]
@@ -113,11 +139,12 @@ def render_circular(root_node, n2i, rot_step):
             full_angle = last_c.full_end - first_c.full_start
             angle_start = last_c.full_end - item.rotation
             angle_end = item.rotation - first_c.full_start
-            #item.set_arc(parent_radius, h/2, parent_radius, r, angle_start, angle_end)
-            #item.set_arc(parent_radius, h/2, parent_radius, r, angle_start, angle_end)
+            item.set_arc(parent_radius, h/2, parent_radius, max_r, angle_start, angle_end)
+
             # Vertical arc Line
             rot_end = n2i[node.children[-1]].rotation
             rot_start = n2i[node.children[0]].rotation
+
             # C = item.vt_line
             C = QtGui.QGraphicsPathItem()
             C.setParentItem(item.parentItem())
@@ -127,14 +154,19 @@ def render_circular(root_node, n2i, rot_step):
             path.arcTo(-r, -r, r*2, r * 2, 360 - rot_start - angle, angle)
             # Faces
             C.setPath(path)
+        else:
+            full_angle = item.full_end - item.full_start
+            angle_start = item.full_end - item.rotation
+            angle_end = item.rotation - item.full_start
+            item.set_arc(parent_radius, h/2, parent_radius, max_r, angle_start, angle_end)
 
         if hasattr(item, "content"):
             item.content.moveBy(xoffset, 0)
             extra = QtGui.QGraphicsLineItem(0, item.center, xoffset, item.center, item)
             extra.setPen(QtGui.QPen(QtGui.QColor("orange")))
-            
-            
-    return max_r
+    n2i[root_node].max_r = max_r
+    print    len( n2i[root_node].parentItem().childItems())
+    return max_r[0]
 
 def init_circular_leaf_item(node, n2i, n2f, last_rotation, rot_step):
     item = n2i[node]

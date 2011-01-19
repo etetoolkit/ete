@@ -2,13 +2,12 @@ import re
 from PyQt4 import QtCore, QtGui
 
 from main import _leaf, NodeStyleDict
-from qt4_gui import _PropertiesDialog
+from qt4_gui import _PropertiesDialog, _NodeActions
 from qt4_face_render import update_node_faces
 import qt4_circular_render as crender
 import qt4_rect_render as rrender
 
-
-## | General scheme on how nodes size are handled
+## | General scheme on nodes attributes
 ## |==========================================================================================================================|
 ## |                                                fullRegion                                                                |       
 ## |             nodeRegion                  |================================================================================|
@@ -16,34 +15,22 @@ import qt4_rect_render as rrender
 ## |                                         |        nodeRegion                     |=======================================||
 ## |                                         |                                       |         fullRegion                   |||
 ## |                                         |                                       |         nodeRegion                   ||| 
-## |                                         |                         |             | xdist_offset | nodesize | facesRegion|||
-## |                                         | xdist_offset | nodesize |facesRegion  |=======================================||
-## |                                         |                         |             |=======================================||
+## |                                         |                         |             |branch_length | nodeSize | facesRegion|||
+## |                                         | branch_length | nodesize|faces-right  |=======================================||
+## |                                         |                         |(facesRegion)|=======================================||
 ## |                                         |                                       |             fullRegion                ||
 ## |                                         |                                       |             nodeRegion                ||
-## |  branch-top     |          |            |                                       | xdist_offset | nodesize | facesRegion ||
-## | dist_xoffset    | nodesize |facesRegion |                                       |=======================================||
-## |  branch-bottom  |          |            |================================================================================|
+## |  faces-top     |          |             |                                       | branch_length | nodeSize | facesRegion||
+## | branch_length  | NodeSize |faces-right  |                                       |=======================================||
+## |  faces-bottom  |          |(facesRegion)|================================================================================|
 ## |                                         |=======================================|                                        |
 ## |                                         |             fullRegion                |                                        |
 ## |                                         |        nodeRegion                     |                                        |
-## |                                         | xdist_offset | nodesize | facesRegion |                                        |
+## |                                         | branch_length | nodeSize | facesRegion|                                        |
 ## |                                         |=======================================|                                        |
 ## |==========================================================================================================================|
 
-class _TextFaceItem(QtGui.QGraphicsSimpleTextItem):
-    """ Manage faces on Scene"""
-    def __init__(self, face, node, *args):
-        QtGui.QGraphicsSimpleTextItem.__init__(self,*args)
-        self.node = node
-
-class _ImgFaceItem(QtGui.QGraphicsPixmapItem):
-    """ Manage faces on Scene"""
-    def __init__(self, face, node, *args):
-        QtGui.QGraphicsPixmapItem.__init__(self,*args)
-        self.node = node
-
-class _NodeItem(QtGui.QGraphicsRectItem):
+class _NodeItem(QtGui.QGraphicsRectItem, _NodeActions):
     def __init__(self, node):
         self.node = node
         self.radius = node.img_style["size"]/2
@@ -137,6 +124,9 @@ def render(root_node, img, hide_root=False):
                 rrender.init_rect_leaf_item(node, n2i, n2f)
             else:
                 rrender.init_rect_node_item(node, n2i, n2f)
+            print item.fullRegion
+            item.setRect(item.fullRegion)
+            print item.rect()
 
         if node is not root_node or not hide_root: 
             render_node_content(node, n2i, n2f, scale, mode)
@@ -148,7 +138,7 @@ def render(root_node, img, hide_root=False):
     else:
         parent.setRect(n2i[root_node].fullRegion)
 
-    return parent
+    return parent, n2i, n2f
 
 def get_node_size(node, n2f, scale):
     branch_length = float(node.dist * scale)
@@ -293,116 +283,106 @@ def render_node_content(node, n2i, n2f, scale, mode):
 
     return parent_partition
 
+
+class _PointerItem(QtGui.QGraphicsRectItem):
+    def __init__(self, parent=None):
+        QtGui.QGraphicsRectItem.__init__(self,0,0,0,0, parent)
+        self.color = QtGui.QColor("blue")
+        self._active = False
+
+
+    def paint(self, p, option, widget):
+        p.setPen(self.color)
+        p.drawRect(self.rect())
+        return
+
+        # Draw info text
+        font = QtGui.QFont("Arial",13)
+        text = "%d selected."  % len(self.get_selected_nodes())
+        textR = QtGui.QFontMetrics(font).boundingRect(text)
+        if  self.rect().width() > textR.width() and \
+                self.rect().height() > textR.height()/2 and 0: # OJO !!!!
+            p.setPen(QtGui.QPen(self.color))
+            p.setFont(QtGui.QFont("Arial",13))
+            p.drawText(self.rect().bottomLeft().x(),self.rect().bottomLeft().y(),text)
+
+    def get_selected_nodes(self):
+        selPath = QtGui.QPainterPath()
+        selPath.addRect(self.rect())
+        self.scene().setSelectionArea(selPath)
+        return [i.node for i in self.scene().selectedItems()]
+
+    def setActive(self,bool):
+        self._active = bool
+
+    def isActive(self):
+        return self._active
+
 class _TreeScene(QtGui.QGraphicsScene):
-    def __init__(self, rootnode=None, style=None, *args):
-        QtGui.QGraphicsScene.__init__(self,*args)
+    def __init__(self):
+        QtGui.QGraphicsScene.__init__(self)
 
-        self.view = None
+    def init_data(self, tree, img, n2i, n2f):
         self.master_item = QtGui.QGraphicsRectItem()
-        
-
-        # Config variables
-        self.buffer_node = None        # Used to copy and paste
-        self.layout_func = None        # Layout function
-        self.startNode   = rootnode    # Node to start drawing
-        self.scale       = 0           # Tree branch scale used to draw
+        self.view = None
+        self.tree = tree
+        self.n2i = n2i
+        self.n2f = n2f
+        self.img = img
+        self.prop_table = None
 
         # Initialize scene 
-        self.max_w_aligned_face = 0    # Stores the max width of aligned faces
-        self.aligned_faces = []
-        self.min_real_branch_separation = 0
-        self.selectors  = []
-        self._highlighted_nodes = {}
-        self.node2faces = {}
-        self.node2item = {}
-
-        # Qt items
-        self.selector = None
-        self.mainItem = None        # Qt Item which is parent of all other items
-        self.propertiesTable = _PropertiesDialog(self)
-        self.border = None
-
-    def initialize_tree_scene(self, tree, style, tree_properties):
-        self.tree        = tree        # Pointer to original tree
-        self.startNode   = tree        # Node to start drawing
-        self.max_w_aligned_face = 0    # Stores the max width of aligned faces
-        self.aligned_faces = []
-
-        # Load image attributes
-        self.props = tree_properties
-
-        # Validates layout function
-        if type(style) == types.FunctionType or\
-                type(style) == types.MethodType:
-            self.layout_func = style
-        else:
-            try:
-                self.layout_func = getattr(layouts,style)
-            except:
-                raise ValueError, "Required layout is not a function pointer nor a valid layout name."
+        self.buffer_node = None        # Used to copy and paste
+        self.pointer  = _PointerItem(self.master_item)
+        self.highlighter = QtGui.QGraphicsPathItem(self.master_item)
+        self.n2hl = {}
 
         # Set the scene background
         self.setBackgroundBrush(QtGui.QColor("white"))
 
-        # Set nodes style
-        self.set_style_from(self.startNode,self.layout_func)
-
-        self.propertiesTable.update_properties(self.startNode)
-
     def highlight_node(self, n):
         self.unhighlight_node(n)
-        r = QtGui.QGraphicsRectItem(self.mainItem)
-        self._highlighted_nodes[n] = r
-
-        R = n.fullRegion.getRect()
-        width = self.i_width-n._x
-        r.setRect(QtCore.QRectF(n._x,n._y,width,R[3]))
- 
-        #r.setRect(0,0, n.fullRegion.width(), n.fullRegion.height())
-
-        #r.setPos(n.scene_pos)
-        # Don't know yet why do I have to add 2 pixels :/
-        #r.moveBy(0,0)
-        r.setZValue(-1)
-        r.setPen(QtGui.QColor(self.props.search_node_fg))
-        r.setBrush(QtGui.QColor(self.props.search_node_bg))
-
-        # self.view.horizontalScrollBar().setValue(n._x)
-        # self.view.verticalScrollBar().setValue(n._y)
+        fgcolor = "green"
+        #bgcolor = "white"
+        item = self.n2i[n]
+        hl = QtGui.QGraphicsRectItem(item)
+        hl.setRect(item.nodeRegion)
+        hl.setPen(QtGui.QColor(fgcolor))
+        #hl.setBrush(QtGui.QColor(bgcolor))
+        self.n2hl[n] = hl
 
     def unhighlight_node(self, n):
-        if n in self._highlighted_nodes and \
-                self._highlighted_nodes[n] is not None:
-            self.removeItem(self._highlighted_nodes[n])
-            del self._highlighted_nodes[n]
+        if n in self.n2hl:
+            self.removeItem(self.n2hl[n])
+            del self.n2hl[n]
 
     def mousePressEvent(self,e):
-        pos = self.selector.mapFromScene(e.scenePos())
-        self.selector.setRect(pos.x(),pos.y(),4,4)
-        self.selector.startPoint = QtCore.QPointF(pos.x(), pos.y())
-        self.selector.setActive(True)
-        self.selector.setVisible(True)
+        pos = self.pointer.mapFromScene(e.scenePos())
+        self.pointer.setRect(pos.x(),pos.y(),10,10)
+        self.pointer.startPoint = QtCore.QPointF(pos.x(), pos.y())
+        self.pointer.setActive(True)
+        self.pointer.setVisible(True)
         QtGui.QGraphicsScene.mousePressEvent(self,e)
 
     def mouseReleaseEvent(self,e):
-        curr_pos = self.selector.mapFromScene(e.scenePos())
-        x = min(self.selector.startPoint.x(),curr_pos.x())
-        y = min(self.selector.startPoint.y(),curr_pos.y())
-        w = max(self.selector.startPoint.x(),curr_pos.x()) - x
-        h = max(self.selector.startPoint.y(),curr_pos.y()) - y
-        if self.selector.startPoint == curr_pos:
-            self.selector.setVisible(False)
-        self.selector.setActive(False)
+        curr_pos = self.pointer.mapFromScene(e.scenePos())
+        x = min(self.pointer.startPoint.x(),curr_pos.x())
+        y = min(self.pointer.startPoint.y(),curr_pos.y())
+        w = max(self.pointer.startPoint.x(),curr_pos.x()) - x
+        h = max(self.pointer.startPoint.y(),curr_pos.y()) - y
+        if self.pointer.startPoint == curr_pos:
+            self.pointer.setVisible(False)
+        self.pointer.setActive(False)
         QtGui.QGraphicsScene.mouseReleaseEvent(self,e)
 
     def mouseMoveEvent(self,e):
-        curr_pos = self.selector.mapFromScene(e.scenePos())
-        if self.selector.isActive():
-            x = min(self.selector.startPoint.x(),curr_pos.x())
-            y = min(self.selector.startPoint.y(),curr_pos.y())
-            w = max(self.selector.startPoint.x(),curr_pos.x()) - x
-            h = max(self.selector.startPoint.y(),curr_pos.y()) - y
-            self.selector.setRect(x,y,w,h)
+        curr_pos = self.pointer.mapFromScene(e.scenePos())
+        if self.pointer.isActive():
+            x = min(self.pointer.startPoint.x(),curr_pos.x())
+            y = min(self.pointer.startPoint.y(),curr_pos.y())
+            w = max(self.pointer.startPoint.x(),curr_pos.x()) - x
+            h = max(self.pointer.startPoint.y(),curr_pos.y()) - y
+            self.pointer.setRect(x,y,w,h)
         QtGui.QGraphicsScene.mouseMoveEvent(self, e)
 
     def mouseDoubleClickEvent(self,e):
@@ -568,30 +548,6 @@ class _TreeScene(QtGui.QGraphicsScene):
         # Tree border
         if self.props.draw_image_border:
             self.border = self.addRect(0, 0, self.i_width, self.i_height)
-
-def get_tree_img_map(self):
-    node_list = []
-    face_list = []
-    nid = 0
-    for n, partition in self.node2item.iteritems():
-        n.add_feature("_nid", str(nid))
-        for item in partition.childItems():
-            if isinstance(item, _NodeItem):
-                pos = item.mapToScene(0,0)
-                size = item.mapToScene(item.rect().width(), item.rect().height())
-                node_list.append([pos.x(),pos.y(),size.x(),size.y(), nid, None])
-            elif isinstance(item, _FaceGroup):
-                for f in item.childItems():
-                    pos = f.mapToScene(0,0)
-                    if isinstance(f, _TextFaceItem):
-                        size = f.mapToScene(f.boundingRect().width(), \
-                                                f.boundingRect().height())
-                        face_list.append([pos.x(),pos.y(),size.x(),size.y(), nid, str(f.text())])
-                    else:
-                        size = f.mapToScene(f.boundingRect().width(), f.boundingRect().height())
-                        face_list.append([pos.x(),pos.y(),size.x(),size.y(), nid, None])
-        nid += 1
-    return {"nodes": node_list, "faces": face_list}
 
 def get_scale(self):
     length = 50

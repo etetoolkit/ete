@@ -1,7 +1,7 @@
 import types
 
 from PyQt4  import QtGui
-from qt4gui import _MainApp, _PropertiesDialog
+from qt4_gui import _GUI, _PropertiesDialog
 
 import layouts
 from ete_dev import Tree, PhyloTree, ClusterTree
@@ -26,7 +26,6 @@ def init_scene(t, layout, img):
         else:
             img.layout_fn = "basic"
 
-
     # Validates layout function
     if type(img.layout_fn) == types.FunctionType or\
             type(img.layout_fn) == types.MethodType:
@@ -43,14 +42,15 @@ def init_scene(t, layout, img):
     scene  = _TreeScene()
     return scene, img
 
-
 def show_tree(t, layout=None, img_properties=None):
     """ Interactively shows a tree."""
-    scene, img_prop = init_scene(t, layout, img_properties)
-    tree_item = render(t, img_prop)
+    scene, img = init_scene(t, layout, img_properties)
+    tree_item, n2i, n2f = render(t, img)
+    scene.init_data(t, img, n2i, n2f)
+
     tree_item.setParentItem(scene.master_item)
     scene.addItem(scene.master_item)
-    mainapp = _MainApp(scene)
+    mainapp = _GUI(scene)
     mainapp.show()
     _QApp.exec_()
 

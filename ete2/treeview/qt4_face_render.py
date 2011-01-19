@@ -1,18 +1,19 @@
 from PyQt4 import QtCore, QtGui
+from qt4_gui import _NodeActions
 
-class _ItemFaceItem(QtGui.QGraphicsRectItem):
+class _ItemFaceItem(QtGui.QGraphicsRectItem, _NodeActions):
     def __init__(self, face, node, *args):
         QtGui.QGraphicsRectItem.__init__(self,*args)
         self.node = node
     def paint(self, painter, option, index):
         return
         
-class _TextFaceItem(QtGui.QGraphicsSimpleTextItem):
+class _TextFaceItem(QtGui.QGraphicsSimpleTextItem, _NodeActions):
     def __init__(self, face, node, *args):
         QtGui.QGraphicsSimpleTextItem.__init__(self,*args)
         self.node = node
 
-class _ImgFaceItem(QtGui.QGraphicsPixmapItem):
+class _ImgFaceItem(QtGui.QGraphicsPixmapItem, _NodeActions):
     def __init__(self, face, node, *args):
         QtGui.QGraphicsPixmapItem.__init__(self,*args)
         self.node = node

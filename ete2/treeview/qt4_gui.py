@@ -1,42 +1,40 @@
 import re
 
-try:
-    from PyQt4  import QtCore, QtGui
-    from PyQt4.QtGui import QPrinter
-except ImportError:
-    import QtCore, QtGui
-    from QtGui import QPrinter
-
+from PyQt4  import QtCore, QtGui
+from PyQt4.QtGui import QPrinter
 try:
     from PyQt4 import QtOpenGL
-    #USE_GL = True
-    USE_GL = False # Temporarily disabled
+    USE_GL = True
+    #USE_GL = False # Temporarily disabled
 except ImportError:
     USE_GL = False
 
-
 import _mainwindow, _search_dialog, _show_newick, _open_newick, _about
 
-class _MainApp(QtGui.QMainWindow):
+class _GUI(QtGui.QMainWindow):
     def __init__(self, scene, *args):
         QtGui.QMainWindow.__init__(self, *args)
         self.scene = scene
-        self.view  = _MainView(scene)
+        self.view  = _TreeView(scene)
         scene.view = self.view
+        self.node_properties = _PropertiesDialog(scene)
+        scene.prop_table = self.node_properties
+
         _mainwindow.Ui_MainWindow().setupUi(self)
-        scene.view = self.view
         self.view.centerOn(0,0)
+
         splitter = QtGui.QSplitter()
         splitter.addWidget(self.view)
-        splitter.addWidget(scene.propertiesTable)
+        splitter.addWidget(self.node_properties)
         self.setCentralWidget(splitter)
-
         # I create a single dialog to keep the last search options
         self.searchDialog =  QtGui.QDialog()
         # Don't know if this is the best way to set up the dialog and
         # its variables
         self.searchDialog._conf = _search_dialog.Ui_Dialog()
         self.searchDialog._conf.setupUi(self.searchDialog)
+
+        self.scene.setItemIndexMethod(QtGui.QGraphicsScene.NoIndex)
 
     @QtCore.pyqtSignature("")
     def on_actionETE_triggered(self):
@@ -136,7 +134,7 @@ class _MainApp(QtGui.QMainWindow):
             elif mType == 7:
                 cmpFn = lambda x,y: re.search(y, x)
 
-            for n in self.scene.startNode.traverse():
+            for n in self.scene.tree.traverse():
                 if setup.leaves_only.isChecked() and not n.is_leaf():
                     continue
                 if hasattr(n, aName) \
@@ -161,7 +159,7 @@ class _MainApp(QtGui.QMainWindow):
 
     @QtCore.pyqtSignature("")
     def on_actionShow_newick_triggered(self):
-        d = NewickDialog(self.scene.startNode)
+        d = NewickDialog(self.scene.tree)
         d._conf = _show_newick.Ui_Newick()
         d._conf.setupUi(d)
         d.update_newick()
@@ -190,13 +188,9 @@ class _MainApp(QtGui.QMainWindow):
         d._conf.setupUi(d)
         d.exec_()
         return
-
-
         fname = QtGui.QFileDialog.getOpenFileName(self ,"Open File",
                                                  "/home",
                                                  )
-
-
         try:
             t = Tree(str(fname))
         except Exception, e:
@@ -210,7 +204,7 @@ class _MainApp(QtGui.QMainWindow):
         fname = QtGui.QFileDialog.getSaveFileName(self ,"Save File",
                                                  "/home",
                                                  "Newick (*.nh *.nhx *.nw )")
-        nw = self.scene.startNode.write()
+        nw = self.scene.tree.write()
         try:
             OUT = open(fname,"w")
         except Exception, e:
@@ -321,7 +315,7 @@ class _PropModeChooser(QtGui.QWidget):
         QtGui.QWidget.__init__(self,*args)
 
 class _PropertiesDialog(QtGui.QWidget):
-    def __init__(self,scene, *args):
+    def __init__(self, scene, *args):
         QtGui.QWidget.__init__(self,*args)
         self.scene = scene
         self._mode = 0
@@ -477,7 +471,7 @@ class NewickDialog(QtGui.QDialog):
         self._conf.attrName.setDisabled(state)
         self.update_newick()
 
-class _MainView(QtGui.QGraphicsView):
+class _TreeView(QtGui.QGraphicsView):
     def __init__(self,*args):
         QtGui.QGraphicsView.__init__(self,*args)
 
@@ -485,7 +479,6 @@ class _MainView(QtGui.QGraphicsView):
         #self.setViewportUpdateMode(QtGui.QGraphicsView.MinimalViewportUpdate)
         #self.setOptimizationFlag (QtGui.QGraphicsView.DontAdjustForAntialiasing)
         #self.setOptimizationFlag (QtGui.QGraphicsView.DontSavePainterState)
-
         if USE_GL:
             F = QtOpenGL.QGLFormat()
             F.setSampleBuffers(True)
@@ -499,7 +492,6 @@ class _MainView(QtGui.QGraphicsView):
 
     def resizeEvent(self, e):
         QtGui.QGraphicsView.resizeEvent(self, e)
-
 
     def safe_scale(self, xfactor, yfactor):
         self.setTransformationAnchor(self.AnchorUnderMouse)
@@ -574,18 +566,18 @@ class _MainView(QtGui.QGraphicsView):
 
 class _NodeActions(object):
     """ Used to extend QGraphicsItem features """
-    def hoverEnterEvent (self,e):
-
-        #width = self..mapFromScene(self.scene().i_width, 0).x()
-        #height = self.rect().height()
+    def hoverEnterEvent (self, e):
         if self.node: 
-            node_partition = self.scene().node2item[self.node]
-            self.scene().highlighter.setRect(node_partition.rect())
-            self.scene().highlighter.setParentItem(node_partition)
-            self.scene().highlighter.setVisible(True)
+            bg = self.scene().n2i[self.node]
+            bg.drawbg = True
+            bg.setPen(QtGui.QPen(QtGui.QColor("red")))
+            self.bufferPen = bg.pen()
 
-    def hoverLeaveEvent (self,e):
-        self.scene().highlighter.setVisible(False)
+    def hoverLeaveEvent(self,e):
+        if not hasattr(self, "highlighted") or self.highlighted == False:
+            bg = self.scene().n2i[self.node]
+            bg.setPen(self.bufferPen)
+            bg.drawbg = False
 
     def mousePressEvent(self,e):
         pass
@@ -594,7 +586,20 @@ class _NodeActions(object):
         if e.button() == QtCore.Qt.RightButton:
             self.showActionPopup()
         elif e.button() == QtCore.Qt.LeftButton:
-            self.scene().propertiesTable.update_properties(self.node)
+            self.scene().prop_table.update_properties(self.node)
+
+    def mouseDoubleClickEvent(self,e):
+        if not hasattr(self, "highlighted") or self.highlighted == False:
+            bg = self.scene().n2i[self.node]
+            bg.setPen(QtGui.QPen(QtGui.QColor("red")))
+            self.bufferPen = bg.pen()
+            bg.drawbg = True
+            self.highlighted = True
+        else:
+            bg = self.scene().n2i[self.node]
+            bg.setPen(self.bufferPen)
+            bg.drawbg = False
+            self.highlighed = False          
 
     def showActionPopup(self):
         contextMenu = QtGui.QMenu()
@@ -610,7 +615,7 @@ class _NodeActions(object):
         contextMenu.addAction( "Add childs"           , self.add_childs)
         contextMenu.addAction( "Populate partition"   , self.populate_partition)
         if self.node.up is not None and\
-                self.scene().startNode == self.node:
+                self.scene().tree == self.node:
             contextMenu.addAction( "Back to parent", self.back_to_parent_node)
         else:
             contextMenu.addAction( "Extract"              , self.set_start_node)
@@ -647,14 +652,14 @@ class _NodeActions(object):
         if ok:
             for i in xrange(n):
                 ch = self.node.add_child()
-            self.scene().set_style_from(self.scene().startNode,self.scene().layout_func)
+            self.scene().set_style_from(self.scene().tree,self.scene().layout_func)
 
     def void(self):
         return True
 
     def set_as_outgroup(self):
-        self.scene().startNode.set_outgroup(self.node)
-        self.scene().set_style_from(self.scene().startNode, self.scene().layout_func)
+        self.scene().tree.set_outgroup(self.node)
+        self.scene().set_style_from(self.scene().tree, self.scene().layout_func)
         self.scene().draw()
 
     def toggle_collapse(self):
@@ -669,7 +674,7 @@ class _NodeActions(object):
     def paste_partition(self):
         if self.scene().buffer_node:
             self.node.add_child(self.scene().buffer_node)
-            self.scene().set_style_from(self.scene().startNode,self.scene().layout_func)
+            self.scene().set_style_from(self.scene().tree,self.scene().layout_func)
             self.scene().buffer_node= None
             self.scene().draw()
 
@@ -677,13 +682,13 @@ class _NodeActions(object):
         n, ok = QtGui.QInputDialog.getInteger(None,"Populate partition","Number of nodes to add:",2,1)
         if ok:
             self.node.populate(n)
-            self.scene().set_style_from(self.scene().startNode,self.scene().layout_func)
+            self.scene().set_style_from(self.scene().tree,self.scene().layout_func)
             self.scene().draw()
 
     def set_start_node(self):
-        self.scene().startNode = self.node
+        self.scene().start_node = self.node
         self.scene().draw()
 
     def back_to_parent_node(self):
-        self.scene().startNode = self.node.up
+        self.scene().start_node = self.node.up
         self.scene().draw()
