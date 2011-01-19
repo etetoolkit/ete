@@ -1,12 +1,12 @@
 import types
-from ete_dev import Tree, PhyloTree, ClusterTree
 
 from PyQt4  import QtGui
 from qt4gui import _MainApp, _PropertiesDialog
 
 import layouts
+from ete_dev import Tree, PhyloTree, ClusterTree
 from main import TreeImage
-from main_render import _TreeScene, render
+from qt4_render import _TreeScene, render
 
 __all__ = ["show_tree", "render_tree"]
 

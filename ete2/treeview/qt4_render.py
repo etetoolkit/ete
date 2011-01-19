@@ -1,12 +1,12 @@
 import re
 from PyQt4 import QtCore, QtGui
 
-from face_render import update_node_faces
 from main import _leaf, NodeStyleDict
-import circular_render as crender
-import rect_render as rrender
+from qt4_gui import _PropertiesDialog
+from qt4_face_render import update_node_faces
+import qt4_circular_render as crender
+import qt4_rect_render as rrender
 
-from qt4gui import _PropertiesDialog
 
 ## | General scheme on how nodes size are handled
 ## |==========================================================================================================================|
