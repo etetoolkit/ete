@@ -3,41 +3,65 @@ import random
 import colorsys
 from PyQt4 import QtCore, QtGui
 from main import _leaf
+from qt4_gui import _NodeActions
 
-class ArcPartition(QtGui.QGraphicsPathItem):
-    def __init__(self, *args):
-        QtGui.QGraphicsPathItem.__init__(self, *args)
+import time
+
+class _LineItem(QtGui.QGraphicsLineItem):
+    def paint(self, painter, option, widget):
+        #painter.setClipRect( option.exposedRect )
+        QtGui.QGraphicsLineItem.paint(self, painter, option, widget)
+
+
+TIME  = [0]
+def etime(f):
+    def a_wrapper_accepting_arguments(*args, **kargs):
+        global TIME
+        t1 = time.time()
+        f(*args, **kargs)
+        print ".",
+        TIME[0] = TIME[0] + time.time() - t1 
+    return a_wrapper_accepting_arguments
+         
+COUNTER = 0
+def reset_counter():
+    global COUNTER
+    COUNTER = 0
+
+def print_counter():
+    global COUNTER
+    print "Paintings:", COUNTER
+
+def increase():
+    global COUNTER
+    COUNTER += 1
+
+class ArcPartition(QtGui.QGraphicsPathItem, _NodeActions):
+    def __init__(self, parent):
+        QtGui.QGraphicsPathItem.__init__(self, parent)
         self.drawbg = False
-        self.arc_drawn = False
+        self.setCacheMode(QtGui.QGraphicsItem.DeviceCoordinateCache)
+        #self.setAcceptsHoverEvents(True)
+        self.setFlag(QtGui.QGraphicsItem.ItemClipsToShape)
+
+    #def boundingRect(self):
+    #    return QtCore.QRectF(0,0,10,10)
 
     def set_arc(self, cxdist, cydist, r1, r2, angle_start, angle_end):
         """ Draws a 2D arc with two arc lines of length r1 (inner) and
         r2 (outer) with center in cxdist,cydist. angle_start and
         angle_end are relative to the starting rotation point equal 0
         degrees """
-        self.cxdist = cxdist
-        self.cydist = cydist
-        self.r1 = r1
-        self.r2 = r2
-        self.angle_start = angle_start
-        self.angle_end = angle_end
-
-    def draw_arc(self):
-        print "HOLA"
-        # Precalculate values
-        r2 = self.r2[0] # r2 is dynamic, so it changed many time
-                        # during tree traversing. Now I have the final
-                        # value.
-        d1 = self.r1 * 2
+        d1 = r1 * 2
         d2 = r2 * 2 
-        r1_xstart = -self.r1 - self.cxdist
-        r1_ystart = -self.r1 + self.cydist
-        r2_xstart = -r2 - self.cxdist
-        r2_ystart = -r2 + self.cydist
-        angle_start = self.angle_start
-        angle_end = self.angle_start
+        r1_xstart = -r1 - cxdist
+        r1_ystart = -r1 + cydist
+        r2_xstart = -r2 - cxdist
+        r2_ystart = -r2 + cydist
+        angle_start = angle_start
+        angle_end = angle_start
         angle_span = angle_end + angle_start
-
+        
         path = QtGui.QPainterPath()
         # Calculate start and end points of inner arc
         path.arcMoveTo(r1_xstart, r1_ystart, d1, d1, -angle_start)
@@ -57,13 +81,14 @@ class ArcPartition(QtGui.QGraphicsPathItem):
         # Draws line to the start point of outer arc (straight line)
         path.lineTo(o1)
         self.setPath(path)
-        self.arc_drawn = True
 
     def paint(self, painter, option, index):
+        global COUNTER 
+        COUNTER += 1
         if self.drawbg:
-            if not self.arc_drawn:
-                self.draw_arc()
+            painter.setClipRect( option.exposedRect )
             return QtGui.QGraphicsPathItem.paint(self, painter, option, index)
+
 
 def rotate_and_displace(item, rotation, height, offset):
     """ Rotates and item of a given height over its own axis and moves
@@ -139,7 +164,7 @@ def render_circular(root_node, n2i, rot_step):
             full_angle = last_c.full_end - first_c.full_start
             angle_start = last_c.full_end - item.rotation
             angle_end = item.rotation - first_c.full_start
-            item.set_arc(parent_radius, h/2, parent_radius, max_r, angle_start, angle_end)
+            item.bg.set_arc(parent_radius, h/2, parent_radius+2, r, angle_start, angle_end)
 
             # Vertical arc Line
             rot_end = n2i[node.children[-1]].rotation
@@ -149,6 +174,7 @@ def render_circular(root_node, n2i, rot_step):
             C = QtGui.QGraphicsPathItem()
             C.setParentItem(item.parentItem())
             path = QtGui.QPainterPath()
+
             # Counter clock wise
             path.arcMoveTo(-r, -r, r * 2, r * 2, 360 - rot_start - angle)
             path.arcTo(-r, -r, r*2, r * 2, 360 - rot_start - angle, angle)
@@ -158,14 +184,14 @@ def render_circular(root_node, n2i, rot_step):
             full_angle = item.full_end - item.full_start
             angle_start = item.full_end - item.rotation
             angle_end = item.rotation - item.full_start
-            item.set_arc(parent_radius, h/2, parent_radius, max_r, angle_start, angle_end)
+            item.bg.set_arc(parent_radius, h/2, parent_radius+1, r, angle_start, angle_end)
 
         if hasattr(item, "content"):
             item.content.moveBy(xoffset, 0)
-            extra = QtGui.QGraphicsLineItem(0, item.center, xoffset, item.center, item)
-            extra.setPen(QtGui.QPen(QtGui.QColor("orange")))
+            extra = _LineItem(0, item.center, xoffset, item.center, item)
+            extra.setPen(QtGui.QPen(QtGui.QColor("grey")))
     n2i[root_node].max_r = max_r
-    print    len( n2i[root_node].parentItem().childItems())
+    print  len( n2i[root_node].parentItem().childItems())
     return max_r[0]
 
 def init_circular_leaf_item(node, n2i, n2f, last_rotation, rot_step):
@@ -176,6 +202,9 @@ def init_circular_leaf_item(node, n2i, n2f, last_rotation, rot_step):
     #item.center = item.nodeRegion.height() / 2
     item.effective_height = get_effective_height(node, n2i, n2f)
     item.center = item.effective_height/2
+
+    #item.setParentItem(n2i[node.up])
+
 
 def init_circular_node_item(node, n2i, n2f):
     item = n2i[node]
@@ -190,6 +219,9 @@ def init_circular_node_item(node, n2i, n2f):
     #item.center = item.nodeRegion.height()/2
     item.effective_height = get_effective_height(node, n2i, n2f)
     item.center = item.effective_height/2
+
+    #if node.up:
+    #    item.setParentItem(n2i[node.up])
 
 def random_color(base=0.25):
     s = 0.5#random.random()

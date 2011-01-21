@@ -4,9 +4,13 @@ class RectPartition(QtGui.QGraphicsRectItem):
     def __init__(self, *args):
         QtGui.QGraphicsRectItem.__init__(self, *args)
         self.drawbg = False
+        self.nodeRegion = QtCore.QRectF()
+        self.facesRegion = QtCore.QRectF()
+        self.fullRegion = QtCore.QRectF()
 
     def paint(self, painter, option, index):
         if self.drawbg:
+            painter.setClipRect( option.exposedRect )
             return QtGui.QGraphicsRectItem.paint(self, painter, option, index)
 
 def get_partition_center(n, n2i, n2f):
@@ -39,7 +43,6 @@ def init_rect_leaf_item(node, n2i, n2f):
 
 def init_rect_node_item(node, n2i, n2f):
     item = n2i[node]
-
     all_childs_height = sum([n2i[c].fullRegion.height() for c in node.children])
     all_childs_width = max([n2i[c].fullRegion.width() for c in node.children])
     if all_childs_height > item.fullRegion.height():

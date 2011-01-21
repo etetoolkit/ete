@@ -5,11 +5,21 @@ from PyQt4.QtGui import QPrinter
 try:
     from PyQt4 import QtOpenGL
     USE_GL = True
-    #USE_GL = False # Temporarily disabled
+    USE_GL = False # Temporarily disabled
 except ImportError:
     USE_GL = False
 
 import _mainwindow, _search_dialog, _show_newick, _open_newick, _about
+
+import time
+def etime(f):
+    def a_wrapper_accepting_arguments(*args, **kargs):
+        global TIME
+        t1 = time.time()
+        f(*args, **kargs)
+        print time.time() - t1 
+    return a_wrapper_accepting_arguments
+
 
 class _GUI(QtGui.QMainWindow):
     def __init__(self, scene, *args):
@@ -474,9 +484,10 @@ class NewickDialog(QtGui.QDialog):
 class _TreeView(QtGui.QGraphicsView):
     def __init__(self,*args):
         QtGui.QGraphicsView.__init__(self,*args)
-
         #self.setViewportUpdateMode(QtGui.QGraphicsView.FullViewportUpdate)
-        #self.setViewportUpdateMode(QtGui.QGraphicsView.MinimalViewportUpdate)
+        self.setViewportUpdateMode(QtGui.QGraphicsView.FullViewportUpdate)
+        self.setCacheMode(QtGui.QGraphicsView.CacheBackground)
+        self.setResizeAnchor(QtGui.QGraphicsView.AnchorUnderMouse)
         #self.setOptimizationFlag (QtGui.QGraphicsView.DontAdjustForAntialiasing)
         #self.setOptimizationFlag (QtGui.QGraphicsView.DontSavePainterState)
         if USE_GL:
@@ -488,7 +499,6 @@ class _TreeView(QtGui.QGraphicsView):
         else:
             self.setRenderHints(QtGui.QPainter.Antialiasing or QtGui.QPainter.SmoothPixmapTransform )
             self.setViewportUpdateMode(QtGui.QGraphicsView.SmartViewportUpdate)
-
 
     def resizeEvent(self, e):
         QtGui.QGraphicsView.resizeEvent(self, e)
@@ -564,21 +574,64 @@ class _TreeView(QtGui.QGraphicsView):
         QtGui.QGraphicsView.keyPressEvent(self,e)
 
 
+
 class _NodeActions(object):
     """ Used to extend QGraphicsItem features """
+    def __init__(self):
+        self.setCursor(QtCore.Qt.PointingHandCursor)
+
+
     def hoverEnterEvent (self, e):
+        return
+        from qt4_circular_render import reset_counter, print_counter
+        reset_counter()
         if self.node: 
             bg = self.scene().n2i[self.node]
-            bg.drawbg = True
-            bg.setPen(QtGui.QPen(QtGui.QColor("red")))
+            bg = self.bg
+            #bg.drawbg = True
+            #try:
+            #    self.hl = QtGui.QGraphicsRectItem(bg.boundingRect())
+            #    self.hl.setPen(QtGui.QPen(QtGui.QColor("orange")))
+            #    self.hl.setParentItem(bg)
+            #except Exception, e:
+            #    print e
+            try:
+                path = bg.path()
+                #self.hl = QtGui.QGraphicsPathItem()
+                #self.hl.setPath(path)
+                
+                self.hl = QtGui.QGraphicsRectItem()
+                self.hl.setRect(self.bg.boundingRect())
+                self.hl.setPen(QtGui.QPen(QtGui.QColor("green")))
+                self.hl.setBrush(QtGui.QBrush(QtCore.Qt.NoBrush))
+                self.hl.setParentItem(bg)
+
+                self.hl2 = QtGui.QGraphicsPathItem(self.hl)
+                self.hl2.setPath(path)
+                self.hl2.setPen(QtGui.QPen(QtGui.QColor("orange")))
+            except Exception, e: 
+                print e
+
             self.bufferPen = bg.pen()
 
+
     def hoverLeaveEvent(self,e):
+        return
+        from qt4_circular_render import reset_counter, print_counter
+        print_counter()
         if not hasattr(self, "highlighted") or self.highlighted == False:
             bg = self.scene().n2i[self.node]
+            bg = self.bg
             bg.setPen(self.bufferPen)
             bg.drawbg = False
-
+            try:
+                self.hl.setParentItem(None)
+                self.hl = None
+            except Exception, e:
+                print e
+                pass
+            
+            
     def mousePressEvent(self,e):
         pass
 
@@ -587,6 +640,33 @@ class _NodeActions(object):
             self.showActionPopup()
         elif e.button() == QtCore.Qt.LeftButton:
             self.scene().prop_table.update_properties(self.node)
+
+
+            try:
+                if self.highlighted == False:
+                    print "Pintando"
+                    self.highlighted = True
+                    self.hl = QtGui.QGraphicsRectItem()
+                    self.hl.setRect(self.bg.boundingRect())
+                    self.hl.setPen(QtGui.QPen(QtGui.QColor("green")))
+                    self.hl.setBrush(QtGui.QBrush(QtCore.Qt.NoBrush))
+                    self.hl.setParentItem(self.bg)
+                    self.hl2 = QtGui.QGraphicsPathItem(self.hl)
+                    self.hl2.setPath(self.bg.path())
+                    self.hl2.setPen(QtGui.QPen(QtGui.QColor("orange")))
+                else:
+                    self.hl.setVisible(False)
+                    self.hl2.setVisible(False)
+                    self.scene().removeItem(self.hl)
+
+                                        
+                    self.highlighted = False                    
+
+            except Exception, e: 
+                print e
+
+
+
 
     def mouseDoubleClickEvent(self,e):
         if not hasattr(self, "highlighted") or self.highlighted == False:

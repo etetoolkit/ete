@@ -17,19 +17,21 @@ def init_scene(t, layout, img):
 
     if not img:
         img = TreeImage()
-    
-    if not img.layout_fn:
+
+    if not layout and not img.layout_fn:
         if t.__class__ == PhyloTree:
-            img.layout_fn = "phylogeny"
+            layout  = "phylogeny"
         elif t.__class__ == ClusterTree:
-            img.layout_fn = "large"
+            layout = "large"
         else:
-            img.layout_fn = "basic"
+            layout = "basic"
+    elif not layout:
+        layout = img.layout_fn
 
     # Validates layout function
-    if type(img.layout_fn) == types.FunctionType or\
-            type(img.layout_fn) == types.MethodType:
-        img._layout_fn = img.layout_fn
+    if type(layout) == types.FunctionType or\
+            type(layout) == types.MethodType:
+        img._layout_fn = layout
     else:
         try:
             img._layout_fn = getattr(layouts, img.layout_fn)
@@ -40,6 +42,7 @@ def init_scene(t, layout, img):
         _QApp = QtGui.QApplication(["ETE"])
 
     scene  = _TreeScene()
+    #scene.setBspTreeDepth(24)
     return scene, img
 
 def show_tree(t, layout=None, img_properties=None):
