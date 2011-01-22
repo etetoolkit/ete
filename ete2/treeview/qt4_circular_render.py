@@ -36,22 +36,22 @@ def increase():
     global COUNTER
     COUNTER += 1
 
-class ArcPartition(QtGui.QGraphicsPathItem, _NodeActions):
+class ArcPartition(QtGui.QGraphicsPathItem):
     def __init__(self, parent):
         QtGui.QGraphicsPathItem.__init__(self, parent)
         self.drawbg = False
         self.setCacheMode(QtGui.QGraphicsItem.DeviceCoordinateCache)
-        #self.setAcceptsHoverEvents(True)
-        self.setFlag(QtGui.QGraphicsItem.ItemClipsToShape)
+        #self.setCacheMode(QtGui.QGraphicsItem.ItemCoordinateCache)
 
     #def boundingRect(self):
     #    return QtCore.QRectF(0,0,10,10)
-
     def set_arc(self, cxdist, cydist, r1, r2, angle_start, angle_end):
         """ Draws a 2D arc with two arc lines of length r1 (inner) and
         r2 (outer) with center in cxdist,cydist. angle_start and
         angle_end are relative to the starting rotation point equal 0
         degrees """
+
+        self.data = [cxdist, cydist, r1, r2, angle_start, angle_end]
         d1 = r1 * 2
         d2 = r2 * 2 
         r1_xstart = -r1 - cxdist
@@ -59,7 +59,7 @@ class ArcPartition(QtGui.QGraphicsPathItem, _NodeActions):
         r2_xstart = -r2 - cxdist
         r2_ystart = -r2 + cydist
         angle_start = angle_start
-        angle_end = angle_start
+        angle_end = angle_end
         angle_span = angle_end + angle_start
         
         path = QtGui.QPainterPath()
@@ -127,7 +127,7 @@ def get_min_radius(w, h, a, xoffset):
 def render_circular(root_node, n2i, rot_step):
     to_visit = []
     to_visit.append(root_node)
-    max_r = [0.0]
+    max_r = 0.0
     while to_visit:
         node = to_visit.pop(0)
 
@@ -155,7 +155,7 @@ def render_circular(root_node, n2i, rot_step):
         r, xoffset = get_min_radius(w, h, angle, parent_radius)
         rotate_and_displace(item, item.rotation, h, parent_radius)
         item.radius = r
-        max_r[0] = max(max_r[0], r)
+        max_r = max(max_r, r)
 
         if not _leaf(node):
             first_c = n2i[node.children[0]]
@@ -192,7 +192,8 @@ def render_circular(root_node, n2i, rot_step):
             extra.setPen(QtGui.QPen(QtGui.QColor("grey")))
     n2i[root_node].max_r = max_r
     print  len( n2i[root_node].parentItem().childItems())
-    return max_r[0]
+    n2i[root_node].max_r = max_r
+    return max_r
 
 def init_circular_leaf_item(node, n2i, n2f, last_rotation, rot_step):
     item = n2i[node]

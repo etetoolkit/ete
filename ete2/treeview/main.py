@@ -1,3 +1,5 @@
+import colorsys
+import random
 import re
 
 _LINE_TYPE_CHECKER = lambda x: x in (0,1,2)
@@ -166,3 +168,13 @@ def get_tree_img_map(self):
                         face_list.append([pos.x(),pos.y(),size.x(),size.y(), nid, None])
         nid += 1
     return {"nodes": node_list, "faces": face_list}
+
+def random_color(base=None):
+    s = 0.5#random.random()
+    v = 0.5+random.random()/2
+    s = random.random()
+    v = random.random()
+    if not base:
+        base = random.random()
+    R, G, B = map(lambda x: int(100*x), colorsys.hsv_to_rgb(base, s, v))
+    return "#%s%s%s" %(hex(R)[2:], hex(G)[2:], hex(B)[2:])

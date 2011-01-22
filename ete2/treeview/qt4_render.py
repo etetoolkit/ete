@@ -38,7 +38,7 @@ class _NodePointItem(QtGui.QGraphicsRectItem):
         self.diam = self.radius*2
         QtGui.QGraphicsRectItem.__init__(self, 0, 0, self.diam, self.diam)
         self.setCacheMode(QtGui.QGraphicsItem.DeviceCoordinateCache)
-    
+
     def paint(self, p, option, widget):
         crender.increase()
         p.setClipRect( option.exposedRect )
@@ -66,6 +66,7 @@ class _NodeItem(QtGui.QGraphicsItemGroup, _NodeActions):
         self.facesRegion = QtCore.QRectF()
         self.fullRegion = QtCore.QRectF()
         self.highlighted = False
+        self.setAcceptsHoverEvents(True)
 
 class _LineItem(QtGui.QGraphicsLineItem):
     def paint(self, painter, option, widget):
@@ -107,8 +108,6 @@ def render(root_node, img, hide_root=False):
                 pass
             else:
                 set_node_size(node, n2i, n2f, scale)
-
-
         if not _leaf(node):
             # visit children starting from left most to right
             # most. Very important!! check all children[-1] and
@@ -138,7 +137,7 @@ def render(root_node, img, hide_root=False):
             else:
                 rrender.init_rect_node_item(node, n2i, n2f)
 
-            item.setRect(item.fullRegion)
+            item.bg.setRect(item.fullRegion)
 
         if node is not root_node or not hide_root: 
             render_node_content(node, n2i, n2f, scale, mode)
@@ -206,8 +205,8 @@ def set_node_size(node, n2i, n2f, scale):
 
 def render_node_content(node, n2i, n2f, scale, mode):
     style = node.img_style
-
     parent_partition = n2i[node]
+    parent_partition.bg.setAcceptsHoverEvents(False)
 
     #partition = QtGui.QGraphicsRectItem(parent_partition)
     partition = QtGui.QGraphicsItemGroup(parent_partition)
@@ -232,7 +231,7 @@ def render_node_content(node, n2i, n2f, scale, mode):
     node_ball = _NodePointItem(node)
     node_ball.setParentItem(partition)       
     node_ball.setPos(ball_start_x, center-(ball_size/2))
-    node_ball.setAcceptsHoverEvents(True)
+
 
     #node_ball.setGraphicsEffect(QtCore.Qt.QGraphicsDropShadowEffect)
 
@@ -256,7 +255,7 @@ def render_node_content(node, n2i, n2f, scale, mode):
     #    pen = QtGui.QPen(color)
     #    set_pen_style(pen, style["line_type"])
     #    extra_hz_line.setPen(pen)
-
+    return 
     # Attach branch-right faces to child 
     fblock = n2f[node]["branch-right"]
     fblock.setParentItem(partition)
@@ -296,7 +295,6 @@ def render_node_content(node, n2i, n2f, scale, mode):
         pen.setCapStyle(QtCore.Qt.FlatCap)
         vt_line.setPen(pen)
         parent_partition.vt_line = vt_line
-
 
     return parent_partition
 
@@ -355,7 +353,8 @@ class _TreeScene(QtGui.QGraphicsScene):
         self.n2hl = {}
 
         # Set the scene background
-        self.setBackgroundBrush(QtGui.QColor("white"))
+        # self.setBackgroundBrush(QtGui.QColor("white"))
+        self.setBackgroundBrush(QtGui.QBrush(QtCore.Qt.NoBrush))
 
     def highlight_node(self, n):
         self.unhighlight_node(n)
