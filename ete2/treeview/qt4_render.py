@@ -233,7 +233,7 @@ def render_node_content(node, n2i, n2f, scale, mode):
     node_ball.setPos(ball_start_x, center-(ball_size/2))
 
 
-    #node_ball.setGraphicsEffect(QtCore.Qt.QGraphicsDropShadowEffect)
+    #node_ball.setGraphicsEffect(QtGui.QGraphicsDropShadowEffect())
 
     # Branch line to parent
     pen = QtGui.QPen()
