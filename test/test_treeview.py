@@ -1,6 +1,8 @@
 import unittest
 import random
-from ete_dev import Tree, faces, TreeImageProperties, NodeStyleDict
+from ete_dev import Tree, faces
+from ete_dev.treeview.main import TreeImage, NodeStyleDict
+
 
 class TestTreeview(unittest.TestCase):
     rF1 = faces.TextFace("branch-right1")
@@ -14,28 +16,25 @@ class TestTreeview(unittest.TestCase):
     downF = faces.TextFace("branch-down1", fsize=11, fgcolor="#099000")
     
     headerF = faces.TextFace("header_up", fsize=11, fgcolor="#099000")
+    headerF.margin_right = 10
     footF = faces.TextFace("header_up", fsize=11, fgcolor="#099000")
     fixedF = faces.TextFace("FIXED", fsize=11, fgcolor="#099000")
 
     def test(self):
         # Text faces
 
-        I = TreeImageProperties()
-        I.aligned_face_header.add_face_to_aligned_column(0, self.headerF)
-        I.aligned_face_header.add_face_to_aligned_column(1, self.headerF)
-        I.aligned_face_header.add_face_to_aligned_column(2, self.headerF)
-        I.aligned_face_header.add_face_to_aligned_column(3, self.headerF)
+        I = TreeImage()
+        I.mode = "rect"
+        I.aligned_header.add_face(self.headerF, 0)
+        I.aligned_header.add_face(self.headerF, 1)
+        I.aligned_header.add_face(self.headerF, 2)
+        I.aligned_header.add_face(self.headerF, 3)
 
-        I.aligned_face_foot.add_face_to_aligned_column(0, self.footF)
-        I.aligned_face_foot.add_face_to_aligned_column(1, self.footF)
-        I.aligned_face_foot.add_face_to_aligned_column(2, self.footF)
-        I.aligned_face_foot.add_face_to_aligned_column(3, self.footF)
-        I.draw_lines_from_leaves_to_aligned_faces = True
-        I.line_from_leaves_to_aligned_faces_type = 2
- 
-        I.draw_image_border = True
-        I.draw_aligned_faces_as_grid = False
-
+        I.aligned_foot.add_face(self.footF, 0)
+        I.aligned_foot.add_face(self.footF, 1)
+        I.aligned_foot.add_face(self.footF, 2)
+        I.aligned_foot.add_face(self.footF, 3) 
+        I.draw_aligned_faces_as_grid = True
         t = Tree()
         t.dist = 0
         t.populate(10)
@@ -46,7 +45,7 @@ class TestTreeview(unittest.TestCase):
         style.add_fixed_face(self.fixedF, "branch-right", 0)
         t.img_style = style
         
-        t.render("./test.svg", layout=mylayout, img_properties=I)
+        #t.render("./test.svg", layout=mylayout, img_properties=I)
         t.show(mylayout, img_properties=I)
         t.show(mylayout2, img_properties=I)
 

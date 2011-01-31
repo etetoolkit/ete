@@ -13,6 +13,8 @@ class _LineItem(QtGui.QGraphicsLineItem):
         QtGui.QGraphicsLineItem.paint(self, painter, option, widget)
 
 
+
+# Performance tests!!
 TIME  = [0]
 def etime(f):
     def a_wrapper_accepting_arguments(*args, **kargs):
@@ -42,9 +44,10 @@ class ArcPartition(QtGui.QGraphicsPathItem):
         self.drawbg = False
         self.setCacheMode(QtGui.QGraphicsItem.DeviceCoordinateCache)
         #self.setCacheMode(QtGui.QGraphicsItem.ItemCoordinateCache)
-
+        
     #def boundingRect(self):
     #    return QtCore.QRectF(0,0,10,10)
+
     def set_arc(self, cxdist, cydist, r1, r2, angle_start, angle_end):
         """ Draws a 2D arc with two arc lines of length r1 (inner) and
         r2 (outer) with center in cxdist,cydist. angle_start and
@@ -83,8 +86,6 @@ class ArcPartition(QtGui.QGraphicsPathItem):
         self.setPath(path)
 
     def paint(self, painter, option, index):
-        global COUNTER 
-        COUNTER += 1
         if self.drawbg:
             painter.setClipRect( option.exposedRect )
             return QtGui.QGraphicsPathItem.paint(self, painter, option, index)
@@ -188,6 +189,7 @@ def render_circular(root_node, n2i, rot_step):
 
         if hasattr(item, "content"):
             item.content.moveBy(xoffset, 0)
+            print item.content.pos(), xoffset
             extra = _LineItem(0, item.center, xoffset, item.center, item)
             extra.setPen(QtGui.QPen(QtGui.QColor("grey")))
     n2i[root_node].max_r = max_r
@@ -203,9 +205,7 @@ def init_circular_leaf_item(node, n2i, n2f, last_rotation, rot_step):
     #item.center = item.nodeRegion.height() / 2
     item.effective_height = get_effective_height(node, n2i, n2f)
     item.center = item.effective_height/2
-
     #item.setParentItem(n2i[node.up])
-
 
 def init_circular_node_item(node, n2i, n2f):
     item = n2i[node]
@@ -220,7 +220,6 @@ def init_circular_node_item(node, n2i, n2f):
     #item.center = item.nodeRegion.height()/2
     item.effective_height = get_effective_height(node, n2i, n2f)
     item.center = item.effective_height/2
-
     #if node.up:
     #    item.setParentItem(n2i[node.up])
 
@@ -232,15 +231,13 @@ def random_color(base=0.25):
 
 
 def get_effective_height(n, n2i, n2f):
-        down_h = n2f[n]["branch-bottom"].h
-        up_h = n2f[n]["branch-top"].h
+    down_h = n2f[n]["branch-bottom"].h
+    up_h = n2f[n]["branch-top"].h
 
-        right_h = n2i[n].nodeRegion.height()/2
-        up_h = max(right_h, up_h)
-        down_h = max(right_h, down_h)
+    right_h = n2i[n].nodeRegion.height()/2
+    up_h = max(right_h, up_h)
+    down_h = max(right_h, down_h)
         
-        fullR = n2i[n].fullRegion
-        center = fullR.height()/2
-
-        return max(up_h, down_h)*2
-
+    fullR = n2i[n].fullRegion
+    center = fullR.height()/2
+    return max(up_h, down_h)*2

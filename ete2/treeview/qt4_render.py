@@ -1,9 +1,10 @@
 import re
 from PyQt4 import QtCore, QtGui
 
-from main import _leaf, NodeStyleDict
+from main import _leaf, NodeStyleDict, add_face_to_node
 from qt4_gui import _PropertiesDialog, _NodeActions
-from qt4_face_render import update_node_faces
+from qt4_face_render import update_node_faces, _FaceGroupItem
+from faces import CircleFace
 import qt4_circular_render as crender
 import qt4_rect_render as rrender
 
@@ -66,27 +67,30 @@ class _NodeItem(QtGui.QGraphicsItemGroup, _NodeActions):
         self.facesRegion = QtCore.QRectF()
         self.fullRegion = QtCore.QRectF()
         self.highlighted = False
-        self.setAcceptsHoverEvents(True)
+        #self.setAcceptsHoverEvents(True)
+    def paint(*args, **kargs):
+        pass
 
 class _LineItem(QtGui.QGraphicsLineItem):
     def paint(self, painter, option, widget):
         QtGui.QGraphicsLineItem.paint(self, painter, option, widget)
 
-
 def render(root_node, img, hide_root=False):
-    n2i = {}
-    n2f = {}
+    n2i = {} # node to items
+    n2f = {} # node to faces
+
     mode = img.mode
     scale = img.scale
     arc_span = img.arc_span 
     last_rotation = -90 + img.arc_start
     layout_fn = img._layout_fn 
-
+    
     parent = QtGui.QGraphicsRectItem(0, 0, 0, 0)
     visited = set()
     to_visit = []
     to_visit.append(root_node)
     rot_step = float(arc_span) / len([n for n in root_node.traverse() if _leaf(n)])
+
     # ::: Precalculate values :::
     while to_visit:
         node = to_visit[-1]
@@ -107,7 +111,11 @@ def render(root_node, img, hide_root=False):
             if node is root_node and hide_root:
                 pass
             else:
-                set_node_size(node, n2i, n2f, scale)
+                set_node_size(node, n2i, n2f, img)
+                if "aligned" in n2f[node]:
+                    n2f[node]["aligned"].h 
+                    n2f[node]["aligned"].w
+
         if not _leaf(node):
             # visit children starting from left most to right
             # most. Very important!! check all children[-1] and
@@ -136,7 +144,6 @@ def render(root_node, img, hide_root=False):
                 rrender.init_rect_leaf_item(node, n2i, n2f)
             else:
                 rrender.init_rect_node_item(node, n2i, n2f)
-
             item.bg.setRect(item.fullRegion)
 
         if node is not root_node or not hide_root: 
@@ -148,13 +155,20 @@ def render(root_node, img, hide_root=False):
         parent.setRect(-max_r, -max_r, max_r*2, max_r*2) 
     else:
         parent.setRect(n2i[root_node].fullRegion)
+        max_r = n2i[root_node].fullRegion.width()
+
+    surroundings = render_aligned_faces(n2i, n2f, img, max_r)
+    surroundings.setParentItem(parent)
+    render_floatings(n2i, n2f, img)
 
     return parent, n2i, n2f
 
-def set_node_size(node, n2i, n2f, scale):
+def set_node_size(node, n2i, n2f, img):
+    scale = img.scale
+    min_separation = img.min_leaf_separation
+
     item = n2i[node]
     branch_length = float(node.dist * scale)
-    min_branch_separation = 3
 
     # Organize faces by groups
     faceblock = update_node_faces(node, n2f)
@@ -164,7 +178,7 @@ def set_node_size(node, n2i, n2f, scale):
             (node.img_style["size"]/2) + node.img_style["hz_line_width"] + faceblock["branch-top"].h + faceblock["branch-bottom"].h, 
             faceblock["branch-right"].h, 
             faceblock["aligned"].h, 
-            min_branch_separation,
+            min_separation,
             )    
 
     # Total width required by the node
@@ -176,32 +190,18 @@ def set_node_size(node, n2i, n2f, scale):
                                  )
     w += node.img_style["vt_line_width"]
 
-    # # Updates the max width spent by aligned faces
-    # if faceblock["aligned"].w > self.max_w_aligned_face:
-    #     self.max_w_aligned_face = faceblock["aligned"].w
-    #  
-    # # This prevents adding empty aligned faces from internal
-    # # nodes
-    # if faceblock["aligned"].column2faces:
-    #     self.aligned_faces.append(faceblock["aligned"])
-
     # rightside faces region
     item.facesRegion.setRect(0, 0, faceblock["branch-right"].w, faceblock["branch-right"].h)
 
     # Node region 
     item.nodeRegion.setRect(0, 0, w, h)
+
+    # Stores real separation between branches, to correctly handle scale changes...
     #if min_real_branch_separation < h:
     #    min_real_branch_separation = h
 
-    #if not _leaf(node):
-    #    widths, heights = zip(*[[c.fullRegion.width(),c.fullRegion.height()] \
-    #                                for c in node.children])
-    #    w += max(widths)
-    #    h = max(node.nodeRegion.height(), sum(heights))
-
     # This is the node total region covered by the node
     item.fullRegion.setRect(0, 0, w, h)
-
 
 def render_node_content(node, n2i, n2f, scale, mode):
     style = node.img_style
@@ -232,7 +232,6 @@ def render_node_content(node, n2i, n2f, scale, mode):
     node_ball.setParentItem(partition)       
     node_ball.setPos(ball_start_x, center-(ball_size/2))
 
-
     #node_ball.setGraphicsEffect(QtGui.QGraphicsDropShadowEffect())
 
     # Branch line to parent
@@ -255,7 +254,7 @@ def render_node_content(node, n2i, n2f, scale, mode):
     #    pen = QtGui.QPen(color)
     #    set_pen_style(pen, style["line_type"])
     #    extra_hz_line.setPen(pen)
-    return 
+
     # Attach branch-right faces to child 
     fblock = n2f[node]["branch-right"]
     fblock.setParentItem(partition)
@@ -494,78 +493,16 @@ class _TreeScene(QtGui.QGraphicsScene):
             ii.save(imgName)
 
     def draw(self):
-
-        # Clean previous items from scene by removing the main parent
-        if self.mainItem:
-            self.removeItem(self.mainItem)
-            self.mainItem = None            
-        if self.border:
-            self.removeItem(self.border)
-            self.border = None
-        # Initialize scene 
-        self.max_w_aligned_face = 0    # Stores the max width of aligned faces
-        self.aligned_faces = []
-        self.min_aligned_column_widths = {}
-
-        self.min_real_branch_separation = 0
-        self.selectors  = []
-        self._highlighted_nodes = {}
-        self.node2faces = {}
-        self.node2item = {}
-        self.node2ballmap = {}
-
-        #Clean_highlighting rects
-        for n in self._highlighted_nodes:
-            self._highlighted_nodes[n] = None
-
-        # Recreates main parent and add it to scene
-        self.mainItem = QtGui.QGraphicsRectItem()
-        self.addItem(self.mainItem)
-        # Recreates selector item (used to zoom etc...)
-        self.selector = _SelectorItem()
-        self.selector.setParentItem(self.mainItem)
-        self.selector.setVisible(False)
-        self.selector.setZValue(2)
-
-        self.highlighter = _HighlighterItem()
-        self.highlighter.setParentItem(self.mainItem)
-        self.highlighter.setVisible(False)
-        self.highlighter.setZValue(2)
-        self.min_real_branch_separation = 0
-
+        pass
         # Get branch scale
-        fnode, max_dist = self.startNode.get_farthest_leaf(topology_only=\
-            self.props.force_topology)
+        # fnode, max_dist = self.startNode.get_farthest_leaf(topology_only=\
+        #                                                        img.force_topology)
+        # if max_dist>0:
+        #     self.scale =  self.props.tree_width / max_dist
+        # else:
+        #     self.scale =  1
 
-        if max_dist>0:
-            self.scale =  self.props.tree_width / max_dist
-        else:
-            self.scale =  1
-
-        #self.update_node_areas(self.startNode)
-        self.update_node_areas_rectangular(self.startNode)
-
-        # Get tree picture dimensions
-        self.i_width  = self.startNode.fullRegion.width()
-        self.i_height = self.startNode.fullRegion.height()
-        self.draw_tree_surrondings()
-
-        # Draw scale
-        scaleItem = self.get_scale()
-        scaleItem.setParentItem(self.mainItem)
-        scaleItem.setPos(0, self.i_height)
-        self.i_height += scaleItem.rect().height()
-        
-        #Re-establish node marks
-        for n in self._highlighted_nodes:
-            self.highlight_node(n)
-
-        self.setSceneRect(0,0, self.i_width, self.i_height)
-        # Tree border
-        if self.props.draw_image_border:
-            self.border = self.addRect(0, 0, self.i_width, self.i_height)
-
-def get_scale(self):
+def render_scale(self):
     length = 50
     scaleItem = _PartitionItem(None) # Unassociated to nodes
     scaleItem.setRect(0, 0, 50, 50)
@@ -612,6 +549,16 @@ def set_style(n, layout_func):
     else:
         raise TypeError("img_style attribute in node %s is not of NodeStyleDict type." \
                             %n.name)
+
+    # This adds the node item (circle, sphere, etc... ) as a normal branch-right face
+    #if n.img_style["size"] > 1:
+    #    add_face_to_node(CircleFace(radius = n.img_style["size"], \
+    #                                    color = n.img_style["fgcolor"], \
+    #                                    style = n.img_style["shape"]),  \
+    #                         node = n, \
+    #                         column = -1, \
+    #                         position="branch-right")
+
     # Adding fixed faces during drawing is not allowed, since
     # added faces will not be tracked until next execution
     n.img_style._block_adding_faces = True
@@ -620,3 +567,108 @@ def set_style(n, layout_func):
     except Exception:
         n.img_style._block_adding_faces = False
         raise
+
+
+def render_floatings(n2i, n2f, img):
+    floating_faces = [ [node, fb["float"]] for node, fb in n2f.iteritems() if "float" in fb]
+    for node, fb in floating_faces:
+        item = n2i[node]
+        fb.update_columns_size()
+        fb.render()
+        fb.setParentItem(item)
+        # x = item.nodeRegion.width()/2 (to center item)
+        fb.setPos(0, item.center-(fb.h/2))
+
+def render_aligned_faces(n2i, n2f, img, tree_end_x):
+    # Prepares and renders aligned face headers. Used to later
+    # place aligned faces
+    aligned_faces = [ [node, fb["aligned"]] for node, fb in n2f.iteritems() if "aligned" in fb]
+
+    column2max_width = {}
+    aligned_face_headers = {}
+    aligned_header = img.aligned_header
+    aligned_foot = img.aligned_foot
+    all_columns = set(aligned_header.keys() + aligned_foot.keys())
+    header_afaces = {}
+    foot_afaces = {}
+    parent = QtGui.QGraphicsRectItem()
+
+    for c in all_columns:
+        c += 1
+        if c in aligned_header:
+            faces = aligned_header[c]
+            fb = _FaceGroupItem({0:faces}, None)
+            fb.setParentItem(parent)
+            header_afaces[c] = fb
+            column2max_width[c] = fb.w
+
+        if c in aligned_foot:
+            faces = aligned_foot[c]
+            fb = _FaceGroupItem({0:faces}, None)
+            fb.setParentItem(parent)
+            foot_afaces[c] = fb
+            column2max_width[c] = max(column2max_width.get(c,0), fb.w)
+
+    # Place aligned faces and calculates the max size of each
+    # column (needed to place column headers)
+    if img.draw_aligned_faces_as_grid: 
+        for node, fb in aligned_faces:
+            for c, size in fb.column2size.iteritems():
+                if size[0] > column2max_width.get(c, 0):
+                    column2max_width[c] = size[0]
+
+    # Place aligned faces
+    for node, fb in aligned_faces:
+        item = n2i[node]
+        fb.set_min_column_widths(column2max_width)
+        fb.update_columns_size()
+        fb.render()
+        fb.setParentItem(item)
+
+        if img.mode == "circular":
+            if node.up in n2i:
+                x = tree_end_x - n2i[node.up].radius 
+            else:
+                x = tree_end_x
+            #fb.moveBy(tree_end_x, 0)
+        elif img.mode == "rect":
+            x = item.mapFromScene(tree_end_x, 0).x() 
+
+        fb.setPos(x, item.center-(fb.h/2))
+
+        #fb.setPos(pos.x(), fb.y())
+
+        #if self.props.draw_guidelines:
+        #    guideline = QtGui.QGraphicsLineItem()
+        #    partition = fb.parentItem()
+        #    guideline.setParentItem(partition)
+        #    guideline.setLine(partition.rect().width(), partition.center,\
+        #                      pos.x(), partition.center)
+        #    pen = QtGui.QPen()
+        #    pen.setColor(QtGui.QColor(self.props.guideline_color))
+        #    set_pen_style(pen, self.props.guideline_type)
+        #    guideline.setPen(pen)
+
+    # Place faces around tree
+    if img.mode == "rect":
+        x = tree_end_x
+        y = 100 
+        max_up_height = 0
+        max_down_height = 0
+        for c in column2max_width:
+            fb_up = header_afaces.get(c, None)
+            fb_down = foot_afaces.get(c, None)
+            fb_width = 0
+            if fb_up: 
+                fb_up.render()
+                fb_up.setPos(x, -fb_up.h)
+                fb_width = fb_up.w 
+                max_up_height = max(max_up_height, fb_up.h)
+            if fb_down:
+                fb_down.render()
+                fb_down.setPos(x, y)
+                fb_width = max(fb_down.w, fb_width) 
+                max_down_height = max(max_down_height, fb_down.h)
+            x += column2max_width.get(c, fb_width)
+
+    return parent

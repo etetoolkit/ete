@@ -129,6 +129,7 @@ class Face(object):
         self.margin_top = 0
         self.margin_bottom = 0
         self.pixmap = None
+        self.opacity = 1
 
     def _size(self):
         if self.pixmap:
@@ -748,9 +749,24 @@ class RandomFace(Face):
     def _height(self):
         return self.tree_partition.rect().height()
 
+
+class BackgroundFace(Face):
+    def __init__(self, min_width=0, min_height=0):
+        faces.Face.__init__(self)
+        self.type = "background"
+        self.min_height = min_height
+        self.min_height = min_width
+
+    def _width(self):
+        return self.min_width
+
+    def _height(self):
+        return self.min_height
+
+
 class TreeFace(Face):
     def __init__(self, tree, img_properties):
-        faces.Face.__init__(self)
+        Face.__init__(self)
         self.type = "item"
         self.root_node = tree
         self.img = img_properties
@@ -763,7 +779,49 @@ class TreeFace(Face):
         self.item = render(self.root_node, {}, {}, self.img, hide_root)
 
     def _width(self):
-        return self.tree_partition.rect().width()
+        return self.item.rect().width()
 
     def _height(self):
-        return self.tree_partition.rect().height()
+        return self.item.rect().height()
+
+class _NodePointItem(QtGui.QGraphicsRectItem):
+    def __init__(self, radius, style, color):
+        self.radius = radius
+        self.diam = radius*2
+        self.style = style
+        self.color  = color
+        QtGui.QGraphicsRectItem.__init__(self, 0, 0, self.diam, self.diam)
+    def paint(self, p, option, widget):
+        if self.style == "sphere":
+            r = self.radius
+            d = self.diam
+            gradient = QtGui.QRadialGradient(r, r, r,(d)/3,(d)/3)
+            gradient.setColorAt(0.05, QtCore.Qt.white);
+            gradient.setColorAt(0.9, QtGui.QColor(self.color));
+            p.setBrush(QtGui.QBrush(gradient))
+            p.setPen(QtCore.Qt.NoPen)
+            p.drawEllipse(self.rect())
+        elif self.style == "square":
+            p.fillRect(self.rect(),QtGui.QBrush(QtGui.QColor(self.color)))
+        elif self.style == "circle":
+            p.setBrush(QtGui.QBrush(QtGui.QColor(self.color)))
+            p.setPen(QtGui.QPen(QtGui.QColor(self.color)))
+            p.drawEllipse(self.rect())
+
+class CircleFace(Face):
+    def __init__(self, radius, color, style="circle"):
+        Face.__init__(self)
+        self.radius = radius
+        self.style = style
+        self.color = color
+        self.type = "item"
+
+    def update_items(self):
+        self.item = _NodePointItem(self.radius, self.style, self.color)
+
+    def _width(self):
+        return self.item.rect().width()
+
+    def _height(self):
+        return self.item.rect().height()
+

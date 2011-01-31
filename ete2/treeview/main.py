@@ -9,7 +9,7 @@ _COLOR_CHECKER = lambda x: re.match(_COLOR_MATCH, x)
 _NODE_TYPE_CHECKER = lambda x: x in ["sphere", "circle", "square"]
 _BOOL_CHECKER =  lambda x: isinstance(x, bool) or x in (0,1)
 
-FACE_POSITIONS = set(["branch-right", "aligned", "branch-top", "branch-bottom"])
+FACE_POSITIONS = set(["branch-right", "aligned", "branch-top", "branch-bottom", "float"])
 
 __all__  = ["NodeStyleDict", "TreeImage", "_leaf", "add_face_to_node"]
 
@@ -83,7 +83,7 @@ class TreeImage(object):
         self.tree_width = 200  
 
         # Min separation, in pixels, between to adjacent branches
-        self.min_branch_separation = 1 # in pixels
+        self.min_leaf_separation = 1 # in pixels
 
         # Complete lines representing branch lengths to better observe
         # the topology of trees
@@ -143,7 +143,7 @@ def add_face_to_node(face, node, column, aligned=False, position="branch-right")
         position = "aligned"
 
     node.img_style["_faces"].setdefault(position, {})
-    node.img_style["_faces"][position].setdefault(int(column), []).append(face)
+    node.img_style["_faces"][position].setdefault(int(column+1), []).append(face)
 
 def get_tree_img_map(self):
     node_list = []

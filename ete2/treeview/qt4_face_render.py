@@ -1,24 +1,33 @@
 from PyQt4 import QtCore, QtGui
 from qt4_gui import _NodeActions
+from main import FACE_POSITIONS
 
 class _ItemFaceItem(QtGui.QGraphicsRectItem):
-    def __init__(self, face, node, *args):
-        QtGui.QGraphicsRectItem.__init__(self,*args)
+    def __init__(self, face, node):
+        QtGui.QGraphicsRectItem.__init__(self)
         self.node = node
     def paint(self, painter, option, index):
         return
         
 class _TextFaceItem(QtGui.QGraphicsSimpleTextItem):
-    def __init__(self, face, node, *args):
-        QtGui.QGraphicsSimpleTextItem.__init__(self,*args)
+    def __init__(self, face, node, text):
+        QtGui.QGraphicsSimpleTextItem.__init__(self, text)
         self.node = node
 
 class _ImgFaceItem(QtGui.QGraphicsPixmapItem):
-    def __init__(self, face, node, *args):
-        QtGui.QGraphicsPixmapItem.__init__(self,*args)
+    def __init__(self, face, node):
+        QtGui.QGraphicsPixmapItem.__init__(self)
         self.node = node
 
-class _FaceGroupItem(QtGui.QGraphicsItemGroup): # I resisted to name this FaceBookItem :) 
+class _BackgroundFaceItem(QtGui.QGraphicsRectItem):
+    def __init__(self, face, node):
+        QtGui.QGraphicsRectItem.__init__(self)
+        self.node = node
+
+    def paint(self, painter, option, index):
+        return
+
+class _FaceGroupItem(QtGui.QGraphicsItem): # I resisted to name this FaceBookItem :) 
     def __init__(self, faces, node, column_widths={}, *args, **kargs):
 
         # This caused seg. faults. in some computers. No idea why.
@@ -97,6 +106,8 @@ class _FaceGroupItem(QtGui.QGraphicsItemGroup): # I resisted to name this FaceBo
                     obj.setAcceptsHoverEvents(True)
                     obj.setParentItem(self)
                 obj.setPos(x+ f.margin_left, y+f.margin_top)
+                if f.opacity < 1:
+                    obj.setOpacity(f.opacity)
                 # Y position is incremented by the height of last face
                 # in column
                 y += f._height() + f.margin_top + f.margin_bottom
@@ -110,21 +121,16 @@ def update_node_faces(node, n2f):
     faceblock = {}
 
     n2f[node] = faceblock
-    for position in ["branch-right", "aligned", "branch-top", "branch-bottom"] :
+    for position in FACE_POSITIONS:
         if position in node.img_style["_faces"]:
             # The value of this is expected to be list of columns of faces
             # c2f = [ [f1, f2, f3], 
             #         [f4, f4]
             #       ]
-            if position=="aligned" and not _leaf(node):
-                faceblock[position] = _FaceGroupItem({}, node)
-                continue # aligned on internal node does not make sense (yet)
-            else:
-                faceblock[position] = _FaceGroupItem(node.img_style["_faces"][position], node)
+            faceblock[position] = _FaceGroupItem(node.img_style["_faces"][position], node)
         else:
             faceblock[position] = _FaceGroupItem({}, node)
     return faceblock
-
 
 def _leaf(node):
     collapsed = hasattr(node, "img_style") and not node.img_style["draw_descendants"]

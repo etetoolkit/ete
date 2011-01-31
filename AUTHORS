@@ -1,23 +1,15 @@
-ETE was originally written and currently maintained by Jaime Huerta
-Cepas (jhcepas@gmail), with the valuable contribution of many other
-people.
+ETE is currently maintain by the Comparative Genomics Group at the
+Centre for Genomic Regulation, Barcelona (Spain).
 
-ETE was born in 2005 as a small program to visualize microarray
-experiments, under the supervision of Joaquin Dopazo. Later, I started
-to use similar tools to deal with phylogenetic trees. Together with
-Toni Gabaldón, I implemented a lot of functionality just because we
-needed in our research.
-
-Eventually, I decided to compile all these tools in a single package
-and release it for general use. Currently, you can refer to ETE using
-the following citation:
+You can cite ETE as:
 
   - Jaime Huerta-Cepas, Joaquín Dopazo and Toni Gabaldón. ETE: a python
   Environment for Tree Exploration. BMC Bioinformatics 2010, 11:2 4.
 
-Usual contributors are:
+Contributors:
 
-François Serra
-Salvador Capella
-Ivan Denisov
+François Serra 
+Salvador Capella 
 Marina Marcet
+Ivan Denisov
+Cristina Amil
