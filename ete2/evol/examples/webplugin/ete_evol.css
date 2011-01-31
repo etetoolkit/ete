@@ -129,3 +129,11 @@ border: 1px dotted #555;
 text-align:center;
 background-color: #fff;
 }
+
+#compare_model_box{
+display:none;
+z-index:100;
+border: 1px dotted #555;
+text-align:center;
+background-color: #fff;
+}

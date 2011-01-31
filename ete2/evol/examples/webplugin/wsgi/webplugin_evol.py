@@ -16,6 +16,8 @@ from ete_dev.evol.control import AVAIL
 from ete_dev import faces # Required by my custom
                                      # application
 
+from struct import pack
+from random import randint, choice
 # In order to extend the default WebTreeApplication, we define our own
 # WSGI function that handles URL queries
 def example_app(environ, start_response, queries):
@@ -64,18 +66,34 @@ def my_tree_loader(tree):
 LEAVE_FACES = [] # Global var that stores the faces that are rendered
                  # by the layout function
 def main_layout(node):
-    ''' Main layout function. It controls what is shown in tree
-    images. '''
-
-    # Add faces to leaf nodes. This allows me to add the faces from
-    # the global variable LEAVE_FACES, which is set by the application
-    # controler according to the arguments passed through the URL.
-    if node.is_leaf():
-        for f, fkey, pos in LEAVE_FACES:
-            if hasattr(node, fkey):
-                #faces.add_face_to_node(f, node, pos)
-                faces.add_face_to_node(f, node, column=pos, position="branch-right")
-    else:
+    '''
+    layout for CodemlTree
+    '''
+    for f, fkey, pos in LEAVE_FACES:
+        if fkey=='dist':
+            if not node.is_root():
+                faces.add_face_to_node (faces.TextFace('%.4f'%(node.dist), fsize=6,
+                                                       fgcolor="#7D2D2D"),
+                                        node, 0, position="branch-top")
+        elif fkey=='support':
+            if not node.is_leaf() and not node.is_root():
+                faces.add_face_to_node (faces.TextFace('%.4f'%(node.support),
+                                                       fsize=6, fgcolor="#787878"),
+                                        node, 0, position="branch-bottom")
+        elif hasattr(node, fkey):
+            if not (fkey == 'name' and node.name =='NoName'):
+                if node.is_leaf():
+                    faces.add_face_to_node(f, node, column=pos, position="branch-right")
+                elif fkey == 'species':
+                    if node.species != "Unknown":
+                        faces.add_face_to_node (faces.TextFace(' (%s)'%(node.species),
+                                                               fsize=6, fgcolor="#787878"),
+                                                node, -1, position="branch-bottom")
+                else:
+                    faces.add_face_to_node(f, node, column=pos, position="branch-bottom")
+    if not node.is_leaf():
+        node.img_style["shape"] = "sphere"
+        node.img_style["size"] = 5
         # Add special faces on collapsed nodes
         if hasattr(node, "hide") and int(node.hide) == 1:
             node.img_style["draw_descendants"]= False
@@ -85,53 +103,17 @@ def main_layout(node):
             faces.add_face_to_node(collapsed_face, node, 0)
         else:
             node.img_style["draw_descendants"]= True
-    if '#1' in node.mark:
-        node.img_style['hz_line_color'] = '#ff0000'
-    elif '#' in node.mark:        
-        node.img_style['hz_line_color'] = '#0000ff'
-    # Set node aspect. This controls which node features are used to
-    # control the style of the tree. You can add or modify this
-    # features, as well as their behaviour
-    if node.is_leaf():
-        node.img_style["shape"] = "square"
-        node.img_style["size"] = 4
     else:
-        node.img_style["size"] = 8
-        node.img_style["shape"] = "sphere"
-
-    # Evoltype: [D]uplications, [S]peciations or [L]osess.
-    #if hasattr(node,"evoltype"):
-    #    if node.evoltype == 'D':
-    #        node.img_style["fgcolor"] = "#1d176e"
-    #        node.img_style["hz_line_color"] = "#1d176e"
-    #        node.img_style["vt_line_color"] = "#1d176e"
-    #    elif node.evoltype == 'S':
-    #        node.img_style["fgcolor"] = "#FF0000"
-    #        node.img_style["line_color"] = "#FF0000"
-    #    elif node.evoltype == 'L':
-    #        node.img_style["fgcolor"] = "#777777"
-    #        node.img_style["vt_line_color"] = "#777777"
-    #        node.img_style["hz_line_color"] = "#777777"
-    #        node.img_style["line_type"] = 1
-    ## If no evolutionary information, set a default style
-    #else:
-    #    node.img_style["fgcolor"] = "#000000"
-    #    node.img_style["vt_line_color"] = "#000000"
-    #    node.img_style["hz_line_color"] = "#000000"
-    #    node.img_style["line_type"] = 0
-
-    # Parse node features features and conver them into styles. This
-    # must be done like this, since current ete version does not allow
-    # modifying style outside the layout function.
+        node.img_style["size"] = 2
+        node.img_style["shape"] = "square"
+    leaf_color = "#000000"
+    node.img_style["fgcolor"] = leaf_color
     if hasattr(node, "bsize"):
         node.img_style["size"]= int(node.bsize)
-
     if hasattr(node, "shape"):
         node.img_style["shape"]= node.shape
-
     if hasattr(node, "bgcolor"):
         node.img_style["bgcolor"]= node.bgcolor
-
     if hasattr(node, "fgcolor"):
         node.img_style["fgcolor"]= node.fgcolor
 
@@ -145,10 +127,12 @@ def main_layout(node):
 #
 # ==============================================================================
 
-can_expand = lambda node: not node.is_leaf() and (hasattr(node, "hide") and node.hide==True)
-can_collapse = lambda node: not node.is_leaf() and (not hasattr(node, "hide") or node.hide==False)
-is_leaf = lambda node: node.is_leaf()
-is_not_leaf = lambda node: not node.is_leaf()
+can_expand    = lambda node: not node.is_leaf() and (hasattr(node, "hide") and node.hide==True)
+can_collapse  = lambda node: not node.is_leaf() and (not hasattr(node, "hide") or node.hide==False)
+is_leaf       = lambda node: node.is_leaf()
+is_not_leaf   = lambda node: not node.is_leaf()
+is_marked     = lambda node: node.mark.startswith ('#')
+is_not_marked = lambda node: not (node.mark.startswith ('#'))
 
 # ==============================================================================
 # Handler function definitions:
@@ -186,13 +170,27 @@ def set_red(node):
 
 def mark_branch (node):
     node.add_feature ('mark', '#1')
+    node.img_style['hz_line_color'] = '#ff0000'
 
 def clean_marks (node):
-    for n in node.get_tree_root().traverse():
-        n.mark = ''
+    node.mark = ''
+    node.img_style['hz_line_color'] = '#000000'
 
+def next_mark (node):
+    colors = ['#000099', '#CC0099', '#00FFFF', '#009900',
+              '#FF6600', '#666699', '#660000', '#663300']*2
+    num = int (node.mark[1:])
+    node.mark = '#' + str (num + 1)
+    node.img_style['hz_line_color'] = colors [num-1]
+    
+    
 def set_bg(node):
-    node.add_feature("bgcolor", "#CEDBC4")
+    node.add_feature("bgcolor",
+                     '#' + str (pack('BBB',
+                                     randint(100, 150),
+                                     randint(80, 200),
+                                     randint(10, 100))).encode('hex'))
+    #node.add_feature("bgcolor", "#CEDBC4")
 
 def set_as_root(node):
     node.get_tree_root().set_outgroup(node)
@@ -202,6 +200,16 @@ def codeml_clean_layout(node):
 
 def codeml_cartoon_layout(node):
     evol_layout(node)
+
+def load_model (node, model):
+    '''
+    supra specia action
+    link to evolutionnary model
+    '''
+    model = model ['loadmodel']
+    path = node.get_tree_root().workdir
+    model = node.get_tree_root()._models [model]
+    node.get_tree_root().change_dist_to_evol ('bL', model, True)
 
 def compute_model (node, ctrl_args):
     ''' Super Special action'''
@@ -311,8 +319,20 @@ def get_summary_models (tree):
         summary += "'%s': '<font size=2>log likelihood: %s<br>num parameters: %s</font>', " % \
                    (rep, tree.get_evol_model (rep).lnL, tree.get_evol_model (rep).np)
     return summary [:-1] + '}';
-    
-    
+
+
+def get_model_values (tree):
+    '''
+    parse computed models and return a dict
+    with all values (lnL) of all dictionnaries.
+    '''
+    summary = 'var models_sum = {'
+    for rep in os.listdir (tree.workdir):
+        tree.link_to_evol_model (tree.workdir +  '/' + rep + '/out', rep)
+        summary += "'%s': [%s, %s], " % \
+                   (rep, tree.get_evol_model (rep).lnL, tree.get_evol_model (rep).np)
+    return summary [:-1] + '}';
+
 
 def get_ctrl_string ():
     '''
@@ -423,6 +443,17 @@ def tree_renderer(tree, treeid, alignment, application):
         "spname": ["Species name", len(leaves), 1, 12, "#f00000", " Species:", ""],
         }
 
+    # MODELS available
+    model_avail = {'--None--': 'None'}
+    for model in AVAIL:
+        if model.startswith ('fb'):
+            model_avail  ['%s (%s)' % \
+                          (model, AVAIL[model]['typ'])] = model
+        else:
+            model_avail  ['%s (%s%s)' % \
+                          (model, AVAIL[model]['typ'],
+                           ', need marks' * AVAIL[model]['allow_mark'])] = model
+
     # populates the global LEAVE_FACES variable
     global LEAVE_FACES
     LEAVE_FACES = []
@@ -445,12 +476,6 @@ def tree_renderer(tree, treeid, alignment, application):
             if not f.startswith("_"):
                 text_features_avail.setdefault(f, 0)
                 text_features_avail[f] = text_features_avail[f] + 1
-
-    model_avail = {'--None--': 'None'}
-    for model in AVAIL:
-        model_avail  ['%s (%s%s)' % \
-                      (model, AVAIL[model]['typ'],
-                       ', need marks' * AVAIL[model]['allow_mark'])] = model
 
     html_features = '''
       <div id="tree_features_box">
@@ -484,7 +509,7 @@ def tree_renderer(tree, treeid, alignment, application):
                                     allVals.push($(this).val());
                                 }});
                                 draw_tree("%s", "", "", "#img1", {"show_features": allVals.join(",")} );'
-                       > 
+                       >
                        </form></div>''' %(treeid)
 
     features_button = '''
@@ -516,7 +541,14 @@ def tree_renderer(tree, treeid, alignment, application):
           var box = $(this).closest("#tree_panel").children("#load_model_box");
           show_box(event, box); '>
       <img width=16 height=16 BORDER=0 src="/webplugin/evolution.gif" alt="Clear search results">
-      </a></li>''' 
+      </a></li>'''
+
+    compare_model_button = '''
+      <li><a href="#" onclick='javascript:
+          var box = $(this).closest("#tree_panel").children("#compare_model_box");
+          show_box(event, box); '>
+      <img width=16 height=16 BORDER=0 src="/webplugin/balance_icon.png" alt="Compare models">
+      </a></li>'''
 
     clean_search_button = '''
       <li><a href="#" onclick='run_action("%s", "", %s, "clean::clean");'>
@@ -526,7 +558,7 @@ def tree_renderer(tree, treeid, alignment, application):
 
     buttons = '<div id="ete_tree_buttons">' +\
         features_button + search_button + clean_search_button + evol_button +\
-        load_model_button + download_button + '</div>'
+        load_model_button + compare_model_button + download_button + '</div>'
 
     search_select = '<select id="ete_search_target">'
     for fkey in text_features_avail:
@@ -588,15 +620,70 @@ def tree_renderer(tree, treeid, alignment, application):
          <div style="text-align:left">
          <br><i>If your model does not appear here, try refreshing, <br> -> first icon "Available tree features"</i><br>
          </div>
-         <input type="submit" value="Load" onclick="javascritp:
-         var allVals = {};
-         var model = document.getElementById ('model_target').value;
-         for (var i in all_models[model]){
-               allVals[all_models[model][i]]=document.getElementById (all_models[model][i]).value;
-             };
-         ">
+         <input type="submit" value="Load" onclick="javascript:
+         var model = document.getElementById ('model_to_load').value;
+         load_model ('%s', model);
+         var allVals = [%s];
+         draw_tree('%s', '', '', '#img1', {'show_features': allVals.join(',')} );
+         "></font>
      </div>
-     ''' % (load_model_select)
+     ''' % (load_model_select, treeid, "'"+"','".join (asked_features)+"'", treeid) #"
+
+
+    # first model
+    load_first_model_select = '''<select id="first_model_to_load" onchange="javascript:
+    %s;
+    ">
+    ''' % (get_model_values (tree))
+    runned_models = ['--None--'] + get_computed_models (tree)
+    for fkey in sorted (runned_models):
+        if fkey == '--None--':
+            load_first_model_select += \
+                              '<option selected value="None" >--None--</option>\n'
+            continue
+        load_first_model_select += '<option value="%s">%s</option>\n' % \
+                             (fkey, fkey)
+    load_first_model_select += '</select>'
+
+    # second model
+    load_second_model_select = '''<select id="second_model_to_load" onchange="javascript:
+    %s;
+    ">
+    ''' % (get_model_values (tree))
+    runned_models = ['--None--'] + get_computed_models (tree)
+    for fkey in sorted (runned_models):
+        if fkey == '--None--':
+            load_second_model_select += \
+                              '<option selected value="None" >--None--</option>\n'
+            continue
+        load_second_model_select += '<option value="%s">%s</option>\n' % \
+                             (fkey, fkey)
+    load_second_model_select += '</select>'
+
+    compare_model_form = '''
+     <div id="compare_model_box">
+         <div class="tree_box_header"> Compare Evolutionary Model
+           <img src="/webplugin/close.png" onclick='$(this).closest("#compare_model_box").hide();' onload='$(this).closest("#compare_model_box").hide();'>
+         </div>
+         <form action="javascript:void(0);">
+         <font size=2> Alternative model:</font>
+         %s
+         <font size=2> Null model:</font>
+         %s
+         </form>
+         <br><br>
+         <font size="2">
+         <div class="contentBox" style="text-align:left" id="delta_df"></div>
+         </font>
+         <br>
+         p-value (that alternative model is the best):<br>
+         <rep>       </rep><input typ=text id=result size=8 value=""><br>
+         <input type="submit" value="Compare" onclick="javascript:
+         %s;
+         calculate([models_sum[document.getElementById ('first_model_to_load').value], models_sum [document.getElementById ('second_model_to_load').value], document.getElementById ('result'), document.getElementById ('delta_df')]);">
+     </div>
+     ''' % (load_first_model_select, load_second_model_select, get_model_values (tree))
+
 
     model_select = '''<select id="model_target" onchange="javascript:
     %s
@@ -624,7 +711,7 @@ def tree_renderer(tree, treeid, alignment, application):
          </form>
          <font size="2">
              name extention**:
-             <input id="extention" type="text" value="">
+             <input id="extention" type="text" value="%s">
          </font>
          <font size="1">
          <table border="0">
@@ -646,13 +733,16 @@ def tree_renderer(tree, treeid, alignment, application):
             model += '.' + document.getElementById ('extention').value;
          }
          run_model ('%s', model, allVals);
+         draw_tree('%s', '', '', '#img1', '');
          ">
      </div>
-     ''' % (model_select, get_ctrl_keys(), treeid)
+     ''' % (model_select, #"
+         ''.join ([choice ('abcdefghijklmnopqrstuvwxyz') for _ in xrange (4)]),
+                  get_ctrl_keys(), treeid, treeid)
 
 
     tree_panel_html = '<div id="tree_panel">' + search_form + evol_form \
-                      + load_model_form + html_features + buttons + '</div>'
+                      + load_model_form + compare_model_form + html_features + buttons + '</div>'
 
     # Now we render the tree into image and get the HTML that handles it
     tree_html = application._get_tree_img(treeid = treeid)
@@ -749,15 +839,17 @@ application.register_action ("", "search", search_by_feature, None, None)
 
 # MY custom run model action "compute" which is attached to MY
 # custom compute function.
-application.register_action ("", "compute", compute_model, None, None)
+application.register_action ("", "compute"  , compute_model, None, None)
+application.register_action ("", "loadmodel", load_model   , None, None)
 
 # Node manipulation options (bound to node items and all their faces)
 application.register_action ("branch_info", "node", None, None, branch_info)
 application.register_action ("<b>Collapse</b>", "node", collapse, can_collapse, None)
 application.register_action ("Expand", "node", expand, can_expand, None)
 application.register_action ("Highlight background", "node", set_bg, None, None)
-application.register_action ("Mark branch", "node", mark_branch, None, None)
-application.register_action ("Clean marks", "node", clean_marks, None, None)
+application.register_action ("Mark branch", "node", mark_branch, is_not_marked, None)
+application.register_action ("Clean mark", "node", clean_marks, is_marked, None)
+application.register_action ("Following mark", "node", next_mark, is_marked, None)
 application.register_action ("Set as root", "node", set_as_root, None, None)
 application.register_action ("Swap children", "node", swap_branches, is_not_leaf, None)
 application.register_action ("Pay me a compliment", "face", set_red, None, None)

@@ -124,6 +124,8 @@ class WebTreeApplication(object):
                 self._treeid2layout[treeid] = handler
             elif atype == "compute":
                 handler(t, arguments[0])
+            elif atype == "loadmodel":
+                handler(t, arguments[0])
 
         layout_fn = self._treeid2layout.get(treeid, self._layout)
         mapid = "img_map_"+str(time.time())
@@ -240,6 +242,16 @@ class WebTreeApplication(object):
                     if not 'run_params' in key:
                         continue
                     params [sub ('run_params\[(\w+)\]',
+                                 '\\1' ,key)] = self.queries [key][0]
+                #stderr.write ('run_params: '+ str (self.queries)+'\n\n')
+                return self._get_tree_img(treeid=treeid, pre_drawing_action=[target, handler, [params]])
+            elif target in set(["loadmodel"]):
+                from re import sub
+                params = {}
+                for key in self.queries:
+                    if not 'loadmodel' in key:
+                        continue
+                    params [sub ('loadmodel\[(\w+)\]',
                                  '\\1' ,key)] = self.queries [key][0]
                 #stderr.write ('run_params: '+ str (self.queries)+'\n\n')
                 return self._get_tree_img(treeid=treeid, pre_drawing_action=[target, handler, [params]])

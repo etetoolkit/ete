@@ -19,6 +19,12 @@ Object.extend = function(destination, source) {
     return destination;
 };
 
+function load_model(treeid, model){
+    var recipient = "#ETE_tree_"+treeid;
+    $(recipient).html(loading_img);
+    $(recipient).load(ete_webplugin_URL+'/action', {"treeid": treeid, "nid": 1, "aindex": "2", "loadmodel": model});
+}
+
 function run_model(treeid, model, extra_params){
     var recipient = "#ETE_tree_"+treeid;
     var params = {"MODEL": model};
@@ -79,3 +85,63 @@ function show_box(e, box) {
 $(document).ready(function(){
   hide_popup();
 });
+
+
+function ncchisqdf(x,f,theta) {
+    with (Math) {
+	var n=1;
+	var lam=theta/2;
+	var pois=exp(-lam);
+	var v=pois;
+	var x2=x/2;
+	var f2=f/2;
+	var t=pow(x2,f2)*exp(-x2-LogGamma(f2+1));
+	var chisq=v*t;
+	while (n<=(x-f)/2) {
+	    pois=pois*lam/n;
+	    v=v+pois;
+	    t=t*x/(f+2*n);
+	    chisq=chisq+v*t;
+	    n=n+1;
+	}
+	while (t*x/(f+2*n-x)>.000001) {
+	    pois=pois*lam/n;
+	    v=v+pois;
+	    t=t*x/(f+2*n);
+	    chisq=chisq+v*t;
+	    n=n+1;
+	}
+	return chisq
+	    }
+}
+
+function LogGamma(Z) {
+    with (Math) {
+	var S=1+76.18009173/Z-86.50532033/(Z+1)+24.01409822/(Z+2)-1.231739516/(Z+3)+.00120858003/(Z+4)-.00000536382/(Z+5);
+	var LG= (Z-.5)*log(Z+4.5)-(Z+4.5)+log(S*2.50662827465);
+    }
+    return LG
+} 
+
+function calculate(values) {
+    var deltalnl = 2*(values [0][0] - values [1][0]);
+    Z=eval(deltalnl)
+	DF=eval(values [0][1]-values [1][1])
+	Theta=0
+	with (Math) {
+	if (DF<=0) {
+	    alert("This is not a null model.")
+	} else if (Theta<0) {
+	    alert("Noncentrality parameter must be non-negative")
+	} else if (Z<=0) {
+	    Ncchisq=0
+	} else {
+	    Ncchisq=ncchisqdf(Z,DF,Theta)
+	}
+	Ncchisq=round(Ncchisq*100000)/100000;
+    }
+    values[2].value = 1-Ncchisq;
+    values[3].innerHTML = "2 delta lnL: "+Math.round(deltalnl*100)/100+", DF: "+DF;
+}
+
+
