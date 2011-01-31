@@ -25,6 +25,7 @@ from PyQt4 import QtCore, QtGui
 import numpy
 
 from main import add_face_to_node
+from qt4_render import render
 
 aafgcolors = {
     'A':"#000000" ,
@@ -776,7 +777,7 @@ class TreeFace(Face):
         hide_root = False
         if self.root_node is self.node:
             hide_root = True
-        self.item = render(self.root_node, {}, {}, self.img, hide_root)
+        self.item, self.n2i, self.n2f = render(self.root_node, self.img, hide_root)
 
     def _width(self):
         return self.item.rect().width()

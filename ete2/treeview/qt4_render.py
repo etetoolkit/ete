@@ -4,7 +4,6 @@ from PyQt4 import QtCore, QtGui
 from main import _leaf, NodeStyleDict, add_face_to_node
 from qt4_gui import _PropertiesDialog, _NodeActions
 from qt4_face_render import update_node_faces, _FaceGroupItem
-from faces import CircleFace
 import qt4_circular_render as crender
 import qt4_rect_render as rrender
 
@@ -156,6 +155,9 @@ def render(root_node, img, hide_root=False):
     else:
         parent.setRect(n2i[root_node].fullRegion)
         max_r = n2i[root_node].fullRegion.width()
+    
+    if not img.draw_image_border:
+        parent.setPen(QtGui.QPen(QtCore.Qt.NoPen))
 
     surroundings = render_aligned_faces(n2i, n2f, img, max_r)
     surroundings.setParentItem(parent)

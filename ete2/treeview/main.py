@@ -1,6 +1,7 @@
 import colorsys
 import random
 import re
+import types 
 
 _LINE_TYPE_CHECKER = lambda x: x in (0,1,2)
 _SIZE_CHECKER = lambda x: isinstance(x, int)
@@ -69,6 +70,24 @@ class NodeStyleDict(dict):
         super(NodeStyleDict, self).__setitem__(i, y)
 
 class TreeImage(object):
+
+    def set_layout_fn(self, layout):
+       
+        # Validates layout function
+        if type(layout) == types.FunctionType or\
+                type(layout) == types.MethodType:
+            self._layout_fn = layout
+        else:
+            try:
+                self._layout_fn = getattr(layouts, img.layout_fn)
+            except Exception:
+                raise ValueError ("Required layout is not a function pointer nor a valid layout name.")
+ 
+    def get_layout_fn(self, value):
+        return self.layout_fn
+
+    layout_fn = property(get_layout_fn, set_layout_fn)
+
     def __init__(self):
         # circular or  rect
         self.mode = "circular"
@@ -123,7 +142,7 @@ class TreeImage(object):
         self.aligned_header = FaceHeader() # aligned face_header
         self.aligned_foot = FaceHeader()
         
-        self.layout_fn = None
+
 
 class FaceHeader(dict):
     def add_face(self, face, column):
