@@ -14,13 +14,13 @@ def random_color(base=None):
     return "#%s%s%s" %(hex(R)[2:], hex(G)[2:], hex(B)[2:])
 
 def ly(node):
-    node.img_style["size"] = 10
+    node.img_style["size"] = 4
     node.img_style["shape"] = "square"
     
     if node.is_leaf():
-        faces.add_face_to_node(faces.AttrFace("name"), node, 0, position="aligned")
+        #faces.add_face_to_node(faces.AttrFace("name"), node, 0, position="aligned")
         faces.add_face_to_node(faces.AttrFace("name"), node, 0, position="branch-right")
-        faces.add_face_to_node(faces.AttrFace("support"), node, 0, position="branch-top")
+        #faces.add_face_to_node(faces.AttrFace("support", fsize=6), node, 0, position="branch-top")
 
     else:
         FLOAT = faces.CircleFace(random.randint(5,40), random_color(), "sphere")
@@ -34,11 +34,13 @@ def tiny(node):
     if node.is_leaf():
         faces.add_face_to_node(faces.AttrFace("name"), node, 0, position="branch-right")
 
-I = TreeImage()
-I.mode = "rect"
-I.scale = 40
 
 n = int(sys.argv[1])
+
+I = TreeImage()
+I.mode = "rect"
+I.scale = n/2
+
 
 t2 = Tree()
 t2.populate(10)

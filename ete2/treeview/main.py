@@ -72,19 +72,20 @@ class NodeStyleDict(dict):
 class TreeImage(object):
 
     def set_layout_fn(self, layout):
-       
         # Validates layout function
         if type(layout) == types.FunctionType or\
                 type(layout) == types.MethodType:
-            self._layout_fn = layout
+            self._layout_fn = layout       
+            self._layout_handler = layout
         else:
             try:
-                self._layout_fn = getattr(layouts, img.layout_fn)
+                self._layout_handler = getattr(layouts, img.layout_fn)
+                self._layout_fn = layout       
             except Exception:
                 raise ValueError ("Required layout is not a function pointer nor a valid layout name.")
  
-    def get_layout_fn(self, value):
-        return self.layout_fn
+    def get_layout_fn(self):
+        return self._layout_fn
 
     layout_fn = property(get_layout_fn, set_layout_fn)
 

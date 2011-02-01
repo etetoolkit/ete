@@ -82,7 +82,7 @@ def render(root_node, img, hide_root=False):
     scale = img.scale
     arc_span = img.arc_span 
     last_rotation = -90 + img.arc_start
-    layout_fn = img._layout_fn 
+    layout_fn = img._layout_handler
     
     parent = QtGui.QGraphicsRectItem(0, 0, 0, 0)
     visited = set()

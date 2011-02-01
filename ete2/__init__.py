@@ -44,7 +44,7 @@ except ImportError, e:
     print e
 
 try:
-    from treeview.drawer import *
+    from treeview.main import *
     from treeview import faces
     from treeview import layouts
 except ImportError, e:
