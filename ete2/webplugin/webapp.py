@@ -18,6 +18,7 @@ class WebTreeApplication(object):
         self._external_app_handler = None
         self._treeid2tree = {}
         self._treeid2index = {}
+        self._img_properties = None
         self.queries = {}
         self.CONFIG = {
             "temp_dir":"/var/www/webplugin/",
@@ -40,6 +41,9 @@ class WebTreeApplication(object):
     def set_default_layout_fn(self, layout_fn):
         self._layout = layout_fn
 
+    def set_img_properties (self, img_properties):
+        self._img_properties = img_properties
+        
     def _get_html_map(self, img_map, treeid, mapid, tree):
         # Scans for node-enabled actions.
         nid2actions = {}
@@ -102,7 +106,7 @@ class WebTreeApplication(object):
         tree_path = os.path.join(self.CONFIG["temp_dir"], treeid+".nw")
         open(tree_path, "w").write(t.write(features=[], format=0))
 
-    def _get_tree_img(self, treeid, pre_drawing_action=None):
+    def _get_tree_img(self, treeid, pre_drawing_action=None, img_prop=None):
         img_url = os.path.join(self.CONFIG["temp_url"], treeid+".png?"+str(time.time()))
         img_path = os.path.join(self.CONFIG["temp_dir"], treeid+".png")
 
@@ -128,8 +132,10 @@ class WebTreeApplication(object):
                 handler(t, arguments[0])
 
         layout_fn = self._treeid2layout.get(treeid, self._layout)
+        img_prop  = self._img_properties
         mapid = "img_map_"+str(time.time())
-        img_map = _render_tree(t, img_path, self.CONFIG["DISPLAY"], layout_fn)
+        img_map = _render_tree(t, img_path, self.CONFIG["DISPLAY"],
+                               layout_fn, img_prop)
         html_map = self._get_html_map(img_map, treeid, mapid, t)
         for n in t.traverse():
             self._treeid2index[treeid][str(n._nid)]=n
@@ -266,6 +272,6 @@ class WebTreeApplication(object):
         else:
             return  '\n'.join(map(str, environ.items())) + str(self.queries) + '\t\n'.join(environ['wsgi.input'])
 
-def _render_tree(t, img_path, display, layout=None):
+def _render_tree(t, img_path, display, layout=None, img_prop=None):
     os.environ["DISPLAY"]=display
-    return t.render(img_path, layout = layout)
+    return t.render(img_path, layout = layout, img_properties=img_prop)

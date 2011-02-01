@@ -566,7 +566,7 @@ class ErrorLineProtamineFace (faces.Face):
         y = height - fm.underlinePos()*2
         if self.num:
             y      -= 25 ## 8
-            height -= 15 ## 8
+            height -= 40 ## 8
         #if self.extras  != ['']:
         #    self.height -= 10
         customPen = QtGui.QPen (QtGui.QColor("red"), 1)
@@ -586,7 +586,10 @@ class ErrorLineProtamineFace (faces.Face):
         prev = y-self.values[0]
         for i in range (0, len (self.values)):
             val = self.values[i]
-            err = self.errors[i]
+            try:
+                err = self.errors[i]
+            except IndexError:
+                err = 0
             bgcol = "white"#self.colors[i]
             #bgcol = self.colors[i]
             posX += sep

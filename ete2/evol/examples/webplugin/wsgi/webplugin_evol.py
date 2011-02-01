@@ -1,7 +1,6 @@
 import sys
 import re
 import os
-from string import strip
 
 #sys.path.insert(0, "/home/services/software/ete2-webplugin/")
 sys.path.insert(0, "/var/www/webplugin/wsgi")
@@ -15,28 +14,10 @@ from ete_dev.evol.model import Model
 from ete_dev.evol.control import AVAIL
 from ete_dev import faces # Required by my custom
                                      # application
+from ete_dev import TreeImageProperties
 
 from struct import pack
 from random import randint, choice
-# In order to extend the default WebTreeApplication, we define our own
-# WSGI function that handles URL queries
-def example_app(environ, start_response, queries):
-    asked_method = environ['PATH_INFO'].split("/")
-    URL = environ['REQUEST_URI']
-
-    # expected arguments from the URL (POST or GET method)
-    param_seqid = queries.get("seqid", [None])[0]
-    param_browser_id_start = queries.get("browser_id_start", [None])[0]
-
-    start_response('202 OK', [('content-type', 'text/plain')])
-
-    if asked_method[1]=="draw_tree":
-        if None in set([param_seqid]):
-            return "Not enough params"
-        return html_seqid_info(param_seqid)
-
-    else:
-        return "Tachan!!"
 
 # ==============================================================================
 # TREE LOADER
@@ -53,8 +34,8 @@ def my_tree_loader(tree):
     """ This is function is used to load trees within the
     WebTreeApplication object. """
     t = EvolTree(tree, sp_naming_function=extract_species_code)
+    application.set_img_properties (None)
     return t
-
 
 # ==============================================================================
 # CUSTOM LAYOUTS
@@ -65,22 +46,16 @@ def my_tree_loader(tree):
 
 LEAVE_FACES = [] # Global var that stores the faces that are rendered
                  # by the layout function
-def main_layout(node):
+
+def codeml_cartoon_layout(node):
+    evol_layout(node)
+
+def codeml_clean_layout(node):
     '''
     layout for CodemlTree
     '''
     for f, fkey, pos in LEAVE_FACES:
-        if fkey=='dist':
-            if not node.is_root():
-                faces.add_face_to_node (faces.TextFace('%.4f'%(node.dist), fsize=6,
-                                                       fgcolor="#7D2D2D"),
-                                        node, 0, position="branch-top")
-        elif fkey=='support':
-            if not node.is_leaf() and not node.is_root():
-                faces.add_face_to_node (faces.TextFace('%.4f'%(node.support),
-                                                       fsize=6, fgcolor="#787878"),
-                                        node, 0, position="branch-bottom")
-        elif hasattr(node, fkey):
+        if hasattr(node, fkey):
             if not (fkey == 'name' and node.name =='NoName'):
                 if node.is_leaf():
                     faces.add_face_to_node(f, node, column=pos, position="branch-right")
@@ -91,6 +66,14 @@ def main_layout(node):
                                                 node, -1, position="branch-bottom")
                 else:
                     faces.add_face_to_node(f, node, column=pos, position="branch-bottom")
+    if hasattr (node, 'dN'):
+        faces.add_face_to_node (faces.TextFace('%.4f'%(node.w), fsize=6,
+                                               fgcolor="#7D2D2D"),
+                                node, 0, position="branch-top")
+        faces.add_face_to_node (faces.TextFace('%.2f/%.2f'% (100*node.dN,
+                                                             100*node.dS),
+                                              fsize=6, fgcolor="#787878"),
+                                node, 0, position="branch-bottom")
     if not node.is_leaf():
         node.img_style["shape"] = "sphere"
         node.img_style["size"] = 5
@@ -106,6 +89,9 @@ def main_layout(node):
     else:
         node.img_style["size"] = 2
         node.img_style["shape"] = "square"
+        if hasattr (node, "sequence"):
+            seqface =  faces.SequenceFace(node.sequence, "aa", 11)
+            faces.add_face_to_node(seqface, node, 1, aligned=True)
     leaf_color = "#000000"
     node.img_style["fgcolor"] = leaf_color
     if hasattr(node, "bsize"):
@@ -163,11 +149,6 @@ def expand(node):
 def swap_branches(node):
     node.children.reverse()
 
-def set_red(node):
-    node.add_feature("fgcolor", "#ff0000")
-    node.add_feature("bsize", 40)
-    node.add_feature("shape", "sphere")
-
 def mark_branch (node):
     node.add_feature ('mark', '#1')
     node.img_style['hz_line_color'] = '#ff0000'
@@ -195,21 +176,33 @@ def set_bg(node):
 def set_as_root(node):
     node.get_tree_root().set_outgroup(node)
 
-def codeml_clean_layout(node):
-    evol_clean_layout(node)
-
-def codeml_cartoon_layout(node):
-    evol_layout(node)
-
 def load_model (node, model):
     '''
     supra specia action
     link to evolutionnary model
     '''
     model = model ['loadmodel']
-    path = node.get_tree_root().workdir
-    model = node.get_tree_root()._models [model]
-    node.get_tree_root().change_dist_to_evol ('bL', model, True)
+    T     = node.get_tree_root()
+    model = T._models [model]
+    T.change_dist_to_evol ('bL', model, True)
+    if model.properties['typ'] == 'site':
+        model.set_histface (up=False, typ='protamine',
+                            lines = [1.0,0.3], col_lines=['black','grey'])
+        I = TreeImageProperties()
+        I.aligned_foot.add_face (model.properties['histface'], 1)
+        application.set_img_properties (I)
+    elif (model.properties['typ'] == 'branch_ancestor'):
+        I = TreeImageProperties()
+        for n in sorted (T.get_descendants()+[T],
+                         key=lambda x: x.paml_id):
+            if n.is_leaf(): continue
+            anc_face = faces.SequenceFace (n.sequence, 'aa', fsize=11)
+            I.aligned_foot.add_face(anc_face, 1)
+            I.aligned_foot.add_face(faces.TextFace('paml_id: #%d '%(n.paml_id),
+                                                   fsize=8), 0)
+        application.set_img_properties (I)
+    else:
+        application.set_img_properties (None)
 
 def compute_model (node, ctrl_args):
     ''' Super Special action'''
@@ -290,15 +283,6 @@ def search_in_ensmbl(aindex, nodeid, treeid, text, node):
               </li> ''' %\
             (node.name, node.name)
 
-def external_links_divider(aindex, nodeid, treeid, text, node):
-    ''' Used to show a separator in the popup menu'''
-    if node.is_leaf():
-        return '''<li
-        style="background:#eee;font-size:8pt;"><b>External
-        links</b></li>'''
-    else:
-        return ""
-
 def get_computed_models (tree):
     '''
     return a list of computed models for a given tree
@@ -318,7 +302,7 @@ def get_summary_models (tree):
         tree.link_to_evol_model (tree.workdir +  '/' + rep + '/out', rep)
         summary += "'%s': '<font size=2>log likelihood: %s<br>num parameters: %s</font>', " % \
                    (rep, tree.get_evol_model (rep).lnL, tree.get_evol_model (rep).np)
-    return summary [:-1] + '}';
+    return summary [:-1] + '}'
 
 
 def get_model_values (tree):
@@ -331,7 +315,7 @@ def get_model_values (tree):
         tree.link_to_evol_model (tree.workdir +  '/' + rep + '/out', rep)
         summary += "'%s': [%s, %s], " % \
                    (rep, tree.get_evol_model (rep).lnL, tree.get_evol_model (rep).np)
-    return summary [:-1] + '}';
+    return summary [:-1] + '}'
 
 
 def get_ctrl_string ():
@@ -381,7 +365,7 @@ def get_ctrl_keys ():
     return ctrl_table[:-1] + '};'
 
 
-def topology_action_divider(aindex, nodeid, treeid, text, node):
+def topology_action_divider (aindex, nodeid, treeid, text, node):
     return '''<li style="background:#eee;"><b>Tree node actions</b></li>'''
 
 # ==============================================================================
@@ -406,7 +390,8 @@ def topology_action_divider(aindex, nodeid, treeid, text, node):
 #    return html
 #
 # ==============================================================================
-def tree_renderer(tree, treeid, alignment, application):
+
+def tree_renderer(tree, treeid, alignment, application, img_prop=None):
     # The following part controls the features that are attched to
     # leaf nodes and that will be shown in the tree image. Node styles
     # are set it here, and faces are also created. The idea is the
@@ -460,13 +445,15 @@ def tree_renderer(tree, treeid, alignment, application):
     unknown_faces_pos = 2
     for fkey in asked_features:
         if fkey in formated_features:
-            name, total, pos, size, color, prefix, suffix = formated_features[fkey]
-            f = faces.AttrFace(fkey, ftype="Arial", fsize=size, fgcolor=color, text_prefix=prefix, text_suffix=suffix)
+            _, _, pos, size, color, prefix, suffix = formated_features[fkey]
+            f = faces.AttrFace(fkey, ftype="Arial", fsize=size, fgcolor=color,
+                               text_prefix=prefix, text_suffix=suffix)
             LEAVE_FACES.append([f, fkey, pos])
         else:
             # If the feature has no associated format, let's add something standard
             prefix = " %s: " %fkey
-            f = faces.AttrFace(fkey, ftype="Arial", fsize=10, fgcolor="#666666", text_prefix=prefix, text_suffix="")
+            f = faces.AttrFace(fkey, ftype="Arial", fsize=10, fgcolor="#666666",
+                               text_prefix=prefix, text_suffix="")
             LEAVE_FACES.append([f, fkey, unknown_faces_pos])
             unknown_faces_pos += 1
 
@@ -485,7 +472,6 @@ def tree_renderer(tree, treeid, alignment, application):
       <form action='javascript: set_tree_features("", "", "");'>
 
       '''
-
     for fkey, counter in text_features_avail.iteritems():
         if fkey in asked_features:
             tag = "CHECKED"
@@ -494,11 +480,8 @@ def tree_renderer(tree, treeid, alignment, application):
 
         fname = formated_features.get(fkey, [fkey])[0]
 
-        #html_features = "<tr>"
         html_features += '<INPUT NAME="tree_feature_selector" TYPE=CHECKBOX %s VALUE="%s">%s (%s/%s leaves)</input><br> ' %\
             (tag, fkey, fname, counter, len(leaves))
- #       html_features += '<td><INPUT size=7 type="text"></td> <td><input size=7 type="text"></td> <td><input size=7 type="text"></td>  <td><input size=1 type="text"></td><br>'
-        #html_features += "</tr>"
 
     html_features += '''<input type="submit" value="Refresh" 
                         onclick='javascript:
@@ -513,52 +496,57 @@ def tree_renderer(tree, treeid, alignment, application):
                        </form></div>''' %(treeid)
 
     features_button = '''
-     <li><a href="#" onclick='show_box(event, $(this).closest("#tree_panel").children("#tree_features_box"));'>
-     <img width=16 height=16 BORDER=0 src="/webplugin/icon_tools.png" alt="Select Tree features">
+     <li><pre>        </pre><a href="#" title="Select features to display" onclick='show_box(event, $(this).closest("#tree_panel").children("#tree_features_box"));'>
+     <img width=24 height=24 BORDER=0 src="/webplugin/icon_tools.png" alt="Select Tree features">
      </a></li>'''
 
     download_button = '''
-     <li><a href="/webplugin/tmp/%s.png" target="_blank">
-     <img width=16 height=16 BORDER=0 src="/webplugin/icon_attachment.png" alt="Download tree image">
+     <li><pre>      </pre><a href="/webplugin/tmp/%s.png" title="Download tree image" target="_blank">
+     <img width=24 height=24 BORDER=0 src="/webplugin/icon_attachment.png" alt="Download tree image">
      </a></li>''' %(treeid)
 
     search_button = '''
-      <li><a href="#" onclick='javascript:
+      <li><pre>      </pre><a href="#" title="Search in tree" onclick='javascript:
           var box = $(this).closest("#tree_panel").children("#search_in_tree_box");
           show_box(event, box); '>
-      <img width=16 height=16 BORDER=0 src="/webplugin/icon_search.png" alt="Search in tree">
+      <img width=24 height=24 BORDER=0 src="/webplugin/icon_search.png" alt="Search in tree">
       </a></li>'''
 
     evol_button = '''
-      <li><a href="#" onclick='javascript:
+      <li><pre>      </pre><a href="#" title="Compute evolutionary model" onclick='javascript:
           var box = $(this).closest("#tree_panel").children("#evol_box");
           show_box(event, box); '>
-      <img width=16 height=16 BORDER=0 src="/webplugin/icon_calc_gray.gif" alt="Compute Evol Model">
+      <img width=24 height=24 BORDER=0 src="/webplugin/icon_calc_gray.gif" alt="Compute Evol Model">
       </a></li>'''
 
     load_model_button = '''
-      <li><a href="#" onclick='javascript:
+      <li><pre>      </pre><a href="#" title="Load computed evolutionary model" onclick='javascript:
           var box = $(this).closest("#tree_panel").children("#load_model_box");
           show_box(event, box); '>
-      <img width=16 height=16 BORDER=0 src="/webplugin/evolution.gif" alt="Clear search results">
+      <img width=24 height=24 BORDER=0 src="/webplugin/evolution.gif" alt="Clear search results">
       </a></li>'''
 
     compare_model_button = '''
-      <li><a href="#" onclick='javascript:
+      <li><pre>      </pre><a href="#" title="Compare (LRT) computed evolutionary model" onclick='javascript:
           var box = $(this).closest("#tree_panel").children("#compare_model_box");
           show_box(event, box); '>
-      <img width=16 height=16 BORDER=0 src="/webplugin/balance_icon.png" alt="Compare models">
+      <img width=24 height=24 BORDER=0 src="/webplugin/balance_icon.png" alt="Compare models">
       </a></li>'''
 
     clean_search_button = '''
-      <li><a href="#" onclick='run_action("%s", "", %s, "clean::clean");'>
-      <img width=16 height=16 BORDER=0 src="/webplugin/icon_cancel_search.png" alt="Clear search results">
+      <li><pre>       </pre><a href="#" title="Clean tree" onclick='run_action("%s", "", %s, "clean::clean");'>
+      <img width=24 height=24 BORDER=0 src="/webplugin/icon_cancel_search.png" alt="Clear search results">
       </a></li>''' % \
         (treeid, 0)
 
-    buttons = '<div id="ete_tree_buttons">' +\
-        features_button + search_button + clean_search_button + evol_button +\
-        load_model_button + compare_model_button + download_button + '</div>'
+    buttons = '<div id="ete_tree_buttons"><table border="0">' +\
+        '<tr align="center" halign="bottom"><td>' + features_button + \
+        '</td><td>' + search_button + \
+        '</td><td>' + clean_search_button + \
+        '</td><td>' + evol_button + \
+        '</td><td>' + load_model_button + \
+        '</td><td>' + compare_model_button + \
+        '</td><td>' + download_button + '</td></tr></table></div>'
 
     search_select = '<select id="ete_search_target">'
     for fkey in text_features_avail:
@@ -624,6 +612,9 @@ def tree_renderer(tree, treeid, alignment, application):
          var model = document.getElementById ('model_to_load').value;
          load_model ('%s', model);
          var allVals = [%s];
+         if (model.match(/fb_anc.*/)) {
+             allVals.push('paml_id');
+         }
          draw_tree('%s', '', '', '#img1', {'show_features': allVals.join(',')} );
          "></font>
      </div>
@@ -660,6 +651,12 @@ def tree_renderer(tree, treeid, alignment, application):
                              (fkey, fkey)
     load_second_model_select += '</select>'
 
+    doc = '<table border=1><tr><th colspan=2>Usual comparisons (Alternative vs Null)</tr><tr><td>'
+    doc += '</td></tr><tr><td>'.join (re.findall ('([A-Za-z0-9_]+ +vs +[A-Za-z0-9_]+ +-> +[A-Za-z0-9 =!()]+)',
+                                             tree.get_most_likely.__doc__))
+    doc = re.sub ('->', '</td><td>', doc)
+    doc += '</tr></table>'
+
     compare_model_form = '''
      <div id="compare_model_box">
          <div class="tree_box_header"> Compare Evolutionary Model
@@ -672,6 +669,12 @@ def tree_renderer(tree, treeid, alignment, application):
          %s
          </form>
          <br><br>
+         <font size=1>
+         <div align="center">
+         %s
+         </div>
+         </font>
+         <br>
          <font size="2">
          <div class="contentBox" style="text-align:left" id="delta_df"></div>
          </font>
@@ -682,7 +685,7 @@ def tree_renderer(tree, treeid, alignment, application):
          %s;
          calculate([models_sum[document.getElementById ('first_model_to_load').value], models_sum [document.getElementById ('second_model_to_load').value], document.getElementById ('result'), document.getElementById ('delta_df')]);">
      </div>
-     ''' % (load_first_model_select, load_second_model_select, get_model_values (tree))
+     ''' % (load_first_model_select, load_second_model_select, doc,  get_model_values (tree))
 
 
     model_select = '''<select id="model_target" onchange="javascript:
@@ -745,7 +748,7 @@ def tree_renderer(tree, treeid, alignment, application):
                       + load_model_form + compare_model_form + html_features + buttons + '</div>'
 
     # Now we render the tree into image and get the HTML that handles it
-    tree_html = application._get_tree_img(treeid = treeid)
+    tree_html = application._get_tree_img (treeid = treeid)
 
     # Let's return enriched HTML
     return tree_panel_html + tree_html
@@ -778,14 +781,17 @@ application.CONFIG["DISPLAY"] = ":0" # This is the most common
 
 # We extend the minimum WebTreeApplication with our own WSGI
 # application
-application.set_external_app_handler(example_app)
+#application.set_external_app_handler(example_app)
 
 # Lets now apply our custom tree loader function to the main
 # application
 application.set_tree_loader(my_tree_loader)
 
 # And our layout as the default one to render trees
-application.set_default_layout_fn(main_layout)
+application.set_default_layout_fn(codeml_clean_layout)
+
+# No img properties at start
+application.set_img_properties (None)
 
 # I want to make up how tree image in shown using a custrom tree
 # renderer that adds much more HTML code
@@ -843,21 +849,29 @@ application.register_action ("", "compute"  , compute_model, None, None)
 application.register_action ("", "loadmodel", load_model   , None, None)
 
 # Node manipulation options (bound to node items and all their faces)
-application.register_action ("branch_info", "node", None, None, branch_info)
-application.register_action ("<b>Collapse</b>", "node", collapse, can_collapse, None)
-application.register_action ("Expand", "node", expand, can_expand, None)
-application.register_action ("Highlight background", "node", set_bg, None, None)
-application.register_action ("Mark branch", "node", mark_branch, is_not_marked, None)
-application.register_action ("Clean mark", "node", clean_marks, is_marked, None)
-application.register_action ("Following mark", "node", next_mark, is_marked, None)
-application.register_action ("Set as root", "node", set_as_root, None, None)
-application.register_action ("Swap children", "node", swap_branches, is_not_leaf, None)
-application.register_action ("Pay me a compliment", "face", set_red, None, None)
+application.register_action ("branch_info", "node",
+                             None, None, branch_info)
+application.register_action ("<b>Collapse</b>", "node",
+                             collapse, can_collapse, None)
+application.register_action ("Expand", "node", expand,
+                             can_expand, None)
+application.register_action ("Highlight background", "node",
+                             set_bg, None, None)
+application.register_action ("Mark branch", "node",
+                             mark_branch, is_not_marked, None)
+application.register_action ("Clean mark", "node",
+                             clean_marks, is_marked, None)
+application.register_action ("Following mark", "node",
+                             next_mark, is_marked, None)
+application.register_action ("Set as root", "node",
+                             set_as_root, None, None)
+application.register_action ("Swap children", "node",
+                             swap_branches, is_not_leaf, None)
 
-# Actions attached to node's content (shown as text faces)
-application.register_action ("divider", "face", None, None, external_links_divider)
+#application.register_action ("Default layout", "layout", main_layout, None, None)
+application.register_action ("Clean PAML layout", "layout",
+                             codeml_clean_layout, None, None)
+application.register_action ("Complimented PAML layout", "layout",
+                             codeml_cartoon_layout, None, None)
 
-application.register_action ("Default layout", "layout", main_layout, None, None)
-application.register_action ("Clean PAML layout", "layout", codeml_clean_layout, None, None)
-application.register_action ("Complimented PAML layout", "layout", codeml_cartoon_layout, None, None)
 
