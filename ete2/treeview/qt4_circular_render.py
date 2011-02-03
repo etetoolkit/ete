@@ -39,9 +39,8 @@ def increase():
     COUNTER += 1
 
 class ArcPartition(QtGui.QGraphicsPathItem):
-    def __init__(self, parent):
+    def __init__(self, parent=None):
         QtGui.QGraphicsPathItem.__init__(self, parent)
-        self.drawbg = False
         self.setCacheMode(QtGui.QGraphicsItem.DeviceCoordinateCache)
         #self.setCacheMode(QtGui.QGraphicsItem.ItemCoordinateCache)
         
@@ -86,9 +85,7 @@ class ArcPartition(QtGui.QGraphicsPathItem):
         self.setPath(path)
 
     def paint(self, painter, option, index):
-        if self.drawbg:
-            painter.setClipRect( option.exposedRect )
-            return QtGui.QGraphicsPathItem.paint(self, painter, option, index)
+        return QtGui.QGraphicsPathItem.paint(self, painter, option, index)
 
 
 def rotate_and_displace(item, rotation, height, offset):
@@ -137,9 +134,7 @@ def render_circular(root_node, n2i, rot_step):
 
         item = n2i[node]
         w = item.nodeRegion.width()
-        #h = item.nodeRegio.height()
         h = item.effective_height
-
 
         if node is not root_node:
             parent_radius = n2i[node.up].radius
@@ -153,6 +148,12 @@ def render_circular(root_node, n2i, rot_step):
             #full_angle = angle
             #full_angle = abs(item.full_end - item.full_start)
 
+        print item.mapToScene(item.pos())
+        if node.up:
+            # Fucking rotation prevent me to use parent-child ralationship!!
+            # item.setParentItem(n2i[node.up])
+        print "\t", item.mapToScene(item.pos())
+
         r, xoffset = get_min_radius(w, h, angle, parent_radius)
         rotate_and_displace(item, item.rotation, h, parent_radius)
         item.radius = r
@@ -161,12 +162,6 @@ def render_circular(root_node, n2i, rot_step):
         if not _leaf(node):
             first_c = n2i[node.children[0]]
             last_c = n2i[node.children[-1]]
-            # BG
-            full_angle = last_c.full_end - first_c.full_start
-            angle_start = last_c.full_end - item.rotation
-            angle_end = item.rotation - first_c.full_start
-            item.bg.set_arc(parent_radius, h/2, parent_radius+2, r, angle_start, angle_end)
-
             # Vertical arc Line
             rot_end = n2i[node.children[-1]].rotation
             rot_start = n2i[node.children[0]].rotation
@@ -175,23 +170,20 @@ def render_circular(root_node, n2i, rot_step):
             C = QtGui.QGraphicsPathItem()
             C.setParentItem(item.parentItem())
             path = QtGui.QPainterPath()
+            C.setZValue(10)
 
             # Counter clock wise
             path.arcMoveTo(-r, -r, r * 2, r * 2, 360 - rot_start - angle)
             path.arcTo(-r, -r, r*2, r * 2, 360 - rot_start - angle, angle)
             # Faces
             C.setPath(path)
-        else:
-            full_angle = item.full_end - item.full_start
-            angle_start = item.full_end - item.rotation
-            angle_end = item.rotation - item.full_start
-            item.bg.set_arc(parent_radius, h/2, parent_radius+1, r, angle_start, angle_end)
 
         if hasattr(item, "content"):
             item.content.moveBy(xoffset, 0)
-            print item.content.pos(), xoffset
             extra = _LineItem(0, item.center, xoffset, item.center, item)
             extra.setPen(QtGui.QPen(QtGui.QColor("grey")))
+            extra.setZValue(10)
+            
     n2i[root_node].max_r = max_r
     print  len( n2i[root_node].parentItem().childItems())
     n2i[root_node].max_r = max_r

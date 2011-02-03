@@ -496,9 +496,10 @@ class _TreeView(QtGui.QGraphicsView):
             self.setRenderHints(QtGui.QPainter.Antialiasing or QtGui.QPainter.SmoothPixmapTransform )
 
         self.setViewportUpdateMode(QtGui.QGraphicsView.BoundingRectViewportUpdate)
+        self.setRenderHints(QtGui.QPainter.Antialiasing or QtGui.QPainter.SmoothPixmapTransform )
         #self.setViewportUpdateMode(QtGui.QGraphicsView.NoViewportUpdate)
         self.setCacheMode(QtGui.QGraphicsView.CacheBackground)
-        #self.setResizeAnchor(QtGui.QGraphicsView.AnchorUnderMouse)
+        self.setResizeAnchor(QtGui.QGraphicsView.AnchorUnderMouse)
         #self.setOptimizationFlag (QtGui.QGraphicsView.DontAdjustForAntialiasing)
         self.setOptimizationFlag (QtGui.QGraphicsView.DontSavePainterState)
         #self.setOptimizationFlag (QtGui.QGraphicsView.DontClipPainter)

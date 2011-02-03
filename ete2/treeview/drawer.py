@@ -6,7 +6,7 @@ from qt4_gui import _GUI, _PropertiesDialog
 import layouts
 from ete_dev import Tree, PhyloTree, ClusterTree
 from main import TreeImage
-from qt4_render import _TreeScene, render
+from qt4_render import _TreeScene, render, save
 
 __all__ = ["show_tree", "render_tree"]
 
@@ -25,18 +25,12 @@ def init_scene(t, layout, img):
             layout = "large"
         else:
             layout = "basic"
-    elif not layout:
-        layout = img.layout_fn
+        
+        img._layout_handler = layout
 
-    # Validates layout function
-    if type(layout) == types.FunctionType or\
-            type(layout) == types.MethodType:
-        img._layout_fn = layout
-    else:
-        try:
-            img._layout_fn = getattr(layouts, img.layout_fn)
-        except Exception:
-            raise ValueError ("Required layout is not a function pointer nor a valid layout name.")
+
+
+
 
     if not _QApp:
         _QApp = QtGui.QApplication(["ETE"])
@@ -60,8 +54,12 @@ def show_tree(t, layout=None, img_properties=None):
 def render_tree(t, imgName, w=None, h=None, layout=None, \
                     img_properties = None, header=None):
     """ Render tree image into a file."""
-    scene, img_prop = init_scene(t, layout, img_properties)
+    scene, img = init_scene(t, layout, img_properties)
+    tree_item, n2i, n2f = render(t, img)
+    scene.init_data(t, img, n2i, n2f)
 
-    scene.save(imgName, w=w, h=h, header=header)
-    return imgmap   
+    tree_item.setParentItem(scene.master_item)
+    scene.addItem(scene.master_item)
+    save(scene, imgName, w, h)
+
 

@@ -1,5 +1,6 @@
 import re
-from PyQt4 import QtCore, QtGui
+import math
+from PyQt4 import QtCore, QtGui, QtSvg
 
 from main import _leaf, NodeStyleDict, add_face_to_node
 from qt4_gui import _PropertiesDialog, _NodeActions
@@ -98,15 +99,6 @@ def render(root_node, img, hide_root=False):
             # Set style according to layout function
             set_style(node, layout_fn)
             item = n2i[node] = _NodeItem(node, parent)
-            if mode == "circular":
-                # ArcPartition all hang from a same parent item
-                item.bg = crender.ArcPartition(item)
-                #item.addToGroup(item.bg)
-            elif mode == "rect":
-            #    # RectPartition are nested, so parent will be modified
-            #    # later on
-                item.bg = rrender.RectPartition(parent)
-
             if node is root_node and hide_root:
                 pass
             else:
@@ -130,7 +122,7 @@ def render(root_node, img, hide_root=False):
             to_visit.pop(-1)
             visited.add(node)
 
-        # :: Post-order visits. Leaves are visited before parents ::
+        # :: Post-order visits. Leaves are already visited here ::
         if mode == "circular": 
             if _leaf(node):
                 crender.init_circular_leaf_item(node, n2i, n2f, last_rotation, rot_step)
@@ -143,7 +135,6 @@ def render(root_node, img, hide_root=False):
                 rrender.init_rect_leaf_item(node, n2i, n2f)
             else:
                 rrender.init_rect_node_item(node, n2i, n2f)
-            item.bg.setRect(item.fullRegion)
 
         if node is not root_node or not hide_root: 
             render_node_content(node, n2i, n2f, scale, mode)
@@ -161,9 +152,50 @@ def render(root_node, img, hide_root=False):
 
     surroundings = render_aligned_faces(n2i, n2f, img, max_r)
     surroundings.setParentItem(parent)
+    render_backgrounds(n2i, n2f, img, max_r)
     render_floatings(n2i, n2f, img)
-
     return parent, n2i, n2f
+
+def render_backgrounds(n2i, n2f, img, max_r):
+    for node, item in n2i.iteritems():
+        if _leaf(node):
+            first_c = n2i[node]
+            last_c = n2i[node]
+        else:
+            first_c = n2i[node.children[0]]
+            last_c = n2i[node.children[-1]]
+
+        if img.mode == "circular":               
+            h = item.effective_height
+            angle_start = last_c.full_end - item.rotation
+            angle_end = item.rotation - first_c.full_start
+            parent_radius = getattr(n2i.get(node.up, None), "radius", 0)
+            base = parent_radius + item.nodeRegion.width()
+
+            if node.img_style["node_bgcolor"].upper() != "#FFFFFF":
+                bg1 = crender.ArcPartition()
+                r = math.sqrt(base**2 + h**2) 
+                bg1.set_arc(parent_radius, h/2, parent_radius, r, angle_start, angle_end)
+                bg1.setParentItem(item)
+                bg1.setPen(QtGui.QPen(QtGui.QColor(node.img_style["node_bgcolor"])))
+                bg1.setBrush(QtGui.QBrush(QtGui.QColor(node.img_style["node_bgcolor"])))
+
+            if node.img_style["faces_bgcolor"].upper() != "#FFFFFF":
+                bg2 = crender.ArcPartition()
+                r = math.sqrt(base**2 + h**2) 
+                bg2.set_arc(r, h/2, parent_radius, item.radius, angle_start, angle_end)
+                bg2.setParentItem(item)
+                bg2.setPen(QtGui.QPen(QtGui.QColor(node.img_style["faces_bgcolor"])))
+                bg2.setBrush(QtGui.QBrush(QtGui.QColor(node.img_style["faces_bgcolor"])))
+
+            if node.img_style["bgcolor"].upper() != "#FFFFFF":
+                bg3 = crender.ArcPartition()
+                bg3.set_arc(parent_radius, h/2, parent_radius, max_r, angle_start, angle_end)
+                bg3.setParentItem(item)
+                bg3.setPen(QtGui.QPen(QtGui.QColor(node.img_style["bgcolor"])))
+                bg3.setBrush(QtGui.QBrush(QtGui.QColor(node.img_style["bgcolor"])))
+
+            item.content.setZValue(10)
 
 def set_node_size(node, n2i, n2f, img):
     scale = img.scale
@@ -208,25 +240,17 @@ def set_node_size(node, n2i, n2f, img):
 def render_node_content(node, n2i, n2f, scale, mode):
     style = node.img_style
     parent_partition = n2i[node]
-    parent_partition.bg.setAcceptsHoverEvents(False)
 
     #partition = QtGui.QGraphicsRectItem(parent_partition)
     partition = QtGui.QGraphicsItemGroup(parent_partition)
     parent_partition.content = partition
-    
+    partition.setZValue(10)
     nodeR = parent_partition.nodeRegion
     facesR = parent_partition.facesRegion
     center = parent_partition.center
 
     branch_length = float(node.dist * scale)
 
-    # Whole partition background
-    if style["bgcolor"].upper() not in set(["#FFFFFF", "white"]): 
-        color = QtGui.QColor(style["bgcolor"])
-        parent_partition.setBrush(color)
-        parent_partition.setPen(color)
-        parent_partition.drawbg = True
-    
     # Node points in partition centers
     ball_size = style["size"] 
     ball_start_x = nodeR.width() - facesR.width() - ball_size
@@ -482,7 +506,7 @@ class _TreeScene(QtGui.QGraphicsScene):
                                  h, \
                                  QtGui.QImage.Format_ARGB32)
             pp = QtGui.QPainter(ii)
-            pp.setRenderHint(QtGui.QPainter.Antialiasing )
+            pp.setRenderHint(QtGui.QPainter.Antialiasing)
             pp.setRenderHint(QtGui.QPainter.TextAntialiasing)
             pp.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
             if take_region:
@@ -674,3 +698,87 @@ def render_aligned_faces(n2i, n2f, img, tree_end_x):
             x += column2max_width.get(c, fb_width)
 
     return parent
+
+
+
+def save(scene, imgName, w=None, h=None, header=None, \
+             dpi=150, take_region=False):
+    ext = imgName.split(".")[-1].upper()
+
+    main_rect = scene.sceneRect()
+
+    aspect_ratio = main_rect.height() / main_rect.width()
+
+    # auto adjust size
+    if w is None and h is None and (ext == "PDF" or ext == "PS"):
+        w = dpi * 6.4
+        h = w * aspect_ratio
+        if h>dpi * 11:
+            h = dpi * 11
+            w = h / aspect_ratio
+    elif w is None and h is None:
+        w = main_rect.width()
+        h = main_rect.height()
+    elif h is None :
+        h = w * aspect_ratio
+    elif w is None:
+        w = h / aspect_ratio
+
+    if ext == "SVG": 
+        svg = QtSvg.QSvgGenerator()
+        svg.setFileName(imgName)
+        svg.setSize(QtCore.QSize(w, h))
+        svg.setViewBox(QtCore.QRect(0, 0, w, h))
+        #svg.setTitle("SVG Generator Example Drawing")
+        #svg.setDescription("An SVG drawing created by the SVG Generator")
+
+        pp = QtGui.QPainter()
+        pp.begin(svg)
+        targetRect =  QtCore.QRectF(0, 0, w, h)
+        scene.render(pp, targetRect, scene.sceneRect())
+        pp.end()
+
+    elif ext == "PDF" or ext == "PS":
+        format = QPrinter.PostScriptFormat if ext == "PS" else QPrinter.PdfFormat
+
+        printer = QPrinter(QPrinter.HighResolution)
+        printer.setResolution(dpi)
+        printer.setOutputFormat(format)
+        printer.setPageSize(QPrinter.A4)
+
+        pageTopLeft = printer.pageRect().topLeft()
+        paperTopLeft = printer.paperRect().topLeft()
+        # For PS -> problems with margins
+        # print paperTopLeft.x(), paperTopLeft.y()
+        # print pageTopLeft.x(), pageTopLeft.y()
+        # print  printer.paperRect().height(),  printer.pageRect().height()
+        topleft =  pageTopLeft - paperTopLeft
+
+        printer.setFullPage(True);
+        printer.setOutputFileName(imgName);
+        pp = QtGui.QPainter(printer)
+        if header:
+            pp.setFont(QtGui.QFont("Verdana",12))
+            pp.drawText(topleft.x(),20, header)
+            targetRect =  QtCore.QRectF(topleft.x(), 20 + (topleft.y()*2), w, h)
+        else:
+            targetRect =  QtCore.QRectF(topleft.x(), topleft.y()*2, w, h)
+
+        scene.render(pp, targetRect, scene.sceneRect())
+        pp.end()
+        return
+    else:
+
+        scene.setBackgroundBrush(QtGui.QBrush(QtGui.QColor("white")));
+        targetRect = QtCore.QRectF(0, 0, w, h)
+        ii= QtGui.QImage(w, \
+                             h, \
+                             QtGui.QImage.Format_ARGB32)
+        pp = QtGui.QPainter(ii)
+        pp.setRenderHint(QtGui.QPainter.Antialiasing)
+        pp.setRenderHint(QtGui.QPainter.TextAntialiasing)
+        pp.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
+
+        scene.render(pp, targetRect, scene.sceneRect())
+        pp.end()
+        ii.save(imgName)

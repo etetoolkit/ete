@@ -51,7 +51,7 @@ def init_rect_node_item(node, n2i, n2f):
     if all_childs_height > item.fullRegion.height():
         item.fullRegion.setHeight(all_childs_height)
 
-    item.fullRegion.setWidth(all_childs_width+item.nodeRegion.width())
+    item.fullRegion.setWidth(all_childs_width + item.nodeRegion.width())
 
     suby = 0
     subx = item.nodeRegion.width()
