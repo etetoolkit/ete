@@ -34,8 +34,8 @@ class NodeStyleDict(dict):
             ["size",             6,            _SIZE_CHECKER                            ], # node circle size 
             ["shape",            "sphere",     _NODE_TYPE_CHECKER                       ], 
             ["draw_descendants", True,         _BOOL_CHECKER                            ],
-            ["hz_line_width",          0,      _SIZE_CHECKER                            ],
-            ["vt_line_width",          0,      _SIZE_CHECKER                            ]
+            ["hz_line_width",          1,      _SIZE_CHECKER                            ],
+            ["vt_line_width",          1,      _SIZE_CHECKER                            ]
             ]
         self._valid_keys = set([i[0] for i in self._defaults]) 
         self.init()

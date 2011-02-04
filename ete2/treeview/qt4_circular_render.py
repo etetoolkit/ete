@@ -44,16 +44,13 @@ class ArcPartition(QtGui.QGraphicsPathItem):
         self.setCacheMode(QtGui.QGraphicsItem.DeviceCoordinateCache)
         #self.setCacheMode(QtGui.QGraphicsItem.ItemCoordinateCache)
         
-    #def boundingRect(self):
-    #    return QtCore.QRectF(0,0,10,10)
-
     def set_arc(self, cxdist, cydist, r1, r2, angle_start, angle_end):
         """ Draws a 2D arc with two arc lines of length r1 (inner) and
         r2 (outer) with center in cxdist,cydist. angle_start and
         angle_end are relative to the starting rotation point equal 0
         degrees """
 
-        self.data = [cxdist, cydist, r1, r2, angle_start, angle_end]
+        #self.data = [cxdist, cydist, r1, r2, angle_start, angle_end]
         d1 = r1 * 2
         d2 = r2 * 2 
         r1_xstart = -r1 - cxdist
@@ -148,14 +145,8 @@ def render_circular(root_node, n2i, rot_step):
             #full_angle = angle
             #full_angle = abs(item.full_end - item.full_start)
 
-        print item.mapToScene(item.pos())
-        if node.up:
-            # Fucking rotation prevent me to use parent-child ralationship!!
-            # item.setParentItem(n2i[node.up])
-        print "\t", item.mapToScene(item.pos())
-
         r, xoffset = get_min_radius(w, h, angle, parent_radius)
-        rotate_and_displace(item, item.rotation, h, parent_radius)
+        rotate_and_displace(item.content, item.rotation, h, parent_radius)
         item.radius = r
         max_r = max(max_r, r)
 
@@ -167,25 +158,21 @@ def render_circular(root_node, n2i, rot_step):
             rot_start = n2i[node.children[0]].rotation
 
             # C = item.vt_line
-            C = QtGui.QGraphicsPathItem()
-            C.setParentItem(item.parentItem())
+            #C = QtGui.QGraphicsPathItem()
+            C = item.vt_line#QtGui.QGraphicsPathItem()
+            C.setParentItem(item)
             path = QtGui.QPainterPath()
-            C.setZValue(10)
-
             # Counter clock wise
             path.arcMoveTo(-r, -r, r * 2, r * 2, 360 - rot_start - angle)
             path.arcTo(-r, -r, r*2, r * 2, 360 - rot_start - angle, angle)
             # Faces
             C.setPath(path)
+            item.static_items.addToGroup(C)
 
         if hasattr(item, "content"):
-            item.content.moveBy(xoffset, 0)
-            extra = _LineItem(0, item.center, xoffset, item.center, item)
-            extra.setPen(QtGui.QPen(QtGui.QColor("grey")))
-            extra.setZValue(10)
+            item.extra_branch_line.setLine(0, item.center, xoffset, item.center)
+            item.movable_items.moveBy(xoffset, 0)
             
-    n2i[root_node].max_r = max_r
-    print  len( n2i[root_node].parentItem().childItems())
     n2i[root_node].max_r = max_r
     return max_r
 
