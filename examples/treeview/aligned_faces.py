@@ -1,5 +1,6 @@
-from ete_dev import Tree, faces, TreeImageProperties, NodeStyleDict
+from ete_dev import Tree, faces, TreeImage, NodeStyleDict
 import random
+import cPickle
 
 def mylayout(node):
     # If node is a leaf, add the nodes name and a its scientific
@@ -61,21 +62,7 @@ style["vt_line_color"] = "#ff0000"
 
 #ETE 2.1 has finally official support for TreeImageProperties, and
 #object that can be used to set different general purpose image properties
-I = TreeImageProperties()
-
-I.force_topology             = False # Use fixed branch length
-I.tree_width                 = 200  # This is used to scale tree branches
-I.draw_aligned_faces_as_grid = True # Align aligned-faces among them
-I.draw_guidelines = True # Line from leaves to aligned faces
-I.guideline_type = 2 # 0 solid, 1 dashed, 2 dotted
-I.guideline_color = "#CCCCCC"
-I.draw_image_border = False
-I.complete_branch_lines = True # If branch-top faces are larger than
-                               # the branch itself. Branch can be
-                               # extended with a different color
-I.extra_branch_line_color = "#cccccc"
-I.show_legend = True 
-I.min_branch_separation = 1 # in pixels
+I = TreeImage()
 
 # You can add faces to the tree image (without any node
 # associated). They will be used as headers and foot notes of the
@@ -96,14 +83,22 @@ t.dist = 0
 t.populate(5)
 
 # Bind the precomputed style to the root node 
-#t.img_style = style
+t.img_style = style
 # t.render("./test.svg", layout=mylayout, img_properties=I)
 t.show(mylayout, img_properties=I)
-import cPickle
+
+for n in t.traverse():
+    n.img_style.clear()
+    for k, v in n.img_style.iteritems():
+        print k, v
+    print 
+    
 #print style
 cPickle.dump(t, open("test.pkl", "w"))
-#print "OK"
-#t = cPickle.load(open("test.pkl"))
-#print t
-#t.show()
+print "OK"
+t = cPickle.load(open("test.pkl"))
+print t
+t.show(mylayout, img_properties=I)
 
+t2 = t.copy()
+t2.show(mylayout, img_properties=I)

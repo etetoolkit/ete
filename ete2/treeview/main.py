@@ -14,35 +14,38 @@ FACE_POSITIONS = set(["branch-right", "aligned", "branch-top", "branch-bottom", 
 
 __all__  = ["NodeStyleDict", "TreeImage", "_leaf", "add_face_to_node"]
 
+NODE_STYLE_DEFAULT = [
+    ["fgcolor",          "#0030c1",    _COLOR_CHECKER                           ],
+    ["bgcolor",          "#FFFFFF",    _COLOR_CHECKER                           ],
+    ["node_bgcolor",     "#FFFFFF",    _COLOR_CHECKER                           ],
+    ["partition_bgcolor","#FFFFFF",    _COLOR_CHECKER                           ],
+    ["faces_bgcolor",    "#FFFFFF",    _COLOR_CHECKER                           ],
+    
+    
+    ["vt_line_color",    "#000000",    _COLOR_CHECKER                           ],
+    ["hz_line_color",    "#000000",    _COLOR_CHECKER                           ],
+    ["hz_line_type",     0,            _LINE_TYPE_CHECKER                       ], # 0 solid, 1 dashed, 2 dotted
+    ["vt_line_type",     0,            _LINE_TYPE_CHECKER                       ], # 0 solid, 1 dashed, 2 dotted
+    ["size",             6,            _SIZE_CHECKER                            ], # node circle size 
+    ["shape",            "sphere",     _NODE_TYPE_CHECKER                       ], 
+    ["draw_descendants", True,         _BOOL_CHECKER                            ],
+    ["hz_line_width",          1,      _SIZE_CHECKER                            ],
+    ["vt_line_width",          1,      _SIZE_CHECKER                            ]
+    ]
+
+
+VALID_NODE_STYLE_KEYS = set([i[0] for i in NODE_STYLE_DEFAULT]) | set(["_faces", "faces"])
+
 class NodeStyleDict(dict):
     def __init__(self, *args, **kargs):
 
         super(NodeStyleDict, self).__init__(*args, **kargs)
         super(NodeStyleDict, self).__setitem__("faces", {})
-        self._defaults = [
-            ["fgcolor",          "#0030c1",    _COLOR_CHECKER                           ],
-            ["bgcolor",          "#FFFFFF",    _COLOR_CHECKER                           ],
-            ["node_bgcolor",     "#FFFFFF",    _COLOR_CHECKER                           ],
-            ["partition_bgcolor","#FFFFFF",    _COLOR_CHECKER                           ],
-            ["faces_bgcolor",    "#FFFFFF",    _COLOR_CHECKER                           ],
-
-
-            ["vt_line_color",    "#000000",    _COLOR_CHECKER                           ],
-            ["hz_line_color",    "#000000",    _COLOR_CHECKER                           ],
-            ["hz_line_type",     0,            _LINE_TYPE_CHECKER                       ], # 0 solid, 1 dashed, 2 dotted
-            ["vt_line_type",     0,            _LINE_TYPE_CHECKER                       ], # 0 solid, 1 dashed, 2 dotted
-            ["size",             6,            _SIZE_CHECKER                            ], # node circle size 
-            ["shape",            "sphere",     _NODE_TYPE_CHECKER                       ], 
-            ["draw_descendants", True,         _BOOL_CHECKER                            ],
-            ["hz_line_width",          1,      _SIZE_CHECKER                            ],
-            ["vt_line_width",          1,      _SIZE_CHECKER                            ]
-            ]
-        self._valid_keys = set([i[0] for i in self._defaults]) 
         self.init()
         self._block_adding_faces = False
 
     def init(self):
-        for key, dvalue, checker in self._defaults:
+        for key, dvalue, checker in NODE_STYLE_DEFAULT:
             if key not in self:
                 self[key] = dvalue
             elif not checker(self[key]):
@@ -70,9 +73,12 @@ class NodeStyleDict(dict):
         self["faces"][position].setdefault(int(column), []).append(face)
 
     def __setitem__(self, i, y):
-        if i not in self._valid_keys:
+        if i not in VALID_NODE_STYLE_KEYS:
             raise ValueError("'%s' is not a valid key for NodeStyleDict instances" %i)
         super(NodeStyleDict, self).__setitem__(i, y)
+
+    def clear(self):
+        super(NodeStyleDict, self).__setitem__("_faces", {})
 
 class TreeImage(object):
 

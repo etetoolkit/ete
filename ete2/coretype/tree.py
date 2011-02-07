@@ -22,6 +22,7 @@
 # #END_LICENSE#############################################################
 import os
 import random
+import copy 
 
 __all__ = ["Tree", "TreeNode"]
 
@@ -904,11 +905,18 @@ class TreeNode(object):
         structure."""
         try:
             from ete_dev.treeview import drawer
+            from ete_dev.treeview.main import TreeImage
         except ImportError, e:
             print "'treeview' module could not be loaded.\n",e
             print "\n\n"
             print self
         else:
+            if not img_properties:
+                img_properties = TreeImage()
+
+            if layout:
+                img_properties.layout_fn = layout
+
             drawer.show_tree(self, layout=layout, img_properties=img_properties)
 
     def render(self, file_name, layout=None, w=None, h=None, \
@@ -916,15 +924,28 @@ class TreeNode(object):
         """ Renders the tree structure into an image file. """
         try:
             from ete_dev.treeview import drawer
+            from ete_dev.treeview.main import TreeImage
         except ImportError, e:
             print "'treeview' module could not be loaded.\n",e
             print "\n\n"
             print self
             print e
         else:
+            if not img_properties:
+                img_properties = TreeImage()
+
+            if layout:
+                img_properties.layout_fn = layout
             return drawer.render_tree(self, file_name, w=w, h=h, layout=layout, \
                                    img_properties=img_properties, \
                                    header=header)
+
+    def copy(self):
+        parent = self.up
+        self.up = None
+        new_node = copy.deepcopy(self)
+        self.up = parent
+        return new_node
 
     def _asciiArt(self, char1='-', show_internal=True, compact=False):
         """
