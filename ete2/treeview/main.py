@@ -95,7 +95,7 @@ class TreeImage(object):
     layout_fn = property(get_layout_fn, set_layout_fn)
 
     def __init__(self):
-        # circular or  rect
+        # mode: circular or  rect
         self.mode = "circular"
 
         # Scale used to convert branch lengths to pixels. None means
@@ -105,7 +105,7 @@ class TreeImage(object):
         # Branch lengths, in pixels, from root node to the most
         # distant leaf. This is used to calculate the scale when this
         # is not manually set.
-        self.tree_width = 200  
+        self.tree_width = 200
 
         # Min separation, in pixels, between to adjacent branches
         self.min_leaf_separation = 1 # in pixels
@@ -148,6 +148,9 @@ class TreeImage(object):
         self.aligned_header = FaceHeader() # aligned face_header
         self.aligned_foot = FaceHeader()
         
+        # Floating faces
+        self.floating_faces_under_tree = False
+        self.children_faces_on_top = True
 
 
 class FaceHeader(dict):

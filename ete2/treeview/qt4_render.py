@@ -9,7 +9,7 @@ from qt4_face_render import update_node_faces, _FaceGroupItem
 import qt4_circular_render as crender
 import qt4_rect_render as rrender
 
-## | General scheme on nodes attributes
+## | General scheme of node content
 ## |==========================================================================================================================|
 ## |                                                fullRegion                                                                |       
 ## |             nodeRegion                  |================================================================================|
@@ -60,13 +60,19 @@ class _NodePointItem(QtGui.QGraphicsRectItem):
             p.setPen(QtGui.QPen(QtGui.QColor(self.node.img_style["fgcolor"])))
             p.drawEllipse(self.rect())
 
-class _EmptyItem(QtGui.QGraphicsRectItem):
+class _EmptyItem(QtGui.QGraphicsItem):
     def __init__(self, parent=None):
-        QtGui.QGraphicsRectItem.__init__(self, parent)
+        QtGui.QGraphicsItem.__init__(self)
         self.setParentItem(parent)
 
+        # qt4.6+ Only 
+        try:
+            self.setFlags(QtGui.QGraphicsItem.ItemHasNoContents)
+        except: 
+            pass
+
     def boundingRect(self):
-        return self.rect() #QtGui.QRectF(0,0,0,0)
+        return QtCore.QRectF(0,0,0,0)
 
     def paint(self, *args, **kargs):
         return
@@ -74,7 +80,6 @@ class _EmptyItem(QtGui.QGraphicsRectItem):
 class _NodeItem(_EmptyItem):
     def __init__(self, node, parent):
         _EmptyItem.__init__(self, parent)
-        #QtGui.QGraphicsItemGroup.__init__(self, parent)
         self.node = node
         self.nodeRegion = QtCore.QRectF()
         self.facesRegion = QtCore.QRectF()
@@ -82,306 +87,9 @@ class _NodeItem(_EmptyItem):
         self.highlighted = False
         self.setAcceptsHoverEvents(True)
 
-    def paint(self, *args, **kargs):
-        return 
-        self.setBrush(QtGui.QBrush(QtGui.QColor("red")))
-        self.setRect(0,0,10,10)
-        return QtGui.QGraphicsRectItem.paint(self, *args, **kargs)
-
-        pass
-
 class _LineItem(QtGui.QGraphicsLineItem):
     def paint(self, painter, option, widget):
         QtGui.QGraphicsLineItem.paint(self, painter, option, widget)
-
-def render(root_node, img, hide_root=False):
-    n2i = {} # node to items
-    n2f = {} # node to faces
-
-    mode = img.mode
-    scale = img.scale
-    arc_span = img.arc_span 
-    last_rotation = img.arc_start
-    layout_fn = img._layout_handler
-    
-    parent = QtGui.QGraphicsRectItem(0, 0, 0, 0, None)
-    parent.bg_layer =  _EmptyItem(parent)
-    parent.tree_layer = _EmptyItem(parent)
-    parent.float_layer = _EmptyItem(parent)
-
-    parent.bg_layer.setZValue(0)
-    parent.tree_layer.setZValue(1)
-    parent.float_layer.setZValue(2)
-
-    visited = set()
-    to_visit = []
-    to_visit.append(root_node)
-    rot_step = float(arc_span) / len([n for n in root_node.traverse() if _leaf(n)])
-
-    # ::: Precalculate values :::
-    depth = 1
-    while to_visit:
-        node = to_visit[-1]
-        finished = True
-        if node not in n2i:
-            # Set style according to layout function
-            set_style(node, layout_fn)
-            item = n2i[node] = _NodeItem(node, parent.tree_layer)
-            item.setZValue(depth)
-
-            depth += 1 
-
-            if node is root_node and hide_root:
-                pass
-            else:
-                set_node_size(node, n2i, n2f, img)
-                if "aligned" in n2f[node]:
-                    n2f[node]["aligned"].h 
-                    n2f[node]["aligned"].w
-
-        if not _leaf(node):
-            # visit children starting from left most to right
-            # most. Very important!! check all children[-1] and
-            # children[0]
-            for c in reversed(node.children):
-                if c not in visited:
-                    to_visit.append(c)
-                    finished = False
-            # :: pre-order code here ::
-        if not finished:
-            continue
-        else:
-            to_visit.pop(-1)
-            visited.add(node)
-
-        # :: Post-order visits. Leaves are already visited here ::
-        if mode == "circular": 
-            if _leaf(node):
-                crender.init_circular_leaf_item(node, n2i, n2f, last_rotation, rot_step)
-                last_rotation += rot_step
-            else:
-                crender.init_circular_node_item(node, n2i, n2f)
-
-        elif mode == "rect": 
-            if _leaf(node):
-                rrender.init_rect_leaf_item(node, n2i, n2f)
-            else:
-                rrender.init_rect_node_item(node, n2i, n2f)
-
-        if node is not root_node or not hide_root: 
-            render_node_content(node, n2i, n2f, scale, mode)
-
-    if mode == "circular":
-        max_r = crender.render_circular(root_node, n2i, rot_step)
-        parent.moveBy(max_r, max_r)
-        parent.setRect(-max_r, -max_r, max_r*2, max_r*2) 
-    else:
-        parent.setRect(n2i[root_node].fullRegion)
-        max_r = n2i[root_node].fullRegion.width()
-    
-    if not img.draw_image_border:
-        parent.setPen(QtGui.QPen(QtCore.Qt.NoPen))
-
-    surroundings = render_aligned_faces(n2i, n2f, img, max_r)
-    surroundings.setParentItem(parent)
-    render_backgrounds(n2i, n2f, img, max_r, parent.bg_layer)
-    render_floatings(n2i, n2f, img, parent.float_layer)
-    return parent, n2i, n2f
-
-
-def traverse(item, level=""):
-    for n in item.childItems():
-        if type(n) == _NodeItem:
-            print level, n, n.node.name
-            traverse(n, level+".")
-   
-
-def render_backgrounds(n2i, n2f, img, max_r, bg_layer):
-    for node, item in n2i.iteritems():
-        if _leaf(node):
-            first_c = n2i[node]
-            last_c = n2i[node]
-        else:
-            first_c = n2i[node.children[0]]
-            last_c = n2i[node.children[-1]]
-
-        if img.mode == "circular":               
-            h = item.effective_height
-            angle_start = first_c.full_start
-            angle_end = last_c.full_end
-            parent_radius = getattr(n2i.get(node.up, None), "radius", 0)
-            base = parent_radius + item.nodeRegion.width()
-
-            if node.img_style["node_bgcolor"].upper() != "#FFFFFF":
-                bg1 = crender.ArcPartition()
-                r = math.sqrt(base**2 + h**2) 
-                bg1.set_arc(parent_radius, h/2, parent_radius, r, angle_start, angle_end)
-                bg1.setParentItem(item.content.bg)
-                bg1.setPen(QtGui.QPen(QtGui.QColor(node.img_style["node_bgcolor"])))
-                bg1.setBrush(QtGui.QBrush(QtGui.QColor(node.img_style["node_bgcolor"])))
-
-            if node.img_style["faces_bgcolor"].upper() != "#FFFFFF":
-                bg2 = crender.ArcPartition()
-                r = math.sqrt(base**2 + h**2) 
-                bg2.set_arc(r, h/2, parent_radius, item.radius, angle_start, angle_end)
-                bg2.setParentItem(item.content)
-                bg2.setPen(QtGui.QPen(QtGui.QColor(node.img_style["faces_bgcolor"])))
-                bg2.setBrush(QtGui.QBrush(QtGui.QColor(node.img_style["faces_bgcolor"])))
-
-            if node.img_style["bgcolor"].upper() != "#FFFFFF":
-                bg = crender._ArcItem()
-                bg.set_arc(0, 0, parent_radius, max_r, angle_start, angle_end)
-                bg.setPen(QtGui.QPen(QtGui.QColor(node.img_style["bgcolor"])))
-                bg.setBrush(QtGui.QBrush(QtGui.QColor(node.img_style["bgcolor"])))
-                bg.setParentItem(bg_layer)
-                bg.setZValue(item.zValue())
-
-
-def set_node_size(node, n2i, n2f, img):
-    scale = img.scale
-    min_separation = img.min_leaf_separation
-
-    item = n2i[node]
-    branch_length = float(node.dist * scale)
-
-    # Organize faces by groups
-    faceblock = update_node_faces(node, n2f)
-
-    # Total height required by the node
-    h = max(node.img_style["size"], 
-            (node.img_style["size"]/2) + node.img_style["hz_line_width"] + faceblock["branch-top"].h + faceblock["branch-bottom"].h, 
-            faceblock["branch-right"].h, 
-            faceblock["aligned"].h, 
-            min_separation,
-            )    
-
-    # Total width required by the node
-    w = sum([max(branch_length + node.img_style["size"], 
-                                      faceblock["branch-top"].w + node.img_style["size"],
-                                      faceblock["branch-bottom"].w + node.img_style["size"],
-                                      ), 
-                                  faceblock["branch-right"].w]
-                                 )
-    w += node.img_style["vt_line_width"]
-
-    # rightside faces region
-    item.facesRegion.setRect(0, 0, faceblock["branch-right"].w, faceblock["branch-right"].h)
-
-    # Node region 
-    item.nodeRegion.setRect(0, 0, w, h)
-
-    # Stores real separation between branches, to correctly handle scale changes...
-    #if min_real_branch_separation < h:
-    #    min_real_branch_separation = h
-
-    # This is the node total region covered by the node
-    item.fullRegion.setRect(0, 0, w, h)
-
-def render_node_content(node, n2i, n2f, scale, mode):
-    style = node.img_style
-    item = n2i[node]
-    item.content = _EmptyItem(item)
-
-    #partition = QtGui.QGraphicsRectItem(parent_partition)
-   
-    nodeR = item.nodeRegion
-    facesR = item.facesRegion
-    center = item.center
-
-    branch_length = float(node.dist * scale)
-
-    # Node points 
-    ball_size = style["size"] 
-    ball_start_x = nodeR.width() - facesR.width() - ball_size
-    node_ball = _NodePointItem(node)
-    node_ball.setPos(ball_start_x, center-(ball_size/2))
-
-    # Branch line to parent
-    pen = QtGui.QPen()
-    set_pen_style(pen, style["hz_line_type"])
-    pen.setColor(QtGui.QColor(style["hz_line_color"]))
-    pen.setWidth(style["hz_line_width"])
-    #pen.setCapStyle(QtCore.Qt.FlatCap)
-    hz_line = _LineItem()
-    hz_line.setPen(pen)
-    hz_line.setLine(0, center, 
-                    branch_length, center)
-    #hz_line.setCacheMode(QtGui.QGraphicsItem.DeviceCoordinateCache)
-
-    extra_line = _LineItem()
-    pen.setColor(QtGui.QColor("grey"))
-    set_pen_style(pen, 1)
-    extra_line.setPen(pen)
-    item.extra_branch_line = extra_line
-
-    #if self.props.complete_branch_lines:
-    #    extra_hz_line = QtGui.QGraphicsLineItem(partition)
-    #    extra_hz_line.setLine(node.dist_xoffset, center, 
-    #                          ball_start_x, center)
-    #    color = QtGui.QColor(self.props.extra_branch_line_color)
-    #    pen = QtGui.QPen(color)
-    #    set_pen_style(pen, style["line_type"])
-    #    extra_hz_line.setPen(pen)
-
-    # Attach branch-right faces to child 
-    fblock_r = n2f[node]["branch-right"]
-    fblock_r.render()
-    fblock_r.setPos(nodeR.width() - facesR.width(), \
-                      center-fblock_r.h/2)
-                
-    # Attach branch-bottom faces to child 
-    fblock_b = n2f[node]["branch-bottom"]
-    fblock_b.render()
-    fblock_b.setPos(0, center)
-        
-    # Attach branch-top faces to child 
-    fblock_t = n2f[node]["branch-top"]
-    fblock_t.render()
-    fblock_t.setPos(0, center-fblock_t.h)
-
-    # Vertical line
-    if not _leaf(node):
-        if mode == "circular":
-            vt_line = QtGui.QGraphicsPathItem()
-
-        elif mode == "rect":
-            vt_line = _LineItem(item)
-            first_child_part = n2i[node.children[0]]
-            last_child_part = n2i[node.children[-1]]
-            c1 = first_child_part.start_y + first_child_part.center
-            c2 = last_child_part.start_y + last_child_part.center
-            vt_line.setLine(nodeR.width(), c1,\
-                                nodeR.width(), c2)            
-
-        pen = QtGui.QPen()
-        set_pen_style(pen, style["vt_line_type"])
-        pen.setColor(QtGui.QColor(style["vt_line_color"]))
-        pen.setWidth(style["vt_line_width"])
-        pen.setCapStyle(QtCore.Qt.FlatCap)
-        vt_line.setPen(pen)
-        item.vt_line = vt_line
-    else:
-        vt_line = None
-
-    item.bg = QtGui.QGraphicsItemGroup()
-    item.movable_items = QtGui.QGraphicsItemGroup()
-    item.static_items = QtGui.QGraphicsItemGroup()
-
-    for i in [node_ball, hz_line, fblock_r, fblock_b, fblock_t, extra_line]:
-        item.movable_items.addToGroup(i)
-    for i in [vt_line, extra_line]:
-        if i:
-            item.static_items.addToGroup(i)
-  
-    item.movable_items.setParentItem(item.content)
-    item.static_items.setParentItem(item.content)
-
-    #item.movable_items.setZValue(TREE_ZLEVEL)
-    #item.static_items.setZValue(TREE_ZLEVEL)
-    #item.bg.setZValue(1)
-
-
-
 
 class _PointerItem(QtGui.QGraphicsRectItem):
     def __init__(self, parent=None):
@@ -586,6 +294,303 @@ class _TreeScene(QtGui.QGraphicsScene):
         # else:
         #     self.scale =  1
 
+
+
+
+def render(root_node, img, hide_root=False):
+    n2i = {} # node to items
+    n2f = {} # node to faces
+
+    mode = img.mode
+    scale = img.scale
+    arc_span = img.arc_span 
+    last_rotation = img.arc_start
+    layout_fn = img._layout_handler
+    
+    parent = QtGui.QGraphicsRectItem(0, 0, 0, 0, None)
+    parent.bg_layer =  _EmptyItem(parent)
+    parent.tree_layer = _EmptyItem(parent)
+    parent.float_layer = _EmptyItem(parent)
+
+    parent.bg_layer.setZValue(0)
+    parent.tree_layer.setZValue(2)
+
+    if img.floating_faces_under_tree:
+        parent.float_layer.setZValue(1)
+    else:
+        parent.float_layer.setZValue(3)
+
+    visited = set()
+    to_visit = []
+    to_visit.append(root_node)
+    rot_step = float(arc_span) / len([n for n in root_node.traverse() if _leaf(n)])
+
+    # ::: Precalculate values :::
+    depth = 1
+    while to_visit:
+        node = to_visit[-1]
+        finished = True
+        if node not in n2i:
+            # Set style according to layout function
+            set_style(node, layout_fn)
+            item = n2i[node] = _NodeItem(node, parent.tree_layer)
+            item.setZValue(depth)
+            depth += 1 
+
+            if node is root_node and hide_root:
+                pass
+            else:
+                set_node_size(node, n2i, n2f, img)
+                if "aligned" in n2f[node]:
+                    n2f[node]["aligned"].h 
+                    n2f[node]["aligned"].w
+
+        if not _leaf(node):
+            # visit children starting from left most to right
+            # most. Very important!! check all children[-1] and
+            # children[0]
+            for c in reversed(node.children):
+                if c not in visited:
+                    to_visit.append(c)
+                    finished = False
+            # :: pre-order code here ::
+        if not finished:
+            continue
+        else:
+            to_visit.pop(-1)
+            visited.add(node)
+
+        # :: Post-order visits. Leaves are already visited here ::
+        if mode == "circular": 
+            if _leaf(node):
+                crender.init_circular_leaf_item(node, n2i, n2f, last_rotation, rot_step)
+                last_rotation += rot_step
+            else:
+                crender.init_circular_node_item(node, n2i, n2f)
+
+        elif mode == "rect": 
+            if _leaf(node):
+                rrender.init_rect_leaf_item(node, n2i, n2f)
+            else:
+                rrender.init_rect_node_item(node, n2i, n2f)
+
+        if node is not root_node or not hide_root: 
+            render_node_content(node, n2i, n2f, scale, mode)
+
+    if mode == "circular":
+        max_r = crender.render_circular(root_node, n2i, rot_step)
+        parent.moveBy(max_r, max_r)
+        parent.setRect(-max_r, -max_r, max_r*2, max_r*2) 
+    else:
+        parent.setRect(n2i[root_node].fullRegion)
+        max_r = n2i[root_node].fullRegion.width()
+    
+    if not img.draw_image_border:
+        parent.setPen(QtGui.QPen(QtCore.Qt.NoPen))
+
+    surroundings = render_aligned_faces(n2i, n2f, img, max_r)
+    surroundings.setParentItem(parent.tree_layer)
+    render_backgrounds(n2i, n2f, img, max_r, parent.bg_layer)
+    render_floatings(n2i, n2f, img, parent.float_layer)
+    return parent, n2i, n2f
+
+
+def render_backgrounds(n2i, n2f, img, max_r, bg_layer):
+    for node, item in n2i.iteritems():
+        if _leaf(node):
+            first_c = n2i[node]
+            last_c = n2i[node]
+        else:
+            first_c = n2i[node.children[0]]
+            last_c = n2i[node.children[-1]]
+
+        if img.mode == "circular":               
+            h = item.effective_height
+            angle_start = first_c.full_start
+            angle_end = last_c.full_end
+            parent_radius = getattr(n2i.get(node.up, None), "radius", 0)
+            base = parent_radius + item.nodeRegion.width()
+
+            if node.img_style["node_bgcolor"].upper() != "#FFFFFF":
+                bg1 = crender._ArcItem()
+                r = math.sqrt(base**2 + h**2) 
+                bg1.set_arc(0, 0, parent_radius, r, angle_start, angle_end)
+                bg1.setParentItem(item.content.bg)
+                bg1.setPen(QtGui.QPen(QtGui.QColor(node.img_style["node_bgcolor"])))
+                bg1.setBrush(QtGui.QBrush(QtGui.QColor(node.img_style["node_bgcolor"])))
+
+            if node.img_style["faces_bgcolor"].upper() != "#FFFFFF":
+                bg2 = crender._ArcItem()
+                r = math.sqrt(base**2 + h**2) 
+                bg2.set_arc(0, 0, parent_radius, item.radius, angle_start, angle_end)
+                bg2.setParentItem(item.content)
+                bg2.setPen(QtGui.QPen(QtGui.QColor(node.img_style["faces_bgcolor"])))
+                bg2.setBrush(QtGui.QBrush(QtGui.QColor(node.img_style["faces_bgcolor"])))
+
+            if node.img_style["bgcolor"].upper() != "#FFFFFF":
+                bg = crender._ArcItem()
+                bg.set_arc(0, 0, parent_radius, max_r, angle_start, angle_end)
+                bg.setPen(QtGui.QPen(QtGui.QColor(node.img_style["bgcolor"])))
+                bg.setBrush(QtGui.QBrush(QtGui.QColor(node.img_style["bgcolor"])))
+                bg.setParentItem(bg_layer)
+                bg.setZValue(item.zValue())
+
+        if img.mode == "rect":
+            if node.img_style["bgcolor"].upper() != "#FFFFFF":
+                bg = QtGui.QGraphicsRectItem()
+                pos = item.content.mapToScene(0, 0)
+                bg.setPos(pos.x(), pos.y())
+                bg.setRect(0, 0, max_r-pos.x(),  item.fullRegion.height())
+                bg.setPen(QtGui.QPen(QtGui.QColor(node.img_style["bgcolor"])))
+                bg.setBrush(QtGui.QBrush(QtGui.QColor(node.img_style["bgcolor"])))
+                bg.setParentItem(bg_layer)
+                bg.setZValue(item.zValue())
+
+def set_node_size(node, n2i, n2f, img):
+    scale = img.scale
+    min_separation = img.min_leaf_separation
+
+    item = n2i[node]
+    branch_length = float(node.dist * scale)
+
+    # Organize faces by groups
+    faceblock = update_node_faces(node, n2f)
+
+    # Total height required by the node
+    h = max(node.img_style["size"], 
+            (node.img_style["size"]/2) + node.img_style["hz_line_width"] + faceblock["branch-top"].h + faceblock["branch-bottom"].h, 
+            faceblock["branch-right"].h, 
+            faceblock["aligned"].h, 
+            min_separation,
+            )    
+
+    # Total width required by the node
+    w = sum([max(branch_length + node.img_style["size"], 
+                                      faceblock["branch-top"].w + node.img_style["size"],
+                                      faceblock["branch-bottom"].w + node.img_style["size"],
+                                      ), 
+                                  faceblock["branch-right"].w]
+                                 )
+    w += node.img_style["vt_line_width"]
+
+    # rightside faces region
+    item.facesRegion.setRect(0, 0, faceblock["branch-right"].w, faceblock["branch-right"].h)
+
+    # Node region 
+    item.nodeRegion.setRect(0, 0, w, h)
+
+    # Stores real separation between branches, to correctly handle scale changes...
+    #if min_real_branch_separation < h:
+    #    min_real_branch_separation = h
+
+    # This is the node total region covered by the node
+    item.fullRegion.setRect(0, 0, w, h)
+
+def render_node_content(node, n2i, n2f, scale, mode):
+    style = node.img_style
+    item = n2i[node]
+    item.content = _EmptyItem(item)
+
+    #partition = QtGui.QGraphicsRectItem(parent_partition)
+   
+    nodeR = item.nodeRegion
+    facesR = item.facesRegion
+    center = item.center
+
+    branch_length = float(node.dist * scale)
+
+    # Node points 
+    ball_size = style["size"] 
+    ball_start_x = nodeR.width() - facesR.width() - ball_size
+    node_ball = _NodePointItem(node)
+    node_ball.setPos(ball_start_x, center-(ball_size/2))
+
+    # Branch line to parent
+    pen = QtGui.QPen()
+    set_pen_style(pen, style["hz_line_type"])
+    pen.setColor(QtGui.QColor(style["hz_line_color"]))
+    pen.setWidth(style["hz_line_width"])
+    #pen.setCapStyle(QtCore.Qt.FlatCap)
+    hz_line = _LineItem()
+    hz_line.setPen(pen)
+    hz_line.setLine(0, center, 
+                    branch_length, center)
+    #hz_line.setCacheMode(QtGui.QGraphicsItem.DeviceCoordinateCache)
+
+    extra_line = _LineItem()
+    pen.setColor(QtGui.QColor("grey"))
+    set_pen_style(pen, 1)
+    extra_line.setPen(pen)
+    item.extra_branch_line = extra_line
+
+    #if self.props.complete_branch_lines:
+    #    extra_hz_line = QtGui.QGraphicsLineItem(partition)
+    #    extra_hz_line.setLine(node.dist_xoffset, center, 
+    #                          ball_start_x, center)
+    #    color = QtGui.QColor(self.props.extra_branch_line_color)
+    #    pen = QtGui.QPen(color)
+    #    set_pen_style(pen, style["line_type"])
+    #    extra_hz_line.setPen(pen)
+
+    # Attach branch-right faces to child 
+    fblock_r = n2f[node]["branch-right"]
+    fblock_r.render()
+    fblock_r.setPos(nodeR.width() - facesR.width(), \
+                      center-fblock_r.h/2)
+                
+    # Attach branch-bottom faces to child 
+    fblock_b = n2f[node]["branch-bottom"]
+    fblock_b.render()
+    fblock_b.setPos(0, center)
+        
+    # Attach branch-top faces to child 
+    fblock_t = n2f[node]["branch-top"]
+    fblock_t.render()
+    fblock_t.setPos(0, center-fblock_t.h)
+
+    # Vertical line
+    if not _leaf(node):
+        if mode == "circular":
+            vt_line = QtGui.QGraphicsPathItem()
+
+        elif mode == "rect":
+            vt_line = _LineItem(item)
+            first_child_part = n2i[node.children[0]]
+            last_child_part = n2i[node.children[-1]]
+            c1 = first_child_part.start_y + first_child_part.center
+            c2 = last_child_part.start_y + last_child_part.center
+            vt_line.setLine(nodeR.width(), c1,\
+                                nodeR.width(), c2)            
+
+        pen = QtGui.QPen()
+        set_pen_style(pen, style["vt_line_type"])
+        pen.setColor(QtGui.QColor(style["vt_line_color"]))
+        pen.setWidth(style["vt_line_width"])
+        pen.setCapStyle(QtCore.Qt.FlatCap)
+        vt_line.setPen(pen)
+        item.vt_line = vt_line
+    else:
+        vt_line = None
+
+    item.bg = QtGui.QGraphicsItemGroup()
+    item.movable_items = QtGui.QGraphicsItemGroup()
+    item.static_items = QtGui.QGraphicsItemGroup()
+
+    for i in [node_ball, hz_line, fblock_r, fblock_b, fblock_t, extra_line]:
+        item.movable_items.addToGroup(i)
+    for i in [vt_line, extra_line]:
+        if i:
+            item.static_items.addToGroup(i)
+  
+    item.movable_items.setParentItem(item.content)
+    item.static_items.setParentItem(item.content)
+
+    #item.movable_items.setZValue(TREE_ZLEVEL)
+    #item.static_items.setZValue(TREE_ZLEVEL)
+    #item.bg.setZValue(1)
+
+
+
 def render_scale(self):
     length = 50
     scaleItem = _PartitionItem(None) # Unassociated to nodes
@@ -634,15 +639,6 @@ def set_style(n, layout_func):
         raise TypeError("img_style attribute in node %s is not of NodeStyleDict type." \
                             %n.name)
 
-    # This adds the node item (circle, sphere, etc... ) as a normal branch-right face
-    #if n.img_style["size"] > 1:
-    #    add_face_to_node(CircleFace(radius = n.img_style["size"], \
-    #                                    color = n.img_style["fgcolor"], \
-    #                                    style = n.img_style["shape"]),  \
-    #                         node = n, \
-    #                         column = -1, \
-    #                         position="branch-right")
-
     # Adding fixed faces during drawing is not allowed, since
     # added faces will not be tracked until next execution
     n.img_style._block_adding_faces = True
@@ -661,14 +657,15 @@ def render_floatings(n2i, n2f, img, float_layer):
         if img.mode == "circular":
             crender.rotate_and_displace(fb, item.rotation, fb.h, item.radius)
         elif img.mode == "rect":
-            print item.mapToScene(0, 0)
             fb.setPos(item.content.mapToScene(0, item.center-(fb.h/2)))
 
-        fb.setZValue(item.zValue())
+        z = item.zValue()
+        if not img.children_faces_on_top:
+            z = -z
+
+        fb.setZValue(z)
         fb.update_columns_size()
         fb.render()
-        #x = item.nodeRegion.width()/2 (to center item)
-        
 
 def render_aligned_faces(n2i, n2f, img, tree_end_x):
     # Prepares and renders aligned face headers. Used to later
@@ -765,13 +762,11 @@ def render_aligned_faces(n2i, n2f, img, tree_end_x):
     return parent
 
 
-
 def save(scene, imgName, w=None, h=None, header=None, \
              dpi=150, take_region=False):
+
     ext = imgName.split(".")[-1].upper()
-
     main_rect = scene.sceneRect()
-
     aspect_ratio = main_rect.height() / main_rect.width()
 
     # auto adjust size

@@ -34,9 +34,9 @@ def ly(node):
         faces.add_face_to_node(faces.AttrFace("name"), node, 0, position="branch-right")
         #faces.add_face_to_node(faces.AttrFace("support", fsize=6), node, 0, position="branch-top")
         pass
-    elif 1:
+    elif 0:
         FLOAT = faces.CircleFace(random.randint(5,40), random_color(), "sphere")
-        FLOAT.opacity = 0.6
+        FLOAT.opacity = 0.9
         faces.add_face_to_node(FLOAT, node, 0, position="float")
 
 def tiny(node):
