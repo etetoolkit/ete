@@ -22,9 +22,9 @@ def hls2hex(h, l, s):
 def ly(node):
     node.img_style["size"] = 4
     node.img_style["shape"] = "circle"
-    
-    if node.up is not None:
-        node.img_style["bgcolor"] = random_color()
+ 
+
+    node.img_style["bgcolor"] = random_color()
 
     #node.img_style["node_bgcolor"] = random_color()
     #node.img_style["faces_bgcolor"] = random_color()
@@ -34,9 +34,9 @@ def ly(node):
         faces.add_face_to_node(faces.AttrFace("name"), node, 0, position="branch-right")
         #faces.add_face_to_node(faces.AttrFace("support", fsize=6), node, 0, position="branch-top")
         pass
-    elif 0:
+    elif 1:
         FLOAT = faces.CircleFace(random.randint(5,40), random_color(), "sphere")
-        FLOAT.opacity = 0.9
+        FLOAT.opacity = 0.6
         faces.add_face_to_node(FLOAT, node, 0, position="float")
 
 def tiny(node):

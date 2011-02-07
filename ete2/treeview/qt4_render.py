@@ -9,10 +9,6 @@ from qt4_face_render import update_node_faces, _FaceGroupItem
 import qt4_circular_render as crender
 import qt4_rect_render as rrender
 
-BG_ZLEVEL = 0
-FLOATINGS_ZLEVEL = 9
-TREE_ZLEVEL = 10
-
 ## | General scheme on nodes attributes
 ## |==========================================================================================================================|
 ## |                                                fullRegion                                                                |       
@@ -35,7 +31,6 @@ TREE_ZLEVEL = 10
 ## |                                         | branch_length | nodeSize | facesRegion|                                        |
 ## |                                         |=======================================|                                        |
 ## |==========================================================================================================================|
-
 
 class _NodePointItem(QtGui.QGraphicsRectItem):
     def __init__(self, node):
@@ -62,12 +57,13 @@ class _NodePointItem(QtGui.QGraphicsRectItem):
             p.fillRect(self.rect(),QtGui.QBrush(QtGui.QColor(self.node.img_style["fgcolor"])))
         elif self.node.img_style["shape"] == "circle":
             p.setBrush(QtGui.QBrush(QtGui.QColor(self.node.img_style["fgcolor"])))
-            #p.setPen(QtGui.QPen(QtGui.QColor(self.node.img_style["fgcolor"])))
+            p.setPen(QtGui.QPen(QtGui.QColor(self.node.img_style["fgcolor"])))
             p.drawEllipse(self.rect())
 
 class _EmptyItem(QtGui.QGraphicsRectItem):
     def __init__(self, parent=None):
         QtGui.QGraphicsRectItem.__init__(self, parent)
+        self.setParentItem(parent)
 
     def boundingRect(self):
         return self.rect() #QtGui.QRectF(0,0,0,0)
@@ -75,7 +71,7 @@ class _EmptyItem(QtGui.QGraphicsRectItem):
     def paint(self, *args, **kargs):
         return
             
-class _NodeItem(_EmptyItem):#QtGui.QGraphicsItemGroup):
+class _NodeItem(_EmptyItem):
     def __init__(self, node, parent):
         _EmptyItem.__init__(self, parent)
         #QtGui.QGraphicsItemGroup.__init__(self, parent)
@@ -84,7 +80,7 @@ class _NodeItem(_EmptyItem):#QtGui.QGraphicsItemGroup):
         self.facesRegion = QtCore.QRectF()
         self.fullRegion = QtCore.QRectF()
         self.highlighted = False
-        #self.setAcceptsHoverEvents(True)
+        self.setAcceptsHoverEvents(True)
 
     def paint(self, *args, **kargs):
         return 
@@ -93,7 +89,6 @@ class _NodeItem(_EmptyItem):#QtGui.QGraphicsItemGroup):
         return QtGui.QGraphicsRectItem.paint(self, *args, **kargs)
 
         pass
-
 
 class _LineItem(QtGui.QGraphicsLineItem):
     def paint(self, painter, option, widget):
@@ -106,25 +101,35 @@ def render(root_node, img, hide_root=False):
     mode = img.mode
     scale = img.scale
     arc_span = img.arc_span 
-    last_rotation = -90 + img.arc_start
+    last_rotation = img.arc_start
     layout_fn = img._layout_handler
     
     parent = QtGui.QGraphicsRectItem(0, 0, 0, 0, None)
+    parent.bg_layer =  _EmptyItem(parent)
+    parent.tree_layer = _EmptyItem(parent)
+    parent.float_layer = _EmptyItem(parent)
+
+    parent.bg_layer.setZValue(0)
+    parent.tree_layer.setZValue(1)
+    parent.float_layer.setZValue(2)
+
     visited = set()
     to_visit = []
     to_visit.append(root_node)
     rot_step = float(arc_span) / len([n for n in root_node.traverse() if _leaf(n)])
 
     # ::: Precalculate values :::
-    depth = 10
+    depth = 1
     while to_visit:
         node = to_visit[-1]
         finished = True
         if node not in n2i:
             # Set style according to layout function
             set_style(node, layout_fn)
-            item = n2i[node] = _NodeItem(node, parent)
-            item.content = _EmptyItem(parent)
+            item = n2i[node] = _NodeItem(node, parent.tree_layer)
+            item.setZValue(depth)
+
+            depth += 1 
 
             if node is root_node and hide_root:
                 pass
@@ -133,13 +138,6 @@ def render(root_node, img, hide_root=False):
                 if "aligned" in n2f[node]:
                     n2f[node]["aligned"].h 
                     n2f[node]["aligned"].w
-
-            item.setZValue(depth)
-            #if depth negative, draws parent bubbless on top
-            item.content.setZValue(depth)
-            depth+=1 
-            #n2i[node].setParentItem(n2i.get(node.up, parent))
-            #print n2i[node].parentItem() == n2i.get(node.up, parent) , node.name
 
         if not _leaf(node):
             # visit children starting from left most to right
@@ -172,6 +170,7 @@ def render(root_node, img, hide_root=False):
 
         if node is not root_node or not hide_root: 
             render_node_content(node, n2i, n2f, scale, mode)
+
     if mode == "circular":
         max_r = crender.render_circular(root_node, n2i, rot_step)
         parent.moveBy(max_r, max_r)
@@ -185,8 +184,8 @@ def render(root_node, img, hide_root=False):
 
     surroundings = render_aligned_faces(n2i, n2f, img, max_r)
     surroundings.setParentItem(parent)
-    render_backgrounds(n2i, n2f, img, max_r)
-    render_floatings(n2i, n2f, img)
+    render_backgrounds(n2i, n2f, img, max_r, parent.bg_layer)
+    render_floatings(n2i, n2f, img, parent.float_layer)
     return parent, n2i, n2f
 
 
@@ -197,7 +196,7 @@ def traverse(item, level=""):
             traverse(n, level+".")
    
 
-def render_backgrounds(n2i, n2f, img, max_r):
+def render_backgrounds(n2i, n2f, img, max_r, bg_layer):
     for node, item in n2i.iteritems():
         if _leaf(node):
             first_c = n2i[node]
@@ -208,8 +207,8 @@ def render_backgrounds(n2i, n2f, img, max_r):
 
         if img.mode == "circular":               
             h = item.effective_height
-            angle_start = last_c.full_end - item.rotation
-            angle_end = item.rotation - first_c.full_start
+            angle_start = first_c.full_start
+            angle_end = last_c.full_end
             parent_radius = getattr(n2i.get(node.up, None), "radius", 0)
             base = parent_radius + item.nodeRegion.width()
 
@@ -230,14 +229,12 @@ def render_backgrounds(n2i, n2f, img, max_r):
                 bg2.setBrush(QtGui.QBrush(QtGui.QColor(node.img_style["faces_bgcolor"])))
 
             if node.img_style["bgcolor"].upper() != "#FFFFFF":
-                bg3 = crender.ArcPartition()
-                bg3.set_arc(parent_radius, h/2, parent_radius, max_r, angle_start, angle_end)
-                bg3.setPen(QtGui.QPen(QtGui.QColor(node.img_style["bgcolor"])))
-                bg3.setBrush(QtGui.QBrush(QtGui.QColor(node.img_style["bgcolor"])))
-                bg3.setParentItem(item.content)
-                bg3.setZValue(BG_ZLEVEL)
-
-                #bg3.moveBy(random.random()*100, 0)
+                bg = crender._ArcItem()
+                bg.set_arc(0, 0, parent_radius, max_r, angle_start, angle_end)
+                bg.setPen(QtGui.QPen(QtGui.QColor(node.img_style["bgcolor"])))
+                bg.setBrush(QtGui.QBrush(QtGui.QColor(node.img_style["bgcolor"])))
+                bg.setParentItem(bg_layer)
+                bg.setZValue(item.zValue())
 
 
 def set_node_size(node, n2i, n2f, img):
@@ -283,6 +280,7 @@ def set_node_size(node, n2i, n2f, img):
 def render_node_content(node, n2i, n2f, scale, mode):
     style = node.img_style
     item = n2i[node]
+    item.content = _EmptyItem(item)
 
     #partition = QtGui.QGraphicsRectItem(parent_partition)
    
@@ -365,8 +363,6 @@ def render_node_content(node, n2i, n2f, scale, mode):
     else:
         vt_line = None
 
-    #item.content = _EmptyItem(item)
-
     item.bg = QtGui.QGraphicsItemGroup()
     item.movable_items = QtGui.QGraphicsItemGroup()
     item.static_items = QtGui.QGraphicsItemGroup()
@@ -380,8 +376,8 @@ def render_node_content(node, n2i, n2f, scale, mode):
     item.movable_items.setParentItem(item.content)
     item.static_items.setParentItem(item.content)
 
-    item.movable_items.setZValue(TREE_ZLEVEL)
-    item.static_items.setZValue(TREE_ZLEVEL)
+    #item.movable_items.setZValue(TREE_ZLEVEL)
+    #item.static_items.setZValue(TREE_ZLEVEL)
     #item.bg.setZValue(1)
 
 
@@ -657,16 +653,22 @@ def set_style(n, layout_func):
         raise
 
 
-def render_floatings(n2i, n2f, img):
+def render_floatings(n2i, n2f, img, float_layer):
     floating_faces = [ [node, fb["float"]] for node, fb in n2f.iteritems() if "float" in fb]
     for node, fb in floating_faces:
         item = n2i[node]
+        fb.setParentItem(float_layer)
+        if img.mode == "circular":
+            crender.rotate_and_displace(fb, item.rotation, fb.h, item.radius)
+        elif img.mode == "rect":
+            print item.mapToScene(0, 0)
+            fb.setPos(item.content.mapToScene(0, item.center-(fb.h/2)))
+
+        fb.setZValue(item.zValue())
         fb.update_columns_size()
         fb.render()
-        fb.setParentItem(item.content)
-        fb.setZValue(FLOATINGS_ZLEVEL)
         #x = item.nodeRegion.width()/2 (to center item)
-        fb.setPos(0, item.center-(fb.h/2))
+        
 
 def render_aligned_faces(n2i, n2f, img, tree_end_x):
     # Prepares and renders aligned face headers. Used to later

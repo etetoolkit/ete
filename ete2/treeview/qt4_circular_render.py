@@ -85,6 +85,62 @@ class ArcPartition(QtGui.QGraphicsPathItem):
         return QtGui.QGraphicsPathItem.paint(self, painter, option, index)
 
 
+class _ArcItem(QtGui.QGraphicsPathItem):
+    def __init__(self, parent=None):
+        QtGui.QGraphicsPathItem.__init__(self, parent)
+        self.setCacheMode(QtGui.QGraphicsItem.DeviceCoordinateCache)
+        #self.setCacheMode(QtGui.QGraphicsItem.ItemCoordinateCache)
+        
+    def set_arc(self, cxdist, cydist, r1, r2, angle_start, angle_end):
+        """ Draws a 2D arc with two arc lines of length r1 (inner) and
+        r2 (outer) with center in cxdist,cydist. angle_start and
+        angle_end are relative to the starting rotation point equal 0
+        degrees """
+
+        def clockwise(a):
+            if a<0: 
+                return -1 * (a)
+            else:
+                return -a
+            return a
+
+        #self.data = [cxdist, cydist, r1, r2, angle_start, angle_end]
+        d1 = r1 * 2
+        d2 = r2 * 2 
+        r1_xstart = -r1 - cxdist
+        r1_ystart = -r1 + cydist
+        r2_xstart = -r2 - cxdist
+        r2_ystart = -r2 + cydist
+
+        # ArcTo does not use clockwise angles
+        angle_start = clockwise(angle_start)
+        angle_end = clockwise(angle_end)
+        angle_span = angle_end - angle_start
+
+        path = QtGui.QPainterPath()
+        # Calculate start and end points of inner arc
+        path.arcMoveTo(r1_xstart, r1_ystart, d1, d1, angle_start)
+        i1 = path.currentPosition()
+        path.arcMoveTo(r1_xstart, r1_ystart, d1, d1, angle_end)
+        i2 = path.currentPosition()
+        # Moves to outer arc start position
+        path.arcMoveTo(r2_xstart, r2_ystart , d2, d2, angle_start)
+        o1 = path.currentPosition()
+        # Draws outer arc
+        path.arcTo(r2_xstart, r2_ystart, d2, d2, angle_start, angle_span)
+        o2 = path.currentPosition()
+        # Draws line to the end point in inner arc (straight line)
+        path.lineTo(i2)
+        # Draws inner arc from end point to to start 
+        path.arcTo(r1_xstart, r1_ystart, d1, d1, angle_end, -angle_span)
+        # Draws line to the start point of outer arc (straight line)
+        #path.lineTo(o1)
+        self.setPath(path)
+
+    def paint(self, painter, option, index):
+        return QtGui.QGraphicsPathItem.paint(self, painter, option, index)
+
+
 def rotate_and_displace(item, rotation, height, offset):
     """ Rotates and item of a given height over its own axis and moves
     the item offset units in the rotated x axis """

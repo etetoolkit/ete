@@ -57,6 +57,7 @@ def init_rect_node_item(node, n2i, n2f):
     subx = item.nodeRegion.width()
     if item.nodeRegion.height() > all_childs_height:
         suby += ((item.fullRegion.height() - all_childs_height))/2
+
     for c in node.children:
         cpart = n2i[c]
         # Sets x and y position of child within parent
@@ -66,4 +67,3 @@ def init_rect_node_item(node, n2i, n2f):
         cpart.start_y = suby
         suby += cpart.fullRegion.height()
     item.center = get_partition_center(node, n2i, n2f)
-
