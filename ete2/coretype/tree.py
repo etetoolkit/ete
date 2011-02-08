@@ -119,6 +119,9 @@ class TreeNode(object):
         if newick is not None:
             read_newick(newick, root_node = self, format=format)
 
+    def __nonzero__(self):
+        return True
+
     def __repr__(self):
         return "Tree node (%s)" %hex(self.__hash__())
 
@@ -915,7 +918,7 @@ class TreeNode(object):
                 img_properties = TreeImage()
 
             if layout:
-                img_properties.layout_fn = layout
+                img_properties.set_layout_fn(layout)
 
             drawer.show_tree(self, layout=layout, img_properties=img_properties)
 
@@ -935,12 +938,13 @@ class TreeNode(object):
                 img_properties = TreeImage()
 
             if layout:
-                img_properties.layout_fn = layout
+                img_properties.set_layout_fn(layout)
             return drawer.render_tree(self, file_name, w=w, h=h, layout=layout, \
                                    img_properties=img_properties, \
                                    header=header)
 
     def copy(self):
+        """ Returns an exact and complete copy of the node."""
         parent = self.up
         self.up = None
         new_node = copy.deepcopy(self)
@@ -1049,8 +1053,6 @@ class TreeNode(object):
                     node.dist = tree_length - ((node2dist[node.up]) * step)
                 node2dist[node] = node2dist[node.up] + 1
             node.dist = node.dist
-
-
 
 def _translate_nodes(root, *nodes):
     target_nodes = []

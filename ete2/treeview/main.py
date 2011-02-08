@@ -19,9 +19,7 @@ NODE_STYLE_DEFAULT = [
     ["bgcolor",          "#FFFFFF",    _COLOR_CHECKER                           ],
     ["node_bgcolor",     "#FFFFFF",    _COLOR_CHECKER                           ],
     ["partition_bgcolor","#FFFFFF",    _COLOR_CHECKER                           ],
-    ["faces_bgcolor",    "#FFFFFF",    _COLOR_CHECKER                           ],
-    
-    
+    ["faces_bgcolor",    "#FFFFFF",    _COLOR_CHECKER                           ],    
     ["vt_line_color",    "#000000",    _COLOR_CHECKER                           ],
     ["hz_line_color",    "#000000",    _COLOR_CHECKER                           ],
     ["hz_line_type",     0,            _LINE_TYPE_CHECKER                       ], # 0 solid, 1 dashed, 2 dotted
@@ -33,7 +31,7 @@ NODE_STYLE_DEFAULT = [
     ["vt_line_width",          1,      _SIZE_CHECKER                            ]
     ]
 
-
+# _faces and faces are registered to allow deepcopy to work on nodes
 VALID_NODE_STYLE_KEYS = set([i[0] for i in NODE_STYLE_DEFAULT]) | set(["_faces", "faces"])
 
 class NodeStyleDict(dict):
@@ -81,7 +79,6 @@ class NodeStyleDict(dict):
         super(NodeStyleDict, self).__setitem__("_faces", {})
 
 class TreeImage(object):
-
     def set_layout_fn(self, layout):
         # Validates layout function
         if type(layout) == types.FunctionType or\
