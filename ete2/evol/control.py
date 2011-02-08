@@ -224,8 +224,17 @@ AVAIL = {
                             ('ncatG'       , 3)]},
     'bsD'   :  {'typ': 'branch-site', 'evol': 'different-ratios',
                 'exec': 'codeml',
-                'allow_mark': True , 
+                'allow_mark': True ,
                 'changes': [('model'       , 3),
                             ('NSsites'     , 3),
-                            ('ncatG'       , 3)]}
+                            ('ncatG'       , 3)]},
+    'SLR'   :  {'typ' : 'site', 'evol': 'positive/negative selection',
+                'exec': 'Slr',
+                'sep' : '= ',
+                'allow_mark': False ,
+                'changes': map (lambda x: (x[0], '*'),
+                                filter (lambda x: 'file' not in x[0],
+                                        PARAMS.items())) + \
+                [('positive_only', '0')]}
     }
+

@@ -67,7 +67,7 @@ class EvolNode (PhyloNode):
         self._speciesFunction = None
         self.img_prop = None
         self.workdir = '/tmp/ete2-codeml/'
-        self.codemlpath = __path__[0] + '/bin/codeml'
+        self.execpath = __path__[0] + '/bin/'
         self._models = {}
         # Caution! native __init__ has to be called after setting
         # _speciesFunction to None!!
@@ -140,8 +140,12 @@ class EvolNode (PhyloNode):
         os.system("mkdir -p %s" %fullpath)
         # write tree file
         self.__write_algn (fullpath + '/algn')
-        self.write (outfile=fullpath+'/tree', 
-                    format = (10 if model_obj.properties['allow_mark'] else 9))
+        if model_obj.properties['exec'] == 'Slr':
+            self.write (outfile=fullpath+'/tree',
+                        format = (11))
+        else:
+            self.write (outfile=fullpath+'/tree',
+                        format = (10 if model_obj.properties['allow_mark'] else 9))
         # write algn file
         ## MODEL MODEL MDE
         if ctrl_string == '':
@@ -150,11 +154,11 @@ class EvolNode (PhyloNode):
             open (fullpath+'/tmp.ctl', 'w').write (ctrl_string)
         hlddir = os.getcwd()
         os.chdir(fullpath)
-        proc = Popen([self.codemlpath, 'tmp.ctl'], stdout=PIPE)
+        proc = Popen([self.execpath + model_obj.properties ['exec'], 'tmp.ctl'], stdout=PIPE)
         run, err = proc.communicate()
         if err is not None:
             warn ("ERROR: codeml not found!!!\n" + \
-                  "       define your variable EvolTree.codemlpath")
+                  "       define your variable EvolTree.execpath")
             return 1
         if 'error' in run:
             warn ("ERROR: inside codeml!!\n" + run)
@@ -315,7 +319,11 @@ class EvolNode (PhyloNode):
              t.get_newick(["species","name"], format=1)
         """
         from re import sub
-        if int (format)==10:
+        if int (format)==11:
+            nwk = ' %s 1\n' % (len (self))
+            nwk += sub('\[&&NHX:mark=([ #0-9.]*)\]', r'\1', \
+                       write_newick(self, features=['mark'],format=9))
+        elif int (format)==10:
             nwk = sub('\[&&NHX:mark=([ #0-9.]*)\]', r'\1', \
                       write_newick(self, features=['mark'],format=9))
         else:

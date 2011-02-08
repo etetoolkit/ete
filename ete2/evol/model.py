@@ -13,7 +13,7 @@ from re       import sub
 from warnings import warn
 
 from ete_dev.evol.control import PARAMS, AVAIL
-from ete_dev.evol.parser  import parse_paml, parse_rst, get_ancestor
+from ete_dev.evol.parser  import parse_paml, parse_rst, get_ancestor, parse_slr
 
 class Model:
     '''Evolutionnary model.
@@ -43,8 +43,7 @@ class Model:
         params = dict (PARAMS.items ())
         for key, arg in kwargs.items():
             if not params.has_key (key):
-                warn ('WARNING: unknown param %s, will not be used'% (key))
-                continue
+                warn ('WARNING: unknown param %s, can cause problems...'% (key))
             if key == 'gappy':
                 arg = not arg
             params[key] = arg
@@ -56,17 +55,23 @@ class Model:
         '''
         parse outfiles and load in model object
         '''
-        parse_paml (path, self)
-        # parse rst file if site or branch-site model
-        if 'site' in self.properties['typ']:
-            # sites and classes attr
-            for key, val in parse_rst (path).iteritems():
+        if self.properties['exec'] == 'codeml':
+            parse_paml (path, self)
+            # parse rst file if site or branch-site model
+            if 'site' in self.properties['typ']:
+                # sites and classes attr
+                for key, val in parse_rst (path).iteritems():
+                    setattr (self, key, val)
+            if 'ancestor' in self.properties['typ']:
+                get_ancestor (path, self)
+            vars (self) ['lnL'] = self.stats ['lnL']
+            vars (self) ['np']  = self.stats ['np']
+        elif self.properties['exec'] == 'Slr':
+            for key, val in parse_slr (path).iteritems():
                 setattr (self, key, val)
-        if 'ancestor' in self.properties['typ']:
-            get_ancestor (path, self)
-        vars (self) ['lnL'] = self.stats ['lnL']
-        vars (self) ['np']  = self.stats ['np']
-        
+            vars (self) ['lnL'] = 0
+            vars (self) ['np']  = 0
+            
     def _change_params(self, params):
         '''
         change model specific values
@@ -107,7 +112,12 @@ class Model:
             return None
         if header == '':
             header = 'Omega value for sites under %s model' % (self.name)
-        bayes = 'BEB' if self.sites.has_key ('BEB') else 'NEB'
+        if self.sites.has_key ('BEB'):
+            bayes = 'BEB'
+        elif self.sites.has_key ('NEB'):
+            bayes = 'NEB'
+        else:
+            bayes = 'SLR'
         self.properties ['histface'] = \
                         face (values = self.sites [bayes]['w'], 
                               lines = lines, col_lines=col_lines,
@@ -130,8 +140,12 @@ class Model:
         write it, otherwise returns the string
         '''
         string = ''
+        if self.properties.has_key ('sep'):
+            sep = self.properties ['sep']
+        else:
+            sep = ' = '
         for p in ['seqfile', 'treefile', 'outfile']:
-            string += '%15s = %s\n' % (p, str(self.properties ['params'][p]))
+            string += '%15s%s%s\n' % (p, sep, str(self.properties ['params'][p]))
         string += '\n'
         for p in sorted (self.properties ['params'].keys(), cmp=lambda x, y: \
                         cmp(sub('fix_', '', x.lower()),
@@ -139,11 +153,12 @@ class Model:
             if p in ['seqfile', 'treefile', 'outfile']:
                 continue
             if str(self.properties ['params'][p]).startswith('*'):
-                string += ' *'+'%13s = %s\n' \
-                          % (p, str(self.properties ['params'][p])[1:])
+                continue
+                #string += ' *'+'%13s = %s\n' \
+                #          % (p, str(self.properties ['params'][p])[1:])
             else:
-                string += '%15s = %s\n' % (p,
-                                           str (self.properties ['params'][p]))
+                string += '%15s%s%s\n' % (p, sep,
+                                          str (self.properties ['params'][p]))
         if outfile == None:
             return string
         else:

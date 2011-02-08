@@ -74,7 +74,7 @@ def colorize_rst(vals, winner, classes,col=None):
         if pval < 0.95:
             colors.append(col['NS'])
         elif (class1 != class2 and class1 != 1) \
-                 and (winner == 'M2' or winner == 'M8'):
+                 and (winner == 'M2' or winner == 'M8' or winner == 'SLR'):
             if pval < 0.99:
                 colors.append(col['RX'])
             else:
@@ -94,6 +94,8 @@ def colorize_rst(vals, winner, classes,col=None):
                 colors.append(col['RX'])
             else:
                 colors.append(col['RX+'])
+        else:
+            colors.append(col['NS'])
     return colors
 
 class HistFace (faces.Face):
@@ -524,12 +526,19 @@ class ErrorLineProtamineFace (faces.Face):
         else:
             self.max = lines[0]*2
         self.values = map (lambda x: float(x)/self.max*height, values)
-        self.errors = map (lambda x: float('0'+str (x))/self.max*height, errors)
+        if len (errors) == 0:
+            errors = [0]*len (values)
+        if type (errors[0]) is not list :
+            self.errorsP = errors[:]
+            self.errorsN = errors[:]
+        else:
+            self.errorsN, self.errorsP = zip (*errors)
+        self.errorsP = map (lambda x: float('0'+str (x))/self.max*height, self.errorsP)
+        self.errorsN = map (lambda x: float('0'+str (x))/self.max*height, self.errorsN)
         if colors == ['white']:
             colors = colors*len(values)
         self.colors = colors
-        self.fsize  = int ((float (fsize)))
-        self.font   = QtGui.QFont("Courier", self.fsize)
+        self.font   = QtGui.QFont("Courier", fsize)
         self.height = height+25
         self.header = header
         self.lines  = lines
@@ -546,34 +555,28 @@ class ErrorLineProtamineFace (faces.Face):
         '''
         to refresh?
         '''
-
         header_font_size = 8
         # Calculates  header's size
         header_font = QtGui.QFont("Arial", header_font_size) \
                       # could this be modified by the user?
         # Calculates size of main plot
         fm = QtGui.QFontMetrics(self.font)
-        #if self.extras != ['']:
-        #    self.height += 10
         height = self.height
         width = self.col_width * len(self.values)
+        
+        # x and y start
+        x = 0 #(-1 * self._x_offset)
+        y = height - fm.underlinePos()*2
+        
         self.pixmap = QtGui.QPixmap(width+20, height)
         self.pixmap.fill()
         p = QtGui.QPainter(self.pixmap)
         # Set the start x and y of the main plot (taking into account
         # header and scale text)
-        x = 0 #(-1 * self._x_offset)
-        y = height - fm.underlinePos()*2
         if self.num:
             y      -= 25 ## 8
             height -= 40 ## 8
-        #if self.extras  != ['']:
-        #    self.height -= 10
         customPen = QtGui.QPen (QtGui.QColor("red"), 1)
-        #hz_line = QtGui.QGraphicsLineItem (self._QtItem_)
-        #hz_line.setPen  (customPen)
-        #hz_line.setLine (y-20,x+20,y,x+200)
-        #hz_line.setLine (0,0,100,30)
         customPen = QtGui.QPen(QtGui.QColor("black"), 1)        
         p.setPen(customPen)
         customPen.setStyle(QtCore.Qt.SolidLine)
@@ -582,60 +585,49 @@ class ErrorLineProtamineFace (faces.Face):
         posX = x - sep
         p.setFont(header_font)
         customPen = QtGui.QPen(QtGui.QColor("black"), 1)
-        p.setPen(customPen)
+        p.setPen (customPen)
         prev = y-self.values[0]
+        ymax = height+15
         for i in range (0, len (self.values)):
             val = self.values[i]
             try:
-                err = self.errors[i]
+                errP = self.errorsP[i]
+                errN = self.errorsN[i]
             except IndexError:
-                err = 0
+                errP = 0
+                errN = 0
             bgcol = "white"#self.colors[i]
             #bgcol = self.colors[i]
             posX += sep
             customPen  = QtGui.QPen (QtGui.QColor (bgcol), 1)
-            p.setBrush(QtGui.QColor(bgcol))
-            p.setPen(customPen)
-            p.drawRect(posX, y-(self.height-25), 4+self.fsize/2, \
-                       (self.height-25))
+            p.setBrush (QtGui.QColor(bgcol))
+            p.setPen (customPen)
+            p.drawRect (posX, y-(ymax), 4+sep/2, (ymax))
             customPen  = QtGui.QPen (QtGui.QColor ("black"), 1.2)
             p.setPen(customPen)
-            if abs(val) <= (self.height-25):
-                p.drawLine(posX+self.fsize/4, y-val, \
-                           posX-sep+4+self.fsize/4, prev)
+            if abs(val) <= (ymax):
+                p.drawLine(posX+sep/4, y-val, \
+                           posX-sep+4+sep/4, prev)
                 prev = y-val
             else:
-                p.drawLine(posX+self.fsize/4, y-(self.height-25), \
-                           posX-sep+4+self.fsize/4, prev)
-                prev = y-(self.height-25)
+                p.drawLine(posX+sep/4, y-(ymax), \
+                           posX-sep+4+sep/4, prev)
+                prev = y-(ymax)
+
             customPen  = QtGui.QPen (QtGui.QColor ("grey" if bgcol == "white" \
                                                    else "white"), 1.2)
             p.setPen(customPen)
 
-            if abs(val) <= (self.height-25):
-                if (abs(val+err)) > (self.height-25):
-                    p.drawLine(posX+2+self.fsize/4-2, y-val, #2, \
-                               posX+2+self.fsize/4+2, y-val)
-                    p.drawLine(posX+2+self.fsize/4, y - self.height+25,
-                               posX+2+self.fsize/4, y-val) # 2, -err)
-                else:
-                    p.drawLine(posX+2+self.fsize/4, y-val-err,
-                               posX+2+self.fsize/4, y-val) # 2, -err)
-                    p.drawLine(posX+2+self.fsize/4-2, y-val,
-                               posX+2+self.fsize/4+2, y-val) # 2, -err)
-                if (abs(val-err)) > (self.height-25):
-                    p.drawLine(posX+2+self.fsize/4+1, y-val, #2, \
-                               posX+2+self.fsize/4-2, y-val-((self.height-25)))
-                else:
-                    p.drawLine(posX+2+self.fsize/4, y-val, #2, \
-                               posX+2+self.fsize/4,
-                               y-val +(err if err<val else val))
-            elif abs (val-err) < (self.height-25):
-                p.drawLine(posX+2+self.fsize/4-2, y - self.height+25,
-                           posX+2+self.fsize/4+2, y - self.height+25) # 2, -err)
-                p.drawLine(posX+2+self.fsize/4, y-(self.height-25),# 2, \
-                           posX+2+self.fsize/4,
-                           y-(self.height-25)-(val-(err if err<val else val)))
+            # horizontal connector
+            if abs(val) <= (ymax):
+                # if positive error bar is out of bound
+                p.drawLine(posX+2+sep/4-2, y-val, #2, \
+                           posX+2+sep/4+2, y-val)
+            # error bar
+            errP = errP if val+errP <= y else (y-val)
+            errN = errN if (val-errN) >= 0 else val
+            p.drawLine(posX+2+sep/4, y-(val+errP),
+                       posX+2+sep/4, y-(val-errN))
 
         customPen = QtGui.QPen(QtGui.QColor("black"), 1)
         p.setPen(customPen)
@@ -646,10 +638,10 @@ class ErrorLineProtamineFace (faces.Face):
             p.setPen(customPen)
             line = line * self.mean/self.meanVal
             p.drawLine(x, y-line, x+width, y-line)
-        p.setPen(QtGui.QColor("black"))
-        p.drawText(x, y-height+12, self.header)
-        p.setFont(QtGui.QFont("Arial", 7))
-        p.drawText(x+width+2, y+2, "0")
+        p.setPen (QtGui.QColor("black"))
+        p.drawText (x, y-height, self.header)
+        p.setFont (QtGui.QFont("Arial", 7))
+        p.drawText (x+width+2, y+2, "0")
 
         if self.extras != ['']:
             posX = x - sep
