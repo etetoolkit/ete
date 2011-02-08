@@ -131,7 +131,7 @@ class TreeImage(object):
 
         # When top-branch and down-branch faces are larger than scaled
         # branch length, lines are completed
-        self.complete_branch_lines = True
+        self.complete_branch_lines_when_necesary = True
         self.extra_branch_line_color = "#cccccc"
 
         # Shows legend (branch length scale)
@@ -174,7 +174,7 @@ def add_face_to_node(face, node, column, aligned=False, position="branch-right")
         position = "aligned"
 
     node.img_style["_faces"].setdefault(position, {})
-    node.img_style["_faces"][position].setdefault(int(column+1), []).append(face)
+    node.img_style["_faces"][position].setdefault(int(column), []).append(face)
 
 def get_tree_img_map(self):
     node_list = []

@@ -6,7 +6,7 @@ Welcome to Environment for Tree Exploration's documentation!
 
    tutorial
    reference
-
+   changelog
 
 Indices and tables
 ==================

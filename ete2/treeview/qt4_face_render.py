@@ -36,6 +36,7 @@ class _FaceGroupItem(QtGui.QGraphicsItem): # I resisted to name this FaceBookIte
 
         self.node = node
         self.column2faces = faces
+        self.column2size = {}
         
         # column_widths is a dictionary of min column size. Can be
         # used to reserve some space to specific columns
@@ -50,7 +51,7 @@ class _FaceGroupItem(QtGui.QGraphicsItem): # I resisted to name this FaceBookIte
         # column_widths is a dictionary of min column size. Can be
         # used to reserve some space to specific columns
         self.column_widths = column_widths
-        self.columns = sorted(set(self.column2faces.keys()+self.column_widths.keys()))
+        self.columns = sorted(set(self.column2faces.keys() + self.column_widths.keys()))
 
     def paint(self, painter, option, index):
         return

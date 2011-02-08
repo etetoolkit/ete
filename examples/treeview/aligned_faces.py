@@ -1,28 +1,30 @@
-from ete_dev import Tree, faces, TreeImage, NodeStyleDict
+import sys
 import random
 import cPickle
+
+from ete_dev import Tree, faces, TreeImage, NodeStyleDict
 
 def mylayout(node):
     # If node is a leaf, add the nodes name and a its scientific
     # name
-
+    pass
     if node.is_leaf():
         faces.add_face_to_node(content, node, column=0, position="aligned")
         faces.add_face_to_node(content, node, column=1, position="aligned")
         faces.add_face_to_node(content, node, column=3, position="aligned")
-    else:
-        faces.add_face_to_node(ud, node, column=1, position="branch-top")
-        faces.add_face_to_node(ud, node, column=1, position="branch-top")
-        faces.add_face_to_node(ud, node, column=1, position="branch-top")
-        faces.add_face_to_node(ud, node, column=1, position="branch-top")
-        faces.add_face_to_node(bd, node, column=1, position="branch-bottom")
-        faces.add_face_to_node(bd, node, column=1, position="branch-bottom")
-        faces.add_face_to_node(rs2, node, column=1, position="branch-right")
-        faces.add_face_to_node(rs1, node, column=1, position="branch-right")
-        faces.add_face_to_node(rs2, node, column=1, position="branch-right")
-        faces.add_face_to_node(rs2, node, column=1, position="branch-right")
-        faces.add_face_to_node(rs2, node, column=1, position="branch-right")
-        faces.add_face_to_node(rs2, node, column=1, position="branch-right")
+    # else:
+    #     faces.add_face_to_node(ud, node, column=1, position="branch-top")
+    #     faces.add_face_to_node(ud, node, column=1, position="branch-top")
+    #     faces.add_face_to_node(ud, node, column=1, position="branch-top")
+    #     faces.add_face_to_node(ud, node, column=1, position="branch-top")
+    #     faces.add_face_to_node(bd, node, column=1, position="branch-bottom")
+    #     faces.add_face_to_node(bd, node, column=1, position="branch-bottom")
+    #     faces.add_face_to_node(rs2, node, column=1, position="branch-right")
+    #     faces.add_face_to_node(rs1, node, column=1, position="branch-right")
+    #     faces.add_face_to_node(rs2, node, column=1, position="branch-right")
+    #     faces.add_face_to_node(rs2, node, column=1, position="branch-right")
+    #     faces.add_face_to_node(rs2, node, column=1, position="branch-right")
+    #     faces.add_face_to_node(rs2, node, column=1, position="branch-right")
 
 # Margins can now be set for any face
 rs1 = faces.TextFace("branch-right1-with-margins", fsize=20, fgcolor="#009000")
@@ -36,7 +38,7 @@ rs3 = faces.TextFace("branch-right3", fsize=20, fgcolor="#009000")
 
 # New face positions (branch-top and branch-bottom)
 bd = faces.TextFace("branch-bottom", fsize=11, fgcolor="#909000")
-ud = faces.TextFace("branch-top", fsize=11, fgcolor="#099000")
+ud = faces.TextFace("branch-top", fsize=6, fgcolor="#099000")
 
 # And faces can also be used as headers or foot notes of aligned
 # columns
@@ -69,9 +71,9 @@ I = TreeImage()
 # aligned columns (aligned faces)
 
 I.aligned_header.add_face(t1, column = 0)
-I.aligned_header.add_face(t1, 0)
-I.aligned_header.add_face(t1, 0)
-I.aligned_header.add_face(t1, 0)
+I.aligned_header.add_face(t1, 1)
+I.aligned_header.add_face(t1, 2)
+I.aligned_header.add_face(t1, 3)
 
 I.aligned_foot.add_face(t2, column = 0)
 I.aligned_foot.add_face(t2, 1)
@@ -80,12 +82,15 @@ I.aligned_foot.add_face(t2, 3)
 
 t = Tree()
 t.dist = 0
-t.populate(5)
+t.populate(int(sys.argv[1]))
 
 # Bind the precomputed style to the root node 
 t.img_style = style
 # t.render("./test.svg", layout=mylayout, img_properties=I)
+I.mode = "circular"
 t.show(mylayout, img_properties=I)
+
+sys.exit(0)
 
 for n in t.traverse():
     n.img_style.clear()

@@ -7,7 +7,6 @@ python-qt4 (for tree visualization)
 
 INSTALL:
 
-./setup.py install 
-
+python setup.py install 
 
 More info at http://ete.cgenomics.org/download

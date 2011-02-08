@@ -39,6 +39,7 @@ class _NodePointItem(QtGui.QGraphicsRectItem):
         self.diam = self.radius*2
         QtGui.QGraphicsRectItem.__init__(self, 0, 0, self.diam, self.diam)
         self.setCacheMode(QtGui.QGraphicsItem.DeviceCoordinateCache)
+        self.setAcceptsHoverEvents(True)
 
     def paint(self, p, option, widget):
         crender.increase()
@@ -85,7 +86,6 @@ class _NodeItem(_EmptyItem):
         self.facesRegion = QtCore.QRectF()
         self.fullRegion = QtCore.QRectF()
         self.highlighted = False
-        self.setAcceptsHoverEvents(True)
 
 class _LineItem(QtGui.QGraphicsLineItem):
     def paint(self, painter, option, widget):
@@ -144,8 +144,8 @@ class _TreeScene(QtGui.QGraphicsScene):
         self.n2hl = {}
 
         # Set the scene background
-        # self.setBackgroundBrush(QtGui.QColor("white"))
-        self.setBackgroundBrush(QtGui.QBrush(QtCore.Qt.NoBrush))
+        self.setBackgroundBrush(QtGui.QColor("white"))
+        #self.setBackgroundBrush(QtGui.QBrush(QtCore.Qt.NoBrush))
 
     def highlight_node(self, n):
         self.unhighlight_node(n)
@@ -195,94 +195,6 @@ class _TreeScene(QtGui.QGraphicsScene):
     def mouseDoubleClickEvent(self,e):
         QtGui.QGraphicsScene.mouseDoubleClickEvent(self,e)
 
-    def save(self, imgName, w=None, h=None, header=None, \
-                 dpi=150, take_region=False):
-        ext = imgName.split(".")[-1].upper()
-
-        root = self.startNode
-        #aspect_ratio = root.fullRegion.height() / root.fullRegion.width()
-        aspect_ratio = self.i_height / self.i_width
-
-        # auto adjust size
-        if w is None and h is None and (ext == "PDF" or ext == "PS"):
-            w = dpi * 6.4
-            h = w * aspect_ratio
-            if h>dpi * 11:
-                h = dpi * 11
-                w = h / aspect_ratio
-        elif w is None and h is None:
-            w = self.i_width
-            h = self.i_height
-        elif h is None :
-            h = w * aspect_ratio
-        elif w is None:
-            w = h / aspect_ratio
-
-        if ext == "SVG": 
-            svg = QtSvg.QSvgGenerator()
-            svg.setFileName(imgName)
-            svg.setSize(QtCore.QSize(w, h))
-            svg.setViewBox(QtCore.QRect(0, 0, w, h))
-            #svg.setTitle("SVG Generator Example Drawing")
-            #svg.setDescription("An SVG drawing created by the SVG Generator")
-            
-            pp = QtGui.QPainter()
-            pp.begin(svg)
-            targetRect =  QtCore.QRectF(0, 0, w, h)
-            self.render(pp, targetRect, self.sceneRect())
-            pp.end()
-
-        elif ext == "PDF" or ext == "PS":
-            format = QPrinter.PostScriptFormat if ext == "PS" else QPrinter.PdfFormat
-
-            printer = QPrinter(QPrinter.HighResolution)
-            printer.setResolution(dpi)
-            printer.setOutputFormat(format)
-            printer.setPageSize(QPrinter.A4)
-            
-            pageTopLeft = printer.pageRect().topLeft()
-            paperTopLeft = printer.paperRect().topLeft()
-            # For PS -> problems with margins
-            # print paperTopLeft.x(), paperTopLeft.y()
-            # print pageTopLeft.x(), pageTopLeft.y()
-            # print  printer.paperRect().height(),  printer.pageRect().height()
-            topleft =  pageTopLeft - paperTopLeft
-
-            printer.setFullPage(True);
-            printer.setOutputFileName(imgName);
-            pp = QtGui.QPainter(printer)
-            if header:
-                pp.setFont(QtGui.QFont("Verdana",12))
-                pp.drawText(topleft.x(),20, header)
-                targetRect =  QtCore.QRectF(topleft.x(), 20 + (topleft.y()*2), w, h)
-            else:
-                targetRect =  QtCore.QRectF(topleft.x(), topleft.y()*2, w, h)
-
-            if take_region:
-                self.selector.setVisible(False)
-                self.render(pp, targetRect, self.selector.rect())
-                self.selector.setVisible(True)
-            else:
-                self.render(pp, targetRect, self.sceneRect())
-            pp.end()
-            return
-        else:
-            targetRect = QtCore.QRectF(0, 0, w, h)
-            ii= QtGui.QImage(w, \
-                                 h, \
-                                 QtGui.QImage.Format_ARGB32)
-            pp = QtGui.QPainter(ii)
-            pp.setRenderHint(QtGui.QPainter.Antialiasing)
-            pp.setRenderHint(QtGui.QPainter.TextAntialiasing)
-            pp.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
-            if take_region:
-                self.selector.setVisible(False)
-                self.render(pp, targetRect, self.selector.rect())
-                self.selector.setVisible(True)
-            else:
-                self.render(pp, targetRect, self.sceneRect())
-            pp.end()
-            ii.save(imgName)
 
     def draw(self):
         pass
@@ -293,9 +205,6 @@ class _TreeScene(QtGui.QGraphicsScene):
         #     self.scale =  self.props.tree_width / max_dist
         # else:
         #     self.scale =  1
-
-
-
 
 def render(root_node, img, hide_root=False):
     n2i = {} # node to items
@@ -323,7 +232,16 @@ def render(root_node, img, hide_root=False):
     visited = set()
     to_visit = []
     to_visit.append(root_node)
-    rot_step = float(arc_span) / len([n for n in root_node.traverse() if _leaf(n)])
+
+    # This could be used to handle aligned faces in internal
+    # nodes.
+    virtual_leaves = 0
+    for n in root_node.traverse():
+        set_style(n, layout_fn)
+        if _leaf(n):# or len(n.img_style["_faces"]["aligned"]):
+            virtual_leaves += 1
+    rot_step = float(arc_span) / virtual_leaves
+    #rot_step = float(arc_span) / len([n for n in root_node.traverse() if _leaf(n)])
 
     # ::: Precalculate values :::
     depth = 1
@@ -332,7 +250,6 @@ def render(root_node, img, hide_root=False):
         finished = True
         if node not in n2i:
             # Set style according to layout function
-            set_style(node, layout_fn)
             item = n2i[node] = _NodeItem(node, parent.tree_layer)
             item.setZValue(depth)
             depth += 1 
@@ -341,9 +258,6 @@ def render(root_node, img, hide_root=False):
                 pass
             else:
                 set_node_size(node, n2i, n2f, img)
-                if "aligned" in n2f[node]:
-                    n2f[node]["aligned"].h 
-                    n2f[node]["aligned"].w
 
         if not _leaf(node):
             # visit children starting from left most to right
@@ -375,7 +289,7 @@ def render(root_node, img, hide_root=False):
                 rrender.init_rect_node_item(node, n2i, n2f)
 
         if node is not root_node or not hide_root: 
-            render_node_content(node, n2i, n2f, scale, mode)
+            render_node_content(node, n2i, n2f, img)
 
     if mode == "circular":
         max_r = crender.render_circular(root_node, n2i, rot_step)
@@ -388,8 +302,8 @@ def render(root_node, img, hide_root=False):
     if not img.draw_image_border:
         parent.setPen(QtGui.QPen(QtCore.Qt.NoPen))
 
-    surroundings = render_aligned_faces(n2i, n2f, img, max_r)
-    surroundings.setParentItem(parent.tree_layer)
+    surroundings = render_aligned_faces(n2i, n2f, img, max_r, parent)
+    #surroundings.setParentItem(parent.tree_layer)
     render_backgrounds(n2i, n2f, img, max_r, parent.bg_layer)
     render_floatings(n2i, n2f, img, parent.float_layer)
     return parent, n2i, n2f
@@ -451,16 +365,22 @@ def set_node_size(node, n2i, n2f, img):
     min_separation = img.min_leaf_separation
 
     item = n2i[node]
-    branch_length = float(node.dist * scale)
+    branch_length = item.branch_length = float(node.dist * scale)
 
     # Organize faces by groups
     faceblock = update_node_faces(node, n2f)
+
+    if _leaf(node):
+        aligned_height = faceblock["aligned"].h
+    else: 
+        aligned_height = 0
+
 
     # Total height required by the node
     h = max(node.img_style["size"], 
             (node.img_style["size"]/2) + node.img_style["hz_line_width"] + faceblock["branch-top"].h + faceblock["branch-bottom"].h, 
             faceblock["branch-right"].h, 
-            faceblock["aligned"].h, 
+            aligned_height, 
             min_separation,
             )    
 
@@ -486,45 +406,53 @@ def set_node_size(node, n2i, n2f, img):
     # This is the node total region covered by the node
     item.fullRegion.setRect(0, 0, w, h)
 
-def render_node_content(node, n2i, n2f, scale, mode):
+def render_node_content(node, n2i, n2f, img):
     style = node.img_style
     item = n2i[node]
     item.content = _EmptyItem(item)
-
-    #partition = QtGui.QGraphicsRectItem(parent_partition)
-   
+ 
     nodeR = item.nodeRegion
     facesR = item.facesRegion
     center = item.center
-
-    branch_length = float(node.dist * scale)
+    branch_length = item.branch_length
 
     # Node points 
     ball_size = style["size"] 
-    ball_start_x = nodeR.width() - facesR.width() - ball_size
+    ball_start_x = nodeR.width() - facesR.width() - ball_size - 1 # Why -1?? mystery
     node_ball = _NodePointItem(node)
-    node_ball.setPos(ball_start_x, center-(ball_size/2))
+    node_ball.setPos(ball_start_x, center-(ball_size/2.0))
+    #node_ball.setPos(branch_length, center-(ball_size/2.0))
 
     # Branch line to parent
     pen = QtGui.QPen()
     set_pen_style(pen, style["hz_line_type"])
     pen.setColor(QtGui.QColor(style["hz_line_color"]))
     pen.setWidth(style["hz_line_width"])
-    #pen.setCapStyle(QtCore.Qt.FlatCap)
+    pen.setCapStyle(QtCore.Qt.FlatCap)
+    #pen.setCapStyle(QtCore.Qt.RoundCap)
+    #pen.setJoinStyle(QtCore.Qt.RoundJoin)
     hz_line = _LineItem()
     hz_line.setPen(pen)
-    hz_line.setLine(0, center, 
+
+    # the -vt_line_width is to solve small imperfections in line
+    # crosses. 
+    hz_line.setLine(-style["vt_line_width"]/2.0, center, 
                     branch_length, center)
-    #hz_line.setCacheMode(QtGui.QGraphicsItem.DeviceCoordinateCache)
 
-    extra_line = _LineItem()
-    pen.setColor(QtGui.QColor("grey"))
-    set_pen_style(pen, 1)
-    extra_line.setPen(pen)
-    item.extra_branch_line = extra_line
+    if img.complete_branch_lines_when_necesary:
+        extra_line = _LineItem(branch_length, center, ball_start_x, center)
+        pen = QtGui.QPen()
+        item.extra_branch_line = extra_line
+        set_pen_style(pen, 2)
+        pen.setColor(QtGui.QColor("lightgrey"))
+        pen.setCapStyle(QtCore.Qt.FlatCap)
+        pen.setWidth(style["hz_line_width"])
+        extra_line.setPen(pen)
+        item.fake_branch_length = max(branch_length,  ball_start_x)
 
-    #if self.props.complete_branch_lines:
-    #    extra_hz_line = QtGui.QGraphicsLineItem(partition)
+    else:
+        extra_line = None
+
     #    extra_hz_line.setLine(node.dist_xoffset, center, 
     #                          ball_start_x, center)
     #    color = QtGui.QColor(self.props.extra_branch_line_color)
@@ -550,10 +478,10 @@ def render_node_content(node, n2i, n2f, scale, mode):
 
     # Vertical line
     if not _leaf(node):
-        if mode == "circular":
+        if img.mode == "circular":
             vt_line = QtGui.QGraphicsPathItem()
 
-        elif mode == "rect":
+        elif img.mode == "rect":
             vt_line = _LineItem(item)
             first_child_part = n2i[node.children[0]]
             last_child_part = n2i[node.children[-1]]
@@ -576,9 +504,10 @@ def render_node_content(node, n2i, n2f, scale, mode):
     item.movable_items = QtGui.QGraphicsItemGroup()
     item.static_items = QtGui.QGraphicsItemGroup()
 
-    for i in [node_ball, hz_line, fblock_r, fblock_b, fblock_t, extra_line]:
+    for i in [node_ball, fblock_r, fblock_b, fblock_t]:
         item.movable_items.addToGroup(i)
-    for i in [vt_line, extra_line]:
+
+    for i in [vt_line, extra_line, hz_line]:
         if i:
             item.static_items.addToGroup(i)
   
@@ -589,12 +518,10 @@ def render_node_content(node, n2i, n2f, scale, mode):
     #item.static_items.setZValue(TREE_ZLEVEL)
     #item.bg.setZValue(1)
 
-
-
-def render_scale(self):
-    length = 50
-    scaleItem = _PartitionItem(None) # Unassociated to nodes
-    scaleItem.setRect(0, 0, 50, 50)
+def render_scale(scale):
+    length=50
+    scaleItem = _EmptyItem()
+    scaleItem.setRect(0, 0, length, length)
     customPen = QtGui.QPen(QtGui.QColor("black"), 1)
     line = QtGui.QGraphicsLineItem(scaleItem)
     line2 = QtGui.QGraphicsLineItem(scaleItem)
@@ -606,7 +533,7 @@ def render_scale(self):
     line.setLine(0, 5, length, 5)
     line2.setLine(0, 0, 0, 10)
     line3.setLine(length, 0, length, 10)
-    scale_text = "%0.2f" % float(length/self.scale)
+    scale_text = "%0.2f" % float(length/scale)
     scale = QtGui.QGraphicsSimpleTextItem(scale_text)
     scale.setParentItem(scaleItem)
     scale.setPos(0, 10)
@@ -667,52 +594,51 @@ def render_floatings(n2i, n2f, img, float_layer):
         fb.update_columns_size()
         fb.render()
 
-def render_aligned_faces(n2i, n2f, img, tree_end_x):
+def render_aligned_faces(n2i, n2f, img, tree_end_x, parent):
     # Prepares and renders aligned face headers. Used to later
     # place aligned faces
     aligned_faces = [ [node, fb["aligned"]] for node, fb in n2f.iteritems() if "aligned" in fb]
 
-    column2max_width = {}
-    aligned_face_headers = {}
-    aligned_header = img.aligned_header
-    aligned_foot = img.aligned_foot
-    all_columns = set(aligned_header.keys() + aligned_foot.keys())
-    header_afaces = {}
-    foot_afaces = {}
-    parent = _EmptyItem()
+    if img.mode == "rect":
+        fb_head = _FaceGroupItem(img.aligned_header, None)
+        fb_head.setParentItem(parent.tree_layer)
 
-    for c in all_columns:
-        c += 1
-        if c in aligned_header:
-            faces = aligned_header[c]
-            fb = _FaceGroupItem({0:faces}, None)
-            fb.setParentItem(parent)
-            header_afaces[c] = fb
-            column2max_width[c] = fb.w
-
-        if c in aligned_foot:
-            faces = aligned_foot[c]
-            fb = _FaceGroupItem({0:faces}, None)
-            fb.setParentItem(parent)
-            foot_afaces[c] = fb
-            column2max_width[c] = max(column2max_width.get(c,0), fb.w)
+        fb_foot = _FaceGroupItem(img.aligned_foot, None)
+        fb_foot.setParentItem(parent.tree_layer)
+        surroundings = [[None,fb_foot], [None, fb_head]]
+    else:
+        surroundings = []
 
     # Place aligned faces and calculates the max size of each
     # column (needed to place column headers)
+    c2max = {}
     if img.draw_aligned_faces_as_grid: 
-        for node, fb in aligned_faces:
+        for node, fb in aligned_faces + surroundings:
             for c, size in fb.column2size.iteritems():
-                if size[0] > column2max_width.get(c, 0):
-                    column2max_width[c] = size[0]
+                c2max[c] = max(size[0],
+                               c2max.get(c,0))
 
+    if img.mode == "rect":
+        fb_head.set_min_column_widths(c2max)
+        fb_head.update_columns_size()
+        fb_head.render()
+        fb_head.setParentItem(parent.tree_layer)
+        fb_head.setPos(tree_end_x, -fb_head.h)
+        
+        fb_foot.set_min_column_widths(c2max)
+        fb_foot.update_columns_size()
+        fb_foot.render()
+        fb_foot.setParentItem(parent.tree_layer)
+        fb_foot.setPos(tree_end_x, parent.rect().height())
+    
     # Place aligned faces
     for node, fb in aligned_faces:
         item = n2i[node]
-        fb.set_min_column_widths(column2max_width)
+        if c2max:
+            fb.set_min_column_widths(c2max)
         fb.update_columns_size()
         fb.render()
-        fb.setParentItem(item)
-
+        fb.setParentItem(item.content)
         if img.mode == "circular":
             if node.up in n2i:
                 x = tree_end_x - n2i[node.up].radius 
@@ -721,46 +647,7 @@ def render_aligned_faces(n2i, n2f, img, tree_end_x):
             #fb.moveBy(tree_end_x, 0)
         elif img.mode == "rect":
             x = item.mapFromScene(tree_end_x, 0).x() 
-
         fb.setPos(x, item.center-(fb.h/2))
-
-        #fb.setPos(pos.x(), fb.y())
-
-        #if self.props.draw_guidelines:
-        #    guideline = QtGui.QGraphicsLineItem()
-        #    partition = fb.parentItem()
-        #    guideline.setParentItem(partition)
-        #    guideline.setLine(partition.rect().width(), partition.center,\
-        #                      pos.x(), partition.center)
-        #    pen = QtGui.QPen()
-        #    pen.setColor(QtGui.QColor(self.props.guideline_color))
-        #    set_pen_style(pen, self.props.guideline_type)
-        #    guideline.setPen(pen)
-
-    # Place faces around tree
-    if img.mode == "rect":
-        x = tree_end_x
-        y = 100 
-        max_up_height = 0
-        max_down_height = 0
-        for c in column2max_width:
-            fb_up = header_afaces.get(c, None)
-            fb_down = foot_afaces.get(c, None)
-            fb_width = 0
-            if fb_up: 
-                fb_up.render()
-                fb_up.setPos(x, -fb_up.h)
-                fb_width = fb_up.w 
-                max_up_height = max(max_up_height, fb_up.h)
-            if fb_down:
-                fb_down.render()
-                fb_down.setPos(x, y)
-                fb_width = max(fb_down.w, fb_width) 
-                max_down_height = max(max_down_height, fb_down.h)
-            x += column2max_width.get(c, fb_width)
-
-    return parent
-
 
 def save(scene, imgName, w=None, h=None, header=None, \
              dpi=150, take_region=False):
