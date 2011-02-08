@@ -121,7 +121,6 @@ def main():
     tree.mark_tree ([2, 3, 4] + [1, 5], marks=['#1']*3 + ['#2']*2)
     print tree.write()
     tree.run_model ('bsC.2-3-4_1-5')
-    tree.run_model ('bsA1.2')
     print 'pv of LRT bsC vs M1, marking 2 3 4 versus 1 5: ',
     print tree.get_most_likely ('bsC.2-3-4_1-5','M1')
     tree.run_model ('b_free.2-3-4_1-5')
