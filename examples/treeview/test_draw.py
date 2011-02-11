@@ -15,7 +15,6 @@ def random_color(h=None):
 def rgb2hex(rgb):
     return '#%02x%02x%02x' % rgb
 
-
 def hls2hex(h, l, s):
     return rgb2hex( tuple(map(lambda x: int(x*255), colorsys.hls_to_rgb(h, l, s))))
 
@@ -34,7 +33,7 @@ def ly(node):
         faces.add_face_to_node(faces.AttrFace("name"), node, 0, position="branch-right")
         #faces.add_face_to_node(faces.AttrFace("support", fsize=6), node, 0, position="branch-top")
         pass
-    elif 0:
+    elif 1:
         FLOAT = faces.CircleFace(random.randint(5,40), random_color(), "sphere")
         FLOAT.opacity = 0.9
         faces.add_face_to_node(FLOAT, node, 0, position="float")
@@ -45,7 +44,6 @@ def tiny(node):
     node.img_style["fgcolor"] = random_color()
     if node.is_leaf():
         faces.add_face_to_node(faces.AttrFace("name"), node, 0, position="branch-right")
-
 
 n = int(sys.argv[1])
 

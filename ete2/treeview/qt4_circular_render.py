@@ -1,5 +1,4 @@
 import math
-import random
 import colorsys
 from PyQt4 import QtCore, QtGui
 from main import _leaf
@@ -86,11 +85,9 @@ class ArcPartition(QtGui.QGraphicsPathItem):
 
 
 class _ArcItem(QtGui.QGraphicsPathItem):
-    def __init__(self, parent=None):
-        QtGui.QGraphicsPathItem.__init__(self, parent)
-        self.setCacheMode(QtGui.QGraphicsItem.DeviceCoordinateCache)
-        #self.setCacheMode(QtGui.QGraphicsItem.ItemCoordinateCache)
-        
+    def __init__(self):
+        QtGui.QGraphicsPathItem.__init__(self)
+       
     def set_arc(self, cxdist, cydist, r1, r2, angle_start, angle_end):
         """ Draws a 2D arc with two arc lines of length r1 (inner) and
         r2 (outer) with center in cxdist,cydist. angle_start and
@@ -140,15 +137,15 @@ class _ArcItem(QtGui.QGraphicsPathItem):
     def paint(self, painter, option, index):
         return QtGui.QGraphicsPathItem.paint(self, painter, option, index)
 
-
 def rotate_and_displace(item, rotation, height, offset):
-    """ Rotates and item of a given height over its own axis and moves
+    """ Rotates an item of a given height over its own axis and moves
     the item offset units in the rotated x axis """
     t = QtGui.QTransform()
     t.rotate(rotation)
     t.translate(0, - (height / 2))
     t.translate(offset, 0)
     item.setTransform(t)
+
 
 def get_min_radius(w, h, a, xoffset):
     """ returns the radius and X-displacement required to render a
@@ -259,12 +256,6 @@ def init_circular_node_item(node, n2i, n2f):
     item.center = item.effective_height/2
     #if node.up:
     #    item.setParentItem(n2i[node.up])
-
-def random_color(base=0.25):
-    s = 0.5#random.random()
-    v = 0.5+random.random()/2
-    R, G, B = map(lambda x: int(100*x), colorsys.hsv_to_rgb(base, s, v))
-    return "#%s%s%s" %(hex(R)[2:], hex(G)[2:], hex(B)[2:])
 
 
 def get_effective_height(n, n2i, n2f):

@@ -2,13 +2,6 @@ from PyQt4 import QtCore, QtGui
 from qt4_gui import _NodeActions
 from main import FACE_POSITIONS
 
-class _ItemFaceItem(QtGui.QGraphicsRectItem):
-    def __init__(self, face, node):
-        QtGui.QGraphicsRectItem.__init__(self)
-        self.node = node
-    def paint(self, painter, option, index):
-        return
-        
 class _TextFaceItem(QtGui.QGraphicsSimpleTextItem):
     def __init__(self, face, node, text):
         QtGui.QGraphicsSimpleTextItem.__init__(self, text)
@@ -98,8 +91,9 @@ class _FaceGroupItem(QtGui.QGraphicsItem): # I resisted to name this FaceBookIte
                     obj.setParentItem(self)
                     obj.setAcceptsHoverEvents(True)
                 elif f.type == "item":
-                    obj = _ItemFaceItem(f, self.node)
-                    f.item.setParentItem(obj)
+                    obj = f.item
+                    #obj = _ItemFaceItem(f, self.node)
+                    #f.item.setParentItem(obj)
                     obj.setParentItem(self)
                 else:
                     # Loads the pre-generated pixmap
@@ -115,6 +109,16 @@ class _FaceGroupItem(QtGui.QGraphicsItem): # I resisted to name this FaceBookIte
             # X position is incremented by the max width of the last
             # processed column.
             x += w
+
+    def rotate(self, rotation):
+        "rotates item over its own center"
+        for obj in self.childItems():
+            rect = obj.boundingRect()
+            x =  rect.width()/2
+            y =  rect.height()/2
+            obj.setTransform(QtGui.QTransform().translate(x, y).rotate(rotation).translate(-x, -y))
+
+
 
 def update_node_faces(node, n2f):
     # Organize all faces of this node in FaceGroups objects

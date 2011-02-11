@@ -306,7 +306,19 @@ def render(root_node, img, hide_root=False):
     #surroundings.setParentItem(parent.tree_layer)
     render_backgrounds(n2i, n2f, img, max_r, parent.bg_layer)
     render_floatings(n2i, n2f, img, parent.float_layer)
+    if mode == "circular":
+        rotate_inverted_faces(n2i, n2f, img)
+
     return parent, n2i, n2f
+
+
+def rotate_inverted_faces(n2i, n2f, img):
+    for node, faceblock in n2f.iteritems():
+        item = n2i[node]
+        if item.rotation > 90 and item.rotation < 270:
+            for pos, fb in faceblock.iteritems():
+                fb.rotate(180)
+
 
 
 def render_backgrounds(n2i, n2f, img, max_r, bg_layer):
@@ -320,7 +332,7 @@ def render_backgrounds(n2i, n2f, img, max_r, bg_layer):
 
         if img.mode == "circular":               
             h = item.effective_height
-            angle_start = first_c.full_start
+            angle_start = first_c.full_start 
             angle_end = last_c.full_end
             parent_radius = getattr(n2i.get(node.up, None), "radius", 0)
             base = parent_radius + item.nodeRegion.width()
@@ -375,15 +387,16 @@ def set_node_size(node, n2i, n2f, img):
     else: 
         aligned_height = 0
 
-
     # Total height required by the node
-    h = max(node.img_style["size"], 
-            (node.img_style["size"]/2) + node.img_style["hz_line_width"] + faceblock["branch-top"].h + faceblock["branch-bottom"].h, 
-            faceblock["branch-right"].h, 
-            aligned_height, 
-            min_separation,
-            )    
-
+    h = max(node.img_style["size"], \
+                ( (node.img_style["size"]/2) \
+                      + node.img_style["hz_line_width"] \
+                      + faceblock["branch-top"].h \
+                      + faceblock["branch-bottom"].h), \
+                faceblock["branch-right"].h, \
+                aligned_height, \
+                min_separation,\
+                )    
     # Total width required by the node
     w = sum([max(branch_length + node.img_style["size"], 
                                       faceblock["branch-top"].w + node.img_style["size"],
