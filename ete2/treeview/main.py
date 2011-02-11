@@ -121,10 +121,10 @@ class TreeImage(object):
         self.draw_aligned_faces_as_grid = True
 
         # Draws guidelines from leaf nodes to aligned faces
-        self.draw_guidelines = False
+        self.draw_guidelines = True
         # Type of guidelines 
-        self.guideline_type = 2 # 0 solid, 1 dashed, 2 dotted
-        self.guideline_color = "#CCCCCC"
+        self.guideline_type = 1 # 0 solid, 1 dashed, 2 dotted
+        self.guideline_color = "gray"
 
         # Draws a border around the whole tree
         self.draw_image_border = False

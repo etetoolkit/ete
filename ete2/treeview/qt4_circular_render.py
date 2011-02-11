@@ -138,7 +138,7 @@ class _ArcItem(QtGui.QGraphicsPathItem):
         return QtGui.QGraphicsPathItem.paint(self, painter, option, index)
 
 def rotate_and_displace(item, rotation, height, offset):
-    """ Rotates an item of a given height over its own axis and moves
+    """ Rotates an item of a given height over its own left most edis and moves
     the item offset units in the rotated x axis """
     t = QtGui.QTransform()
     t.rotate(rotation)

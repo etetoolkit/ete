@@ -302,13 +302,13 @@ def render(root_node, img, hide_root=False):
     if not img.draw_image_border:
         parent.setPen(QtGui.QPen(QtCore.Qt.NoPen))
 
-    surroundings = render_aligned_faces(n2i, n2f, img, max_r, parent)
-    #surroundings.setParentItem(parent.tree_layer)
-    render_backgrounds(n2i, n2f, img, max_r, parent.bg_layer)
+    extra_width = render_aligned_faces(n2i, n2f, img, max_r, parent)
+    render_backgrounds(n2i, n2f, img, max_r + extra_width, parent.bg_layer)
     render_floatings(n2i, n2f, img, parent.float_layer)
     if mode == "circular":
         rotate_inverted_faces(n2i, n2f, img)
 
+        
     return parent, n2i, n2f
 
 
@@ -457,7 +457,7 @@ def render_node_content(node, n2i, n2f, img):
         pen = QtGui.QPen()
         item.extra_branch_line = extra_line
         set_pen_style(pen, 2)
-        pen.setColor(QtGui.QColor("lightgrey"))
+        pen.setColor(QtGui.QColor("grey"))
         pen.setCapStyle(QtCore.Qt.FlatCap)
         pen.setWidth(style["hz_line_width"])
         extra_line.setPen(pen)
@@ -595,7 +595,13 @@ def render_floatings(n2i, n2f, img, float_layer):
         item = n2i[node]
         fb.setParentItem(float_layer)
         if img.mode == "circular":
-            crender.rotate_and_displace(fb, item.rotation, fb.h, item.radius)
+
+            # Floatings are positioned over branches 
+            crender.rotate_and_displace(fb, item.rotation, fb.h, item.radius - item.nodeRegion.width())
+
+            # Floatings are positioned starting from the node circle 
+            #crender.rotate_and_displace(fb, item.rotation, fb.h, item.radius - item.nodeRegion.width())
+
         elif img.mode == "rect":
             fb.setPos(item.content.mapToScene(0, item.center-(fb.h/2)))
 
@@ -625,11 +631,10 @@ def render_aligned_faces(n2i, n2f, img, tree_end_x, parent):
     # Place aligned faces and calculates the max size of each
     # column (needed to place column headers)
     c2max = {}
-    if img.draw_aligned_faces_as_grid: 
-        for node, fb in aligned_faces + surroundings:
-            for c, size in fb.column2size.iteritems():
-                c2max[c] = max(size[0],
-                               c2max.get(c,0))
+    for node, fb in aligned_faces + surroundings:
+        for c, size in fb.column2size.iteritems():
+            c2max[c] = max(size[0],
+                           c2max.get(c,0))
 
     if img.mode == "rect":
         fb_head.set_min_column_widths(c2max)
@@ -647,7 +652,7 @@ def render_aligned_faces(n2i, n2f, img, tree_end_x, parent):
     # Place aligned faces
     for node, fb in aligned_faces:
         item = n2i[node]
-        if c2max:
+        if img.draw_aligned_faces_as_grid: 
             fb.set_min_column_widths(c2max)
         fb.update_columns_size()
         fb.render()
@@ -660,7 +665,20 @@ def render_aligned_faces(n2i, n2f, img, tree_end_x, parent):
             #fb.moveBy(tree_end_x, 0)
         elif img.mode == "rect":
             x = item.mapFromScene(tree_end_x, 0).x() 
+            
         fb.setPos(x, item.center-(fb.h/2))
+
+        if img.draw_guidelines and _leaf(node):
+            guide_line = _LineItem(item.nodeRegion.width(), item.center, x, item.center)
+            pen = QtGui.QPen()
+            set_pen_style(pen, img.guideline_type)
+            pen.setColor(QtGui.QColor(img.guideline_color))
+            pen.setCapStyle(QtCore.Qt.FlatCap)
+            pen.setWidth(0)
+            guide_line.setPen(pen)
+            guide_line.setParentItem(item.content)
+
+    return sum(c2max.values())
 
 def save(scene, imgName, w=None, h=None, header=None, \
              dpi=150, take_region=False):

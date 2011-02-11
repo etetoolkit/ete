@@ -131,6 +131,7 @@ class Face(object):
         self.margin_bottom = 0
         self.pixmap = None
         self.opacity = 1
+        self.rotable = True
 
     def _size(self):
         if self.pixmap:
@@ -241,8 +242,6 @@ class AttrFace(TextFace):
         return ''.join(map(str, [self.text_prefix, \
                                      getattr(self.node, self.attr), \
                                      self.text_suffix]))
-
-
 
 class ImgFace(Face):
     """ Creates a new image face object.
@@ -816,6 +815,7 @@ class CircleFace(Face):
         self.style = style
         self.color = color
         self.type = "item"
+        self.rotable = False
 
     def update_items(self):
         self.item = _NodePointItem(self.radius, self.style, self.color)

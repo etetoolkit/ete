@@ -103,6 +103,7 @@ class _FaceGroupItem(QtGui.QGraphicsItem): # I resisted to name this FaceBookIte
                 obj.setPos(x+ f.margin_left, y+f.margin_top)
                 if f.opacity < 1:
                     obj.setOpacity(f.opacity)
+                obj.rotable = f.rotable
                 # Y position is incremented by the height of last face
                 # in column
                 y += f._height() + f.margin_top + f.margin_bottom
@@ -113,11 +114,11 @@ class _FaceGroupItem(QtGui.QGraphicsItem): # I resisted to name this FaceBookIte
     def rotate(self, rotation):
         "rotates item over its own center"
         for obj in self.childItems():
-            rect = obj.boundingRect()
-            x =  rect.width()/2
-            y =  rect.height()/2
-            obj.setTransform(QtGui.QTransform().translate(x, y).rotate(rotation).translate(-x, -y))
-
+            if obj.rotable:
+                rect = obj.boundingRect()
+                x =  rect.width()/2
+                y =  rect.height()/2
+                obj.setTransform(QtGui.QTransform().translate(x, y).rotate(rotation).translate(-x, -y))
 
 
 def update_node_faces(node, n2f):
