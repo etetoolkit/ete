@@ -6,7 +6,7 @@ from qt4_gui import _GUI, _PropertiesDialog
 import layouts
 from ete_dev import Tree, PhyloTree, ClusterTree
 from main import TreeImage
-from qt4_render import _TreeScene, render, save
+from qt4_render import _TreeScene, render, save, get_tree_img_map
 
 __all__ = ["show_tree", "render_tree"]
 
@@ -61,5 +61,9 @@ def render_tree(t, imgName, w=None, h=None, layout=None, \
     tree_item.setParentItem(scene.master_item)
     scene.addItem(scene.master_item)
     save(scene, imgName, w, h)
+    imgmap = get_tree_img_map(n2i)
+
+    return imgmap
+    
 
 

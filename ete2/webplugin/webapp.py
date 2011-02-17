@@ -13,6 +13,7 @@ class WebTreeApplication(object):
         self.TREE_TARGET_ACTIONS = ["layout", "search"]
         self.actions = []
         self._layout = None
+        self._img_properties = None
         self._custom_tree_renderer = None
         self._treeid2layout = {}
         self._external_app_handler = None
@@ -39,6 +40,9 @@ class WebTreeApplication(object):
 
     def set_default_layout_fn(self, layout_fn):
         self._layout = layout_fn
+
+    def set_img_properties(self, handler):
+        self._img_properties = handler
 
     def _get_html_map(self, img_map, treeid, mapid, tree):
         # Scans for node-enabled actions.
@@ -124,7 +128,7 @@ class WebTreeApplication(object):
 
         layout_fn = self._treeid2layout.get(treeid, self._layout)
         mapid = "img_map_"+str(time.time())
-        img_map = _render_tree(t, img_path, self.CONFIG["DISPLAY"], layout_fn)
+        img_map = _render_tree(t, img_path, self.CONFIG["DISPLAY"], layout = layout_fn, img_properties = self._img_properties)
         html_map = self._get_html_map(img_map, treeid, mapid, t)
         for n in t.traverse():
             self._treeid2index[treeid][str(n._nid)]=n
@@ -240,6 +244,6 @@ class WebTreeApplication(object):
         else:
             return  '\n'.join(map(str, environ.items())) + str(self.queries) + '\t\n'.join(environ['wsgi.input'])
 
-def _render_tree(t, img_path, display, layout=None):
+def _render_tree(t, img_path, display, layout=None, img_properties=None):
     os.environ["DISPLAY"]=display
-    return t.render(img_path, layout = layout)
+    return t.render(img_path, layout = layout, img_properties = img_properties)

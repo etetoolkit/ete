@@ -176,30 +176,6 @@ def add_face_to_node(face, node, column, aligned=False, position="branch-right")
     node.img_style["_faces"].setdefault(position, {})
     node.img_style["_faces"][position].setdefault(int(column), []).append(face)
 
-def get_tree_img_map(self):
-    node_list = []
-    face_list = []
-    nid = 0
-    for n, partition in self.node2item.iteritems():
-        n.add_feature("_nid", str(nid))
-        for item in partition.childItems():
-            if isinstance(item, _NodeItem):
-                pos = item.mapToScene(0,0)
-                size = item.mapToScene(item.rect().width(), item.rect().height())
-                node_list.append([pos.x(),pos.y(),size.x(),size.y(), nid, None])
-            elif isinstance(item, _FaceGroup):
-                for f in item.childItems():
-                    pos = f.mapToScene(0,0)
-                    if isinstance(f, _TextFaceItem):
-                        size = f.mapToScene(f.boundingRect().width(), \
-                                                f.boundingRect().height())
-                        face_list.append([pos.x(),pos.y(),size.x(),size.y(), nid, str(f.text())])
-                    else:
-                        size = f.mapToScene(f.boundingRect().width(), f.boundingRect().height())
-                        face_list.append([pos.x(),pos.y(),size.x(),size.y(), nid, None])
-        nid += 1
-    return {"nodes": node_list, "faces": face_list}
-
 def random_color(base=None):
     s = 0.5#random.random()
     v = 0.5+random.random()/2

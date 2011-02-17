@@ -92,6 +92,7 @@ t.show(img_properties=I)
 
 I.mode = "circular"
 I2.mode = "rect"
-t.render("test.png", img_properties=I)
+print t.render("test.png", img_properties=I)
+
 t.show(ly, img_properties=I)
 

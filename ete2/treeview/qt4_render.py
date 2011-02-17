@@ -5,7 +5,7 @@ import random
 
 from main import _leaf, NodeStyleDict, add_face_to_node
 from qt4_gui import _PropertiesDialog, _NodeActions
-from qt4_face_render import update_node_faces, _FaceGroupItem
+from qt4_face_render import update_node_faces, _FaceGroupItem, _TextFaceItem
 import qt4_circular_render as crender
 import qt4_rect_render as rrender
 
@@ -32,18 +32,52 @@ import qt4_rect_render as rrender
 ## |                                         |=======================================|                                        |
 ## |==========================================================================================================================|
 
+
+class _CircleItem(QtGui.QGraphicsEllipseItem):
+    def __init__(self, node):
+        self.node = node
+        d = node.img_style["size"]
+        QtGui.QGraphicsEllipseItem.__init__(self, 0, 0, d, d)
+        self.setBrush(QtGui.QBrush(QtGui.QColor(self.node.img_style["fgcolor"])))
+        self.setPen(QtGui.QPen(QtGui.QColor(self.node.img_style["fgcolor"])))
+
+
+class _RectItem(QtGui.QGraphicsRectItem):
+    def __init__(self, node):
+        self.node = node
+        d = node.img_style["size"]
+        QtGui.QGraphicsRectItem.__init__(self, 0, 0, d, d)
+        self.setBrush(QtGui.QBrush(QtGui.QColor(self.node.img_style["fgcolor"])))
+        self.setPen(QtGui.QPen(QtGui.QColor(self.node.img_style["fgcolor"])))
+
+
+class _SphereItem(QtGui.QGraphicsEllipseItem):
+    def __init__(self, node):
+        self.node = node
+        d = node.img_style["size"]
+        r = d/2
+        QtGui.QGraphicsEllipseItem.__init__(self, 0, 0, d, d)
+        self.setBrush(QtGui.QBrush(QtGui.QColor(self.node.img_style["fgcolor"])))
+        self.setPen(QtGui.QPen(QtGui.QColor(self.node.img_style["fgcolor"])))
+        gradient = QtGui.QRadialGradient(r, r, r,(d)/3,(d)/3)
+        gradient.setColorAt(0.05, QtCore.Qt.white);
+        gradient.setColorAt(0.9, QtGui.QColor(self.node.img_style["fgcolor"]));
+        self.setBrush(QtGui.QBrush(gradient))
+        self.setPen(QtCore.Qt.NoPen)
+
+
 class _NodePointItem(QtGui.QGraphicsRectItem):
     def __init__(self, node):
         self.node = node
         self.radius = node.img_style["size"]/2
         self.diam = self.radius*2
         QtGui.QGraphicsRectItem.__init__(self, 0, 0, self.diam, self.diam)
-        self.setCacheMode(QtGui.QGraphicsItem.DeviceCoordinateCache)
-        self.setAcceptsHoverEvents(True)
+        #self.setCacheMode(QtGui.QGraphicsItem.DeviceCoordinateCache)
+        #self.setAcceptsHoverEvents(True)
 
     def paint(self, p, option, widget):
-        crender.increase()
-        p.setClipRect( option.exposedRect )
+        #crender.increase()
+        #p.setClipRect( option.exposedRect )
         if self.node.img_style["shape"] == "sphere":
             r = self.radius
             d = self.diam
@@ -52,10 +86,11 @@ class _NodePointItem(QtGui.QGraphicsRectItem):
             gradient.setColorAt(0.9, QtGui.QColor(self.node.img_style["fgcolor"]));
             p.setBrush(QtGui.QBrush(gradient))
             p.setPen(QtCore.Qt.NoPen)
-
             p.drawEllipse(self.rect())
+
         elif self.node.img_style["shape"] == "square":
             p.fillRect(self.rect(),QtGui.QBrush(QtGui.QColor(self.node.img_style["fgcolor"])))
+
         elif self.node.img_style["shape"] == "circle":
             p.setBrush(QtGui.QBrush(QtGui.QColor(self.node.img_style["fgcolor"])))
             p.setPen(QtGui.QPen(QtGui.QColor(self.node.img_style["fgcolor"])))
@@ -308,9 +343,7 @@ def render(root_node, img, hide_root=False):
     if mode == "circular":
         rotate_inverted_faces(n2i, n2f, img)
 
-        
     return parent, n2i, n2f
-
 
 def rotate_inverted_faces(n2i, n2f, img):
     for node, faceblock in n2f.iteritems():
@@ -318,8 +351,6 @@ def rotate_inverted_faces(n2i, n2f, img):
         if item.rotation > 90 and item.rotation < 270:
             for pos, fb in faceblock.iteritems():
                 fb.rotate(180)
-
-
 
 def render_backgrounds(n2i, n2f, img, max_r, bg_layer):
     for node, item in n2i.iteritems():
@@ -432,7 +463,13 @@ def render_node_content(node, n2i, n2f, img):
     # Node points 
     ball_size = style["size"] 
     ball_start_x = nodeR.width() - facesR.width() - ball_size - 1 # Why -1?? mystery
-    node_ball = _NodePointItem(node)
+    if node.img_style["shape"] == "sphere":
+        node_ball = _SphereItem(node)
+    elif node.img_style["shape"] == "circle":
+        node_ball = _CircleItem(node)
+    elif node.img_style["shape"] == "square":
+        node_ball = _RectItem(node)
+    #node_ball = _NodePointItem(node)
     node_ball.setPos(ball_start_x, center-(ball_size/2.0))
     #node_ball.setPos(branch_length, center-(ball_size/2.0))
 
@@ -519,17 +556,16 @@ def render_node_content(node, n2i, n2f, img):
 
     for i in [node_ball, fblock_r, fblock_b, fblock_t]:
         item.movable_items.addToGroup(i)
+        i.setParentItem(item.content) 
 
     for i in [vt_line, extra_line, hz_line]:
         if i:
             item.static_items.addToGroup(i)
-  
+            i.setParentItem(item.content) 
+
     item.movable_items.setParentItem(item.content)
     item.static_items.setParentItem(item.content)
 
-    #item.movable_items.setZValue(TREE_ZLEVEL)
-    #item.static_items.setZValue(TREE_ZLEVEL)
-    #item.bg.setZValue(1)
 
 def render_scale(scale):
     length=50
@@ -588,7 +624,6 @@ def set_style(n, layout_func):
         n.img_style._block_adding_faces = False
         raise
 
-
 def render_floatings(n2i, n2f, img, float_layer):
     floating_faces = [ [node, fb["float"]] for node, fb in n2f.iteritems() if "float" in fb]
     for node, fb in floating_faces:
@@ -616,7 +651,10 @@ def render_floatings(n2i, n2f, img, float_layer):
 def render_aligned_faces(n2i, n2f, img, tree_end_x, parent):
     # Prepares and renders aligned face headers. Used to later
     # place aligned faces
-    aligned_faces = [ [node, fb["aligned"]] for node, fb in n2f.iteritems() if "aligned" in fb]
+    aligned_faces = [ [node, fb["aligned"]] for node, fb in n2f.iteritems() if fb["aligned"].column2faces]
+
+    if not aligned_faces:
+        return 0
 
     if img.mode == "rect":
         fb_head = _FaceGroupItem(img.aligned_header, None)
@@ -760,3 +798,40 @@ def save(scene, imgName, w=None, h=None, header=None, \
         scene.render(pp, targetRect, scene.sceneRect())
         pp.end()
         ii.save(imgName)
+
+def get_tree_img_map(n2i):
+    node_list = []
+    face_list = []
+    nid = 0
+    for n, main_item in n2i.iteritems():
+        n.add_feature("_nid", str(nid))
+        for item in main_item.content.childItems() + \
+                main_item.childItems():
+
+            if isinstance(item, _NodePointItem):
+                rect = item.mapToScene(item.boundingRect()).boundingRect()
+                x1 = rect.x()
+                y1 = rect.y()
+                x2 = x1 + rect.width()
+                y2 = y1 + rect.height()
+                node_list.append([x1, y1, x2, y2, nid, None])
+
+            elif isinstance(item, _FaceGroupItem):
+                for f in item.childItems():
+                    rect = item.mapToScene(item.boundingRect()).boundingRect()
+                    x1 = rect.x()
+                    y1 = rect.y()
+                    x2 = x1 + rect.width()
+                    y2 = y1 + rect.height()
+                    node_list.append([x1, y1, x2, y2, nid, None])
+                    if isinstance(f, _TextFaceItem):
+                        #size = f.mapToScene(f.boundingRect().width(), \
+                        #                        f.boundingRect().height())
+                        #face_list.append([pos.x(),pos.y(),size.x(),size.y(), nid, str(f.text())])
+                        face_list.append([x1, y1, x2, y2, nid, str(f.text()) ])
+                    else:
+                        #size = f.mapToScene(f.boundingRect().width(), f.boundingRect().height())
+                        #face_list.append([pos.x(),pos.y(),size.x(),size.y(), nid, None])
+                        face_list.append([x1, y1, x2, y2, nid, None])
+        nid += 1
+    return {"nodes": node_list, "faces": face_list}

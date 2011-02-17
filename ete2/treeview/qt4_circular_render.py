@@ -221,6 +221,7 @@ def render_circular(root_node, n2i, rot_step):
             # Faces
             C.setPath(path)
             item.static_items.addToGroup(C)
+            
 
         if hasattr(item, "content"):
             if item.extra_branch_line:
