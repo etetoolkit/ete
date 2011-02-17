@@ -1,0 +1,112 @@
+Sequence file (default: incodon)
+-------------
+  Alignments of sequences should be provided in PAML format. Gaps
+should be specified using a dash '-', sites that are partially gapped
+will be treated as having gaps at all three sites, which in turn are
+treated as missing data.
+Format:
+		number_of_sequences  number_of_nucleotide_sites
+repeated  |     name
+as needed |     sequence with gaps
+
+E.g.
+    3 9
+    human
+    ctg---cct
+    tarsier
+    ctgactgct
+    bushbaby
+    ctgactcct
+
+
+Tree file (default: intree)
+---------
+  Trees should be specified in Newick format (a la PAML). The position
+of a sequence in the tree should be specified by its number in the
+alignment, not by name as it common in PAML.
+E.g.
+  5 1
+  (3:0.14974872, (4:0.02840006, 5:0.06031739):0.15985391,(1:0.17351861, 2:0.22127351):0.06466335);
+
+
+
+Results file (default: slr.res)
+------------
+Results are presented in eleven columns (nine if ldiff is zero)
+
+Site
+  Number of sites in alignment
+
+Neutral
+  (minus) Log-probability of observing site given that it was 
+  evolving neutrally (omega=1)
+
+Optimal
+  (minus) Log-probability of observing site given that it was 
+  evolving at the optimal value of omega.
+
+Omega
+  The value of omega which maximizes the log-probability of observing 
+
+lower
+  Lower bound of support interval ("confidence interval") for omega.
+  Taken by thresholding likelihood surface at distance below maximum
+  defined by ldiff. This column is not present if ldiff is zero.
+
+upper
+  Upper bound of support interval ("confidence interval") for omega.
+  Taken by thresholding likelihood surface at distance below maximum
+  defined by ldiff. This column is not present if ldiff is zero.
+
+LRT_Stat
+  Log-likelihood ratio statistic for non-neutral selection (or
+  positive selection if the positive_only option is set to 1).
+  LRT_Stat = 2 * (Neutral-Optimal)
+
+Pval
+  P-value for non-neutral (or positive) selection at a site,
+  unadjusted for multiple comparisons.
+
+Adj. Pval 
+  P-value for non-neutral (or positive) selection at a site, after
+  adjusting for multiple comparisons using the Hochberg procedure 
+  (see the file "MultipleComparisons.txt" in the doc directory).
+
+Qvalue
+  Q-value for results (positive false discovery rate), see Storey
+(J. Roy. Stat. Soc. B 2002,2004). The parameter lambda is estimated 
+as described in Storey (2004) but an analytical solution to the
+bootstrap is used rather than Monte Carlo estimation.
+
+
+Result
+  A simple visual guide to the result. Sites detected as having been
+  under positive selection are marked with a '+', sites under 
+  purifying selection are marked with '-'. The number of symbols
+    Number symbols	Threshold
+	  1		95%
+	  2		99%
+	  3		95% after adjustment
+	  4		99% after adjustment
+
+  Occasionally the result may also contain an exclamation mark. This
+  indicates that the observation at a site is not significantly
+  different from random (equivalent to infinitely strong positive
+  selection). This may indicate that the alignment at that site is bad
+
+Note
+  The following events are flagged:
+  Synonymous		All codons at a site code for the same amino 
+			acid.
+  Single character	Only one sequence at the site is ungapped,
+			the result of a recent insertion for example.
+  All gaps		All sequences at a site contain a gap
+			character.
+  
+  Sites marked "Single character" or "All gaps" are not counted
+  towards the number of sites for the purposes of correcting for
+  multiple comparisons since it is not possible to detect selection
+  from none or one observation under the assumptions made by the
+  sitewise likelihood ratio test.
+
+

@@ -1,0 +1,49 @@
+
+  SLR implements Hochberg's step-up procedure[1] to correct p-values 
+for multiple tests. This is a method to control the expect number of
+false positives (family-wise error rate) and should not be confused
+with the similarly named procedure for controlling the false discovery
+rate (proportion of positive results which are false)[2].
+
+
+Why correct for multiple tests?
+  The SLR method conducts one hypothesis test for each site in an
+alignment and some sites will have unlikely observations by chance.
+For example, if there are 100 sites and each one is tested at the 5% 
+level, then five false positive results would be expected. The more 
+tests that are carried out, the greater the number of false positives
+expected. By carrying out each test with more stringent conditions,
+the probability that any of the tests results in a false positive can
+be controlled
+
+
+Why not Bonferroni?
+  The Bonferroni procedure reduces all the significant of all
+observations, independently of each other. This assumes the worst case
+that every site in a protein is evolving neutrally and may contribute
+to the false positive total, whereas we would general expect many
+sites to be under positive or purifying selection (true positives) and
+each individual statistic has been penalised too much so the 
+Bonferroni correction will be too conservative. Multi-step
+methods like Hochberg's adjust the correction to take into account 
+the number of sites accepted as true positives, achieving greater power 
+than the Bonferroni correction when several sites are under positive or
+purifying selection, while still controlling the probability of any site 
+being a false positive.
+
+
+Why are some of the adjusted p-values tied?
+  The method for adjusting the p-values ensures that the order of 
+adjusted p-values is the same as that for the original p-values.
+Enforcing this condition causes some p-values to be tied, especially
+for particularly common observations. See Hsu[3] for a more detailed
+explanation.
+
+
+[1] Hochberg, Y. (1988) A sharper Bonferroni procedure for multiple
+tests of significance. Biometrika 75:800--803
+[2] Benjamini, Y., and Hochberg, Y. (1995) Controlling the false
+discovery rate: a practical and powerful approach to multiple testing.
+J. Royal Stat. Soc. B 57:289--300
+[3] Hsu, J. C. (1996) Multiple comparisons: theory and methods.
+Chapman and Hall, London.

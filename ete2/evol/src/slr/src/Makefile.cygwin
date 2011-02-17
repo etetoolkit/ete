@@ -1,0 +1,24 @@
+CC = gcc
+# For Windows
+BLASDIR =
+CFLAGS = -O4 -fomit-frame-pointer -funroll-loops -DNDEBUG -std=gnu99 -mno-cygwin -DWINDOWS
+LDFLAGS = -static -lm 
+
+#CFLAGS = -static -O3 -funroll-loops -DNDEBUG -std=gnu99 -Wall
+#CFLAGS = -Wall -g -DWARNINGS -std=gnu99 -pedantic -mno-cygwin -DWINDOWS
+#CFLAGS = -pg -std=gnu99 -DNDEBUG
+LD = ld
+INCFLAGS= -Iwindows
+
+objects = like.o tree.o data.o rng.o model.o  bases.o codonmodel.o gencode.o utility.o matrix.o optimize_new.o spinner.o options.o tree_data.o linemin.o gamma.o statistics.o mystring.o nucmodel.o root.o vec.o brent.o rbtree.o windows/err.o windows/math_win.o
+
+
+Slr: slr.o $(objects)
+	g77  -o ../bin/$@ slr.o $(objects) $(CFLAGS) $(LDFLAGS) /home/Tim/lib/lapack.a /home/Tim/lib/blas.a
+
+.c.o:
+	$(CC) $(CFLAGS) $(INCFLAGS) -o $@ -c $<
+
+clean:
+	rm -f *~ *.o windows/*.o
+

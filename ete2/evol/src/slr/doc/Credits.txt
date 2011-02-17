@@ -1,0 +1,17 @@
+Originally the code for SLR was build on several other libraries
+although these dependencies have now be removed from the code base.
+
+Thanks to the following:
+
+Meschach library (David Stewart, des@thrain.anu.edu.au)
+  A linear algebra library written in C.
+
+Brent minimizer (Oleg Keselyov, oleg@ponder.csci.unt.edu)
+  Brent's method of minimization in one dimension.
+
+The original code for both these libraries can be obtained from 
+http://www.netlib.org/c/
+
+Hash table functions (Farooq Mela fmela@uci.edu)
+   Dictionary library (hash tables and tree-based structures).
+http://www.crazycoder.org/libdict.html
