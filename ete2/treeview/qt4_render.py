@@ -307,15 +307,25 @@ def render(root_node, img, hide_root=False):
     if mode == "circular":
         max_r = crender.render_circular(root_node, n2i, rot_step)
         parent.moveBy(max_r, max_r)
-        parent.setRect(-max_r, -max_r, max_r*2, max_r*2) 
+        #parent.setRect(-max_r, -max_r, max_r*2, max_r*2) 
+        parent.setRect(0, 0, max_r*2, max_r*2) 
     else:
         parent.setRect(n2i[root_node].fullRegion)
         max_r = n2i[root_node].fullRegion.width()
     
     if not img.draw_image_border:
         parent.setPen(QtGui.QPen(QtCore.Qt.NoPen))
-
+    
     extra_width = render_aligned_faces(n2i, n2f, img, max_r, parent)
+    # If there were aligned faces, we need to re-set main tree size
+    if extra_width:
+        if mode == "circular": 
+            r = (max_r + extra_width)
+            parent.setPos(r, r)
+            parent.setRect(0, 0, r*2, r*2) 
+        if mode == "rect":
+            parent.setRect(0, 0, max_r + extra_width, parent.rect().height())
+       
     render_backgrounds(n2i, n2f, img, max_r + extra_width, parent.bg_layer)
     render_floatings(n2i, n2f, img, parent.float_layer)
     if mode == "circular":
@@ -327,7 +337,6 @@ def render(root_node, img, hide_root=False):
                 fb.flip_hz()
 
     return parent, n2i, n2f
-
 
 def rotate_inverted_faces(n2i, n2f, img):
     for node, faceblock in n2f.iteritems():
@@ -660,8 +669,7 @@ def render_aligned_faces(n2i, n2f, img, tree_end_x, parent):
     c2max = {}
     for node, fb in aligned_faces + surroundings:
         for c, size in fb.column2size.iteritems():
-            c2max[c] = max(size[0],
-                           c2max.get(c,0))
+            c2max[c] = max(size[0], c2max.get(c,0))
 
     if img.mode == "rect":
         fb_head.set_min_column_widths(c2max)
@@ -679,6 +687,7 @@ def render_aligned_faces(n2i, n2f, img, tree_end_x, parent):
     # Place aligned faces
     for node, fb in aligned_faces:
         item = n2i[node]
+        item.mapped_items.append(fb)
         if img.draw_aligned_faces_as_grid: 
             fb.set_min_column_widths(c2max)
         fb.update_columns_size()
@@ -728,6 +737,8 @@ def save(scene, imgName, w=None, h=None, header=None, \
         h = w * aspect_ratio
     elif w is None:
         w = h / aspect_ratio
+
+    print w, h, main_rect
 
     if ext == "SVG": 
         svg = QtSvg.QSvgGenerator()
@@ -794,40 +805,30 @@ def get_tree_img_map(n2i):
     for n, main_item in n2i.iteritems():
         n.add_feature("_nid", str(nid))
         for item in main_item.mapped_items:
-
             if isinstance(item, _CircleItem) \
-                    or isinstance(item, _SphereItem):
+                    or isinstance(item, _SphereItem) \
+                    or isinstance(item, _RectItem):
 
-                rect = item.boundingRect()
-                topleft = item.mapToScene(rect.x(),  rect.y())
-                bottomright = item.mapToScene( rect.bottomRight().x(),  rect.bottomRight().y())
-                x1 = topleft.x()
-                y1 = topleft.y()
-                x2 = bottomright.x()
-                y2 = bottomright.y()
+                r = item.boundingRect()
+                rect = item.mapToScene(r).boundingRect()
+                x1 = rect.x() 
+                y1 = rect.y() 
+                x2 = rect.x() + rect.width()
+                y2 = rect.y() + rect.height()
                 node_list.append([x1, y1, x2, y2, nid, None])
-
-            elif isinstance(item, _RectItem):
-                rect = item.boundingRect()
-                c = item.mapToScene(rect.center())
-                x1 = c.x() - rect.width()/2 
-                y1 = c.y() - rect.height()/2 
-                x2 = x1 + rect.width()
-                y2 = y1 + rect.height() 
-                node_list.append([x1, y1, x2, y2, nid, None])
-
             elif isinstance(item, _FaceGroupItem):
                 if item.column2faces:
                     for f in item.childItems():
-                        rect = item.mapToScene(item.boundingRect()).boundingRect()
-                        x1 = rect.x()
-                        y1 = rect.y()
-                        x2 = x1 + rect.width()
-                        y2 = y1 + rect.height()
-                        node_list.append([x1, y1, x2, y2, nid, None])
+                        r = f.boundingRect()
+                        rect = f.mapToScene(r).boundingRect()
+                        x1 = rect.x() 
+                        y1 = rect.y() 
+                        x2 = rect.x() + rect.width()
+                        y2 = rect.y() + rect.height()
                         if isinstance(f, _TextFaceItem):
                             face_list.append([x1, y1, x2, y2, nid, str(f.text())])
                         else:
                             face_list.append([x1, y1, x2, y2, nid, None])
+                        print "face", face_list[-1]
         nid += 1
     return {"nodes": node_list, "faces": face_list}

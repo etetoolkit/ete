@@ -30,7 +30,7 @@ def ly(node):
 
     if node.is_leaf():
         #faces.add_face_to_node(faces.AttrFace("name"), node, 0, position="aligned")
-        faces.add_face_to_node(faces.AttrFace("name", fsize=16), node, 0, position="branch-right")
+        faces.add_face_to_node(faces.AttrFace("name", fsize=16), node, 0, position="aligned")
         #faces.add_face_to_node(faces.AttrFace("support", fsize=6), node, 0, position="branch-top")
         pass
     elif 0:
