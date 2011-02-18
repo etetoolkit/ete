@@ -100,10 +100,11 @@ class TreeImage(object):
     def __init__(self):
         # mode: circular or  rect
         self.mode = "circular"
+        self.orientation = 0 # 0: left-to-right 1: right-to-left (only rect mode)
 
         # Scale used to convert branch lengths to pixels. None means
         # that it will be estimated using "tree_with".
-        self.scale = 10
+        self.scale = None
 
         # Branch lengths, in pixels, from root node to the most
         # distant leaf. This is used to calculate the scale when this

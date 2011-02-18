@@ -20,7 +20,7 @@ def hls2hex(h, l, s):
 
 def ly(node):
     node.img_style["size"] = 4
-    node.img_style["shape"] = "circle"
+    node.img_style["shape"] = "square"
  
 
     node.img_style["bgcolor"] = random_color()
@@ -30,10 +30,10 @@ def ly(node):
 
     if node.is_leaf():
         #faces.add_face_to_node(faces.AttrFace("name"), node, 0, position="aligned")
-        faces.add_face_to_node(faces.AttrFace("name"), node, 0, position="branch-right")
+        faces.add_face_to_node(faces.AttrFace("name", fsize=16), node, 0, position="branch-right")
         #faces.add_face_to_node(faces.AttrFace("support", fsize=6), node, 0, position="branch-top")
         pass
-    elif 1:
+    elif 0:
         FLOAT = faces.CircleFace(random.randint(5,40), random_color(), "sphere")
         FLOAT.opacity = 0.9
         faces.add_face_to_node(FLOAT, node, 0, position="float")
@@ -49,20 +49,22 @@ n = int(sys.argv[1])
 
 I = TreeImage()
 I.mode = "rect"
-I.scale = n/2
+I.orientation = 1
+#I.scale = n/2
 I.layout_fn = ly
 
 t2 = Tree()
 t2.populate(10)
 I2 = TreeImage()
-I2.scale=1
+#I2.scale=1
 I2.mode = "circular"
 I2.layout_fn = tiny
 I2.arc_start = 45
 I2.arc_span = 360
 
 t = Tree()
-t.populate(n, "ABCDEFGHI", reuse_names=False)
+#t.populate(n, "ABCDEFGHIjklmnopqrstuvwxyz", reuse_names=False)
+t.populate(n, reuse_names=False)
 #t = Tree("(a, b, c);")
 
 

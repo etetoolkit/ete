@@ -28,10 +28,6 @@ def init_scene(t, layout, img):
         
         img._layout_handler = layout
 
-
-
-
-
     if not _QApp:
         _QApp = QtGui.QApplication(["ETE"])
 

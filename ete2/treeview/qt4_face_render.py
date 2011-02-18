@@ -120,6 +120,21 @@ class _FaceGroupItem(QtGui.QGraphicsItem): # I resisted to name this FaceBookIte
                 y =  rect.height()/2
                 obj.setTransform(QtGui.QTransform().translate(x, y).rotate(rotation).translate(-x, -y))
 
+    def flip_hz(self):
+        for obj in self.childItems():
+            rect = obj.boundingRect()
+            x =  rect.width()/2
+            y =  rect.height()/2
+            obj.setTransform(QtGui.QTransform().translate(x, y).scale(-1,1).translate(-x, -y))
+
+    def flip_vt(self):
+        for obj in self.childItems():
+            rect = obj.boundingRect()
+            x =  rect.width()/2
+            y =  rect.height()/2
+            obj.setTransform(QtGui.QTransform().translate(x, y).scale(1,-1).translate(-x, -y))
+
+
 
 def update_node_faces(node, n2f):
     # Organize all faces of this node in FaceGroups objects
