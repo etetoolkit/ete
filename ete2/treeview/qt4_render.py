@@ -745,8 +745,8 @@ def save(scene, imgName, w=None, h=None, header=None, \
         svg.setFileName(imgName)
         svg.setSize(QtCore.QSize(w, h))
         svg.setViewBox(QtCore.QRect(0, 0, w, h))
-        #svg.setTitle("SVG Generator Example Drawing")
-        #svg.setDescription("An SVG drawing created by the SVG Generator")
+        #svg.setTitle("")
+        svg.setDescription("Generated with ETE http://ete.cgenomics.org")
 
         pp = QtGui.QPainter()
         pp.begin(svg)
@@ -829,6 +829,6 @@ def get_tree_img_map(n2i):
                             face_list.append([x1, y1, x2, y2, nid, str(f.text())])
                         else:
                             face_list.append([x1, y1, x2, y2, nid, None])
-                        print "face", face_list[-1]
+                          
         nid += 1
     return {"nodes": node_list, "faces": face_list}

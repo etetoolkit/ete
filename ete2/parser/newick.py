@@ -22,11 +22,14 @@
 # #END_LICENSE#############################################################
 import re
 import os
+import base64 
 
 __all__ = ["read_newick", "write_newick", "print_supported_formats"]
 
 # Regular expressions used for reading newick format
 _ILEGAL_NEWICK_CHARS = ":;(),\[\]\t\n\r="
+_NON_PRINTABLE_CHARS_RE = "[\x00-\x1f]+"
+
 _NHX_RE = "\[&&NHX:[^\]]*\]"
 _FLOAT_RE = "[+-]?\d+\.?\d*(?:[eE][-+]\d+)?"
 #_FLOAT_RE = "[+-]?\d+\.?\d*"
@@ -358,7 +361,6 @@ def write_newick(node, features=[], format=1, _is_root=True):
         newick += ";"
     return newick
 
-
 def _get_features_string(self, features=[]):
     """ Generates the extended newick string NHX with extra data about
     a node. """
@@ -370,7 +372,7 @@ def _get_features_string(self, features=[]):
 
     for pr in features:
         if hasattr(self, pr):
-            value = re.sub("["+_ILEGAL_NEWICK_CHARS+"]", "_", \
+            value = re.sub("["+_ILEGAL_NEWICK_CHARS+"]", "?", \
                              str(getattr(self, pr)))
             if string != "":
                 string +=":"
