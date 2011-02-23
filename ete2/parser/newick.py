@@ -372,7 +372,7 @@ def _get_features_string(self, features=[]):
 
     for pr in features:
         if hasattr(self, pr):
-            value = re.sub("["+_ILEGAL_NEWICK_CHARS+"]", "?", \
+            value = re.sub("["+_ILEGAL_NEWICK_CHARS+"]", "_", \
                              str(getattr(self, pr)))
             if string != "":
                 string +=":"

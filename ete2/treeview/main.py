@@ -10,7 +10,7 @@ _COLOR_CHECKER = lambda x: re.match(_COLOR_MATCH, x)
 _NODE_TYPE_CHECKER = lambda x: x in ["sphere", "circle", "square"]
 _BOOL_CHECKER =  lambda x: isinstance(x, bool) or x in (0,1)
 
-FACE_POSITIONS = set(["branch-right", "aligned", "branch-top", "branch-bottom", "float"])
+FACE_POSITIONS = set(["branch-right", "branch-top", "branch-bottom", "float", "aligned"])
 
 __all__  = ["NodeStyleDict", "TreeImage", "_leaf", "add_face_to_node"]
 
@@ -34,6 +34,28 @@ NODE_STYLE_DEFAULT = [
 # _faces and faces are registered to allow deepcopy to work on nodes
 VALID_NODE_STYLE_KEYS = set([i[0] for i in NODE_STYLE_DEFAULT]) | set(["_faces", "faces"])
 
+class _ActionDelegator(object):
+    """ Used to associate GUI Functions to nodes and faces """ 
+
+    def get_delegate(self):
+        return self._delegate
+
+    def set_delegate(self, delegate):
+        if hasattr(delegate, "init"):
+            delegate.init(self)
+
+        for attr in dir(delegate):
+            if not attr.startswith("_") and attr != "init" :
+                fn = getattr(delegate, attr)
+                setattr(self, attr, types.MethodType(fn, self))
+        self._delegate = delegate
+
+    delegate = property(get_delegate, set_delegate)
+
+    def __init__(self):
+        self._delegate = None
+
+      
 class NodeStyleDict(dict):
     def __init__(self, *args, **kargs):
 
@@ -60,8 +82,9 @@ class NodeStyleDict(dict):
         if self._block_adding_faces:
             raise AttributeError("fixed faces cannot be modified while drawing.")
             
-        """ Add faces as a fixed feature of this node style. This
-        faces are always rendered. 
+        """ 
+        Add faces as a fixed feature of this node style. This faces
+        are always rendered.
 
         face: a Face compatible instance
         Valid positions: %s
@@ -142,7 +165,7 @@ class TreeImage(object):
         self.botton_line_text = None
 
         # Circular tree properties
-        self.arc_start = 0 # 0 degrees = 12 o'clock
+        self.arc_start = 0 # 0 degrees = 3 o'clock
         self.arc_span = 360
 
         self.search_node_bg = "#cccccc"
@@ -155,7 +178,6 @@ class TreeImage(object):
         # Floating faces
         self.floating_faces_under_tree = False
         self.children_faces_on_top = True
-
 
 class FaceHeader(dict):
     def add_face(self, face, column):

@@ -210,9 +210,7 @@ def render_circular(root_node, n2i, rot_step):
             rot_end = n2i[node.children[-1]].rotation
             rot_start = n2i[node.children[0]].rotation
 
-            # C = item.vt_line
-            #C = QtGui.QGraphicsPathItem()
-            C = item.vt_line#QtGui.QGraphicsPathItem()
+            C = item.vt_line
             C.setParentItem(item)
             path = QtGui.QPainterPath()
             # Counter clock wise
@@ -220,14 +218,26 @@ def render_circular(root_node, n2i, rot_step):
             path.arcTo(-r, -r, r*2, r * 2, 360 - rot_start - angle, angle)
             # Faces
             C.setPath(path)
-            item.static_items.addToGroup(C)
+            item.static_items.append(C)
 
         if hasattr(item, "content"):
+
+            # If applies, it sets the length of the extra branch length
             if item.extra_branch_line:
-                final_x = xoffset + item.fake_branch_length
-                item.extra_branch_line.setLine(item.branch_length , item.center, final_x, item.center)
+                xtra =  item.extra_branch_line.line().dx()
+                if xtra > 0:
+                    xtra = xoffset + xtra
+                else:
+                    xtra = xoffset 
+                item.extra_branch_line.setLine(item.branch_length, item.center,\
+                                                   item.branch_length + xtra , item.center)
+                item.nodeRegion.setWidth(item.nodeRegion.width()+xtra)
+
+            # And moves elements 
             if xoffset:
-                item.movable_items.moveBy(xoffset, 0)
+                for i in item.movable_items:
+                    i.moveBy(xoffset, 0)
+                
             
     n2i[root_node].max_r = max_r
     return max_r

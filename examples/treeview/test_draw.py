@@ -19,7 +19,7 @@ def hls2hex(h, l, s):
     return rgb2hex( tuple(map(lambda x: int(x*255), colorsys.hls_to_rgb(h, l, s))))
 
 def ly(node):
-    node.img_style["size"] = 4
+    node.img_style["size"] = 50
     node.img_style["shape"] = "square"
  
 
@@ -29,8 +29,8 @@ def ly(node):
     #node.img_style["faces_bgcolor"] = random_color()
 
     if node.is_leaf():
-        #faces.add_face_to_node(faces.AttrFace("name"), node, 0, position="aligned")
-        faces.add_face_to_node(faces.AttrFace("name", fsize=16), node, 0, position="aligned")
+        faces.add_face_to_node(faces.AttrFace("name"), node, 0, position="aligned")
+        faces.add_face_to_node(faces.AttrFace("name", fsize=16), node, 0)#), position="aligned")
         #faces.add_face_to_node(faces.AttrFace("support", fsize=6), node, 0, position="branch-top")
         pass
     elif 0:

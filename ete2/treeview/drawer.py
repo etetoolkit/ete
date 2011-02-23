@@ -1,7 +1,7 @@
 import types
 
 from PyQt4  import QtGui
-from qt4_gui import _GUI, _PropertiesDialog
+from qt4_gui import _GUI, _PropertiesDialog, _BasicNodeActions
 
 import layouts
 from ete_dev import Tree, PhyloTree, ClusterTree
@@ -32,7 +32,6 @@ def init_scene(t, layout, img):
         _QApp = QtGui.QApplication(["ETE"])
 
     scene  = _TreeScene()
-    #scene.setBspTreeDepth(24)
     return scene, img
 
 def show_tree(t, layout=None, img_properties=None):

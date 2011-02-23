@@ -1,13 +1,13 @@
-import re
 import math
-from PyQt4 import QtCore, QtGui, QtSvg
-import random 
 
-from main import _leaf, NodeStyleDict, add_face_to_node
-from qt4_gui import _PropertiesDialog, _NodeActions
-from qt4_face_render import update_node_faces, _FaceGroupItem, _TextFaceItem
+from PyQt4 import QtCore, QtGui, QtSvg
+
 import qt4_circular_render as crender
 import qt4_rect_render as rrender
+
+from main import _leaf, NodeStyleDict, _ActionDelegator
+from qt4_face_render import update_node_faces, _FaceGroupItem, _TextFaceItem
+
 
 ## | General scheme of node content
 ## |==========================================================================================================================|
@@ -32,7 +32,7 @@ import qt4_rect_render as rrender
 ## |                                         |=======================================|                                        |
 ## |==========================================================================================================================|
 
-class _CircleItem(QtGui.QGraphicsEllipseItem):
+class _CircleItem(QtGui.QGraphicsEllipseItem, _ActionDelegator):
     def __init__(self, node):
         self.node = node
         d = node.img_style["size"]
@@ -40,16 +40,18 @@ class _CircleItem(QtGui.QGraphicsEllipseItem):
         self.setBrush(QtGui.QBrush(QtGui.QColor(self.node.img_style["fgcolor"])))
         self.setPen(QtGui.QPen(QtGui.QColor(self.node.img_style["fgcolor"])))
 
-
-class _RectItem(QtGui.QGraphicsRectItem):
+class _RectItem(QtGui.QGraphicsRectItem, _ActionDelegator):
     def __init__(self, node):
         self.node = node
         d = node.img_style["size"]
         QtGui.QGraphicsRectItem.__init__(self, 0, 0, d, d)
         self.setBrush(QtGui.QBrush(QtGui.QColor(self.node.img_style["fgcolor"])))
         self.setPen(QtGui.QPen(QtGui.QColor(self.node.img_style["fgcolor"])))
+     
+        
+        #self.highlight_node()
 
-class _SphereItem(QtGui.QGraphicsEllipseItem):
+class _SphereItem(QtGui.QGraphicsEllipseItem, _ActionDelegator):
     def __init__(self, node):
         self.node = node
         d = node.img_style["size"]
@@ -61,8 +63,8 @@ class _SphereItem(QtGui.QGraphicsEllipseItem):
         gradient.setColorAt(0.05, QtCore.Qt.white);
         gradient.setColorAt(0.9, QtGui.QColor(self.node.img_style["fgcolor"]));
         self.setBrush(QtGui.QBrush(gradient))
-        #self.setPen(QtCore.Qt.NoPen)
-
+        # self.setPen(QtCore.Qt.NoPen)
+        
 class _EmptyItem(QtGui.QGraphicsItem):
     def __init__(self, parent=None):
         QtGui.QGraphicsItem.__init__(self)
@@ -79,7 +81,17 @@ class _EmptyItem(QtGui.QGraphicsItem):
 
     def paint(self, *args, **kargs):
         return
-            
+
+class _TreeItem(QtGui.QGraphicsRectItem):
+    def __init__(self, parent=None):
+        QtGui.QGraphicsRectItem.__init__(self)
+        self.setParentItem(parent)
+        self.n2i = {}
+        self.n2f = {}
+
+    def paint(self, *args, **kargs):
+        return         
+    
 class _NodeItem(_EmptyItem):
     def __init__(self, node, parent):
         _EmptyItem.__init__(self, parent)
@@ -98,12 +110,12 @@ class _PointerItem(QtGui.QGraphicsRectItem):
         QtGui.QGraphicsRectItem.__init__(self,0,0,0,0, parent)
         self.color = QtGui.QColor("blue")
         self._active = False
+        self.setBrush(QtGui.QBrush(QtCore.Qt.NoBrush))
 
     def paint(self, p, option, widget):
         p.setPen(self.color)
         p.drawRect(self.rect())
         return
-
         # Draw info text
         font = QtGui.QFont("Arial",13)
         text = "%d selected."  % len(self.get_selected_nodes())
@@ -129,7 +141,7 @@ class _PointerItem(QtGui.QGraphicsRectItem):
 class _TreeScene(QtGui.QGraphicsScene):
     def __init__(self):
         QtGui.QGraphicsScene.__init__(self)
-
+        
     def init_data(self, tree, img, n2i, n2f):
         self.master_item = QtGui.QGraphicsRectItem(None)
         self.view = None
@@ -197,7 +209,6 @@ class _TreeScene(QtGui.QGraphicsScene):
     def mouseDoubleClickEvent(self,e):
         QtGui.QGraphicsScene.mouseDoubleClickEvent(self,e)
 
-
     def draw(self):
         pass
         # Get branch scale
@@ -209,9 +220,6 @@ class _TreeScene(QtGui.QGraphicsScene):
         #     self.scale =  1
 
 def render(root_node, img, hide_root=False):
-    n2i = {} # node to items
-    n2f = {} # node to faces
-
     mode = img.mode
     orientation = img.orientation 
 
@@ -229,7 +237,11 @@ def render(root_node, img, hide_root=False):
     last_rotation = img.arc_start
     layout_fn = img._layout_handler
     
-    parent = QtGui.QGraphicsRectItem(0, 0, 0, 0, None)
+    #parent = QtGui.QGraphicsRectItem(0, 0, 0, 0, None)
+    parent = _TreeItem()
+    n2i = parent.n2i # node to items
+    n2f = parent.n2f # node to faces
+
     parent.bg_layer =  _EmptyItem(parent)
     parent.tree_layer = _EmptyItem(parent)
     parent.float_layer = _EmptyItem(parent)
@@ -322,7 +334,7 @@ def render(root_node, img, hide_root=False):
         if mode == "circular": 
             r = (max_r + extra_width)
             parent.setPos(r, r)
-            parent.setRect(0, 0, r*2, r*2) 
+            parent.setRect(0, 0, r, r) 
         if mode == "rect":
             parent.setRect(0, 0, max_r + extra_width, parent.rect().height())
        
@@ -463,8 +475,14 @@ def render_node_content(node, n2i, n2f, img):
             node_ball = _CircleItem(node)
         elif node.img_style["shape"] == "square":
             node_ball = _RectItem(node)
+
         node_ball.setPos(ball_start_x, center-(ball_size/2.0))
-        #node_ball.setPos(branch_length, center-(ball_size/2.0))
+
+        from qt4_gui import _BasicNodeActions
+        node_ball.delegate = _BasicNodeActions()
+        #node_ball.setAcceptsHoverEvents(True)
+        #node_ball.setCursor(QtCore.Qt.PointingHandCursor)
+        
     else:
         node_ball = None
 
@@ -493,7 +511,6 @@ def render_node_content(node, n2i, n2f, img):
         pen.setCapStyle(QtCore.Qt.FlatCap)
         pen.setWidth(style["hz_line_width"])
         extra_line.setPen(pen)
-        item.fake_branch_length = max(branch_length,  ball_start_x)
 
     else:
         extra_line = None
@@ -546,24 +563,26 @@ def render_node_content(node, n2i, n2f, img):
         vt_line = None
 
     item.bg = QtGui.QGraphicsItemGroup()
-    item.movable_items = QtGui.QGraphicsItemGroup()
-    item.static_items = QtGui.QGraphicsItemGroup()
+    item.movable_items = [] #QtGui.QGraphicsItemGroup()
+    item.static_items = [] #QtGui.QGraphicsItemGroup()
 
+    # Items fow which coordinates are exported in the image map
     item.mapped_items = [node_ball, fblock_r, fblock_b, fblock_t]
 
     for i in [node_ball, fblock_r, fblock_b, fblock_t]:
         if i:
-            item.movable_items.addToGroup(i)
-        #i.setParentItem(item.content) 
-
+            #item.movable_items.addToGroup(i)
+            item.movable_items.append(i)
+            i.setParentItem(item.content) 
+            
     for i in [vt_line, extra_line, hz_line]:
         if i:
-            item.static_items.addToGroup(i)
-            #i.setParentItem(item.content) 
+            #item.static_items.addToGroup(i)
+            item.static_items.append(i)
+            i.setParentItem(item.content) 
 
-    item.movable_items.setParentItem(item.content)
-    item.static_items.setParentItem(item.content)
-
+    #item.movable_items.setParentItem(item.content)
+    #item.static_items.setParentItem(item.content)
 
 def render_scale(scale):
     length=50
@@ -717,10 +736,11 @@ def render_aligned_faces(n2i, n2f, img, tree_end_x, parent):
     return sum(c2max.values())
 
 def save(scene, imgName, w=None, h=None, header=None, \
-             dpi=150, take_region=False):
+             dpi=300, take_region=False):
 
     ext = imgName.split(".")[-1].upper()
     main_rect = scene.sceneRect()
+    print main_rect
     aspect_ratio = main_rect.height() / main_rect.width()
 
     # auto adjust size

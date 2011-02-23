@@ -1,13 +1,12 @@
 from PyQt4 import QtCore, QtGui
-from qt4_gui import _NodeActions
-from main import FACE_POSITIONS
+from main import FACE_POSITIONS, _ActionDelegator
 
-class _TextFaceItem(QtGui.QGraphicsSimpleTextItem):
+class _TextFaceItem(QtGui.QGraphicsSimpleTextItem, _ActionDelegator):
     def __init__(self, face, node, text):
         QtGui.QGraphicsSimpleTextItem.__init__(self, text)
         self.node = node
 
-class _ImgFaceItem(QtGui.QGraphicsPixmapItem):
+class _ImgFaceItem(QtGui.QGraphicsPixmapItem, _ActionDelegator):
     def __init__(self, face, node):
         QtGui.QGraphicsPixmapItem.__init__(self)
         self.node = node

@@ -20,12 +20,11 @@ def etime(f):
         print time.time() - t1 
     return a_wrapper_accepting_arguments
 
-
 class _GUI(QtGui.QMainWindow):
     def __init__(self, scene, *args):
         QtGui.QMainWindow.__init__(self, *args)
         self.scene = scene
-        self.view  = _TreeView(scene)
+        self.view = _TreeView(scene)
         scene.view = self.view
         self.node_properties = _PropertiesDialog(scene)
         scene.prop_table = self.node_properties
@@ -578,11 +577,40 @@ class _TreeView(QtGui.QGraphicsView):
             self.update()
         QtGui.QGraphicsView.keyPressEvent(self,e)
 
+class _BasicNodeActions(object):
+    """ Should be added as ActionDelegator """
+
+    @staticmethod
+    def init(obj):
+        obj.setCursor(QtCore.Qt.PointingHandCursor)
+        obj.setAcceptsHoverEvents(True)
+
+    @staticmethod
+    def hoverEnterEvent (obj, e):
+        print "HOLA"
+
+    @staticmethod
+    def hoverLeaveEvent(obj, e):
+        print "ADIOS"
+
+    @staticmethod            
+    def mousePressEvent(obj, e):
+        print "Click"
+
+    @staticmethod
+    def mouseReleaseEvent(obj, e):
+        print obj
+        if e.button() == QtCore.Qt.RightButton:
+            obj.showActionPopup()
+        elif e.button() == QtCore.Qt.LeftButton:
+            obj.scene().prop_table.update_properties(obj.node)
+
+
 class _NodeActions(object):
     """ Used to extend QGraphicsItem features """
     def __init__(self):
         self.setCursor(QtCore.Qt.PointingHandCursor)
-
+        self.setAcceptsHoverEvents(True)
 
     def hoverEnterEvent (self, e):
         self.highlight_node()
@@ -629,8 +657,6 @@ class _NodeActions(object):
             except Exception, e: 
                 print e
             
-
-
     def mouseDoubleClickEvent(self,e):
         if not hasattr(self, "highlighted") or self.highlighted == False:
             bg = self.scene().n2i[self.node]
