@@ -599,12 +599,11 @@ class _BasicNodeActions(object):
 
     @staticmethod
     def mouseReleaseEvent(obj, e):
-        print obj
+        print "Released"
         if e.button() == QtCore.Qt.RightButton:
             obj.showActionPopup()
         elif e.button() == QtCore.Qt.LeftButton:
             obj.scene().prop_table.update_properties(obj.node)
-
 
 class _NodeActions(object):
     """ Used to extend QGraphicsItem features """

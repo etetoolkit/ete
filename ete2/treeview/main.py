@@ -102,6 +102,101 @@ class NodeStyleDict(dict):
         super(NodeStyleDict, self).__setitem__("_faces", {})
 
 class TreeImage(object):
+
+    def __init__(self):
+
+        # :::::::::::::::::::::::::
+        # TREE SHAPE AND SIZE
+        # :::::::::::::::::::::::::
+        
+        # Valid modes are : "circular" or "rect"
+        self.mode = "circular"
+
+        # Layout function used to dynamically control the aspect of
+        # nodes
+        self.layout = None
+        
+        # 0= tree is drawn from left-to-right 1= tree is drawn from
+        # right-to-left. This property only has sense when "rect" mode
+        # is used.
+        self.orientation = 0 
+
+        # Scale used to convert branch lengths to pixels. If 'None',
+        # the scale will be calculated using the "tree_width"
+        # attribute (read bellow)
+        self.scale = None
+
+        # Total width, in pixels, that tree branches are allowed to
+        # used. This is, the distance in pixels from root to the most
+        # distant leaf. If set, this value will be used to
+        # automatically calculate the branch scale.
+        self.tree_width = 200
+
+        # Min separation, in pixels, between to adjacent branches
+        self.min_leaf_separation = 1 
+
+        # When circular trees are drawn, this defines the starting
+        # angle (in degrees) from which leaves are distribute
+        # (clock-wise) around the total arc. 0 = 3 o'clock
+        self.arc_start = 0 
+
+        # Total arc used to draw circular trees (in degrees)
+        self.arc_span = 360
+
+        # :::::::::::::::::::::::::
+        # TREE BRANCHES
+        # :::::::::::::::::::::::::
+
+        # When top-branch and bottom-branch faces are larger than
+        # branch length, branch line can be completed. Also, when
+        # circular trees are drawn, 
+        self.complete_branch_lines_when_necesary = True
+        self.extra_branch_line_color = "#cccccc"
+
+        # Convert tree branches to a fixed length, thus allowing to
+        # observe the topology of tight nodes
+        self.force_topology = False
+
+        # Draw guidelines from leaf nodes to aligned faces
+        self.draw_guiding_lines = True
+
+        # Format and color for the guiding lines
+        self.guiding_lines_type = 1 # 0 solid, 1 dashed, 2 dotted
+        self.guiding_lines_color = "gray"
+
+        # :::::::::::::::::::::::::
+        # FACES
+        # :::::::::::::::::::::::::
+
+        # Aligned faces will be drawn as a table, considering all
+        # columns in all node faces.
+        self.draw_aligned_faces_as_grid = True
+
+        # By default, floating faces are expected to be transparent,
+        # so they can be plotted directly on the tree image. However,
+        # you can also render all floating faces under the tree to
+        # ensure total tree topology visibility
+        self.floating_faces_under_tree = False
+
+        # When floating faces from different nodes overlap, children
+        # faces are drawn on top of parent faces. This can be reversed
+        # by setting this attribute to false.
+        self.children_faces_on_top = True
+
+        # :::::::::::::::::::::::::
+        # Addons
+        # :::::::::::::::::::::::::
+
+        # Draw a border around the whole tree
+        self.draw_image_border = False
+
+        # Draw the scale 
+        self.draw_image_border = False
+
+        # Initialize aligned face headers
+        self.aligned_header = FaceHeader()
+        self.aligned_foot = FaceHeader()
+
     def set_layout_fn(self, layout):
         # Validates layout function
         if type(layout) == types.FunctionType or\
@@ -119,66 +214,7 @@ class TreeImage(object):
         return self._layout_fn
 
     layout_fn = property(get_layout_fn, set_layout_fn)
-
-    def __init__(self):
-        # mode: circular or  rect
-        self.mode = "circular"
-        self.orientation = 0 # 0: left-to-right 1: right-to-left (only rect mode)
-
-        # Scale used to convert branch lengths to pixels. None means
-        # that it will be estimated using "tree_with".
-        self.scale = None
-
-        # Branch lengths, in pixels, from root node to the most
-        # distant leaf. This is used to calculate the scale when this
-        # is not manually set.
-        self.tree_width = 200
-
-        # Min separation, in pixels, between to adjacent branches
-        self.min_leaf_separation = 1 # in pixels
-
-        # Complete lines representing branch lengths to better observe
-        # the topology of trees
-        self.force_topology = False
-
-        # Aligned faces will be drawn in aligned columns
-        self.draw_aligned_faces_as_grid = True
-
-        # Draws guidelines from leaf nodes to aligned faces
-        self.draw_guidelines = True
-        # Type of guidelines 
-        self.guideline_type = 1 # 0 solid, 1 dashed, 2 dotted
-        self.guideline_color = "gray"
-
-        # Draws a border around the whole tree
-        self.draw_image_border = False
-
-        # When top-branch and down-branch faces are larger than scaled
-        # branch length, lines are completed
-        self.complete_branch_lines_when_necesary = True
-        self.extra_branch_line_color = "#cccccc"
-
-        # Shows legend (branch length scale)
-        self.show_legend = True
-
-        self.title = None
-        self.botton_line_text = None
-
-        # Circular tree properties
-        self.arc_start = 0 # 0 degrees = 3 o'clock
-        self.arc_span = 360
-
-        self.search_node_bg = "#cccccc"
-        self.search_node_fg = "#ff0000"
-
-        # Initialize aligned face headers
-        self.aligned_header = FaceHeader() # aligned face_header
-        self.aligned_foot = FaceHeader()
         
-        # Floating faces
-        self.floating_faces_under_tree = False
-        self.children_faces_on_top = True
-
 class FaceHeader(dict):
     def add_face(self, face, column):
         self.setdefault(int(column), []).append(face)

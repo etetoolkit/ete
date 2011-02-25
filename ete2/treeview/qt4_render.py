@@ -723,11 +723,11 @@ def render_aligned_faces(n2i, n2f, img, tree_end_x, parent):
             
         fb.setPos(x, item.center-(fb.h/2))
 
-        if img.draw_guidelines and _leaf(node):
+        if img.draw_guiding_lines and _leaf(node):
             guide_line = _LineItem(item.nodeRegion.width(), item.center, x, item.center)
             pen = QtGui.QPen()
-            set_pen_style(pen, img.guideline_type)
-            pen.setColor(QtGui.QColor(img.guideline_color))
+            set_pen_style(pen, img.guiding_lines_type)
+            pen.setColor(QtGui.QColor(img.guiding_lines_color))
             pen.setCapStyle(QtCore.Qt.FlatCap)
             pen.setWidth(0)
             guide_line.setPen(pen)
