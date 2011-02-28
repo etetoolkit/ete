@@ -67,7 +67,6 @@ t = Tree()
 t.populate(n, reuse_names=False)
 #t = Tree("(a, b, c);")
 
-
 print t.get_ascii(show_internal=True)
 
 style = NodeStyleDict()

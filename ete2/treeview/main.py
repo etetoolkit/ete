@@ -120,7 +120,7 @@ class TreeImage(object):
         # right-to-left. This property only has sense when "rect" mode
         # is used.
         self.orientation = 0 
-
+        
         # Scale used to convert branch lengths to pixels. If 'None',
         # the scale will be calculated using the "tree_width"
         # attribute (read bellow)

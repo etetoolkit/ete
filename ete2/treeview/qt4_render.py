@@ -771,7 +771,7 @@ def save(scene, imgName, w=None, h=None, header=None, \
         pp = QtGui.QPainter()
         pp.begin(svg)
         targetRect =  QtCore.QRectF(0, 0, w, h)
-        scene.render(pp, targetRect, scene.sceneRect())
+        scene.render(pp, scene.sceneRect(), scene.sceneRect())
         pp.end()
 
     elif ext == "PDF" or ext == "PS":
