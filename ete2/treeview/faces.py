@@ -170,18 +170,20 @@ class TextFace(Face):
     penwidth: Penwdith used to draw the text. (default is 0)
     """
 
-    def __init__(self, text, ftype="Verdana", fsize=10, fgcolor="#000000", bgcolor=None, penwidth=0):
+    def __init__(self, text, ftype="Verdana", fsize=10, fgcolor="#000000", bgcolor=None, penwidth=0, fstyle="normal"):
         Face.__init__(self)
 
         if bgcolor is None:
             bgcolor = QtCore.Qt.transparent
-        self.pixmap      = None
-        self.type        = "text"
-        self.text        = str(text)
+        self.pixmap = None
+        self.type = "text"
+
+        self.text = str(text)
         self.bgcolor = bgcolor
         self.fgcolor = fgcolor
         self.ftype = ftype 
         self.fsize = fsize
+        self.fstyle = fstyle
         self.penwidth = penwidth
         #self.pen         = QtGui.QPen(QtGui.QColor(fgcolor))
         #self.pen.setWidth(penwidth)
@@ -192,18 +194,24 @@ class TextFace(Face):
         #self.fgcolor = QtGui.QColor(fgcolor)
         #self.font    = QtGui.QFont(ftype,fsize)
 
-    def _height(self):
+    def _get_font(self):
         font = QtGui.QFont(self.ftype, self.fsize)
-        fm = QtGui.QFontMetrics(font)
+        if self.fstyle == "italic":
+            font.setStyle(QtGui.QFont.StyleItalic)
+        elif self.fstyle == "oblique":
+            font.setStyle(QtGui.QFont.StyleOblique)
+        return font
+
+    def _height(self):
+        fm = QtGui.QFontMetrics(self._get_font())
         h =  fm.boundingRect(QtCore.QRect(), \
                                  QtCore.Qt.AlignLeft, \
                                  self.get_text()).height()
         return h
 
     def _width(self):
-        font = QtGui.QFont(self.ftype, self.fsize)
-        fm = QtGui.QFontMetrics(font)
-        return fm.size(QtCore.Qt.AlignTop, self.text).width()
+        fm = QtGui.QFontMetrics(self._get_font())
+        return fm.size(QtCore.Qt.AlignTop, self.get_text()).width()
 
     def get_text(self):
         return self.text
@@ -224,19 +232,13 @@ class AttrFace(TextFace):
     """
 
     def __init__(self, attr, ftype="Verdana", fsize=10, fgcolor="#000000", \
-                     bgcolor=None, penwidth=0, text_prefix="", text_suffix=""):
+                     bgcolor=None, penwidth=0, text_prefix="", text_suffix="", fstyle="normal"):
         Face.__init__(self)
-        TextFace.__init__(self, "", ftype, fsize, fgcolor, bgcolor, penwidth)
+        TextFace.__init__(self, "", ftype, fsize, fgcolor, bgcolor, penwidth, fstyle)
         self.attr     = attr
         self.type     = "text"
         self.text_prefix = text_prefix
         self.text_suffix = text_suffix
-
-    def _width(self):
-        font = QtGui.QFont(self.ftype, self.fsize)
-        text = self.get_text()
-        fm = QtGui.QFontMetrics(font)
-        return fm.size(QtCore.Qt.AlignTop,text).width()
 
     def get_text(self):
         return ''.join(map(str, [self.text_prefix, \

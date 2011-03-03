@@ -143,6 +143,12 @@ class TreeImage(object):
         # Total arc used to draw circular trees (in degrees)
         self.arc_span = 360
 
+        # Margins around tree picture
+        self.margin_left = 1
+        self.margin_right = 1
+        self.margin_top = 1
+        self.margin_bottom = 1
+
         # :::::::::::::::::::::::::
         # TREE BRANCHES
         # :::::::::::::::::::::::::
@@ -151,7 +157,8 @@ class TreeImage(object):
         # branch length, branch line can be completed. Also, when
         # circular trees are drawn, 
         self.complete_branch_lines_when_necesary = True
-        self.extra_branch_line_color = "#cccccc"
+        self.extra_branch_line_type = 2 # 0 solid, 1 dashed, 2 dotted
+        self.extra_branch_line_color = "gray" 
 
         # Convert tree branches to a fixed length, thus allowing to
         # observe the topology of tight nodes
@@ -161,7 +168,7 @@ class TreeImage(object):
         self.draw_guiding_lines = True
 
         # Format and color for the guiding lines
-        self.guiding_lines_type = 1 # 0 solid, 1 dashed, 2 dotted
+        self.guiding_lines_type = 2 # 0 solid, 1 dashed, 2 dotted
         self.guiding_lines_color = "gray"
 
         # :::::::::::::::::::::::::
@@ -188,10 +195,10 @@ class TreeImage(object):
         # :::::::::::::::::::::::::
 
         # Draw a border around the whole tree
-        self.draw_image_border = False
+        self.draw_border = False
 
         # Draw the scale 
-        self.draw_image_border = False
+        self.draw_scale = False
 
         # Initialize aligned face headers
         self.aligned_header = FaceHeader()

@@ -1,7 +1,7 @@
 /*  it requires jquery loaded */
 
-var ete_webplugin_URL = "http://jaime.phylomedb.org/wsgi/webplugin.py";
-var loading_img = '<img border=0 src="/webplugin/loader.gif">';
+var ete_webplugin_URL = "http://jaime.phylomedb.org/wsgi/tol/tol_example.py";
+var loading_img = '<img border=0 src="/loader.gif">';
 
 function draw_tree(treeid, newick, recipient, extra_params){
   var params = {"tree": newick, "treeid": treeid};
@@ -10,8 +10,12 @@ function draw_tree(treeid, newick, recipient, extra_params){
     }
 
   $(recipient).html(loading_img);
-  $(recipient).load(ete_webplugin_URL+'/draw', params);
-    }
+  //$(recipient).fadeTo(500, 0.2);
+  $(recipient).load(ete_webplugin_URL+'/draw', params,  function() {
+          $(recipient).fadeTo(100, 1);
+  });
+}
+
 function show_context_menu(treeid, nodeid, actions, textface){
   if ( textface==undefined ){
     var textface = "";
@@ -23,9 +27,11 @@ function show_context_menu(treeid, nodeid, actions, textface){
 
 function run_action(treeid, nodeid, aindex, search_term){
   var recipient = "#ETE_tree_"+treeid;
-  $(recipient).html(loading_img);
-  $(recipient).load(ete_webplugin_URL+'/action', {"treeid": treeid, "nid": nodeid, "aindex": aindex, "search_term": search_term}
-                   );
+  //$(recipient).html(loading_img);
+  $(recipient).fadeTo(500, 0.3);
+  $(recipient).load(ete_webplugin_URL+'/action', {"treeid": treeid, "nid": nodeid, "aindex": aindex, "search_term": search_term}, function() {
+          $(recipient).fadeTo(250, 1);
+      });
 }
 
 function random_tid(){

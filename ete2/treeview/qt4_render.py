@@ -88,9 +88,6 @@ class _TreeItem(QtGui.QGraphicsRectItem):
         self.setParentItem(parent)
         self.n2i = {}
         self.n2f = {}
-
-    def paint(self, *args, **kargs):
-        return         
     
 class _NodeItem(_EmptyItem):
     def __init__(self, node, parent):
@@ -317,29 +314,47 @@ def render(root_node, img, hide_root=False):
             render_node_content(node, n2i, n2f, img)
 
     if mode == "circular":
-        max_r = crender.render_circular(root_node, n2i, rot_step)
-        parent.moveBy(max_r, max_r)
+        tree_radius = crender.render_circular(root_node, n2i, rot_step)
+        iwidth = tree_radius * 2
+        iheight = tree_radius * 2
+        parent.moveBy(tree_radius, tree_radius)
         #parent.setRect(-max_r, -max_r, max_r*2, max_r*2) 
-        parent.setRect(0, 0, max_r*2, max_r*2) 
+        #parent.setRect(0, 0, max_r*2, max_r*2) 
     else:
-        parent.setRect(n2i[root_node].fullRegion)
-        max_r = n2i[root_node].fullRegion.width()
+        iwidth = n2i[root_node].fullRegion.width()
+        iheight = n2i[root_node].fullRegion.height()
+        tree_radius = iwidth
     
-    if not img.draw_image_border:
-        parent.setPen(QtGui.QPen(QtCore.Qt.NoPen))
-    
-    extra_width = render_aligned_faces(n2i, n2f, img, max_r, parent)
+   
+    aligned_region_width = render_aligned_faces(n2i, n2f, img, tree_radius, parent)
+  
     # If there were aligned faces, we need to re-set main tree size
-    if extra_width:
+    if 0 and extra_width:
         if mode == "circular": 
             r = (max_r + extra_width)
             parent.setPos(r, r)
             parent.setRect(0, 0, r, r) 
         if mode == "rect":
             parent.setRect(0, 0, max_r + extra_width, parent.rect().height())
+
+    # Set tree margins
+    if mode == "circular": 
+        parent.setRect( -tree_radius - img.margin_left,  -tree_radius-img.margin_top, \
+                            iwidth + img.margin_left + img.margin_right + aligned_region_width, \
+                            iheight + img.margin_top + img.margin_bottom)
+    elif mode == "rect": 
+        parent.setRect(-img.margin_left,  -img.margin_top, \
+                            iwidth + img.margin_left + img.margin_right + aligned_region_width, \
+                            iheight + img.margin_top + img.margin_bottom)
+        
+
        
-    render_backgrounds(n2i, n2f, img, max_r + extra_width, parent.bg_layer)
+    # Background colors
+    render_backgrounds(n2i, n2f, img, tree_radius + aligned_region_width, parent.bg_layer)
+
+    # Place Floating faces
     render_floatings(n2i, n2f, img, parent.float_layer)
+
     if mode == "circular":
         rotate_inverted_faces(n2i, n2f, img)
     elif mode == "rect" and orientation == 1: 
@@ -347,6 +362,13 @@ def render(root_node, img, hide_root=False):
         for faceblock in n2f.itervalues():
             for pos, fb in faceblock.iteritems():
                 fb.flip_hz()
+
+    # Draws a border around the tree
+    if not img.draw_border:
+        parent.setPen(QtGui.QPen(QtCore.Qt.NoPen))
+    else:
+        parent.setPen(QtGui.QPen(QtGui.QColor("black")))
+
 
     return parent, n2i, n2f
 
@@ -506,21 +528,13 @@ def render_node_content(node, n2i, n2f, img):
         extra_line = _LineItem(branch_length, center, ball_start_x, center)
         pen = QtGui.QPen()
         item.extra_branch_line = extra_line
-        set_pen_style(pen, 2)
-        pen.setColor(QtGui.QColor("grey"))
+        set_pen_style(pen, img.extra_branch_line_type)
+        pen.setColor(QtGui.QColor(img.extra_branch_line_color))
         pen.setCapStyle(QtCore.Qt.FlatCap)
         pen.setWidth(style["hz_line_width"])
         extra_line.setPen(pen)
-
     else:
         extra_line = None
-
-    #    extra_hz_line.setLine(node.dist_xoffset, center, 
-    #                          ball_start_x, center)
-    #    color = QtGui.QColor(self.props.extra_branch_line_color)
-    #    pen = QtGui.QPen(color)
-    #    set_pen_style(pen, style["line_type"])
-    #    extra_hz_line.setPen(pen)
 
     # Attach branch-right faces to child 
     fblock_r = n2f[node]["branch-right"]

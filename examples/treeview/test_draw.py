@@ -30,7 +30,9 @@ def ly(node):
 
     if node.is_leaf():
         #faces.add_face_to_node(faces.AttrFace("name"), node, 0, position="aligned")
-        faces.add_face_to_node(faces.AttrFace("name", fsize=16), node, 0)#), position="aligned")
+        faces.add_face_to_node(faces.AttrFace("name", fsize=16, fstyle="italic"), node, 0)#), position="aligned")
+        faces.add_face_to_node(faces.AttrFace("name", fsize=16, fstyle="oblique"), node, 0)#), position="aligned")
+
         #faces.add_face_to_node(faces.AttrFace("support", fsize=6), node, 0, position="branch-top")
         pass
     elif 0:
@@ -43,7 +45,7 @@ def tiny(node):
     node.img_style["shape"] = "circle"
     node.img_style["fgcolor"] = random_color()
     if node.is_leaf():
-        faces.add_face_to_node(faces.AttrFace("name"), node, 0, position="branch-right")
+        faces.add_face_to_node(faces.AttrFace("name", fstyle="italic"), node, 0, position="branch-right")
 
 n = int(sys.argv[1])
 
@@ -52,6 +54,11 @@ I.mode = "rect"
 I.orientation = 1
 #I.scale = n/2
 I.layout_fn = ly
+I.margin_left = 50
+I.margin_right = 100
+I.margin_top = 100
+I.margin_bottom = 50
+I.draw_border = True
 
 t2 = Tree()
 t2.populate(10)

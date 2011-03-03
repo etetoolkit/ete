@@ -84,7 +84,7 @@ class _FaceGroupItem(QtGui.QGraphicsItem): # I resisted to name this FaceBookIte
                 f.node = self.node
                 if f.type == "text":
                     obj = _TextFaceItem(f, self.node, f.get_text())
-                    font = QtGui.QFont(f.ftype, f.fsize)
+                    font = f._get_font()
                     obj.setFont(font)
                     obj.setBrush(QtGui.QBrush(QtGui.QColor(f.fgcolor)))
                     obj.setParentItem(self)
