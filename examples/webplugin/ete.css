@@ -67,7 +67,7 @@
  }
 
 #ete_close_popup{
-    background-image:url('close.png');
+    background-image:url('/webplugin/close.png');
     width:16px;
     height:16px;
     cursor:auto;
