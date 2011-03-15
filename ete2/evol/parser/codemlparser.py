@@ -170,10 +170,16 @@ def parse_paml (pamout, model):
         line = line.rstrip()
         # lnL and number of parameters
         if line.startswith ('lnL'):
-            line = re.sub ('.* np: *(\d+)\): +(-\d+\.\d+).*',
-                           '\\1 \\2', line)
-            model.stats ['np' ] = int   (line.split()[0])
-            model.stats ['lnL'] = float (line.split()[1])
+            try:
+                line = re.sub ('.* np: *(\d+)\): +(-\d+\.\d+).*',
+                               '\\1 \\2', line)
+                model.stats ['np' ] = int   (line.split()[0])
+                model.stats ['lnL'] = float (line.split()[1])
+            except ValueError:
+                line = re.sub ('.* np: *(\d+)\): +(nan).*',
+                               '\\1 \\2', line)
+                model.stats ['np' ] = int   (line.split()[0])
+                model.stats ['lnL'] = float ('-inf')
             continue
         # get labels of internal branches
         if line.count('..') >= 2:
@@ -182,8 +188,11 @@ def parse_paml (pamout, model):
             continue
         # retrieve kappa
         if line.startswith ('kappa '):
-            model.stats ['kappa'] = float (re.sub ('.*(\d+\.\d+).*',
-                                                   '\\1', line))
+            try:
+                model.stats ['kappa'] = float (re.sub ('.*(\d+\.\d+).*',
+                                                       '\\1', line))
+            except ValueError:
+                model.stats ['kappa'] = 'nan'
         # retrieve dS dN t w N S and if present, errors. from summary table
         if line.count('..') == 1 and line.startswith (' '):
             if not re.match (' +\d+\.\.\d+ +\d\.\d+ ', line):
