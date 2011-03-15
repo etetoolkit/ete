@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-#0;115;0c #START_LICENSE###########################################################
+# #START_LICENSE###########################################################
 #
 # Copyright (C) 2009 by Jaime Huerta Cepas. All rights reserved.
 # email: jhcepas@gmail.com
