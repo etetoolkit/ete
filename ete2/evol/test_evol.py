@@ -168,9 +168,6 @@ def main():
         tree.run_model ('bsC.' + omega, omega=omega)
 
 
-    tree = EvolTree ('((((Hylobates_EDN,(Orang_EDN,(Gorilla_EDN,(Chimp_EDN,Human_EDN)))),(Macaq_EDN,(Cercopith_EDN,(Macaq2_EDN,Papio_EDN)))),(Orang_ECP,((Macaq_ECP,Macaq2_ECP),(Goril_ECP,Chimp_ECP,Human_ECP)))),OwlMonkey_EDN,Tamarin_EDN);')
-    tree.run_model ('fb.17spe')
-
     print "The End."
 
 
