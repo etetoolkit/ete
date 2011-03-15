@@ -10,7 +10,7 @@
 
 #include "paml.h"
 
-#define NS            5000
+#define NS            10000
 #define NBRANCH       (NS*2-2)
 #define NNODE         (NS*2-1)
 #define MAXNSONS      100
@@ -199,6 +199,9 @@ int main (int argc, char *argv[])
       if(idata)  GetOptions(ctlf); /* com.cleandata is read from here again. */
       ReadSeq ((com.verbose?fout:NULL), fseq, com.cleandata);
       SetMapAmbiguity();
+
+      /* AllPatterns(fout); */
+
       if (com.rho && com.readpattern) error2("rho doesn't work with readpattern.");
       if(com.ndata==1) fclose(fseq);
       i=(com.ns*2-1)*sizeof(struct TREEN);
@@ -270,6 +273,70 @@ int main (int argc, char *argv[])
 
       if(getdistance)
          DistanceMatNuc(fout,fpair[0],com.model,com.alpha);
+
+
+#if(0)
+/* Selecting the most divergent sequences using the distance matrix 
+*/
+{
+	char keep[NS];
+	FILE *ftmp=gfopen("newdata.txt", "w");
+	int is, js, i,j, nskeep, isbest=0, isk, chosen[NS];
+   double dmax, dminmax, d, dbig=9;
+
+   if(com.model==0 && com.print==0)
+      error2("choose RateAncestor = 1 to print the seqs correctly.");
+   nskeep=5;
+	printf("\nPicking up the most different sequences.\nHow many do you want? ");
+	scanf("%d", &nskeep);
+
+   if(nskeep>=com.ns) error2("nothing to do");
+
+   for(is=0; is<com.ns; is++) {
+      keep[is] = 0;
+      chosen[is] = -1;
+   }
+
+   for(is=0,dmax=0; is<com.ns; is++) {
+      for(js=0; js<is; js++) {
+         d = SeqDistance[is*(is-1)/2+js];
+         if(dmax<d) { dmax = d; chosen[1]=is; chosen[0]=js; }
+      }
+   }
+   keep[chosen[0]] = keep[chosen[1]] = 1;
+   printf("selected seq %3d %s\n", chosen[0]+1, com.spname[chosen[0]]);
+   printf("selected seq %3d %s\n", chosen[1]+1, com.spname[chosen[1]]);
+   for (isk=2; isk<nskeep; isk++) {
+      for(is=0,dminmax=0; is<com.ns; is++) { 
+         if(keep[is]) continue;
+         /* d is the smallest distance to those chosen */
+         for(js=0,d=dbig; chosen[js]!=-1; js++) {
+            i = max2(is,chosen[js]);
+            j = min2(is,chosen[js]);
+            if(d>SeqDistance[i*(i-1)/2+j]) d = SeqDistance[i*(i-1)/2+j];
+         }
+         if(dminmax<d) {
+            dminmax = d;  isbest = is;
+         }
+      }
+      keep[isbest] = 1;
+      chosen[isk] = isbest;
+      printf("selected seq %5d (dmin = %8.4f): %s\n", isbest+1, dminmax, com.spname[isbest]);
+   }
+
+   fprintf(ftmp,"%6d %6d\n", nskeep, com.ls);
+   for(j=0; j<com.ns; j++) {
+      if(keep[j]==0) continue;
+      fprintf(ftmp,"%-40s  ", com.spname[j]);
+      print1seq (ftmp, com.z[j], com.ls, com.pose);
+      FPN(ftmp);
+   }
+   fclose(ftmp);
+   return(0);
+
+}
+
+#endif
 
       if (com.Mgene==1)        MultipleGenes (fout, fpair, com.space);
       else if (com.runmode==0) Forestry (fout);
@@ -574,12 +641,14 @@ void DetailOutput (FILE *fout, double x[], double var[])
 
    fprintf(fout,"\nDetailed output identifying parameters\n");
    if(com.clock) OutputTimesRates(fout, x, var);
-   k=com.ntime;
-   if (com.nrgene && !com.clock) {
+   k = com.ntime;
+   
+   if (com.nrgene) { /* this used to be:  if (com.nrgene && !com.clock) */
       fprintf (fout, "\nrates for %d genes:%6.0f", com.ngene, 1.);
-      FOR (i,com.nrgene) fprintf (fout, " %8.5f", x[k+i]);  FPN(fout);
+      for(i=0; i<com.nrgene; i++) 
+         fprintf (fout, " %8.5f", x[k++]);
+      FPN(fout);
    }
-   k+=com.nrgene;
    
    if(com.nhomo==1) {
       if(com.nrate) fprintf (fout, "kappa under %s:", models[com.model]);
@@ -893,17 +962,19 @@ int GetInitials (double x[], int *fromfile)
    size_t sconP_new=(size_t)(tree.nnode-com.ns)*com.ncode*com.npatt*com.ncatG*sizeof(double);
    double t=-1;
 
-   NFunCall=NPMatUVRoot=NEigenQ=0;
+   NFunCall = NPMatUVRoot = NEigenQ = 0;
    if(com.clock==ClockCombined && com.ngene<=1) 
       error2("Combined clock model requires mutliple genes.");
    GetInitialsTimes (x);
 
-   com.plfun=lfunAdG;
-   if (com.alpha==0 && com.nparK==0)  com.plfun=lfun;
+   com.plfun = lfunAdG;
+   if (com.alpha==0 && com.nparK==0) 
+      com.plfun = lfun;
    else if ((com.alpha && com.rho==0) || com.nparK==1 || com.nparK==2)
-      com.plfun=lfundG;
+      com.plfun = lfundG;
 
-   if(com.clock && com.fix_blength==-1) com.fix_blength=0;
+   if(com.clock && com.fix_blength==-1)
+      com.fix_blength = 0;
 
    if(com.method && com.fix_blength!=2 && com.plfun==lfundG) {
       com.conPSiteClass = 1;

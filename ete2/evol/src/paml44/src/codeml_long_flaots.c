@@ -345,10 +345,13 @@ int main (int argc, char *argv[])
          FPN(F0);
       }
 
-      com.cleandata=cleandata0;
+      com.cleandata = cleandata0;
+
       /* ReadSeq may change seqtype*/
       ReadSeq((com.verbose?fout:NULL),fseq, com.cleandata); 
       SetMapAmbiguity();
+      
+      /* AllPatterns(fout); */
 
       fprintf(frst1,"\t%d\t%d\t%d", com.ns, com.ls, com.npatt); 
 
@@ -365,8 +368,9 @@ int main (int argc, char *argv[])
 
       if(com.ndata==1) fclose(fseq);
 
-      i=(com.ns*2-1)*sizeof(struct TREEN);
-      if((nodes=(struct TREEN*)malloc(i))==NULL) error2("oom nodes");
+      i = (com.ns*2-1)*sizeof(struct TREEN);
+      if((nodes=(struct TREEN*)malloc(i))==NULL) 
+         error2("oom nodes");
 
       pmodel=(com.seqtype==CODONseq?NSbranchmodels[com.model]:aamodels[com.model]);
       fprintf(fout,"%s (in %s)  %s\n",seqtypestr[com.seqtype-1], VerStr, com.seqf);
@@ -433,7 +437,7 @@ int main (int argc, char *argv[])
          SeqDistance=(double*)realloc(SeqDistance, k*sizeof(double));
          ancestor=(int*)realloc(ancestor, k*sizeof(int));
          if(SeqDistance==NULL||ancestor==NULL) error2("oom distance&ancestor");
-         FOR(i,k) SeqDistance[i]=-1;
+         for(i=0; i<k; i++) SeqDistance[i] = -1;
       }
       if(com.seqtype==AAseq) {
          InitializeBaseAA (fout);
@@ -448,7 +452,10 @@ int main (int argc, char *argv[])
          }
          if (InitializeCodon(fout,com.space))
             error2("giving up on stop codons");
-         if(com.Mgene==3) FOR (i,com.ngene) xtoy(com.pi,com.piG[i],com.ncode);
+
+         if(com.Mgene==3)
+            for(i=0; i<com.ngene; i++)
+               xtoy(com.pi,com.piG[i],com.ncode);
       }
 
       if(getdistance) {
@@ -495,18 +502,18 @@ continue;
          if (nnsmodels>1) {
             for(insmodel=0; insmodel<nnsmodels; insmodel++) {
                com.NSsites=nsmodels[insmodel];
-               if(com.NSsites<=NSpselection)  com.ncatG=com.NSsites+1;
-               else if (com.NSsites==NSdiscrete) com.ncatG=3;
-               else if (com.NSsites==NSfreqs) com.ncatG=5;
+               if(com.NSsites<=NSpselection)     com.ncatG = com.NSsites+1;
+               else if (com.NSsites==NSdiscrete) com.ncatG = 3;
+               else if (com.NSsites==NSfreqs)    com.ncatG=5;
                else if (com.NSsites==NSbetaw||com.NSsites==NS02normal) 
-                     com.ncatG=ncatG0+1;
-               else  com.ncatG=ncatG0;
+                     com.ncatG = ncatG0 + 1;
+               else  com.ncatG = ncatG0;
 
                com.nrate=com.nkappa=(com.hkyREV?5:!com.fix_kappa);
-               if(com.NSsites==0 || com.NSsites==NSbetaw)  com.nrate+=!com.fix_omega;
-               else if(com.NSsites==NSnneutral)            com.nrate++;
-               else if(com.NSsites==NSpselection)          com.nrate+=1+!com.fix_omega;
-               else if(com.NSsites==NSdiscrete)            com.nrate+=com.ncatG;
+               if(com.NSsites==0 || com.NSsites==NSbetaw)  com.nrate += !com.fix_omega;
+               else if(com.NSsites==NSnneutral)            com.nrate ++;
+               else if(com.NSsites==NSpselection)          com.nrate += 1+!com.fix_omega;
+               else if(com.NSsites==NSdiscrete)            com.nrate += com.ncatG;
 
                printf("\n\nModel %d: %s\n",com.NSsites, NSsitesmodels[com.NSsites]);
                fprintf(fout,"\n\nModel %d: %s",com.NSsites,NSsitesmodels[com.NSsites]);
@@ -1327,7 +1334,7 @@ void DetailOutput (FILE *fout, double x[], double var[])
                tdSdNb[tree.nnode*2+i] = dN;
             }
 
-            fprintf(fout," %7.70f %7.4f %7.4f %7.100f %7.100f %7.100f %5.1f %5.1f",
+            fprintf(fout," %7.70f %7.4f %7.4f %7.100f %7.100f %7.100f %5.1f %5.1f", //fprintf(fout," %7.3f %7.1f %7.1f %7.4f %7.4f %7.4f %5.1f %5.1f",
                           t,N,S,om,dN,dS,N*dN,S*dS);
             /* fprintf(frst,"%8.1f%8.1f %9.5f%9.4f%9.4f",N,S,om,dN,dS); */
 
@@ -1337,14 +1344,14 @@ void DetailOutput (FILE *fout, double x[], double var[])
                vtw[3] = var[k*np+k]; 
                vtw[1] = vtw[2] = var[i*np+k]; 
                VariancedSdN(t, om, vtw, vSN);
-               fprintf(fout,"  dN = %7.100f +- %.100f dS = %7.100f +- %.100f",
+               fprintf(fout,"  dN = %7.100f +- %.100f dS = %7.100f +- %.100f",//fprintf(fout,"  dN = %7.4f +- %.4f dS = %7.4f +- %.4f",
                   dN,(vSN[3]>0?sqrt(vSN[3]):-0),dS,(vSN[0]>0?sqrt(vSN[0]):-0));
                fprintf(fout," (method 2)");
             }
             FPN(fout);
          }
          else if(com.model==0) {  /* NSsites & other site-class models */
-            fprintf(fout,"%9.70f %8.4f %8.4f %8.100f %8.100f %8.100f %6.1f %6.1f\n",
+	   fprintf(fout,"%9.70f %8.4f %8.4f %8.100f %8.100f %8.100f %6.1f %6.1f\n", //fprintf(fout,"%9.3f %8.1f %8.1f %8.4f %8.4f %8.4f %6.1f %6.1f\n",
                           t,N,S,om,dN*t,dS*t, N*dN*t,S*dS*t);
          }
          else {  /* NSbranchsites models */

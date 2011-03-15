@@ -494,13 +494,17 @@ int PMatUVRoot (double P[], double t, int n, double U[], double V[], double Root
 
    NPMatUVRoot++;
    if (t<-0.1) printf ("\nt = %.5f in PMatUVRoot", t);
-   if (t<1e-100) { identity (P, n); return(0); }
+   if (t<1e-100) {
+      identity (P, n); 
+      return(0); 
+   }
    for (k=0,zero(P,n*n); k<n; k++)
       for (i=0,pP=P,expt=exp(t*Root[k]); i<n; i++)
          for (j=0,uexpt=U[i*n+k]*expt; j<n; j++)
             *pP++ += uexpt*V[k*n+j];
 
-   for(i=0;i<n*n;i++)  if(P[i]<smallp)  P[i]=0;
+   for(i=0; i<n*n; i++)
+      if(P[i]<smallp)  P[i] = 0;
 
 #if (DEBUG>=5)
       if (testTransP(P,n)) {
@@ -765,7 +769,7 @@ int Codon2AA(char codon[3], char aa[3], int icode, int *iaa)
          }
 
    if(naa==0) {
-      printf("stop codon %c%c%c\n",codon[0],codon[1],codon[2]);
+      printf("stop codon %c%c%c\n", codon[0], codon[1], codon[2]);
       *iaa = 20;
    }
    else if(naa==2)  *iaa = 20; 
@@ -1043,8 +1047,10 @@ char* printtime (char timestr[])
    time_t t;
    int h, m, s;
 
-   t=time(NULL)-time_start;
-   h=t/3600; m=(t%3600)/60; s=t-(t/60)*60;
+   t = time(NULL)-time_start;
+   h = (int)t/3600;
+   m = (int)(t%3600)/60;
+   s = (int)(t-(t/60)*60);
    if(h)  sprintf(timestr,"%d:%02d:%02d", h,m,s);
    else   sprintf(timestr,"%2d:%02d", m,s);
    return(timestr);
@@ -1055,7 +1061,7 @@ void sleep2(int wait)
 /* Pauses for a specified number of seconds. */
    time_t t_cur=time(NULL);
 
-   while(time(NULL)<t_cur+wait) ;
+   while(time(NULL) < t_cur+wait) ;
 }
 
 
@@ -4718,20 +4724,20 @@ int variance (double x[], int n, int nx, double mx[], double vx[])
 }
 
 int correl (double x[], double y[], int n, double *mx, double *my,
-    double *v11, double *v12, double *v22, double *r)
+            double *vxx, double *vxy, double *vyy, double *r)
 {
    int i;
 
-   *mx = *my = *v11 = *v12 = *v22 = 0.0;
+   *mx = *my = *vxx = *vxy = *vyy = 0.0;
    for (i=0; i<n; i++) {
-       *v11 += square(x[i] - *mx) * i/(i+1.);
-       *v22 += square(y[i] - *my) * i/(i+1.);
-       *v12 += (x[i] - *mx) * (y[i] - *my) * i/(i+1.);
+       *vxx += square(x[i] - *mx) * i/(i+1.);
+       *vyy += square(y[i] - *my) * i/(i+1.);
+       *vxy += (x[i] - *mx) * (y[i] - *my) * i/(i+1.);
        *mx = (*mx * i + x[i])/(i+1.);
        *my = (*my * i + y[i])/(i+1.);
    }
 
-   if (*v11>0.0 && *v22>0.0)  *r = *v12/sqrt(*v11 * *v22);
+   if (*vxx>0.0 && *vyy>0.0)  *r = *vxy/sqrt(*vxx * *vyy);
    else                       *r = -9;
    return(0);
 }
@@ -5052,11 +5058,14 @@ int DescriptiveStatistics (FILE *fout, char infile[], int nbin, int nrho, int pr
    double h, *y, *rho, *gap, *space, a,b,c,d, v2d[4];
    int nf2d=0, ivar_f2d[MAXNF2D][2]={{5,6},{0,2}}, k2d;
 
-   int  lline=320000, ifields[MAXNFIELDS], Ignore1stColumn=1, ReadHeader=0;
-   char line[320000];
+   int  lline=320000, ifields[MAXNFIELDS], SkipColumn=1, ReadHeader=1;
+   char *line;
    char varstr[MAXNFIELDS][32]={""};
 
+   if((line=(char*)malloc(lline*sizeof(char)))==NULL) error2("oom ds");
    scanfile(fin, &n, &p, &ReadHeader, line, ifields);
+   printf("\n%d records, %d variables\n", n, p);
+
    if(ReadHeader)
       for(i=0; i<p; i++) sscanf(line+ifields[i], "%s", varstr[i]);
 
@@ -5086,16 +5095,18 @@ int DescriptiveStatistics (FILE *fout, char infile[], int nbin, int nrho, int pr
    /* min, max, and mean */
    printf("\n(1) collecting min, max, and mean");
    for(i=0; i<n; i++) {
-      for(j=0;j<p;j++) 
-         fscanf(fin,"%lf", &x[j]);
+      for(j=0; j<p; j++) 
+         fscanf(fin, "%lf", &x[j]);
       if(i==0)
-         for(j=Ignore1stColumn;j<p;j++) minx[j]=maxx[j]=x[j];
+         for(j=SkipColumn; j<p; j++)
+            minx[j] = maxx[j] = x[j];
       else {
-         for(j=Ignore1stColumn;j<p;j++) 
-            if      (minx[j]>x[j]) minx[j]=x[j];
-            else if (maxx[j]<x[j]) maxx[j]=x[j];
+         for(j=SkipColumn;j<p;j++) 
+            if      (minx[j]>x[j]) minx[j] = x[j];
+            else if (maxx[j]<x[j]) maxx[j] = x[j];
       }
-      for(j=Ignore1stColumn; j<p; j++) mean[j]+=x[j]/n;
+      for(j=SkipColumn; j<p; j++)
+         mean[j] += x[j]/n;
    }
 
    /* variance-covariance matrix */
@@ -5103,20 +5114,22 @@ int DescriptiveStatistics (FILE *fout, char infile[], int nbin, int nrho, int pr
    rewind(fin);
    if(ReadHeader) fgets(line, lline, fin);
    for (i=0; i<n; i++) {
-      for(j=0;j<p;j++) 
-         fscanf(fin,"%lf", &x[j]);
-      for(j=Ignore1stColumn; j<p; j++) for(k=Ignore1stColumn; k<=j; k++)
-         var[j*p+k] += (x[j]-mean[j])*(x[k]-mean[k])/n;
+      for(j=0; j<p; j++) 
+         fscanf(fin, "%lf", &x[j]);
+      for(j=SkipColumn; j<p; j++)
+         for(k=SkipColumn; k<=j; k++)
+            var[j*p+k] += (x[j] - mean[j]) * (x[k] - mean[k])/n;
    }
-   for(j=Ignore1stColumn; j<p; j++) for(k=Ignore1stColumn; k<j; k++)
-      var[k*p+j]=var[j*p+k];
+   for(j=SkipColumn; j<p; j++)
+      for(k=SkipColumn; k<j; k++)
+         var[k*p+j] = var[j*p+k];
 
    /* sorting to get median and percentiles */
    printf("%10s\n(3) median, percentiles & serial correlation",printtime(timestr));
    y=(double*)malloc((n*(2+(nf2d>0))+nbin*nbin*3)*sizeof(double));
    if(y==NULL) { printf("not enough mem for %d variables\n",n); exit(-1); }
    space=y+(1+(nf2d>0))*n;  /* space[] points to y after the data */
-   for(jj=Ignore1stColumn; jj<p; jj++) {
+   for(jj=SkipColumn; jj<p; jj++) {
       rewind(fin);
       if(ReadHeader) fgets(line, lline, fin);
 
@@ -5140,27 +5153,28 @@ int DescriptiveStatistics (FILE *fout, char infile[], int nbin, int nrho, int pr
    }
 
    fprintf(fout,"\n(A) Descriptive statistics\n\n       ");
-   for (j=Ignore1stColumn; j<p; j++) fprintf(fout,"   %s", varstr[j]);
-   fprintf(fout,"\nmean    ");  for(j=Ignore1stColumn;j<p;j++) fprintf(fout,fmt,mean[j]);
-   fprintf(fout,"\nmedian  ");  for(j=Ignore1stColumn;j<p;j++) fprintf(fout,fmt,median[j]);
-   fprintf(fout,"\nS.D.    ");  for(j=Ignore1stColumn;j<p;j++) fprintf(fout,fmt,sqrt(var[j*p+j]));
-   fprintf(fout,"\nmin     ");  for(j=Ignore1stColumn;j<p;j++) fprintf(fout,fmt,minx[j]);
-   fprintf(fout,"\nmax     ");  for(j=Ignore1stColumn;j<p;j++) fprintf(fout,fmt,maxx[j]);
-   fprintf(fout,"\n2.5%%    "); for(j=Ignore1stColumn;j<p;j++) fprintf(fout,fmt,x025[j]);
-   fprintf(fout,"\n97.5%%   "); for(j=Ignore1stColumn;j<p;j++) fprintf(fout,fmt,x975[j]);
-   fprintf(fout,"\nESS*    ");  for(j=Ignore1stColumn;j<p;j++) fprintf(fout,fmt1,n/Tint[j]);
+   for (j=SkipColumn; j<p; j++) fprintf(fout,"   %s", varstr[j]);
+   fprintf(fout,"\nmean    ");  for(j=SkipColumn;j<p;j++) fprintf(fout,fmt,mean[j]);
+   fprintf(fout,"\nmedian  ");  for(j=SkipColumn;j<p;j++) fprintf(fout,fmt,median[j]);
+   fprintf(fout,"\nS.D.    ");  for(j=SkipColumn;j<p;j++) fprintf(fout,fmt,sqrt(var[j*p+j]));
+   fprintf(fout,"\nmin     ");  for(j=SkipColumn;j<p;j++) fprintf(fout,fmt,minx[j]);
+   fprintf(fout,"\nmax     ");  for(j=SkipColumn;j<p;j++) fprintf(fout,fmt,maxx[j]);
+   fprintf(fout,"\n2.5%%    "); for(j=SkipColumn;j<p;j++) fprintf(fout,fmt,x025[j]);
+   fprintf(fout,"\n97.5%%   "); for(j=SkipColumn;j<p;j++) fprintf(fout,fmt,x975[j]);
+   fprintf(fout,"\nESS*    ");  for(j=SkipColumn;j<p;j++) fprintf(fout,fmt1,n/Tint[j]);
+   FPN(F0); 
    fflush(fout);
 
    /*
    FPN(F0); FPN(F0);
-   for(j=Ignore1stColumn; j<p; j++) printf("%.3f(%.3f,%.3f)\n",mean[j], x025[j],x975[j]);
+   for(j=SkipColumn; j<p; j++) printf("%.3f(%.3f,%.3f)\n",mean[j], x025[j],x975[j]);
    free(x); free(y); return(0);
    */
 
 
    fprintf(fout, "\n\n(B) Matrix of correlation coefficients between variables\n\n");
-   for (j=Ignore1stColumn; j<p; j++,fputc('\n',fout)) {
-      for (k=Ignore1stColumn; k<=j; k++) {
+   for (j=SkipColumn; j<p; j++,fputc('\n',fout)) {
+      for (k=SkipColumn; k<=j; k++) {
          t = sqrt(var[j*p+j]*var[k*p+k]);
          fprintf(fout, fmt, (t>0?var[j*p+k]/t:-9));
       }
@@ -5170,7 +5184,7 @@ int DescriptiveStatistics (FILE *fout, char infile[], int nbin, int nrho, int pr
    fprintf(fout, "\nlag  variables ...\n\n");
    for(i=0; i<nrho; i++,FPN(fout)) {
       fprintf(fout, "%d", i+1);
-      for(j=Ignore1stColumn; j<p; j++)
+      for(j=SkipColumn; j<p; j++)
          fprintf(fout, "\t%.6f", rho[j*nrho+i]);
    }
    fflush(fout);
@@ -5180,7 +5194,7 @@ return(0);
 */
    printf(" %10s\n(4) Histograms and 1-D densities\n",printtime(timestr));
    fprintf(fout, "\n(D) Histograms and 1-D densities\n");
-   for(jj=Ignore1stColumn; jj<p; jj++) {
+   for(jj=SkipColumn; jj<p; jj++) {
       rewind(fin);
       if(ReadHeader) fgets(line, lline, fin);
 
@@ -5233,11 +5247,99 @@ return(0);
       density2d (fout, y, y+n, n, nbin, minx[jj], minx[kk], gap[jj], gap[kk], v2d, 
          h, space, propternary);
    }
-   free(x); free(y);
+   fclose(fin); free(x); free(y); free(line);
    printf("\n%10s used\n", printtime(timestr));
    return(0);
 }
 
+int DescriptiveStatisticsSimple (FILE *fout, char infile[], int nbin, int nrho, int SkipColumn)
+{
+   FILE *fin=gfopen(infile,"r");
+   int  n, p, i,j,k, jj,kk;
+   char *fmt=" %9.6f", *fmt1=" %9.1f", timestr[32];
+   double *x, *mean, *median, *minx, *maxx, *x005,*x995,*x025,*x975,*x25,*x75,*var, t;
+   double *Tint;
+   double h, *y, *rho, *gap, *space, a,b,c,d, v2d[4];
+   int  lline=320000, ifields[MAXNFIELDS], ReadHeader=1;
+   char *line;
+   char varstr[MAXNFIELDS][32]={""};
+
+   if((line=(char*)malloc(lline*sizeof(char)))==NULL) error2("oom ds");
+   scanfile(fin, &n, &p, &ReadHeader, line, ifields);
+   printf("\n%d records, %d variables\n", n, p);
+   if(ReadHeader)
+      for(i=0; i<p; i++) sscanf(line+ifields[i], "%s", varstr[i]);
+
+   x = (double*)malloc((p*13+p*p + p*nrho)*sizeof(double));
+   if (x==NULL) error2("oom DescriptiveStatistics.");
+   for(j=0;j<p*13+p*p + p*nrho; j++) x[j]=0;
+   mean=x+p; median=mean+p; minx=median+p; maxx=minx+p; 
+   x005=maxx+p; x995=x005+p; x025=x995+p; x975=x025+p; x25=x975+p; x75=x25+p;
+   var=x75+p;   rho=var+p;   Tint=rho+p*nrho;
+
+   /* min, max, mean, var */
+   printf("   Collecting min, max, and mean");
+   for(i=0; i<n; i++) {
+      for(j=0; j<p; j++) 
+         fscanf(fin, "%lf", &x[j]);
+      if(i==0)
+         for(j=SkipColumn; j<p; j++)
+            minx[j] = maxx[j] = x[j];
+      else {
+         for(j=SkipColumn;j<p;j++) 
+            if      (minx[j]>x[j]) minx[j] = x[j];
+            else if (maxx[j]<x[j]) maxx[j] = x[j];
+      }
+      for(j=SkipColumn; j<p; j++) {
+         var[j] += square(x[j] - mean[j]) * i/(i+1.0);
+         mean[j] = (mean[j]*i + x[j])/(i+1);
+      }   
+   }
+   for(j=SkipColumn; j<p; j++)
+      var[j] /= n-1.0;
+
+   /* sorting to get median and percentiles */
+   printf("%10s\n   Collecting median, percentiles",printtime(timestr));
+   y=(double*)malloc(n*sizeof(double));
+   if(y==NULL) error2("oom for y");
+   for(jj=SkipColumn; jj<p; jj++) {
+      rewind(fin);
+      if(ReadHeader) fgets(line, lline, fin);
+
+      for(i=0;i<n;i++) {
+         for(j=0; j<p; j++) fscanf(fin,"%lf", &x[j]);
+         y[i] = x[jj];
+      }
+
+      for(i=0,Tint[jj]=1; i<nrho; i++) {
+         correl(y, y+1+i, n-1-i, &a, &b, &c, &d, &x[0], &rho[jj*nrho+i]);
+         if(rho[jj*nrho+i]<0) break;
+         Tint[jj] += rho[jj*nrho+i]*2;
+      }
+
+      qsort(y, (size_t)n, sizeof(double), comparedouble);
+      if(n%2==0)  median[jj] = (y[n/2]+y[n/2+1])/2;
+      else        median[jj] = y[(n+1)/2];
+      x005[jj] = y[(int)(n*.005)];  x995[jj] = y[(int)(n*.995)];
+      x025[jj] = y[(int)(n*.025)];  x975[jj] = y[(int)(n*.975)];
+      x25[jj]  = y[(int)(n*.25)];   x75[jj] = y[(int)(n*.75)];
+   }
+
+   fprintf(fout,"\n\n       ");
+   for (j=SkipColumn; j<p; j++) fprintf(fout,"   %s", varstr[j]);
+   fprintf(fout,"\nmean    ");  for(j=SkipColumn;j<p;j++) fprintf(fout,fmt,mean[j]);
+   fprintf(fout,"\nmedian  ");  for(j=SkipColumn;j<p;j++) fprintf(fout,fmt,median[j]);
+   fprintf(fout,"\nS.D.    ");  for(j=SkipColumn;j<p;j++) fprintf(fout,fmt,sqrt(var[j]));
+   fprintf(fout,"\nmin     ");  for(j=SkipColumn;j<p;j++) fprintf(fout,fmt,minx[j]);
+   fprintf(fout,"\nmax     ");  for(j=SkipColumn;j<p;j++) fprintf(fout,fmt,maxx[j]);
+   fprintf(fout,"\n2.5%%    "); for(j=SkipColumn;j<p;j++) fprintf(fout,fmt,x025[j]);
+   fprintf(fout,"\n97.5%%   "); for(j=SkipColumn;j<p;j++) fprintf(fout,fmt,x975[j]);
+   fprintf(fout,"\nESS*    ");  for(j=SkipColumn;j<p;j++) fprintf(fout,fmt1,n/Tint[j]);
+   fflush(fout);
+
+   fclose(fin); free(x); free(y); free(line);
+   return(0);
+}
 
 #undef MAXNFIELDS
 

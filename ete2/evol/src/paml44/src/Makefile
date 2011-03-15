@@ -31,8 +31,6 @@ pamp : pamp.c tools.c
 	$(CC) $(CFLAGS) -o $@ pamp.c tools.c $(LIBS)
 mcmctree : mcmctree.c tools.c
 	$(CC) $(CFLAGS) -o $@ mcmctree.c tools.c $(LIBS)
-	$(CC) $(CFLAGS) -o mcmctreeHH -DHardHard mcmctree.c tools.c $(LIBS)
-	$(CC) $(CFLAGS) -o mcmctreeHS -DHardSoft mcmctree.c tools.c $(LIBS)
 yn00: yn00.c tools.c
 	$(CC) $(CFLAGS) -o $@ yn00.c tools.c $(LIBS)
 chi2 : chi2.c
