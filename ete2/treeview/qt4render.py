@@ -14,14 +14,14 @@ class _TextFaceItem(QtGui.QGraphicsSimpleTextItem, _NodeActions):
     def __init__(self, face, node, *args):
         QtGui.QGraphicsSimpleTextItem.__init__(self,*args)
         self.node = node
-        self.face = face
+        #self.face = face
 
 class _ImgFaceItem(QtGui.QGraphicsPixmapItem, _NodeActions):
     """ Manage faces on Scene"""
     def __init__(self, face, node, *args):
         QtGui.QGraphicsPixmapItem.__init__(self,*args)
         self.node = node
-        self.face = face
+        #self.face = face
 
 
 class _NodeItem(QtGui.QGraphicsRectItem, _NodeActions):
@@ -116,6 +116,7 @@ class _FaceGroup(QtGui.QGraphicsItem): # I resisted to name this FaceBook :)
             # Starting y position. Center columns
             y = (self.h / 2) - (h/2)
             for f in faces:
+                f.node = self.node
                 if f.type == "text":
                     obj = _TextFaceItem(f, self.node, f.get_text())
                     font = QtGui.QFont(f.ftype, f.fsize)
@@ -544,9 +545,8 @@ class _TreeScene(QtGui.QGraphicsScene):
     def get_tree_img_map(self):
         node_list = []
         face_list = []
-        nid = 0
         for n, partition in self.node2item.iteritems():
-            n.add_feature("_nid", str(nid))
+            nid = int (n._nid)
             for item in partition.childItems():
                 if isinstance(item, _NodeItem):
                     pos = item.mapToScene(0,0)
@@ -562,7 +562,6 @@ class _TreeScene(QtGui.QGraphicsScene):
                         else:
                             size = f.mapToScene(f.boundingRect().width(), f.boundingRect().height())
                             face_list.append([pos.x(),pos.y(),size.x(),size.y(), nid, None])
-            nid += 1
         return {"nodes": node_list, "faces": face_list}
 
     def get_scale(self):

@@ -96,6 +96,7 @@ def translate(sequence):
              'N':['A', 'C', 'G', 'T']}
     proteinseq = ''
     #loop to read DNA sequence in codons, 3 nucleotides at a time
+    sequence = sequence.upper()
     for n in range(0, len(sequence), 3):
         #checking to see if the dictionary has the key
         try:

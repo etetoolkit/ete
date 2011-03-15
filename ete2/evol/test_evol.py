@@ -52,13 +52,13 @@ def main():
     tree._models['M2.b'] = M2b
     tree._models['M2.c'] = M2c
     tree._models['M2.d'] = M2d
-    col = {'NS' : 'grey', 'RX' : 'black',
-           'RX+': 'grey', 'CN' : 'black',
-           'CN+': 'grey', 'PS' : 'black', 'PS+': 'black'}
+    col =  {'NS' : 'grey', 'RX' : 'black',
+            'RX+': 'grey', 'CN' : 'black',
+            'CN+': 'grey', 'PS' : 'black', 'PS+': 'black'}
     col2 = {'NS' : 'white', 'RX' : 'white',
             'RX+': 'white', 'CN' : 'white',
             'CN+': 'white', 'PS' : 'white', 'PS+': 'white'}
-    print tree._models
+
     M2a.set_histface (up=False, typ='line', lines = [1.0,0.3], col_lines=['red','grey'], header='ugliest face')
     M2b.set_histface (up=False, typ='error', col=col2, lines = [2.5, 1.0, 4.0, 0.5], header = 'Many lines, error boxes, background black',
                       col_lines=['orange', 'yellow', 'red', 'cyan'])
@@ -121,7 +121,6 @@ def main():
     tree.mark_tree ([2, 3, 4] + [1, 5], marks=['#1']*3 + ['#2']*2)
     print tree.write()
     tree.run_model ('bsC.2-3-4_1-5')
-    tree.run_model ('bsA1.2')
     print 'pv of LRT bsC vs M1, marking 2 3 4 versus 1 5: ',
     print tree.get_most_likely ('bsC.2-3-4_1-5','M1')
     tree.run_model ('b_free.2-3-4_1-5')

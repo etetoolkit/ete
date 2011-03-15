@@ -97,7 +97,7 @@ def read_paml (source, obj=None):
 def write_paml(sequences, outfile = None, seqwidth = 80):
     """ Writes a SeqGroup python object using PAML format. """
     text =  ' %d %d\n' % (len (sequences), len (sequences.get_entries()[0][1]))
-    text += '\n'.join([">%s\n%s" %( "\t".join([name]+comment), _seq2str(seq)) for
+    text += '\n'.join(["%s\n%s" %( "\t".join([name]+comment), _seq2str(seq)) for
                        name, seq, comment in sequences])
     if outfile is not None:
         OUT = open(outfile,"w")

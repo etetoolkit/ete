@@ -1,3 +1,9 @@
+.. module:: ete_dev.clustering
+  :synopsis: Extends Tree object: link trees to numeric matrices, perform cluster validation analysis, visualize node profiles
+.. moduleauthor:: Jaime Huerta-Cepas
+:Author: Jaime Huerta-Cepas
+
+
 ****************
 Clustering Trees
 ****************

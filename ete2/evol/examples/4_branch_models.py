@@ -25,7 +25,7 @@ print tree
 print 'Tree and alignment loaded.'
 raw_input ('Tree will be mark in order to contrast Gorilla and Chimpanzee as foreground \nspecies.')
 
-marks = [2, 3, 4]
+marks = ['2', '3', '4']
 
 tree.mark_tree (marks, ['#1'] * 3)
 print tree.write ()

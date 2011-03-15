@@ -199,5 +199,36 @@ class PhyloNode(TreeNode):
                 pass
         return outgroup_node
 
+    def get_farthest_oldest_node(self, species2age):
+        """ Returns the farthest oldest node (leaf or internal) to the
+        current one. It requieres an species2age dictionary with the
+        age estimation for all species."""
+
+        root = self.get_tree_root()
+
+        # Get all tree leaves
+        leaves      = root.get_leaves()
+
+        outgroup_dist  = 0
+        outgroup_node  = self
+        outgroup_age = 0 #species2age[self.species]
+
+        for leaf in leaves:
+            if species2age[leaf.species] > outgroup_age:
+                outgroup_dist = leaf.get_distance(self)
+                outgroup_node = leaf
+                outgroup_age = species2age[leaf.species]
+            elif species2age[leaf.species]==outgroup_age:
+                dist = leaf.get_distance(self)
+                if dist>outgroup_dist:
+                    outgroup_dist  = leaf.get_distance(self)
+                    outgroup_node  = leaf
+                    outgroup_age = species2age[leaf.species]
+            else:
+                pass
+        return outgroup_node
+
+
+
 # cosmetic alias
 PhyloTree = PhyloNode

@@ -1,20 +1,22 @@
-import _nexml as main
-from _nexml import * 
+import _nexml
+from _nexml import *
 from _nexml_tree import NexMLTree 
 
-main.AbstractTree.subclass = NexMLTree
+#_nexml.AbstractTree.subclass = NexMLTree
+_nexml.FloatTree.subclass = NexMLTree
+_nexml.IntTree.subclass = NexMLTree
 
-class Nexml(main.Nexml):
+class Nexml(_nexml.Nexml):
     def __repr__(self):
         return "NeXML project <%s>" %hex(hash(self))
 
     def __init__(self, *args, **kargs):
-        main.Nexml.__init__(self, *args, **kargs)
+        _nexml.Nexml.__init__(self, *args, **kargs)
         
     def build_from_file(self, fname, index_otus=True):
-        doc = main.parsexml_(fname)
+        doc = _nexml.parsexml_(fname)
         rootNode = doc.getroot()
-        rootTag, rootClass = main.get_root_tag(rootNode)
+        rootTag, rootClass = _nexml.get_root_tag(rootNode)
         if rootClass is None:
             rootTag = 'Nexml'
             rootClass = self.__class__
@@ -37,3 +39,5 @@ class Nexml(main.Nexml):
                     t.set_nexml_project(self)
                     if trees.otus in id2taxa:
                         t.nexml_otus = id2taxa[trees.otus][0]
+
+__all__ = _nexml.__all__ + ["Nexml", "NexMLTree"]

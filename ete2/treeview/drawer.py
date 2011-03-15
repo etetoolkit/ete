@@ -31,25 +31,29 @@ class TreeImageProperties(object):
         self.title = None
         self.botton_line_text = None
 
+_LINE_TYPE_CHECKER = lambda x: x in (0,1,2)
+_SIZE_CHECKER = lambda x: isinstance(x, int)
+_COLOR_MATCH = re.compile("^#[A-Fa-f\d]{6}$")
+_COLOR_CHECKER = lambda x: re.match(_COLOR_MATCH, x)
+_NODE_TYPE_CHECKER = lambda x: x in ["sphere", "circle", "square"]
+_BOOL_CHECKER =  lambda x: isinstance(x, bool) or x in (0,1)
+
 class NodeStyleDict(dict):
-    _LINE_TYPE_CHECKER = lambda self, x: x in (0,1,2)
-    _SIZE_CHECKER = lambda self, x: isinstance(x, int)
-    _COLOR_MATCH = re.compile("^#[A-Fa-f\d]{6}$")
-    _COLOR_CHECKER = lambda self, x: re.match(self._COLOR_MATCH, x)
 
     def __init__(self, *args, **kargs):
+
         super(NodeStyleDict, self).__init__(*args, **kargs)
         super(NodeStyleDict, self).__setitem__("faces", {})
         self._defaults = [
-            ["fgcolor",          "#0030c1",    self._COLOR_CHECKER                           ],
-            ["bgcolor",          "#FFFFFF",    self._COLOR_CHECKER                           ],
-            ["vt_line_color",    "#000000",    self._COLOR_CHECKER                           ],
-            ["hz_line_color",    "#000000",    self._COLOR_CHECKER                           ],
-            ["line_type",        0,            self._LINE_TYPE_CHECKER                       ], # 0 solid, 1 dashed, 2 dotted
-            ["size",             6,            self._SIZE_CHECKER                            ], # node circle size 
-            ["shape",            "sphere",     lambda x: x in ["sphere", "circle", "square"] ], 
-            ["draw_descendants", True,         lambda x: isinstance(x, bool) or x in (0,1)   ],
-            ["hlwidth",          1,            self._SIZE_CHECKER                            ]
+            ["fgcolor",          "#0030c1",    _COLOR_CHECKER                           ],
+            ["bgcolor",          "#FFFFFF",    _COLOR_CHECKER                           ],
+            ["vt_line_color",    "#000000",    _COLOR_CHECKER                           ],
+            ["hz_line_color",    "#000000",    _COLOR_CHECKER                           ],
+            ["line_type",        0,            _LINE_TYPE_CHECKER                       ], # 0 solid, 1 dashed, 2 dotted
+            ["size",             6,            _SIZE_CHECKER                            ], # node circle size 
+            ["shape",            "sphere",     _NODE_TYPE_CHECKER                       ], 
+            ["draw_descendants", True,         _BOOL_CHECKER   ],
+            ["hlwidth",          1,            _SIZE_CHECKER                            ]
             ]
         self._valid_keys = set([i[0] for i in self._defaults]) 
         self.init()
@@ -132,7 +136,6 @@ def render_tree(t, imgName, w=None, h=None, layout=None, \
         else:
             layout = "basic"
 
-
     global _QApp
     if not _QApp:
         _QApp = QtGui.QApplication(["ETE"])
@@ -143,6 +146,7 @@ def render_tree(t, imgName, w=None, h=None, layout=None, \
     scene.initialize_tree_scene(t, layout,
                                 tree_properties=img_properties)
     scene.draw()
+    t.sort_descendants()
     imgmap = scene.get_tree_img_map()
     scene.save(imgName, w=w, h=h, header=header)
     return imgmap   

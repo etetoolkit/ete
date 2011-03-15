@@ -67,7 +67,7 @@ class EvolNode (PhyloNode):
         self._speciesFunction = None
         self.img_prop = None
         self.workdir = '/tmp/ete2-codeml/'
-        self.codemlpath = __path__[0] + '/bin/codeml'
+        self.execpath = __path__[0] + '/bin/'
         self._models = {}
         # Caution! native __init__ has to be called after setting
         # _speciesFunction to None!!
@@ -131,38 +131,42 @@ class EvolNode (PhyloNode):
             seq_group.name2id [n.name   ] = n.paml_id
         seq_group.write (outfile=fullpath, format='paml')
 
-    def run_model (self, model, ctrl_string='', keep=True, **kwargs):
+    def run_model (self, model_name, ctrl_string='', keep=True, **kwargs):
         ''' To compute evolutionnary models with paml
         extra parameters should be in '''
         from subprocess import Popen, PIPE
-        model = Model(model, self, **kwargs)
-        fullpath = os.path.join (self.workdir, model.name)
+        model_obj = Model(model_name, self, **kwargs)
+        fullpath = os.path.join (self.workdir, model_obj.name)
         os.system("mkdir -p %s" %fullpath)
         # write tree file
         self.__write_algn (fullpath + '/algn')
-        self.write (outfile=fullpath+'/tree', 
-                    format = (10 if model.properties['allow_mark'] else 9))
+        if model_obj.properties['exec'] == 'Slr':
+            self.write (outfile=fullpath+'/tree',
+                        format = (11))
+        else:
+            self.write (outfile=fullpath+'/tree',
+                        format = (10 if model_obj.properties['allow_mark'] else 9))
         # write algn file
         ## MODEL MODEL MDE
         if ctrl_string == '':
-            ctrl_string = model.get_ctrl_string(fullpath+'/tmp.ctl')
+            ctrl_string = model_obj.get_ctrl_string(fullpath+'/tmp.ctl')
         else:
             open (fullpath+'/tmp.ctl', 'w').write (ctrl_string)
         hlddir = os.getcwd()
         os.chdir(fullpath)
-        proc = Popen([self.codemlpath, 'tmp.ctl'], stdout=PIPE)
+        proc = Popen([self.execpath + model_obj.properties ['exec'], 'tmp.ctl'], stdout=PIPE)
         run, err = proc.communicate()
         if err is not None:
             warn ("ERROR: codeml not found!!!\n" + \
-                  "       define your variable EvolTree.codemlpath")
+                  "       define your variable EvolTree.execpath")
             return 1
         if 'error' in run:
             warn ("ERROR: inside codeml!!\n" + run)
             return 1
         os.chdir(hlddir)
         if keep:
-            setattr (model, 'run', run)
-            self.link_to_evol_model (os.path.join(fullpath,'out'), model)
+            setattr (model_obj, 'run', run)
+            self.link_to_evol_model (os.path.join(fullpath,'out'), model_obj)
     run_model.__doc__ += '''%s
     to run paml, needs tree linked to alignment.
     model name needs to start by one of:
@@ -217,7 +221,7 @@ class EvolNode (PhyloNode):
         super(EvolTree, self).show(layout=layout,
                                      img_properties=img_properties)
 
-    def render (self, filename, layout=evol_layout, w=None, h=None,
+    def render (self, file_name, layout=evol_layout, w=None, h=None,
                 img_properties=None, header=None, histfaces=None):
         '''
         call super show adding up and down faces
@@ -235,9 +239,10 @@ class EvolNode (PhyloNode):
                     img_properties.aligned_header.add_face (mdl.histface, 1)
                 else:
                     img_properties.aligned_foot.add_face (mdl.histface, 1)
-        super(EvolTree, self).render(filename, layout=layout,
-                                       img_properties=img_properties,
-                                       w=w, h=h)
+        return super(EvolTree, self).render(file_name, layout=layout,
+                                            img_properties=img_properties,
+                                            w=w, h=h)
+        
 
     def mark_tree (self, node_ids, verbose=False, **kargs):
         '''
@@ -246,6 +251,7 @@ class EvolNode (PhyloNode):
         e.g.: t=Tree.mark_tree([2,3], marks=["#1","#2"])
         '''
         from re import match
+        node_ids = map (str , node_ids)
         if kargs.has_key('marks'):
             marks = list(kargs['marks'])
         else:
@@ -314,7 +320,11 @@ class EvolNode (PhyloNode):
              t.get_newick(["species","name"], format=1)
         """
         from re import sub
-        if int (format)==10:
+        if int (format)==11:
+            nwk = ' %s 1\n' % (len (self))
+            nwk += sub('\[&&NHX:mark=([ #0-9.]*)\]', r'\1', \
+                       write_newick(self, features=['mark'],format=9))
+        elif int (format)==10:
             nwk = sub('\[&&NHX:mark=([ #0-9.]*)\]', r'\1', \
                       write_newick(self, features=['mark'],format=9))
         else:
