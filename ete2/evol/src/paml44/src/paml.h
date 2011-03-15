@@ -4,6 +4,10 @@
 #if (!defined PAML_H)
 #define PAML_H
 
+/* To get rid of annoying messages from VC++ 2008 */
+#define _CRT_SECURE_NO_WARNINGS
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -207,10 +211,11 @@ int eigenRealSym(double A[], int n, double Root[], double work[]);
 int MeanVar (double x[], int n, double *mean, double *var);
 int variance (double x[], int n, int nx, double mx[], double vx[]);
 int correl (double x[], double y[], int n, double *mx, double *my,
-            double *v11, double *v12, double *v22, double *r);
+            double *vxx, double *vxy, double *vyy, double *r);
 int comparefloat  (const void *a, const void *b);
 int comparedouble (const void *a, const void *b);
 int DescriptiveStatistics(FILE *fout, char infile[], int nbin, int nrho, int propternary);
+int DescriptiveStatisticsSimple (FILE *fout, char infile[], int nbin, int nrho, int SkipColumn);
 int splitline (char line[], int fields[]);
 int scanfile (FILE*fin, int *nrecords, int *nx, int *ReadHeader, char line[], int ifields[]);
 
@@ -343,17 +348,16 @@ enum {PrBranch=1, PrNodeNum=2, PrLabel=4, PrAge=8, PrOmega=16} OutTreeOptions;
 /* use mean (0) for discrete gamma instead of median (1) */
 #define DGammaMean 0  
 
+
+
 #define FAST_RANDOM_NUMBER
 
 #define m2NormalSym  0.95
 
 #define MAXNFIELDS 10000
 
-#define p_LOWERBOUND 0.1
-#define c_LOWERBOUND 1.0
-
 #define PAML_RELEASE      0
 
-#define VerStr "paml version 4.4, January 2010"
+#define VerStr "paml version 4.4c, August 2010"
 
 #endif

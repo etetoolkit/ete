@@ -58,7 +58,7 @@ class EvolNode (PhyloNode):
     attributes and methods to work with phylogentic trees. """
 
     def __init__ (self, newick=None, alignment=None, alg_format="fasta",
-                 sp_naming_function=_parse_species):
+                 sp_naming_function=_parse_species, format=0):
         '''
         freebranch: path to find codeml output of freebranch model.
         '''
@@ -71,7 +71,7 @@ class EvolNode (PhyloNode):
         self._models = {}
         # Caution! native __init__ has to be called after setting
         # _speciesFunction to None!!
-        PhyloNode.__init__(self, newick=newick)
+        PhyloNode.__init__(self, newick=newick, format=format)
 
         # This will be only executed after reading the whole tree,
         # because the argument 'alignment' is not passed to the

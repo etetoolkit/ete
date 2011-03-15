@@ -171,8 +171,8 @@ int main (int argc, char*argv[])
                error2("oom");
          }
          switch (option) {
-         case(1):
-         case(2):
+         case(1):   /* random UNROOTED trees */
+         case(2):   /* random ROOTED trees */
             for(i=0; i<com.ns; i++)          /* default spname */
                sprintf(com.spname[i],"S%d",i+1);
             if(BD) {
@@ -186,8 +186,10 @@ int main (int argc, char*argv[])
                if(com.ns<20&&ntree<10) { OutTreeN(F0,0,BD); puts("\n"); }
                OutTreeN(fout,1,BD);  FPN(fout);
             }
-            /* for (i=0; i<com.ns-2-!rooted; i++) Ib[i]=(int)((3.+i)*rndu());
-               MakeTreeIb (com.ns, Ib, rooted);
+            /*
+            for (i=0; i<com.ns-2-!rooted; i++)
+               Ib[i] = (int)((3.+i)*rndu());
+            MakeTreeIb (com.ns, Ib, rooted);
             */
             break;
          case(3):
