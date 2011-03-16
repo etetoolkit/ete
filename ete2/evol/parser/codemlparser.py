@@ -9,7 +9,7 @@ __email__   = "francois@barrabin.org"
 __licence__ = "GPLv3"
 __version__ = "0.0"
 
-import sys, re
+import re
 from warnings import warn
 
 def parse_rst (path):
@@ -195,7 +195,7 @@ def parse_paml (pamout, model):
                 model.stats ['kappa'] = 'nan'
         # retrieve dS dN t w N S and if present, errors. from summary table
         if line.count('..') == 1 and line.startswith (' '):
-            if not re.match (' +\d+\.\.\d+ +\d\.\d+ ', line):
+            if not re.match (' +\d+\.\.\d+ +\d+\.\d+ ', line):
                 if re.match (' +( +\d+\.\d+){8}', all_lines [i+1]):
                     _get_values (model, line.split ()[0]+'  '+all_lines [i+1])
                 continue
