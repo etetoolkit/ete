@@ -18,15 +18,15 @@ def init_scene(t, layout, img):
     if not img:
         img = TreeImage()
 
-    if not layout and not img.layout_fn:
-        if t.__class__ == PhyloTree:
-            layout  = "phylogeny"
-        elif t.__class__ == ClusterTree:
-            layout = "large"
-        else:
-            layout = "basic"
+    # if not layout and not img.layout_fn:
+    #     if t.__class__ == PhyloTree:
+    #         layout  = "phylogeny"
+    #     elif t.__class__ == ClusterTree:
+    #         layout = "large"
+    #     else:
+    #         layout = "basic"
         
-        img._layout_handler = layout
+    #     img._layout_handler = layout
 
     if not _QApp:
         _QApp = QtGui.QApplication(["ETE"])

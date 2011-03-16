@@ -24,8 +24,8 @@ NODE_STYLE_DEFAULT = [
     ["hz_line_color",    "#000000",    _COLOR_CHECKER                           ],
     ["hz_line_type",     0,            _LINE_TYPE_CHECKER                       ], # 0 solid, 1 dashed, 2 dotted
     ["vt_line_type",     0,            _LINE_TYPE_CHECKER                       ], # 0 solid, 1 dashed, 2 dotted
-    ["size",             6,            _SIZE_CHECKER                            ], # node circle size 
-    ["shape",            "sphere",     _NODE_TYPE_CHECKER                       ], 
+    ["size",             3,            _SIZE_CHECKER                            ], # node circle size 
+    ["shape",            "circle",     _NODE_TYPE_CHECKER                       ], 
     ["draw_descendants", True,         _BOOL_CHECKER                            ],
     ["hz_line_width",          1,      _SIZE_CHECKER                            ],
     ["vt_line_width",          1,      _SIZE_CHECKER                            ]
@@ -54,7 +54,6 @@ class _ActionDelegator(object):
 
     def __init__(self):
         self._delegate = None
-
       
 class NodeStyleDict(dict):
     def __init__(self, *args, **kargs):
@@ -103,6 +102,8 @@ class NodeStyleDict(dict):
 
 class TreeImage(object):
 
+    
+
     def __init__(self):
         # :::::::::::::::::::::::::
         # TREE SHAPE AND SIZE
@@ -113,7 +114,7 @@ class TreeImage(object):
 
         # Layout function used to dynamically control the aspect of
         # nodes
-        self.layout = None
+        self.layout_fn = None
         
         # 0= tree is drawn from left-to-right 1= tree is drawn from
         # right-to-left. This property only has sense when "rect" mode
@@ -219,7 +220,7 @@ class TreeImage(object):
     def set_layout_fn(self, layout):
         # Validates layout function
         if type(layout) == types.FunctionType or\
-                type(layout) == types.MethodType:
+                type(layout) == types.MethodType or layout is None:
             self._layout_fn = layout       
             self._layout_handler = layout
         else:
@@ -230,7 +231,7 @@ class TreeImage(object):
                 raise ValueError ("Required layout is not a function pointer nor a valid layout name.")
  
     def get_layout_fn(self):
-        return self._layout_fn
+        return self._layout_handler
 
     layout_fn = property(get_layout_fn, set_layout_fn)
         

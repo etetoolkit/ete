@@ -95,7 +95,7 @@ for c in t.children:
 # t.show(img_properties = I3)
 # sys.exit()
 
-
+t.show()
 t.show(img_properties=I)
 
 I.mode = "circular"

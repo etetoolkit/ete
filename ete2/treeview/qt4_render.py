@@ -645,14 +645,15 @@ def set_style(n, layout_func):
         raise TypeError("img_style attribute in node %s is not of NodeStyleDict type." \
                             %n.name)
 
-    # Adding fixed faces during drawing is not allowed, since
-    # added faces will not be tracked until next execution
-    n.img_style._block_adding_faces = True
-    try:
-        layout_func(n)
-    except Exception:
-        n.img_style._block_adding_faces = False
-        raise
+    if layout_func:
+        # Adding fixed faces during drawing is not allowed, since
+        # added faces will not be tracked until next execution
+        n.img_style._block_adding_faces = True
+        try:
+            layout_func(n)
+        except Exception:
+            n.img_style._block_adding_faces = False
+            raise
 
 def render_floatings(n2i, n2f, img, float_layer):
     floating_faces = [ [node, fb["float"]] for node, fb in n2f.iteritems() if "float" in fb]
