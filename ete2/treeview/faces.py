@@ -25,7 +25,6 @@ from PyQt4 import QtCore, QtGui
 import numpy
 
 from main import add_face_to_node
-from qt4_render import render
 
 aafgcolors = {
     'A':"#000000" ,
@@ -232,17 +231,22 @@ class AttrFace(TextFace):
     """
 
     def __init__(self, attr, ftype="Verdana", fsize=10, fgcolor="#000000", \
-                     bgcolor=None, penwidth=0, text_prefix="", text_suffix="", fstyle="normal"):
+                     bgcolor=None, penwidth=0, text_prefix="", text_suffix="", formatter=None, fstyle="normal"):
         Face.__init__(self)
         TextFace.__init__(self, "", ftype, fsize, fgcolor, bgcolor, penwidth, fstyle)
         self.attr     = attr
         self.type     = "text"
         self.text_prefix = text_prefix
         self.text_suffix = text_suffix
+        self.attr_formatter = formatter
 
     def get_text(self):
+        if self.attr_formatter:
+            text = self.attr_formatter % getattr(self.node, self.attr)
+        else:
+            text = str(getattr(self.node, self.attr))
         return ''.join(map(str, [self.text_prefix, \
-                                     getattr(self.node, self.attr), \
+                                     text, \
                                      self.text_suffix]))
 
 class ImgFace(Face):
@@ -768,6 +772,8 @@ class BackgroundFace(Face):
 
 class TreeFace(Face):
     def __init__(self, tree, img_properties):
+        from qt4_render import render
+
         Face.__init__(self)
         self.type = "item"
         self.root_node = tree

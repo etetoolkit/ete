@@ -104,13 +104,12 @@ class NodeStyleDict(dict):
 class TreeImage(object):
 
     def __init__(self):
-
         # :::::::::::::::::::::::::
         # TREE SHAPE AND SIZE
         # :::::::::::::::::::::::::
         
         # Valid modes are : "circular" or "rect"
-        self.mode = "circular"
+        self.mode = "rect"
 
         # Layout function used to dynamically control the aspect of
         # nodes
@@ -120,7 +119,10 @@ class TreeImage(object):
         # right-to-left. This property only has sense when "rect" mode
         # is used.
         self.orientation = 0 
-        
+
+        # Tree rotation in degrees (clock-wise rotation)
+        self.rotation = 0 
+       
         # Scale used to convert branch lengths to pixels. If 'None',
         # the scale will be calculated using the "tree_width"
         # attribute (read bellow)
@@ -129,11 +131,17 @@ class TreeImage(object):
         # Total width, in pixels, that tree branches are allowed to
         # used. This is, the distance in pixels from root to the most
         # distant leaf. If set, this value will be used to
-        # automatically calculate the branch scale.
+        # automatically calculate the branch scale.  In practice,
+        # increasing this number will cause an X-zoom in.
         self.tree_width = 200
 
         # Min separation, in pixels, between to adjacent branches
         self.min_leaf_separation = 1 
+
+        # Leaf branch separation margin, in pixels. This will add a
+        # separation of X pixels between adjacent leaf branches. In
+        # practice this produces a Y-zoom in.
+        self.branch_vertical_margin = 0
 
         # When circular trees are drawn, this defines the starting
         # angle (in degrees) from which leaves are distribute
@@ -162,7 +170,7 @@ class TreeImage(object):
 
         # Convert tree branches to a fixed length, thus allowing to
         # observe the topology of tight nodes
-        self.force_topology = False
+        self.force_topology = True
 
         # Draw guidelines from leaf nodes to aligned faces
         self.draw_guiding_lines = True
@@ -203,6 +211,10 @@ class TreeImage(object):
         # Initialize aligned face headers
         self.aligned_header = FaceHeader()
         self.aligned_foot = FaceHeader()
+
+        self.show_leaf_name = True
+        self.show_branch_length = True
+        self.show_branch_support = True
 
     def set_layout_fn(self, layout):
         # Validates layout function

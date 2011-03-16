@@ -12,13 +12,13 @@
   + (A) Add custom actions/popup-options to faces and nodes (they will
     appear in the GUI)
   + (I) Performance issues with circular tree rendering 
-  + (F) Re-enable force topology button 
+  + DONE (F) Re-enable force topology button 
   + (A) Several Trees in the same scene
   + (A) Add mode switching in GUI
-  + (F) Show/hide branch length and support
+  + ALMOST DONE (F) Show/hide branch length and support
   + (A) On the fly layout function switching
   + (F) Highlight node when mouse is over
-  + (F) Search for nodes
+  + DONE (F) Search for nodes
  
 * NexML 
   + (F) Fix parser
@@ -39,6 +39,8 @@
 
 * Tree Rendering
   + (F) SVG spheres are not well rendered
+  + (F) Show tree header text
+  + (F) Show legend and scale
   + (A) Cristina Amil work (Domain faces)
   + (A) More background control in faces and nodes
   + (A) Handle internal node faces

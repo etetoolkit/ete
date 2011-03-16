@@ -27,10 +27,23 @@ class _GUI(QtGui.QMainWindow):
         self.view = _TreeView(scene)
         scene.view = self.view
         self.node_properties = _PropertiesDialog(scene)
-        scene.prop_table = self.node_properties
+        self.view.prop_table = self.node_properties
 
-        _mainwindow.Ui_MainWindow().setupUi(self)
+        self.main = _mainwindow.Ui_MainWindow()
+        self.main.setupUi(self)
+
         self.view.centerOn(0,0)
+
+        if scene.img.show_branch_length: 
+            self.main.actionBranchLength.setChecked(True)
+        if scene.img.show_branch_support: 
+            self.main.actionBranchSupport.setChecked(True)
+        if scene.img.show_leaf_name: 
+            self.main.actionLeafName.setChecked(True)
+        if scene.img.force_topology: 
+            self.main.actionForceTopology.setChecked(True)
+
+
 
         splitter = QtGui.QSplitter()
         splitter.addWidget(self.view)
@@ -69,28 +82,27 @@ class _GUI(QtGui.QMainWindow):
 
     @QtCore.pyqtSignature("")
     def on_actionZoomInX_triggered(self):
-        self.scene.props.tree_width += 20
+        self.scene.img.scale += self.scene.img.scale * 0.05
         self.scene.draw()
 
     @QtCore.pyqtSignature("")
     def on_actionZoomOutX_triggered(self):
-        if self.scene.props.tree_width >20:
-            self.scene.props.tree_width -= 20
-            self.scene.draw()
+        self.scene.img.scale -= self.scene.img.scale * 0.05
+        self.scene.draw()
 
     @QtCore.pyqtSignature("")
     def on_actionZoomInY_triggered(self):
-        if self.scene.props.min_branch_separation < \
-                self.scene.min_real_branch_separation:
-            self.scene.props.min_branch_separation = \
-                self.scene.min_real_branch_separation
-        self.scene.props.min_branch_separation += 5
+        self.scene.img.branch_vertical_margin += 5 
         self.scene.draw()
 
     @QtCore.pyqtSignature("")
     def on_actionZoomOutY_triggered(self):
-        if self.scene.props.min_branch_separation > 5:
-            self.scene.props.min_branch_separation -= 5
+        if self.scene.img.branch_vertical_margin > 0:
+            margin = self.scene.img.branch_vertical_margin - 5 
+            if margin > 0: 
+                self.scene.img.branch_vertical_margin = margin
+            else:
+                self.scene.img.branch_vertical_margin = 0.0
             self.scene.draw()
 
     @QtCore.pyqtSignature("")
@@ -128,9 +140,9 @@ class _GUI(QtGui.QMainWindow):
             elif mType == 0 or mType == 1:
                 aValue =  str(setup.attrValue.text())
 
-            if mType == 0 or mType == 2:
+            if mType == 1 or mType == 2: #"is or =="
                 cmpFn = lambda x,y: x == y
-            elif mType == 1:
+            elif mType == 0: # "contains"
                 cmpFn = lambda x,y: y in x
             elif mType == 3:
                 cmpFn = lambda x,y: x >= y
@@ -153,17 +165,27 @@ class _GUI(QtGui.QMainWindow):
     @QtCore.pyqtSignature("")
     def on_actionClear_search_triggered(self):
         # This could be much more efficient
-        for n in self.scene._highlighted_nodes.keys():
+        for n in self.view.n2hl.keys():
             self.scene.unhighlight_node(n)
 
     @QtCore.pyqtSignature("")
     def on_actionBranchLength_triggered(self):
-        self.scene.props.draw_branch_length ^= True
+        self.scene.img.show_branch_length ^= True
+        self.scene.draw()
+
+    @QtCore.pyqtSignature("")
+    def on_actionBranchSupport_triggered(self):
+        self.scene.img.show_branch_support ^= True
+        self.scene.draw()
+
+    @QtCore.pyqtSignature("")
+    def on_actionLeafName_triggered(self):
+        self.scene.img.show_leaf_name ^= True
         self.scene.draw()
 
     @QtCore.pyqtSignature("")
     def on_actionForceTopology_triggered(self):
-        self.scene.props.force_topology ^= True
+        self.scene.img.force_topology ^= True
         self.scene.draw()
 
     @QtCore.pyqtSignature("")
@@ -191,7 +213,6 @@ class _GUI(QtGui.QMainWindow):
 
     @QtCore.pyqtSignature("")
     def on_actionOpen_triggered(self):
-
         d = QtGui.QFileDialog()
         d._conf = _open_newick.Ui_OpenNewick()
         d._conf.setupUi(d)
@@ -483,6 +504,7 @@ class NewickDialog(QtGui.QDialog):
 class _TreeView(QtGui.QGraphicsView):
     def __init__(self,*args):
         QtGui.QGraphicsView.__init__(self,*args)
+        self.n2hl = {}
 
         if USE_GL:
             print "USING GL"
@@ -517,7 +539,7 @@ class _TreeView(QtGui.QGraphicsView):
         if (xfactor>1 and xscale>200000) or \
                 (yfactor>1 and yscale>200000):
             QtGui.QMessageBox.information(self, "!",\
-                                              "Hey! I'm not an electron microscope?")
+                                              "Hey! I'm not an electron microscope!")
             return
 
         # Do not allow to reduce scale to a value producing height or with smaller than 20 pixels
@@ -529,6 +551,25 @@ class _TreeView(QtGui.QGraphicsView):
         else:
             self.scale(xfactor, yfactor)
 
+    def highlight_node(self, n, fullRegion=False):
+        #self.unhighlight_node(n)
+        fgcolor = "red"
+        bgcolor = "black"
+        item = self.scene().n2i[n]
+        hl = QtGui.QGraphicsRectItem(item.content)
+        if fullRegion:
+            hl.setRect(item.fullRegion)
+        else:
+            hl.setRect(item.nodeRegion)
+        hl.setPen(QtGui.QColor(fgcolor))
+        hl.setBrush(QtGui.QColor(bgcolor))
+        hl.setOpacity(0.4)
+        self.n2hl[n] = hl
+
+    def unhighlight_node(self, n):
+        if n in self.n2hl:
+            self.scene().removeItem(self.n2hl[n])
+            del self.n2hl[n]
 
     def wheelEvent(self,e):
         factor =  (-e.delta() / 360.0)
@@ -603,7 +644,16 @@ class _BasicNodeActions(object):
         if e.button() == QtCore.Qt.RightButton:
             obj.showActionPopup()
         elif e.button() == QtCore.Qt.LeftButton:
-            obj.scene().prop_table.update_properties(obj.node)
+            obj.scene().view.prop_table.update_properties(obj.node)
+
+    @staticmethod            
+    def hoverEnterEvent (self, e):
+        self.scene().view.highlight_node(self.node, fullRegion=True)
+
+    @staticmethod
+    def hoverLeaveEvent(self,e):
+        self.scene().view.unhighlight_node(self.node)
+
 
 class _NodeActions(object):
     """ Used to extend QGraphicsItem features """
@@ -626,7 +676,7 @@ class _NodeActions(object):
         if e.button() == QtCore.Qt.RightButton:
             self.showActionPopup()
         elif e.button() == QtCore.Qt.LeftButton:
-            self.scene().prop_table.update_properties(self.node)
+            self.scene().view.prop_table.update_properties(self.node)
 
     def highlight(self):
             from qt4_circular_render import ArcPartition

@@ -2,25 +2,22 @@
 
 # Form implementation generated from reading ui file 'ete_qt4app.ui'
 #
-# Created: Mon Sep 14 11:11:49 2009
-#      by: PyQt4 UI code generator 4.5.4
+# Created: Wed Mar 16 17:21:28 2011
+#      by: PyQt4 UI code generator 4.6
 #
 # WARNING! All changes made in this file will be lost!
-try:
-    from PyQt4 import QtCore, QtGui
-except ImportError:
-    import QtCore, QtGui
+
+from PyQt4 import QtCore, QtGui
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(673, 493)
         self.centralwidget = QtGui.QWidget(MainWindow)
-        self.centralwidget.setGeometry(QtCore.QRect(0, 58, 673, 411))
         self.centralwidget.setObjectName("centralwidget")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 673, 24))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 673, 27))
         self.menubar.setObjectName("menubar")
         self.menuFile = QtGui.QMenu(self.menubar)
         self.menuFile.setObjectName("menuFile")
@@ -28,12 +25,10 @@ class Ui_MainWindow(object):
         self.menuAbout.setObjectName("menuAbout")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtGui.QStatusBar(MainWindow)
-        self.statusbar.setGeometry(QtCore.QRect(0, 469, 673, 24))
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
         self.toolBar = QtGui.QToolBar(MainWindow)
         self.toolBar.setEnabled(True)
-        self.toolBar.setGeometry(QtCore.QRect(0, 24, 673, 34))
         self.toolBar.setObjectName("toolBar")
         MainWindow.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
         self.actionOpen = QtGui.QAction(MainWindow)
@@ -73,6 +68,7 @@ class Ui_MainWindow(object):
         icon5 = QtGui.QIcon()
         icon5.addPixmap(QtGui.QPixmap(":/ete icons/force_topo.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionForceTopology.setIcon(icon5)
+        self.actionForceTopology.setProperty("HOLA", False)
         self.actionForceTopology.setObjectName("actionForceTopology")
         self.actionSave_newick = QtGui.QAction(MainWindow)
         self.actionSave_newick.setIcon(icon1)
@@ -96,6 +92,7 @@ class Ui_MainWindow(object):
         icon9 = QtGui.QIcon()
         icon9.addPixmap(QtGui.QPixmap(":/ete icons/y_reduce.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionZoomOutY.setIcon(icon9)
+        self.actionZoomOutY.setProperty("actionBranchSupport", False)
         self.actionZoomOutY.setObjectName("actionZoomOutY")
         self.actionFit2tree = QtGui.QAction(MainWindow)
         icon10 = QtGui.QIcon()
@@ -135,6 +132,18 @@ class Ui_MainWindow(object):
         self.actionRender_selected_region.setIcon(icon12)
         self.actionRender_selected_region.setShortcutContext(QtCore.Qt.WidgetShortcut)
         self.actionRender_selected_region.setObjectName("actionRender_selected_region")
+        self.actionBranchSupport = QtGui.QAction(MainWindow)
+        self.actionBranchSupport.setCheckable(True)
+        icon16 = QtGui.QIcon()
+        icon16.addPixmap(QtGui.QPixmap(":/ete icons/show_support.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionBranchSupport.setIcon(icon16)
+        self.actionBranchSupport.setObjectName("actionBranchSupport")
+        self.actionLeafName = QtGui.QAction(MainWindow)
+        self.actionLeafName.setCheckable(True)
+        icon17 = QtGui.QIcon()
+        icon17.addPixmap(QtGui.QPixmap(":/ete icons/show_names.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionLeafName.setIcon(icon17)
+        self.actionLeafName.setObjectName("actionLeafName")
         self.menuFile.addAction(self.actionOpen)
         self.menuFile.addAction(self.actionPaste_newick)
         self.menuFile.addAction(self.actionSave_newick)
@@ -155,6 +164,8 @@ class Ui_MainWindow(object):
         self.toolBar.addAction(self.actionClear_search)
         self.toolBar.addAction(self.actionForceTopology)
         self.toolBar.addAction(self.actionBranchLength)
+        self.toolBar.addAction(self.actionBranchSupport)
+        self.toolBar.addAction(self.actionLeafName)
         self.toolBar.addAction(self.actionRenderPDF)
         self.toolBar.addAction(self.actionShow_newick)
 
@@ -201,5 +212,11 @@ class Ui_MainWindow(object):
         self.actionShow_newick.setShortcut(QtGui.QApplication.translate("MainWindow", "N", None, QtGui.QApplication.UnicodeUTF8))
         self.actionShow_node_attributes_box.setText(QtGui.QApplication.translate("MainWindow", "Show node attributes box", None, QtGui.QApplication.UnicodeUTF8))
         self.actionRender_selected_region.setText(QtGui.QApplication.translate("MainWindow", "Render selected region", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionBranchSupport.setText(QtGui.QApplication.translate("MainWindow", "Show branch support", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionBranchSupport.setToolTip(QtGui.QApplication.translate("MainWindow", "Show branch support", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionBranchSupport.setShortcut(QtGui.QApplication.translate("MainWindow", "S", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionLeafName.setText(QtGui.QApplication.translate("MainWindow", "Show leaf names", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionLeafName.setToolTip(QtGui.QApplication.translate("MainWindow", "show leaf names", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionLeafName.setShortcut(QtGui.QApplication.translate("MainWindow", "N", None, QtGui.QApplication.UnicodeUTF8))
 
 import ete_resources_rc

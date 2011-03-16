@@ -21,7 +21,7 @@ def hls2hex(h, l, s):
 def ly(node):
     node.img_style["size"] = 50
     node.img_style["shape"] = "square"
- 
+
 
     node.img_style["bgcolor"] = random_color()
 
@@ -100,7 +100,6 @@ t.show(img_properties=I)
 
 I.mode = "circular"
 I2.mode = "rect"
-print t.render("test.png", img_properties=I)
-
+treemap =  t.render("test.png", img_properties=I)
 t.show(ly, img_properties=I)
 

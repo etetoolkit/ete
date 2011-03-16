@@ -2,16 +2,12 @@
 
 # Form implementation generated from reading ui file 'show_newick.ui'
 #
-# Created: Mon Sep 14 11:11:49 2009
-#      by: PyQt4 UI code generator 4.5.4
+# Created: Wed Mar 16 17:21:27 2011
+#      by: PyQt4 UI code generator 4.6
 #
 # WARNING! All changes made in this file will be lost!
 
-try:
-    from PyQt4 import QtCore, QtGui
-except ImportError:
-    import QtCore, QtGui
-
+from PyQt4 import QtCore, QtGui
 
 class Ui_Newick(object):
     def setupUi(self, Newick):
@@ -20,17 +16,17 @@ class Ui_Newick(object):
         self.nwFormat = QtGui.QComboBox(Newick)
         self.nwFormat.setGeometry(QtCore.QRect(200, 20, 51, 23))
         self.nwFormat.setObjectName("nwFormat")
-        self.nwFormat.addItem(QtCore.QString())
-        self.nwFormat.addItem(QtCore.QString())
-        self.nwFormat.addItem(QtCore.QString())
-        self.nwFormat.addItem(QtCore.QString())
-        self.nwFormat.addItem(QtCore.QString())
-        self.nwFormat.addItem(QtCore.QString())
-        self.nwFormat.addItem(QtCore.QString())
-        self.nwFormat.addItem(QtCore.QString())
-        self.nwFormat.addItem(QtCore.QString())
-        self.nwFormat.addItem(QtCore.QString())
-        self.nwFormat.addItem(QtCore.QString())
+        self.nwFormat.addItem("")
+        self.nwFormat.addItem("")
+        self.nwFormat.addItem("")
+        self.nwFormat.addItem("")
+        self.nwFormat.addItem("")
+        self.nwFormat.addItem("")
+        self.nwFormat.addItem("")
+        self.nwFormat.addItem("")
+        self.nwFormat.addItem("")
+        self.nwFormat.addItem("")
+        self.nwFormat.addItem("")
         self.label = QtGui.QLabel(Newick)
         self.label.setGeometry(QtCore.QRect(100, 20, 91, 20))
         self.label.setObjectName("label")
@@ -86,3 +82,4 @@ class Ui_Newick(object):
         self.pushButton_2.setText(QtGui.QApplication.translate("Newick", "Del", None, QtGui.QApplication.UnicodeUTF8))
         self.label_3.setText(QtGui.QApplication.translate("Newick", "Node\'s attribute (NHX format)", None, QtGui.QApplication.UnicodeUTF8))
         self.useAllFeatures.setText(QtGui.QApplication.translate("Newick", "Include all attributes in nodes", None, QtGui.QApplication.UnicodeUTF8))
+

@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="ete icons" >
+    <file>show_names.png</file>
+    <file>show_support.png</file>
     <file>fit_tree.png</file>
     <file>clean_search.png</file>
     <file>fileopen.png</file>
@@ -20,4 +22,5 @@
     <file>zoom_in.png</file>
     <file>zoom_out.png</file>
   </qresource>
+  <qresource prefix=":/ete icons/show_dist.png" />
 </RCC>

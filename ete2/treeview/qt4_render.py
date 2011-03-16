@@ -7,7 +7,7 @@ import qt4_rect_render as rrender
 
 from main import _leaf, NodeStyleDict, _ActionDelegator
 from qt4_face_render import update_node_faces, _FaceGroupItem, _TextFaceItem
-
+import faces
 
 ## | General scheme of node content
 ## |==========================================================================================================================|
@@ -47,9 +47,6 @@ class _RectItem(QtGui.QGraphicsRectItem, _ActionDelegator):
         QtGui.QGraphicsRectItem.__init__(self, 0, 0, d, d)
         self.setBrush(QtGui.QBrush(QtGui.QColor(self.node.img_style["fgcolor"])))
         self.setPen(QtGui.QPen(QtGui.QColor(self.node.img_style["fgcolor"])))
-     
-        
-        #self.highlight_node()
 
 class _SphereItem(QtGui.QGraphicsEllipseItem, _ActionDelegator):
     def __init__(self, node):
@@ -138,83 +135,66 @@ class _PointerItem(QtGui.QGraphicsRectItem):
 class _TreeScene(QtGui.QGraphicsScene):
     def __init__(self):
         QtGui.QGraphicsScene.__init__(self)
-        
+        self.view = None
+        self.tree = None
+
     def init_data(self, tree, img, n2i, n2f):
-        self.master_item = QtGui.QGraphicsRectItem(None)
+        self.master_item = _EmptyItem()
         self.view = None
         self.tree = tree
         self.n2i = n2i
         self.n2f = n2f
         self.img = img
-        self.prop_table = None
 
         # Initialize scene 
         self.buffer_node = None        # Used to copy and paste
         self.pointer  = _PointerItem(self.master_item)
         self.highlighter = QtGui.QGraphicsPathItem(self.master_item)
-        self.n2hl = {}
 
         # Set the scene background
         self.setBackgroundBrush(QtGui.QColor("white"))
         #self.setBackgroundBrush(QtGui.QBrush(QtCore.Qt.NoBrush))
 
-    def highlight_node(self, n):
-        self.unhighlight_node(n)
-        fgcolor = "green"
-        #bgcolor = "white"
-        item = self.n2i[n]
-        hl = QtGui.QGraphicsRectItem(item)
-        hl.setRect(item.nodeRegion)
-        hl.setPen(QtGui.QColor(fgcolor))
-        #hl.setBrush(QtGui.QColor(bgcolor))
-        self.n2hl[n] = hl
 
-    def unhighlight_node(self, n):
-        if n in self.n2hl:
-            self.removeItem(self.n2hl[n])
-            del self.n2hl[n]
-
-    def mousePressEvent(self,e):
-        pos = self.pointer.mapFromScene(e.scenePos())
-        self.pointer.setRect(pos.x(),pos.y(),10,10)
-        self.pointer.startPoint = QtCore.QPointF(pos.x(), pos.y())
-        self.pointer.setActive(True)
-        self.pointer.setVisible(True)
-        QtGui.QGraphicsScene.mousePressEvent(self,e)
-
-    def mouseReleaseEvent(self,e):
-        curr_pos = self.pointer.mapFromScene(e.scenePos())
-        x = min(self.pointer.startPoint.x(),curr_pos.x())
-        y = min(self.pointer.startPoint.y(),curr_pos.y())
-        w = max(self.pointer.startPoint.x(),curr_pos.x()) - x
-        h = max(self.pointer.startPoint.y(),curr_pos.y()) - y
-        if self.pointer.startPoint == curr_pos:
-            self.pointer.setVisible(False)
-        self.pointer.setActive(False)
-        QtGui.QGraphicsScene.mouseReleaseEvent(self,e)
-
-    def mouseMoveEvent(self,e):
-        curr_pos = self.pointer.mapFromScene(e.scenePos())
-        if self.pointer.isActive():
-            x = min(self.pointer.startPoint.x(),curr_pos.x())
-            y = min(self.pointer.startPoint.y(),curr_pos.y())
-            w = max(self.pointer.startPoint.x(),curr_pos.x()) - x
-            h = max(self.pointer.startPoint.y(),curr_pos.y()) - y
-            self.pointer.setRect(x,y,w,h)
-        QtGui.QGraphicsScene.mouseMoveEvent(self, e)
-
-    def mouseDoubleClickEvent(self,e):
-        QtGui.QGraphicsScene.mouseDoubleClickEvent(self,e)
+    # def mousePressEvent(self,e):
+    #     pos = self.pointer.mapFromScene(e.scenePos())
+    #     self.pointer.setRect(pos.x(),pos.y(),10,10)
+    #     self.pointer.startPoint = QtCore.QPointF(pos.x(), pos.y())
+    #     self.pointer.setActive(True)
+    #     self.pointer.setVisible(True)
+    #     QtGui.QGraphicsScene.mousePressEvent(self,e)
+    #  
+    # def mouseReleaseEvent(self,e):
+    #     curr_pos = self.pointer.mapFromScene(e.scenePos())
+    #     x = min(self.pointer.startPoint.x(),curr_pos.x())
+    #     y = min(self.pointer.startPoint.y(),curr_pos.y())
+    #     w = max(self.pointer.startPoint.x(),curr_pos.x()) - x
+    #     h = max(self.pointer.startPoint.y(),curr_pos.y()) - y
+    #     if self.pointer.startPoint == curr_pos:
+    #         self.pointer.setVisible(False)
+    #     self.pointer.setActive(False)
+    #     QtGui.QGraphicsScene.mouseReleaseEvent(self,e)
+    #  
+    # def mouseMoveEvent(self,e):
+    #     curr_pos = self.pointer.mapFromScene(e.scenePos())
+    #     if self.pointer.isActive():
+    #         x = min(self.pointer.startPoint.x(),curr_pos.x())
+    #         y = min(self.pointer.startPoint.y(),curr_pos.y())
+    #         w = max(self.pointer.startPoint.x(),curr_pos.x()) - x
+    #         h = max(self.pointer.startPoint.y(),curr_pos.y()) - y
+    #         self.pointer.setRect(x,y,w,h)
+    #     QtGui.QGraphicsScene.mouseMoveEvent(self, e)
+    #  
+    # def mouseDoubleClickEvent(self,e):
+    #     QtGui.QGraphicsScene.mouseDoubleClickEvent(self,e)
 
     def draw(self):
-        pass
-        # Get branch scale
-        # fnode, max_dist = self.startNode.get_farthest_leaf(topology_only=\
-        #                                                        img.force_topology)
-        # if max_dist>0:
-        #     self.scale =  self.props.tree_width / max_dist
-        # else:
-        #     self.scale =  1
+        tree_item, self.n2i, self.n2f = render(self.tree, self.img)
+        if self.master_item:
+            self.removeItem(self.master_item)
+        self.master_item = _EmptyItem()
+        self.addItem(self.master_item)
+        tree_item.setParentItem(self.master_item)
 
 def render(root_node, img, hide_root=False):
     mode = img.mode
@@ -227,6 +207,7 @@ def render(root_node, img, hide_root=False):
             img.scale =  img.tree_width / max_dist
         else:
             img.scale =  1
+
         print img.scale
 
     scale = img.scale
@@ -258,8 +239,26 @@ def render(root_node, img, hide_root=False):
     # This could be used to handle aligned faces in internal
     # nodes.
     virtual_leaves = 0
+    
+    if img.show_branch_length:
+        bl_face = faces.AttrFace("dist", fsize=8, ftype="Arial", fgcolor="black", formatter = "%0.2g")
+    if img.show_branch_support:
+        su_face = faces.AttrFace("support", fsize=8, ftype="Arial", fgcolor="darkred", formatter = "%0.2g")
+    if img.show_leaf_name:
+        na_face = faces.AttrFace("name", fsize=10, ftype="Arial", fgcolor="black")
+
     for n in root_node.traverse():
         set_style(n, layout_fn)
+
+        if img.show_branch_length:
+            faces.add_face_to_node(bl_face, n, 0, position="branch-top")
+
+        if img.show_branch_support:
+            faces.add_face_to_node(su_face, n, 0, position="branch-bottom")
+
+        if _leaf(n) and img.show_leaf_name:
+            faces.add_face_to_node(na_face, n, 0, position="branch-right")
+
         if _leaf(n):# or len(n.img_style["_faces"]["aligned"]):
             virtual_leaves += 1
     rot_step = float(arc_span) / virtual_leaves
@@ -318,8 +317,6 @@ def render(root_node, img, hide_root=False):
         iwidth = tree_radius * 2
         iheight = tree_radius * 2
         parent.moveBy(tree_radius, tree_radius)
-        #parent.setRect(-max_r, -max_r, max_r*2, max_r*2) 
-        #parent.setRect(0, 0, max_r*2, max_r*2) 
     else:
         iwidth = n2i[root_node].fullRegion.width()
         iheight = n2i[root_node].fullRegion.height()
@@ -435,7 +432,10 @@ def set_node_size(node, n2i, n2f, img):
     min_separation = img.min_leaf_separation
 
     item = n2i[node]
-    branch_length = item.branch_length = float(node.dist * scale)
+    if img.force_topology:
+        branch_length = item.branch_length = float(scale)
+    else:
+        branch_length = item.branch_length = float(node.dist * scale)
 
     # Organize faces by groups
     faceblock = update_node_faces(node, n2f)
@@ -454,7 +454,10 @@ def set_node_size(node, n2i, n2f, img):
                 faceblock["branch-right"].h, \
                 aligned_height, \
                 min_separation,\
-                )    
+                )
+
+    h += img.branch_vertical_margin
+    
     # Total width required by the node
     w = sum([max(branch_length + node.img_style["size"], 
                                       faceblock["branch-top"].w + node.img_style["size"],
@@ -469,10 +472,6 @@ def set_node_size(node, n2i, n2f, img):
 
     # Node region 
     item.nodeRegion.setRect(0, 0, w, h)
-
-    # Stores real separation between branches, to correctly handle scale changes...
-    #if min_real_branch_separation < h:
-    #    min_real_branch_separation = h
 
     # This is the node total region covered by the node
     item.fullRegion.setRect(0, 0, w, h)
