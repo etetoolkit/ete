@@ -5,7 +5,7 @@ from PyQt4 import QtCore, QtGui, QtSvg
 import qt4_circular_render as crender
 import qt4_rect_render as rrender
 
-from main import _leaf, NodeStyleDict, _ActionDelegator
+from main import _leaf, NodeStyle, _ActionDelegator
 from qt4_face_render import update_node_faces, _FaceGroupItem, _TextFaceItem
 import faces
 
@@ -638,11 +638,11 @@ def set_style(n, layout_func):
     # I import dict at the moment of drawing, otherwise there is a
     # loop of imports between drawer and qt4render
     if not hasattr(n, "img_style"):
-        n.img_style = NodeStyleDict()
-    elif isinstance(n.img_style, NodeStyleDict): 
+        n.img_style = NodeStyle()
+    elif isinstance(n.img_style, NodeStyle): 
         n.img_style.init()
     else:
-        raise TypeError("img_style attribute in node %s is not of NodeStyleDict type." \
+        raise TypeError("img_style attribute in node %s is not of NodeStyle type." \
                             %n.name)
 
     if layout_func:

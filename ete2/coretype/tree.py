@@ -110,7 +110,6 @@ class TreeNode(object):
         self._support = 1.0
 
         self.features = set([])
-        self.collapsed = False
         # Add basic features
         self.add_features(name="NoName")
         self.features.update(["dist", "support"])
@@ -592,7 +591,7 @@ class TreeNode(object):
         return self.search_nodes(name=name, children=[])
 
     def is_leaf(self):
-        if self.collapsed or len(self.children)==0:
+        if len(self.children)==0:
             return True
         else:
             return False
@@ -602,11 +601,6 @@ class TreeNode(object):
             return True
         else:
             return False
-
-    def collapse(self):
-        self.collapse = True
-    def expand(self):
-        self.collapse = False
 
     # Distance related functions
     def get_distance(self, target, target2=None, topology_only=False):
@@ -1098,10 +1092,6 @@ def asRphylo(ETE_tree):
         return
     R.library("ape")
     return R['read.tree'](text=ETE_tree.write())
-
-
-
-
 
 # A cosmetic alias :)
 Tree = TreeNode

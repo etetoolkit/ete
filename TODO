@@ -17,7 +17,7 @@
   + (A) Add mode switching in GUI
   + DONE (F) Show/hide branch length and support
   + (A) On the fly layout function switching
-  + (F) Highlight node when mouse is over
+  + (F) Highlight node when mouse is over (very slow!)
   + DONE (F) Search for nodes
  
 * NexML 

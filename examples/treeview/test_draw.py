@@ -1,7 +1,7 @@
 import sys
 
 from ete_dev import Tree, faces
-from ete_dev.treeview.main import TreeImage, NodeStyleDict
+from ete_dev.treeview.main import TreeStyle, NodeStyle
 import colorsys
 import random
 
@@ -49,7 +49,7 @@ def tiny(node):
 
 n = int(sys.argv[1])
 
-I = TreeImage()
+I = TreeStyle()
 I.mode = "rect"
 I.orientation = 1
 #I.scale = n/2
@@ -62,7 +62,7 @@ I.draw_border = True
 
 t2 = Tree()
 t2.populate(10)
-I2 = TreeImage()
+I2 = TreeStyle()
 #I2.scale=1
 I2.mode = "circular"
 I2.layout_fn = tiny
@@ -76,12 +76,12 @@ t.populate(n, reuse_names=False)
 
 print t.get_ascii(show_internal=True)
 
-style = NodeStyleDict()
+style = NodeStyle()
 style.add_fixed_face(faces.TreeFace(t2, I2), "branch-right", 0)
 
-t.img_style = NodeStyleDict()
+t.img_style = NodeStyle()
 for c in t.children:
-    c.img_style = NodeStyleDict()
+    c.img_style = NodeStyle()
 
 #t.children[1].children[0].img_style = style 
 

@@ -12,7 +12,7 @@ _BOOL_CHECKER =  lambda x: isinstance(x, bool) or x in (0,1)
 
 FACE_POSITIONS = set(["branch-right", "branch-top", "branch-bottom", "float", "aligned"])
 
-__all__  = ["NodeStyleDict", "TreeImage", "_leaf", "add_face_to_node"]
+__all__  = ["NodeStyle", "TreeImage", "_leaf", "add_face_to_node"]
 
 NODE_STYLE_DEFAULT = [
     ["fgcolor",          "#0030c1",    _COLOR_CHECKER                           ],
@@ -55,11 +55,11 @@ class _ActionDelegator(object):
     def __init__(self):
         self._delegate = None
       
-class NodeStyleDict(dict):
+class NodeStyle(dict):
     def __init__(self, *args, **kargs):
 
-        super(NodeStyleDict, self).__init__(*args, **kargs)
-        super(NodeStyleDict, self).__setitem__("faces", {})
+        super(NodeStyle, self).__init__(*args, **kargs)
+        super(NodeStyle, self).__setitem__("faces", {})
         self.init()
         self._block_adding_faces = False
 
@@ -70,7 +70,7 @@ class NodeStyleDict(dict):
             elif not checker(self[key]):
                 raise ValueError("'%s' attribute in node style has not a valid value: %s" %\
                                      (key, self[key]))
-        super(NodeStyleDict, self).__setitem__("_faces", {})
+        super(NodeStyle, self).__setitem__("_faces", {})
         # copy fixed faces to the faces dict that will be drawn 
         for pos, values in self["faces"].iteritems():
             for col, faces in values.iteritems():
@@ -94,15 +94,13 @@ class NodeStyleDict(dict):
 
     def __setitem__(self, i, y):
         if i not in VALID_NODE_STYLE_KEYS:
-            raise ValueError("'%s' is not a valid key for NodeStyleDict instances" %i)
-        super(NodeStyleDict, self).__setitem__(i, y)
+            raise ValueError("'%s' is not a valid key for NodeStyle instances" %i)
+        super(NodeStyle, self).__setitem__(i, y)
 
     def clear(self):
-        super(NodeStyleDict, self).__setitem__("_faces", {})
+        super(NodeStyle, self).__setitem__("_faces", {})
 
 class TreeImage(object):
-
-    
 
     def __init__(self):
         # :::::::::::::::::::::::::
@@ -242,7 +240,6 @@ class FaceHeader(dict):
 def _leaf(node):
     collapsed = hasattr(node, "img_style") and not node.img_style["draw_descendants"]
     return collapsed or node.is_leaf()
-
 
 def add_face_to_node(face, node, column, aligned=False, position="branch-right"):
     """ Links a node with a given face instance.  """
