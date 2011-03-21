@@ -792,29 +792,22 @@ class TreeFace(Face):
     def _height(self):
         return self.item.rect().height()
 
-class _NodePointItem(QtGui.QGraphicsRectItem):
-    def __init__(self, radius, style, color):
-        self.radius = radius
-        self.diam = radius*2
-        self.style = style
-        self.color  = color
-        QtGui.QGraphicsRectItem.__init__(self, 0, 0, self.diam, self.diam)
-    def paint(self, p, option, widget):
-        if self.style == "sphere":
-            r = self.radius
-            d = self.diam
-            gradient = QtGui.QRadialGradient(r, r, r,(d)/3,(d)/3)
-            gradient.setColorAt(0.05, QtCore.Qt.white);
-            gradient.setColorAt(0.9, QtGui.QColor(self.color));
-            p.setBrush(QtGui.QBrush(gradient))
-            p.setPen(QtCore.Qt.NoPen)
-            p.drawEllipse(self.rect())
-        elif self.style == "square":
-            p.fillRect(self.rect(),QtGui.QBrush(QtGui.QColor(self.color)))
-        elif self.style == "circle":
-            p.setBrush(QtGui.QBrush(QtGui.QColor(self.color)))
-            p.setPen(QtGui.QPen(QtGui.QColor(self.color)))
-            p.drawEllipse(self.rect())
+
+class _SphereItem(QtGui.QGraphicsEllipseItem):
+    def __init__(self, radius, color, solid=False):
+        r = radius
+        d = r*2 
+        QtGui.QGraphicsEllipseItem.__init__(self, 0, 0, d, d)
+        self.gradient = QtGui.QRadialGradient(r, r, r,(d)/3,(d)/3)
+        self.gradient.setColorAt(0.05, QtCore.Qt.white)
+        self.gradient.setColorAt(1, QtGui.QColor(color))
+        if solid:
+            self.setBrush(QtGui.QBrush(QtGui.QColor(color)))
+        else:
+            self.setBrush(QtGui.QBrush(self.gradient))
+        self.setPen(QtGui.QPen(QtGui.QColor(color)))
+        #self.setPen(QtCore.Qt.NoPen)
+
 
 class CircleFace(Face):
     def __init__(self, radius, color, style="circle"):
@@ -826,7 +819,10 @@ class CircleFace(Face):
         self.rotable = False
 
     def update_items(self):
-        self.item = _NodePointItem(self.radius, self.style, self.color)
+        if self.style == "circle":
+            self.item = _SphereItem(self.radius, self.color, solid=True)
+        elif self.style == "sphere":
+            self.item = _SphereItem(self.radius, self.color)
 
     def _width(self):
         return self.item.rect().width()

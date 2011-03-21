@@ -54,11 +54,11 @@ class _SphereItem(QtGui.QGraphicsEllipseItem, _ActionDelegator):
         d = node.img_style["size"]
         r = d/2
         QtGui.QGraphicsEllipseItem.__init__(self, 0, 0, d, d)
-        self.setBrush(QtGui.QBrush(QtGui.QColor(self.node.img_style["fgcolor"])))
+        #self.setBrush(QtGui.QBrush(QtGui.QColor(self.node.img_style["fgcolor"])))
         self.setPen(QtGui.QPen(QtGui.QColor(self.node.img_style["fgcolor"])))
         gradient = QtGui.QRadialGradient(r, r, r,(d)/3,(d)/3)
         gradient.setColorAt(0.05, QtCore.Qt.white);
-        gradient.setColorAt(0.9, QtGui.QColor(self.node.img_style["fgcolor"]));
+        gradient.setColorAt(1, QtGui.QColor(self.node.img_style["fgcolor"]));
         self.setBrush(QtGui.QBrush(gradient))
         # self.setPen(QtCore.Qt.NoPen)
         
@@ -772,21 +772,25 @@ def save(scene, imgName, w=None, h=None, header=None, \
     elif w is None:
         w = h / aspect_ratio
 
-    print w, h, main_rect
-
     if ext == "SVG": 
         svg = QtSvg.QSvgGenerator()
         svg.setFileName(imgName)
+        targetRect = QtCore.QRectF(0, 0, w, h)
         svg.setSize(QtCore.QSize(w, h))
-        svg.setViewBox(QtCore.QRect(0, 0, w, h))
-        #svg.setTitle("")
+        svg.setViewBox(targetRect)
+        svg.setTitle("Generated with ETE http://ete.cgenomics.org")
         svg.setDescription("Generated with ETE http://ete.cgenomics.org")
 
         pp = QtGui.QPainter()
         pp.begin(svg)
-        targetRect =  QtCore.QRectF(0, 0, w, h)
-        scene.render(pp, scene.sceneRect(), scene.sceneRect())
+        scene.render(pp, targetRect, scene.sceneRect())
         pp.end()
+
+        # Fix a very annoying problem with Radial gradients in
+        # inkscape and browsers...
+        compatible_code = open(imgName).read().replace("xml:id=", "id=")
+        open(imgName, "w").write(compatible_code)
+        # End of fix
 
     elif ext == "PDF" or ext == "PS":
         format = QPrinter.PostScriptFormat if ext == "PS" else QPrinter.PdfFormat

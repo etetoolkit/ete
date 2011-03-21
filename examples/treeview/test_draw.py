@@ -1,7 +1,8 @@
 import sys
+import os
 
 from ete_dev import Tree, faces
-from ete_dev.treeview.main import TreeStyle, NodeStyle
+from ete_dev.treeview.main import TreeImage, NodeStyle
 import colorsys
 import random
 
@@ -20,22 +21,22 @@ def hls2hex(h, l, s):
 
 def ly(node):
     node.img_style["size"] = 50
-    node.img_style["shape"] = "square"
+    node.img_style["shape"] = "sphere"
 
 
-    node.img_style["bgcolor"] = random_color()
+    #node.img_style["bgcolor"] = random_color()
 
     #node.img_style["node_bgcolor"] = random_color()
     #node.img_style["faces_bgcolor"] = random_color()
 
     if node.is_leaf():
         #faces.add_face_to_node(faces.AttrFace("name"), node, 0, position="aligned")
-        faces.add_face_to_node(faces.AttrFace("name", fsize=16, fstyle="italic"), node, 0)#), position="aligned")
-        faces.add_face_to_node(faces.AttrFace("name", fsize=16, fstyle="oblique"), node, 0)#), position="aligned")
+        #faces.add_face_to_node(faces.AttrFace("name", fsize=16, fstyle="italic"), node, 0)#), position="aligned")
+        #faces.add_face_to_node(faces.AttrFace("name", fsize=16, fstyle="oblique"), node, 0)#), position="aligned")
 
         #faces.add_face_to_node(faces.AttrFace("support", fsize=6), node, 0, position="branch-top")
         pass
-    elif 0:
+    else:
         FLOAT = faces.CircleFace(random.randint(5,40), random_color(), "sphere")
         FLOAT.opacity = 0.9
         faces.add_face_to_node(FLOAT, node, 0, position="float")
@@ -49,7 +50,7 @@ def tiny(node):
 
 n = int(sys.argv[1])
 
-I = TreeStyle()
+I = TreeImage()
 I.mode = "rect"
 I.orientation = 1
 #I.scale = n/2
@@ -62,7 +63,7 @@ I.draw_border = True
 
 t2 = Tree()
 t2.populate(10)
-I2 = TreeStyle()
+I2 = TreeImage()
 #I2.scale=1
 I2.mode = "circular"
 I2.layout_fn = tiny
@@ -95,11 +96,14 @@ for c in t.children:
 # t.show(img_properties = I3)
 # sys.exit()
 
-t.show()
+t.show(img_properties=I)
+t.render("/home/jhuerta/test.svg", img_properties=I)
+os.system("inkscape /home/jhuerta/test.svg")
 t.show(img_properties=I)
 
 I.mode = "circular"
 I2.mode = "rect"
-treemap =  t.render("test.png", img_properties=I)
+print t.render("test.svg", img_properties=I)
+
 t.show(ly, img_properties=I)
 
