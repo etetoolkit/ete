@@ -169,7 +169,7 @@ class TreeImage(object):
 
         # Convert tree branches to a fixed length, thus allowing to
         # observe the topology of tight nodes
-        self.force_topology = True
+        self.force_topology = False
 
         # Draw guidelines from leaf nodes to aligned faces
         self.draw_guiding_lines = True
@@ -202,18 +202,21 @@ class TreeImage(object):
         # :::::::::::::::::::::::::
 
         # Draw a border around the whole tree
-        self.draw_border = False
+        self.show_border = False
 
         # Draw the scale 
-        self.draw_scale = False
+        self.show_scale = False
 
         # Initialize aligned face headers
         self.aligned_header = FaceHeader()
         self.aligned_foot = FaceHeader()
 
-        self.show_leaf_name = True
-        self.show_branch_length = True
-        self.show_branch_support = True
+        self.show_leaf_name = False
+        self.show_branch_length = False
+        self.show_branch_support = False
+
+        self.legend = TreeImageLegend()
+        self.legend_position = 2
 
     def set_layout_fn(self, layout):
         # Validates layout function
@@ -236,6 +239,11 @@ class TreeImage(object):
 class FaceHeader(dict):
     def add_face(self, face, column):
         self.setdefault(int(column), []).append(face)
+
+class TreeImageLegend(dict):
+    def add_face(self, face, column):
+        self.setdefault(int(column), []).append(face)
+
 
 def _leaf(node):
     collapsed = hasattr(node, "img_style") and not node.img_style["draw_descendants"]

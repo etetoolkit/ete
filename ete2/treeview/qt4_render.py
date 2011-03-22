@@ -209,7 +209,7 @@ def render(root_node, img, hide_root=False):
         else:
             img.scale =  1
 
-        print img.scale
+
 
     scale = img.scale
     arc_span = img.arc_span 
@@ -224,6 +224,7 @@ def render(root_node, img, hide_root=False):
     parent.bg_layer =  _EmptyItem(parent)
     parent.tree_layer = _EmptyItem(parent)
     parent.float_layer = _EmptyItem(parent)
+    TREE_LAYERS = [parent.bg_layer, parent.tree_layer, parent.float_layer]
 
     parent.bg_layer.setZValue(0)
     parent.tree_layer.setZValue(2)
@@ -322,51 +323,76 @@ def render(root_node, img, hide_root=False):
         iwidth = n2i[root_node].fullRegion.width()
         iheight = n2i[root_node].fullRegion.height()
         tree_radius = iwidth
-    
    
     aligned_region_width = render_aligned_faces(n2i, n2f, img, tree_radius, parent)
-  
-    # If there were aligned faces, we need to re-set main tree size
-    if 0 and extra_width:
-        if mode == "circular": 
-            r = (max_r + extra_width)
-            parent.setPos(r, r)
-            parent.setRect(0, 0, r, r) 
-        if mode == "rect":
-            parent.setRect(0, 0, max_r + extra_width, parent.rect().height())
-
-    # Set tree margins
-    if mode == "circular": 
-        parent.setRect( -tree_radius - img.margin_left,  -tree_radius-img.margin_top, \
-                            iwidth + img.margin_left + img.margin_right + aligned_region_width, \
-                            iheight + img.margin_top + img.margin_bottom)
-    elif mode == "rect": 
-        parent.setRect(-img.margin_left,  -img.margin_top, \
-                            iwidth + img.margin_left + img.margin_right + aligned_region_width, \
-                            iheight + img.margin_top + img.margin_bottom)
-        
-
-       
+    
     # Background colors
     render_backgrounds(n2i, n2f, img, tree_radius + aligned_region_width, parent.bg_layer)
 
     # Place Floating faces
     render_floatings(n2i, n2f, img, parent.float_layer)
 
+    # Set tree margins
+    if mode == "circular": 
+        mainRect = QtCore.QRectF( -tree_radius - img.margin_left,  -tree_radius-img.margin_top, \
+                                       iwidth + img.margin_left + img.margin_right + aligned_region_width, \
+                                       iheight + img.margin_top + img.margin_bottom)
+    elif mode == "rect": 
+        iwidth += aligned_region_width
+        mainRect = QtCore.QRectF(0, 0, iwidth, iheight)
+        mainRect.adjust(-img.margin_left, -img.margin_top, \
+                             img.margin_right, \
+                             img.margin_bottom)
+
     if mode == "circular":
         rotate_inverted_faces(n2i, n2f, img)
-    elif mode == "rect" and orientation == 1: 
-        parent.setTransform(QtGui.QTransform().scale(-1, 1))
+    elif mode == "rect" and orientation == 1:
+        for layer in TREE_LAYERS:
+            layer.setTransform(QtGui.QTransform().translate(0, 0).scale(-1,1).translate(0, 0))
+            layer.moveBy(iwidth,0)
+
         for faceblock in n2f.itervalues():
             for pos, fb in faceblock.iteritems():
                 fb.flip_hz()
 
+    if img.legend:
+        legend = _FaceGroupItem(img.legend, None)
+        legend.setup_grid()
+        print legend.row_heights
+        legend.render()
+        lg_w, lg_h = legend.get_size()
+
+        legend.setParentItem(parent)
+
+
+        if img.legend_position == 1:
+            legend.setPos(mainRect.topLeft())
+            for layer in TREE_LAYERS:
+                layer.moveBy(0,lg_h)
+        elif img.legend_position == 2:
+            pos = mainRect.topRight()
+            legend.setPos(pos.x()-lg_w, pos.y())
+            for layer in TREE_LAYERS:
+                layer.moveBy(0,lg_h)
+        elif img.legend_position == 3:
+            legend.setPos(mainRect.bottomLeft())
+        elif img.legend_position == 4:
+            pos = mainRect.bottomRight()
+            legend.setPos(pos.x()-lg_w, pos.y())
+
+        dw = max(0, lg_w-mainRect.width())
+        mainRect.adjust(0, 0, dw, lg_h)
+
+    if img.show_scale:
+        pass
+
+    parent.setRect(mainRect)
+
     # Draws a border around the tree
-    if not img.draw_border:
+    if not img.show_border:
         parent.setPen(QtGui.QPen(QtCore.Qt.NoPen))
     else:
         parent.setPen(QtGui.QPen(QtGui.QColor("black")))
-
 
     return parent, n2i, n2f
 
@@ -446,26 +472,41 @@ def set_node_size(node, n2i, n2f, img):
     else: 
         aligned_height = 0
 
-    # Total height required by the node
-    h = max(node.img_style["size"], \
-                ( (node.img_style["size"]/2) \
-                      + node.img_style["hz_line_width"] \
-                      + faceblock["branch-top"].h \
-                      + faceblock["branch-bottom"].h), \
-                faceblock["branch-right"].h, \
-                aligned_height, \
-                min_separation,\
-                )
+    # Total height required by the node. I cannot sum up the height of
+    # all elements, since the position of some of them are forced to
+    # be on top or at the bottom of branches. This fact can produce
+    # and unbalanced nodeRegion center. Here, I only need to know
+    # about the imbalance size to correct node height. The center will
+    # be calculated later according to the parent position.
+    top_half_h = ( (node.img_style["size"]/2) +
+                       node.img_style["hz_line_width"]/2 +
+                       faceblock["branch-top"].h )
 
+    bottom_half_h =( (node.img_style["size"]/2) +
+                       node.img_style["hz_line_width"]/2 +
+                       faceblock["branch-bottom"].h )
+
+
+    h1 = top_half_h + bottom_half_h
+    h2 = max(faceblock["branch-right"].h, \
+                aligned_height, \
+                min_separation )
+
+    h = max(h1, h2)
+    imbalance = abs(top_half_h - bottom_half_h)
+    if imbalance > h2/2:
+        h += imbalance - (h2/2)
+
+    # This adds a vertical margin around the node elements
     h += img.branch_vertical_margin
     
     # Total width required by the node
     w = sum([max(branch_length + node.img_style["size"], 
-                                      faceblock["branch-top"].w + node.img_style["size"],
-                                      faceblock["branch-bottom"].w + node.img_style["size"],
-                                      ), 
-                                  faceblock["branch-right"].w]
-                                 )
+                 faceblock["branch-top"].w + node.img_style["size"],
+                 faceblock["branch-bottom"].w + node.img_style["size"],
+                 ), 
+             faceblock["branch-right"].w]
+            )
     w += node.img_style["vt_line_width"]
 
     # rightside faces region

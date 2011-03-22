@@ -20,7 +20,7 @@ class _BackgroundFaceItem(QtGui.QGraphicsRectItem):
         return
 
 class _FaceGroupItem(QtGui.QGraphicsItem): # I resisted to name this FaceBookItem :) 
-    def __init__(self, faces, node, column_widths={}, *args, **kargs):
+    def __init__(self, faces, node, *args, **kargs):
 
         # This caused seg. faults. in some computers. No idea why.
         # QtGui.QGraphicsItem.__init__(self, *args, **kargs) 
@@ -29,10 +29,13 @@ class _FaceGroupItem(QtGui.QGraphicsItem): # I resisted to name this FaceBookIte
         self.node = node
         self.column2faces = faces
         self.column2size = {}
+        self.columns = sorted(set(self.column2faces.keys()))
         
-        # column_widths is a dictionary of min column size. Can be
-        # used to reserve some space to specific columns
-        self.set_min_column_widths(column_widths)
+        # Two dictionaries containing min column size. Can be used to
+        # reserve some space to specific columns and draw FaceBlocks
+        # like tables.
+        self.column_widths = {}
+        self.row_heights = {}
 
         self.w = 0
         self.h = 0
@@ -41,9 +44,14 @@ class _FaceGroupItem(QtGui.QGraphicsItem): # I resisted to name this FaceBookIte
 
     def set_min_column_widths(self, column_widths):
         # column_widths is a dictionary of min column size. Can be
-        # used to reserve some space to specific columns
+        # used to reserve horizontal space to specific columns
         self.column_widths = column_widths
         self.columns = sorted(set(self.column2faces.keys() + self.column_widths.keys()))
+
+    def set_min_column_heights(self, column_heights):
+        # column_widths is a dictionary of min column size. Can be
+        # used to reserve vertical space to specific columns
+        self.row_heights = column_heights
 
     def paint(self, painter, option, index):
         return
@@ -51,36 +59,50 @@ class _FaceGroupItem(QtGui.QGraphicsItem): # I resisted to name this FaceBookIte
     def boundingRect(self):
         return QtCore.QRectF(0,0, self.w, self.h)
 
-    def get_size():
+    def get_size(self):
         return self.w, self.h
 
     def update_columns_size(self):
         self.column2size = {}
         for c in self.columns:
             faces = self.column2faces.get(c, [])
-            height = 0
+            heights = {}
             width = 0
-            for f in faces:
+            for r, f in enumerate(faces):
                 f.node = self.node
                 if f.type == "pixmap": 
                     f.update_pixmap()
                 elif f.type == "item":
                     f.update_items()
-                height += f._height() + f.margin_top + f.margin_bottom
+                    
+                height = max(f._height(), self.row_heights.get(r, 0)) + f.margin_top + f.margin_bottom
+                heights[r] = height
                 width = max(width, f._width() + f.margin_right + f.margin_left)
             width = max(width, self.column_widths.get(c, 0))
-            self.column2size[c] = (width, height)
+            self.column2size[c] = (width, heights)
         self.w = sum([0]+[size[0] for size in self.column2size.itervalues()])
-        self.h = max([0]+[size[1] for size in self.column2size.itervalues()])
+        self.h = max([0]+[sum(heights.values()) for c_w, heights in self.column2size.itervalues()])
+
+    def setup_grid(self):
+        c2max_w, c2max_h = {}, {}
+        for c, (c_w, heights) in self.column2size.iteritems():
+            c2max_w[c] = max(c_w, c2max_w.get(c,0))
+            for r, r_h in heights.iteritems():
+                c2max_h[r] = max(r_h, c2max_h.get(c,0))
+        
+        self.set_min_column_widths(c2max_w)
+        self.set_min_column_heights(c2max_h)
+        self.update_columns_size()
 
     def render(self):
         x = 0
         for c in self.columns:
             faces = self.column2faces.get(c, [])
-            w, h = self.column2size[c]
+            w, col_h = self.column2size[c]
             # Starting y position. Center columns
-            y = (self.h / 2) - (h/2)
-            for f in faces:
+            y = (self.h - sum(col_h.values())) / 2 
+            for r, f in enumerate(faces):
+                h = self.row_heights.get(r, 0)
                 f.node = self.node
                 if f.type == "text":
                     obj = _TextFaceItem(f, self.node, f.get_text())
@@ -89,25 +111,37 @@ class _FaceGroupItem(QtGui.QGraphicsItem): # I resisted to name this FaceBookIte
                     obj.setBrush(QtGui.QBrush(QtGui.QColor(f.fgcolor)))
                     obj.setParentItem(self)
                     obj.setAcceptsHoverEvents(True)
-                    #border = QtGui.QGraphicsRectItem(obj.boundingRect())
-                    #border.setParentItem(obj)
                 elif f.type == "item":
                     obj = f.item
-                    #obj = _ItemFaceItem(f, self.node)
-                    #f.item.setParentItem(obj)
                     obj.setParentItem(self)
                 else:
                     # Loads the pre-generated pixmap
                     obj = _ImgFaceItem(f, self.node, f.pixmap)
                     obj.setAcceptsHoverEvents(True)
                     obj.setParentItem(self)
-                obj.setPos(x+ f.margin_left, y+f.margin_top)
+
+                # relative alignemnt of faces
+                face_rect = obj.boundingRect()
+                x_offset, y_offset = 0, 0 
+                if w > face_rect.width():
+                    x_offset = (w - face_rect.width()) / 2  
+                if h > face_rect.height():
+                    y_offset = (h - face_rect.height()) / 2  
+
+                obj.setPos(x + f.margin_left + x_offset,\
+                               y + f.margin_top + y_offset )
+
                 if f.opacity < 1:
                     obj.setOpacity(f.opacity)
                 obj.rotable = f.rotable
+
+                if f.border: 
+                    border = QtGui.QGraphicsRectItem(obj.boundingRect())
+                    border.setParentItem(obj)
+
                 # Y position is incremented by the height of last face
                 # in column
-                y += f._height() + f.margin_top + f.margin_bottom
+                y += h 
             # X position is incremented by the max width of the last
             # processed column.
             x += w

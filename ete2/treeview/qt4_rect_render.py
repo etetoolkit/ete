@@ -34,10 +34,12 @@ def get_partition_center(n, n2i, n2f):
             c1 = first_child_part.start_y + first_child_part.center
             c2 = last_child_part.start_y + last_child_part.center
             center = c1 + ((c2-c1)/2)
+
         if up_h > center:
             center = up_h
         elif down_h > fullR.height() - center:
             center = fullR.height() - down_h
+
         return center
 
 def init_rect_leaf_item(node, n2i, n2f):

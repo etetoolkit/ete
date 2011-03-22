@@ -131,6 +131,7 @@ class Face(object):
         self.pixmap = None
         self.opacity = 1
         self.rotable = True
+        self.border = False
 
     def _size(self):
         if self.pixmap:
@@ -772,8 +773,6 @@ class BackgroundFace(Face):
 
 class TreeFace(Face):
     def __init__(self, tree, img_properties):
-        from qt4_render import render
-
         Face.__init__(self)
         self.type = "item"
         self.root_node = tree
@@ -781,6 +780,7 @@ class TreeFace(Face):
         self.item = None
 
     def update_items(self):
+        from qt4_render import render
         hide_root = False
         if self.root_node is self.node:
             hide_root = True
