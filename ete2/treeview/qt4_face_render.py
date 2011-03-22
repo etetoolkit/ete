@@ -89,6 +89,8 @@ class _FaceGroupItem(QtGui.QGraphicsItem): # I resisted to name this FaceBookIte
                     obj.setBrush(QtGui.QBrush(QtGui.QColor(f.fgcolor)))
                     obj.setParentItem(self)
                     obj.setAcceptsHoverEvents(True)
+                    #border = QtGui.QGraphicsRectItem(obj.boundingRect())
+                    #border.setParentItem(obj)
                 elif f.type == "item":
                     obj = f.item
                     #obj = _ItemFaceItem(f, self.node)

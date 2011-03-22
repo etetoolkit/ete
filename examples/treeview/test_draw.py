@@ -30,7 +30,7 @@ def ly(node):
     #node.img_style["faces_bgcolor"] = random_color()
 
     if node.is_leaf():
-        #faces.add_face_to_node(faces.AttrFace("name"), node, 0, position="aligned")
+        faces.add_face_to_node(faces.AttrFace("name"), node, 0, position="aligned")
         #faces.add_face_to_node(faces.AttrFace("name", fsize=16, fstyle="italic"), node, 0)#), position="aligned")
         #faces.add_face_to_node(faces.AttrFace("name", fsize=16, fstyle="oblique"), node, 0)#), position="aligned")
 

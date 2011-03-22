@@ -1,4 +1,5 @@
 import math
+import re # Used to fix SVG exporting
 
 from PyQt4 import QtCore, QtGui, QtSvg
 
@@ -788,7 +789,8 @@ def save(scene, imgName, w=None, h=None, header=None, \
 
         # Fix a very annoying problem with Radial gradients in
         # inkscape and browsers...
-        compatible_code = open(imgName).read().replace("xml:id=", "id=")
+        temp_compatible_code = open(imgName).read().replace("xml:id=", "id=")
+        compatible_code = re.sub('font-size="(\d+)"', 'font-size="\\1pt"', temp_compatible_code)
         open(imgName, "w").write(compatible_code)
         # End of fix
 
