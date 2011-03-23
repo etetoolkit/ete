@@ -151,8 +151,13 @@ def parse_paml (pamout, model):
     if not '*' in str (model.properties['params']['ndata']):
         divide_data (pamout, model)
         return
-    # starts parsing
     all_lines = open (pamout).readlines()
+    # if we do not have tree, load it
+    if model._tree == None:
+        from ete_dev.evol import EvolTree
+        model._tree = EvolTree (re.findall ('\(.*\);', ''.join(all_lines))[2])
+        model._tree._label_as_paml()
+    # starts parsing
     for i, line in enumerate (all_lines):
         if line is '\n':
             continue

@@ -19,7 +19,7 @@ class Model:
     '''Evolutionnary model.
     available models are:
     '''
-    def __init__(self, model_name, tree, path=None, **kwargs):
+    def __init__(self, model_name, tree=None, path=None, **kwargs):
         '''
         "omega" stands for starting value of omega, in the computation. Qs
         Zihen Yang says, it is good to try with different starting values...
