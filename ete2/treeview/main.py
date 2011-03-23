@@ -208,15 +208,18 @@ class TreeImage(object):
         self.show_scale = False
 
         # Initialize aligned face headers
-        self.aligned_header = FaceHeader()
-        self.aligned_foot = FaceHeader()
+        self.aligned_header = FaceContainer()
+        self.aligned_foot = FaceContainer()
 
         self.show_leaf_name = False
         self.show_branch_length = False
         self.show_branch_support = False
 
-        self.legend = TreeImageLegend()
+        self.legend = FaceContainer()
         self.legend_position = 2
+
+        # A text string that will be draw as the Tree title
+        self.title = FaceContainer()
 
     def set_layout_fn(self, layout):
         # Validates layout function
@@ -236,11 +239,7 @@ class TreeImage(object):
 
     layout_fn = property(get_layout_fn, set_layout_fn)
         
-class FaceHeader(dict):
-    def add_face(self, face, column):
-        self.setdefault(int(column), []).append(face)
-
-class TreeImageLegend(dict):
+class FaceContainer(dict):
     def add_face(self, face, column):
         self.setdefault(int(column), []).append(face)
 

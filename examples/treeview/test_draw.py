@@ -39,18 +39,26 @@ def leaf_name(node):
     if node.is_leaf():
         nameF = faces.AttrFace("name")
         nameF.border=True
-        faces.add_face_to_node(nameF, node, 0, position="aligned")
+        faces.add_face_to_node(nameF, node, 0, position="branch-right")
+
+
+def aligned_faces(node):
+    if node.is_leaf():
+        for i in xrange(3):
+            F = faces.TextFace("ABCDEFGHIJK"[0:random.randint(1,11)] )
+            F.border = True
+            faces.add_face_to_node(F, node, i, position="aligned")
 
 def master_ly(node):
     random_background(node)
     sphere_map(node)
     leaf_name(node)
+    aligned_faces(node)
 
 def tiny_ly(node):
     node.img_style["size"] = 2
     node.img_style["shape"] = "square"
     
-
 size = int(sys.argv[1])
 t = Tree()
 t.populate(size, reuse_names=False)
@@ -64,6 +72,21 @@ I.margin_right = 50
 I.margin_top = 100
 I.margin_bottom = 50
 I.show_border = True
+I.legend_position = 4
+I.title.add_face(faces.TextFace("HOLA MUNDO", fsize=30), 0)
+
+I.aligned_header.add_face( faces.TextFace("H1"), 0 )
+I.aligned_header.add_face( faces.TextFace("H1"), 1 )
+I.aligned_header.add_face( faces.TextFace("H1"), 2 )
+I.aligned_header.add_face( faces.TextFace("H1111111111111"), 3 )
+I.aligned_header.add_face( faces.TextFace("H1"), 4 )
+
+I.aligned_foot.add_face( faces.TextFace("FO1"), 0 )
+I.aligned_foot.add_face( faces.TextFace("FO1"), 1 )
+I.aligned_foot.add_face( faces.TextFace("FO1"), 2 )
+I.aligned_foot.add_face( faces.TextFace("F1"), 3 )
+I.aligned_foot.add_face( faces.TextFace("FO1"), 4 )
+
 
 I.legend.add_face(faces.CircleFace(30, random_color(), "sphere"), 0)
 I.legend.add_face(faces.CircleFace(30, random_color(), "sphere"), 0)

@@ -83,16 +83,19 @@ class _FaceGroupItem(QtGui.QGraphicsItem): # I resisted to name this FaceBookIte
         self.w = sum([0]+[size[0] for size in self.column2size.itervalues()])
         self.h = max([0]+[sum(heights.values()) for c_w, heights in self.column2size.itervalues()])
 
-    def setup_grid(self):
-        c2max_w, c2max_h = {}, {}
+    def setup_grid(self, c2max_w=None, c2max_h=None):
+        if c2max_w is None:
+            c2max_w = {}
+        if c2max_h is None:
+            c2max_h = {}
         for c, (c_w, heights) in self.column2size.iteritems():
             c2max_w[c] = max(c_w, c2max_w.get(c,0))
             for r, r_h in heights.iteritems():
                 c2max_h[r] = max(r_h, c2max_h.get(c,0))
-        
         self.set_min_column_widths(c2max_w)
         self.set_min_column_heights(c2max_h)
         self.update_columns_size()
+        return c2max_w, c2max_h
 
     def render(self):
         x = 0

@@ -209,8 +209,6 @@ def render(root_node, img, hide_root=False):
         else:
             img.scale =  1
 
-
-
     scale = img.scale
     arc_span = img.arc_span 
     last_rotation = img.arc_start
@@ -314,78 +312,34 @@ def render(root_node, img, hide_root=False):
         if node is not root_node or not hide_root: 
             render_node_content(node, n2i, n2f, img)
 
+    mainRect = parent.rect()
+
     if mode == "circular":
         tree_radius = crender.render_circular(root_node, n2i, rot_step)
-        iwidth = tree_radius * 2
-        iheight = tree_radius * 2
-        parent.moveBy(tree_radius, tree_radius)
+        mainRect.adjust( -tree_radius, -tree_radius, tree_radius, tree_radius)
+
     else:
         iwidth = n2i[root_node].fullRegion.width()
         iheight = n2i[root_node].fullRegion.height()
+        mainRect.adjust(0, 0, iwidth, iheight)
         tree_radius = iwidth
-   
-    aligned_region_width = render_aligned_faces(n2i, n2f, img, tree_radius, parent)
-    
-    # Background colors
-    render_backgrounds(n2i, n2f, img, tree_radius + aligned_region_width, parent.bg_layer)
 
-    # Place Floating faces
+    # The order by which the following methods IS IMPORTANT
+
     render_floatings(n2i, n2f, img, parent.float_layer)
 
-    # Set tree margins
-    if mode == "circular": 
-        mainRect = QtCore.QRectF( -tree_radius - img.margin_left,  -tree_radius-img.margin_top, \
-                                       iwidth + img.margin_left + img.margin_right + aligned_region_width, \
-                                       iheight + img.margin_top + img.margin_bottom)
-    elif mode == "rect": 
-        iwidth += aligned_region_width
-        mainRect = QtCore.QRectF(0, 0, iwidth, iheight)
-        mainRect.adjust(-img.margin_left, -img.margin_top, \
-                             img.margin_right, \
-                             img.margin_bottom)
+    aligned_region_width = render_aligned_faces(img, mainRect, parent.tree_layer, n2i, n2f)
+   
+    render_backgrounds(img, mainRect, parent.bg_layer, n2i, n2f)
 
-    if mode == "circular":
-        rotate_inverted_faces(n2i, n2f, img)
-    elif mode == "rect" and orientation == 1:
-        for layer in TREE_LAYERS:
-            layer.setTransform(QtGui.QTransform().translate(0, 0).scale(-1,1).translate(0, 0))
-            layer.moveBy(iwidth,0)
+    adjust_faces_to_tranformations(img, mainRect, n2i, n2f, TREE_LAYERS)
 
-        for faceblock in n2f.itervalues():
-            for pos, fb in faceblock.iteritems():
-                fb.flip_hz()
+    mainRect.adjust(-img.margin_left, -img.margin_top, \
+                         img.margin_right, img.margin_bottom)
 
-    if img.legend:
-        legend = _FaceGroupItem(img.legend, None)
-        legend.setup_grid()
-        print legend.row_heights
-        legend.render()
-        lg_w, lg_h = legend.get_size()
-
-        legend.setParentItem(parent)
-
-
-        if img.legend_position == 1:
-            legend.setPos(mainRect.topLeft())
-            for layer in TREE_LAYERS:
-                layer.moveBy(0,lg_h)
-        elif img.legend_position == 2:
-            pos = mainRect.topRight()
-            legend.setPos(pos.x()-lg_w, pos.y())
-            for layer in TREE_LAYERS:
-                layer.moveBy(0,lg_h)
-        elif img.legend_position == 3:
-            legend.setPos(mainRect.bottomLeft())
-        elif img.legend_position == 4:
-            pos = mainRect.bottomRight()
-            legend.setPos(pos.x()-lg_w, pos.y())
-
-        dw = max(0, lg_w-mainRect.width())
-        mainRect.adjust(0, 0, dw, lg_h)
-
-    if img.show_scale:
-        pass
-
+    add_legend(img, mainRect, parent)
+    add_title(img, mainRect, parent)
+    #add_scale(img, mainRect, parent)
     parent.setRect(mainRect)
 
     # Draws a border around the tree
@@ -393,8 +347,52 @@ def render(root_node, img, hide_root=False):
         parent.setPen(QtGui.QPen(QtCore.Qt.NoPen))
     else:
         parent.setPen(QtGui.QPen(QtGui.QColor("black")))
-
     return parent, n2i, n2f
+
+def adjust_faces_to_tranformations(img, mainRect, n2i, n2f, tree_layers):
+    if img.mode == "circular":
+        rotate_inverted_faces(n2i, n2f, img)
+    elif img.mode == "rect" and img.orientation == 1:
+        for layer in tree_layers:
+            layer.setTransform(QtGui.QTransform().translate(0, 0).scale(-1,1).translate(0, 0))
+            layer.moveBy(mainRect.width(),0)
+        for faceblock in n2f.itervalues():
+            for pos, fb in faceblock.iteritems():
+                fb.flip_hz()
+
+def add_legend(img, mainRect, parent):
+    if img.legend:
+        legend = _FaceGroupItem(img.legend, None)
+        legend.setup_grid()
+        legend.render()
+        lg_w, lg_h = legend.get_size()
+        dw = max(0, lg_w-mainRect.width())
+        legend.setParentItem(parent)
+        if img.legend_position == 1:
+            mainRect.adjust(0, -lg_h, dw, 0)
+            legend.setPos(mainRect.topLeft())
+        elif img.legend_position == 2:
+            mainRect.adjust(0, -lg_h, dw, 0)
+            pos = mainRect.topRight()
+            legend.setPos(pos.x()-lg_w, pos.y())
+        elif img.legend_position == 3:
+            legend.setPos(mainRect.bottomLeft())
+            mainRect.adjust(0, 0, dw, lg_h)
+        elif img.legend_position == 4:
+            pos = mainRect.bottomRight()
+            legend.setPos(pos.x()-lg_w, pos.y())
+            mainRect.adjust(0, 0, dw, lg_h)
+
+def add_title(img, mainRect, parent):
+    if img.title:
+        title = _FaceGroupItem(img.title, None)
+        title.setup_grid()
+        title.render()
+        lg_w, lg_h = title.get_size()
+        dw = max(0, lg_w-mainRect.width())
+        title.setParentItem(parent)
+        mainRect.adjust(0, -lg_h, dw, 0)
+        title.setPos(mainRect.topLeft())
 
 def rotate_inverted_faces(n2i, n2f, img):
     for node, faceblock in n2f.iteritems():
@@ -403,7 +401,13 @@ def rotate_inverted_faces(n2i, n2f, img):
             for pos, fb in faceblock.iteritems():
                 fb.rotate(180)
 
-def render_backgrounds(n2i, n2f, img, max_r, bg_layer):
+def render_backgrounds(img, mainRect, bg_layer, n2i, n2f):
+
+    if img.mode == "circular":
+        max_r = mainRect.width()/2
+    else:
+        max_r = mainRect.width()
+
     for node, item in n2i.iteritems():
         if _leaf(node):
             first_c = n2i[node]
@@ -721,51 +725,56 @@ def render_floatings(n2i, n2f, img, float_layer):
         fb.update_columns_size()
         fb.render()
 
-def render_aligned_faces(n2i, n2f, img, tree_end_x, parent):
+def render_aligned_faces(img, mainRect, parent, n2i, n2f):
     # Prepares and renders aligned face headers. Used to later
     # place aligned faces
     aligned_faces = [ [node, fb["aligned"]] for node, fb in n2f.iteritems() if fb["aligned"].column2faces]
 
+    # If no aligned faces, just return an offset of 0 pixels 
     if not aligned_faces:
         return 0
 
+    # Load header and footer 
     if img.mode == "rect":
+        tree_end_x = mainRect.width()
         fb_head = _FaceGroupItem(img.aligned_header, None)
-        fb_head.setParentItem(parent.tree_layer)
-
+        fb_head.setParentItem(parent)
         fb_foot = _FaceGroupItem(img.aligned_foot, None)
-        fb_foot.setParentItem(parent.tree_layer)
+        fb_foot.setParentItem(parent)
         surroundings = [[None,fb_foot], [None, fb_head]]
+        mainRect.adjust(0, -fb_head.h, 0, fb_foot.h)
     else:
+        tree_end_x = mainRect.width()/2
         surroundings = []
 
     # Place aligned faces and calculates the max size of each
     # column (needed to place column headers)
-    c2max = {}
+    c2max_w = {}
     for node, fb in aligned_faces + surroundings:
         for c, size in fb.column2size.iteritems():
-            c2max[c] = max(size[0], c2max.get(c,0))
+            c2max_w[c] = max(size[0], c2max_w.get(c,0))
 
-    if img.mode == "rect":
-        fb_head.set_min_column_widths(c2max)
-        fb_head.update_columns_size()
+    # If rect mode, render header and footer 
+    if img.mode == "rect": 
+        if img.draw_aligned_faces_as_grid:
+            fb_head.setup_grid(c2max_w)
+            fb_foot.setup_grid(c2max_w)
+
         fb_head.render()
-        fb_head.setParentItem(parent.tree_layer)
-        fb_head.setPos(tree_end_x, -fb_head.h)
-        
-        fb_foot.set_min_column_widths(c2max)
-        fb_foot.update_columns_size()
+        fb_head.setPos(tree_end_x, mainRect.top())
         fb_foot.render()
-        fb_foot.setParentItem(parent.tree_layer)
-        fb_foot.setPos(tree_end_x, parent.rect().height())
+        fb_foot.setPos(tree_end_x, mainRect.bottom()-fb_foot.h)
+        if img.orientation == 1:
+            fb_head.flip_hz()
+            fb_foot.flip_hz()
     
     # Place aligned faces
     for node, fb in aligned_faces:
         item = n2i[node]
         item.mapped_items.append(fb)
         if img.draw_aligned_faces_as_grid: 
-            fb.set_min_column_widths(c2max)
-        fb.update_columns_size()
+            fb.setup_grid(c2max_w)
+
         fb.render()
         fb.setParentItem(item.content)
         if img.mode == "circular":
@@ -789,7 +798,12 @@ def render_aligned_faces(n2i, n2f, img, tree_end_x, parent):
             guide_line.setPen(pen)
             guide_line.setParentItem(item.content)
 
-    return sum(c2max.values())
+    extra_width = sum(c2max_w.values())
+    if img.mode == "circular":
+        mainRect.adjust(-extra_width, -extra_width, extra_width, extra_width)
+    else:
+        mainRect.adjust(0, 0, extra_width, 0)
+    return extra_width
 
 def save(scene, imgName, w=None, h=None, header=None, \
              dpi=300, take_region=False):
