@@ -132,6 +132,8 @@ class Face(object):
         self.opacity = 1
         self.rotable = True
         self.border = False
+        self.hz_align = 0 # 0 left, 1 center, 2 right
+        self.vt_align = 1
 
     def _size(self):
         if self.pixmap:

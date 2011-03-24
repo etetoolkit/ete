@@ -126,10 +126,28 @@ class _FaceGroupItem(QtGui.QGraphicsItem): # I resisted to name this FaceBookIte
                 # relative alignemnt of faces
                 face_rect = obj.boundingRect()
                 x_offset, y_offset = 0, 0 
+               
                 if w > face_rect.width():
-                    x_offset = (w - face_rect.width()) / 2  
+                    # Horizontally at the left
+                    if f.hz_align == 0:
+                        x_offset = 0
+                    elif f.hz_align == 1:
+                        # Horizontally centered
+                        x_offset = (w - face_rect.width()) / 2  
+                    elif f.hz_align == 2:
+                        # At the right
+                        x_offset = (w - face_rect.width())
+
                 if h > face_rect.height():
-                    y_offset = (h - face_rect.height()) / 2  
+                    if f.vt_align == 0:
+                        # Vertically on top
+                        y_offset = 0
+                    elif f.vt_align == 1:
+                        # Vertically centered
+                        y_offset = (h - face_rect.height()) / 2  
+                    elif f.hz_align == 2:
+                        # Vertically at bottom
+                        y_offset = (h - face_rect.height()) 
 
                 obj.setPos(x + f.margin_left + x_offset,\
                                y + f.margin_top + y_offset )

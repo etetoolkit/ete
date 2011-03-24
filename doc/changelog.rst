@@ -5,11 +5,15 @@ Changelog ete 2.1
 *********************************
 
 * The drawing engine has been fully rewritten to provide many new features:
-   * Show aligned faces as a table.
-   * Support for faces around trees (header, footers)
    * Circular and rectangular rendering modes
    * Support for floating faces in nodes
-   * Support for margins and opacity in all faces
+   * Added tree title face block (Text or images that rendered on top of the tree)
+   * Added tree legend face block (Text or images that rendered as image legend)
+   * Possibility of drawing aligned faces as a table
+   * Added several face attributes:
+      * left, right, top and bottom margins
+      * face opacity
+      * horizontal and vertical alignment (useful when faces are rendered as table)
    * node styles can be set outside layout function (allows to save and export fixed drawing attributes)
    * Added support for branch-top and branch-down face positions 
    * Added Circle Faces
@@ -17,7 +21,7 @@ Changelog ete 2.1
    * Added support for QGraphicsItem based faces
    * AttrFace accepts prefix and suffix text 
    * Added :class:`TreeImage` class to control general aspects regarding tree drawing
-   * added support for SVG image rendering   
+   * added full support for SVG image rendering   
 
 * Core methods:
    * Added :func:`Tree.copy`:  returns an exact and independent copy of node and all its attributes

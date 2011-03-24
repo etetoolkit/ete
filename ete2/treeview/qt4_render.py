@@ -339,7 +339,7 @@ def render(root_node, img, hide_root=False):
 
     add_legend(img, mainRect, parent)
     add_title(img, mainRect, parent)
-    #add_scale(img, mainRect, parent)
+    add_scale(img, mainRect, parent)
     parent.setRect(mainRect)
 
     # Draws a border around the tree
@@ -393,6 +393,65 @@ def add_title(img, mainRect, parent):
         title.setParentItem(parent)
         mainRect.adjust(0, -lg_h, dw, 0)
         title.setPos(mainRect.topLeft())
+
+def add_legend(img, mainRect, parent):
+    if img.legend:
+        legend = _FaceGroupItem(img.legend, None)
+        legend.setup_grid()
+        legend.render()
+        lg_w, lg_h = legend.get_size()
+        dw = max(0, lg_w-mainRect.width())
+        legend.setParentItem(parent)
+        if img.legend_position == 1:
+            mainRect.adjust(0, -lg_h, dw, 0)
+            legend.setPos(mainRect.topLeft())
+        elif img.legend_position == 2:
+            mainRect.adjust(0, -lg_h, dw, 0)
+            pos = mainRect.topRight()
+            legend.setPos(pos.x()-lg_w, pos.y())
+        elif img.legend_position == 3:
+            legend.setPos(mainRect.bottomLeft())
+            mainRect.adjust(0, 0, dw, lg_h)
+        elif img.legend_position == 4:
+            pos = mainRect.bottomRight()
+            legend.setPos(pos.x()-lg_w, pos.y())
+            mainRect.adjust(0, 0, dw, lg_h)
+
+def add_scale(img, mainRect, parent):
+    if img.show_scale:
+        length=50
+        scaleItem = _EmptyItem()
+        customPen = QtGui.QPen(QtGui.QColor("black"), 1)
+        line = QtGui.QGraphicsLineItem(scaleItem)
+        line2 = QtGui.QGraphicsLineItem(scaleItem)
+        line3 = QtGui.QGraphicsLineItem(scaleItem)
+        line.setPen(customPen)
+        line2.setPen(customPen)
+        line3.setPen(customPen)
+
+        line.setLine(0, 5, length, 5)
+        line2.setLine(0, 0, 0, 10)
+        line3.setLine(length, 0, length, 10)
+        print img.scale
+        scale_text = "%0.2f" % (float(length) / img.scale)
+        scale = QtGui.QGraphicsSimpleTextItem(scale_text)
+        scale.setParentItem(scaleItem)
+        scale.setPos(0, 10)
+
+        if img.force_topology:
+            wtext = "Force topology is enabled!\nBranch lengths does not represent original values."
+            warning_text = QtGui.QGraphicsSimpleTextItem(wtext)
+            warning_text.setFont(QtGui.QFont("Arial", 8))
+            warning_text.setBrush( QtGui.QBrush(QtGui.QColor("darkred")))
+            warning_text.setPos(0, 32)
+            warning_text.setParentItem(scaleItem)
+
+        scaleItem.setParentItem(parent)
+        dw = max(0, length-mainRect.width())
+        scaleItem.setPos(mainRect.bottomLeft())
+        mainRect.adjust(0,0,dw, length)    
+
+
 
 def rotate_inverted_faces(n2i, n2f, img):
     for node, faceblock in n2f.iteritems():
@@ -643,34 +702,7 @@ def render_node_content(node, n2i, n2f, img):
     #item.movable_items.setParentItem(item.content)
     #item.static_items.setParentItem(item.content)
 
-def render_scale(scale):
-    length=50
-    scaleItem = _EmptyItem()
-    scaleItem.setRect(0, 0, length, length)
-    customPen = QtGui.QPen(QtGui.QColor("black"), 1)
-    line = QtGui.QGraphicsLineItem(scaleItem)
-    line2 = QtGui.QGraphicsLineItem(scaleItem)
-    line3 = QtGui.QGraphicsLineItem(scaleItem)
-    line.setPen(customPen)
-    line2.setPen(customPen)
-    line3.setPen(customPen)
 
-    line.setLine(0, 5, length, 5)
-    line2.setLine(0, 0, 0, 10)
-    line3.setLine(length, 0, length, 10)
-    scale_text = "%0.2f" % float(length/scale)
-    scale = QtGui.QGraphicsSimpleTextItem(scale_text)
-    scale.setParentItem(scaleItem)
-    scale.setPos(0, 10)
-
-    if self.props.force_topology:
-        wtext = "Force topology is enabled!\nBranch lengths does not represent original values."
-        warning_text = QtGui.QGraphicsSimpleTextItem(wtext)
-        warning_text.setFont(QtGui.QFont("Arial", 8))
-        warning_text.setBrush( QtGui.QBrush(QtGui.QColor("darkred")))
-        warning_text.setPos(0, 32)
-        warning_text.setParentItem(scaleItem)
-    return scaleItem
 
 def set_pen_style(pen, line_style):
     if line_style == 0:

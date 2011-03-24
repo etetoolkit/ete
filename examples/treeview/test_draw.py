@@ -87,7 +87,6 @@ I.aligned_foot.add_face( faces.TextFace("FO1"), 2 )
 I.aligned_foot.add_face( faces.TextFace("F1"), 3 )
 I.aligned_foot.add_face( faces.TextFace("FO1"), 4 )
 
-
 I.legend.add_face(faces.CircleFace(30, random_color(), "sphere"), 0)
 I.legend.add_face(faces.CircleFace(30, random_color(), "sphere"), 0)
 I.legend.add_face(faces.TextFace("HOLA"), 1)
