@@ -12,7 +12,7 @@ _BOOL_CHECKER =  lambda x: isinstance(x, bool) or x in (0,1)
 
 FACE_POSITIONS = set(["branch-right", "branch-top", "branch-bottom", "float", "aligned"])
 
-__all__  = ["NodeStyle", "TreeImage", "FaceContainer", "_leaf", "add_face_to_node"]
+__all__  = ["NodeStyle", "TreeStyle", "FaceContainer", "_leaf", "add_face_to_node"]
 
 NODE_STYLE_DEFAULT = [
     ["fgcolor",          "#0030c1",    _COLOR_CHECKER                           ],
@@ -100,7 +100,7 @@ class NodeStyle(dict):
     def clear(self):
         super(NodeStyle, self).__setitem__("_faces", {})
 
-class TreeImage(object):
+class TreeStyle(object):
 
     def __init__(self):
         # :::::::::::::::::::::::::

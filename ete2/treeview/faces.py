@@ -1,4 +1,4 @@
-# #START_LICENSE###########################################################
+#START_LICENSE###########################################################
 #
 # Copyright (C) 2009 by Jaime Huerta Cepas. All rights reserved.
 # email: jhcepas@gmail.com
@@ -832,3 +832,20 @@ class CircleFace(Face):
     def _height(self):
         return self.item.rect().height()
 
+class ItemFace(Face):
+    def __init__(self, constructor, *args, **kargs):
+        Face.__init__(self)
+        self.type = "item"
+        self.item = None
+        self.constructor = constructor
+        self.args = args
+        self.kargs = kargs
+
+    def update_items(self):
+        self.item = self.constructor(self.node, self.args, self.kargs)
+
+    def _width(self):
+        return self.item.rect().width()
+
+    def _height(self):
+        return self.item.rect().height()

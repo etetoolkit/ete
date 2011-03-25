@@ -902,14 +902,14 @@ class TreeNode(object):
         structure."""
         try:
             from ete_dev.treeview import drawer
-            from ete_dev.treeview.main import TreeImage
+            from ete_dev.treeview.main import TreeStyle
         except ImportError, e:
             print "'treeview' module could not be loaded.\n",e
             print "\n\n"
             print self
         else:
             if not img_properties:
-                img_properties = TreeImage()
+                img_properties = TreeStyle()
 
             if layout:
                 img_properties.set_layout_fn(layout)
@@ -921,7 +921,7 @@ class TreeNode(object):
         """ Renders the tree structure into an image file. """
         try:
             from ete_dev.treeview import drawer
-            from ete_dev.treeview.main import TreeImage
+            from ete_dev.treeview.main import TreeStyle
         except ImportError, e:
             print "'treeview' module could not be loaded.\n",e
             print "\n\n"
@@ -929,7 +929,7 @@ class TreeNode(object):
             print e
         else:
             if not img_properties:
-                img_properties = TreeImage()
+                img_properties = TreeStyle()
 
             if layout:
                 img_properties.set_layout_fn(layout)

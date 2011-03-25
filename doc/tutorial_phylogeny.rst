@@ -3,12 +3,10 @@
 .. moduleauthor:: Jaime Huerta-Cepas
 :Author: Jaime Huerta-Cepas
 
-
 ********************
 Phylogenetic Trees
 ********************
 .. versionadded:: 2.1
-
 
 Phylogenetic trees are the result of most evolutionary analyses. They represent
 the evolutionary relationships among a set of species or, in molecular biology,
@@ -20,7 +18,7 @@ species genome), internal nodes are considered the ancestral states leading to
 current species. A consequence of this is, for instance, that each bifurcation
 can be considered as a speciation or a duplication event.
 
-**PhyloTree** instances extend the **Tree** class with several specific method
+:class:`PhyloTree` instances extend the :class:`Tree` class with several specific method
 that apply only for the analysis of phylogenetic trees.
 
 

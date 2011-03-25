@@ -43,6 +43,13 @@ except ImportError, e:
     print >>stderr, " MySQLdb module could not be loaded"
     print e
 
+
+
+from treeview.main import *
+from treeview import faces
+from treeview import layouts
+
+
 try:
     from treeview.main import *
     from treeview import faces

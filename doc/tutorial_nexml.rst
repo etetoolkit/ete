@@ -1,37 +1,12 @@
-************************************  
-Phylogenetic XML standards
-************************************
-.. versionadded:: 2.1
-
-From version 2.1, ETE has support for NeXML and PhyloXML phylogenetic
-XML standards, both for reading and writing.
-
-These standards allow to encode complex phylogenetic data, and they
-are not limited to trees. However, although ETE is mainly focused on
-allowing transparent interaction with the trees encoded in such data
-formats, it also provides basic support for many other features.
-
-Essentially, NexML and PhyloXML formats are internally represented as
-projects. Each XML instance can be loaded into ETE as a python object
-using the corresponding module. Project objects are expected to follow
-the hierarchical structure of the original XML schema. Trees within
-projects will be represented as fully functional ETE tree objects.
-
-Thus, while phylogenetic trees encoded using NeXML or PhyloXML formats
-can be accessed as a normal ETE tree objects, other elements
-(i.e. otus, metadata, annotation.) will be also accessible as basic
-python instances.
-
-NeXML and PhyloXML python parsers are possible thanks to the work of
-Dave Kulhman on the generateDS.py application. 
-
 .. module:: ete_dev.nexml
   :synopsis: Reading and writing support support for the NexML format
 .. moduleauthor:: Jaime Huerta-Cepas
+.. versionadded:: 2.1
 
-=============
-Nexml
-=============
+************************
+NeXML 
+************************
+
 
 NeXML(http://nexml.org) is an exchange standard for representing
 phyloinformatic data inspired by the commonly used NEXUS format, but
@@ -87,7 +62,7 @@ each node.
 
 
 --------------------------------------
-Export projects to XML format
+Writing NeXML objects
 --------------------------------------
 
 Every NexML object has its own :func:`export` method. By calling it,

@@ -5,7 +5,7 @@ from qt4_gui import _GUI, _PropertiesDialog, _BasicNodeActions
 
 import layouts
 from ete_dev import Tree, PhyloTree, ClusterTree
-from main import TreeImage
+from main import TreeStyle
 from qt4_render import _TreeScene, render, save, get_tree_img_map
 
 __all__ = ["show_tree", "render_tree"]
@@ -16,7 +16,7 @@ def init_scene(t, layout, img):
     global _QApp
 
     if not img:
-        img = TreeImage()
+        img = TreeStyle()
 
     # if not layout and not img.layout_fn:
     #     if t.__class__ == PhyloTree:

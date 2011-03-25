@@ -2,7 +2,7 @@ import sys
 import os
 
 from ete_dev import Tree, faces
-from ete_dev.treeview.main import TreeImage, NodeStyle
+from ete_dev.treeview.main import TreeStyle, NodeStyle
 import colorsys
 import random
 
@@ -63,7 +63,7 @@ size = int(sys.argv[1])
 t = Tree()
 t.populate(size, reuse_names=False)
 
-I = TreeImage()
+I = TreeStyle()
 I.mode = "rect"
 I.orientation = 1
 I.layout_fn = master_ly
@@ -97,7 +97,7 @@ t2 = Tree()
 t2.populate(10)
 
 # Creates an alternative Tree Image set of properties
-I2 = TreeImage()
+I2 = TreeStyle()
 I2.mode = "circular"
 I2.layout_fn = tiny_ly
 I2.arc_start = 45
