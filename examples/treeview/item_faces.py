@@ -49,6 +49,10 @@ def ugly_name_face(node, *args):
 
 def master_ly(node):
     if node.is_leaf():
+        # Create an ItemFAce. First argument must be the pointer to
+        # the constructor function that returns a QGraphicsItem. It
+        # will be used to draw the Face. Next arguments are arbitrary,
+        # and they will be forwarded to the constructor Face function.
         F = faces.ItemFace(ugly_name_face, 100, 50)
         faces.add_face_to_node(F, node, 0, position="aligned")
   
