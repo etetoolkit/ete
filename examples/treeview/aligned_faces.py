@@ -1,5 +1,4 @@
 import sys
-import random
 
 from ete_dev import Tree, faces, TreeStyle, NodeStyle
 
@@ -32,17 +31,17 @@ rs1.opacity = 0.6
 rs1.hz_align = 2 # 0 left, 1 center, 2 right
 rs1.vt_align = 1 # 0 left, 1 center, 2 right
 
-br1 = faces.TextFace("branch-right2", fsize=20, fgcolor="#009000")
-br2 = faces.TextFace("branch-right3", fsize=20, fgcolor="#009000")
+br1 = faces.TextFace("branch-right2", fsize=12, fgcolor="#009000")
+br2 = faces.TextFace("branch-right3", fsize=12, fgcolor="#009000")
 
 # New face positions (branch-top and branch-bottom)
-bb = faces.TextFace("branch-bottom", fsize=11, fgcolor="#909000")
+bb = faces.TextFace("branch-bottom", fsize=8, fgcolor="#909000")
 bt = faces.TextFace("branch-top", fsize=6, fgcolor="#099000")
 
 # And faces can also be used as headers or foot notes of aligned
 # columns
-t1 = faces.TextFace("header_up", fsize=11, fgcolor="#099000")
-t2 = faces.TextFace("header_down", fsize=11, fgcolor="#099000")
+t1 = faces.TextFace("header_up", fsize=12, fgcolor="#099000")
+t2 = faces.TextFace("header_down", fsize=12, fgcolor="#099000")
 
 # Attribute faces can now contain prefix and suffix fixed text
 aligned = faces.AttrFace("name", fsize=12, fgcolor="#099000", text_prefix="name=(", text_suffix=")")
