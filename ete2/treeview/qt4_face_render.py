@@ -101,11 +101,14 @@ class _FaceGroupItem(QtGui.QGraphicsItem): # I resisted to name this FaceBookIte
         x = 0
         for c in self.columns:
             faces = self.column2faces.get(c, [])
-            w, col_h = self.column2size[c]
+            max_w, col_h = self.column2size[c]
             # Starting y position. Center columns
             y = (self.h - sum(col_h.values())) / 2 
             for r, f in enumerate(faces):
-                h = self.row_heights.get(r, 0)
+                max_h = col_h[r]
+                w = max_w - f.margin_left - f.margin_right
+                h = max_h - f.margin_top - f.margin_bottom
+
                 f.node = self.node
                 if f.type == "text":
                     obj = _TextFaceItem(f, self.node, f.get_text())
@@ -159,13 +162,16 @@ class _FaceGroupItem(QtGui.QGraphicsItem): # I resisted to name this FaceBookIte
                 if f.border: 
                     border = QtGui.QGraphicsRectItem(obj.boundingRect())
                     border.setParentItem(obj)
+                if f.margin_border:
+                    border = QtGui.QGraphicsRectItem(x, y, max_w, max_h)
+                    border.setParentItem(self)
 
                 # Y position is incremented by the height of last face
                 # in column
-                y += h 
+                y += max_h 
             # X position is incremented by the max width of the last
             # processed column.
-            x += w
+            x += max_w
 
     def rotate(self, rotation):
         "rotates item over its own center"

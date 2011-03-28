@@ -132,8 +132,15 @@ class Face(object):
         self.opacity = 1
         self.rotable = True
         self.border = False
+        self.margin_border = False
         self.hz_align = 0 # 0 left, 1 center, 2 right
         self.vt_align = 1
+
+    def _plus_hz_margins(self, width):
+        return width + self.margin_left + self.margin_right
+    
+    def _plus_vt_margins(self, height):
+        return height + self.margin_top + self.margin_top
 
     def _size(self):
         if self.pixmap:
