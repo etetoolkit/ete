@@ -22,8 +22,10 @@ class InteractiveItem(QGraphicsRectItem):
         if not self.label: 
             self.label = QGraphicsRectItem()
             self.label.setParentItem(self)
+            # This is to ensure that the label is rendered over the
+            # rest of item children (default ZValue for items is 0)
+            self.label.setZValue(1)
             self.label.setBrush(QBrush(QColor("white")))
-            self.label.setParentItem(self)
             self.label.text = QGraphicsSimpleTextItem()
             self.label.text.setParentItem(self.label)
 
@@ -77,11 +79,11 @@ def ugly_name_face(node, *args, **kargs):
     ellipse = QGraphicsEllipseItem(masterItem.rect())
     ellipse.setParentItem(masterItem)
     # Change ellipse color
-    ellipse.setBrush(QBrush(QColor("darkred")))
+    ellipse.setBrush(QBrush(QColor( random_color())))
 
     # Add text
     text = QGraphicsSimpleTextItem(node.name)
-    text.setParentItem(masterItem)
+    text.setParentItem(ellipse)
     text.setPen(QPen(QPen(QColor("white"))))
 
     # Center text according to masterItem size
