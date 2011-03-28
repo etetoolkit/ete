@@ -76,13 +76,16 @@ I.aligned_header.add_face(t1, 2)
 I.aligned_header.add_face(t1, 3)
 t1.hz_align = 1 # 0 left, 1 center, 2 right 
 t1.margin_border = True
+
 I.aligned_foot.add_face(t2, column = 0)
 I.aligned_foot.add_face(t2, 1)
 I.aligned_foot.add_face(t2, 2)
 I.aligned_foot.add_face(t2, 3)
 t2.hz_align = 1
 
+# Set tree image style. Note that aligned header and foot is only
+# visible in "rect" mode.
 
-I.mode = "rect" # or "circular"
+I.mode =  "circular" # "rect" # or "circular"
 t.show(mylayout, img_properties=I)
 # t.render("./test.svg", layout=mylayout, img_properties=I)

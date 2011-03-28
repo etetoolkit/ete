@@ -155,16 +155,18 @@ class _FaceGroupItem(QtGui.QGraphicsItem): # I resisted to name this FaceBookIte
                 obj.setPos(x + f.margin_left + x_offset,\
                                y + f.margin_top + y_offset )
 
+                obj.rotable = f.rotable
                 if f.opacity < 1:
                     obj.setOpacity(f.opacity)
-                obj.rotable = f.rotable
 
                 if f.border: 
                     border = QtGui.QGraphicsRectItem(obj.boundingRect())
                     border.setParentItem(obj)
+                    border.rotable = False
                 if f.margin_border:
                     border = QtGui.QGraphicsRectItem(x, y, max_w, max_h)
                     border.setParentItem(self)
+                    border.rotable = False
 
                 # Y position is incremented by the height of last face
                 # in column

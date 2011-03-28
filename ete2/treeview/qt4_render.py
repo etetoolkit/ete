@@ -593,7 +593,9 @@ def render_node_content(node, n2i, n2f, img):
 
     # Node points 
     ball_size = style["size"] 
-    ball_start_x = nodeR.width() - facesR.width() - ball_size - 1 # Why -1?? mystery
+    lw = style["vt_line_width"] 
+    ball_start_x = nodeR.width() - facesR.width() - ball_size - lw
+
     if ball_size:
         if node.img_style["shape"] == "sphere":
             node_ball = _SphereItem(node)
@@ -625,10 +627,11 @@ def render_node_content(node, n2i, n2f, img):
 
     # the -vt_line_width is to solve small imperfections in line
     # crosses. 
-    hz_line.setLine(-style["vt_line_width"]/2.0, center, 
+    hz_line.setLine(0, center, 
                     branch_length, center)
 
     if img.complete_branch_lines_when_necesary:
+
         extra_line = _LineItem(branch_length, center, ball_start_x, center)
         pen = QtGui.QPen()
         item.extra_branch_line = extra_line
@@ -667,8 +670,9 @@ def render_node_content(node, n2i, n2f, img):
             last_child_part = n2i[node.children[-1]]
             c1 = first_child_part.start_y + first_child_part.center
             c2 = last_child_part.start_y + last_child_part.center
-            vt_line.setLine(nodeR.width(), c1,\
-                                nodeR.width(), c2)            
+            fx = nodeR.width()-node.img_style["vt_line_width"]/2 - facesR.width()
+            vt_line.setLine(fx, c1,\
+                                fx, c2)            
 
         pen = QtGui.QPen()
         set_pen_style(pen, style["vt_line_type"])
