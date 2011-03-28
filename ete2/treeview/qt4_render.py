@@ -532,6 +532,7 @@ def set_node_size(node, n2i, n2f, img):
 
     if _leaf(node):
         aligned_height = faceblock["aligned"].h
+        print "H", aligned_height
     else: 
         aligned_height = 0
 
@@ -559,7 +560,7 @@ def set_node_size(node, n2i, n2f, img):
     imbalance = abs(top_half_h - bottom_half_h)
     if imbalance > h2/2:
         h += imbalance - (h2/2)
-
+    print "height", h
     # This adds a vertical margin around the node elements
     h += img.branch_vertical_margin
     
@@ -573,7 +574,7 @@ def set_node_size(node, n2i, n2f, img):
     w += node.img_style["vt_line_width"]
 
     # rightside faces region
-    item.facesRegion.setRect(0, 0, faceblock["branch-right"].w, faceblock["branch-right"].h)
+    item.facesRegion.setRect(0, 0, faceblock["branch-right"].w, h)
 
     # Node region 
     item.nodeRegion.setRect(0, 0, w, h)
@@ -647,7 +648,7 @@ def render_node_content(node, n2i, n2f, img):
     fblock_r = n2f[node]["branch-right"]
     fblock_r.render()
     fblock_r.setPos(nodeR.width() - facesR.width(), \
-                      center-fblock_r.h/2)
+                        center-fblock_r.h/2)
                 
     # Attach branch-bottom faces to child 
     fblock_b = n2f[node]["branch-bottom"]
@@ -876,9 +877,7 @@ def save(scene, imgName, w=None, h=None, header=None, \
         pp = QtGui.QPainter()
         pp.begin(svg)
         scene.render(pp, targetRect, scene.sceneRect())
-        pp.end()
-
-        # Fix a very annoying problem with Radial gradients in
+        pp.end()        # Fix a very annoying problem with Radial gradients in
         # inkscape and browsers...
         temp_compatible_code = open(imgName).read().replace("xml:id=", "id=")
         compatible_code = re.sub('font-size="(\d+)"', 'font-size="\\1pt"', temp_compatible_code)

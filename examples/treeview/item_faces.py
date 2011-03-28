@@ -81,7 +81,7 @@ def ugly_name_face(node, *args, **kargs):
     # Change ellipse color
     ellipse.setBrush(QBrush(QColor( random_color())))
 
-    # Add text
+    # Add node name within the ellipse
     text = QGraphicsSimpleTextItem(node.name)
     text.setParentItem(ellipse)
     text.setPen(QPen(QPen(QColor("white"))))

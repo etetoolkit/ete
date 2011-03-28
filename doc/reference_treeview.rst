@@ -20,3 +20,9 @@ treeview module
    :undoc-members:
    :inherited-members:
    :show-inheritance:
+
+.. module:: ete_dev.treeview.main
+
+.. :autoattribute:: ete_dev.treeview.main.TreeStyle
+
+

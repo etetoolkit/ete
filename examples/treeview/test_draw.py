@@ -47,7 +47,13 @@ def aligned_faces(node):
         for i in xrange(3):
             F = faces.TextFace("ABCDEFGHIJK"[0:random.randint(1,11)] )
             F.border = True
+            F.margin_border = True
+            F.vt_align = 2
+            F.margin_bottom = random.randint(0, 100)
             faces.add_face_to_node(F, node, i, position="aligned")
+            if random.randint(0, 1):
+                faces.add_face_to_node(F, node, i, position="aligned")
+
 
 def master_ly(node):
     random_background(node)
@@ -65,7 +71,7 @@ t.populate(size, reuse_names=False)
 
 I = TreeStyle()
 I.mode = "rect"
-I.orientation = 1
+I.orientation = 0
 I.layout_fn = master_ly
 I.margin_left = 100
 I.margin_right = 50
@@ -75,17 +81,17 @@ I.show_border = True
 I.legend_position = 4
 I.title.add_face(faces.TextFace("HOLA MUNDO", fsize=30), 0)
 
-I.aligned_header.add_face( faces.TextFace("H1"), 0 )
-I.aligned_header.add_face( faces.TextFace("H1"), 1 )
-I.aligned_header.add_face( faces.TextFace("H1"), 2 )
-I.aligned_header.add_face( faces.TextFace("H1111111111111"), 3 )
-I.aligned_header.add_face( faces.TextFace("H1"), 4 )
-
-I.aligned_foot.add_face( faces.TextFace("FO1"), 0 )
-I.aligned_foot.add_face( faces.TextFace("FO1"), 1 )
-I.aligned_foot.add_face( faces.TextFace("FO1"), 2 )
-I.aligned_foot.add_face( faces.TextFace("F1"), 3 )
-I.aligned_foot.add_face( faces.TextFace("FO1"), 4 )
+#I.aligned_header.add_face( faces.TextFace("H1"), 0 )
+#I.aligned_header.add_face( faces.TextFace("H1"), 1 )
+#I.aligned_header.add_face( faces.TextFace("H1"), 2 )
+#I.aligned_header.add_face( faces.TextFace("H1111111111111"), 3 )
+#I.aligned_header.add_face( faces.TextFace("H1"), 4 )
+# 
+#I.aligned_foot.add_face( faces.TextFace("FO1"), 0 )
+#I.aligned_foot.add_face( faces.TextFace("FO1"), 1 )
+#I.aligned_foot.add_face( faces.TextFace("FO1"), 2 )
+#I.aligned_foot.add_face( faces.TextFace("F1"), 3 )
+#I.aligned_foot.add_face( faces.TextFace("FO1"), 4 )
 
 I.legend.add_face(faces.CircleFace(30, random_color(), "sphere"), 0)
 I.legend.add_face(faces.CircleFace(30, random_color(), "sphere"), 0)
@@ -114,8 +120,8 @@ style.add_fixed_face(faces.TreeFace(t2, I2), "branch-right", 0)
 t.show(img_properties=I)
 #t.render("/home/jhuerta/test.svg", img_properties=I)
 #os.system("inkscape /home/jhuerta/test.svg")
-I.mode = "circular"
-t.show(img_properties=I)
+#I.mode = "circular"
+#t.show(img_properties=I)
 
 sys.exit(1)
 
@@ -148,14 +154,14 @@ for c in t.children:
 # t.show(img_properties = I3)
 # sys.exit()
 
-t.show(img_properties=I)
-t.render("/home/jhuerta/test.svg", img_properties=I)
-os.system("inkscape /home/jhuerta/test.svg")
-t.show(img_properties=I)
+#t.show(img_properties=I)
+#t.render("/home/jhuerta/test.svg", img_properties=I)
+#os.system("inkscape /home/jhuerta/test.svg")
+#t.show(img_properties=I)
+# 
+#I.mode = "circular"
+#I2.mode = "rect"
+#print t.render("test.svg", img_properties=I)
 
-I.mode = "circular"
-I2.mode = "rect"
-print t.render("test.svg", img_properties=I)
-
-t.show(ly, img_properties=I)
+#t.show(ly, img_properties=I)
 
