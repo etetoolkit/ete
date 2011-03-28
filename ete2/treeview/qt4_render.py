@@ -528,11 +528,10 @@ def set_node_size(node, n2i, n2f, img):
         branch_length = item.branch_length = float(node.dist * scale)
 
     # Organize faces by groups
-    faceblock = update_node_faces(node, n2f)
+    faceblock = update_node_faces(node, n2f, img)
 
     if _leaf(node):
         aligned_height = faceblock["aligned"].h
-        print "H", aligned_height
     else: 
         aligned_height = 0
 
@@ -560,7 +559,7 @@ def set_node_size(node, n2i, n2f, img):
     imbalance = abs(top_half_h - bottom_half_h)
     if imbalance > h2/2:
         h += imbalance - (h2/2)
-    print "height", h
+
     # This adds a vertical margin around the node elements
     h += img.branch_vertical_margin
     
@@ -671,7 +670,7 @@ def render_node_content(node, n2i, n2f, img):
             last_child_part = n2i[node.children[-1]]
             c1 = first_child_part.start_y + first_child_part.center
             c2 = last_child_part.start_y + last_child_part.center
-            fx = nodeR.width()-node.img_style["vt_line_width"]/2 - facesR.width()
+            fx = nodeR.width()-node.img_style["vt_line_width"]/2
             vt_line.setLine(fx, c1,\
                                 fx, c2)            
 
@@ -788,8 +787,8 @@ def render_aligned_faces(img, mainRect, parent, n2i, n2f):
     # column (needed to place column headers)
     c2max_w = {}
     for node, fb in aligned_faces + surroundings:
-        for c, size in fb.column2size.iteritems():
-            c2max_w[c] = max(size[0], c2max_w.get(c,0))
+        for c, w in fb.c2max_w.iteritems():
+            c2max_w[c] = max(w, c2max_w.get(c,0))
 
     # If rect mode, render header and footer 
     if img.mode == "rect": 
@@ -809,8 +808,13 @@ def render_aligned_faces(img, mainRect, parent, n2i, n2f):
     for node, fb in aligned_faces:
         item = n2i[node]
         item.mapped_items.append(fb)
+        print "***"
+        print fb.h
         if img.draw_aligned_faces_as_grid: 
             fb.setup_grid(c2max_w)
+        print fb.h
+        print "---"
+
 
         fb.render()
         fb.setParentItem(item.content)

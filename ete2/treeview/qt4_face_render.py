@@ -1,3 +1,4 @@
+import random
 from PyQt4 import QtCore, QtGui
 from main import FACE_POSITIONS, _ActionDelegator
 
@@ -20,12 +21,14 @@ class _BackgroundFaceItem(QtGui.QGraphicsRectItem):
         return
 
 class _FaceGroupItem(QtGui.QGraphicsRectItem): # I resisted to name this FaceBookItem :) 
-    def __init__(self, faces, node, *args, **kargs):
+    def __init__(self, faces, node, as_grid=False):
 
         # This caused seg. faults. in some computers. No idea why.
         # QtGui.QGraphicsItem.__init__(self, *args, **kargs) 
         QtGui.QGraphicsRectItem.__init__(self)  
-
+        self.as_grid = as_grid
+        self.c2max_w = {}
+        self.r2max_h = {}
         self.node = node
         self.column2faces = faces
         self.column2size = {}
@@ -66,58 +69,64 @@ class _FaceGroupItem(QtGui.QGraphicsRectItem): # I resisted to name this FaceBoo
         return self.w, self.h
 
     def update_columns_size(self):
-        self.column2size = {}
-        for c in self.columns:
-            faces = self.column2faces.get(c, [])
-            heights = {}
-            width = 0
+        self.sizes = {}
+        c2height = {}
+        for c, faces in self.column2faces.iteritems():
+            self.sizes[c] = {}
+            total_height = 0
             for r, f in enumerate(faces):
                 f.node = self.node
                 if f.type == "pixmap": 
                     f.update_pixmap()
                 elif f.type == "item":
                     f.update_items()
-                    
-                height = max(f._height() + f.margin_top + f.margin_bottom, \
-                                 self.row_heights.get(r, 0)) 
-                print "FACE height", height
-                heights[r] = height
-                width = max(width, f._width() + f.margin_right + f.margin_left)
-            width = max(width, self.column_widths.get(c, 0))
-            self.column2size[c] = (width, heights)
-        self.w = sum([0]+[size[0] for size in self.column2size.itervalues()])
-        self.h = max([0]+[sum(heights.values()) for c_w, heights in self.column2size.itervalues()])
-        self.setRect(-2, -2, self.w+2, self.h+2)
-        pen = QtGui.QPen()
-        pen.setColor(QtGui.QColor("gray"))
-        self.setPen(pen)
 
-    def setup_grid(self, c2max_w=None, c2max_h=None):
-        if c2max_w is None:
-            c2max_w = {}
-        if c2max_h is None:
-            c2max_h = {}
-        for c, (c_w, heights) in self.column2size.iteritems():
-            c2max_w[c] = max(c_w, c2max_w.get(c,0))
-            for r, r_h in heights.iteritems():
-                c2max_h[r] = max(r_h, c2max_h.get(c,0))
-        self.set_min_column_widths(c2max_w)
-        self.set_min_column_heights(c2max_h)
+                width = f._width() + f.margin_right + f.margin_left
+                height = f._height() + f.margin_top + f.margin_bottom
+                self.sizes[c][r] = [width, height]
+                self.c2max_w[c] = max(self.c2max_w.get(c, 0), width)
+                self.r2max_h[r] = max(self.r2max_h.get(r, 0), height)
+                total_height += height
+            c2height[c] = total_height
+                    
+        if not self.sizes:
+            return 
+
+        if self.as_grid:
+            self.h = max( [sum([self.r2max_h[r] for r in rows.iterkeys()]) for c, rows in self.sizes.iteritems()])
+        else:
+            self.h = max( [c2height[c] for c in self.sizes.iterkeys()])
+
+        self.w = sum(self.c2max_w.values())
+      
+        #self.setRect(0, 0, self.w+random.randint(1,5), self.h)
+        #pen = QtGui.QPen()
+        #pen.setColor(QtGui.QColor("red"))
+        #self.setPen(pen)
+
+    def setup_grid(self, c2max_w=None, r2max_h=None):
+        if c2max_w: 
+            self.c2max_w = c2max_w
+        
+        if r2max_h: 
+            self.r2max_h = r2max_h
+
+        self.as_grid = True
         self.update_columns_size()
-        return c2max_w, c2max_h
+        return self.c2max_w, self.r2max_h
 
     def render(self):
         x = 0
-        for c in self.columns:
+        for c, max_w in self.c2max_w.iteritems(): 
             faces = self.column2faces.get(c, [])
-            max_w, col_h = self.column2size[c]
-            # Starting y position. Center columns
-            y = 0 # (self.h - sum(col_h.values())) / 2 
+            if self.as_grid:
+                y = 0
+            else:
+                y = (self.h - ( sum([s[1] for s in self.sizes[c].values()]) )) /2
+
             for r, f in enumerate(faces):
-                max_h = col_h[r]
-                print max_h
-                w = max_w - f.margin_left - f.margin_right
-                h = max_h - f.margin_top - f.margin_bottom
+                w, h = self.sizes[c][r]
+                max_h = self.r2max_h[r]
 
                 f.node = self.node
                 if f.type == "text":
@@ -137,30 +146,29 @@ class _FaceGroupItem(QtGui.QGraphicsRectItem): # I resisted to name this FaceBoo
                     obj.setParentItem(self)
 
                 # relative alignemnt of faces
-                face_rect = obj.boundingRect()
                 x_offset, y_offset = 0, 0 
                
-                if w > face_rect.width():
+                if max_w > w:
                     # Horizontally at the left
                     if f.hz_align == 0:
                         x_offset = 0
                     elif f.hz_align == 1:
                         # Horizontally centered
-                        x_offset = (max_w - face_rect.width()) / 2  
+                        x_offset = (max_w - w) / 2  
                     elif f.hz_align == 2:
                         # At the right
-                        x_offset = (max_w - face_rect.width())
-
-                if h > face_rect.height():
+                        x_offset = (max_w - w)
+                
+                if max_h > h:
                     if f.vt_align == 0:
                         # Vertically on top
                         y_offset = 0
                     elif f.vt_align == 1:
                         # Vertically centered
-                        y_offset = (max_h - face_rect.height()) / 2  
+                        y_offset = (max_h - h) / 2  
                     elif f.hz_align == 2:
                         # Vertically at bottom
-                        y_offset = (max_h - face_rect.height()) 
+                        y_offset = (max_h - h) 
 
                 obj.setPos(x + f.margin_left + x_offset,\
                                y + y_offset + f.margin_top)
@@ -172,23 +180,21 @@ class _FaceGroupItem(QtGui.QGraphicsRectItem): # I resisted to name this FaceBoo
                 if f.border: 
                     border = QtGui.QGraphicsRectItem(obj.boundingRect())
                     border.setParentItem(obj)
-                    border.rotable = False
                 if f.margin_border:
                     border = QtGui.QGraphicsRectItem(x, y, max_w, max_h)
                     border.setParentItem(self)
-                    border.rotale = False
 
-                # Y position is incremented by the height of last face
-                # in column
-                y += max_h 
-            # X position is incremented by the max width of the last
-            # processed column.
+                if self.as_grid:
+                    y += max_h
+                else:
+                    y += h
+
             x += max_w
 
     def rotate(self, rotation):
         "rotates item over its own center"
         for obj in self.childItems():
-            if obj.rotable:
+            if hasattr(obj, "rotable") and obj.rotable:
                 rect = obj.boundingRect()
                 x =  rect.width()/2
                 y =  rect.height()/2
@@ -208,7 +214,7 @@ class _FaceGroupItem(QtGui.QGraphicsRectItem): # I resisted to name this FaceBoo
             y =  rect.height()/2
             obj.setTransform(QtGui.QTransform().translate(x, y).scale(1,-1).translate(-x, -y))
 
-def update_node_faces(node, n2f):
+def update_node_faces(node, n2f, img):
     # Organize all faces of this node in FaceGroups objects
     # (tables of faces)
     faceblock = {}
@@ -220,7 +226,12 @@ def update_node_faces(node, n2f):
             # c2f = [ [f1, f2, f3], 
             #         [f4, f4]
             #       ]
-            faceblock[position] = _FaceGroupItem(node.img_style["_faces"][position], node)
+
+            if position == "aligned" and img.draw_aligned_faces_as_grid: 
+                as_grid = True
+            else:
+                as_grid = False
+            faceblock[position] = _FaceGroupItem(node.img_style["_faces"][position], node, as_grid=as_grid)
         else:
             faceblock[position] = _FaceGroupItem({}, node)
     return faceblock

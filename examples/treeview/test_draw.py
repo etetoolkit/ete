@@ -48,8 +48,12 @@ def aligned_faces(node):
             F = faces.TextFace("ABCDEFGHIJK"[0:random.randint(1,11)] )
             F.border = True
             F.margin_border = True
-            F.vt_align = 2
-            F.margin_bottom = random.randint(0, 100)
+            F.vt_align = 0
+            F.hz_align = 0
+            F.margin_bottom = random.randint(1, 20)
+            F.margin_right  = random.randint(1, 20)
+            F.margin_left = random.randint(1, 20)
+            F.margin_top = random.randint(1, 20)
             faces.add_face_to_node(F, node, i, position="aligned")
             if random.randint(0, 1):
                 faces.add_face_to_node(F, node, i, position="aligned")
@@ -80,6 +84,7 @@ I.margin_bottom = 50
 I.show_border = True
 I.legend_position = 4
 I.title.add_face(faces.TextFace("HOLA MUNDO", fsize=30), 0)
+I.draw_aligned_faces_as_grid = False
 
 #I.aligned_header.add_face( faces.TextFace("H1"), 0 )
 #I.aligned_header.add_face( faces.TextFace("H1"), 1 )
