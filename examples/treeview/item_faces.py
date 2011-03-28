@@ -6,6 +6,37 @@ from ete_dev import Tree, faces, TreeStyle, NodeStyle
 
 import colorsys
 import random
+
+class InteractiveItem(QGraphicsRectItem):
+    def __init__(self, *arg, **karg):
+        QGraphicsRectItem.__init__(self, *arg, **karg)
+        self.node = None
+        self.label = None
+        self.setCursor(QtCore.Qt.PointingHandCursor)
+        self.setAcceptsHoverEvents(True)
+
+    def hoverEnterEvent (self, e):
+        # There are many ways of adding interactive elements. With the
+        # following code, I show/hide a text item over my custom
+        # ItemFace
+        if not self.label: 
+            self.label = QGraphicsRectItem()
+            self.label.setParentItem(self)
+            self.label.setBrush(QBrush(QColor("white")))
+            self.label.setParentItem(self)
+            self.label.text = QGraphicsSimpleTextItem()
+            self.label.text.setParentItem(self.label)
+
+        self.label.text.setText(self.node.name)
+        self.label.setRect(self.label.text.boundingRect())
+        self.label.setVisible(True)
+
+    def hoverLeaveEvent(self, e):
+        if self.label: 
+            self.label.setVisible(False)
+
+
+
 def random_color(h=None):
     if not h:
         h = random.random()
@@ -20,23 +51,37 @@ def hls2hex(h, l, s):
     return rgb2hex( tuple(map(lambda x: int(x*255), colorsys.hls_to_rgb(h, l, s))))
 
 
-def ugly_name_face(node, *args):
+def ugly_name_face(node, *args, **kargs):
+
     # receive an arbitrary number of arguments, in this case width and
     # height of the faces
     width = args[0][0]
     height = args[0][1]
+
     # Creates a main master Item that will contain all other elements
-    masterItem = QGraphicsRectItem(0, 0, width, height)
+
+    # Items can be standard QGraphicsItem
+    # masterItem = QGraphicsRectItem(0, 0, width, height)
+    
+    # Or your custom Items, in which you can re-implement interactive
+    # functions, etc. Check QGraphicsItem doc for details.
+    masterItem = InteractiveItem(0, 0, width, height)
+
+    # Keep a link within the item to access node info 
+    masterItem.node = node 
+
     # I dont want a border around the masterItem
     masterItem.setPen(QPen(QtCore.Qt.NoPen))
 
     # Add ellipse around text
-    ellipse = QGraphicsEllipseItem(masterItem.rect(), parent=masterItem)
+    ellipse = QGraphicsEllipseItem(masterItem.rect())
+    ellipse.setParentItem(masterItem)
     # Change ellipse color
     ellipse.setBrush(QBrush(QColor("darkred")))
 
     # Add text
-    text = QGraphicsSimpleTextItem(node.name, parent=masterItem)
+    text = QGraphicsSimpleTextItem(node.name)
+    text.setParentItem(masterItem)
     text.setPen(QPen(QPen(QColor("white"))))
 
     # Center text according to masterItem size
