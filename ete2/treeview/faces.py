@@ -106,13 +106,15 @@ _ntbgcolors = {
     ' ':"#FFFFFF"
 }
 
-__all__ = ["add_face_to_node", "Face", "TextFace", "AttrFace", "ImgFace",\
+__all__ = ["Face", "TextFace", "AttrFace", "ImgFace",\
                "ProfileFace", "SequenceFace", "TreeFace",\
                "RandomFace"]
 
 
 class Face(object):
-    """ Standard definition of a face node object.
+    """ 
+
+    Standard definition of a Face node object.
 
     This class is not functional and it should only be used to create
     other face objects. By inheriting this class, you set all the
@@ -136,7 +138,7 @@ class Face(object):
         self.hz_align = 0 # 0 left, 1 center, 2 right
         self.vt_align = 1
         self.background = _Background()
-        self.border = Border()
+        self.border = _Border()
         self.margin_border = _Border()
         self.margin_background = _Background()
 
@@ -165,19 +167,20 @@ class Face(object):
         pass
 
 class TextFace(Face):
-    """ Creates a new text face object.
+    """ 
+    Static text Face object
 
-
-
-    text:     Text to be drawn
-    ftype:    Font type, e.g. Arial, Verdana, Courier, (default="Verdana")
-    fsize:    Font size, e.g. 10,12,6, (default=10)
-    fgcolor:  Foreground font color in RGB name format, e.g. #FF00DD,#000000  (default="#000000")
-    bgcolor:  Backgroung font color in RGB name format, e.g. #FFFFFF,#DDDDDD, (default=None)
-    penwidth: Penwdith used to draw the text. (default is 0)
+    :argument text:     Text to be drawn
+    :argument ftype:    Font type, e.g. Arial, Verdana, Courier
+    :argument fsize:    Font size, e.g. 10,12,6, (default=10)
+    :argument fgcolor:  Foreground font color in RGB name format, e.g. #FF00DD,#000000  
+    :argument bgcolor:  Backgroung font color in RGB name format, e.g. #FFFFFF,#DDDDDD 
+    :argument penwidth: Penwdith used to draw the text.
+    :argument fstyle: "normal" or "italic" 
     """
 
     def __init__(self, text, ftype="Verdana", fsize=10, fgcolor="#000000", bgcolor=None, penwidth=0, fstyle="normal"):
+
         Face.__init__(self)
 
         if bgcolor is None:
@@ -216,16 +219,22 @@ class TextFace(Face):
         return self.text
 
 class AttrFace(TextFace):
-    """ Creates a new text attribute face object.
+    """ 
 
-    attr:     Node's attribute that will be drawn as text
-    ftype:    Font type, e.g. Arial, Verdana, Courier, (default="Verdana")
-    fsize:    Font size, e.g. 10,12,6, (default=10)
-    fgcolor:  Foreground font color in RGB name format, e.g. #FF00DD,#000000  (default="#000000")
-    bgcolor:  Backgroung font color in RGB name format, e.g. #FFFFFF,#DDDDDD, (default=None)
-    penwidth: Penwdith used to draw the text. (default is 0)
-    text_prefix: text_rendered before attribute value
-    text_suffix: text_rendered after attribute value
+    Dynamic text Face. Text rendered is taken from the value of a
+    given node attribute.
+
+    :argument attr:     Node's attribute that will be drawn as text
+    :argument ftype:    Font type, e.g. Arial, Verdana, Courier, (default="Verdana")
+    :argument fsize:    Font size, e.g. 10,12,6, (default=10)
+    :argument fgcolor:  Foreground font color in RGB name format, e.g. #FF00DD,#000000  (default="#000000")
+    :argument bgcolor:  Backgroung font color in RGB name format, e.g. #FFFFFF,#DDDDDD, (default=None)
+    :argument penwidth: Penwdith used to draw the text. (default is 0)
+    :argument text_prefix: text_rendered before attribute value
+    :argument text_suffix: text_rendered after attribute value
+    :argument formatter: a text string defining a python formater to
+      process the attribute value before renderer. e.g. "%0.2f"
+    :argument fstyle: "normal" or "italic" 
     """
 
     def __init__(self, attr, ftype="Verdana", fsize=10, fgcolor="#000000", \
@@ -251,7 +260,8 @@ class ImgFace(Face):
     """ Creates a new image face object.
 
 
-    img_file: Image file in png,jpg,bmp format
+    :argument img_file: Image file in png,jpg,bmp format
+
     """
     def __init__(self,img_file):
         Face.__init__(self)
@@ -263,16 +273,18 @@ class ImgFace(Face):
 
 
 class ProfileFace(Face):
-    """ Creates a new vector profile face object.
+    """ 
 
+    A profile Face for ClusterNodes 
 
-    max_v:    maximum value used to build the build the plot scale.
-    max_v:    manimum value used to build the build the plot scale.
-    center_v: Center value used to scale plot and heat map.
-    width:    Plot width in pixels. (defaulf=200)
-    height:   Plot width in pixels. (defaulf=40)
-    style:    Plot style: "lines", "bars", "cbars" or "heatmap". (default="lines")
+    :argument max_v:    maximum value used to build the build the plot scale.
+    :argument max_v:    manimum value used to build the build the plot scale.
+    :argument center_v: Center value used to scale plot and heat map.
+    :argument width:    Plot width in pixels. (defaulf=200)
+    :argument height:   Plot width in pixels. (defaulf=40)
+    :argument style:    Plot style: "lines", "bars", "cbars" or "heatmap". (default="lines")
     """
+
     def __init__(self,max_v,min_v,center_v,width=200,height=40,style="lines",colorscheme=2):
         Face.__init__(self)
 
@@ -682,22 +694,51 @@ class ProfileFace(Face):
 class SequenceFace(Face):
     """ Creates a new molecular sequence face object.
 
-    seq:     Sequence string to be drawn
-    seqtype: Type of sequence: "nt" or "aa"
-    fsize:   Font size,  (default=10)
+
+    :argument seq:  Sequence string to be drawn
+    :argument seqtype: Type of sequence: "nt" or "aa"
+    :argument fsize:   Font size,  (default=10)
+
+    You can set custom colors for aminoacids or nucleotides: 
+
+    :argument aafg: a dictionary in which keys are aa codes and values
+      are foreground RGB colors
+
+    :argument aabg: a dictionary in which keys are aa codes and values
+      are background RGB colors
+
+    :argument ntfg: a dictionary in which keys are nucleotides codes
+      and values are foreground RGB colors
+
+    :argument ntbg: a dictionary in which keys are nucleotides codes and values
+      are background RGB colors
+
     """
 
-    def __init__(self, seq, seqtype, fsize=10, aafg=_aafgcolors,  aabg=_aabgcolors, ntfg=_ntfgcolors, ntbg=_ntbgcolors):
+    def __init__(self, seq, seqtype, fsize=10, aafg=None,  \
+                     aabg=None, ntfg=None, ntbg=None):
+
         Face.__init__(self)
         self.seq  = seq
         self.name = "sequence"
         self.fsize= fsize
         self.fsize = fsize
         self.style = seqtype
+
+        if not aafg:
+            aafg = _aafgcolors
+        if not aabg: 
+            aabg = _aabgcolors
+        if not ntfg:
+            ntfg = _ntfgcolors
+        if not ntbg:
+            ntbg = _ntbgcolors
+
         self.aafg = aafg
         self.aabg = aabg
         self.ntfg = ntfg
         self.ntbg = ntbg
+
 
     def update_pixmap(self):
         font = QtGui.QFont("Courier", self.fsize)
@@ -729,45 +770,19 @@ class SequenceFace(Face):
             x += float(width)/len(self.seq)
         p.end()
 
-class RandomFace(Face):
-    def __init__(self):
-        faces.Face.__init__(self)
-        self.type = "item"
-
-    def update_items(self):
-        import random
-        w = random.randint(4, 100)
-        h = random.randint(4, 100)
-        self.tree_partition = QtGui.QGraphicsRectItem(0,0,w, h)
-        self.tree_partition.setBrush(QtGui.QBrush(QtGui.QColor("green")))
-
-    def _width(self):
-        return self.tree_partition.rect().width()
-
-    def _height(self):
-        return self.tree_partition.rect().height()
-
-
-class BackgroundFace(Face):
-    def __init__(self, min_width=0, min_height=0):
-        faces.Face.__init__(self)
-        self.type = "background"
-        self.min_height = min_height
-        self.min_height = min_width
-
-    def _width(self):
-        return self.min_width
-
-    def _height(self):
-        return self.min_height
-
-
 class TreeFace(Face):
-    def __init__(self, tree, img_properties):
+    """ 
+    Creates a Face containing a Tree object. 
+
+    :argument tree: An ETE Tree instance (Tree, PhyloTree, etc...)
+    :argument tree_style: A TreeStyle instance defining how tree show be drawn 
+    
+    """
+    def __init__(self, tree, tree_style):
         Face.__init__(self)
         self.type = "item"
         self.root_node = tree
-        self.img = img_properties
+        self.img = tree_style
         self.item = None
 
     def update_items(self):
@@ -801,6 +816,14 @@ class _SphereItem(QtGui.QGraphicsEllipseItem):
 
 
 class CircleFace(Face):
+    """
+    Creates a Circle or Sphere Face.
+
+    :arguments radius: integer number defining the radius of the face
+    :arguments color: RGB code or SVG color name used to fill the circle
+    :arguments "circle" style: Valid values are "circle" or "sphere"
+    """
+
     def __init__(self, radius, color, style="circle"):
         Face.__init__(self)
         self.radius = radius
@@ -822,6 +845,13 @@ class CircleFace(Face):
         return self.item.rect().height()
 
 class ItemFace(Face):
+    """
+    Creates a QtGraphicsItem Face. 
+
+    :arguments constructor: A pointer to a function or methods
+      returning a QGraphicsItem based object
+    """
+
     def __init__(self, constructor, *args, **kargs):
         Face.__init__(self)
         self.type = "item"
@@ -838,3 +868,36 @@ class ItemFace(Face):
 
     def _height(self):
         return self.item.rect().height()
+
+class RandomFace(Face):
+    def __init__(self):
+        faces.Face.__init__(self)
+        self.type = "item"
+
+    def update_items(self):
+        import random
+        w = random.randint(4, 100)
+        h = random.randint(4, 100)
+        self.tree_partition = QtGui.QGraphicsRectItem(0,0,w, h)
+        self.tree_partition.setBrush(QtGui.QBrush(QtGui.QColor("green")))
+
+    def _width(self):
+        return self.tree_partition.rect().width()
+
+    def _height(self):
+        return self.tree_partition.rect().height()
+
+
+class BackgroundFace(Face):
+    def __init__(self, min_width=0, min_height=0):
+        faces.Face.__init__(self)
+        self.type = "background"
+        self.min_height = min_height
+        self.min_height = min_width
+
+    def _width(self):
+        return self.min_width
+
+    def _height(self):
+        return self.min_height
+

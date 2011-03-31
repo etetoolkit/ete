@@ -46,6 +46,7 @@ def aligned_faces(node):
             F = faces.TextFace("ABCDEFGHIJK"[0:random.randint(1,11)])
             F.border.width = 1
             F.border.line_style = 1
+            F.background.color = "lightgreen"
             F.margin_border.width = 1
             F.margin_border.width = 1
             F.margin_background.color = "darkgreen"
@@ -77,29 +78,31 @@ t = Tree()
 t.populate(size, reuse_names=False)
 
 I = TreeStyle()
-I.mode = "circular"
+I.mode = "rect"
 I.orientation = 0
 I.layout_fn = master_ly
 I.margin_left = 100
 I.margin_right = 50
 I.margin_top = 100
+I.arc_start = 45
+I.arc_span = 360
 I.margin_bottom = 50
 I.show_border = True
 I.legend_position = 4
 I.title.add_face(faces.TextFace("HOLA MUNDO", fsize=30), 0)
 I.draw_aligned_faces_as_grid = True
 
-#I.aligned_header.add_face( faces.TextFace("H1"), 0 )
-#I.aligned_header.add_face( faces.TextFace("H1"), 1 )
-#I.aligned_header.add_face( faces.TextFace("H1"), 2 )
-#I.aligned_header.add_face( faces.TextFace("H1111111111111"), 3 )
-#I.aligned_header.add_face( faces.TextFace("H1"), 4 )
-# 
-#I.aligned_foot.add_face( faces.TextFace("FO1"), 0 )
-#I.aligned_foot.add_face( faces.TextFace("FO1"), 1 )
-#I.aligned_foot.add_face( faces.TextFace("FO1"), 2 )
-#I.aligned_foot.add_face( faces.TextFace("F1"), 3 )
-#I.aligned_foot.add_face( faces.TextFace("FO1"), 4 )
+I.aligned_header.add_face( faces.TextFace("H1"), 0 )
+I.aligned_header.add_face( faces.TextFace("H1"), 1 )
+I.aligned_header.add_face( faces.TextFace("H1"), 2 )
+I.aligned_header.add_face( faces.TextFace("H1111111111111"), 3 )
+I.aligned_header.add_face( faces.TextFace("H1"), 4 )
+ 
+I.aligned_foot.add_face( faces.TextFace("FO1"), 0 )
+I.aligned_foot.add_face( faces.TextFace("FO1"), 1 )
+I.aligned_foot.add_face( faces.TextFace("FO1"), 2 )
+I.aligned_foot.add_face( faces.TextFace("F1"), 3 )
+I.aligned_foot.add_face( faces.TextFace("FO1"), 4 )
 
 I.legend.add_face(faces.CircleFace(30, random_color(), "sphere"), 0)
 I.legend.add_face(faces.CircleFace(30, random_color(), "sphere"), 0)
@@ -110,17 +113,10 @@ I.legend.add_face(faces.TextFace("HOLA"), 1)
 t2 = Tree()
 t2.populate(10)
 
-# Creates an alternative Tree Image set of properties
-I2 = TreeStyle()
-I2.mode = "rect"
-I2.layout_fn = tiny_ly
-I2.arc_start = 45
-I2.arc_span = 360
-
 # Creates a fixed NodeStyle object containing a TreeFace (A tree image
 # as a face within another tree image)
 style = NodeStyle()
-style.add_fixed_face(faces.TreeFace(t2, I2), "branch-right", 0)
+style.add_fixed_face(faces.TreeFace(t2, I), "branch-right", 0)
 
 # Attach the fixed style to the first child of the root node
 # t.children[0].img_style = style
@@ -130,46 +126,4 @@ t.show(img_properties=I)
 #os.system("inkscape /home/jhuerta/test.svg")
 #I.mode = "circular"
 #t.show(img_properties=I)
-
-sys.exit(1)
-
-
-
-
-t = Tree()
-#t.populate(n, "ABCDEFGHIjklmnopqrstuvwxyz", reuse_names=False)
-
-#t = Tree("(a, b, c);")
-
-print t.get_ascii(show_internal=True)
-
-style = NodeStyle()
-style.add_fixed_face(faces.TreeFace(t2, I2), "branch-right", 0)
-
-t.img_style = NodeStyle()
-for c in t.children:
-    c.img_style = NodeStyle()
-
-#t.children[1].children[0].img_style = style 
-
-#t.img_style["bgcolor"] = "#ff0000"
-# t.children[1].img_style["bgcolor"] = "#00ff00"
-# t.children[0].img_style["bgcolor"] = "#0000ff"
-
-# I3 = TreeImage()
-# I3.scale = n/2 
-# I3.layout_fn = tiny
-# t.show(img_properties = I3)
-# sys.exit()
-
-#t.show(img_properties=I)
-#t.render("/home/jhuerta/test.svg", img_properties=I)
-#os.system("inkscape /home/jhuerta/test.svg")
-#t.show(img_properties=I)
-# 
-#I.mode = "circular"
-#I2.mode = "rect"
-#print t.render("test.svg", img_properties=I)
-
-#t.show(ly, img_properties=I)
 

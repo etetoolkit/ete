@@ -39,7 +39,7 @@ class SeqGroup(object):
     or not).
 
     CONSTRUCTOR ARGUMENTS:
-    ======================
+
 
       * sequences: Path to the file containing the sequences or,
         alternatively, the text string containing the same information.
@@ -49,11 +49,11 @@ class SeqGroup(object):
         and "iphylip" (phylip interleaved)
 
     RETURNS:
-    ========
+
      A SeqGroup object to operate with sequencies.
 
     EXAMPLES:
-    =========
+
      msf = ">seq1\\nAAAAAAAAAAA\\n>seq2\\nTTTTTTTTTTTTT\\n"
      seqs = SeqGroup(msf, format="fasta")
      print seqs.get_seq("seq1")

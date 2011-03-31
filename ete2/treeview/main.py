@@ -34,6 +34,7 @@ NODE_STYLE_DEFAULT = [
     ["vt_line_width",          1,      _SIZE_CHECKER                            ]
     ]
 
+
 # _faces and faces are registered to allow deepcopy to work on nodes
 VALID_NODE_STYLE_KEYS = set([i[0] for i in NODE_STYLE_DEFAULT]) | set(["_faces", "faces"])
 
@@ -100,7 +101,24 @@ class _ActionDelegator(object):
         self._delegate = None
       
 class NodeStyle(dict):
-    """ A dictionary with all valid node graphical attributes.  """
+    """ A dictionary with all valid node graphical attributes.  
+
+    :argument #0030c1 fgcolor: RGB code or SVG color name
+    :argument #FFFFFF bgcolor: RGB code or SVG color name
+    :argument #FFFFFF node_bgcolor: RGB code or SVG color name
+    :argument #FFFFFF partition_bgcolor: RGB code or SVG color name
+    :argument #FFFFFF faces_bgcolor: RGB code or SVG color name
+    :argument #000000 vt_line_color: RGB code or SVG color name
+    :argument #000000 hz_line_color: RGB code or SVG color name
+    :argument 0 hz_line_type: integer number
+    :argument 0 vt_line_type: integer number
+    :argument 3 size: integer number
+    :argument "circle" shape: "circle", "square" or "sphere"
+    :argument True draw_descendants: Mark an internal node as a leaf. 
+    :argument 1 hz_line_width: integer number 
+    :argument 1 vt_line_width: integer number
+    
+    """
 
     def __init__(self, *args, **kargs):
 
@@ -152,102 +170,100 @@ class TreeStyle(object):
 
     **TREE SHAPE AND IMAGE DESIGN**
         
-    :var mode="r": Valid modes are "c" (circular) or "r"
+    :var "rect" mode: Valid modes are "c" (circular) or "r"
       (rectangular).
 
-    :var layout_fn=None: Layout function used to dynamically control
+    :var None layout_fn: Layout function used to dynamically control
       the aspect of nodes. Valid values are: None or a pointer to a method,
       function, etc.
                    
-    :var orientation=0: If 0, tree is drawn from left-to-right. If
+    :var 0 orientation: If 0, tree is drawn from left-to-right. If
        1, tree is drawn from right-to-left. This property only makes
        sense when "rect" mode is used.
     
-    :var scale=None: Scale used to convert branch lengths to
+    :var None scale: Scale used to convert branch lengths to
       pixels. If 'None', the scale will be calculated using the
       "tree_width" attribute (read bellow)
 
 
-    :var tree_width=200: Total width, in pixels, that tree
+    :var 200 tree_width: Total width, in pixels, that tree
       branches are allowed to used. This is, the distance in
       pixels from root to the most distant leaf. If set, this
       value will be used to automatically calculate the branch
       scale.  In practice, increasing this number will cause an
       X-zoom in.
 
-    :var min_leaf_separation=1: Min separation, in pixels, between
+    :var 1 min_leaf_separation: Min separation, in pixels, between
       to adjacent branches
 
-    :var branch_vertical_margin=0: Leaf branch separation margin,
+    :var 0 branch_vertical_margin: Leaf branch separation margin,
       in pixels. This will add a separation of X pixels between
       adjacent leaf branches. In practice this produces a Y-zoom
       in.
 
-    :var arc_start=0: When circular trees are drawn, this defines
+    :var 0 arc_start: When circular trees are drawn, this defines
       the starting angle (in degrees) from which leaves are
       distribute (clock-wise) around the total arc. 0 = 3 o'clock
 
-    :var arc_span=360: Total arc used to draw circular trees (in
+    :var 360 arc_span: Total arc used to draw circular trees (in
       degrees)
 
-    :var self.margin_left=0: Left tree image margin, in pixels
-    :var self.margin_right=0: Right tree image margin, in pixels
-    :var self.margin_top=0: Top tree image margin, in pixels
-    :var self.margin_bottom=0: Bottom tree image margin, in pixels
-
+    :var 0 margin_left: Left tree image margin, in pixels
+    :var 0 margin_right: Right tree image margin, in pixels
+    :var 0 margin_top: Top tree image margin, in pixels
+    :var 0 margin_bottom: Bottom tree image margin, in pixels
 
     **TREE BRANCHES**
 
-
-    :var complete_branch_lines_when_necesary=True: True or False.
+    :var True complete_branch_lines_when_necesary: True or False.
       When top-branch and bottom-branch faces are larger than
       branch length, branch line can be completed. Also, when
       circular trees are drawn
-    :var extra_branch_line_type=2:  0 solid, 1 dashed, 2 dotted
-    :var extra_branch_line_color="gray": RGB or SVG color name
+    :var 2 extra_branch_line_type:  0 solid, 1 dashed, 2 dotted
+    :var "gray"  extra_branch_line_color": RGB or SVG color name
 
     
-    :var force_topology = False: Convert tree branches to a fixed length, thus allowing to
+    :var False force_topology: Convert tree branches to a fixed length, thus allowing to
       observe the topology of tight nodes
 
 
-    :var draw_guiding_lines=True: Draw guidelines from leaf nodes
+    :var True draw_guiding_lines: Draw guidelines from leaf nodes
       to aligned faces
     
-    :var guiding_lines_type=2: 0 solid, 1 dashed, 2 dotted
-    :var guiding_lines_color="gray": RGB color code  or SVG color name
+    :var 2 guiding_lines_type: 0 solid, 1 dashed, 2 dotted
+    :var "gray" guiding_lines_color: RGB color code  or SVG color name
 
     **FACES**
 
-    :var draw_aligned_faces_as_grid=True: Aligned faces will be
+    :var True draw_aligned_faces_as_grid: Aligned faces will be
       drawn as a table, considering all columns in all node faces.
 
     
-    :var floating_faces_under_tree=False: By default, floating
+    :var False floating_faces_under_tree: By default, floating
       faces are expected to be transparent, so they can be plotted
       directly on the tree image. However, you can also render all
       floating faces under the tree to ensure total tree topology
       visibility
 
-    :var children_faces_on_top=True: When floating faces from
+    :var True children_faces_on_top: When floating faces from
       different nodes overlap, children faces are drawn on top of
       parent faces. This can be reversed by setting this attribute
       to false.
 
     **Addons**
 
-    :var show_border=False: Draw a border around the whole tree
+    :var False show_border: Draw a border around the whole tree
 
-    :var show_scale=True: Include the scale legend in the tree
+    :var True show_scale: Include the scale legend in the tree
       image
 
-    :var show_leaf_name=False: Automatically adds a text Face to
+    :var False show_leaf_name: Automatically adds a text Face to
       leaf nodes showing their names
 
-    :var show_branch_length=False: Automatically adds branch
+    :var False show_branch_length: Automatically adds branch
       length information on top of branches
 
-    :var show_branch_support=False: Automatically adds branch
+    :var False show_branch_support: Automatically adds branch
       support text in the bottom of tree branches
 
 
@@ -258,7 +274,7 @@ class TreeStyle(object):
 
     :var legend:
 
-    :var self.legend_position=4: TopLeft corner if 1, TopRight
+    :var 4 legend_position=4: TopLeft corner if 1, TopRight
       if 2, BottomLeft if 3, BottomRight if 4
 
     
@@ -412,7 +428,20 @@ def _leaf(node):
     return collapsed or node.is_leaf()
 
 def add_face_to_node(face, node, column, aligned=False, position="branch-right"):
-    """ Links a node with a given face instance.  """
+    """ 
+    Adds a Face to a given node. 
+
+    :argument face: A Face instance
+    :argument node: a TreeNode instance (TreeNode, PhyloNode, etc...)
+    :argument column: an integer number starting from 0
+
+    :argument "branch-right" position: Posible values are
+      "branch-right", "branch-top", "branch-bottom", "aligned" or
+      "float"
+
+    **This function is obsolete. Use :func:`TreeNode.add_face`: instead**
+
+    """
     node.img_style.setdefault("_faces", {})
     if position not in FACE_POSITIONS:
         raise (ValueError, "Incorrect position") 
