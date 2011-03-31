@@ -3,6 +3,9 @@ import random
 import re
 import types 
 
+from PyQt4.QtGui import QGraphicsItem,QGraphicsRectItem, QColor, QPen, QBrush
+from PyQt4 import QtCore
+
 _LINE_TYPE_CHECKER = lambda x: x in (0,1,2)
 _SIZE_CHECKER = lambda x: isinstance(x, int)
 _COLOR_MATCH = re.compile("^#[A-Fa-f\d]{6}$")
@@ -12,7 +15,7 @@ _BOOL_CHECKER =  lambda x: isinstance(x, bool) or x in (0,1)
 
 FACE_POSITIONS = set(["branch-right", "branch-top", "branch-bottom", "float", "aligned"])
 
-__all__  = ["NodeStyle", "TreeStyle", "FaceContainer", "_leaf", "add_face_to_node"]
+__all__  = ["NodeStyle", "TreeStyle", "FaceContainer", "_leaf", "add_face_to_node", "Border", "Background"]
 
 NODE_STYLE_DEFAULT = [
     ["fgcolor",          "#0030c1",    _COLOR_CHECKER                           ],
@@ -33,6 +36,47 @@ NODE_STYLE_DEFAULT = [
 
 # _faces and faces are registered to allow deepcopy to work on nodes
 VALID_NODE_STYLE_KEYS = set([i[0] for i in NODE_STYLE_DEFAULT]) | set(["_faces", "faces"])
+
+class Border(object):
+    def __init__(self):
+        self.width = 0
+        self.line_style = 0
+        self.color = None 
+
+    def apply(self, item):
+        if self.width:
+            r = item.boundingRect()
+            border = QGraphicsRectItem(r)
+            border.setParentItem(item)
+            pen = QPen()
+            set_pen_style(pen, self.line_style)
+            pen.setWidth(self.width)
+            pen.setCapStyle(QtCore.Qt.FlatCap)
+            pen.setColor(QColor(self.color))
+            border.setPen(pen)
+            return border
+        else:
+            return None
+
+class Background(object):
+    def __init__(self):
+        self.color = None
+
+    def apply(self, item):
+        if self.color: 
+            r = item.boundingRect()
+            bg = QGraphicsRectItem(r)
+            bg.setParentItem(item)
+            pen = QPen(QColor(self.color))
+            brush = QBrush(QColor(self.color))
+            bg.setPen(pen)
+            bg.setBrush(brush)
+            bg.setFlag(QGraphicsItem.ItemStacksBehindParent)
+            return bg
+        else:
+            return None
+        
+
 
 class _ActionDelegator(object):
     """ Used to associate GUI Functions to nodes and faces """ 
@@ -243,7 +287,6 @@ class FaceContainer(dict):
     def add_face(self, face, column):
         self.setdefault(int(column), []).append(face)
 
-
 def _leaf(node):
     collapsed = hasattr(node, "img_style") and not node.img_style["draw_descendants"]
     return collapsed or node.is_leaf()
@@ -268,3 +311,13 @@ def random_color(base=None):
         base = random.random()
     R, G, B = map(lambda x: int(100*x), colorsys.hsv_to_rgb(base, s, v))
     return "#%s%s%s" %(hex(R)[2:], hex(G)[2:], hex(B)[2:])
+
+
+def set_pen_style(pen, line_style):
+    if line_style == 0:
+        pen.setStyle(QtCore.Qt.SolidLine)
+    elif line_style == 1:
+        pen.setStyle(QtCore.Qt.DashLine)
+    elif line_style == 2:
+        pen.setStyle(QtCore.Qt.DotLine)
+     

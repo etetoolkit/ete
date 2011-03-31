@@ -32,28 +32,31 @@ def sphere_map(node):
 def random_background(node):
     # Set a random background color for each node partition
     node.img_style["bgcolor"] = random_color()
-    #node.img_style["node_bgcolor"] = random_color()
-    #node.img_style["faces_bgcolor"] = random_color()
 
 def leaf_name(node):
     if node.is_leaf():
         nameF = faces.AttrFace("name")
-        nameF.border=True
+        nameF.border.width = 1
         faces.add_face_to_node(nameF, node, 0, position="branch-right")
 
 
 def aligned_faces(node):
     if node.is_leaf():
         for i in xrange(3):
-            F = faces.TextFace("ABCDEFGHIJK"[0:random.randint(1,11)] )
-            F.border = True
-            F.margin_border = True
-            F.vt_align = 0
-            F.hz_align = 0
+            F = faces.TextFace("ABCDEFGHIJK"[0:random.randint(1,11)])
+            F.border.width = 1
+            F.border.line_style = 1
+            F.margin_border.width = 1
+            F.margin_border.width = 1
+            F.margin_background.color = "darkgreen"
+            F.margin_border.width = 2
+            F.vt_align = random.randint(0,4)
+            F.hz_align = random.randint(0,4)
             F.margin_bottom = random.randint(1, 20)
             F.margin_right  = random.randint(1, 20)
             F.margin_left = random.randint(1, 20)
             F.margin_top = random.randint(1, 20)
+
             faces.add_face_to_node(F, node, i, position="aligned")
             if random.randint(0, 1):
                 faces.add_face_to_node(F, node, i, position="aligned")
@@ -74,7 +77,7 @@ t = Tree()
 t.populate(size, reuse_names=False)
 
 I = TreeStyle()
-I.mode = "rect"
+I.mode = "circular"
 I.orientation = 0
 I.layout_fn = master_ly
 I.margin_left = 100
@@ -84,7 +87,7 @@ I.margin_bottom = 50
 I.show_border = True
 I.legend_position = 4
 I.title.add_face(faces.TextFace("HOLA MUNDO", fsize=30), 0)
-I.draw_aligned_faces_as_grid = False
+I.draw_aligned_faces_as_grid = True
 
 #I.aligned_header.add_face( faces.TextFace("H1"), 0 )
 #I.aligned_header.add_face( faces.TextFace("H1"), 1 )
@@ -109,7 +112,7 @@ t2.populate(10)
 
 # Creates an alternative Tree Image set of properties
 I2 = TreeStyle()
-I2.mode = "circular"
+I2.mode = "rect"
 I2.layout_fn = tiny_ly
 I2.arc_start = 45
 I2.arc_span = 360

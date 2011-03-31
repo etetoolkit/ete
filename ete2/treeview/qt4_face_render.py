@@ -1,31 +1,35 @@
 import random
 from PyQt4 import QtCore, QtGui
+from PyQt4.QtGui import QGraphicsSimpleTextItem, QGraphicsPixmapItem, \
+    QGraphicsRectItem, QTransform, QBrush, QPen, QColor, QGraphicsItem
+
+
 from main import FACE_POSITIONS, _ActionDelegator
 
-class _TextFaceItem(QtGui.QGraphicsSimpleTextItem, _ActionDelegator):
+class _TextFaceItem(QGraphicsSimpleTextItem, _ActionDelegator):
     def __init__(self, face, node, text):
-        QtGui.QGraphicsSimpleTextItem.__init__(self, text)
+        QGraphicsSimpleTextItem.__init__(self, text)
         self.node = node
 
-class _ImgFaceItem(QtGui.QGraphicsPixmapItem, _ActionDelegator):
+class _ImgFaceItem(QGraphicsPixmapItem, _ActionDelegator):
     def __init__(self, face, node):
-        QtGui.QGraphicsPixmapItem.__init__(self)
+        QGraphicsPixmapItem.__init__(self)
         self.node = node
 
-class _BackgroundFaceItem(QtGui.QGraphicsRectItem):
+class _BackgroundFaceItem(QGraphicsRectItem):
     def __init__(self, face, node):
-        QtGui.QGraphicsRectItem.__init__(self)
+        QGraphicsRectItem.__init__(self)
         self.node = node
 
     def paint(self, painter, option, index):
         return
 
-class _FaceGroupItem(QtGui.QGraphicsRectItem): # I resisted to name this FaceBookItem :) 
+class _FaceGroupItem(QGraphicsRectItem): # I resisted to name this FaceBookItem :) 
     def __init__(self, faces, node, as_grid=False):
 
         # This caused seg. faults. in some computers. No idea why.
         # QtGui.QGraphicsItem.__init__(self, *args, **kargs) 
-        QtGui.QGraphicsRectItem.__init__(self)  
+        QGraphicsRectItem.__init__(self)  
         self.as_grid = as_grid
         self.c2max_w = {}
         self.r2max_h = {}
@@ -68,9 +72,26 @@ class _FaceGroupItem(QtGui.QGraphicsRectItem): # I resisted to name this FaceBoo
     def get_size(self):
         return self.w, self.h
 
+    def update_size(self):
+        for c, faces in self.column2faces.iteritems():
+            for r, f in enumerate(faces):
+                f.node = self.node
+                if f.type == "pixmap": 
+                    f.update_pixmap()
+                elif f.type == "item":
+                    f.update_items()
+
+                width = f._width() + f.margin_right + f.margin_left
+                height = f._height() + f.margin_top + f.margin_bottom
+                c2max_w
+                c2max_h
+
+
+
     def update_columns_size(self):
         self.sizes = {}
-        c2height = {}
+        self.c2height = {}
+
         for c, faces in self.column2faces.iteritems():
             self.sizes[c] = {}
             total_height = 0
@@ -87,7 +108,7 @@ class _FaceGroupItem(QtGui.QGraphicsRectItem): # I resisted to name this FaceBoo
                 self.c2max_w[c] = max(self.c2max_w.get(c, 0), width)
                 self.r2max_h[r] = max(self.r2max_h.get(r, 0), height)
                 total_height += height
-            c2height[c] = total_height
+            self.c2height[c] = total_height
                     
         if not self.sizes:
             return 
@@ -95,7 +116,7 @@ class _FaceGroupItem(QtGui.QGraphicsRectItem): # I resisted to name this FaceBoo
         if self.as_grid:
             self.h = max( [sum([self.r2max_h[r] for r in rows.iterkeys()]) for c, rows in self.sizes.iteritems()])
         else:
-            self.h = max( [c2height[c] for c in self.sizes.iterkeys()])
+            self.h = max( [self.c2height[c] for c in self.sizes.iterkeys()])
 
         self.w = sum(self.c2max_w.values())
       
@@ -119,21 +140,24 @@ class _FaceGroupItem(QtGui.QGraphicsRectItem): # I resisted to name this FaceBoo
         x = 0
         for c, max_w in self.c2max_w.iteritems(): 
             faces = self.column2faces.get(c, [])
+
             if self.as_grid:
                 y = 0
             else:
-                y = (self.h - ( sum([s[1] for s in self.sizes[c].values()]) )) /2
-
+                y = (self.h - self.c2height[c])/2
             for r, f in enumerate(faces):
                 w, h = self.sizes[c][r]
-                max_h = self.r2max_h[r]
+                if self.as_grid: 
+                    max_h = self.r2max_h[r]
+                else:
+                    max_h = h
 
                 f.node = self.node
                 if f.type == "text":
                     obj = _TextFaceItem(f, self.node, f.get_text())
                     font = f._get_font()
                     obj.setFont(font)
-                    obj.setBrush(QtGui.QBrush(QtGui.QColor(f.fgcolor)))
+                    obj.setBrush(QBrush(QColor(f.fgcolor)))
                     obj.setParentItem(self)
                     obj.setAcceptsHoverEvents(True)
                 elif f.type == "item":
@@ -174,15 +198,23 @@ class _FaceGroupItem(QtGui.QGraphicsRectItem): # I resisted to name this FaceBoo
                                y + y_offset + f.margin_top)
 
                 obj.rotable = f.rotable
+                f.background.apply(obj)
+                f.border.apply(obj)
+
                 if f.opacity < 1:
                     obj.setOpacity(f.opacity)
 
-                if f.border: 
-                    border = QtGui.QGraphicsRectItem(obj.boundingRect())
-                    border.setParentItem(obj)
                 if f.margin_border:
-                    border = QtGui.QGraphicsRectItem(x, y, max_w, max_h)
-                    border.setParentItem(self)
+
+                    border = f.margin_background.apply(obj)
+                    bg = f.margin_border.apply(obj)
+                    if border: 
+                        border.setRect(x, y, max_w, max_h)
+                        border.setParentItem(self)
+                    if bg:
+                        bg.setRect(x, y, max_w, max_h)
+                        bg.setParentItem(self)
+
 
                 if self.as_grid:
                     y += max_h
@@ -198,21 +230,21 @@ class _FaceGroupItem(QtGui.QGraphicsRectItem): # I resisted to name this FaceBoo
                 rect = obj.boundingRect()
                 x =  rect.width()/2
                 y =  rect.height()/2
-                obj.setTransform(QtGui.QTransform().translate(x, y).rotate(rotation).translate(-x, -y))
+                obj.setTransform(QTransform().translate(x, y).rotate(rotation).translate(-x, -y))
 
     def flip_hz(self):
         for obj in self.childItems():
             rect = obj.boundingRect()
             x =  rect.width()/2
             y =  rect.height()/2
-            obj.setTransform(QtGui.QTransform().translate(x, y).scale(-1,1).translate(-x, -y))
+            obj.setTransform(QTransform().translate(x, y).scale(-1,1).translate(-x, -y))
 
     def flip_vt(self):
         for obj in self.childItems():
             rect = obj.boundingRect()
             x =  rect.width()/2
             y =  rect.height()/2
-            obj.setTransform(QtGui.QTransform().translate(x, y).scale(1,-1).translate(-x, -y))
+            obj.setTransform(QTransform().translate(x, y).scale(1,-1).translate(-x, -y))
 
 def update_node_faces(node, n2f, img):
     # Organize all faces of this node in FaceGroups objects
@@ -239,4 +271,5 @@ def update_node_faces(node, n2f, img):
 def _leaf(node):
     collapsed = hasattr(node, "img_style") and not node.img_style["draw_descendants"]
     return collapsed or node.is_leaf()
+
 

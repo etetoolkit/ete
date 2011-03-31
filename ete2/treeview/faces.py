@@ -24,7 +24,7 @@
 from PyQt4 import QtCore, QtGui
 import numpy
 
-from main import add_face_to_node
+from main import add_face_to_node, Background, Border
 
 aafgcolors = {
     'A':"#000000" ,
@@ -110,6 +110,7 @@ __all__ = ["add_face_to_node", "Face", "TextFace", "AttrFace", "ImgFace",\
                "ProfileFace", "ValidationFace", "SequenceFace", "TreeFace",\
                "RandomFace"]
 
+
 class Face(object):
     """ Standard definition of a face node object.
 
@@ -131,11 +132,13 @@ class Face(object):
         self.pixmap = None
         self.opacity = 1
         self.rotable = True
-        self.border = False
-        self.margin_border = False
+
         self.hz_align = 0 # 0 left, 1 center, 2 right
         self.vt_align = 1
-
+        self.background = Background()
+        self.border = Border()
+        self.margin_border = Border()
+        self.margin_background = Background()
 
     def _size(self):
         if self.pixmap:

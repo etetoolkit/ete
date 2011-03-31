@@ -432,7 +432,6 @@ def add_scale(img, mainRect, parent):
         line.setLine(0, 5, length, 5)
         line2.setLine(0, 0, 0, 10)
         line3.setLine(length, 0, length, 10)
-        print img.scale
         scale_text = "%0.2f" % (float(length) / img.scale)
         scale = QtGui.QGraphicsSimpleTextItem(scale_text)
         scale.setParentItem(scaleItem)
@@ -706,8 +705,6 @@ def render_node_content(node, n2i, n2f, img):
     #item.movable_items.setParentItem(item.content)
     #item.static_items.setParentItem(item.content)
 
-
-
 def set_pen_style(pen, line_style):
     if line_style == 0:
         pen.setStyle(QtCore.Qt.SolidLine)
@@ -808,13 +805,8 @@ def render_aligned_faces(img, mainRect, parent, n2i, n2f):
     for node, fb in aligned_faces:
         item = n2i[node]
         item.mapped_items.append(fb)
-        print "***"
-        print fb.h
         if img.draw_aligned_faces_as_grid: 
             fb.setup_grid(c2max_w)
-        print fb.h
-        print "---"
-
 
         fb.render()
         fb.setParentItem(item.content)
