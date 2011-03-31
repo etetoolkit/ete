@@ -15,7 +15,7 @@ _BOOL_CHECKER =  lambda x: isinstance(x, bool) or x in (0,1)
 
 FACE_POSITIONS = set(["branch-right", "branch-top", "branch-bottom", "float", "aligned"])
 
-__all__  = ["NodeStyle", "TreeStyle", "FaceContainer", "_leaf", "add_face_to_node", "Border", "Background"]
+__all__  = ["NodeStyle", "TreeStyle", "FaceContainer", "_leaf", "add_face_to_node"]
 
 NODE_STYLE_DEFAULT = [
     ["fgcolor",          "#0030c1",    _COLOR_CHECKER                           ],
@@ -37,7 +37,7 @@ NODE_STYLE_DEFAULT = [
 # _faces and faces are registered to allow deepcopy to work on nodes
 VALID_NODE_STYLE_KEYS = set([i[0] for i in NODE_STYLE_DEFAULT]) | set(["_faces", "faces"])
 
-class Border(object):
+class _Border(object):
     def __init__(self):
         self.width = 0
         self.line_style = 0
@@ -58,7 +58,7 @@ class Border(object):
         else:
             return None
 
-class Background(object):
+class _Background(object):
     def __init__(self):
         self.color = None
 
@@ -100,6 +100,8 @@ class _ActionDelegator(object):
         self._delegate = None
       
 class NodeStyle(dict):
+    """ A dictionary with all valid node graphical attributes.  """
+
     def __init__(self, *args, **kargs):
 
         super(NodeStyle, self).__init__(*args, **kargs)
@@ -145,13 +147,131 @@ class NodeStyle(dict):
         super(NodeStyle, self).__setitem__("_faces", {})
 
 class TreeStyle(object):
+    """ 
+    Contains all the general image properties used to render a tree
 
+    **TREE SHAPE AND IMAGE DESIGN**
+        
+    :var mode="r": Valid modes are "c" (circular) or "r"
+      (rectangular).
+
+    :var layout_fn=None: Layout function used to dynamically control
+      the aspect of nodes. Valid values are: None or a pointer to a method,
+      function, etc.
+                   
+    :var orientation=0: If 0, tree is drawn from left-to-right. If
+       1, tree is drawn from right-to-left. This property only makes
+       sense when "rect" mode is used.
+    
+    :var scale=None: Scale used to convert branch lengths to
+      pixels. If 'None', the scale will be calculated using the
+      "tree_width" attribute (read bellow)
+
+
+    :var tree_width=200: Total width, in pixels, that tree
+      branches are allowed to used. This is, the distance in
+      pixels from root to the most distant leaf. If set, this
+      value will be used to automatically calculate the branch
+      scale.  In practice, increasing this number will cause an
+      X-zoom in.
+
+    :var min_leaf_separation=1: Min separation, in pixels, between
+      to adjacent branches
+
+    :var branch_vertical_margin=0: Leaf branch separation margin,
+      in pixels. This will add a separation of X pixels between
+      adjacent leaf branches. In practice this produces a Y-zoom
+      in.
+
+    :var arc_start=0: When circular trees are drawn, this defines
+      the starting angle (in degrees) from which leaves are
+      distribute (clock-wise) around the total arc. 0 = 3 o'clock
+
+    :var arc_span=360: Total arc used to draw circular trees (in
+      degrees)
+
+    :var self.margin_left=0: Left tree image margin, in pixels
+    :var self.margin_right=0: Right tree image margin, in pixels
+    :var self.margin_top=0: Top tree image margin, in pixels
+    :var self.margin_bottom=0: Bottom tree image margin, in pixels
+
+
+    **TREE BRANCHES**
+
+
+    :var complete_branch_lines_when_necesary=True: True or False.
+      When top-branch and bottom-branch faces are larger than
+      branch length, branch line can be completed. Also, when
+      circular trees are drawn
+    :var extra_branch_line_type=2:  0 solid, 1 dashed, 2 dotted
+    :var extra_branch_line_color="gray": RGB or SVG color name
+
+    
+    :var force_topology = False: Convert tree branches to a fixed length, thus allowing to
+      observe the topology of tight nodes
+
+
+    :var draw_guiding_lines=True: Draw guidelines from leaf nodes
+      to aligned faces
+    
+    :var guiding_lines_type=2: 0 solid, 1 dashed, 2 dotted
+    :var guiding_lines_color="gray": RGB color code  or SVG color name
+
+    **FACES**
+
+    :var draw_aligned_faces_as_grid=True: Aligned faces will be
+      drawn as a table, considering all columns in all node faces.
+
+    
+    :var floating_faces_under_tree=False: By default, floating
+      faces are expected to be transparent, so they can be plotted
+      directly on the tree image. However, you can also render all
+      floating faces under the tree to ensure total tree topology
+      visibility
+
+    :var children_faces_on_top=True: When floating faces from
+      different nodes overlap, children faces are drawn on top of
+      parent faces. This can be reversed by setting this attribute
+      to false.
+
+    **Addons**
+
+    :var show_border=False: Draw a border around the whole tree
+
+    :var show_scale=True: Include the scale legend in the tree
+      image
+
+    :var show_leaf_name=False: Automatically adds a text Face to
+      leaf nodes showing their names
+
+    :var show_branch_length=False: Automatically adds branch
+      length information on top of branches
+
+    :var show_branch_support=False: Automatically adds branch
+      support text in the bottom of tree branches
+
+
+    Initialize aligned face headers
+
+    :var aligned_header: 
+    :var aligned_foot: 
+
+    :var legend:
+
+    :var self.legend_position=4: TopLeft corner if 1, TopRight
+      if 2, BottomLeft if 3, BottomRight if 4
+
+    
+    :var title: A text string that will be draw as the Tree title
+
+    """
+   
     def __init__(self):
         # :::::::::::::::::::::::::
         # TREE SHAPE AND SIZE
         # :::::::::::::::::::::::::
         
-        # Valid modes are : "circular" or "rect"
+        #: Valid modes are : "circular" or "rect"
         self.mode = "rect"
 
         # Layout function used to dynamically control the aspect of

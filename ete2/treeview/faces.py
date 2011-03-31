@@ -24,9 +24,9 @@
 from PyQt4 import QtCore, QtGui
 import numpy
 
-from main import add_face_to_node, Background, Border
+from main import add_face_to_node, _Background, _Border
 
-aafgcolors = {
+_aafgcolors = {
     'A':"#000000" ,
     'R':"#000000" ,
     'N':"#000000" ,
@@ -54,7 +54,7 @@ aafgcolors = {
     '-':"#000000",
 }
 
-aabgcolors = {
+_aabgcolors = {
     'A':"#C8C8C8" ,
     'R':"#145AFF" ,
     'N':"#00DCDC" ,
@@ -82,7 +82,7 @@ aabgcolors = {
     '-':"#FFFFFF",
     }
 
-ntfgcolors = {
+_ntfgcolors = {
     'A':'#000000',
     'G':'#000000',
     'I':'#000000',
@@ -94,7 +94,7 @@ ntfgcolors = {
     ' ':"#000000"
     }
 
-ntbgcolors = {
+_ntbgcolors = {
     'A':'#A0A0FF',
     'G':'#FF7070',
     'I':'#80FFFF',
@@ -107,7 +107,7 @@ ntbgcolors = {
 }
 
 __all__ = ["add_face_to_node", "Face", "TextFace", "AttrFace", "ImgFace",\
-               "ProfileFace", "ValidationFace", "SequenceFace", "TreeFace",\
+               "ProfileFace", "SequenceFace", "TreeFace",\
                "RandomFace"]
 
 
@@ -135,10 +135,10 @@ class Face(object):
 
         self.hz_align = 0 # 0 left, 1 center, 2 right
         self.vt_align = 1
-        self.background = Background()
+        self.background = _Background()
         self.border = Border()
-        self.margin_border = Border()
-        self.margin_background = Background()
+        self.margin_border = _Border()
+        self.margin_background = _Background()
 
     def _size(self):
         if self.pixmap:
@@ -167,8 +167,8 @@ class Face(object):
 class TextFace(Face):
     """ Creates a new text face object.
 
-    Arguments description
-    ---------------------
+
+
     text:     Text to be drawn
     ftype:    Font type, e.g. Arial, Verdana, Courier, (default="Verdana")
     fsize:    Font size, e.g. 10,12,6, (default=10)
@@ -192,14 +192,6 @@ class TextFace(Face):
         self.fsize = fsize
         self.fstyle = fstyle
         self.penwidth = penwidth
-        #self.pen         = QtGui.QPen(QtGui.QColor(fgcolor))
-        #self.pen.setWidth(penwidth)
-        #if not bgcolor:
-        #    self.bgcolor = QtGui.QColor(None)
-        #else:
-        #    self.bgcolor = QtGui.QColor(bgcolor)
-        #self.fgcolor = QtGui.QColor(fgcolor)
-        #self.font    = QtGui.QFont(ftype,fsize)
 
     def _get_font(self):
         font = QtGui.QFont(self.ftype, self.fsize)
@@ -226,8 +218,6 @@ class TextFace(Face):
 class AttrFace(TextFace):
     """ Creates a new text attribute face object.
 
-    Arguments description
-    ---------------------
     attr:     Node's attribute that will be drawn as text
     ftype:    Font type, e.g. Arial, Verdana, Courier, (default="Verdana")
     fsize:    Font size, e.g. 10,12,6, (default=10)
@@ -260,8 +250,6 @@ class AttrFace(TextFace):
 class ImgFace(Face):
     """ Creates a new image face object.
 
-    Arguments description
-    ---------------------
 
     img_file: Image file in png,jpg,bmp format
     """
@@ -277,8 +265,6 @@ class ImgFace(Face):
 class ProfileFace(Face):
     """ Creates a new vector profile face object.
 
-    Arguments description
-    ---------------------
 
     max_v:    maximum value used to build the build the plot scale.
     max_v:    manimum value used to build the build the plot scale.
@@ -696,14 +682,12 @@ class ProfileFace(Face):
 class SequenceFace(Face):
     """ Creates a new molecular sequence face object.
 
-    Arguments description
-    ---------------------
     seq:     Sequence string to be drawn
     seqtype: Type of sequence: "nt" or "aa"
     fsize:   Font size,  (default=10)
     """
 
-    def __init__(self, seq, seqtype, fsize=10, aafg=aafgcolors,  aabg=aabgcolors, ntfg=ntfgcolors, ntbg=ntbgcolors):
+    def __init__(self, seq, seqtype, fsize=10, aafg=_aafgcolors,  aabg=_aabgcolors, ntfg=_ntfgcolors, ntbg=_ntbgcolors):
         Face.__init__(self)
         self.seq  = seq
         self.name = "sequence"
