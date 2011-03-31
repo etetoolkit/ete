@@ -11,7 +11,9 @@ class Children(list):
         item.nexml_edge.source = item.nexml_node.id
 
 class NexMLTree(PhyloTree):
-    ''' Special PhyloTree object with nexml support '''
+    """ 
+    Special PhyloTree object with nexml support 
+    """
 
     def __repr__(self):
         return "NexML ETE tree <%s>" %hex(hash(self))

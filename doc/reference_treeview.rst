@@ -1,3 +1,4 @@
+.. module:: ete_dev.treeview
 
 *****************
 treeview module 
@@ -8,7 +9,6 @@ Main functions
 =================
 
 .. autofunction:: ete_dev.treeview.main.add_face_to_node
-
 
 =========================
 Tree and Node Styles

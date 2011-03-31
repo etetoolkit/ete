@@ -7,7 +7,6 @@
 NeXML 
 ************************
 
-
 NeXML(http://nexml.org) is an exchange standard for representing
 phyloinformatic data inspired by the commonly used NEXUS format, but
 more robust and easier to process.
@@ -135,7 +134,4 @@ conversion between both formats.
    tree_collection.add_tree(nexml_tree)
    nexml_project.add_trees(tree_collection)
    
-.. module:: ete_dev.phyloxml
-  :synopsis: Reading and writing support for the PhyloXML format
-.. moduleauthor:: Jaime Huerta-Cepas
 

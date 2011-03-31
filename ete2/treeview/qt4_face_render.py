@@ -3,7 +3,6 @@ from PyQt4 import QtCore, QtGui
 from PyQt4.QtGui import QGraphicsSimpleTextItem, QGraphicsPixmapItem, \
     QGraphicsRectItem, QTransform, QBrush, QPen, QColor, QGraphicsItem
 
-
 from main import FACE_POSITIONS, _ActionDelegator
 
 class _TextFaceItem(QGraphicsSimpleTextItem, _ActionDelegator):
@@ -71,22 +70,6 @@ class _FaceGroupItem(QGraphicsRectItem): # I resisted to name this FaceBookItem 
 
     def get_size(self):
         return self.w, self.h
-
-    def update_size(self):
-        for c, faces in self.column2faces.iteritems():
-            for r, f in enumerate(faces):
-                f.node = self.node
-                if f.type == "pixmap": 
-                    f.update_pixmap()
-                elif f.type == "item":
-                    f.update_items()
-
-                width = f._width() + f.margin_right + f.margin_left
-                height = f._height() + f.margin_top + f.margin_bottom
-                c2max_w
-                c2max_h
-
-
 
     def update_columns_size(self):
         self.sizes = {}

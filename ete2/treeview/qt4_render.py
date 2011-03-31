@@ -214,7 +214,6 @@ def render(root_node, img, hide_root=False):
     last_rotation = img.arc_start
     layout_fn = img._layout_handler
     
-    #parent = QtGui.QGraphicsRectItem(0, 0, 0, 0, None)
     parent = _TreeItem()
     n2i = parent.n2i # node to items
     n2f = parent.n2f # node to faces

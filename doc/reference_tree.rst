@@ -6,7 +6,6 @@ main ete2 module
 
 .. autoclass:: ete_dev.TreeNode
    :members:
-   :undoc-members: 
+   :no-undoc-members: 
    :inherited-members:
    :show-inheritance:
-

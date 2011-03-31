@@ -368,18 +368,24 @@ class TreeNode(object):
             self.children[0].delete()
                 
     def iter_leaves(self):
-        """ Returns an iterator over the leaves under this node. """
+        """ 
+        Returns an iterator over the leaves under this node. 
+        """
         for n in self.traverse(strategy="preorder"):
             if n.is_leaf():
                 yield n
 
     def iter_leaf_names(self):
-        """ Returns an iterator over the leaf names under this node. """
+        """ 
+        Returns an iterator over the leaf names under this node. 
+        """
         for n in self.iter_leaves():
             yield n.name
 
     def iter_descendants(self, strategy="levelorder"):
-        """ Returns an iterator over descendant nodes. """
+        """ 
+        Returns an iterator over descendant nodes. 
+        """
         for n in self.traverse(strategy=strategy):
             if n != self:
                 yield n
@@ -447,19 +453,25 @@ class TreeNode(object):
         if len(self.children)>1:
             self.children.reverse()
     def get_children(self):
-        """ Returns an independent list of node's children. """
+        """ 
+        Returns an independent list of node's children. 
+        """
         return [ch for ch in self.children]
 
     def get_sisters(self):
-        """ Returns an indepent list of sister nodes. """
+        """ 
+        Returns an indepent list of sister nodes. 
+        """
         if self.up!=None:
             return [ch for ch in self.up.children if ch!=self]
         else:
             return []
 
     def describe(self):
-        """ Prints general information about this node and its
-        connections."""
+        """ 
+        Prints general information about this node and its
+        connections.
+        """
         if len(self.get_tree_root().children)==2:
             rooting = "Yes"
         elif len(self.get_tree_root().children)>2:
@@ -475,7 +487,8 @@ class TreeNode(object):
             "with a branch distance of", max_dist
 
     def write(self, features=None, outfile=None, format=0):
-        """ Returns the newick representation of this node
+        """ 
+        Returns the newick representation of this node
         topology. Several arguments control the way in which extra
         data is shown for every node:
 
@@ -882,9 +895,11 @@ class TreeNode(object):
         self.children.sort()
 
     def unroot(self):
-        """ Unroots this node. This function is intented to be used over
+        """ 
+        Unroots this node. This function is intented to be used over
         the absolute tree root node, but it can be also be applied to any
-        other internal node. """
+        other internal node. 
+        """
         # if is rooted
         if not self.is_root():
             print >>sys.stderr, "Warning. You are unrooting an internal node.!!"
@@ -898,8 +913,9 @@ class TreeNode(object):
 
     def show(self, layout=None, \
                img_properties=None):
-        """ Begins an interative session to visualize this node
-        structure."""
+        """ 
+        Begins an interative session to visualize this node structure.
+        """
         try:
             from ete_dev.treeview import drawer
             from ete_dev.treeview.main import TreeStyle
@@ -918,7 +934,9 @@ class TreeNode(object):
 
     def render(self, file_name, layout=None, w=None, h=None, \
                        img_properties=None, header=None):
-        """ Renders the tree structure into an image file. """
+        """ 
+        Renders the tree structure into an image file. 
+        """
         try:
             from ete_dev.treeview import drawer
             from ete_dev.treeview.main import TreeStyle
@@ -938,7 +956,9 @@ class TreeNode(object):
                                    header=header)
 
     def copy(self):
-        """ Returns an exact and complete copy of the node."""
+        """ 
+        Returns an exact and complete copy of the node.
+        """
         parent = self.up
         self.up = None
         new_node = copy.deepcopy(self)
@@ -984,7 +1004,8 @@ class TreeNode(object):
             return ([char1 + '-' + self.name], 0)
 
     def get_ascii(self, show_internal=True, compact=False):
-        """Returns a string containing an ascii drawing of the tree.
+        """
+        Returns a string containing an ascii drawing of the tree.
 
         Arguments:
         - show_internal: includes internal edge names.
@@ -1022,8 +1043,10 @@ class TreeNode(object):
             counter += 1
 
     def convert_to_ultrametric(self, tree_length, strategy="balanced"):
-        ''' Converts a tree to ultrametric topology (all leaves must
-        have the same distance to root).'''
+        """
+        Converts a tree to ultrametric topology (all leaves must
+        have the same distance to root).
+        """
 
         # pre-calculate how many splits remain under each node
         node2max_depth = {}

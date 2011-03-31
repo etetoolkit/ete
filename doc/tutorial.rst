@@ -12,6 +12,5 @@ Contents:
    tutorial_phylogeny
    tutorial_clustering
    tutorial_phylomedb
-   tutorial_nexml
-   tutorial_phyloxml
+   tutorial_xml
    tutorial_webplugin
