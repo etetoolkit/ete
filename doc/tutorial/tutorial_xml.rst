@@ -3,7 +3,8 @@ Phylogenetic XML standards
 ************************************
 .. versionadded:: 2.1
 
-From version 2.1, ETE provides support for NeXML and PhyloXML
+From version 2.1, ETE provides support for `NeXML
+<http://nexml.org/>`_ and `PhyloXML <http://phyloxml.org/>`_
 phylogenetic XML standards, both reading and writing. These standards
 allow to encode complex phylogenetic data, and therefore they are not
 limited to trees. Although ETE is mainly focused on allowing
@@ -30,7 +31,12 @@ original XML hierarchy.
    tutorial_nexml
    tutorial_phyloxml
 
+.. note:: 
 
-NeXML and PhyloXML python parsers are possible thanks to the work of
-Dave Kulhman on the generateDS.py application. 
+   NeXML and PhyloXML python parsers are possible thanks to the work
+   of Dave Kulhman on the `generateDS.py
+   <http://http://www.rexx.com/~dkuhlman/generateDS.html>`_
+   application. Thanks Dave! ;-)
+
+
 
