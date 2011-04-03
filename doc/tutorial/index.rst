@@ -1,4 +1,4 @@
-ETE's tutorial
+The ETE tutorial
 ============================================================
 
 Contents:

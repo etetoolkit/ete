@@ -108,12 +108,10 @@ _ntbgcolors = {
 
 __all__ = ["Face", "TextFace", "AttrFace", "ImgFace",\
                "ProfileFace", "SequenceFace", "TreeFace",\
-               "RandomFace"]
-
+               "RandomFace", "ItemFace"]
 
 class Face(object):
     """ 
-
     Standard definition of a Face node object.
 
     This class is not functional and it should only be used to create
@@ -257,8 +255,8 @@ class AttrFace(TextFace):
                                      self.text_suffix]))
 
 class ImgFace(Face):
-    """ Creates a new image face object.
-
+    """ 
+    Creates a new image face object.
 
     :argument img_file: Image file in png,jpg,bmp format
 
@@ -274,7 +272,6 @@ class ImgFace(Face):
 
 class ProfileFace(Face):
     """ 
-
     A profile Face for ClusterNodes 
 
     :argument max_v:    maximum value used to build the build the plot scale.
@@ -772,6 +769,8 @@ class SequenceFace(Face):
 
 class TreeFace(Face):
     """ 
+    .. versionadded:: 2.1
+
     Creates a Face containing a Tree object. 
 
     :argument tree: An ETE Tree instance (Tree, PhyloTree, etc...)
@@ -817,6 +816,8 @@ class _SphereItem(QtGui.QGraphicsEllipseItem):
 
 class CircleFace(Face):
     """
+    .. versionadded:: 2.1
+
     Creates a Circle or Sphere Face.
 
     :arguments radius: integer number defining the radius of the face
@@ -846,10 +847,14 @@ class CircleFace(Face):
 
 class ItemFace(Face):
     """
+    .. versionadded:: 2.1
+
     Creates a QtGraphicsItem Face. 
 
     :arguments constructor: A pointer to a function or methods
       returning a QGraphicsItem based object
+     
+
     """
 
     def __init__(self, constructor, *args, **kargs):

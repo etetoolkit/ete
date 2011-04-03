@@ -101,7 +101,10 @@ class _ActionDelegator(object):
         self._delegate = None
       
 class NodeStyle(dict):
-    """ A dictionary with all valid node graphical attributes.  
+    """ 
+    .. versionadded:: 2.1    
+
+    A dictionary with all valid node graphical attributes.  
 
     :argument #0030c1 fgcolor: RGB code or SVG color name
     :argument #FFFFFF bgcolor: RGB code or SVG color name
@@ -166,6 +169,8 @@ class NodeStyle(dict):
 
 class TreeStyle(object):
     """ 
+    .. versionadded:: 2.1
+
     Contains all the general image properties used to render a tree
 
     **TREE SHAPE AND IMAGE DESIGN**
@@ -426,6 +431,8 @@ class TreeStyle(object):
         
 class FaceContainer(dict):
     """
+    .. versionadded:: 2.1
+
     Use this object to create a grid of faces. You can add faces to different columns. 
     """
 
