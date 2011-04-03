@@ -1,13 +1,14 @@
-Welcome to Environment for Tree Exploration's documentation!
+Environment for Tree Exploration (ETE) documentation
 ============================================================
 
 .. toctree::
-   :maxdepth: 2
 
-   tutorial
-   reference
+   tutorial/tutorial
+   reference/reference 
+
    changelog
    cheatsheet
+
 
 Indices and tables
 ==================

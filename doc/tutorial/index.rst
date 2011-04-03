@@ -6,7 +6,6 @@ Contents:
 .. toctree::
    :maxdepth: 3
 
-   tutorial_about
    tutorial_trees
    tutorial_drawing
    tutorial_phylogeny
