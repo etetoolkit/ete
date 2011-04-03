@@ -20,9 +20,10 @@
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
 # #END_LICENSE#############################################################
+
 """
 This module defines the PhyloNode dataytype to manage phylogenetic
-tree. It inheritates the coretype TreeNode and add some speciall
+trees. It inheritates the coretype TreeNode and add some speciall
 features to the the node instances.
 """
 
@@ -40,8 +41,42 @@ def _parse_species(name):
     return name[:3]
 
 class PhyloNode(TreeNode):
-    """ Re-implementation of the standart TreeNode instance. It adds
-    attributes and methods to work with phylogentic trees. """
+    """ 
+    .. currentmodule:: ete_dev
+    Extends the standard :class:`TreeNode` instance. It adds
+    specific attributes and methods to work with phylogentic trees.
+
+    :argument newick: Path to the file containing the tree or, alternatively,
+      the text string containing the same information.
+
+    :argument alignment: file containing a multiple sequence alignment. 
+
+    :argument alg_format:  "fasta", "phylip" or "iphylip" (interleaved)
+
+    :argument format: sub-newick format 
+
+
+      .. table::                                               
+
+          ======  ============================================== 
+          FORMAT  DESCRIPTION                                    
+          ======  ============================================== 
+          0        flexible with support values                  
+          1        flexible with internal node names             
+          2        all branches + leaf names + internal supports 
+          3        all branches + all names                      
+          4        leaf branches + leaf names                    
+          5        internal and leaf branches + leaf names       
+          6        internal branches + leaf names                
+          7        leaf branches + all names                     
+          8        all names                                     
+          9        leaf names                                    
+          100      topology only                                 
+          ======  ============================================== 
+
+    :returns: a tree node object which represents the base of the tree.
+    """
+
 
     def _get_species(self):
         if self._speciesFunction:
@@ -61,10 +96,20 @@ class PhyloNode(TreeNode):
     # This tweak overwrites the native 'name' attribute to create a
     # property that updates the species code every time name is
     # changed
+
+    #: .. currentmodule:: ete_dev.phylo
+    #: Species code associated to the node. This property can be
+    #: automatically extracted from the TreeNode.name attribute or
+    #: manually set (see :func:`PhyloNode.set_species_naming_function`)
     species = property(fget = _get_species, fset = _set_species)
 
     def __init__(self, newick=None, alignment=None, alg_format="fasta", \
                  sp_naming_function=_parse_species, format=0):
+
+
+
+
+
         # _update names?
         self._name = "NoName"
         self._species = "Unknown"
@@ -85,6 +130,9 @@ class PhyloNode(TreeNode):
         return "PhyloTree node (%s)" %hex(self.__hash__())
 
     def set_species_naming_function(self, fn):
+        """ 
+        None
+        """
         for n in self.iter_leaves():
             n.features.add("species")
             if fn:

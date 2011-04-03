@@ -1,9 +1,13 @@
+.. currentmodule:: ete_dev.phylo
+
+===============
 phylo module
 ===============
 
-.. automodule:: ete_dev.phylo
+.. autoclass:: PhyloNode
    :members:
    :undoc-members:
-   :inherited-members:
    :show-inheritance:
+
+.. autoclass:: PhyloTree
 

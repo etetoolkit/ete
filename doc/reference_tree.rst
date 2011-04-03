@@ -1,11 +1,11 @@
-main ete2 module 
+Tree class
 ==================================
 
-.. automodule:: ete_dev
-   :members:
+.. currentmodule:: ete_dev
 
 .. autoclass:: ete_dev.TreeNode
+   :inherited-members:
    :members:
    :no-undoc-members: 
-   :inherited-members:
-   :show-inheritance:
+
+.. autoclass:: ete_dev.Tree

@@ -21,3 +21,5 @@
 #
 # #END_LICENSE#############################################################
 
+from main import *
+from faces import *

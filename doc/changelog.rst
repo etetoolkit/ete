@@ -1,4 +1,5 @@
 .. module:: ete_dev
+.. currentmodule:: ete_dev
 
 *********************************
 Changelog ete 2.1
@@ -20,13 +21,13 @@ Changelog ete 2.1
    * Added Tree Faces (tree instances can be drawn as faces of other trees)
    * Added support for QGraphicsItem based faces
    * AttrFace accepts prefix and suffix text 
-   * Added :class:`TreeImage` class to control general aspects regarding tree drawing
+   * Added :class:`treeview.TreeImage` class to control general aspects regarding tree drawing
    * added full support for SVG image rendering   
 
 * Core methods:
-   * Added :func:`Tree.copy`:  returns an exact and independent copy of node and all its attributes
-   * Added :func:`Tree.convert_to_ultrametric`: converts all branch lengths to allow leaves to be equidistant to root
-   * Added :func:`Tree.sort_descendants`: sort tree branches according to node names.
+   * Added :func:`TreeNode.copy`:  returns an exact and independent copy of node and all its attributes
+   * Added :func:`TreeNode.convert_to_ultrametric`: converts all branch lengths to allow leaves to be equidistant to root
+   * Added :func:`TreeNode.sort_descendants`: sort tree branches according to node names.
    * nodes can now be fully exported using cPickle 
    * newick parser can read distances and support values using scientific notation
 
@@ -42,11 +43,11 @@ Changelog ete 2.1
 
 * Bug Fixes and improvements: 
   
-   * Fix: :func:`Tree.get_common_ancestor` accepts a list of nodes 
+   * Fix: :func:`TreeNode.get_common_ancestor` accepts a list of nodes 
    * Fix: Fast scroll based zooming produced tree inversion 
    * Fix: Phylip parser does not truncate long names by default
    * Fix: "if not node: do something" syntax was using a len(node)
      test, which made it totally inefficient. Now, any node instance
      returns always True.
 
-
+* :func:`TreeNode.swap_childs` method has changed to :func:`TreeNode.swap_children`

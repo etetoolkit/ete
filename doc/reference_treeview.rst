@@ -1,4 +1,5 @@
 .. module:: ete_dev.treeview
+.. currentmodule:: ete_dev.treeview
 
 *****************
 treeview module 
@@ -8,15 +9,18 @@ treeview module
 Main functions
 =================
 
-.. autofunction:: ete_dev.treeview.main.add_face_to_node
+.. autofunction:: add_face_to_node
 
 =========================
 Tree and Node Styles
 =========================
 
-.. autoclass:: ete_dev.treeview.main.TreeStyle
+.. autoclass:: TreeStyle
 
-.. autoclass:: ete_dev.treeview.main.NodeStyle
+.. autoclass:: NodeStyle
+
+.. autoclass:: FaceContainer
+   :members:
 
 =========================
 Faces

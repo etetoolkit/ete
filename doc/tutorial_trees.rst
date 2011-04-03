@@ -1,7 +1,7 @@
 .. module:: ete_dev
   :synopsis: provides main objects and modules
 .. moduleauthor:: Jaime Huerta-Cepas
-
+.. currentmodule:: ete_dev
 
 *********************************
 Working With Tree Data Structures
@@ -96,7 +96,7 @@ Reading newick trees
 -----------------------
 
 In order to load a tree from a newick text string you can use the
-constructor :class:`Tree`, provided by the main module
+constructor :class:`TreeNode` or its :class:`Tree` alias, provided by the main module
 :mod:`ete_dev`. You will only need to pass a text string containing
 the newick structure and the format that should be used to parse it (0
 by default). Alternatively, you can pass the path to a text file
@@ -122,7 +122,7 @@ Writing newick trees
 Any ETE tree instance can be exported using newick notation using the
 :func:`Tree.write` method, which is available in any tree node
 instance. It also allows for format selection
-(:ref:`sub:newick-format`), so you can use the same function to
+(:ref:`sub:newick-formats`), so you can use the same function to
 convert between newick formats.
 
 ::
@@ -193,7 +193,6 @@ tree node instance:
 
 In addition, several methods are provided to perform basic operations
 on tree node instances:
-
 
 .. table:: 
 
@@ -281,57 +280,140 @@ provides a number of methods to search for specific nodes or to
 navigate over the hierarchical structure of a tree.
 
 
+
+
 Getting Leaves, Descendants and Node's Relatives
 ------------------------------------------------
 
-Any tree instance contains several functions to access its
-descendants. This can be done in a single step (**get_** methods) or
-by iteration (**iter_** methods, recommended when trees are very
-large). Available methods are self explanatory:
+TreeNode instances contain several functions to access their
+descendants. Available methods are self explanatory:
 
-.. table:: Browsing method
+.. autosummary::  
 
-  =======================================  ==================================================================================================
-  method                                   Description
-  =======================================  ==================================================================================================
-  :func:`TreeNode.iter_descendants`             Iterates over all descendant nodes excluding the root node tree in postorder way 
-  :func:`TreeNode.iter_leaves`                  Iterates only over leaf nodes
-  :func:`TreeNode.get_descendants`              Returns the list of nodes under tree
-  :func:`TreeNode.get_leaves`                   Returns the list leaf nodes under tree
-  :func:`TreeNode.get_leaf_names`               Returns the list leaf names under tree
-  :func:`TreeNode.get_children`                 Returns the list of first level children nodes of tree
-  :func:`TreeNode.get_sisters`                  Returns the list of sister branches/nodes
-  =======================================  ==================================================================================================
+   :signatures:
+   TreeNode.get_descendants
+   TreeNode.get_leaves    
+   TreeNode.get_leaf_names
+   TreeNode.get_children
+   TreeNode.get_sisters
+
+
+Traversing (browsing) trees
+---------------------------
+
+
+Often, when processing trees, all nodes need to be visited. This is
+called tree traversing. There are different ways to traverse a tree
+structure depending on the order in which children nodes are
+visited. ETE implements the three most common strategies:
+**preorder**, **levelorder** and **postorder**. The following scheme
+shows the differences in the strategy for visiting nodes (note that in
+both cases the whole tree is browsed):
+
+* preorder: 1)Visit the root, 2) Traverse the left subtree , 3) Traverse the right subtree.
+* postorder: 1) Traverse the left subtree , 2) Traverse the right subtree, 3) Visit the root 
+* levelorder (default): every node on a level before is visited going to a lower level 
+
+.. note::
+
+    * Preorder traversal sequence: F, B, A, D, C, E, G, I, H (root, left, right)
+    * Inorder traversal sequence: A, B, C, D, E, F, G, H, I (left, root, right); note how this produces a sorted sequence
+    * Postorder traversal sequence: A, C, E, D, B, H, I, G, F (left, right, root)
+    * Level-order traversal sequence: F, B, G, A, D, I, C, E, H
+
+Every node in a tree includes a :func:`TreeNode.traverse` method, which can be
+used to visit, one by one, every node node under the current
+partition. In addition, the :func:`TreeNode.iter_descendants` method can be set
+to use either a post- or a preorder strategy.  The only different
+between :func:`TreeNode.traverse` and :func:`TreeNode.iter_descendants` is that the
+first will include the root node in the iteration.
+
+
+.. autosummary::
+
+   :signature:
+   TreeNode.traverse
+   TreeNode.iter_descendants
+   TreeNode.iter_leaves
+
+**strategy** can take one of the following values: ``"postorder"``, ``"preorder"`` or  ``"levelorder"``
+
+::
+
+   # we load a tree
+   t = Tree('((((H,K)D,(F,I)G)B,E)A,((L,(N,Q)O)J,(P,S)M)C);', format=1)
+    
+   for node in t.traverse("postorder"):
+     # Do some analysis on node
+     print node.name
+     
+   # If we want to iterate over a tree excluding the root node, we can
+   # use the iter_descendant method
+   for node in t.iter_descendants("postorder"):
+     # Do some analysis on node
+     print node.name
+
+
+Additionally, you can implement your own traversing function using the
+structural attributes of nodes. In the following example, only nodes
+between a given leaf and the tree root are visited.
+
+::
+
+   from ete_dev import Tree
+   tree = Tree( "(A:1,(B:1,(C:1,D:1):0.5):0.5);" )
+    
+   # Browse the tree from a specific leaf to the root
+   node = t.search_nodes(name="C")[0]
+   while node:
+      print node
+      node = node.up   
+
+
+Iterating instead of Getting
+----------------------------
+
+As commented previously, methods starting with **get_** are all
+prepared to return results as a closed list of items. This means, for
+instance, that if you want to process all tree leaves and you ask for
+them using the :func:`TreeNode.get_leaves` method, the whole tree
+structure will be browsed before returning the final list of terminal
+nodes.  This is not a problem in most of the cases, but in large
+trees, you can speed up the browsing process by using iterators.
+
+Most **get_** methods have their homologous iterator functions. Thus,
+:func:`TreeNode.get_leaves` could be substituted by :func:`TreeNode.iter_leaves`. The same
+occurs with :func:`TreeNode.iter_descendants` and :func:`TreeNode.iter_search_nodes`.
+
+When iterators are used (note that is only applicable for looping),
+only one step is processed at a time. For instance,
+:func:`TreeNode.iter_search_nodes` will return one match in each iteration. In
+practice, this makes no differences in the final result, but it may
+increase the performance of loop functions (i.e. in case of finding a
+match which interrupts the loop).
 
 
 Finding nodes by their attributes
 ------------------------------------
 
 Both terminal and internal nodes can be located by searching along the
-tree structure. You can find, for instance, all nodes matching a given
-name.  However, any node's attribute can be used as a filter to find
-nodes.
-
-In addition, ETE implements a built-in method to find the **first node
-matching a given name**, which is one of the most common tasks needed
-for tree analysis.  This can be done using a special syntaxis: ``node
-& "name"``. Thus, ``Tree&"A"`` will always return the first leaf node
-whose name is "A" (even if there are mode "A" nodes) in the same tree.
-
-Other methods are also available that restrict search criteria.
+tree structure. Several methods are available:
 
 .. table:: 
 
-  ==========================================       ==============================================================================================================
-  method                                            Description
-  ==========================================       ==============================================================================================================
-  t.search_nodes(attr=value)                        Returns a list of nodes in which attr is equal to value, i.e. name=A
-  t.iter_search_nodes(attr=value)                   Iterates over all matching nodes matching attr=value. Faster when you only need to get the first occurrence
-  t.get_leaves_by_name(name)                        Returns a list of leaf nodes matching a given name. Only leaves are browsed.
-  t.get_common_ancestor(node1, node2, node3)        Return the first internal node grouping node1, node2 and node3
-  t&"A"                                             Shortcut for t.search_nodes(name="A")[0]
-  ==========================================       ==============================================================================================================
+  ==============================================       ==============================================================================================================
+  method                                                Description
+  ==============================================       ==============================================================================================================
+  t.search_nodes(attr=value)                            Returns a list of nodes in which attr is equal to value, i.e. name=A
+  t.iter_search_nodes(attr=value)                       Iterates over all matching nodes matching attr=value. Faster when you only need to get the first occurrence
+  t.get_leaves_by_name(name)                            Returns a list of leaf nodes matching a given name. Only leaves are browsed.
+  t.get_common_ancestor([node1, node2, node3])          Return the first internal node grouping node1, node2 and node3
+  t&"A"                                                 Shortcut for t.search_nodes(name="A")[0]
+  ==============================================       ==============================================================================================================
 
+
+Search_all nodes matching a given criteria
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A custom list of nodes matching a given name can be easily obtain
 through the :func:`TreeNode.search_node` function.
@@ -365,17 +447,9 @@ through the :func:`TreeNode.search_node` function.
    print D
 
 
-Searching for the first common ancestor of a given set of nodes it is
-a handy way of finding internal nodes.
 
-::
-
-  from ete_dev import Tree
-  t = Tree( '((H:0.3,I:0.1):0.5, A:1, (B:0.4,(C:0.5,(J:1.3, (F:1.2, D:0.1):0.5):0.5):0.5):0.5);' )
-  print t
-  ancestor = t.get_common_ancestor("C", "J", "B")
-  
-
+Search nodes matching a given criteria (iteration)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A limitation of the :func:`TreeNode.search_nodes` method is that you cannot use
 complex conditional statements to find specific nodes.  When search
@@ -399,149 +473,190 @@ function.
   # returns nodes containing 6 leaves
   search_by_size(t, size=6) 
 
+Find the first common ancestor
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Searching for the first common ancestor of a given set of nodes it is
+a handy way of finding internal nodes.
 
-Traversing (browsing) trees
----------------------------
+::
 
-
-Often, when processing trees, all nodes need to be visited. This is
-called tree traversing. There are different ways to traverse a tree
-structure depending on the order in which children nodes are
-visited. ETE implements the two most common strategies: **pre-** and
-**post-order**. The following scheme shows the differences in the
-strategy for visiting nodes (note that in both cases the whole tree is
-browsed):
-
-* preorder: 1)Visit the root, 2) Traverse the left subtree , 3) Traverse the right subtree.
-* postorder: 1) Traverse the left subtree , 2) Traverse the right subtree, 3) Visit the root 
-* levelorder (default): every node on a level before is visited going to a lower level 
+  from ete_dev import Tree
+  t = Tree( "((H:0.3,I:0.1):0.5, A:1, (B:0.4,(C:0.5,(J:1.3, (F:1.2, D:0.1):0.5):0.5):0.5):0.5);" )
+  print t
+  ancestor = t.get_common_ancestor("C", "J", "B")
+  
 
 
-.. note::
+Custom searching functions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    * Preorder traversal sequence: F, B, A, D, C, E, G, I, H (root, left, right)
-    * Inorder traversal sequence: A, B, C, D, E, F, G, H, I (left, root, right); note how this produces a sorted sequence
-    * Postorder traversal sequence: A, C, E, D, B, H, I, G, F (left, right, root)
-    * Level-order traversal sequence: F, B, G, A, D, I, C, E, H
+A limitation of the previous methods is that you cannot use complex
+conditional statements to find specific nodes. However you can user
+traversing methods to meet your custom filters. A possible general
+strategy would look like this:
 
-Every node in a tree includes a :func:`TreeNode.traverse` method, which can be
-used to visit, one by one, every node node under the current
-partition. In addition, the :func:`TreeNode.iter_descendants` method can be set
-to use either a post- or a preorder strategy.  The only different
-between :func:`TreeNode.traverse` and :func:`TreeNode.iter_descendants` is that the
-first will include the root node in the iteration.
+::
 
-
-.. table:: 
-
-  ==========================================  ==============================================================================================================
-   Method                                       Description
-  ==========================================  ==============================================================================================================
-   :attr:`node.traverse(method)`               Iterates over the whole tree structure, yielding internal and external nodes, as well as the root node
-   :attr:`node.iter_descendants(method)`       Iterates over all descendants except the root node, yielding internal and external nodes. 
-  ==========================================  ==============================================================================================================
-
-**method** can take one of the following values: ``"postorder"`` or ``"preorder"``
-
-Additionally, you can implement your own traversing function using the
-structural attributes of nodes. In the following example, only nodes
-between a given leaf and the tree root are visited.
-
-.. warning::
-   Example missing, sorry
+  from ete2 import Tree
+  t = Tree("((H:0.3,I:0.1):0.5, A:1, (B:0.4,(C:1,D:1):0.5):0.5);")
+  # Create a small function to filter your nodes
+  def conditional_function(node):
+      if node.dist > 0.3:
+          return True
+      else:
+          return False
+   
+  # Use previous function to find matches. Note that we use the traverse
+  # method in the filter function. This will iterate over all nodes to
+  # assess if they meet our custom conditions and will return a list of
+  # matches.
+  matches = filter(conditional_function, t.traverse())
+  print len(matches), "nodes have ditance >0.3"
+   
+  # depending on the complexity of your conditions you can do the same
+  # in just one line with the help of lambda functions:
+  matches = filter(lambda n: n.dist>0.3 and n.is_leaf(), t.traverse() )
+  print len(matches), "nodes have ditance >0.3 and are leaves"
 
 
-Iterating instead of Getting
-----------------------------
+Shortcuts 
+^^^^^^^^^^^^
 
-As commented previously, methods starting with **get_** are all
-prepared to return results as a closed list of items. This means, for
-instance, that if you want to process all tree leaves and you ask for
-them using the **get_leaves()** method, the whole tree structure will
-be browsed before returning the final list of terminal nodes.  This is
-not a problem in most of the cases, but in large trees, you can speed
-up the browsing process by using iterators.
+Finally, ETE implements a built-in method to find the first node
+matching a given name, which is one of the most common tasks needed
+for tree analysis. This can be done through the operator &
+(AND). Thus, TreeNode&”A” will always return the first node whose name
+is “A” and that is under the tree “MyTree”. The syntaxis may seem
+confusing, but it can be very useful in some situations.
 
-Most **get_** methods have their homologous iterator functions. Thus,
-:func:`TreeNode.get_leaves` could be substituted by :func:`TreeNode.iter_leaves`. The same
-occurs with :func:`TreeNode.iter_descendants` and :func:`TreeNode.iter_search_nodes`.
+::
 
-When iterators are used (note that is only applicable for looping),
-only one step is processed at a time. For instance,
-:func:`TreeNode.iter_search_nodes` will return one match in each iteration. In
-practice, this makes no differences in the final result, but it may
-increase the performance of loop functions (i.e. in case of finding a
-match which interrupts the loop).
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  from ete2 import Tree
+  t = Tree("((H:0.3,I:0.1):0.5, A:1, (B:0.4,(C:1,(J:1, (F:1, D:1):0.5):0.5):0.5):0.5);")
+  # Get the node D in a very simple way
+  D = t&"D"
+  # Get the path from B to the root
+  node = D
+  path = []
+  while node.up:
+    path.append(node)
+    node = node.up
+  print t
+  # I substract D node from the total number of visited nodes
+  print "There are", len(path)-1, "nodes between D and the root"
+  # Using parentheses you can use by-operand search syntax as a node
+  # instance itself
+  Dsparent= (t&"C").up
+  Bsparent= (t&"B").up
+  Jsparent= (t&"J").up
+  # I check if nodes belong to certain partitions
+  print "It is", Dsparent in Bsparent, "that C's parent is under B's ancestor"
+  print "It is", Dsparent in Jsparent, "that C's parent is under J's ancestor"
 
 
 Node annotation
 =========================
 
-Every node contains three basic attributes: name, branch length and
-branch support. These three values are encoded in the newick format.
-However, any extra data could be linked to trees. This is called tree
-annotation.
+Every node contains three basic attributes: name
+(:attr:`TreeNode.name`), branch length (:attr:`TreeNode.dist`) and
+branch support (:attr:`TreeNode.support`). These three values are
+encoded in the newick format.  However, any extra data could be linked
+to trees. This is called tree annotation.
 
 The :func:`TreeNode.add_feature` and :func:`TreeNode.add_features`
 methods allow to add extra attributes (features) to any node.  The
 first allows to add one one feature at a time, while the second can be
 used to add many features with the same call.
 
-::
- 
-  from ete_dev import Tree
-  t = Tree( "((a,b),c);" )
-  
-
-:func:`TreeNode.del_feature` can be used to delete an attribute.
-
 Once extra features are added, you can access their values at any time
 during the analysis of a tree. To do so, you only need to access to
-the ``node.feature_name`` attribute. Let's see this with some
-examples:
+the :attr:`TreeNode.feature_name` attributes.
 
-.. warning::
-   example missing, sorry
+Similarly, :func:`TreeNode.del_feature` can be used to delete an
+attribute.
+
+::
+ 
+   import random
+   from ete_dev import Tree
+   # Creates a tree
+   t = Tree( '((H:0.3,I:0.1):0.5, A:1, (B:0.4,(C:0.5,(J:1.3, (F:1.2, D:0.1):0.5):0.5):0.5):0.5);' )
+
+   # Let's locate some nodes using the get common ancestor method
+   ancestor=t.get_common_ancestor("J", "F", "C")
+   # the search_nodes method (I take only the first match )
+   A = t.search_nodes(name="A")[0]
+   # and using the shorcut to finding nodes by name
+   C= t&"C"
+   H= t&"H"
+   I= t&"I"
+
+   # Let's now add some custom features to our nodes. add_features can be
+   # used to add many features at the same time.
+   C.add_features(vowel=False, confidence=1.0)
+   A.add_features(vowel=True, confidence=0.5)
+   ancestor.add_features(nodetype="internal")
+
+   # Or, using the oneliner notation
+   (t&"H").add_features(vowel=False, confidence=0.2)
+
+   # But we can automatize this. (note that i will overwrite the previous
+   # values)
+   for leaf in t.traverse():
+      if leaf.name in "AEIOU":
+         leaf.add_features(vowel=True, confidence=random.random())
+      else:
+         leaf.add_features(vowel=False, confidence=random.random())
+
+   # Now we use these information to analyze the tree.
+   print "This tree has", len(t.search_nodes(vowel=True)), "vowel nodes"
+   print "Which are", [leaf.name for leaf in t.iter_leaves() if leaf.vowel==True]
+
+   # But features may refer to any kind of data, not only simple
+   # values. For example, we can calculate some values and store them
+   # within nodes.
+   #
+   # Let's detect leaf nodes under "ancestor" with distance higher thatn
+   # 1. Note that I'm traversing a subtree which starts from "ancestor"
+   matches = [leaf for leaf in ancestor.traverse() if leaf.dist>1.0]
+
+   # And save this pre-computed information into the ancestor node
+   ancestor.add_feature("long_branch_nodes", matches)
+
+   # Prints the precomputed nodes
+   print "These are nodes under ancestor with long branches", \
+      [n.name for n in ancestor.long_branch_nodes]
+
+   # We can also use the add_feature() method to dynamically add new features.
+   label = raw_input("custom label:")
+   value = raw_input("custom label value:")
+   ancestor.add_feature(label, value)
+   print "Ancestor has now the [", label, "] attribute with value [", value, "]"  
+
 
 Unfortunately, newick format does not support adding extra features to
 a tree.  Because of this drawback, several improved formats haven been
 (or are being) developed to read and write tree based
 information. Some of these new formats are based in a completely new
-standard (PhyloXML, NeXML), while others are extensions of the
+standard (:doc:`tutorial_xml`), while others are extensions of the
 original newick formar (NHX
-http://phylosoft.org/NHX/http://phylosoft.org/NHX/). Currently, ETE
+http://phylosoft.org/NHX/http://phylosoft.org/NHX/).
+
+Currently, ETE
 includes support for the New Hampshire eXtended format (NHX), which
 uses the original newick standard and adds the possibility of saving
 additional date related to each tree node. Here is an example of a
 extended newick representation in which extra information is added to
 an internal node:
 
+::
+
+ (A:0.35,(B:0.72,(D:0.60,G:0.12):0.64[&&NHX:conf=0.01:name=INTERNAL]):0.56);
+
 As you can notice, extra node features in the NHX format are enclosed
 between brackets. ETE is able to read and write features using such
-format, however, the encoded information is expected to be dumped as
-plain text.
-
+format, however, the encoded information is expected to be exportable
+as plain text.
 
 The NHX format is automatically detected when reading a newick file,
 and the detected node features are added using the
@@ -554,15 +669,70 @@ using the :attr:`features` argument, which is expected to be a list
 with the features names that you want to include in the newick
 string. Note that all nodes containing the suplied features will be
 exposed into the newick string. Use an empty features list
-(:attr:`features=[ ]`) to include all node's data into the newick
+(:attr:`features=[]`) to include all node's data into the newick
 string.
+
+::
+   
+  import random
+  from ete2 import Tree
+  # Creates a normal tree
+  t = Tree('((H:0.3,I:0.1):0.5, A:1,(B:0.4,(C:0.5,(J:1.3,(F:1.2, D:0.1):0.5):0.5):0.5):0.5);')
+  print t
+  # Let's locate some nodes using the get common ancestor method
+  ancestor=t.get_common_ancestor("J", "F", "C")
+  # Let's label leaf nodes
+  for leaf in t.traverse():
+      if leaf.name in "AEIOU":
+        leaf.add_features(vowel=True, confidence=random.random())
+      else:
+        leaf.add_features(vowel=False, confidence=random.random())
+   
+  # Let's detect leaf nodes under "ancestor" with distance higher thatn
+  # 1. Note that I'm traversing a subtree which starts from "ancestor"
+  matches = [leaf for leaf in ancestor.traverse() if leaf.dist>1.0]
+   
+  # And save this pre-computed information into the ancestor node
+  ancestor.add_feature("long_branch_nodes", matches)
+  print
+  print "NHX notation including vowel and confidence attributes"
+  print
+  print t.write(features=["vowel", "confidence"])
+  print
+  print "NHX notation including all node's data"
+  print
+   
+  # Note that when all features are requested, only those with values
+  # equal to text-strings or numbers are considered. "long_branch_nodes"
+  # is not included into the newick string.
+  print t.write(features=[])
+  print
+  print "basic newick formats are still available"
+  print
+  print t.write(format=9, features=["vowel"])
+  # You don't need to do anything speciall to read NHX notation. Just
+  # specify the newick format and the NHX tags will be automatically
+  # detected.
+  nw = """
+  (((ADH2:0.1[&&NHX:S=human:E=1.1.1.1], ADH1:0.11[&&NHX:S=human:E=1.1.1.1])
+  :0.05[&&NHX:S=Primates:E=1.1.1.1:D=Y:B=100], ADHY:0.1[&&NHX:S=nematode:
+  E=1.1.1.1],ADHX:0.12[&&NHX:S=insect:E=1.1.1.1]):0.1[&&NHX:S=Metazoa:
+  E=1.1.1.1:D=N], (ADH4:0.09[&&NHX:S=yeast:E=1.1.1.1],ADH3:0.13[&&NHX:S=yeast:
+  E=1.1.1.1], ADH2:0.12[&&NHX:S=yeast:E=1.1.1.1],ADH1:0.11[&&NHX:S=yeast:E=1.1.1.1]):0.1
+  [&&NHX:S=Fungi])[&&NHX:E=1.1.1.1:D=N];
+  """
+  # Loads the NHX example found at http://www.phylosoft.org/NHX/
+  t = Tree(nw)
+  # And access node's attributes.
+  for n in t.traverse():
+      if hasattr(n,"S"):
+         print n.name, n.S
+
 
 
 .. _sec:modifying-tree-topology:
-
 Modifying Tree Topology
 =======================
-
 
 Creating Trees from Scratch
 ---------------------------

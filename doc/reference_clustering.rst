@@ -1,9 +1,8 @@
 clustering module 
 ====================
+.. currentmodule:: ete_dev.clustering
 
-.. automodule:: ete_dev.clustering
+.. autoclass:: ClusterNode
    :members:
-   :undoc-members:
-   :inherited-members:
    :show-inheritance:
 

@@ -269,11 +269,16 @@ class TreeStyle(object):
 
     Initialize aligned face headers
 
-    :var aligned_header: 
-    :var aligned_foot: 
+    .. currentmodule:: ete_dev.treeview
 
-    :var legend:
+    :var aligned_header: a :class:`FaceContainer` with the header faces added
+      to the aligned faces grid.
 
+    :var aligned_foot: a :class:`FaceContainer` with the foot faces added
+      to the aligned faces grid.
+
+    :var legend: a :class:`FaceContainer` with an arbitrary number of faces
+      representing the legend of the figure. 
     :var 4 legend_position=4: TopLeft corner if 1, TopRight
       if 2, BottomLeft if 3, BottomRight if 4
 
@@ -420,7 +425,14 @@ class TreeStyle(object):
     layout_fn = property(get_layout_fn, set_layout_fn)
         
 class FaceContainer(dict):
+    """
+    Use this object to create a grid of faces. You can add faces to different columns. 
+    """
+
     def add_face(self, face, column):
+        """ 
+        add the face **face** to the specified **column**
+        """
         self.setdefault(int(column), []).append(face)
 
 def _leaf(node):
@@ -429,19 +441,23 @@ def _leaf(node):
 
 def add_face_to_node(face, node, column, aligned=False, position="branch-right"):
     """ 
+    .. currentmodule:: ete_dev.treeview.faces
+
     Adds a Face to a given node. 
 
-    :argument face: A Face instance
-    :argument node: a TreeNode instance (TreeNode, PhyloNode, etc...)
-    :argument column: an integer number starting from 0
+    :argument face: A :class:`Face` instance
 
-    :argument "branch-right" position: Posible values are
-      "branch-right", "branch-top", "branch-bottom", "aligned" or
-      "float"
+    .. currentmodule:: ete_dev
 
-    **This function is obsolete. Use :func:`TreeNode.add_face`: instead**
+    :argument node: a tree node instance (:class:`TreeNode`, :class:`phylo.PhyloNode`, etc.)
+    :argument column: An integer number starting from 0
+    :argument "branch-right" position: Posible values are "branch-right", "branch-top", "branch-bottom", "aligned" or "float"
 
-    """
+   .. warning::
+
+      This function is obsolete. Use :func:`TreeNode.add_face` instead.
+   """
+
     node.img_style.setdefault("_faces", {})
     if position not in FACE_POSITIONS:
         raise (ValueError, "Incorrect position") 
