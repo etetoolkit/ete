@@ -1,4 +1,4 @@
-Tree class
+Master Tree class
 ==================================
 
 .. currentmodule:: ete_dev

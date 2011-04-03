@@ -1,10 +1,10 @@
-.. module:: ete_dev.treeview
-  :synopsis: Display and rendering capabilities: it provides the programmable tree drawing engine and the Graphical User Interface to interact with trees
+.. currentmodule:: ete_dev.treeview
+
 .. moduleauthor:: Jaime Huerta-Cepas
+
 :Author: Jaime Huerta-Cepas
 
 
-************************************
 The Programmable Tree Drawing Engine
 ************************************
 
@@ -41,13 +41,13 @@ any size. Of course, this will depend on you computer and graphical card
 performance.
 
 To start the visualization of a given tree or subtree, you can simply call the
-**show() **method present in every node:
+show() method present in every node:
 
 One of the advantages of this on-line GUI visualization is that you can use it
 to interrupt a given program/analysis, explore trees, manipulate them, and
 continuing with the execution thread. Note that **changes made using the GUI
-will be kept in the tree structure after quiting the visualization interface
-**(Figure :ref:`fig:gui tree manipulation`). This feature is specially useful
+will be kept in the tree structure after quiting the visualization interface**
+(Figure :ref:`fig:gui tree manipulation`). This feature is specially useful
 for using during python sessions, in which analyses are performed interactively.
 
 The GUI allow many operations to be performed graphically, however it does not

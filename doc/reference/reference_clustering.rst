@@ -1,4 +1,4 @@
-clustering module 
+ClusterTree class
 ====================
 .. currentmodule:: ete_dev.clustering
 

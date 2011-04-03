@@ -1,4 +1,4 @@
-phyloxml  module
+PhyloXML class
 =================
 
 .. autodoc_member_order:: alphabetical

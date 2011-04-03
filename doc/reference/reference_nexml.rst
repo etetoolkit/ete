@@ -1,4 +1,4 @@
-nexml module
+Nexml class 
 ================
 
 .. automodule:: ete_dev.nexml

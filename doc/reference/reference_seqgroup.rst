@@ -1,4 +1,4 @@
-SeqGroup object
+Seqgroup class
 ==================
 
 .. autoclass:: ete_dev.SeqGroup

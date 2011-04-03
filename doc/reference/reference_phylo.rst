@@ -1,8 +1,8 @@
-.. currentmodule:: ete_dev.phylo
+.. module:: ete_dev.phylo
 
-===============
-phylo module
-===============
+================
+PhyloTree class
+================
 
 .. autoclass:: PhyloNode
    :members:
