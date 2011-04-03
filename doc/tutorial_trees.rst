@@ -52,6 +52,7 @@ topologies, as well as specific modules to deal with phylogenetic and
 clustering trees.
 
 
+.. _sec:newick-formats:
 
 Reading and Writing Newick Trees
 ================================
@@ -65,7 +66,6 @@ uncommon to find slightly different formats using the newick standard.
 
 ETE can read and write many of them: 
 
-.. _sub:newick-formats:
 .. table::
 
   ======  ============================================== =========================================================================================
@@ -122,7 +122,7 @@ Writing newick trees
 Any ETE tree instance can be exported using newick notation using the
 :func:`Tree.write` method, which is available in any tree node
 instance. It also allows for format selection
-(:ref:`sub:newick-formats`), so you can use the same function to
+(:ref:`sec:newick-formats`), so you can use the same function to
 convert between newick formats.
 
 ::
@@ -731,60 +731,300 @@ string.
 
 
 .. _sec:modifying-tree-topology:
+
 Modifying Tree Topology
 =======================
 
 Creating Trees from Scratch
 ---------------------------
 
-If no arguments are passed to the **Tree** class constructor, an empty tree node
-will be returned. Then, you can use such an orphan node to populate a tree from
-scratch. For this, you should never manipulate the **up**, and** children
-**attributes of a node (unless it is strictly necessary). Instead, you must use
-the methods created to this end. **add_child()**, **add_sister()**, and
-**populate()** are the most common methods to create a tree structure. While the
-two first adds one node at a time, populate() is able to create a custom number
-of random nodes. This is useful to quickly create random trees.
+If no arguments are passed to the :class:`TreeNode` class constructor,
+an empty tree node will be returned. Such an orphan node can be used
+to populate a tree from scratch. For this, the :attr:`TreeNode.up`,
+and :attr:`TreeNode.children` attributes should never be used (unless
+it is strictly necessary). Instead, several methods exist to
+manipulate the topology of a tree:
+
+
+.. autosummary:: 
+
+   :signature:
+   TreeNode.populate
+   TreeNode.add_child
+   TreeNode.add_child
+   TreeNode.delete 
+   TreeNode.detach
+
+
+::
+
+  from ete_dev import Tree
+  t = Tree() # Creates an empty tree
+  A = t.add_child(name="A") # Adds a new child to the current tree root
+                             # and returns it
+  B = t.add_child(name="B") # Adds a second child to the current tree
+                             # root and returns it
+  C = A.add_child(name="C") # Adds a new child to one of the branches
+  D = C.add_sister(name="D") # Adds a second child to same branch as
+                               # before, but using a sister as the starting
+                               # point
+  R = A.add_child(name="R") # Adds a third child to the
+                             # branch. Multifurcations are supported
+  # Next, I add 6 random leaves to the R branch names_library is an
+  # optional argument. If no names are provided, they will be generated
+  # randomly.
+  R.populate(6, names_library=["r1","r2","r3","r4","r5","r6"])
+  # Prints the tree topology
+  print t
+  #                     /-C
+  #                    |
+  #                    |--D
+  #                    |
+  #           /--------|                              /-r4
+  #          |         |                    /--------|
+  #          |         |          /--------|          \-r3
+  #          |         |         |         |
+  #          |         |         |          \-r5
+  #          |          \--------|
+  # ---------|                   |                    /-r6
+  #          |                   |          /--------|
+  #          |                    \--------|          \-r2
+  #          |                             |
+  #          |                              \-r1
+  #          |
+  #           \-B
+  # a common use of the populate method is to quickly create example
+  # trees from scratch. Here we create a random tree with 100 leaves.
+  t = Tree()
+  t.populate(100)
+
+
+
 
 
 Deleting (eliminating) and Removing (detaching) nodes
 -----------------------------------------------------
 
-As currently implemented, there is a difference between removing or deleting a
-node. The former (removing) detaches a node's partition from the tree structure,
-so all its descendants are also disconnected from the tree. There are two
-methods to perform this action: **node.remove_child(ch)** and
-**child.detach()**. In contrast, deleting a node means eliminating such node
-without affecting its descendants. Children from the deleted node are
-automatically connected to the next possible parent. This is better understood
-with the following example:
+As currently implemented, there is a difference between detaching and
+deleting a node. The former disconnects a complete partition from the
+tree structure, so all its descendants are also disconnected from the
+tree. There are two methods to perform this action:
+:func:`TreeNode.remove_child` and :func:`TreeNode.detach`. In
+contrast, deleting a node means eliminating such node without
+affecting its descendants. Children from the deleted node are
+automatically connected to the next possible parent. This is better
+understood with the following example:
+
+:: 
+
+  from ete_dev import Tree
+  # Loads a tree. Note that we use format 1 to read internal node names
+  t = Tree('((((H,K)D,(F,I)G)B,E)A,((L,(N,Q)O)J,(P,S)M)C);', format=1)
+  print "original tree looks like this:"
+  # This is an alternative way of using "print t". Thus we have a bit
+  # more of control on how tree is printed. Here i print the tree
+  # showing internal node names
+  print t.get_ascii(show_internal=True)
+  #
+  #                                        /-H
+  #                              /D-------|
+  #                             |          \-K
+  #                    /B-------|
+  #                   |         |          /-F
+  #          /A-------|          \G-------|
+  #         |         |                    \-I
+  #         |         |
+  #         |          \-E
+  #-NoName--|
+  #         |                    /-L
+  #         |          /J-------|
+  #         |         |         |          /-N
+  #         |         |          \O-------|
+  #          \C-------|                    \-Q
+  #                   |
+  #                   |          /-P
+  #                    \M-------|
+  #                              \-S
+  # Get pointers to specific nodes
+  G = t.search_nodes(name="G")[0]
+  J = t.search_nodes(name="J")[0]
+  C = t.search_nodes(name="C")[0]
+  # If we remove J from the tree, the whole partition under J node will
+  # be detached from the tree and it will be considered an independent
+  # tree. We can do the same thing using two approaches: J.detach() or
+  # C.remove_child(J)
+  removed_node = J.detach() # = C.remove_child(J)
+  # if we know print the original tree, we will see how J partition is
+  # no longer there.
+  print "Tree after REMOVING the node J"
+  print t.get_ascii(show_internal=True)
+  #                                        /-H
+  #                              /D-------|
+  #                             |          \-K
+  #                    /B-------|
+  #                   |         |          /-F
+  #          /A-------|          \G-------|
+  #         |         |                    \-I
+  #         |         |
+  #-NoName--|          \-E
+  #         |
+  #         |                    /-P
+  #          \C------- /M-------|
+  #                              \-S
+  # however, if we DELETE the node G, only G will be eliminated from the
+  # tree, and all its descendants will then hang from the next upper
+  # node.
+  G.delete()
+  print "Tree after DELETING the node G"
+  print t.get_ascii(show_internal=True)
+  #                                        /-H
+  #                              /D-------|
+  #                             |          \-K
+  #                    /B-------|
+  #                   |         |--F
+  #          /A-------|         |
+  #         |         |          \-I
+  #         |         |
+  #-NoName--|          \-E
+  #         |
+  #         |                    /-P
+  #          \C------- /M-------|
+  #                              \-S
+
+
 
 
 Pruning trees
 =============
 
-Pruning a tree means to obtain the topology that connects a certain group of
-items by removing the unnecessary edges. To facilitate this task, ETE implements
-the **prune()** method, which can be used in two different ways: by providing
-the list of terminal nodes that must be kept in the tree; or by providing a list
-of nodes that must be removed. In any case, the result is a pruned tree
-containing the topology that connects a custom set of nodes.
+Pruning a tree means to obtain the topology that connects a certain
+group of items by removing the unnecessary edges. To facilitate this
+task, ETE implements the :func:`TreeNode.prune` method, which can be
+used in two different ways: by providing the list of terminal nodes
+that must be kept in the tree; or by providing a list of nodes that
+must be removed. In any case, the result is a pruned tree containing
+the topology that connects a custom set of nodes.
+
+::
+
+  from ete_dev import Tree
+  # Let's create simple tree
+  t = Tree('((((H,K),(F,I)G),E),((L,(N,Q)O),(P,S)));')
+  print "Original tree looks like this:"
+  print t
+  #
+  #                                        /-H
+  #                              /--------|
+  #                             |          \-K
+  #                    /--------|
+  #                   |         |          /-F
+  #          /--------|          \--------|
+  #         |         |                    \-I
+  #         |         |
+  #         |          \-E
+  #---------|
+  #         |                    /-L
+  #         |          /--------|
+  #         |         |         |          /-N
+  #         |         |          \--------|
+  #          \--------|                    \-Q
+  #                   |
+  #                   |          /-P
+  #                    \--------|
+  #                              \-S
+  # Prune the tree in order to keep only some leaf nodes.
+  t.prune(["H","F","E","Q", "P"])
+  print "Pruned tree"
+  print t
+  #
+  #                              /-F
+  #                    /--------|
+  #          /--------|          \-H
+  #         |         |
+  #---------|          \-E
+  #         |
+  #         |          /-Q
+  #          \--------|
+  #                    \-P
+  # Let's re-create the same tree again
+
+
 
 
 Concatenating trees
 ===================
 
-Given that all tree nodes share the same basic properties, they can be connected
-freely. In fact, any node can add a whole subtree as a child, so we can actually
-*cut & paste* partitions. To do so, you only need to call the **add_child()
-**method using another tree node as a first argument. If such a node is the root
-node of a different tree, you will concatenate two structures. But caution!!,
-this kind of operations may result into circular tree structures if add an
-node's ancestor as a new node's child. Some basic checks are internally
-performed by the ETE topology related methods, however, a fully qualified check
-of this issue would affect seriously to the performance of the program. For this
-reason, users should take care about not creating circular structures by
-mistake.
+Given that all tree nodes share the same basic properties, they can be
+connected freely. In fact, any node can add a whole subtree as a
+child, so we can actually *cut & paste* partitions. To do so, you only
+need to call the :func:`TreeNode.add_child` method using another tree
+node as a first argument. If such a node is the root node of a
+different tree, you will concatenate two structures. But caution!!,
+this kind of operations may result into circular tree structures if
+add an node's ancestor as a new node's child. Some basic checks are
+internally performed by the ETE topology related methods, however, a
+fully qualified check of this issue would affect seriously the
+performance of the method. For this reason, users themselves should
+take care about not creating circular structures by mistake.
+
+::
+
+  from ete_dev import Tree
+  # Loads 3 independent trees
+  t1 = Tree('(A,(B,C));')
+  t2 = Tree('((D,E), (F,G));')
+  t3 = Tree('(H, ((I,J), (K,L)));')
+  print "Tree1:", t1
+  #            /-A
+  #  ---------|
+  #           |          /-B
+  #            \--------|
+  #                      \-C
+  print "Tree2:", t2
+  #                      /-D
+  #            /--------|
+  #           |          \-E
+  #  ---------|
+  #           |          /-F
+  #            \--------|
+  #                      \-G
+  print "Tree3:", t3
+  #            /-H
+  #           |
+  #  ---------|                    /-I
+  #           |          /--------|
+  #           |         |          \-J
+  #            \--------|
+  #                     |          /-K
+  #                      \--------|
+  #                                \-L
+  # Locates a terminal node in the first tree
+  A = t1.search_nodes(name='A')[0]
+  # and adds the two other trees as children.
+  A.add_child(t2)
+  A.add_child(t3)
+  print "Resulting concatenated tree:", t1
+  #                                          /-D
+  #                                /--------|
+  #                               |          \-E
+  #                      /--------|
+  #                     |         |          /-F
+  #                     |          \--------|
+  #            /--------|                    \-G
+  #           |         |
+  #           |         |          /-H
+  #           |         |         |
+  #           |          \--------|                    /-I
+  #           |                   |          /--------|
+  #  ---------|                   |         |          \-J
+  #           |                    \--------|
+  #           |                             |          /-K
+  #           |                              \--------|
+  #           |                                        \-L
+  #           |
+  #           |          /-B
+  #            \--------|
+  #                      \-C
 
 
 .. _sec:tree-rooting:
@@ -792,63 +1032,256 @@ mistake.
 Tree Rooting
 ============
 
-Tree rooting is understood as the technique by with a given tree is conceptually
-polarized from more basal to more terminal nodes. In phylogenetics, for
-instance, this a crucial step prior to the interpretation of trees, since it
-will determine the evolutionary relationships among the species involved. The
-concept of rooted trees is different than just having a root node, which is
-always necessary to handle a tree data structure. Usually, the way in which a
-tree is differentiated between rooted and unrooted, is by counting the number of
-branches of the current root node. Thus, if the root node has more than two
-child branches, the tree is considered unrooted. By contrast, when only two main
-branches exist under the root node, the tree is considered rooted. Having an
-unrooted tree means that any internal branch within the tree could be regarded
-as the root node, and there is no conceptual reason to place the root node where
-it is placed at the moment. Therefore, in an unrooted tree, there is no
-information about which internal nodes are more basal than others. By setting
-the root node between a given edge/branch of the tree structure the tree is
-polarized, meaning that the two branches under the root node are the most basal
-nodes. In practice, this is usually done by setting an **outgroup** **node**,
-which would represent one of these main root branches. The second one will be,
-obviously, the brother node. When you set an outgroup on unrooted trees, the
-multifurcations at the current root node are solved.
+Tree rooting is understood as the technique by with a given tree is
+conceptually polarized from more basal to more terminal nodes. In
+phylogenetics, for instance, this a crucial step prior to the
+interpretation of trees, since it will determine the evolutionary
+relationships among the species involved. The concept of rooted trees
+is different than just having a root node, which is always necessary
+to handle a tree data structure. Usually, the way in which a tree is
+differentiated between rooted and unrooted, is by counting the number
+of branches of the current root node. Thus, if the root node has more
+than two child branches, the tree is considered unrooted. By contrast,
+when only two main branches exist under the root node, the tree is
+considered rooted. 
 
-In order to root an unrooted tree or re-root a tree structure, ETE implements
-the **set_outgroup()** method, which is present in any tree node instance.
-Similarly, the **unroot()** method can be used to perform the opposite action.
+Having an unrooted tree means that any internal branch within the tree
+could be regarded as the root node, and there is no conceptual reason
+to place the root node where it is placed at the moment. Therefore, in
+an unrooted tree, there is no information about which internal nodes
+are more basal than others. By setting the root node between a given
+edge/branch of the tree structure the tree is polarized, meaning that
+the two branches under the root node are the most basal nodes. In
+practice, this is usually done by setting an **outgroup** **node**,
+which would represent one of these main root branches. The second one
+will be, obviously, the brother node. When you set an outgroup on
+unrooted trees, the multifurcations at the current root node are
+solved.
 
-Note that although **rooting** is usually regarded as a whole-tree operation,
-ETE allows to root subparts of the tree without affecting to its parent tree
-structure.
+In order to root an unrooted tree or re-root a tree structure, ETE
+implements the :func:`TreeNode.set_outgroup` method, which is present
+in any tree node instance.  Similarly, the :func:`TreeNode.unroot`
+method can be used to perform the opposite action.
+
+::
+
+  from ete_dev import Tree
+  # Load an unrooted tree. Note that three branches hang from the root
+  # node. This usually means that no information is available about
+  # which of nodes is more basal.
+  t = Tree('(A,(H,F)(B,(E,D)));')
+  print "Unrooted tree"
+  print t
+  #          /-A
+  #         |
+  #         |          /-H
+  #---------|---------|
+  #         |          \-F
+  #         |
+  #         |          /-B
+  #          \--------|
+  #                   |          /-E
+  #                    \--------|
+  #                              \-D
+  #
+  # Let's define that the ancestor of E and D as the tree outgroup.  Of
+  # course, the definition of an outgroup will depend on user criteria.
+  ancestor = t.get_common_ancestor("E","D")
+  t.set_outgroup(ancestor)
+  print "Tree rooteda at E and D's ancestor is more basal that the others."
+  print t
+  #
+  #                    /-B
+  #          /--------|
+  #         |         |          /-A
+  #         |          \--------|
+  #         |                   |          /-H
+  #---------|                    \--------|
+  #         |                              \-F
+  #         |
+  #         |          /-E
+  #          \--------|
+  #                    \-D
+  #
+  # Note that setting a different outgroup, a different interpretation
+  # of the tree is possible
+  t.set_outgroup( t&"A" )
+  print "Tree rooted at a terminal node"
+  print t
+  #                              /-H
+  #                    /--------|
+  #                   |          \-F
+  #          /--------|
+  #         |         |          /-B
+  #         |          \--------|
+  #---------|                   |          /-E
+  #         |                    \--------|
+  #         |                              \-D
+  #         |
+  #          \-A
+
+
+Note that although **rooting** is usually regarded as a whole-tree
+operation, ETE allows to root subparts of the tree without affecting
+to its parent tree structure.
+
+::
+
+  from ete_dev import Tree
+  t = Tree('(((A,C),((H,F),(L,M))),((B,(J,K))(E,D)));')
+  print "Original tree:"
+  print t
+  #                              /-A
+  #                    /--------|
+  #                   |          \-C
+  #                   |
+  #          /--------|                    /-H
+  #         |         |          /--------|
+  #         |         |         |          \-F
+  #         |          \--------|
+  #         |                   |          /-L
+  #         |                    \--------|
+  #---------|                              \-M
+  #         |
+  #         |                    /-B
+  #         |          /--------|
+  #         |         |         |          /-J
+  #         |         |          \--------|
+  #          \--------|                    \-K
+  #                   |
+  #                   |          /-E
+  #                    \--------|
+  #                              \-D
+  #
+  # Each main branch of the tree is independently rooted.
+  node1 = t.get_common_ancestor("A","H")
+  node2 = t.get_common_ancestor("B","D")
+  node1.set_outgroup("H")
+  node2.set_outgroup("E")
+  print "Tree after rooting each node independently:"
+  print t
+  #
+  #                              /-F
+  #                             |
+  #                    /--------|                    /-L
+  #                   |         |          /--------|
+  #                   |         |         |          \-M
+  #                   |          \--------|
+  #          /--------|                   |          /-A
+  #         |         |                    \--------|
+  #         |         |                              \-C
+  #         |         |
+  #         |          \-H
+  #---------|
+  #         |                    /-D
+  #         |          /--------|
+  #         |         |         |          /-B
+  #         |         |          \--------|
+  #          \--------|                   |          /-J
+  #                   |                    \--------|
+  #                   |                              \-K
+  #                   |
+  #                    \-E
 
 
 Working with branch distances
 =============================
 
-The branch length between one node an its parent is encoded as the **node.dist**
-attribute. Together with tree topology, branch lengths define the relationships
-among nodes.
+The branch length between one node an its parent is encoded as the
+:attr:`TreeNode.dist` attribute. Together with tree topology, branch
+lengths define the relationships among nodes.
 
 
 Getting distances between nodes
 -------------------------------
 
-The **get_distance()** method can be used to calculate the distance between two
-connected nodes. There are two ways of using this method: a) by querying the
-distance between two descendant nodes (two nodes are passed as arguments) b) by
-querying the distance between the current node and any other relative node
-(parental or descendant).
+The :func:`TreeNode.get_distance` method can be used to calculate the
+distance between two connected nodes. There are two ways of using this
+method: a) by querying the distance between two descendant nodes (two
+nodes are passed as arguments) b) by querying the distance between the
+current node and any other relative node (parental or descendant).
 
-Additionally to this, ETE incorporates two more methods to calculate the most
-distant node from a given point in a tree. You can use the
-**get_farthest_node()** method to retrieve the most distant point from a node
-within the whole tree structure. Alternatively, **get_farthest_leaf()** will
-return the most distant descendant (always a leaf). If more than one node
-matches the farthest distance, the first occurrence is returned.
 
-Distance between nodes can also be computed as the number of nodes between them
-(considering all branch lengths equal to 1.0). To do so, the **topology_only**
-argument must be set to **True **for all the above mentioned methods.
+::
+
+  from ete_dev import Tree
+   
+  # Loads a tree with branch lenght information. Note that if no
+  # distance info is provided in the newick, it will be initialized with
+  # the default dist value = 1.0
+  nw = """(((A:0.1, B:0.01):0.001, C:0.0001):1.0,
+  (((((D:0.00001:0,I:0):0,F:0):0,G:0):0,H:0):0,
+  E:0.000001):0.0000001):2.0;"""
+  t = Tree(nw)
+  print t
+  #                              /-A
+  #                    /--------|
+  #          /--------|          \-B
+  #         |         |
+  #         |          \-C
+  #         |
+  #         |                                                  /-D
+  #         |                                        /--------|
+  #---------|                              /--------|          \-I
+  #         |                             |         |
+  #         |                    /--------|          \-F
+  #         |                   |         |
+  #         |          /--------|          \-G
+  #         |         |         |
+  #          \--------|          \-H
+  #                   |
+  #                    \-E
+  #
+  # Locate some nodes
+  A = t&"A"
+  C = t&"C"
+  # Calculate distance from current node
+  print "The distance between A and C is",  A.get_distance("C")
+  # Calculate distance between two descendants of current node
+  print "The distance between A and C is",  t.get_distance("A","C")
+  # Calculate the toplogical distance (number of nodes in between)
+  print "The number of nodes between A and D is ",  \
+      t.get_distance("A","D", topology_only=True)
+
+
+
+Additionally to this, ETE incorporates two more methods to calculate
+the most distant node from a given point in a tree. You can use the
+:func:`TreeNode.get_farthest_node` method to retrieve the most distant
+point from a node within the whole tree structure. Alternatively,
+:func:`TreeNode.get_farthest_leaf` will return the most distant
+descendant (always a leaf). If more than one node matches the farthest
+distance, the first occurrence is returned.
+
+Distance between nodes can also be computed as the number of nodes
+between them (considering all branch lengths equal to 1.0). To do so,
+the **topology_only** argument must be set to **True** for all the
+above mentioned methods.
+
+
+::
+
+  # Calculate the farthest node from E within the whole structure
+  farthest, dist = (t&"E").get_farthest_node()
+  print "The farthest node from E is", farthest.name, "with dist=", dist
+  # Calculate the farthest node from E within the whole structure,
+  # regarding the number of nodes in between as distance value
+  # Note that the result is differnt.
+  farthest, dist = (t&"E").get_farthest_node(topology_only=True)
+  print "The farthest (topologically) node from E is", \
+      farthest.name, "with", dist, "nodes in between"
+  # Calculate farthest node from an internal node
+  farthest, dist = t.get_farthest_node()
+  print "The farthest node from root is is", farthest.name, "with dist=", dist
+  #
+  # The program results in the following information:
+  #
+  # The distance between A and C is 0.1011
+  # The distance between A and C is 0.1011
+  # The number of nodes between A and D is  8.0
+  # The farthest node from E is A with dist= 1.1010011
+  # The farthest (topologically) node from E is I with 5.0 nodes in between
+  # The farthest node from root is is A with dist= 1.101
 
 
 .. _sub:getting-midpoint-outgroup:
@@ -860,10 +1293,81 @@ In order to obtain a balanced rooting of the tree, you can set as the tree
 outgroup that partition which splits the tree in two equally distant clusters
 (using branch lengths). This is called the midpoint outgroup.
 
-The **get_midpoint_outgroup()** method will return the outgroup partition that
-splits current node into two balanced branches in terms of node distances.
+The :func:`TreeNode.get_midpoint_outgroup` method will return the
+outgroup partition that splits current node into two balanced branches
+in terms of node distances.
+
+::
+
+  from ete_dev import Tree
+  # generates a random tree
+  t = Tree();
+  t.populate(15);
+  print t
+  #
+  #
+  #                    /-qogjl
+  #          /--------|
+  #         |          \-vxbgp
+  #         |
+  #         |          /-xyewk
+  #---------|         |
+  #         |         |                    /-opben
+  #         |         |                   |
+  #         |         |          /--------|                    /-xoryn
+  #          \--------|         |         |          /--------|
+  #                   |         |         |         |         |          /-wdima
+  #                   |         |          \--------|          \--------|
+  #                   |         |                   |                    \-qxovz
+  #                   |         |                   |
+  #                   |         |                    \-isngq
+  #                    \--------|
+  #                             |                    /-neqsc
+  #                             |                   |
+  #                             |                   |                              /-waxkv
+  #                             |          /--------|                    /--------|
+  #                             |         |         |          /--------|          \-djeoh
+  #                             |         |         |         |         |
+  #                             |         |          \--------|          \-exmsn
+  #                              \--------|                   |
+  #                                       |                   |          /-udspq
+  #                                       |                    \--------|
+  #                                       |                              \-buxpw
+  #                                       |
+  #                                        \-rkzwd
+  # Calculate the midpoint node
+  R = t.get_midpoint_outgroup()
+  # and set it as tree outgroup
+  t.set_outgroup(R)
+  print t
+  #                              /-opben
+  #                             |
+  #                    /--------|                    /-xoryn
+  #                   |         |          /--------|
+  #                   |         |         |         |          /-wdima
+  #                   |          \--------|          \--------|
+  #          /--------|                   |                    \-qxovz
+  #         |         |                   |
+  #         |         |                    \-isngq
+  #         |         |
+  #         |         |          /-xyewk
+  #         |          \--------|
+  #         |                   |          /-qogjl
+  #         |                    \--------|
+  #---------|                              \-vxbgp
+  #         |
+  #         |                    /-neqsc
+  #         |                   |
+  #         |                   |                              /-waxkv
+  #         |          /--------|                    /--------|
+  #         |         |         |          /--------|          \-djeoh
+  #         |         |         |         |         |
+  #         |         |          \--------|          \-exmsn
+  #          \--------|                   |
+  #                   |                   |          /-udspq
+  #                   |                    \--------|
+  #                   |                              \-buxpw
+  #                   |
+  #                    \-rkzwd
 
 
-.. _cha:the-programmable-tree:
-
-:Author: Jaime Huerta-Cepas

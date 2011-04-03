@@ -7,6 +7,7 @@ Welcome to Environment for Tree Exploration's documentation!
    tutorial
    reference
    changelog
+   cheatsheet
 
 Indices and tables
 ==================
@@ -14,6 +15,7 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
 
 
 
