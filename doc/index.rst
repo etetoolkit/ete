@@ -1,22 +1,22 @@
-Environment for Tree Exploration (ETE) documentation
-============================================================
+Contents
+***************
+
 
 .. toctree::
 
-   tutorial/tutorial
-   reference/reference 
-
-   changelog
+   tutorial/index
+   reference/index
+   faqs/index
+   install/index
+   changelog/index
+   
+   ack
+   about
+   license
+   bugs
+   contribute
    cheatsheet
 
 
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
-
-
-
+:genindex:
+:modindex:

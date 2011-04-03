@@ -31,7 +31,6 @@ original XML hierarchy.
    tutorial_phyloxml
 
 
-
 NeXML and PhyloXML python parsers are possible thanks to the work of
 Dave Kulhman on the generateDS.py application. 
 

@@ -1,6 +1,5 @@
 .. versionadded:: 2.1
-.. module:: ete_dev.nexml
-  :synopsis: Reading and writing support support for the NexML format
+.. currentmodule:: ete_dev.phyloxml
 .. moduleauthor:: Jaime Huerta-Cepas
 
 ************************************  

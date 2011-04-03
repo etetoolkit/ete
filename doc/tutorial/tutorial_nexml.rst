@@ -1,4 +1,4 @@
-.. module:: ete_dev.nexml
+.. currentmodule:: ete_dev.nexml
   :synopsis: Reading and writing support support for the NexML format
 .. moduleauthor:: Jaime Huerta-Cepas
 .. versionadded:: 2.1
