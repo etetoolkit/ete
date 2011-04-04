@@ -111,7 +111,7 @@ METAPKG_JAIL_PATH = "/home/jhuerta/_Devel/ete_metapackage/etepkg_CheckBeforeRm"
 METAPKG_PATH = "/home/jhuerta/_Devel/ete_metapackage"
 RELEASES_BASE_PATH = "/tmp"
 VERSION = BRANCH_NAME+"rev"+commands.getoutput("git log --pretty=format:'' | wc -l").strip()
-MODULE_NAME = "ete21beta1"
+MODULE_NAME = "ete21b1"
 RELEASE_NAME = MODULE_NAME+"-"+VERSION
 RELEASE_PATH = os.path.join(RELEASES_BASE_PATH, RELEASE_NAME)
 RELEASE_MODULE_PATH = os.path.join(RELEASE_PATH, MODULE_NAME)
@@ -140,8 +140,8 @@ _ex("git clone . %s" %RELEASE_PATH)
 
 # Set VERSION in all modules
 print "*** Setting VERSION in all python files"
-_ex('find %s -name \'*.py\' |xargs sed \'1 i __VERSION__=\"%s\" \' -i' %\
-              (RELEASE_MODULE_PATH, RELEASE_NAME))
+_ex('find %s/ete_dev/ -name \'*.py\' |xargs sed \'1 i __VERSION__=\"%s\" \' -i' %\
+              (RELEASE_PATH, RELEASE_NAME))
 
 # Generating VERSION file
 print "*** Generating VERSION file"
@@ -152,17 +152,17 @@ _ex('echo %s > %s/VERSION' %\
 # Check LICENSE disclaimer and add it or modify it if necessary
 print  "*** Setting LICENSE in all python files"
 _ex('find %s -name \'*.py\' -exec  python ___put_disclaimer.py {} \;' %\
-        (RELEASE_MODULE_PATH))
+        (RELEASE_PATH))
 
 
 # Correct imports. I use ete_dev for development, but ete2 is the
 # correct name for stable releases. First I install the module using a
 # different name just to test it
 print "*** Fixing imports..."
-_ex('find %s -name \'*.py\' -name \'*.rst\'| xargs perl -e "s/ete_dev/ete2_tester/g" -p -i' %\
+_ex('find %s -name \'*.py\' -o -name \'*.rst\'| xargs perl -e "s/ete_dev/ete2_tester/g" -p -i' %\
               (RELEASE_PATH) )
 
-_ex('mv %s %s/ete2_tester' %(RELEASE_MODULE_PATH, RELEASE_PATH))
+_ex('mv %s/ete_dev %s/ete2_tester' %(RELEASE_PATH, RELEASE_PATH))
 _ex('cd %s; python setup.py build --build-lib=build/lib' %(RELEASE_PATH))
 
 if options.unitest:
@@ -188,7 +188,7 @@ if options.test_examples:
 
 # Re-establish module name
 _ex('mv %s/ete2_tester %s' %(RELEASE_PATH, RELEASE_MODULE_PATH))
-_ex('find %s -name \'*.py\' -name \'*.rst\'| xargs perl -e "s/ete2_tester/%s/g" -p -i' %\
+_ex('find %s -name \'*.py\' -o -name \'*.rst\'| xargs perl -e "s/ete2_tester/%s/g" -p -i' %\
               (RELEASE_PATH, MODULE_NAME) )
 _ex('cd %s; python setup.py build' %(RELEASE_PATH))
 

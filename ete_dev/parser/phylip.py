@@ -145,7 +145,7 @@ def write_phylip(aln, outfile=None, interleaved=True):
             for j in xrange(len(aln)):
                 name =  aln.id2name[j]
                 if len(name)>10:
-                    #name = name[:10]
+                    name = name[:10]
                     show_name_warning = True
 
                 seq = aln.id2seq[j][i:i+width]
@@ -161,7 +161,7 @@ def write_phylip(aln, outfile=None, interleaved=True):
     else:
         for name, seq, comments in aln.iter_entries():
             if len(name)>10:
-                #name = name[:10]
+                name = name[:10]
                 show_name_warning = True
             alg_text += "%s %s\n%s\n" %\
                 (name, seq[0:width-13], '\n'.join([seq[k:k+width]  \
