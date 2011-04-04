@@ -39,9 +39,7 @@ What's new in ETE 2.1
 * Added :mod:`ete_dev.phyloxml` module (read and write phyloxml format)
 * Added :mod:`ete_dev.webplugin` module: Allows to create interactive web tree applications 
 * Added :class:`PhylomeDB3Connector`
-
-* Added new examples
-
+* Added more examples
 * Bug Fixes and improvements: 
   
    * Fix: :func:`TreeNode.get_common_ancestor` accepts a list of nodes 
@@ -50,6 +48,4 @@ What's new in ETE 2.1
    * Fix: "if not node: do something" syntax was using a len(node)
      test, which made it totally inefficient. Now, any node instance
      returns always True.
-
-
 * Improved documentation tutorial and reference guide!

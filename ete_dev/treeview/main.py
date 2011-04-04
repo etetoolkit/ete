@@ -175,8 +175,7 @@ class TreeStyle(object):
 
     **TREE SHAPE AND IMAGE DESIGN**
         
-    :var "rect" mode: Valid modes are "c" (circular) or "r"
-      (rectangular).
+    :var "rect" mode: Valid modes are "circular" or "rect".
 
     :var None layout_fn: Layout function used to dynamically control
       the aspect of nodes. Valid values are: None or a pointer to a method,
