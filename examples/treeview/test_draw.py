@@ -90,7 +90,7 @@ I.margin_bottom = 50
 I.show_border = True
 I.legend_position = 4
 I.title.add_face(faces.TextFace("HOLA MUNDO", fsize=30), 0)
-I.draw_aligned_faces_as_grid = True
+I.draw_aligned_faces_as_table = True
 
 I.aligned_header.add_face( faces.TextFace("H1"), 0 )
 I.aligned_header.add_face( faces.TextFace("H1"), 1 )

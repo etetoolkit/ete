@@ -4,11 +4,14 @@ What's new in ETE 2.1
 
 * The drawing engine has been fully rewritten to provide many new features:
 
-  * Added *circular tree drawing* mode
-  * Added support for *floating faces* in nodes
-  * Added tree *title face block* (Text or images that rendered on top of the tree)
-  * Added tree *legend face block* (Text or images that rendered as image legend)
-  * Possibility of drawing *aligned faces as a table*
+  * Added :class:`TreeStyle` class allowing to set the following
+    * Added *circular tree drawing* mode
+    * Added support for *floating faces* in nodes
+    * Added tree *title face block* (Text or images that rendered on top of the tree)
+    * Added tree *legend face block* (Text or images that rendered as image legend)
+    * Added support for *tree rotation and orientation*
+    * Possibility of drawing *aligned faces as a table*
+    * And more! Check :class:`TreeStyle` options
   * Added several *face attributes*:
 
     * face border

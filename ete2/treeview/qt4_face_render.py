@@ -245,7 +245,7 @@ def update_node_faces(node, n2f, img):
             #         [f4, f4]
             #       ]
 
-            if position == "aligned" and img.draw_aligned_faces_as_grid: 
+            if position == "aligned" and img.draw_aligned_faces_as_table: 
                 as_grid = True
             else:
                 as_grid = False

@@ -340,7 +340,7 @@ def render(root_node, img, hide_root=False):
 
     parent.setRect(mainRect)
     parent.setPen(QtGui.QPen(QtCore.Qt.NoPen))
-
+    
     if img.rotation:
         rect = parent.boundingRect()
         x =  rect.x() + rect.width()/2
@@ -807,7 +807,7 @@ def render_aligned_faces(img, mainRect, parent, n2i, n2f):
 
     # If rect mode, render header and footer 
     if img.mode == "rect": 
-        if img.draw_aligned_faces_as_grid:
+        if img.draw_aligned_faces_as_table:
             fb_head.setup_grid(c2max_w)
             fb_foot.setup_grid(c2max_w)
 
@@ -823,7 +823,7 @@ def render_aligned_faces(img, mainRect, parent, n2i, n2f):
     for node, fb in aligned_faces:
         item = n2i[node]
         item.mapped_items.append(fb)
-        if img.draw_aligned_faces_as_grid: 
+        if img.draw_aligned_faces_as_table: 
             fb.setup_grid(c2max_w)
 
         fb.render()

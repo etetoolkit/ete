@@ -242,7 +242,7 @@ class TreeStyle(object):
 
     **FACES**
 
-    :var True draw_aligned_faces_as_grid: Aligned faces will be
+    :var True draw_aligned_faces_as_table: Aligned faces will be
       drawn as a table, considering all columns in all node faces.
 
     
@@ -376,7 +376,7 @@ class TreeStyle(object):
 
         # Aligned faces will be drawn as a table, considering all
         # columns in all node faces.
-        self.draw_aligned_faces_as_grid = True
+        self.draw_aligned_faces_as_table = True
 
         # By default, floating faces are expected to be transparent,
         # so they can be plotted directly on the tree image. However,
@@ -462,9 +462,6 @@ def add_face_to_node(face, node, column, aligned=False, position="branch-right")
     :argument column: An integer number starting from 0
     :argument "branch-right" position: Posible values are "branch-right", "branch-top", "branch-bottom", "aligned" or "float"
 
-   .. warning::
-
-      This function is obsolete. Use :func:`TreeNode.add_face` instead.
    """
 
     node.img_style.setdefault("_faces", {})
