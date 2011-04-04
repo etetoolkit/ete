@@ -3,16 +3,19 @@ from PyQt4 import QtCore, QtGui
 from PyQt4.QtGui import QGraphicsSimpleTextItem, QGraphicsPixmapItem, \
     QGraphicsRectItem, QTransform, QBrush, QPen, QColor, QGraphicsItem
 
-from main import FACE_POSITIONS, _ActionDelegator
+from main import FACE_POSITIONS
+from qt4_gui import _NodeActions as _ActionDelegator
 
 class _TextFaceItem(QGraphicsSimpleTextItem, _ActionDelegator):
     def __init__(self, face, node, text):
         QGraphicsSimpleTextItem.__init__(self, text)
+        _ActionDelegator.__init__(self)
         self.node = node
 
 class _ImgFaceItem(QGraphicsPixmapItem, _ActionDelegator):
     def __init__(self, face, node):
         QGraphicsPixmapItem.__init__(self)
+        _ActionDelegator.__init__(self)
         self.node = node
 
 class _BackgroundFaceItem(QGraphicsRectItem):

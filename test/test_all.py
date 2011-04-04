@@ -527,7 +527,7 @@ class Test_Coretype_Tree(unittest.TestCase):
 
         # Swap childs
         n = t.get_children()
-        t.swap_childs()
+        t.swap_children()
         n.reverse()
         self.assertEqual(n, t.get_children())
 

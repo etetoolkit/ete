@@ -5,8 +5,8 @@ from qt4_gui import _GUI, _PropertiesDialog, _BasicNodeActions
 
 import layouts
 from ete_dev import Tree, PhyloTree, ClusterTree
-from main import TreeStyle
-from qt4_render import _TreeScene, render, save, get_tree_img_map
+from main import TreeStyle, save
+from qt4_render import _TreeScene, render, get_tree_img_map
 
 __all__ = ["show_tree", "render_tree"]
 

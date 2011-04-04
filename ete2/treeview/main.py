@@ -186,6 +186,8 @@ class TreeStyle(object):
        1, tree is drawn from right-to-left. This property only makes
        sense when "rect" mode is used.
     
+    :var 0 rotation: Tree figure will be rotate X degrees (clock-wise rotation)
+
     :var None scale: Scale used to convert branch lengths to
       pixels. If 'None', the scale will be calculated using the
       "tree_width" attribute (read bellow)
@@ -493,3 +495,93 @@ def set_pen_style(pen, line_style):
     elif line_style == 2:
         pen.setStyle(QtCore.Qt.DotLine)
      
+
+def save(scene, imgName, w=None, h=None, header=None, \
+             dpi=300, take_region=False):
+
+    from PyQt4 import QtGui
+
+    ext = imgName.split(".")[-1].upper()
+    main_rect = scene.sceneRect()
+    print main_rect
+    aspect_ratio = main_rect.height() / main_rect.width()
+
+    # auto adjust size
+    if w is None and h is None and (ext == "PDF" or ext == "PS"):
+        w = dpi * 6.4
+        h = w * aspect_ratio
+        if h>dpi * 11:
+            h = dpi * 11
+            w = h / aspect_ratio
+    elif w is None and h is None:
+        w = main_rect.width()
+        h = main_rect.height()
+    elif h is None :
+        h = w * aspect_ratio
+    elif w is None:
+        w = h / aspect_ratio
+
+    if ext == "SVG": 
+        from PyQt4 import QtSvg
+        svg = QtSvg.QSvgGenerator()
+        svg.setFileName(imgName)
+        targetRect = QtCore.QRectF(0, 0, w, h)
+        svg.setSize(QtCore.QSize(w, h))
+        svg.setViewBox(targetRect)
+        svg.setTitle("Generated with ETE http://ete.cgenomics.org")
+        svg.setDescription("Generated with ETE http://ete.cgenomics.org")
+
+        pp = QtGui.QPainter()
+        pp.begin(svg)
+        scene.render(pp, targetRect, scene.sceneRect())
+        pp.end()        # Fix a very annoying problem with Radial gradients in
+        # inkscape and browsers...
+        temp_compatible_code = open(imgName).read().replace("xml:id=", "id=")
+        compatible_code = re.sub('font-size="(\d+)"', 'font-size="\\1pt"', temp_compatible_code)
+        open(imgName, "w").write(compatible_code)
+        # End of fix
+
+    elif ext == "PDF" or ext == "PS":
+        format = QtGui.QPrinter.PostScriptFormat if ext == "PS" else QtGui.QPrinter.PdfFormat
+
+        printer = QtGui.QPrinter(QtGui.QPrinter.HighResolution)
+        printer.setResolution(dpi)
+        printer.setOutputFormat(format)
+        printer.setPageSize(QtGui.QPrinter.A4)
+
+        pageTopLeft = printer.pageRect().topLeft()
+        paperTopLeft = printer.paperRect().topLeft()
+        # For PS -> problems with margins
+        # print paperTopLeft.x(), paperTopLeft.y()
+        # print pageTopLeft.x(), pageTopLeft.y()
+        # print  printer.paperRect().height(),  printer.pageRect().height()
+        topleft =  pageTopLeft - paperTopLeft
+
+        printer.setFullPage(True);
+        printer.setOutputFileName(imgName);
+        pp = QtGui.QPainter(printer)
+        if header:
+            pp.setFont(QtGui.QFont("Verdana",12))
+            pp.drawText(topleft.x(),20, header)
+            targetRect =  QtCore.QRectF(topleft.x(), 20 + (topleft.y()*2), w, h)
+        else:
+            targetRect =  QtCore.QRectF(topleft.x(), topleft.y()*2, w, h)
+
+        scene.render(pp, targetRect, scene.sceneRect())
+        pp.end()
+        return
+    else:
+        scene.setBackgroundBrush(QtGui.QBrush(QtGui.QColor("white")));
+        targetRect = QtCore.QRectF(0, 0, w, h)
+        ii= QtGui.QImage(w, \
+                             h, \
+                             QtGui.QImage.Format_ARGB32)
+        pp = QtGui.QPainter(ii)
+        pp.setRenderHint(QtGui.QPainter.Antialiasing)
+        pp.setRenderHint(QtGui.QPainter.TextAntialiasing)
+        pp.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
+
+        scene.render(pp, targetRect, scene.sceneRect())
+        pp.end()
+        ii.save(imgName)
+

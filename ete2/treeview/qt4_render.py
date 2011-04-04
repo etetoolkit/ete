@@ -6,7 +6,8 @@ from PyQt4 import QtCore, QtGui, QtSvg
 import qt4_circular_render as crender
 import qt4_rect_render as rrender
 
-from main import _leaf, NodeStyle, _ActionDelegator
+from main import _leaf, NodeStyle
+from qt4_gui import _NodeActions as _ActionDelegator
 from qt4_face_render import update_node_faces, _FaceGroupItem, _TextFaceItem
 import faces
 
@@ -38,6 +39,8 @@ class _CircleItem(QtGui.QGraphicsEllipseItem, _ActionDelegator):
         self.node = node
         d = node.img_style["size"]
         QtGui.QGraphicsEllipseItem.__init__(self, 0, 0, d, d)
+        _ActionDelegator.__init__(self)
+
         self.setBrush(QtGui.QBrush(QtGui.QColor(self.node.img_style["fgcolor"])))
         self.setPen(QtGui.QPen(QtGui.QColor(self.node.img_style["fgcolor"])))
 
@@ -46,6 +49,7 @@ class _RectItem(QtGui.QGraphicsRectItem, _ActionDelegator):
         self.node = node
         d = node.img_style["size"]
         QtGui.QGraphicsRectItem.__init__(self, 0, 0, d, d)
+        _ActionDelegator.__init__(self)
         self.setBrush(QtGui.QBrush(QtGui.QColor(self.node.img_style["fgcolor"])))
         self.setPen(QtGui.QPen(QtGui.QColor(self.node.img_style["fgcolor"])))
 
@@ -55,6 +59,7 @@ class _SphereItem(QtGui.QGraphicsEllipseItem, _ActionDelegator):
         d = node.img_style["size"]
         r = d/2
         QtGui.QGraphicsEllipseItem.__init__(self, 0, 0, d, d)
+        _ActionDelegator.__init__(self)
         #self.setBrush(QtGui.QBrush(QtGui.QColor(self.node.img_style["fgcolor"])))
         self.setPen(QtGui.QPen(QtGui.QColor(self.node.img_style["fgcolor"])))
         gradient = QtGui.QRadialGradient(r, r, r,(d)/3,(d)/3)
@@ -333,20 +338,34 @@ def render(root_node, img, hide_root=False):
 
     adjust_faces_to_tranformations(img, mainRect, n2i, n2f, TREE_LAYERS)
 
+    parent.setRect(mainRect)
+    parent.setPen(QtGui.QPen(QtCore.Qt.NoPen))
+
+    if img.rotation:
+        rect = parent.boundingRect()
+        x =  rect.x() + rect.width()/2
+        y =  rect.y() +  rect.height()/2
+        parent.setTransform(QtGui.QTransform().translate(x, y).rotate(img.rotation).translate(-x, -y))
+
+    frame = QtGui.QGraphicsRectItem()
+    parent.setParentItem(frame)
+    mainRect = parent.mapToScene(mainRect).boundingRect()
+   
     mainRect.adjust(-img.margin_left, -img.margin_top, \
                          img.margin_right, img.margin_bottom)
 
-    add_legend(img, mainRect, parent)
-    add_title(img, mainRect, parent)
-    add_scale(img, mainRect, parent)
-    parent.setRect(mainRect)
+    add_legend(img, mainRect, frame)
+    add_title(img, mainRect, frame)
+    add_scale(img, mainRect, frame)
+    frame.setRect(mainRect)
 
     # Draws a border around the tree
     if not img.show_border:
-        parent.setPen(QtGui.QPen(QtCore.Qt.NoPen))
+        frame.setPen(QtGui.QPen(QtCore.Qt.NoPen))
     else:
-        parent.setPen(QtGui.QPen(QtGui.QColor("black")))
-    return parent, n2i, n2f
+        frame.setPen(QtGui.QPen(QtGui.QColor("black")))
+
+    return frame, n2i, n2f
 
 def adjust_faces_to_tranformations(img, mainRect, n2i, n2f, tree_layers):
     if img.mode == "circular":
@@ -604,8 +623,8 @@ def render_node_content(node, n2i, n2f, img):
 
         node_ball.setPos(ball_start_x, center-(ball_size/2.0))
 
-        from qt4_gui import _BasicNodeActions
-        node_ball.delegate = _BasicNodeActions()
+        #from qt4_gui import _BasicNodeActions
+        #node_ball.delegate = _BasicNodeActions()
         #node_ball.setAcceptsHoverEvents(True)
         #node_ball.setCursor(QtCore.Qt.PointingHandCursor)
         
@@ -837,93 +856,9 @@ def render_aligned_faces(img, mainRect, parent, n2i, n2f):
         mainRect.adjust(0, 0, extra_width, 0)
     return extra_width
 
-def save(scene, imgName, w=None, h=None, header=None, \
-             dpi=300, take_region=False):
-
-    ext = imgName.split(".")[-1].upper()
-    main_rect = scene.sceneRect()
-    print main_rect
-    aspect_ratio = main_rect.height() / main_rect.width()
-
-    # auto adjust size
-    if w is None and h is None and (ext == "PDF" or ext == "PS"):
-        w = dpi * 6.4
-        h = w * aspect_ratio
-        if h>dpi * 11:
-            h = dpi * 11
-            w = h / aspect_ratio
-    elif w is None and h is None:
-        w = main_rect.width()
-        h = main_rect.height()
-    elif h is None :
-        h = w * aspect_ratio
-    elif w is None:
-        w = h / aspect_ratio
-
-    if ext == "SVG": 
-        svg = QtSvg.QSvgGenerator()
-        svg.setFileName(imgName)
-        targetRect = QtCore.QRectF(0, 0, w, h)
-        svg.setSize(QtCore.QSize(w, h))
-        svg.setViewBox(targetRect)
-        svg.setTitle("Generated with ETE http://ete.cgenomics.org")
-        svg.setDescription("Generated with ETE http://ete.cgenomics.org")
-
-        pp = QtGui.QPainter()
-        pp.begin(svg)
-        scene.render(pp, targetRect, scene.sceneRect())
-        pp.end()        # Fix a very annoying problem with Radial gradients in
-        # inkscape and browsers...
-        temp_compatible_code = open(imgName).read().replace("xml:id=", "id=")
-        compatible_code = re.sub('font-size="(\d+)"', 'font-size="\\1pt"', temp_compatible_code)
-        open(imgName, "w").write(compatible_code)
-        # End of fix
-
-    elif ext == "PDF" or ext == "PS":
-        format = QPrinter.PostScriptFormat if ext == "PS" else QPrinter.PdfFormat
-
-        printer = QPrinter(QPrinter.HighResolution)
-        printer.setResolution(dpi)
-        printer.setOutputFormat(format)
-        printer.setPageSize(QPrinter.A4)
-
-        pageTopLeft = printer.pageRect().topLeft()
-        paperTopLeft = printer.paperRect().topLeft()
-        # For PS -> problems with margins
-        # print paperTopLeft.x(), paperTopLeft.y()
-        # print pageTopLeft.x(), pageTopLeft.y()
-        # print  printer.paperRect().height(),  printer.pageRect().height()
-        topleft =  pageTopLeft - paperTopLeft
-
-        printer.setFullPage(True);
-        printer.setOutputFileName(imgName);
-        pp = QtGui.QPainter(printer)
-        if header:
-            pp.setFont(QtGui.QFont("Verdana",12))
-            pp.drawText(topleft.x(),20, header)
-            targetRect =  QtCore.QRectF(topleft.x(), 20 + (topleft.y()*2), w, h)
-        else:
-            targetRect =  QtCore.QRectF(topleft.x(), topleft.y()*2, w, h)
-
-        scene.render(pp, targetRect, scene.sceneRect())
-        pp.end()
-        return
-    else:
-        scene.setBackgroundBrush(QtGui.QBrush(QtGui.QColor("white")));
-        targetRect = QtCore.QRectF(0, 0, w, h)
-        ii= QtGui.QImage(w, \
-                             h, \
-                             QtGui.QImage.Format_ARGB32)
-        pp = QtGui.QPainter(ii)
-        pp.setRenderHint(QtGui.QPainter.Antialiasing)
-        pp.setRenderHint(QtGui.QPainter.TextAntialiasing)
-        pp.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
-
-        scene.render(pp, targetRect, scene.sceneRect())
-        pp.end()
-        ii.save(imgName)
-
 def get_tree_img_map(n2i):
+  
+
     node_list = []
     face_list = []
     nid = 0

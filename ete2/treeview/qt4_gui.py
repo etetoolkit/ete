@@ -10,8 +10,9 @@ except ImportError:
     USE_GL = False
 
 import _mainwindow, _search_dialog, _show_newick, _open_newick, _about
-from main import random_color
+from main import random_color, TreeStyle, save
 import time
+
 def etime(f):
     def a_wrapper_accepting_arguments(*args, **kargs):
         global TIME
@@ -226,7 +227,8 @@ class _GUI(QtGui.QMainWindow):
         except Exception, e:
             print e
         else:
-            self.scene.initialize_tree_scene(t, "basic", TreeImageProperties())
+            self.scene.tree = t
+            self.img = TreeStyle()
             self.scene.draw()
 
     @QtCore.pyqtSignature("")
@@ -250,7 +252,7 @@ class _GUI(QtGui.QMainWindow):
             imgName = str(F.selectedFiles()[0])
             if not imgName.endswith(".pdf"):
                 imgName += ".pdf"
-            self.scene.save(imgName)
+            save(self.scene, imgName)
 
 
     @QtCore.pyqtSignature("")
@@ -406,7 +408,10 @@ class _PropertiesDialog(QtGui.QWidget):
         self.tableView.setItemDelegate(self.delegate)
 
         row = 0
-        for name,nodes in self.prop2nodes.iteritems():
+        items = self.prop2nodes.items()
+        items.sort()
+
+        for name, nodes in items:#self.prop2nodes.iteritems():
             value= getattr(nodes[0],name)
 
             index1 = self.model.index(row, 0, QtCore.QModelIndex())
@@ -419,7 +424,9 @@ class _PropertiesDialog(QtGui.QWidget):
             self._prop_indexes.add( (index1, index2) )
             row +=1
 
-        for name in self.style2nodes.iterkeys():
+        keys = self.style2nodes.keys()
+        keys.sort()
+        for name in keys:#self.style2nodes.iterkeys():
             value= self.style2values[name][0]
 
             index1 = self.model.index(row, 0, QtCore.QModelIndex())
@@ -505,6 +512,8 @@ class _TreeView(QtGui.QGraphicsView):
     def __init__(self,*args):
         QtGui.QGraphicsView.__init__(self,*args)
         self.n2hl = {}
+        self.buffer_node = None
+
 
         if USE_GL:
             print "USING GL"
@@ -554,7 +563,7 @@ class _TreeView(QtGui.QGraphicsView):
     def highlight_node(self, n, fullRegion=False):
         #self.unhighlight_node(n)
         fgcolor = "red"
-        bgcolor = "black"
+        bgcolor = "gray"
         item = self.scene().n2i[n]
         hl = QtGui.QGraphicsRectItem(item.content)
         if fullRegion:
@@ -563,7 +572,7 @@ class _TreeView(QtGui.QGraphicsView):
             hl.setRect(item.nodeRegion)
         hl.setPen(QtGui.QColor(fgcolor))
         hl.setBrush(QtGui.QColor(bgcolor))
-        hl.setOpacity(0.4)
+        hl.setOpacity(0.2)
         self.n2hl[n] = hl
 
     def unhighlight_node(self, n):
@@ -642,6 +651,7 @@ class _BasicNodeActions(object):
     def mouseReleaseEvent(obj, e):
         print "Released"
         if e.button() == QtCore.Qt.RightButton:
+            print obj.node
             obj.showActionPopup()
         elif e.button() == QtCore.Qt.LeftButton:
             obj.scene().view.prop_table.update_properties(obj.node)
@@ -661,52 +671,28 @@ class _NodeActions(object):
         self.setCursor(QtCore.Qt.PointingHandCursor)
         self.setAcceptsHoverEvents(True)
 
-    def hoverEnterEvent (self, e):
-        self.highlight_node()
-        return
-
-    def hoverLeaveEvent(self,e):
-        self.highlight_node()
-            
-    def mousePressEvent(self,e):
-        print "HECHO"        
-
-    def mouseReleaseEvent(self,e):
-        self.highlight()
+    def mouseReleaseEvent(self, e):
+        if not self.node: return
         if e.button() == QtCore.Qt.RightButton:
             self.showActionPopup()
         elif e.button() == QtCore.Qt.LeftButton:
             self.scene().view.prop_table.update_properties(self.node)
 
-    def highlight(self):
-            from qt4_circular_render import ArcPartition
-            try:
-                if self.highlighted == False:
-                    self.highlighted = True
-                    self.hl = QtGui.QGraphicsRectItem()
-                    self.hl.setRect(self.bg.boundingRect())
-                    self.hl.setPen(QtGui.QPen(QtGui.QColor("green")))
-                    self.hl.setBrush(QtGui.QBrush(QtCore.Qt.NoBrush))
-                    self.hl.setParentItem(self.bg)
-                    r = self.scene().n2i[self.scene().tree].max_r
 
-                    self.hl2 = ArcPartition(self.hl)
-                    data = list(self.bg.data)
-                    data[3] = r
-                    self.hl2.set_arc(*data)
-                    self.hl2.drawbg = True
-                    self.hl2.setPen(QtGui.QPen(QtGui.QColor("orange")))
-                    self.hl2.setBrush(QtGui.QBrush(QtGui.QColor(random_color())))
-                    
-                else:
+    def hoverEnterEvent (self, e):
+        if not self.node: return
+        self.scene().view.highlight_node(self.node, fullRegion=True)
 
-                    self.scene().removeItem(self.hl)
-                    self.highlighted = False                    
+    def hoverLeaveEvent(self,e):
+        if not self.node: return
+        self.scene().view.unhighlight_node(self.node)
+            
+    def mousePressEvent(self,e):
+        pass
 
-            except Exception, e: 
-                print e
             
     def mouseDoubleClickEvent(self,e):
+        if not self.node: return
         if not hasattr(self, "highlighted") or self.highlighted == False:
             bg = self.scene().n2i[self.node]
             bg.setPen(QtGui.QPen(QtGui.QColor("red")))
@@ -721,7 +707,7 @@ class _NodeActions(object):
 
     def showActionPopup(self):
         contextMenu = QtGui.QMenu()
-        if self.node.collapsed:
+        if self.node.img_style["draw_descendants"] == False:
             contextMenu.addAction( "Expand"           , self.toggle_collapse)
         else:
             contextMenu.addAction( "Collapse"         , self.toggle_collapse)
@@ -730,7 +716,7 @@ class _NodeActions(object):
         contextMenu.addAction( "Swap branches"        , self.swap_branches)
         contextMenu.addAction( "Delete node"          , self.delete_node)
         contextMenu.addAction( "Delete partition"     , self.detach_node)
-        contextMenu.addAction( "Add childs"           , self.add_childs)
+        contextMenu.addAction( "Add childs"           , self.add_children)
         contextMenu.addAction( "Populate partition"   , self.populate_partition)
         if self.node.up is not None and\
                 self.scene().tree == self.node:
@@ -738,7 +724,7 @@ class _NodeActions(object):
         else:
             contextMenu.addAction( "Extract"              , self.set_start_node)
 
-        if self.scene().buffer_node:
+        if self.scene().view.buffer_node:
             contextMenu.addAction( "Paste partition"  , self.paste_partition)
 
         contextMenu.addAction( "Cut partition"        , self.cut_partition)
@@ -762,38 +748,36 @@ class _NodeActions(object):
         self.scene().draw()
 
     def swap_branches(self):
-        self.node.swap_childs()
+        self.node.swap_children()
         self.scene().draw()
 
-    def add_childs(self):
+    def add_children(self):
         n,ok = QtGui.QInputDialog.getInteger(None,"Add childs","Number of childs to add:",1,1)
         if ok:
             for i in xrange(n):
                 ch = self.node.add_child()
-            self.scene().set_style_from(self.scene().tree,self.scene().layout_func)
+        self.scene().draw()
 
     def void(self):
         return True
 
     def set_as_outgroup(self):
         self.scene().tree.set_outgroup(self.node)
-        self.scene().set_style_from(self.scene().tree, self.scene().layout_func)
         self.scene().draw()
 
     def toggle_collapse(self):
-        self.node.collapsed ^= True
+        self.node.img_style["draw_descendants"] ^= True
         self.scene().draw()
 
     def cut_partition(self):
-        self.scene().buffer_node = self.node
+        self.scene().view.buffer_node = self.node
         self.node.detach()
         self.scene().draw()
 
     def paste_partition(self):
-        if self.scene().buffer_node:
-            self.node.add_child(self.scene().buffer_node)
-            self.scene().set_style_from(self.scene().tree,self.scene().layout_func)
-            self.scene().buffer_node= None
+        if self.scene().view.buffer_node:
+            self.node.add_child(self.scene().view.buffer_node)
+            self.scene().view.buffer_node= None
             self.scene().draw()
 
     def populate_partition(self):
