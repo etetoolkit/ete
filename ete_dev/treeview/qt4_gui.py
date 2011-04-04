@@ -173,21 +173,25 @@ class _GUI(QtGui.QMainWindow):
     def on_actionBranchLength_triggered(self):
         self.scene.img.show_branch_length ^= True
         self.scene.draw()
+        self.view.centerOn(0,0)
 
     @QtCore.pyqtSignature("")
     def on_actionBranchSupport_triggered(self):
         self.scene.img.show_branch_support ^= True
         self.scene.draw()
+        self.view.centerOn(0,0)
 
     @QtCore.pyqtSignature("")
     def on_actionLeafName_triggered(self):
         self.scene.img.show_leaf_name ^= True
         self.scene.draw()
+        self.view.centerOn(0,0)
 
     @QtCore.pyqtSignature("")
     def on_actionForceTopology_triggered(self):
         self.scene.img.force_topology ^= True
         self.scene.draw()
+        self.view.centerOn(0,0)
 
     @QtCore.pyqtSignature("")
     def on_actionShow_newick_triggered(self):
