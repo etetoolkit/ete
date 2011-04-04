@@ -192,27 +192,46 @@ _ex('find %s -name \'*.py\' -o -name \'*.rst\'| xargs perl -e "s/ete2_tester/%s/
               (RELEASE_PATH, MODULE_NAME) )
 _ex('cd %s; python setup.py build' %(RELEASE_PATH))
 
-# Generate reference guide
+
+
+print "Cleaning doc dir:"
+_ex("mv %s/doc %s/sdoc" %(RELEASE_PATH, RELEASE_PATH))
+_ex("mkdir %s/doc" %(RELEASE_PATH))
+
 if options.doc:
     print "*** Creating reference guide"
-    _ex('export PYTHONPATH="%s/build/lib/"; epydoc %s -n %s --exclude PyQt4  --inheritance grouped --name ete2 -o %s/doc/ete_guide_html' %\
-                  (RELEASE_PATH, RELEASE_MODULE_PATH, RELEASE_NAME, RELEASE_PATH))
+    #_ex('export PYTHONPATH="%s/build/lib/"; epydoc %s -n %s --exclude PyQt4  --inheritance grouped --name ete2 -o %s/doc/ete_guide_html' %\
+    #              (RELEASE_PATH, RELEASE_MODULE_PATH, RELEASE_NAME, RELEASE_PATH))
     #_ex('export PYTHONPATH="%s/build/lib/"; epydoc %s -n %s  --exclude PyQt4 --pdf --inheritance grouped --name ete2 -o %s/doc/latex_guide' %\
     #_ex('export PYTHONPATH="%s/build/lib/"; epydoc %s -n %s  --exclude PyQt4  --inheritance grouped --name ete2 -o %s/doc/latex_guide' %\
     #              (RELEASE_PATH, RELEASE_MODULE_PATH, RELEASE_NAME, RELEASE_PATH))
     # _ex("cp %s/doc/latex_guide/api.pdf %s/doc/%s.pdf " %\
     #              (RELEASE_PATH, RELEASE_PATH, RELEASE_NAME))
+    _ex("cd %s/sdoc; make html" % RELEASE_PATH)
+    _ex("cd %s/sdoc; make latex" % RELEASE_PATH)
+    _ex("cd %s/sdoc/_build/latex/; make all-pdf" % RELEASE_PATH)
+    _ex("cp -a %s/sdoc/_build/html/ %s/doc/" %(RELEASE_PATH, RELEASE_PATH))
+    _ex("cp -a %s/sdoc/_build/latex/*.pdf %s/doc/" %(RELEASE_PATH, RELEASE_PATH))
+
+    copydoc= ask("Update ONLINE documentation?", ["y","n"])
+    if copydoc=="y":
+        # INSTALL THIS http://pypi.python.org/pypi/Sphinx-PyPI-upload/0.2.1
+        print "Uploading"
+        _ex("cd %s; python setup.py upload_sphinx --upload-dir %s/doc/html/ --show-response" %\
+                (RELEASE_PATH, RELEASE_PATH))
+        #_ex("rsync -r %s/doc/ete_guide_html/ %s/html/" %\
+        #        (RELEASE_PATH, SERVER+":"+SERVER_DOC_PATH))
+
 
 # Clean from internal files
 _ex("rm %s/.git -r" %\
         (RELEASE_PATH))
 _ex('rm %s/build/ -r' %(RELEASE_PATH))
+_ex('rm %s/sdoc/ -r' %(RELEASE_PATH))
 _ex('rm %s/___* -r' %(RELEASE_PATH))
 
-# Creates tar ball
-# print "Creating tar gz.."
-# _ex('cd %s/..; tar -zcf %s.tar.gz %s/' %\
-#        (RELEASE_PATH, RELEASE_NAME, RELEASE_NAME))
+print "Creating tar.gz"
+_ex("cd %s; python ./setup.py sdist " %RELEASE_PATH) 
 
 release= ask("Copy release to main server?", ["y","n"])
 if release=="y":
@@ -223,26 +242,7 @@ if release=="y":
             (RELEASE_PATH, RELEASE_NAME, SERVER+":"+SERVER_RELEASES_PATH))
     print "Updating releases table..."
     _ex("ssh %s 'cd %s; sh update_downloads.sh'" %(SERVER, SERVER_RELEASES_PATH))
- 
 
-if options.doc:
-    copydoc= ask("Update documentation?", ["y","n"])
-    if copydoc=="y":
-        #print "Copying guide PDF..."
-        #_ex("scp %s/doc/%s.pdf %s/ete_guide.pdf" %\
-        #        (RELEASE_PATH, RELEASE_NAME,  SERVER+":"+SERVER_DOC_PATH))
-        print "Copying html guide..."
-        _ex("rsync -r %s/doc/ete_guide_html/ %s/html/" %\
-                (RELEASE_PATH, SERVER+":"+SERVER_DOC_PATH))
-if options.lyx:
-    copytuto= ask("Update tutorial?", ["y","n"])
-    if copytuto=="y":
-        print "Copying tutorial..."
-        _ex("scp %s/doc/%s_tutorial.pdf %s/ete_tutorial.pdf" %\
-                (RELEASE_PATH, RELEASE_NAME,  SERVER+":"+SERVER_DOC_PATH))
-        print "Copying tutorial examples..."
-        _ex("scp %s/doc/%s_tutorial_examples.tar.gz %s/ete_tutorial_examples.tar.gz" %(RELEASE_PATH, RELEASE_NAME, SERVER+":"+SERVER_DOC_PATH))
-        
 
 updatemeta= ask("Update metapkg?", ["y","n"])
 if updatemeta=="y":

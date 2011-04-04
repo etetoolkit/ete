@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # #START_LICENSE###########################################################
 #
 #
@@ -34,6 +35,7 @@
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
 # If you use ETE for your analysis, please support its development by
+
 # citing the program.
 #
 # The code of the ETE package is currently maintained by Jaime
