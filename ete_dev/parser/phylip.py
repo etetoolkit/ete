@@ -163,8 +163,8 @@ def write_phylip(aln, outfile=None, interleaved=True):
             if len(name)>10:
                 name = name[:10]
                 show_name_warning = True
-            alg_text += "%s %s\n%s\n" %\
-                (name, seq[0:width-13], '\n'.join([seq[k:k+width]  \
+            alg_text += "%s   %s\n%s\n" %\
+                (name.ljust(10), seq[0:width-13], '\n'.join([seq[k:k+width]  \
                                       for k in xrange(width-13, len(seq), width)]))
     if show_name_warning:
         print >>STDERR, "Warning! Some seqnames are longer 10 characters"
