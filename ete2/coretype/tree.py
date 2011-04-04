@@ -825,7 +825,7 @@ class TreeNode(object):
         # sister nodes, creates a new node to group them
 
         self.children.remove(n)
-        if len(self.children)>1:
+        if len(self.children)!=1:
             down_branch_connector = self.__class__()
             down_branch_connector.dist = 0.0
             down_branch_connector.support = n.support
