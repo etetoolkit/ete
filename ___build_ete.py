@@ -158,11 +158,8 @@ _ex('find %s -name \'*.py\' -exec  python ___put_disclaimer.py {} \;' %\
 # correct name for stable releases. First I install the module using a
 # different name just to test it
 print "*** Fixing imports..."
-_ex('find %s -name \'*.py\' | xargs perl -e "s/ete_dev/ete2_tester/g" -p -i' %\
-              (RELEASE_PATH) )
-
-_ex('find %s/doc -name \'*.rst\'| xargs perl -e "s/ete_dev/ete2/g" -p -i' %\
-              (RELEASE_PATH) )
+_ex('find %s -name \'*.py\' -o -name \'*.rst\'| xargs perl -e "s/ete_dev/ete2_tester/g" -p -i' %\
+        (RELEASE_PATH))
 
 _ex('mv %s/ete_dev %s/ete2_tester' %(RELEASE_PATH, RELEASE_PATH))
 _ex('cd %s; python setup.py build --build-lib=build/lib' %(RELEASE_PATH))
@@ -214,6 +211,10 @@ if options.doc:
     _ex("cd %s/sdoc/_build/latex/; make all-pdf" % RELEASE_PATH)
     _ex("cp -a %s/sdoc/_build/html/ %s/doc/" %(RELEASE_PATH, RELEASE_PATH))
     _ex("cp -a %s/sdoc/_build/latex/*.pdf %s/doc/" %(RELEASE_PATH, RELEASE_PATH))
+
+
+    _ex('find %s/doc | xargs perl -e "s/%s/ete2/g" -p -i' %\
+            (RELEASE_PATH, MODULE_NAME) )
 
     copydoc= ask("Update ONLINE documentation?", ["y","n"])
     if copydoc=="y":
