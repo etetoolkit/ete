@@ -44,8 +44,6 @@ class _GUI(QtGui.QMainWindow):
         if scene.img.force_topology: 
             self.main.actionForceTopology.setChecked(True)
 
-
-
         splitter = QtGui.QSplitter()
         splitter.addWidget(self.view)
         splitter.addWidget(self.node_properties)

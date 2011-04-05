@@ -1074,6 +1074,8 @@ class TreeNode(object):
 
     def sort_descendants(self):
         """ 
+        .. versionadded: 2.1 
+
         This function sort the branches of a given tree by
         considerening node names. After the tree is sorted, nodes are
         labeled using ascendent numbers.  This can be used to ensure that
@@ -1101,6 +1103,8 @@ class TreeNode(object):
 
     def convert_to_ultrametric(self, tree_length, strategy="balanced"):
         """
+        .. versionadded: 2.1 
+
         Converts a tree to ultrametric topology (all leaves must
         have the same distance to root).
         """
@@ -1130,6 +1134,8 @@ class TreeNode(object):
 
     def add_face(self, face, column, position):
         """
+        .. versionadded: 2.1 
+
         Add a face to the node. NOT IMPLEMENTED YET
         """
         pass

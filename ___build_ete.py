@@ -102,7 +102,6 @@ def ask_path(string, default_path):
 #Check repo is commited
 
 #Creates a release clone
-BRANCH_NAME = "2.1beta"
 SERVER="jhuerta@cgenomics"
 SERVER_RELEASES_PATH = "/home/services/web/ete.cgenomics.org/releases/ete2"
 SERVER_DOC_PATH = "/home/services/web/ete.cgenomics.org/releases/ete2/doc"
@@ -110,8 +109,8 @@ SERVER_METAPKG_PATH = "/home/services/web/ete.cgenomics.org/releases/ete2/metapk
 METAPKG_JAIL_PATH = "/home/jhuerta/_Devel/ete_metapackage/etepkg_CheckBeforeRm"
 METAPKG_PATH = "/home/jhuerta/_Devel/ete_metapackage"
 RELEASES_BASE_PATH = "/tmp"
-VERSION = BRANCH_NAME+"rev"+commands.getoutput("git log --pretty=format:'' | wc -l").strip()
-MODULE_NAME = "ete21b1"
+MODULE_NAME = "ete2a1"
+VERSION = MODULE_NAME+"rev"+commands.getoutput("git log --pretty=format:'' | wc -l").strip()
 RELEASE_NAME = MODULE_NAME+"-"+VERSION
 RELEASE_PATH = os.path.join(RELEASES_BASE_PATH, RELEASE_NAME)
 RELEASE_MODULE_PATH = os.path.join(RELEASE_PATH, MODULE_NAME)
@@ -159,7 +158,10 @@ _ex('find %s -name \'*.py\' -exec  python ___put_disclaimer.py {} \;' %\
 # correct name for stable releases. First I install the module using a
 # different name just to test it
 print "*** Fixing imports..."
-_ex('find %s -name \'*.py\' -o -name \'*.rst\'| xargs perl -e "s/ete_dev/ete2_tester/g" -p -i' %\
+_ex('find %s -name \'*.py\' | xargs perl -e "s/ete_dev/ete2_tester/g" -p -i' %\
+              (RELEASE_PATH) )
+
+_ex('find %s/doc -name \'*.rst\'| xargs perl -e "s/ete_dev/ete2/g" -p -i' %\
               (RELEASE_PATH) )
 
 _ex('mv %s/ete_dev %s/ete2_tester' %(RELEASE_PATH, RELEASE_PATH))

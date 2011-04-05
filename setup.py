@@ -122,9 +122,13 @@ if missing:
         sys.exit()
 
 # SETUP
+
+ete_version = open("VERSION").readline().strip()
+mod_name = ete_version.split("rev")[0]
+
 setup(
-    name = "ete2",
-    version = open("VERSION").readline().strip(),
+    name = mode_name,
+    version = ete_version,
     packages = find_packages(),
 
     requires = [],
@@ -146,7 +150,7 @@ setup(
     description = "A python Environment for Tree Exploration",
     long_description = DESCRIPTION.replace("\n", " "),
     classifiers = TAGS,
-    provides = ['ete2'],
+    provides = [mode_name],
     keywords = "bioinformatics phylogeny evolution phylogenomics genomics tree clustering phylogenetics phylogenetic ete orthology paralogy",
     url = "http://ete.cgenomics.org",
     download_url = "http://ete.cgenomics.org/releases/ete2/",
