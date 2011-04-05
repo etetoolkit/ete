@@ -127,7 +127,7 @@ ete_version = open("VERSION").readline().strip()
 mod_name = ete_version.split("rev")[0]
 
 setup(
-    name = mode_name,
+    name = mod_name,
     version = ete_version,
     packages = find_packages(),
 
@@ -150,7 +150,7 @@ setup(
     description = "A python Environment for Tree Exploration",
     long_description = DESCRIPTION.replace("\n", " "),
     classifiers = TAGS,
-    provides = [mode_name],
+    provides = [mod_name],
     keywords = "bioinformatics phylogeny evolution phylogenomics genomics tree clustering phylogenetics phylogenetic ete orthology paralogy",
     url = "http://ete.cgenomics.org",
     download_url = "http://ete.cgenomics.org/releases/ete2/",
