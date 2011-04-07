@@ -48,4 +48,5 @@ What's new in ETE 2.1
    * Fix: "if not node: do something" syntax was using a len(node)
      test, which made it totally inefficient. Now, any node instance
      returns always True.
+   * Traversing methods are now much faster
 * Improved documentation tutorial and reference guide!

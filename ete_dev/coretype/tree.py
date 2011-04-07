@@ -411,6 +411,7 @@ class TreeNode(object):
         for n in self.traverse(strategy=strategy):
             if n != self:
                 yield n
+
     def _iter_descendants_postorder(self):
         """
         Iterate over all desdecendant nodes. 
@@ -437,6 +438,7 @@ class TreeNode(object):
         #tovisit = [self]
         tovisit = deque([self])
         while len(tovisit)>0:
+            #current = tovisit.pop()
             current = tovisit.popleft()
             yield current
             tovisit.extend(current.children)
@@ -454,7 +456,7 @@ class TreeNode(object):
             to_visit.extendleft(node.children) 
             try:
                 #node = to_visit.pop(0)
-                node = to_visit.popleft(0)
+                node = to_visit.popleft()
             except:
                 node = None
 
