@@ -223,7 +223,7 @@ if options.doc:
         #_ex("cd %s; python setup.py upload_sphinx --upload-dir %s/doc/html/ --show-response" %\
         #        (RELEASE_PATH, RELEASE_PATH))
 
-        _ex("rsync -arv doc/html/ jhuerta@cgenomics:/data/services/web/ete.cgenomics.org/doc/2.1/" %\
+        _ex("cd %s; rsync -arv doc/html/ jhuerta@cgenomics:/data/services/web/ete.cgenomics.org/doc/2.1/" %\
                 (RELEASE_PATH))
 
         #_ex("rsync -r %s/doc/ete_guide_html/ %s/html/" %\
