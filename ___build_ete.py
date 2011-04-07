@@ -220,8 +220,12 @@ if options.doc:
     if copydoc=="y":
         # INSTALL THIS http://pypi.python.org/pypi/Sphinx-PyPI-upload/0.2.1
         print "Uploading"
-        _ex("cd %s; python setup.py upload_sphinx --upload-dir %s/doc/html/ --show-response" %\
-                (RELEASE_PATH, RELEASE_PATH))
+        #_ex("cd %s; python setup.py upload_sphinx --upload-dir %s/doc/html/ --show-response" %\
+        #        (RELEASE_PATH, RELEASE_PATH))
+
+        _ex("rsync -arv doc/html/ jhuerta@cgenomics:/data/services/web/ete.cgenomics.org/doc/2.1/" %\
+                (RELEASE_PATH))
+
         #_ex("rsync -r %s/doc/ete_guide_html/ %s/html/" %\
         #        (RELEASE_PATH, SERVER+":"+SERVER_DOC_PATH))
 
