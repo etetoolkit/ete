@@ -23,6 +23,7 @@
 import os
 import random
 import copy 
+from collections import deque 
 
 __all__ = ["Tree", "TreeNode"]
 
@@ -433,9 +434,10 @@ class TreeNode(object):
         """ 
         Iterate over all desdecendant nodes. 
         """
-        tovisit = [self]
+        #tovisit = [self]
+        tovisit = deque([self])
         while len(tovisit)>0:
-            current = tovisit.pop(0)
+            current = tovisit.dequeleft()
             yield current
             tovisit.extend(current.children)
 
@@ -443,13 +445,16 @@ class TreeNode(object):
         """
         Iterator over all descendant nodes. 
         """
-        to_visit = []
+        #to_visit = []
+        to_visit = deque()
         node = self
         while node is not None:
             yield node
-            to_visit = node.children + to_visit
+            #to_visit = node.children + to_visit
+            to_visit.extendleft(node.children) 
             try:
-                node = to_visit.pop(0)
+                #node = to_visit.pop(0)
+                node = to_visit.popleft(0)
             except:
                 node = None
 
