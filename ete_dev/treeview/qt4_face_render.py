@@ -13,8 +13,8 @@ class _TextFaceItem(QGraphicsSimpleTextItem, _ActionDelegator):
         self.node = node
 
 class _ImgFaceItem(QGraphicsPixmapItem, _ActionDelegator):
-    def __init__(self, face, node):
-        QGraphicsPixmapItem.__init__(self)
+    def __init__(self, face, node, pixmap):
+        QGraphicsPixmapItem.__init__(self, pixmap)
         _ActionDelegator.__init__(self)
         self.node = node
 
