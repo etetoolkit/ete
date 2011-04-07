@@ -437,7 +437,7 @@ class TreeNode(object):
         #tovisit = [self]
         tovisit = deque([self])
         while len(tovisit)>0:
-            current = tovisit.dequeleft()
+            current = tovisit.popleft()
             yield current
             tovisit.extend(current.children)
 
