@@ -32,6 +32,7 @@ What's new in ETE 2.1
    * Added :func:`TreeNode.copy`:  returns an exact and independent copy of node and all its attributes
    * Added :func:`TreeNode.convert_to_ultrametric`: converts all branch lengths to allow leaves to be equidistant to root
    * Added :func:`TreeNode.sort_descendants`: sort tree branches according to node names.
+   * Added :func:`TreeNode.ladderize`: sort tree branches according to partition size
    * nodes can now be fully exported using cPickle 
    * newick parser can read distances and support values using scientific notation
    * :func:`TreeNode.swap_childs` method has changed to :func:`TreeNode.swap_children`
@@ -42,11 +43,15 @@ What's new in ETE 2.1
 * Added more examples
 * Bug Fixes and improvements: 
   
-   * Fix: :func:`TreeNode.get_common_ancestor` accepts a list of nodes 
+   * Fix: :func:`TreeNode.get_common_ancestor` accepts a single argument (node or list of nodes) instead of a succession or nodes. It can also return the path of each node to the parent.
    * Fix: Fast scroll based zooming produced tree inversion 
    * Fix: Phylip parser does not truncate long names by default
    * Fix: "if not node: do something" syntax was using a len(node)
      test, which made it totally inefficient. Now, any node instance
      returns always True.
-   * Traversing methods are now much faster
+   * Improved: Traversing methods are now much faster (specially preorder and levelorder)
+   * Improved: Faster populate function (added possibility of random and non-random branch lengths)
+   * Improved: Faster prune function
+   
+
 * Improved documentation tutorial and reference guide!

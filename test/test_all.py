@@ -27,6 +27,7 @@ import random
 import sys
 import numpy
 import copy
+import time
 
 from ete_dev import *
 from ete_dev.coretype.tree import asRphylo, asETE
@@ -452,28 +453,47 @@ class Test_Coretype_Tree(unittest.TestCase):
         self.assertEqual(J in t, False)
         self.assertEqual(set([n.name for n in t.iter_descendants()]),set(["A","B","C","I","H"]))
 
+
+        #prune
+        t1 = Tree()
+        t1.populate(50)
+        t1.ladderize()
+        t1.ladderize(1)
+
         #prune
         t1 = Tree("(((A, B), C)[&&NHX:name=I], (D, F)[&&NHX:name=J])[&&NHX:name=root];")
         D1 = t1.search_nodes(name="D")[0]
         root = t.search_nodes(name="root")[0]
         t1.prune(["A","C", D1])
         self.assertEqual(set([n.name for n in t1.iter_descendants()]),  set(["A","C","D","I"]))
+        
+        
         t_fuzzy = Tree("(((A,B), C),(D,E));")
         orig_nw = t_fuzzy.write()
         ref_nodes = t_fuzzy.get_leaves()
-        t_fuzzy.populate(1000)
+        t_fuzzy.populate(100)
         t_fuzzy.prune(ref_nodes)
         self.assertEqual(t_fuzzy.write(),orig_nw)
-       
+        # Total number of nodes is correct (no single child nodes)
+        self.assertEqual(len(t_fuzzy.get_descendants()), (len(ref_nodes)*2)-2 )
 
+
+        t = Tree()
+        sample_size = 5
+        t.populate(10000)
+        sample = random.sample(t.get_leaves(), sample_size)
+        t.prune(sample)
+        self.assertEqual(len(t), sample_size)
+        self.assertEqual(len(t.get_descendants()), (sample_size*2)-2 )
+       
         # getting nodes, get_childs, get_sisters, get_tree_root,
         # get_common_ancestor, get_nodes_by_name
         # get_descendants_by_name, is_leaf, is_root
-        t = Tree("(((A,B),C)[&&NHX:tag=common],D)[&&NHX:tag=root];")
+        t = Tree("(((A,B),C)[&&NHX:tag=common],D)[&&NHX:tag=root:name=root];")
         A = t.search_nodes(name="A")[0]
         B = t.search_nodes(name="B")[0]
         C = t.search_nodes(name="C")[0]
-
+        root = (t&"root")
         self.assertEqual("A", A.name)
 
         common  = A.get_common_ancestor(C)
@@ -481,6 +501,8 @@ class Test_Coretype_Tree(unittest.TestCase):
 
         common  = A.get_common_ancestor(C, B)
         self.assertEqual("common", common.tag)
+
+        self.assertEqual(root, t.get_common_ancestor([A, "D"]))
 
         self.assertEqual("root", A.get_tree_root().tag)
         self.assertEqual("root", B.get_tree_root().tag)
@@ -651,6 +673,43 @@ class Test_Coretype_Tree(unittest.TestCase):
         # positions.
         dist = set([round(l.get_distance(t), 6) for l in t.iter_leaves()])
         self.assertEqual(dist, set([200.0]))
+
+    def test_traversing_speed(self):
+        return
+        for x in xrange(10):
+            t = Tree()
+            t.populate(100000)
+
+            leaves = t.get_leaves()
+            sample = random.sample(leaves, 100)
+
+            t1 = time.time()
+            a = t.get_common_ancestor_OLD(sample)
+            t2 = time.time() - t1
+            print "OLD get common", t2
+
+            t1 = time.time()
+            b = t.get_common_ancestor(sample)
+            t2 = time.time() - t1
+            print "NEW get common", t2
+
+            self.assertEqual(a, b)
+
+
+            t1 = time.time()
+            [n for n in t._iter_descendants_postorder_OLD()]
+            t2 = time.time() - t1
+            print "OLD postorder", t2
+
+            t1 = time.time()
+            [n for n in t._iter_descendants_postorder()]
+            t2 = time.time() - t1
+            print "NEW postorder", t2
+
+
+
+        
+
 
 class Test_phylo_module(unittest.TestCase):
 
@@ -1003,7 +1062,7 @@ class Test_Coretype_ArrayTable(unittest.TestCase):
                                     ["col5", "col6"]}, \
                                    "mean")
 
-
+        
         #self.assert_((Abis.get_column_vector("merged1")==numpy.array([-1.02, -1.35, -1.03, -1.1, -1.15, -1.075, -1.37, -1.39, ])).all()==True )
 
         # Continue this......

@@ -351,7 +351,58 @@ class TreeNode(object):
             self.up = None
         return self
 
+
     def prune(self, nodes):
+        """
+        Prunes the topology of this node in order to conserve only a
+        selected list of leaf or internal nodes. The algorithm deletes
+        nodes until getting a consistent topology with a subset of
+        nodes. Topology relationships among kept nodes is maintained.
+
+        :var nodes: a list of node names or node objects that must be kept
+
+        **Examples:**
+
+        ::
+
+          t = Tree("(((A:0.1, B:0.01):0.001, C:0.0001):1.0[&&NHX:name=I], (D:0.00001):0.000001[&&NHX:name=J]):2.0[&&NHX:name=root];")
+          node_C = t.search_nodes(name="C")[0]
+          t.prune(["A","D", node_C])
+          print t
+        """
+
+        to_keep = set(_translate_nodes(self, *nodes))
+        
+        start, node2path = self.get_common_ancestor(to_keep, get_path=True)
+        n2count = {}
+        for n1, path1 in node2path.iteritems():
+            for n2 in path1: 
+                n2count[n2] = n2count.get(n2, 0) + 1
+        
+        to_keep.update([n for n,count in n2count.iteritems() if count >1])
+       
+        #for n1, path1 in node2path.iteritems():
+        #    for n2 in path1: 
+        #        for n3, path2 in node2path.iteritems():
+        #            if n1 != n2 and n2 in path2: 
+        #                to_keep.add(n2)
+
+        #i = all_paths[0].intersection(*all_paths[1:])
+        #to_keep.update(i)
+
+        if start is not self:
+            start.detach()
+            for n in self.get_children(): 
+                n.detach()
+            for n in start.get_children():
+                self.add_child(child=n)
+
+        for n in self.traverse(): 
+            if n not in to_keep: 
+                n.delete()
+
+
+    def prune_OLD(self, nodes):
         """
         Prunes the topology of this node in order to conserve only a
         selected list of leaf or internal nodes. The algorithm deletes
@@ -412,7 +463,7 @@ class TreeNode(object):
             if n != self:
                 yield n
 
-    def _iter_descendants_postorder(self):
+    def _iter_descendants_postorder_OLD(self):
         """
         Iterate over all desdecendant nodes. 
         """
@@ -430,6 +481,17 @@ class TreeNode(object):
                 visited_childs.add(current)
                 yield current
                 current = current.up
+
+    def _iter_descendants_postorder(self):
+        """
+        Iterate over all desdecendant nodes. 
+        """
+        for ch in self.children:
+            for node in ch._iter_descendants_postorder():
+                yield node
+        yield self
+
+
 
     def _iter_descendants_levelorder(self):
         """ 
@@ -559,7 +621,7 @@ class TreeNode(object):
             root = root.up
         return root
 
-    def get_common_ancestor(self, *target_nodes):
+    def get_common_ancestor_OLD(self, *target_nodes):
         """ 
         Returns the first common ancestor between this node and a given
         list of 'target_nodes'.
@@ -605,7 +667,75 @@ class TreeNode(object):
                 prev_node = current
                 current = current.up
 
+        
         return current
+
+
+    def get_common_ancestor(self, *target_nodes, **kargs):
+        """ 
+        Returns the first common ancestor between this node and a given
+        list of 'target_nodes'.
+
+        **Examples:**
+
+        ::
+
+          t = tree.Tree("(((A:0.1, B:0.01):0.001, C:0.0001):1.0[&&NHX:name=common], (D:0.00001):0.000001):2.0[&&NHX:name=root];")
+          A = t.get_descendants_by_name("A")[0]
+          C = t.get_descendants_by_name("C")[0]
+          common =  A.get_common_ancestor(C)
+          print common.name
+
+        """
+        
+        get_path = kargs.get("get_path", False)
+
+        if len(target_nodes) == 1 and type(target_nodes[0]) \
+                in set([set, tuple, list, frozenset]):
+            target_nodes = target_nodes[0]
+
+        # Convert node names into node instances
+        target_nodes = _translate_nodes(self, *target_nodes)
+
+        # If only one node is provided, use self as the second target
+        if type(target_nodes) != list:
+            target_nodes = [target_nodes, self]
+        elif len(target_nodes)==1:
+            target_nodes = tree_nodes.append(self)
+
+        n2path = {}
+        reference = []
+        ref_node = None
+        for n in target_nodes:
+            current = n
+            while current: 
+                n2path.setdefault(n, set()).add(current)
+                if not ref_node:
+                    reference.append(current)
+                current = current.up
+            if not ref_node:
+                ref_node = n
+
+        common = None
+        for n in reference:
+            broken = False
+            for node, path in n2path.iteritems():
+                if node is not ref_node and n not in path:
+                    broken = True
+                    break
+
+            if not broken: 
+                common = n
+                break
+        if not common: 
+            raise ValueError("Nodes are not connected!")
+
+        if get_path:
+            return common, n2path
+        else:
+            return common
+
+
 
     def get_leaves(self):
         """
@@ -827,7 +957,46 @@ class TreeNode(object):
                 current = current.up
         return current
 
-    def populate(self, size, names_library=[], reuse_names=False):
+    def populate(self, size, names_library=[], reuse_names=False, random_dist=False): 
+        NewNode = self.__class__
+
+        if len(self.children) > 1: 
+            connector = NewNode()
+            for ch in self.get_children():
+                ch.detach()
+                connector.add_child(child = ch)
+            root = NewNode()
+            self.add_child(child = connector)
+            self.add_child(child = root)
+        else:
+            root = self
+
+        next = deque([root])
+        for i in xrange(size-1):
+            if random.randint(0, 1):
+                p = next.pop()
+            else:
+                p = next.popleft()
+
+            c1 = p.add_child()
+            c2 = p.add_child()
+            next.extend([c1, c2])
+            if random_dist:
+                c1.dist = random.random()
+                c2.dist = random.random()
+        # next contains leaf nodes
+        charset =  "abcdefghijklmnopqrstuvwxyz"
+        names_library = deque(names_library)
+        for n in next:
+            if names_library:
+                if reuse_names: 
+                    tname = random.sample(names_library, 1)[0]
+                else:
+                    tname = names_library.pop()
+            tname = ''.join(random.sample(charset,5))
+            n.name = tname
+            
+    def old_populate(self, size, names_library=[], reuse_names=False):
         """
         Populates the partition under this node with a given number
         of leaves. Internal nodes are added as required.
@@ -844,6 +1013,7 @@ class TreeNode(object):
         """
 
         charset =  "abcdefghijklmnopqrstuvwxyz"
+        
         prev_size = len(self)
         terminal_nodes = set(self.get_leaves())
         silly_nodes = set([n for n in self.traverse() \
@@ -874,6 +1044,7 @@ class TreeNode(object):
             tdist = random.random()
             new_node = target.add_child( name=tname, dist=tdist )
             terminal_nodes.add(new_node)
+
     def set_outgroup(self, outgroup):
         """
         Sets a descendant node as the outgroup of a tree.  This function
@@ -1079,6 +1250,60 @@ class TreeNode(object):
         return '\n'+'\n'.join(lines)
 
 
+    def ladderize(self, direction=0):
+        """ 
+        .. versionadded: 2.1 
+
+        Sort the branches of a given tree (swapping children nodes)
+        according to the size of each partition.
+        """
+
+        if not self.is_leaf():
+            n2s = {}
+            for n in self.get_children():
+                s = n.ladderize(direction=direction)
+                n2s[n] = s
+
+            self.children.sort(lambda x,y: cmp(n2s[x], n2s[y]))
+            if direction == 1:
+                self.children.reverse()
+            size = sum(n2s.values())
+        else:
+            size = 1
+
+        return size
+
+    def sort_descendants(self):
+        """ 
+        .. versionadded: 2.1 
+
+        This function sort the branches of a given tree by
+        considerening node names. After the tree is sorted, nodes are
+        labeled using ascendent numbers.  This can be used to ensure that
+        nodes in a tree with the same node names are always labeled in
+        the same way.  Note that if duplicated names are present, extra
+        criteria should be added to sort nodes.
+        unique id is stored in _nid
+        """
+        from hashlib import md5
+        for n in self.traverse(strategy="postorder"):
+            if n.is_leaf():
+                key = md5(str(n.name)).hexdigest()
+                n.__idname = key
+            else:
+                key = md5 (str (\
+                    sorted ([c.__idname for c in n.children]))).hexdigest()
+                n.__idname=key
+                children = [[c.__idname, c] for c in n.children]
+                children.sort() # sort list by idname
+                n.children = [item[1] for item in children]
+            counter = 1
+        for n in self.traverse(strategy="postorder"):
+            n.add_features(_nid=counter)
+            counter += 1
+
+
+
     def sort_descendants(self):
         """ 
         .. versionadded: 2.1 
@@ -1149,6 +1374,35 @@ class TreeNode(object):
 
 
 def _translate_nodes(root, *nodes):
+    
+    name2node = dict([ [n, None] for n in nodes if type(n) is str])
+    for n in root.traverse():
+        if n.name in name2node:
+            if name2node[n.name] is not None:
+                raise ValueError, "Ambiguos node name: "+str(n.name)
+            else:
+                name2node[n.name] = n
+
+    if None in name2node.values():
+        notfound = [key for key, value in name2node.iteritems() if value is None]
+        raise ValueError, "Node names not found: "+str(nodefound)
+
+    valid_nodes = []
+    for n in nodes: 
+        if type(n) is not str:
+            if type(n) is not root.__class__ :
+                raise ValueError, "Invalid target node: "+str(n)
+            else:
+                valid_nodes.append(n)
+            
+    valid_nodes.extend(name2node.values())
+    if len(valid_nodes) == 1:
+        return valid_nodes[0]
+    else:
+        return valid_nodes
+
+
+def OLD_translate_nodes(root, *nodes):
     target_nodes = []
     for n in nodes:
         if type(n) is str:
@@ -1163,7 +1417,7 @@ def _translate_nodes(root, *nodes):
             raise ValueError, "Invalid target node: "+str(n)
         else:
             target_nodes.append(n)
-
+     
     if len(target_nodes) == 1:
         return target_nodes[0]
     else:
