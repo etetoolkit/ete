@@ -1129,6 +1129,90 @@ class TreeNode(object):
         outgroup2.support = outgroup.support
         self.children.sort()
 
+
+    def set_outgroup2(self, outgroup):
+        """
+        Sets a descendant node as the outgroup of a tree.  This function
+        can be used to root a tree or even an internal node.
+
+        :argument outgroup: a node instance within the same tree
+          structure that will be used as a basal node. 
+
+        """
+
+
+        outgroup = _translate_nodes(self, outgroup)
+
+        if outgroup is self:
+            raise ValueError, "Cannot set myself as outgroup"
+
+        parent_outgroup = outgroup.up
+
+        # Detects (sub)tree root
+        out_branch = outgroup
+        while out_branch.up is not self:
+            out_branch = out_branch.up
+
+        # If outgroup is a child from root, but with more than one
+        # sister nodes, creates a new node to group them
+        out_branch.detach()
+        if len(self.children)>1:
+            connector = self.__class__()
+            connector.dist = 0.0
+            connector.support = out_branch.support
+            for ch in self.get_children():
+                connector.children.append(ch)
+                ch.up = connector
+                self.children.remove(ch)
+        elif len(self.children) == 1:
+            connector = self.children[0]
+        else:
+            connector = None
+
+        if connector: 
+            connector.detach()
+
+        outgroup.detach()
+        swap_node = parent_outgroup
+        buff_parent = self
+        buff_dist = 0.0
+        buff_support = outgroup.support
+        while swap_node is not None: 
+            tmp_buff_dist = swap_node.dist
+            swap_node.dist = buff_dist
+            buff_dist = tmp_buff_dist
+
+            tmp_buff_support =  swap_node.support
+            swap_node.support = buff_support
+            buff_support = tmp_buff_support 
+
+            next_node = swap_node.up
+            swap_node.detach()
+            buff_parent.add_child(child=swap_node)
+
+            if next_node is None and connector:
+                print "CONNECT"
+                swap_node.add_child(child=connector)
+               
+
+            buff_parent = swap_node
+            swap_node = next_node
+            #print self.get_ascii()
+
+            
+        self.add_child(outgroup)
+        #self.add_child(parent_outgroup)
+        print "FINAL"
+        print self
+
+        middist = (parent_outgroup.dist + outgroup.dist)/2
+        outgroup.dist = middist
+        parent_outgroup.dist = middist
+        parent_outgroup.support = outgroup.support
+
+        return
+
+
     def unroot(self):
         """ 
         Unroots current node. This function is intented to be used over
@@ -1168,7 +1252,7 @@ class TreeNode(object):
             drawer.show_tree(self, layout=layout, img_properties=img_properties)
 
     def render(self, file_name, layout=None, w=None, h=None, \
-                       img_properties=None, header=None):
+                       img_properties=None, units="px"):
         """ 
         Renders the tree structure into an image file. 
         """
@@ -1188,7 +1272,7 @@ class TreeNode(object):
                 img_properties.set_layout_fn(layout)
             return drawer.render_tree(self, file_name, w=w, h=h, layout=layout, \
                                    img_properties=img_properties, \
-                                   header=header)
+                                   units=units)
 
     def copy(self):
         """ 

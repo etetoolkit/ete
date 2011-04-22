@@ -493,14 +493,28 @@ def set_pen_style(pen, line_style):
      
 
 def save(scene, imgName, w=None, h=None, header=None, \
-             dpi=300, take_region=False):
+             dpi=300, take_region=False, units="px"):
 
     from PyQt4 import QtGui
 
     ext = imgName.split(".")[-1].upper()
     main_rect = scene.sceneRect()
-    print main_rect
     aspect_ratio = main_rect.height() / main_rect.width()
+
+    if units == "mm":
+        if w: 
+            w = w * 0.0393700787 * dpi
+        if h: 
+            h = h * 0.0393700787 * dpi
+    elif units == "in":
+        if w: 
+            w = w * dpi
+        if h: 
+            h = h * dpi
+    elif units == "px":
+        pass
+    else:
+        raise Exception("wrong unit format")
 
     # auto adjust size
     if w is None and h is None and (ext == "PDF" or ext == "PS"):
@@ -565,13 +579,15 @@ def save(scene, imgName, w=None, h=None, header=None, \
 
         scene.render(pp, targetRect, scene.sceneRect())
         pp.end()
-        return
+
     else:
         scene.setBackgroundBrush(QtGui.QBrush(QtGui.QColor("white")));
         targetRect = QtCore.QRectF(0, 0, w, h)
         ii= QtGui.QImage(w, \
                              h, \
                              QtGui.QImage.Format_ARGB32)
+        ii.setDotsPerMeterX(dpi / 0.0254) # Convert inches to meters
+        ii.setDotsPerMeterY(dpi / 0.0254)
         pp = QtGui.QPainter(ii)
         pp.setRenderHint(QtGui.QPainter.Antialiasing)
         pp.setRenderHint(QtGui.QPainter.TextAntialiasing)

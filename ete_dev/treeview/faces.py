@@ -130,7 +130,7 @@ class Face(object):
         self.margin_top = 0
         self.margin_bottom = 0
         self.pixmap = None
-        self.opacity = 1
+        self.opacity = 1.0
         self.rotable = True
 
         self.hz_align = 0 # 0 left, 1 center, 2 right

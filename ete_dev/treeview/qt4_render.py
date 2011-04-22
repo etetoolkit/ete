@@ -552,6 +552,7 @@ def set_node_size(node, n2i, n2f, img):
     else: 
         aligned_height = 0
 
+    aligned_height = 0
     # Total height required by the node. I cannot sum up the height of
     # all elements, since the position of some of them are forced to
     # be on top or at the bottom of branches. This fact can produce
@@ -757,10 +758,14 @@ def render_floatings(n2i, n2f, img, float_layer):
     for node, fb in floating_faces:
         item = n2i[node]
         fb.setParentItem(float_layer)
-        if img.mode == "circular":
+        if item.extra_branch_line:
+            xtra =  item.extra_branch_line.line().dx()
+        else:
+            xtra = 0
 
+        if img.mode == "circular":
             # Floatings are positioned over branches 
-            crender.rotate_and_displace(fb, item.rotation, fb.h, item.radius - item.nodeRegion.width())
+            crender.rotate_and_displace(fb, item.rotation, fb.h, item.radius - item.nodeRegion.width()+ xtra)
 
             # Floatings are positioned starting from the node circle 
             #crender.rotate_and_displace(fb, item.rotation, fb.h, item.radius - item.nodeRegion.width())
@@ -788,6 +793,7 @@ def render_aligned_faces(img, mainRect, parent, n2i, n2f):
     # Load header and footer 
     if img.mode == "rect":
         tree_end_x = mainRect.width()
+
         fb_head = _FaceGroupItem(img.aligned_header, None)
         fb_head.setParentItem(parent)
         fb_foot = _FaceGroupItem(img.aligned_foot, None)
@@ -845,7 +851,7 @@ def render_aligned_faces(img, mainRect, parent, n2i, n2f):
             set_pen_style(pen, img.guiding_lines_type)
             pen.setColor(QtGui.QColor(img.guiding_lines_color))
             pen.setCapStyle(QtCore.Qt.FlatCap)
-            pen.setWidth(0)
+            pen.setWidth(node.img_style["hz_line_width"])
             guide_line.setPen(pen)
             guide_line.setParentItem(item.content)
 
