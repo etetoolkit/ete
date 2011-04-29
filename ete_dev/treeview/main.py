@@ -34,6 +34,9 @@ NODE_STYLE_DEFAULT = [
     ["vt_line_width",          1,      _SIZE_CHECKER                            ]
     ]
 
+TREE_STYLE_CHECKER = {
+    "mode": lambda x: x[0].lower() in set(["c", "r"]),
+    }
 
 # _faces and faces are registered to allow deepcopy to work on nodes
 VALID_NODE_STYLE_KEYS = set([i[0] for i in NODE_STYLE_DEFAULT]) | set(["_faces", "faces"])
@@ -175,7 +178,7 @@ class TreeStyle(object):
 
     **TREE SHAPE AND IMAGE DESIGN**
         
-    :var "rect" mode: Valid modes are "circular" or "rect".
+    :var "r" mode: Valid modes are 'c'(ircular)  or 'r'(ectangular).
 
     :var None layout_fn: Layout function used to dynamically control
       the aspect of nodes. Valid values are: None or a pointer to a method,
@@ -183,7 +186,7 @@ class TreeStyle(object):
                    
     :var 0 orientation: If 0, tree is drawn from left-to-right. If
        1, tree is drawn from right-to-left. This property only makes
-       sense when "rect" mode is used.
+       sense when "r" mode is used.
     
     :var 0 rotation: Tree figure will be rotate X degrees (clock-wise rotation)
 
@@ -298,15 +301,15 @@ class TreeStyle(object):
         # TREE SHAPE AND SIZE
         # :::::::::::::::::::::::::
         
-        #: Valid modes are : "circular" or "rect"
-        self.mode = "rect"
+        #: Valid modes are : "c" or "r"
+        self.mode = "r"
 
         # Layout function used to dynamically control the aspect of
         # nodes
         self.layout_fn = None
         
         # 0= tree is drawn from left-to-right 1= tree is drawn from
-        # right-to-left. This property only has sense when "rect" mode
+        # right-to-left. This property only has sense when "r" mode
         # is used.
         self.orientation = 0 
 
@@ -411,6 +414,7 @@ class TreeStyle(object):
 
         # A text string that will be draw as the Tree title
         self.title = FaceContainer()
+        self.__closed__ = 1
 
     def set_layout_fn(self, layout):
         # Validates layout function
@@ -429,6 +433,15 @@ class TreeStyle(object):
         return self._layout_handler
 
     layout_fn = property(get_layout_fn, set_layout_fn)
+
+    def __setattr__(self, attr, val):
+        if hasattr(self, attr) or not getattr(self, "__closed__", 0):
+            if TREE_STYLE_CHECKER.get(attr, lambda x: True)(val):
+                object.__setattr__(self, attr, val)
+            else:
+                raise ValueError("[%s] wrong type" %attr)
+        else:
+            raise ValueError("[%s] option is not supported" %attr)
         
 class FaceContainer(dict):
     """

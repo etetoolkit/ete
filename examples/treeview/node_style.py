@@ -56,6 +56,6 @@ for l in t.iter_leaves():
 
 # ETE 2.1 has now support for general image properties 
 I = TreeStyle()
-I.mode =  "rect" # or "circular"
+I.mode =  "r" 
 t.show(mylayout, img_properties=I)
 # t.render("./test.svg", layout=mylayout, img_properties=I)

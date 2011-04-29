@@ -265,6 +265,7 @@ def render(root_node, img, hide_root=False):
 
         if _leaf(n):# or len(n.img_style["_faces"]["aligned"]):
             virtual_leaves += 1
+
     rot_step = float(arc_span) / virtual_leaves
     #rot_step = float(arc_span) / len([n for n in root_node.traverse() if _leaf(n)])
 
@@ -300,14 +301,14 @@ def render(root_node, img, hide_root=False):
             visited.add(node)
 
         # :: Post-order visits. Leaves are already visited here ::
-        if mode == "circular": 
+        if mode == "c": 
             if _leaf(node):
                 crender.init_circular_leaf_item(node, n2i, n2f, last_rotation, rot_step)
                 last_rotation += rot_step
             else:
                 crender.init_circular_node_item(node, n2i, n2f)
 
-        elif mode == "rect": 
+        elif mode == "r": 
             if _leaf(node):
                 rrender.init_rect_leaf_item(node, n2i, n2f)
             else:
@@ -318,7 +319,7 @@ def render(root_node, img, hide_root=False):
 
     mainRect = parent.rect()
 
-    if mode == "circular":
+    if mode == "c":
         tree_radius = crender.render_circular(root_node, n2i, rot_step)
         mainRect.adjust( -tree_radius, -tree_radius, tree_radius, tree_radius)
 
@@ -368,9 +369,9 @@ def render(root_node, img, hide_root=False):
     return frame, n2i, n2f
 
 def adjust_faces_to_tranformations(img, mainRect, n2i, n2f, tree_layers):
-    if img.mode == "circular":
+    if img.mode == "c":
         rotate_inverted_faces(n2i, n2f, img)
-    elif img.mode == "rect" and img.orientation == 1:
+    elif img.mode == "r" and img.orientation == 1:
         for layer in tree_layers:
             layer.setTransform(QtGui.QTransform().translate(0, 0).scale(-1,1).translate(0, 0))
             layer.moveBy(mainRect.width(),0)
@@ -479,7 +480,7 @@ def rotate_inverted_faces(n2i, n2f, img):
 
 def render_backgrounds(img, mainRect, bg_layer, n2i, n2f):
 
-    if img.mode == "circular":
+    if img.mode == "c":
         max_r = mainRect.width()/2
     else:
         max_r = mainRect.width()
@@ -492,7 +493,7 @@ def render_backgrounds(img, mainRect, bg_layer, n2i, n2f):
             first_c = n2i[node.children[0]]
             last_c = n2i[node.children[-1]]
 
-        if img.mode == "circular":               
+        if img.mode == "c":               
             h = item.effective_height
             angle_start = first_c.full_start 
             angle_end = last_c.full_end
@@ -523,7 +524,7 @@ def render_backgrounds(img, mainRect, bg_layer, n2i, n2f):
                 bg.setParentItem(bg_layer)
                 bg.setZValue(item.zValue())
 
-        if img.mode == "rect":
+        if img.mode == "r":
             if node.img_style["bgcolor"].upper() != "#FFFFFF":
                 bg = QtGui.QGraphicsRectItem()
                 pos = item.content.mapToScene(0, 0)
@@ -546,13 +547,15 @@ def set_node_size(node, n2i, n2f, img):
 
     # Organize faces by groups
     faceblock = update_node_faces(node, n2f, img)
-
-    if _leaf(node):
-        aligned_height = faceblock["aligned"].h
-    else: 
-        aligned_height = 0
-
     aligned_height = 0
+    if _leaf(node):
+        if img.mode == "r": 
+            aligned_height = faceblock["aligned"].h
+        elif img.mode == "c":
+            # aligned faces in circular mode are adjusted afterwords. The
+            # min radius of the largest aligned faces will be calculated.
+            pass
+    
     # Total height required by the node. I cannot sum up the height of
     # all elements, since the position of some of them are forced to
     # be on top or at the bottom of branches. This fact can produce
@@ -567,12 +570,10 @@ def set_node_size(node, n2i, n2f, img):
                        node.img_style["hz_line_width"]/2 +
                        faceblock["branch-bottom"].h )
 
-
     h1 = top_half_h + bottom_half_h
     h2 = max(faceblock["branch-right"].h, \
-                aligned_height, \
+                 aligned_height, \
                 min_separation )
-
     h = max(h1, h2)
     imbalance = abs(top_half_h - bottom_half_h)
     if imbalance > h2/2:
@@ -679,10 +680,10 @@ def render_node_content(node, n2i, n2f, img):
 
     # Vertical line
     if not _leaf(node):
-        if img.mode == "circular":
+        if img.mode == "c":
             vt_line = QtGui.QGraphicsPathItem()
 
-        elif img.mode == "rect":
+        elif img.mode == "r":
             vt_line = _LineItem(item)
             first_child_part = n2i[node.children[0]]
             last_child_part = n2i[node.children[-1]]
@@ -763,14 +764,14 @@ def render_floatings(n2i, n2f, img, float_layer):
         else:
             xtra = 0
 
-        if img.mode == "circular":
+        if img.mode == "c":
             # Floatings are positioned over branches 
             crender.rotate_and_displace(fb, item.rotation, fb.h, item.radius - item.nodeRegion.width()+ xtra)
 
             # Floatings are positioned starting from the node circle 
             #crender.rotate_and_displace(fb, item.rotation, fb.h, item.radius - item.nodeRegion.width())
 
-        elif img.mode == "rect":
+        elif img.mode == "r":
             fb.setPos(item.content.mapToScene(0, item.center-(fb.h/2)))
 
         z = item.zValue()
@@ -784,14 +785,15 @@ def render_floatings(n2i, n2f, img, float_layer):
 def render_aligned_faces(img, mainRect, parent, n2i, n2f):
     # Prepares and renders aligned face headers. Used to later
     # place aligned faces
-    aligned_faces = [ [node, fb["aligned"]] for node, fb in n2f.iteritems() if fb["aligned"].column2faces]
+    aligned_faces = [ [node, fb["aligned"]] for node, fb in n2f.iteritems()\
+                          if fb["aligned"].column2faces and _leaf(node)]
 
     # If no aligned faces, just return an offset of 0 pixels 
     if not aligned_faces:
         return 0
 
     # Load header and footer 
-    if img.mode == "rect":
+    if img.mode == "r":
         tree_end_x = mainRect.width()
 
         fb_head = _FaceGroupItem(img.aligned_header, None)
@@ -807,12 +809,18 @@ def render_aligned_faces(img, mainRect, parent, n2i, n2f):
     # Place aligned faces and calculates the max size of each
     # column (needed to place column headers)
     c2max_w = {}
+    maxh = 0
+    maxh_node = None
     for node, fb in aligned_faces + surroundings:
+        if fb.h > maxh:
+            maxh = fb.h
+            maxh_node = node 
         for c, w in fb.c2max_w.iteritems():
             c2max_w[c] = max(w, c2max_w.get(c,0))
+    extra_width = sum(c2max_w.values())
 
     # If rect mode, render header and footer 
-    if img.mode == "rect": 
+    if img.mode == "r": 
         if img.draw_aligned_faces_as_table:
             fb_head.setup_grid(c2max_w)
             fb_foot.setup_grid(c2max_w)
@@ -824,7 +832,14 @@ def render_aligned_faces(img, mainRect, parent, n2i, n2f):
         if img.orientation == 1:
             fb_head.flip_hz()
             fb_foot.flip_hz()
-    
+
+    elif img.mode == "c":
+        angle = n2i[maxh_node].angle_span
+        rad, off = crender.get_min_radius(1, maxh, angle, tree_end_x)
+        extra_width += rad - tree_end_x 
+        tree_end_x = rad
+        
+
     # Place aligned faces
     for node, fb in aligned_faces:
         item = n2i[node]
@@ -834,13 +849,13 @@ def render_aligned_faces(img, mainRect, parent, n2i, n2f):
 
         fb.render()
         fb.setParentItem(item.content)
-        if img.mode == "circular":
+        if img.mode == "c":
             if node.up in n2i:
                 x = tree_end_x - n2i[node.up].radius 
             else:
                 x = tree_end_x
             #fb.moveBy(tree_end_x, 0)
-        elif img.mode == "rect":
+        elif img.mode == "r":
             x = item.mapFromScene(tree_end_x, 0).x() 
             
         fb.setPos(x, item.center-(fb.h/2))
@@ -855,16 +870,13 @@ def render_aligned_faces(img, mainRect, parent, n2i, n2f):
             guide_line.setPen(pen)
             guide_line.setParentItem(item.content)
 
-    extra_width = sum(c2max_w.values())
-    if img.mode == "circular":
+    if img.mode == "c":
         mainRect.adjust(-extra_width, -extra_width, extra_width, extra_width)
     else:
         mainRect.adjust(0, 0, extra_width, 0)
     return extra_width
 
 def get_tree_img_map(n2i):
-  
-
     node_list = []
     face_list = []
     nid = 0

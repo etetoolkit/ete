@@ -247,6 +247,7 @@ def init_circular_leaf_item(node, n2i, n2f, last_rotation, rot_step):
     item.rotation = last_rotation
     item.full_start = last_rotation - (rot_step / 2)
     item.full_end = last_rotation + (rot_step / 2)
+    item.angle_span = rot_step
     #item.center = item.nodeRegion.height() / 2
     item.effective_height = get_effective_height(node, n2i, n2f)
     item.center = item.effective_height/2

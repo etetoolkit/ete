@@ -598,7 +598,7 @@ class Test_Coretype_Tree(unittest.TestCase):
                     print "NONE"
                 t.set_outgroup(n)
             t.set_outgroup(t.get_midpoint_outgroup())
-            self.assertEqual([t.children[0], t.children[1]], [o1, o2])
+            self.assertEqual(set([t.children[0], t.children[1]]), set([o1, o2]))
             ##  I need to sort branches first
             #self.assertEqual(t.write(), nw_original) 
         d3 = YGR138C.get_distance(YGR028W)
@@ -609,18 +609,16 @@ class Test_Coretype_Tree(unittest.TestCase):
 
         t = Tree("((((a,b)1,c)2,i)3,(e,d)4)5;", format=1)
         print t.get_ascii()
-        t.set_outgroup2(t&"a")
+        t.set_outgroup(t&"a")
         print t.get_ascii()
 
 
         t = Tree("(((a,b)2,c)x)9;", format=1)
         print "START"
         print t.get_ascii()
-        t.set_outgroup2(t&"a")
+        t.set_outgroup(t&"a")
         print t.get_ascii()
 
-
-           
         # Test branch support and distances after rooting
         SIZE = 35
         t = Tree()

@@ -89,6 +89,6 @@ t2.hz_align = 1
 # Set tree image style. Note that aligned header and foot is only
 # visible in "rect" mode.
 
-I.mode =  "rect" # or "circular"
+I.mode =  "r" #(rectangular)
 t.show(mylayout, img_properties=I)
 # t.render("./test.svg", layout=mylayout, img_properties=I)

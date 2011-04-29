@@ -78,7 +78,7 @@ t = Tree()
 t.populate(size, reuse_names=False)
 
 I = TreeStyle()
-I.mode = "rect"
+I.mode = "r"
 I.orientation = 0
 I.layout_fn = master_ly
 I.margin_left = 100
@@ -121,13 +121,13 @@ style.add_fixed_face(faces.TreeFace(t2, I), "branch-right", 0)
 # Attach the fixed style to the first child of the root node
 # t.children[0].img_style = style
 I.rotation = 90
-I.mode = "circular"
+I.mode = "c"
 t.show(img_properties=I)
 #t.render("/home/jhuerta/test.svg", img_properties=I)
 #t.render("/home/jhuerta/test.pdf", img_properties=I)
 #t.render("/home/jhuerta/test.png", img_properties=I)
 #t.render("/home/jhuerta/test.ps", img_properties=I)
 #os.system("inkscape /home/jhuerta/test.svg")
-#I.mode = "circular"
+#I.mode = "c"
 #t.show(img_properties=I)
 
