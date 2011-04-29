@@ -119,12 +119,29 @@ class Face(object):
     essential attributes, however the update_pixmap() function is
     required to be reimplemented for convenience.
 
+
+    margin_left = 0
+    margin_right = 0
+    margin_top = 0
+    margin_bottom = 0
+    pixmap = None
+    opacity = 1.0
+    rotable = True
+    hz_align = 0 # 0 left, 1 center, 2 right
+    vt_align = 1
+    background = _Background()
+    border = _Border()
+    with_margin_border = _Border()
+    with_margin_background = _Background()
+
+
     """
 
     def __init__(self):
         self.node        = None
         self.type = "pixmap" # pixmap, text or item
         self.name = "unknown"
+
         self.margin_left = 0
         self.margin_right = 0
         self.margin_top = 0
@@ -132,7 +149,6 @@ class Face(object):
         self.pixmap = None
         self.opacity = 1.0
         self.rotable = True
-
         self.hz_align = 0 # 0 left, 1 center, 2 right
         self.vt_align = 1
         self.background = _Background()

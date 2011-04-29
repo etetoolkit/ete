@@ -12,6 +12,7 @@ def mylayout(node):
     else:
         faces.add_face_to_node(bt, node, column=0, position="branch-top")
         faces.add_face_to_node(bb, node, column=0, position="branch-bottom")
+        faces.add_face_to_node(bb2, node, column=0, position="branch-bottom")
         faces.add_face_to_node(br1, node, column=0, position="branch-right")
         faces.add_face_to_node(rs1, node, column=0, position="branch-right")
         faces.add_face_to_node(br2, node, column=0, position="branch-right")
@@ -20,7 +21,7 @@ t = Tree()
 t.populate(int(sys.argv[1]))
 
 # Margins, alignment, border, background and opacity can now be set for any face
-rs1 = faces.TextFace("branch-right1-with-margins", fsize=20, fgcolor="#009000")
+rs1 = faces.TextFace("branch-right2-with \n margins-and-borders", fsize=20, fgcolor="#009000")
 rs1.margin_top = 10
 rs1.margin_bottom = 50
 rs1.margin_left = 40
@@ -34,20 +35,21 @@ rs1.opacity = 0.6
 rs1.hz_align = 2 # 0 left, 1 center, 2 right
 rs1.vt_align = 1 # 0 left, 1 center, 2 right
 
-br1 = faces.TextFace("branch-right2", fsize=12, fgcolor="#009000")
+br1 = faces.TextFace("branch-right1", fsize=12, fgcolor="#009000")
 br2 = faces.TextFace("branch-right3", fsize=12, fgcolor="#009000")
 
 # New face positions (branch-top and branch-bottom)
-bb = faces.TextFace("branch-bottom", fsize=8, fgcolor="#909000")
-bt = faces.TextFace("branch-top", fsize=6, fgcolor="#099000")
+bb = faces.TextFace("branch-bottom 1", fsize=8, fgcolor="#909000")
+bb2 = faces.TextFace("branch-bottom 2", fsize=8, fgcolor="#909000")
+bt = faces.TextFace("branch-top 1", fsize=6, fgcolor="#099000")
 
 # And faces can also be used as headers or foot notes of aligned
 # columns
-t1 = faces.TextFace("header_up", fsize=12, fgcolor="#099000")
-t2 = faces.TextFace("header_down", fsize=12, fgcolor="#099000")
+t1 = faces.TextFace("Header Face", fsize=12, fgcolor="#aa0000")
+t2 = faces.TextFace("Footer Face", fsize=12, fgcolor="#0000aa")
 
 # Attribute faces can now contain prefix and suffix fixed text
-aligned = faces.AttrFace("name", fsize=12, fgcolor="#099000", text_prefix="name=(", text_suffix=")")
+aligned = faces.AttrFace("name", fsize=12, fgcolor="#099000", text_prefix="Aligned (", text_suffix=")")
 # horizontal and vertical alignment per face
 aligned.hz_align = 1 # 0 left, 1 center, 2 right
 aligned.vt_align = 1 
@@ -62,8 +64,8 @@ style["shape"] = "square"
 style["vt_line_color"] = "#ff0000"
 # add a face to the style. This face will be render in any node
 # associated to the style.
-fixed = faces.TextFace("FIXED", fsize=11, fgcolor="#099000")
-style.add_fixed_face(fixed, "branch-right", 0)
+fixed = faces.TextFace("FIXED branch-right", fsize=11, fgcolor="#099000")
+style.add_fixed_face(fixed, position="branch-right", column=1)
 # Bind the precomputed style to the root node 
 t.img_style = style
 
@@ -89,6 +91,7 @@ t2.hz_align = 1
 # Set tree image style. Note that aligned header and foot is only
 # visible in "rect" mode.
 
-I.mode =  "r" #(rectangular)
+I.mode =  "c" #(rectangular)
+I.tree_width= 50
 t.show(mylayout, img_properties=I)
 # t.render("./test.svg", layout=mylayout, img_properties=I)

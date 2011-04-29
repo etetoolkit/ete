@@ -184,23 +184,20 @@ class _FaceGroupItem(QGraphicsRectItem): # I resisted to name this FaceBookItem 
                                y + y_offset + f.margin_top)
 
                 obj.rotable = f.rotable
-                f.background.apply(obj)
-                f.border.apply(obj)
+                f.margin_background.apply(obj)
+                f.margin_border.apply(obj)
+
+                bg = f.background.apply(obj)
+                border = f.border.apply(obj)
+                if border: 
+                    border.setRect(x, y, max_w, max_h)
+                    border.setParentItem(self)
+                if bg:
+                    bg.setRect(x, y, max_w, max_h)
+                    bg.setParentItem(self)
 
                 if f.opacity < 1:
                     obj.setOpacity(f.opacity)
-
-                if f.margin_border:
-
-                    border = f.margin_background.apply(obj)
-                    bg = f.margin_border.apply(obj)
-                    if border: 
-                        border.setRect(x, y, max_w, max_h)
-                        border.setParentItem(self)
-                    if bg:
-                        bg.setRect(x, y, max_w, max_h)
-                        bg.setParentItem(self)
-
 
                 if self.as_grid:
                     y += max_h
