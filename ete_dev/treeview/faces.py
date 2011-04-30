@@ -22,7 +22,7 @@
 # #END_LICENSE#############################################################
 
 from PyQt4 import QtCore, QtGui
-import numpy
+from numpy import isfinite, ceil
 
 from main import add_face_to_node, _Background, _Border
 
@@ -327,6 +327,9 @@ class ProfileFace(Face):
                 color=QtGui.QColor()
                 color.setRgb( 200-2*a,255,200-2*a )
                 colors.append(color)
+
+            colors.append(QtGui.QColor("white"))
+
             for a in xrange(0,100):
                 color=QtGui.QColor()
                 color.setRgb( 200-2*a,200-2*a,255 )
@@ -340,6 +343,8 @@ class ProfileFace(Face):
                 color=QtGui.QColor()
                 color.setRgb( 200-2*a,255,200-2*a )
                 colors.append(color)
+
+            colors.append(QtGui.QColor("white"))
 
             for a in xrange(0,100):
                 color=QtGui.QColor()
@@ -355,14 +360,21 @@ class ProfileFace(Face):
                 color=QtGui.QColor()
                 color.setRgb( 200-2*a,200-2*a,255 )
                 colors.append(color)
+
+            colors.append(QtGui.QColor("white"))
+
             for a in xrange(0,100):
                 color=QtGui.QColor()
                 color.setRgb( 255,200-2*a,200-2*a )
                 colors.append(color)
+
 #            color=QtGui.QColor()
 #            color.setRgb( 255,0,255 )
 #            colors.append(color)
-        colors.append(QtGui.QColor("white"))
+
+        print 'total', len(colors)
+
+
 
         return colors
 
@@ -382,7 +394,7 @@ class ProfileFace(Face):
         profile_height= self.height 
 
         x_alpha = float( profile_width / (len(mean_vector)) )
-        y_alpha = float ( profile_height / (self.max_value-self.min_value) )
+        y_alpha = float ( (profile_height-1) / (self.max_value-self.min_value) )
 
         # Creates a pixmap
         self.pixmap = QtGui.QPixmap(self.width,self.height)
@@ -420,22 +432,22 @@ class ProfileFace(Face):
             x1 = x2
             x2 = x1 + x_alpha
 
-            dev1 =  self.fit_to_scale( deviation_vector[pos]   )
-            mean1 = self.fit_to_scale( mean_vector[pos]        )
+            dev1 =  self.fit_to_scale(deviation_vector[pos])
+            mean1 = self.fit_to_scale(mean_vector[pos])
 
             # If nan value, skip
-            if not numpy.isfinite(mean1):
+            if not isfinite(mean1):
                 continue
 
             # Set heatmap color
-            if mean1>self.center_v:
-                color_index = int(abs(((self.center_v-mean1)*100)/(self.max_value-self.center_v)))
-                customColor = colors[100+color_index]
-            elif mean1<self.center_v:
-                color_index = int(abs(((self.center_v-mean1)*100)/(self.min_value-self.center_v)))
-                customColor = colors[100-color_index]
+            if mean1 > self.center_v:
+                color_index = abs(int(ceil(((self.center_v - mean1) * 100) / (self.max_value - self.center_v))))
+                customColor = colors[100 + color_index]
+            elif mean1 < self.center_v:
+                color_index = abs(int(ceil(((self.center_v - mean1) * 100) / (self.min_value - self.center_v))))
+                customColor = colors[100 - color_index]
             else:
-                customColor = colors[0]
+                customColor = colors[100]
 
             # mean bar high
             mean_y1     = int ( (mean1 - self.min_value) * y_alpha)
@@ -470,8 +482,8 @@ class ProfileFace(Face):
         profile_height= self.height
 
         x_alpha = float( profile_width / (len(mean_vector)) )
-        y_alpha_up = float ( (profile_height/2) / (self.max_value-self.center_v) )
-        y_alpha_down = float ( (profile_height/2) / (self.min_value-self.center_v) )
+        y_alpha_up = float ( ((profile_height-1)/2) / (self.max_value-self.center_v) )
+        y_alpha_down = float ( ((profile_height-1)/2) / (self.min_value-self.center_v) )
 
         # Creates a pixmap
         self.pixmap = QtGui.QPixmap(self.width,self.height)
@@ -514,21 +526,26 @@ class ProfileFace(Face):
             mean1 = self.fit_to_scale( mean_vector[pos]        )
 
             # If nan value, skip
-            if not numpy.isfinite(mean1):
+            if not isfinite(mean1):
                 continue
 
             # Set heatmap color
             if mean1>self.center_v:
-                color_index = int(abs(((self.center_v-mean1)*100)/(self.max_value-self.center_v)))
-                customColor = colors[100+color_index]
+                color_index = abs(int(ceil(((self.center_v-mean1)*100)/(self.max_value-self.center_v))))
+                customColor = colors[100 + color_index]
+
+                print mean1, color_index, len(colors), "%x" %colors[100 + color_index].rgb()
+                print abs(((self.center_v-mean1)*100)/(self.max_value-self.center_v))
+                print round(((self.center_v-mean1)*100)/(self.max_value-self.center_v))
+
             elif mean1<self.center_v:
-                color_index = int(abs(((self.center_v-mean1)*100)/(self.min_value-self.center_v)))
-                customColor = colors[100-color_index]
+                color_index = abs(int(ceil(((self.center_v-mean1)*100)/(self.min_value-self.center_v))))
+                customColor = colors[100 - color_index]
             else:
-                customColor = colors[0]
+                customColor = colors[100]
 
             # mean bar high
-            if mean1<self.center_v:
+            if mean1 < self.center_v:
                 mean_y1 = int(abs((mean1 - self.center_v) * y_alpha_down))
             else:
                 mean_y1 = int(abs((mean1 - self.center_v) * y_alpha_up))
@@ -571,7 +588,7 @@ class ProfileFace(Face):
 
 
         x_alpha = float( profile_width / (len(mean_vector)-1) )
-        y_alpha = float ( profile_height / (self.max_value-self.min_value) )
+        y_alpha = float ( (profile_height-1) / (self.max_value-self.min_value) )
 
         # Creates a pixmap
         self.pixmap = QtGui.QPixmap(self.width,self.height)
@@ -619,7 +636,7 @@ class ProfileFace(Face):
                 p.drawLine(x2, y+1, x2, profile_height-2)
 
             # If nan values, continue
-            if not numpy.isfinite(mean1) or not numpy.isfinite(mean2):
+            if not isfinite(mean1) or not isfinite(mean2):
                 continue
 
             # First Y postions for mean
@@ -679,16 +696,16 @@ class ProfileFace(Face):
                 dev1 =  self.fit_to_scale( deviation_vector[pos]   )
                 mean1 = self.fit_to_scale( mean_vector[pos]        )
                 # Set heatmap color
-                if not numpy.isfinite(mean1):
+                if not isfinite(mean1):
                     customColor = QtGui.QColor("#000000")
                 elif mean1>self.center_v:
-                    color_index = int(abs(((self.center_v-mean1)*100)/(self.max_value-self.center_v)))
-                    customColor = colors[100+color_index]
+                    color_index = abs(int(ceil(((self.center_v-mean1)*100)/(self.max_value-self.center_v))))
+                    customColor = colors[100 + color_index]
                 elif mean1<self.center_v:
-                    color_index = int(abs(((self.center_v-mean1)*100)/(self.min_value-self.center_v)))
-                    customColor = colors[100-color_index]
+                    color_index = abs(int(ceil(((self.center_v-mean1)*100)/(self.min_value-self.center_v))))
+                    customColor = colors[100 - color_index]
                 else:
-                    customColor = colors[-1]
+                    customColor = colors[100]
 
                 # Fill bar with custom color
                 p.fillRect(x1, y, x_alpha, y_step, QtGui.QBrush(customColor))

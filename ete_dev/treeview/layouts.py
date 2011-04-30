@@ -72,7 +72,9 @@ def heatmap(node):
 
     matrix_max = numpy.max(node.arraytable._matrix_max)
     matrix_min = numpy.min(node.arraytable._matrix_min)
+    print matrix_max
     matrix_avg = matrix_min+((matrix_max-matrix_min)/2)
+
     ProfileFace = faces.ProfileFace(\
       matrix_max,\
         matrix_min,\
@@ -84,9 +86,6 @@ def heatmap(node):
     if node.is_leaf():
         # Set colors
         faces.add_face_to_node(ProfileFace, node, 0, aligned=True )
-
-
-
 
 def cluster_cbars(node):
     # Extras node info

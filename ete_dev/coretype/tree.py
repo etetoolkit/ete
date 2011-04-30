@@ -1157,7 +1157,7 @@ class TreeNode(object):
         except ImportError, e:
             print "'treeview' module could not be loaded.\n",e
             print "\n\n"
-            print self
+            print e
         else:
             if not img_properties:
                 img_properties = TreeStyle()
@@ -1178,7 +1178,6 @@ class TreeNode(object):
         except ImportError, e:
             print "'treeview' module could not be loaded.\n",e
             print "\n\n"
-            print self
             print e
         else:
             if not img_properties:

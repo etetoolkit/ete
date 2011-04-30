@@ -6,6 +6,8 @@ import types
 from PyQt4.QtGui import QGraphicsItem,QGraphicsRectItem, QColor, QPen, QBrush
 from PyQt4 import QtCore
 
+
+
 _LINE_TYPE_CHECKER = lambda x: x in (0,1,2)
 _SIZE_CHECKER = lambda x: isinstance(x, int)
 _COLOR_MATCH = re.compile("^#[A-Fa-f\d]{6}$")
@@ -420,13 +422,15 @@ class TreeStyle(object):
         # Validates layout function
         if type(layout) == types.FunctionType or\
                 type(layout) == types.MethodType or layout is None:
-            self._layout_fn = layout       
+            #self._layout_fn = layout       
             self._layout_handler = layout
         else:
             try:
-                self._layout_handler = getattr(layouts, img.layout_fn)
-                self._layout_fn = layout       
-            except Exception:
+                import layouts
+                self._layout_handler = getattr(layouts, layout)
+                #self._layout_fn = layout       
+            except Exception, e:
+                print e
                 raise ValueError ("Required layout is not a function pointer nor a valid layout name.")
  
     def get_layout_fn(self):
