@@ -1,25 +1,22 @@
 .. module:: ete_dev.phylo
-  :synopsis: Extends Tree object: add orthology and paralogy methods, species aware node, links to multiple sequence alignments
+  :synopsis: Extends Tree object: add orthology and paralogy methods, species aware nodes, links to multiple sequence alignments
 .. moduleauthor:: Jaime Huerta-Cepas
 :Author: Jaime Huerta-Cepas
 
 ********************
 Phylogenetic Trees
 ********************
-.. versionadded:: 2.1
 
-Phylogenetic trees are the result of most evolutionary analyses. They represent
-the evolutionary relationships among a set of species or, in molecular biology,
-a set of homologous sequences.
+Phylogenetic trees are the result of most evolutionary analyses. They
+represent the evolutionary relationships among a set of species or, in
+molecular biology, a set of homologous sequences.
 
-The :class:`PhyloTree` class provides a proper way to deal with phylogenetic trees.
-Thus, while leaves are assumed to represent species (or sequences from a given
-species genome), internal nodes are considered the ancestral states leading to
-current species. A consequence of this is, for instance, that each bifurcation
-can be considered as a speciation or a duplication event.
-
-:class:`PhyloTree` instances extend the :class:`Tree` class with several specific method
-that apply only for the analysis of phylogenetic trees.
+The :class:`PhyloTree` class is an extension of the base :class:`Tree`
+object, providing a appropriate way to deal with phylogenetic trees.
+Thus, while leaves are considered to represent species (or sequences
+from a given species genome), internal nodes are considered ancestral
+nodes. A direct consequence of this is, for instance, that every split
+in the tree will represent a speciation or duplication event.
 
 
 Linking Phylogenetic Trees and Multiple Sequence Alignments
@@ -27,65 +24,84 @@ Linking Phylogenetic Trees and Multiple Sequence Alignments
 
 :class:`PhyloTree` instances allow molecular phylogenies to be linked
 to the Multiple Sequence Alignments (MSA). To associate a MSA with a
-phylogenetic tree you can use the **link_to_alignment()** method
-present in any PhyloTree instance, which receives the path of an MSA
-file as first argument or, alternatively, a text string containing the
-MSA. Currently, **the following sequence file formats are supported:
-**
+phylogenetic tree you can use the :func:`PhyloNode.link_to_alignment`
+method. You can use the :var:`alg_format` argument to specify its
+format.  Phylip sequential ("**phylip**"), Phylip interleaved
+("*iphylip*") and Fasta ("**fasta**") formats are currently
+supported. Given that Fasta format are not only applicable for MSA but
+also for **Unaligned Sequences**, you may also associate sequences of
+different lengths with tree nodes.  
 
-.. % 
+::
+  
+  tree = PhyloTree("mytreeFile")
+  tree.link_to_alignment("/home/alg.phy", alg_format="iphylip")
 
-**Fasta** format is assumed by default, but you can change this by setting the
-**alg_format** argument. Given that such formats are not only applicable for MSA
-but also for **Unaligned Sequences**, you may also associate sequences of
-different lengths with tree nodes. Alternatively to this method, MSAs can be
-directly passed to the PhyloTree constructor and sequences will be automatically
-linked with terminal nodes: i.e.) **PhyloTree("mytreeFile", "myAlginmentFile",
-format=0, alg_format="iphylip") **
 
-As currently implemented, sequence linking process is not strict, which means
-that a perfect match between all node names and sequences names is **not
-required**. Thus, if only one match is found between sequences names within the
-MSA file and tree node names, only one tree node will contain an associated
-sequence. Also, it is important to note that sequence linking is not limited to
-terminal nodes. If internal nodes are named, and such names find a match within
-the provided MSA file, their corresponding sequences will be also loaded into
-the tree structure. Once a MSA is linked, sequences will be available for every
-tree node through its** node.sequence** attribute.
+The same could be done at the same time the tree is being loaded, by
+using the :var:`alg` and :var:`alg_format` arguments of the
+:class:`PhyloTree`
 
+:: 
+  
+  PhyloTree("mytreeFile", format=0, alg="myAlginmentFile", alg_format="iphylip")
+
+
+As currently implemented, sequence linking process is not strict,
+which means that a perfect match between all node names and sequences
+names **is not required**. Thus, if only one match is found between
+sequences names within the MSA file and tree node names, only one tree
+node will contain an associated sequence. Also, it is important to
+note that sequence linking is not limited to terminal nodes. If
+internal nodes are named, and such names find a match within the
+provided MSA file, their corresponding sequences will be also loaded
+into the tree structure. Once a MSA is linked, sequences will be
+available for every tree node through its :attr:`node.sequence`
+attribute.
 
 .. _sec:using-taxonomic-data:
 
 Using Taxonomic Data
 ====================
 
-PhyloTree instances allow to deal with leaf names and species names separately.
-This is useful when working with molecular phylogenies, in which leaves are
-usually encoded using sequence names but species names. You could easily solve
-this by annotating each terminal node according to its source species. However,
-PhyloTree instances can automatically deal with this issue. Thus, when a
-phylogenetic tree is loaded, species names (codes, key names or fingerprints)
-are automatically derived from the **three first letters of leaf names**.
-Although, you can indeed change this behavior by using a custom parsin function.
-By doing this, you can easily load taxonomy-aware molecular phylogenies. The
-attribute **node.species** will be present in every node and stores the inferred
-species name, while the method **get_species()** can be used to retrieve all
-species names under a given ancestral node.
+:class:`PhyloTree` instances allow to deal with leaf names and species
+names separately.  This is useful when working with molecular
+phylogenies, in which node names usually represent sequence
+identifiers. Often, sequence names contain species information as a
+part of the name, and ETE will help to do it automatically. By
+default, **the first three letters** of every sequence name are taken
+as species codes. However, this behavior can be changed by using the
+:func:`PhyloNode.set_species_naming_funcion` method or by using the
+:var:`sp_naming_function` argument of the :class:`PhyloTree` class.
+Note that, using the :var:`sp_naming_function` argument, the whole
+tree structure will be initialized to use the provided parsing
+function to obtain species name
+information. :func:`PhyloNode.set_species_naming_function` (present in
+all tree nodes) can be used to change the behavior in a previously
+loaded tree, or to set different parsing function to different parts
+of the tree.
 
-There are two ways of setting the automatic species name generation:
+::
 
-#. using the** **PhyloTree **sp_naming_function** argument. The whole tree
-   structure will be initialized to use the provided parsing function to obtain
-   species name information.
+  Example
 
-#. using the **set_species_naming_function** method (present in all tree nodes),
-   which can be used to change the behavior in a previously loaded tree, or to set
-   different parsing function to different
 
-#. parts of the tree.
+To disable the automatic generation of species names (the user will be
+expected to set such information manually), **None** can be passed as
+the species naming function.
 
-In both cases, possible values are **None **(to disable automatic generation of
-species names)** **or the **reference to a custom python function**.
+:: 
+  
+  Example
+
+Species names will be stored in the :attr:`PhyloNode.species`
+attribute of each leaf node. The method :func:`PhyloNode.get_species`
+can be used obtain the set of species names found under a given
+internal node (speciation or duplication event).
+
+:: 
+   
+  Example
 
 
 .. _sec:dating-phylogenetic-nodes:
@@ -101,7 +117,7 @@ evolution. This is, we can date evolutionary events.
 
 There are many ways to infer such information. Most approaches are based on the
 comparison of the sequences affected by a given event. However, these methods
-suffer from several limitations (REF). An alternative approach that has been
+suffer from several limitations. An alternative approach that has been
 shown to overcome some of such limitations is to date evolutionary events
 according the topology of phylogenetic trees ( In brief, the relative age of any
 evolutionary event can be established by detecting the oldest taxonomic group
@@ -176,18 +192,19 @@ Species Overlap (SO) algorithm
 ------------------------------
 
 In order to apply the SO algorithm, you can use the
-**node.get_descendant_evol_events()** method (it will map all events under the
-current node) or the** node.get_my_evol_events()** method (it will map only the
+:func:`PhyloNode.get_descendant_evol_events` method (it will map all
+events under the current node) or the
+:func:`PhyloNode.get_my_evol_events` method (it will map only the
 events involving the current node, usually a leaf node).
 
-By default the **species overlap score (SOS) threshold** is set to 0.0, which
-means that a single species in common between two node branches will rise a
-duplication event. This has been shown to preform the best with real data,
-however you can adjust the threshold using the **sos_thr** argument present in
-both methods.
+By default the **species overlap score (SOS) threshold** is set to
+0.0, which means that a single species in common between two node
+branches will rise a duplication event. This has been shown to preform
+the best with real data, however you can adjust the threshold using
+the **sos_thr** argument present in both methods.
 
 
-Example2: Tree reconciliation algorithm
+Tree reconciliation algorithm
 ---------------------------------------
 
 Tree reconciliation algorithm uses a predefined species tree to infer the genes
@@ -201,10 +218,10 @@ the species tree must match the species names in the gene tree (by default, the
 first 3 letters of the gene tree leaf names) (see
 :ref:`sec:using-taxonomic-data`).
 
-As a result, the **reconcile()** method will label the original gene tree nodes
-as duplication or speciation, will return the list of inferred events, and will
-return a new **reconcilied tree**, in which inferred gene losses are present and
-labeled.
+As a result, the :func:`PhyloNode.reconcile` method will label the
+original gene tree nodes as duplication or speciation, will return the
+list of inferred events, and will return a new **reconcilied tree**,
+in which inferred gene losses are present and labeled.
 
 
 Visualization of phylogenetic trees
