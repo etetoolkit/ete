@@ -49,7 +49,7 @@ t1 = faces.TextFace("Header Face", fsize=12, fgcolor="#aa0000")
 t2 = faces.TextFace("Footer Face", fsize=12, fgcolor="#0000aa")
 
 # Attribute faces can now contain prefix and suffix fixed text
-aligned = faces.AttrFace("name", fsize=12, fgcolor="#099000", text_prefix="Aligned (", text_suffix=")")
+aligned = faces.AttrFace("name", fsize=12, fgcolor="RoyalBlue", text_prefix="Aligned (", text_suffix=")")
 # horizontal and vertical alignment per face
 aligned.hz_align = 1 # 0 left, 1 center, 2 right
 aligned.vt_align = 1 
@@ -59,15 +59,17 @@ aligned.vt_align = 1
 # or even add them to nodes before drawing (this allows to save and
 # reproduce an tree image design)
 style = NodeStyle()
-style["fgcolor"] = "#ff0000"
+style["fgcolor"] = "Gold"
 style["shape"] = "square"
+style["size"] = 15
 style["vt_line_color"] = "#ff0000"
+t.set_style(style)
 # add a face to the style. This face will be render in any node
 # associated to the style.
-fixed = faces.TextFace("FIXED branch-right", fsize=11, fgcolor="#099000")
-style.add_fixed_face(fixed, position="branch-right", column=1)
+fixed = faces.TextFace("FIXED branch-right", fsize=11, fgcolor="blue")
+t.add_face(fixed, column=1, position="branch-right")
 # Bind the precomputed style to the root node 
-t.img_style = style
+
 
 
 # ETE 2.1 has now support for general image properties 
@@ -91,7 +93,7 @@ t2.hz_align = 1
 # Set tree image style. Note that aligned header and foot is only
 # visible in "rect" mode.
 
-I.mode =  "c" #(rectangular)
+I.mode =  "r" #(rectangular)
 I.tree_width= 50
-t.show(mylayout, img_properties=I)
-# t.render("./test.svg", layout=mylayout, img_properties=I)
+t.show(mylayout, tree_style=I)
+

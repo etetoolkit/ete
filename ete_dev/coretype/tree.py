@@ -25,9 +25,12 @@ import random
 import copy 
 from collections import deque 
 
-__all__ = ["Tree", "TreeNode"]
-
 from ete_dev.parser.newick import read_newick, write_newick
+# the following imports are necessary to set fixed styles and faces
+from ete_dev.treeview.main import NodeStyle, FACE_POSITIONS
+from ete_dev.treeview.faces import Face
+
+__all__ = ["Tree", "TreeNode"]
 
 DEFAULT_COMPACT = False
 DEFAULT_SHOWINTERNAL = False
@@ -1147,9 +1150,11 @@ class TreeNode(object):
                 raise TreeError, "Cannot unroot a tree with only two leaves"
 
     def show(self, layout=None, \
-               img_properties=None):
+               tree_style=None):
         """ 
-        Begins an interative session to visualize current node structure.
+        Starts an interative session to visualize current node
+        structure using provided layout and TreeStyle.
+
         """
         try:
             from ete_dev.treeview import drawer
@@ -1159,19 +1164,34 @@ class TreeNode(object):
             print "\n\n"
             print e
         else:
-            if not img_properties:
-                img_properties = TreeStyle()
+            if not tree_style:
+                tree_style = TreeStyle()
 
             if layout:
-                img_properties.set_layout_fn(layout)
+                tree_style.set_layout_fn(layout)
 
-            drawer.show_tree(self, layout=layout, img_properties=img_properties)
+            drawer.show_tree(self, layout=layout, img_properties=tree_style)
 
     def render(self, file_name, layout=None, w=None, h=None, \
-                       img_properties=None, units="px"):
+                       tree_style=None, units="px", dpi=300):
         """ 
-        Renders the tree structure into an image file. 
+        Renders the node structure as an image. 
+
+        :var file_name: path to the output image file. valid
+          extensions are .SVG, .PDF, .PNG
+ 
+        :var layout: a layout function or a valid layout function name
+
+        :var tree_style: a `TreeStyle` instance containing the image
+          properties
+
+        :var px units: "px": pixels, "mm": millimeters, "in": inches 
+        :var None h: height of the image in :attr:`units`        
+        :var None w: weight of the image in :attr:`units`        
+        :var 300 dpi: dots per inches. 
+
         """
+
         try:
             from ete_dev.treeview import drawer
             from ete_dev.treeview.main import TreeStyle
@@ -1180,13 +1200,13 @@ class TreeNode(object):
             print "\n\n"
             print e
         else:
-            if not img_properties:
-                img_properties = TreeStyle()
+            if not tree_style:
+                tree_style  = TreeStyle()
 
             if layout:
-                img_properties.set_layout_fn(layout)
+                tree_style.set_layout_fn(layout)
             return drawer.render_tree(self, file_name, w=w, h=h, layout=layout, \
-                                   img_properties=img_properties, \
+                                   img_properties=tree_style, \
                                    units=units)
 
     def copy(self):
@@ -1363,14 +1383,39 @@ class TreeNode(object):
                 node2dist[node] = node2dist[node.up] + 1
             node.dist = node.dist
 
-    def add_face(self, face, column, position):
+    def add_face(self, face, column, position="branch-right"):
         """
         .. versionadded: 2.1 
 
-        Add a face to the node. NOT IMPLEMENTED YET
-        """
-        pass
+        Add a fixed face to the node.  This type of faces will be
+        always attached to nodes, independently of the layout
+        function.
 
+        :argument face: a Face or inherited instance
+        :argument column: An integer number starting from 0
+        :argument "branch-right" position: Posible values are: %s
+        """ % ','.join(FACE_POSITIONS)
+        
+        if Face in face.__class__.__bases__:
+            if self.img_style._block_adding_faces:
+                raise AttributeError("fixed faces cannot be modified while drawing.")
+
+            if not hasattr(self, "img_style"):
+                self.set_style(NodeStyle())
+
+            self.img_style["faces"].setdefault(position, {})
+            self.img_style["faces"][position].setdefault(int(column), []).append(face)
+        else:
+            raise ValueError("'face' must be a Face or inherited instance")
+
+    def set_style(self, node_style):
+        """
+        .. versionadded: 2.1 
+
+        Set 'node_style' as the fixed style for the current node.
+        """
+        if type(node_style) is NodeStyle:
+            self.img_style = node_style
        
 
 def _translate_nodes(root, *nodes):
@@ -1430,8 +1475,7 @@ def asETE(R_phylo_tree):
         R = robjects.r
     except ImportError, e:
         print e
-        print >>sys.stderr, "RPy >= 2.0 is required to connect"
-        return
+        raise Exception ("RPy >= 2.0 is required to connect")
 
     R.library("ape")
     return Tree( R["write.tree"](R_phylo_tree)[0])
@@ -1442,8 +1486,8 @@ def asRphylo(ETE_tree):
         R = robjects.r
     except ImportError, e:
         print e
-        print >>sys.stderr, "RPy >= 2.0 is required to connect"
-        return
+        raise Exception("RPy >= 2.0 is required to connect")
+
     R.library("ape")
     return R['read.tree'](text=ETE_tree.write())
 

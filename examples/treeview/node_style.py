@@ -26,7 +26,7 @@ style["vt_line_width"] = 8
 style["hz_line_width"] = 8
 style["vt_line_type"] = 0 # 0 solid, 1 dashed, 2 dotted
 style["hz_line_type"] = 0
-t.img_style = style
+t.set_style(style)
 
 #Set dotted red lines to the first two branches
 style1 = NodeStyle()
@@ -55,7 +55,7 @@ for l in t.iter_leaves():
     l.img_style = style2
 
 # ETE 2.1 has now support for general image properties 
-I = TreeStyle()
-I.mode =  "r" 
-t.show(mylayout, img_properties=I)
-# t.render("./test.svg", layout=mylayout, img_properties=I)
+S = TreeStyle()
+S.mode =  "r" 
+t.show(mylayout, tree_style=S)
+

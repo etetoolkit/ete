@@ -12,11 +12,11 @@ Main functions
 Node and Tree Style
 =====================
 
-.. autoclass:: TreeStyle
+.. autoclass:: ete_dev.TreeStyle
 
-.. autoclass:: NodeStyle
+.. autoclass:: ete_dev.NodeStyle
 
-.. autoclass:: FaceContainer
+.. autoclass:: ete_dev.FaceContainer
    :members:
 
 =========================

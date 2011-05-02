@@ -1,87 +1,161 @@
-.. currentmodule:: ete_dev.treeview
-
-.. moduleauthor:: Jaime Huerta-Cepas
-
 :Author: Jaime Huerta-Cepas
 
+.. currentmodule:: ete_dev
 
 The Programmable Tree Drawing Engine
 ************************************
 
-ETE's treeview extension provides a highly programmable drawing system to render
-any hierarchical tree structure into a custom image. Although a number or
-predefined visualization layouts are included with the default installation,
-custom styles can be easily created from scratch. To do so, ETE makes use of
-there main concepts (node** styles**, node** faces** and **layout** functions),
-which allow the user to define the rules in which trees are rendered. Briefly, a
-node** style** defines the general aspect of a given tree node (size, color,
-background, line type, etc.). Node **faces** are small graphical pieces
-(representing, for instance, any node's extra information) that are added to
-nodes and that drawn at the same node position. Finally, **layouts functions**
-are custom python functions that define the rules on how faces and styles are
-added to nodes when they are going to be drawn. By combining this elements, the
-aspect of trees can be controlled by custom criteria.
+ETE's treeview extension provides a highly programmable drawing system
+to render any hierarchical tree structure as PDF, SVG or PNG
+images. Although several predefined visualization layouts are included
+with the default installation, custom styles can be easily created
+from scratch.
 
-Treeview extension provides an interactive Graphical User Interface (GUI) to
-visualize trees using custom layouts. Alternatively, images can be directly
-rendered as PNG or PDF files. Every node within a given tree structure has its
-own **show() **and** render()** methods, thus allowing to visualize or render
-its subtree structure.
+Image customization is performed through four elements: **a)**
+:class:`TreeStyle`, setting general options about the image (shape,
+rotation, etc.), **b)** :class:`NodeStyle`, which defines the
+specific aspect of each node (size, color, background, line type,
+etc.), **c)** node :class:`faces.Face` which are small pieces of extra
+graphical information that can be added to nodes (text labels, images,
+graphs, etc.) **d)** a :attr:`layout` function, a normal python
+function that controls how node styles and faces are dynamically added
+to nodes.
+
+Images can be rendered as **PNG**, **PDF** or **SVG** files using the
+:func:`TreeNode.render` method or interactively visualized using a
+built-in Graphical User Interface (GUI) invoked by the
+:func:`TreeNode.show` method.
 
 
 Interactive visualization of trees
 ==================================
 
-ETE's tree drawing engine is fully integrated with a built-in graphical user
-interface (GUI). Thus, ETE allows to render tree structures directly on an
-interactive interface that can be used to explore and manipulate trees node's
-properties and topology. The GUI is based on Qt4 , a cross platform and open
-source application and UI framework which allows to handle, virtually, images of
-any size. Of course, this will depend on you computer and graphical card
-performance.
+ETE's tree drawing engine is fully integrated with a built-in
+graphical user interface (GUI). Thus, ETE allows to visualize trees
+using an interactive interface that allows to explore and manipulate
+node's properties and tree topology.  To start the visualization of a
+node (tree or subtree), you can simply call the :func:`TreeNode.show`
+method.
 
-To start the visualization of a given tree or subtree, you can simply call the
-show() method present in every node:
+One of the advantages of this on-line GUI visualization is that you
+can use it to interrupt a given program/analysis, explore the tree,
+manipulate them, and continuing with the execution thread. Note that
+**changes made using the GUI will be kept after quiting the
+GUI**. This feature is specially useful for using during python
+sessions, in which analyses are performed interactively.
 
-One of the advantages of this on-line GUI visualization is that you can use it
-to interrupt a given program/analysis, explore trees, manipulate them, and
-continuing with the execution thread. Note that **changes made using the GUI
-will be kept in the tree structure after quiting the visualization interface**
-(Figure :ref:`fig:gui tree manipulation`). This feature is specially useful
-for using during python sessions, in which analyses are performed interactively.
+The GUI allows many operations to be performed graphically, however it
+does not implement all the possibilities of the programming toolkit.
 
-The GUI allow many operations to be performed graphically, however it does not
-implement all the possibilities of the programming toolkit. These are some of
-the allowed GUI options:
+:: 
 
+  from ete_dev import Tree 
+  t = Tree( "((a,b),c);" )
+  t.show()
 
-Render trees into image files
+Rendering trees as images
 =============================
 
-Alternatively, images can be directly written info a file. PNG and PDF formats
-are supported. While PNG will store only a normal image, PDF will keep vector
-graphics format, thus allowing to better edit or resize images using the proper
-programs (Such as inkscape in GNU/linux).
+Tree images can be directly written as image files. SVG, PDF and PNG
+formats are supported. Note that, while PNG images are raster images,
+PDF and SVG pictures are rendered as `vector graphics
+<http://en.wikipedia.org/wiki/Vector_graphics>`_, thus allowing its
+later modification and scaling.
 
-To generate an image, the **render()** method should be used instead of
-**show()**. The only required argument is the file name, which will determine
-the final format of the file (.pdf or .png). By default, the resulting image is
-scaled to 7 inches, approximately the width of an A4 paper. However, you can
-change this by setting a custom width and height. If only one of this values is
-provided, the other is imputed to keep the original aspect ratio.
+To generate an image, the :func:`TreeNode.render` method should be
+used instead of :func:`TreeNode.show`. The only required argument is
+the file name, whose extension will determine the image format (.PDF,
+.SVG or .PNG). Several parameters regarding the image size and
+resolution can be adjusted:
 
+.. table::
+
+   ================= ==============================================================
+   Argument           Description
+   ================= ==============================================================
+   :attr:`units`     "**px**": pixels, "**mm**": millimeters, "**in**": inches
+   :attr:`h`         height of the image in :attr:`units`.       
+   :attr:`w`         weight of the image in :attr:`units`.
+   :attr:`dpi`       dots per inches.
+   ================= ==============================================================
+
+.. note:: 
+
+   If :attr:`h` and :attr:`w` values are both provided, image size
+   will be adjusted even if it requires to break the original aspect
+   ratio of the image. If only one value (:attr:`h` or :attr:`w`) is
+   provided, the other will be estimated to maintain aspect ratio. If
+   no sizing values are provided, image will be adjusted to A4
+   dimensions.
+
+:: 
+
+  from ete_dev import Tree 
+  t = Tree( "((a,b),c);" )
+  t.render("mytree.png", w=183, units="mm")
 
 Customizing tree aspect
 =======================
 
-There are three basic elements that control the general aspect of trees:
-**node's style**, **node's faces** and **layouts functions**. In brief, layout
-functions can be used to set the rules that control the way in which certain
-nodes are drawn (setting its style and adding specific faces).
+Image customization is performed through four main elements:
+
+Tree style 
+-------------------
+
+The :class:`TreeStyle` class can be used to create a custom set of
+options that control the general aspect of the tree image. Tree styles
+can be passed to the :func:`TreeNode.show` and :func:`TreeNode.render`
+methods.  For instance, :class:`TreeStyle` allows to modify the scale
+used to render tree branches or choose between circular or rectangular
+tree drawing modes.
+
+:: 
+
+  from ete_dev import Tree, TreeStyle
+
+  t = Tree( "((a,b),c);" )
+  circular_style = TreeStyle()
+  circular_style.mode = "c" # draw tree in circular mode
+  circular_mode.scale = 20
+  t.render("mytree.png", w=183, units="mm", tree_style=circular_style)
+  
+A number of parameters can be controlled through custom tree style
+objetcs, check :class:`TreeStyle` documentation for a complete list of
+accepted values.
+
+Node style
+-------------------
+
+Through the :class:`NodeStyle` class the aspect of each single node
+can be controlled, including its size, color, background and branches.
+
+A node style can be defined statically and attached to several nodes: 
+
+:: 
+
+  from ete_dev import Tree, NodeStyle
+  t = Tree( "((a,b),c);" )
+  nstyle = NodeStyle()
+  
+  # Draws nodes as small red spheres of diameter equal to 10 pixels
+  nstyle["shape"] = "sphere"   
+  nstyle["size"] = 10  
+  nstyle["fgcolor"] = "darkred" 
+
+  # Gray dashed branch lines
+  nstyle["hz_line_type"] = 1 
+  nstyle["hz_line_type"] = "#cccccc" 
+
+  # Applies the same static style to all nodes in the tree
+  for n in t.traverse():
+     n.set_style(nstyle)
+
+  t.show() 
 
 
-styles
-------
+
+
+
 
 A '**style**' is a set of special node attributes that are used by the drawing
 algorithm to set the colours, and general aspect of nodes and branches. Styles
@@ -158,3 +232,4 @@ node.show(layout=mypythonFn)``.
 
 Example: combining styles, faces and layouts
 --------------------------------------------
+.. image:: ../svg_colors.png

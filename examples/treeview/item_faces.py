@@ -111,5 +111,5 @@ I = TreeStyle()
 I.layout_fn = master_ly
 I.title.add_face(faces.TextFace("Drawing your own Qt Faces", fsize=15), 0)
 
-t.show(None, img_properties=I)
+t.show(None, tree_style=I)
 
