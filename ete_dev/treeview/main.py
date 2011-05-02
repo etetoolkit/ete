@@ -182,6 +182,13 @@ class TreeStyle(object):
         
     :var "r" mode: Valid modes are 'c'(ircular)  or 'r'(ectangular).
 
+    :var "False" allow_face_overlap: This option applies only for
+      circular mode. It prevents aligned faces to overlap each other
+      by increasing the radius of the circular tree. In very large
+      trees, this may produce huge image representations. By setting
+      this option to *True*, you will obtain smaller images in which
+      aligned faces (typically node names) may overlap. 
+
     :var None layout_fn: Layout function used to dynamically control
       the aspect of nodes. Valid values are: None or a pointer to a method,
       function, etc.
@@ -277,7 +284,6 @@ class TreeStyle(object):
     :var False show_branch_support: Automatically adds branch
       support text in the bottom of tree branches
 
-
     Initialize aligned face headers
 
     .. currentmodule:: ete_dev.treeview
@@ -292,7 +298,6 @@ class TreeStyle(object):
       representing the legend of the figure. 
     :var 4 legend_position=4: TopLeft corner if 1, TopRight
       if 2, BottomLeft if 3, BottomRight if 4
-
     
     :var title: A text string that will be draw as the Tree title
 
@@ -303,8 +308,12 @@ class TreeStyle(object):
         # TREE SHAPE AND SIZE
         # :::::::::::::::::::::::::
         
-        #: Valid modes are : "c" or "r"
+        # Valid modes are : "c" or "r"
         self.mode = "r"
+
+        # Applies only for circular mode. It prevents aligned faces to
+        # overlap each other by increasing the radius. 
+        self.allow_face_overlap = False
 
         # Layout function used to dynamically control the aspect of
         # nodes

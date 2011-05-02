@@ -833,12 +833,11 @@ def render_aligned_faces(img, mainRect, parent, n2i, n2f):
             fb_head.flip_hz()
             fb_foot.flip_hz()
 
-    elif img.mode == "c":
+    elif img.mode == "c" and not img.allow_face_overlap:
         angle = n2i[maxh_node].angle_span
         rad, off = crender.get_min_radius(1, maxh, angle, tree_end_x)
         extra_width += rad - tree_end_x 
         tree_end_x = rad
-        
 
     # Place aligned faces
     for node, fb in aligned_faces:

@@ -79,6 +79,7 @@ t.populate(size, reuse_names=False)
 
 I = TreeStyle()
 I.mode = "r"
+
 I.orientation = 0
 I.layout_fn = master_ly
 I.margin_left = 100
@@ -91,6 +92,10 @@ I.show_border = True
 I.legend_position = 4
 I.title.add_face(faces.TextFace("HOLA MUNDO", fsize=30), 0)
 I.draw_aligned_faces_as_table = True
+
+def test(node):
+    if node.is_leaf():
+        faces.add_face_to_node(faces.AttrFace("name"), node, 0, position="aligned")
 
 I.aligned_header.add_face( faces.TextFace("H1"), 0 )
 I.aligned_header.add_face( faces.TextFace("H1"), 1 )
