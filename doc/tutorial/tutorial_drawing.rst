@@ -205,16 +205,22 @@ the :mod:`ete_dev.treeview` reference page.
 
 Faces can be added to different areas around the node, namely
 **branch-right**, **branch-top**, **branch-bottom** or **aligned**.
-Each area represents a table in which faces can be added. Thus, if two
-text labels want to be plotted bellow the branch line, a pair of
-:text:`TextFaces` could be created and added to the columns 0 and 1 of the
-**branch-bottom** area:
+Each area represents a table in which faces can be added. For
+instance, if two text labels want to be drawn bellow the branch line
+of a given node, a pair of :text:`TextFace` faces could be created and
+added to the columns 0 and 1 of the **branch-bottom** area:
 
 :: 
 
   from ete_dev import Tree, NodeStyle
   t = Tree( "((a,b),c);" )
 
+
+If you add more than one face to the same area and column, they will
+be piled up. See the following image as an example of face positions:
+
+:: 
+  
   
 
 
@@ -224,7 +230,10 @@ text labels want to be plotted bellow the branch line, a pair of
 
 
 
-Static faces can be added to nodes in the same way as node style is
+
+
+
+Static faces can be added to nodes in the same way as node style ispi
 set. 
 
 

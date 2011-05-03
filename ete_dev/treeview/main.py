@@ -41,7 +41,7 @@ TREE_STYLE_CHECKER = {
     }
 
 # _faces and faces are registered to allow deepcopy to work on nodes
-VALID_NODE_STYLE_KEYS = set([i[0] for i in NODE_STYLE_DEFAULT]) | set(["_faces", "faces"])
+VALID_NODE_STYLE_KEYS = set([i[0] for i in NODE_STYLE_DEFAULT]) | set(["_faces"])
 
 class _Border(object):
     def __init__(self):
@@ -139,11 +139,9 @@ class NodeStyle(dict):
     """
 
     def __init__(self, *args, **kargs):
-
         super(NodeStyle, self).__init__(*args, **kargs)
-        super(NodeStyle, self).__setitem__("faces", {})
         self.init()
-        self._block_adding_faces = False
+        #self._block_adding_faces = False
 
     def init(self):
         for key, dvalue, checker in NODE_STYLE_DEFAULT:
@@ -152,20 +150,21 @@ class NodeStyle(dict):
             elif not checker(self[key]):
                 raise ValueError("'%s' attribute in node style has not a valid value: %s" %\
                                      (key, self[key]))
-        super(NodeStyle, self).__setitem__("_faces", {})
-        # copy fixed faces to the faces dict that will be drawn 
-        for pos, values in self["faces"].iteritems():
-            for col, faces in values.iteritems():
-                self["_faces"].setdefault(pos, {})
-                self["_faces"][pos][col] = list(faces)
+    # 
+    #    #super(NodeStyle, self).__setitem__("_faces", {})
+    #    # copy fixed faces to the faces dict that will be drawn 
+    #    #for pos, values in self["faces"].iteritems():
+    #    #    for col, faces in values.iteritems():
+    #    #        self["_faces"].setdefault(pos, {})
+    #    #        self["_faces"][pos][col] = list(faces)
 
-    def __setitem__(self, i, y):
+    def __setitem__(self, i, v):
         if i not in VALID_NODE_STYLE_KEYS:
-            raise ValueError("'%s' is not a valid key for NodeStyle instances" %i)
-        super(NodeStyle, self).__setitem__(i, y)
+            raise ValueError("'%s' is not a valid key for a NodeStyle instance" %i)
+        super(NodeStyle, self).__setitem__(i, v)
 
-    def clear(self):
-        super(NodeStyle, self).__setitem__("_faces", {})
+    #def clear(self):
+    #    super(NodeStyle, self).__setitem__("_faces", {})
 
 class TreeStyle(object):
     """ 
@@ -451,13 +450,27 @@ class TreeStyle(object):
         else:
             raise ValueError("[%s] option is not supported" %attr)
         
+class _FaceAreas(object):
+    def __init__(self):
+        for a in FACE_POSITIONS:
+            setattr(self, a, FaceContainer())
+
+    def __setattr__(self, attr, val):
+        if attr not in FACE_POSITIONS:
+            raise AttributeError("Face area [%s] not in %s" %(attr, FACE_POSITIONS) )
+        return super(_FaceAreas, self).__setattr__(attr, val)
+
+    def __getattr__(self, attr):
+        if attr not in FACE_POSITIONS:
+            raise AttributeError("Face area [%s] not in %s" %(attr, FACE_POSITIONS) )
+        return super(_FaceAreas, self).__getattr__(attr)
+
 class FaceContainer(dict):
     """
     .. versionadded:: 2.1
 
     Use this object to create a grid of faces. You can add faces to different columns. 
     """
-
     def add_face(self, face, column):
         """ 
         add the face **face** to the specified **column**
@@ -480,18 +493,17 @@ def add_face_to_node(face, node, column, aligned=False, position="branch-right")
 
     :argument node: a tree node instance (:class:`TreeNode`, :class:`phylo.PhyloNode`, etc.)
     :argument column: An integer number starting from 0
-    :argument "branch-right" position: Posible values are "branch-right", "branch-top", "branch-bottom", "aligned" or "float"
+    :argument "branch-right" position: Possible values are %s
+   """ % ','.join(FACE_POSITIONS)
 
-   """
+    # to stay 2.0 compatible 
+    if aligned == True:
+        position == "aligned"
 
-    node.img_style.setdefault("_faces", {})
-    if position not in FACE_POSITIONS:
-        raise (ValueError, "Incorrect position") 
-    if aligned:
-        position = "aligned"
-
-    node.img_style["_faces"].setdefault(position, {})
-    node.img_style["_faces"][position].setdefault(int(column), []).append(face)
+    if getattr(node, "_temp_faces", None):
+        getattr(node._temp_faces, position).add_face(face, column)
+    else:
+        raise Exception("This function can only be called within a layout function. Use node.add_face() instead")
 
 def random_color(base=None):
     s = 0.5#random.random()

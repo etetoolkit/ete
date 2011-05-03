@@ -230,25 +230,38 @@ class _FaceGroupItem(QGraphicsRectItem): # I resisted to name this FaceBookItem 
             obj.setTransform(QTransform().translate(x, y).scale(1,-1).translate(-x, -y))
 
 def update_node_faces(node, n2f, img):
+
     # Organize all faces of this node in FaceGroups objects
     # (tables of faces)
     faceblock = {}
 
     n2f[node] = faceblock
     for position in FACE_POSITIONS:
-        if position in node.img_style["_faces"]:
-            # The value of this is expected to be list of columns of faces
-            # c2f = [ [f1, f2, f3], 
-            #         [f4, f4]
-            #       ]
+        # _temp_faces.position = 
+        #  1: [f1, f2, f3], 
+        #  2: [f4, f4], 
+        #  ... 
 
-            if position == "aligned" and img.draw_aligned_faces_as_table: 
-                as_grid = True
-            else:
-                as_grid = False
-            faceblock[position] = _FaceGroupItem(node.img_style["_faces"][position], node, as_grid=as_grid)
+        # In case there are fixed faces 
+        fixed_faces =  getattr(getattr(node, "faces", None) , position, {})
+
+        # _temp_faces should be initialized by the set_style funcion
+        all_faces = getattr(node._temp_faces, position)
+        for column, values in fixed_faces.iteritems():
+            all_faces.setdefault(column, []).extend(values) 
+
+        if position == "aligned" and img.draw_aligned_faces_as_table: 
+            as_grid = True
         else:
-            faceblock[position] = _FaceGroupItem({}, node)
+            as_grid = False
+        faceblock[position] = _FaceGroupItem(all_faces, node, as_grid=as_grid)
+
+
+    # all temp and fixed faces are now referenced by the faceblock, so
+    # we can clear the node temp faces (don't want temp faces to be
+    # replicated with copy or dumped with cpickle)
+    node._temp_faces = None
+        
     return faceblock
 
 def _leaf(node):

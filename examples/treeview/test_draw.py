@@ -120,14 +120,13 @@ t2.populate(10)
 
 # Creates a fixed NodeStyle object containing a TreeFace (A tree image
 # as a face within another tree image)
-style = NodeStyle()
-style.add_fixed_face(faces.TreeFace(t2, I), "branch-right", 0)
+# t.add_face(faces.TreeFace(t2, I), "branch-right", 0)
 
 # Attach the fixed style to the first child of the root node
 # t.children[0].img_style = style
 I.rotation = 90
 I.mode = "c"
-t.show(img_properties=I)
+t.show(tree_style=I)
 #t.render("/home/jhuerta/test.svg", img_properties=I)
 #t.render("/home/jhuerta/test.pdf", img_properties=I)
 #t.render("/home/jhuerta/test.png", img_properties=I)

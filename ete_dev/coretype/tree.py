@@ -26,9 +26,15 @@ import copy
 from collections import deque 
 
 from ete_dev.parser.newick import read_newick, write_newick
+
 # the following imports are necessary to set fixed styles and faces
-from ete_dev.treeview.main import NodeStyle, FACE_POSITIONS
-from ete_dev.treeview.faces import Face
+try:
+    from ete_dev.treeview.main import NodeStyle, _FaceAreas, FaceContainer, FACE_POSITIONS
+    from ete_dev.treeview.faces import Face
+except ImportError:
+    TREEVIEW = False
+else:
+    TREEVIEW = True
 
 __all__ = ["Tree", "TreeNode"]
 
@@ -50,7 +56,6 @@ class TreeNode(object):
     consists of a collection of TreeNode instances connected in a
     hierarchical way. Trees can be loaded from the New Hampshire Newick
     format (newick).
-
 
     :argument newick: Path to the file containing the tree or, alternatively,
        the text string containing the same information.
@@ -74,7 +79,6 @@ class TreeNode(object):
           9        leaf names                                    
           100      topology only                                 
           ======  ============================================== 
-
 
     :returns: a tree node object which represents the base of the tree.
 
@@ -129,6 +133,15 @@ class TreeNode(object):
     #: A list of children nodes
     children = property(fget=_get_children, fset=_set_children)
 
+    def _set_face_areas(self, value):
+        if isinstance(value, _FaceAreas):
+            self._faces = value
+        else:
+            raise ValueError("[%s] is not a valid FaceAreas instance" %type(value))
+
+    faces = property(fget=lambda self: self._faces, \
+                         fset=_set_face_areas)
+
     def __init__(self, newick=None, format=0):
         self._children = []
         self._up = None
@@ -143,6 +156,8 @@ class TreeNode(object):
         # Initialize tree
         if newick is not None:
             read_newick(newick, root_node = self, format=format)
+            
+        self._faces = _FaceAreas()
 
     def __nonzero__(self):
         return True
@@ -1395,16 +1410,12 @@ class TreeNode(object):
         :argument column: An integer number starting from 0
         :argument "branch-right" position: Posible values are: %s
         """ % ','.join(FACE_POSITIONS)
+
+        if position not in FACE_POSITIONS:
+            raise ValueError("face position not in %s" %FACE_POSITIONS)
         
         if Face in face.__class__.__bases__:
-            if self.img_style._block_adding_faces:
-                raise AttributeError("fixed faces cannot be modified while drawing.")
-
-            if not hasattr(self, "img_style"):
-                self.set_style(NodeStyle())
-
-            self.img_style["faces"].setdefault(position, {})
-            self.img_style["faces"][position].setdefault(int(column), []).append(face)
+            getattr(self._faces, position).add_face(face, column=column)
         else:
             raise ValueError("'face' must be a Face or inherited instance")
 

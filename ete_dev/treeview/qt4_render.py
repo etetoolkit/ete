@@ -6,7 +6,7 @@ from PyQt4 import QtCore, QtGui, QtSvg
 import qt4_circular_render as crender
 import qt4_rect_render as rrender
 
-from main import _leaf, NodeStyle
+from main import _leaf, NodeStyle, _FaceAreas
 from qt4_gui import _NodeActions as _ActionDelegator
 from qt4_face_render import update_node_faces, _FaceGroupItem, _TextFaceItem
 import faces
@@ -734,26 +734,13 @@ def set_pen_style(pen, line_style):
         pen.setStyle(QtCore.Qt.DotLine)
 
 def set_style(n, layout_func):
-    # I import dict at the moment of drawing, otherwise there is a
-    # loop of imports between drawer and qt4render
-    if not hasattr(n, "img_style"):
+    if not isinstance(getattr(n, "img_style", None), NodeStyle):
         n.img_style = NodeStyle()
-    elif isinstance(n.img_style, NodeStyle): 
-        n.img_style.init()
-    else:
-        raise TypeError("img_style attribute in node %s is not of NodeStyle type." \
-                            %n.name)
-
+       
+    n._temp_faces = _FaceAreas()
     if layout_func:
-        # Adding fixed faces during drawing is not allowed, since
-        # added faces will not be tracked until next execution
-        n.img_style._block_adding_faces = True
-        try:
-            layout_func(n)
-        except Exception:
-            n.img_style._block_adding_faces = False
-            raise
-
+        layout_func(n)
+    
 def render_floatings(n2i, n2f, img, float_layer):
     floating_faces = [ [node, fb["float"]] for node, fb in n2f.iteritems() if "float" in fb]
     for node, fb in floating_faces:
