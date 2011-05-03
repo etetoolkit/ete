@@ -1002,6 +1002,9 @@ class TreeNode(object):
             if random_dist:
                 c1.dist = random.random()
                 c2.dist = random.random()
+                c1.support = random.random()
+                c2.support = random.random()
+
         # next contains leaf nodes
         charset =  "abcdefghijklmnopqrstuvwxyz"
         names_library = deque(names_library)
@@ -1408,8 +1411,10 @@ class TreeNode(object):
 
         :argument face: a Face or inherited instance
         :argument column: An integer number starting from 0
-        :argument "branch-right" position: Posible values are: %s
-        """ % ','.join(FACE_POSITIONS)
+        :argument "branch-right" position: Posible values are:
+          "branch-right", "branch-top", "branch-bottom", "float",
+          "aligned"
+        """ 
 
         if position not in FACE_POSITIONS:
             raise ValueError("face position not in %s" %FACE_POSITIONS)

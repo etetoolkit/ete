@@ -206,7 +206,7 @@ class TreeStyle(object):
       X-zoom in.
 
     :var 1 min_leaf_separation: Min separation, in pixels, between
-      to adjacent branches
+      two adjacent branches
 
     :var 0 branch_vertical_margin: Leaf branch separation margin,
       in pixels. This will add a separation of X pixels between
@@ -493,8 +493,9 @@ def add_face_to_node(face, node, column, aligned=False, position="branch-right")
 
     :argument node: a tree node instance (:class:`TreeNode`, :class:`phylo.PhyloNode`, etc.)
     :argument column: An integer number starting from 0
-    :argument "branch-right" position: Possible values are %s
-   """ % ','.join(FACE_POSITIONS)
+    :argument "branch-right" position: Possible values are
+      "branch-right", "branch-top", "branch-bottom", "float", "aligned"
+   """ 
 
     # to stay 2.0 compatible 
     if aligned == True:

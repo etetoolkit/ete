@@ -94,8 +94,8 @@ resolution can be adjusted:
   t = Tree( "((a,b),c);" )
   t.render("mytree.png", w=183, units="mm")
 
-Customizing tree aspect
-=======================
+Customizing the aspect of trees
+==================================
 
 Image customization is performed through four main elements:
 
@@ -121,7 +121,96 @@ tree drawing modes.
   
 A number of parameters can be controlled through custom tree style
 objetcs, check :class:`TreeStyle` documentation for a complete list of
-accepted values.
+accepted values. Some common configurations include:
+
+Show leaf node names, branch length and branch support 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This will automatically add node names and branch information to the tree image
+
+::
+
+  from ete_dev import Tree, TreeStyle
+  t = Tree()
+  t.populate(50, random_dist=True)
+  ts = TreeStyle()
+  ts.show_leaf_name = True
+  ts.show_branch_length = True
+  ts.show_branch_support = True
+  t.show(tree_style=ts)
+
+Change branch length scale (zoom in X)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+::
+
+  from ete_dev import Tree, TreeStyle
+  t = Tree()
+  t.populate(50, random_dist=True)
+  ts = TreeStyle()
+  ts.show_leaf_name = True
+  ts.scale =  60 # 60 pixels per branch length unit
+  t.show(tree_style=ts)
+
+
+Change branch separation between nodes (zoom in Y)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+::
+
+  from ete_dev import Tree, TreeStyle
+  t = Tree()
+  t.populate(50, random_dist=True)
+  ts = TreeStyle()
+  ts.show_leaf_name = True
+  ts.branch_vertical_margin = 10 # 10 pixels between adjacent branches
+  t.show(tree_style=ts)
+
+
+Rotate a tree
+^^^^^^^^^^^^^^^
+
+This will render a rectangular tree from top to bottom
+:: 
+
+  from ete_dev import Tree, TreeStyle
+  t = Tree()
+  t.populate(50)
+  ts = TreeStyle()
+  ts.show_leaf_name = True
+  ts.rotation = 90
+  t.show(tree_style=ts)
+
+circular tree in 180 degrees
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Draws a circular tree using a semi-circumference 
+
+:: 
+
+  from ete_dev import Tree, TreeStyle
+  t = Tree()
+  t.populate(50)
+  ts = TreeStyle()
+  ts.show_leaf_name = True
+  ts.mode = "c"
+  ts.arc_start = -90 # 0 degrees = 3 o'clock
+  ts.arc_span = 180
+  t.show(tree_style=ts)
+
+
+Add legend and title 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:: 
+
+  from ete_dev import Tree, TreeStyle, TextFace
+  t = Tree( "((a,b),c);" )
+  ts = TreeStyle()
+  ts.show_leaf_name = True
+  ts.title.add_face(TextFace("Hello ETE", fsize=20), column=0) 
+  t.show(tree_style=ts)
+
 
 Node style
 -------------------
@@ -205,86 +294,74 @@ the :mod:`ete_dev.treeview` reference page.
 
 Faces can be added to different areas around the node, namely
 **branch-right**, **branch-top**, **branch-bottom** or **aligned**.
-Each area represents a table in which faces can be added. For
-instance, if two text labels want to be drawn bellow the branch line
-of a given node, a pair of :text:`TextFace` faces could be created and
-added to the columns 0 and 1 of the **branch-bottom** area:
+Each area represents a table in which faces can be added through the
+:func:`TreeNode.add_face` method. For instance, if two text labels
+want to be drawn bellow the branch line of a given node, a pair of
+:class:`TextFace` faces can be created and added to the columns 0
+and 1 of the **branch-bottom** area:
 
 :: 
-
-  from ete_dev import Tree, NodeStyle
+   
+  from ete_dev import Tree, TreeStyle, TextFace
   t = Tree( "((a,b),c);" )
 
+  # Basic tree style
+  ts = TreeStyle()
+  ts.show_leaf_name = True
+
+  # Add two text faces to different columns 
+  t.add_face(TextFace("hola "), column=0, position = "branch-right")
+  t.add_face(TextFace("mundo!"), column=1, position = "branch-right")
+  t.show(tree_style=ts)
 
 If you add more than one face to the same area and column, they will
 be piled up. See the following image as an example of face positions:
 
-:: 
-  
-  
+ .. figure:: ../face_positions.png
+  :alt: possible face positions
 
+  :download:`Source code <../face_grid.py>` used to generate the
+  above image.
 
+.. note::
 
+  Once a face object is created, it can be linked to one or more
+  nodes. For instance, the same text label can be recycled and added
+  to several nodes.
 
-
-
-
-
-
-
-
-Static faces can be added to nodes in the same way as node style ispi
-set. 
-
-
-To create a face, the following general constructors can be used, which are
-**available through the face module**:
-
-.. % 
-
-Once a face is created, it can be linked to one or more nodes. To do so, you
-must use the **add_face_to_node() **method within the** faces** module. By doing
-this, when a node is drawn, their linked faces will be drawn beside it. Since
-several faces can be added to the same node, you must specify the relative
-position in which they will be placed. Each node reserves a virtual space that
-controls how faces are positioned. The position of each face is determined by an
-imaginary grid at the right side of each node (Figure :ref:`fig:faces
-positions`). Each column from the grid is internally treated as a stack of
-faces. Thus, faces can be added to any column and its row position will be
-determined by insertion order: **first inserted is first row**. In the case of
-trees leaves, nodes can handle an independent list of faces that will be drawn
-aligned with the farthest leaf in the tree. To add an aligned face you can use
-the **aligned=True **argument** **when calling the **add_face_to_node()**
-method. By knowing this rules, you can easily fill virtual node grids with any
-external image or text label and the algorithm will take care of positioning.
-Note that** add_face_to_node()** must only be used inside a layout function.
-
-.. % 
 
 .. _sec:layout_functions:
 
 layouts
 -------
 
-**Layout functions** are the key component of the tree drawing customization.
-Any python function accepting a node instance as a first argument can be used as
-a layout function. Essentially, such function will be called just before drawing
-each tree node, so you can use it perform any operation prior to render nodes.
-In practice, layout functions are used to define the set of rules that control
-nodes style attributes and the faces that will be linked to them. Of course,
-such rules can be based on a previous node analysis. For instance: ``if node has
-more than 5 descendants, then add a text label, set a different background
-color, perform an analysis on leaves and associate an external image`` with
-node. As you imagine, rules can be are as sophisticated as you want. Thus, the
-advantage of this method is that you can create your own drawing algorithms to
-render trees dynamically and fitting very specific needs.
+.. note::
+   
+  Layout functions are the key component of the tree drawing
+  customization.  Any python function accepting a node instance as a
+  first argument can be used as a layout function. Essentially, such
+  function will be called just before drawing each tree node, so you
+  can use it perform any operation prior to render nodes.  In
+  practice, layout functions are used to define the set of rules that
+  control nodes style attributes and the faces that will be linked to
+  them. Of course, such rules can be based on a previous node
+  analysis. For instance: ``if node has more than 5 descendants, then
+  add a text label, set a different background color, perform an
+  analysis on leaves and associate an external image`` with node. As
+  you imagine, rules can be are as sophisticated as you want. Thus,
+  the advantage of this method is that you can create your own drawing
+  algorithms to render trees dynamically and fitting very specific
+  needs.
 
-In order to apply your custom layouts functions, function's name (the reference
-to it) can be passed to both **render()** and **show()** methods:
-``node.render(``\ filename.pdf'', layout=mypythonFn) ``**or**``
-node.show(layout=mypythonFn)``.
+  In order to apply your custom layouts functions, function's name
+  (the reference to it) can be passed to both **render()** and
+  **show()** methods: ``node.render(``\ filename.pdf'',
+  layout=mypythonFn) ``**or**`` node.show(layout=mypythonFn)``.
 
 
 Example: combining styles, faces and layouts
 --------------------------------------------
-:data:`SVG_COLORS`
+
+.. warning::
+
+   Missing example
