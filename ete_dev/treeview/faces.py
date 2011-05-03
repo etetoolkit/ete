@@ -108,7 +108,7 @@ _ntbgcolors = {
 
 __all__ = ["Face", "TextFace", "AttrFace", "ImgFace",\
                "ProfileFace", "SequenceFace", "TreeFace",\
-               "RandomFace", "ItemFace"]
+               "RandomFace", "ItemFace", "CircleFace"]
 
 class Face(object):
     """ 
@@ -184,11 +184,13 @@ class TextFace(Face):
     """ 
     Static text Face object
 
+    .. currentmodule:: ete_dev
+    
     :argument text:     Text to be drawn
     :argument ftype:    Font type, e.g. Arial, Verdana, Courier
     :argument fsize:    Font size, e.g. 10,12,6, (default=10)
-    :argument fgcolor:  Foreground font color in RGB name format, e.g. #FF00DD,#000000  
-    :argument bgcolor:  Backgroung font color in RGB name format, e.g. #FFFFFF,#DDDDDD 
+    :argument fgcolor:  Foreground font color. RGB code or name in :data:`SVG_COLORS` 
+    :argument bgcolor:  Backgroung font color. RGB code or  name in :data:`SVG_COLORS` 
     :argument penwidth: Penwdith used to draw the text.
     :argument fstyle: "normal" or "italic" 
     """
@@ -241,8 +243,8 @@ class AttrFace(TextFace):
     :argument attr:     Node's attribute that will be drawn as text
     :argument ftype:    Font type, e.g. Arial, Verdana, Courier, (default="Verdana")
     :argument fsize:    Font size, e.g. 10,12,6, (default=10)
-    :argument fgcolor:  Foreground font color in RGB name format, e.g. #FF00DD,#000000  (default="#000000")
-    :argument bgcolor:  Backgroung font color in RGB name format, e.g. #FFFFFF,#DDDDDD, (default=None)
+    :argument fgcolor:  Foreground font color. RGB code or name in :data:`SVG_COLORS` 
+    :argument bgcolor:  Backgroung font color. RGB code or name in :data:`SVG_COLORS` 
     :argument penwidth: Penwdith used to draw the text. (default is 0)
     :argument text_prefix: text_rendered before attribute value
     :argument text_suffix: text_rendered after attribute value
@@ -846,7 +848,6 @@ class _SphereItem(QtGui.QGraphicsEllipseItem):
         self.setPen(QtGui.QPen(QtGui.QColor(color)))
         #self.setPen(QtCore.Qt.NoPen)
 
-
 class CircleFace(Face):
     """
     .. versionadded:: 2.1
@@ -854,7 +855,7 @@ class CircleFace(Face):
     Creates a Circle or Sphere Face.
 
     :arguments radius: integer number defining the radius of the face
-    :arguments color: RGB code or SVG color name used to fill the circle
+    :arguments color: Color used to fill the circle. RGB code or name in :data:`SVG_COLORS` 
     :arguments "circle" style: Valid values are "circle" or "sphere"
     """
 
@@ -886,8 +887,6 @@ class ItemFace(Face):
 
     :arguments constructor: A pointer to a function or methods
       returning a QGraphicsItem based object
-     
-
     """
 
     def __init__(self, constructor, *args, **kargs):

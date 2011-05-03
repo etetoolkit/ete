@@ -8,7 +8,6 @@ Main functions
 
 .. autofunction:: add_face_to_node
 
-
 Node and Tree Style
 =====================
 
@@ -19,11 +18,18 @@ Node and Tree Style
 .. autoclass:: ete_dev.FaceContainer
    :members:
 
-=========================
 Faces
 =========================
 
 .. automodule:: ete_dev.treeview.faces
    :members:
    :no-undoc-members:
+
+Supported Colors
+=========================
+
+.. toctree::
+   :maxdepth: 2
+
+   reference_svgcolors
 

@@ -65,6 +65,14 @@ class _Border(object):
             return None
 
 class _Background(object):
+    """ 
+    Set the background of the object
+    
+    :param color: RGB color code or :data:`SVG_COLORS`
+
+    """
+
+
     def __init__(self):
         self.color = None
 
@@ -109,15 +117,17 @@ class NodeStyle(dict):
     """ 
     .. versionadded:: 2.1    
 
+    .. currentmodule:: ete_dev
+
     A dictionary with all valid node graphical attributes.  
 
-    :argument #0030c1 fgcolor: RGB code or SVG color name
-    :argument #FFFFFF bgcolor: RGB code or SVG color name
-    :argument #FFFFFF node_bgcolor: RGB code or SVG color name
-    :argument #FFFFFF partition_bgcolor: RGB code or SVG color name
-    :argument #FFFFFF faces_bgcolor: RGB code or SVG color name
-    :argument #000000 vt_line_color: RGB code or SVG color name
-    :argument #000000 hz_line_color: RGB code or SVG color name
+    :argument #0030c1 fgcolor: RGB code or name in :data:`SVG_COLORS` 
+    :argument #FFFFFF bgcolor: RGB code or name in :data:`SVG_COLORS` 
+    :argument #FFFFFF node_bgcolor: RGB code or name in :data:`SVG_COLORS` 
+    :argument #FFFFFF partition_bgcolor: RGB code or name in :data:`SVG_COLORS` 
+    :argument #FFFFFF faces_bgcolor: RGB code or name in :data:`SVG_COLORS` 
+    :argument #000000 vt_line_color: RGB code or name in :data:`SVG_COLORS` 
+    :argument #000000 hz_line_color: RGB code or name in :data:`SVG_COLORS` 
     :argument 0 hz_line_type: integer number
     :argument 0 vt_line_type: integer number
     :argument 3 size: integer number
@@ -148,21 +158,6 @@ class NodeStyle(dict):
             for col, faces in values.iteritems():
                 self["_faces"].setdefault(pos, {})
                 self["_faces"][pos][col] = list(faces)
-
-    def add_fixed_face(self, face, position, column):
-        if self._block_adding_faces:
-            raise AttributeError("fixed faces cannot be modified while drawing.")
-            
-        """ 
-        Add faces as a fixed feature of this node style. This faces
-        are always rendered.
-
-        face: a Face compatible instance
-        Valid positions: %s
-        column: an integer number defining face relative position
-         """ %FACE_POSITIONS
-        self["faces"].setdefault(position, {})
-        self["faces"][position].setdefault(int(column), []).append(face)
 
     def __setitem__(self, i, y):
         if i not in VALID_NODE_STYLE_KEYS:
@@ -238,8 +233,8 @@ class TreeStyle(object):
       branch length, branch line can be completed. Also, when
       circular trees are drawn
     :var 2 extra_branch_line_type:  0 solid, 1 dashed, 2 dotted
-    :var "gray"  extra_branch_line_color": RGB or SVG color name
-
+    :var "gray" extra_branch_line_color": RGB code or name in
+      :data:`SVG_COLORS`
     
     :var False force_topology: Convert tree branches to a fixed length, thus allowing to
       observe the topology of tight nodes
@@ -249,7 +244,7 @@ class TreeStyle(object):
       to aligned faces
     
     :var 2 guiding_lines_type: 0 solid, 1 dashed, 2 dotted
-    :var "gray" guiding_lines_color: RGB color code  or SVG color name
+    :var "gray" guiding_lines_color: RGB code or name in :data:`SVG_COLORS` 
 
     **FACES**
 

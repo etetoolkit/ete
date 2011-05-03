@@ -127,7 +127,7 @@ Node style
 -------------------
 
 Through the :class:`NodeStyle` class the aspect of each single node
-can be controlled, including its size, color, background and branches.
+can be controlled, including its size, color, background and branch type.
 
 A node style can be defined statically and attached to several nodes: 
 
@@ -144,44 +144,89 @@ A node style can be defined statically and attached to several nodes:
 
   # Gray dashed branch lines
   nstyle["hz_line_type"] = 1 
-  nstyle["hz_line_type"] = "#cccccc" 
+  nstyle["hz_line_color"] = "#cccccc" 
 
-  # Applies the same static style to all nodes in the tree
+  # Applies the same static style to all nodes in the tree. Note that,
+  # if "nstyle" is modified, changes will affect to all nodes
   for n in t.traverse():
      n.set_style(nstyle)
 
   t.show() 
 
+If each node should be drawn differently, an independent
+:class:`NodeStyle` instance could be created for each node. Note that
+node styles can be modified at any moment by accessing the
+:attr:`TreeNode.img_style` attribute.
+
+::
+
+  from ete_dev import Tree, NodeStyle
+  t = Tree( "((a,b),c);" )
+
+  # Creates an independent node style for each node, which is
+  # initialized with a red foreground color.
+  for n in t.traverse():
+     nstyle = NodeStyle()
+     nstyle["fgcolor"] = "red"
+     nstyle["size"] = 15
+     n.set_style(nstyle)
+
+  # Let's now modify the aspect of the root node
+  t.img_style["size"] = 30
+  t.img_style["fgcolor"] = "blue"
+
+  t.show() 
+
+
+Static node styles, set through the :func:`set_style` method, will be
+attached to the nodes and exported as part of their information. For
+instance, :func:`TreeNode.copy` will replicate all node styles in the
+replicate tree.
+
+Note that node styles can be also modified on the fly through a
+:attr:`layout` function (see :ref:`sec:layout_functions`)
+
+
+Node faces
+-------------
+
+.. currentmodule:: ete_dev.treeview.faces
+
+Node faces are small pieces of graphical information that can be
+linked to nodes. For instance, text labels or external images could be
+linked to nodes and they will be plotted within the tree image. 
+
+Several types of node faces are provided by the main :mod:`ete_dev`
+module, ranging from simple text (:class:`TextFace`) and geometric
+shapes (:class:`CircleFace`), to molecular sequence representations
+(:class:`SequenceFace`), heatmaps and profile plots
+(:class:`ProfileFace`). A full list of available faces can be found at
+the :mod:`ete_dev.treeview` reference page.
+
+Faces can be added to different areas around the node, namely
+**branch-right**, **branch-top**, **branch-bottom** or **aligned**.
+Each area represents a table in which faces can be added. Thus, if two
+text labels want to be plotted bellow the branch line, a pair of
+:text:`TextFaces` could be created and added to the columns 0 and 1 of the
+**branch-bottom** area:
+
+:: 
+
+  from ete_dev import Tree, NodeStyle
+  t = Tree( "((a,b),c);" )
+
+  
 
 
 
 
 
-A '**style**' is a set of special node attributes that are used by the drawing
-algorithm to set the colours, and general aspect of nodes and branches. Styles
-are internally encoded as python dictionaries. Each node has its own style
-dictionary, which is accessible as **node.img_style**. A default style is
-associated to every tree node, but you can modify them at any time. Note that
-**nodes styles must only be modified inside a layout function**. Otherwise,
-custom settings may be missing or overwritten by default values.
 
 
-Faces
------
 
-**Node's faces** are more sophisticated drawing features associated to nodes.
-They represent independent images that can be linked to nodes, usually
-representing a given node's feature. Faces can be loaded **from external image
-files**, **created from scratch** using any drawing library, **or generated as
-text labels**.
+Static faces can be added to nodes in the same way as node style is
+set. 
 
-The complexity of faces may go from simple text tags to complete plots showing
-the average expression pattern associated to a given partition in a microarray
-clustering tree. Given that faces can be loaded from external images and added
-*on the fly*, any way of producing external images could be easily connected to
-the drawing engine. For instance, the statistical framework R could be used to
-analyze a given node's property, and to generate a plot that can be used as a
-node's face.
 
 To create a face, the following general constructors can be used, which are
 **available through the face module**:
@@ -207,6 +252,7 @@ Note that** add_face_to_node()** must only be used inside a layout function.
 
 .. % 
 
+.. _sec:layout_functions:
 
 layouts
 -------
@@ -232,4 +278,4 @@ node.show(layout=mypythonFn)``.
 
 Example: combining styles, faces and layouts
 --------------------------------------------
-.. image:: ../svg_colors.png
+:data:`SVG_COLORS`

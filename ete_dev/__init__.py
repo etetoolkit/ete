@@ -30,6 +30,9 @@ try:
     from treeview.main import *
     from treeview import faces
     from treeview import layouts
+    from treeview.svg_colors import SVG_COLORS
+    from faces import *
+
 except ImportError, e:
     print >>stderr, "Treeview module could not be loaded"
     print e
