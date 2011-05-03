@@ -25,26 +25,39 @@ Linking Phylogenetic Trees and Multiple Sequence Alignments
 :class:`PhyloTree` instances allow molecular phylogenies to be linked
 to the Multiple Sequence Alignments (MSA). To associate a MSA with a
 phylogenetic tree you can use the :func:`PhyloNode.link_to_alignment`
-method. You can use the :var:`alg_format` argument to specify its
+method. You can use the :attr:`alg_format` argument to specify its
 format.  Phylip sequential ("**phylip**"), Phylip interleaved
-("*iphylip*") and Fasta ("**fasta**") formats are currently
+("**iphylip**") and Fasta ("**fasta**") formats are currently
 supported. Given that Fasta format are not only applicable for MSA but
 also for **Unaligned Sequences**, you may also associate sequences of
 different lengths with tree nodes.  
 
 ::
   
-  tree = PhyloTree("mytreeFile")
-  tree.link_to_alignment("/home/alg.phy", alg_format="iphylip")
+  from ete_dev import PhyloTree
+  fasta_txt = """
+  >seqA
+  MAEIPDETIQQFMALT---HNIAVQYLSEFGDLNEALNSYYASQTDDIKDRREEAH
+  >seqB
+  MAEIPDATIQQFMALTNVSHNIAVQY--EFGDLNEALNSYYAYQTDDQKDRREEAH
+  >seqC
+  MAEIPDATIQ---ALTNVSHNIAVQYLSEFGDLNEALNSYYASQTDDQPDRREEAH
+  >seqD
+  MAEAPDETIQQFMALTNVSHNIAVQYLSEFGDLNEAL--------------REEAH
+  """
 
+  # Load a tree and link it to an alignment.
+  t = PhyloTree("(((seqA,seqB),seqC),seqD);")
+  t.link_to_alignment(alignment=fasta_txt, alg_format="fasta") 
 
 The same could be done at the same time the tree is being loaded, by
-using the :var:`alg` and :var:`alg_format` arguments of the
-:class:`PhyloTree`
+using the :attr:`alignment` and :attr:`alg_format` arguments of
+:class:`PhyloTree`.
 
-:: 
-  
-  PhyloTree("mytreeFile", format=0, alg="myAlginmentFile", alg_format="iphylip")
+::
+
+  # Load a tree and link it to an alignment. 
+  t = PhyloTree("(((seqA,seqB),seqC),seqD);", alignment=fasta_txt, alg_format="fasta")
 
 
 As currently implemented, sequence linking process is not strict,
@@ -59,6 +72,85 @@ into the tree structure. Once a MSA is linked, sequences will be
 available for every tree node through its :attr:`node.sequence`
 attribute.
 
+::
+  
+  from ete_dev import PhyloTree
+  fasta_txt = """
+   >seqA
+   MAEIPDETIQQFMALT---HNIAVQYLSEFGDLNEALNSYYASQTDDIKDRREEAH
+   >seqB
+   MAEIPDATIQQFMALTNVSHNIAVQY--EFGDLNEALNSYYAYQTDDQKDRREEAH
+   >seqC
+   MAEIPDATIQ---ALTNVSHNIAVQYLSEFGDLNEALNSYYASQTDDQPDRREEAH
+   >seqD
+   MAEAPDETIQQFMALTNVSHNIAVQYLSEFGDLNEAL--------------REEAH
+  """
+  iphylip_txt = """
+   4 76
+        seqA   MAEIPDETIQ QFMALT---H NIAVQYLSEF GDLNEALNSY YASQTDDIKD RREEAHQFMA
+        seqB   MAEIPDATIQ QFMALTNVSH NIAVQY--EF GDLNEALNSY YAYQTDDQKD RREEAHQFMA
+        seqC   MAEIPDATIQ ---ALTNVSH NIAVQYLSEF GDLNEALNSY YASQTDDQPD RREEAHQFMA
+        seqD   MAEAPDETIQ QFMALTNVSH NIAVQYLSEF GDLNEAL--- ---------- -REEAHQ---
+               LTNVSHQFMA LTNVSH
+               LTNVSH---- ------
+               LTNVSH---- ------
+               -------FMA LTNVSH
+  """
+  # Load a tree and link it to an alignment. As usual, 'alignment' can
+  # be the path to a file or data in text format.
+  t = PhyloTree("(((seqA,seqB),seqC),seqD);", alignment=fasta_txt, alg_format="fasta")
+   
+  #We can now access the sequence of every leaf node
+  print "These are the nodes and its sequences:"
+  for leaf in t.iter_leaves():
+      print leaf.name, leaf.sequence
+  #seqD MAEAPDETIQQFMALTNVSHNIAVQYLSEFGDLNEAL--------------REEAH
+  #seqC MAEIPDATIQ---ALTNVSHNIAVQYLSEFGDLNEALNSYYASQTDDQPDRREEAH
+  #seqA MAEIPDETIQQFMALT---HNIAVQYLSEFGDLNEALNSYYASQTDDIKDRREEAH
+  #seqB MAEIPDATIQQFMALTNVSHNIAVQY--EFGDLNEALNSYYAYQTDDQKDRREEAH
+  #
+  # The associated alignment can be changed at any time
+  t.link_to_alignment(alignment=iphylip_txt, alg_format="iphylip")
+  # Let's check that sequences have changed
+  print "These are the nodes and its re-linked sequences:"
+  for leaf in t.iter_leaves():
+      print leaf.name, leaf.sequence
+   
+  #seqD MAEAPDETIQQFMALTNVSHNIAVQYLSEFGDLNEAL--------------REEAHQ----------FMALTNVSH
+  #seqC MAEIPDATIQ---ALTNVSHNIAVQYLSEFGDLNEALNSYYASQTDDQPDRREEAHQFMALTNVSH----------
+  #seqA MAEIPDETIQQFMALT---HNIAVQYLSEFGDLNEALNSYYASQTDDIKDRREEAHQFMALTNVSHQFMALTNVSH
+  #seqB MAEIPDATIQQFMALTNVSHNIAVQY--EFGDLNEALNSYYAYQTDDQKDRREEAHQFMALTNVSH----------
+  #
+  # The sequence attribute is considered as node feature, so you can
+  # even include sequences in your extended newick format!
+  print t.write(features=["sequence"], format=9)
+   
+  #
+  #
+  # (((seqA[&&NHX:sequence=MAEIPDETIQQFMALT---HNIAVQYLSEFGDLNEALNSYYASQTDDIKDRREEAHQF
+  # MALTNVSHQFMALTNVSH],seqB[&&NHX:sequence=MAEIPDATIQQFMALTNVSHNIAVQY--EFGDLNEALNSY
+  # YAYQTDDQKDRREEAHQFMALTNVSH----------]),seqC[&&NHX:sequence=MAEIPDATIQ---ALTNVSHNIA
+  # VQYLSEFGDLNEALNSYYASQTDDQPDRREEAHQFMALTNVSH----------]),seqD[&&NHX:sequence=MAEAPD
+  # ETIQQFMALTNVSHNIAVQYLSEFGDLNEAL--------------REEAHQ----------FMALTNVSH]);
+  #
+  # And yes, you can save this newick text and reload it into a PhyloTree instance.
+  sametree = PhyloTree(t.write(features=["sequence"]))
+  print "Recovered tree with sequence features:"
+  print sametree
+   
+  #
+  #                              /-seqA
+  #                    /--------|
+  #          /--------|          \-seqB
+  #         |         |
+  #---------|          \-seqC
+  #         |
+  #          \-seqD
+  #
+   
+  print "seqA sequence:", (t&"seqA").sequence
+  # MAEIPDETIQQFMALT---HNIAVQYLSEFGDLNEALNSYYASQTDDIKDRREEAHQFMALTNVSHQFMALTNVSH
+
 .. _sec:using-taxonomic-data:
 
 Using Taxonomic Data
@@ -67,13 +159,49 @@ Using Taxonomic Data
 :class:`PhyloTree` instances allow to deal with leaf names and species
 names separately.  This is useful when working with molecular
 phylogenies, in which node names usually represent sequence
-identifiers. Often, sequence names contain species information as a
+identifiers.  Species names will be stored in the :attr:`PhyloNode.species`
+attribute of each leaf node. The method :func:`PhyloNode.get_species`
+can be used obtain the set of species names found under a given
+internal node (speciation or duplication event).
+
+Often, sequence names do contain species information as a
 part of the name, and ETE will help to do it automatically. By
 default, **the first three letters** of every sequence name are taken
-as species codes. However, this behavior can be changed by using the
+as species codes. 
+
+::
+
+  from ete_dev import PhyloTree
+  # Reads a phylogenetic tree (using default species name encoding)
+  t = PhyloTree("(((Hsa_001,Ptr_001),(Cfa_001,Mms_001)),(Dme_001,Dme_002));")
+  #                              /-Hsa_001
+  #                    /--------|
+  #                   |          \-Ptr_001
+  #          /--------|
+  #         |         |          /-Cfa_001
+  #         |          \--------|
+  #---------|                    \-Mms_001
+  #         |
+  #         |          /-Dme_001
+  #          \--------|
+  #                    \-Dme_002
+  #
+  # Prints current leaf names and species codes
+  print "Deafult mode:"
+  for n in t.get_leaves():
+      print "node:", n.name, "Species name:", n.species
+  # node: Dme_001 Species name: Dme
+  # node: Dme_002 Species name: Dme
+  # node: Hsa_001 Species name: Hsa
+  # node: Ptr_001 Species name: Ptr
+  # node: Cfa_001 Species name: Cfa
+  # node: Mms_001 Species name: Mms
+
+
+However, this behavior can be changed by using the
 :func:`PhyloNode.set_species_naming_funcion` method or by using the
-:var:`sp_naming_function` argument of the :class:`PhyloTree` class.
-Note that, using the :var:`sp_naming_function` argument, the whole
+:attr:`sp_naming_function` argument of the :class:`PhyloTree` class.
+Note that, using the :attr:`sp_naming_function` argument, the whole
 tree structure will be initialized to use the provided parsing
 function to obtain species name
 information. :func:`PhyloNode.set_species_naming_function` (present in
@@ -83,21 +211,173 @@ of the tree.
 
 ::
 
-  Example
+  from ete_dev import PhyloTree
+  # Reads a phylogenetic tree
+  t = PhyloTree("(((Hsa_001,Ptr_001),(Cfa_001,Mms_001)),(Dme_001,Dme_002));")
+
+  # Let's use our own leaf name parsing function to obtain species
+  # names. All we need to do is create a python function that takes
+  # node's name as argument and return its corresponding species name.
+  def get_species_name(node_name_string):
+      # Species code is the first part of leaf name (separated by an
+      #  underscore character)
+      spcode = node_name_string.split("_")[0]
+      # We could even translate the code to complete names
+      code2name = {
+        "Dme":"Drosophila melanogaster",
+        "Hsa":"Homo sapiens",
+        "Ptr":"Pan troglodytes",
+        "Mms":"Mus musculus",
+        "Cfa":"Canis familiaris"
+        }
+      return code2name[spcode]
+   
+  # Now, let's ask the tree to use our custom species naming function
+  t.set_species_naming_function(get_species_name)
+  print "Custom mode:"
+  for n in t.get_leaves():
+      print "node:", n.name, "Species name:", n.species
+
+  # node: Dme_001 Species name: Drosophila melanogaster
+  # node: Dme_002 Species name: Drosophila melanogaster
+  # node: Hsa_001 Species name: Homo sapiens
+  # node: Ptr_001 Species name: Pan troglodytes
+  # node: Cfa_001 Species name: Canis familiaris
+  # node: Mms_001 Species name: Mus musculus
 
 
 To disable the automatic generation of species names (the user will be
 expected to set such information manually), **None** can be passed as
 the species naming function.
 
-:: 
-  
-  Example
+::
 
-Species names will be stored in the :attr:`PhyloNode.species`
-attribute of each leaf node. The method :func:`PhyloNode.get_species`
-can be used obtain the set of species names found under a given
-internal node (speciation or duplication event).
+  from ete_dev import PhyloTree
+  # Reads a phylogenetic tree
+  t = PhyloTree("(((Hsa_001,Ptr_001),(Cfa_001,Mms_001)),(Dme_001,Dme_002));")
+
+  # Of course, you can disable the automatic generation of species
+  # names. To do so, you can set the species naming function to
+  # None. This is useful to set the species names manually or for
+  # reading them from a newick file. Other wise, species attribute would
+  # be overwriten
+  mynewick = """
+  (((Hsa_001[&&NHX:species=Human],Ptr_001[&&NHX:species=Chimp]),
+  (Cfa_001[&&NHX:species=Dog],Mms_001[&&NHX:species=Mouse])),
+  (Dme_001[&&NHX:species=Fly],Dme_002[&&NHX:species=Fly]));
+  """
+  t = PhyloTree(mynewick, sp_naming_function=None)
+  print "Disabled mode (manual set)"
+  for n in t.get_leaves():
+      print "node:", n.name, "Species name:", n.species
+   
+  # node: Dme_001 Species name: Fly
+  # node: Dme_002 Species name: Fly
+  # node: Hsa_001 Species name: Human
+  # node: Ptr_001 Species name: Chimp
+  # node: Cfa_001 Species name: Dog
+  # node: Mms_001 Species name: Mouse  
+
+Full example:
+
+::
+
+  from ete2 import PhyloTree
+  # Reads a phylogenetic tree (using default species name encoding)
+  t = PhyloTree("(((Hsa_001,Ptr_001),(Cfa_001,Mms_001)),(Dme_001,Dme_002));")
+  #                              /-Hsa_001
+  #                    /--------|
+  #                   |          \-Ptr_001
+  #          /--------|
+  #         |         |          /-Cfa_001
+  #         |          \--------|
+  #---------|                    \-Mms_001
+  #         |
+  #         |          /-Dme_001
+  #          \--------|
+  #                    \-Dme_002
+  #
+  # Prints current leaf names and species codes
+  print "Deafult mode:"
+  for n in t.get_leaves():
+      print "node:", n.name, "Species name:", n.species
+  # node: Dme_001 Species name: Dme
+  # node: Dme_002 Species name: Dme
+  # node: Hsa_001 Species name: Hsa
+  # node: Ptr_001 Species name: Ptr
+  # node: Cfa_001 Species name: Cfa
+  # node: Mms_001 Species name: Mms
+  #
+  # We can also use our own leaf name parsing function to obtain species
+  # names. All we need to do is create a python function that takes
+  # node's name as argument and return its corresponding species name.
+  def get_species_name(node_name_string):
+      # Species code is the first part of leaf name (separated by an
+      #  underscore character)
+      spcode = node_name_string.split("_")[0]
+      # We could even translate the code to complete names
+      code2name = {
+        "Dme":"Drosophila melanogaster",
+        "Hsa":"Homo sapiens",
+        "Ptr":"Pan troglodytes",
+        "Mms":"Mus musculus",
+        "Cfa":"Canis familiaris"
+        }
+      return code2name[spcode]
+   
+  # Now, let's ask the tree to use our custom species naming function
+  t.set_species_naming_function(get_species_name)
+  print "Custom mode:"
+  for n in t.get_leaves():
+      print "node:", n.name, "Species name:", n.species
+   
+  # node: Dme_001 Species name: Drosophila melanogaster
+  # node: Dme_002 Species name: Drosophila melanogaster
+  # node: Hsa_001 Species name: Homo sapiens
+  # node: Ptr_001 Species name: Pan troglodytes
+  # node: Cfa_001 Species name: Canis familiaris
+  # node: Mms_001 Species name: Mus musculus
+  #
+  # Of course, you can disable the automatic generation of species
+  # names. To do so, you can set the species naming function to
+  # None. This is useful to set the species names manually or for
+  # reading them from a newick file. Other wise, species attribute would
+  # be overwriten
+  mynewick = """
+  (((Hsa_001[&&NHX:species=Human],Ptr_001[&&NHX:species=Chimp]),
+  (Cfa_001[&&NHX:species=Dog],Mms_001[&&NHX:species=Mouse])),
+  (Dme_001[&&NHX:species=Fly],Dme_002[&&NHX:species=Fly]));
+  """
+  t = PhyloTree(mynewick, sp_naming_function=None)
+  print "Disabled mode (manual set):"
+  for n in t.get_leaves():
+      print "node:", n.name, "Species name:", n.species
+   
+  # node: Dme_001 Species name: Fly
+  # node: Dme_002 Species name: Fly
+  # node: Hsa_001 Species name: Human
+  # node: Ptr_001 Species name: Chimp
+  # node: Cfa_001 Species name: Dog
+  # node: Mms_001 Species name: Mouse
+  #
+  # Of course, once this info is available you can query any internal
+  # node for species covered.
+  human_mouse_ancestor = t.get_common_ancestor("Hsa_001", "Mms_001")
+  print "These are the species under the common ancestor of Human & Mouse"
+  print '\n'.join( human_mouse_ancestor.get_species() )
+  # Mouse
+  # Chimp
+  # Dog
+  # Human
+   
+  # We can also check for the monophyly of nodes:
+  for node in t.traverse():
+     if len(node)>1 and node.is_monophyletic(["Fly"]):
+        print "Fly specific expansion!:"
+        print node
+
+
+  
 
 :: 
    
