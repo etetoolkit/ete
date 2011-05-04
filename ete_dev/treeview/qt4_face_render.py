@@ -184,8 +184,8 @@ class _FaceGroupItem(QGraphicsRectItem): # I resisted to name this FaceBookItem 
                                y + y_offset + f.margin_top)
 
                 obj.rotable = f.rotable
-                f.margin_background.apply(obj)
-                f.margin_border.apply(obj)
+                f.inner_background.apply(obj)
+                f.inner_border.apply(obj)
 
                 bg = f.background.apply(obj)
                 border = f.border.apply(obj)
