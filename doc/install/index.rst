@@ -1,6 +1,13 @@
 Download and Install
 **********************
 
+.. warning:: 
+   
+   Until the official stable version is released, you can download and
+   install the last 2.1 ETE (beta) version from:
+   http://pypi.python.org/pypi/ete2a1 Current version is fully usable
+   and pretty much stable. Please, report any bug that you may find. 
+
 
 GNU/Linux
 ===========
