@@ -403,7 +403,6 @@ class documentation. Here is a very simple example:
     
      t.show(tree_style=ts)
 
-
 .. _sec:layout_functions:
 
 layout functions
@@ -418,18 +417,21 @@ how different nodes are drawn.
 
 
 :: 
+
   from ete_dev import Tree
   t = Tree( "((((a,b),c), d), e);" )
 
   def abc_layout(node):
       vowels = set(["a", "e", "i", "o", "u"])
       if node.name in vowels:
+
          # Note that node style are already initialized with the
          # default values
+
          node.img_style["size"] = 15
          node.img_style["color"] = "red"
 
-         add_face_to_node
+       
 
   # Basic tree style
   ts = TreeStyle()
