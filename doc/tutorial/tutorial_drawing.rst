@@ -410,15 +410,14 @@ layout functions
 -------------------
 
 Layout functions act as pre-drawing `hooking functions
-<http://en.wikipedia.org/wiki/Hooking>`_. This is, when a given node is
-about to be drawn, it is first sent to a layout function.  Node
+<http://en.wikipedia.org/wiki/Hooking>`_. This means, when a given node
+is about to be drawn, it is first sent to a layout function.  Node
 properties, style and faces can be then modified on the fly. Thus,
-layout function can be seen as the set of rules that control how
-different nodes are drawn.
+layout functions can be understood as the set of rules that control
+how different nodes are drawn.
 
 
 :: 
-
   from ete_dev import Tree
   t = Tree( "((((a,b),c), d), e);" )
 
@@ -446,4 +445,5 @@ Cmbining styles, faces and layouts
 --------------------------------------------
 
 .. warning::
-   Missing example
+   Under construction, sorry :(
+   More complex examples will be added!
