@@ -208,7 +208,7 @@ Add legend and title
   t = Tree( "((a,b),c);" )
   ts = TreeStyle()
   ts.show_leaf_name = True
-  ts.title.add_face(TextFace("Hello ETE", fsize=20), column=0) 
+  ts.title.add_face(TextFace("This is an ETE tree", fsize=20), column=0) 
   t.show(tree_style=ts)
 
 
@@ -329,11 +329,10 @@ be piled up. See the following image as an example of face positions:
   nodes. For instance, the same text label can be recycled and added
   to several nodes.
 
-
 .. _sec:layout_functions:
 
-layouts
--------
+layout functions
+---------------------
 
 .. note::
    
