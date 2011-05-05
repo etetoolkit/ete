@@ -5,6 +5,11 @@
 The Programmable Tree Drawing Engine
 ************************************
 
+.. contents::
+
+Overview
+=================
+
 ETE's treeview extension provides a highly programmable drawing system
 to render any hierarchical tree structure as PDF, SVG or PNG
 images. Although several predefined visualization layouts are included
@@ -25,6 +30,8 @@ Images can be rendered as **PNG**, **PDF** or **SVG** files using the
 :func:`TreeNode.render` method or interactively visualized using a
 built-in Graphical User Interface (GUI) invoked by the
 :func:`TreeNode.show` method.
+
+
 
 
 Interactive visualization of trees
@@ -119,84 +126,99 @@ tree drawing modes.
   circular_mode.scale = 20
   t.render("mytree.png", w=183, units="mm", tree_style=circular_style)
   
-A number of parameters can be controlled through custom tree style
-objetcs, check :class:`TreeStyle` documentation for a complete list of
-accepted values. Some common configurations include:
+.. warning:: 
+
+   A number of parameters can be controlled through custom
+   tree style objetcs, check :class:`TreeStyle` documentation for a
+   complete list of accepted values.
+
+Some common uses include:
 
 Show leaf node names, branch length and branch support 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This will automatically add node names and branch information to the tree image
+.. figure:: ../ex_figures/show_info.png
 
-::
+  Automatically adds node names and branch information to the tree image:
+  ::
 
-  from ete_dev import Tree, TreeStyle
-  t = Tree()
-  t.populate(50, random_dist=True)
-  ts = TreeStyle()
-  ts.show_leaf_name = True
-  ts.show_branch_length = True
-  ts.show_branch_support = True
-  t.show(tree_style=ts)
+    from ete_dev import Tree, TreeStyle
+    t = Tree()
+    t.populate(10, random_dist=True)
+    ts = TreeStyle()
+    ts.show_leaf_name = True
+    ts.show_branch_length = True
+    ts.show_branch_support = True
+    t.show(tree_style=ts)
 
 Change branch length scale (zoom in X)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-::
+.. figure:: ../ex_figures/scale_x.png
 
-  from ete_dev import Tree, TreeStyle
-  t = Tree()
-  t.populate(50, random_dist=True)
-  ts = TreeStyle()
-  ts.show_leaf_name = True
-  ts.scale =  60 # 60 pixels per branch length unit
-  t.show(tree_style=ts)
+  Increases the length of the tree by changing the scale:
+
+  ::
+   
+    from ete_dev import Tree, TreeStyle
+    t = Tree()
+    t.populate(10, random_dist=True)
+    ts = TreeStyle()
+    ts.show_leaf_name = True
+    ts.scale =  120 # 120 pixels per branch length unit
+    t.show(tree_style=ts)
 
 
 Change branch separation between nodes (zoom in Y)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-::
+.. figure:: ../ex_figures/scale_y.png
 
-  from ete_dev import Tree, TreeStyle
-  t = Tree()
-  t.populate(50, random_dist=True)
-  ts = TreeStyle()
-  ts.show_leaf_name = True
-  ts.branch_vertical_margin = 10 # 10 pixels between adjacent branches
-  t.show(tree_style=ts)
+  Increases the separation between leaf branches:
+  ::
+   
+    from ete_dev import Tree, TreeStyle
+    t = Tree()
+    t.populate(10, random_dist=True)
+    ts = TreeStyle()
+    ts.show_leaf_name = True
+    ts.branch_vertical_margin = 10 # 10 pixels between adjacent branches
+    t.show(tree_style=ts)
 
 
 Rotate a tree
 ^^^^^^^^^^^^^^^
 
-This will render a rectangular tree from top to bottom
-:: 
+.. figure:: ../ex_figures/rotated_tree.png
 
-  from ete_dev import Tree, TreeStyle
-  t = Tree()
-  t.populate(50)
-  ts = TreeStyle()
-  ts.show_leaf_name = True
-  ts.rotation = 90
-  t.show(tree_style=ts)
+  Draws a rectangular tree from top to bottom:
+  :: 
+   
+    from ete_dev import Tree, TreeStyle
+    t = Tree()
+    t.populate(10)
+    ts = TreeStyle()
+    ts.show_leaf_name = True
+    ts.rotation = 90
+    t.show(tree_style=ts)
 
 circular tree in 180 degrees
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Draws a circular tree using a semi-circumference 
+.. figure:: ../ex_figures/semi_circular_tree.png 
 
-:: 
-
-  from ete_dev import Tree, TreeStyle
-  t = Tree()
-  t.populate(50)
-  ts = TreeStyle()
-  ts.show_leaf_name = True
-  ts.mode = "c"
-  ts.arc_start = -90 # 0 degrees = 3 o'clock
-  ts.arc_span = 180
-  t.show(tree_style=ts)
+   Draws a circular tree using a semi-circumference:
+   :: 
+    
+     from ete_dev import Tree, TreeStyle
+     t = Tree()
+     t.populate(30)
+     ts = TreeStyle()
+     ts.show_leaf_name = True
+     ts.mode = "c"
+     ts.arc_start = -180 # 0 degrees = 3 o'clock
+     ts.arc_span = 180
+     t.show(tree_style=ts)
 
 
 Add legend and title 
@@ -208,7 +230,7 @@ Add legend and title
   t = Tree( "((a,b),c);" )
   ts = TreeStyle()
   ts.show_leaf_name = True
-  ts.title.add_face(TextFace("This is an ETE tree", fsize=20), column=0) 
+  ts.title.add_face(TextFace("Hello ETE", fsize=20), column=0) 
   t.show(tree_style=ts)
 
 
@@ -220,61 +242,75 @@ can be controlled, including its size, color, background and branch type.
 
 A node style can be defined statically and attached to several nodes: 
 
-:: 
+.. figure:: ../ex_figures/node_style_red_nodes.png
 
-  from ete_dev import Tree, NodeStyle
-  t = Tree( "((a,b),c);" )
-  nstyle = NodeStyle()
-  
-  # Draws nodes as small red spheres of diameter equal to 10 pixels
-  nstyle["shape"] = "sphere"   
-  nstyle["size"] = 10  
-  nstyle["fgcolor"] = "darkred" 
+  Simple tree in which the same style is applied to all nodes:
+  :: 
+   
+    from ete_dev import Tree, NodeStyle, TreeStyle
+    t = Tree( "((a,b),c);" )
+   
+    # Basic tree style
+    ts = TreeStyle()
+    ts.show_leaf_name = True
+   
+    # Draws nodes as small red spheres of diameter equal to 10 pixels
+    nstyle = NodeStyle()
+    nstyle["shape"] = "sphere"   
+    nstyle["size"] = 10  
+    nstyle["fgcolor"] = "darkred" 
+   
+    # Gray dashed branch lines
+    nstyle["hz_line_type"] = 1 
+    nstyle["hz_line_color"] = "#cccccc" 
+   
+    # Applies the same static style to all nodes in the tree. Note that,
+    # if "nstyle" is modified, changes will affect to all nodes
+    for n in t.traverse():
+       n.set_style(nstyle)
+   
+    t.show(tree_style=ts) 
 
-  # Gray dashed branch lines
-  nstyle["hz_line_type"] = 1 
-  nstyle["hz_line_color"] = "#cccccc" 
-
-  # Applies the same static style to all nodes in the tree. Note that,
-  # if "nstyle" is modified, changes will affect to all nodes
-  for n in t.traverse():
-     n.set_style(nstyle)
-
-  t.show() 
-
-If each node should be drawn differently, an independent
-:class:`NodeStyle` instance could be created for each node. Note that
+If you want to draw nodes with different styles, an independent
+:class:`NodeStyle` instance must be created for each node. Note that
 node styles can be modified at any moment by accessing the
 :attr:`TreeNode.img_style` attribute.
 
-::
+.. figure:: ../ex_figures/node_style_red_and_blue_nodes.png
 
-  from ete_dev import Tree, NodeStyle
-  t = Tree( "((a,b),c);" )
-
-  # Creates an independent node style for each node, which is
-  # initialized with a red foreground color.
-  for n in t.traverse():
-     nstyle = NodeStyle()
-     nstyle["fgcolor"] = "red"
-     nstyle["size"] = 15
-     n.set_style(nstyle)
-
-  # Let's now modify the aspect of the root node
-  t.img_style["size"] = 30
-  t.img_style["fgcolor"] = "blue"
-
-  t.show() 
+  Simple tree in which the different styles are applied to each node:
+  ::
+   
+    from ete_dev import Tree, NodeStyle, TreeStyle
+    t = Tree( "((a,b),c);" )
+   
+    # Basic tree style
+    ts = TreeStyle()
+    ts.show_leaf_name = True
+   
+    # Creates an independent node style for each node, which is
+    # initialized with a red foreground color.
+    for n in t.traverse():
+       nstyle = NodeStyle()
+       nstyle["fgcolor"] = "red"
+       nstyle["size"] = 15
+       n.set_style(nstyle)
+   
+    # Let's now modify the aspect of the root node
+    t.img_style["size"] = 30
+    t.img_style["fgcolor"] = "blue"
+   
+    t.show(tree_style=ts) 
 
 
 Static node styles, set through the :func:`set_style` method, will be
 attached to the nodes and exported as part of their information. For
 instance, :func:`TreeNode.copy` will replicate all node styles in the
-replicate tree.
+replicate tree. Note that node styles can be also modified on the fly
+through a :attr:`layout` function (see :ref:`sec:layout_functions`)
 
-Note that node styles can be also modified on the fly through a
-:attr:`layout` function (see :ref:`sec:layout_functions`)
 
+.. _sec:node_faces:
 
 Node faces
 -------------
@@ -289,8 +325,11 @@ Several types of node faces are provided by the main :mod:`ete_dev`
 module, ranging from simple text (:class:`TextFace`) and geometric
 shapes (:class:`CircleFace`), to molecular sequence representations
 (:class:`SequenceFace`), heatmaps and profile plots
-(:class:`ProfileFace`). A full list of available faces can be found at
-the :mod:`ete_dev.treeview` reference page.
+(:class:`ProfileFace`). **A complete list of available faces can be
+found at the :mod:`ete_dev.treeview` reference page**.
+
+Faces position
+^^^^^^^^^^^^^^^^
 
 Faces can be added to different areas around the node, namely
 **branch-right**, **branch-top**, **branch-bottom** or **aligned**.
@@ -317,7 +356,7 @@ and 1 of the **branch-bottom** area:
 If you add more than one face to the same area and column, they will
 be piled up. See the following image as an example of face positions:
 
- .. figure:: ../face_positions.png
+ .. figure:: ../ex_figures/face_positions.png
   :alt: possible face positions
 
   :download:`Source code <../face_grid.py>` used to generate the
@@ -329,38 +368,94 @@ be piled up. See the following image as an example of face positions:
   nodes. For instance, the same text label can be recycled and added
   to several nodes.
 
+
+Face properties
+^^^^^^^^^^^^^^^^^^
+
+Apart from the specific config values of each face type, all face
+instances contain same basic attributes that permit to modify general
+aspects such as margins, background colors, border, etc. A complete
+list of face attributes can be found in the general :class:`Face`
+class documentation. Here is a very simple example:
+
+.. figure:: ../ex_figures/face_borders.png
+
+   Basic use of face general attributes
+
+   :: 
+    
+     from ete_dev import Tree, TreeStyle, TextFace
+    
+     t = Tree( "(a,b);" )
+    
+     # Basic tree style
+     ts = TreeStyle()
+     ts.show_leaf_name = True
+     ts.tree_width = 80
+    
+     # Creates two faces
+     hola = TextFace("hola")
+     mundo = TextFace("mundo")
+    
+     # Set some attributes
+     hola.margin_top = 10
+     hola.margin_right = 10
+     hola.margin_left = 10
+     hola.margin_bottom = 10
+     hola.opacity = 0.5 # from 0 to 1
+     hola.inner_border.width = 1 # 1 pixel border
+     hola.inner_border.type = 1  # dashed line
+     hola.border.width = 1
+     hola.background.color = "LightGreen"
+      
+     t.add_face(hola, column=0, position = "branch-top")
+     t.add_face(mundo, column=1, position = "branch-bottom")
+    
+     t.show(tree_style=ts)
+
 .. _sec:layout_functions:
 
 layout functions
----------------------
+-------------------
 
-.. note::
-   
-  Layout functions are the key component of the tree drawing
-  customization.  Any python function accepting a node instance as a
-  first argument can be used as a layout function. Essentially, such
-  function will be called just before drawing each tree node, so you
-  can use it perform any operation prior to render nodes.  In
-  practice, layout functions are used to define the set of rules that
-  control nodes style attributes and the faces that will be linked to
-  them. Of course, such rules can be based on a previous node
-  analysis. For instance: ``if node has more than 5 descendants, then
-  add a text label, set a different background color, perform an
-  analysis on leaves and associate an external image`` with node. As
-  you imagine, rules can be are as sophisticated as you want. Thus,
-  the advantage of this method is that you can create your own drawing
-  algorithms to render trees dynamically and fitting very specific
-  needs.
-
-  In order to apply your custom layouts functions, function's name
-  (the reference to it) can be passed to both **render()** and
-  **show()** methods: ``node.render(``\ filename.pdf'',
-  layout=mypythonFn) ``**or**`` node.show(layout=mypythonFn)``.
+Layout functions act as pre-drawing `hooking functions
+<http://en.wikipedia.org/wiki/Hooking>`_. This means, when a node is
+about to be drawn, it is first sent to a layout function.  Node
+properties, style and faces can be then modified on the fly and return
+it to the drawer engine. Thus, layout functions can be understood as a
+collection of rules controlling how different nodes should be drawn. 
 
 
-Example: combining styles, faces and layouts
+:: 
+
+  from ete_dev import Tree
+  t = Tree( "((((a,b),c), d), e);" )
+
+  def abc_layout(node):
+      vowels = set(["a", "e", "i", "o", "u"])
+      if node.name in vowels:
+
+         # Note that node style are already initialized with the
+         # default values
+
+         node.img_style["size"] = 15
+         node.img_style["color"] = "red"
+
+       
+
+  # Basic tree style
+  ts = TreeStyle()
+  ts.show_leaf_name = True
+
+  # Add two text faces to different columns 
+  t.add_face(TextFace("hola "), column=0, position = "branch-right")
+  t.add_face(TextFace("mundo!"), column=1, position = "branch-right")
+  t.show(tree_style=ts)
+
+
+Combining styles, faces and layouts
 --------------------------------------------
 
 .. warning::
-
-   Missing example
+   Under construction, sorry :(
+   More complex examples will be added!

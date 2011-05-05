@@ -46,7 +46,7 @@ VALID_NODE_STYLE_KEYS = set([i[0] for i in NODE_STYLE_DEFAULT]) | set(["_faces"]
 class _Border(object):
     def __init__(self):
         self.width = 0
-        self.line_style = 0
+        self.type = 0
         self.color = None 
 
     def apply(self, item):
@@ -55,7 +55,7 @@ class _Border(object):
             border = QGraphicsRectItem(r)
             border.setParentItem(item)
             pen = QPen()
-            set_pen_style(pen, self.line_style)
+            set_pen_style(pen, self.type)
             pen.setWidth(self.width)
             pen.setCapStyle(QtCore.Qt.FlatCap)
             pen.setColor(QColor(self.color))

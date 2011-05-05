@@ -119,28 +119,27 @@ class Face(object):
     essential attributes, however the update_pixmap() function is
     required to be reimplemented for convenience.
 
+    User adjustable properties: 
 
-    margin_left = 0
-    margin_right = 0
-    margin_top = 0
-    margin_bottom = 0
-    pixmap = None
-    opacity = 1.0
-    rotable = True
-    hz_align = 0 # 0 left, 1 center, 2 right
-    vt_align = 1
-    background = _Background()
-    border = _Border()
-    with_margin_border = _Border()
-    with_margin_background = _Background()
-
+    :param 0 margin_left: in pixels 
+    :param 0 margin_right: in pixels
+    :param 0 margin_top: in pixels
+    :param 0 margin_bottom: in pixels 
+    :param 1.0 opacity: a float number in the (0,1) range
+    :param True rotable: If True, face will be rotated when necessary
+      (i.e. when circular mode is enabled and face occupies an inverted position.)
+    :param 0 hz_align: 0 left, 1 center, 2 right
+    :param 1 vt_align: 0 top, 1 center, 2 bottom
+    :param background: background of face
+    :param border: border line around face
+    :param inner_border: border of the face ignoring margins. 
+    :param inner_background: background of the face ignoring margins. 
 
     """
 
     def __init__(self):
         self.node        = None
         self.type = "pixmap" # pixmap, text or item
-        self.name = "unknown"
 
         self.margin_left = 0
         self.margin_right = 0
@@ -153,8 +152,8 @@ class Face(object):
         self.vt_align = 1
         self.background = _Background()
         self.border = _Border()
-        self.margin_border = _Border()
-        self.margin_background = _Background()
+        self.inner_border = _Border()
+        self.inner_background = _Background()
 
     def _size(self):
         if self.pixmap:
@@ -282,7 +281,6 @@ class ImgFace(Face):
     def __init__(self,img_file):
         Face.__init__(self)
         self.img_file = img_file
-        self.name = "ImageFile"
 
     def update_pixmap(self):
         self.load_pixmap_from_file(self.img_file)
@@ -752,7 +750,6 @@ class SequenceFace(Face):
 
         Face.__init__(self)
         self.seq  = seq
-        self.name = "sequence"
         self.fsize= fsize
         self.fsize = fsize
         self.style = seqtype

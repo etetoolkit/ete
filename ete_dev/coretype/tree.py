@@ -1014,7 +1014,8 @@ class TreeNode(object):
                     tname = random.sample(names_library, 1)[0]
                 else:
                     tname = names_library.pop()
-            tname = ''.join(random.sample(charset,5))
+            else:
+                tname = ''.join(random.sample(charset,5))
             n.name = tname
             
     def old_populate(self, size, names_library=[], reuse_names=False):

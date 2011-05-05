@@ -1,11 +1,16 @@
 .. module:: ete_dev
   :synopsis: provides main objects and modules
+
 .. moduleauthor:: Jaime Huerta-Cepas
 .. currentmodule:: ete_dev
 
-*********************************
 Working With Tree Data Structures
-*********************************
+************************************
+
+.. contents::
+
+Trees
+==========
 
 Trees are a widely-used type of data structure that emulates a tree
 design with a set of linked nodes.  Formally, a tree is considered an

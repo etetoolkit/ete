@@ -1,4 +1,5 @@
 {% extends "defindex.html" %}
+
 {% block tables %}
   <table class="contentstable" align="center"><tr>
     <td width="50%">
@@ -18,8 +19,8 @@
       <p class="biglink"><a class="biglink" href="{{ pathto("faqs/index") }}">FAQs</a><br/>
          <span class="linkdescr">Frequently asked questions</span></p>
 
-      <p class="biglink"><a class="biglink" href="{{ pathto("about") }}">About ETE</a><br/>
-         <span class="linkdescr">Behind the scenes</span></p>
+      <p class="biglink"><a class="biglink" href="{{ pathto("support") }}">Help</a><br/>
+         <span class="linkdescr">Where to find support</span></p>
 
     </td></tr>
   </table>
@@ -27,8 +28,9 @@
   <p><strong>Meta information:</strong></p>
   <table class="contentstable" align="center"><tr>
     <td width="50%">
+      <p class="biglink"><a class="biglink" href="{{ pathto("about") }}">About ETE</a><br/>
+        <span class="linkdescr">Behind the scenes</span></p>
       <p class="biglink"><a class="biglink" href="{{ pathto("bugs") }}">Reporting bugs</a></p>
-      <p class="biglink"><a class="biglink" href="{{ pathto("contribute") }}">Get involved</a></p>
     </td><td width="50%">
       <p class="biglink"><a class="biglink" href="{{ pathto("license") }}">License</a></p>
       <p class="biglink"><a class="biglink" href="{{ pathto("ack") }}">Acknowledgments</a></p>

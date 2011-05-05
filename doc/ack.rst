@@ -7,11 +7,10 @@ ETE is currently developed by the `Comparative genomics group
 
 Original authors and citation:
 
-
   | Jaime Huerta-Cepas, Joaquín Dopazo and Toni Gabaldón. 
   | ETE: a python Environment for Tree Exploration. BMC Bioinformatics 2010, 11:2 4.
 
-**Thanks a lot to current and former contributors!**:
+**Thanks a lot to current and past contributors!**:
 
 * François Serra 
 * Salvador Capella 

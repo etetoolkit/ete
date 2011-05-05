@@ -1,31 +1,70 @@
 .. module:: ete_dev.treeview
 
 treeview module 
-%%%%%%%%%%%%%%%%%%%
+*************************
 
-Main functions
-=================
+.. contents::
 
-.. autofunction:: add_face_to_node
 
-Node and Tree Style
-=====================
+
+Tree style
+====================
 
 .. autoclass:: ete_dev.TreeStyle
-
-.. autoclass:: ete_dev.NodeStyle
 
 .. autoclass:: ete_dev.FaceContainer
    :members:
 
-Faces
+
+Node style
+=====================
+
+.. autoclass:: ete_dev.NodeStyle
+
+
+Node faces
 =========================
 
-.. automodule:: ete_dev.treeview.faces
+.. autofunction:: add_face_to_node
+
+.. autoclass:: ete_dev.Face
    :members:
    :no-undoc-members:
 
-Supported Colors
+.. autoclass:: ete_dev.TextFace
+   :members:
+   :no-undoc-members:
+
+.. autoclass:: ete_dev.AttrFace
+   :members:
+   :no-undoc-members:
+
+.. autoclass:: ete_dev.ImgFace
+   :members:
+   :no-undoc-members:
+
+.. autoclass:: ete_dev.CircleFace
+   :members:
+   :no-undoc-members:
+
+.. autoclass:: ete_dev.SequenceFace
+   :members:
+   :no-undoc-members:
+
+.. autoclass:: ete_dev.ProfileFace
+   :members:
+   :no-undoc-members:
+
+.. autoclass:: ete_dev.TreeFace
+   :members:
+   :no-undoc-members:
+
+.. autoclass:: ete_dev.ItemFace
+   :members:
+   :no-undoc-members:
+
+
+Supported colors names
 =========================
 
 .. toctree::

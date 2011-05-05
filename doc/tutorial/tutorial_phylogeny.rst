@@ -3,9 +3,13 @@
 .. moduleauthor:: Jaime Huerta-Cepas
 :Author: Jaime Huerta-Cepas
 
-********************
 Phylogenetic Trees
 ********************
+
+.. contents::
+
+Overview
+================
 
 Phylogenetic trees are the result of most evolutionary analyses. They
 represent the evolutionary relationships among a set of species or, in
