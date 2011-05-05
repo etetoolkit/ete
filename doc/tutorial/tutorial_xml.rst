@@ -17,13 +17,13 @@ a collection Python objects sorted in a hierarchical way. A specific
 Python class exists for every element encoded documented by the NeXML
 and PhyloXML formats. This is possible thanks to the the general
 purpose Python drivers available for both formats
-(http:/ete.cgenomics.org/XML_drivers). ETE will use such drivers to
-access XML data, and it will also convert tree data into PhyloTree
-objects. In practice, conversions will occur transparently.  NeXML and
-PhyloXML files are loaded using their specific root classes, provided
-by the main ETE module, and all the information will become available
-as a collection of Python objects internally sorted according to the
-original XML hierarchy.
+(http://ete.cgenomics.org/phyloxml-and-nexml-python-parsers). ETE will
+use such drivers to access XML data, and it will also convert tree
+data into PhyloTree objects. In practice, conversions will occur
+transparently.  NeXML and PhyloXML files are loaded using their
+specific root classes, provided by the main ETE module, and all the
+information will become available as a collection of Python objects
+internally sorted according to the original XML hierarchy.
 
 .. toctree::
    :maxdepth: 2
@@ -33,9 +33,9 @@ original XML hierarchy.
 
 .. note:: 
 
-   NeXML and PhyloXML python parsers are possible thanks to the work
-   of Dave Kulhman on the `generateDS.py
-   <http://http://www.rexx.com/~dkuhlman/generateDS.html>`_
+   NeXML and PhyloXML python parsers are possible thanks to Dave
+   Kulhman and his work on the `generateDS.py
+   <http://www.rexx.com/~dkuhlman/generateDS.html>`_
    application. Thanks Dave! ;-)
 
 

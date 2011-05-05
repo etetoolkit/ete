@@ -40,8 +40,8 @@ source_encoding = 'utf-8'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Environment for Tree Exploration'
-copyright = u'2010, Jaime Huerta-Cepas & Toni Gabaldón'
+project = u'ETE'
+copyright = u'2011, Jaime Huerta-Cepas & Toni Gabaldón'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -108,10 +108,10 @@ html_theme = 'default'
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-html_title = None
+html_title = "A Python Environment for Tree Exploration (ETE)"
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
-html_short_title = "ETE doc"
+html_short_title = "ETE documentation"
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
@@ -167,7 +167,7 @@ html_split_index = False
 #html_file_suffix = ''
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'ETE_doc'
+htmlhelp_basename = 'ETE-doc'
 
 
 # -- Options for LaTeX output --------------------------------------------------

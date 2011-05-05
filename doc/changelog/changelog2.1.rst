@@ -13,9 +13,11 @@ What's new in ETE 2.1
     * Added tree *legend face block* (Text or images that rendered as image legend)
     * Added support for *tree rotation and orientation*
     * Possibility of drawing *aligned faces as a table*
+    * Added header and footer regions for aligned faces.
     * And more! Check :class:`TreeStyle` documentation
   * Added new face positions **float**, **branch-top** and
     **branch-bottom**. See tutorial (:ref:`sec:node_faces`) for more details.
+
   * Added several *face attributes*:
 
     * face border
@@ -62,4 +64,5 @@ What's new in ETE 2.1
    * Improvement: Faster prune function
    * Improvement: unicode support for tree files
 * Improved documentation tutorial and reference guide!
-* Examples
+  * Detailed library reference 
+  * New examples section
