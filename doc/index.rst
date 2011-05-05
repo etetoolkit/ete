@@ -16,7 +16,7 @@ Contents
    bugs
    contribute
    cheatsheet
-
+   support
 
 :genindex:
 :modindex:

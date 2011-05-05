@@ -213,15 +213,15 @@ if options.doc:
     _ex("cp -a %s/sdoc/_build/latex/*.pdf %s/doc/" %(RELEASE_PATH, RELEASE_PATH))
 
 
-    _ex('find %s/doc | xargs perl -e "s/%s/ete2/g" -p -i' %\
+    _ex('find %s/doc | xargs perl -e "s/ete_dev/%s/g" -p -i' %\
             (RELEASE_PATH, MODULE_NAME) )
 
     copydoc= ask("Update ONLINE documentation?", ["y","n"])
     if copydoc=="y":
         # INSTALL THIS http://pypi.python.org/pypi/Sphinx-PyPI-upload/0.2.1
         print "Uploading"
-        #_ex("cd %s; python setup.py upload_sphinx --upload-dir %s/doc/html/ --show-response" %\
-        #        (RELEASE_PATH, RELEASE_PATH))
+        _ex("cd %s; python setup.py upload_sphinx --upload-dir %s/doc/html/ --show-response" %\
+                (RELEASE_PATH, RELEASE_PATH))
 
         _ex("cd %s; rsync -arv doc/html/ jhuerta@cgenomics:/data/services/web/ete.cgenomics.org/doc/2.1/" %\
                 (RELEASE_PATH))
