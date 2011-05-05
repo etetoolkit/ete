@@ -60,5 +60,6 @@ What's new in ETE 2.1
    * Improvement: Traversing methods are now much faster (specially preorder and levelorder)
    * Improvement: Faster populate function (added possibility of random and non-random branch lengths)
    * Improvement: Faster prune function
+   * Improvement: unicode support for tree files
 * Improved documentation tutorial and reference guide!
 * Examples
