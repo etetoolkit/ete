@@ -5,6 +5,11 @@
 The Programmable Tree Drawing Engine
 ************************************
 
+.. contents::
+
+Overview
+=================
+
 ETE's treeview extension provides a highly programmable drawing system
 to render any hierarchical tree structure as PDF, SVG or PNG
 images. Although several predefined visualization layouts are included
@@ -25,6 +30,8 @@ Images can be rendered as **PNG**, **PDF** or **SVG** files using the
 :func:`TreeNode.render` method or interactively visualized using a
 built-in Graphical User Interface (GUI) invoked by the
 :func:`TreeNode.show` method.
+
+
 
 
 Interactive visualization of trees
@@ -302,6 +309,8 @@ instance, :func:`TreeNode.copy` will replicate all node styles in the
 replicate tree. Note that node styles can be also modified on the fly
 through a :attr:`layout` function (see :ref:`sec:layout_functions`)
 
+
+.. _sec:node_faces:
 
 Node faces
 -------------

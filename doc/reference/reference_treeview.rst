@@ -1,25 +1,31 @@
 .. module:: ete_dev.treeview
 
 treeview module 
-%%%%%%%%%%%%%%%%%%%
+*************************
 
-Main functions
-=================
+.. contents::
 
-.. autofunction:: add_face_to_node
 
-Node and Tree Style
-=====================
+
+Tree style
+====================
 
 .. autoclass:: ete_dev.TreeStyle
-
-.. autoclass:: ete_dev.NodeStyle
 
 .. autoclass:: ete_dev.FaceContainer
    :members:
 
-Faces
+
+Node style
+=====================
+
+.. autoclass:: ete_dev.NodeStyle
+
+
+Node faces
 =========================
+
+.. autofunction:: add_face_to_node
 
 .. autoclass:: ete_dev.Face
    :members:
@@ -58,7 +64,7 @@ Faces
    :no-undoc-members:
 
 
-Supported Colors
+Supported colors names
 =========================
 
 .. toctree::

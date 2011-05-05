@@ -14,7 +14,8 @@ What's new in ETE 2.1
     * Added support for *tree rotation and orientation*
     * Possibility of drawing *aligned faces as a table*
     * And more! Check :class:`TreeStyle` documentation
-  * Added new face positions **float**, **branch-top** and **branch-bottom**
+  * Added new face positions **float**, **branch-top** and
+    **branch-bottom**. See tutorial (:ref:`sec:node_faces`) for more details.
   * Added several *face attributes*:
 
     * face border
@@ -22,7 +23,7 @@ What's new in ETE 2.1
     * left, right, top and bottom margins
     * face opacity
     * horizontal and vertical alignment (useful when faces are rendered as table)
-  * Added support for predefined :class:`NodeStyle`, that can be set
+  * Added support for predefined :class:`NodeStyle`, which can be set
     outside the layout function (allows to save and export image rendering info)
   * Added new face types:
      * :class:`CircleFace` (basic circle/sphere forms)
@@ -37,7 +38,7 @@ What's new in ETE 2.1
      * Added full support for SVG image rendering  
      * Added more options to the :func:`TreeNode.render` function to
        control image size and resolution
-  * Added support for :data:`SVG_COLOR` names in faces and node styles
+  * Added support for :data:`SVG_COLORS` names in faces and node styles
 * Core methods:
    * Added :func:`TreeNode.copy`:  returns an exact and independent copy of node and all its attributes
    * Added :func:`TreeNode.convert_to_ultrametric`: converts all branch lengths to allow leaves to be equidistant to root
