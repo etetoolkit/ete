@@ -21,9 +21,42 @@ Node and Tree Style
 Faces
 =========================
 
-.. automodule:: ete_dev.treeview.faces
+.. autoclass:: ete_dev.Face
    :members:
    :no-undoc-members:
+
+.. autoclass:: ete_dev.TextFace
+   :members:
+   :no-undoc-members:
+
+.. autoclass:: ete_dev.AttrFace
+   :members:
+   :no-undoc-members:
+
+.. autoclass:: ete_dev.ImgFace
+   :members:
+   :no-undoc-members:
+
+.. autoclass:: ete_dev.CircleFace
+   :members:
+   :no-undoc-members:
+
+.. autoclass:: ete_dev.SequenceFace
+   :members:
+   :no-undoc-members:
+
+.. autoclass:: ete_dev.ProfileFace
+   :members:
+   :no-undoc-members:
+
+.. autoclass:: ete_dev.TreeFace
+   :members:
+   :no-undoc-members:
+
+.. autoclass:: ete_dev.ItemFace
+   :members:
+   :no-undoc-members:
+
 
 Supported Colors
 =========================

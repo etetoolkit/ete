@@ -316,8 +316,11 @@ Several types of node faces are provided by the main :mod:`ete_dev`
 module, ranging from simple text (:class:`TextFace`) and geometric
 shapes (:class:`CircleFace`), to molecular sequence representations
 (:class:`SequenceFace`), heatmaps and profile plots
-(:class:`ProfileFace`). A full list of available faces can be found at
-the :mod:`ete_dev.treeview` reference page.
+(:class:`ProfileFace`). **A complete list of available faces can be
+found at the :mod:`ete_dev.treeview` reference page**.
+
+Faces position
+^^^^^^^^^^^^^^^^
 
 Faces can be added to different areas around the node, namely
 **branch-right**, **branch-top**, **branch-bottom** or **aligned**.
@@ -326,8 +329,6 @@ Each area represents a table in which faces can be added through the
 want to be drawn bellow the branch line of a given node, a pair of
 :class:`TextFace` faces can be created and added to the columns 0
 and 1 of the **branch-bottom** area:
-
-
 
 :: 
    
@@ -409,11 +410,11 @@ layout functions
 -------------------
 
 Layout functions act as pre-drawing `hooking functions
-<http://en.wikipedia.org/wiki/Hooking>`_. This means, when a given node
-is about to be drawn, it is first sent to a layout function.  Node
-properties, style and faces can be then modified on the fly. Thus,
-layout functions can be understood as the set of rules that control
-how different nodes are drawn.
+<http://en.wikipedia.org/wiki/Hooking>`_. This means, when a node is
+about to be drawn, it is first sent to a layout function.  Node
+properties, style and faces can be then modified on the fly and return
+it to the drawer engine. Thus, layout functions can be understood as a
+collection of rules controlling how different nodes should be drawn. 
 
 
 :: 
@@ -443,7 +444,7 @@ how different nodes are drawn.
   t.show(tree_style=ts)
 
 
-Cmbining styles, faces and layouts
+Combining styles, faces and layouts
 --------------------------------------------
 
 .. warning::
