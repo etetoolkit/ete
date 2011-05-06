@@ -212,7 +212,6 @@ if options.doc:
     _ex("cp -a %s/sdoc/_build/html/ %s/doc/" %(RELEASE_PATH, RELEASE_PATH))
     _ex("cp -a %s/sdoc/_build/latex/*.pdf %s/doc/" %(RELEASE_PATH, RELEASE_PATH))
 
-
     _ex('find %s/doc | xargs perl -e "s/ete_dev/%s/g" -p -i' %\
             (RELEASE_PATH, MODULE_NAME) )
 
@@ -220,8 +219,16 @@ if options.doc:
     if copydoc=="y":
         # INSTALL THIS http://pypi.python.org/pypi/Sphinx-PyPI-upload/0.2.1
         print "Uploading"
+        
+        # Always upload DOC to the main page
+        _ex(' cd %s; cp VERSION _VERSION;  perl -e "s/%s/ete2/g" -p -i VERSION;' %\
+                (RELEASE_PATH, MODULE_NAME))
+        
         _ex("cd %s; python setup.py upload_sphinx --upload-dir %s/doc/html/ --show-response" %\
                 (RELEASE_PATH, RELEASE_PATH))
+
+        # Restore real VERSION 
+        _ex(' cd %s; mv _VERSION VERSION;' % (RELEASE_PATH) )
 
         _ex("cd %s; rsync -arv doc/html/ jhuerta@cgenomics:/data/services/web/ete.cgenomics.org/doc/2.1/" %\
                 (RELEASE_PATH))

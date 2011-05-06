@@ -113,7 +113,7 @@ I.legend.add_face(faces.CircleFace(30, random_color(), "sphere"), 0)
 I.legend.add_face(faces.CircleFace(30, random_color(), "sphere"), 0)
 I.legend.add_face(faces.TextFace("HOLA"), 1)
 I.legend.add_face(faces.TextFace("HOLA"), 1)
-
+ 
 # Creates a random tree with 10 leaves
 t2 = Tree()
 t2.populate(10)

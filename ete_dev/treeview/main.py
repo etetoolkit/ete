@@ -71,8 +71,6 @@ class _Background(object):
     :param color: RGB color code or :data:`SVG_COLORS`
 
     """
-
-
     def __init__(self):
         self.color = None
 

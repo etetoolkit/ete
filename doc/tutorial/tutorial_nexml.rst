@@ -25,40 +25,29 @@ root instance.
 Note that all Nexml elements have a python class that represent their
 attributes. Thus, each element in a Nexml file will be loaded as a
 python object that will contain "set" and "get" methods for all their
-attributes.
-
-tree instances are mixed objects containing all ETE tree functionality
-plus Nexml attributes. 
-
-::
-
-   from ete2 import Nexml
-   # Create an empty Nexml project 
-   nexml_project = Nexml()
-
-   # Upload content from file
-   nexml_project.build_from_file("nexml_example.xml")
-
-   # All XML elements are within the project instance.
-   # exist in each element to access their attributes.
-   print nexml_projects.get_otus()
-
-   # Trees can be also accesed 
-   trees_collections = nexml_projects.get_trees()
-   collection_1 = trees_collection[0]
-   tree_1 = collection_1.get_trees()[0]
-
-   # And they are seen as normal ETE tree objects
-   print tree_1
+attributes. However, XML tree elements will be converted into
+:class:`PhyloTree` instances, containing all ETE functionality
+(traversing, drawing, etc) plus NeXML attributes.
 
 In Nexml, a trees are represented as plain lists of nodes and
 edges. ETE will convert such lists into tree topologies, in which
 every node will contain a :attr:`nexml_node` and :attr:`nexml_edge`
-attribute. They will contain all nexml functionality and annotation.
+attribute. In addition, each tree node has a :attr:`nexml_tree`
+attribute (i.e. ``NEXML->FloatTree``) , which can be used to set the
+nexml properties of the subtree represented by each node.
 
-In addition, each tree node has a :attr:`nexml_tree` attribute, which
-can be used to set the nexml properties of the subtree represented by
-each node. 
+.. literalinclude:: ../../examples/nexml/nexml_parser.py
+
+:download:`[Download tolweb.xml example]  <../../examples/nexml/trees.xml>` ||
+:download:`[Download script]  <../../examples/nexml/nexml_parser.py>`
+
+
+Node meta information is also available:
+
+.. literalinclude:: ../../examples/nexml/nexml_annotated_trees.py 
+
+:download:`[Download tolweb.xml example]  <../../examples/nexml/tolweb.xml>` || 
+:download:`[Download script]  <../../examples/nexml/nexml_annotated_trees.py>`
 
 
 --------------------------------------
@@ -71,51 +60,32 @@ Nexml project structure.
 
 Usually, all you will need is to export the whole project. 
 
-::
+:: 
 
-   from ete2 import Nexml
+   from ete_dev import Nexml
    # Create an empty Nexml project 
    nexml_project = Nexml()
 
    # Upload content from file
    nexml_project.build_from_file("nexml_example.xml")
 
-   # All XML elements are within the project instance.
-   # exist in each element to access their attributes.
-   print nexml_projects.get_otus()
-
-   # Trees can be also accesed 
-   trees_collections = nexml_projects.get_trees()
-   collection_1 = trees_collection[0]
-   tree_1 = collection_1.get_trees()[0]
-
    nexml_project.export()
-
-
 
 
 ------------------------------------
 Creating Nexml project from scratch 
 ------------------------------------
 
-:class:`Nexml` base class can also be used to create projects from scratch
-in a programmatic way. Using the collection of NeXML classes provided
-by the **nexml** module, you can populate an empty project and export
-it as XML. 
+.. warning:: 
 
-::
+   sorry, this feature does not work yet.
 
-   from ete2 import Nexml # Root project class 
-   # the module contains all classes representing nexml elements
-   from ete2 import nexml 
+:class:`Nexml` base class can also be used to create projects from
+scratch in a programmatic way. Using the collection of NeXML classes
+provided by the:mod:`ete_dev.nexml` module, you can populate an empty
+project and export it as XML.
 
-   # Create an empty Nexml project 
-   nexml_project = Nexml()
-   tree_collection = nexml.Trees()
-   nexml_tree = nexml.NexMLTree()
-   nexml_tree.populate(10) # Random tree with 10 leaves
-   tree_collection.add_tree(nexml_tree)
-   nexml_project.add_trees(tree_collection)
+.. literalinclude:: ../../examples/nexml/nexml_from_scratch.py
 
 
 Note that trees can be also read from newick files, allowing the

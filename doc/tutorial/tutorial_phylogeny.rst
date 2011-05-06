@@ -23,8 +23,8 @@ nodes. A direct consequence of this is, for instance, that every split
 in the tree will represent a speciation or duplication event.
 
 
-Linking Phylogenetic Trees and Multiple Sequence Alignments
-===========================================================
+Linking Phylogenetic Trees with Multiple Sequence Alignments
+================================================================
 
 :class:`PhyloTree` instances allow molecular phylogenies to be linked
 to the Multiple Sequence Alignments (MSA). To associate a MSA with a
@@ -157,8 +157,8 @@ attribute.
 
 .. _sec:using-taxonomic-data:
 
-Using Taxonomic Data
-====================
+Adding taxonomic information
+===============================
 
 :class:`PhyloTree` instances allow to deal with leaf names and species
 names separately.  This is useful when working with molecular
@@ -286,7 +286,7 @@ Full example:
 
 ::
 
-  from ete2 import PhyloTree
+  from ete_dev import PhyloTree
   # Reads a phylogenetic tree (using default species name encoding)
   t = PhyloTree("(((Hsa_001,Ptr_001),(Cfa_001,Mms_001)),(Dme_001,Dme_002));")
   #                              /-Hsa_001
@@ -379,63 +379,74 @@ Full example:
      if len(node)>1 and node.is_monophyletic(["Fly"]):
         print "Fly specific expansion!:"
         print node
-
-
-  
-
-:: 
-   
-  Example
+ 
 
 
 .. _sec:dating-phylogenetic-nodes:
-
-Dating Phylogenetic Nodes
-=========================
-
-Nodes in molecular phylogenies can be interpreted as evolutionary events. They
-can represent the duplication of an ancestral sequence or the speciation event
-that separated the evolution of two ancestral sequences. In any case, because
-nodes represent ancestral events, they can be located at a given moment in the
-evolution. This is, we can date evolutionary events.
-
-There are many ways to infer such information. Most approaches are based on the
-comparison of the sequences affected by a given event. However, these methods
-suffer from several limitations. An alternative approach that has been
-shown to overcome some of such limitations is to date evolutionary events
-according the topology of phylogenetic trees ( In brief, the relative age of any
-evolutionary event can be established by detecting the oldest taxonomic group
-affected by such event. Given that in phylogenies nodes are events, this is
-something that can be easily evaluated by looking at the species under each
-node. Although this task can be done manually, ETE implements a method to
-automatize the process. Thus, by defining a python dictionary containing the
-conversion between **species names** and the considered **taxonomic levels,
-**phylogenetic nodes can be easily dated. The **get_age() **method, found in
-every node, can be used to this end. Obviously, the more taxonomic levels are
-defined, the more precise is time estimation. For instance, if we consider a
-tree in which several vertebrate species are represented, we could define an age
-dictionary like this:
-
-.. % 
-
-In which each number refers to a taxonomic group, and older taxonomic groups
-have higher values. Then, any internal node could be easily mapped to an
-evolutionary period by executing: **node.get_date(vertebrates_taxa_levels)**.
 
 
 Detecting evolutionary events
 =============================
 
-There are several ways to automatically detect duplication and speciation nodes
-within molecular phylogenies. ETE provides the two most extended methodologies.
-One implements the algorithm described in and is based on the species overlap
-between partitions and thus does not depend on the availability of a species
-tree (species overlap). The second one, which requires the comparison between
-the gene tree and a previously defined species tree, implements a strict tree
-reconciliation algorithm [Page and Charleston, 1997]. By detecting evolutionary
-events, orthology and paralogy relationships among sequences are also inferred.
+There are several ways to automatically detect duplication and
+speciation nodes. ETE provides two methodologies: One implements the
+algorithm described in `Huerta-Cepas (2007)
+<http://genomebiology.com/2007/8/6/R109>`_ and is based on the species
+overlap (SO) between partitions and thus does not depend on the
+availability of a species tree. The second, which requires the
+comparison between the gene tree and a previously defined species
+tree, implements a strict tree reconciliation algorithm (Page and
+Charleston, 1997). By detecting evolutionary events, orthology and
+paralogy relationships among sequences can also be inferred.  Find a
+comparison of both methods in `Marcet-Houben and Gabaldon (2009)
+<http://www.plosone.org/article/info:doi%2F10.1371%2Fjournal.pone.0004357>`_.
 
-.. % 
+
+Species Overlap (SO) algorithm
+------------------------------
+
+In order to apply the SO algorithm, you can use the
+:func:`PhyloNode.get_descendant_evol_events` method (it will detect
+all evolutionary events under the current node) or the
+:func:`PhyloNode.get_my_evol_events` method (it will detect only the
+evolutionary events in which current node, a leaf, is involved).
+
+By default the **species overlap score (SOS) threshold** is set to
+0.0, which means that a single species in common between two node
+branches will rise a duplication event. This has been shown to perform
+the best with real data, however you can adjust the threshold using
+the ``sos_thr`` argument present in both methods.
+
+
+Tree reconciliation algorithm
+---------------------------------------
+
+Tree reconciliation algorithm uses a predefined species tree to infer
+all the necessary genes losses that explain a given gene tree
+topology. Consequently, duplication and separation nodes will strictly
+follow the species tree topology.
+
+To perform a tree reconciliation analysis over a given node in a
+molecular phylogeny you can use the :func:`PhyloNode.reconcile`
+method, which requires a species :class:`PhyloTree` as its first
+argument. Leaf node names in the the species are expected to be the
+same species codes in the gene tree (see
+:ref:`sec:using-taxonomic-data`). All species codes present in the
+gene tree should appear in the species tree.
+
+As a result, the :func:`PhyloNode.reconcile` method will label the
+original gene tree nodes as duplication or speciation, will return the
+list of inferred events, and will return a new **reconcilied tree**
+(:class:`PhyloTree` instance), in which inferred gene losses are
+present and labeled.
+
+:: 
+
+  Example
+
+
+Evolutionary Events
+----------------------
 
 Both methods, species overlap and tree reconciliation, can be used to **label
 each tree node as a duplication or speciation event**.** **Thus, after applying
@@ -472,40 +483,107 @@ overlap allows to track only all the evolutionary events involving a specific
 tree leaf.
 
 
-Species Overlap (SO) algorithm
-------------------------------
-
-In order to apply the SO algorithm, you can use the
-:func:`PhyloNode.get_descendant_evol_events` method (it will map all
-events under the current node) or the
-:func:`PhyloNode.get_my_evol_events` method (it will map only the
-events involving the current node, usually a leaf node).
-
-By default the **species overlap score (SOS) threshold** is set to
-0.0, which means that a single species in common between two node
-branches will rise a duplication event. This has been shown to preform
-the best with real data, however you can adjust the threshold using
-the **sos_thr** argument present in both methods.
 
 
-Tree reconciliation algorithm
----------------------------------------
 
-Tree reconciliation algorithm uses a predefined species tree to infer the genes
-losses that explain a given gene tree topology. By doing this, it infers also
-the duplication and speciation events. To perform a strict tree reconciliation
-analysis over a given node in a molecular phylogeny you can use the
-**node.reconcile()** method, which requires a species tree as its first
-argument. The species tree (another PhyloTree instance) must contain the
-topology of the species represented in the gene tree. Moreover, leaf names in
-the species tree must match the species names in the gene tree (by default, the
-first 3 letters of the gene tree leaf names) (see
-:ref:`sec:using-taxonomic-data`).
+Dating phylogenetic nodes
+=========================
 
-As a result, the :func:`PhyloNode.reconcile` method will label the
-original gene tree nodes as duplication or speciation, will return the
-list of inferred events, and will return a new **reconcilied tree**,
-in which inferred gene losses are present and labeled.
+In molecular phylogeny, nodes can be interpreted as evolutionary
+events. Therefor, they represent duplication or speciation events. In
+the case of gene duplication events, nodes can also be assigned to a
+certain point in a relative temporal scale. In other words, you can
+obtain a relative dating of all the duplication events detected.
+
+Although **absolute dating is always preferred and more precise**,
+relative dating provides a faster approach to compare the relative age
+of paralogs (`read this
+<http://bioinformatics.oxfordjournals.org/content/27/1/38.long>`_ for
+a comparison with other methods, such as the use of synonymous
+substitution rates as a proxy to the divergence time).
+
+Relative dating can be automatized by defining a dictionary of
+distances between all the species of interest and a reference
+species. For instance, in a collection of gene trees containing human,
+chimp, mouse, rat and fish species, we could establish that:
+
+  * chimp is the closest species to human (primates) 
+  * mouse and rat are the second closest species (defining mammals)
+  * and fish is the farthest species to human 
+
+:: 
+
+  relative_dist = {
+      "human": 0, # distance from human to human 
+      "chimp": 1, # distance from chimp to human 
+      "rat":   2, # ...
+      "mouse": 2,
+      "fish":  3 }
+
+Once done, you can use such a dictionary to assign a time label to all
+duplication events found in a collection of trees. The
+:func:`PhyloNode.get_age` method can be used to that purpose.
+
+
+For the following 3 duplication events, 
+
+::
+
+    #                         /-humanA
+    #                    /---|
+    #                   |     \-chimpA
+    #               /Dup1
+    #              |    |     /-humanB
+    #          /---|     \---|
+    #         |    |          \-chimpB
+    #     /---|    |
+    #    |    |     \-mouseA
+    #    |    |
+    #    |     \-fish
+    #-Dup3
+    #    |               /-humanC
+    #    |          /---|
+    #    |     /---|     \-chimpC
+    #    |    |    |
+    #     \Dup2     \-humanD
+    #         |
+    #         |     /-ratC
+    #          \---|
+    #               \-mouseC
+
+
+the result would be:
+
+ * Dup1 will be assigned to primates (most distant species is
+   chimp). ``Dup1.get_age(relative_distances)`` will return 1
+
+ * Dup2 will be assigned to mammals [2] (most distant species are rat
+   and mouse). ``Dup2.get_age(relative_distances)`` will return 2
+
+ * Dup3 will be assigned to mammals [3] (most distant species is
+   fish). ``Dup3.get_age(relative_distances)`` will return 3
+
+.. warning:: 
+
+   Note that relative distances will vary depending on your reference
+   species.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 Visualization of phylogenetic trees
@@ -525,4 +603,6 @@ faces with the coloured sequence associated to each node.
 Example: A reconciled tree showing inferred evolutionary events, gene losses and node's sequences
 -------------------------------------------------------------------------------------------------
 
-.. % 
+.. 
+
+  literalinclude:: ../../examples/webplugin/wsgi/webplugin_example.py

@@ -4,19 +4,19 @@ Contents
 
 .. toctree::
 
+   changelog/index
    tutorial/index
    reference/index
-   faqs/index
+
    install/index
-   changelog/index
-   
-   ack
-   about
-   license
-   bugs
-   contribute
-   cheatsheet
+   faqs/index
    support
+
+   cheatsheet
+   about
+   bugs
+   ack   
+   license
 
 :genindex:
 :modindex:
