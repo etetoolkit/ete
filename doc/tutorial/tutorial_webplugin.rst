@@ -94,6 +94,32 @@ Copy the *webplugin* directory to the document root path of your
 site. Remember that *webplugin* directory path must be configured to
 execute WSGI applications in Apache config files.
 
+
+======================
+Installing a X server
+======================
+
+You will need to install a X server (not a desktop) in your ETE host
+and provide X access to apache processes.
+
+For instance:
+
+``apt-get install  xserver-xorg xdm  xfonts-base xfonts-100dpi xfonts-75dpi``
+
+Then, edit ``/etc/X11/xdm/xdm-config`` and set following values: 
+::
+  
+  DisplayManager*authorize:       false
+  !
+  DisplayManager*authComplain:    false
+
+
+Do not forget to restart your xdm server. 
+
+``/etc/init.d/xdm restart``
+
+
+
 ==========================================
 Adding functionality to your application
 ==========================================

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*- 
 
 #
-# Generated Fri Mar 25 18:23:07 2011 by generateDS.py version 2.4c.
+# Generated Mon May 23 16:04:19 2011 by generateDS.py version 2.4c.
 #
 
 import sys
@@ -570,8 +570,8 @@ class ResourceMeta(Meta):
     def exportChildren(self, outfile, level, namespace_='', name_='ResourceMeta', fromsubclass_=False):
         super(ResourceMeta, self).exportChildren(outfile, level, namespace_, name_, True)
         if not fromsubclass_:
-            for item_ in self.content_:
-                item_.export(outfile, level, item_.name, namespace_)
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
         if (
             self.meta or
@@ -1264,8 +1264,8 @@ class Annotated(Base):
     def exportChildren(self, outfile, level, namespace_='', name_='Annotated', fromsubclass_=False):
         super(Annotated, self).exportChildren(outfile, level, namespace_, name_, True)
         if not fromsubclass_:
-            for item_ in self.content_:
-                item_.export(outfile, level, item_.name, namespace_)
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
         if (
             self.meta or
@@ -1413,12 +1413,13 @@ class Nexml(Annotated):
             outfile.write(' generator=%s' % (self.gds_format_string(quote_attrib(self.generator).encode(ExternalEncoding), input_name='generator'), ))
     def exportChildren(self, outfile, level, namespace_='', name_='Nexml', fromsubclass_=False):
         super(Nexml, self).exportChildren(outfile, level, namespace_, name_, True)
-        for otus_ in self.otus:
-            otus_.export(outfile, level, namespace_, name_='otus')
-        for characters_ in self.get_characters():
-            characters_.export(outfile, level, namespace_, name_='characters')
-        for trees_ in self.trees:
-            trees_.export(outfile, level, namespace_, name_='trees')
+        if not fromsubclass_:
+          for otus_ in self.otus:
+              otus_.export(outfile, level, namespace_, name_='otus')
+          for characters_ in self.get_characters():
+              characters_.export(outfile, level, namespace_, name_='characters')
+          for trees_ in self.trees:
+              trees_.export(outfile, level, namespace_, name_='trees')
     def hasContent_(self):
         if (
             self.otus or
@@ -1591,8 +1592,10 @@ class AbstractObsMatrix(Annotated):
     def exportChildren(self, outfile, level, namespace_='', name_='AbstractObsMatrix', fromsubclass_=False):
         super(AbstractObsMatrix, self).exportChildren(outfile, level, namespace_, name_, True)
         if not fromsubclass_:
-            for item_ in self.content_:
-                item_.export(outfile, level, item_.name, namespace_)
+          for row_ in self.get_row():
+              row_.export(outfile, level, namespace_, name_='row')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.row or
@@ -1741,8 +1744,10 @@ class AbstractSeqMatrix(Annotated):
     def exportChildren(self, outfile, level, namespace_='', name_='AbstractSeqMatrix', fromsubclass_=False):
         super(AbstractSeqMatrix, self).exportChildren(outfile, level, namespace_, name_, True)
         if not fromsubclass_:
-            for item_ in self.content_:
-                item_.export(outfile, level, item_.name, namespace_)
+          for row_ in self.get_row():
+              row_.export(outfile, level, namespace_, name_='row')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.row or
@@ -1901,8 +1906,12 @@ class AbstractFormat(Annotated):
     def exportChildren(self, outfile, level, namespace_='', name_='AbstractFormat', fromsubclass_=False):
         super(AbstractFormat, self).exportChildren(outfile, level, namespace_, name_, True)
         if not fromsubclass_:
-            for item_ in self.content_:
-                item_.export(outfile, level, item_.name, namespace_)
+          for states_ in self.get_states():
+              states_.export(outfile, level, namespace_, name_='states')
+          for char_ in self.get_char():
+              char_.export(outfile, level, namespace_, name_='char')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.states or
@@ -2063,10 +2072,11 @@ class ContinuousObsMatrix(AbstractObsMatrix):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='ContinuousObsMatrix'):
         super(ContinuousObsMatrix, self).exportAttributes(outfile, level, already_processed, namespace_, name_='ContinuousObsMatrix')
     def exportChildren(self, outfile, level, namespace_='', name_='ContinuousObsMatrix', fromsubclass_=False):
-        for row_ in self.row:
-            row_.export(outfile, level, namespace_, name_='row')
-        for set_ in self.set:
-            set_.export(outfile, level, namespace_, name_='set')
+        if not fromsubclass_:
+          for row_ in self.row:
+              row_.export(outfile, level, namespace_, name_='row')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.row or
@@ -2170,10 +2180,11 @@ class ContinuousSeqMatrix(AbstractSeqMatrix):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='ContinuousSeqMatrix'):
         super(ContinuousSeqMatrix, self).exportAttributes(outfile, level, already_processed, namespace_, name_='ContinuousSeqMatrix')
     def exportChildren(self, outfile, level, namespace_='', name_='ContinuousSeqMatrix', fromsubclass_=False):
-        for row_ in self.row:
-            row_.export(outfile, level, namespace_, name_='row')
-        for set_ in self.set:
-            set_.export(outfile, level, namespace_, name_='set')
+        if not fromsubclass_:
+          for row_ in self.row:
+              row_.export(outfile, level, namespace_, name_='row')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.row or
@@ -2278,10 +2289,11 @@ class ContinuousFormat(AbstractFormat):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='ContinuousFormat'):
         super(ContinuousFormat, self).exportAttributes(outfile, level, already_processed, namespace_, name_='ContinuousFormat')
     def exportChildren(self, outfile, level, namespace_='', name_='ContinuousFormat', fromsubclass_=False):
-        for char_ in self.char:
-            char_.export(outfile, level, namespace_, name_='char')
-        for set_ in self.set:
-            set_.export(outfile, level, namespace_, name_='set')
+        if not fromsubclass_:
+          for char_ in self.char:
+              char_.export(outfile, level, namespace_, name_='char')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.char or
@@ -2484,10 +2496,11 @@ class StandardObsMatrix(AbstractObsMatrix):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='StandardObsMatrix'):
         super(StandardObsMatrix, self).exportAttributes(outfile, level, already_processed, namespace_, name_='StandardObsMatrix')
     def exportChildren(self, outfile, level, namespace_='', name_='StandardObsMatrix', fromsubclass_=False):
-        for row_ in self.row:
-            row_.export(outfile, level, namespace_, name_='row')
-        for set_ in self.set:
-            set_.export(outfile, level, namespace_, name_='set')
+        if not fromsubclass_:
+          for row_ in self.row:
+              row_.export(outfile, level, namespace_, name_='row')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.row or
@@ -2591,10 +2604,11 @@ class StandardSeqMatrix(AbstractSeqMatrix):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='StandardSeqMatrix'):
         super(StandardSeqMatrix, self).exportAttributes(outfile, level, already_processed, namespace_, name_='StandardSeqMatrix')
     def exportChildren(self, outfile, level, namespace_='', name_='StandardSeqMatrix', fromsubclass_=False):
-        for row_ in self.row:
-            row_.export(outfile, level, namespace_, name_='row')
-        for set_ in self.set:
-            set_.export(outfile, level, namespace_, name_='set')
+        if not fromsubclass_:
+          for row_ in self.row:
+              row_.export(outfile, level, namespace_, name_='row')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.row or
@@ -2707,12 +2721,13 @@ class StandardFormat(AbstractFormat):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='StandardFormat'):
         super(StandardFormat, self).exportAttributes(outfile, level, already_processed, namespace_, name_='StandardFormat')
     def exportChildren(self, outfile, level, namespace_='', name_='StandardFormat', fromsubclass_=False):
-        for states_ in self.states:
-            states_.export(outfile, level, namespace_, name_='states')
-        for char_ in self.char:
-            char_.export(outfile, level, namespace_, name_='char')
-        for set_ in self.set:
-            set_.export(outfile, level, namespace_, name_='set')
+        if not fromsubclass_:
+          for states_ in self.states:
+              states_.export(outfile, level, namespace_, name_='states')
+          for char_ in self.char:
+              char_.export(outfile, level, namespace_, name_='char')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.states or
@@ -2833,10 +2848,11 @@ class RNAObsMatrix(AbstractObsMatrix):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='RNAObsMatrix'):
         super(RNAObsMatrix, self).exportAttributes(outfile, level, already_processed, namespace_, name_='RNAObsMatrix')
     def exportChildren(self, outfile, level, namespace_='', name_='RNAObsMatrix', fromsubclass_=False):
-        for row_ in self.row:
-            row_.export(outfile, level, namespace_, name_='row')
-        for set_ in self.set:
-            set_.export(outfile, level, namespace_, name_='set')
+        if not fromsubclass_:
+          for row_ in self.row:
+              row_.export(outfile, level, namespace_, name_='row')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.row or
@@ -2940,10 +2956,11 @@ class RNASeqMatrix(AbstractSeqMatrix):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='RNASeqMatrix'):
         super(RNASeqMatrix, self).exportAttributes(outfile, level, already_processed, namespace_, name_='RNASeqMatrix')
     def exportChildren(self, outfile, level, namespace_='', name_='RNASeqMatrix', fromsubclass_=False):
-        for row_ in self.row:
-            row_.export(outfile, level, namespace_, name_='row')
-        for set_ in self.set:
-            set_.export(outfile, level, namespace_, name_='set')
+        if not fromsubclass_:
+          for row_ in self.row:
+              row_.export(outfile, level, namespace_, name_='row')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.row or
@@ -3055,12 +3072,13 @@ class RNAFormat(AbstractFormat):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='RNAFormat'):
         super(RNAFormat, self).exportAttributes(outfile, level, already_processed, namespace_, name_='RNAFormat')
     def exportChildren(self, outfile, level, namespace_='', name_='RNAFormat', fromsubclass_=False):
-        for states_ in self.states:
-            states_.export(outfile, level, namespace_, name_='states')
-        for char_ in self.char:
-            char_.export(outfile, level, namespace_, name_='char')
-        for set_ in self.set:
-            set_.export(outfile, level, namespace_, name_='set')
+        if not fromsubclass_:
+          for states_ in self.states:
+              states_.export(outfile, level, namespace_, name_='states')
+          for char_ in self.char:
+              char_.export(outfile, level, namespace_, name_='char')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.states or
@@ -3181,10 +3199,11 @@ class RestrictionObsMatrix(AbstractObsMatrix):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='RestrictionObsMatrix'):
         super(RestrictionObsMatrix, self).exportAttributes(outfile, level, already_processed, namespace_, name_='RestrictionObsMatrix')
     def exportChildren(self, outfile, level, namespace_='', name_='RestrictionObsMatrix', fromsubclass_=False):
-        for row_ in self.row:
-            row_.export(outfile, level, namespace_, name_='row')
-        for set_ in self.set:
-            set_.export(outfile, level, namespace_, name_='set')
+        if not fromsubclass_:
+          for row_ in self.row:
+              row_.export(outfile, level, namespace_, name_='row')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.row or
@@ -3288,10 +3307,11 @@ class RestrictionSeqMatrix(AbstractSeqMatrix):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='RestrictionSeqMatrix'):
         super(RestrictionSeqMatrix, self).exportAttributes(outfile, level, already_processed, namespace_, name_='RestrictionSeqMatrix')
     def exportChildren(self, outfile, level, namespace_='', name_='RestrictionSeqMatrix', fromsubclass_=False):
-        for row_ in self.row:
-            row_.export(outfile, level, namespace_, name_='row')
-        for set_ in self.set:
-            set_.export(outfile, level, namespace_, name_='set')
+        if not fromsubclass_:
+          for row_ in self.row:
+              row_.export(outfile, level, namespace_, name_='row')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.row or
@@ -3404,12 +3424,13 @@ class RestrictionFormat(AbstractFormat):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='RestrictionFormat'):
         super(RestrictionFormat, self).exportAttributes(outfile, level, already_processed, namespace_, name_='RestrictionFormat')
     def exportChildren(self, outfile, level, namespace_='', name_='RestrictionFormat', fromsubclass_=False):
-        for states_ in self.states:
-            states_.export(outfile, level, namespace_, name_='states')
-        for char_ in self.char:
-            char_.export(outfile, level, namespace_, name_='char')
-        for set_ in self.set:
-            set_.export(outfile, level, namespace_, name_='set')
+        if not fromsubclass_:
+          for states_ in self.states:
+              states_.export(outfile, level, namespace_, name_='states')
+          for char_ in self.char:
+              char_.export(outfile, level, namespace_, name_='char')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.states or
@@ -3530,10 +3551,11 @@ class AAObsMatrix(AbstractObsMatrix):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='AAObsMatrix'):
         super(AAObsMatrix, self).exportAttributes(outfile, level, already_processed, namespace_, name_='AAObsMatrix')
     def exportChildren(self, outfile, level, namespace_='', name_='AAObsMatrix', fromsubclass_=False):
-        for row_ in self.row:
-            row_.export(outfile, level, namespace_, name_='row')
-        for set_ in self.set:
-            set_.export(outfile, level, namespace_, name_='set')
+        if not fromsubclass_:
+          for row_ in self.row:
+              row_.export(outfile, level, namespace_, name_='row')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.row or
@@ -3637,10 +3659,11 @@ class AASeqMatrix(AbstractSeqMatrix):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='AASeqMatrix'):
         super(AASeqMatrix, self).exportAttributes(outfile, level, already_processed, namespace_, name_='AASeqMatrix')
     def exportChildren(self, outfile, level, namespace_='', name_='AASeqMatrix', fromsubclass_=False):
-        for row_ in self.row:
-            row_.export(outfile, level, namespace_, name_='row')
-        for set_ in self.set:
-            set_.export(outfile, level, namespace_, name_='set')
+        if not fromsubclass_:
+          for row_ in self.row:
+              row_.export(outfile, level, namespace_, name_='row')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.row or
@@ -3753,12 +3776,13 @@ class AAFormat(AbstractFormat):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='AAFormat'):
         super(AAFormat, self).exportAttributes(outfile, level, already_processed, namespace_, name_='AAFormat')
     def exportChildren(self, outfile, level, namespace_='', name_='AAFormat', fromsubclass_=False):
-        for states_ in self.states:
-            states_.export(outfile, level, namespace_, name_='states')
-        for char_ in self.char:
-            char_.export(outfile, level, namespace_, name_='char')
-        for set_ in self.set:
-            set_.export(outfile, level, namespace_, name_='set')
+        if not fromsubclass_:
+          for states_ in self.states:
+              states_.export(outfile, level, namespace_, name_='states')
+          for char_ in self.char:
+              char_.export(outfile, level, namespace_, name_='char')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.states or
@@ -3879,10 +3903,11 @@ class DNAObsMatrix(AbstractObsMatrix):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='DNAObsMatrix'):
         super(DNAObsMatrix, self).exportAttributes(outfile, level, already_processed, namespace_, name_='DNAObsMatrix')
     def exportChildren(self, outfile, level, namespace_='', name_='DNAObsMatrix', fromsubclass_=False):
-        for row_ in self.row:
-            row_.export(outfile, level, namespace_, name_='row')
-        for set_ in self.set:
-            set_.export(outfile, level, namespace_, name_='set')
+        if not fromsubclass_:
+          for row_ in self.row:
+              row_.export(outfile, level, namespace_, name_='row')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.row or
@@ -3986,10 +4011,11 @@ class DNASeqMatrix(AbstractSeqMatrix):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='DNASeqMatrix'):
         super(DNASeqMatrix, self).exportAttributes(outfile, level, already_processed, namespace_, name_='DNASeqMatrix')
     def exportChildren(self, outfile, level, namespace_='', name_='DNASeqMatrix', fromsubclass_=False):
-        for row_ in self.row:
-            row_.export(outfile, level, namespace_, name_='row')
-        for set_ in self.set:
-            set_.export(outfile, level, namespace_, name_='set')
+        if not fromsubclass_:
+          for row_ in self.row:
+              row_.export(outfile, level, namespace_, name_='row')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.row or
@@ -4101,12 +4127,13 @@ class DNAFormat(AbstractFormat):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='DNAFormat'):
         super(DNAFormat, self).exportAttributes(outfile, level, already_processed, namespace_, name_='DNAFormat')
     def exportChildren(self, outfile, level, namespace_='', name_='DNAFormat', fromsubclass_=False):
-        for states_ in self.states:
-            states_.export(outfile, level, namespace_, name_='states')
-        for char_ in self.char:
-            char_.export(outfile, level, namespace_, name_='char')
-        for set_ in self.set:
-            set_.export(outfile, level, namespace_, name_='set')
+        if not fromsubclass_:
+          for states_ in self.states:
+              states_.export(outfile, level, namespace_, name_='states')
+          for char_ in self.char:
+              char_.export(outfile, level, namespace_, name_='char')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.states or
@@ -4351,8 +4378,9 @@ class ContinuousObs(AbstractObs):
             already_processed.append('state')
             outfile.write(' state=%s' % (quote_attrib(self.state), ))
     def exportChildren(self, outfile, level, namespace_='', name_='ContinuousObs', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
         if (
             self.meta or
@@ -4573,10 +4601,11 @@ class Taxa(IDTagged):
         super(Taxa, self).exportAttributes(outfile, level, already_processed, namespace_, name_='Taxa')
     def exportChildren(self, outfile, level, namespace_='', name_='Taxa', fromsubclass_=False):
         super(Taxa, self).exportChildren(outfile, level, namespace_, name_, True)
-        for otu_ in self.otu:
-            otu_.export(outfile, level, namespace_, name_='otu')
-        for set_ in self.set:
-            set_.export(outfile, level, namespace_, name_='set')
+        if not fromsubclass_:
+          for otu_ in self.otu:
+              otu_.export(outfile, level, namespace_, name_='otu')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.otu or
@@ -4763,8 +4792,12 @@ class AbstractTrees(IDTagged):
     def exportChildren(self, outfile, level, namespace_='', name_='AbstractTrees', fromsubclass_=False):
         super(AbstractTrees, self).exportChildren(outfile, level, namespace_, name_, True)
         if not fromsubclass_:
-            for item_ in self.content_:
-                item_.export(outfile, level, item_.name, namespace_)
+          for network_ in self.get_network():
+              network_.export(outfile, level, namespace_, name_='network')
+          for tree_ in self.get_tree():
+              tree_.export(outfile, level, namespace_, name_='tree')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.network or
@@ -4950,8 +4983,12 @@ class AbstractNetwork(IDTagged):
     def exportChildren(self, outfile, level, namespace_='', name_='AbstractNetwork', fromsubclass_=False):
         super(AbstractNetwork, self).exportChildren(outfile, level, namespace_, name_, True)
         if not fromsubclass_:
-            for item_ in self.content_:
-                item_.export(outfile, level, item_.name, namespace_)
+          for node_ in self.get_node():
+              node_.export(outfile, level, namespace_, name_='node')
+          for edge_ in self.get_edge():
+              edge_.export(outfile, level, namespace_, name_='edge')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.node or
@@ -5139,8 +5176,13 @@ class AbstractTree(IDTagged):
     def exportChildren(self, outfile, level, namespace_='', name_='AbstractTree', fromsubclass_=False):
         super(AbstractTree, self).exportChildren(outfile, level, namespace_, name_, True)
         if not fromsubclass_:
-            for item_ in self.content_:
-                item_.export(outfile, level, item_.name, namespace_)
+          for node_ in self.get_node():
+              node_.export(outfile, level, namespace_, name_='node')
+          rootedge_.export(outfile, level, namespace_, name_='rootedge')
+          for edge_ in self.get_edge():
+              edge_.export(outfile, level, namespace_, name_='edge')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.node or
@@ -5592,16 +5634,17 @@ class IntTree(AbstractTree):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='IntTree'):
         super(IntTree, self).exportAttributes(outfile, level, already_processed, namespace_, name_='IntTree')
     def exportChildren(self, outfile, level, namespace_='', name_='IntTree', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
-        for node_ in self.node:
-            node_.export(outfile, level, namespace_, name_='node')
-        if self.rootedge:
-            self.rootedge.export(outfile, level, namespace_, name_='rootedge')
-        for edge_ in self.edge:
-            edge_.export(outfile, level, namespace_, name_='edge')
-        for set_ in self.set:
-            set_.export(outfile, level, namespace_, name_='set')
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
+          for node_ in self.node:
+              node_.export(outfile, level, namespace_, name_='node')
+          if self.rootedge:
+              self.rootedge.export(outfile, level, namespace_, name_='rootedge')
+          for edge_ in self.edge:
+              edge_.export(outfile, level, namespace_, name_='edge')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.meta or
@@ -5782,16 +5825,17 @@ class FloatTree(AbstractTree):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='FloatTree'):
         super(FloatTree, self).exportAttributes(outfile, level, already_processed, namespace_, name_='FloatTree')
     def exportChildren(self, outfile, level, namespace_='', name_='FloatTree', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
-        for node_ in self.node:
-            node_.export(outfile, level, namespace_, name_='node')
-        if self.rootedge:
-            self.rootedge.export(outfile, level, namespace_, name_='rootedge')
-        for edge_ in self.edge:
-            edge_.export(outfile, level, namespace_, name_='edge')
-        for set_ in self.set:
-            set_.export(outfile, level, namespace_, name_='set')
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
+          for node_ in self.node:
+              node_.export(outfile, level, namespace_, name_='node')
+          if self.rootedge:
+              self.rootedge.export(outfile, level, namespace_, name_='rootedge')
+          for edge_ in self.edge:
+              edge_.export(outfile, level, namespace_, name_='edge')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.meta or
@@ -5951,8 +5995,9 @@ class TreeIntRootEdge(AbstractRootEdge):
             already_processed.append('length')
             outfile.write(' length="%s"' % self.gds_format_integer(self.length, input_name='length'))
     def exportChildren(self, outfile, level, namespace_='', name_='TreeIntRootEdge', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
         if (
             self.meta or
@@ -6061,8 +6106,9 @@ class TreeIntEdge(AbstractEdge):
             already_processed.append('length')
             outfile.write(' length="%s"' % self.gds_format_integer(self.length, input_name='length'))
     def exportChildren(self, outfile, level, namespace_='', name_='TreeIntEdge', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
         if (
             self.meta or
@@ -6171,8 +6217,9 @@ class TreeFloatRootEdge(AbstractRootEdge):
             already_processed.append('length')
             outfile.write(' length="%s"' % self.gds_format_double(self.length, input_name='length'))
     def exportChildren(self, outfile, level, namespace_='', name_='TreeFloatRootEdge', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
         if (
             self.meta or
@@ -6281,8 +6328,9 @@ class TreeFloatEdge(AbstractEdge):
             already_processed.append('length')
             outfile.write(' length="%s"' % self.gds_format_double(self.length, input_name='length'))
     def exportChildren(self, outfile, level, namespace_='', name_='TreeFloatEdge', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
         if (
             self.meta or
@@ -6397,8 +6445,9 @@ class StandardObs(AbstractObs):
             already_processed.append('state')
             outfile.write(' state=%s' % (self.gds_format_string(quote_attrib(self.state).encode(ExternalEncoding), input_name='state'), ))
     def exportChildren(self, outfile, level, namespace_='', name_='StandardObs', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
         if (
             self.meta or
@@ -6519,8 +6568,9 @@ class RNAObs(AbstractObs):
             already_processed.append('state')
             outfile.write(' state=%s' % (self.gds_format_string(quote_attrib(self.state).encode(ExternalEncoding), input_name='state'), ))
     def exportChildren(self, outfile, level, namespace_='', name_='RNAObs', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
         if (
             self.meta or
@@ -6641,8 +6691,9 @@ class RestrictionObs(AbstractObs):
             already_processed.append('state')
             outfile.write(' state=%s' % (self.gds_format_string(quote_attrib(self.state).encode(ExternalEncoding), input_name='state'), ))
     def exportChildren(self, outfile, level, namespace_='', name_='RestrictionObs', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
         if (
             self.meta or
@@ -6763,8 +6814,9 @@ class AAObs(AbstractObs):
             already_processed.append('state')
             outfile.write(' state=%s' % (self.gds_format_string(quote_attrib(self.state).encode(ExternalEncoding), input_name='state'), ))
     def exportChildren(self, outfile, level, namespace_='', name_='AAObs', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
         if (
             self.meta or
@@ -6885,8 +6937,9 @@ class DNAObs(AbstractObs):
             already_processed.append('state')
             outfile.write(' state=%s' % (self.gds_format_string(quote_attrib(self.state).encode(ExternalEncoding), input_name='state'), ))
     def exportChildren(self, outfile, level, namespace_='', name_='DNAObs', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
         if (
             self.meta or
@@ -7182,8 +7235,14 @@ class AbstractStates(IDTagged):
     def exportChildren(self, outfile, level, namespace_='', name_='AbstractStates', fromsubclass_=False):
         super(AbstractStates, self).exportChildren(outfile, level, namespace_, name_, True)
         if not fromsubclass_:
-            for item_ in self.content_:
-                item_.export(outfile, level, item_.name, namespace_)
+          for state_ in self.get_state():
+              state_.export(outfile, level, namespace_, name_='state')
+          for polymorphic_state_set_ in self.get_polymorphic_state_set():
+              polymorphic_state_set_.export(outfile, level, namespace_, name_='polymorphic_state_set')
+          for uncertain_state_set_ in self.get_uncertain_state_set():
+              uncertain_state_set_.export(outfile, level, namespace_, name_='uncertain_state_set')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.state or
@@ -7492,8 +7551,9 @@ class ContinuousChar(AbstractChar):
             already_processed.append('codon')
             outfile.write(' codon=%s' % (quote_attrib(self.codon), ))
     def exportChildren(self, outfile, level, namespace_='', name_='ContinuousChar', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
         if (
             self.meta or
@@ -8013,12 +8073,13 @@ class IntNetwork(AbstractNetwork):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='IntNetwork'):
         super(IntNetwork, self).exportAttributes(outfile, level, already_processed, namespace_, name_='IntNetwork')
     def exportChildren(self, outfile, level, namespace_='', name_='IntNetwork', fromsubclass_=False):
-        for node_ in self.node:
-            node_.export(outfile, level, namespace_, name_='node')
-        for edge_ in self.edge:
-            edge_.export(outfile, level, namespace_, name_='edge')
-        for set_ in self.set:
-            set_.export(outfile, level, namespace_, name_='set')
+        if not fromsubclass_:
+          for node_ in self.node:
+              node_.export(outfile, level, namespace_, name_='node')
+          for edge_ in self.edge:
+              edge_.export(outfile, level, namespace_, name_='edge')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.node or
@@ -8147,12 +8208,13 @@ class FloatNetwork(AbstractNetwork):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='FloatNetwork'):
         super(FloatNetwork, self).exportAttributes(outfile, level, already_processed, namespace_, name_='FloatNetwork')
     def exportChildren(self, outfile, level, namespace_='', name_='FloatNetwork', fromsubclass_=False):
-        for node_ in self.node:
-            node_.export(outfile, level, namespace_, name_='node')
-        for edge_ in self.edge:
-            edge_.export(outfile, level, namespace_, name_='edge')
-        for set_ in self.set:
-            set_.export(outfile, level, namespace_, name_='set')
+        if not fromsubclass_:
+          for node_ in self.node:
+              node_.export(outfile, level, namespace_, name_='node')
+          for edge_ in self.edge:
+              edge_.export(outfile, level, namespace_, name_='edge')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.node or
@@ -8271,8 +8333,9 @@ class NetworkIntEdge(AbstractEdge):
             already_processed.append('length')
             outfile.write(' length="%s"' % self.gds_format_integer(self.length, input_name='length'))
     def exportChildren(self, outfile, level, namespace_='', name_='NetworkIntEdge', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
         if (
             self.meta or
@@ -8381,8 +8444,9 @@ class NetworkFloatEdge(AbstractEdge):
             already_processed.append('length')
             outfile.write(' length="%s"' % self.gds_format_double(self.length, input_name='length'))
     def exportChildren(self, outfile, level, namespace_='', name_='NetworkFloatEdge', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
         if (
             self.meta or
@@ -8590,8 +8654,9 @@ class TreeNode(AbstractNode):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='TreeNode'):
         super(TreeNode, self).exportAttributes(outfile, level, already_processed, namespace_, name_='TreeNode')
     def exportChildren(self, outfile, level, namespace_='', name_='TreeNode', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
         if (
             self.meta or
@@ -8715,8 +8780,12 @@ class Trees(TaxaLinked):
     def exportChildren(self, outfile, level, namespace_='', name_='Trees', fromsubclass_=False):
         super(Trees, self).exportChildren(outfile, level, namespace_, name_, True)
         if not fromsubclass_:
-            for item_ in self.content_:
-                item_.export(outfile, level, item_.name, namespace_)
+          for network_ in self.get_network():
+              network_.export(outfile, level, namespace_, name_='network')
+          for tree_ in self.get_tree():
+              tree_.export(outfile, level, namespace_, name_='tree')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.network or
@@ -8900,8 +8969,9 @@ class StandardChar(AbstractChar):
             already_processed.append('id')
             outfile.write(' id=%s' % (self.gds_format_string(quote_attrib(self.id).encode(ExternalEncoding), input_name='id'), ))
     def exportChildren(self, outfile, level, namespace_='', name_='StandardChar', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
         if (
             self.meta or
@@ -9069,16 +9139,17 @@ class StandardStates(AbstractStates):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='StandardStates'):
         super(StandardStates, self).exportAttributes(outfile, level, already_processed, namespace_, name_='StandardStates')
     def exportChildren(self, outfile, level, namespace_='', name_='StandardStates', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
-        for state_ in self.state:
-            state_.export(outfile, level, namespace_, name_='state')
-        for polymorphic_state_set_ in self.polymorphic_state_set:
-            polymorphic_state_set_.export(outfile, level, namespace_, name_='polymorphic_state_set')
-        for uncertain_state_set_ in self.uncertain_state_set:
-            uncertain_state_set_.export(outfile, level, namespace_, name_='uncertain_state_set')
-        for set_ in self.set:
-            set_.export(outfile, level, namespace_, name_='set')
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
+          for state_ in self.state:
+              state_.export(outfile, level, namespace_, name_='state')
+          for polymorphic_state_set_ in self.polymorphic_state_set:
+              polymorphic_state_set_.export(outfile, level, namespace_, name_='polymorphic_state_set')
+          for uncertain_state_set_ in self.uncertain_state_set:
+              uncertain_state_set_.export(outfile, level, namespace_, name_='uncertain_state_set')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.meta or
@@ -9249,8 +9320,9 @@ class StandardState(AbstractState):
             already_processed.append('symbol')
             outfile.write(' symbol=%s' % (quote_attrib(self.symbol), ))
     def exportChildren(self, outfile, level, namespace_='', name_='StandardState', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
         if (
             self.meta or
@@ -9385,8 +9457,9 @@ class RNAChar(AbstractChar):
             already_processed.append('id')
             outfile.write(' id=%s' % (self.gds_format_string(quote_attrib(self.id).encode(ExternalEncoding), input_name='id'), ))
     def exportChildren(self, outfile, level, namespace_='', name_='RNAChar', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
         if (
             self.meta or
@@ -9554,16 +9627,17 @@ class RNAStates(AbstractStates):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='RNAStates'):
         super(RNAStates, self).exportAttributes(outfile, level, already_processed, namespace_, name_='RNAStates')
     def exportChildren(self, outfile, level, namespace_='', name_='RNAStates', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
-        for state_ in self.state:
-            state_.export(outfile, level, namespace_, name_='state')
-        for polymorphic_state_set_ in self.polymorphic_state_set:
-            polymorphic_state_set_.export(outfile, level, namespace_, name_='polymorphic_state_set')
-        for uncertain_state_set_ in self.uncertain_state_set:
-            uncertain_state_set_.export(outfile, level, namespace_, name_='uncertain_state_set')
-        for set_ in self.set:
-            set_.export(outfile, level, namespace_, name_='set')
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
+          for state_ in self.state:
+              state_.export(outfile, level, namespace_, name_='state')
+          for polymorphic_state_set_ in self.polymorphic_state_set:
+              polymorphic_state_set_.export(outfile, level, namespace_, name_='polymorphic_state_set')
+          for uncertain_state_set_ in self.uncertain_state_set:
+              uncertain_state_set_.export(outfile, level, namespace_, name_='uncertain_state_set')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.meta or
@@ -9838,8 +9912,9 @@ class RestrictionChar(AbstractChar):
             already_processed.append('id')
             outfile.write(' id=%s' % (self.gds_format_string(quote_attrib(self.id).encode(ExternalEncoding), input_name='id'), ))
     def exportChildren(self, outfile, level, namespace_='', name_='RestrictionChar', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
         if (
             self.meta or
@@ -9991,12 +10066,13 @@ class RestrictionStates(AbstractStates):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='RestrictionStates'):
         super(RestrictionStates, self).exportAttributes(outfile, level, already_processed, namespace_, name_='RestrictionStates')
     def exportChildren(self, outfile, level, namespace_='', name_='RestrictionStates', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
-        for state_ in self.state:
-            state_.export(outfile, level, namespace_, name_='state')
-        for set_ in self.set:
-            set_.export(outfile, level, namespace_, name_='set')
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
+          for state_ in self.state:
+              state_.export(outfile, level, namespace_, name_='state')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.meta or
@@ -10323,16 +10399,17 @@ class AAStates(AbstractStates):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='AAStates'):
         super(AAStates, self).exportAttributes(outfile, level, already_processed, namespace_, name_='AAStates')
     def exportChildren(self, outfile, level, namespace_='', name_='AAStates', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
-        for state_ in self.state:
-            state_.export(outfile, level, namespace_, name_='state')
-        for polymorphic_state_set_ in self.polymorphic_state_set:
-            polymorphic_state_set_.export(outfile, level, namespace_, name_='polymorphic_state_set')
-        for uncertain_state_set_ in self.uncertain_state_set:
-            uncertain_state_set_.export(outfile, level, namespace_, name_='uncertain_state_set')
-        for set_ in self.set:
-            set_.export(outfile, level, namespace_, name_='set')
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
+          for state_ in self.state:
+              state_.export(outfile, level, namespace_, name_='state')
+          for polymorphic_state_set_ in self.polymorphic_state_set:
+              polymorphic_state_set_.export(outfile, level, namespace_, name_='polymorphic_state_set')
+          for uncertain_state_set_ in self.uncertain_state_set:
+              uncertain_state_set_.export(outfile, level, namespace_, name_='uncertain_state_set')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.meta or
@@ -10522,8 +10599,9 @@ class AAChar(AbstractChar):
             already_processed.append('id')
             outfile.write(' id=%s' % (self.gds_format_string(quote_attrib(self.id).encode(ExternalEncoding), input_name='id'), ))
     def exportChildren(self, outfile, level, namespace_='', name_='AAChar', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
         if (
             self.meta or
@@ -10689,8 +10767,9 @@ class DNAChar(AbstractChar):
             already_processed.append('id')
             outfile.write(' id=%s' % (self.gds_format_string(quote_attrib(self.id).encode(ExternalEncoding), input_name='id'), ))
     def exportChildren(self, outfile, level, namespace_='', name_='DNAChar', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
         if (
             self.meta or
@@ -10858,16 +10937,17 @@ class DNAStates(AbstractStates):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='DNAStates'):
         super(DNAStates, self).exportAttributes(outfile, level, already_processed, namespace_, name_='DNAStates')
     def exportChildren(self, outfile, level, namespace_='', name_='DNAStates', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
-        for state_ in self.state:
-            state_.export(outfile, level, namespace_, name_='state')
-        for polymorphic_state_set_ in self.polymorphic_state_set:
-            polymorphic_state_set_.export(outfile, level, namespace_, name_='polymorphic_state_set')
-        for uncertain_state_set_ in self.uncertain_state_set:
-            uncertain_state_set_.export(outfile, level, namespace_, name_='uncertain_state_set')
-        for set_ in self.set:
-            set_.export(outfile, level, namespace_, name_='set')
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
+          for state_ in self.state:
+              state_.export(outfile, level, namespace_, name_='state')
+          for polymorphic_state_set_ in self.polymorphic_state_set:
+              polymorphic_state_set_.export(outfile, level, namespace_, name_='polymorphic_state_set')
+          for uncertain_state_set_ in self.uncertain_state_set:
+              uncertain_state_set_.export(outfile, level, namespace_, name_='uncertain_state_set')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.meta or
@@ -11123,8 +11203,7 @@ class AbstractBlock(TaxaLinked):
     def exportChildren(self, outfile, level, namespace_='', name_='AbstractBlock', fromsubclass_=False):
         super(AbstractBlock, self).exportChildren(outfile, level, namespace_, name_, True)
         if not fromsubclass_:
-            for item_ in self.content_:
-                item_.export(outfile, level, item_.name, namespace_)
+          format_.export(outfile, level, namespace_, name_='format')
     def hasContent_(self):
         if (
             self.format is not None or
@@ -11257,8 +11336,10 @@ class AbstractObsRow(TaxonLinked):
     def exportChildren(self, outfile, level, namespace_='', name_='AbstractObsRow', fromsubclass_=False):
         super(AbstractObsRow, self).exportChildren(outfile, level, namespace_, name_, True)
         if not fromsubclass_:
-            for item_ in self.content_:
-                item_.export(outfile, level, item_.name, namespace_)
+          for cell_ in self.get_cell():
+              cell_.export(outfile, level, namespace_, name_='cell')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.cell or
@@ -11396,8 +11477,8 @@ class AbstractSeqRow(TaxonLinked):
     def exportChildren(self, outfile, level, namespace_='', name_='AbstractSeqRow', fromsubclass_=False):
         super(AbstractSeqRow, self).exportChildren(outfile, level, namespace_, name_, True)
         if not fromsubclass_:
-            for item_ in self.content_:
-                item_.export(outfile, level, item_.name, namespace_)
+          if self.seq:
+              self.seq.export(outfile, level, namespace_, name_='seq', )
     def hasContent_(self):
         if (
             self.seq is not None or
@@ -11511,8 +11592,8 @@ class AbstractUncertainStateSet(AbstractState):
     def exportChildren(self, outfile, level, namespace_='', name_='AbstractUncertainStateSet', fromsubclass_=False):
         super(AbstractUncertainStateSet, self).exportChildren(outfile, level, namespace_, name_, True)
         if not fromsubclass_:
-            for item_ in self.content_:
-                item_.export(outfile, level, item_.name, namespace_)
+          for member_ in self.get_member():
+              member_.export(outfile, level, namespace_, name_='member')
     def hasContent_(self):
         if (
             self.member or
@@ -11635,12 +11716,13 @@ class ContinuousMatrixObsRow(AbstractObsRow):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='ContinuousMatrixObsRow'):
         super(ContinuousMatrixObsRow, self).exportAttributes(outfile, level, already_processed, namespace_, name_='ContinuousMatrixObsRow')
     def exportChildren(self, outfile, level, namespace_='', name_='ContinuousMatrixObsRow', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
-        for cell_ in self.cell:
-            cell_.export(outfile, level, namespace_, name_='cell')
-        for set_ in self.set:
-            set_.export(outfile, level, namespace_, name_='set')
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
+          for cell_ in self.cell:
+              cell_.export(outfile, level, namespace_, name_='cell')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.meta or
@@ -11769,11 +11851,12 @@ class ContinuousMatrixSeqRow(AbstractSeqRow):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='ContinuousMatrixSeqRow'):
         super(ContinuousMatrixSeqRow, self).exportAttributes(outfile, level, already_processed, namespace_, name_='ContinuousMatrixSeqRow')
     def exportChildren(self, outfile, level, namespace_='', name_='ContinuousMatrixSeqRow', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
-        if self.seq is not None:
-            showIndent(outfile, level)
-            outfile.write('<%sseq>%s</%sseq>\n' % (namespace_, self.gds_format_double_list(self.seq, input_name='seq'), namespace_))
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
+          if self.seq is not None:
+              showIndent(outfile, level)
+              outfile.write('<%sseq>%s</%sseq>\n' % (namespace_, self.gds_format_double_list(self.seq, input_name='seq'), namespace_))
     def hasContent_(self):
         if (
             self.meta or
@@ -12615,8 +12698,9 @@ class NetworkNode(AbstractNode):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='NetworkNode'):
         super(NetworkNode, self).exportAttributes(outfile, level, already_processed, namespace_, name_='NetworkNode')
     def exportChildren(self, outfile, level, namespace_='', name_='NetworkNode', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
     def hasContent_(self):
         if (
             self.meta or
@@ -12724,12 +12808,13 @@ class StandardMatrixObsRow(AbstractObsRow):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='StandardMatrixObsRow'):
         super(StandardMatrixObsRow, self).exportAttributes(outfile, level, already_processed, namespace_, name_='StandardMatrixObsRow')
     def exportChildren(self, outfile, level, namespace_='', name_='StandardMatrixObsRow', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
-        for cell_ in self.cell:
-            cell_.export(outfile, level, namespace_, name_='cell')
-        for set_ in self.set:
-            set_.export(outfile, level, namespace_, name_='set')
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
+          for cell_ in self.cell:
+              cell_.export(outfile, level, namespace_, name_='cell')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.meta or
@@ -12858,11 +12943,12 @@ class StandardMatrixSeqRow(AbstractSeqRow):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='StandardMatrixSeqRow'):
         super(StandardMatrixSeqRow, self).exportAttributes(outfile, level, already_processed, namespace_, name_='StandardMatrixSeqRow')
     def exportChildren(self, outfile, level, namespace_='', name_='StandardMatrixSeqRow', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
-        if self.seq is not None:
-            showIndent(outfile, level)
-            outfile.write('<%sseq>%s</%sseq>\n' % (namespace_, self.gds_format_double_list(self.seq, input_name='seq'), namespace_))
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
+          if self.seq is not None:
+              showIndent(outfile, level)
+              outfile.write('<%sseq>%s</%sseq>\n' % (namespace_, self.gds_format_double_list(self.seq, input_name='seq'), namespace_))
     def hasContent_(self):
         if (
             self.meta or
@@ -12969,8 +13055,9 @@ class StandardUncertainStateSet(AbstractUncertainStateSet):
             already_processed.append('symbol')
             outfile.write(' symbol=%s' % (self.gds_format_string(quote_attrib(self.symbol).encode(ExternalEncoding), input_name='symbol'), ))
     def exportChildren(self, outfile, level, namespace_='', name_='StandardUncertainStateSet', fromsubclass_=False):
-        for member_ in self.member:
-            member_.export(outfile, level, namespace_, name_='member')
+        if not fromsubclass_:
+          for member_ in self.member:
+              member_.export(outfile, level, namespace_, name_='member')
     def hasContent_(self):
         if (
             self.member or
@@ -13074,12 +13161,13 @@ class RNAMatrixObsRow(AbstractObsRow):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='RNAMatrixObsRow'):
         super(RNAMatrixObsRow, self).exportAttributes(outfile, level, already_processed, namespace_, name_='RNAMatrixObsRow')
     def exportChildren(self, outfile, level, namespace_='', name_='RNAMatrixObsRow', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
-        for cell_ in self.cell:
-            cell_.export(outfile, level, namespace_, name_='cell')
-        for set_ in self.set:
-            set_.export(outfile, level, namespace_, name_='set')
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
+          for cell_ in self.cell:
+              cell_.export(outfile, level, namespace_, name_='cell')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.meta or
@@ -13208,11 +13296,12 @@ class RNAMatrixSeqRow(AbstractSeqRow):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='RNAMatrixSeqRow'):
         super(RNAMatrixSeqRow, self).exportAttributes(outfile, level, already_processed, namespace_, name_='RNAMatrixSeqRow')
     def exportChildren(self, outfile, level, namespace_='', name_='RNAMatrixSeqRow', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
-        if self.seq is not None:
-            showIndent(outfile, level)
-            outfile.write('<%sseq>%s</%sseq>\n' % (namespace_, self.gds_format_string(quote_xml(self.seq).encode(ExternalEncoding), input_name='seq'), namespace_))
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
+          if self.seq is not None:
+              showIndent(outfile, level)
+              outfile.write('<%sseq>%s</%sseq>\n' % (namespace_, self.gds_format_string(quote_xml(self.seq).encode(ExternalEncoding), input_name='seq'), namespace_))
     def hasContent_(self):
         if (
             self.meta or
@@ -13322,8 +13411,9 @@ class RNAUncertainStateSet(AbstractUncertainStateSet):
             already_processed.append('symbol')
             outfile.write(' symbol=%s' % (quote_attrib(self.symbol), ))
     def exportChildren(self, outfile, level, namespace_='', name_='RNAUncertainStateSet', fromsubclass_=False):
-        for member_ in self.member:
-            member_.export(outfile, level, namespace_, name_='member')
+        if not fromsubclass_:
+          for member_ in self.member:
+              member_.export(outfile, level, namespace_, name_='member')
     def hasContent_(self):
         if (
             self.member or
@@ -13428,12 +13518,13 @@ class RestrictionMatrixObsRow(AbstractObsRow):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='RestrictionMatrixObsRow'):
         super(RestrictionMatrixObsRow, self).exportAttributes(outfile, level, already_processed, namespace_, name_='RestrictionMatrixObsRow')
     def exportChildren(self, outfile, level, namespace_='', name_='RestrictionMatrixObsRow', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
-        for cell_ in self.cell:
-            cell_.export(outfile, level, namespace_, name_='cell')
-        for set_ in self.set:
-            set_.export(outfile, level, namespace_, name_='set')
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
+          for cell_ in self.cell:
+              cell_.export(outfile, level, namespace_, name_='cell')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.meta or
@@ -13563,11 +13654,12 @@ class RestrictionMatrixSeqRow(AbstractSeqRow):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='RestrictionMatrixSeqRow'):
         super(RestrictionMatrixSeqRow, self).exportAttributes(outfile, level, already_processed, namespace_, name_='RestrictionMatrixSeqRow')
     def exportChildren(self, outfile, level, namespace_='', name_='RestrictionMatrixSeqRow', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
-        if self.seq is not None:
-            showIndent(outfile, level)
-            outfile.write('<%sseq>%s</%sseq>\n' % (namespace_, self.gds_format_string(quote_xml(self.seq).encode(ExternalEncoding), input_name='seq'), namespace_))
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
+          if self.seq is not None:
+              showIndent(outfile, level)
+              outfile.write('<%sseq>%s</%sseq>\n' % (namespace_, self.gds_format_string(quote_xml(self.seq).encode(ExternalEncoding), input_name='seq'), namespace_))
     def hasContent_(self):
         if (
             self.meta or
@@ -13684,12 +13776,13 @@ class AAMatrixObsRow(AbstractObsRow):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='AAMatrixObsRow'):
         super(AAMatrixObsRow, self).exportAttributes(outfile, level, already_processed, namespace_, name_='AAMatrixObsRow')
     def exportChildren(self, outfile, level, namespace_='', name_='AAMatrixObsRow', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
-        for cell_ in self.cell:
-            cell_.export(outfile, level, namespace_, name_='cell')
-        for set_ in self.set:
-            set_.export(outfile, level, namespace_, name_='set')
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
+          for cell_ in self.cell:
+              cell_.export(outfile, level, namespace_, name_='cell')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.meta or
@@ -13819,11 +13912,12 @@ class AAMatrixSeqRow(AbstractSeqRow):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='AAMatrixSeqRow'):
         super(AAMatrixSeqRow, self).exportAttributes(outfile, level, already_processed, namespace_, name_='AAMatrixSeqRow')
     def exportChildren(self, outfile, level, namespace_='', name_='AAMatrixSeqRow', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
-        if self.seq is not None:
-            showIndent(outfile, level)
-            outfile.write('<%sseq>%s</%sseq>\n' % (namespace_, self.gds_format_string(quote_xml(self.seq).encode(ExternalEncoding), input_name='seq'), namespace_))
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
+          if self.seq is not None:
+              showIndent(outfile, level)
+              outfile.write('<%sseq>%s</%sseq>\n' % (namespace_, self.gds_format_string(quote_xml(self.seq).encode(ExternalEncoding), input_name='seq'), namespace_))
     def hasContent_(self):
         if (
             self.meta or
@@ -13932,8 +14026,9 @@ class AAUncertainStateSet(AbstractUncertainStateSet):
             already_processed.append('symbol')
             outfile.write(' symbol=%s' % (quote_attrib(self.symbol), ))
     def exportChildren(self, outfile, level, namespace_='', name_='AAUncertainStateSet', fromsubclass_=False):
-        for member_ in self.member:
-            member_.export(outfile, level, namespace_, name_='member')
+        if not fromsubclass_:
+          for member_ in self.member:
+              member_.export(outfile, level, namespace_, name_='member')
     def hasContent_(self):
         if (
             self.member or
@@ -14038,12 +14133,13 @@ class DNAMatrixObsRow(AbstractObsRow):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='DNAMatrixObsRow'):
         super(DNAMatrixObsRow, self).exportAttributes(outfile, level, already_processed, namespace_, name_='DNAMatrixObsRow')
     def exportChildren(self, outfile, level, namespace_='', name_='DNAMatrixObsRow', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
-        for cell_ in self.cell:
-            cell_.export(outfile, level, namespace_, name_='cell')
-        for set_ in self.set:
-            set_.export(outfile, level, namespace_, name_='set')
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
+          for cell_ in self.cell:
+              cell_.export(outfile, level, namespace_, name_='cell')
+          for set_ in self.set:
+              set_.export(outfile, level, namespace_, name_='set')
     def hasContent_(self):
         if (
             self.meta or
@@ -14172,11 +14268,12 @@ class DNAMatrixSeqRow(AbstractSeqRow):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='DNAMatrixSeqRow'):
         super(DNAMatrixSeqRow, self).exportAttributes(outfile, level, already_processed, namespace_, name_='DNAMatrixSeqRow')
     def exportChildren(self, outfile, level, namespace_='', name_='DNAMatrixSeqRow', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
-        if self.seq is not None:
-            showIndent(outfile, level)
-            outfile.write('<%sseq>%s</%sseq>\n' % (namespace_, self.gds_format_string(quote_xml(self.seq).encode(ExternalEncoding), input_name='seq'), namespace_))
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
+          if self.seq is not None:
+              showIndent(outfile, level)
+              outfile.write('<%sseq>%s</%sseq>\n' % (namespace_, self.gds_format_string(quote_xml(self.seq).encode(ExternalEncoding), input_name='seq'), namespace_))
     def hasContent_(self):
         if (
             self.meta or
@@ -14287,8 +14384,9 @@ class DNAUncertainStateSet(AbstractUncertainStateSet):
             already_processed.append('symbol')
             outfile.write(' symbol=%s' % (quote_attrib(self.symbol), ))
     def exportChildren(self, outfile, level, namespace_='', name_='DNAUncertainStateSet', fromsubclass_=False):
-        for member_ in self.member:
-            member_.export(outfile, level, namespace_, name_='member')
+        if not fromsubclass_:
+          for member_ in self.member:
+              member_.export(outfile, level, namespace_, name_='member')
     def hasContent_(self):
         if (
             self.member or
@@ -14388,8 +14486,7 @@ class AbstractCells(AbstractBlock):
     def exportChildren(self, outfile, level, namespace_='', name_='AbstractCells', fromsubclass_=False):
         super(AbstractCells, self).exportChildren(outfile, level, namespace_, name_, True)
         if not fromsubclass_:
-            for item_ in self.content_:
-                item_.export(outfile, level, item_.name, namespace_)
+          matrix_.export(outfile, level, namespace_, name_='matrix')
     def hasContent_(self):
         if (
             self.matrix is not None or
@@ -14507,8 +14604,7 @@ class AbstractSeqs(AbstractBlock):
     def exportChildren(self, outfile, level, namespace_='', name_='AbstractSeqs', fromsubclass_=False):
         super(AbstractSeqs, self).exportChildren(outfile, level, namespace_, name_, True)
         if not fromsubclass_:
-            for item_ in self.content_:
-                item_.export(outfile, level, item_.name, namespace_)
+          matrix_.export(outfile, level, namespace_, name_='matrix')
     def hasContent_(self):
         if (
             self.matrix is not None or
@@ -14635,8 +14731,8 @@ class AbstractPolymorphicStateSet(AbstractUncertainStateSet):
     def exportChildren(self, outfile, level, namespace_='', name_='AbstractPolymorphicStateSet', fromsubclass_=False):
         super(AbstractPolymorphicStateSet, self).exportChildren(outfile, level, namespace_, name_, True)
         if not fromsubclass_:
-            for item_ in self.content_:
-                item_.export(outfile, level, item_.name, namespace_)
+          for uncertain_state_set_ in self.get_uncertain_state_set():
+              uncertain_state_set_.export(outfile, level, namespace_, name_='uncertain_state_set')
     def hasContent_(self):
         if (
             self.uncertain_state_set or
@@ -14749,12 +14845,13 @@ class ContinuousCells(AbstractCells):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='ContinuousCells'):
         super(ContinuousCells, self).exportAttributes(outfile, level, already_processed, namespace_, name_='ContinuousCells')
     def exportChildren(self, outfile, level, namespace_='', name_='ContinuousCells', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
-        if self.format:
-            self.format.export(outfile, level, namespace_, name_='format', )
-        if self.matrix:
-            self.matrix.export(outfile, level, namespace_, name_='matrix', )
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
+          if self.format:
+              self.format.export(outfile, level, namespace_, name_='format', )
+          if self.matrix:
+              self.matrix.export(outfile, level, namespace_, name_='matrix', )
     def hasContent_(self):
         if (
             self.meta or
@@ -14875,12 +14972,13 @@ class ContinuousSeqs(AbstractSeqs):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='ContinuousSeqs'):
         super(ContinuousSeqs, self).exportAttributes(outfile, level, already_processed, namespace_, name_='ContinuousSeqs')
     def exportChildren(self, outfile, level, namespace_='', name_='ContinuousSeqs', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
-        if self.format:
-            self.format.export(outfile, level, namespace_, name_='format', )
-        if self.matrix:
-            self.matrix.export(outfile, level, namespace_, name_='matrix', )
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
+          if self.format:
+              self.format.export(outfile, level, namespace_, name_='format', )
+          if self.matrix:
+              self.matrix.export(outfile, level, namespace_, name_='matrix', )
     def hasContent_(self):
         if (
             self.meta or
@@ -15001,12 +15099,13 @@ class StandardCells(AbstractCells):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='StandardCells'):
         super(StandardCells, self).exportAttributes(outfile, level, already_processed, namespace_, name_='StandardCells')
     def exportChildren(self, outfile, level, namespace_='', name_='StandardCells', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
-        if self.format:
-            self.format.export(outfile, level, namespace_, name_='format', )
-        if self.matrix:
-            self.matrix.export(outfile, level, namespace_, name_='matrix', )
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
+          if self.format:
+              self.format.export(outfile, level, namespace_, name_='format', )
+          if self.matrix:
+              self.matrix.export(outfile, level, namespace_, name_='matrix', )
     def hasContent_(self):
         if (
             self.meta or
@@ -15127,12 +15226,13 @@ class StandardSeqs(AbstractSeqs):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='StandardSeqs'):
         super(StandardSeqs, self).exportAttributes(outfile, level, already_processed, namespace_, name_='StandardSeqs')
     def exportChildren(self, outfile, level, namespace_='', name_='StandardSeqs', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
-        if self.format:
-            self.format.export(outfile, level, namespace_, name_='format', )
-        if self.matrix:
-            self.matrix.export(outfile, level, namespace_, name_='matrix', )
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
+          if self.format:
+              self.format.export(outfile, level, namespace_, name_='format', )
+          if self.matrix:
+              self.matrix.export(outfile, level, namespace_, name_='matrix', )
     def hasContent_(self):
         if (
             self.meta or
@@ -15255,10 +15355,11 @@ class StandardPolymorphicStateSet(AbstractPolymorphicStateSet):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='StandardPolymorphicStateSet'):
         super(StandardPolymorphicStateSet, self).exportAttributes(outfile, level, already_processed, namespace_, name_='StandardPolymorphicStateSet')
     def exportChildren(self, outfile, level, namespace_='', name_='StandardPolymorphicStateSet', fromsubclass_=False):
-        for member_ in self.member:
-            member_.export(outfile, level, namespace_, name_='member')
-        for uncertain_state_set_ in self.uncertain_state_set:
-            uncertain_state_set_.export(outfile, level, namespace_, name_='uncertain_state_set')
+        if not fromsubclass_:
+          for member_ in self.member:
+              member_.export(outfile, level, namespace_, name_='member')
+          for uncertain_state_set_ in self.uncertain_state_set:
+              uncertain_state_set_.export(outfile, level, namespace_, name_='uncertain_state_set')
     def hasContent_(self):
         if (
             self.member or
@@ -15361,12 +15462,13 @@ class RnaCells(AbstractCells):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='RnaCells'):
         super(RnaCells, self).exportAttributes(outfile, level, already_processed, namespace_, name_='RnaCells')
     def exportChildren(self, outfile, level, namespace_='', name_='RnaCells', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
-        if self.format:
-            self.format.export(outfile, level, namespace_, name_='format')
-        if self.matrix:
-            self.matrix.export(outfile, level, namespace_, name_='matrix', )
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
+          if self.format:
+              self.format.export(outfile, level, namespace_, name_='format')
+          if self.matrix:
+              self.matrix.export(outfile, level, namespace_, name_='matrix', )
     def hasContent_(self):
         if (
             self.meta or
@@ -15486,12 +15588,13 @@ class RnaSeqs(AbstractSeqs):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='RnaSeqs'):
         super(RnaSeqs, self).exportAttributes(outfile, level, already_processed, namespace_, name_='RnaSeqs')
     def exportChildren(self, outfile, level, namespace_='', name_='RnaSeqs', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
-        if self.format:
-            self.format.export(outfile, level, namespace_, name_='format', )
-        if self.matrix:
-            self.matrix.export(outfile, level, namespace_, name_='matrix', )
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
+          if self.format:
+              self.format.export(outfile, level, namespace_, name_='format', )
+          if self.matrix:
+              self.matrix.export(outfile, level, namespace_, name_='matrix', )
     def hasContent_(self):
         if (
             self.meta or
@@ -15623,10 +15726,11 @@ class RNAPolymorphicStateSet(AbstractPolymorphicStateSet):
             already_processed.append('symbol')
             outfile.write(' symbol=%s' % (quote_attrib(self.symbol), ))
     def exportChildren(self, outfile, level, namespace_='', name_='RNAPolymorphicStateSet', fromsubclass_=False):
-        for member_ in self.member:
-            member_.export(outfile, level, namespace_, name_='member')
-        for uncertain_state_set_ in self.uncertain_state_set:
-            uncertain_state_set_.export(outfile, level, namespace_, name_='uncertain_state_set')
+        if not fromsubclass_:
+          for member_ in self.member:
+              member_.export(outfile, level, namespace_, name_='member')
+          for uncertain_state_set_ in self.uncertain_state_set:
+              uncertain_state_set_.export(outfile, level, namespace_, name_='uncertain_state_set')
     def hasContent_(self):
         if (
             self.member or
@@ -15738,12 +15842,13 @@ class RestrictionCells(AbstractCells):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='RestrictionCells'):
         super(RestrictionCells, self).exportAttributes(outfile, level, already_processed, namespace_, name_='RestrictionCells')
     def exportChildren(self, outfile, level, namespace_='', name_='RestrictionCells', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
-        if self.format:
-            self.format.export(outfile, level, namespace_, name_='format', )
-        if self.matrix:
-            self.matrix.export(outfile, level, namespace_, name_='matrix', )
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
+          if self.format:
+              self.format.export(outfile, level, namespace_, name_='format', )
+          if self.matrix:
+              self.matrix.export(outfile, level, namespace_, name_='matrix', )
     def hasContent_(self):
         if (
             self.meta or
@@ -15864,12 +15969,13 @@ class RestrictionSeqs(AbstractSeqs):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='RestrictionSeqs'):
         super(RestrictionSeqs, self).exportAttributes(outfile, level, already_processed, namespace_, name_='RestrictionSeqs')
     def exportChildren(self, outfile, level, namespace_='', name_='RestrictionSeqs', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
-        if self.format:
-            self.format.export(outfile, level, namespace_, name_='format', )
-        if self.matrix:
-            self.matrix.export(outfile, level, namespace_, name_='matrix', )
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
+          if self.format:
+              self.format.export(outfile, level, namespace_, name_='format', )
+          if self.matrix:
+              self.matrix.export(outfile, level, namespace_, name_='matrix', )
     def hasContent_(self):
         if (
             self.meta or
@@ -15990,12 +16096,13 @@ class ProteinCells(AbstractCells):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='ProteinCells'):
         super(ProteinCells, self).exportAttributes(outfile, level, already_processed, namespace_, name_='ProteinCells')
     def exportChildren(self, outfile, level, namespace_='', name_='ProteinCells', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
-        if self.format:
-            self.format.export(outfile, level, namespace_, name_='format', )
-        if self.matrix:
-            self.matrix.export(outfile, level, namespace_, name_='matrix', )
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
+          if self.format:
+              self.format.export(outfile, level, namespace_, name_='format', )
+          if self.matrix:
+              self.matrix.export(outfile, level, namespace_, name_='matrix', )
     def hasContent_(self):
         if (
             self.meta or
@@ -16116,12 +16223,13 @@ class ProteinSeqs(AbstractSeqs):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='ProteinSeqs'):
         super(ProteinSeqs, self).exportAttributes(outfile, level, already_processed, namespace_, name_='ProteinSeqs')
     def exportChildren(self, outfile, level, namespace_='', name_='ProteinSeqs', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
-        if self.format:
-            self.format.export(outfile, level, namespace_, name_='format', )
-        if self.matrix:
-            self.matrix.export(outfile, level, namespace_, name_='matrix', )
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
+          if self.format:
+              self.format.export(outfile, level, namespace_, name_='format', )
+          if self.matrix:
+              self.matrix.export(outfile, level, namespace_, name_='matrix', )
     def hasContent_(self):
         if (
             self.meta or
@@ -16252,10 +16360,11 @@ class AAPolymorphicStateSet(AbstractPolymorphicStateSet):
             already_processed.append('symbol')
             outfile.write(' symbol=%s' % (quote_attrib(self.symbol), ))
     def exportChildren(self, outfile, level, namespace_='', name_='AAPolymorphicStateSet', fromsubclass_=False):
-        for member_ in self.member:
-            member_.export(outfile, level, namespace_, name_='member')
-        for uncertain_state_set_ in self.uncertain_state_set:
-            uncertain_state_set_.export(outfile, level, namespace_, name_='uncertain_state_set')
+        if not fromsubclass_:
+          for member_ in self.member:
+              member_.export(outfile, level, namespace_, name_='member')
+          for uncertain_state_set_ in self.uncertain_state_set:
+              uncertain_state_set_.export(outfile, level, namespace_, name_='uncertain_state_set')
     def hasContent_(self):
         if (
             self.member or
@@ -16367,12 +16476,13 @@ class DnaCells(AbstractCells):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='DnaCells'):
         super(DnaCells, self).exportAttributes(outfile, level, already_processed, namespace_, name_='DnaCells')
     def exportChildren(self, outfile, level, namespace_='', name_='DnaCells', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
-        if self.format:
-            self.format.export(outfile, level, namespace_, name_='format', )
-        if self.matrix:
-            self.matrix.export(outfile, level, namespace_, name_='matrix', )
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
+          if self.format:
+              self.format.export(outfile, level, namespace_, name_='format', )
+          if self.matrix:
+              self.matrix.export(outfile, level, namespace_, name_='matrix', )
     def hasContent_(self):
         if (
             self.meta or
@@ -16492,12 +16602,13 @@ class DnaSeqs(AbstractSeqs):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='DnaSeqs'):
         super(DnaSeqs, self).exportAttributes(outfile, level, already_processed, namespace_, name_='DnaSeqs')
     def exportChildren(self, outfile, level, namespace_='', name_='DnaSeqs', fromsubclass_=False):
-        for meta_ in self.get_meta():
-            meta_.export(outfile, level, namespace_, name_='meta')
-        if self.format:
-            self.format.export(outfile, level, namespace_, name_='format', )
-        if self.matrix:
-            self.matrix.export(outfile, level, namespace_, name_='matrix', )
+        if not fromsubclass_:
+          for meta_ in self.get_meta():
+              meta_.export(outfile, level, namespace_, name_='meta')
+          if self.format:
+              self.format.export(outfile, level, namespace_, name_='format', )
+          if self.matrix:
+              self.matrix.export(outfile, level, namespace_, name_='matrix', )
     def hasContent_(self):
         if (
             self.meta or
@@ -16630,10 +16741,11 @@ class DNAPolymorphicStateSet(AbstractPolymorphicStateSet):
             already_processed.append('symbol')
             outfile.write(' symbol=%s' % (quote_attrib(self.symbol), ))
     def exportChildren(self, outfile, level, namespace_='', name_='DNAPolymorphicStateSet', fromsubclass_=False):
-        for member_ in self.member:
-            member_.export(outfile, level, namespace_, name_='member')
-        for uncertain_state_set_ in self.uncertain_state_set:
-            uncertain_state_set_.export(outfile, level, namespace_, name_='uncertain_state_set')
+        if not fromsubclass_:
+          for member_ in self.member:
+              member_.export(outfile, level, namespace_, name_='member')
+          for uncertain_state_set_ in self.uncertain_state_set:
+              uncertain_state_set_.export(outfile, level, namespace_, name_='uncertain_state_set')
     def hasContent_(self):
         if (
             self.member or
