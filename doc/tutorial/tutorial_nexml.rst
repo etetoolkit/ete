@@ -93,16 +93,20 @@ conversion between both formats.
 
 ::
 
-   from ete2 import Nexml # Root project class 
-   # the module contains all classes representing nexml elements
-   from ete2 import nexml 
+   # Root project class 
+   from ete2a1 import Nexml 
+
+   # the module contains all other classes representing nexml elements
+   from ete2a1 import nexml 
 
    # Create an empty Nexml project 
    nexml_project = Nexml()
    tree_collection = nexml.Trees()
-   nexml_tree = nexml.NexMLTree()
-   nexml_tree.populate('(((a:0.9,b:0.5),c:1.3):1.2;') # You can also pass a file name
+   nexml_tree = nexml.NexMLTree("(((A, B), C), D);")
    tree_collection.add_tree(nexml_tree)
    nexml_project.add_trees(tree_collection)
+
+   nexml_project.export()
+
    
 

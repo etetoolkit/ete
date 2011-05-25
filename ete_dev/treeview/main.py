@@ -37,7 +37,7 @@ NODE_STYLE_DEFAULT = [
     ]
 
 TREE_STYLE_CHECKER = {
-    "mode": lambda x: x[0].lower() in set(["c", "r"]),
+    "mode": lambda x: x.lower() in set(["c", "r"]),
     }
 
 # _faces and faces are registered to allow deepcopy to work on nodes
