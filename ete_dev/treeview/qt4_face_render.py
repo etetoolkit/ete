@@ -255,8 +255,6 @@ def update_node_faces(node, n2f, img):
         else:
             as_grid = False
         faceblock[position] = _FaceGroupItem(all_faces, node, as_grid=as_grid)
-        if position == "aligned": 
-            print all_faces
 
     # all temp and fixed faces are now referenced by the faceblock, so
     # we can clear the node temp faces (don't want temp faces to be
