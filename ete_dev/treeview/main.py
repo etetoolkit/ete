@@ -497,7 +497,7 @@ def add_face_to_node(face, node, column, aligned=False, position="branch-right")
 
     # to stay 2.0 compatible 
     if aligned == True:
-        position == "aligned"
+        position = "aligned"
 
     if getattr(node, "_temp_faces", None):
         getattr(node._temp_faces, position).add_face(face, column)

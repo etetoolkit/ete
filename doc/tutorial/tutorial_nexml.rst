@@ -87,7 +87,6 @@ project and export it as XML.
 
 .. literalinclude:: ../../examples/nexml/nexml_from_scratch.py
 
-
 Note that trees can be also read from newick files, allowing the
 conversion between both formats.
 
@@ -96,7 +95,9 @@ conversion between both formats.
    # Root project class 
    from ete2a1 import Nexml 
 
-   # the module contains all other classes representing nexml elements
+   # the nexml module contains classes representing each nexml element
+   # defined in its schema
+
    from ete2a1 import nexml 
 
    # Create an empty Nexml project 
