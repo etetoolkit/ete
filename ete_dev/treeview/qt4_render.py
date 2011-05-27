@@ -831,7 +831,10 @@ def render_aligned_faces(img, mainRect, parent, n2i, n2f):
         item = n2i[node]
         item.mapped_items.append(fb)
         if img.draw_aligned_faces_as_table: 
-            fb.setup_grid(c2max_w)
+            if img.aligned_table_style == 0: 
+                fb.setup_grid(c2max_w, as_grid=True)
+            elif img.aligned_table_style == 1: 
+                fb.setup_grid(c2max_w, as_grid=False)
 
         fb.render()
         fb.setParentItem(item.content)

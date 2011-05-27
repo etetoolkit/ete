@@ -105,22 +105,22 @@ class _FaceGroupItem(QGraphicsRectItem): # I resisted to name this FaceBookItem 
             self.h = max( [self.c2height[c] for c in self.sizes.iterkeys()])
 
         self.w = sum(self.c2max_w.values())
-      
         #self.setRect(0, 0, self.w+random.randint(1,5), self.h)
         #pen = QtGui.QPen()
         #pen.setColor(QtGui.QColor("red"))
         #self.setPen(pen)
 
-    def setup_grid(self, c2max_w=None, r2max_h=None):
+    def setup_grid(self, c2max_w=None, r2max_h=None, as_grid=True):
         if c2max_w: 
             self.c2max_w = c2max_w
         
         if r2max_h: 
             self.r2max_h = r2max_h
 
-        self.as_grid = True
+        self.as_grid = as_grid
         self.update_columns_size()
         return self.c2max_w, self.r2max_h
+  
 
     def render(self):
         x = 0
@@ -130,7 +130,8 @@ class _FaceGroupItem(QGraphicsRectItem): # I resisted to name this FaceBookItem 
             if self.as_grid:
                 y = 0
             else:
-                y = (self.h - self.c2height[c])/2
+                y = (self.h - self.c2height.get(c,0))/2
+
             for r, f in enumerate(faces):
                 w, h = self.sizes[c][r]
                 if self.as_grid: 
@@ -251,9 +252,10 @@ def update_node_faces(node, n2f, img):
             all_faces.setdefault(column, []).extend(values) 
 
         if position == "aligned" and img.draw_aligned_faces_as_table: 
-            as_grid = True
+            as_grid = False
         else:
             as_grid = False
+
         faceblock[position] = _FaceGroupItem(all_faces, node, as_grid=as_grid)
 
     # all temp and fixed faces are now referenced by the faceblock, so

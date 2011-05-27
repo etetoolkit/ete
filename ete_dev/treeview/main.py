@@ -382,6 +382,9 @@ class TreeStyle(object):
         # Aligned faces will be drawn as a table, considering all
         # columns in all node faces.
         self.draw_aligned_faces_as_table = True
+        self.aligned_table_style = 0 # 0 = full grid (rows and
+                                     # columns), 1 = semigrid ( rows
+                                     # are merged )
 
         # By default, floating faces are expected to be transparent,
         # so they can be plotted directly on the tree image. However,
