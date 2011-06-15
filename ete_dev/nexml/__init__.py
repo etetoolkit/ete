@@ -1,3 +1,4 @@
+from sys import stdout
 import _nexml
 from _nexml import *
 from _nexml_tree import NexMLTree 
@@ -39,5 +40,9 @@ class Nexml(_nexml.Nexml):
                     t.set_nexml_project(self)
                     if trees.otus in id2taxa:
                         t.nexml_otus = id2taxa[trees.otus][0]
+
+    def export(self, outfile=stdout, level=0):
+        return super(Nexml, self).export(outfile=outfile, level=level)
+        
 
 __all__ = _nexml.__all__ + ["Nexml", "NexMLTree"]

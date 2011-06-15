@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*- 
 
 #
-# Generated Mon May 23 16:20:31 2011 by generateDS.py version 2.4c.
+# Generated Wed Jun 15 12:40:40 2011 by generateDS.py version 2.5a.
 #
 
 import sys
@@ -220,7 +220,6 @@ def quote_python(inStr):
         else:
             return '"""%s"""' % s1
 
-
 def get_all_text_(node):
     if node.text is not None:
         text = node.text
@@ -230,6 +229,19 @@ def get_all_text_(node):
         if child.tail is not None:
             text += child.tail
     return text
+
+def find_attr_value_(attr_name, node):
+    attrs = node.attrib
+    # First try with no namespace.
+    value = attrs.get(attr_name)
+    if value is None:
+        # Now try the other possible namespaces.
+        namespaces = node.nsmap.itervalues()
+        for namespace in namespaces:
+            value = attrs.get('{%s}%s' % (namespace, attr_name, ))
+            if value is not None:
+                break
+    return value
 
 
 class GDSParseError(Exception):
@@ -373,9 +385,8 @@ class Phyloxml(GeneratedsSuper):
     def exportAttributes(self, outfile, level, already_processed, namespace_='phy:', name_='Phyloxml'):
         pass
     def exportChildren(self, outfile, level, namespace_='phy:', name_='Phyloxml', fromsubclass_=False):
-        if not fromsubclass_:
-          for phylogeny_ in self.phylogeny:
-              phylogeny_.export(outfile, level, namespace_, name_='phylogeny')
+        for phylogeny_ in self.phylogeny:
+            phylogeny_.export(outfile, level, namespace_, name_='phylogeny')
     def hasContent_(self):
         if (
             self.phylogeny
@@ -411,7 +422,7 @@ class Phyloxml(GeneratedsSuper):
     def buildAttributes(self, node, attrs, already_processed):
         pass
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        if nodeName_ == 'phylogeny': 
+        if nodeName_ == 'phylogeny':
             obj_ = Phylogeny.factory()
             obj_.build(child_)
             self.phylogeny.append(obj_)
@@ -523,28 +534,27 @@ class Phylogeny(GeneratedsSuper):
             already_processed.append('rooted')
             outfile.write(' rooted="%s"' % self.gds_format_boolean(self.gds_str_lower(str(self.rooted)), input_name='rooted'))
     def exportChildren(self, outfile, level, namespace_='phy:', name_='Phylogeny', fromsubclass_=False):
-        if not fromsubclass_:
-          if self.name is not None:
-              showIndent(outfile, level)
-              outfile.write('<%sname>%s</%sname>\n' % (namespace_, self.gds_format_string(quote_xml(self.name).encode(ExternalEncoding), input_name='name'), namespace_))
-          if self.id:
-              self.id.export(outfile, level, namespace_, name_='id')
-          if self.description is not None:
-              showIndent(outfile, level)
-              outfile.write('<%sdescription>%s</%sdescription>\n' % (namespace_, self.gds_format_string(quote_xml(self.description).encode(ExternalEncoding), input_name='description'), namespace_))
-          if self.date is not None:
-              showIndent(outfile, level)
-              outfile.write('<%sdate>%s</%sdate>\n' % (namespace_, self.gds_format_string(quote_xml(self.date).encode(ExternalEncoding), input_name='date'), namespace_))
-          for confidence_ in self.confidence:
-              confidence_.export(outfile, level, namespace_, name_='confidence')
-          if self.clade:
-              self.clade.export(outfile, level, namespace_, name_='clade')
-          for clade_relation_ in self.clade_relation:
-              clade_relation_.export(outfile, level, namespace_, name_='clade_relation')
-          for sequence_relation_ in self.sequence_relation:
-              sequence_relation_.export(outfile, level, namespace_, name_='sequence_relation')
-          for property_ in self.property:
-              property_.export(outfile, level, namespace_, name_='property')
+        if self.name is not None:
+            showIndent(outfile, level)
+            outfile.write('<%sname>%s</%sname>\n' % (namespace_, self.gds_format_string(quote_xml(self.name).encode(ExternalEncoding), input_name='name'), namespace_))
+        if self.id:
+            self.id.export(outfile, level, namespace_, name_='id')
+        if self.description is not None:
+            showIndent(outfile, level)
+            outfile.write('<%sdescription>%s</%sdescription>\n' % (namespace_, self.gds_format_string(quote_xml(self.description).encode(ExternalEncoding), input_name='description'), namespace_))
+        if self.date is not None:
+            showIndent(outfile, level)
+            outfile.write('<%sdate>%s</%sdate>\n' % (namespace_, self.gds_format_string(quote_xml(self.date).encode(ExternalEncoding), input_name='date'), namespace_))
+        for confidence_ in self.confidence:
+            confidence_.export(outfile, level, namespace_, name_='confidence')
+        if self.clade:
+            self.clade.export(outfile, level, namespace_, name_='clade')
+        for clade_relation_ in self.clade_relation:
+            clade_relation_.export(outfile, level, namespace_, name_='clade_relation')
+        for sequence_relation_ in self.sequence_relation:
+            sequence_relation_.export(outfile, level, namespace_, name_='sequence_relation')
+        for property_ in self.property:
+            property_.export(outfile, level, namespace_, name_='property')
     def hasContent_(self):
         if (
             self.name is not None or
@@ -658,7 +668,7 @@ class Phylogeny(GeneratedsSuper):
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
-        value = attrs.get('rerootable')
+        value = find_attr_value_('rerootable', node)
         if value is not None and 'rerootable' not in already_processed:
             already_processed.append('rerootable')
             if value in ('true', '1'):
@@ -667,17 +677,17 @@ class Phylogeny(GeneratedsSuper):
                 self.rerootable = False
             else:
                 raise_parse_error(node, 'Bad boolean attribute')
-        value = attrs.get('branch_length_unit')
+        value = find_attr_value_('branch_length_unit', node)
         if value is not None and 'branch_length_unit' not in already_processed:
             already_processed.append('branch_length_unit')
             self.branch_length_unit = value
             self.branch_length_unit = ' '.join(self.branch_length_unit.split())
-        value = attrs.get('type')
+        value = find_attr_value_('type', node)
         if value is not None and 'type' not in already_processed:
             already_processed.append('type')
             self.type_ = value
             self.type_ = ' '.join(self.type_.split())
-        value = attrs.get('rooted')
+        value = find_attr_value_('rooted', node)
         if value is not None and 'rooted' not in already_processed:
             already_processed.append('rooted')
             if value in ('true', '1'):
@@ -692,7 +702,7 @@ class Phylogeny(GeneratedsSuper):
             name_ = re_.sub(STRING_CLEANUP_PAT, " ", name_).strip()
             name_ = self.gds_validate_string(name_, node, 'name')
             self.name = name_
-        elif nodeName_ == 'id': 
+        elif nodeName_ == 'id':
             obj_ = Id.factory()
             obj_.build(child_)
             self.set_id(obj_)
@@ -705,23 +715,23 @@ class Phylogeny(GeneratedsSuper):
             date_ = child_.text
             date_ = self.gds_validate_string(date_, node, 'date')
             self.date = date_
-        elif nodeName_ == 'confidence': 
+        elif nodeName_ == 'confidence':
             obj_ = Confidence.factory()
             obj_.build(child_)
             self.confidence.append(obj_)
-        elif nodeName_ == 'clade': 
+        elif nodeName_ == 'clade':
             obj_ = Clade.factory()
             obj_.build(child_)
             self.set_clade(obj_)
-        elif nodeName_ == 'clade_relation': 
+        elif nodeName_ == 'clade_relation':
             obj_ = CladeRelation.factory()
             obj_.build(child_)
             self.clade_relation.append(obj_)
-        elif nodeName_ == 'sequence_relation': 
+        elif nodeName_ == 'sequence_relation':
             obj_ = SequenceRelation.factory()
             obj_.build(child_)
             self.sequence_relation.append(obj_)
-        elif nodeName_ == 'property': 
+        elif nodeName_ == 'property':
             obj_ = Property.factory()
             obj_.build(child_)
             self.property.append(obj_)
@@ -856,40 +866,39 @@ class Clade(GeneratedsSuper):
             already_processed.append('branch_length_attr')
             outfile.write(' branch_length_attr=%s' % (self.gds_format_string(quote_attrib(self.branch_length_attr).encode(ExternalEncoding), input_name='branch_length_attr'), ))
     def exportChildren(self, outfile, level, namespace_='phy:', name_='Clade', fromsubclass_=False):
-        if not fromsubclass_:
-          if self.name is not None:
-              showIndent(outfile, level)
-              outfile.write('<%sname>%s</%sname>\n' % (namespace_, self.gds_format_string(quote_xml(self.name).encode(ExternalEncoding), input_name='name'), namespace_))
-          if self.branch_length is not None:
-              showIndent(outfile, level)
-              outfile.write('<%sbranch_length>%s</%sbranch_length>\n' % (namespace_, self.gds_format_double(self.branch_length, input_name='branch_length'), namespace_))
-          for confidence_ in self.confidence:
-              confidence_.export(outfile, level, namespace_, name_='confidence')
-          if self.width is not None:
-              showIndent(outfile, level)
-              outfile.write('<%swidth>%s</%swidth>\n' % (namespace_, self.gds_format_double(self.width, input_name='width'), namespace_))
-          if self.color:
-              self.color.export(outfile, level, namespace_, name_='color')
-          if self.node_id:
-              self.node_id.export(outfile, level, namespace_, name_='node_id')
-          for taxonomy_ in self.taxonomy:
-              taxonomy_.export(outfile, level, namespace_, name_='taxonomy')
-          for sequence_ in self.sequence:
-              sequence_.export(outfile, level, namespace_, name_='sequence')
-          if self.events:
-              self.events.export(outfile, level, namespace_, name_='events')
-          if self.binary_characters:
-              self.binary_characters.export(outfile, level, namespace_, name_='binary_characters')
-          for distribution_ in self.distribution:
-              distribution_.export(outfile, level, namespace_, name_='distribution')
-          if self.date:
-              self.date.export(outfile, level, namespace_, name_='date')
-          for reference_ in self.reference:
-              reference_.export(outfile, level, namespace_, name_='reference')
-          for property_ in self.property:
-              property_.export(outfile, level, namespace_, name_='property')
-          for clade_ in self.clade:
-              clade_.export(outfile, level, namespace_, name_='clade')
+        if self.name is not None:
+            showIndent(outfile, level)
+            outfile.write('<%sname>%s</%sname>\n' % (namespace_, self.gds_format_string(quote_xml(self.name).encode(ExternalEncoding), input_name='name'), namespace_))
+        if self.branch_length is not None:
+            showIndent(outfile, level)
+            outfile.write('<%sbranch_length>%s</%sbranch_length>\n' % (namespace_, self.gds_format_double(self.branch_length, input_name='branch_length'), namespace_))
+        for confidence_ in self.confidence:
+            confidence_.export(outfile, level, namespace_, name_='confidence')
+        if self.width is not None:
+            showIndent(outfile, level)
+            outfile.write('<%swidth>%s</%swidth>\n' % (namespace_, self.gds_format_double(self.width, input_name='width'), namespace_))
+        if self.color:
+            self.color.export(outfile, level, namespace_, name_='color')
+        if self.node_id:
+            self.node_id.export(outfile, level, namespace_, name_='node_id')
+        for taxonomy_ in self.taxonomy:
+            taxonomy_.export(outfile, level, namespace_, name_='taxonomy')
+        for sequence_ in self.sequence:
+            sequence_.export(outfile, level, namespace_, name_='sequence')
+        if self.events:
+            self.events.export(outfile, level, namespace_, name_='events')
+        if self.binary_characters:
+            self.binary_characters.export(outfile, level, namespace_, name_='binary_characters')
+        for distribution_ in self.distribution:
+            distribution_.export(outfile, level, namespace_, name_='distribution')
+        if self.date:
+            self.date.export(outfile, level, namespace_, name_='date')
+        for reference_ in self.reference:
+            reference_.export(outfile, level, namespace_, name_='reference')
+        for property_ in self.property:
+            property_.export(outfile, level, namespace_, name_='property')
+        for clade_ in self.clade:
+            clade_.export(outfile, level, namespace_, name_='clade')
     def hasContent_(self):
         if (
             self.name is not None or
@@ -1055,11 +1064,11 @@ class Clade(GeneratedsSuper):
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
-        value = attrs.get('id_source')
+        value = find_attr_value_('id_source', node)
         if value is not None and 'id_source' not in already_processed:
             already_processed.append('id_source')
             self.id_source = value
-        value = attrs.get('branch_length_attr')
+        value = find_attr_value_('branch_length_attr', node)
         if value is not None and 'branch_length_attr' not in already_processed:
             already_processed.append('branch_length_attr')
             self.branch_length_attr = value
@@ -1077,7 +1086,7 @@ class Clade(GeneratedsSuper):
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             fval_ = self.gds_validate_float(fval_, node, 'branch_length')
             self.branch_length = fval_
-        elif nodeName_ == 'confidence': 
+        elif nodeName_ == 'confidence':
             obj_ = Confidence.factory()
             obj_.build(child_)
             self.confidence.append(obj_)
@@ -1089,47 +1098,47 @@ class Clade(GeneratedsSuper):
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             fval_ = self.gds_validate_float(fval_, node, 'width')
             self.width = fval_
-        elif nodeName_ == 'color': 
+        elif nodeName_ == 'color':
             obj_ = BranchColor.factory()
             obj_.build(child_)
             self.set_color(obj_)
-        elif nodeName_ == 'node_id': 
+        elif nodeName_ == 'node_id':
             obj_ = Id.factory()
             obj_.build(child_)
             self.set_node_id(obj_)
-        elif nodeName_ == 'taxonomy': 
+        elif nodeName_ == 'taxonomy':
             obj_ = Taxonomy.factory()
             obj_.build(child_)
             self.taxonomy.append(obj_)
-        elif nodeName_ == 'sequence': 
+        elif nodeName_ == 'sequence':
             obj_ = Sequence.factory()
             obj_.build(child_)
             self.sequence.append(obj_)
-        elif nodeName_ == 'events': 
+        elif nodeName_ == 'events':
             obj_ = Events.factory()
             obj_.build(child_)
             self.set_events(obj_)
-        elif nodeName_ == 'binary_characters': 
+        elif nodeName_ == 'binary_characters':
             obj_ = BinaryCharacters.factory()
             obj_.build(child_)
             self.set_binary_characters(obj_)
-        elif nodeName_ == 'distribution': 
+        elif nodeName_ == 'distribution':
             obj_ = Distribution.factory()
             obj_.build(child_)
             self.distribution.append(obj_)
-        elif nodeName_ == 'date': 
+        elif nodeName_ == 'date':
             obj_ = Date.factory()
             obj_.build(child_)
             self.set_date(obj_)
-        elif nodeName_ == 'reference': 
+        elif nodeName_ == 'reference':
             obj_ = Reference.factory()
             obj_.build(child_)
             self.reference.append(obj_)
-        elif nodeName_ == 'property': 
+        elif nodeName_ == 'property':
             obj_ = Property.factory()
             obj_.build(child_)
             self.property.append(obj_)
-        elif nodeName_ == 'clade': 
+        elif nodeName_ == 'clade':
             obj_ = Clade.factory()
             obj_.build(child_)
             self.clade.append(obj_)
@@ -1175,6 +1184,9 @@ class Taxonomy(GeneratedsSuper):
     def set_id(self, id): self.id = id
     def get_code(self): return self.code
     def set_code(self, code): self.code = code
+    def validate_TaxonomyCode(self, value):
+        # Validate type TaxonomyCode, a restriction on xs:token.
+        pass
     def get_scientific_name(self): return self.scientific_name
     def set_scientific_name(self, scientific_name): self.scientific_name = scientific_name
     def get_authority(self): return self.authority
@@ -1189,6 +1201,9 @@ class Taxonomy(GeneratedsSuper):
     def insert_synonym(self, index, value): self.synonym[index] = value
     def get_rank(self): return self.rank
     def set_rank(self, rank): self.rank = rank
+    def validate_Rank(self, value):
+        # Validate type Rank, a restriction on xs:token.
+        pass
     def get_uri(self): return self.uri
     def set_uri(self, uri): self.uri = uri
     def get_id_source(self): return self.id_source
@@ -1209,29 +1224,28 @@ class Taxonomy(GeneratedsSuper):
             already_processed.append('id_source')
             outfile.write(' id_source=%s' % (quote_attrib(self.id_source), ))
     def exportChildren(self, outfile, level, namespace_='phy:', name_='Taxonomy', fromsubclass_=False):
-        if not fromsubclass_:
-          if self.id:
-              self.id.export(outfile, level, namespace_, name_='id')
-          if self.code is not None:
-              showIndent(outfile, level)
-              outfile.write('<%scode>%s</%scode>\n' % (namespace_, self.gds_format_string(quote_xml(self.code).encode(ExternalEncoding), input_name='code'), namespace_))
-          if self.scientific_name is not None:
-              showIndent(outfile, level)
-              outfile.write('<%sscientific_name>%s</%sscientific_name>\n' % (namespace_, self.gds_format_string(quote_xml(self.scientific_name).encode(ExternalEncoding), input_name='scientific_name'), namespace_))
-          if self.authority is not None:
-              showIndent(outfile, level)
-              outfile.write('<%sauthority>%s</%sauthority>\n' % (namespace_, self.gds_format_string(quote_xml(self.authority).encode(ExternalEncoding), input_name='authority'), namespace_))
-          for common_name_ in self.common_name:
-              showIndent(outfile, level)
-              outfile.write('<%scommon_name>%s</%scommon_name>\n' % (namespace_, self.gds_format_string(quote_xml(common_name_).encode(ExternalEncoding), input_name='common_name'), namespace_))
-          for synonym_ in self.synonym:
-              showIndent(outfile, level)
-              outfile.write('<%ssynonym>%s</%ssynonym>\n' % (namespace_, self.gds_format_string(quote_xml(synonym_).encode(ExternalEncoding), input_name='synonym'), namespace_))
-          if self.rank is not None:
-              showIndent(outfile, level)
-              outfile.write('<%srank>%s</%srank>\n' % (namespace_, self.gds_format_string(quote_xml(self.rank).encode(ExternalEncoding), input_name='rank'), namespace_))
-          if self.uri:
-              self.uri.export(outfile, level, namespace_, name_='uri')
+        if self.id:
+            self.id.export(outfile, level, namespace_, name_='id')
+        if self.code is not None:
+            showIndent(outfile, level)
+            outfile.write('<%scode>%s</%scode>\n' % (namespace_, self.gds_format_string(quote_xml(self.code).encode(ExternalEncoding), input_name='code'), namespace_))
+        if self.scientific_name is not None:
+            showIndent(outfile, level)
+            outfile.write('<%sscientific_name>%s</%sscientific_name>\n' % (namespace_, self.gds_format_string(quote_xml(self.scientific_name).encode(ExternalEncoding), input_name='scientific_name'), namespace_))
+        if self.authority is not None:
+            showIndent(outfile, level)
+            outfile.write('<%sauthority>%s</%sauthority>\n' % (namespace_, self.gds_format_string(quote_xml(self.authority).encode(ExternalEncoding), input_name='authority'), namespace_))
+        for common_name_ in self.common_name:
+            showIndent(outfile, level)
+            outfile.write('<%scommon_name>%s</%scommon_name>\n' % (namespace_, self.gds_format_string(quote_xml(common_name_).encode(ExternalEncoding), input_name='common_name'), namespace_))
+        for synonym_ in self.synonym:
+            showIndent(outfile, level)
+            outfile.write('<%ssynonym>%s</%ssynonym>\n' % (namespace_, self.gds_format_string(quote_xml(synonym_).encode(ExternalEncoding), input_name='synonym'), namespace_))
+        if self.rank is not None:
+            showIndent(outfile, level)
+            outfile.write('<%srank>%s</%srank>\n' % (namespace_, self.gds_format_string(quote_xml(self.rank).encode(ExternalEncoding), input_name='rank'), namespace_))
+        if self.uri:
+            self.uri.export(outfile, level, namespace_, name_='uri')
     def hasContent_(self):
         if (
             self.id is not None or
@@ -1305,12 +1319,12 @@ class Taxonomy(GeneratedsSuper):
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
-        value = attrs.get('id_source')
+        value = find_attr_value_('id_source', node)
         if value is not None and 'id_source' not in already_processed:
             already_processed.append('id_source')
             self.id_source = value
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        if nodeName_ == 'id': 
+        if nodeName_ == 'id':
             obj_ = Id.factory()
             obj_.build(child_)
             self.set_id(obj_)
@@ -1319,6 +1333,7 @@ class Taxonomy(GeneratedsSuper):
             code_ = re_.sub(STRING_CLEANUP_PAT, " ", code_).strip()
             code_ = self.gds_validate_string(code_, node, 'code')
             self.code = code_
+            self.validate_TaxonomyCode(self.code)    # validate type TaxonomyCode
         elif nodeName_ == 'scientific_name':
             scientific_name_ = child_.text
             scientific_name_ = re_.sub(STRING_CLEANUP_PAT, " ", scientific_name_).strip()
@@ -1344,7 +1359,8 @@ class Taxonomy(GeneratedsSuper):
             rank_ = re_.sub(STRING_CLEANUP_PAT, " ", rank_).strip()
             rank_ = self.gds_validate_string(rank_, node, 'rank')
             self.rank = rank_
-        elif nodeName_ == 'uri': 
+            self.validate_Rank(self.rank)    # validate type Rank
+        elif nodeName_ == 'uri':
             obj_ = Uri.factory()
             obj_.build(child_)
             self.set_uri(obj_)
@@ -1388,6 +1404,9 @@ class Sequence(GeneratedsSuper):
     factory = staticmethod(factory)
     def get_symbol(self): return self.symbol
     def set_symbol(self, symbol): self.symbol = symbol
+    def validate_SequenceSymbol(self, value):
+        # Validate type SequenceSymbol, a restriction on xs:token.
+        pass
     def get_accession(self): return self.accession
     def set_accession(self, accession): self.accession = accession
     def get_name(self): return self.name
@@ -1432,26 +1451,25 @@ class Sequence(GeneratedsSuper):
             already_processed.append('type_')
             outfile.write(' type=%s' % (quote_attrib(self.type_), ))
     def exportChildren(self, outfile, level, namespace_='phy:', name_='Sequence', fromsubclass_=False):
-        if not fromsubclass_:
-          if self.symbol is not None:
-              showIndent(outfile, level)
-              outfile.write('<%ssymbol>%s</%ssymbol>\n' % (namespace_, self.gds_format_string(quote_xml(self.symbol).encode(ExternalEncoding), input_name='symbol'), namespace_))
-          if self.accession:
-              self.accession.export(outfile, level, namespace_, name_='accession')
-          if self.name is not None:
-              showIndent(outfile, level)
-              outfile.write('<%sname>%s</%sname>\n' % (namespace_, self.gds_format_string(quote_xml(self.name).encode(ExternalEncoding), input_name='name'), namespace_))
-          if self.location is not None:
-              showIndent(outfile, level)
-              outfile.write('<%slocation>%s</%slocation>\n' % (namespace_, self.gds_format_string(quote_xml(self.location).encode(ExternalEncoding), input_name='location'), namespace_))
-          if self.mol_seq:
-              self.mol_seq.export(outfile, level, namespace_, name_='mol_seq')
-          if self.uri:
-              self.uri.export(outfile, level, namespace_, name_='uri')
-          for annotation_ in self.annotation:
-              annotation_.export(outfile, level, namespace_, name_='annotation')
-          if self.domain_architecture:
-              self.domain_architecture.export(outfile, level, namespace_, name_='domain_architecture')
+        if self.symbol is not None:
+            showIndent(outfile, level)
+            outfile.write('<%ssymbol>%s</%ssymbol>\n' % (namespace_, self.gds_format_string(quote_xml(self.symbol).encode(ExternalEncoding), input_name='symbol'), namespace_))
+        if self.accession:
+            self.accession.export(outfile, level, namespace_, name_='accession')
+        if self.name is not None:
+            showIndent(outfile, level)
+            outfile.write('<%sname>%s</%sname>\n' % (namespace_, self.gds_format_string(quote_xml(self.name).encode(ExternalEncoding), input_name='name'), namespace_))
+        if self.location is not None:
+            showIndent(outfile, level)
+            outfile.write('<%slocation>%s</%slocation>\n' % (namespace_, self.gds_format_string(quote_xml(self.location).encode(ExternalEncoding), input_name='location'), namespace_))
+        if self.mol_seq:
+            self.mol_seq.export(outfile, level, namespace_, name_='mol_seq')
+        if self.uri:
+            self.uri.export(outfile, level, namespace_, name_='uri')
+        for annotation_ in self.annotation:
+            annotation_.export(outfile, level, namespace_, name_='annotation')
+        if self.domain_architecture:
+            self.domain_architecture.export(outfile, level, namespace_, name_='domain_architecture')
     def hasContent_(self):
         if (
             self.symbol is not None or
@@ -1536,15 +1554,15 @@ class Sequence(GeneratedsSuper):
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
-        value = attrs.get('id_source')
+        value = find_attr_value_('id_source', node)
         if value is not None and 'id_source' not in already_processed:
             already_processed.append('id_source')
             self.id_source = value
-        value = attrs.get('id_ref')
+        value = find_attr_value_('id_ref', node)
         if value is not None and 'id_ref' not in already_processed:
             already_processed.append('id_ref')
             self.id_ref = value
-        value = attrs.get('type')
+        value = find_attr_value_('type', node)
         if value is not None and 'type' not in already_processed:
             already_processed.append('type')
             self.type_ = value
@@ -1554,7 +1572,8 @@ class Sequence(GeneratedsSuper):
             symbol_ = re_.sub(STRING_CLEANUP_PAT, " ", symbol_).strip()
             symbol_ = self.gds_validate_string(symbol_, node, 'symbol')
             self.symbol = symbol_
-        elif nodeName_ == 'accession': 
+            self.validate_SequenceSymbol(self.symbol)    # validate type SequenceSymbol
+        elif nodeName_ == 'accession':
             obj_ = Accession.factory()
             obj_.build(child_)
             self.set_accession(obj_)
@@ -1568,19 +1587,19 @@ class Sequence(GeneratedsSuper):
             location_ = re_.sub(STRING_CLEANUP_PAT, " ", location_).strip()
             location_ = self.gds_validate_string(location_, node, 'location')
             self.location = location_
-        elif nodeName_ == 'mol_seq': 
+        elif nodeName_ == 'mol_seq':
             obj_ = MolSeq.factory()
             obj_.build(child_)
             self.set_mol_seq(obj_)
-        elif nodeName_ == 'uri': 
+        elif nodeName_ == 'uri':
             obj_ = Uri.factory()
             obj_.build(child_)
             self.set_uri(obj_)
-        elif nodeName_ == 'annotation': 
+        elif nodeName_ == 'annotation':
             obj_ = Annotation.factory()
             obj_.build(child_)
             self.annotation.append(obj_)
-        elif nodeName_ == 'domain_architecture': 
+        elif nodeName_ == 'domain_architecture':
             obj_ = DomainArchitecture.factory()
             obj_.build(child_)
             self.set_domain_architecture(obj_)
@@ -1615,7 +1634,7 @@ class MolSeq(GeneratedsSuper):
         self.exportAttributes(outfile, level, [], namespace_, name_='MolSeq')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(self.valueOf_)
+            outfile.write(self.valueOf_.encode(ExternalEncoding))
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
@@ -1625,7 +1644,6 @@ class MolSeq(GeneratedsSuper):
             already_processed.append('is_aligned')
             outfile.write(' is_aligned="%s"' % self.gds_format_boolean(self.gds_str_lower(str(self.is_aligned)), input_name='is_aligned'))
     def exportChildren(self, outfile, level, namespace_='phy:', name_='MolSeq', fromsubclass_=False):
-        super(MolSeq, self).exportChildren(outfile, level, namespace_, name_, True)
         pass
     def hasContent_(self):
         if (
@@ -1655,7 +1673,7 @@ class MolSeq(GeneratedsSuper):
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
-        value = attrs.get('is_aligned')
+        value = find_attr_value_('is_aligned', node)
         if value is not None and 'is_aligned' not in already_processed:
             already_processed.append('is_aligned')
             if value in ('true', '1'):
@@ -1695,7 +1713,7 @@ class Accession(GeneratedsSuper):
         self.exportAttributes(outfile, level, [], namespace_, name_='Accession')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(self.valueOf_)
+            outfile.write(self.valueOf_.encode(ExternalEncoding))
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
@@ -1734,7 +1752,7 @@ class Accession(GeneratedsSuper):
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
-        value = attrs.get('source')
+        value = find_attr_value_('source', node)
         if value is not None and 'source' not in already_processed:
             already_processed.append('source')
             self.source = value
@@ -1783,9 +1801,8 @@ class DomainArchitecture(GeneratedsSuper):
             already_processed.append('length')
             outfile.write(' length="%s"' % self.gds_format_integer(self.length, input_name='length'))
     def exportChildren(self, outfile, level, namespace_='phy:', name_='DomainArchitecture', fromsubclass_=False):
-        if not fromsubclass_:
-          for domain_ in self.domain:
-              domain_.export(outfile, level, namespace_, name_='domain')
+        for domain_ in self.domain:
+            domain_.export(outfile, level, namespace_, name_='domain')
     def hasContent_(self):
         if (
             self.domain
@@ -1822,7 +1839,7 @@ class DomainArchitecture(GeneratedsSuper):
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
-        value = attrs.get('length')
+        value = find_attr_value_('length', node)
         if value is not None and 'length' not in already_processed:
             already_processed.append('length')
             try:
@@ -1832,7 +1849,7 @@ class DomainArchitecture(GeneratedsSuper):
             if self.length < 0:
                 raise_parse_error(node, 'Invalid NonNegativeInteger')
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        if nodeName_ == 'domain': 
+        if nodeName_ == 'domain':
             obj_ = ProteinDomain.factory()
             obj_.build(child_)
             self.domain.append(obj_)
@@ -1873,7 +1890,7 @@ class ProteinDomain(GeneratedsSuper):
         self.exportAttributes(outfile, level, [], namespace_, name_='ProteinDomain')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(self.valueOf_)
+            outfile.write(self.valueOf_.encode(ExternalEncoding))
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
@@ -1933,7 +1950,7 @@ class ProteinDomain(GeneratedsSuper):
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
-        value = attrs.get('to')
+        value = find_attr_value_('to', node)
         if value is not None and 'to' not in already_processed:
             already_processed.append('to')
             try:
@@ -1942,14 +1959,14 @@ class ProteinDomain(GeneratedsSuper):
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             if self.to < 0:
                 raise_parse_error(node, 'Invalid NonNegativeInteger')
-        value = attrs.get('confidence')
+        value = find_attr_value_('confidence', node)
         if value is not None and 'confidence' not in already_processed:
             already_processed.append('confidence')
             try:
                 self.confidence = float(value)
             except ValueError, exp:
                 raise ValueError('Bad float/double attribute (confidence): %s' % exp)
-        value = attrs.get('from')
+        value = find_attr_value_('from', node)
         if value is not None and 'from' not in already_processed:
             already_processed.append('from')
             try:
@@ -1958,7 +1975,7 @@ class ProteinDomain(GeneratedsSuper):
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             if self.fromxx < 0:
                 raise_parse_error(node, 'Invalid NonNegativeInteger')
-        value = attrs.get('id')
+        value = find_attr_value_('id', node)
         if value is not None and 'id' not in already_processed:
             already_processed.append('id')
             self.id = value
@@ -1986,6 +2003,9 @@ class Events(GeneratedsSuper):
     factory = staticmethod(factory)
     def get_type(self): return self.type_
     def set_type(self, type_): self.type_ = type_
+    def validate_EventType(self, value):
+        # Validate type EventType, a restriction on xs:token.
+        pass
     def get_duplications(self): return self.duplications
     def set_duplications(self, duplications): self.duplications = duplications
     def get_speciations(self): return self.speciations
@@ -2008,21 +2028,20 @@ class Events(GeneratedsSuper):
     def exportAttributes(self, outfile, level, already_processed, namespace_='phy:', name_='Events'):
         pass
     def exportChildren(self, outfile, level, namespace_='phy:', name_='Events', fromsubclass_=False):
-        if not fromsubclass_:
-          if self.type_ is not None:
-              showIndent(outfile, level)
-              outfile.write('<%stype>%s</%stype>\n' % (namespace_, self.gds_format_string(quote_xml(self.type_).encode(ExternalEncoding), input_name='type'), namespace_))
-          if self.duplications is not None:
-              showIndent(outfile, level)
-              outfile.write('<%sduplications>%s</%sduplications>\n' % (namespace_, self.gds_format_integer(self.duplications, input_name='duplications'), namespace_))
-          if self.speciations is not None:
-              showIndent(outfile, level)
-              outfile.write('<%sspeciations>%s</%sspeciations>\n' % (namespace_, self.gds_format_integer(self.speciations, input_name='speciations'), namespace_))
-          if self.losses is not None:
-              showIndent(outfile, level)
-              outfile.write('<%slosses>%s</%slosses>\n' % (namespace_, self.gds_format_integer(self.losses, input_name='losses'), namespace_))
-          if self.confidence:
-              self.confidence.export(outfile, level, namespace_, name_='confidence')
+        if self.type_ is not None:
+            showIndent(outfile, level)
+            outfile.write('<%stype>%s</%stype>\n' % (namespace_, self.gds_format_string(quote_xml(self.type_).encode(ExternalEncoding), input_name='type'), namespace_))
+        if self.duplications is not None:
+            showIndent(outfile, level)
+            outfile.write('<%sduplications>%s</%sduplications>\n' % (namespace_, self.gds_format_integer(self.duplications, input_name='duplications'), namespace_))
+        if self.speciations is not None:
+            showIndent(outfile, level)
+            outfile.write('<%sspeciations>%s</%sspeciations>\n' % (namespace_, self.gds_format_integer(self.speciations, input_name='speciations'), namespace_))
+        if self.losses is not None:
+            showIndent(outfile, level)
+            outfile.write('<%slosses>%s</%slosses>\n' % (namespace_, self.gds_format_integer(self.losses, input_name='losses'), namespace_))
+        if self.confidence:
+            self.confidence.export(outfile, level, namespace_, name_='confidence')
     def hasContent_(self):
         if (
             self.type_ is not None or
@@ -2073,6 +2092,7 @@ class Events(GeneratedsSuper):
             type_ = re_.sub(STRING_CLEANUP_PAT, " ", type_).strip()
             type_ = self.gds_validate_string(type_, node, 'type')
             self.type_ = type_
+            self.validate_EventType(self.type_)    # validate type EventType
         elif nodeName_ == 'duplications':
             sval_ = child_.text
             try:
@@ -2103,7 +2123,7 @@ class Events(GeneratedsSuper):
                 raise_parse_error(child_, 'requires nonNegativeInteger')
             ival_ = self.gds_validate_integer(ival_, node, 'losses')
             self.losses = ival_
-        elif nodeName_ == 'confidence': 
+        elif nodeName_ == 'confidence':
             obj_ = Confidence.factory()
             obj_.build(child_)
             self.set_confidence(obj_)
@@ -2177,15 +2197,14 @@ class BinaryCharacters(GeneratedsSuper):
             already_processed.append('gained_count')
             outfile.write(' gained_count="%s"' % self.gds_format_integer(self.gained_count, input_name='gained_count'))
     def exportChildren(self, outfile, level, namespace_='phy:', name_='BinaryCharacters', fromsubclass_=False):
-        if not fromsubclass_:
-          if self.gained:
-              self.gained.export(outfile, level, namespace_, name_='gained')
-          if self.lost:
-              self.lost.export(outfile, level, namespace_, name_='lost')
-          if self.present:
-              self.present.export(outfile, level, namespace_, name_='present')
-          if self.absent:
-              self.absent.export(outfile, level, namespace_, name_='absent')
+        if self.gained:
+            self.gained.export(outfile, level, namespace_, name_='gained')
+        if self.lost:
+            self.lost.export(outfile, level, namespace_, name_='lost')
+        if self.present:
+            self.present.export(outfile, level, namespace_, name_='present')
+        if self.absent:
+            self.absent.export(outfile, level, namespace_, name_='absent')
     def hasContent_(self):
         if (
             self.gained is not None or
@@ -2253,7 +2272,7 @@ class BinaryCharacters(GeneratedsSuper):
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
-        value = attrs.get('lost_count')
+        value = find_attr_value_('lost_count', node)
         if value is not None and 'lost_count' not in already_processed:
             already_processed.append('lost_count')
             try:
@@ -2262,7 +2281,7 @@ class BinaryCharacters(GeneratedsSuper):
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             if self.lost_count < 0:
                 raise_parse_error(node, 'Invalid NonNegativeInteger')
-        value = attrs.get('absent_count')
+        value = find_attr_value_('absent_count', node)
         if value is not None and 'absent_count' not in already_processed:
             already_processed.append('absent_count')
             try:
@@ -2271,7 +2290,7 @@ class BinaryCharacters(GeneratedsSuper):
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             if self.absent_count < 0:
                 raise_parse_error(node, 'Invalid NonNegativeInteger')
-        value = attrs.get('present_count')
+        value = find_attr_value_('present_count', node)
         if value is not None and 'present_count' not in already_processed:
             already_processed.append('present_count')
             try:
@@ -2280,12 +2299,12 @@ class BinaryCharacters(GeneratedsSuper):
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             if self.present_count < 0:
                 raise_parse_error(node, 'Invalid NonNegativeInteger')
-        value = attrs.get('type')
+        value = find_attr_value_('type', node)
         if value is not None and 'type' not in already_processed:
             already_processed.append('type')
             self.type_ = value
             self.type_ = ' '.join(self.type_.split())
-        value = attrs.get('gained_count')
+        value = find_attr_value_('gained_count', node)
         if value is not None and 'gained_count' not in already_processed:
             already_processed.append('gained_count')
             try:
@@ -2295,19 +2314,19 @@ class BinaryCharacters(GeneratedsSuper):
             if self.gained_count < 0:
                 raise_parse_error(node, 'Invalid NonNegativeInteger')
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        if nodeName_ == 'gained': 
+        if nodeName_ == 'gained':
             obj_ = BinaryCharacterList.factory()
             obj_.build(child_)
             self.set_gained(obj_)
-        elif nodeName_ == 'lost': 
+        elif nodeName_ == 'lost':
             obj_ = BinaryCharacterList.factory()
             obj_.build(child_)
             self.set_lost(obj_)
-        elif nodeName_ == 'present': 
+        elif nodeName_ == 'present':
             obj_ = BinaryCharacterList.factory()
             obj_.build(child_)
             self.set_present(obj_)
-        elif nodeName_ == 'absent': 
+        elif nodeName_ == 'absent':
             obj_ = BinaryCharacterList.factory()
             obj_.build(child_)
             self.set_absent(obj_)
@@ -2346,10 +2365,9 @@ class BinaryCharacterList(GeneratedsSuper):
     def exportAttributes(self, outfile, level, already_processed, namespace_='phy:', name_='BinaryCharacterList'):
         pass
     def exportChildren(self, outfile, level, namespace_='phy:', name_='BinaryCharacterList', fromsubclass_=False):
-        if not fromsubclass_:
-          for bc_ in self.bc:
-              showIndent(outfile, level)
-              outfile.write('<%sbc>%s</%sbc>\n' % (namespace_, self.gds_format_string(quote_xml(bc_).encode(ExternalEncoding), input_name='bc'), namespace_))
+        for bc_ in self.bc:
+            showIndent(outfile, level)
+            outfile.write('<%sbc>%s</%sbc>\n' % (namespace_, self.gds_format_string(quote_xml(bc_).encode(ExternalEncoding), input_name='bc'), namespace_))
     def hasContent_(self):
         if (
             self.bc
@@ -2425,10 +2443,9 @@ class Reference(GeneratedsSuper):
             already_processed.append('doi')
             outfile.write(' doi=%s' % (quote_attrib(self.doi), ))
     def exportChildren(self, outfile, level, namespace_='phy:', name_='Reference', fromsubclass_=False):
-        if not fromsubclass_:
-          if self.desc is not None:
-              showIndent(outfile, level)
-              outfile.write('<%sdesc>%s</%sdesc>\n' % (namespace_, self.gds_format_string(quote_xml(self.desc).encode(ExternalEncoding), input_name='desc'), namespace_))
+        if self.desc is not None:
+            showIndent(outfile, level)
+            outfile.write('<%sdesc>%s</%sdesc>\n' % (namespace_, self.gds_format_string(quote_xml(self.desc).encode(ExternalEncoding), input_name='desc'), namespace_))
     def hasContent_(self):
         if (
             self.desc is not None
@@ -2456,7 +2473,7 @@ class Reference(GeneratedsSuper):
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
-        value = attrs.get('doi')
+        value = find_attr_value_('doi', node)
         if value is not None and 'doi' not in already_processed:
             already_processed.append('doi')
             self.doi = value
@@ -2544,16 +2561,15 @@ class Annotation(GeneratedsSuper):
             already_processed.append('evidence')
             outfile.write(' evidence=%s' % (self.gds_format_string(quote_attrib(self.evidence).encode(ExternalEncoding), input_name='evidence'), ))
     def exportChildren(self, outfile, level, namespace_='phy:', name_='Annotation', fromsubclass_=False):
-        if not fromsubclass_:
-          if self.desc is not None:
-              showIndent(outfile, level)
-              outfile.write('<%sdesc>%s</%sdesc>\n' % (namespace_, self.gds_format_string(quote_xml(self.desc).encode(ExternalEncoding), input_name='desc'), namespace_))
-          if self.confidence:
-              self.confidence.export(outfile, level, namespace_, name_='confidence')
-          for property_ in self.property:
-              property_.export(outfile, level, namespace_, name_='property')
-          if self.uri:
-              self.uri.export(outfile, level, namespace_, name_='uri')
+        if self.desc is not None:
+            showIndent(outfile, level)
+            outfile.write('<%sdesc>%s</%sdesc>\n' % (namespace_, self.gds_format_string(quote_xml(self.desc).encode(ExternalEncoding), input_name='desc'), namespace_))
+        if self.confidence:
+            self.confidence.export(outfile, level, namespace_, name_='confidence')
+        for property_ in self.property:
+            property_.export(outfile, level, namespace_, name_='property')
+        if self.uri:
+            self.uri.export(outfile, level, namespace_, name_='uri')
     def hasContent_(self):
         if (
             self.desc is not None or
@@ -2620,21 +2636,21 @@ class Annotation(GeneratedsSuper):
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
-        value = attrs.get('source')
+        value = find_attr_value_('source', node)
         if value is not None and 'source' not in already_processed:
             already_processed.append('source')
             self.source = value
             self.source = ' '.join(self.source.split())
-        value = attrs.get('type')
+        value = find_attr_value_('type', node)
         if value is not None and 'type' not in already_processed:
             already_processed.append('type')
             self.type_ = value
             self.type_ = ' '.join(self.type_.split())
-        value = attrs.get('ref')
+        value = find_attr_value_('ref', node)
         if value is not None and 'ref' not in already_processed:
             already_processed.append('ref')
             self.ref = value
-        value = attrs.get('evidence')
+        value = find_attr_value_('evidence', node)
         if value is not None and 'evidence' not in already_processed:
             already_processed.append('evidence')
             self.evidence = value
@@ -2645,15 +2661,15 @@ class Annotation(GeneratedsSuper):
             desc_ = re_.sub(STRING_CLEANUP_PAT, " ", desc_).strip()
             desc_ = self.gds_validate_string(desc_, node, 'desc')
             self.desc = desc_
-        elif nodeName_ == 'confidence': 
+        elif nodeName_ == 'confidence':
             obj_ = Confidence.factory()
             obj_.build(child_)
             self.set_confidence(obj_)
-        elif nodeName_ == 'property': 
+        elif nodeName_ == 'property':
             obj_ = Property.factory()
             obj_.build(child_)
             self.property.append(obj_)
-        elif nodeName_ == 'uri': 
+        elif nodeName_ == 'uri':
             obj_ = Uri.factory()
             obj_.build(child_)
             self.set_uri(obj_)
@@ -2785,23 +2801,23 @@ class Property(GeneratedsSuper):
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
-        value = attrs.get('datatype')
+        value = find_attr_value_('datatype', node)
         if value is not None and 'datatype' not in already_processed:
             already_processed.append('datatype')
             self.datatype = value
-        value = attrs.get('id_ref')
+        value = find_attr_value_('id_ref', node)
         if value is not None and 'id_ref' not in already_processed:
             already_processed.append('id_ref')
             self.id_ref = value
-        value = attrs.get('ref')
+        value = find_attr_value_('ref', node)
         if value is not None and 'ref' not in already_processed:
             already_processed.append('ref')
             self.ref = value
-        value = attrs.get('applies_to')
+        value = find_attr_value_('applies_to', node)
         if value is not None and 'applies_to' not in already_processed:
             already_processed.append('applies_to')
             self.applies_to = value
-        value = attrs.get('unit')
+        value = find_attr_value_('unit', node)
         if value is not None and 'unit' not in already_processed:
             already_processed.append('unit')
             self.unit = value
@@ -2843,7 +2859,7 @@ class Uri(GeneratedsSuper):
         self.exportAttributes(outfile, level, [], namespace_, name_='Uri')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(self.valueOf_)
+            outfile.write(self.valueOf_.encode(ExternalEncoding))
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
@@ -2889,12 +2905,12 @@ class Uri(GeneratedsSuper):
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
-        value = attrs.get('type')
+        value = find_attr_value_('type', node)
         if value is not None and 'type' not in already_processed:
             already_processed.append('type')
             self.type_ = value
             self.type_ = ' '.join(self.type_.split())
-        value = attrs.get('desc')
+        value = find_attr_value_('desc', node)
         if value is not None and 'desc' not in already_processed:
             already_processed.append('desc')
             self.desc = value
@@ -2929,7 +2945,7 @@ class Confidence(GeneratedsSuper):
         self.exportAttributes(outfile, level, [], namespace_, name_='Confidence')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(self.valueOf_)
+            outfile.write(self.valueOf_.encode(ExternalEncoding))
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
@@ -2968,7 +2984,7 @@ class Confidence(GeneratedsSuper):
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
-        value = attrs.get('type')
+        value = find_attr_value_('type', node)
         if value is not None and 'type' not in already_processed:
             already_processed.append('type')
             self.type_ = value
@@ -3002,7 +3018,7 @@ class Id(GeneratedsSuper):
         self.exportAttributes(outfile, level, [], namespace_, name_='Id')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(self.valueOf_)
+            outfile.write(self.valueOf_.encode(ExternalEncoding))
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
@@ -3041,7 +3057,7 @@ class Id(GeneratedsSuper):
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
-        value = attrs.get('provider')
+        value = find_attr_value_('provider', node)
         if value is not None and 'provider' not in already_processed:
             already_processed.append('provider')
             self.provider = value
@@ -3100,14 +3116,13 @@ class Distribution(GeneratedsSuper):
     def exportAttributes(self, outfile, level, already_processed, namespace_='phy:', name_='Distribution'):
         pass
     def exportChildren(self, outfile, level, namespace_='phy:', name_='Distribution', fromsubclass_=False):
-        if not fromsubclass_:
-          if self.desc is not None:
-              showIndent(outfile, level)
-              outfile.write('<%sdesc>%s</%sdesc>\n' % (namespace_, self.gds_format_string(quote_xml(self.desc).encode(ExternalEncoding), input_name='desc'), namespace_))
-          for point_ in self.point:
-              point_.export(outfile, level, namespace_, name_='point')
-          for polygon_ in self.polygon:
-              polygon_.export(outfile, level, namespace_, name_='polygon')
+        if self.desc is not None:
+            showIndent(outfile, level)
+            outfile.write('<%sdesc>%s</%sdesc>\n' % (namespace_, self.gds_format_string(quote_xml(self.desc).encode(ExternalEncoding), input_name='desc'), namespace_))
+        for point_ in self.point:
+            point_.export(outfile, level, namespace_, name_='point')
+        for polygon_ in self.polygon:
+            polygon_.export(outfile, level, namespace_, name_='polygon')
     def hasContent_(self):
         if (
             self.desc is not None or
@@ -3165,11 +3180,11 @@ class Distribution(GeneratedsSuper):
             desc_ = re_.sub(STRING_CLEANUP_PAT, " ", desc_).strip()
             desc_ = self.gds_validate_string(desc_, node, 'desc')
             self.desc = desc_
-        elif nodeName_ == 'point': 
+        elif nodeName_ == 'point':
             obj_ = Point.factory()
             obj_.build(child_)
             self.point.append(obj_)
-        elif nodeName_ == 'polygon': 
+        elif nodeName_ == 'polygon':
             obj_ = Polygon.factory()
             obj_.build(child_)
             self.polygon.append(obj_)
@@ -3226,16 +3241,15 @@ class Point(GeneratedsSuper):
             already_processed.append('alt_unit')
             outfile.write(' alt_unit=%s' % (self.gds_format_string(quote_attrib(self.alt_unit).encode(ExternalEncoding), input_name='alt_unit'), ))
     def exportChildren(self, outfile, level, namespace_='phy:', name_='Point', fromsubclass_=False):
-        if not fromsubclass_:
-          if self.lat is not None:
-              showIndent(outfile, level)
-              outfile.write('<%slat>%s</%slat>\n' % (namespace_, self.gds_format_float(self.lat, input_name='lat'), namespace_))
-          if self.long is not None:
-              showIndent(outfile, level)
-              outfile.write('<%slong>%s</%slong>\n' % (namespace_, self.gds_format_float(self.long, input_name='long'), namespace_))
-          if self.alt is not None:
-              showIndent(outfile, level)
-              outfile.write('<%salt>%s</%salt>\n' % (namespace_, self.gds_format_float(self.alt, input_name='alt'), namespace_))
+        if self.lat is not None:
+            showIndent(outfile, level)
+            outfile.write('<%slat>%s</%slat>\n' % (namespace_, self.gds_format_float(self.lat, input_name='lat'), namespace_))
+        if self.long is not None:
+            showIndent(outfile, level)
+            outfile.write('<%slong>%s</%slong>\n' % (namespace_, self.gds_format_float(self.long, input_name='long'), namespace_))
+        if self.alt is not None:
+            showIndent(outfile, level)
+            outfile.write('<%salt>%s</%salt>\n' % (namespace_, self.gds_format_float(self.alt, input_name='alt'), namespace_))
     def hasContent_(self):
         if (
             self.lat is not None or
@@ -3275,12 +3289,12 @@ class Point(GeneratedsSuper):
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
-        value = attrs.get('geodetic_datum')
+        value = find_attr_value_('geodetic_datum', node)
         if value is not None and 'geodetic_datum' not in already_processed:
             already_processed.append('geodetic_datum')
             self.geodetic_datum = value
             self.geodetic_datum = ' '.join(self.geodetic_datum.split())
-        value = attrs.get('alt_unit')
+        value = find_attr_value_('alt_unit', node)
         if value is not None and 'alt_unit' not in already_processed:
             already_processed.append('alt_unit')
             self.alt_unit = value
@@ -3347,9 +3361,8 @@ class Polygon(GeneratedsSuper):
     def exportAttributes(self, outfile, level, already_processed, namespace_='phy:', name_='Polygon'):
         pass
     def exportChildren(self, outfile, level, namespace_='phy:', name_='Polygon', fromsubclass_=False):
-        if not fromsubclass_:
-          for point_ in self.point:
-              point_.export(outfile, level, namespace_, name_='point')
+        for point_ in self.point:
+            point_.export(outfile, level, namespace_, name_='point')
     def hasContent_(self):
         if (
             self.point
@@ -3385,7 +3398,7 @@ class Polygon(GeneratedsSuper):
     def buildAttributes(self, node, attrs, already_processed):
         pass
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        if nodeName_ == 'point': 
+        if nodeName_ == 'point':
             obj_ = Point.factory()
             obj_.build(child_)
             self.point.append(obj_)
@@ -3440,19 +3453,18 @@ class Date(GeneratedsSuper):
             already_processed.append('unit')
             outfile.write(' unit=%s' % (self.gds_format_string(quote_attrib(self.unit).encode(ExternalEncoding), input_name='unit'), ))
     def exportChildren(self, outfile, level, namespace_='phy:', name_='Date', fromsubclass_=False):
-        if not fromsubclass_:
-          if self.desc is not None:
-              showIndent(outfile, level)
-              outfile.write('<%sdesc>%s</%sdesc>\n' % (namespace_, self.gds_format_string(quote_xml(self.desc).encode(ExternalEncoding), input_name='desc'), namespace_))
-          if self.value is not None:
-              showIndent(outfile, level)
-              outfile.write('<%svalue>%s</%svalue>\n' % (namespace_, self.gds_format_float(self.value, input_name='value'), namespace_))
-          if self.minimum is not None:
-              showIndent(outfile, level)
-              outfile.write('<%sminimum>%s</%sminimum>\n' % (namespace_, self.gds_format_float(self.minimum, input_name='minimum'), namespace_))
-          if self.maximum is not None:
-              showIndent(outfile, level)
-              outfile.write('<%smaximum>%s</%smaximum>\n' % (namespace_, self.gds_format_float(self.maximum, input_name='maximum'), namespace_))
+        if self.desc is not None:
+            showIndent(outfile, level)
+            outfile.write('<%sdesc>%s</%sdesc>\n' % (namespace_, self.gds_format_string(quote_xml(self.desc).encode(ExternalEncoding), input_name='desc'), namespace_))
+        if self.value is not None:
+            showIndent(outfile, level)
+            outfile.write('<%svalue>%s</%svalue>\n' % (namespace_, self.gds_format_float(self.value, input_name='value'), namespace_))
+        if self.minimum is not None:
+            showIndent(outfile, level)
+            outfile.write('<%sminimum>%s</%sminimum>\n' % (namespace_, self.gds_format_float(self.minimum, input_name='minimum'), namespace_))
+        if self.maximum is not None:
+            showIndent(outfile, level)
+            outfile.write('<%smaximum>%s</%smaximum>\n' % (namespace_, self.gds_format_float(self.maximum, input_name='maximum'), namespace_))
     def hasContent_(self):
         if (
             self.desc is not None or
@@ -3492,7 +3504,7 @@ class Date(GeneratedsSuper):
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
-        value = attrs.get('unit')
+        value = find_attr_value_('unit', node)
         if value is not None and 'unit' not in already_processed:
             already_processed.append('unit')
             self.unit = value
@@ -3566,16 +3578,15 @@ class BranchColor(GeneratedsSuper):
     def exportAttributes(self, outfile, level, already_processed, namespace_='phy:', name_='BranchColor'):
         pass
     def exportChildren(self, outfile, level, namespace_='phy:', name_='BranchColor', fromsubclass_=False):
-        if not fromsubclass_:
-          if self.red is not None:
-              showIndent(outfile, level)
-              outfile.write('<%sred>%s</%sred>\n' % (namespace_, self.gds_format_integer(self.red, input_name='red'), namespace_))
-          if self.green is not None:
-              showIndent(outfile, level)
-              outfile.write('<%sgreen>%s</%sgreen>\n' % (namespace_, self.gds_format_integer(self.green, input_name='green'), namespace_))
-          if self.blue is not None:
-              showIndent(outfile, level)
-              outfile.write('<%sblue>%s</%sblue>\n' % (namespace_, self.gds_format_integer(self.blue, input_name='blue'), namespace_))
+        if self.red is not None:
+            showIndent(outfile, level)
+            outfile.write('<%sred>%s</%sred>\n' % (namespace_, self.gds_format_integer(self.red, input_name='red'), namespace_))
+        if self.green is not None:
+            showIndent(outfile, level)
+            outfile.write('<%sgreen>%s</%sgreen>\n' % (namespace_, self.gds_format_integer(self.green, input_name='green'), namespace_))
+        if self.blue is not None:
+            showIndent(outfile, level)
+            outfile.write('<%sblue>%s</%sblue>\n' % (namespace_, self.gds_format_integer(self.blue, input_name='blue'), namespace_))
     def hasContent_(self):
         if (
             self.red is not None or
@@ -3690,9 +3701,8 @@ class SequenceRelation(GeneratedsSuper):
             already_processed.append('distance')
             outfile.write(' distance="%s"' % self.gds_format_double(self.distance, input_name='distance'))
     def exportChildren(self, outfile, level, namespace_='phy:', name_='SequenceRelation', fromsubclass_=False):
-        if not fromsubclass_:
-          if self.confidence:
-              self.confidence.export(outfile, level, namespace_, name_='confidence')
+        if self.confidence:
+            self.confidence.export(outfile, level, namespace_, name_='confidence')
     def hasContent_(self):
         if (
             self.confidence is not None
@@ -3735,19 +3745,19 @@ class SequenceRelation(GeneratedsSuper):
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
-        value = attrs.get('id_ref_0')
+        value = find_attr_value_('id_ref_0', node)
         if value is not None and 'id_ref_0' not in already_processed:
             already_processed.append('id_ref_0')
             self.id_ref_0 = value
-        value = attrs.get('id_ref_1')
+        value = find_attr_value_('id_ref_1', node)
         if value is not None and 'id_ref_1' not in already_processed:
             already_processed.append('id_ref_1')
             self.id_ref_1 = value
-        value = attrs.get('type')
+        value = find_attr_value_('type', node)
         if value is not None and 'type' not in already_processed:
             already_processed.append('type')
             self.type_ = value
-        value = attrs.get('distance')
+        value = find_attr_value_('distance', node)
         if value is not None and 'distance' not in already_processed:
             already_processed.append('distance')
             try:
@@ -3755,7 +3765,7 @@ class SequenceRelation(GeneratedsSuper):
             except ValueError, exp:
                 raise ValueError('Bad float/double attribute (distance): %s' % exp)
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        if nodeName_ == 'confidence': 
+        if nodeName_ == 'confidence':
             obj_ = Confidence.factory()
             obj_.build(child_)
             self.set_confidence(obj_)
@@ -3815,9 +3825,8 @@ class CladeRelation(GeneratedsSuper):
             already_processed.append('distance')
             outfile.write(' distance="%s"' % self.gds_format_double(self.distance, input_name='distance'))
     def exportChildren(self, outfile, level, namespace_='phy:', name_='CladeRelation', fromsubclass_=False):
-        if not fromsubclass_:
-          if self.confidence:
-              self.confidence.export(outfile, level, namespace_, name_='confidence')
+        if self.confidence:
+            self.confidence.export(outfile, level, namespace_, name_='confidence')
     def hasContent_(self):
         if (
             self.confidence is not None
@@ -3860,20 +3869,20 @@ class CladeRelation(GeneratedsSuper):
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
-        value = attrs.get('id_ref_0')
+        value = find_attr_value_('id_ref_0', node)
         if value is not None and 'id_ref_0' not in already_processed:
             already_processed.append('id_ref_0')
             self.id_ref_0 = value
-        value = attrs.get('id_ref_1')
+        value = find_attr_value_('id_ref_1', node)
         if value is not None and 'id_ref_1' not in already_processed:
             already_processed.append('id_ref_1')
             self.id_ref_1 = value
-        value = attrs.get('type')
+        value = find_attr_value_('type', node)
         if value is not None and 'type' not in already_processed:
             already_processed.append('type')
             self.type_ = value
             self.type_ = ' '.join(self.type_.split())
-        value = attrs.get('distance')
+        value = find_attr_value_('distance', node)
         if value is not None and 'distance' not in already_processed:
             already_processed.append('distance')
             try:
@@ -3881,7 +3890,7 @@ class CladeRelation(GeneratedsSuper):
             except ValueError, exp:
                 raise ValueError('Bad float/double attribute (distance): %s' % exp)
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        if nodeName_ == 'confidence': 
+        if nodeName_ == 'confidence':
             obj_ = Confidence.factory()
             obj_.build(child_)
             self.set_confidence(obj_)
@@ -3949,8 +3958,8 @@ def parseLiteral(inFileName):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-    sys.stdout.write('#from _phyloxml import *\n\n')
-    sys.stdout.write('import _phyloxml as model_\n\n')
+    sys.stdout.write('#from phyloxml import *\n\n')
+    sys.stdout.write('import phyloxml as model_\n\n')
     sys.stdout.write('rootObj = model_.rootTag(\n')
     rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
     sys.stdout.write(')\n')

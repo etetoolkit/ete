@@ -10,7 +10,6 @@ OUT = open("/tmp/phyloxml.tmp.xml", "w")
 p.export(OUT, 0, namespacedef_='xmlns:phy="http://www.phyloxml.org"')
 OUT.close()
 
-
 p = Phyloxml()
 p.build_from_file("/tmp/phyloxml.tmp.xml")
 for t in p.phylogeny:
@@ -21,6 +20,7 @@ p = Phyloxml()
 p.build_from_file("apaf.xml")
 for t in p.phylogeny:
     print t
+    t.show()
 
 OUT = open("/tmp/phyloxml.tmp.xml", "w")
 p.export(OUT, 0, namespacedef_='xmlns:phy="http://www.phyloxml.org"')
@@ -31,13 +31,6 @@ p = Phyloxml()
 p.build_from_file("/tmp/phyloxml.tmp.xml")
 for t in p.phylogeny:
     print t
-
-
-
-
-
-
-
 
 
 

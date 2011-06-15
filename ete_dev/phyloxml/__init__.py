@@ -20,5 +20,8 @@ class Phyloxml(_phyloxml.Phyloxml):
             rootClass = self.__class__
         self.build(rootNode)
 
+    def export(self, outfile=stdout, level=0):
+        return super(Phyloxml, self).export(outfile=outfile, level=level)
+
 
 __all__ = _phyloxml.__all__ + ["Phyloxml", "PhyloXMLTree"]

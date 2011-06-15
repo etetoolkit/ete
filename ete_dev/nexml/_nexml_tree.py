@@ -1,5 +1,5 @@
 import sys
-from _nexml import MixedContainer, FloatTree, TreeFloatEdge, TreeNode
+from _nexml import MixedContainer, FloatTree, TreeFloatEdge, TreeNode, LiteralMeta
 from ete_dev import PhyloTree
 from ete_dev.phylo.phylotree import _parse_species
 from ete_dev.parser.newick import read_newick
@@ -19,11 +19,27 @@ class NexMLTree(PhyloTree):
         return "NexML ETE tree <%s>" %hex(hash(self))
 
     def _get_dist(self):
-        return self._dist
+        return self.nexml_edge.get_length()
     def _set_dist(self, value):
         try:
-            self._dist = float(value)
-            self.nexml_edge.set_length(self._dist)
+            self.nexml_edge.set_length(value)
+        except ValueError:
+            raise
+
+    def _get_support(self):
+        return self._nexml_support.content
+    def _set_support(self, value):
+        try:
+            self._nexml_support.content = float(value)
+        except ValueError:
+            raise
+       
+    def _get_name(self):
+        return self.nexml_node.get_label()
+
+    def _set_name(self, value):
+        try:
+            self.nexml_node.set_label(value)
         except ValueError:
             raise
 
@@ -37,13 +53,13 @@ class NexMLTree(PhyloTree):
             raise ValueError, "children:wrong type"
 
     dist = property(fget=_get_dist, fset=_set_dist)
+    support = property(fget=_get_support, fset=_set_support)
     children = property(fget=_get_children, fset=_set_children)
+    name = property(fget=_get_name, fset=_set_name)
 
     def __init__(self, newick=None, alignment=None, alg_format="fasta", \
                  sp_naming_function=_parse_species, format=0):
 
-        # Initialize empty PhyloTree
-        super(NexMLTree, self).__init__()
         self._children = Children()
         self._children.node = self
         self.nexml_tree = FloatTree()
@@ -52,7 +68,11 @@ class NexMLTree(PhyloTree):
         self.nexml_node.id = "node_%s" %hash(self)
         self.nexml_edge.id = "edge_%s" %hash(self)
         self.nexml_project = None
-        self.dist = 1.0
+        self._nexml_support = LiteralMeta(datatype="float", property="branch_support", content=1.0)
+        self.nexml_edge.add_meta(self._nexml_support)
+
+        # Initialize empty PhyloTree
+        super(NexMLTree, self).__init__()
 
         if alignment:
             self.link_to_alignment(alignment, alg_format)
@@ -95,9 +115,6 @@ class NexMLTree(PhyloTree):
             
             if xmlnode.id is not None:
                 ete_node.name = xmlnode.id
-                
-            if xmlnode.label is not None:
-                ete_node.name += "(" + xmlnode.label + ")"
 
     def export(self, outfile=sys.stdout, level=0, namespace_='', name_='FloatTree', namespacedef_=''):
         if self.nexml_tree:
