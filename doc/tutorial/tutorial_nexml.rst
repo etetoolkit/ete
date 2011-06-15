@@ -36,6 +36,11 @@ attribute. In addition, each tree node has a :attr:`nexml_tree`
 attribute (i.e. ``NEXML->FloatTree``) , which can be used to set the
 nexml properties of the subtree represented by each node.
 
+Note that :attr:`node.dist` and :attr:`node.name` features are linked
+to :attr:`node.nexml_edge.length` and :attr:`node.nexml_node.label`,
+respectively.
+
+
 .. literalinclude:: ../../examples/nexml/nexml_parser.py
 
 :download:`[Download tolweb.xml example]  <../../examples/nexml/trees.xml>` ||
@@ -48,6 +53,20 @@ Node meta information is also available:
 
 :download:`[Download tolweb.xml example]  <../../examples/nexml/tolweb.xml>` || 
 :download:`[Download script]  <../../examples/nexml/nexml_annotated_trees.py>`
+
+
+------------------------------------
+Creating Nexml project from scratch 
+------------------------------------
+
+:class:`Nexml` base class can also be used to create projects from
+scratch in a programmatic way. Using the collection of NeXML classes
+provided by the:mod:`ete_dev.nexml` module, you can populate an empty
+project and export it as XML.
+
+.. literalinclude:: ../../examples/nexml/nexml_from_scratch.py
+
+:download:`[Download script]  <../../examples/nexml/nexml_from_scratch.py>`
 
 
 --------------------------------------
@@ -70,44 +89,4 @@ Usually, all you will need is to export the whole project.
    nexml_project.build_from_file("nexml_example.xml")
 
    nexml_project.export()
-
-
-------------------------------------
-Creating Nexml project from scratch 
-------------------------------------
-
-.. warning:: 
-
-   sorry, this feature does not work yet.
-
-:class:`Nexml` base class can also be used to create projects from
-scratch in a programmatic way. Using the collection of NeXML classes
-provided by the:mod:`ete_dev.nexml` module, you can populate an empty
-project and export it as XML.
-
-.. literalinclude:: ../../examples/nexml/nexml_from_scratch.py
-
-Note that trees can be also read from newick files, allowing the
-conversion between both formats.
-
-::
-
-   # Root project class 
-   from ete2a1 import Nexml 
-
-   # the nexml module contains classes representing each nexml element
-   # defined in its schema
-
-   from ete2a1 import nexml 
-
-   # Create an empty Nexml project 
-   nexml_project = Nexml()
-   tree_collection = nexml.Trees()
-   nexml_tree = nexml.NexMLTree("(((A, B), C), D);")
-   tree_collection.add_tree(nexml_tree)
-   nexml_project.add_trees(tree_collection)
-
-   nexml_project.export()
-
-   
 

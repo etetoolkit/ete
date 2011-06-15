@@ -1,13 +1,17 @@
+.. currentmodule:: ete_dev.webplugin
+
+.. moduleauthor:: Jaime Huerta-Cepas
+
+.. versionadded:: 2.1
+
 ************************************
 Interactive web tree applications
 ************************************
 
-.. versionadded:: 2.1
-
 Starting at version 2.1, ETE provides a module to interactively
 display trees within web pages.
 
-The :mod:`ete2.webplugin` module implements a transparent connector
+The :mod:`ete_dev.webplugin` module implements a transparent connector
 between ETE's functionality and python web application. For this, a
 pre-built `WSGI
 <http://en.wikipedia.org/wiki/Web_Server_Gateway_Interface>`_
@@ -117,8 +121,6 @@ http://pypi.python.org/pypi/ete2a1
 Copy the *webplugin* directory to the document root path of your
 site. Remember that *webplugin* directory path must be configured to
 execute WSGI applications in Apache config files.
-
-
 
 ==========================================
 Adding functionality to your application

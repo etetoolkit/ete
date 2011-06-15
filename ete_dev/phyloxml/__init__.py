@@ -1,3 +1,4 @@
+from sys import stdout
 import _phyloxml as main
 from _phyloxml import * 
 from _phyloxml_tree import PhyloXMLTree 

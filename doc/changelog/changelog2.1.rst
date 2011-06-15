@@ -64,5 +64,5 @@ What's new in ETE 2.1
    * Improvement: Faster prune function
    * Improvement: unicode support for tree files
 * Improved documentation tutorial and reference guide!
-  * Detailed library reference 
-  * New examples section
+   * A better library reference 
+   * New examples section

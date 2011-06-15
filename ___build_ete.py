@@ -150,9 +150,8 @@ _ex('echo %s > %s/VERSION' %\
 
 # Check LICENSE disclaimer and add it or modify it if necessary
 print  "*** Setting LICENSE in all python files"
-_ex('find %s -name \'*.py\' -exec  python ___put_disclaimer.py {} \;' %\
+_ex('find %s/ete_dev/ -name \'*.py\' -exec  python ___put_disclaimer.py {} \;' %\
         (RELEASE_PATH))
-
 
 # Correct imports. I use ete_dev for development, but ete2 is the
 # correct name for stable releases. First I install the module using a
