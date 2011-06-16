@@ -55,31 +55,4 @@ Creating PhyloXML projects from scratch
 In order to create new PhyloXML projects, a set of classes is
 available in the :mod:`ete_dev.phyloxml` module.
 
-
-:: 
- 
-   from ete_dev import Phyloxml
-   import random 
-
-   project = Phyloxml()
-   phylo = PhyloXMLTree()
-   phylo.populate(100)
-   phylo.phyloxml_phylogeny.add
-   project.add_phylogeny(phylo)
-
-   # Let's now add another phylogeny bases on a subtree of the original "phylo" tree
-   all_internal_nodes =  [n for n in phylo.get_descendants() if not n.is_leaf()]
-   random_node = random.sample(all_internal_nodes, 1)[0]
-
-   random_node.phyloxml_phylogeny.add_
-   project.add_phylogeny(random_node)
-
-:: 
-
-  from ete_dev import Phyloxml, phyloxml
-  # create empty project 
-  proj = Phyloxml()
-  phylogeny = phyloxml.PhyloxmlTree()
-  phylogeny.populate(10)
-  proj.add_phylogeny(phylogeny)
   

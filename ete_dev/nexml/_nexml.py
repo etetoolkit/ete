@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*- 
 
 #
-# Generated Wed Jun 15 12:24:25 2011 by generateDS.py version 2.5a.
+# Generated Thu Jun 16 18:30:08 2011 by generateDS.py version 2.5a.
 #
 
 import sys
@@ -379,7 +379,7 @@ class Base(GeneratedsSuper):
         self.exportAttributes(outfile, level, [], namespace_, name_='Base')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(self.valueOf_.encode(ExternalEncoding))
+            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
@@ -448,7 +448,7 @@ class Meta(Base):
         outfile.write(' xsi:type="Meta"')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(self.valueOf_.encode(ExternalEncoding))
+            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
@@ -653,7 +653,7 @@ class LiteralMeta(Meta):
         outfile.write(' xsi:type="LiteralMeta"')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(self.valueOf_.encode(ExternalEncoding))
+            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
@@ -754,7 +754,7 @@ class attrExtensions(GeneratedsSuper):
         self.exportAttributes(outfile, level, [], namespace_, name_='attrExtensions')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(self.valueOf_.encode(ExternalEncoding))
+            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
@@ -834,7 +834,7 @@ class AbstractMapping(Base):
         outfile.write(' xsi:type="AbstractMapping"')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(self.valueOf_.encode(ExternalEncoding))
+            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
@@ -910,7 +910,7 @@ class DNAMapping(AbstractMapping):
         self.exportAttributes(outfile, level, [], namespace_, name_='DNAMapping')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(self.valueOf_.encode(ExternalEncoding))
+            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
@@ -973,7 +973,7 @@ class AAMapping(AbstractMapping):
         self.exportAttributes(outfile, level, [], namespace_, name_='AAMapping')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(self.valueOf_.encode(ExternalEncoding))
+            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
@@ -1036,7 +1036,7 @@ class RNAMapping(AbstractMapping):
         self.exportAttributes(outfile, level, [], namespace_, name_='RNAMapping')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(self.valueOf_.encode(ExternalEncoding))
+            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
@@ -1099,7 +1099,7 @@ class StandardMapping(AbstractMapping):
         self.exportAttributes(outfile, level, [], namespace_, name_='StandardMapping')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(self.valueOf_.encode(ExternalEncoding))
+            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
@@ -9156,7 +9156,7 @@ class RNAState(AbstractState):
         self.exportAttributes(outfile, level, [], namespace_, name_='RNAState')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(self.valueOf_.encode(ExternalEncoding))
+            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
@@ -9553,7 +9553,7 @@ class RestrictionState(AbstractState):
         self.exportAttributes(outfile, level, [], namespace_, name_='RestrictionState')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(self.valueOf_.encode(ExternalEncoding))
+            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
@@ -9640,7 +9640,7 @@ class AAState(AbstractState):
         self.exportAttributes(outfile, level, [], namespace_, name_='AAState')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(self.valueOf_.encode(ExternalEncoding))
+            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
@@ -10460,7 +10460,7 @@ class DNAState(AbstractState):
         self.exportAttributes(outfile, level, [], namespace_, name_='DNAState')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(self.valueOf_.encode(ExternalEncoding))
+            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
@@ -15851,8 +15851,8 @@ def parseLiteral(inFileName):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-    sys.stdout.write('#from nexml import *\n\n')
-    sys.stdout.write('import nexml as model_\n\n')
+    sys.stdout.write('#from _nexml import *\n\n')
+    sys.stdout.write('import _nexml as model_\n\n')
     sys.stdout.write('rootObj = model_.rootTag(\n')
     rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
     sys.stdout.write(')\n')

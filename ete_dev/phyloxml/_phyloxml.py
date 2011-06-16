@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*- 
 
 #
-# Generated Wed Jun 15 12:40:40 2011 by generateDS.py version 2.5a.
+# Generated Thu Jun 16 18:28:52 2011 by generateDS.py version 2.5a.
 #
 
 import sys
@@ -356,7 +356,7 @@ class Phyloxml(GeneratedsSuper):
     phylogeny) possibly followed by elements from other namespaces."""
     subclass = None
     superclass = None
-    def __init__(self, phylogeny=None):
+    def __init__(self, phylogeny=None, valueOf_=None):
         if phylogeny is None:
             self.phylogeny = []
         else:
@@ -443,7 +443,7 @@ class Phylogeny(GeneratedsSuper):
     tree."""
     subclass = None
     superclass = None
-    def __init__(self, rerootable=None, branch_length_unit=None, type_=None, rooted=None, name=None, id=None, description=None, date=None, confidence=None, clade=None, clade_relation=None, sequence_relation=None, property=None):
+    def __init__(self, rerootable=None, branch_length_unit=None, type_=None, rooted=None, name=None, id=None, description=None, date=None, confidence=None, clade=None, clade_relation=None, sequence_relation=None, property=None, valueOf_=None):
         self.rerootable = _cast(bool, rerootable)
         self.branch_length_unit = _cast(None, branch_length_unit)
         self.type_ = _cast(None, type_)
@@ -754,7 +754,7 @@ class Clade(GeneratedsSuper):
     other elements to a clade (on the xml-level)."""
     subclass = None
     superclass = None
-    def __init__(self, id_source=None, branch_length_attr=None, name=None, branch_length=None, confidence=None, width=None, color=None, node_id=None, taxonomy=None, sequence=None, events=None, binary_characters=None, distribution=None, date=None, reference=None, property=None, clade=None):
+    def __init__(self, id_source=None, branch_length_attr=None, name=None, branch_length=None, confidence=None, width=None, color=None, node_id=None, taxonomy=None, sequence=None, events=None, binary_characters=None, distribution=None, date=None, reference=None, property=None, clade=None, valueOf_=None):
         self.id_source = _cast(None, id_source)
         self.branch_length_attr = _cast(None, branch_length_attr)
         self.name = name
@@ -1158,7 +1158,7 @@ class Taxonomy(GeneratedsSuper):
     other elements to a taxonomy (on the xml-level)."""
     subclass = None
     superclass = None
-    def __init__(self, id_source=None, id=None, code=None, scientific_name=None, authority=None, common_name=None, synonym=None, rank=None, uri=None):
+    def __init__(self, id_source=None, id=None, code=None, scientific_name=None, authority=None, common_name=None, synonym=None, rank=None, uri=None, valueOf_=None):
         self.id_source = _cast(None, id_source)
         self.id = id
         self.code = code
@@ -1381,7 +1381,7 @@ class Sequence(GeneratedsSuper):
     node."""
     subclass = None
     superclass = None
-    def __init__(self, id_source=None, id_ref=None, type_=None, symbol=None, accession=None, name=None, location=None, mol_seq=None, uri=None, annotation=None, domain_architecture=None):
+    def __init__(self, id_source=None, id_ref=None, type_=None, symbol=None, accession=None, name=None, location=None, mol_seq=None, uri=None, annotation=None, domain_architecture=None, valueOf_=None):
         self.id_source = _cast(None, id_source)
         self.id_ref = _cast(None, id_ref)
         self.type_ = _cast(None, type_)
@@ -1634,7 +1634,7 @@ class MolSeq(GeneratedsSuper):
         self.exportAttributes(outfile, level, [], namespace_, name_='MolSeq')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(self.valueOf_.encode(ExternalEncoding))
+            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
@@ -1644,6 +1644,7 @@ class MolSeq(GeneratedsSuper):
             already_processed.append('is_aligned')
             outfile.write(' is_aligned="%s"' % self.gds_format_boolean(self.gds_str_lower(str(self.is_aligned)), input_name='is_aligned'))
     def exportChildren(self, outfile, level, namespace_='phy:', name_='MolSeq', fromsubclass_=False):
+        super(MolSeq, self).exportChildren(outfile, level, namespace_, name_, True)
         pass
     def hasContent_(self):
         if (
@@ -1713,7 +1714,7 @@ class Accession(GeneratedsSuper):
         self.exportAttributes(outfile, level, [], namespace_, name_='Accession')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(self.valueOf_.encode(ExternalEncoding))
+            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
@@ -1767,7 +1768,7 @@ class DomainArchitecture(GeneratedsSuper):
     Attribute 'length' is the total length of the protein"""
     subclass = None
     superclass = None
-    def __init__(self, length=None, domain=None):
+    def __init__(self, length=None, domain=None, valueOf_=None):
         self.length = _cast(int, length)
         if domain is None:
             self.domain = []
@@ -1890,7 +1891,7 @@ class ProteinDomain(GeneratedsSuper):
         self.exportAttributes(outfile, level, [], namespace_, name_='ProteinDomain')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(self.valueOf_.encode(ExternalEncoding))
+            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
@@ -1989,7 +1990,7 @@ class Events(GeneratedsSuper):
     """Events at the root node of a clade (e.g. one gene duplication)."""
     subclass = None
     superclass = None
-    def __init__(self, type_=None, duplications=None, speciations=None, losses=None, confidence=None):
+    def __init__(self, type_=None, duplications=None, speciations=None, losses=None, confidence=None, valueOf_=None):
         self.type_ = type_
         self.duplications = duplications
         self.speciations = speciations
@@ -2135,7 +2136,7 @@ class BinaryCharacters(GeneratedsSuper):
     lost at the root of a clade."""
     subclass = None
     superclass = None
-    def __init__(self, lost_count=None, absent_count=None, present_count=None, type_=None, gained_count=None, gained=None, lost=None, present=None, absent=None):
+    def __init__(self, lost_count=None, absent_count=None, present_count=None, type_=None, gained_count=None, gained=None, lost=None, present=None, absent=None, valueOf_=None):
         self.lost_count = _cast(int, lost_count)
         self.absent_count = _cast(int, absent_count)
         self.present_count = _cast(int, present_count)
@@ -2336,7 +2337,7 @@ class BinaryCharacters(GeneratedsSuper):
 class BinaryCharacterList(GeneratedsSuper):
     subclass = None
     superclass = None
-    def __init__(self, bc=None):
+    def __init__(self, bc=None, valueOf_=None):
         if bc is None:
             self.bc = []
         else:
@@ -2414,7 +2415,7 @@ class Reference(GeneratedsSuper):
     possible."""
     subclass = None
     superclass = None
-    def __init__(self, doi=None, desc=None):
+    def __init__(self, doi=None, desc=None, valueOf_=None):
         self.doi = _cast(None, doi)
         self.desc = desc
     def factory(*args_, **kwargs_):
@@ -2500,7 +2501,7 @@ class Annotation(GeneratedsSuper):
     external resources."""
     subclass = None
     superclass = None
-    def __init__(self, source=None, type_=None, ref=None, evidence=None, desc=None, confidence=None, property=None, uri=None):
+    def __init__(self, source=None, type_=None, ref=None, evidence=None, desc=None, confidence=None, property=None, uri=None, valueOf_=None):
         self.source = _cast(None, source)
         self.type_ = _cast(None, type_)
         self.ref = _cast(None, ref)
@@ -2859,7 +2860,7 @@ class Uri(GeneratedsSuper):
         self.exportAttributes(outfile, level, [], namespace_, name_='Uri')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(self.valueOf_.encode(ExternalEncoding))
+            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
@@ -2945,7 +2946,7 @@ class Confidence(GeneratedsSuper):
         self.exportAttributes(outfile, level, [], namespace_, name_='Confidence')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(self.valueOf_.encode(ExternalEncoding))
+            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
@@ -3018,7 +3019,7 @@ class Id(GeneratedsSuper):
         self.exportAttributes(outfile, level, [], namespace_, name_='Id')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(self.valueOf_.encode(ExternalEncoding))
+            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
@@ -3076,7 +3077,7 @@ class Distribution(GeneratedsSuper):
     'Polygons'."""
     subclass = None
     superclass = None
-    def __init__(self, desc=None, point=None, polygon=None):
+    def __init__(self, desc=None, point=None, polygon=None, valueOf_=None):
         self.desc = desc
         if point is None:
             self.point = []
@@ -3200,7 +3201,7 @@ class Point(GeneratedsSuper):
     'meter')."""
     subclass = None
     superclass = None
-    def __init__(self, geodetic_datum=None, alt_unit=None, lat=None, long=None, alt=None):
+    def __init__(self, geodetic_datum=None, alt_unit=None, lat=None, long=None, alt=None, valueOf_=None):
         self.geodetic_datum = _cast(None, geodetic_datum)
         self.alt_unit = _cast(None, alt_unit)
         self.lat = lat
@@ -3332,7 +3333,7 @@ class Polygon(GeneratedsSuper):
     'Distribution')."""
     subclass = None
     superclass = None
-    def __init__(self, point=None):
+    def __init__(self, point=None, valueOf_=None):
         if point is None:
             self.point = []
         else:
@@ -3415,7 +3416,7 @@ class Date(GeneratedsSuper):
     range/confidence interval"""
     subclass = None
     superclass = None
-    def __init__(self, unit=None, desc=None, value=None, minimum=None, maximum=None):
+    def __init__(self, unit=None, desc=None, value=None, minimum=None, maximum=None, valueOf_=None):
         self.unit = _cast(None, unit)
         self.desc = desc
         self.value = value
@@ -3548,7 +3549,7 @@ class BranchColor(GeneratedsSuper):
     clades)."""
     subclass = None
     superclass = None
-    def __init__(self, red=None, green=None, blue=None):
+    def __init__(self, red=None, green=None, blue=None, valueOf_=None):
         self.red = red
         self.green = green
         self.blue = blue
@@ -3654,7 +3655,7 @@ class SequenceRelation(GeneratedsSuper):
     case attribute 'type' is 'orthology')."""
     subclass = None
     superclass = None
-    def __init__(self, id_ref_0=None, id_ref_1=None, type_=None, distance=None, confidence=None):
+    def __init__(self, id_ref_0=None, id_ref_1=None, type_=None, distance=None, confidence=None, valueOf_=None):
         self.id_ref_0 = _cast(None, id_ref_0)
         self.id_ref_1 = _cast(None, id_ref_1)
         self.type_ = _cast(None, type_)
@@ -3778,7 +3779,7 @@ class CladeRelation(GeneratedsSuper):
     clade."""
     subclass = None
     superclass = None
-    def __init__(self, id_ref_0=None, id_ref_1=None, type_=None, distance=None, confidence=None):
+    def __init__(self, id_ref_0=None, id_ref_1=None, type_=None, distance=None, confidence=None, valueOf_=None):
         self.id_ref_0 = _cast(None, id_ref_0)
         self.id_ref_1 = _cast(None, id_ref_1)
         self.type_ = _cast(None, type_)
@@ -3958,8 +3959,8 @@ def parseLiteral(inFileName):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-    sys.stdout.write('#from phyloxml import *\n\n')
-    sys.stdout.write('import phyloxml as model_\n\n')
+    sys.stdout.write('#from _phyloxml import *\n\n')
+    sys.stdout.write('import _phyloxml as model_\n\n')
     sys.stdout.write('rootObj = model_.rootTag(\n')
     rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
     sys.stdout.write(')\n')

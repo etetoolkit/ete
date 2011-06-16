@@ -8,7 +8,7 @@ and Phylogeny classes.
 """
 
 import sys
-from _phyloxml import Clade, Phylogeny, Tag_pattern_
+from _phyloxml import Clade, Phylogeny, Confidence, Tag_pattern_
 from ete_dev import PhyloTree
 
 class PhyloXMLTree(PhyloTree):
@@ -18,7 +18,7 @@ class PhyloXMLTree(PhyloTree):
         return "PhyloXML ETE tree <%s>" %hex(hash(self))
 
     def _get_dist(self):
-        return self.phyloxml_clade.branch_length
+        return self.phyloxml_clade.get_branch_length()
     def _set_dist(self, value):
         try:
             self.phyloxml_clade.set_branch_length(float(value))
@@ -26,15 +26,15 @@ class PhyloXMLTree(PhyloTree):
             raise
 
     def _get_support(self):
-        return self.phyloxml_clade.confidence
+        return self.__support.get_valueOf_()
     def _set_support(self, value):
         try:
-            self.phyloxml_clade.set_confidence(float(value))
+            self.__support.set_valueOf_(float(value))
         except ValueError:
             raise
 
     def _get_name(self):
-        return self.phyloxml_clade.name
+        return self.phyloxml_clade.get_name()
     def _set_name(self, value):
         try:
             self.phyloxml_clade.set_name(value)
@@ -56,9 +56,8 @@ class PhyloXMLTree(PhyloTree):
             self.phyloxml_phylogeny = phyloxml_phylogeny 
         if not phyloxml_clade:
             self.phyloxml_clade = Clade()
-            self.phyloxml_clade.branch_length = 1.0
-            self.phyloxml_clade.name = "UnNamed"
-            self.phyloxml_clade.support = 1.0
+            self.__support = Confidence(valueOf_=1.0, type_="branch_support")
+            self.phyloxml_clade.add_confidence(self.__support)
         else:
             self.phyloxml_clade = phyloxml_clade
         super(PhyloXMLTree, self).__init__(**kargs)
