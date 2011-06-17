@@ -108,7 +108,7 @@ html_theme = 'default'
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-html_title = "A Python Environment for Tree Exploration (Extended Newick, Nexml and Phyloxml phylogenetic format support)"
+html_title = "A Python Environment for (phylogenetic) Tree Exploration"
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 html_short_title = "ETE documentation"
