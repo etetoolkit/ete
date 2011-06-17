@@ -1,6 +1,7 @@
 Contents
 ***************
 
+:download:`[Download PDF documentation]  <../doc/ETE.pdf>` || 
 
 .. toctree::
 
@@ -20,3 +21,4 @@ Contents
 
 :genindex:
 :modindex:
+

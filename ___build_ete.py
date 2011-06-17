@@ -1,9 +1,14 @@
 #!/usr/bin/env python
 
+# requires: 
+#  pdflatex tools
+# python twitter module 
+# sphinx
+
 import os
 import sys
 import commands
-
+import readline
 from optparse import OptionParser
 
 parser = OptionParser()
@@ -75,15 +80,20 @@ def _ex(cmd, interrupt=True):
 
 def ask(string, valid_values, default=-1, case_sensitive=False):
     """ Asks for a keyborad answer """
+
     v = None
     if not case_sensitive:
         valid_values = [value.lower() for value in valid_values]
     while v not in valid_values:
-        v = raw_input("%s [%s] " % (string, ', '.join(valid_values))).strip()
-        if v == '' and default>=0:
-            v = valid_values[default]
-        if not case_sensitive:
-            v = v.lower()
+        readline.set_startup_hook(lambda: readline.insert_text(default))
+        try:
+            v = raw_input("%s [%s] " % (string, ', '.join(valid_values))).strip()
+            if v == '' and default>=0:
+                v = valid_values[default]
+            if not case_sensitive:
+                v = v.lower()
+        finally:
+            readline.set_startup_hook()
     return v
 
 def ask_path(string, default_path):
@@ -111,6 +121,7 @@ METAPKG_PATH = "/home/jhuerta/_Devel/ete_metapackage"
 RELEASES_BASE_PATH = "/tmp"
 MODULE_NAME = "ete2a1"
 VERSION = MODULE_NAME+"rev"+commands.getoutput("git log --pretty=format:'' | wc -l").strip()
+VERSION_LOG = commands.getoutput("git log --pretty=format:'%s' | head -n1").strip()
 RELEASE_NAME = MODULE_NAME+"-"+VERSION
 RELEASE_PATH = os.path.join(RELEASES_BASE_PATH, RELEASE_NAME)
 RELEASE_MODULE_PATH = os.path.join(RELEASE_PATH, MODULE_NAME)
@@ -205,14 +216,21 @@ if options.doc:
     #              (RELEASE_PATH, RELEASE_MODULE_PATH, RELEASE_NAME, RELEASE_PATH))
     # _ex("cp %s/doc/latex_guide/api.pdf %s/doc/%s.pdf " %\
     #              (RELEASE_PATH, RELEASE_PATH, RELEASE_NAME))
-    _ex("cd %s/sdoc; make html" % RELEASE_PATH)
+
+    # Generates PDF doc
     _ex("cd %s/sdoc; make latex" % RELEASE_PATH)
     _ex("cd %s/sdoc/_build/latex/; make all-pdf" % RELEASE_PATH)
-    _ex("cp -a %s/sdoc/_build/html/ %s/doc/" %(RELEASE_PATH, RELEASE_PATH))
     _ex("cp -a %s/sdoc/_build/latex/*.pdf %s/doc/" %(RELEASE_PATH, RELEASE_PATH))
 
+    # Generates HTML doc (it includes a link to the PDF doc, so it
+    # must be executed after PDF commands)
+    _ex("cd %s/sdoc; make html" % RELEASE_PATH)
+    _ex("cp -a %s/sdoc/_build/html/ %s/doc/" %(RELEASE_PATH, RELEASE_PATH))
+
+    # Set the correct ete module name in all doc files
     _ex('find %s/doc | xargs perl -e "s/ete_dev/%s/g" -p -i' %\
             (RELEASE_PATH, MODULE_NAME) )
+
 
     copydoc= ask("Update ONLINE documentation?", ["y","n"])
     if copydoc=="y":
@@ -257,17 +275,9 @@ if release=="y":
     _ex("ssh %s 'cd %s; sh update_downloads.sh'" %(SERVER, SERVER_RELEASES_PATH))
 
 
-updatemeta= ask("Update metapkg?", ["y","n"])
-if updatemeta=="y":
-    print "Updating metapkg..."
-    _ex("sudo cp -a %s/%s.tar.gz %s/root/" %\
-            (RELEASES_BASE_PATH, RELEASE_NAME, METAPKG_JAIL_PATH))
-    print "Updating ete in chroot"
-    _ex("sudo chroot %s easy_install /root/%s.tar.gz" %\
-            (METAPKG_JAIL_PATH, RELEASE_NAME))
-    # cd is important to avoid the full path when uncompressing
-    _ex("cd %s/..; sudo tar -zcf ete_metapkg.tar.gz ete_metapackage/" %\
-            (METAPKG_PATH))
-    print "Copying metapkg to main server"
-    _ex("scp %s/../ete_metapkg.tar.gz %s" %\
-            (METAPKG_PATH,  SERVER+":"+SERVER_METAPKG_PATH))
+announce = ask("publish tweet?", ["y","n"])
+if announce == "y":
+    msg = ask(default=VERSION_LOG)
+    
+    if ask("publish tweet?", ["y","n"]) == "y":
+        _ex("twitter -eetetoolkit set %s" %msg) 

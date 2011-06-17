@@ -2,6 +2,7 @@
 
 {% block tables %}
   <table class="contentstable" align="center"><tr>
+     
     <td width="50%">
       <p class="biglink"><a class="biglink" href="{{ pathto("changelog/changelog" + version) }}">What's new in ETE {{ version }}?</a><br/>
          <span class="linkdescr"><a href="{{ pathto("changelog/index") }}">Check older changes</a></span></span></p>
@@ -25,7 +26,6 @@
     </td></tr>
   </table>
 
-  <p><strong>Meta information:</strong></p>
   <table class="contentstable" align="center"><tr>
     <td width="50%">
       <p class="biglink"><a class="biglink" href="{{ pathto("about") }}">About ETE</a><br/>
@@ -36,6 +36,11 @@
       <p class="biglink"><a class="biglink" href="{{ pathto("license") }}">License</a></p>
     </td></tr>
   </table>
+
+
+  <div class="note" style="border:0px;text-align:center;background-color:#ffffff">
+    <a href="_downloads/ETE.pdf"> Download documentation as PDF </a>
+  </div>
 
   <!-- <p><strong>Indices and tables:</strong></p> -->
   <!-- <table class="contentstable" align="center"><tr> -->

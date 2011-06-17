@@ -1,9 +1,11 @@
-You should place this file in a WSGI apache enabled directory
+You should copy this directory to your document root. 
+Do not forget to enable the wsgi/ directory to execute WSGI applications. 
 
-This structure worked for me
+
+The following structure worked for me:
 
 /var/www/wsgi/webplugin_example.py 
-/var/www/tmp/			  # 777 
+/var/www/tmp/			     # chmod 777 
 /var/www/webplugin_example.html
 /var/www/jquery-1.4.2.min.js
 /var/www/ete.js
@@ -14,7 +16,6 @@ My apache config para el sitio "default":
 
 <VirtualHost *:80>
  ServerAdmin webmaster@localhost
-
  
  DocumentRoot /var/www
  <Directory />
