@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*- 
 
 #
-# Generated Thu Jun 16 18:28:52 2011 by generateDS.py version 2.5a.
+# Generated Fri Jun 17 17:13:06 2011 by generateDS.py version 2.5a.
 #
 
 import sys
@@ -3926,7 +3926,7 @@ def parse(inFileName):
     doc = None
     sys.stdout.write('<?xml version="1.0" ?>\n')
     rootObj.export(sys.stdout, 0, name_=rootTag, 
-        namespacedef_='')
+        namespacedef_='xmlns:phy="http://www.phyloxml.org"')
     return rootObj
 
 
@@ -3944,7 +3944,7 @@ def parseString(inString):
     doc = None
     sys.stdout.write('<?xml version="1.0" ?>\n')
     rootObj.export(sys.stdout, 0, name_="phyloxml",
-        namespacedef_='')
+        namespacedef_='xmlns:phy="http://www.phyloxml.org"')
     return rootObj
 
 

@@ -55,4 +55,7 @@ Creating PhyloXML projects from scratch
 In order to create new PhyloXML projects, a set of classes is
 available in the :mod:`ete_dev.phyloxml` module.
 
+.. literalinclude:: ../../examples/phyloxml/phyloxml_from_scratch.py
+
+:download:`[Download script]  <../../examples/phyloxml/phyloxml_from_scratch.py>`
   
