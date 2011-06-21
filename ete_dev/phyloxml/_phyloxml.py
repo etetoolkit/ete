@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*- 
 
 #
-# Generated Fri Jun 17 17:13:06 2011 by generateDS.py version 2.5a.
+# Generated Tue Jun 21 17:27:37 2011 by generateDS.py version 2.5a.
 #
 
 import sys
@@ -168,7 +168,7 @@ except ImportError, exp:
 # Globals
 #
 
-ExternalEncoding = 'ascii'
+ExternalEncoding = 'utf-8'
 Tag_pattern_ = re_.compile(r'({.*})?(.*)')
 STRING_CLEANUP_PAT = re_.compile(r"[\n\r\s]+")
 
@@ -1644,7 +1644,6 @@ class MolSeq(GeneratedsSuper):
             already_processed.append('is_aligned')
             outfile.write(' is_aligned="%s"' % self.gds_format_boolean(self.gds_str_lower(str(self.is_aligned)), input_name='is_aligned'))
     def exportChildren(self, outfile, level, namespace_='phy:', name_='MolSeq', fromsubclass_=False):
-        super(MolSeq, self).exportChildren(outfile, level, namespace_, name_, True)
         pass
     def hasContent_(self):
         if (
@@ -3926,7 +3925,7 @@ def parse(inFileName):
     doc = None
     sys.stdout.write('<?xml version="1.0" ?>\n')
     rootObj.export(sys.stdout, 0, name_=rootTag, 
-        namespacedef_='xmlns:phy="http://www.phyloxml.org"')
+        namespacedef_='xmlns:phy="http://www.phyloxml.org/1.10/phyloxml.xsd"')
     return rootObj
 
 
@@ -3944,7 +3943,7 @@ def parseString(inString):
     doc = None
     sys.stdout.write('<?xml version="1.0" ?>\n')
     rootObj.export(sys.stdout, 0, name_="phyloxml",
-        namespacedef_='xmlns:phy="http://www.phyloxml.org"')
+        namespacedef_='xmlns:phy="http://www.phyloxml.org/1.10/phyloxml.xsd"')
     return rootObj
 
 
@@ -3959,8 +3958,8 @@ def parseLiteral(inFileName):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-    sys.stdout.write('#from _phyloxml import *\n\n')
-    sys.stdout.write('import _phyloxml as model_\n\n')
+    sys.stdout.write('#from phyloxml import *\n\n')
+    sys.stdout.write('import phyloxml as model_\n\n')
     sys.stdout.write('rootObj = model_.rootTag(\n')
     rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
     sys.stdout.write(')\n')

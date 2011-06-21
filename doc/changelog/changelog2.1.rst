@@ -46,6 +46,7 @@ What's new in ETE 2.1
    * Added :func:`TreeNode.convert_to_ultrametric`: converts all branch lengths to allow leaves to be equidistant to root
    * Added :func:`TreeNode.sort_descendants`: sort tree branches according to node names.
    * Added :func:`TreeNode.ladderize`: sort tree branches according to partition size
+   * Added :func:`TreeNode.get_partitions`: return the set of all possible partitions grouping leaf nodes
    * nodes can now be fully exported using cPickle 
    * newick parser can read distances and support values using scientific notation
    * :func:`TreeNode.swap_childs` method has changed to :func:`TreeNode.swap_children`

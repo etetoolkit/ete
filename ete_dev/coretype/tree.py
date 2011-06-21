@@ -372,7 +372,7 @@ class TreeNode(object):
 
     def prune(self, nodes):
         """
-        Prunes the topology of this node in order to conserve only a
+        Prunes the topology of a node in order to conserve only a
         selected list of leaf or internal nodes. The algorithm deletes
         nodes until getting a consistent topology with a subset of
         nodes. Topology relationships among kept nodes is maintained.
@@ -1371,12 +1371,43 @@ class TreeNode(object):
             n.add_features(_nid=counter)
             counter += 1
 
+    def get_partitions(self):
+        """ 
+        .. versionadded: 2.1
+        
+        It returns the set of all possible partitions under a
+        node. Note that current implementation is quite inefficient
+        when used in very large trees.
+
+        t = Tree("((a, b), e);")
+        partitions = t.get_partitions()
+
+        # Will return: 
+        # a,b,e
+        # a,e
+        # b,e
+        # a,b
+        # e
+        # b
+        # a
+        """
+        all_leaves = frozenset(self.get_leaf_names())
+        all_partitions = set([all_leaves])
+        for n in self.iter_descendants():
+            p1 = frozenset(n.get_leaf_names())
+            p2 = frozenset(all_leaves - p1)
+            all_partitions.add(p1)
+            all_partitions.add(p2)
+        return all_partitions
+
     def convert_to_ultrametric(self, tree_length, strategy="balanced"):
         """
         .. versionadded: 2.1 
 
-        Converts a tree to ultrametric topology (all leaves must
-        have the same distance to root).
+        Converts a tree to ultrametric topology (all leaves must have
+        the same distance to root). Note that, for visual inspection
+        of ultrametric trees, node.img_style["size"] should be set to
+        0.
         """
 
         # pre-calculate how many splits remain under each node

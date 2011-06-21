@@ -207,18 +207,5 @@ def test_ultrametric():
     nameFace = faces.AttrFace("name")
     t.show(ultrametric_layout)
 
-
-def generate_partitions(t):
-    """ Nice function to generate all posible partitions in a tree"""
-    all_leaves = frozenset(t.get_leaf_names())
-    all_partitions = set([all_leaves])
-    for n in t.iter_descendants():
-        p1 = frozenset(n.get_leaf_names())
-        p2 = frozenset(all_leaves - p1)
-        all_partitions.add(p1)
-        all_partitions.add(p2)
-    return all_partitions
-
-
 if __name__ == "__main__":
     test_ultrametric()
