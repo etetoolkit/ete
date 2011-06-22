@@ -445,6 +445,7 @@ class Test_Coretype_Tree(unittest.TestCase):
         t1 = Tree("(((A, B), C)[&&NHX:name=I], (D, F)[&&NHX:name=J])[&&NHX:name=root];")
         D1 = t1.search_nodes(name="D")[0]
         t1.prune(["A","C", D1])
+        sys.stdout.flush()
         self.assertEqual(set([n.name for n in t1.iter_descendants()]),  set(["A","C","D","I"]))
         
         t1 = Tree("(((A, B), C)[&&NHX:name=I], (D, F)[&&NHX:name=J])[&&NHX:name=root];")
@@ -461,7 +462,6 @@ class Test_Coretype_Tree(unittest.TestCase):
         self.assertEqual(t_fuzzy.write(),orig_nw)
         # Total number of nodes is correct (no single child nodes)
         self.assertEqual(len(t_fuzzy.get_descendants()), (len(ref_nodes)*2)-2 )
-
 
         t = Tree()
         sample_size = 5
@@ -594,16 +594,11 @@ class Test_Coretype_Tree(unittest.TestCase):
         """ Check branch support and distances after rooting """
 
         t = Tree("((((a,b)1,c)2,i)3,(e,d)4)5;", format=1)
-        print t.get_ascii()
         t.set_outgroup(t&"a")
-        print t.get_ascii()
 
 
         t = Tree("(((a,b)2,c)x)9;", format=1)
-        print "START"
-        print t.get_ascii()
         t.set_outgroup(t&"a")
-        print t.get_ascii()
 
         # Test branch support and distances after rooting
         SIZE = 35

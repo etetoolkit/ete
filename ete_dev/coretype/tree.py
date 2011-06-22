@@ -163,7 +163,8 @@ class TreeNode(object):
         return True
 
     def __repr__(self):
-        return "Tree node (%s)" %hex(self.__hash__())
+
+        return "Tree node '%s' (%s)" %(self.name, hex(self.__hash__()))
 
     def __and__(self, value):
         """ This allows to execute tree&'A' to obtain the descendant node
@@ -373,9 +374,9 @@ class TreeNode(object):
     def prune(self, nodes):
         """
         Prunes the topology of a node in order to conserve only a
-        selected list of leaf or internal nodes. The algorithm deletes
-        nodes until getting a consistent topology with a subset of
-        nodes. Topology relationships among kept nodes is maintained.
+        selected list of leaf or internal nodes. The minimum number of
+        internal nodes (the deepest as possible) are kept to conserve
+        the topological relationship among the provided list of nodes.
 
         :var nodes: a list of node names or node objects that must be kept
 
@@ -388,26 +389,51 @@ class TreeNode(object):
           t.prune(["A","D", node_C])
           print t
         """
+        def cmp_nodes(x, y):
+            # if several nodes are in the same path of two kept nodes,
+            # only one should be maintained. This prioritize internal
+            # nodes that are already in the to_keep list and then
+            # deeper nodes (closer to the leaves). 
+            if x in to_keep:
+                if y not in to_keep:
+                    return -1
+                elif y in to_keep:
+                    return 0
+            elif n2depth[x] > n2depth[y]:
+                return -1
+            elif n2depth[x] < n2depth[y]:
+                return 1
+            else:
+                return 0
 
         to_keep = set(_translate_nodes(self, *nodes))
-        
         start, node2path = self.get_common_ancestor(to_keep, get_path=True)
+
+        # Calculate which kept nodes are visiting the same nodes in
+        # their path to the common ancestor.
         n2count = {}
-        for n1, path1 in node2path.iteritems():
-            for n2 in path1: 
-                n2count[n2] = n2count.get(n2, 0) + 1
-        
-        to_keep.update([n for n,count in n2count.iteritems() if count >1])
-       
-        #for n1, path1 in node2path.iteritems():
-        #    for n2 in path1: 
-        #        for n3, path2 in node2path.iteritems():
-        #            if n1 != n2 and n2 in path2: 
-        #                to_keep.add(n2)
+        n2depth = {}
+        for seed, path in node2path.iteritems():
+            for visited_node in path: 
+                if visited_node not in n2depth:
+                    depth = visited_node.get_distance(start, topology_only=True)
+                    n2depth[visited_node] = depth
+                if visited_node is not seed:
+                    n2count.setdefault(visited_node, set()).add(seed)
 
-        #i = all_paths[0].intersection(*all_paths[1:])
-        #to_keep.update(i)
+        # if several internal nodes are in the path of exactly the
+        # same kept nodes, only one should be maintain. 
+        visitors2nodes = {}
+        for node, visitors in n2count.iteritems():
+            # keep nodes connection at least two other nodes
+            if len(visitors)>1: 
+                visitor_key = frozenset(visitors)
+                visitors2nodes.setdefault(visitor_key, set()).add(node)
+        for visitors, nodes in visitors2nodes.iteritems():
+            s = sorted(nodes, cmp_nodes)
+            to_keep.add(s[0])
 
+        # Detach unvisited branches
         if start is not self:
             start.detach()
             for n in self.get_children(): 
@@ -415,10 +441,9 @@ class TreeNode(object):
             for n in start.get_children():
                 self.add_child(child=n)
 
-        for n in self.traverse(): 
+        for n in [self]+self.get_descendants():
             if n not in to_keep: 
-                n.delete()
-
+                n.delete(prevent_nondicotomic=False)
 
     def prune_OLD(self, nodes):
         """
@@ -1478,7 +1503,7 @@ def _translate_nodes(root, *nodes):
 
     if None in name2node.values():
         notfound = [key for key, value in name2node.iteritems() if value is None]
-        raise ValueError, "Node names not found: "+str(nodefound)
+        raise ValueError("Node names not found: "+str(notfound))
 
     valid_nodes = []
     for n in nodes: 
