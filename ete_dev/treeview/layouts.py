@@ -45,7 +45,8 @@ def phylogeny(node):
             node.img_style["fgcolor"] = "#777777"
             node.img_style["vt_line_color"] = "#777777"
             node.img_style["hz_line_color"] = "#777777"
-            node.img_style["line_type"] = 1
+            node.img_style["hz_line_type"] = 1
+            node.img_style["vt_line_type"] = 1
             leaf_color = "#777777"
 
     if node.is_leaf():

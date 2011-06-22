@@ -1193,8 +1193,7 @@ class TreeNode(object):
             else:
                 raise TreeError, "Cannot unroot a tree with only two leaves"
 
-    def show(self, layout=None, \
-               tree_style=None):
+    def show(self, layout=None, tree_style=None):
         """ 
         Starts an interative session to visualize current node
         structure using provided layout and TreeStyle.

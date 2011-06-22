@@ -127,7 +127,10 @@ class PhyloNode(TreeNode):
             self.set_species_naming_function(sp_naming_function)
 
     def __repr__(self):
-        return "PhyloTree node (%s)" %hex(self.__hash__())
+        return "PhyloTree node '%s' (%s)" %(self.name, hex(self.__hash__()))
+
+    def show(self, layout="phylogeny", tree_style=None):
+        super(PhyloNode, self).show(layout=layout, tree_style=tree_style)
 
     def set_species_naming_function(self, fn):
         """ 
