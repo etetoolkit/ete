@@ -56,6 +56,8 @@ class PhyloXMLTree(PhyloTree):
             self.phyloxml_phylogeny = phyloxml_phylogeny 
         if not phyloxml_clade:
             self.phyloxml_clade = Clade()
+            self.phyloxml_clade.set_branch_length(0.0)
+            self.phyloxml_clade.set_name("NoName")
             self.__support = Confidence(valueOf_=1.0, type_="branch_support")
             self.phyloxml_clade.add_confidence(self.__support)
         else:

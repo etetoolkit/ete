@@ -20,6 +20,9 @@ tree_collection.add_tree(nexml_tree)
 nexml_tree2 = nexml.NexMLTree("((hello, nexml):1.51, project):0.6;")
 tree_collection.add_tree(nexml_tree2)
 
+# Tree can be handled as normal ETE objects
+nexml_tree2.show()
+
 # Add the collection of trees to the NexML project object
 nexml_project.add_trees(tree_collection)
 

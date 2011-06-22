@@ -69,6 +69,7 @@ class NexMLTree(PhyloTree):
         self.nexml_edge.id = "edge_%s" %hash(self)
         self.nexml_project = None
         self._nexml_support = LiteralMeta(datatype="float", property="branch_support", content=1.0)
+        self.nexml_edge.length = 0.0
         self.nexml_edge.add_meta(self._nexml_support)
 
         # Initialize empty PhyloTree

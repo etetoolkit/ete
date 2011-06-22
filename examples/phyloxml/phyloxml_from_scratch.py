@@ -9,6 +9,24 @@ phylo.populate(5, random_dist=True)
 phylo.phyloxml_phylogeny.set_name("test_tree")
 # Add the tree to the phyloxml project
 project.add_phylogeny(phylo)
+
+print project.get_phylogeny()[0]
+
+#          /-iajom
+#     /---|
+#    |     \-wiszh
+#----|
+#    |     /-xrygw
+#     \---|
+#         |     /-gjlwx
+#          \---|
+#               \-ijvnk
+
+# Trees can be operated as normal ETE trees
+phylo.show()
+
+
+# Export the project as phyloXML format
 project.export()
 
 # <phy:Phyloxml>
