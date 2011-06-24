@@ -1318,6 +1318,41 @@ class TreeNode(object):
 
         Sort the branches of a given tree (swapping children nodes)
         according to the size of each partition.
+
+        ::
+
+           t =  Tree("(f,((d, ((a,b),c)),e));")
+
+           print t
+
+           #            
+           #      /-f
+           #     |
+           #     |          /-d
+           # ----|         |
+           #     |     /---|          /-a
+           #     |    |    |     /---|
+           #     |    |     \---|     \-b
+           #      \---|         |
+           #          |          \-c
+           #          |
+           #           \-e
+
+           t.ladderize()
+           print t
+
+           #      /-f
+           # ----|
+           #     |     /-e
+           #      \---|
+           #          |     /-d
+           #           \---|
+           #               |     /-c
+           #                \---|
+           #                    |     /-a
+           #                     \---|
+           #                          \-b
+
         """
 
         if not self.is_leaf():

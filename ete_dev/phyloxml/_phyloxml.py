@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*- 
 
 #
-# Generated Tue Jun 21 17:27:37 2011 by generateDS.py version 2.5a.
+# Generated Fri Jun 24 09:44:49 2011 by generateDS.py version 2.5a.
 #
 
 import sys
@@ -3923,9 +3923,9 @@ def parse(inFileName):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-    sys.stdout.write('<?xml version="1.0" ?>\n')
-    rootObj.export(sys.stdout, 0, name_=rootTag, 
-        namespacedef_='xmlns:phy="http://www.phyloxml.org/1.10/phyloxml.xsd"')
+##     sys.stdout.write('<?xml version="1.0" ?>\n')
+##     rootObj.export(sys.stdout, 0, name_=rootTag, 
+##         namespacedef_='xmlns:phy="http://www.phyloxml.org/1.10/phyloxml.xsd"')
     return rootObj
 
 
@@ -3941,9 +3941,9 @@ def parseString(inString):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-    sys.stdout.write('<?xml version="1.0" ?>\n')
-    rootObj.export(sys.stdout, 0, name_="phyloxml",
-        namespacedef_='xmlns:phy="http://www.phyloxml.org/1.10/phyloxml.xsd"')
+##     sys.stdout.write('<?xml version="1.0" ?>\n')
+##     rootObj.export(sys.stdout, 0, name_="phyloxml",
+##         namespacedef_='xmlns:phy="http://www.phyloxml.org/1.10/phyloxml.xsd"')
     return rootObj
 
 
@@ -3958,11 +3958,11 @@ def parseLiteral(inFileName):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-    sys.stdout.write('#from phyloxml import *\n\n')
-    sys.stdout.write('import phyloxml as model_\n\n')
-    sys.stdout.write('rootObj = model_.rootTag(\n')
-    rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
-    sys.stdout.write(')\n')
+##     sys.stdout.write('#from phyloxml import *\n\n')
+##     sys.stdout.write('import phyloxml as model_\n\n')
+##     sys.stdout.write('rootObj = model_.rootTag(\n')
+##     rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
+##     sys.stdout.write(')\n')
     return rootObj
 
 

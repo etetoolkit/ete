@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*- 
 
 #
-# Generated Thu Jun 16 18:30:08 2011 by generateDS.py version 2.5a.
+# Generated Fri Jun 24 09:44:50 2011 by generateDS.py version 2.5a.
 #
 
 import sys
@@ -168,7 +168,7 @@ except ImportError, exp:
 # Globals
 #
 
-ExternalEncoding = 'ascii'
+ExternalEncoding = 'utf-8'
 Tag_pattern_ = re_.compile(r'({.*})?(.*)')
 STRING_CLEANUP_PAT = re_.compile(r"[\n\r\s]+")
 
@@ -444,7 +444,7 @@ class Meta(Base):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='Meta')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="Meta"')
         if self.hasContent_():
             outfile.write('>')
@@ -524,7 +524,7 @@ class ResourceMeta(Meta):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='ResourceMeta')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="ResourceMeta"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -600,6 +600,7 @@ class ResourceMeta(Meta):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -649,7 +650,7 @@ class LiteralMeta(Meta):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='LiteralMeta')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="LiteralMeta"')
         if self.hasContent_():
             outfile.write('>')
@@ -830,7 +831,7 @@ class AbstractMapping(Base):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='AbstractMapping')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="AbstractMapping"')
         if self.hasContent_():
             outfile.write('>')
@@ -1169,7 +1170,7 @@ class Annotated(Base):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='Annotated')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="Annotated"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -1234,6 +1235,7 @@ class Annotated(Base):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -1302,7 +1304,7 @@ class Nexml(Annotated):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='Nexml')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="Nexml"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -1416,6 +1418,7 @@ class Nexml(Annotated):
             self.otus.append(obj_)
         elif nodeName_ == 'characters':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -1473,7 +1476,7 @@ class AbstractObsMatrix(Annotated):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='AbstractObsMatrix')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="AbstractObsMatrix"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -1542,6 +1545,7 @@ class AbstractObsMatrix(Annotated):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'row':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -1599,7 +1603,7 @@ class AbstractSeqMatrix(Annotated):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='AbstractSeqMatrix')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="AbstractSeqMatrix"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -1668,6 +1672,7 @@ class AbstractSeqMatrix(Annotated):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'row':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -1735,7 +1740,7 @@ class AbstractFormat(Annotated):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='AbstractFormat')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="AbstractFormat"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -1819,6 +1824,7 @@ class AbstractFormat(Annotated):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'states':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -1836,6 +1842,7 @@ class AbstractFormat(Annotated):
             self.states.append(obj_)
         elif nodeName_ == 'char':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -2203,7 +2210,7 @@ class Labelled(Annotated):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='Labelled')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="Labelled"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -4027,7 +4034,7 @@ class AbstractObs(Labelled):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='AbstractObs')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="AbstractObs"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -4202,6 +4209,7 @@ class ContinuousObs(AbstractObs):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -4242,7 +4250,7 @@ class IDTagged(Labelled):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='IDTagged')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="IDTagged"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -4326,7 +4334,7 @@ class Taxa(IDTagged):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='Taxa')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="Taxa"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -4421,7 +4429,7 @@ class Taxon(IDTagged):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='Taxon')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="Taxon"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -4503,7 +4511,7 @@ class AbstractTrees(IDTagged):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='AbstractTrees')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="AbstractTrees"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -4587,6 +4595,7 @@ class AbstractTrees(IDTagged):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'network':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -4604,6 +4613,7 @@ class AbstractTrees(IDTagged):
             self.network.append(obj_)
         elif nodeName_ == 'tree':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -4668,7 +4678,7 @@ class AbstractNetwork(IDTagged):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='AbstractNetwork')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="AbstractNetwork"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -4752,6 +4762,7 @@ class AbstractNetwork(IDTagged):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'node':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -4769,6 +4780,7 @@ class AbstractNetwork(IDTagged):
             self.node.append(obj_)
         elif nodeName_ == 'edge':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -4835,7 +4847,7 @@ class AbstractTree(IDTagged):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='AbstractTree')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="AbstractTree"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -4927,6 +4939,7 @@ class AbstractTree(IDTagged):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'node':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -4944,6 +4957,7 @@ class AbstractTree(IDTagged):
             self.node.append(obj_)
         elif nodeName_ == 'rootedge':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -4961,6 +4975,7 @@ class AbstractTree(IDTagged):
             self.set_rootedge(obj_)
         elif nodeName_ == 'edge':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -5011,7 +5026,7 @@ class AbstractRootEdge(IDTagged):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='AbstractRootEdge')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="AbstractRootEdge"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -5103,7 +5118,7 @@ class AbstractEdge(IDTagged):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='AbstractEdge')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="AbstractEdge"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -5334,6 +5349,7 @@ class IntTree(AbstractTree):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -5524,6 +5540,7 @@ class FloatTree(AbstractTree):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -5650,6 +5667,7 @@ class TreeIntRootEdge(AbstractRootEdge):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -5760,6 +5778,7 @@ class TreeIntEdge(AbstractEdge):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -5870,6 +5889,7 @@ class TreeFloatRootEdge(AbstractRootEdge):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -5980,6 +6000,7 @@ class TreeFloatEdge(AbstractEdge):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -6101,6 +6122,7 @@ class StandardObs(AbstractObs):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -6223,6 +6245,7 @@ class RNAObs(AbstractObs):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -6345,6 +6368,7 @@ class RestrictionObs(AbstractObs):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -6467,6 +6491,7 @@ class AAObs(AbstractObs):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -6589,6 +6614,7 @@ class DNAObs(AbstractObs):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -6644,7 +6670,7 @@ class AbstractChar(IDTagged):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='AbstractChar')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="AbstractChar"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -6779,7 +6805,7 @@ class AbstractStates(IDTagged):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='AbstractStates')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="AbstractStates"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -6878,6 +6904,7 @@ class AbstractStates(IDTagged):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'state':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -6895,6 +6922,7 @@ class AbstractStates(IDTagged):
             self.state.append(obj_)
         elif nodeName_ == 'polymorphic_state_set':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -6912,6 +6940,7 @@ class AbstractStates(IDTagged):
             self.polymorphic_state_set.append(obj_)
         elif nodeName_ == 'uncertain_state_set':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -6959,7 +6988,7 @@ class AbstractState(IDTagged):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='AbstractState')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="AbstractState"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -7148,6 +7177,7 @@ class ContinuousChar(AbstractChar):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -7182,7 +7212,7 @@ class AbstractSet(IDTagged):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='AbstractSet')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="AbstractSet"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -7245,7 +7275,7 @@ class TaxaLinked(IDTagged):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='TaxaLinked')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="TaxaLinked"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -7319,7 +7349,7 @@ class OptionalTaxonLinked(IDTagged):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='OptionalTaxonLinked')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="OptionalTaxonLinked"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -7393,7 +7423,7 @@ class TaxonLinked(IDTagged):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='TaxonLinked')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="TaxonLinked"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -7806,6 +7836,7 @@ class NetworkIntEdge(AbstractEdge):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -7916,6 +7947,7 @@ class NetworkFloatEdge(AbstractEdge):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -7957,7 +7989,7 @@ class AbstractNode(OptionalTaxonLinked):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='AbstractNode')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="AbstractNode"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -8090,6 +8122,7 @@ class TreeNode(AbstractNode):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -8148,7 +8181,7 @@ class Trees(TaxaLinked):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='Trees')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="Trees"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -8232,6 +8265,7 @@ class Trees(TaxaLinked):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'network':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -8249,6 +8283,7 @@ class Trees(TaxaLinked):
             self.network.append(obj_)
         elif nodeName_ == 'tree':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -8422,6 +8457,7 @@ class StandardChar(AbstractChar):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -8607,6 +8643,7 @@ class StandardStates(AbstractStates):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -8739,6 +8776,7 @@ class StandardState(AbstractState):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -8907,6 +8945,7 @@ class RNAChar(AbstractChar):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -9092,6 +9131,7 @@ class RNAStates(AbstractStates):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -9360,6 +9400,7 @@ class RestrictionChar(AbstractChar):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -9499,6 +9540,7 @@ class RestrictionStates(AbstractStates):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -9861,6 +9903,7 @@ class AAStates(AbstractStates):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -10044,6 +10087,7 @@ class AAChar(AbstractChar):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -10211,6 +10255,7 @@ class DNAChar(AbstractChar):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -10396,6 +10441,7 @@ class DNAStates(AbstractStates):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -10534,7 +10580,7 @@ class AbstractBlock(TaxaLinked):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='AbstractBlock')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="AbstractBlock"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -10581,6 +10627,7 @@ class AbstractBlock(TaxaLinked):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'format':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -10635,7 +10682,7 @@ class AbstractObsRow(TaxonLinked):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='AbstractObsRow')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="AbstractObsRow"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -10704,6 +10751,7 @@ class AbstractObsRow(TaxonLinked):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'cell':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -10750,7 +10798,7 @@ class AbstractSeqRow(TaxonLinked):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='AbstractSeqRow')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="AbstractSeqRow"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -10833,7 +10881,7 @@ class AbstractUncertainStateSet(AbstractState):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='AbstractUncertainStateSet')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="AbstractUncertainStateSet"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -10887,6 +10935,7 @@ class AbstractUncertainStateSet(AbstractState):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'member':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -11028,6 +11077,7 @@ class ContinuousMatrixObsRow(AbstractObsRow):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -11142,6 +11192,7 @@ class ContinuousMatrixSeqRow(AbstractSeqRow):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -11190,7 +11241,7 @@ class NodeAndRootEdgeAndEdgeSet(AbstractSet):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='NodeAndRootEdgeAndEdgeSet')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="NodeAndRootEdgeAndEdgeSet"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -11287,7 +11338,7 @@ class TreeAndNetworkSet(AbstractSet):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='TreeAndNetworkSet')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="TreeAndNetworkSet"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -11370,7 +11421,7 @@ class CellSet(AbstractSet):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='CellSet')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="CellSet"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -11442,7 +11493,7 @@ class RowSet(AbstractSet):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='RowSet')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="RowSet"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -11514,7 +11565,7 @@ class CharSet(AbstractSet):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='CharSet')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="CharSet"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -11592,7 +11643,7 @@ class StateSet(AbstractSet):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='StateSet')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="StateSet"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -11686,7 +11737,7 @@ class TaxonSet(AbstractSet):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='TaxonSet')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="TaxonSet"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -11814,6 +11865,7 @@ class NetworkNode(AbstractNode):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -11953,6 +12005,7 @@ class StandardMatrixObsRow(AbstractObsRow):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -12067,6 +12120,7 @@ class StandardMatrixSeqRow(AbstractSeqRow):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -12307,6 +12361,7 @@ class RNAMatrixObsRow(AbstractObsRow):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -12421,6 +12476,7 @@ class RNAMatrixSeqRow(AbstractSeqRow):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -12665,6 +12721,7 @@ class RestrictionMatrixObsRow(AbstractObsRow):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -12780,6 +12837,7 @@ class RestrictionMatrixSeqRow(AbstractSeqRow):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -12925,6 +12983,7 @@ class AAMatrixObsRow(AbstractObsRow):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -13040,6 +13099,7 @@ class AAMatrixSeqRow(AbstractSeqRow):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -13283,6 +13343,7 @@ class DNAMatrixObsRow(AbstractObsRow):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -13397,6 +13458,7 @@ class DNAMatrixSeqRow(AbstractSeqRow):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -13540,7 +13602,7 @@ class AbstractCells(AbstractBlock):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='AbstractCells')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="AbstractCells"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -13587,6 +13649,7 @@ class AbstractCells(AbstractBlock):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'matrix':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -13626,7 +13689,7 @@ class AbstractSeqs(AbstractBlock):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='AbstractSeqs')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="AbstractSeqs"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -13673,6 +13736,7 @@ class AbstractSeqs(AbstractBlock):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'matrix':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -13721,7 +13785,7 @@ class AbstractPolymorphicStateSet(AbstractUncertainStateSet):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, [], namespace_, name_='AbstractPolymorphicStateSet')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
         outfile.write(' xsi:type="AbstractPolymorphicStateSet"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -13775,6 +13839,7 @@ class AbstractPolymorphicStateSet(AbstractUncertainStateSet):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'uncertain_state_set':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -13894,6 +13959,7 @@ class ContinuousCells(AbstractCells):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -14020,6 +14086,7 @@ class ContinuousSeqs(AbstractSeqs):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -14146,6 +14213,7 @@ class StandardCells(AbstractCells):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -14272,6 +14340,7 @@ class StandardSeqs(AbstractSeqs):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -14506,6 +14575,7 @@ class RnaCells(AbstractCells):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -14631,6 +14701,7 @@ class RnaSeqs(AbstractSeqs):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -14883,6 +14954,7 @@ class RestrictionCells(AbstractCells):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -15009,6 +15081,7 @@ class RestrictionSeqs(AbstractSeqs):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -15135,6 +15208,7 @@ class ProteinCells(AbstractCells):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -15261,6 +15335,7 @@ class ProteinSeqs(AbstractSeqs):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -15512,6 +15587,7 @@ class DnaCells(AbstractCells):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -15637,6 +15713,7 @@ class DnaSeqs(AbstractSeqs):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -15816,9 +15893,9 @@ def parse(inFileName):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-    sys.stdout.write('<?xml version="1.0" ?>\n')
-    rootObj.export(sys.stdout, 0, name_=rootTag, 
-        namespacedef_='')
+##     sys.stdout.write('<?xml version="1.0" ?>\n')
+##     rootObj.export(sys.stdout, 0, name_=rootTag, 
+##         namespacedef_='xmlns:nex="http://www.phyloxml.org/1.10/"')
     return rootObj
 
 
@@ -15834,9 +15911,9 @@ def parseString(inString):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-    sys.stdout.write('<?xml version="1.0" ?>\n')
-    rootObj.export(sys.stdout, 0, name_="Nexml",
-        namespacedef_='')
+##     sys.stdout.write('<?xml version="1.0" ?>\n')
+##     rootObj.export(sys.stdout, 0, name_="Nexml",
+##         namespacedef_='xmlns:nex="http://www.phyloxml.org/1.10/"')
     return rootObj
 
 
@@ -15851,11 +15928,11 @@ def parseLiteral(inFileName):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-    sys.stdout.write('#from _nexml import *\n\n')
-    sys.stdout.write('import _nexml as model_\n\n')
-    sys.stdout.write('rootObj = model_.rootTag(\n')
-    rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
-    sys.stdout.write(')\n')
+##     sys.stdout.write('#from nexml import *\n\n')
+##     sys.stdout.write('import nexml as model_\n\n')
+##     sys.stdout.write('rootObj = model_.rootTag(\n')
+##     rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
+##     sys.stdout.write(')\n')
     return rootObj
 
 
