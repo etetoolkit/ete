@@ -1,4 +1,4 @@
-.. versionadded:: 2.1
+1;2790;0c.. versionadded:: 2.1
 .. currentmodule:: ete_dev.phyloxml
 .. moduleauthor:: Jaime Huerta-Cepas
 
@@ -25,7 +25,7 @@ operations.
 
    from ete_dev import Phyloxml
    project = Phyloxml()
-   project.build_from_tree("phyloxml_example.xml")
+   project.build_from_file("phyloxml_example.xml")
 
    # Each tree contains the same methods as a PhyloTree object
    for tree in project.phylogenies: 

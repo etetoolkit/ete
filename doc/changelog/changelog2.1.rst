@@ -59,11 +59,12 @@ What's new in ETE 2.1
    * Fix: Fast scroll based zoom-in was producing tree image inversions
    * Fix: Phylip parser does not truncate long names by default
    * Fix: "if not node" syntax was using a len(node) test, which made
-     it totally inefficient. Now, the same expression return always *True*
+     it totally inefficient. Now, the same expression returns always *True*
    * Improvement: Traversing methods are now much faster (specially preorder and levelorder)
    * Improvement: Faster populate function (added possibility of random and non-random branch lengths)
    * Improvement: Faster prune function
    * Improvement: unicode support for tree files
+   * Improvement: Added newick support for scientific notation in branch lengths
 * Improved documentation tutorial and reference guide!
    * A better library reference 
    * New examples section
