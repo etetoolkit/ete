@@ -9,9 +9,8 @@ for tree in project.get_phylogeny():
     tree.show()
     # PhyloXML features are stored in the phyloxml_clade attribute
     for node in tree: 
-        if node.phyloxml_clade.get_sequence(): 
-            print "Node name:", node.name
-            for seq in node.phyloxml_clade.sequence: 
-                for domain in seq.domain_architecture.get_domain():
-                    domain_data = [domain.valueOf_, domain.get_from(), domain.get_to()]
-                    print "   ", '\t'.join(map(str, domain_data))
+        print "Node name:", node.name
+        for seq in node.phyloxml_clade.get_sequence(): 
+            for domain in seq.domain_architecture.get_domain():
+                domain_data = [domain.valueOf_, domain.get_from(), domain.get_to()]
+                print "  Domain:", '\t'.join(map(str, domain_data))
