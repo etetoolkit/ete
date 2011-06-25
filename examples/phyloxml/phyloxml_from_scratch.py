@@ -1,6 +1,5 @@
 from ete_dev import Phyloxml, phyloxml
 import random 
-
 project = Phyloxml()
 
 # Creates a random tree
@@ -29,50 +28,51 @@ phylo.show()
 # Export the project as phyloXML format
 project.export()
 
-# <phy:Phyloxml>
+# <phy:Phyloxml xmlns:phy="http://www.phyloxml.org/1.10/phyloxml.xsd">
 #     <phy:phylogeny>
 #         <phy:name>test_tree</phy:name>
 #         <phy:clade>
 #             <phy:name>NoName</phy:name>
+#             <phy:branch_length>0.000000e+00</phy:branch_length>
 #             <phy:confidence type="branch_support">1.0</phy:confidence>
 #             <phy:clade>
-#                 <phy:name>vnmur</phy:name>
-#                 <phy:branch_length>8.952004e-01</phy:branch_length>
-#                 <phy:confidence type="branch_support">0.42116997466</phy:confidence>
+#                 <phy:name>NoName</phy:name>
+#                 <phy:branch_length>1.665083e-01</phy:branch_length>
+#                 <phy:confidence type="branch_support">0.938507980435</phy:confidence>
+#                 <phy:clade>
+#                     <phy:name>NoName</phy:name>
+#                     <phy:branch_length>1.366655e-01</phy:branch_length>
+#                     <phy:confidence type="branch_support">0.791888248212</phy:confidence>
+#                     <phy:clade>
+#                         <phy:name>ojnfg</phy:name>
+#                         <phy:branch_length>2.194209e-01</phy:branch_length>
+#                         <phy:confidence type="branch_support">0.304705977822</phy:confidence>
+#                     </phy:clade>
+#                     <phy:clade>
+#                         <phy:name>qrfnz</phy:name>
+#                         <phy:branch_length>5.235437e-02</phy:branch_length>
+#                         <phy:confidence type="branch_support">0.508533765418</phy:confidence>
+#                     </phy:clade>
+#                 </phy:clade>
+#                 <phy:clade>
+#                     <phy:name>shngq</phy:name>
+#                     <phy:branch_length>9.740958e-01</phy:branch_length>
+#                     <phy:confidence type="branch_support">0.642187390965</phy:confidence>
+#                 </phy:clade>
 #             </phy:clade>
 #             <phy:clade>
 #                 <phy:name>NoName</phy:name>
-#                 <phy:branch_length>4.862201e-01</phy:branch_length>
-#                 <phy:confidence type="branch_support">0.361907662007</phy:confidence>
+#                 <phy:branch_length>3.806412e-01</phy:branch_length>
+#                 <phy:confidence type="branch_support">0.383619811911</phy:confidence>
 #                 <phy:clade>
-#                     <phy:name>mrntb</phy:name>
-#                     <phy:branch_length>4.952616e-01</phy:branch_length>
-#                     <phy:confidence type="branch_support">0.638935066222</phy:confidence>
+#                     <phy:name>vfmnk</phy:name>
+#                     <phy:branch_length>6.495163e-01</phy:branch_length>
+#                     <phy:confidence type="branch_support">0.141298879514</phy:confidence>
 #                 </phy:clade>
 #                 <phy:clade>
-#                     <phy:name>NoName</phy:name>
-#                     <phy:branch_length>4.925216e-01</phy:branch_length>
-#                     <phy:confidence type="branch_support">0.786868092056</phy:confidence>
-#                     <phy:clade>
-#                         <phy:name>selav</phy:name>
-#                         <phy:branch_length>9.488587e-01</phy:branch_length>
-#                         <phy:confidence type="branch_support">0.283151040908</phy:confidence>
-#                     </phy:clade>
-#                     <phy:clade>
-#                         <phy:name>NoName</phy:name>
-#                         <phy:branch_length>8.244555e-01</phy:branch_length>
-#                         <phy:confidence type="branch_support">0.756896679656</phy:confidence>
-#                         <phy:clade>
-#                             <phy:name>wlfpo</phy:name>
-#                             <phy:branch_length>8.214268e-01</phy:branch_length>
-#                             <phy:confidence type="branch_support">0.143944613883</phy:confidence>
-#                         </phy:clade>
-#                         <phy:clade>
-#                             <phy:name>bsaqu</phy:name>
-#                             <phy:branch_length>7.529829e-01</phy:branch_length>
-#                             <phy:confidence type="branch_support">0.140360900938</phy:confidence>
-#                         </phy:clade>
-#                     </phy:clade>
+#                     <phy:name>btexi</phy:name>
+#                     <phy:branch_length>5.704955e-01</phy:branch_length>
+#                     <phy:confidence type="branch_support">0.951876078012</phy:confidence>
 #                 </phy:clade>
 #             </phy:clade>
 #         </phy:clade>

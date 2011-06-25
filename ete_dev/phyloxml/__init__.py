@@ -22,7 +22,8 @@ class Phyloxml(_phyloxml.Phyloxml):
         self.build(rootNode)
 
     def export(self, outfile=stdout, level=0):
-        return super(Phyloxml, self).export(outfile=outfile, level=level)
+        namespace = 'xmlns:phy="http://www.phyloxml.org/1.10/phyloxml.xsd"'
+        return super(Phyloxml, self).export(outfile=outfile, level=level, namespacedef_=namespace)
 
 
 __all__ = _phyloxml.__all__ + ["Phyloxml", "PhyloXMLTree"]

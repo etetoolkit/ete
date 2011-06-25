@@ -42,7 +42,8 @@ class Nexml(_nexml.Nexml):
                         t.nexml_otus = id2taxa[trees.otus][0]
 
     def export(self, outfile=stdout, level=0):
-        return super(Nexml, self).export(outfile=outfile, level=level)
-        
+        namespace='xmlns:nex="http://www.nexml.org/2009"'
+        return super(Nexml, self).export(outfile=outfile, level=level, namespacedef_=namespace)
+      
 
 __all__ = _nexml.__all__ + ["Nexml", "NexMLTree"]
