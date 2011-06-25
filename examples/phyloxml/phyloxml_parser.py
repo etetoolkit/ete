@@ -1,49 +1,17 @@
-import sys
 from ete_dev import Phyloxml
+project = Phyloxml()
+project.build_from_file("apaf.xml")
 
-p = Phyloxml()
-p.build_from_file("example1.xml")
-for t in p.phylogeny:
-    print t
-
-OUT = open("/tmp/phyloxml.tmp.xml", "w")
-p.export(OUT, 0, namespacedef_='xmlns:phy="http://www.phyloxml.org"')
-OUT.close()
-
-p = Phyloxml()
-p.build_from_file("/tmp/phyloxml.tmp.xml")
-for t in p.phylogeny:
-    print t
-
-########
-p = Phyloxml()
-p.build_from_file("apaf.xml")
-for t in p.phylogeny:
-    print t
-    t.show()
-
-OUT = open("/tmp/phyloxml.tmp.xml", "w")
-p.export(OUT, 0, namespacedef_='xmlns:phy="http://www.phyloxml.org"')
-OUT.close()
-
-
-p = Phyloxml()
-p.build_from_file("/tmp/phyloxml.tmp.xml")
-for t in p.phylogeny:
-    print t
-
-
-
-
-
-
-p = Phyloxml()
-p.build_from_file("phyloxml_examples.xml")
-for t in p.phylogeny:
-    print t
-
-
-#p = Phyloxml()
-#p.build_from_file("ncbi_taxonomy_metazoa.xml")
-#print "Done"
-#print p.phylogeny[0]
+# Each tree contains the same methods as a PhyloTree object
+for tree in project.get_phylogeny():
+    print tree
+    # you can even use rendering options
+    tree.show()
+    # PhyloXML features are stored in the phyloxml_clade attribute
+    for node in tree: 
+        if node.phyloxml_clade.get_sequence(): 
+            print "Node name:", node.name
+            for seq in node.phyloxml_clade.sequence: 
+                for domain in seq.domain_architecture.get_domain():
+                    domain_data = [domain.valueOf_, domain.get_from(), domain.get_to()]
+                    print "   ", '\t'.join(map(str, domain_data))

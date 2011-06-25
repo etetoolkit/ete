@@ -1,4 +1,4 @@
-1;2790;0c.. versionadded:: 2.1
+.. versionadded:: 2.1
 .. currentmodule:: ete_dev.phyloxml
 .. moduleauthor:: Jaime Huerta-Cepas
 
@@ -21,19 +21,12 @@ integrated as ETE's tree data structures, while the rest of features
 are represented as simple classes providing basic reading and writing
 operations.
 
-:: 
 
-   from ete_dev import Phyloxml
-   project = Phyloxml()
-   project.build_from_file("phyloxml_example.xml")
+.. literalinclude:: ../../examples/phyloxml/phyloxml_parser.py
 
-   # Each tree contains the same methods as a PhyloTree object
-   for tree in project.phylogenies: 
-       print tree
-       # you can even use rendering options
-       tree.show()
-       # PhyloXML features are stored in the phyloxml_clade attribute
-       print tree.phyloxml_clade
+:download:`[Download script]  <../../examples/phyloxml/phyloxml_parser.py>`
+:download:`[Download example]  <../../examples/phyloxml/apaf.xml>`
+
 
 Each tree node contains two phyloxml elements, :attr:`phyloxml_clade`
 and :attr:`phyloxml_phylogeny`. The first attribute contains clade
