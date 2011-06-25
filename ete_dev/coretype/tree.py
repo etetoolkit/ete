@@ -1,4 +1,4 @@
-# #START_LICENSE###########################################################
+ #START_LICENSE###########################################################
 #
 # Copyright (C) 2009 by Jaime Huerta Cepas. All rights reserved.
 # email: jhcepas@gmail.com
@@ -157,7 +157,8 @@ class TreeNode(object):
         if newick is not None:
             read_newick(newick, root_node = self, format=format)
             
-        self._faces = _FaceAreas()
+        if TREEVIEW:
+            self._faces = _FaceAreas()
 
     def __nonzero__(self):
         return True
