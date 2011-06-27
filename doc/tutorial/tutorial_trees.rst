@@ -905,10 +905,8 @@ Pruning trees
 Pruning a tree means to obtain the topology that connects a certain
 group of items by removing the unnecessary edges. To facilitate this
 task, ETE implements the :func:`TreeNode.prune` method, which can be
-used in two different ways: by providing the list of terminal nodes
-that must be kept in the tree; or by providing a list of nodes that
-must be removed. In any case, the result is a pruned tree containing
-the topology that connects a custom set of nodes.
+used by providing the list of terminal and/or internal nodes that must
+be kept in the tree. 
 
 ::
 
@@ -952,8 +950,6 @@ the topology that connects a custom set of nodes.
   #          \--------|
   #                    \-P
   # Let's re-create the same tree again
-
-
 
 
 Concatenating trees
