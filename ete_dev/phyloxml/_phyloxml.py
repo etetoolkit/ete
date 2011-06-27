@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*- 
 
 #
-# Generated Fri Jun 24 09:44:49 2011 by generateDS.py version 2.5a.
+# Generated Mon Jun 27 10:13:44 2011 by generateDS.py version 2.5b.
 #
 
 import sys
@@ -374,7 +374,8 @@ class Phyloxml(GeneratedsSuper):
     def export(self, outfile, level, namespace_='phy:', name_='Phyloxml', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='Phyloxml')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='Phyloxml')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -512,7 +513,8 @@ class Phylogeny(GeneratedsSuper):
     def export(self, outfile, level, namespace_='phy:', name_='Phylogeny', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='Phylogeny')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='Phylogeny')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -850,7 +852,8 @@ class Clade(GeneratedsSuper):
     def export(self, outfile, level, namespace_='phy:', name_='Clade', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='Clade')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='Clade')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -1211,7 +1214,8 @@ class Taxonomy(GeneratedsSuper):
     def export(self, outfile, level, namespace_='phy:', name_='Taxonomy', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='Taxonomy')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='Taxonomy')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -1432,7 +1436,8 @@ class Sequence(GeneratedsSuper):
     def export(self, outfile, level, namespace_='phy:', name_='Sequence', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='Sequence')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='Sequence')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -1631,7 +1636,8 @@ class MolSeq(GeneratedsSuper):
     def export(self, outfile, level, namespace_='phy:', name_='MolSeq', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='MolSeq')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='MolSeq')
         if self.hasContent_():
             outfile.write('>')
             outfile.write(str(self.valueOf_).encode(ExternalEncoding))
@@ -1683,7 +1689,6 @@ class MolSeq(GeneratedsSuper):
             else:
                 raise_parse_error(node, 'Bad boolean attribute')
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        super(MolSeq, self).buildChildren(child_, node, nodeName_, True)
         pass
 # end class MolSeq
 
@@ -1710,7 +1715,8 @@ class Accession(GeneratedsSuper):
     def export(self, outfile, level, namespace_='phy:', name_='Accession', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='Accession')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='Accession')
         if self.hasContent_():
             outfile.write('>')
             outfile.write(str(self.valueOf_).encode(ExternalEncoding))
@@ -1788,7 +1794,8 @@ class DomainArchitecture(GeneratedsSuper):
     def export(self, outfile, level, namespace_='phy:', name_='DomainArchitecture', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='DomainArchitecture')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='DomainArchitecture')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -1887,7 +1894,8 @@ class ProteinDomain(GeneratedsSuper):
     def export(self, outfile, level, namespace_='phy:', name_='ProteinDomain', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='ProteinDomain')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='ProteinDomain')
         if self.hasContent_():
             outfile.write('>')
             outfile.write(str(self.valueOf_).encode(ExternalEncoding))
@@ -2017,7 +2025,8 @@ class Events(GeneratedsSuper):
     def export(self, outfile, level, namespace_='phy:', name_='Events', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='Events')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='Events')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -2172,7 +2181,8 @@ class BinaryCharacters(GeneratedsSuper):
     def export(self, outfile, level, namespace_='phy:', name_='BinaryCharacters', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='BinaryCharacters')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='BinaryCharacters')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -2354,7 +2364,8 @@ class BinaryCharacterList(GeneratedsSuper):
     def export(self, outfile, level, namespace_='phy:', name_='BinaryCharacterList', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='BinaryCharacterList')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='BinaryCharacterList')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -2430,7 +2441,8 @@ class Reference(GeneratedsSuper):
     def export(self, outfile, level, namespace_='phy:', name_='Reference', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='Reference')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='Reference')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -2539,7 +2551,8 @@ class Annotation(GeneratedsSuper):
     def export(self, outfile, level, namespace_='phy:', name_='Annotation', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='Annotation')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='Annotation')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -2731,7 +2744,8 @@ class Property(GeneratedsSuper):
     def export(self, outfile, level, namespace_='phy:', name_='Property', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='Property')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='Property')
         outfile.write('>')
         self.exportChildren(outfile, level + 1, namespace_, name_)
         outfile.write('</%s%s>\n' % (namespace_, name_))
@@ -2856,7 +2870,8 @@ class Uri(GeneratedsSuper):
     def export(self, outfile, level, namespace_='phy:', name_='Uri', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='Uri')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='Uri')
         if self.hasContent_():
             outfile.write('>')
             outfile.write(str(self.valueOf_).encode(ExternalEncoding))
@@ -2942,7 +2957,8 @@ class Confidence(GeneratedsSuper):
     def export(self, outfile, level, namespace_='phy:', name_='Confidence', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='Confidence')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='Confidence')
         if self.hasContent_():
             outfile.write('>')
             outfile.write(str(self.valueOf_).encode(ExternalEncoding))
@@ -3015,7 +3031,8 @@ class Id(GeneratedsSuper):
     def export(self, outfile, level, namespace_='phy:', name_='Id', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='Id')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='Id')
         if self.hasContent_():
             outfile.write('>')
             outfile.write(str(self.valueOf_).encode(ExternalEncoding))
@@ -3105,7 +3122,8 @@ class Distribution(GeneratedsSuper):
     def export(self, outfile, level, namespace_='phy:', name_='Distribution', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='Distribution')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='Distribution')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -3225,7 +3243,8 @@ class Point(GeneratedsSuper):
     def export(self, outfile, level, namespace_='phy:', name_='Point', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='Point')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='Point')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -3350,7 +3369,8 @@ class Polygon(GeneratedsSuper):
     def export(self, outfile, level, namespace_='phy:', name_='Polygon', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='Polygon')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='Polygon')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -3440,7 +3460,8 @@ class Date(GeneratedsSuper):
     def export(self, outfile, level, namespace_='phy:', name_='Date', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='Date')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='Date')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -3567,7 +3588,8 @@ class BranchColor(GeneratedsSuper):
     def export(self, outfile, level, namespace_='phy:', name_='BranchColor', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='BranchColor')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='BranchColor')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -3679,7 +3701,8 @@ class SequenceRelation(GeneratedsSuper):
     def export(self, outfile, level, namespace_='phy:', name_='SequenceRelation', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='SequenceRelation')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='SequenceRelation')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -3803,7 +3826,8 @@ class CladeRelation(GeneratedsSuper):
     def export(self, outfile, level, namespace_='phy:', name_='CladeRelation', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='CladeRelation')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='CladeRelation')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)

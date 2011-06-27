@@ -19,6 +19,17 @@ class Test_PhyloXML(unittest.TestCase):
                 print "%0.1f secs" %(etime)
                 p.export(outfile = W)
 
+    def test_examples(self):
+        path = "../examples/phyloxml/"
+        for ex in os.listdir(path):
+            print "testing", ex 
+            if ex.endswith(".py"):
+                s = os.system("cd %s && python %s" %(path, ex))
+                if s: 
+                    raise Exception("Example crashed!")
+
+
+
 class Test_NeXML(unittest.TestCase):
     def test_nexml_parser(self):
         path = "../examples/nexml/"
@@ -33,6 +44,15 @@ class Test_NeXML(unittest.TestCase):
                 etime = time.time()-t1
                 print "%0.1f secs" %(etime)
                 p.export(outfile = W)
+
+    def test_examples(self):
+        path = "../examples/nexml/"
+        for ex in os.listdir(path):
+            print "testing", ex 
+            if ex.endswith(".py"):
+                s = os.system("cd %s && python %s" %(path, ex))
+                if s: 
+                    raise Exception("Example crashed!")
 
 
 

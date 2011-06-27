@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*- 
 
 #
-# Generated Fri Jun 24 09:44:50 2011 by generateDS.py version 2.5a.
+# Generated Mon Jun 27 10:13:44 2011 by generateDS.py version 2.5b.
 #
 
 import sys
@@ -361,7 +361,6 @@ class Base(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, valueOf_=None):
-        self.valueOf_ = valueOf_
         self.anyAttributes_ = {}
     def factory(*args_, **kwargs_):
         if Base.subclass:
@@ -369,30 +368,40 @@ class Base(GeneratedsSuper):
         else:
             return Base(*args_, **kwargs_)
     factory = staticmethod(factory)
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def get_anyAttributes_(self): return self.anyAttributes_
     def set_anyAttributes_(self, anyAttributes_): self.anyAttributes_ = anyAttributes_
     def export(self, outfile, level, namespace_='', name_='Base', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='Base')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='Base')
         if self.hasContent_():
-            outfile.write('>')
-            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
+            outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='Base'):
         for name, value in self.anyAttributes_.items():
-            outfile.write(' %s=%s' % (name, quote_attrib(value), ))
+            xsinamespaceprefix = 'xsi'
+            xsinamespace1 = 'http://www.w3.org/2001/XMLSchema-instance'
+            xsinamespace2 = '{%s}' % (xsinamespace1, )
+            if name.startswith(xsinamespace2):
+                name1 = name[len(xsinamespace2):]
+                name2 = '%s:%s' % (xsinamespaceprefix, name1, )
+                if name2 not in already_processed:
+                    already_processed.append(name2)
+                    outfile.write(' %s=%s' % (name2, quote_attrib(value), ))
+            else:
+                if name not in already_processed:
+                    already_processed.append(name)
+                    outfile.write(' %s=%s' % (name, quote_attrib(value), ))
         pass
     def exportChildren(self, outfile, level, namespace_='', name_='Base', fromsubclass_=False):
         pass
     def hasContent_(self):
         if (
-            self.valueOf_
+
             ):
             return True
         else:
@@ -402,8 +411,6 @@ class Base(GeneratedsSuper):
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
         for name, value in self.anyAttributes_.items():
             showIndent(outfile, level)
@@ -412,7 +419,6 @@ class Base(GeneratedsSuper):
         pass
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
@@ -430,25 +436,24 @@ class Meta(Base):
     subclass = None
     superclass = Base
     def __init__(self, valueOf_=None):
-        super(Meta, self).__init__(valueOf_, )
-        self.valueOf_ = valueOf_
+        super(Meta, self).__init__()
+        pass
     def factory(*args_, **kwargs_):
         if Meta.subclass:
             return Meta.subclass(*args_, **kwargs_)
         else:
             return Meta(*args_, **kwargs_)
     factory = staticmethod(factory)
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='Meta', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='Meta')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="Meta"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='Meta')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="Meta"')
         if self.hasContent_():
-            outfile.write('>')
-            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
+            outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
@@ -460,7 +465,6 @@ class Meta(Base):
         pass
     def hasContent_(self):
         if (
-            self.valueOf_ or
             super(Meta, self).hasContent_()
             ):
             return True
@@ -471,8 +475,6 @@ class Meta(Base):
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
         super(Meta, self).exportLiteralAttributes(outfile, level, already_processed, name_)
     def exportLiteralChildren(self, outfile, level, name_):
@@ -480,7 +482,6 @@ class Meta(Base):
         pass
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
@@ -523,9 +524,11 @@ class ResourceMeta(Meta):
     def export(self, outfile, level, namespace_='', name_='ResourceMeta', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='ResourceMeta')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="ResourceMeta"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='ResourceMeta')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="ResourceMeta"')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -600,7 +603,6 @@ class ResourceMeta(Meta):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -627,11 +629,11 @@ class LiteralMeta(Meta):
     subclass = None
     superclass = Meta
     def __init__(self, datatype=None, content=None, property=None, valueOf_=None):
-        super(LiteralMeta, self).__init__(valueOf_, )
+        super(LiteralMeta, self).__init__()
         self.datatype = _cast(None, datatype)
         self.content = _cast(None, content)
         self.property = _cast(None, property)
-        self.valueOf_ = valueOf_
+        pass
     def factory(*args_, **kwargs_):
         if LiteralMeta.subclass:
             return LiteralMeta.subclass(*args_, **kwargs_)
@@ -644,17 +646,16 @@ class LiteralMeta(Meta):
     def set_content(self, content): self.content = content
     def get_property(self): return self.property
     def set_property(self, property): self.property = property
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='LiteralMeta', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='LiteralMeta')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="LiteralMeta"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='LiteralMeta')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="LiteralMeta"')
         if self.hasContent_():
-            outfile.write('>')
-            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
+            outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
@@ -675,7 +676,6 @@ class LiteralMeta(Meta):
         pass
     def hasContent_(self):
         if (
-            self.valueOf_ or
             super(LiteralMeta, self).hasContent_()
             ):
             return True
@@ -686,8 +686,6 @@ class LiteralMeta(Meta):
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
         if self.datatype is not None and 'datatype' not in already_processed:
             already_processed.append('datatype')
@@ -707,7 +705,6 @@ class LiteralMeta(Meta):
         pass
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
@@ -737,7 +734,6 @@ class attrExtensions(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, valueOf_=None):
-        self.valueOf_ = valueOf_
         self.anyAttributes_ = {}
     def factory(*args_, **kwargs_):
         if attrExtensions.subclass:
@@ -745,30 +741,40 @@ class attrExtensions(GeneratedsSuper):
         else:
             return attrExtensions(*args_, **kwargs_)
     factory = staticmethod(factory)
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def get_anyAttributes_(self): return self.anyAttributes_
     def set_anyAttributes_(self, anyAttributes_): self.anyAttributes_ = anyAttributes_
     def export(self, outfile, level, namespace_='', name_='attrExtensions', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='attrExtensions')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='attrExtensions')
         if self.hasContent_():
-            outfile.write('>')
-            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
+            outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='attrExtensions'):
         for name, value in self.anyAttributes_.items():
-            outfile.write(' %s=%s' % (name, quote_attrib(value), ))
+            xsinamespaceprefix = 'xsi'
+            xsinamespace1 = 'http://www.w3.org/2001/XMLSchema-instance'
+            xsinamespace2 = '{%s}' % (xsinamespace1, )
+            if name.startswith(xsinamespace2):
+                name1 = name[len(xsinamespace2):]
+                name2 = '%s:%s' % (xsinamespaceprefix, name1, )
+                if name2 not in already_processed:
+                    already_processed.append(name2)
+                    outfile.write(' %s=%s' % (name2, quote_attrib(value), ))
+            else:
+                if name not in already_processed:
+                    already_processed.append(name)
+                    outfile.write(' %s=%s' % (name, quote_attrib(value), ))
         pass
     def exportChildren(self, outfile, level, namespace_='', name_='attrExtensions', fromsubclass_=False):
         pass
     def hasContent_(self):
         if (
-            self.valueOf_
+
             ):
             return True
         else:
@@ -778,8 +784,6 @@ class attrExtensions(GeneratedsSuper):
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
         for name, value in self.anyAttributes_.items():
             showIndent(outfile, level)
@@ -788,7 +792,6 @@ class attrExtensions(GeneratedsSuper):
         pass
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
@@ -814,9 +817,9 @@ class AbstractMapping(Base):
     subclass = None
     superclass = Base
     def __init__(self, state=None, valueOf_=None):
-        super(AbstractMapping, self).__init__(valueOf_, )
+        super(AbstractMapping, self).__init__()
         self.state = _cast(None, state)
-        self.valueOf_ = valueOf_
+        pass
     def factory(*args_, **kwargs_):
         if AbstractMapping.subclass:
             return AbstractMapping.subclass(*args_, **kwargs_)
@@ -825,17 +828,16 @@ class AbstractMapping(Base):
     factory = staticmethod(factory)
     def get_state(self): return self.state
     def set_state(self, state): self.state = state
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='AbstractMapping', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='AbstractMapping')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="AbstractMapping"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='AbstractMapping')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="AbstractMapping"')
         if self.hasContent_():
-            outfile.write('>')
-            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
+            outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
@@ -850,7 +852,6 @@ class AbstractMapping(Base):
         pass
     def hasContent_(self):
         if (
-            self.valueOf_ or
             super(AbstractMapping, self).hasContent_()
             ):
             return True
@@ -861,8 +862,6 @@ class AbstractMapping(Base):
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
         if self.state is not None and 'state' not in already_processed:
             already_processed.append('state')
@@ -874,7 +873,6 @@ class AbstractMapping(Base):
         pass
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
@@ -895,23 +893,21 @@ class DNAMapping(AbstractMapping):
     subclass = None
     superclass = AbstractMapping
     def __init__(self, state=None, valueOf_=None):
-        super(DNAMapping, self).__init__(state, valueOf_, )
-        self.valueOf_ = valueOf_
+        super(DNAMapping, self).__init__(state, )
+        pass
     def factory(*args_, **kwargs_):
         if DNAMapping.subclass:
             return DNAMapping.subclass(*args_, **kwargs_)
         else:
             return DNAMapping(*args_, **kwargs_)
     factory = staticmethod(factory)
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='DNAMapping', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='DNAMapping')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='DNAMapping')
         if self.hasContent_():
-            outfile.write('>')
-            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
+            outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
@@ -922,7 +918,6 @@ class DNAMapping(AbstractMapping):
         pass
     def hasContent_(self):
         if (
-            self.valueOf_ or
             super(DNAMapping, self).hasContent_()
             ):
             return True
@@ -933,8 +928,6 @@ class DNAMapping(AbstractMapping):
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
         super(DNAMapping, self).exportLiteralAttributes(outfile, level, already_processed, name_)
     def exportLiteralChildren(self, outfile, level, name_):
@@ -942,7 +935,6 @@ class DNAMapping(AbstractMapping):
         pass
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
@@ -958,23 +950,21 @@ class AAMapping(AbstractMapping):
     subclass = None
     superclass = AbstractMapping
     def __init__(self, state=None, valueOf_=None):
-        super(AAMapping, self).__init__(state, valueOf_, )
-        self.valueOf_ = valueOf_
+        super(AAMapping, self).__init__(state, )
+        pass
     def factory(*args_, **kwargs_):
         if AAMapping.subclass:
             return AAMapping.subclass(*args_, **kwargs_)
         else:
             return AAMapping(*args_, **kwargs_)
     factory = staticmethod(factory)
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='AAMapping', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='AAMapping')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='AAMapping')
         if self.hasContent_():
-            outfile.write('>')
-            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
+            outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
@@ -985,7 +975,6 @@ class AAMapping(AbstractMapping):
         pass
     def hasContent_(self):
         if (
-            self.valueOf_ or
             super(AAMapping, self).hasContent_()
             ):
             return True
@@ -996,8 +985,6 @@ class AAMapping(AbstractMapping):
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
         super(AAMapping, self).exportLiteralAttributes(outfile, level, already_processed, name_)
     def exportLiteralChildren(self, outfile, level, name_):
@@ -1005,7 +992,6 @@ class AAMapping(AbstractMapping):
         pass
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
@@ -1021,23 +1007,21 @@ class RNAMapping(AbstractMapping):
     subclass = None
     superclass = AbstractMapping
     def __init__(self, state=None, valueOf_=None):
-        super(RNAMapping, self).__init__(state, valueOf_, )
-        self.valueOf_ = valueOf_
+        super(RNAMapping, self).__init__(state, )
+        pass
     def factory(*args_, **kwargs_):
         if RNAMapping.subclass:
             return RNAMapping.subclass(*args_, **kwargs_)
         else:
             return RNAMapping(*args_, **kwargs_)
     factory = staticmethod(factory)
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='RNAMapping', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='RNAMapping')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='RNAMapping')
         if self.hasContent_():
-            outfile.write('>')
-            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
+            outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
@@ -1048,7 +1032,6 @@ class RNAMapping(AbstractMapping):
         pass
     def hasContent_(self):
         if (
-            self.valueOf_ or
             super(RNAMapping, self).hasContent_()
             ):
             return True
@@ -1059,8 +1042,6 @@ class RNAMapping(AbstractMapping):
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
         super(RNAMapping, self).exportLiteralAttributes(outfile, level, already_processed, name_)
     def exportLiteralChildren(self, outfile, level, name_):
@@ -1068,7 +1049,6 @@ class RNAMapping(AbstractMapping):
         pass
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
@@ -1084,23 +1064,21 @@ class StandardMapping(AbstractMapping):
     subclass = None
     superclass = AbstractMapping
     def __init__(self, state=None, valueOf_=None):
-        super(StandardMapping, self).__init__(state, valueOf_, )
-        self.valueOf_ = valueOf_
+        super(StandardMapping, self).__init__(state, )
+        pass
     def factory(*args_, **kwargs_):
         if StandardMapping.subclass:
             return StandardMapping.subclass(*args_, **kwargs_)
         else:
             return StandardMapping(*args_, **kwargs_)
     factory = staticmethod(factory)
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='StandardMapping', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='StandardMapping')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='StandardMapping')
         if self.hasContent_():
-            outfile.write('>')
-            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
+            outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
@@ -1111,7 +1089,6 @@ class StandardMapping(AbstractMapping):
         pass
     def hasContent_(self):
         if (
-            self.valueOf_ or
             super(StandardMapping, self).hasContent_()
             ):
             return True
@@ -1122,8 +1099,6 @@ class StandardMapping(AbstractMapping):
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
         super(StandardMapping, self).exportLiteralAttributes(outfile, level, already_processed, name_)
     def exportLiteralChildren(self, outfile, level, name_):
@@ -1131,7 +1106,6 @@ class StandardMapping(AbstractMapping):
         pass
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
@@ -1169,9 +1143,11 @@ class Annotated(Base):
     def export(self, outfile, level, namespace_='', name_='Annotated', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='Annotated')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="Annotated"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='Annotated')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="Annotated"')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -1235,7 +1211,6 @@ class Annotated(Base):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -1303,9 +1278,11 @@ class Nexml(Annotated):
     def export(self, outfile, level, namespace_='', name_='Nexml', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='Nexml')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="Nexml"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='Nexml')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="Nexml"')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -1418,7 +1395,6 @@ class Nexml(Annotated):
             self.otus.append(obj_)
         elif nodeName_ == 'characters':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -1475,9 +1451,11 @@ class AbstractObsMatrix(Annotated):
     def export(self, outfile, level, namespace_='', name_='AbstractObsMatrix', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='AbstractObsMatrix')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="AbstractObsMatrix"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='AbstractObsMatrix')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="AbstractObsMatrix"')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -1545,7 +1523,6 @@ class AbstractObsMatrix(Annotated):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'row':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -1602,9 +1579,11 @@ class AbstractSeqMatrix(Annotated):
     def export(self, outfile, level, namespace_='', name_='AbstractSeqMatrix', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='AbstractSeqMatrix')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="AbstractSeqMatrix"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='AbstractSeqMatrix')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="AbstractSeqMatrix"')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -1672,7 +1651,6 @@ class AbstractSeqMatrix(Annotated):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'row':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -1739,9 +1717,11 @@ class AbstractFormat(Annotated):
     def export(self, outfile, level, namespace_='', name_='AbstractFormat', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='AbstractFormat')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="AbstractFormat"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='AbstractFormat')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="AbstractFormat"')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -1824,7 +1804,6 @@ class AbstractFormat(Annotated):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'states':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -1842,7 +1821,6 @@ class AbstractFormat(Annotated):
             self.states.append(obj_)
         elif nodeName_ == 'char':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -1897,7 +1875,8 @@ class ContinuousObsMatrix(AbstractObsMatrix):
     def export(self, outfile, level, namespace_='', name_='ContinuousObsMatrix', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='ContinuousObsMatrix')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='ContinuousObsMatrix')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -2004,7 +1983,8 @@ class ContinuousSeqMatrix(AbstractSeqMatrix):
     def export(self, outfile, level, namespace_='', name_='ContinuousSeqMatrix', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='ContinuousSeqMatrix')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='ContinuousSeqMatrix')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -2112,7 +2092,8 @@ class ContinuousFormat(AbstractFormat):
     def export(self, outfile, level, namespace_='', name_='ContinuousFormat', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='ContinuousFormat')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='ContinuousFormat')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -2209,9 +2190,11 @@ class Labelled(Annotated):
     def export(self, outfile, level, namespace_='', name_='Labelled', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='Labelled')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="Labelled"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='Labelled')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="Labelled"')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -2294,7 +2277,8 @@ class StandardObsMatrix(AbstractObsMatrix):
     def export(self, outfile, level, namespace_='', name_='StandardObsMatrix', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='StandardObsMatrix')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='StandardObsMatrix')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -2401,7 +2385,8 @@ class StandardSeqMatrix(AbstractSeqMatrix):
     def export(self, outfile, level, namespace_='', name_='StandardSeqMatrix', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='StandardSeqMatrix')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='StandardSeqMatrix')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -2517,7 +2502,8 @@ class StandardFormat(AbstractFormat):
     def export(self, outfile, level, namespace_='', name_='StandardFormat', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='StandardFormat')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='StandardFormat')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -2643,7 +2629,8 @@ class RNAObsMatrix(AbstractObsMatrix):
     def export(self, outfile, level, namespace_='', name_='RNAObsMatrix', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='RNAObsMatrix')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='RNAObsMatrix')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -2750,7 +2737,8 @@ class RNASeqMatrix(AbstractSeqMatrix):
     def export(self, outfile, level, namespace_='', name_='RNASeqMatrix', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='RNASeqMatrix')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='RNASeqMatrix')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -2865,7 +2853,8 @@ class RNAFormat(AbstractFormat):
     def export(self, outfile, level, namespace_='', name_='RNAFormat', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='RNAFormat')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='RNAFormat')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -2991,7 +2980,8 @@ class RestrictionObsMatrix(AbstractObsMatrix):
     def export(self, outfile, level, namespace_='', name_='RestrictionObsMatrix', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='RestrictionObsMatrix')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='RestrictionObsMatrix')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -3098,7 +3088,8 @@ class RestrictionSeqMatrix(AbstractSeqMatrix):
     def export(self, outfile, level, namespace_='', name_='RestrictionSeqMatrix', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='RestrictionSeqMatrix')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='RestrictionSeqMatrix')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -3214,7 +3205,8 @@ class RestrictionFormat(AbstractFormat):
     def export(self, outfile, level, namespace_='', name_='RestrictionFormat', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='RestrictionFormat')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='RestrictionFormat')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -3340,7 +3332,8 @@ class AAObsMatrix(AbstractObsMatrix):
     def export(self, outfile, level, namespace_='', name_='AAObsMatrix', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='AAObsMatrix')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='AAObsMatrix')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -3447,7 +3440,8 @@ class AASeqMatrix(AbstractSeqMatrix):
     def export(self, outfile, level, namespace_='', name_='AASeqMatrix', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='AASeqMatrix')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='AASeqMatrix')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -3563,7 +3557,8 @@ class AAFormat(AbstractFormat):
     def export(self, outfile, level, namespace_='', name_='AAFormat', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='AAFormat')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='AAFormat')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -3689,7 +3684,8 @@ class DNAObsMatrix(AbstractObsMatrix):
     def export(self, outfile, level, namespace_='', name_='DNAObsMatrix', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='DNAObsMatrix')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='DNAObsMatrix')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -3796,7 +3792,8 @@ class DNASeqMatrix(AbstractSeqMatrix):
     def export(self, outfile, level, namespace_='', name_='DNASeqMatrix', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='DNASeqMatrix')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='DNASeqMatrix')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -3911,7 +3908,8 @@ class DNAFormat(AbstractFormat):
     def export(self, outfile, level, namespace_='', name_='DNAFormat', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='DNAFormat')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='DNAFormat')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -4033,9 +4031,11 @@ class AbstractObs(Labelled):
     def export(self, outfile, level, namespace_='', name_='AbstractObs', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='AbstractObs')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="AbstractObs"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='AbstractObs')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="AbstractObs"')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -4131,7 +4131,8 @@ class ContinuousObs(AbstractObs):
     def export(self, outfile, level, namespace_='', name_='ContinuousObs', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='ContinuousObs')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='ContinuousObs')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -4209,7 +4210,6 @@ class ContinuousObs(AbstractObs):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -4249,9 +4249,11 @@ class IDTagged(Labelled):
     def export(self, outfile, level, namespace_='', name_='IDTagged', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='IDTagged')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="IDTagged"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='IDTagged')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="IDTagged"')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -4333,9 +4335,11 @@ class Taxa(IDTagged):
     def export(self, outfile, level, namespace_='', name_='Taxa', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='Taxa')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="Taxa"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='Taxa')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="Taxa"')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -4428,9 +4432,11 @@ class Taxon(IDTagged):
     def export(self, outfile, level, namespace_='', name_='Taxon', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='Taxon')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="Taxon"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='Taxon')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="Taxon"')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -4510,9 +4516,11 @@ class AbstractTrees(IDTagged):
     def export(self, outfile, level, namespace_='', name_='AbstractTrees', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='AbstractTrees')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="AbstractTrees"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='AbstractTrees')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="AbstractTrees"')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -4595,7 +4603,6 @@ class AbstractTrees(IDTagged):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'network':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -4613,7 +4620,6 @@ class AbstractTrees(IDTagged):
             self.network.append(obj_)
         elif nodeName_ == 'tree':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -4677,9 +4683,11 @@ class AbstractNetwork(IDTagged):
     def export(self, outfile, level, namespace_='', name_='AbstractNetwork', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='AbstractNetwork')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="AbstractNetwork"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='AbstractNetwork')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="AbstractNetwork"')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -4762,7 +4770,6 @@ class AbstractNetwork(IDTagged):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'node':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -4780,7 +4787,6 @@ class AbstractNetwork(IDTagged):
             self.node.append(obj_)
         elif nodeName_ == 'edge':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -4846,9 +4852,11 @@ class AbstractTree(IDTagged):
     def export(self, outfile, level, namespace_='', name_='AbstractTree', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='AbstractTree')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="AbstractTree"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='AbstractTree')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="AbstractTree"')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -4939,7 +4947,6 @@ class AbstractTree(IDTagged):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'node':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -4957,7 +4964,6 @@ class AbstractTree(IDTagged):
             self.node.append(obj_)
         elif nodeName_ == 'rootedge':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -4975,7 +4981,6 @@ class AbstractTree(IDTagged):
             self.set_rootedge(obj_)
         elif nodeName_ == 'edge':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -5025,9 +5030,11 @@ class AbstractRootEdge(IDTagged):
     def export(self, outfile, level, namespace_='', name_='AbstractRootEdge', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='AbstractRootEdge')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="AbstractRootEdge"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='AbstractRootEdge')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="AbstractRootEdge"')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -5117,9 +5124,11 @@ class AbstractEdge(IDTagged):
     def export(self, outfile, level, namespace_='', name_='AbstractEdge', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='AbstractEdge')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="AbstractEdge"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='AbstractEdge')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="AbstractEdge"')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -5243,7 +5252,8 @@ class IntTree(AbstractTree):
     def export(self, outfile, level, namespace_='', name_='IntTree', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='IntTree')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='IntTree')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -5349,7 +5359,6 @@ class IntTree(AbstractTree):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -5434,7 +5443,8 @@ class FloatTree(AbstractTree):
     def export(self, outfile, level, namespace_='', name_='FloatTree', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='FloatTree')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='FloatTree')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -5540,7 +5550,6 @@ class FloatTree(AbstractTree):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -5601,7 +5610,8 @@ class TreeIntRootEdge(AbstractRootEdge):
     def export(self, outfile, level, namespace_='', name_='TreeIntRootEdge', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='TreeIntRootEdge')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='TreeIntRootEdge')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -5667,7 +5677,6 @@ class TreeIntRootEdge(AbstractRootEdge):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -5712,7 +5721,8 @@ class TreeIntEdge(AbstractEdge):
     def export(self, outfile, level, namespace_='', name_='TreeIntEdge', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='TreeIntEdge')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='TreeIntEdge')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -5778,7 +5788,6 @@ class TreeIntEdge(AbstractEdge):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -5823,7 +5832,8 @@ class TreeFloatRootEdge(AbstractRootEdge):
     def export(self, outfile, level, namespace_='', name_='TreeFloatRootEdge', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='TreeFloatRootEdge')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='TreeFloatRootEdge')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -5889,7 +5899,6 @@ class TreeFloatRootEdge(AbstractRootEdge):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -5934,7 +5943,8 @@ class TreeFloatEdge(AbstractEdge):
     def export(self, outfile, level, namespace_='', name_='TreeFloatEdge', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='TreeFloatEdge')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='TreeFloatEdge')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -6000,7 +6010,6 @@ class TreeFloatEdge(AbstractEdge):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -6048,7 +6057,8 @@ class StandardObs(AbstractObs):
     def export(self, outfile, level, namespace_='', name_='StandardObs', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='StandardObs')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='StandardObs')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -6122,7 +6132,6 @@ class StandardObs(AbstractObs):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -6171,7 +6180,8 @@ class RNAObs(AbstractObs):
     def export(self, outfile, level, namespace_='', name_='RNAObs', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='RNAObs')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='RNAObs')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -6245,7 +6255,6 @@ class RNAObs(AbstractObs):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -6294,7 +6303,8 @@ class RestrictionObs(AbstractObs):
     def export(self, outfile, level, namespace_='', name_='RestrictionObs', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='RestrictionObs')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='RestrictionObs')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -6368,7 +6378,6 @@ class RestrictionObs(AbstractObs):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -6417,7 +6426,8 @@ class AAObs(AbstractObs):
     def export(self, outfile, level, namespace_='', name_='AAObs', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='AAObs')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='AAObs')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -6491,7 +6501,6 @@ class AAObs(AbstractObs):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -6540,7 +6549,8 @@ class DNAObs(AbstractObs):
     def export(self, outfile, level, namespace_='', name_='DNAObs', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='DNAObs')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='DNAObs')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -6614,7 +6624,6 @@ class DNAObs(AbstractObs):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -6669,9 +6678,11 @@ class AbstractChar(IDTagged):
     def export(self, outfile, level, namespace_='', name_='AbstractChar', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='AbstractChar')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="AbstractChar"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='AbstractChar')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="AbstractChar"')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -6804,9 +6815,11 @@ class AbstractStates(IDTagged):
     def export(self, outfile, level, namespace_='', name_='AbstractStates', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='AbstractStates')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="AbstractStates"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='AbstractStates')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="AbstractStates"')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -6904,7 +6917,6 @@ class AbstractStates(IDTagged):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'state':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -6922,7 +6934,6 @@ class AbstractStates(IDTagged):
             self.state.append(obj_)
         elif nodeName_ == 'polymorphic_state_set':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -6940,7 +6951,6 @@ class AbstractStates(IDTagged):
             self.polymorphic_state_set.append(obj_)
         elif nodeName_ == 'uncertain_state_set':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -6987,9 +6997,11 @@ class AbstractState(IDTagged):
     def export(self, outfile, level, namespace_='', name_='AbstractState', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='AbstractState')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="AbstractState"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='AbstractState')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="AbstractState"')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -7080,7 +7092,8 @@ class ContinuousChar(AbstractChar):
     def export(self, outfile, level, namespace_='', name_='ContinuousChar', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='ContinuousChar')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='ContinuousChar')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -7177,7 +7190,6 @@ class ContinuousChar(AbstractChar):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -7211,9 +7223,11 @@ class AbstractSet(IDTagged):
     def export(self, outfile, level, namespace_='', name_='AbstractSet', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='AbstractSet')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="AbstractSet"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='AbstractSet')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="AbstractSet"')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -7274,9 +7288,11 @@ class TaxaLinked(IDTagged):
     def export(self, outfile, level, namespace_='', name_='TaxaLinked', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='TaxaLinked')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="TaxaLinked"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='TaxaLinked')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="TaxaLinked"')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -7348,9 +7364,11 @@ class OptionalTaxonLinked(IDTagged):
     def export(self, outfile, level, namespace_='', name_='OptionalTaxonLinked', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='OptionalTaxonLinked')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="OptionalTaxonLinked"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='OptionalTaxonLinked')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="OptionalTaxonLinked"')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -7422,9 +7440,11 @@ class TaxonLinked(IDTagged):
     def export(self, outfile, level, namespace_='', name_='TaxonLinked', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='TaxonLinked')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="TaxonLinked"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='TaxonLinked')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="TaxonLinked"')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -7515,7 +7535,8 @@ class IntNetwork(AbstractNetwork):
     def export(self, outfile, level, namespace_='', name_='IntNetwork', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='IntNetwork')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='IntNetwork')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -7649,7 +7670,8 @@ class FloatNetwork(AbstractNetwork):
     def export(self, outfile, level, namespace_='', name_='FloatNetwork', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='FloatNetwork')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='FloatNetwork')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -7770,7 +7792,8 @@ class NetworkIntEdge(AbstractEdge):
     def export(self, outfile, level, namespace_='', name_='NetworkIntEdge', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='NetworkIntEdge')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='NetworkIntEdge')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -7836,7 +7859,6 @@ class NetworkIntEdge(AbstractEdge):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -7881,7 +7903,8 @@ class NetworkFloatEdge(AbstractEdge):
     def export(self, outfile, level, namespace_='', name_='NetworkFloatEdge', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='NetworkFloatEdge')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='NetworkFloatEdge')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -7947,7 +7970,6 @@ class NetworkFloatEdge(AbstractEdge):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -7988,9 +8010,11 @@ class AbstractNode(OptionalTaxonLinked):
     def export(self, outfile, level, namespace_='', name_='AbstractNode', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='AbstractNode')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="AbstractNode"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='AbstractNode')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="AbstractNode"')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -8070,7 +8094,8 @@ class TreeNode(AbstractNode):
     def export(self, outfile, level, namespace_='', name_='TreeNode', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='TreeNode')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='TreeNode')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -8122,7 +8147,6 @@ class TreeNode(AbstractNode):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -8180,9 +8204,11 @@ class Trees(TaxaLinked):
     def export(self, outfile, level, namespace_='', name_='Trees', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='Trees')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="Trees"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='Trees')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="Trees"')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -8265,7 +8291,6 @@ class Trees(TaxaLinked):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'network':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -8283,7 +8308,6 @@ class Trees(TaxaLinked):
             self.network.append(obj_)
         elif nodeName_ == 'tree':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -8349,7 +8373,8 @@ class StandardChar(AbstractChar):
     def export(self, outfile, level, namespace_='', name_='StandardChar', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='StandardChar')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='StandardChar')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -8457,7 +8482,6 @@ class StandardChar(AbstractChar):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -8531,7 +8555,8 @@ class StandardStates(AbstractStates):
     def export(self, outfile, level, namespace_='', name_='StandardStates', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='StandardStates')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='StandardStates')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -8643,7 +8668,6 @@ class StandardStates(AbstractStates):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -8709,7 +8733,8 @@ class StandardState(AbstractState):
     def export(self, outfile, level, namespace_='', name_='StandardState', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='StandardState')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='StandardState')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -8776,7 +8801,6 @@ class StandardState(AbstractState):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -8837,7 +8861,8 @@ class RNAChar(AbstractChar):
     def export(self, outfile, level, namespace_='', name_='RNAChar', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='RNAChar')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='RNAChar')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -8945,7 +8970,6 @@ class RNAChar(AbstractChar):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -9019,7 +9043,8 @@ class RNAStates(AbstractStates):
     def export(self, outfile, level, namespace_='', name_='RNAStates', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='RNAStates')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='RNAStates')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -9131,7 +9156,6 @@ class RNAStates(AbstractStates):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -9174,9 +9198,9 @@ class RNAState(AbstractState):
     subclass = None
     superclass = AbstractState
     def __init__(self, about=None, meta=None, label=None, id=None, symbol=None, valueOf_=None):
-        super(RNAState, self).__init__(about, meta, label, id, symbol, valueOf_, )
+        super(RNAState, self).__init__(about, meta, label, id, symbol, )
         self.symbol = _cast(None, symbol)
-        self.valueOf_ = valueOf_
+        pass
     def factory(*args_, **kwargs_):
         if RNAState.subclass:
             return RNAState.subclass(*args_, **kwargs_)
@@ -9188,15 +9212,13 @@ class RNAState(AbstractState):
     def validate_RNAToken(self, value):
         # Validate type RNAToken, a restriction on AbstractSymbol.
         pass
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='RNAState', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='RNAState')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='RNAState')
         if self.hasContent_():
-            outfile.write('>')
-            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
+            outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
@@ -9210,7 +9232,6 @@ class RNAState(AbstractState):
         pass
     def hasContent_(self):
         if (
-            self.valueOf_ or
             super(RNAState, self).hasContent_()
             ):
             return True
@@ -9221,8 +9242,6 @@ class RNAState(AbstractState):
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
         if self.symbol is not None and 'symbol' not in already_processed:
             already_processed.append('symbol')
@@ -9234,7 +9253,6 @@ class RNAState(AbstractState):
         pass
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
@@ -9292,7 +9310,8 @@ class RestrictionChar(AbstractChar):
     def export(self, outfile, level, namespace_='', name_='RestrictionChar', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='RestrictionChar')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='RestrictionChar')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -9400,7 +9419,6 @@ class RestrictionChar(AbstractChar):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -9458,7 +9476,8 @@ class RestrictionStates(AbstractStates):
     def export(self, outfile, level, namespace_='', name_='RestrictionStates', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='RestrictionStates')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='RestrictionStates')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -9540,7 +9559,6 @@ class RestrictionStates(AbstractStates):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -9573,9 +9591,9 @@ class RestrictionState(AbstractState):
     subclass = None
     superclass = AbstractState
     def __init__(self, about=None, meta=None, label=None, id=None, symbol=None, valueOf_=None):
-        super(RestrictionState, self).__init__(about, meta, label, id, symbol, valueOf_, )
+        super(RestrictionState, self).__init__(about, meta, label, id, symbol, )
         self.symbol = _cast(None, symbol)
-        self.valueOf_ = valueOf_
+        pass
     def factory(*args_, **kwargs_):
         if RestrictionState.subclass:
             return RestrictionState.subclass(*args_, **kwargs_)
@@ -9587,15 +9605,13 @@ class RestrictionState(AbstractState):
     def validate_RestrictionToken(self, value):
         # Validate type RestrictionToken, a restriction on xs:integer.
         pass
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='RestrictionState', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='RestrictionState')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='RestrictionState')
         if self.hasContent_():
-            outfile.write('>')
-            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
+            outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
@@ -9609,7 +9625,6 @@ class RestrictionState(AbstractState):
         pass
     def hasContent_(self):
         if (
-            self.valueOf_ or
             super(RestrictionState, self).hasContent_()
             ):
             return True
@@ -9620,8 +9635,6 @@ class RestrictionState(AbstractState):
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
         if self.symbol is not None and 'symbol' not in already_processed:
             already_processed.append('symbol')
@@ -9633,7 +9646,6 @@ class RestrictionState(AbstractState):
         pass
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
@@ -9660,9 +9672,9 @@ class AAState(AbstractState):
     subclass = None
     superclass = AbstractState
     def __init__(self, about=None, meta=None, label=None, id=None, symbol=None, valueOf_=None):
-        super(AAState, self).__init__(about, meta, label, id, symbol, valueOf_, )
+        super(AAState, self).__init__(about, meta, label, id, symbol, )
         self.symbol = _cast(None, symbol)
-        self.valueOf_ = valueOf_
+        pass
     def factory(*args_, **kwargs_):
         if AAState.subclass:
             return AAState.subclass(*args_, **kwargs_)
@@ -9674,15 +9686,13 @@ class AAState(AbstractState):
     def validate_AAToken(self, value):
         # Validate type AAToken, a restriction on AbstractSymbol.
         pass
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='AAState', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='AAState')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='AAState')
         if self.hasContent_():
-            outfile.write('>')
-            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
+            outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
@@ -9696,7 +9706,6 @@ class AAState(AbstractState):
         pass
     def hasContent_(self):
         if (
-            self.valueOf_ or
             super(AAState, self).hasContent_()
             ):
             return True
@@ -9707,8 +9716,6 @@ class AAState(AbstractState):
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
         if self.symbol is not None and 'symbol' not in already_processed:
             already_processed.append('symbol')
@@ -9720,7 +9727,6 @@ class AAState(AbstractState):
         pass
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
@@ -9791,7 +9797,8 @@ class AAStates(AbstractStates):
     def export(self, outfile, level, namespace_='', name_='AAStates', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='AAStates')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='AAStates')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -9903,7 +9910,6 @@ class AAStates(AbstractStates):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -9979,7 +9985,8 @@ class AAChar(AbstractChar):
     def export(self, outfile, level, namespace_='', name_='AAChar', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='AAChar')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='AAChar')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -10087,7 +10094,6 @@ class AAChar(AbstractChar):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -10147,7 +10153,8 @@ class DNAChar(AbstractChar):
     def export(self, outfile, level, namespace_='', name_='DNAChar', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='DNAChar')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='DNAChar')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -10255,7 +10262,6 @@ class DNAChar(AbstractChar):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -10329,7 +10335,8 @@ class DNAStates(AbstractStates):
     def export(self, outfile, level, namespace_='', name_='DNAStates', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='DNAStates')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='DNAStates')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -10441,7 +10448,6 @@ class DNAStates(AbstractStates):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -10484,9 +10490,9 @@ class DNAState(AbstractState):
     subclass = None
     superclass = AbstractState
     def __init__(self, about=None, meta=None, label=None, id=None, symbol=None, valueOf_=None):
-        super(DNAState, self).__init__(about, meta, label, id, symbol, valueOf_, )
+        super(DNAState, self).__init__(about, meta, label, id, symbol, )
         self.symbol = _cast(None, symbol)
-        self.valueOf_ = valueOf_
+        pass
     def factory(*args_, **kwargs_):
         if DNAState.subclass:
             return DNAState.subclass(*args_, **kwargs_)
@@ -10498,15 +10504,13 @@ class DNAState(AbstractState):
     def validate_DNAToken(self, value):
         # Validate type DNAToken, a restriction on AbstractSymbol.
         pass
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='', name_='DNAState', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='DNAState')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='DNAState')
         if self.hasContent_():
-            outfile.write('>')
-            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
+            outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
@@ -10520,7 +10524,6 @@ class DNAState(AbstractState):
         pass
     def hasContent_(self):
         if (
-            self.valueOf_ or
             super(DNAState, self).hasContent_()
             ):
             return True
@@ -10531,8 +10534,6 @@ class DNAState(AbstractState):
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
         if self.symbol is not None and 'symbol' not in already_processed:
             already_processed.append('symbol')
@@ -10544,7 +10545,6 @@ class DNAState(AbstractState):
         pass
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
@@ -10579,9 +10579,11 @@ class AbstractBlock(TaxaLinked):
     def export(self, outfile, level, namespace_='', name_='AbstractBlock', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='AbstractBlock')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="AbstractBlock"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='AbstractBlock')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="AbstractBlock"')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -10627,7 +10629,6 @@ class AbstractBlock(TaxaLinked):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'format':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -10681,9 +10682,11 @@ class AbstractObsRow(TaxonLinked):
     def export(self, outfile, level, namespace_='', name_='AbstractObsRow', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='AbstractObsRow')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="AbstractObsRow"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='AbstractObsRow')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="AbstractObsRow"')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -10751,7 +10754,6 @@ class AbstractObsRow(TaxonLinked):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'cell':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -10797,9 +10799,11 @@ class AbstractSeqRow(TaxonLinked):
     def export(self, outfile, level, namespace_='', name_='AbstractSeqRow', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='AbstractSeqRow')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="AbstractSeqRow"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='AbstractSeqRow')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="AbstractSeqRow"')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -10880,9 +10884,11 @@ class AbstractUncertainStateSet(AbstractState):
     def export(self, outfile, level, namespace_='', name_='AbstractUncertainStateSet', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='AbstractUncertainStateSet')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="AbstractUncertainStateSet"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='AbstractUncertainStateSet')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="AbstractUncertainStateSet"')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -10935,7 +10941,6 @@ class AbstractUncertainStateSet(AbstractState):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'member':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -10995,7 +11000,8 @@ class ContinuousMatrixObsRow(AbstractObsRow):
     def export(self, outfile, level, namespace_='', name_='ContinuousMatrixObsRow', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='ContinuousMatrixObsRow')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='ContinuousMatrixObsRow')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -11077,7 +11083,6 @@ class ContinuousMatrixObsRow(AbstractObsRow):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -11133,7 +11138,8 @@ class ContinuousMatrixSeqRow(AbstractSeqRow):
     def export(self, outfile, level, namespace_='', name_='ContinuousMatrixSeqRow', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='ContinuousMatrixSeqRow')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='ContinuousMatrixSeqRow')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -11192,7 +11198,6 @@ class ContinuousMatrixSeqRow(AbstractSeqRow):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -11240,9 +11245,11 @@ class NodeAndRootEdgeAndEdgeSet(AbstractSet):
     def export(self, outfile, level, namespace_='', name_='NodeAndRootEdgeAndEdgeSet', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='NodeAndRootEdgeAndEdgeSet')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="NodeAndRootEdgeAndEdgeSet"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='NodeAndRootEdgeAndEdgeSet')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="NodeAndRootEdgeAndEdgeSet"')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -11337,9 +11344,11 @@ class TreeAndNetworkSet(AbstractSet):
     def export(self, outfile, level, namespace_='', name_='TreeAndNetworkSet', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='TreeAndNetworkSet')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="TreeAndNetworkSet"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='TreeAndNetworkSet')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="TreeAndNetworkSet"')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -11420,9 +11429,11 @@ class CellSet(AbstractSet):
     def export(self, outfile, level, namespace_='', name_='CellSet', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='CellSet')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="CellSet"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='CellSet')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="CellSet"')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -11492,9 +11503,11 @@ class RowSet(AbstractSet):
     def export(self, outfile, level, namespace_='', name_='RowSet', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='RowSet')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="RowSet"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='RowSet')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="RowSet"')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -11564,9 +11577,11 @@ class CharSet(AbstractSet):
     def export(self, outfile, level, namespace_='', name_='CharSet', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='CharSet')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="CharSet"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='CharSet')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="CharSet"')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -11642,9 +11657,11 @@ class StateSet(AbstractSet):
     def export(self, outfile, level, namespace_='', name_='StateSet', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='StateSet')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="StateSet"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='StateSet')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="StateSet"')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -11736,9 +11753,11 @@ class TaxonSet(AbstractSet):
     def export(self, outfile, level, namespace_='', name_='TaxonSet', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='TaxonSet')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="TaxonSet"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='TaxonSet')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="TaxonSet"')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -11813,7 +11832,8 @@ class NetworkNode(AbstractNode):
     def export(self, outfile, level, namespace_='', name_='NetworkNode', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='NetworkNode')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='NetworkNode')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -11865,7 +11885,6 @@ class NetworkNode(AbstractNode):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -11923,7 +11942,8 @@ class StandardMatrixObsRow(AbstractObsRow):
     def export(self, outfile, level, namespace_='', name_='StandardMatrixObsRow', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='StandardMatrixObsRow')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='StandardMatrixObsRow')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -12005,7 +12025,6 @@ class StandardMatrixObsRow(AbstractObsRow):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -12061,7 +12080,8 @@ class StandardMatrixSeqRow(AbstractSeqRow):
     def export(self, outfile, level, namespace_='', name_='StandardMatrixSeqRow', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='StandardMatrixSeqRow')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='StandardMatrixSeqRow')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -12120,7 +12140,6 @@ class StandardMatrixSeqRow(AbstractSeqRow):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -12171,7 +12190,8 @@ class StandardUncertainStateSet(AbstractUncertainStateSet):
     def export(self, outfile, level, namespace_='', name_='StandardUncertainStateSet', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='StandardUncertainStateSet')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='StandardUncertainStateSet')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -12279,7 +12299,8 @@ class RNAMatrixObsRow(AbstractObsRow):
     def export(self, outfile, level, namespace_='', name_='RNAMatrixObsRow', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='RNAMatrixObsRow')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='RNAMatrixObsRow')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -12361,7 +12382,6 @@ class RNAMatrixObsRow(AbstractObsRow):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -12417,7 +12437,8 @@ class RNAMatrixSeqRow(AbstractSeqRow):
     def export(self, outfile, level, namespace_='', name_='RNAMatrixSeqRow', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='RNAMatrixSeqRow')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='RNAMatrixSeqRow')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -12476,7 +12497,6 @@ class RNAMatrixSeqRow(AbstractSeqRow):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -12530,7 +12550,8 @@ class RNAUncertainStateSet(AbstractUncertainStateSet):
     def export(self, outfile, level, namespace_='', name_='RNAUncertainStateSet', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='RNAUncertainStateSet')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='RNAUncertainStateSet')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -12639,7 +12660,8 @@ class RestrictionMatrixObsRow(AbstractObsRow):
     def export(self, outfile, level, namespace_='', name_='RestrictionMatrixObsRow', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='RestrictionMatrixObsRow')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='RestrictionMatrixObsRow')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -12721,7 +12743,6 @@ class RestrictionMatrixObsRow(AbstractObsRow):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -12778,7 +12799,8 @@ class RestrictionMatrixSeqRow(AbstractSeqRow):
     def export(self, outfile, level, namespace_='', name_='RestrictionMatrixSeqRow', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='RestrictionMatrixSeqRow')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='RestrictionMatrixSeqRow')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -12837,7 +12859,6 @@ class RestrictionMatrixSeqRow(AbstractSeqRow):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -12901,7 +12922,8 @@ class AAMatrixObsRow(AbstractObsRow):
     def export(self, outfile, level, namespace_='', name_='AAMatrixObsRow', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='AAMatrixObsRow')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='AAMatrixObsRow')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -12983,7 +13005,6 @@ class AAMatrixObsRow(AbstractObsRow):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -13040,7 +13061,8 @@ class AAMatrixSeqRow(AbstractSeqRow):
     def export(self, outfile, level, namespace_='', name_='AAMatrixSeqRow', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='AAMatrixSeqRow')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='AAMatrixSeqRow')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -13099,7 +13121,6 @@ class AAMatrixSeqRow(AbstractSeqRow):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -13152,7 +13173,8 @@ class AAUncertainStateSet(AbstractUncertainStateSet):
     def export(self, outfile, level, namespace_='', name_='AAUncertainStateSet', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='AAUncertainStateSet')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='AAUncertainStateSet')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -13261,7 +13283,8 @@ class DNAMatrixObsRow(AbstractObsRow):
     def export(self, outfile, level, namespace_='', name_='DNAMatrixObsRow', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='DNAMatrixObsRow')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='DNAMatrixObsRow')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -13343,7 +13366,6 @@ class DNAMatrixObsRow(AbstractObsRow):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -13399,7 +13421,8 @@ class DNAMatrixSeqRow(AbstractSeqRow):
     def export(self, outfile, level, namespace_='', name_='DNAMatrixSeqRow', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='DNAMatrixSeqRow')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='DNAMatrixSeqRow')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -13458,7 +13481,6 @@ class DNAMatrixSeqRow(AbstractSeqRow):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -13513,7 +13535,8 @@ class DNAUncertainStateSet(AbstractUncertainStateSet):
     def export(self, outfile, level, namespace_='', name_='DNAUncertainStateSet', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='DNAUncertainStateSet')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='DNAUncertainStateSet')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -13601,9 +13624,11 @@ class AbstractCells(AbstractBlock):
     def export(self, outfile, level, namespace_='', name_='AbstractCells', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='AbstractCells')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="AbstractCells"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='AbstractCells')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="AbstractCells"')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -13649,7 +13674,6 @@ class AbstractCells(AbstractBlock):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'matrix':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -13688,9 +13712,11 @@ class AbstractSeqs(AbstractBlock):
     def export(self, outfile, level, namespace_='', name_='AbstractSeqs', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='AbstractSeqs')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="AbstractSeqs"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='AbstractSeqs')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="AbstractSeqs"')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -13736,7 +13762,6 @@ class AbstractSeqs(AbstractBlock):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'matrix':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -13784,9 +13809,11 @@ class AbstractPolymorphicStateSet(AbstractUncertainStateSet):
     def export(self, outfile, level, namespace_='', name_='AbstractPolymorphicStateSet', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='AbstractPolymorphicStateSet')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2002/XMLSchema-instance"')
-        outfile.write(' xsi:type="AbstractPolymorphicStateSet"')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='AbstractPolymorphicStateSet')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        if 'xsi:type' not in already_processed:
+            outfile.write(' xsi:type="AbstractPolymorphicStateSet"')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -13839,7 +13866,6 @@ class AbstractPolymorphicStateSet(AbstractUncertainStateSet):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'uncertain_state_set':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -13889,7 +13915,8 @@ class ContinuousCells(AbstractCells):
     def export(self, outfile, level, namespace_='', name_='ContinuousCells', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='ContinuousCells')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='ContinuousCells')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -13959,7 +13986,6 @@ class ContinuousCells(AbstractCells):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -14016,7 +14042,8 @@ class ContinuousSeqs(AbstractSeqs):
     def export(self, outfile, level, namespace_='', name_='ContinuousSeqs', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='ContinuousSeqs')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='ContinuousSeqs')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -14086,7 +14113,6 @@ class ContinuousSeqs(AbstractSeqs):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -14143,7 +14169,8 @@ class StandardCells(AbstractCells):
     def export(self, outfile, level, namespace_='', name_='StandardCells', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='StandardCells')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='StandardCells')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -14213,7 +14240,6 @@ class StandardCells(AbstractCells):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -14270,7 +14296,8 @@ class StandardSeqs(AbstractSeqs):
     def export(self, outfile, level, namespace_='', name_='StandardSeqs', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='StandardSeqs')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='StandardSeqs')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -14340,7 +14367,6 @@ class StandardSeqs(AbstractSeqs):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -14399,7 +14425,8 @@ class StandardPolymorphicStateSet(AbstractPolymorphicStateSet):
     def export(self, outfile, level, namespace_='', name_='StandardPolymorphicStateSet', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='StandardPolymorphicStateSet')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='StandardPolymorphicStateSet')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -14505,7 +14532,8 @@ class RnaCells(AbstractCells):
     def export(self, outfile, level, namespace_='', name_='RnaCells', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='RnaCells')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='RnaCells')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -14575,7 +14603,6 @@ class RnaCells(AbstractCells):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -14631,7 +14658,8 @@ class RnaSeqs(AbstractSeqs):
     def export(self, outfile, level, namespace_='', name_='RnaSeqs', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='RnaSeqs')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='RnaSeqs')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -14701,7 +14729,6 @@ class RnaSeqs(AbstractSeqs):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -14766,7 +14793,8 @@ class RNAPolymorphicStateSet(AbstractPolymorphicStateSet):
     def export(self, outfile, level, namespace_='', name_='RNAPolymorphicStateSet', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='RNAPolymorphicStateSet')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='RNAPolymorphicStateSet')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -14884,7 +14912,8 @@ class RestrictionCells(AbstractCells):
     def export(self, outfile, level, namespace_='', name_='RestrictionCells', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='RestrictionCells')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='RestrictionCells')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -14954,7 +14983,6 @@ class RestrictionCells(AbstractCells):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -15011,7 +15039,8 @@ class RestrictionSeqs(AbstractSeqs):
     def export(self, outfile, level, namespace_='', name_='RestrictionSeqs', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='RestrictionSeqs')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='RestrictionSeqs')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -15081,7 +15110,6 @@ class RestrictionSeqs(AbstractSeqs):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -15138,7 +15166,8 @@ class ProteinCells(AbstractCells):
     def export(self, outfile, level, namespace_='', name_='ProteinCells', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='ProteinCells')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='ProteinCells')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -15208,7 +15237,6 @@ class ProteinCells(AbstractCells):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -15265,7 +15293,8 @@ class ProteinSeqs(AbstractSeqs):
     def export(self, outfile, level, namespace_='', name_='ProteinSeqs', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='ProteinSeqs')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='ProteinSeqs')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -15335,7 +15364,6 @@ class ProteinSeqs(AbstractSeqs):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -15399,7 +15427,8 @@ class AAPolymorphicStateSet(AbstractPolymorphicStateSet):
     def export(self, outfile, level, namespace_='', name_='AAPolymorphicStateSet', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='AAPolymorphicStateSet')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='AAPolymorphicStateSet')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -15517,7 +15546,8 @@ class DnaCells(AbstractCells):
     def export(self, outfile, level, namespace_='', name_='DnaCells', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='DnaCells')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='DnaCells')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -15587,7 +15617,6 @@ class DnaCells(AbstractCells):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -15643,7 +15672,8 @@ class DnaSeqs(AbstractSeqs):
     def export(self, outfile, level, namespace_='', name_='DnaSeqs', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='DnaSeqs')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='DnaSeqs')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -15713,7 +15743,6 @@ class DnaSeqs(AbstractSeqs):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'meta':
             type_name_ = child_.attrib.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-            #type_name_ = child_.attrib.get('xsi:type')
             if type_name_ is None:
                 type_name_ = child_.attrib.get('type')
             if type_name_ is not None:
@@ -15779,7 +15808,8 @@ class DNAPolymorphicStateSet(AbstractPolymorphicStateSet):
     def export(self, outfile, level, namespace_='', name_='DNAPolymorphicStateSet', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='DNAPolymorphicStateSet')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='DNAPolymorphicStateSet')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -15895,7 +15925,7 @@ def parse(inFileName):
     doc = None
 ##     sys.stdout.write('<?xml version="1.0" ?>\n')
 ##     rootObj.export(sys.stdout, 0, name_=rootTag, 
-##         namespacedef_='xmlns:nex="http://www.phyloxml.org/1.10/"')
+##         namespacedef_='xmlns:nex="http://www.nexml.org/2009"')
     return rootObj
 
 
@@ -15913,7 +15943,7 @@ def parseString(inString):
     doc = None
 ##     sys.stdout.write('<?xml version="1.0" ?>\n')
 ##     rootObj.export(sys.stdout, 0, name_="Nexml",
-##         namespacedef_='xmlns:nex="http://www.phyloxml.org/1.10/"')
+##         namespacedef_='xmlns:nex="http://www.nexml.org/2009"')
     return rootObj
 
 

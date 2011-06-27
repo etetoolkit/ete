@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*- 
 
 #
-# Generated Fri Jun 24 09:44:49 2011 by generateDS.py version 2.5a.
+# Generated Mon Jun 27 10:13:43 2011 by generateDS.py version 2.5b.
 #
 
 import sys
@@ -393,7 +393,8 @@ class orthoXML(GeneratedsSuper):
     def export(self, outfile, level, namespace_='ortho:', name_='orthoXML', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='orthoXML')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='orthoXML')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -554,7 +555,8 @@ class species(GeneratedsSuper):
     def export(self, outfile, level, namespace_='ortho:', name_='species', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='species')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='species')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -684,7 +686,8 @@ class database(GeneratedsSuper):
     def export(self, outfile, level, namespace_='ortho:', name_='database', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='database')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='database')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -807,7 +810,8 @@ class genes(GeneratedsSuper):
     def export(self, outfile, level, namespace_='ortho:', name_='genes', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='genes')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='genes')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -887,7 +891,7 @@ class gene(GeneratedsSuper):
         self.id = _cast(int, id)
         self.geneId = _cast(None, geneId)
         self.transcriptId = _cast(None, transcriptId)
-        self.valueOf_ = valueOf_
+        pass
     def factory(*args_, **kwargs_):
         if gene.subclass:
             return gene.subclass(*args_, **kwargs_)
@@ -902,15 +906,13 @@ class gene(GeneratedsSuper):
     def set_geneId(self, geneId): self.geneId = geneId
     def get_transcriptId(self): return self.transcriptId
     def set_transcriptId(self, transcriptId): self.transcriptId = transcriptId
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='ortho:', name_='gene', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='gene')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='gene')
         if self.hasContent_():
-            outfile.write('>')
-            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
+            outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
@@ -932,7 +934,7 @@ class gene(GeneratedsSuper):
         pass
     def hasContent_(self):
         if (
-            self.valueOf_
+
             ):
             return True
         else:
@@ -942,8 +944,6 @@ class gene(GeneratedsSuper):
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
         if self.protId is not None and 'protId' not in already_processed:
             already_processed.append('protId')
@@ -965,7 +965,6 @@ class gene(GeneratedsSuper):
         pass
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
@@ -1016,7 +1015,8 @@ class scores(GeneratedsSuper):
     def export(self, outfile, level, namespace_='ortho:', name_='scores', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='scores')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='scores')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -1095,7 +1095,8 @@ class groups(GeneratedsSuper):
     def export(self, outfile, level, namespace_='ortho:', name_='groups', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='groups')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='groups')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -1222,7 +1223,8 @@ class group(GeneratedsSuper):
     def export(self, outfile, level, namespace_='ortho:', name_='group', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='group')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='group')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -1410,7 +1412,8 @@ class geneRef(GeneratedsSuper):
     def export(self, outfile, level, namespace_='ortho:', name_='geneRef', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='geneRef')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='geneRef')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -1503,7 +1506,7 @@ class scoreDef(GeneratedsSuper):
     def __init__(self, id=None, desc=None, valueOf_=None):
         self.id = _cast(None, id)
         self.desc = _cast(None, desc)
-        self.valueOf_ = valueOf_
+        pass
     def factory(*args_, **kwargs_):
         if scoreDef.subclass:
             return scoreDef.subclass(*args_, **kwargs_)
@@ -1514,15 +1517,13 @@ class scoreDef(GeneratedsSuper):
     def set_id(self, id): self.id = id
     def get_desc(self): return self.desc
     def set_desc(self, desc): self.desc = desc
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='ortho:', name_='scoreDef', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='scoreDef')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='scoreDef')
         if self.hasContent_():
-            outfile.write('>')
-            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
+            outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
@@ -1538,7 +1539,7 @@ class scoreDef(GeneratedsSuper):
         pass
     def hasContent_(self):
         if (
-            self.valueOf_
+
             ):
             return True
         else:
@@ -1548,8 +1549,6 @@ class scoreDef(GeneratedsSuper):
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
         if self.id is not None and 'id' not in already_processed:
             already_processed.append('id')
@@ -1563,7 +1562,6 @@ class scoreDef(GeneratedsSuper):
         pass
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
@@ -1593,7 +1591,7 @@ class score(GeneratedsSuper):
     def __init__(self, id=None, value=None, valueOf_=None):
         self.id = _cast(None, id)
         self.value = _cast(float, value)
-        self.valueOf_ = valueOf_
+        pass
     def factory(*args_, **kwargs_):
         if score.subclass:
             return score.subclass(*args_, **kwargs_)
@@ -1604,15 +1602,13 @@ class score(GeneratedsSuper):
     def set_id(self, id): self.id = id
     def get_value(self): return self.value
     def set_value(self, value): self.value = value
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='ortho:', name_='score', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='score')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='score')
         if self.hasContent_():
-            outfile.write('>')
-            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
+            outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
@@ -1628,7 +1624,7 @@ class score(GeneratedsSuper):
         pass
     def hasContent_(self):
         if (
-            self.valueOf_
+
             ):
             return True
         else:
@@ -1638,8 +1634,6 @@ class score(GeneratedsSuper):
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
         if self.id is not None and 'id' not in already_processed:
             already_processed.append('id')
@@ -1653,7 +1647,6 @@ class score(GeneratedsSuper):
         pass
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
@@ -1684,7 +1677,7 @@ class property(GeneratedsSuper):
     def __init__(self, name=None, value=None, valueOf_=None):
         self.name = _cast(None, name)
         self.value = _cast(None, value)
-        self.valueOf_ = valueOf_
+        pass
     def factory(*args_, **kwargs_):
         if property.subclass:
             return property.subclass(*args_, **kwargs_)
@@ -1695,15 +1688,13 @@ class property(GeneratedsSuper):
     def set_name(self, name): self.name = name
     def get_value(self): return self.value
     def set_value(self, value): self.value = value
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='ortho:', name_='property', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='property')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='property')
         if self.hasContent_():
-            outfile.write('>')
-            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
+            outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
@@ -1719,7 +1710,7 @@ class property(GeneratedsSuper):
         pass
     def hasContent_(self):
         if (
-            self.valueOf_
+
             ):
             return True
         else:
@@ -1729,8 +1720,6 @@ class property(GeneratedsSuper):
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
         if self.name is not None and 'name' not in already_processed:
             already_processed.append('name')
@@ -1744,7 +1733,6 @@ class property(GeneratedsSuper):
         pass
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
-        self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
@@ -1795,7 +1783,8 @@ class notes(GeneratedsSuper):
     def export(self, outfile, level, namespace_='ortho:', name_='notes', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='notes')
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='notes')
         outfile.write('>')
         self.exportChildren(outfile, level + 1, namespace_, name_)
         outfile.write('</%s%s>\n' % (namespace_, name_))
