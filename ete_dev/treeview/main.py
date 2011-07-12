@@ -496,7 +496,9 @@ def add_face_to_node(face, node, column, aligned=False, position="branch-right")
     :argument column: An integer number starting from 0
     :argument "branch-right" position: Possible values are
       "branch-right", "branch-top", "branch-bottom", "float", "aligned"
-   """ 
+    """ 
+
+    ## ADD HERE SOME TYPE CHECK FOR node and face
 
     # to stay 2.0 compatible 
     if aligned == True:
@@ -505,6 +507,8 @@ def add_face_to_node(face, node, column, aligned=False, position="branch-right")
     if getattr(node, "_temp_faces", None):
         getattr(node._temp_faces, position).add_face(face, column)
     else:
+        print node
+        print getattr(node, "_temp_faces", None)
         raise Exception("This function can only be called within a layout function. Use node.add_face() instead")
 
 def random_color(base=None):

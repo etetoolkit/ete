@@ -24,7 +24,7 @@ import os
 import re
 from sys import stderr as STDERR
 
-def read_phylip(source, interleaved=True, obj=None):
+def read_phylip(source, interleaved=True, obj=None, relaxed=False):
     if obj is None:
         from ete_dev.coretype import SeqGroup
         SG = SeqGroup()
@@ -59,7 +59,10 @@ def read_phylip(source, interleaved=True, obj=None):
             if not interleaved:
                 # Reads names and sequences
                 if SG.id2name.get(id_counter, None) is None:
-                    m = re.match("^(.{10})(.+)", line)
+                    if relaxed:
+                        m = re.match("^([^ ]+)(.+)", line)
+                    else:
+                        m = re.match("^(.{10})(.+)", line)
                     if m:
                         name = m.groups()[0].strip()
                         if name in SG.name2id:
@@ -89,7 +92,10 @@ def read_phylip(source, interleaved=True, obj=None):
                         "Unexpected length of sequence [%s] [%s]." %(name,SG.id2seq[id_counter])
             else:
                 if len(SG)<ntax:
-                    m = re.match("^(.{10})(.+)",line)
+                    if relaxed:
+                        m = re.match("^([^ ]+)(.+)", line)
+                    else:
+                        m = re.match("^(.{10})(.+)",line)
                     if m:
                         name = m.groups()[0].strip()
 
@@ -128,7 +134,7 @@ def read_phylip(source, interleaved=True, obj=None):
 
     return SG
 
-def write_phylip(aln, outfile=None, interleaved=True):
+def write_phylip(aln, outfile=None, interleaved=True, relaxed=False):
     width = 60
     seq_visited = set([])
 
@@ -138,36 +144,41 @@ def write_phylip(aln, outfile=None, interleaved=True):
         raise Exception, "Phylip format requires sequences of equal lenght."
     seqlength = lenghts.pop()
 
+    if not relaxed:
+        name_fix = 10
+    else:
+        name_fix = max([len(name) for name in aln.id2name.values()])
+
     alg_text = " %d %d\n" %(len(aln), seqlength)
     if interleaved:
         visited = set([])
         for i in xrange(0, seqlength, width):
-            for j in xrange(len(aln)):
+            for j in aln.id2name.iterkeys(): #xrange(len(aln)):
                 name =  aln.id2name[j]
-                if len(name)>10:
-                    name = name[:10]
+                if not relaxed and len(name)>name_fix:
+                    name = name[:name_fix]
                     show_name_warning = True
 
                 seq = aln.id2seq[j][i:i+width]
                 if j not in visited:
-                    alg_text += "%s   " %name
+                    alg_text += "%s   " %name.ljust(name_fix)
                     visited.add(j)
                 else:
-                    alg_text += " "*13
+                    alg_text += " " * (name_fix+3)
 
                 alg_text += ' '.join([seq[k:k+10] for k in xrange(0, len(seq), 10)])
                 alg_text += "\n"
             alg_text += "\n"
     else:
         for name, seq, comments in aln.iter_entries():
-            if len(name)>10:
-                name = name[:10]
+            if not relaxed and len(name)>10:
+                name = name[:name_fix]
                 show_name_warning = True
             alg_text += "%s   %s\n%s\n" %\
-                (name.ljust(10), seq[0:width-13], '\n'.join([seq[k:k+width]  \
-                                      for k in xrange(width-13, len(seq), width)]))
+                (name.ljust(name_fix), seq[0:width-name_fix+3], '\n'.join([seq[k:k+width]  \
+                                      for k in xrange(width-name_fix+3, len(seq), width)]))
     if show_name_warning:
-        print >>STDERR, "Warning! Some seqnames are longer 10 characters"
+        print >>STDERR, "Warning! Some sequence names were cut to 10 characters!!"
 
     if outfile is not None:
         OUT = open(outfile, "w")

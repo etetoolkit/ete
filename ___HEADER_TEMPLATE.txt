@@ -22,17 +22,16 @@
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
 # 
-# ETE is distributed under the GPL copyleft license (2008-2010).  
+# ETE is distributed under the GPL copyleft license (2008-2011).  
 #
-# ETE original authors and citation:
+# If you make use of ETE in published work, please cite:
 #
-# Huerta-Cepas, Joaquin Dopazo and Toni Gabaldon.
+# Jaime Huerta-Cepas, Joaquin Dopazo and Toni Gabaldon.
 # ETE: a python Environment for Tree Exploration. Jaime BMC
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
-# Please help ETE development by citing it when applicable. 
 # Note that extra references to the specific methods implemented in 
-# the toolkit could are available in the documentation. 
+# the toolkit are available in the documentation. 
 # 
 # More info at http://ete.cgenomics.org
 #

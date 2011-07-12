@@ -74,8 +74,10 @@ class SeqGroup(object):
     def __init__(self, sequences = None , format="fasta"):
         self.parsers = {
             "fasta": [read_fasta, write_fasta, {}],
-            "phylip": [read_phylip, write_phylip, {"interleaved":False}],
-            "iphylip": [read_phylip, write_phylip, {"interleaved":True}]
+            "phylip": [read_phylip, write_phylip, {"interleaved":False, "relaxed":False}],
+            "iphylip": [read_phylip, write_phylip, {"interleaved":True, "relaxed":False}],
+            "phylip_relaxed": [read_phylip, write_phylip, {"interleaved":False, "relaxed":True}],
+            "iphylip_relaxed": [read_phylip, write_phylip, {"interleaved":True, "relaxed":True}],
             }
 
         self.id2name = {}
