@@ -3,12 +3,16 @@ import os
 import time
 import cgi
 from hashlib import md5
-sys.stdout = sys.stderr 
+
 
 ALL = ["WebTreeApplication"]
 
 class WebTreeApplication(object):
     def __init__(self):
+        # Redirects normal output msgs to stderr, since stdout in web
+        # application is for the browser
+        sys.stdout = sys.stderr 
+
         self.TreeConstructor = None
         self.NODE_TARGET_ACTIONS = ["node", "face"]
         self.TREE_TARGET_ACTIONS = ["layout", "search"]
