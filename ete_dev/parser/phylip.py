@@ -175,8 +175,8 @@ def write_phylip(aln, outfile=None, interleaved=True, relaxed=False):
                 name = name[:name_fix]
                 show_name_warning = True
             alg_text += "%s   %s\n%s\n" %\
-                (name.ljust(name_fix), seq[0:width-name_fix+3], '\n'.join([seq[k:k+width]  \
-                                      for k in xrange(width-name_fix+3, len(seq), width)]))
+                (name.ljust(name_fix), seq[0:width-name_fix-3], '\n'.join([seq[k:k+width]  \
+                                      for k in xrange(width-name_fix-3, len(seq), width)]))
     if show_name_warning:
         print >>STDERR, "Warning! Some sequence names were cut to 10 characters!!"
 
