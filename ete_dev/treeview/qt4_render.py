@@ -850,7 +850,8 @@ def render_aligned_faces(img, mainRect, parent, n2i, n2f):
         fb.setPos(x, item.center-(fb.h/2))
 
         if img.draw_guiding_lines and _leaf(node):
-            guide_line = _LineItem(item.nodeRegion.width(), item.center, x, item.center)
+            # -1 is to connect the two lines, otherwise there is a pixel in between 
+            guide_line = _LineItem(item.nodeRegion.width()-1, item.center, x, item.center)
             pen = QtGui.QPen()
             set_pen_style(pen, img.guiding_lines_type)
             pen.setColor(QtGui.QColor(img.guiding_lines_color))
