@@ -49,6 +49,9 @@ import MySQLdb
 from string import strip
 from ete_dev import PhyloTree
 
+def extract_species_name(name):
+  return name.split("_")[1]
+
 ID_PATTERN = re.compile("^[Pp][Hh][Yy]\w{7}(_\w{2,7})?$")
 ITERABLE_TYPES = set([list, set, tuple, frozenset])
 
@@ -675,7 +678,7 @@ class PhylomeDB3Connector(object):
     if self.__execute__(cmd):
       for row in self._SQL.fetchall():
         trees.setdefault(row["method"], {})["lk"] = row["lk"]
-        trees.setdefault(row["method"], {})["tree"] = PhyloTree(row["tree"])
+        trees.setdefault(row["method"], {})["tree"] = PhyloTree(row["tree"], sp_naming_function=extract_species_name)
     return trees
 
   def get_best_tree(self, id, phylome_id):
@@ -698,7 +701,7 @@ class PhylomeDB3Connector(object):
     ## Execute the MySQL query and then format the query result
     if self.__execute__(cmd):
       tree = self._SQL.fetchone()
-      tree["tree"] = PhyloTree(tree["tree"])
+      tree["tree"] = PhyloTree(tree["tree"], sp_naming_function=extract_species_name)
 
     return tree
 
@@ -959,7 +962,7 @@ class PhylomeDB3Connector(object):
     if self.__execute__(cmd):
       for row in self._SQL.fetchall():
         trees.setdefault(row["protid"], {}).setdefault(row["method"], \
-          [row["lk"], PhyloTree(row["newick"])])
+          [row["lk"], PhyloTree(row["newick"], sp_naming_function=extract_species_name)])
     return trees
 
   def get_phylome_algs(self, phylome_id):

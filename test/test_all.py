@@ -14,5 +14,4 @@ from test_clustertree import *
 from test_r_bindings import *
 
 if __name__ == '__main__':
-    unittest.TextTestRunner(verbosity=2)
     unittest.main()
