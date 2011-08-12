@@ -621,6 +621,16 @@ class PhylomeDB3Connector(object):
 
     return conversion
 
+  def get_translations_for_proteome(self, taxid, version):
+    cmd  = 'SELECT protid, prot_name, gene_name FROM protein WHERE taxid=%d AND version=%d' %\
+        (taxid, version)
+
+    if self.__execute__(cmd):
+      return [(r["protid"], r["prot_name"], r["gene_name"]) for r in self._SQL.fetchall()]
+    else:
+      return []
+
+
   def get_collateral_seeds(self, protid):
     """ Return the trees where the protid is presented as part of the homolog
         sequences to the seed protein
@@ -803,7 +813,7 @@ class PhylomeDB3Connector(object):
 
     # Check if the protein id is well-constructed
     if not self.__check_input_parameter__(single_id = id):
-      raise NameError("Check your input data")
+      raise NameError("Wrong id [%s]" %id)
     protid = self.__parser_ids__(id)
 
     ## Join and retrieve all the information available in the database for
@@ -1184,6 +1194,17 @@ class PhylomeDB3Connector(object):
           proteomes["seed"] = row["proteome"]
 
     return proteomes
+
+  def get_species_in_phylome(self, phylome_id):
+    """ Returns a list of proteomes associated to a given phylome_id
+    """
+    ## Retrieve taxids associated to a phylome
+    cmd =  'SELECT taxid from %s WHERE phylome_id="%s"' % \
+        (self._phy_content, phylome_id)
+    if self.__execute__(cmd):
+      return [values["taxid"] for values in self._SQL.fetchall()]
+    else:
+      return []
 
   def get_phylomes_for_seed_ids(self, ids):
     """ Given a list of phylomeDB IDs, return in which phylomes these IDs have

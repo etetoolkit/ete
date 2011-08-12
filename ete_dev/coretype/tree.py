@@ -617,7 +617,7 @@ class TreeNode(object):
             rooting = "No"
         else:
             rooting = "Unknown"
-        max_node, max_dis = get_farthest_leaf()
+        max_node, max_dis = self.get_farthest_leaf()
         print "Number of nodes:\t %d" % len(self.get_descendants())
         print "Number of leaves:\t %d" % len(self.get_leaves())
         print "Rooted:", rooting
