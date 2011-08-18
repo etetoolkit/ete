@@ -3,7 +3,7 @@ import random
 import re
 import types 
 
-from PyQt4.QtGui import QGraphicsItem,QGraphicsRectItem, QColor, QPen, QBrush, QPrinter
+from PyQt4.QtGui import *
 from PyQt4 import QtCore
 
 from svg_colors import SVG_COLORS
@@ -531,15 +531,29 @@ def set_pen_style(pen, line_style):
         pen.setStyle(QtCore.Qt.DotLine)
      
 
-def save(scene, imgName, w=None, h=None, header=None, \
-             dpi=300, take_region=False, units="px"):
-
-    from PyQt4 import QtGui
+def save(scene, imgName, w=None, h=None, dpi=300,\
+             take_region=False, units="px"):
 
     ext = imgName.split(".")[-1].upper()
     main_rect = scene.sceneRect()
     aspect_ratio = main_rect.height() / main_rect.width()
 
+    # auto adjust size    
+    if not w and not h:
+        units = "mm"
+        w = 205 
+        h = 292
+        ratio_mode = QtCore.Qt.KeepAspectRatio
+    elif w and h: 
+        ratio_mode = QtCore.Qt.IgnoreAspectRatio
+    elif h is None :
+        h = w * aspect_ratio
+        ratio_mode = QtCore.Qt.KeepAspectRatio
+    elif w is None:
+        w = h / aspect_ratio
+        ratio_mode = QtCore.Qt.KeepAspectRatio
+    
+    # Adjust to resolution
     if units == "mm":
         if w: 
             w = w * 0.0393700787 * dpi
@@ -555,21 +569,6 @@ def save(scene, imgName, w=None, h=None, header=None, \
     else:
         raise Exception("wrong unit format")
 
-    # auto adjust size
-    if w is None and h is None and (ext == "PDF" or ext == "PS"):
-        w = dpi * 6.4
-        h = w * aspect_ratio
-        if h>dpi * 11:
-            h = dpi * 11
-            w = h / aspect_ratio
-    elif w is None and h is None:
-        w = main_rect.width()
-        h = main_rect.height()
-    elif h is None :
-        h = w * aspect_ratio
-    elif w is None:
-        w = h / aspect_ratio
-
     if ext == "SVG": 
         from PyQt4 import QtSvg
         svg = QtSvg.QSvgGenerator()
@@ -580,10 +579,11 @@ def save(scene, imgName, w=None, h=None, header=None, \
         svg.setTitle("Generated with ETE http://ete.cgenomics.org")
         svg.setDescription("Generated with ETE http://ete.cgenomics.org")
 
-        pp = QtGui.QPainter()
+        pp = QPainter()
         pp.begin(svg)
-        scene.render(pp, targetRect, scene.sceneRect())
-        pp.end()        # Fix a very annoying problem with Radial gradients in
+        scene.render(pp, targetRect, scene.sceneRect(), ratio_mode)
+        pp.end() 
+        # Fix a very annoying problem with Radial gradients in
         # inkscape and browsers...
         temp_compatible_code = open(imgName).read().replace("xml:id=", "id=")
         compatible_code = re.sub('font-size="(\d+)"', 'font-size="\\1pt"', temp_compatible_code)
@@ -613,33 +613,21 @@ def save(scene, imgName, w=None, h=None, header=None, \
 
         printer.setFullPage(True);
         printer.setOutputFileName(imgName);
-        pp = QtGui.QPainter(printer)
-        if header:
-            pp.setFont(QtGui.QFont("Verdana",12))
-            pp.drawText(topleft.x(),20, header)
-            #targetRect =  QtCore.QRectF(topleft.x(), 20 + (topleft.y()*2), w, h)
-            targetRect =  QtCore.QRectF(0, 20 , w, h)
-        else:
-            targetRect =  QtCore.QRectF(0, 0 , w, h)
-            #targetRect =  QtCore.QRectF(topleft.x(), topleft.y()*2, w, h)
-
-        scene.render(pp, targetRect, scene.sceneRect())
-        pp.end()
-
+        pp = QPainter(printer)
+        targetRect =  QtCore.QRectF(0, 0 , w, h)
+        scene.render(pp, targetRect, scene.sceneRect(), ratio_mode)
     else:
-        scene.setBackgroundBrush(QtGui.QBrush(QtGui.QColor("white")));
         targetRect = QtCore.QRectF(0, 0, w, h)
-        ii= QtGui.QImage(w, \
-                             h, \
-                             QtGui.QImage.Format_ARGB32)
+        ii= QImage(w, h, QImage.Format_ARGB32)
+        ii.fill(QColor(QtCore.Qt.white).rgb())
         ii.setDotsPerMeterX(dpi / 0.0254) # Convert inches to meters
         ii.setDotsPerMeterY(dpi / 0.0254)
-        pp = QtGui.QPainter(ii)
-        pp.setRenderHint(QtGui.QPainter.Antialiasing)
-        pp.setRenderHint(QtGui.QPainter.TextAntialiasing)
-        pp.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
+        pp = QPainter(ii)
+        pp.setRenderHint(QPainter.Antialiasing)
+        pp.setRenderHint(QPainter.TextAntialiasing)
+        pp.setRenderHint(QPainter.SmoothPixmapTransform)
 
-        scene.render(pp, targetRect, scene.sceneRect())
+        scene.render(pp, targetRect, scene.sceneRect(), ratio_mode)
         pp.end()
         ii.save(imgName)
 
