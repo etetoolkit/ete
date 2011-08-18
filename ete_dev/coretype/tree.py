@@ -627,9 +627,9 @@ class TreeNode(object):
 
     def write(self, features=None, outfile=None, format=0):
         """ 
-        Returns the newick representation of this node
-        topology. Several arguments control the way in which extra
-        data is shown for every node:
+        Returns the newick representation of current node. Several
+        arguments control the way in which extra data is shown for
+        every node:
 
         :argument features: a list of feature names to be exported
           using the Extended Newick Format (i.e. features=["name",

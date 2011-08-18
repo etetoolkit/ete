@@ -3,7 +3,7 @@ import random
 import re
 import types 
 
-from PyQt4.QtGui import QGraphicsItem,QGraphicsRectItem, QColor, QPen, QBrush
+from PyQt4.QtGui import QGraphicsItem,QGraphicsRectItem, QColor, QPen, QBrush, QPrinter
 from PyQt4 import QtCore
 
 from svg_colors import SVG_COLORS
@@ -591,20 +591,25 @@ def save(scene, imgName, w=None, h=None, header=None, \
         # End of fix
 
     elif ext == "PDF" or ext == "PS":
-        format = QtGui.QPrinter.PostScriptFormat if ext == "PS" else QtGui.QPrinter.PdfFormat
+        if ext == "PS":
+            format = QPrinter.PostScriptFormat
+        else:
+            format = QPrinter.PdfFormat
 
-        printer = QtGui.QPrinter(QtGui.QPrinter.HighResolution)
+        printer = QPrinter(QPrinter.HighResolution)
         printer.setResolution(dpi)
         printer.setOutputFormat(format)
-        printer.setPageSize(QtGui.QPrinter.A4)
+        #printer.setPageSize(QPrinter.A4)
+        printer.setPaperSize(QtCore.QSizeF(w, h), QPrinter.DevicePixel)
+        printer.setPageMargins(0, 0, 0, 0, QPrinter.DevicePixel) 
 
-        pageTopLeft = printer.pageRect().topLeft()
-        paperTopLeft = printer.paperRect().topLeft()
+        #pageTopLeft = printer.pageRect().topLeft()
+        #paperTopLeft = printer.paperRect().topLeft()
         # For PS -> problems with margins
-        # print paperTopLeft.x(), paperTopLeft.y()
-        # print pageTopLeft.x(), pageTopLeft.y()
+        #print paperTopLeft.x(), paperTopLeft.y()
+        #print pageTopLeft.x(), pageTopLeft.y()
         # print  printer.paperRect().height(),  printer.pageRect().height()
-        topleft =  pageTopLeft - paperTopLeft
+        #topleft =  pageTopLeft - paperTopLeft
 
         printer.setFullPage(True);
         printer.setOutputFileName(imgName);
@@ -612,9 +617,11 @@ def save(scene, imgName, w=None, h=None, header=None, \
         if header:
             pp.setFont(QtGui.QFont("Verdana",12))
             pp.drawText(topleft.x(),20, header)
-            targetRect =  QtCore.QRectF(topleft.x(), 20 + (topleft.y()*2), w, h)
+            #targetRect =  QtCore.QRectF(topleft.x(), 20 + (topleft.y()*2), w, h)
+            targetRect =  QtCore.QRectF(0, 20 , w, h)
         else:
-            targetRect =  QtCore.QRectF(topleft.x(), topleft.y()*2, w, h)
+            targetRect =  QtCore.QRectF(0, 0 , w, h)
+            #targetRect =  QtCore.QRectF(topleft.x(), topleft.y()*2, w, h)
 
         scene.render(pp, targetRect, scene.sceneRect())
         pp.end()

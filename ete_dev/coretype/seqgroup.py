@@ -108,7 +108,7 @@ class SeqGroup(object):
             args = self.parsers[format][2]
             return write(self, outfile, **args)
         else:
-            raise ValueError, "Unssupported format: [%s]" %format
+            raise ValueError, "Unsupported format: [%s]" %format
 
     def iter_entries(self):
         """ Returns an iterator over all sequences in the
@@ -149,3 +149,4 @@ class SeqGroup(object):
         self.id2name[seqid] = name
         self.id2comment[seqid] = comments
         self.id2seq[seqid] = seq
+
