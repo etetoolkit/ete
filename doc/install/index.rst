@@ -12,24 +12,24 @@ Download and Install
 GNU/Linux
 ===========
 
-In order to install ETE you will need python>=2.5. In addition,
-several python libraries are necessary for using specific ETE's
-features:
+ETE requires python>=2.5 as well as several dependencies (Required
+only to enable particular functions, but highly recommended):
 
+- python-qt4 (>=4.5) [Enables tree visualization and image rendering]
+- python-mysqldb (>=1.2) [Enables programmatic access to PhylomeDB]
+- python-numpy (Required to work with clustering trees)
+- python-lxml [Required to work whit NexML and PhyloXML phylogenetic formats]
+- python-setuptools [Optional. Allows to install and upgrade ETE from PyPI repositories]
 
-   1. python-numpy (required to work with clustering trees)
-   2.  scipy (>=0.6) (required to work with clustering trees)
-   3.  pyqt4 (>=4.5) (Required for tree visualization)
-   4.  python-mysqldb (>=1.2) (Required for using the PhylomeDB API)
 
 Meeting dependencies (Debian based distributions)
 ------------------------------------------------------
 
-ETE is developed and tested under Debian based distributions. All the
-above mentioned dependencies are in the official repositories of
-Debian and can be installed using a package manager such as APT,
-Synaptics or Adept. For instance, in Ubuntu you can use the following
-shell command to install all dependencies at the same time:
+ETE is developed and tested under Debian based distributions
+(i.e. Ubuntu). All the above mentioned dependencies are in the
+official repositories of Debian and can be installed using a package
+manager such as APT, Synaptics or Adept. For instance, in Ubuntu you
+can use the following shell command to install all dependencies:
 
 :: 
 
