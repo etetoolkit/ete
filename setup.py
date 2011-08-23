@@ -1,27 +1,5 @@
 #! /usr/bin/env python
 
-# #START_LICENSE###########################################################
-#
-# Copyright (C) 2009 by Jaime Huerta Cepas. All rights reserved.
-# email: jhcepas@gmail.com
-#
-# This file is part of the Environment for Tree Exploration program (ETE).
-# http://ete.cgenomics.org
-#
-# ETE is free software: you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# ETE is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with ETE.  If not, see <http://www.gnu.org/licenses/>.
-#
-# #END_LICENSE#############################################################
 import sys
 import ez_setup
 
@@ -38,13 +16,7 @@ python_dependencies = [
     ["PyQt4", "PyQt4 is required for tree visualization and rendering.", 0]
 ]
 
-DESCRIPTION="""ETE is a python programming toolkit that assists in the automated
-manipulation, analysis and visualization of hierarchical
-trees. Besides a broad set of tree handling options, ETE provides
-specific methods to work on phylogenetics and clustering analyses. ETE
-supports large tree data structures, node annotation, topology
-manipulation and provides a highly customizable visualization
-framework."""
+long_description = open("README").read()
 
 TAGS = [
     "Development Status :: 6 - Mature",
