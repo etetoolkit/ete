@@ -160,7 +160,7 @@ _ex('echo %s > %s/VERSION' %\
 
 # Generating INSTALL file
 print "*** Generating INSTALL file"
-_ex('cp %s/doc/install/indes.rst %s/INSTALL' %\
+_ex('cp %s/doc/install/index.rst %s/INSTALL' %\
               (RELEASE_PATH, RELEASE_PATH))
 
 # Check LICENSE disclaimer and add it or modify it if necessary
