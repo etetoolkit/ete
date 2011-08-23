@@ -5,16 +5,20 @@ other tree-like data would, in principle, supported).  ETE is built as
 a Python library, thus providing the methods to operate with trees
 within your own python programs.
 
+********************************************************************
 ETE is developed as a tool for reaseachers. If you use ETE in a
 published work, please cite: 
 
 Jaime Huerta-Cepas, Joaquín Dopazo and Toni Gabaldón. ETE: a python
 Environment for Tree Exploration. BMC Bioinformatics 2010, 11:24.
+********************************************************************
 
 Supported Tree Formats:
 ========================
 
-Currently, ETE supports read and write trees in the following formats:
+Currently, the following tree data formats are supported, both for
+reading and writing trees:
+
  - Newick (including several sub-types)
  - Extended Newick
  - PhyloXML
@@ -77,13 +81,3 @@ functionality. Most importantly:
 - Integrated with the phylomeDB database
 
 Full info and documentation can be found at: http://ete.cgenomics.org
-
-
-
-
-
-
-
-
-
-
