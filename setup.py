@@ -16,8 +16,6 @@ python_dependencies = [
     ["PyQt4", "PyQt4 is required for tree visualization and rendering.", 0]
 ]
 
-long_description = open("README").read()
-
 TAGS = [
     "Development Status :: 6 - Mature",
     "Environment :: Console",
@@ -88,8 +86,8 @@ for mname, msg, ex in python_dependencies:
         print msg
         missing=True
 if missing:
-    print "\nHowever, you can still install ETE without such funtionalites."
-    con = ask( "Do you want to continue with the installation?", ["y", "n"])
+    print "\nHowever, you can still install ETE without such functionality."
+    con = ask( "Do you want to continue with the installation anyway?", ["y", "n"])
     if con == "n":
         sys.exit()
 
@@ -97,6 +95,10 @@ if missing:
 
 ete_version = open("VERSION").readline().strip()
 mod_name = ete_version.split("rev")[0]
+
+long_description = open("README").read()
+long_description += open("INSTALL").read()
+long_description.replace("ete2", mod_name)
 
 setup(
     name = mod_name,
@@ -113,14 +115,14 @@ setup(
     package_data = {
     },
     # metadata for upload to PyPI
-    author = "Jaime Huerta-Cepas",
+    author = "Jaime Huerta-Cepas, Joaquín Dopazo and Toni Gabaldón",
     author_email = "jhcepas@gmail.com",
     maintainer = "Jaime Huerta-Cepas",
     maintainer_email = "jhcepas@gmail.com",
     platforms = "OS Independent",
     license = "GPLv3",
     description = "A python Environment for Tree Exploration",
-    long_description = DESCRIPTION.replace("\n", " "),
+    long_description = long_description,
     classifiers = TAGS,
     provides = [mod_name],
     keywords = "bioinformatics phylogeny evolution phylogenomics genomics tree clustering phylogenetics phylogenetic ete orthology paralogy",

@@ -11,30 +11,6 @@ and genomics. If you use ETE in a published work, please cite:
 Jaime Huerta-Cepas, Joaquín Dopazo and Toni Gabaldón. ETE: a python
 Environment for Tree Exploration. BMC Bioinformatics 2010, 11:24.
 
-INSTALLATION
-**************
-
-ETE requires python>=2.5 as well as several dependencies (Required
-only to enable particular functions, but highly recommended):
-
-- python-qt4 (>=4.5) [Enables tree visualization and image rendering]
-- python-mysqldb (>=1.2) [Enables programmatic access to PhylomeDB]
-- python-numpy (Required to work with clustering trees)
-- python-lxml [Required to work whit NexML and PhyloXML phylogenetic formats]
-- python-setuptools [Optional. Allows to install and upgrade ETE from PyPI repositories]
-
-In Debian based distributions (i.e. Ubuntu): 
-
-    $ sudo apt-get install python-numpy python-qt4 python-mysqldb python-setuptools python-lxml
-    $ easy_install -U ete2
-
-Alternatively, you can download and manually install ETE using the
-setup.py script:
-
-    $ tar -zxf ete2-XXXX.tar.gz
-    $ cd ete2-XXXX/
-    $ sudo python setup.py install
-
 DESCRIPTION
 ****************
 
