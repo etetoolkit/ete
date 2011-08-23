@@ -115,7 +115,7 @@ setup(
     package_data = {
     },
     # metadata for upload to PyPI
-    author = "Jaime Huerta-Cepas, Joaquín Dopazo and Toni Gabaldón",
+    author = "Jaime Huerta-Cepas, Joaquin Dopazo and Toni Gabaldon",
     author_email = "jhcepas@gmail.com",
     maintainer = "Jaime Huerta-Cepas",
     maintainer_email = "jhcepas@gmail.com",
