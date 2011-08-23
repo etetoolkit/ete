@@ -5,8 +5,8 @@ other tree-like data would, in principle, supported).  ETE is built as
 a Python library, thus providing the methods to operate with trees
 within your own python programs.
 
-ETE is developed as a tool for researchers. If you use ETE in a
-published work, please cite: 
+ETE is developed as a tool for researchers working in phylogenetics
+and genomics. If you use ETE in a published work, please cite:
 
 Jaime Huerta-Cepas, Joaquín Dopazo and Toni Gabaldón. ETE: a python
 Environment for Tree Exploration. BMC Bioinformatics 2010, 11:24.
@@ -20,7 +20,7 @@ only to enable particular functions, but highly recommended):
 - python-qt4 (>=4.5) [Enables tree visualization and image rendering]
 - python-mysqldb (>=1.2) [Enables programmatic access to PhylomeDB]
 - python-numpy (Required to work with clustering trees)
-- python-lxml [Required to work whit NexML and PhyloXML formats]
+- python-lxml [Required to work whit NexML and PhyloXML phylogenetic formats]
 - python-setuptools [Optional. Allows to install and upgrade ETE from PyPI repositories]
 
 In Debian based distributions (i.e. Ubuntu): 
@@ -45,9 +45,9 @@ Currently, the following tree data formats are supported, both for
 reading and writing trees:
 
  - Newick (including several sub-types)
- - Extended Newick
+ - Extended Newick / New Hampshire Extended (NHX) 
  - PhyloXML
- - NeXML.
+ - NeXML
 
 Tree operations: 
 ================
@@ -93,8 +93,8 @@ Phylogenetic Trees:
 
 ETE is not a phylogenetic reconstruction program, as it only provides
 methods to load, analyze and manipulate phylogenetic results. Thus, a
-PhyloTree instance is provided that extends the standard Tree
-functionality. Most importantly: 
+PhyloTree instance is provided, which extends the standard Tree
+functionality with phylogenetics related methods. Most notably:
 
 - Link trees with Multiple Sequence Alignments (MSAs).
 - Automatic detection of species codes within family gene-trees
