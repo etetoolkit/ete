@@ -33,7 +33,7 @@ can use the following shell command to install all dependencies:
 
 :: 
 
-  sh# apt-get install python-numpy python-qt4 python-scipy python-mysqldb python-setuptools
+  $ apt-get install python-numpy python-qt4 python-scipy python-mysqldb python-setuptools
 
 
 Meeting dependencies (other GNU/Linux distributions)
@@ -60,7 +60,7 @@ can execute this shell command to install/update ETE.
 
 :: 
 
-  sh# easy_install -U ete2
+  $ easy_install -U ete2
 
 Alternatively, you can download the last version of ETE from
 http://pypi.python.org/pypi/ete2/, decompress the file and install the
@@ -68,8 +68,7 @@ package by executing the setup installer:
 
 :: highlight bash
 
-  sh#  python setup.py install 
-
+  $  python setup.py install 
  
 MacOS
 =======

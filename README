@@ -8,8 +8,10 @@ within your own python programs.
 ETE is developed as a tool for researchers working in phylogenetics
 and genomics. If you use ETE in a published work, please cite:
 
-Jaime Huerta-Cepas, Joaquín Dopazo and Toni Gabaldón. ETE: a python
-Environment for Tree Exploration. BMC Bioinformatics 2010, 11:24.
+::
+
+  Jaime Huerta-Cepas, Joaquín Dopazo and Toni Gabaldón. ETE: a python
+  Environment for Tree Exploration. BMC Bioinformatics 2010, 11:24.
 
 DESCRIPTION
 ****************
