@@ -74,7 +74,7 @@ def read_fasta(source, obj=None):
 
         else:
             if seq_name is None:
-                raise Exception, "Error readind sequences: Wrong format."
+                raise Exception, "Error reading sequences: Wrong format."
 
             # removes all white spaces in line
             s = line.strip().replace(" ","")
