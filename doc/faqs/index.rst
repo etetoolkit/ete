@@ -69,6 +69,24 @@ Note also that tree topology cannot be modified while iterating
 methods are being executed. This limitation does not apply for "get_"
 methods.
 
+In addition, "get_" methods can be used to cache tree browsing paths
+(the order in which nodes must be visited), so the same tree
+traversing operations don't need to be repeated:
+
+::
+
+  nodes_in_preorder = tree.get_descendants("preorder")
+  for n in nodes_in_preorder:
+      pass # Do something
+  #
+  # (...)
+  #
+  for n in nodes_in_preorder:
+      pass # Do something else
+  
+
+
+
 How do I export tree node annotations using the Newick format?
 ---------------------------------------------------------------
 

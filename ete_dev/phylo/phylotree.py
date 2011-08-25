@@ -31,6 +31,7 @@ import sys
 import os
 import re
 
+
 from ete_dev import TreeNode, SeqGroup
 from reconciliation import get_reconciled_tree
 import spoverlap
@@ -167,10 +168,9 @@ class PhyloNode(TreeNode):
         #       "Warnning: [%d] internal nodes could not be found in the alignment." %\
         #       len(missing_leaves)
 
-
     def get_species(self):
         """ Returns the set of species covered by its partition. """
-        return set( [ l.species for l in self.iter_leaves() ])
+        return set([l.species for l in self.iter_leaves()])
 
     def iter_species(self):
         """ Returns an iterator over the species grouped by this node. """
@@ -186,8 +186,10 @@ class PhyloNode(TreeNode):
         if type(species) != set:
             species = set(species)
         return self.get_species().issubset(species)
+
     def get_age(self, species2age):
         return max([species2age[sp] for sp in self.get_species()])
+
     def reconcile(self, species_tree):
         """ Returns the reconcilied topology with the provided species
         tree, and a list of evolutionary events inferred from such
@@ -221,65 +223,46 @@ class PhyloNode(TreeNode):
         """
         return spoverlap.get_evol_events_from_root(self, sos_thr=sos_thr)
 
-    def get_farthest_oldest_leaf(self, species2age):
-        """ Returns the farthest oldest leafnode to the current
-        one. It requieres an species2age dictionary with the age
-        estimation for all species."""
+    def get_farthest_oldest_leaf(self, species2age, is_leaf_fn=None):
+        """ Returns the farthest oldest leaf to the current
+        one. It requires an species2age dictionary with the age
+        estimation for all species. 
+
+        :arg: is_leaf_fn None: A pointer to a function that receives a
+        node instance as unique argument and returns True or False. It
+        can be used to dynamically collapse nodes, so they are seen as
+        leaves.
+        """
 
         root = self.get_tree_root()
-
-        # Get all tree leaves
-        leaves      = root.get_leaves()
-
         outgroup_dist  = 0
         outgroup_node  = self
-        outgroup_age = 0 #species2age[self.species]
+        outgroup_age = 0 # self.get_age(species2age)
 
-        for leaf in leaves:
-            if species2age[leaf.species] > outgroup_age: # OJO! Change crocodile to invert the comparison.
+        for leaf in root.iter_leaves(is_leaf_fn=is_leaf_fn):
+            if leaf.get_age(species2age) > outgroup_age:
                 outgroup_dist = leaf.get_distance(self)
                 outgroup_node = leaf
-                outgroup_age = species2age[leaf.species]
-            elif species2age[leaf.species]==outgroup_age:
+                outgroup_age = species2age[leaf.get_species().pop()]
+            elif leaf.get_age(species2age) == outgroup_age:
                 dist = leaf.get_distance(self)
                 if dist>outgroup_dist:
                     outgroup_dist  = leaf.get_distance(self)
                     outgroup_node  = leaf
-                    outgroup_age = species2age[leaf.species]
-            else:
-                pass
+                    outgroup_age = species2age[leaf.get_species().pop()]
         return outgroup_node
 
     def get_farthest_oldest_node(self, species2age):
-        """ Returns the farthest oldest node (leaf or internal) to the
-        current one. It requieres an species2age dictionary with the
-        age estimation for all species."""
+        """ Returns the farthest oldest node (leaf or internal). The
+        difference with get_farthest_oldest_leaf() is that in this
+        function internal nodes grouping seqs from the same species
+        are collapsed. """
 
-        root = self.get_tree_root()
-
-        # Get all tree leaves
-        leaves      = root.get_leaves()
-
-        outgroup_dist  = 0
-        outgroup_node  = self
-        outgroup_age = 0 #species2age[self.species]
-
-        for leaf in leaves:
-            if species2age[leaf.species] > outgroup_age:
-                outgroup_dist = leaf.get_distance(self)
-                outgroup_node = leaf
-                outgroup_age = species2age[leaf.species]
-            elif species2age[leaf.species]==outgroup_age:
-                dist = leaf.get_distance(self)
-                if dist>outgroup_dist:
-                    outgroup_dist  = leaf.get_distance(self)
-                    outgroup_node  = leaf
-                    outgroup_age = species2age[leaf.species]
-            else:
-                pass
-        return outgroup_node
-
-
+        # I use a custom is_leaf() function to collapse nodes groups
+        # seqs from the same species
+        
+        is_leaf = lambda node: len(node.get_species())==1
+        return self.get_farthest_oldest_leaf(species2age, is_leaf_fn=is_leaf)
 
 # cosmetic alias
 PhyloTree = PhyloNode

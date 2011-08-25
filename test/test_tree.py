@@ -199,7 +199,7 @@ class Test_Coretype_Tree(unittest.TestCase):
         t = Tree("(((A,B),C)[&&NHX:tag=common],D)[&&NHX:tag=root];")
         A = t.search_nodes(name="A")[0]
 
-        # Iterators, get_leaves, get_leaf_names
+        # Check gettters and itters return the same
         t = Tree(nw2_full)
         self.assert_(t.get_leaf_names(), [name for name in  t.iter_leaf_names()])
         self.assert_(t.get_leaves(), [name for name in  t.iter_leaves()])
@@ -208,6 +208,20 @@ class Test_Coretype_Tree(unittest.TestCase):
         self.assertEqual(set([n for n in t.traverse("preorder")]), \
                              set([n for n in t.traverse("postorder")]))
         self.assert_(t in set([n for n in t.traverse("preorder")]))
+
+        # Check order or visiting nodes
+        t = Tree("(((A, B)C, (D, E)F)G, (H, (I, J)K)L)M;", format=1)
+        postorder = [c for c in "ABCDEFGHIJKLM"]
+        preorder = [c for c in reversed(postorder)]
+        levelorder = [c for c in "MGLCFHKABDEIJ"]
+        self.assertEqual(preorder, 
+                          [n.name for n in t.traverse("preorder")])
+
+        self.assertEqual(postorder, 
+                          [n.name for n in t.traverse("postorder")])
+
+        self.assertEqual(levelorder, 
+                          [n.name for n in t.traverse("levelorder")])
 
         # Swap childs
         n = t.get_children()
@@ -375,3 +389,5 @@ class Test_Coretype_Tree(unittest.TestCase):
             t2 = time.time() - t1
             print "NEW postorder", t2
 
+if __name__ == '__main__':
+    unittest.main()

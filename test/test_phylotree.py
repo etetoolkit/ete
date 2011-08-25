@@ -308,9 +308,13 @@ class Test_phylo_module(unittest.TestCase):
         expected_root = t.search_nodes(name="Dme_002")[0]
         expected_root.dist += 2.3
         self.assertEqual(t.get_farthest_oldest_leaf(sp2age), expected_root)
+        print t
+        print t.get_farthest_oldest_node(sp2age)
 
 
         # Check get species functions
         self.assertEqual(t.get_species(), set(sp2age.keys()))
         self.assertEqual(set([sp for sp in t.iter_species()]), set(sp2age.keys()))
 
+if __name__ == '__main__':
+    unittest.main()

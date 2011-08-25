@@ -82,7 +82,7 @@ class TreeNode(object):
 
     :returns: a tree node object which represents the base of the tree.
 
-    **Examples:**
+    ** Examples: **
 
     :: 
 
@@ -164,12 +164,11 @@ class TreeNode(object):
         return True
 
     def __repr__(self):
-
         return "Tree node '%s' (%s)" %(self.name, hex(self.__hash__()))
 
     def __and__(self, value):
         """ This allows to execute tree&'A' to obtain the descendant node
-        A"""
+        whose name is A"""
         value=str(value)
         try:
             first_match = self.iter_search_nodes(name=value).next()
@@ -446,151 +445,56 @@ class TreeNode(object):
             if n not in to_keep: 
                 n.delete(prevent_nondicotomic=False)
 
-    def prune_OLD(self, nodes):
-        """
-        Prunes the topology of this node in order to conserve only a
-        selected list of leaf or internal nodes. The algorithm deletes
-        nodes until getting a consistent topology with a subset of
-        nodes. Topology relationships among kept nodes is maintained.
-
-        :var nodes: a list of node names or node objects that must be kept
-
-        **Examples:**
-
-        ::
-
-          t = Tree("(((A:0.1, B:0.01):0.001, C:0.0001):1.0[&&NHX:name=I], (D:0.00001):0.000001[&&NHX:name=J]):2.0[&&NHX:name=root];")
-          node_C = t.search_nodes(name="C")[0]
-          t.prune(["A","D", node_C])
-          print t
-        """
-       
-        to_keep = set(_translate_nodes(self, *nodes))
-        to_detach = []
-        for node in self.traverse("postorder"):
-            for c in node.children:
-                if c in to_keep:
-                    to_keep.add(node)
-                    break
-            if node not in to_keep:
-                to_detach.append(node)
-                for c in node.children:
-                    to_detach.remove(c)
-        for node in to_detach:
-            node.detach()
-        for node in to_keep:
-            if len(node.children) == 1:
-                node.delete()
-        if len(self.children)==1 and self.children[0] not in to_keep:
-            self.children[0].delete()
-                
-    def iter_leaves(self):
-        """ 
-        Returns an iterator over the leaves under this node. 
-        """
-        for n in self.traverse(strategy="preorder"):
-            if n.is_leaf():
-                yield n
-
-    def iter_leaf_names(self):
-        """ 
-        Returns an iterator over the leaf names under this node. 
-        """
-        for n in self.iter_leaves():
-            yield n.name
-
-    def iter_descendants(self, strategy="levelorder"):
-        """ 
-        Returns an iterator over descendant nodes. 
-        """
-        for n in self.traverse(strategy=strategy):
-            if n != self:
-                yield n
-
-    def _iter_descendants_postorder_OLD(self):
-        """
-        Iterate over all desdecendant nodes. 
-        """
-        current = self
-        end = self.up
-        visited_childs = set([])
-        while current is not end:
-            childs = False
-            for c in current.children:
-                if c not in visited_childs:
-                    childs = True
-                    current = c
-                    break
-            if not childs:
-                visited_childs.add(current)
-                yield current
-                current = current.up
-
-    def _iter_descendants_postorder(self):
-        """
-        Iterate over all desdecendant nodes. 
-        """
-        for ch in self.children:
-            for node in ch._iter_descendants_postorder():
-                yield node
-        yield self
-
-
-
-    def _iter_descendants_levelorder(self):
-        """ 
-        Iterate over all desdecendant nodes. 
-        """
-        #tovisit = [self]
-        tovisit = deque([self])
-        while len(tovisit)>0:
-            #current = tovisit.pop()
-            current = tovisit.popleft()
-            yield current
-            tovisit.extend(current.children)
-
-    def _iter_descendants_preorder(self):
-        """
-        Iterator over all descendant nodes. 
-        """
-        #to_visit = []
-        to_visit = deque()
-        node = self
-        while node is not None:
-            yield node
-            #to_visit = node.children + to_visit
-            to_visit.extendleft(node.children) 
-            try:
-                #node = to_visit.pop(0)
-                node = to_visit.popleft()
-            except:
-                node = None
-
-    def traverse(self, strategy="levelorder"):
-        """
-         Returns an iterator that traverse the tree structure under this
-         node.
-         
-         :argument "levelorder" strategy: set the way in which tree
-           will be traversed. Possible values are: "preorder" (first
-           parent and then children) 'postorder' (first children and
-           the parent) and "levelorder" (nodes are visited in order
-           from root to leaves)
-
-        """
-        if strategy=="preorder":
-            return self._iter_descendants_preorder()
-        elif strategy=="levelorder":
-            return self._iter_descendants_levelorder()
-        elif strategy=="postorder":
-            return self._iter_descendants_postorder()
-
     def swap_children(self):
         """
         Swaps current children order.
         """
         if len(self.children)>1:
             self.children.reverse()
+
+    # def prune_OLD(self, nodes):
+    #     """
+    #     Prunes the topology of this node in order to conserve only a
+    #     selected list of leaf or internal nodes. The algorithm deletes
+    #     nodes until getting a consistent topology with a subset of
+    #     nodes. Topology relationships among kept nodes is maintained.
+    #  
+    #     :var nodes: a list of node names or node objects that must be kept
+    #  
+    #     **Examples:**
+    #  
+    #     ::
+    #  
+    #       t = Tree("(((A:0.1, B:0.01):0.001, C:0.0001):1.0[&&NHX:name=I], (D:0.00001):0.000001[&&NHX:name=J]):2.0[&&NHX:name=root];")
+    #       node_C = t.search_nodes(name="C")[0]
+    #       t.prune(["A","D", node_C])
+    #       print t
+    #     """
+    #    
+    #     to_keep = set(_translate_nodes(self, *nodes))
+    #     to_detach = []
+    #     for node in self.traverse("postorder"):
+    #         for c in node.children:
+    #             if c in to_keep:
+    #                 to_keep.add(node)
+    #                 break
+    #         if node not in to_keep:
+    #             to_detach.append(node)
+    #             for c in node.children:
+    #                 to_detach.remove(c)
+    #     for node in to_detach:
+    #         node.detach()
+    #     for node in to_keep:
+    #         if len(node.children) == 1:
+    #             node.delete()
+    #     if len(self.children)==1 and self.children[0] not in to_keep:
+    #         self.children[0].delete()
+
+    # #####################
+    # Tree traversing 
+    # #####################
+
+
     def get_children(self):
         """ 
         Returns an independent list of node's children. 
@@ -605,6 +509,128 @@ class TreeNode(object):
             return [ch for ch in self.up.children if ch!=self]
         else:
             return []
+
+    def iter_leaves(self, is_leaf_fn=None):
+        """ 
+        Returns an iterator over the leaves under this node. 
+        """
+        for n in self.traverse(strategy="preorder", is_leaf_fn=is_leaf_fn):
+            if not is_leaf_fn:
+                if n.is_leaf():
+                    yield n
+            else:
+                if is_leaf_fn(n):
+                    yield n
+
+    def get_leaves(self, is_leaf_fn=None):
+        """
+        Returns the list of terminal nodes (leaves) under this node.
+        """
+        return [n for n in self.iter_leaves(is_leaf_fn=is_leaf_fn)]
+
+    def iter_leaf_names(self, is_leaf_fn=None):
+        """ 
+        Returns an iterator over the leaf names under this node. 
+        """
+        for n in self.iter_leaves(is_leaf_fn=is_leaf_fn):
+            yield n.name
+
+    def get_leaf_names(self, is_leaf_fn=None):
+        """
+        Returns the list of terminal node names under the current
+        node.
+        """
+        return [name for name in self.iter_leaf_names(is_leaf_fn=is_leaf_fn)]
+
+    def iter_descendants(self, strategy="levelorder", is_leaf_fn=None):
+        """ 
+        Returns an iterator over all descendant nodes. 
+        """
+        for n in self.traverse(strategy=strategy, is_leaf_fn=is_leaf_fn):
+            if n is not self:
+                yield n
+
+    def get_descendants(self, strategy="levelorder", is_leaf_fn=None):
+        """
+        Returns a list of all (leaves and internal) descendant nodes.
+        """
+        return [n for n in self.iter_descendants(strategy=strategy, \
+                                                 is_leaf_fn=is_leaf_fn)]
+
+    def traverse(self, strategy="levelorder", is_leaf_fn=None):
+        """
+         Returns an iterator to traverse the tree structure under this
+         node.
+         
+         :argument "levelorder" strategy: set the way in which tree
+           will be traversed. Possible values are: "preorder" (first
+           parent and then children) 'postorder' (first children and
+           the parent) and "levelorder" (nodes are visited in order
+           from root to leaves)
+
+        """
+        if strategy=="preorder":
+            return self._iter_descendants_preorder(is_leaf_fn=is_leaf_fn)
+        elif strategy=="levelorder":
+            return self._iter_descendants_levelorder(is_leaf_fn=is_leaf_fn)
+        elif strategy=="postorder":
+            return self._iter_descendants_postorder(is_leaf_fn=is_leaf_fn)
+
+    def _iter_descendants_postorder(self, is_leaf_fn=None):
+        """
+        Iterate over all desdecendant nodes. 
+        """
+        if not is_leaf_fn or not is_leaf_fn(ch):
+            for ch in self.children:
+                for node in ch._iter_descendants_postorder():
+                    yield node
+        yield self
+
+    def _iter_descendants_levelorder(self, is_leaf_fn=None):
+        """ 
+        Iterate over all desdecendant nodes. 
+        """
+        tovisit = deque([self])
+        while len(tovisit)>0:
+            node = tovisit.popleft()
+            yield node
+            if not is_leaf_fn or not is_leaf_fn(node):
+                tovisit.extend(node.children)
+
+    def _iter_descendants_preorder(self, is_leaf_fn=None):
+        """
+        Iterator over all descendant nodes. 
+        """
+        to_visit = deque()
+        node = self
+        while node is not None:
+            yield node
+            if not is_leaf_fn or not is_leaf_fn(node):
+                to_visit.extendleft(node.children) 
+            try:
+                node = to_visit.popleft()
+            except:
+                node = None
+
+    # def _iter_descendants_postorder_OLD(self):
+    #     """
+    #     Iterative version. Slower.
+    #     """
+    #     current = self
+    #     end = self.up
+    #     visited_childs = set([])
+    #     while current is not end:
+    #         childs = False
+    #         for c in current.children:
+    #             if c not in visited_childs:
+    #                 childs = True
+    #                 current = c
+    #                 break
+    #         if not childs:
+    #             visited_childs.add(current)
+    #             yield current
+    #             current = current.up
+
 
     def describe(self):
         """ 
@@ -714,7 +740,6 @@ class TreeNode(object):
         
         return current
 
-
     def get_common_ancestor(self, *target_nodes, **kargs):
         """ 
         Returns the first common ancestor between this node and a given
@@ -779,31 +804,6 @@ class TreeNode(object):
         else:
             return common
 
-
-
-    def get_leaves(self):
-        """
-        Returns the list of terminal nodes (leaves) under this node.
-        """
-        return [n for n in self.iter_leaves()]
-
-    def get_leaf_names(self):
-        """
-        Returns the list of terminal node names under the current
-        node.
-        """
-        return [ n.name for n in self.iter_leaves() ]
-
-    def get_descendants(self, strategy="levelorder"):
-        """
-        Returns the list of all nodes (leaves and internal) under
-        this node.
-        re buil
-
-        See iter_descendants method for strategy option. 
-        """
-        return [n for n in self.traverse(strategy=strategy) if n != self]
-
     def iter_search_nodes(self, **conditions):
         """ 
         Search nodes in an interative way. Matches are being yield as
@@ -846,10 +846,7 @@ class TreeNode(object):
         """ 
         Return True if current node is a leaf.
         """
-        if len(self.children)==0:
-            return True
-        else:
-            return False
+        return len(self.children) == 0
 
     def is_root(self):
         """ 
@@ -860,7 +857,9 @@ class TreeNode(object):
         else:
             return False
 
+    # ###########################
     # Distance related functions
+    # ###########################
     def get_distance(self, target, target2=None, topology_only=False):
         """
         Returns the distance between two nodes. If only one target is
