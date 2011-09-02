@@ -332,7 +332,6 @@ class Test_Coretype_Tree(unittest.TestCase):
                 if n.up and n.up.up:
                     self.assertEqual(cluster_id2dist.get(cluster_id, None), n.dist)
                     
-                    
         # Test unrooting
         t = Tree()
         t.populate(20)

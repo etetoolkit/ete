@@ -22,7 +22,6 @@ from a given species genome), internal nodes are considered ancestral
 nodes. A direct consequence of this is, for instance, that every split
 in the tree will represent a speciation or duplication event.
 
-
 Linking Phylogenetic Trees with Multiple Sequence Alignments
 ================================================================
 
@@ -384,7 +383,6 @@ Full example:
 
 .. _sec:dating-phylogenetic-nodes:
 
-
 Detecting evolutionary events
 =============================
 
@@ -483,9 +481,6 @@ overlap allows to track only all the evolutionary events involving a specific
 tree leaf.
 
 
-
-
-
 Dating phylogenetic nodes
 =========================
 
@@ -569,21 +564,18 @@ the result would be:
    species.
 
 
+Automatic rooting (outgroup detection)
+=========================================
 
+Two methods are provided to assist in the automatic rooting of
+phylogenetic trees. Since tree nodes contain relative age information
+(based on the species code autodetection), the same relative age
+dictionaries can be used to detect the farthest and oldest node in a
+tree to given sequences. 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+:func:`PhyloNode.get_farthest_oldest_node` and
+:func:`PhyloNode.get_farthest_oldest_leaf` can be used for that
+purpose.
 
 
 Visualization of phylogenetic trees

@@ -54,6 +54,7 @@ What's new in ETE 2.1
 * Added :mod:`ete_dev.phyloxml` module (read and write phyloxml format)
 * Added :mod:`ete_dev.webplugin` module: Allows to create interactive web tree applications 
 * Added :class:`PhylomeDB3Connector`
+* Added :func:`PhyloNode.get_farthest_oldest_node` function, which allows to find the best outgroup node in a tree, even if it is an internal node.
 * Bug Fixes and improvements: 
    * Fix: :func:`TreeNode.get_common_ancestor` accepts a single argument (node or list of nodes) instead of a succession or nodes. It can also return the path of each node to the parent.
    * Fix: Fast scroll based zoom-in was producing tree image inversions

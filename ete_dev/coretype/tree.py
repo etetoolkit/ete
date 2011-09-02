@@ -513,6 +513,9 @@ class TreeNode(object):
     def iter_leaves(self, is_leaf_fn=None):
         """ 
         Returns an iterator over the leaves under this node. 
+
+        :argument None is_leaf_fn: See :func:`TreeNode.traverse` for
+          documentation.
         """
         for n in self.traverse(strategy="preorder", is_leaf_fn=is_leaf_fn):
             if not is_leaf_fn:
@@ -525,12 +528,18 @@ class TreeNode(object):
     def get_leaves(self, is_leaf_fn=None):
         """
         Returns the list of terminal nodes (leaves) under this node.
+
+        :argument None is_leaf_fn: See :func:`TreeNode.traverse` for
+          documentation.
         """
         return [n for n in self.iter_leaves(is_leaf_fn=is_leaf_fn)]
 
     def iter_leaf_names(self, is_leaf_fn=None):
         """ 
         Returns an iterator over the leaf names under this node. 
+
+        :argument None is_leaf_fn: See :func:`TreeNode.traverse` for
+          documentation.
         """
         for n in self.iter_leaves(is_leaf_fn=is_leaf_fn):
             yield n.name
@@ -539,12 +548,18 @@ class TreeNode(object):
         """
         Returns the list of terminal node names under the current
         node.
+
+        :argument None is_leaf_fn: See :func:`TreeNode.traverse` for
+          documentation.
         """
         return [name for name in self.iter_leaf_names(is_leaf_fn=is_leaf_fn)]
 
     def iter_descendants(self, strategy="levelorder", is_leaf_fn=None):
         """ 
         Returns an iterator over all descendant nodes. 
+
+        :argument None is_leaf_fn: See :func:`TreeNode.traverse` for
+          documentation.
         """
         for n in self.traverse(strategy=strategy, is_leaf_fn=is_leaf_fn):
             if n is not self:
@@ -553,21 +568,30 @@ class TreeNode(object):
     def get_descendants(self, strategy="levelorder", is_leaf_fn=None):
         """
         Returns a list of all (leaves and internal) descendant nodes.
+
+        :argument None is_leaf_fn: See :func:`TreeNode.traverse` for
+          documentation.
         """
         return [n for n in self.iter_descendants(strategy=strategy, \
                                                  is_leaf_fn=is_leaf_fn)]
 
     def traverse(self, strategy="levelorder", is_leaf_fn=None):
         """
-         Returns an iterator to traverse the tree structure under this
-         node.
+        Returns an iterator to traverse the tree structure under this
+        node.
          
-         :argument "levelorder" strategy: set the way in which tree
+        :argument "levelorder" strategy: set the way in which tree
            will be traversed. Possible values are: "preorder" (first
            parent and then children) 'postorder' (first children and
            the parent) and "levelorder" (nodes are visited in order
            from root to leaves)
 
+        :argument None is_leaf_fn: If supplied, ``is_leaf_fn``
+           function will be used to interrogate nodes about if they
+           are terminal or internal. ``is_leaf_fn`` function should
+           receive a node instance as first argument and return True
+           or False. Use this argument to traverse a tree dynamically
+           collapsing internal nodes.
         """
         if strategy=="preorder":
             return self._iter_descendants_preorder(is_leaf_fn=is_leaf_fn)
@@ -1267,7 +1291,6 @@ class TreeNode(object):
         Returns the ASCII representation of the tree. Code taken from the
         PyCogent GPL project.
         """
-
         LEN = 5
         PAD = ' ' * LEN
         PA = ' ' * (LEN-1)

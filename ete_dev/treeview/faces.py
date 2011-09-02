@@ -290,12 +290,17 @@ class ProfileFace(Face):
     """ 
     A profile Face for ClusterNodes 
 
-    :argument max_v:    maximum value used to build the build the plot scale.
-    :argument max_v:    manimum value used to build the build the plot scale.
-    :argument center_v: Center value used to scale plot and heat map.
-    :argument width:    Plot width in pixels. (defaulf=200)
-    :argument height:   Plot width in pixels. (defaulf=40)
-    :argument style:    Plot style: "lines", "bars", "cbars" or "heatmap". (default="lines")
+    :argument max_v: maximum value used to build the build the plot scale.
+    :argument max_v: manimum value used to build the build the plot scale.
+    :argument center_v: Center value used to scale plot and heatmap.
+    :argument 200 width:  Plot width in pixels. 
+    :argument 40 height: Plot width in pixels. 
+    :argument lines style: Plot style: "lines", "bars", "cbars" or "heatmap".
+
+    :argument 2 colorscheme: colors used to create the gradient from
+      min values to max values. 0=green & blue; 1=green & red; 2=red &
+      blue. In all three cases, missing values are rendered in black
+      and transition color (values=center) is white.
     """
 
     def __init__(self,max_v,min_v,center_v,width=200,height=40,style="lines",colorscheme=2):
@@ -371,10 +376,6 @@ class ProfileFace(Face):
 #            color=QtGui.QColor()
 #            color.setRgb( 255,0,255 )
 #            colors.append(color)
-
-        print 'total', len(colors)
-
-
 
         return colors
 
@@ -534,9 +535,9 @@ class ProfileFace(Face):
                 color_index = abs(int(ceil(((self.center_v-mean1)*100)/(self.max_value-self.center_v))))
                 customColor = colors[100 + color_index]
 
-                print mean1, color_index, len(colors), "%x" %colors[100 + color_index].rgb()
-                print abs(((self.center_v-mean1)*100)/(self.max_value-self.center_v))
-                print round(((self.center_v-mean1)*100)/(self.max_value-self.center_v))
+                #print mean1, color_index, len(colors), "%x" %colors[100 + color_index].rgb()
+                #print abs(((self.center_v-mean1)*100)/(self.max_value-self.center_v))
+                #print round(((self.center_v-mean1)*100)/(self.max_value-self.center_v))
 
             elif mean1<self.center_v:
                 color_index = abs(int(ceil(((self.center_v-mean1)*100)/(self.min_value-self.center_v))))

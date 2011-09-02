@@ -20,7 +20,7 @@ matrix_avg = matrix_min+((matrix_max-matrix_min)/2)
 # Creates a profile face that will represent node's profile as a
 # heatmap
 profileFace  = faces.ProfileFace(matrix_max, matrix_min, matrix_avg, \
-                                         200, 14, "heatmap")
+                                         200, 14, "heatmap", colorscheme=1)
 cbarsFace = faces.ProfileFace(matrix_max,matrix_min,matrix_avg,200,70,"cbars")
 nameFace = faces.AttrFace("name", fsize=8)
 # Creates my own layout function that uses previous faces
