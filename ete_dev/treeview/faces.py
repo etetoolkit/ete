@@ -108,7 +108,7 @@ _ntbgcolors = {
 
 __all__ = ["Face", "TextFace", "AttrFace", "ImgFace",\
                "ProfileFace", "SequenceFace", "TreeFace",\
-               "RandomFace", "ItemFace", "CircleFace"]
+               "RandomFace", "ItemFace", "CircleFace", "PieChartFace"]
 
 class Face(object):
     """ 
@@ -936,3 +936,41 @@ class BackgroundFace(Face):
     def _height(self):
         return self.min_height
 
+class _PieChartItem(QtGui.QGraphicsRectItem):
+    def __init__(self, percents, width, height, colors):
+        QtGui.QGraphicsRectItem.__init__(self, 0, 0, width, height)
+        self.percents = percents
+        self.colors = colors
+    def paint(self, painter, option, widget):
+        a = 5760
+        angle_start = 0
+        for i, p in enumerate(self.percents):
+            col = self.colors[i]
+            painter.setBrush(QtGui.QBrush(QtGui.QColor(col)))
+            painter.setPen(QtCore.Qt.NoPen)
+            angle_span = (p/100.) * a
+            painter.drawPie(self.rect(), angle_start, angle_span )
+            angle_start += angle_span
+
+class PieChartFace(Face):
+    """ 
+    .. versionadded:: 2.2
+   
+    """
+    def __init__(self, percents, width, height, colors):
+        Face.__init__(self)
+        self.type = "item"
+        self.item = None
+        self.percents = percents
+        self.colors =  colors
+        self.width = width
+        self.height = height
+
+    def update_items(self):
+        self.item = _PieChartItem(self.percents, self.width, self.height, self.colors)
+        
+    def _width(self):
+        return self.item.rect().width()
+
+    def _height(self):
+        return self.item.rect().height()

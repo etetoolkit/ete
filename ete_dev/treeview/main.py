@@ -15,7 +15,7 @@ _COLOR_CHECKER = lambda x: x.lower() in SVG_COLORS or re.match(_COLOR_MATCH, x)
 _NODE_TYPE_CHECKER = lambda x: x in ["sphere", "circle", "square"]
 _BOOL_CHECKER =  lambda x: isinstance(x, bool) or x in (0,1)
 
-FACE_POSITIONS = set(["branch-right", "branch-top", "branch-bottom", "float", "aligned"])
+FACE_POSITIONS = set(["branch-right", "branch-top", "branch-bottom", "float", "float-behind", "aligned"])
 
 __all__  = ["NodeStyle", "TreeStyle", "FaceContainer", "_leaf", "add_face_to_node"]
 
@@ -248,13 +248,6 @@ class TreeStyle(object):
     :var True draw_aligned_faces_as_table: Aligned faces will be
       drawn as a table, considering all columns in all node faces.
 
-    
-    :var False floating_faces_under_tree: By default, floating
-      faces are expected to be transparent, so they can be plotted
-      directly on the tree image. However, you can also render all
-      floating faces under the tree to ensure total tree topology
-      visibility
-
     :var True children_faces_on_top: When floating faces from
       different nodes overlap, children faces are drawn on top of
       parent faces. This can be reversed by setting this attribute
@@ -385,12 +378,6 @@ class TreeStyle(object):
         self.aligned_table_style = 0 # 0 = full grid (rows and
                                      # columns), 1 = semigrid ( rows
                                      # are merged )
-
-        # By default, floating faces are expected to be transparent,
-        # so they can be plotted directly on the tree image. However,
-        # you can also render all floating faces under the tree to
-        # ensure total tree topology visibility
-        self.floating_faces_under_tree = False
 
         # When floating faces from different nodes overlap, children
         # faces are drawn on top of parent faces. This can be reversed
