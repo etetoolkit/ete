@@ -24,6 +24,10 @@ parser.add_option("-d", "--doc", dest="doc", \
                       action="store_true", \
                       help="Process documentation files")
 
+parser.add_option("-D", "--doc-only", dest="doc_only", \
+                      action="store_true", \
+                      help="Process last modifications of the documentation files. No git commit necessary. Package is not uploaded to PyPI")
+
 parser.add_option("-x", "--lyx", dest="lyx", \
                       action="store_true", \
                       help="Process lyx based tutorial")
@@ -144,8 +148,15 @@ if os.path.exists(RELEASE_PATH):
         print "Aborted."
         sys.exit(-1)
 
-print "Creating a repository clone in ", RELEASE_PATH
-_ex("git clone . %s" %RELEASE_PATH)
+if options.doc_only:
+    print "Creating a repository copy in ", RELEASE_PATH
+    options.doc = True
+    process_package = False
+    _ex("mkdir %s; cp -a ./ %s" %(RELEASE_PATH, RELEASE_PATH))
+else:
+    process_package = True
+    print "Creating a repository clone in ", RELEASE_PATH
+    _ex("git clone . %s" %RELEASE_PATH)
 
 
 # Set VERSION in all modules
@@ -205,8 +216,6 @@ _ex('find %s -name \'*.py\' -o -name \'*.rst\'| xargs perl -e "s/ete2_tester/%s/
               (RELEASE_PATH, MODULE_NAME) )
 _ex('cd %s; python setup.py build' %(RELEASE_PATH))
 
-
-
 print "Cleaning doc dir:"
 _ex("mv %s/doc %s/sdoc" %(RELEASE_PATH, RELEASE_PATH))
 _ex("mkdir %s/doc" %(RELEASE_PATH))
@@ -258,30 +267,31 @@ if options.doc:
         #        (RELEASE_PATH, SERVER+":"+SERVER_DOC_PATH))
 
 
-# Clean from internal files
-_ex("rm %s/.git -r" %\
-        (RELEASE_PATH))
-_ex('rm %s/build/ -r' %(RELEASE_PATH))
-_ex('rm %s/sdoc/ -r' %(RELEASE_PATH))
-_ex('rm %s/___* -r' %(RELEASE_PATH))
-
-print "Creating tar.gz"
-_ex("cd %s; python ./setup.py sdist " %RELEASE_PATH) 
-
-release= ask("Copy release to main server?", ["y","n"])
-if release=="y":
-    print "Creating and submitting distribution to PyPI"
-    _ex("cd %s; python ./setup.py sdist upload --show-response " %RELEASE_PATH) 
-    print "Copying release to ete server..."
-    _ex("scp %s/dist/%s.tar.gz %s" %\
-            (RELEASE_PATH, RELEASE_NAME, SERVER+":"+SERVER_RELEASES_PATH))
-    print "Updating releases table..."
-    _ex("ssh %s 'cd %s; sh update_downloads.sh'" %(SERVER, SERVER_RELEASES_PATH))
-
-
-announce = ask("publish tweet?", ["y","n"])
-if announce == "y":
-    msg = ask(default=VERSION_LOG)
-    
-    if ask("publish tweet?", ["y","n"]) == "y":
-        _ex("twitter -eetetoolkit set %s" %msg) 
+if process_package:
+    # Clean from internal files
+    _ex("rm %s/.git -r" %\
+            (RELEASE_PATH))
+    _ex('rm %s/build/ -r' %(RELEASE_PATH))
+    _ex('rm %s/sdoc/ -r' %(RELEASE_PATH))
+    _ex('rm %s/___* -r' %(RELEASE_PATH))
+     
+    print "Creating tar.gz"
+    _ex("cd %s; python ./setup.py sdist " %RELEASE_PATH) 
+     
+    release= ask("Copy release to main server?", ["y","n"])
+    if release=="y":
+        print "Creating and submitting distribution to PyPI"
+        _ex("cd %s; python ./setup.py sdist upload --show-response " %RELEASE_PATH) 
+        print "Copying release to ete server..."
+        _ex("scp %s/dist/%s.tar.gz %s" %\
+                (RELEASE_PATH, RELEASE_NAME, SERVER+":"+SERVER_RELEASES_PATH))
+        print "Updating releases table..."
+        _ex("ssh %s 'cd %s; sh update_downloads.sh'" %(SERVER, SERVER_RELEASES_PATH))
+     
+     
+    announce = ask("publish tweet?", ["y","n"])
+    if announce == "y":
+        msg = ask(default=VERSION_LOG)
+        
+        if ask("publish tweet?", ["y","n"]) == "y":
+            _ex("twitter -eetetoolkit set %s" %msg) 

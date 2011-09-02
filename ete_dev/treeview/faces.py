@@ -291,7 +291,7 @@ class ProfileFace(Face):
     A profile Face for ClusterNodes 
 
     :argument max_v: maximum value used to build the build the plot scale.
-    :argument max_v: manimum value used to build the build the plot scale.
+    :argument max_v: minimum value used to build the build the plot scale.
     :argument center_v: Center value used to scale plot and heatmap.
     :argument 200 width:  Plot width in pixels. 
     :argument 40 height: Plot width in pixels. 
