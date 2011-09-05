@@ -22,9 +22,11 @@
 # #END_LICENSE#############################################################
 
 from PyQt4 import QtCore, QtGui
-from numpy import isfinite, ceil
+from numpy import isfinite as _isfinite, ceil
 
 from main import add_face_to_node, _Background, _Border
+
+isfinite = lambda n: n and _isfinite(n)
 
 _aafgcolors = {
     'A':"#000000" ,
@@ -108,7 +110,7 @@ _ntbgcolors = {
 
 __all__ = ["Face", "TextFace", "AttrFace", "ImgFace",\
                "ProfileFace", "SequenceFace", "TreeFace",\
-               "RandomFace", "ItemFace", "CircleFace", "PieChartFace"]
+               "RandomFace", "ItemFace", "CircleFace", "PieChartFace", "BarChartFace"]
 
 class Face(object):
     """ 
@@ -134,9 +136,7 @@ class Face(object):
     :param border: border line around face
     :param inner_border: border of the face ignoring margins. 
     :param inner_background: background of the face ignoring margins. 
-
     """
-
     def __init__(self):
         self.node        = None
         self.type = "pixmap" # pixmap, text or item
@@ -303,7 +303,7 @@ class ProfileFace(Face):
       and transition color (values=center) is white.
     """
 
-    def __init__(self,max_v,min_v,center_v,width=200,height=40,style="lines",colorscheme=2):
+    def __init__(self,max_v,min_v,center_v,width=200,height=40,style="lines", colorscheme=2):
         Face.__init__(self)
 
         self.width  = width
@@ -952,9 +952,15 @@ class _PieChartItem(QtGui.QGraphicsRectItem):
             painter.drawPie(self.rect(), angle_start, angle_span )
             angle_start += angle_span
 
+
 class PieChartFace(Face):
     """ 
     .. versionadded:: 2.2
+
+    :arguments percents: a list of values summing up 100. 
+    :arguments width: width of the piechart 
+    :arguments height: height of the piechart
+    :arguments colors: a list of colors (same length as percents)
    
     """
     def __init__(self, percents, width, height, colors):
@@ -974,3 +980,123 @@ class PieChartFace(Face):
 
     def _height(self):
         return self.item.rect().height()
+
+
+class BarChartFace(Face):
+    """ 
+    .. versionadded:: 2.2
+
+    :arguments percents: a list of values summing up 100. 
+    :arguments width: width of the piechart 
+    :arguments height: height of the piechart
+    :arguments colors: a list of colors (same length as percents)
+   
+    """
+    def __init__(self, values, deviations, width, height, colors, max_value):
+        Face.__init__(self)
+        self.type = "item"
+        self.item = None
+        self.values = values
+        self.deviations = deviations
+        self.colors =  colors
+        self.width = width
+        self.height = height
+        self.max_value = max_value
+
+    def update_items(self):
+        self.item = _BarChartItem(self.values, self.deviations, self.width,
+                                  self.height, self.colors, self.max_value)
+        
+    def _width(self):
+        return self.item.rect().width()
+
+    def _height(self):
+        return self.item.rect().height()
+
+class _BarChartItem(QtGui.QGraphicsRectItem):
+    def __init__(self, values, deviations, width, height, colors, max_value):
+        QtGui.QGraphicsRectItem.__init__(self, 0, 0, width, height)
+        self.values = values
+        self.deviations = deviations
+        self.colors = colors
+        self.width = width
+        self.height = height
+        self.draw_border = False
+        self.draw_grid = False
+        self.draw_scale = True
+        self.max_value = max_value
+
+    def paint(self, p, option, widget):
+        colors = self.colors
+        values = self.values
+        deviations = self.deviations
+        spacer = 3
+        scale_length = self.draw_scale * 40
+        width = self.width - scale_length
+        spacing_length = (spacer*(len(values)-1))
+        height=  self.height 
+        if self.max_value is None:
+            max_value = max([v+d for v,d in zip(values, deviations) if isfinite(v)])
+        else:
+            max_value = self.max_value
+
+        min_value = 0
+        x_alpha = float((width - spacing_length) / (len(values))) 
+        if x_alpha < 1:
+            print scale_length + spacing_length + len(values)
+            raise ValueError("BarChartFace is too small")
+        
+        y_alpha = float ( (height-1) / float(max_value - min_value) )
+        x2 = 0 
+        y  = 0
+
+        # Mean and quartiles y positions
+        mean_line_y = y + height / 2
+        line2_y     = mean_line_y  + height/4
+        line3_y     = mean_line_y - height/4
+
+        if self.draw_border:
+            p.setPen(QtGui.QColor("black"))
+            p.drawRect(x2, y, width, height - 1)
+        if self.draw_scale: 
+            p.setFont(QtGui.QFont("Verdana", 8))
+            p.drawText(width, y + 10,"%0.3f" %max_value)
+            p.drawText(width, y + height,"%0.3f" %min_value)
+        if self.draw_grid: 
+            dashedPen = QtGui.QPen(QtGui.QBrush(QtGui.QColor("#ddd")), 0)
+            dashedPen.setStyle(QtCore.Qt.DashLine)
+            p.setPen(dashedPen)
+            p.drawLine(x2+1, mean_line_y, width - 2, mean_line_y )
+            p.drawLine(x2+1, line2_y, width - 2, line2_y )
+            p.drawLine(x2+1, line3_y, width - 2, line3_y )
+
+        # Draw bars
+        for pos in xrange(len(values)):
+            # first and second X pixel positions
+            x1 = x2
+            x2 = x1 + x_alpha + spacer
+
+            std =  deviations[pos]
+            val = values[pos]
+
+            # If nan value, skip
+            if not isfinite(val):
+                continue
+
+            color = QtGui.QColor(colors[pos])
+            # mean bar high
+            mean_y1     = int((val - min_value) * y_alpha)
+            # Draw bar border
+            p.setPen(QtGui.QColor("black"))
+
+            # Fill bar with custom color
+            p.fillRect(x1, height-mean_y1, x_alpha, mean_y1 - 1, QtGui.QBrush(color))
+
+            # Draw error bars
+            if std != 0:
+                dev_up_y1   = int((val + std - min_value) * y_alpha)
+                dev_down_y1 = int((val - std - min_value) * y_alpha)
+                center_x = x1 + (x_alpha / 2)
+                p.drawLine(center_x, height - dev_up_y1, center_x, height - dev_down_y1)
+                p.drawLine(center_x + 1, height - dev_up_y1, center_x -1, height - dev_up_y1)
+                p.drawLine(center_x + 1, height - dev_down_y1, center_x -1, height - dev_down_y1)
