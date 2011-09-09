@@ -992,7 +992,7 @@ class BarChartFace(Face):
     :arguments colors: a list of colors (same length as percents)
    
     """
-    def __init__(self, values, deviations, width, height, colors, max_value):
+    def __init__(self, values, deviations, width, height, colors, labels, max_value):
         Face.__init__(self)
         self.type = "item"
         self.item = None
@@ -1001,11 +1001,13 @@ class BarChartFace(Face):
         self.colors =  colors
         self.width = width
         self.height = height
+        self.labels = labels
         self.max_value = max_value
 
     def update_items(self):
         self.item = _BarChartItem(self.values, self.deviations, self.width,
-                                  self.height, self.colors, self.max_value)
+                                  self.height, self.colors, self.labels, 
+                                  self.max_value)
         
     def _width(self):
         return self.item.rect().width()
@@ -1014,7 +1016,7 @@ class BarChartFace(Face):
         return self.item.rect().height()
 
 class _BarChartItem(QtGui.QGraphicsRectItem):
-    def __init__(self, values, deviations, width, height, colors, max_value):
+    def __init__(self, values, deviations, width, height, colors, labels, max_value):
         QtGui.QGraphicsRectItem.__init__(self, 0, 0, width, height)
         self.values = values
         self.deviations = deviations
@@ -1024,9 +1026,13 @@ class _BarChartItem(QtGui.QGraphicsRectItem):
         self.draw_border = False
         self.draw_grid = False
         self.draw_scale = True
+        self.labels = labels
         self.max_value = max_value
 
     def paint(self, p, option, widget):
+
+        
+
         colors = self.colors
         values = self.values
         deviations = self.deviations
@@ -1100,3 +1106,11 @@ class _BarChartItem(QtGui.QGraphicsRectItem):
                 p.drawLine(center_x, height - dev_up_y1, center_x, height - dev_down_y1)
                 p.drawLine(center_x + 1, height - dev_up_y1, center_x -1, height - dev_up_y1)
                 p.drawLine(center_x + 1, height - dev_down_y1, center_x -1, height - dev_down_y1)
+
+            if self.labels: 
+                p.save();
+                p.translate(x1, -height-30);
+                p.rotate(90);
+                p.drawText(0, 0, self.labels[pos]);
+                p.restore();
+

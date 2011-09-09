@@ -457,7 +457,7 @@ def add_scale(img, mainRect, parent):
         scale.setPos(0, 10)
 
         if img.force_topology:
-            wtext = "Force topology is enabled!\nBranch lengths does not represent original values."
+            wtext = "Force topology is enabled!\nBranch lengths do not represent original values."
             warning_text = QtGui.QGraphicsSimpleTextItem(wtext)
             warning_text.setFont(QtGui.QFont("Arial", 8))
             warning_text.setBrush( QtGui.QBrush(QtGui.QColor("darkred")))
