@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import os
 import time
 import logging
@@ -17,10 +18,10 @@ except:
 __DESCRIPTION__ = """ 
 --------------------------------------------------------------------------------
                  Nested Phylogenetic Reconstruction program.  
-                          NPR-1.0%s (Aug, 2011)
+                          NPR-0.1%s(alpha) Aug, 2011.
 
-      NPR a program to reconstruct phylogenetic trees optimizing each
-      internal node.
+      NPR is a program to reconstruct phylogenetic trees by optimizing
+      each of the internal node.
 
       If you use this program for published work, please cite: 
 
@@ -32,7 +33,7 @@ __DESCRIPTION__ = """
 """ %__VERSION__
 
 RETRY_WHEN_ERRORS = True
-EXECUTE = False
+EXECUTE = True
 
 __LOGINDENT__ = 0
 def set_logindent(x):
@@ -47,7 +48,7 @@ def dec_logindent(x):
     global __LOGINDENT__
     __LOGINDENT__ -= x
 
-class IndentFormatter(logging.Formatter):
+class IndentedFormatter(logging.Formatter):
     def __init__( self, fmt=None, datefmt=None ):
         logging.Formatter.__init__(self, fmt, datefmt)
 
@@ -120,18 +121,22 @@ def my_pipeline(task, main_tree):
     """
     new_tasks = []
     if task.ttype == "msf":
-        new_tasks.append(MuscleAlgTask(task.cladeid,
-                                       task.multiseq_file))
+        if task.nseqs < 200:
+            new_tasks.append(MuscleAlgTask(task.cladeid,
+                                           task.multiseq_file))
+        else:
+            new_tasks.append(ClustalOmegaAlgTask(task.cladeid,
+                                                 task.multiseq_file))
 
     elif task.ttype == "alg":
-        #new_tasks.append(\
-        #    TrimalTask(task.cladeid, task.alg_file))
-        new_tasks.append(ModelChooserTask(task.cladeid, 
-                                          task.alg_phylip_file))
+        new_tasks.append(\
+            TrimalTask(task.cladeid, task.alg_fasta_file))
+        #new_tasks.append(BionjModelChooserTask(task.cladeid, 
+        #                                  task.alg_phylip_file))
 
     elif task.ttype == "acleaner":
-        new_tasks.append(ModelChooserTask(task.cladeid,
-                                          task.clean_alg_file))
+        new_tasks.append(BionjModelChooserTask(task.cladeid,
+                                          task.clean_alg_phylip_file))
 
     elif task.ttype == "mchooser":
         new_tasks.append(RaxmlTreeTask(task.cladeid, 
@@ -201,11 +206,10 @@ if __name__ == "__main__":
     # Prepares main log
     log = logging.getLogger("main")
     log.setLevel(logging.DEBUG)
-    log_format = IndentFormatter("%(levelname) 6s -%(indent)s %(message)s")
+    log_format = IndentedFormatter("%(levelname) 6s -%(indent)s %(message)s")
     log_handler = logging.StreamHandler()
     log_handler.setFormatter(log_format)
     log.addHandler(log_handler)
 
     # Example execution
     schedule(my_pipeline, 1, "./Phy0007XAR_HUMAN.msf.fasta")
-
