@@ -3,11 +3,9 @@ import os
 import time
 import logging
 from collections import deque
-
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
-from utils import del_gaps
-from task import *
+from task import MsfTask 
 
 try:
     module_path = os.path.split(__file__)[0]
@@ -114,52 +112,6 @@ def schedule(processer, schedule_time, seed_file):
         time.sleep(WAITING_TIME)
         print
 
-def my_pipeline(task, main_tree):
-    """ This function defines the pipeline that will be applied. You
-    can configure rules to decide which steps follow the others and
-    make decisions about when to stop or continue the optimization.
-    """
-    new_tasks = []
-    if task.ttype == "msf":
-        if task.nseqs < 200:
-            new_tasks.append(MuscleAlgTask(task.cladeid,
-                                           task.multiseq_file))
-        else:
-            new_tasks.append(ClustalOmegaAlgTask(task.cladeid,
-                                                 task.multiseq_file))
-
-    elif task.ttype == "alg":
-        new_tasks.append(\
-            TrimalTask(task.cladeid, task.alg_fasta_file))
-        #new_tasks.append(BionjModelChooserTask(task.cladeid, 
-        #                                  task.alg_phylip_file))
-
-    elif task.ttype == "acleaner":
-        new_tasks.append(BionjModelChooserTask(task.cladeid,
-                                          task.clean_alg_phylip_file))
-
-    elif task.ttype == "mchooser":
-        new_tasks.append(RaxmlTreeTask(task.cladeid, 
-                                       task.alg_file, task.best_model))
-
-    elif task.ttype == "tree":
-        t = PhyloTree(task.tree_file)
-        merge = MergeTreeTask(task.cladeid, t, main_tree)
-        main_tree = merge.main_tree
-        alg = SeqGroup(task.alg_file, "iphylip_relaxed")
-        for part in [merge.set_a, merge.set_b]:
-            set_cladeid, seqs, outgroups = part
-            if len(seqs)>4 and len(outgroups)>2:
-                msf_seqs = seqs + outgroups[:3]
-                new_msf_file = os.path.join(task.taskdir, "children_%s.msf" %set_cladeid)
-                fasta = '\n'.join([">%s\n%s" %
-                                   (n,del_gaps(alg.get_seq(n)))
-                                   for n in msf_seqs])
-                open(new_msf_file, "w").write(fasta)
-                new_tasks.append(\
-                    MsfTask(set_cladeid, new_msf_file))
-    return new_tasks, main_tree
-
 if __name__ == "__main__":
     parser = ArgumentParser(description=__DESCRIPTION__, 
                             formatter_class=RawDescriptionHelpFormatter)
@@ -198,7 +150,6 @@ if __name__ == "__main__":
     parser.add_argument("-x", "--execute-inplace", dest="execute-inplace", 
                         action="store_true",
                         help="""Jobs are launched in this machine """)
-
  
     args = parser.parse_args()
 
@@ -212,4 +163,5 @@ if __name__ == "__main__":
     log.addHandler(log_handler)
 
     # Example execution
-    schedule(my_pipeline, 1, "./Phy0007XAR_HUMAN.msf.fasta")
+    from template.standard1 import pipeline
+    schedule(pipeline, 1, "./Phy0007XAR_HUMAN.msf.fasta")
