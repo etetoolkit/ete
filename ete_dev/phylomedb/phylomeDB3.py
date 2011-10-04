@@ -331,7 +331,7 @@ class PhylomeDB3Connector(object):
     return None
 
   def get_info_homologous_seqs(self, protid, phylome_id, tree = None, \
-    tree_model = False, sequence = False):
+    tree_method = False, sequence = False):
     """ Return all the available information for a given set of homologous
         sequences extracted from a tree from a given phylome.
     """
@@ -454,7 +454,8 @@ class PhylomeDB3Connector(object):
         code = row["protid"]
 
         if data["seq"][row["protid"]]["copy"] > 1 and copy_var_support:
-          code += ("_%d") % (row["copy"])
+          #code += ("_%d") % (row["copy"])
+          pass
         if not copy_var_support and row["copy"] > 1 or not code in leaves:
           continue
 

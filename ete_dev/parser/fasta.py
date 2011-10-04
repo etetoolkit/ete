@@ -24,7 +24,7 @@ import os
 import string
 from sys import stderr as STDERR
 
-def read_fasta(source, obj=None):
+def read_fasta(source, obj=None, header_delimiter="\t"):
     """ Reads a collection of sequences econded in FASTA format."""
 
     if obj is None:
@@ -55,7 +55,7 @@ def read_fasta(source, obj=None):
 
             seq_id += 1
             # Takes header info
-            seq_header_fields = map(string.strip, line[1:].split("\t"))
+            seq_header_fields = map(string.strip, line[1:].split(header_delimiter))
             seq_name = seq_header_fields[0]
 
             # Checks for duplicated seq names
