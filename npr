@@ -5,7 +5,12 @@ import logging
 from collections import deque
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
-from task import MsfTask 
+from master_task import Task
+
+import sys
+sys.path.insert(0, "/home/jhuerta/_Devel/ete/2.2/")
+from ete_dev import SeqGroup
+
 
 try:
     module_path = os.path.split(__file__)[0]
@@ -13,10 +18,17 @@ try:
 except: 
     __VERSION__ = "unknown"
 
+try:
+    module_path = os.path.split(__file__)[0]
+    __DATE__ = open(os.path.join(module_path, "DATE")).read().strip()
+except: 
+    __DATE__ = "unknown"
+
+
 __DESCRIPTION__ = """ 
 --------------------------------------------------------------------------------
                  Nested Phylogenetic Reconstruction program.  
-                          NPR-0.1%s(alpha) Aug, 2011.
+                          NPR-0.1%s(alpha), %s.
 
       NPR is a program to reconstruct phylogenetic trees by optimizing
       each of the internal node.
@@ -28,7 +40,7 @@ __DESCRIPTION__ = """
 
       Contact: jhuerta (at) crg.es, tgabaldon (at) crg.es
 --------------------------------------------------------------------------------
-""" %__VERSION__
+""" %(__VERSION__, __DATE__)
 
 RETRY_WHEN_ERRORS = True
 EXECUTE = True
@@ -55,14 +67,14 @@ class IndentedFormatter(logging.Formatter):
         out = logging.Formatter.format(self, rec)
         return out
 
-def schedule(processer, schedule_time, seed_file):
+def schedule(processer, schedule_time, aa_seed_file, nt_seed_file):
     """ Main pipeline scheduler """ 
     WAITING_TIME = schedule_time
-    main_tree = None
-    # Initial task hangs from the seed msf file. Note that empty
-    # cladeid force cladeid to be generated using all seqs in file.
-    init_task = MsfTask(None, seed_file)
-    pending_tasks = deque([init_task])
+    # Pass seed files to processer to generate the initial task
+    pending_tasks, main_tree = processer(None, None, 
+                                         aa_seed_file, nt_seed_file)
+
+    # Then enters into the pipeline. 
     while pending_tasks:
         for task in list(pending_tasks):
             set_logindent(0)
@@ -90,7 +102,9 @@ def schedule(processer, schedule_time, seed_file):
                     task.finish()
                     if task.check():
                         inc_logindent(3)
-                        new_tasks, main_tree = processer(task, main_tree)
+                        new_tasks, main_tree = processer(task, main_tree, 
+                                                         aa_seed_file, 
+                                                         nt_seed_file)
                         inc_logindent(-3)
                         pending_tasks.extend(new_tasks)
                         pending_tasks.remove(task)
@@ -135,6 +149,10 @@ if __name__ == "__main__":
                         type=str, 
                         help="""Initial multi sequence file with nucleotide sequences""")
 
+    parser.add_argument("-p", "--project_path", dest="basepath", 
+                        type=str, required=True, 
+                        help="""Root path for the execution. """)
+
     parser.add_argument("-t", "--schedule-time", dest="schedule_time", 
                         type=int, default=5,
                         help="""Schedule time in seconds. """)
@@ -154,14 +172,47 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     print __DESCRIPTION__    
+
     # Prepares main log
     log = logging.getLogger("main")
     log.setLevel(logging.DEBUG)
-    log_format = IndentedFormatter("%(levelname) 6s -%(indent)s %(message)s")
+    log_format = IndentedFormatter("%(levelname) 7s -%(indent)s %(message)s")
     log_handler = logging.StreamHandler()
     log_handler.setFormatter(log_format)
     log.addHandler(log_handler)
 
+    basepath = os.path.abspath(args.basepath)
+    if not os.path.exists(basepath):
+        os.mkdir(basepath)
+   
+    # check nt_seed and aa_seed. Do they contain the same seqs?
+    # format? names?
+    visited_seqs = set()
+    seed_files = {}
+    for label, seq_file in [["aa_seed", args.aa_seed_file],
+                            ["nt_seed", args.nt_seed_file]]:
+        if seq_file: 
+            seqs = SeqGroup(seq_file)
+            for i,n in seqs.id2name.iteritems():
+                if len(n)>10: 
+                    seqs.id2name[i] = n[:10]
+                    log.warning("sequence names %s was truncated to 10 chars: %s " %(n, n[:10]))
+            values = seqs.id2name.values()
+            if len(values) != len(set(values)):
+                raise Exception("Duplicated sequence names, execution aborted.")
+            if visited_seqs and set(values) != visited_seqs:
+                raise Exception("Sequence names do not match between aa and nt files.")
+            visited_seqs.update(values)
+            fullpath = os.path.join(basepath, label+".fasta")
+            seed_files[label] = fullpath
+            seqs.write(outfile=fullpath)
+
     # Example execution
     from template.standard1 import pipeline
-    schedule(pipeline, 1, "./Phy0007XAR_HUMAN.msf.fasta")
+
+    #args.aa_seed_file = "./Phy0007XAR_HUMAN.msf.fasta"
+    schedule(pipeline, 1, seed_files.get("aa_seed", None),
+             seed_files.get("nt_seed", None))
+
+        
+        
