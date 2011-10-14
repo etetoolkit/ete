@@ -66,7 +66,7 @@ class IndentedFormatter(logging.Formatter):
         logging.Formatter.__init__(self, fmt, datefmt)
 
     def format( self, rec ):
-        rec.indent = ' ' * __LOGINDENT__
+        rec.indent = ' '*__LOGINDENT__
         out = logging.Formatter.format(self, rec)
         return out
 
@@ -174,11 +174,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     print __DESCRIPTION__    
-   
-
- 
-
-    from stringIO import stringIO
 
     # Prepares main log
     log = logging.getLogger("main")
