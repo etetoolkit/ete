@@ -9,6 +9,7 @@ from configobj import ConfigObj
 from validate import Validator
 from StringIO import StringIO
 from master_task import Task
+import signal 
 
 import sys
 sys.path.insert(0, "/home/jhuerta/_Devel/ete/2.2/")
@@ -32,15 +33,16 @@ __DESCRIPTION__ = """
                  Nested Phylogenetic Reconstruction program.  
                           NPR-0.1%s(alpha), %s.
 
-      NPR is a program to reconstruct phylogenetic trees by optimizing
-      each of the internal node.
+      NPR is a program for phylogenetic reconstruction that optimizes
+      the resolution of the final tree by fine grained tunning and
+      recomputing of the inner nodes.
 
       If you use this program for published work, please cite: 
 
        Jaime Huerta-Cepas and Toni Gabaldon. Nested Phylogenetic
        Reconstruction. XXX-XX. 2011.
 
-      Contact: jhuerta (at) crg.es, tgabaldon (at) crg.es
+      Contact: jhuerta [at] crg.es, tgabaldon [at] crg.es
 --------------------------------------------------------------------------------
 """ %(__VERSION__, __DATE__)
 
@@ -50,20 +52,35 @@ EXECUTE = True
 import curses
 
 scr = curses.initscr()
-#scr = curses.newwin(20, 20, 20, 20)
+#scr.border()
 curses.noecho()
 curses.cbreak()
 scr.keypad(1)
 scr.idlok(True)
 scr.scrollok(True)
-
+h, w = scr.getmaxyx()
+#scr.addstr(0,2, "-NPR-")
+win = curses.newwin(h-2,w-2, 1,1)
+win.keypad(1)
+win.idlok(True)
+win.scrollok(True)
 curses.start_color()
 curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLACK)
-curses.init_pair(2, curses.COLOR_BLUE, curses.COLOR_BLACK)
+curses.init_pair(2, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
 curses.init_pair(3, curses.COLOR_GREEN, curses.COLOR_BLACK)
 curses.init_pair(4, curses.COLOR_YELLOW, curses.COLOR_BLACK)
 curses.init_pair(5, curses.COLOR_RED, curses.COLOR_BLACK)
 curses.init_pair(6, curses.COLOR_RED, curses.COLOR_WHITE)
+
+def sigwinch_handler(n, frame):
+    curses.initscr()
+    h, w = scr.getmaxyx()
+    curses.resizeterm(h, w)
+    #win.addstr("RESIZED %d %d \n\n" %(h,w))
+    #win.refresh()
+
+signal.signal(signal.SIGWINCH, sigwinch_handler) 
+
 
 __LOGINDENT__ = 0
 def set_logindent(x):
@@ -89,35 +106,41 @@ class IndentedFormatter(logging.Formatter):
 
 import re
 
-class U(StringIO):
+class CursesPrinter(StringIO):
+
+    # TAG USED TO CHANGE COLOR OF STRINGS
+    TAG = re.compile("@@(\d+):", re.MULTILINE)
+
     def write(self, text):
         formatstr = []
-        for m in re.finditer("@@(\d+):", text, re.MULTILINE):
+        
+        for m in re.finditer(self.TAG, text):
             x1, x2  = m.span()
             formatstr.append([x1, x2, m.groups()[0]])
-
         if not formatstr:
-            formatstr.append(-1, 0, 1)
+            formatstr.append([None, 0, 1])
+
         if formatstr[0][1] == 0:
             stop, start, cindex = formatstr.pop(0)
         else:
-            stop, start, cindex = -1, 0, 1
-        while start != -1:
+            stop, start, cindex = None, 0, 1
+
+        while start is not None:
             if formatstr:
                 next_stop, next_start, next_cindex = formatstr.pop(0)
             else:
-                next_stop, next_start, next_cindex = -1, -1, cindex
+                next_stop, next_start, next_cindex = None, None, cindex
 
             face = curses.color_pair(int(cindex))
             try:
-                scr.addstr(text[start:next_stop], face)
+                win.addstr(text[start:next_stop], face)
             except curses.error: 
-                scr.addstr("???")
-
+                win.addstr("???")
             start = next_start
             stop = next_stop
             cindex = next_cindex
-        scr.refresh()
+        win.refresh()
+        #scr.refresh()
 
 def schedule(config, processer, schedule_time):
     """ Main pipeline scheduler """ 
@@ -175,7 +198,7 @@ def schedule(config, processer, schedule_time):
                 log.info("Task is DONE")
             
         time.sleep(WAITING_TIME)
-        print "\n\r"
+        print 
 
 if __name__ == "__main__":
     parser = ArgumentParser(description=__DESCRIPTION__, 
@@ -222,21 +245,19 @@ if __name__ == "__main__":
  
     args = parser.parse_args()
 
+    if curses:
+        screen = CursesPrinter()
+    else:
+        screen = sys.stdout
+    sys.stdout = screen
 
-
-    scr.addstr(__DESCRIPTION__)
-
-    screen = U()
-    #screen = sys.stdout
+    print __DESCRIPTION__
 
     # Prepares main log
-
-
     log = logging.getLogger("main")
 
-
-    log.setLevel(logging.DEBUG)
-    log_format = IndentedFormatter("%(levelname) 7s@@1: - %(indent)s %(message)s\n")
+    log.setLevel(logging.INFO)
+    log_format = IndentedFormatter("%(levelname) 7s@@1: - %(indent)s %(message)s")
     logging.addLevelName(10, "@@2:DEBUG")
     logging.addLevelName(20, "@@3:INFO")
     logging.addLevelName(30, "@@4:WARNING")
@@ -271,7 +292,6 @@ if __name__ == "__main__":
     else:
         imp.find_module("standard1", __path__)
 
-
     # check nt_seed and aa_seed. Do they contain the same seqs?
     # format? names?
     visited_seqs = set()
@@ -297,6 +317,10 @@ if __name__ == "__main__":
     config["general"]["aa_seed"] =  seed_files.get("aa_seed", None)
     config["general"]["nt_seed"] =  seed_files.get("nt_seed", None)
     try:
+
+        print curses.COLORS, " COLORS"
+        print curses.COLOR_PAIRS, " PAIRS"
+        print "PROBABNDO@@4:GOLA@@2:11"
         schedule(config, template.pipeline, args.schedule_time)
     except: 
         # NCURSES
