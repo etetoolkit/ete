@@ -89,7 +89,7 @@ __DESCRIPTION__ = """
 --------------------------------------------------------------------------------
 """ %(__VERSION__, __DATE__)
 
-RETRY_WHEN_ERRORS = True
+RETRY_WHEN_ERRORS = False
 EXECUTE = True
 
 class Screen(StringIO):
@@ -183,7 +183,9 @@ def schedule(config, processer, schedule_time):
             set_logindent(0)
             log.info(task)
             inc_logindent(2)
-            log.info("TaskDir: %s" %task.taskdir)
+            tdir = task.taskdir.replace(config["general"]["basedir"], "")
+            tdir = tdir.lstrip("/")
+            log.info("TaskDir: %s" %tdir)
             log.info("TaskJobs: %d" %len(task.jobs))
             inc_logindent(2)
             for j in task.jobs:
@@ -196,6 +198,7 @@ def schedule(config, processer, schedule_time):
                 if EXECUTE: 
                     log.info("Running jobs..")
                     os.system("sh %s" %task.jobs_file)
+
 
             if task.status == "R":
                 log.info("Task is marked as Running")
@@ -294,7 +297,7 @@ if __name__ == "__main__":
                            list_values=False, _inspec=True)
 
     config = ConfigObj("config", configspec=configspec)
-    
+    print config["mafft"].__str__
     val = Validator()
     if not config.validate(val):
         print test
@@ -345,9 +348,8 @@ if __name__ == "__main__":
     except: 
         raise
     finally:
+        log.info("@@6:Program ended.")
         if CURSES:
-            log.critical("Program ended. Press any key to quit")
-            WIN[0].getch()
             curses.nocbreak()
             curses.echo()
             curses.endwin()
