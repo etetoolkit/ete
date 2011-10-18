@@ -16,7 +16,6 @@ import sys
 sys.path.insert(0, "/home/jhuerta/_Devel/ete/2.2/")
 from ete_dev import SeqGroup
 
-
 try:
     import curses
 except: 
@@ -219,7 +218,7 @@ def schedule(config, processer, schedule_time):
                     task.status = "E"
 
             elif task.status == "E":
-                log.info("Task is marked as ERROR")
+                log.error("Task is marked as ERROR")
                 if RETRY_WHEN_ERRORS:
                     log.info("Remarking task as undone to retry")
                     task.retry()
@@ -342,13 +341,15 @@ if __name__ == "__main__":
     try:
         schedule(config, template.pipeline, args.schedule_time)
     except KeyboardInterrupt: 
-        log.critical("Interrupted")
-    except Exception: 
+        log.critical("Interrupted!")
+    except: 
         raise
     finally:
         if CURSES:
+            log.critical("Program ended. Press any key to quit")
+            WIN[0].getch()
             curses.nocbreak()
             curses.echo()
             curses.endwin()
-
+            
 
