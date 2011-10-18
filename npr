@@ -10,10 +10,54 @@ from validate import Validator
 from StringIO import StringIO
 from master_task import Task
 import signal 
+import re
 
 import sys
 sys.path.insert(0, "/home/jhuerta/_Devel/ete/2.2/")
 from ete_dev import SeqGroup
+
+
+try:
+    import curses
+except: 
+    CURSES = False
+    screen = sys.stdout
+else:
+    CURSES = True
+
+    def sigwinch_handler(n, frame):
+        WIN[0] = curses.initscr()
+        h, w = WIN[0].getmaxyx()
+        curses.resizeterm(h, w)
+        for w in WIN.values():
+            w.refresh()
+
+    dbg_h = 40
+    WIN = {}
+    WIN[0] = curses.initscr()
+    h, w = WIN[0].getmaxyx()
+    WIN[1] = curses.newwin(h-2, w/2, 1,1)
+    WIN[2] = curses.newwin(h-dbg_h, (w/2)-1, 1, (w/2)+2)
+    WIN[3] = curses.newwin(dbg_h, (w/2)-1, h-dbg_h-1, (w/2)+2)
+    WIN[3].box()
+
+    for w in WIN.values():
+        w.keypad(1)
+        w.idlok(True)
+        w.scrollok(True)
+
+    curses.noecho()
+    curses.cbreak()
+    curses.start_color()
+    curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLACK)
+    curses.init_pair(2, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
+    curses.init_pair(3, curses.COLOR_GREEN, curses.COLOR_BLACK)
+    curses.init_pair(4, curses.COLOR_YELLOW, curses.COLOR_BLACK)
+    curses.init_pair(5, curses.COLOR_RED, curses.COLOR_BLACK)
+    curses.init_pair(6, curses.COLOR_RED, curses.COLOR_WHITE)
+    # Resize window signal
+    signal.signal(signal.SIGWINCH, sigwinch_handler) 
+
 
 try:
     module_path = os.path.split(__file__)[0]
@@ -33,7 +77,7 @@ __DESCRIPTION__ = """
                  Nested Phylogenetic Reconstruction program.  
                           NPR-0.1%s(alpha), %s.
 
-      NPR is a program for phylogenetic reconstruction that optimizes
+      @@2:NPR@@1: is a program for phylogenetic reconstruction that optimizes
       the resolution of the final tree by fine grained tunning and
       recomputing of the inner nodes.
 
@@ -49,37 +93,60 @@ __DESCRIPTION__ = """
 RETRY_WHEN_ERRORS = True
 EXECUTE = True
 
-import curses
+class Screen(StringIO):
+    # TAG USED TO CHANGE COLOR OF STRINGS
+    TAG = re.compile("@@(\d+)?,?(\d+):", re.MULTILINE)
 
-scr = curses.initscr()
-#scr.border()
-curses.noecho()
-curses.cbreak()
-scr.keypad(1)
-scr.idlok(True)
-scr.scrollok(True)
-h, w = scr.getmaxyx()
-#scr.addstr(0,2, "-NPR-")
-win = curses.newwin(h-2,w-2, 1,1)
-win.keypad(1)
-win.idlok(True)
-win.scrollok(True)
-curses.start_color()
-curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLACK)
-curses.init_pair(2, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
-curses.init_pair(3, curses.COLOR_GREEN, curses.COLOR_BLACK)
-curses.init_pair(4, curses.COLOR_YELLOW, curses.COLOR_BLACK)
-curses.init_pair(5, curses.COLOR_RED, curses.COLOR_BLACK)
-curses.init_pair(6, curses.COLOR_RED, curses.COLOR_WHITE)
+    def write(self, text):
+        if CURSES: 
+            self.write_curses(text)
+        else:
+            self.write_normal(text)
 
-def sigwinch_handler(n, frame):
-    curses.initscr()
-    h, w = scr.getmaxyx()
-    curses.resizeterm(h, w)
-    #win.addstr("RESIZED %d %d \n\n" %(h,w))
-    #win.refresh()
+    def write_normal(self, text):
+        text = re.sub(self.TAG, "", text)
+        self.stdout.write(text)
 
-signal.signal(signal.SIGWINCH, sigwinch_handler) 
+    def write_curses(self, text):
+        formatstr = []
+        for m in re.finditer(self.TAG, text):
+            x1, x2  = m.span()
+            cindex = int(m.groups()[1])
+            windex = m.groups()[0]
+            formatstr.append([x1, x2, cindex, windex])
+        if not formatstr:
+            formatstr.append([None, 0, 1, 1])
+
+        if formatstr[0][1] == 0:
+            stop, start, cindex, windex = formatstr.pop(0)
+            if windex is None:
+                windex = 1
+        else:
+            stop, start, cindex, windex = None, 0, 1, 1
+
+        while start is not None:
+            if formatstr:
+                next_stop, next_start, next_cindex, next_windex = formatstr.pop(0)
+            else:
+                next_stop, next_start, next_cindex, next_windex = None, None, cindex, windex
+
+            face = curses.color_pair(cindex)
+            try:
+                WIN[int(windex)].addstr(text[start:next_stop], face)
+            except curses.error: 
+                WIN[int(windex)].addstr("???")
+            start = next_start
+            stop = next_stop
+            cindex = next_cindex
+            if next_windex is not None:
+                windex = next_windex
+        for w in WIN.values():
+            w.refresh()
+
+
+screen = Screen()
+screen.stdout = sys.stdout
+sys.stdout = screen
 
 
 __LOGINDENT__ = 0
@@ -103,44 +170,6 @@ class IndentedFormatter(logging.Formatter):
         rec.indent = ' ' * __LOGINDENT__
         out = logging.Formatter.format(self, rec)
         return out
-
-import re
-
-class CursesPrinter(StringIO):
-
-    # TAG USED TO CHANGE COLOR OF STRINGS
-    TAG = re.compile("@@(\d+):", re.MULTILINE)
-
-    def write(self, text):
-        formatstr = []
-        
-        for m in re.finditer(self.TAG, text):
-            x1, x2  = m.span()
-            formatstr.append([x1, x2, m.groups()[0]])
-        if not formatstr:
-            formatstr.append([None, 0, 1])
-
-        if formatstr[0][1] == 0:
-            stop, start, cindex = formatstr.pop(0)
-        else:
-            stop, start, cindex = None, 0, 1
-
-        while start is not None:
-            if formatstr:
-                next_stop, next_start, next_cindex = formatstr.pop(0)
-            else:
-                next_stop, next_start, next_cindex = None, None, cindex
-
-            face = curses.color_pair(int(cindex))
-            try:
-                win.addstr(text[start:next_stop], face)
-            except curses.error: 
-                win.addstr("???")
-            start = next_start
-            stop = next_stop
-            cindex = next_cindex
-        win.refresh()
-        #scr.refresh()
 
 def schedule(config, processer, schedule_time):
     """ Main pipeline scheduler """ 
@@ -245,24 +274,18 @@ if __name__ == "__main__":
  
     args = parser.parse_args()
 
-    if curses:
-        screen = CursesPrinter()
-    else:
-        screen = sys.stdout
-    sys.stdout = screen
-
     print __DESCRIPTION__
 
     # Prepares main log
     log = logging.getLogger("main")
 
-    log.setLevel(logging.INFO)
+    log.setLevel(logging.DEBUG)
     log_format = IndentedFormatter("%(levelname) 7s@@1: - %(indent)s %(message)s")
-    logging.addLevelName(10, "@@2:DEBUG")
-    logging.addLevelName(20, "@@3:INFO")
-    logging.addLevelName(30, "@@4:WARNING")
-    logging.addLevelName(40, "@@5:ERROR")
-    logging.addLevelName(50, "@@6:CRITICAL")
+    logging.addLevelName(10, "@@3,2:DEBUG")
+    logging.addLevelName(20, "@@1,3:INFO")
+    logging.addLevelName(30, "@@2,4:WARNING")
+    logging.addLevelName(40, "@@2,5:ERROR")
+    logging.addLevelName(50, "@@2,6:CRITICAL")
 
     log_handler = logging.StreamHandler(screen)
     log_handler.setFormatter(log_format)
@@ -317,22 +340,15 @@ if __name__ == "__main__":
     config["general"]["aa_seed"] =  seed_files.get("aa_seed", None)
     config["general"]["nt_seed"] =  seed_files.get("nt_seed", None)
     try:
-
-        print curses.COLORS, " COLORS"
-        print curses.COLOR_PAIRS, " PAIRS"
-        print "PROBABNDO@@4:GOLA@@2:11"
         schedule(config, template.pipeline, args.schedule_time)
-    except: 
-        # NCURSES
-        curses.nocbreak()
-        scr.keypad(0)
-        curses.echo()
-        curses.endwin()
+    except KeyboardInterrupt: 
+        log.critical("Interrupted")
+    except Exception: 
         raise
-
-    curses.nocbreak()
-    scr.keypad(0)
-    curses.echo()
-    curses.endwin()
+    finally:
+        if CURSES:
+            curses.nocbreak()
+            curses.echo()
+            curses.endwin()
 
 
