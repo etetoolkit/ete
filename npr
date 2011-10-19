@@ -3,9 +3,9 @@ import os
 import time
 import imp
 import logging
-from collections import deque
+from collections import deque, defaultdict
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
-from configobj import ConfigObj
+from configobj import ConfigObj, flatten_errors
 from validate import Validator
 from StringIO import StringIO
 from master_task import Task
@@ -15,6 +15,8 @@ import re
 import sys
 sys.path.insert(0, "/home/jhuerta/_Devel/ete/2.2/")
 from ete_dev import SeqGroup
+
+from utils import get_cladeid
 
 try:
     import curses
@@ -107,7 +109,7 @@ class Screen(StringIO):
         self.stdout.write(text)
 
     def write_curses(self, text):
-        formatstr = []
+        formatstr = deque()
         for m in re.finditer(self.TAG, text):
             x1, x2  = m.span()
             cindex = int(m.groups()[1])
@@ -117,7 +119,7 @@ class Screen(StringIO):
             formatstr.append([None, 0, 1, 1])
 
         if formatstr[0][1] == 0:
-            stop, start, cindex, windex = formatstr.pop(0)
+            stop, start, cindex, windex = formatstr.popleft()
             if windex is None:
                 windex = 1
         else:
@@ -125,7 +127,7 @@ class Screen(StringIO):
 
         while start is not None:
             if formatstr:
-                next_stop, next_start, next_cindex, next_windex = formatstr.pop(0)
+                next_stop, next_start, next_cindex, next_windex = formatstr.popleft()
             else:
                 next_stop, next_start, next_cindex, next_windex = None, None, cindex, windex
 
@@ -170,15 +172,27 @@ class IndentedFormatter(logging.Formatter):
         out = logging.Formatter.format(self, rec)
         return out
 
+def quitapp(exception=None):
+    log.info("@@6:Program ended. Press any key to quit")
+    if CURSES:
+        WIN[0].getch()
+        curses.nocbreak()
+        curses.echo()
+        curses.endwin()
+    if exception:
+        raise exception
+
 def schedule(config, processer, schedule_time):
     """ Main pipeline scheduler """ 
     WAITING_TIME = schedule_time
     # Pass seed files to processer to generate the initial task
     pending_tasks, main_tree = processer(None, None, 
                                          config)
-
+    clade2tasks = defaultdict(list)
     # Then enters into the pipeline. 
     while pending_tasks:
+        # A will modify pending_task within the loop, so I create a
+        # copy of it
         for task in list(pending_tasks):
             set_logindent(0)
             log.info(task)
@@ -199,7 +213,6 @@ def schedule(config, processer, schedule_time):
                     log.info("Running jobs..")
                     os.system("sh %s" %task.jobs_file)
 
-
             if task.status == "R":
                 log.info("Task is marked as Running")
                 jobs_status = task.get_jobs_status()
@@ -214,6 +227,7 @@ def schedule(config, processer, schedule_time):
                         pending_tasks.extend(new_tasks)
                         pending_tasks.remove(task)
                         task.status = "D"
+                        clade2tasks[task.cladeid].append(task)
                     else: 
                         log.error("Task looks done but result files are not found")
                         task.status = "E"
@@ -230,6 +244,11 @@ def schedule(config, processer, schedule_time):
             
         time.sleep(WAITING_TIME)
         print 
+    for n in main_tree.traverse():
+        n.cladeid = get_cladeid(n.get_leaf_names())
+        print n.cladeid
+        for ts in clade2tasks.get(n.cladeid, []):
+            print "   ", ts
 
 if __name__ == "__main__":
     parser = ArgumentParser(description=__DESCRIPTION__, 
@@ -297,11 +316,12 @@ if __name__ == "__main__":
                            list_values=False, _inspec=True)
 
     config = ConfigObj("config", configspec=configspec)
-    print config["mafft"].__str__
+
     val = Validator()
-    if not config.validate(val):
-        print test
-        raise 
+    check = config.validate(val)
+    if not check:
+        print flatten_errors(config, check)
+        quitapp(ValueError("Error reading config file!"))
 
     base_dir = os.path.abspath(config["general"]["basedir"])
     if not os.path.exists(base_dir):
@@ -345,13 +365,13 @@ if __name__ == "__main__":
         schedule(config, template.pipeline, args.schedule_time)
     except KeyboardInterrupt: 
         log.critical("Interrupted!")
-    except: 
-        raise
+    except Exception, e: 
+        quitapp(e)
     finally:
-        log.info("@@6:Program ended.")
-        if CURSES:
-            curses.nocbreak()
-            curses.echo()
-            curses.endwin()
+        quitapp()
+
+  
+
+
             
 
