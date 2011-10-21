@@ -1,64 +1,18 @@
 #!/usr/bin/env python
 import os
-import time
 import imp
 import logging
-from collections import deque, defaultdict
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from configobj import ConfigObj, flatten_errors
 from validate import Validator
-from StringIO import StringIO
-from master_task import Task
-import signal 
-import re
 
 import sys
 sys.path.insert(0, "/home/jhuerta/_Devel/ete/2.2/")
 from ete_dev import SeqGroup
 
-from utils import get_cladeid
-
-try:
-    import curses
-except: 
-    CURSES = False
-    screen = sys.stdout
-else:
-    CURSES = True
-
-    def sigwinch_handler(n, frame):
-        WIN[0] = curses.initscr()
-        h, w = WIN[0].getmaxyx()
-        curses.resizeterm(h, w)
-        for w in WIN.values():
-            w.refresh()
-
-    dbg_h = 40
-    WIN = {}
-    WIN[0] = curses.initscr()
-    h, w = WIN[0].getmaxyx()
-    WIN[1] = curses.newwin(h-2, w/2, 1,1)
-    WIN[2] = curses.newwin(h-dbg_h, (w/2)-1, 1, (w/2)+2)
-    WIN[3] = curses.newwin(dbg_h, (w/2)-1, h-dbg_h-1, (w/2)+2)
-    WIN[3].box()
-
-    for w in WIN.values():
-        w.keypad(1)
-        w.idlok(True)
-        w.scrollok(True)
-
-    curses.noecho()
-    curses.cbreak()
-    curses.start_color()
-    curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLACK)
-    curses.init_pair(2, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
-    curses.init_pair(3, curses.COLOR_GREEN, curses.COLOR_BLACK)
-    curses.init_pair(4, curses.COLOR_YELLOW, curses.COLOR_BLACK)
-    curses.init_pair(5, curses.COLOR_RED, curses.COLOR_BLACK)
-    curses.init_pair(6, curses.COLOR_RED, curses.COLOR_WHITE)
-    # Resize window signal
-    signal.signal(signal.SIGWINCH, sigwinch_handler) 
-
+from master_task import Task
+from interface import app_wrapper
+from scheduler import schedule
 
 try:
     module_path = os.path.split(__file__)[0]
@@ -71,7 +25,6 @@ try:
     __DATE__ = open(os.path.join(module_path, "DATE")).read().strip()
 except: 
     __DATE__ = "unknown"
-
 
 __DESCRIPTION__ = """ 
 --------------------------------------------------------------------------------
@@ -91,227 +44,11 @@ __DESCRIPTION__ = """
 --------------------------------------------------------------------------------
 """ %(__VERSION__, __DATE__)
 
-RETRY_WHEN_ERRORS = False
-EXECUTE = True
-
-class Screen(StringIO):
-    # TAG USED TO CHANGE COLOR OF STRINGS
-    TAG = re.compile("@@(\d+)?,?(\d+):", re.MULTILINE)
-
-    def write(self, text):
-        if CURSES: 
-            self.write_curses(text)
-        else:
-            self.write_normal(text)
-
-    def write_normal(self, text):
-        text = re.sub(self.TAG, "", text)
-        self.stdout.write(text)
-
-    def write_curses(self, text):
-        formatstr = deque()
-        for m in re.finditer(self.TAG, text):
-            x1, x2  = m.span()
-            cindex = int(m.groups()[1])
-            windex = m.groups()[0]
-            formatstr.append([x1, x2, cindex, windex])
-        if not formatstr:
-            formatstr.append([None, 0, 1, 1])
-
-        if formatstr[0][1] == 0:
-            stop, start, cindex, windex = formatstr.popleft()
-            if windex is None:
-                windex = 1
-        else:
-            stop, start, cindex, windex = None, 0, 1, 1
-
-        while start is not None:
-            if formatstr:
-                next_stop, next_start, next_cindex, next_windex = formatstr.popleft()
-            else:
-                next_stop, next_start, next_cindex, next_windex = None, None, cindex, windex
-
-            face = curses.color_pair(cindex)
-            try:
-                WIN[int(windex)].addstr(text[start:next_stop], face)
-            except curses.error: 
-                WIN[int(windex)].addstr("???")
-            start = next_start
-            stop = next_stop
-            cindex = next_cindex
-            if next_windex is not None:
-                windex = next_windex
-        for w in WIN.values():
-            w.refresh()
-
-
-screen = Screen()
-screen.stdout = sys.stdout
-sys.stdout = screen
-
-
-__LOGINDENT__ = 0
-def set_logindent(x):
-    global __LOGINDENT__
-    __LOGINDENT__ = x
-
-def inc_logindent(x):
-    global __LOGINDENT__
-    __LOGINDENT__ += x
-
-def dec_logindent(x):
-    global __LOGINDENT__
-    __LOGINDENT__ -= x
-
-class IndentedFormatter(logging.Formatter):
-    def __init__( self, fmt=None, datefmt=None ):
-        logging.Formatter.__init__(self, fmt, datefmt)
-
-    def format(self, rec ):
-        rec.indent = ' ' * __LOGINDENT__
-        out = logging.Formatter.format(self, rec)
-        return out
-
-def quitapp(exception=None):
-    log.info("@@6:Program ended. Press any key to quit")
-    if CURSES:
-        WIN[0].getch()
-        curses.nocbreak()
-        curses.echo()
-        curses.endwin()
-    if exception:
-        raise exception
-
-def schedule(config, processer, schedule_time):
-    """ Main pipeline scheduler """ 
-    WAITING_TIME = schedule_time
-    # Pass seed files to processer to generate the initial task
-    pending_tasks, main_tree = processer(None, None, 
-                                         config)
-    clade2tasks = defaultdict(list)
-    # Then enters into the pipeline. 
-    while pending_tasks:
-        # A will modify pending_task within the loop, so I create a
-        # copy of it
-        for task in list(pending_tasks):
-            set_logindent(0)
-            log.info(task)
-            inc_logindent(2)
-            tdir = task.taskdir.replace(config["general"]["basedir"], "")
-            tdir = tdir.lstrip("/")
-            log.info("TaskDir: %s" %tdir)
-            log.info("TaskJobs: %d" %len(task.jobs))
-            inc_logindent(2)
-            for j in task.jobs:
-                log.info(j)
-            inc_logindent(-2)
-
-            if task.status == "W":
-                task.dump_job_commands()
-                task.status = "R"
-                if EXECUTE: 
-                    log.info("Running jobs..")
-                    os.system("sh %s" %task.jobs_file)
-
-            if task.status == "R":
-                log.info("Task is marked as Running")
-                jobs_status = task.get_jobs_status()
-                log.info("JobStatus: %s" %jobs_status)
-                if jobs_status == set("D"):
-                    task.finish()
-                    if task.check():
-                        inc_logindent(3)
-                        new_tasks, main_tree = processer(task, main_tree, 
-                                                         config)
-                        inc_logindent(-3)
-                        pending_tasks.extend(new_tasks)
-                        pending_tasks.remove(task)
-                        task.status = "D"
-                        clade2tasks[task.cladeid].append(task)
-                    else: 
-                        log.error("Task looks done but result files are not found")
-                        task.status = "E"
-                elif "E" in jobs_status:
-                    task.status = "E"
-
-            elif task.status == "E":
-                log.error("Task is marked as ERROR")
-                if RETRY_WHEN_ERRORS:
-                    log.info("Remarking task as undone to retry")
-                    task.retry()
-            elif task.status == "D":
-                log.info("Task is DONE")
-            
-        time.sleep(WAITING_TIME)
-        print 
-    for n in main_tree.traverse():
-        n.cladeid = get_cladeid(n.get_leaf_names())
-        print n.cladeid
-        for ts in clade2tasks.get(n.cladeid, []):
-            print "   ", ts
-
-if __name__ == "__main__":
-    parser = ArgumentParser(description=__DESCRIPTION__, 
-                            formatter_class=RawDescriptionHelpFormatter)
-    # name or flags - Either a name or a list of option strings, e.g. foo or -f, --foo.
-    # action - The basic type of action to be taken when this argument is encountered at the command line. (store, store_const, store_true, store_false, append, append_const, version)
-    # nargs - The number of command-line arguments that should be consumed. (N, ? (one or default), * (all 1 or more), + (more than 1) )
-    # const - A constant value required by some action and nargs selections. 
-    # default - The value produced if the argument is absent from the command line.
-    # type - The type to which the command-line argument should be converted.
-    # choices - A container of the allowable values for the argument.
-    # required - Whether or not the command-line option may be omitted (optionals only).
-    # help - A brief description of what the argument does.
-    # metavar - A name for the argument in usage messages.
-    # dest - The name of the attribute to be added to the object returned by parse_args().
-
-    parser.add_argument("-c", "--config", dest="configfile", 
-                        type=str, required=True, 
-                        help="""A valid config file to execute the pipeline""")
-
-    parser.add_argument("-a", "--aa-seed-file", dest="aa_seed_file", 
-                        type=str, 
-                        help="""Initial multi sequence file with protein sequences""")
-
-    parser.add_argument("-n", "--nt-seed-file", dest="nt_seed_file", 
-                        type=str, 
-                        help="""Initial multi sequence file with nucleotide sequences""")
-
-    parser.add_argument("-t", "--schedule-time", dest="schedule_time", 
-                        type=int, default=1,
-                        help="""Schedule time in seconds. """)
-
-    parser.add_argument("-v", "--verbose", dest="verbose", 
-                        action="store_true",
-                        help="""Print all info messages """)
-
-    parser.add_argument("-r", "--retry-error-jobs", dest="retry_error_jobs", 
-                        action="store_true",
-                        help="""Try to relaunch jobs marked as error """)
-
-    parser.add_argument("-x", "--execute-inplace", dest="execute-inplace", 
-                        action="store_true",
-                        help="""Jobs are launched in this machine """)
- 
-    args = parser.parse_args()
+def main(args):
+    log = logging.getLogger("main")
 
     print __DESCRIPTION__
 
-    # Prepares main log
-    log = logging.getLogger("main")
-
-    log.setLevel(logging.DEBUG)
-    log_format = IndentedFormatter("%(levelname) 7s@@1: - %(indent)s %(message)s")
-    logging.addLevelName(10, "@@3,2:DEBUG")
-    logging.addLevelName(20, "@@1,3:INFO")
-    logging.addLevelName(30, "@@2,4:WARNING")
-    logging.addLevelName(40, "@@2,5:ERROR")
-    logging.addLevelName(50, "@@2,6:CRITICAL")
-
-    log_handler = logging.StreamHandler(screen)
-    log_handler.setFormatter(log_format)
-    log.addHandler(log_handler)
-  
     configspec = ConfigObj("specs", 
                            list_values=False, _inspec=True)
 
@@ -321,7 +58,7 @@ if __name__ == "__main__":
     check = config.validate(val)
     if not check:
         print flatten_errors(config, check)
-        quitapp(ValueError("Error reading config file!"))
+        raise ValueError("Error reading config file!")
 
     base_dir = os.path.abspath(config["general"]["basedir"])
     if not os.path.exists(base_dir):
@@ -361,17 +98,54 @@ if __name__ == "__main__":
 
     config["general"]["aa_seed"] =  seed_files.get("aa_seed", None)
     config["general"]["nt_seed"] =  seed_files.get("nt_seed", None)
-    try:
-        schedule(config, template.pipeline, args.schedule_time)
-    except KeyboardInterrupt: 
-        log.critical("Interrupted!")
-    except Exception, e: 
-        quitapp(e)
-    finally:
-        quitapp()
 
-  
+    schedule(config, template.pipeline, args.schedule_time, args.execute, args.retry)
 
 
-            
+if __name__ == "__main__":
+    parser = ArgumentParser(description=__DESCRIPTION__, 
+                            formatter_class=RawDescriptionHelpFormatter)
+    # name or flags - Either a name or a list of option strings, e.g. foo or -f, --foo.
+    # action - The basic type of action to be taken when this argument is encountered at the command line. (store, store_const, store_true, store_false, append, append_const, version)
+    # nargs - The number of command-line arguments that should be consumed. (N, ? (one or default), * (all 1 or more), + (more than 1) )
+    # const - A constant value required by some action and nargs selections. 
+    # default - The value produced if the argument is absent from the command line.
+    # type - The type to which the command-line argument should be converted.
+    # choices - A container of the allowable values for the argument.
+    # required - Whether or not the command-line option may be omitted (optionals only).
+    # help - A brief description of what the argument does.
+    # metavar - A name for the argument in usage messages.
+    # dest - The name of the attribute to be added to the object returned by parse_args().
 
+    parser.add_argument("-c", "--config", dest="configfile", 
+                        type=str, required=True, 
+                        help="""A valid config file to execute the pipeline""")
+
+    parser.add_argument("-a", "--aa-seed-file", dest="aa_seed_file", 
+                        type=str, 
+                        help="""Initial multi sequence file with protein sequences""")
+
+    parser.add_argument("-n", "--nt-seed-file", dest="nt_seed_file", 
+                        type=str, 
+                        help="""Initial multi sequence file with nucleotide sequences""")
+
+    parser.add_argument("-t", "--schedule-time", dest="schedule_time", 
+                        type=int, default=1,
+                        help="""Schedule time in seconds. """)
+
+    parser.add_argument("-r", "--retry-error-jobs", dest="retry", 
+                        action="store_true",
+                        help="""Try to relaunch jobs marked as error """)
+
+    parser.add_argument("-x", "--execute-inplace", dest="execute", 
+                        action="store_true",
+                        help="""Jobs are launched in this machine """)
+
+    parser.add_argument("-I", "--disable-advanced-interface", dest="disable_interface", 
+                        action="store_true",
+                        help="""When used, log messages are redirected to the standard output. It disable color based interface.""")
+ 
+    args = parser.parse_args()
+    
+    # Start the application
+    app_wrapper(main, args)
