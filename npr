@@ -45,8 +45,8 @@ __DESCRIPTION__ = """
 """ %(__VERSION__, __DATE__)
 
 def main(args):
-    log = logging.getLogger("main")
 
+    log = logging.getLogger("main")
     print __DESCRIPTION__
 
     configspec = ConfigObj("specs", 
@@ -146,6 +146,6 @@ if __name__ == "__main__":
                         help="""When used, log messages are redirected to the standard output. It disable color based interface.""")
  
     args = parser.parse_args()
-    
+   
     # Start the application
     app_wrapper(main, args)
