@@ -251,4 +251,4 @@ class WebTreeApplication(object):
 
 def _render_tree(t, img_path, display, layout=None, tree_style=None):
     os.environ["DISPLAY"]=display
-    return t.render(img_path, layout = layout, tree_style)
+    return t.render(img_path, layout = layout, tree_style=tree_style)
