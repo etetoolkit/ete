@@ -78,15 +78,21 @@ def main(args):
     # format? names?
     visited_seqs = set()
     seed_files = {}
-    for label, seq_file in [["aa_seed", args.aa_seed_file],
-                            ["nt_seed", args.nt_seed_file]]:
+    seq2aalength = {}
+    seq2ntlength = {}
+    for label, seq_file, seq2length in [["aa_seed", args.aa_seed_file, seq2aalength],
+                                        ["nt_seed", args.nt_seed_file, seq2ntlength]]:
         if seq_file: 
-            seqs = SeqGroup(seq_file)
-            for i,n in seqs.id2name.iteritems():
+            SEQS = SeqGroup(seq_file)
+            # Loads seq lengths
+            for seqname, seq, comment in SEQS.iter_entries():
+                seq2length[seqname] = len(seq)
+
+            for i,n in SEQS.id2name.iteritems():
                 if len(n)>10: 
-                    seqs.id2name[i] = n[:10]
+                    SEQS.id2name[i] = n[:10]
                     log.warning("sequence names %s was truncated to 10 chars: %s " %(n, n[:10]))
-            values = seqs.id2name.values()
+            values = SEQS.id2name.values()
             if len(values) != len(set(values)):
                 raise Exception("Duplicated sequence names, execution aborted.")
             if visited_seqs and set(values) != visited_seqs:
@@ -94,10 +100,19 @@ def main(args):
             visited_seqs.update(values)
             fullpath = os.path.join(base_dir, label+".fasta")
             seed_files[label] = fullpath
-            seqs.write(outfile=fullpath)
+            SEQS.write(outfile=fullpath)
 
     config["general"]["aa_seed"] =  seed_files.get("aa_seed", None)
     config["general"]["nt_seed"] =  seed_files.get("nt_seed", None)
+
+    if seq2ntlength and seq2aalength:
+        for seqname, length in seq2aalength.iteritems():
+            try:
+                if length != seq2ntlength[seqname]/3.0:
+                    raise ValueError("The length of [%s] CDS does not match with the protein sequence. ")
+            except KeyError:
+                raise KeyError("aa and nt files do not contain the same sequence identifiers. ")
+        
 
     schedule(config, template.pipeline, args.schedule_time, args.execute, args.retry)
 
