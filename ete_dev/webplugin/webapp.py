@@ -33,7 +33,7 @@ class WebTreeApplication(object):
             "DISPLAY" :":0" # Used by ete to render images
             }
 
-    def set_tree_size(w, h, units="px"):
+    def set_tree_size(self, w, h, units="px"):
         self._width = w
         self._height = j
         self._size_units = units
