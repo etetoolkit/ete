@@ -140,7 +140,11 @@ class WebTreeApplication(object):
 
         layout_fn = self._treeid2layout.get(treeid, self._layout)
         mapid = "img_map_"+str(time.time())
-        img_map = _render_tree(t, img_path, self.CONFIG["DISPLAY"], layout = layout_fn, tree_style = self._tree_style)
+        img_map = _render_tree(t, img_path, self.CONFIG["DISPLAY"], layout = layout_fn, 
+                               tree_style = self._tree_style, 
+                               w=self._width,
+                               h=self._height,
+                               units=self._size_units)
         html_map = self._get_html_map(img_map, treeid, mapid, t)
         for n in t.traverse():
             self._treeid2index[treeid][str(n._nid)]=n
@@ -256,7 +260,8 @@ class WebTreeApplication(object):
         else:
             return  '\n'.join(map(str, environ.items())) + str(self.queries) + '\t\n'.join(environ['wsgi.input'])
 
-def _render_tree(t, img_path, display, layout=None, tree_style=None):
+def _render_tree(t, img_path, display, layout=None, tree_style=None, 
+                 w=None, h=None, units="px"):
     os.environ["DISPLAY"]=display
     return t.render(img_path, layout = layout, tree_style=tree_style, 
-                    w=self._width, h=self._height, units=self._size_units)
+                    w=w, h=h, units=units)
