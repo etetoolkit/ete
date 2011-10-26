@@ -35,7 +35,7 @@ class WebTreeApplication(object):
 
     def set_tree_size(self, w, h, units="px"):
         self._width = w
-        self._height = j
+        self._height = h
         self._size_units = units
 
     def set_external_app_handler(self, handler):
