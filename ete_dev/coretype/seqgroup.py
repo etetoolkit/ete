@@ -130,21 +130,13 @@ class SeqGroup(object):
         return zip(names, seqs, comments)
 
     def set_seq(self, name, seq, comments = []):
-        """Updates or creates the sequence of "name" """
+        """Updates or adds a sequence """
         name = name.strip()
         seq = seq.replace(" ", "")
         seq = seq.replace("\t", "")
         seq = seq.replace("\n", "")
         seq = seq.replace("\r", "")
-        seqid = self.name2id.get(name, None)
-        if not seqid:
-            for i in xrange(len(self.id2seq)):
-                if i not in self.id2seq:
-                    seqid = i
-                    break
-            if not seqid:
-                seqid = i+1
-
+        seqid = self.name2id.get(name, max([0]+self.name2id.values())+1)
         self.name2id[name] = seqid
         self.id2name[seqid] = name
         self.id2comment[seqid] = comments

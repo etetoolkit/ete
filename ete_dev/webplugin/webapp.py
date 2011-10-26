@@ -4,7 +4,6 @@ import time
 import cgi
 from hashlib import md5
 
-
 ALL = ["WebTreeApplication"]
 
 class WebTreeApplication(object):
@@ -19,6 +18,9 @@ class WebTreeApplication(object):
         self.actions = []
         self._layout = None
         self._tree_style = None
+        self._width = None
+        self._height = None
+        self._size_units = "px" 
         self._custom_tree_renderer = None
         self._treeid2layout = {}
         self._external_app_handler = None
@@ -30,6 +32,11 @@ class WebTreeApplication(object):
             "temp_url":"http://localhost/webplugin/tmp",
             "DISPLAY" :":0" # Used by ete to render images
             }
+
+    def set_tree_size(w, h, units="px"):
+        self._width = w
+        self._height = j
+        self._size_units = units
 
     def set_external_app_handler(self, handler):
         self._external_app_handler = handler
@@ -251,4 +258,5 @@ class WebTreeApplication(object):
 
 def _render_tree(t, img_path, display, layout=None, tree_style=None):
     os.environ["DISPLAY"]=display
-    return t.render(img_path, layout = layout, tree_style=tree_style)
+    return t.render(img_path, layout = layout, tree_style=tree_style, 
+                    w=self._width, h=self._height, units=self._size_units)
