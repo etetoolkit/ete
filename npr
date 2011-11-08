@@ -60,14 +60,19 @@ def main(args):
         print flatten_errors(config, check)
         raise ValueError("Error reading config file!")
 
-    base_dir = os.path.abspath(config["general"]["basedir"])
-    if not os.path.exists(base_dir):
-        os.mkdir(base_dir)
+    base_dir = os.path.abspath(config["main"]["basedir"])
+    gallery_dir = os.path.join(base_dir, "gallery")
+    snapshots_dir = os.path.join(base_dir, "tree_snapshots")
+    try:
+        os.makedirs(gallery_dir)
+        os.makedirs(snapshots_dir)
+    except OSError:
+        pass
 
-    config["general"]["basedir"] = base_dir
+    config["main"]["basedir"] = base_dir
     Task.global_config["basedir"] = base_dir
     # Load pipeline
-    pipeline_module = config["general"]["pipeline"]
+    pipeline_module = config["main"]["pipeline"]
     if os.path.isfile(pipeline_module):
         template = imp.load_module("__main__.standard1", open(pipeline_module),
                                    pipeline_module, ["py", "r", imp.PY_SOURCE])
@@ -102,8 +107,8 @@ def main(args):
             seed_files[label] = fullpath
             SEQS.write(outfile=fullpath)
 
-    config["general"]["aa_seed"] =  seed_files.get("aa_seed", None)
-    config["general"]["nt_seed"] =  seed_files.get("nt_seed", None)
+    config["main"]["aa_seed"] =  seed_files.get("aa_seed", None)
+    config["main"]["nt_seed"] =  seed_files.get("nt_seed", None)
 
     if seq2ntlength and seq2aalength:
         for seqname, length in seq2aalength.iteritems():
