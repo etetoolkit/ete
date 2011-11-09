@@ -122,9 +122,10 @@ class _GUI(QtGui.QMainWindow):
 
     @QtCore.pyqtSignature("")
     def on_actionSearchNode_triggered(self):
+        setup = self.searchDialog._conf
+        setup.attrValue.setFocus()
         ok = self.searchDialog.exec_()
         if ok:
-            setup = self.searchDialog._conf
             mType = setup.attrType.currentIndex()
             aName = str(setup.attrName.text())
             if mType >= 2 and mType <=6:
@@ -159,13 +160,13 @@ class _GUI(QtGui.QMainWindow):
                     continue
                 if hasattr(n, aName) \
                         and cmpFn(getattr(n, aName), aValue ):
-                    self.scene.highlight_node(n)
+                    self.scene.view.highlight_node(n)
 
     @QtCore.pyqtSignature("")
     def on_actionClear_search_triggered(self):
         # This could be much more efficient
         for n in self.view.n2hl.keys():
-            self.scene.unhighlight_node(n)
+            self.scene.view.unhighlight_node(n)
 
     @QtCore.pyqtSignature("")
     def on_actionBranchLength_triggered(self):
@@ -563,7 +564,7 @@ class _TreeView(QtGui.QGraphicsView):
             self.scale(xfactor, yfactor)
 
     def highlight_node(self, n, fullRegion=False):
-        #self.unhighlight_node(n)
+        self.unhighlight_node(n)
         fgcolor = "red"
         bgcolor = "gray"
         item = self.scene().n2i[n]
