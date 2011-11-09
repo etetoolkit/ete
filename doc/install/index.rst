@@ -66,9 +66,9 @@ Alternatively, you can download the last version of ETE from
 http://pypi.python.org/pypi/ete2/, decompress the file and install the
 package by executing the setup installer:
 
-:: highlight bash
+::
 
-  $  python setup.py install 
+  $ python setup.py install 
  
 MacOS
 =======

@@ -1,8 +1,31 @@
 {% extends "defindex.html" %}
 
-{% block tables %}
+{% block tables %} 
+<p style="padding-right:30px;padding-left:30px;font-size:10.5pt;">
+ETE is a python programming toolkit that assists in the <b>automated
+manipulation, analysis and visualization of phylogenetic trees</b>. It
+provides a wide range of tree handling options, node annotation
+features, programmatic access to the phylomeDB database (containing
+thousands of pre-calculated phylogenetic trees), and automatic
+orthology and paralogy prediction.  In addition, ETE implements an
+interactive tree visualization system as well as a highly customizable
+tree drawing engine to create <b>PDF and SVG tree images</b>. Note
+that, although ETE is mainly developed as a tool for phylogenetic
+analysis, it can also be used to deal with clustering trees or any
+other data that can be represented as a hierarchical tree.
+</p>
+<p style="padding-right:30px;padding-left:30px;font-size:9pt;">
+If you use ETE to analyze or process results which are planned to be
+part of a published work, please do not forget to support ETE's
+development by citing:
+<br>
+<a href="http://www.biomedcentral.com/1471-2105/11/24">Jaime
+Huerta-Cepas, Joaquín Dopazo and Toni Gabaldón. ETE: a python
+Environment for Tree Exploration. BMC Bioinformatics 2010, 11:24.</a>
+</li>
+</p>
   <table class="contentstable" align="center"><tr>
-     
+    
     <td width="50%">
       <p class="biglink"><a class="biglink" href="{{ pathto("changelog/changelog" + version) }}">What's new in ETE {{ version }}?</a><br/>
          <span class="linkdescr"><a href="{{ pathto("changelog/index") }}">Check older changes</a></span></span></p>
@@ -26,16 +49,16 @@
     </td></tr>
   </table>
 
-  <table class="contentstable" align="center"><tr>
-    <td width="50%">
-      <p class="biglink"><a class="biglink" href="{{ pathto("about") }}">About ETE</a><br/>
-        <span class="linkdescr">Behind the scenes</span></p>
-      <p class="biglink"><a class="biglink" href="{{ pathto("bugs") }}">Bugs?</a></p>
-    </td><td width="50%">
-      <p class="biglink"><a class="biglink" href="{{ pathto("ack") }}">Acknowledgments</a></p>
-      <p class="biglink"><a class="biglink" href="{{ pathto("license") }}">License</a></p>
-    </td></tr>
-  </table>
+  <!-- <table class="contentstable" align="center"><tr> -->
+  <!--   <td width="50%"> -->
+  <!--     <p class="biglink"><a class="biglink" href="{{ pathto("about") }}">About ETE</a><br/> -->
+  <!--       <span class="linkdescr">Behind the scenes</span></p> -->
+  <!--     <p class="biglink"><a class="biglink" href="{{ pathto("bugs") }}">Bugs?</a></p> -->
+  <!--   </td><td width="50%"> -->
+  <!--     <p class="biglink"><a class="biglink" href="{{ pathto("ack") }}">Acknowledgments</a></p> -->
+  <!--     <p class="biglink"><a class="biglink" href="{{ pathto("license") }}">License</a></p> -->
+  <!--   </td></tr> -->
+  <!-- </table> -->
 
 
   <div class="note" style="border:0px;text-align:center;background-color:#ffffff">
@@ -53,5 +76,15 @@
   <div class="note" style="text-align:center;background-color:#D0ECa2">
     For ETE related news and announcements, visit the <a href="http://ete.cgenomics.org" target="_blank"> main ETE website </a>
   </div>
+  <!-- <div  style="font-family:courier;text-align:justify;margin-top:10px;font-size:10pt;background-color:#fff;"> -->
+  <!--   ETE is free software: you can redistribute it and/or modify it -->
+  <!--   under the terms of the GNU General Public License as published by -->
+  <!--   the Free Software Foundation, either version 3 of the License, or -->
+  <!--   (at your option) any later version. ETE is distributed in the -->
+  <!--   hope that it will be useful, but WITHOUT ANY WARRANTY; without -->
+  <!--   even the implied warranty of MERCHANTABILITY or FITNESS FOR A -->
+  <!--   PARTICULAR PURPOSE.  See the GNU General Public License for more -->
+  <!--   details. -->
+  <!-- </div> -->
 
 {% endblock %}

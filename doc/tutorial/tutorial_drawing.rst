@@ -31,9 +31,6 @@ Images can be rendered as **PNG**, **PDF** or **SVG** files using the
 built-in Graphical User Interface (GUI) invoked by the
 :func:`TreeNode.show` method.
 
-
-
-
 Interactive visualization of trees
 ==================================
 
@@ -123,7 +120,7 @@ tree drawing modes.
   t = Tree( "((a,b),c);" )
   circular_style = TreeStyle()
   circular_style.mode = "c" # draw tree in circular mode
-  circular_mode.scale = 20
+  circular_style.scale = 20
   t.render("mytree.png", w=183, units="mm", tree_style=circular_style)
   
 .. warning:: 
@@ -425,7 +422,6 @@ properties, style and faces can be then modified on the fly and return
 it to the drawer engine. Thus, layout functions can be understood as a
 collection of rules controlling how different nodes should be drawn. 
 
-
 :: 
 
   from ete_dev import Tree
@@ -440,8 +436,6 @@ collection of rules controlling how different nodes should be drawn.
 
          node.img_style["size"] = 15
          node.img_style["color"] = "red"
-
-       
 
   # Basic tree style
   ts = TreeStyle()
