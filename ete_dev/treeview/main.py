@@ -411,7 +411,7 @@ class TreeStyle(object):
         self.aligned_header = FaceContainer()
         self.aligned_foot = FaceContainer()
 
-        self.show_leaf_name = False
+        self.show_leaf_name = True
         self.show_branch_length = False
         self.show_branch_support = False
 

@@ -42,10 +42,17 @@ Then, edit ``/etc/X11/xdm/xdm-config`` and set following values:
   !
   DisplayManager*authComplain:    false
 
-
 Do not forget to restart your xdm server. 
 
 ``/etc/init.d/xdm restart``
+
+
+Note that this is not necessary if you are already in desktop
+system. In this case, you only need to give permissions to the
+web-server (i.e. apache) to connect your display. Usually: 
+
+``xhost +``
+
 
 ======================================
 Configuring your web sever
@@ -86,7 +93,8 @@ server (usually at ``/ete/apache2/sites-available/default``):
                                                                                                                                                                                                                
    WSGIDaemonProcess eteApp user=www-data group=www-data processes=1 threads=1                                                                                                                                 
    WSGIProcessGroup eteApp                                                                                                                                                                                     
-                                                                                                                                                                                                               
+   WSGIApplicationGroup %{GLOBAL}
+                                                                                                                                                                                                        
    <Directory /var/www/webplugin/>                                                                                                                                                                                  
           Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch                                                                                                                                                   
           SetHandler wsgi-script                                                                                                                                                                               
