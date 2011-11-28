@@ -46,11 +46,11 @@ def aligned_faces(node):
             F = faces.TextFace("ABCDEFGHIJK"[0:random.randint(1,11)])
             F.border.width = 1
             F.border.line_style = 1
-            F.background.color = "lightgreen"
-            F.margin_border.width = 1
-            F.margin_border.width = 1
-            F.margin_background.color = "darkgreen"
-            F.margin_border.width = 2
+            F.inner_background.color = "lightgreen"
+            F.border.width = 1
+            F.inner_border.width = 1
+            F.background.color = "darkgreen"
+            F.border.width = 2
             F.vt_align = random.randint(0,4)
             F.hz_align = random.randint(0,4)
             F.margin_bottom = random.randint(1, 20)
