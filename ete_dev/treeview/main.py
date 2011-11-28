@@ -45,12 +45,12 @@ VALID_NODE_STYLE_KEYS = set([i[0] for i in NODE_STYLE_DEFAULT]) | set(["_faces"]
 
 class _Border(object):
     def __init__(self):
-        self.width = 0
+        self.width = None
         self.type = 0
         self.color = None 
 
     def apply(self, item):
-        if self.width:
+        if self.width is not None:
             r = item.boundingRect()
             border = QGraphicsRectItem(r)
             border.setParentItem(item)
