@@ -26,11 +26,11 @@ rs1.margin_top = 10
 rs1.margin_bottom = 50
 rs1.margin_left = 40
 rs1.margin_right = 40
-rs1.margin_border.width = 1
-rs1.background.color = "lightgreen"
 rs1.border.width = 1
-rs1.border.line_style = 1
-rs1.border.color= "red"
+rs1.background.color = "lightgreen"
+rs1.inner_border.width = 0
+rs1.inner_border.line_style = 1
+rs1.inner_border.color= "red"
 rs1.opacity = 0.6
 rs1.hz_align = 2 # 0 left, 1 center, 2 right
 rs1.vt_align = 1 # 0 left, 1 center, 2 right
@@ -82,7 +82,7 @@ I.aligned_header.add_face(t1, 1)
 I.aligned_header.add_face(t1, 2)
 I.aligned_header.add_face(t1, 3)
 t1.hz_align = 1 # 0 left, 1 center, 2 right 
-t1.margin_border.width = 1
+t1.border.width = 1
 
 I.aligned_foot.add_face(t2, column = 0)
 I.aligned_foot.add_face(t2, 1)
