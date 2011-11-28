@@ -32,8 +32,8 @@ NODE_STYLE_DEFAULT = [
     ["size",             3,            _SIZE_CHECKER                            ], # node circle size 
     ["shape",            "circle",     _NODE_TYPE_CHECKER                       ], 
     ["draw_descendants", True,         _BOOL_CHECKER                            ],
-    ["hz_line_width",          1,      _SIZE_CHECKER                            ],
-    ["vt_line_width",          1,      _SIZE_CHECKER                            ]
+    ["hz_line_width",          0,      _SIZE_CHECKER                            ],
+    ["vt_line_width",          0,      _SIZE_CHECKER                            ]
     ]
 
 TREE_STYLE_CHECKER = {
@@ -131,8 +131,20 @@ class NodeStyle(dict):
     :argument 3 size: integer number
     :argument "circle" shape: "circle", "square" or "sphere"
     :argument True draw_descendants: Mark an internal node as a leaf. 
-    :argument 1 hz_line_width: integer number 
-    :argument 1 vt_line_width: integer number
+
+    :argument 0 hz_line_width: integer number representing the width
+                               of the line in pixels.  A line width of
+                               zero indicates a cosmetic pen. This
+                               means that the pen width is always
+                               drawn one pixel wide, independent of
+                               the transformation set on the painter.
+
+    :argument 0 vt_line_width: integer number representing the width
+                               of the line in pixels.  A line width of
+                               zero indicates a cosmetic pen. This
+                               means that the pen width is always
+                               drawn one pixel wide, independent of
+                               the transformation set on the painter.
     
     """
 

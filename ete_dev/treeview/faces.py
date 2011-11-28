@@ -130,10 +130,25 @@ class Face(object):
       (i.e. when circular mode is enabled and face occupies an inverted position.)
     :param 0 hz_align: 0 left, 1 center, 2 right
     :param 1 vt_align: 0 top, 1 center, 2 bottom
-    :param background: background of face
-    :param border: border line around face
-    :param inner_border: border of the face ignoring margins. 
-    :param inner_background: background of the face ignoring margins. 
+    :param background: background of face plus its margins
+    :param inner_background: background of the face
+
+    :param None border: Border around face margins. Integer number
+                        representing the width of the face border line
+                        in pixels.  A line width of zero indicates a
+                        cosmetic pen. This means that the pen width is
+                        always drawn one pixel wide, independent of
+                        the transformation set on the painter. A
+                        "None" value means invisible border.
+
+    :param None inner_border: Border around face . Integer number
+                              representing the width of the face
+                              border line in pixels.  A line width of
+                              zero indicates a cosmetic pen. This
+                              means that the pen width is always drawn
+                              one pixel wide, independent of the
+                              transformation set on the painter. A
+                              "None" value means invisible border.
 
     """
 
