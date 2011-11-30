@@ -226,15 +226,15 @@ def render(root_node, img, hide_root=False):
     parent.bg_layer =  _EmptyItem(parent)
     parent.tree_layer = _EmptyItem(parent)
     parent.float_layer = _EmptyItem(parent)
+    parent.float_behind_layer = _EmptyItem(parent)
+
     TREE_LAYERS = [parent.bg_layer, parent.tree_layer, parent.float_layer]
 
     parent.bg_layer.setZValue(0)
     parent.tree_layer.setZValue(2)
 
-    if img.floating_faces_under_tree:
-        parent.float_layer.setZValue(1)
-    else:
-        parent.float_layer.setZValue(3)
+    parent.float_behind_layer.setZValue(1)
+    parent.float_layer.setZValue(3)
 
     visited = set()
     to_visit = []
@@ -331,7 +331,7 @@ def render(root_node, img, hide_root=False):
 
     # The order by which the following methods IS IMPORTANT
 
-    render_floatings(n2i, n2f, img, parent.float_layer)
+    render_floatings(n2i, n2f, img, parent.float_layer, parent.float_behind_layer)
 
     aligned_region_width = render_aligned_faces(img, mainRect, parent.tree_layer, n2i, n2f)
    
@@ -741,33 +741,42 @@ def set_style(n, layout_func):
     if layout_func:
         layout_func(n)
     
-def render_floatings(n2i, n2f, img, float_layer):
-    floating_faces = [ [node, fb["float"]] for node, fb in n2f.iteritems() if "float" in fb]
-    for node, fb in floating_faces:
-        item = n2i[node]
-        fb.setParentItem(float_layer)
-        if item.extra_branch_line:
-            xtra =  item.extra_branch_line.line().dx()
-        else:
-            xtra = 0
+def render_floatings(n2i, n2f, img, float_layer, float_behind_layer):
+    #floating_faces = [ [node, fb["float"]] for node, fb in n2f.iteritems() if "float" in fb]
 
-        if img.mode == "c":
-            # Floatings are positioned over branches 
-            crender.rotate_and_displace(fb, item.rotation, fb.h, item.radius - item.nodeRegion.width()+ xtra)
+    for node, faces in n2f.iteritems():
+        face_set = [ [float_layer, faces.get("float", None)],
+                     [float_behind_layer, faces.get("float-behind",None)]]
 
-            # Floatings are positioned starting from the node circle 
-            #crender.rotate_and_displace(fb, item.rotation, fb.h, item.radius - item.nodeRegion.width())
-
-        elif img.mode == "r":
-            fb.setPos(item.content.mapToScene(0, item.center-(fb.h/2)))
-
-        z = item.zValue()
-        if not img.children_faces_on_top:
-            z = -z
-
-        fb.setZValue(z)
-        fb.update_columns_size()
-        fb.render()
+        for parent_layer,fb in face_set:
+            if not fb:
+                continue
+            
+            item = n2i[node]
+            fb.setParentItem(parent_layer)
+             
+            if item.extra_branch_line:
+                xtra =  item.extra_branch_line.line().dx()
+            else:
+                xtra = 0
+             
+            if img.mode == "c":
+                # Floatings are positioned over branches 
+                crender.rotate_and_displace(fb, item.rotation, fb.h, item.radius - item.nodeRegion.width()+ xtra)
+             
+                # Floatings are positioned starting from the node circle 
+                #crender.rotate_and_displace(fb, item.rotation, fb.h, item.radius - item.nodeRegion.width())
+             
+            elif img.mode == "r":
+                fb.setPos(item.content.mapToScene(0, item.center-(fb.h/2)))
+             
+            z = item.zValue()
+            if not img.children_faces_on_top:
+                z = -z
+             
+            fb.setZValue(z)
+            fb.update_columns_size()
+            fb.render()
 
 def render_aligned_faces(img, mainRect, parent, n2i, n2f):
     # Prepares and renders aligned face headers. Used to later
