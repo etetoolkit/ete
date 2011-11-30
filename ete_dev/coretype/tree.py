@@ -1547,9 +1547,21 @@ class TreeNode(object):
         if type(node_style) is NodeStyle:
             self.img_style = node_style
        
+    def phonehome(self):
+        import urllib2
+        print "Calling home..."
+        try:
+            v = __VERSION__
+        except Exception: 
+            v = "Unknown"
+        f = urllib2.urlopen('http://ete.cgenomics.org/et_phone_home.php?ver=%s' %v)
+        print f.read()
+        if f: 
+            print "got answer!" 
+            yourmsg = raw_input("Type your message:")
+       
 
 def _translate_nodes(root, *nodes):
-    
     name2node = dict([ [n, None] for n in nodes if type(n) is str])
     for n in root.traverse():
         if n.name in name2node:

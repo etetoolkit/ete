@@ -33,7 +33,6 @@ try:
     from treeview import layouts
     from treeview.svg_colors import SVG_COLORS
 
-
 except ImportError, e:
     print >>stderr, "Treeview module could not be loaded"
     print e
