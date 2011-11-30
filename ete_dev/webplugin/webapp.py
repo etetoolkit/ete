@@ -4,7 +4,6 @@ import time
 import cgi
 from hashlib import md5
 
-
 ALL = ["WebTreeApplication"]
 
 class WebTreeApplication(object):
@@ -18,7 +17,10 @@ class WebTreeApplication(object):
         self.TREE_TARGET_ACTIONS = ["layout", "search"]
         self.actions = []
         self._layout = None
-        self._img_properties = None
+        self._tree_style = None
+        self._width = None
+        self._height = None
+        self._size_units = "px" 
         self._custom_tree_renderer = None
         self._treeid2layout = {}
         self._external_app_handler = None
@@ -30,6 +32,11 @@ class WebTreeApplication(object):
             "temp_url":"http://localhost/webplugin/tmp",
             "DISPLAY" :":0" # Used by ete to render images
             }
+
+    def set_tree_size(self, w, h, units="px"):
+        self._width = w
+        self._height = h
+        self._size_units = units
 
     def set_external_app_handler(self, handler):
         self._external_app_handler = handler
@@ -46,8 +53,8 @@ class WebTreeApplication(object):
     def set_default_layout_fn(self, layout_fn):
         self._layout = layout_fn
 
-    def set_img_properties(self, handler):
-        self._img_properties = handler
+    def set_tree_style(self, handler):
+        self._tree_style = handler
 
     def _get_html_map(self, img_map, treeid, mapid, tree):
         # Scans for node-enabled actions.
@@ -133,7 +140,11 @@ class WebTreeApplication(object):
 
         layout_fn = self._treeid2layout.get(treeid, self._layout)
         mapid = "img_map_"+str(time.time())
-        img_map = _render_tree(t, img_path, self.CONFIG["DISPLAY"], layout = layout_fn, img_properties = self._img_properties)
+        img_map = _render_tree(t, img_path, self.CONFIG["DISPLAY"], layout = layout_fn, 
+                               tree_style = self._tree_style, 
+                               w=self._width,
+                               h=self._height,
+                               units=self._size_units)
         html_map = self._get_html_map(img_map, treeid, mapid, t)
         for n in t.traverse():
             self._treeid2index[treeid][str(n._nid)]=n
@@ -249,6 +260,8 @@ class WebTreeApplication(object):
         else:
             return  '\n'.join(map(str, environ.items())) + str(self.queries) + '\t\n'.join(environ['wsgi.input'])
 
-def _render_tree(t, img_path, display, layout=None, img_properties=None):
+def _render_tree(t, img_path, display, layout=None, tree_style=None, 
+                 w=None, h=None, units="px"):
     os.environ["DISPLAY"]=display
-    return t.render(img_path, layout = layout, img_properties = img_properties)
+    return t.render(img_path, layout = layout, tree_style=tree_style, 
+                    w=w, h=h, units=units)

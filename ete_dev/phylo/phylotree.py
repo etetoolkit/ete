@@ -108,9 +108,6 @@ class PhyloNode(TreeNode):
                  sp_naming_function=_parse_species, format=0):
 
 
-
-
-
         # _update names?
         self._name = "NoName"
         self._species = "Unknown"
@@ -137,10 +134,11 @@ class PhyloNode(TreeNode):
         """ 
         None
         """
-        for n in self.iter_leaves():
-            n.features.add("species")
-            if fn:
+        if fn:
+            for n in self.traverse():
                 n._speciesFunction = fn
+                if n.is_leaf():
+                    n.features.add("species")
 
     def link_to_alignment(self, alignment, alg_format="fasta"):
         missing_leaves = []
@@ -260,9 +258,58 @@ class PhyloNode(TreeNode):
 
         # I use a custom is_leaf() function to collapse nodes groups
         # seqs from the same species
-        
         is_leaf = lambda node: len(node.get_species())==1
         return self.get_farthest_oldest_leaf(species2age, is_leaf_fn=is_leaf)
+
+    def get_smartest_outgroup(self, species2age):
+        """ Returns the best outgroup according to topological ages
+        and node sizes."""
+        root = self #.get_tree_root()
+        all_seqs = set(self.get_leaf_names())
+        outgroup_dist  = 0
+        best_balance = max(species2age.values())
+        outgroup_node  = self
+        outgroup_size = 0
+
+        for leaf in root.iter_descendants():
+            leaf_seqs = set(leaf.get_leaf_names())
+            size = len(leaf_seqs)
+            
+            leaf_species =[self._speciesFunction(s) for s in leaf_seqs]
+            out_species = [self._speciesFunction(s) for s in all_seqs-leaf_seqs]
+
+            leaf_age_min = min([species2age[sp] for sp in leaf_species])
+            out_age_min = min([species2age[sp] for sp in out_species])
+            leaf_age_max = max([species2age[sp] for sp in leaf_species])
+            out_age_max = max([species2age[sp] for sp in out_species])
+            leaf_age = leaf_age_max - leaf_age_min
+            out_age = out_age_max - out_age_min
+
+            age_inbalance = abs(out_age - leaf_age)
+
+            # DEBUG ONLY
+            # leaf.add_features(age_inbalance = age_inbalance, age=leaf_age)
+
+            update = False
+            if age_inbalance < best_balance:
+                update = True
+            elif age_inbalance == best_balance:
+                if size > outgroup_size: 
+                    update = True
+                elif size == outgroup_size:
+                    dist = self.get_distance(leaf)
+                    outgroup_dist = self.get_distance(outgroup_node)
+                    if dist > outgroup_dist:
+                        update = True
+       
+            if update:
+                best_balance = age_inbalance
+                outgroup_node = leaf
+                outgroup_size = size
+
+        return outgroup_node
+
+
 
 # cosmetic alias
 PhyloTree = PhyloNode

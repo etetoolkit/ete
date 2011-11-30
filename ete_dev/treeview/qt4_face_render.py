@@ -145,16 +145,14 @@ class _FaceGroupItem(QGraphicsRectItem): # I resisted to name this FaceBookItem 
                     font = f._get_font()
                     obj.setFont(font)
                     obj.setBrush(QBrush(QColor(f.fgcolor)))
-                    obj.setParentItem(self)
-                    obj.setAcceptsHoverEvents(True)
                 elif f.type == "item":
                     obj = f.item
-                    obj.setParentItem(self)
                 else:
                     # Loads the pre-generated pixmap
                     obj = _ImgFaceItem(f, self.node, f.pixmap)
-                    obj.setAcceptsHoverEvents(True)
-                    obj.setParentItem(self)
+
+                obj.setAcceptsHoverEvents(True)
+                obj.setParentItem(self)
 
                 # relative alignemnt of faces
                 x_offset, y_offset = 0, 0 
