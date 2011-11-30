@@ -57,6 +57,156 @@ ITERABLE_TYPES = set([list, set, tuple, frozenset])
 
 __all__ = ["PhylomeDB3Connector"]
 
+
+class Phylome(object):
+  def __str__(self): 
+    info = "Phylome %s (%s)\n" %(self.phyid,self.name) +\
+        " seed species: %s\n" %(self.tax2name[self.seed_taxid]) +\
+        " seed proteome: %s\n" %(self.seed_proteome) +\
+        " Species: %d\n" %len(self.species) +\
+        " Seed sequences: %d\n" %len(self.seed_ids) +\
+        " Trees: %d\n" %len(self.trees) +\
+        " Proteome list: %s\n" %','.join(self.proteomes) 
+    return info
+
+  def __init__(self, phyid, connector, filter_isoforms=True):
+    self.filter_isoforms = filter_isoforms
+    self._conn = connector
+    self._dsql = connector.cursor(MySQLdb.cursors.DictCursor)
+    self._lsql = connector.cursor(MySQLdb.cursors.Cursor)
+
+    # Get seed ids
+    cmd = 'SELECT seed_taxid, seed_version, name, description, comments FROM phylome' +\
+        ' WHERE phylome_id = %s' % (phyid)
+    self._dsql.execute(cmd)
+    phyinfo = self._dsql.fetchone()
+    self.phyid = phyid 
+    self.seed_taxid = phyinfo["seed_taxid"]
+    self.prot_vs = phyinfo["seed_version"]
+    self.name = phyinfo["name"]
+    self.description = phyinfo["description"]
+    # Phylome content
+    cmd = 'SELECT taxid, version FROM phylome_content' +\
+        ' WHERE phylome_id = %s' % (phyid)
+    self._lsql.execute(cmd)
+    phycontent = self._lsql.fetchall()
+    self.species = [int(e[0]) for e in phycontent]    
+
+    # Species info
+    cmd = 'SELECT taxid, code, name FROM species' +\
+        ' WHERE taxid IN (%s);' %','.join(map(str, self.species))
+    self._lsql.execute(cmd)
+    sp_info = self._lsql.fetchall()
+    self.tax2name = {}
+    self.tax2code = {}
+    self.code2tax = {}
+    for taxid, code, name in sp_info:
+      self.tax2name[taxid] = name
+      self.tax2code[taxid] = code
+      self.code2tax[code] = taxid
+    self.proteomes = [self.tax2code[e[0]]+str(e[1]) for e in phycontent] 
+    self.seed_proteome = "%s%d" %(self.tax2code[self.seed_taxid], self.prot_vs)
+
+    # Seed ids
+    if self.filter_isoforms:
+      cmd =  'SELECT DISTINCT CONCAT("Phy", i.longest, "_", s.code) AS protid '
+      cmd += 'FROM protein AS p, isoform AS i, species AS s WHERE p.taxid = '
+      cmd += '%s AND p.version = %s AND p.protid = i.isoform' % (self.seed_taxid, self.prot_vs)
+      cmd += ' AND p.version = i.version AND p.taxid = s.taxid'
+    else:
+      cmd =  'SELECT DISTINCT CONCAT("Phy", protid, "_", code) AS protid FROM '
+      cmd += 'protein AS p, species AS s WHERE p.taxid = %s AND p.' % (self.seed_taxid)
+      cmd += 'version = %s AND p.taxid = s.taxid' % (self.prot_vs)
+    
+    self._lsql.execute(cmd)
+    self.seed_ids = [e[0] for e in self._lsql.fetchall()]
+    self.load_trees()
+
+  def load_trees(self, seqnames=None, model="best_lk", anotate_trees = True):
+    """
+    Returns all newick tree for the given set of seqnames and
+    model. If no seqnames are provided, all available trees in the
+    phylome is returned. 
+    """
+    def clean_name(name):
+      quote = lambda x: '"%s"' %x
+      m = re.search("Phy(\w{7})_[\w\d]+", name)
+      if m: 
+        return quote(m.groups()[0])
+     
+    if not seqnames: 
+      seqids =  map(clean_name, self.seed_ids)
+    else:
+      seqids =  map(clean_name, seqnames)
+      
+    tree_table = "tree"
+    cmd = 'SELECT  temp.protid, temp.method, temp.lk, temp.newick from ' +\
+        ' (SELECT T.protid , T.method, T.newick, T.lk FROM %s AS T WHERE' %(tree_table) +\
+        ' T.phylome_id = %s AND T.protid IN (%s)' %(self.phyid, ','.join(seqids)) +\
+        ' ORDER BY lk DESC) AS temp GROUP BY protid; '
+
+    self.trees = {}
+    if self._lsql.execute(cmd):
+      seed_code = self.tax2code[self.seed_taxid]
+      for protid, method, lk, nw in self._lsql.fetchall():
+        seqid = "Phy%s_%s" %(protid, seed_code)
+        self.trees[seqid] = [nw, method, lk]
+        #t.add_features(lk=lk, method=method)
+
+  def get_algs(self, seqid, atype="clean"):
+    pass
+
+  def get_seed_species(self):
+    pass
+
+
+class PhylomeDB(object):
+  def __init__(self, host = "84.88.66.245", db = "phylomedb_3", user = "public",
+    passwd = "public", port = 3306):
+    """ Connect to a phylomeDB database and return an object to perform queries
+        to the database.
+    """
+    # Establish the connection to the MySQL database where phylomeDB is stored.
+    try:
+      self._SQLconnection = MySQLdb.connect(host = host, user = user, passwd = \
+        passwd, db = db, port = int(port))
+    except:
+      raise NameError("ERROR: Check your connection parameters")
+
+    self._SQL = self._SQLconnection.cursor(MySQLdb.cursors.DictCursor)
+
+    # Store the connection parameters to use it if the connection is lost.
+    self.db = db
+    self.host = host
+    self.user = user
+    self.port = port
+    self.passwd = passwd
+
+    # Define the different database views depending on the user profile
+    self._trees = "tree_public"
+    self._algs = "alignment_public"
+    self._phylomes = "phylome_public"
+    self._phy_content = "phycontent_public"
+
+  def get_phylome(self, phyid):
+    pass
+
+  def get_proteomes(self, protids=[]):
+    pass
+
+  def get_seqs(self, seqids=[]):
+    'get aa sequence of seqids'
+    pass
+  
+  def search_trees(self, seqid, include_collateral=True):
+    'Returns all available trees for seqid'
+    pass
+
+  
+
+
+
+
 class PhylomeDB3Connector(object):
   """ Returns a connector to a phylomeDB3 database.
 
@@ -72,6 +222,12 @@ class PhylomeDB3Connector(object):
   ========
     An object whose methods can be used to query the database.
   """
+
+  #########
+  def _get_phylome(self, phyid):
+    return Phylome(phyid, connector = self._SQLconnection)
+
+  ##########
 
   def __init__(self, host = "84.88.66.245", db = "phylomedb_3", user = "public",
     passwd = "public", port = 3306):

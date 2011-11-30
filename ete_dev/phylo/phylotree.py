@@ -262,11 +262,9 @@ class PhyloNode(TreeNode):
         return self.get_farthest_oldest_leaf(species2age, is_leaf_fn=is_leaf)
 
     def get_smartest_outgroup(self, species2age):
-        """ Returns the farthest oldest node (leaf or internal). The
-        difference with get_farthest_oldest_leaf() is that in this
-        function internal nodes grouping seqs from the same species
-        are collapsed. """
-        root = self.get_tree_root()
+        """ Returns the best outgroup according to topological ages
+        and node sizes."""
+        root = self #.get_tree_root()
         all_seqs = set(self.get_leaf_names())
         outgroup_dist  = 0
         best_balance = max(species2age.values())
@@ -290,7 +288,7 @@ class PhyloNode(TreeNode):
             age_inbalance = abs(out_age - leaf_age)
 
             # DEBUG ONLY
-            leaf.add_features(age_inbalance = age_inbalance, age=leaf_age)
+            # leaf.add_features(age_inbalance = age_inbalance, age=leaf_age)
 
             update = False
             if age_inbalance < best_balance:

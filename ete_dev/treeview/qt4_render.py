@@ -245,9 +245,9 @@ def render(root_node, img, hide_root=False):
     virtual_leaves = 0
     
     if img.show_branch_length:
-        bl_face = faces.AttrFace("dist", fsize=8, ftype="Arial", fgcolor="black", formatter = "%0.2g")
+        bl_face = faces.AttrFace("dist", fsize=8, ftype="Arial", fgcolor="black", formatter = "%0.3g")
     if img.show_branch_support:
-        su_face = faces.AttrFace("support", fsize=8, ftype="Arial", fgcolor="darkred", formatter = "%0.2g")
+        su_face = faces.AttrFace("support", fsize=8, ftype="Arial", fgcolor="darkred", formatter = "%f")
     if img.show_leaf_name:
         na_face = faces.AttrFace("name", fsize=10, ftype="Arial", fgcolor="black")
 
@@ -257,7 +257,7 @@ def render(root_node, img, hide_root=False):
         if img.show_branch_length:
             faces.add_face_to_node(bl_face, n, 0, position="branch-top")
 
-        if img.show_branch_support:
+        if not _leaf() and img.show_branch_support:
             faces.add_face_to_node(su_face, n, 0, position="branch-bottom")
 
         if _leaf(n) and img.show_leaf_name:
