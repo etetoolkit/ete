@@ -2,12 +2,16 @@
 
 import sys
 import ez_setup
+import hashlib 
+import time, random
 
 try:
     from setuptools import setup, find_packages
 except ImportError:
     ez_setup.use_setuptools()
     from setuptools import setup, find_packages
+
+ID = hashlib.md5(str(time.time()+random.random())).hexdigest()
 
 #    ["scipy", "Scipy is only required for the clustering validation functions.", 0],
 python_dependencies = [
@@ -78,6 +82,7 @@ def ask(string,valid_values,default=-1,case_sensitive=False):
 print
 print "Installing ETE (A python Environment for Tree Exploration)."
 print
+
 print "Checking dependencies..."
 missing = False
 for mname, msg, ex in python_dependencies:

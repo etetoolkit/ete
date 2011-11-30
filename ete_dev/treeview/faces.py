@@ -921,6 +921,7 @@ class ItemFace(Face):
     def _height(self):
         return self.item.rect().height()
 
+
 class RandomFace(Face):
     def __init__(self):
         faces.Face.__init__(self)

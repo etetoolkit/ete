@@ -244,7 +244,6 @@ if options.doc:
     _ex('find %s/doc | xargs perl -e "s/ete_dev/%s/g" -p -i' %\
             (RELEASE_PATH, MODULE_NAME) )
 
-
     copydoc= ask("Update ONLINE documentation?", ["y","n"])
     if copydoc=="y":
         # INSTALL THIS http://pypi.python.org/pypi/Sphinx-PyPI-upload/0.2.1
@@ -265,7 +264,6 @@ if options.doc:
 
         #_ex("rsync -r %s/doc/ete_guide_html/ %s/html/" %\
         #        (RELEASE_PATH, SERVER+":"+SERVER_DOC_PATH))
-
 
 if process_package:
     # Clean from internal files
