@@ -1,0 +1,13 @@
+###  README --- /home/francisco/toolbox/ete2-evol-plugin/ete2/evol/bin/
+
+## Copyright 2010 garamonfok
+##
+## Author: francisco@evolution
+## Keywords: 
+
+
+codeml was compiled from modified codeml.c in order to 
+display dN dS and omega values with more significant numbers
+
+
+

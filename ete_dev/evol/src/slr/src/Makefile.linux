@@ -1,0 +1,23 @@
+CC = gcc
+# For Linux, etc.
+BLASDIR =
+CFLAGS = -O4 -fomit-frame-pointer -funroll-loops -DNDEBUG -std=gnu99
+LDFLAGS = -L$(BLASDIR) -lblas -llapack -lm 
+
+#CFLAGS = -static -O3 -funroll-loops -DNDEBUG -std=gnu99 -Wall
+#CFLAGS = -Wall -g -DWARNINGS -std=gnu99 -pedantic
+#CFLAGS = -pg -std=gnu99 -DNDEBUG
+LD = ld
+
+objects = like.o tree.o data.o rng.o model.o  bases.o codonmodel.o gencode.o utility.o matrix.o optimize_new.o spinner.o options.o tree_data.o linemin.o gamma.o statistics.o mystring.o nucmodel.o root.o vec.o brent.o rbtree.o
+
+
+Slr: slr.o $(objects)
+	gcc  -o ../bin/$@ slr.o $(objects) $(CFLAGS) $(LDFLAGS)
+
+.c.o:
+	$(CC) $(CFLAGS) $(INCFLAGS) -o $@ -c $<
+
+clean:
+	rm -f *~ *.o
+
