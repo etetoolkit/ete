@@ -12,8 +12,6 @@ __version__ = "0.0"
 
 from ete_dev.evol import EvolTree, faces
 from random import random as rnd
-from ete_dev import TreeImageProperties
-
 
 WRKDIR = 'data/protamine/PRM1/'
 
@@ -46,7 +44,7 @@ def main():
 def random_swap(tree):
     for node in tree.iter_descendants():
         if int (rnd()*100)%3:
-            node.swap_childs()
+            node.swap_children()
     
 def check_annotation (tree):
     for node in tree.iter_descendants():

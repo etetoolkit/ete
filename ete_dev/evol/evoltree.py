@@ -43,7 +43,7 @@ from ete_dev.evol          import __path__
 from ete_dev.evol.model    import Model, PARAMS, AVAIL
 from ete_dev.evol.utils    import translate
 from ete_dev.parser.newick import write_newick
-from ete_dev               import TreeImageProperties
+from ete_dev               import TreeStyle
 
 __all__ = ["EvolNode", "EvolTree"]
 
@@ -198,13 +198,16 @@ class EvolNode (PhyloNode):
                 leaf.sequence = translate(leaf.nt_sequence)
         self._label_as_paml()
 
-    def show (self, layout=evol_layout, img_properties=None, histfaces=None):
+    def show(self, layout=evol_layout, tree_style=None, histfaces=None):
         '''
         call super show
         histface should be a list of models to be displayes as histfaces
         '''
+        if not tree_style:
+            ts = TreeStyle()
+        else: 
+            ts = tree_style
         if histfaces:
-            img_properties = TreeImageProperties()
             for hist in histfaces:
                 try:
                     mdl = self.get_evol_model (hist)
@@ -213,21 +216,24 @@ class EvolNode (PhyloNode):
                 if not mdl.properties.has_key ('histface'):
                     mdl.set_histface ()
                 if mdl.properties ['histface'].up:
-                    img_properties.aligned_header.add_face (\
+                    ts.aligned_header.add_face (\
                         mdl.properties['histface'], 1)
                 else:
-                    img_properties.aligned_foot.add_face (\
+                    ts.aligned_foot.add_face (\
                         mdl.properties['histface'], 1)
         super(EvolTree, self).show(layout=layout,
-                                     img_properties=img_properties)
+                                     tree_style=ts)
 
     def render (self, file_name, layout=evol_layout, w=None, h=None,
-                img_properties=None, header=None, histfaces=None):
+                tree_style=None, header=None, histfaces=None):
         '''
         call super show adding up and down faces
         '''
+        if not tree_style:
+            ts = TreeStyle()
+        else: 
+            ts = tree_style
         if histfaces:
-            img_properties = TreeImageProperties()
             for hist in histfaces:
                 try:
                     mdl = self.get_evol_model (hist)
@@ -236,11 +242,11 @@ class EvolNode (PhyloNode):
                 if mdl.histface is None:
                     mdl.set_histface()
                 if mdl.histface.up:
-                    img_properties.aligned_header.add_face (mdl.histface, 1)
+                    ts.aligned_header.add_face (mdl.histface, 1)
                 else:
-                    img_properties.aligned_foot.add_face (mdl.histface, 1)
+                    ts.aligned_foot.add_face (mdl.histface, 1)
         return super(EvolTree, self).render(file_name, layout=layout,
-                                            img_properties=img_properties,
+                                            tree_style=ts,
                                             w=w, h=h)
         
 
