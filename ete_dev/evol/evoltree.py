@@ -58,7 +58,9 @@ class EvolNode (PhyloNode):
     attributes and methods to work with phylogentic trees. """
 
     def __init__ (self, newick=None, alignment=None, alg_format="fasta",
-                 sp_naming_function=_parse_species, format=0):
+                 sp_naming_function=_parse_species, format=0, 
+                  binpath=os.path.join(os.getcwd(), "bin")
+                  ):
         '''
         freebranch: path to find codeml output of freebranch model.
         '''
@@ -67,7 +69,7 @@ class EvolNode (PhyloNode):
         self._speciesFunction = None
         self.img_prop = None
         self.workdir = '/tmp/ete2-codeml/'
-        self.execpath = __path__[0] + '/bin/'
+        self.execpath = binpath
         self._models = {}
         # Caution! native __init__ has to be called after setting
         # _speciesFunction to None!!
@@ -154,7 +156,8 @@ class EvolNode (PhyloNode):
             open (fullpath+'/tmp.ctl', 'w').write (ctrl_string)
         hlddir = os.getcwd()
         os.chdir(fullpath)
-        proc = Popen([self.execpath + model_obj.properties ['exec'], 'tmp.ctl'], stdout=PIPE)
+        bin = os.path.join(self.execpath, model_obj.properties['exec'])
+        proc = Popen([bin, 'tmp.ctl'], stdout=PIPE)
         run, err = proc.communicate()
         if err is not None:
             warn ("ERROR: codeml not found!!!\n" + \
