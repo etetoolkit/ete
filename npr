@@ -7,8 +7,7 @@ from configobj import ConfigObj, flatten_errors
 from validate import Validator
 
 import sys
-sys.path.insert(0, "/home/jhuerta/_Devel/ete/2.2/")
-from ete_dev import SeqGroup
+from utils import SeqGroup
 
 from master_task import Task
 from interface import app_wrapper
@@ -47,7 +46,6 @@ __DESCRIPTION__ = """
 """ %(__VERSION__, __DATE__)
 
 def main(args):
-
     log = logging.getLogger("main")
     print __DESCRIPTION__
 
@@ -55,7 +53,6 @@ def main(args):
                            list_values=False, _inspec=True)
 
     config = ConfigObj("config", configspec=configspec)
-
     val = Validator()
     check = config.validate(val)
     if not check:
