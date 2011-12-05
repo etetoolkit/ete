@@ -31,11 +31,13 @@ __DESCRIPTION__ = """
                  Nested Phylogenetic Reconstruction program.  
                           NPR-0.1%s(alpha), %s.
 
-      @@2:NPR@@1: is a program for phylogenetic reconstruction that optimizes
-      the resolution of the final tree by fine grained tunning and
-      recomputing of the inner nodes.
+      @@2:NPR@@1: allows to reconstruct large phylogenies by means of
+      an iterative strategy that provides scalable resolution and
+      continuous update of tree topologies. In NPR, all internal nodes
+      in a tree are re-evaluated to optimize and fine tune the
+      parameters of phylogenetic inference.
 
-      If you use this program for published work, please cite: 
+      If you use this program for published work, please cite:
 
        Jaime Huerta-Cepas and Toni Gabaldon. Nested Phylogenetic
        Reconstruction. XXX-XX. 2011.
@@ -96,12 +98,14 @@ def main(args):
             for i,n in SEQS.id2name.iteritems():
                 if len(n)>10: 
                     SEQS.id2name[i] = n[:10]
-                    log.warning("sequence names %s was truncated to 10 chars: %s " %(n, n[:10]))
+                    log.warning("sequence names %s was truncated to 10"
+                                " chars: %s " %(n, n[:10]))
             values = SEQS.id2name.values()
             if len(values) != len(set(values)):
                 raise Exception("Duplicated sequence names, execution aborted.")
             if visited_seqs and set(values) != visited_seqs:
-                raise Exception("Sequence names do not match between aa and nt files.")
+                raise Exception("Sequence names do not match between aa and"
+                                " nt files.")
             visited_seqs.update(values)
             fullpath = os.path.join(base_dir, label+".fasta")
             seed_files[label] = fullpath
@@ -114,13 +118,15 @@ def main(args):
         for seqname, length in seq2aalength.iteritems():
             try:
                 if length != seq2ntlength[seqname]/3.0:
-                    raise ValueError("The length of [%s] CDS does not match with the protein sequence. ")
+                    raise ValueError("The length of [%s] CDS does not match"
+                                     "with the protein sequence." %seqname)
             except KeyError:
-                raise KeyError("aa and nt files do not contain the same sequence identifiers. ")
+                raise ValueError("aa and nt files do not contain the same"
+                               "sequence identifiers.")
         
 
-    schedule(config, template.pipeline, args.schedule_time, args.execute, args.retry)
-
+    schedule(config, template.pipeline, args.schedule_time, 
+             args.execute, args.retry)
 
 if __name__ == "__main__":
     parser = ArgumentParser(description=__DESCRIPTION__, 
@@ -143,11 +149,13 @@ if __name__ == "__main__":
 
     parser.add_argument("-a", "--aa-seed-file", dest="aa_seed_file", 
                         type=str, 
-                        help="""Initial multi sequence file with protein sequences""")
+                        help="Initial multi sequence file with"
+                        " protein sequences")
 
     parser.add_argument("-n", "--nt-seed-file", dest="nt_seed_file", 
                         type=str, 
-                        help="""Initial multi sequence file with nucleotide sequences""")
+                        help="Initial multi sequence file with"
+                        " nucleotide sequences")
 
     parser.add_argument("-t", "--schedule-time", dest="schedule_time", 
                         type=int, default=1,
@@ -159,11 +167,13 @@ if __name__ == "__main__":
 
     parser.add_argument("-x", "--execute-inplace", dest="execute", 
                         action="store_true",
-                        help="""Jobs are launched in this machine """)
+                        help="Jobs are launched in the same machine"
+                        " as in the program is called.")
 
-    parser.add_argument("-I", "--disable-advanced-interface", dest="disable_interface", 
+    parser.add_argument("-U", "--disable-ui", dest="disable_interface", 
                         action="store_true",
-                        help="""When used, log messages are redirected to the standard output. It disable color based interface.""")
+                        help="When used, log messages are redirected to the"
+                        " standard output and color based interface is disabled.")
  
     args = parser.parse_args()
    
