@@ -206,22 +206,18 @@ class TextFace(Face):
     :argument ftype:    Font type, e.g. Arial, Verdana, Courier
     :argument fsize:    Font size, e.g. 10,12,6, (default=10)
     :argument fgcolor:  Foreground font color. RGB code or name in :data:`SVG_COLORS` 
-    :argument bgcolor:  Backgroung font color. RGB code or  name in :data:`SVG_COLORS` 
     :argument penwidth: Penwdith used to draw the text.
     :argument fstyle: "normal" or "italic" 
     """
 
-    def __init__(self, text, ftype="Verdana", fsize=10, fgcolor="#000000", bgcolor=None, penwidth=0, fstyle="normal"):
+    def __init__(self, text, ftype="Verdana", fsize=10, fgcolor="#000000", penwidth=0, fstyle="normal"):
 
         Face.__init__(self)
 
-        if bgcolor is None:
-            bgcolor = QtCore.Qt.transparent
         self.pixmap = None
         self.type = "text"
 
         self.text = str(text)
-        self.bgcolor = bgcolor
         self.fgcolor = fgcolor
         self.ftype = ftype 
         self.fsize = fsize
@@ -260,7 +256,6 @@ class AttrFace(TextFace):
     :argument ftype:    Font type, e.g. Arial, Verdana, Courier, (default="Verdana")
     :argument fsize:    Font size, e.g. 10,12,6, (default=10)
     :argument fgcolor:  Foreground font color. RGB code or name in :data:`SVG_COLORS` 
-    :argument bgcolor:  Backgroung font color. RGB code or name in :data:`SVG_COLORS` 
     :argument penwidth: Penwdith used to draw the text. (default is 0)
     :argument text_prefix: text_rendered before attribute value
     :argument text_suffix: text_rendered after attribute value
@@ -270,9 +265,9 @@ class AttrFace(TextFace):
     """
 
     def __init__(self, attr, ftype="Verdana", fsize=10, fgcolor="#000000", \
-                     bgcolor=None, penwidth=0, text_prefix="", text_suffix="", formatter=None, fstyle="normal"):
+                     penwidth=0, text_prefix="", text_suffix="", formatter=None, fstyle="normal"):
         Face.__init__(self)
-        TextFace.__init__(self, "", ftype, fsize, fgcolor, bgcolor, penwidth, fstyle)
+        TextFace.__init__(self, "", ftype, fsize, fgcolor, penwidth, fstyle)
         self.attr     = attr
         self.type     = "text"
         self.text_prefix = text_prefix
