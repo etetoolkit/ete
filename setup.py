@@ -177,9 +177,7 @@ try:
 except:
     raise
 else:
-    #notwanted = set(["-h", "--help", "-n", "--dry-run"])
-    notwanted = set(["-h", "--help"])
-
+    notwanted = set(["-h", "--help", "-n", "--dry-run"])
     seen = set(_s.script_args)
     if "install" in seen and not (notwanted & seen):
         # If the installation finished correctly, tries to send ETEID
