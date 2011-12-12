@@ -136,6 +136,7 @@ open("ete_dev/__init__.py", "w").write(init_content)
 print "Your installation ID is:", ETEID
 
 ete_version = open("VERSION").readline().strip()
+revision = ete_version.split("rev")[-1]
 mod_name = ete_version.split("rev")[0]
 
 long_description = open("README").read()
@@ -191,9 +192,20 @@ else:
         except ImportError:
             pass
         else:
-            try:
-                welcome = urllib2.quote("New alien in earth!")
-                urllib2.urlopen("http://ete.cgenomics.org/et_phone_home?ID=%s&VERSION=%s&MSG=%s"
-                                %(ETEID, ete_version, welcome))
-            except urllib2.HTTPError, e: 
+            try: 
+                from _mod import __VERSION__
+            except ImportError:
                 pass
+            else:
+                try:
+                    _rev = __VERSION__.split("rev")[1]
+                except IndexError:
+                    _rev = None
+                if revision == _rev:
+                    print _rev
+                    try:
+                        welcome = urllib2.quote("New alien in earth!")
+                        urllib2.urlopen("http://ete.cgenomics.org/et_phone_home?ID=%s&VERSION=%s&MSG=%s"
+                                        %(ETEID, ete_version, welcome))
+                    except urllib2.HTTPError, e: 
+                        pass
