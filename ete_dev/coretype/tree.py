@@ -36,6 +36,8 @@ except ImportError:
 else:
     TREEVIEW = True
 
+
+
 __all__ = ["Tree", "TreeNode"]
 
 DEFAULT_COMPACT = False
@@ -1547,14 +1549,16 @@ class TreeNode(object):
         if type(node_style) is NodeStyle:
             self.img_style = node_style
        
+    def phonehome(self):
+        from ete_dev import _ph
+        _ph.call()
 
 def _translate_nodes(root, *nodes):
-    
     name2node = dict([ [n, None] for n in nodes if type(n) is str])
     for n in root.traverse():
         if n.name in name2node:
             if name2node[n.name] is not None:
-                raise ValueError, "Ambiguos node name: "+str(n.name)
+                raise ValueError, "Ambiguous node name: "+str(n.name)
             else:
                 name2node[n.name] = n
 
@@ -1585,7 +1589,7 @@ def OLD_translate_nodes(root, *nodes):
             if len(mnodes) == 0:
                 raise ValueError, "Node name not found: "+str(n)
             elif len(mnodes)>1:
-                raise ValueError, "Ambiguos node name: "+str(n)
+                raise ValueError, "Ambiguous node name: "+str(n)
             else:
                 target_nodes.append(mnodes[0])
         elif type(n) != root.__class__:

@@ -36,7 +36,7 @@ parser.add_option("-v", "--verbose", dest="verbose", \
                       action="store_true", \
                       help="It shows the commands that are executed at every step.")
 
-parser.add_option("-q", "--quite", dest="simulate", \
+parser.add_option("-s", "--simulate", dest="simulate", \
                       action="store_true", \
                       help="Do not actually do anything. ")
 
@@ -124,7 +124,8 @@ METAPKG_JAIL_PATH = "/home/jhuerta/_Devel/ete_metapackage/etepkg_CheckBeforeRm"
 METAPKG_PATH = "/home/jhuerta/_Devel/ete_metapackage"
 RELEASES_BASE_PATH = "/tmp"
 MODULE_NAME = "ete2a1"
-VERSION = MODULE_NAME+"rev"+commands.getoutput("git log --pretty=format:'' | wc -l").strip()
+REVISION = commands.getoutput("git log --pretty=format:'' | wc -l").strip()
+VERSION = MODULE_NAME + "rev" + REVISION
 VERSION_LOG = commands.getoutput("git log --pretty=format:'%s' | head -n1").strip()
 RELEASE_NAME = MODULE_NAME+"-"+VERSION
 RELEASE_PATH = os.path.join(RELEASES_BASE_PATH, RELEASE_NAME)
@@ -278,18 +279,18 @@ if process_package:
      
     release= ask("Copy release to main server?", ["y","n"])
     if release=="y":
-        print "Creating and submitting distribution to PyPI"
-        _ex("cd %s; python ./setup.py sdist upload --show-response " %RELEASE_PATH) 
         print "Copying release to ete server..."
         _ex("scp %s/dist/%s.tar.gz %s" %\
                 (RELEASE_PATH, RELEASE_NAME, SERVER+":"+SERVER_RELEASES_PATH))
+
         print "Updating releases table..."
-        _ex("ssh %s 'cd %s; sh update_downloads.sh'" %(SERVER, SERVER_RELEASES_PATH))
-     
+        _ex("ssh %s 'cd %s; echo %s > %s.latest; sh update_downloads.sh;'" %(SERVER, SERVER_RELEASES_PATH, REVISION, MODULE_NAME))
+
+        print "Creating and submitting distribution to PyPI"
+        _ex("cd %s; python ./setup.py sdist upload --show-response " %RELEASE_PATH) 
      
     announce = ask("publish tweet?", ["y","n"])
     if announce == "y":
         msg = ask(default=VERSION_LOG)
-        
         if ask("publish tweet?", ["y","n"]) == "y":
             _ex("twitter -eetetoolkit set %s" %msg) 

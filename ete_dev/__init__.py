@@ -4,6 +4,9 @@
 #
 # #END_LICENSE#############################################################
 
+# Note that the use of "from x import *" is safe here. Modules include
+# the __all__ variable.
+
 from sys import stderr
 from coretype.tree import *
 from coretype.seqgroup import *
@@ -32,7 +35,10 @@ try:
     from treeview import faces
     from treeview import layouts
     from treeview.svg_colors import SVG_COLORS
-
 except ImportError, e:
     print >>stderr, "Treeview module could not be loaded"
     print e
+
+# Do not modify the following line. It will be checked during
+# installation
+__ETEID__="e6da32ae67ce3dea7c8d16f3a2cafe45"
