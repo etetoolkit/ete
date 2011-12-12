@@ -1550,43 +1550,8 @@ class TreeNode(object):
             self.img_style = node_style
        
     def phonehome(self):
-        from urllib2 import urlopen, HTTPError
-        from ete_dev import __ETEID__
-        try:
-            v = __VERSION__
-        except Exception: 
-            v = "ete2.0rev111"
-
-        module_name = __name__.split(".")[0]
-        print "Calling home..."
-        f = urlopen('http://ete.cgenomics.org/et_phone_home.php?VERSION=%s&ID=%s' 
-                    %(v, __ETEID__))
-        if f: 
-            print "Got answer!:" 
-            print f.read()
-            try:
-                f = urlopen('http://ete.cgenomics.org/releases/ete2/%s.latest' 
-                        %module_name)
-            except HTTPError:
-                latest = None
-            else:
-                latest = int(f.read())
-
-            try:
-                current = int(v.split("rev")[1])
-            except (IndexError, ValueError): 
-                current = None
-
-            if not latest:
-                print "Unable to find data about your version, ", module_name
-            elif not current:
-                print "Unable to determine your version."
-                print "Are you in a development package?"
-                print "Latest stable ETE version is", latest
-            elif latest > current:
-                print "New version found!", latest
-            else:
-                print "You are in fit."
+        from ete_dev import _ph
+        _ph.call()
 
 def _translate_nodes(root, *nodes):
     name2node = dict([ [n, None] for n in nodes if type(n) is str])
