@@ -36,6 +36,8 @@ except ImportError:
 else:
     TREEVIEW = True
 
+
+
 __all__ = ["Tree", "TreeNode"]
 
 DEFAULT_COMPACT = False
@@ -1548,25 +1550,26 @@ class TreeNode(object):
             self.img_style = node_style
        
     def phonehome(self):
-        import urllib2
+        from urllib2 import urlopen
+        from ete_dev import __ETEID__
         print "Calling home..."
+
         try:
             v = __VERSION__
         except Exception: 
             v = "Unknown"
-        f = urllib2.urlopen('http://ete.cgenomics.org/et_phone_home.php?ver=%s' %v)
-        print f.read()
+           
+        f = urlopen('http://ete.cgenomics.org/et_phone_home.php?VERSION=%s&ID=%s' %(v, __ETEID__))
         if f: 
-            print "got answer!" 
-            yourmsg = raw_input("Type your message:")
-       
+            print "Got answer!:" 
+            print f.read()
 
 def _translate_nodes(root, *nodes):
     name2node = dict([ [n, None] for n in nodes if type(n) is str])
     for n in root.traverse():
         if n.name in name2node:
             if name2node[n.name] is not None:
-                raise ValueError, "Ambiguos node name: "+str(n.name)
+                raise ValueError, "Ambiguous node name: "+str(n.name)
             else:
                 name2node[n.name] = n
 
@@ -1597,7 +1600,7 @@ def OLD_translate_nodes(root, *nodes):
             if len(mnodes) == 0:
                 raise ValueError, "Node name not found: "+str(n)
             elif len(mnodes)>1:
-                raise ValueError, "Ambiguos node name: "+str(n)
+                raise ValueError, "Ambiguous node name: "+str(n)
             else:
                 target_nodes.append(mnodes[0])
         elif type(n) != root.__class__:

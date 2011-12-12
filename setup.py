@@ -1,9 +1,11 @@
 #! /usr/bin/env python
-
 import sys
+import os
 import ez_setup
 import hashlib 
 import time, random
+import re
+import urllib2
 
 try:
     from setuptools import setup, find_packages
@@ -11,13 +13,35 @@ except ImportError:
     ez_setup.use_setuptools()
     from setuptools import setup, find_packages
 
-ID = hashlib.md5(str(time.time()+random.random())).hexdigest()
+# Generates a unique id for ete installation. If this is an upgrade,
+# use the previous id. ETEID is used to get basic statistics about
+# number of users/installations. The Id generated is a random number,
+# it does not collect any personal information about your computer.
+try:
+    # Avoids importing a previously generated id
+    try:
+        _wd = os.getcwd()
+        sys.path.remove(_wd)
+    except ValueError:
+        _fix_path = False
+        pass
+    else:
+        _fix_path = True
+    from ete_dev import __ETEID__ as ETEID
+
+    if _fix_path:
+        sys.path.insert(0, wd)
+except ImportError:
+    ETEID = None
+if not ETEID:
+    ETEID = hashlib.md5(str(time.time()+random.random())).hexdigest()
 
 #    ["scipy", "Scipy is only required for the clustering validation functions.", 0],
-python_dependencies = [
+PYTHON_DEPENDENCIES = [
     ["numpy", "Numpy is required for the ArrayTable and ClusterTree classes.", 0],
     ["MySQLdb", "MySQLdb is required for the PhylomeDB access API.", 0],
-    ["PyQt4", "PyQt4 is required for tree visualization and rendering.", 0]
+    ["PyQt4", "PyQt4 is required for tree visualization and image rendering.", 0],
+    ["lxml", "lxml is required from Nexml and Phyloxml support.", 0]
 ]
 
 TAGS = [
@@ -39,6 +63,7 @@ TAGS = [
     ]
 
 def can_import(mname):
+    'Test if a module can be imported '
     if mname=="PyQt4":
         try:
             __import__("PyQt4.QtCore")
@@ -85,52 +110,69 @@ print
 
 print "Checking dependencies..."
 missing = False
-for mname, msg, ex in python_dependencies:
+for mname, msg, ex in PYTHON_DEPENDENCIES:
     if not can_import(mname):
         print mname, "cannot be found in your python installation."
         print msg
         missing=True
+
 if missing:
     print "\nHowever, you can still install ETE without such functionality."
     con = ask( "Do you want to continue with the installation anyway?", ["y", "n"])
     if con == "n":
         sys.exit()
 
-# SETUP
+# writes installation id into 
+init_content = open("ete_dev/__init__.py").read()
+init_content = re.sub('__ETEID__="[\w\d]*"', '__ETEID__="%s"'%ETEID, init_content)
+open("ete_dev/__init__.py", "w").write(init_content)
+
+print "Installation ID:", ETEID
 
 ete_version = open("VERSION").readline().strip()
 mod_name = ete_version.split("rev")[0]
 
 long_description = open("README").read()
 long_description += open("INSTALL").read()
-long_description.replace("ete2", mod_name)
+long_description.replace("ete_dev", mod_name)
 
-setup(
-    name = mod_name,
-    version = ete_version,
-    packages = find_packages(),
+try:
+    _s = setup(
+        name = mod_name,
+        version = ete_version,
+        packages = find_packages(),
+        
+        requires = [],
 
-    requires = [],
-
-    # Project uses reStructuredText, so ensure that the docutils get
-    # installed or upgraded on the target machine
-    install_requires = [
-        ],
-
-    package_data = {
-    },
-    # metadata for upload to PyPI
-    author = "Jaime Huerta-Cepas, Joaquin Dopazo and Toni Gabaldon",
-    author_email = "jhcepas@gmail.com",
-    maintainer = "Jaime Huerta-Cepas",
-    maintainer_email = "jhcepas@gmail.com",
-    platforms = "OS Independent",
-    license = "GPLv3",
-    description = "A python Environment for Tree Exploration",
-    long_description = long_description,
-    classifiers = TAGS,
-    provides = [mod_name],
-    keywords = "bioinformatics phylogeny evolution phylogenomics genomics tree clustering phylogenetics phylogenetic ete orthology paralogy",
-    url = "http://ete.cgenomics.org",
-    download_url = "http://ete.cgenomics.org/releases/ete2/",
-)
+        # Project uses reStructuredText, so ensure that the docutils get
+        # installed or upgraded on the target machine
+        install_requires = [
+            ],
+        
+        package_data = {
+            },
+        # metadata for upload to PyPI
+        author = "Jaime Huerta-Cepas, Joaquin Dopazo and Toni Gabaldon",
+        author_email = "jhcepas@gmail.com",
+        maintainer = "Jaime Huerta-Cepas",
+        maintainer_email = "jhcepas@gmail.com",
+        platforms = "OS Independent",
+        license = "GPLv3",
+        description = "A python Environment for phylogenetic Tree Exploration",
+        long_description = long_description,
+        classifiers = TAGS,
+        provides = [mod_name],
+        keywords = "bioinformatics phylogeny evolution phylogenomics genomics tree clustering phylogenetics phylogenetic ete orthology paralogy",
+        url = "http://ete.cgenomics.org",
+        download_url = "http://ete.cgenomics.org/releases/ete2/",
+        )
+except:
+    raise
+else:
+    notwanted = set(["-h", "--help", "-n", "--dry-run"])
+    seen = set(_s.script_args)
+    if "install" in seen and not (notwanted & seen):
+        try:
+            urllib2.urlopen("http://ete.cgenomics.org/new_alien?ID=%s&VERSION=%s" %(ETEID, ete_version), timeout=1)
+        except urllib2.HTTPError, e: 
+            pass
