@@ -1,0 +1,164 @@
+#! /usr/bin/python 
+import os 
+import re
+import sys
+
+try:
+    import argparse
+except:
+    from ete_dev import _argparse as argparse
+
+from ete_dev import PhyloTree, TreeStyle, faces
+
+__DESCRIPTION__ = """
+ETE tree viewer. 
+"""
+
+NAME_FONT_SIZE = 14
+LEAF_NAME_POSITION = "branch-right"
+SHOW_LEAF_NAMES = True
+
+def master_layout(node):
+    if node.is_leaf() and SHOW_LEAF_NAMES:
+        N = faces.AttrFace("name", fsize=NAME_FONT_SIZE)
+        N.margin_left = 2
+        faces.add_face_to_node(N, node, 0, position=LEAF_NAME_POSITION)
+        
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__DESCRIPTION__, 
+                            formatter_class=argparse.RawDescriptionHelpFormatter)
+    # name or flags - Either a name or a list of option strings, e.g. foo or -f, --foo.
+    # action - The basic type of action to be taken when this argument is encountered at the command line. (store, store_const, store_true, store_false, append, append_const, version)
+    # nargs - The number of command-line arguments that should be consumed. (N, ? (one or default), * (all 1 or more), + (more than 1) )
+    # const - A constant value required by some action and nargs selections. 
+    # default - The value produced if the argument is absent from the command line.
+    # type - The type to which the command-line argument should be converted.
+    # choices - A container of the allowable values for the argument.
+    # required - Whether or not the command-line option may be omitted (optionals only).
+    # help - A brief description of what the argument does.
+    # metavar - A name for the argument in usage messages.
+    # dest - The name of the attribute to be added to the object returned by parse_args().
+
+    parser.add_argument('tree', metavar='trees', type=str, nargs=1,
+                      help='A tree file in newick format')
+
+    parser.add_argument("-a", "--aln", dest="aln", 
+                        type=str, 
+                        help="""Multi sequence alignment""")
+
+    parser.add_argument("-af", "--aln-format", dest="aln_format", 
+                        type=str, default="fasta",
+                        help="""fasta, phylip, iphylip, relaxed_iphylip, relaxed_phylip""")
+
+    parser.add_argument("-m", "--mode", dest="mode", 
+                        choices=["c", "r"], default="r",
+                        help="""(r)ectangular or (c)ircular visualization""")
+
+    parser.add_argument("-r", "--root", dest="root", 
+                        type=str, nargs="*",
+                        help="Roots the tree to the node grouping the list"
+                        " of nodes provided (space separated)""")
+
+    parser.add_argument("-i", "--image", dest="image", 
+                        type=str, 
+                        help="Render tree image instead of showing it. A filename "
+                        " should be provided. PDF, SVG and PNG file extensions are"
+                        " supported (i.e. -i tree.svg)"
+                        )
+
+    parser.add_argument("-Iw", "--width", dest="width", 
+                        type=int, default=0, 
+                        help="width of the rendered image in pixels (see --size-units)"
+                        )
+
+    parser.add_argument("-Ih", "--height", dest="height", 
+                        type=int, default=0,
+                        help="height of the rendered image in pixels (see --size-units)"
+                        )
+
+    parser.add_argument("-Ir", "--resolution", dest="resolution", 
+                        type=int, default=300,
+                        help="Resolution if the tree image (DPI)"
+                        )
+
+    parser.add_argument("-Iu", "--size-units", dest="size_units", 
+                        choices=["px", "mm", "in"], default="px",
+                        help="Units used to specify the size of the image."
+                        " (px:pixels, mm:millimeters, in:inches). "
+                        )
+
+    parser.add_argument("-Sm", "--min-branch-separation", dest="branch_separation", 
+                        type=int, default = 3, 
+                        help="Min number of pixels to separate branches vertically"
+                        )
+
+    parser.add_argument("-b", "--bootstrap", dest="bootstrap", 
+                        action="store_true",
+                        help="""Shows branch support values""")
+
+    parser.add_argument("-N", "--hide-names", dest="hide_names", 
+                        action="store_true",
+                        help="""Hide leaf names""")
+
+    parser.add_argument("-l", "--ladderize", dest="ladderize", 
+                        action="store_true",
+                        help="""Sort branches by size""")
+
+    parser.add_argument("-S", "--do-not-sort", dest="not_sort", 
+                        action="store_true",
+                        help="""do not sort branches by node names (respects order in newick)""")
+
+    parser.add_argument("-rx", "--raxml", dest="raxml", 
+                        action="store_true",
+                        help="""Process newick as raxml bootstrap values""")
+
+    args = parser.parse_args()
+
+    tfile = args.tree[0]
+
+    if args.raxml:
+        nw = re.sub(":(\d+\.\d+)\[(\d+)\]", ":\\1[&&NHX:bootstrap=\\2]", open(tfile).read())
+        t = PhyloTree(nw)
+        for n in t.traverse():
+            n.support = getattr(n, "bootstrap", 100.0)
+    else:
+        t = PhyloTree(tfile)        
+
+    if args.aln:
+        t.link_to_alignment(args.aln, format=args.aln_format)
+
+    if args.ladderize:
+        t.ladderize()
+
+    if not args.not_sort:
+        t.sort_descendants()
+
+    t.dist = 0
+
+    if args.root:
+        if len(args.root) > 1:
+            outgroup = t.get_common_ancestor(args.root)
+        else:
+            outgroup = t & args.root[0]
+        t.set_outgroup(outgroup)
+    ts = TreeStyle()
+    ts.mode = args.mode
+    ts.show_leaf_name = False
+    ts.branch_vertical_margin = args.branch_separation
+    if args.bootstrap:
+        ts.show_branch_support = True
+
+    if args.hide_names:
+        SHOW_LEAF_NAMES = False
+
+    # scale the tree
+    if not args.height: 
+        args.height = None
+    if not args.width: 
+        args.width = None
+
+    ts.layout_fn = master_layout
+    if args.image:
+        t.render(args.image, tree_style=ts, w=args.width, h=args.height)
+    else:
+        t.show(None, tree_style=ts)
