@@ -214,7 +214,7 @@ if options.test_examples:
 
 # Re-establish module name
 _ex('mv %s/ete2_tester %s' %(RELEASE_PATH, RELEASE_MODULE_PATH))
-_ex('cp %s/scripts/ete2_tester' % (RELEASE_PATH))
+_ex('rm %s/scripts/ete2_tester' % (RELEASE_PATH))
 _ex('find %s -name \'*.py\' -o -name \'*.rst\'| xargs perl -e "s/ete2_tester/%s/g" -p -i' %\
               (RELEASE_PATH, MODULE_NAME) )
 _ex('mv %s/scripts/ete_dev %s/scripts/%s' %\
