@@ -30,7 +30,7 @@ What's new in ETE 2.1
   * Added new face types:
      * :class:`CircleFace` (basic circle/sphere forms)
      * :class:`TreeFace` (trees within trees)
-     * :class:`ItemFace` (create custom and interactive QtGraphicsItems)
+     * :class:`StaticItemFace` and :class:`DynamicItemFace` (create custom and interactive QtGraphicsItems)
   * Improved faces:
      * :class:`AttrFace` accepts prefix and suffix text, as well as a
        text formatter function. :attr:`fstyle` argument can be set to

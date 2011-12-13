@@ -484,6 +484,14 @@ Bubble tree maps
 
  .. literalinclude:: ../../examples/treeview/bubble_map.py
 
+Trees within trees
+-------------------
+
+ .. figure:: ../../examples/treeview/tree_faces.png
+
+ .. literalinclude:: ../../examples/treeview/tree_faces.py
+
+
 Creating your custom interactive Item faces
 -------------------------------------------
 

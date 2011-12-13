@@ -893,6 +893,8 @@ class CircleFace(Face):
 
 class StaticItemFace(Face):
     """
+    .. versionadded:: 2.1
+
     Creates a face based on an external QtGraphicsItem object.
     QGraphicsItem object is expected to be independent from tree node
     properties, so its content is assumed to be static (drawn only

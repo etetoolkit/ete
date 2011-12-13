@@ -39,8 +39,6 @@ class InteractiveItem(QGraphicsRectItem):
         if self.label: 
             self.label.setVisible(False)
 
-
-
 def random_color(h=None):
     """Generates a random color in RGB format.""" 
     if not h:
