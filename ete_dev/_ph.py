@@ -52,7 +52,7 @@ def call():
             print "Latest stable ETE version is", latest
         elif latest > current:
             print "You look a bit old."
-            print "A newer version is available: rev%" %latest
+            print "A newer version is available: rev%s" %latest
             print "Use 'easy_install -U %s' to upgrade" %module_name
         else:
             print "I see you are in shape."
