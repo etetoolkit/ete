@@ -467,6 +467,14 @@ Node backgrounds
 
  .. literalinclude:: ../../examples/treeview/node_background.py
 
+Img Faces
+-------------------
+
+ .. figure:: ../../examples/treeview/img_faces/img_faces.png
+
+Note that images are attached to terminal and internal nodes. 
+
+ .. literalinclude:: ../../examples/treeview/img_faces/img_faces.py
 
 
 Bubble tree maps

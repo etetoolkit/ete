@@ -1,5 +1,5 @@
 # Import Tree instance and faces module
-from ete_dev import Tree, faces
+from ete_dev import Tree, faces, TreeStyle
 
 # Loads an example tree
 nw = """
@@ -81,7 +81,7 @@ def mylayout(node):
         descFace = faces.TextFace(code2desc[node.name], fsize=10)
         descFace.margin_top = 10
         descFace.margin_bottom = 10
-        descFace.margin_border.width = 1
+        descFace.border.margin = 1
 
         # Note that this faces is added in "aligned" mode
         faces.add_face_to_node(descFace, node, column=0, aligned=True)
@@ -129,4 +129,7 @@ def mylayout(node):
         node.img_style["bgcolor"] = "#9db0cf"
 
 # And, finally, Visualize the tree using my own layout function
-t.show(mylayout)
+ts = TreeStyle()
+ts.layout_fn = mylayout
+t.render("img_faces.png", w=600, tree_style = ts)
+
