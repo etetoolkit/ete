@@ -322,8 +322,8 @@ Several types of node faces are provided by the main :mod:`ete_dev`
 module, ranging from simple text (:class:`TextFace`) and geometric
 shapes (:class:`CircleFace`), to molecular sequence representations
 (:class:`SequenceFace`), heatmaps and profile plots
-(:class:`ProfileFace`). **A complete list of available faces can be
-found at the :mod:`ete_dev.treeview` reference page**.
+(:class:`ProfileFace`). A complete list of available faces can be
+found at the :mod:`ete_dev.treeview` reference page..
 
 Faces position
 ^^^^^^^^^^^^^^^^
@@ -458,6 +458,15 @@ Fixed node styles
  .. figure:: ../../examples/treeview/node_style.png
 
  .. literalinclude:: ../../examples/treeview/node_style.py
+
+
+Node backgrounds
+-------------------
+
+ .. figure:: ../../examples/treeview/node_background.png
+
+ .. literalinclude:: ../../examples/treeview/node_background.py
+
 
 
 Bubble tree maps
