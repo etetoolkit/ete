@@ -154,10 +154,6 @@ try:
         # Project uses reStructuredText, so ensure that the docutils get
         # installed or upgraded on the target machine
         install_requires = [
-            "ete2_stats"
-            ],
-        dependency_links = [
-            "http://ete.cgenomics.org/releases/ete2/"
             ],
         package_data = {
             },
