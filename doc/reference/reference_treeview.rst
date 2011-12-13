@@ -57,7 +57,11 @@ Node faces
    :members:
    :no-undoc-members:
 
-.. autoclass:: ete_dev.ItemFace
+.. autoclass:: ete_dev.StaticItemFace
+   :members:
+   :no-undoc-members:
+
+.. autoclass:: ete_dev.DynamicItemFace
    :members:
    :no-undoc-members:
 

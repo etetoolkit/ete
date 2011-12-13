@@ -20,7 +20,7 @@ class InteractiveItem(QGraphicsRectItem):
     def hoverEnterEvent (self, e):
         # There are many ways of adding interactive elements. With the
         # following code, I show/hide a text item over my custom
-        # ItemFace
+        # DynamicItemFace
         if not self.label: 
             self.label = QGraphicsRectItem()
             self.label.setParentItem(self)
@@ -102,7 +102,7 @@ def master_ly(node):
         # the constructor function that returns a QGraphicsItem. It
         # will be used to draw the Face. Next arguments are arbitrary,
         # and they will be forwarded to the constructor Face function.
-        F = faces.ItemFace(ugly_name_face, 100, 50)
+        F = faces.DynamicItemFace(ugly_name_face, 100, 50)
         faces.add_face_to_node(F, node, 0, position="aligned")
   
 

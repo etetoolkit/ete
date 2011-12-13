@@ -108,9 +108,10 @@ _ntbgcolors = {
     ' ':"#FFFFFF"
 }
 
-__all__ = ["Face", "TextFace", "AttrFace", "ImgFace",\
-               "ProfileFace", "SequenceFace", "TreeFace",\
-               "RandomFace", "ItemFace", "CircleFace", "PieChartFace", "BarChartFace"]
+__all__ = ["Face", "TextFace", "AttrFace", "ImgFace",
+           "ProfileFace", "SequenceFace", "TreeFace",
+           "RandomFace", "DynamicItemFace", "StaticItemFace",
+           "CircleFace", "PieChartFace", "BarChartFace"]
 
 class Face(object):
     """ 
@@ -889,14 +890,44 @@ class CircleFace(Face):
     def _height(self):
         return self.item.rect().height()
 
-class ItemFace(Face):
+
+class StaticItemFace(Face):
+    """
+    Creates a face based on an external QtGraphicsItem object.
+    QGraphicsItem object is expected to be independent from tree node
+    properties, so its content is assumed to be static (drawn only
+    once, no updates when tree changes). 
+
+    :arguments item: an object based on QGraphicsItem
+    """
+    def __init__(self, item):
+        Face.__init__(self)
+        self.type = "item"
+        self.item = item
+
+    def update_items(self):
+        return 
+
+    def _width(self):
+        return self.item.rect().width()
+
+    def _height(self):
+        return self.item.rect().height()
+
+
+class DynamicItemFace(Face):
     """
     .. versionadded:: 2.1
 
-    Creates a QtGraphicsItem Face. 
+    Creates a face based on an external QGraphicsItem object whose
+    content depends on the node that is linked to. 
 
-    :arguments constructor: A pointer to a function or methods
-      returning a QGraphicsItem based object
+    :arguments constructor: A pointer to a method (function or class
+      constructor) returning a QGraphicsItem based
+      object. "constructor" method is expected to receive a node
+      instance as the first argument. The rest of arguments passed to
+      ItemFace are optional and will passed also to the constructor
+      function.
     """
 
     def __init__(self, constructor, *args, **kargs):
