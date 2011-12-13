@@ -129,8 +129,10 @@ class SeqGroup(object):
         names = map(lambda x: self.id2name[x], keys)
         return zip(names, seqs, comments)
 
-    def set_seq(self, name, seq, comments = []):
+    def set_seq(self, name, seq, comments = None):
         """Updates or adds a sequence """
+        if comments is None:
+            comments = []
         name = name.strip()
         seq = seq.replace(" ", "")
         seq = seq.replace("\t", "")
