@@ -150,12 +150,15 @@ try:
         packages = find_packages(),
         
         requires = [],
-
+        
         # Project uses reStructuredText, so ensure that the docutils get
         # installed or upgraded on the target machine
         install_requires = [
+            "ete2_stats"
             ],
-        
+        dependency_links = [
+            "http://ete.cgenomics.org/releases/ete2/"
+            ],
         package_data = {
             },
         # metadata for upload to PyPI
@@ -170,42 +173,21 @@ try:
         classifiers = TAGS,
         provides = [mod_name],
         keywords = "bioinformatics phylogeny evolution phylogenomics genomics" 
-                   " tree clustering phylogenetics phylogenetic ete orthology" 
-                   " paralogy",
+        " tree clustering phylogenetics phylogenetic ete orthology" 
+        " paralogy",
         url = "http://ete.cgenomics.org",
         download_url = "http://ete.cgenomics.org/releases/ete2/",
-        )
-except:
+    )
+except: 
     raise
 else:
     notwanted = set(["-h", "--help", "-n", "--dry-run"])
     seen = set(_s.script_args)
-    
-    if not (notwanted & seen):
+    wanted = set(["install", "bdist", "bdist_egg"])
+    if (wanted & seen) and not (notwanted & seen):
         try:
-            sys.path.remove(_wd)
-        except ValueError:
+            welcome = urllib2.quote("New alien in earth!")
+            urllib2.urlopen("http://ete.cgenomics.org/et_phone_home?ID=%s&VERSION=%s&MSG=%s"
+                            %(ETEID, ete_version, welcome))
+        except urllib2.HTTPError, e: 
             pass
-
-        try: 
-            _mod = __import__(mod_name)
-        except ImportError:
-            pass
-        else:
-            try: 
-                from _mod import __VERSION__
-            except ImportError:
-                pass
-            else:
-                try:
-                    _rev = __VERSION__.split("rev")[1]
-                except IndexError:
-                    _rev = None
-                if revision == _rev:
-                    print _rev
-                    try:
-                        welcome = urllib2.quote("New alien in earth!")
-                        urllib2.urlopen("http://ete.cgenomics.org/et_phone_home?ID=%s&VERSION=%s&MSG=%s"
-                                        %(ETEID, ete_version, welcome))
-                    except urllib2.HTTPError, e: 
-                        pass
