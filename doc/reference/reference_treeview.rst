@@ -1,11 +1,9 @@
 .. module:: ete_dev.treeview
 
-treeview module 
+Treeview module 
 *************************
 
 .. contents::
-
-
 
 Tree style
 ====================

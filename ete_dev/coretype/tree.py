@@ -126,7 +126,7 @@ class TreeNode(object):
         else:
             raise ValueError, "children:wrong type"
 
-    #: Branch length distance to parent node. Default = 1
+    #: Branch length distance to parent node. Default = 0.0
     dist = property(fget=_get_dist, fset=_set_dist)
     #: Branch support for current node
     support = property(fget=_get_support, fset=_set_support)
@@ -1026,7 +1026,21 @@ class TreeNode(object):
                 current = current.up
         return current
 
-    def populate(self, size, names_library=None, reuse_names=False, random_dist=False): 
+    def populate(self, size, names_library=None, reuse_names=False, 
+                 random_branches=False): 
+        """
+        Generates a random topology by populating current node.
+
+        :argument None names_library: If provided, names library
+          (list, set, dict, etc.) will be used to name nodes.
+
+        :argument False reuse_names: If True, node names will not be
+          necessarily unique, which makes the process a bit more
+          efficient.
+
+        :argument False random: If True, branch distances and support
+          values will be randomized.
+        """
         NewNode = self.__class__
 
         if len(self.children) > 1: 
@@ -1050,7 +1064,7 @@ class TreeNode(object):
             c1 = p.add_child()
             c2 = p.add_child()
             next.extend([c1, c2])
-            if random_dist:
+            if random_branches:
                 c1.dist = random.random()
                 c2.dist = random.random()
                 c1.support = random.random()

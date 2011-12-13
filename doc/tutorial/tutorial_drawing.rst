@@ -448,8 +448,32 @@ collection of rules controlling how different nodes should be drawn.
 
 
 Combining styles, faces and layouts
---------------------------------------------
+=====================================
 
-.. warning::
-   Under construction, sorry :(
-   More complex examples will be added!
+Examples are probably the best way to show how ETE works: 
+
+Fixed node styles
+-------------------
+
+ .. figure:: ../../examples/treeview/node_style.png
+
+ .. literalinclude:: ../../examples/treeview/node_style.py
+
+
+Bubble tree maps
+-------------------
+
+ .. figure:: ../../examples/treeview/bubble_map.png
+
+ .. literalinclude:: ../../examples/treeview/bubble_map.py
+
+Creating your custom interactive Item faces
+-------------------------------------------
+
+ .. figure:: ../../examples/treeview/item_faces.png 
+ 
+Note that item faces shown in this image are not static. When the tree
+is view using the tree.show() method, you can interact with items.
+
+ .. literalinclude:: ../../examples/treeview/item_faces.py
+

@@ -816,7 +816,7 @@ class TreeFace(Face):
     """ 
     .. versionadded:: 2.1
 
-    Creates a Face containing a Tree object. 
+    Creates a Face containing a Tree object. Yes, a tree within a tree :)
 
     :argument tree: An ETE Tree instance (Tree, PhyloTree, etc...)
     :argument tree_style: A TreeStyle instance defining how tree show be drawn 
@@ -949,6 +949,7 @@ class BackgroundFace(Face):
     def _height(self):
         return self.min_height
 
+
 class _PieChartItem(QtGui.QGraphicsRectItem):
     def __init__(self, percents, width, height, colors):
         QtGui.QGraphicsRectItem.__init__(self, 0, 0, width, height)
@@ -1027,6 +1028,7 @@ class BarChartFace(Face):
 
     def _height(self):
         return self.item.rect().height()
+
 
 class _BarChartItem(QtGui.QGraphicsRectItem):
     def __init__(self, values, deviations, width, height, colors, labels, max_value):

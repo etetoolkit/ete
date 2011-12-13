@@ -180,6 +180,8 @@ class TreeStyle(object):
     """ 
     .. versionadded:: 2.1
 
+    .. currentmodule:: ete_dev
+
     Contains all the general image properties used to render a tree
 
     **TREE SHAPE AND IMAGE DESIGN**
@@ -225,7 +227,7 @@ class TreeStyle(object):
 
     :var 0 arc_start: When circular trees are drawn, this defines
       the starting angle (in degrees) from which leaves are
-      distribute (clock-wise) around the total arc. 0 = 3 o'clock
+      distributed (clock-wise) around the total arc. 0 = 3 o'clock
 
     :var 360 arc_span: Total arc used to draw circular trees (in
       degrees)
@@ -283,13 +285,11 @@ class TreeStyle(object):
 
     Initialize aligned face headers
 
-    .. currentmodule:: ete_dev.treeview
+    :var aligned_header: a :class:`FaceContainer` aligned to the end
+      of the tree and placed at the top part.
 
-    :var aligned_header: a :class:`FaceContainer` with the header faces added
-      to the aligned faces grid.
-
-    :var aligned_foot: a :class:`FaceContainer` with the foot faces added
-      to the aligned faces grid.
+    :var aligned_foot: a :class:`FaceContainer` aligned to the end
+      of the tree and placed at the bottom part.
 
     :var legend: a :class:`FaceContainer` with an arbitrary number of faces
       representing the legend of the figure. 
@@ -345,7 +345,7 @@ class TreeStyle(object):
         self.branch_vertical_margin = 0
 
         # When circular trees are drawn, this defines the starting
-        # angle (in degrees) from which leaves are distribute
+        # angle (in degrees) from which leaves are distributed
         # (clock-wise) around the total arc. 0 = 3 o'clock
         self.arc_start = 0 
 
