@@ -182,7 +182,7 @@ class ArrayTable(object):
             self.rowValues[rowname] = self.matrix[i,:]
             i+=1
 
-    def write(self, fname, colnames=[]):
+    def write(self, fname, colnames=None):
         write_arraytable(self, fname, colnames=colnames)
 
 

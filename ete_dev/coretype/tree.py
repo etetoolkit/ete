@@ -1024,7 +1024,7 @@ class TreeNode(object):
                 current = current.up
         return current
 
-    def populate(self, size, names_library=[], reuse_names=False, random_dist=False): 
+    def populate(self, size, names_library=None, reuse_names=False, random_dist=False): 
         NewNode = self.__class__
 
         if len(self.children) > 1: 
@@ -1056,7 +1056,8 @@ class TreeNode(object):
 
         # next contains leaf nodes
         charset =  "abcdefghijklmnopqrstuvwxyz"
-        names_library = deque(names_library)
+        if names_library:
+            names_library = deque(names_library)
         for n in next:
             if names_library:
                 if reuse_names: 
@@ -1067,54 +1068,6 @@ class TreeNode(object):
                 tname = ''.join(random.sample(charset,5))
             n.name = tname
             
-    def old_populate(self, size, names_library=[], reuse_names=False):
-        """
-        Populates the partition under this node with a given number
-        of leaves. Internal nodes are added as required.
-
-        :argument size: number of leaf nodes to add to the current
-            tree structure.
-
-        :argument [] names_library: a list of names that can be used
-          to create new nodes.
-
-        :argument False reuse_name: If True, new node names are not
-          necessarily unique.
-
-        """
-
-        charset =  "abcdefghijklmnopqrstuvwxyz"
-        
-        prev_size = len(self)
-        terminal_nodes = set(self.get_leaves())
-        silly_nodes = set([n for n in self.traverse() \
-                           if len(n)==1 and n.children!=[]])
-
-        if self.is_leaf():
-            size -=1
-        names_library = set(names_library)
-        while len(terminal_nodes) != size+prev_size:
-            try:
-                target = random.sample(silly_nodes, 1)[0]
-                silly_nodes.remove(target)
-            except ValueError:
-                target = random.sample(terminal_nodes, 1)[0]
-                terminal_nodes.remove(target)
-                silly_nodes.add(target)
-                if target is not self:
-                    names_library.add(target.name)
-                    #target.name = "NoName"
-
-            if len(names_library)>0:
-                tname = random.sample(names_library,1)[0]
-                if not reuse_names:
-                    names_library.remove(tname)
-
-            else:
-                tname = ''.join(random.sample(charset,5))
-            tdist = random.random()
-            new_node = target.add_child( name=tname, dist=tdist )
-            terminal_nodes.add(new_node)
 
     def set_outgroup(self, outgroup):
         """
