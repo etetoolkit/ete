@@ -186,7 +186,8 @@ _ex('find %s/ete_dev/ -name \'*.py\' -exec  python ___put_disclaimer.py {} \;' %
 print "*** Fixing imports..."
 _ex('find %s -name \'*.py\' -o -name \'*.rst\'| xargs perl -e "s/ete_dev/ete2_tester/g" -p -i' %\
         (RELEASE_PATH))
-
+_ex('cp %s/scripts/ete_dev %s/scripts/ete2_tester' %\
+              (RELEASE_PATH, RELEASE_PATH))
 _ex('mv %s/ete_dev %s/ete2_tester' %(RELEASE_PATH, RELEASE_PATH))
 _ex('cd %s; python setup.py build --build-lib=build/lib' %(RELEASE_PATH))
 
