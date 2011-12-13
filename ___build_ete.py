@@ -215,6 +215,8 @@ if options.test_examples:
 _ex('mv %s/ete2_tester %s' %(RELEASE_PATH, RELEASE_MODULE_PATH))
 _ex('find %s -name \'*.py\' -o -name \'*.rst\'| xargs perl -e "s/ete2_tester/%s/g" -p -i' %\
               (RELEASE_PATH, MODULE_NAME) )
+_ex('mv %s/scripts/ete_dev %s/scripts/%s' %\
+              (RELEASE_PATH, RELEASE_PATH,  MODULE_NAME) )
 _ex('cd %s; python setup.py build' %(RELEASE_PATH))
 
 print "Cleaning doc dir:"

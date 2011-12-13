@@ -148,7 +148,7 @@ try:
         name = mod_name,
         version = ete_version,
         packages = find_packages(),
-        scripts = ['scripts/ete'],
+        scripts = ['scripts/%s' %mod_name],
         requires = [],
         
         # Project uses reStructuredText, so ensure that the docutils get
