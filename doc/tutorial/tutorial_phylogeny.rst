@@ -1,7 +1,10 @@
-.. module:: ete_dev.phylo
-  :synopsis: Extends Tree object: add orthology and paralogy methods, species aware nodes, links to multiple sequence alignments
 .. moduleauthor:: Jaime Huerta-Cepas
-:Author: Jaime Huerta-Cepas
+
+.. :author:: Jaime Huerta-Cepas
+
+.. :synopsis:: Extends Tree object: add orthology and paralogy methods, species aware nodes, links to multiple sequence alignments
+
+.. currentmodule:: ete_dev
 
 Phylogenetic Trees
 ********************
@@ -29,11 +32,11 @@ Linking Phylogenetic Trees with Multiple Sequence Alignments
 to the Multiple Sequence Alignments (MSA). To associate a MSA with a
 phylogenetic tree you can use the :func:`PhyloNode.link_to_alignment`
 method. You can use the :attr:`alg_format` argument to specify its
-format.  Phylip sequential ("**phylip**"), Phylip interleaved
-("**iphylip**") and Fasta ("**fasta**") formats are currently
-supported. Given that Fasta format are not only applicable for MSA but
-also for **Unaligned Sequences**, you may also associate sequences of
-different lengths with tree nodes.  
+format (See :class:`SeqGroup` documentation for available formats)
+
+Given that Fasta format are not only applicable for MSA but also for
+**Unaligned Sequences**, you may also associate sequences of different
+lengths with tree nodes.
 
 ::
   

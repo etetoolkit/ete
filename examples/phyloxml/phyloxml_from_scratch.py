@@ -3,7 +3,7 @@ import random
 project = Phyloxml()
 
 # Creates a random tree
-phylo = phyloxml.PhyloXMLTree()
+phylo = phyloxml.PhyloxmlTree()
 phylo.populate(5, random_dist=True)
 phylo.phyloxml_phylogeny.set_name("test_tree")
 # Add the tree to the phyloxml project

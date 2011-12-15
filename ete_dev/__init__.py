@@ -12,8 +12,8 @@ from coretype.tree import *
 from coretype.seqgroup import *
 from phylo.phylotree import *
 from webplugin.webapp import *
-from phyloxml import Phyloxml
-from nexml import Nexml
+from phyloxml import Phyloxml, PhyloxmlTree
+from nexml import Nexml, NexmlTree
 
 try:
     from coretype.arraytable import *

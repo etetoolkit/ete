@@ -1,13 +1,14 @@
 from sys import stdout
 import _nexml
 from _nexml import *
-from _nexml_tree import NexMLTree 
+from _nexml_tree import NexmlTree 
 
-#_nexml.AbstractTree.subclass = NexMLTree
-_nexml.FloatTree.subclass = NexMLTree
-_nexml.IntTree.subclass = NexMLTree
+#_nexml.AbstractTree.subclass = NexmlTree
+_nexml.FloatTree.subclass = NexmlTree
+_nexml.IntTree.subclass = NexmlTree
 
 class Nexml(_nexml.Nexml):
+    """ Creates a new nexml project. """
     def __repr__(self):
         return "NeXML project <%s>" %hex(hash(self))
 
@@ -15,6 +16,7 @@ class Nexml(_nexml.Nexml):
         _nexml.Nexml.__init__(self, *args, **kargs)
         
     def build_from_file(self, fname, index_otus=True):
+        """ Populate Nexml project with data in a nexml file. """
         doc = _nexml.parsexml_(fname)
         rootNode = doc.getroot()
         rootTag, rootClass = _nexml.get_root_tag(rootNode)
@@ -46,4 +48,4 @@ class Nexml(_nexml.Nexml):
         return super(Nexml, self).export(outfile=outfile, level=level, namespacedef_=namespace)
       
 
-__all__ = _nexml.__all__ + ["Nexml", "NexMLTree"]
+__all__ = _nexml.__all__ + ["Nexml", "NexmlTree"]

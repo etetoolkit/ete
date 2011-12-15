@@ -233,4 +233,6 @@ class ClusterNode(TreeNode):
 
 
 # cosmetic alias
+#: .. currentmodule:: ete_dev
+#
 ClusterTree = ClusterNode

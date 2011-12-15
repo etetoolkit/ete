@@ -1,9 +1,9 @@
 from sys import stdout
 import _phyloxml as main
 from _phyloxml import * 
-from _phyloxml_tree import PhyloXMLTree 
+from _phyloxml_tree import PhyloxmlTree 
 
-_phyloxml.Phylogeny.subclass = PhyloXMLTree
+_phyloxml.Phylogeny.subclass = PhyloxmlTree
 
 class Phyloxml(_phyloxml.Phyloxml):
     def __repr__(self):
@@ -26,4 +26,4 @@ class Phyloxml(_phyloxml.Phyloxml):
         return super(Phyloxml, self).export(outfile=outfile, level=level, namespacedef_=namespace)
 
 
-__all__ = _phyloxml.__all__ + ["Phyloxml", "PhyloXMLTree"]
+__all__ = _phyloxml.__all__ + ["Phyloxml", "PhyloxmlTree"]

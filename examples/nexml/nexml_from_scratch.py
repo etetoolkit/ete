@@ -8,16 +8,16 @@ from ete_dev import nexml
 nexml_project = nexml.Nexml()
 tree_collection = nexml.Trees()
 
-# NexMLTree is a special PhyloTree instance that is prepared to be
+# NexmlTree is a special PhyloTree instance that is prepared to be
 # added to NeXML projects. So lets populate a random tree
-nexml_tree = nexml.NexMLTree()
+nexml_tree = nexml.NexmlTree()
 # Random tree with 10 leaves
 nexml_tree.populate(10, random_dist=True) 
 # We add the tree to the collection 
 tree_collection.add_tree(nexml_tree)
 
 # Create another tree from a newick string
-nexml_tree2 = nexml.NexMLTree("((hello, nexml):1.51, project):0.6;")
+nexml_tree2 = nexml.NexmlTree("((hello, nexml):1.51, project):0.6;")
 tree_collection.add_tree(nexml_tree2)
 
 # Tree can be handled as normal ETE objects

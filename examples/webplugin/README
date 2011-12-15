@@ -16,31 +16,37 @@ My apache config para el sitio "default":
 
 <VirtualHost *:80>
  ServerAdmin webmaster@localhost
- 
+
  DocumentRoot /var/www
  <Directory />
-	Options +FollowSymLinks
-	AllowOverride None
+        Options +FollowSymLinks
+        AllowOverride None
  </Directory>
 
- WSGIDaemonProcess eteApp user=www-data group=www-data processes=1 threads=1
- WSGIProcessGroup eteApp
-
- <Directory /var/www/wsgi/>
-	Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch
-	SetHandler wsgi-script
-	Order allow,deny
-	Allow from all
-	 AddHandler wsgi-script .py  
- </Directory>
- 
  ErrorLog /var/log/apache2/error.log
- 
+
  # Possible values include: debug, info, notice, warn, error, crit,
  # alert, emerg.
  LogLevel warn
- 
+
  CustomLog /var/log/apache2/access.log combined
+
+ # ########################### #
+ # WSGI SPECIFIC CONFIG        #
+
+ WSGIDaemonProcess eteApp user=www-data group=www-data processes=1 threads=1
+ WSGIProcessGroup eteApp
+ WSGIApplicationGroup %{GLOBAL}
+
+ <Directory /var/www/webplugin/>
+        Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch
+        SetHandler wsgi-script
+        Order allow,deny
+        Allow from all
+        AddHandler wsgi-script .py
+ </Directory>
+
+ # END OF WSGI SPECIFIC CONFIG #
+ # ########################### #
+
 </VirtualHost>
-
-

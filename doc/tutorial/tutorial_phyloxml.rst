@@ -1,8 +1,9 @@
-.. versionadded:: 2.1
-.. currentmodule:: ete_dev.phyloxml
 .. moduleauthor:: Jaime Huerta-Cepas
 
-************************************  
+.. versionadded:: 2.1
+
+.. currentmodule:: ete_dev
+
 PhyloXML
 ************************************
 
@@ -16,10 +17,11 @@ support values, and gene duplication and speciation events.
 Loading PhyloXML projects from files 
 ----------------------------------------
 
-ETE provides full support for phyloXML projects. Phylogenies are
-integrated as ETE's tree data structures, while the rest of features
-are represented as simple classes providing basic reading and writing
-operations.
+ETE provides full support for phyloXML projects through the
+:class:`Phyloxml` object. Phylogenies are integrated as ETE's tree
+data structures as :class:`PhyloxmlTree` instances, while the rest of
+features are represented as simple classes (:mod:`ete_dev.phyloxml`)
+providing basic reading and writing operations.
 
 
 .. literalinclude:: ../../examples/phyloxml/phyloxml_parser.py
