@@ -1,8 +1,16 @@
-ClusterTree class
-====================
-.. currentmodule:: ete_dev.clustering
+.. module:: ete_dev.clustering
 
-.. autoclass:: ClusterNode
+.. contents::
+
+
+Clustering module
+====================
+
+.. autoclass:: ete_dev.ClusterNode
    :members:
    :show-inheritance:
 
+
+.. autoclass:: ete_dev.ClusterTree
+   :members:
+   :show-inheritance:

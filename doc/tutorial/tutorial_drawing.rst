@@ -501,4 +501,3 @@ Note that item faces shown in this image are not static. When the tree
 is view using the tree.show() method, you can interact with items.
 
  .. literalinclude:: ../../examples/treeview/item_faces.py
-

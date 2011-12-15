@@ -59,17 +59,17 @@ How do I visit all leaves within a tree?
 What's the difference between **get_leaves()** and **iter_leaves()**?
 -----------------------------------------------------------------------
 
-All "get_" methods (get_leaves, get_descendants, etc.) return an
+All get\_ methods (get_leaves, get_descendants, etc.) return an
 independent list of items. This means that tree traversing is fully
-performed before returning the result.  In contrast, "iter_" methods
+performed before returning the result.  In contrast, iter\_ methods
 return one item at a time, saving memory and, increasing the
 performance of some operations.
 
 Note also that tree topology cannot be modified while iterating
-methods are being executed. This limitation does not apply for "get_"
+methods are being executed. This limitation does not apply for get\_
 methods.
 
-In addition, "get_" methods can be used to cache tree browsing paths
+In addition, get\_ methods can be used to cache tree browsing paths
 (the order in which nodes must be visited), so the same tree
 traversing operations don't need to be repeated:
 

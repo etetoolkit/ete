@@ -4,10 +4,10 @@
 PhyloTree class
 ================
 
-.. autoclass:: PhyloNode
+.. autoclass:: ete_dev.PhyloNode
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: PhyloTree
+.. autoclass:: ete_dev.PhyloTree
 
