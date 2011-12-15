@@ -18,7 +18,6 @@ Phyloxml classes linked to ETE
 .. autoclass:: PhyloxmlTree
    :members:
 
-
 Generic Phyloxml classes
 =======================
 
