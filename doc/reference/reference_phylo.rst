@@ -11,3 +11,4 @@ PhyloTree class
 
 .. autoclass:: ete_dev.PhyloTree
 
+.. autoclass:: ete_dev.phylo.EvolEvent
