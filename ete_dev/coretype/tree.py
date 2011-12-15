@@ -62,7 +62,7 @@ class TreeNode(object):
     :argument newick: Path to the file containing the tree or, alternatively,
        the text string containing the same information.
 
-    :argument format: subnewick format 
+    :argument 0 format: subnewick format 
 
       .. table::                                               
 
@@ -1592,5 +1592,6 @@ def asRphylo(ETE_tree):
     R.library("ape")
     return R['read.tree'](text=ETE_tree.write())
 
-# An alias for the :class:`TreeNode` class
+# Alias
+#: .. currentmodule:: ete_dev
 Tree = TreeNode

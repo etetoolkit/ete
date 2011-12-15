@@ -23,7 +23,7 @@
 
 """
 This module defines the PhyloNode dataytype to manage phylogenetic
-trees. It inheritates the coretype TreeNode and add some speciall
+trees. It inheritates the coretype TreeNode and add some special
 features to the the node instances.
 """
 
@@ -56,7 +56,6 @@ class PhyloNode(TreeNode):
 
     :argument format: sub-newick format 
 
-
       .. table::                                               
 
           ======  ============================================== 
@@ -75,9 +74,16 @@ class PhyloNode(TreeNode):
           100      topology only                                 
           ======  ============================================== 
 
+    :argument sp_naming_function: Pointer to a parsing python
+       function that receives nodename as first argument and returns
+       the species name (see
+       :func:`PhyloNode.set_species_naming_function`. By default, the
+       3 first letter of nodes will be used as species identifiers.
+
+
+
     :returns: a tree node object which represents the base of the tree.
     """
-
 
     def _get_species(self):
         if self._speciesFunction:
@@ -98,10 +104,11 @@ class PhyloNode(TreeNode):
     # property that updates the species code every time name is
     # changed
 
-    #: .. currentmodule:: ete_dev.phylo
-    #: Species code associated to the node. This property can be
-    #: automatically extracted from the TreeNode.name attribute or
-    #: manually set (see :func:`PhyloNode.set_species_naming_function`)
+    #: .. currentmodule:: ete_dev
+    #:
+    #Species code associated to the node. This property can be
+    #automatically extracted from the TreeNode.name attribute or
+    #manually set (see :func:`PhyloNode.set_species_naming_function`).
     species = property(fget = _get_species, fset = _set_species)
 
     def __init__(self, newick=None, alignment=None, alg_format="fasta", \
@@ -132,7 +139,21 @@ class PhyloNode(TreeNode):
 
     def set_species_naming_function(self, fn):
         """ 
-        None
+        Sets the parsing function used to extract species name from a
+        node's name.
+
+        :argument fn: Pointer to a parsing python function that
+          receives nodename as first argument and returns the species
+          name.
+        
+        :: 
+
+          # Example of a parsing function to extract species names for
+          # all nodes in a given tree.
+          def parse_sp_name(node_name):
+              return node_name.split("_")[1]
+          tree.set_species_naming_function(parse_sp_name)
+
         """
         if fn:
             for n in self.traverse():
@@ -226,10 +247,11 @@ class PhyloNode(TreeNode):
         one. It requires an species2age dictionary with the age
         estimation for all species. 
 
-        :arg: is_leaf_fn None: A pointer to a function that receives a
-        node instance as unique argument and returns True or False. It
-        can be used to dynamically collapse nodes, so they are seen as
-        leaves.
+        :argument None is_leaf_fn: A pointer to a function that
+          receives a node instance as unique argument and returns True
+          or False. It can be used to dynamically collapse nodes, so
+          they are seen as leaves.
+
         """
 
         root = self.get_tree_root()
@@ -257,7 +279,8 @@ class PhyloNode(TreeNode):
         Returns the farthest oldest node (leaf or internal). The
         difference with get_farthest_oldest_leaf() is that in this
         function internal nodes grouping seqs from the same species
-        are collapsed. """
+        are collapsed.
+        """
 
         # I use a custom is_leaf() function to collapse nodes groups
         # seqs from the same species
@@ -320,6 +343,6 @@ class PhyloNode(TreeNode):
         return outgroup_node
 
 
-
-# cosmetic alias
+#: .. currentmodule:: ete_dev
+#
 PhyloTree = PhyloNode

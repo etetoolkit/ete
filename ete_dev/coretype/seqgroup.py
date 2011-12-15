@@ -38,21 +38,19 @@ class SeqGroup(object):
     SeqGroup class can be used to store a set of sequences (aligned
     or not).
 
-    CONSTRUCTOR ARGUMENTS:
 
+    :argument sequences: Path to the file containing the sequences or,
+        alternatively, the text string containing the same
+        information.
 
-      * sequences: Path to the file containing the sequences or,
-        alternatively, the text string containing the same information.
+    :argument fasta format: the format in which sequences are
+        encoded. Current supported formats are: ``fasta``, ``phylip``
+        (phylip sequencial) and ``iphylip`` (phylip
+        interleaved). Phylip format forces sequence names to a maximum
+        of 10 chars. To avoid this effect, you can use the relaxed
+        phylip format: ``phylip_relaxed`` and ``iphylip_relaxed``.
 
-      * format (optional): the format in which sequences are encoded. Current
-        supported formats are: "fasta", "phylip" (phylip sequencial)
-        and "iphylip" (phylip interleaved)
-
-    RETURNS:
-
-     A SeqGroup object to operate with sequencies.
-
-    EXAMPLES:
+    ::
 
      msf = ">seq1\\nAAAAAAAAAAA\\n>seq2\\nTTTTTTTTTTTTT\\n"
      seqs = SeqGroup(msf, format="fasta")

@@ -13,7 +13,6 @@ Tree style
 .. autoclass:: ete_dev.FaceContainer
    :members:
 
-
 Node style
 =====================
 

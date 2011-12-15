@@ -1,21 +1,23 @@
-.. currentmodule:: ete_dev.webplugin
+.. module:: ete_dev.webplugin
+
+.. currentmodule:: ete_dev
 
 .. moduleauthor:: Jaime Huerta-Cepas
 
 .. versionadded:: 2.1
 
-************************************
-Interactive web tree applications
+Overview
 ************************************
 
 Starting at version 2.1, ETE provides a module to interactively
-display trees within web pages.
+display trees within web pages. This task is not straightforward, but
+ETE tries to simplify it by providing a basic
+:class:`WebTreeApplication` class that can be imported in your python
+web applications.
 
-The :mod:`ete_dev.webplugin` module implements a transparent connector
-between ETE's functionality and python web application. For this, a
-pre-built `WSGI
-<http://en.wikipedia.org/wiki/Web_Server_Gateway_Interface>`_
-application is provided.
+:class:`WebTreeApplication` implements a transparent connector between
+ETE's functionality and web application. For this, a pre-built
+`WSGI <http://wsgi.org>`_ application is provided.
 
 Through this application, you will be able to create custom web
 implementations to visualize and manipulate trees interactively. Some
@@ -24,19 +26,32 @@ examples can be found at the `PhylomeDB tree browser
 the `ETE's online treeviewer <http://ete.cgenomics.org/treeview>`_.
 
 
-======================
+
 Installing a X server
-======================
+=========================
 
-You will need to install a X server (not a desktop) in your ETE host
-and provide X access to apache processes.
+All modern linux desktop installations include a graphical interface
+(called X server). However web servers (in which the ETE plugin is
+expected to run) may not count with a X server. 
 
-For instance:
+
+Servers
+========
+
+In order to render tree images with ETE, you will need to install, at
+least, a basic X server. Note that the X server does not require a
+desktop interface, such as Gnome or KDE. 
+
+In Ubuntu, for instance, a basic X server called xdm can be installed
+as follows:
 
 ``apt-get install  xserver-xorg xdm  xfonts-base xfonts-100dpi xfonts-75dpi``
 
-Then, edit ``/etc/X11/xdm/xdm-config`` and set following values: 
-::
+Once the X server is installed, you will need to configure it to
+accept connections from the web-server. 
+
+In our example, edit the ``/etc/X11/xdm/xdm-config`` file and set
+following values: ::
   
   DisplayManager*authorize:       false
   !
@@ -47,15 +62,19 @@ Do not forget to restart your xdm server.
 ``/etc/init.d/xdm restart``
 
 
-Note that this is not necessary if you are already in desktop
-system. In this case, you only need to give permissions to the
-web-server (i.e. apache) to connect your display. Usually: 
+Desktops
+==========
+
+If you plan to use web tree application in a linux desktop computer,
+then the X server is already installed. You will only need to give
+permissions to the web-server (i.e. apache) to connect your
+display. Usually, as simple as running the following command in a
+terminal:
 
 ``xhost +``
 
 
-======================================
-Configuring your web sever
+Configuring the web sever
 ======================================
 
 You will need to add support for WSGI application to your web
@@ -110,34 +129,30 @@ server (usually at ``/ete/apache2/sites-available/default``):
 
 .. note::
 
+   `/var/www/webplugin/wsgi/` is the folder in which python web
+   application will be located. Make sure that the apache WSGI config
+   enables this folder to run wsgi-scripts.
+
+.. warning::
+   
+   Important notes: 
+
    `/var/www/webplugin/` is assumed to be the directory in which your
    application will run. 
 
+   `/var/www/webplugin/tmp/` should be writable by the web-server
+   (i.e. chmod 777)
 
-======================================
-Creating your web tree application
-======================================
 
-ETE's web tree application uses WSGI in the backend, and a several
-javascript files in the frontend. 
 
-The best way to start creating your web application is to make use of
-the ETE's webplugin examples. They can be found within the
-installation package (``examples/webplugin``) of the last ete package:
-http://pypi.python.org/pypi/ete2a1
+Implementation of WebTreeApplications
+========================================
 
-Copy the *webplugin* directory to the document root path of your
-site. Remember that *webplugin* directory path must be configured to
-execute WSGI applications in Apache config files.
-
-==========================================
-Adding functionality to your application
-==========================================
-
-.. warning::
-
-  ::
-
-    webplugin/tmp/    # chmod 777 
-    webplugin/wsgi/   # WSGI Apache enabled
+ETE's :class:`WebTreeApplication` uses WSGI in the backend, and a
+several javascript files in the frontend. Basic files are included as
+an example in the `ETE installation package
+<http://pypi.python.org/pypi/ete_dev>`_ ``examples/webplugin``. The
+whole example folder is necessary, and it contains a commented copy of
+a web-tree implementation
+``examples/webplugin/wsgi/webplugin_example.py``.
 
