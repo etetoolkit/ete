@@ -154,13 +154,13 @@ In the following example, a microarray clustering result is visualized
 and validated using ETE.
 
 .. figure:: ../ex_figures/bubbles_validation.png
-   
-    Image resulting from a microarray clustering validation
-    analysis. Red bubbles represent a bad silhouette index (S<0),
-    while green represents good silhouette index (S>0). Size of
-    bubbles is proportional to the Silhouette index. Internal nodes
-    are drawn with the average expression proﬁle grouped by their
-    partitions. Leaf node proﬁles are shown as a heatmap.
+      
+Image resulting from a microarray clustering validation analysis. Red
+bubbles represent a bad silhouette index (S<0), while green represents
+good silhouette index (S>0). Size of bubbles is proportional to the
+Silhouette index. Internal nodes are drawn with the average expression
+proﬁle grouped by their partitions. Leaf node proﬁles are shown as a
+heatmap.
 
 .. literalinclude:: ../../examples/clustering/bubbles_validation.py
 
