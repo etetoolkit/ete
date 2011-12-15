@@ -12,7 +12,7 @@ tree_collection = nexml.Trees()
 # added to NeXML projects. So lets populate a random tree
 nexml_tree = nexml.NexmlTree()
 # Random tree with 10 leaves
-nexml_tree.populate(10, random_dist=True) 
+nexml_tree.populate(10, random_branches=True) 
 # We add the tree to the collection 
 tree_collection.add_tree(nexml_tree)
 

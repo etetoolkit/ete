@@ -4,7 +4,7 @@ project = Phyloxml()
 
 # Creates a random tree
 phylo = phyloxml.PhyloxmlTree()
-phylo.populate(5, random_dist=True)
+phylo.populate(5, random_branches=True)
 phylo.phyloxml_phylogeny.set_name("test_tree")
 # Add the tree to the phyloxml project
 project.add_phylogeny(phylo)
