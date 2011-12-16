@@ -2,6 +2,7 @@ import colorsys
 import random
 import re
 import types 
+from sys import stderr
 
 from PyQt4.QtGui import *
 from PyQt4 import QtCore
@@ -87,7 +88,6 @@ class _Background(object):
             return bg
         else:
             return None
-        
 
 
 class _ActionDelegator(object):
@@ -169,8 +169,27 @@ class NodeStyle(dict):
     #    #        self["_faces"][pos][col] = list(faces)
 
     def __setitem__(self, i, v):
+        # keeps compatible with ETE 2.0 version
+        if i == "line_type":
+            print >>stderr, "WARNING: [%s] keyword is deprecated and it has been replaced by %s." %\
+                (i, "[hz_line_type, vt_line_type]")
+            print >>stderr, "WARNING: Support for this keyword will be removed in next ETE versions."
+            super(NodeStyle, self).__setitem__("hz_line_type", v)
+            i = "vt_line_type"
+
+        if i == "vlwidth":
+            i = "vt_line_width"
+            print >>stderr, "WARNING: [%s] keyword is deprecated and it has been replaced by %s." %\
+                (i, "[vt_line_width]")
+            print >>stderr, "WARNING: Support for this keyword will be removed in next ETE versions."
+        if i == "hlwidth":
+            i = "hz_line_width"
+            print >>stderr, "WARNING: [%s] keyword is deprecated and it has been replaced by %s." %\
+                (i, "[hz_line_width]")
+            print >>stderr, "WARNING: Support for this keyword will be removed in next ETE versions."
+      
         if i not in VALID_NODE_STYLE_KEYS:
-            raise ValueError("'%s' is not a valid key for a NodeStyle instance" %i)
+            raise ValueError("'%s' is not a valid keyword for a NodeStyle instance" %i)
         super(NodeStyle, self).__setitem__(i, v)
 
     #def clear(self):
