@@ -54,5 +54,6 @@ for l in t.iter_leaves():
 
 ts = TreeStyle()
 ts.layout_fn = layout
+ts.show_leaf_name = False
 t.render("node_style.png", w=400, tree_style=ts)
 

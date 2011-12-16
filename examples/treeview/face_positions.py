@@ -1,5 +1,3 @@
-import sys
-
 from ete_dev import Tree, faces, TreeStyle, NodeStyle
 
 def mylayout(node):
@@ -18,7 +16,7 @@ def mylayout(node):
         faces.add_face_to_node(br2, node, column=0, position="branch-right")
 
 t = Tree()
-t.populate(int(sys.argv[1]))
+t.populate(10)
 
 # Margins, alignment, border, background and opacity can now be set for any face
 rs1 = faces.TextFace("branch-right2-with \n margins-and-borders", fsize=20, fgcolor="#009000")
