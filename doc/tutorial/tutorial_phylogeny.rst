@@ -78,22 +78,45 @@ attribute.
 
 .. literalinclude:: ../../examples/phylogenies/link_sequences_to_phylogenies.py
 
+Visualization of phylogenetic trees
+===================================
+
+PhyloTree instances can benefit from all the features of the
+programmable drawing engine. However, a built-in phylogenetic layout
+is provided for convenience. 
+
+All PhyloTree instances are, by default, attached to such layout for
+tree visualization, thus allowing for in-place alignment visualization
+and evolutionary events labeling. 
+
+.. figure:: ../../examples/phylogenies/phylotree.png
+
+.. literalinclude:: ../../examples/phylogenies/phylotree_visualization.py
+
 
 Adding taxonomic information
 ===============================
+.. _taxonomic_info:
 
 :class:`PhyloTree` instances allow to deal with leaf names and species
 names separately.  This is useful when working with molecular
 phylogenies, in which node names usually represent sequence
-identifiers.  Species names will be stored in the :attr:`PhyloNode.species`
-attribute of each leaf node. The method :func:`PhyloNode.get_species`
-can be used obtain the set of species names found under a given
-internal node (speciation or duplication event).
+identifiers.  Species names will be stored in the
+:attr:`PhyloNode.species` attribute of each leaf node. The method
+:func:`PhyloNode.get_species` can be used obtain the set of species
+names found under a given internal node (speciation or duplication
+event).  Often, sequence names do contain species information as a
+part of the name, and ETE can parse this information automatically. 
 
-Often, sequence names do contain species information as a
-part of the name, and ETE will help to do it automatically. By
-default, **the first three letters** of every sequence name are taken
-as species codes. 
+There are three ways to establish the species of the different tree
+nodes:
+
++ Default: The three first letters of node's name represent the species 
++ The species code of each node is dynamically created based on node's name
++ The species code of each node is manually set.
+
+Automatic control of species info
+------------------------------------
 
 ::
 
@@ -124,8 +147,11 @@ as species codes.
   # node: Mms_001 Species name: Mms
 
 
-However, this behavior can be changed by using the
-:func:`PhyloNode.set_species_naming_funcion` method or by using the
+Automatic (and custom) control of the species info
+----------------------------------------------------
+
+The default behavior can be changed by using the
+:func:`PhyloNode.set_species_naming_function` method or by using the
 :attr:`sp_naming_function` argument of the :class:`PhyloTree` class.
 Note that, using the :attr:`sp_naming_function` argument, the whole
 tree structure will be initialized to use the provided parsing
@@ -172,9 +198,14 @@ of the tree.
   # node: Mms_001 Species name: Mus musculus
 
 
-To disable the automatic generation of species names (the user will be
-expected to set such information manually), **None** can be passed as
-the species naming function.
+Manual control of the species info
+-------------------------------------
+
+To disable the automatic generation of species names based on node
+names, a ``None`` value can be passed to the
+:func:`PhyloNode.set_species_naming_function` function. From then on,
+species attribute will not be automatically updated based on the name
+of nodes and it could be controlled manually. 
 
 ::
 
@@ -243,7 +274,6 @@ the ``sos_thr`` argument present in both methods.
 
 .. literalinclude:: ../../examples/phylogenies/orthology_and_paralogy_prediction.py
 
-
 Tree reconciliation algorithm
 ---------------------------------------
 
@@ -257,7 +287,7 @@ molecular phylogeny you can use the :func:`PhyloNode.reconcile`
 method, which requires a species :class:`PhyloTree` as its first
 argument. Leaf node names in the the species are expected to be the
 same species codes in the gene tree (see
-:ref:`sec:using-taxonomic-data`). All species codes present in the
+`taxonomic_info`_). All species codes present in the
 gene tree should appear in the species tree.
 
 As a result, the :func:`PhyloNode.reconcile` method will label the
@@ -289,8 +319,8 @@ paralogous** to ``out_seqs``. Similarly, if an event represents a
 speciation, ``in_seqs`` **are all orthologous** to ``out_seqs``.
 
 
-Dating phylogenetic nodes
-=========================
+Relative dating phylogenetic nodes
+=====================================
 
 In molecular phylogeny, nodes can be interpreted as evolutionary
 events. Therefore, they represent duplication or speciation events. In
@@ -298,41 +328,57 @@ the case of gene duplication events, nodes can also be assigned to a
 certain point in a relative temporal scale. In other words, you can
 obtain a relative dating of all the duplication events detected.
 
-Some examples of its use can be found in XXXX . 
-
 Although **absolute dating is always preferred and more precise**,
-relative dating provides a faster approach to compare the relative age
-of paralogs (`read this
+topological dating provides a faster approach to compare the relative
+age of paralogous sequences (`read this
 <http://bioinformatics.oxfordjournals.org/content/27/1/38.long>`_ for
 a comparison with other methods, such as the use of synonymous
 substitution rates as a proxy to the divergence time).
 
-Recently, this method has been referred as phyloSTRATIFICATION? XXX. 
+Some applications of topological dating can be found in `Huerta-Cepas
+et al, 2007 <http://genomebiology.com/2007/8/6/r109>`_ or, more
+recently, in `Huerta-Cepas et al, 2011
+<http://bib.oxfordjournals.org/content/12/5/442.abstract>`_ or
+`Kalinka et al, 2001
+<http://www.nature.com/nature/journal/v468/n7325/full/nature09634.html>`_.
 
-This type of relative dating can be automatized by defining a
-dictionary of distances between all the species of interest and a
-reference species. For instance, in a collection of gene trees
-containing human, chimp, mouse, rat and fish species, we could
-establish that:
 
-  * chimp is the closest species to human (primates) 
-  * mouse and rat are the second closest species (defining mammals)
-  * and fish is the farthest species to human 
+Implementation
+------------------
+
+The aim of relative dating is to establish a gradient of ages among
+sequences. For this, a reference species needs to be fixed, so the
+gradient of ages will be referred to that referent point.
+
+Thus, if our reference species is `Human`, we could establish the
+following gradient of species: 
+
++ \(1) Human -> (2) Other Primates -> (3) Mammals -> (4) Vertebrates
+
+So, nodes in a tree can be assigned to one of the above categories
+depending on the sequences grouped. For instance: 
+
++ A node with only human sequences will be mapped to (1). 
++ A node with human and orangutan sequences will be mapped to (2)
++ A node with human a fish sequences will be mapped to (4)
+
+This simple calculation can be done automatically by encoding the
+gradient of species ages as Python dictionary.
 
 :: 
 
   relative_dist = {
-      "human": 0, # distance from human to human 
-      "chimp": 1, # distance from chimp to human 
-      "rat":   2, # ...
-      "mouse": 2,
-      "fish":  3 }
+      "human": 0, # human
+      "chimp": 1, # Primates non human
+      "rat":   2, # Mammals non primates
+      "mouse": 2, # Mammals non primates
+      "fish":  3  # Vertebrates non mammals
+      }
 
-Once done, you can use such a dictionary to assign a time label to all
-duplication events found in a collection of trees. The
-:func:`PhyloNode.get_age` method can be used to that purpose.
+Once done, ETE can check the relative age of any tree node.  The
+:func:`PhyloNode.get_age` method can be used to that purpose. 
 
-For the following 3 duplication events, 
+For example, let's consider the following gene tree:
 
 ::
 
@@ -359,7 +405,7 @@ For the following 3 duplication events,
     #               \-mouseC
 
 
-the result would be:
+the expected node dating would be:
 
  * Dup1 will be assigned to primates (most distant species is
    chimp). ``Dup1.get_age(relative_distances)`` will return 1
@@ -370,13 +416,12 @@ the result would be:
  * Dup3 will be assigned to mammals [3] (most distant species is
    fish). ``Dup3.get_age(relative_distances)`` will return 3
 
+.. literalinclude:: ../../examples/phylogenies/dating_evolutionary_events.py
+
 .. warning:: 
 
    Note that relative distances will vary depending on your reference
    species.
-
-
-.. literalinclude:: ../../examples/phylogenies/dating_evolutionary_events.py
 
 
 Automatic rooting (outgroup detection)
@@ -393,15 +438,3 @@ tree to given sequences.
 purpose.
 
 
-Visualization of phylogenetic trees
-===================================
-
-A special set of visualization rules (see chapter
-:ref:`cha:the-programmable-tree`) are provided with the phylogenetic extension
-as the **phylogeny** layout function. By default, this layout function will be
-used to show and render any PhyloTree instance, thus handling the visualization
-of MSAs, evolutionary events, and taxonomic information. However, you can
-change/extend this layout by providing a custom layout function.
-
-The **SeqFace()** class is also provided for convenience. It allows to add nodes
-faces with the coloured sequence associated to each node.

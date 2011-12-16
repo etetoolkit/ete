@@ -4,6 +4,7 @@
 
 The Programmable Tree Drawing Engine
 ************************************
+.. _drawing:
 
 .. contents::
 
