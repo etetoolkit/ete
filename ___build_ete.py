@@ -199,17 +199,22 @@ if options.unitest:
 
 if options.test_examples:
     # Check tutorial examples
-    'find %s/examples/ -name "*.py" -exec python {} \;'
-
-    for filename in os.listdir("%s/examples/*/" %RELEASE_PATH):
-        error_examples = []
-        if filename.endswith(".py"):
-            print "Testing", filename
-            s = _ex('export PYTHONPATH="%s/build/lib/"; python %s/doc/tutorial/examples/%s;' %\
-                    (RELEASE_PATH, RELEASE_PATH, filename), interrupt=False)
-            if s != 0:
-                error_examples.append(filename)
-    print len(error_examples), "examples caused problems", error_examples
+    exfiles = commands.getoutput('find %s/examples/ -name "*.py"' %\
+            RELEASE_PATH).split("\n")
+    error_examples = []
+    for filename in exfiles:
+        print "Testing", filename
+        path = os.path.split(filename)[0]
+        cmd = 'cd %s; PYTHONPATH="%s/build/lib/" python %s' %\
+            (path, RELEASE_PATH, filename)
+        print cmd
+        s = _ex(cmd, interrupt=False)
+        if s != 0:
+            error_examples.append(filename)
+    print len(error_examples), "examples caused problems"
+    print '\n'.join(map(str, error_examples))
+    if ask("Continue?", ["y","n"]) == "n":
+        exit(-1)
 
 
 # Re-establish module name
