@@ -436,5 +436,3 @@ tree to given sequences.
 :func:`PhyloNode.get_farthest_oldest_node` and
 :func:`PhyloNode.get_farthest_oldest_leaf` can be used for that
 purpose.
-
-

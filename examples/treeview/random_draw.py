@@ -1,4 +1,3 @@
-import sys
 import os
 
 from ete_dev import Tree, faces
@@ -73,7 +72,7 @@ def tiny_ly(node):
     node.img_style["size"] = 2
     node.img_style["shape"] = "square"
     
-size = int(sys.argv[1])
+size = 15
 t = Tree()
 t.populate(size, reuse_names=False)
 
