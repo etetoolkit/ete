@@ -32,6 +32,7 @@ import os
 import re
 
 from ete_dev import TreeNode, SeqGroup
+from ete_dev.treeview.main import  TreeStyle
 from reconciliation import get_reconciled_tree
 import spoverlap
 
@@ -113,7 +114,6 @@ class PhyloNode(TreeNode):
     def __init__(self, newick=None, alignment=None, alg_format="fasta", \
                  sp_naming_function=_parse_species, format=0):
 
-
         # _update names?
         self._name = "NoName"
         self._species = "Unknown"
@@ -132,9 +132,6 @@ class PhyloNode(TreeNode):
 
     def __repr__(self):
         return "PhyloTree node '%s' (%s)" %(self.name, hex(self.__hash__()))
-
-    def show(self, layout="phylogeny", tree_style=None):
-        super(PhyloNode, self).show(layout=layout, tree_style=tree_style)
 
     def set_species_naming_function(self, fn):
         """ 

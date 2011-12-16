@@ -7,36 +7,39 @@ import layouts
 from ete_dev import Tree, PhyloTree, ClusterTree
 from main import TreeStyle, save
 from qt4_render import _TreeScene, render, get_tree_img_map
+from templates import _DEFAULT_STYLE, apply_template
+
 
 __all__ = ["show_tree", "render_tree"]
 
 _QApp = None
 
-def init_scene(t, layout, img):
+def init_scene(t, layout, ts):
     global _QApp
 
-    if not img:
-        img = TreeStyle()
+    if not ts:
+        ts = TreeStyle()
 
-    # if not layout and not img.layout_fn:
-    #     if t.__class__ == PhyloTree:
-    #         layout  = "phylogeny"
-    #     elif t.__class__ == ClusterTree:
-    #         layout = "large"
-    #     else:
-    #         layout = "basic"
-        
-    #     img._layout_handler = layout
+    if layout and not ts.layout_fn: 
+        ts.layout_fn  = layout
+    elif not layout and not ts.layout_fn:
+        cl = t.__class__
+        try:
+            ts_template = _DEFAULT_STYLE[cl]
+        except KeyError, e:
+            pass
+        else:
+            apply_template(ts, ts_template)
 
     if not _QApp:
         _QApp = QtGui.QApplication(["ETE"])
 
     scene  = _TreeScene()
-    return scene, img
+    return scene, ts
 
-def show_tree(t, layout=None, img_properties=None):
+def show_tree(t, layout=None, tree_style=None):
     """ Interactively shows a tree."""
-    scene, img = init_scene(t, layout, img_properties)
+    scene, img = init_scene(t, layout, tree_style)
     tree_item, n2i, n2f = render(t, img)
     scene.init_data(t, img, n2i, n2f)
 
@@ -47,9 +50,9 @@ def show_tree(t, layout=None, img_properties=None):
     _QApp.exec_()
 
 def render_tree(t, imgName, w=None, h=None, layout=None, \
-                    img_properties = None, header=None, units="px"):
+                    tree_style = None, header=None, units="px"):
     """ Render tree image into a file."""
-    scene, img = init_scene(t, layout, img_properties)
+    scene, img = init_scene(t, layout, tree_style)
     tree_item, n2i, n2f = render(t, img)
 
     scene.init_data(t, img, n2i, n2f)

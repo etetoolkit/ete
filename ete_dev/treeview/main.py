@@ -319,6 +319,24 @@ class TreeStyle(object):
 
     """
    
+    def set_layout_fn(self, layout):
+        # Validates layout function
+        if type(layout) == types.FunctionType or\
+                type(layout) == types.MethodType or layout is None:
+            self._layout_handler = layout
+        else:
+            try:
+                import layouts
+                self._layout_handler = getattr(layouts, layout)
+            except Exception, e:
+                print e
+                raise ValueError ("Required layout is not a function pointer nor a valid layout name.")
+ 
+    def get_layout_fn(self):
+        return self._layout_handler
+
+    layout_fn = property(get_layout_fn, set_layout_fn)
+
     def __init__(self):
         # :::::::::::::::::::::::::
         # TREE SHAPE AND SIZE
@@ -333,7 +351,7 @@ class TreeStyle(object):
 
         # Layout function used to dynamically control the aspect of
         # nodes
-        self.layout_fn = None
+        self._layout_handler = None
         
         # 0= tree is drawn from left-to-right 1= tree is drawn from
         # right-to-left. This property only has sense when "r" mode
@@ -440,25 +458,6 @@ class TreeStyle(object):
         self.title = FaceContainer()
         self.__closed__ = 1
 
-    def set_layout_fn(self, layout):
-        # Validates layout function
-        if type(layout) == types.FunctionType or\
-                type(layout) == types.MethodType or layout is None:
-            #self._layout_fn = layout       
-            self._layout_handler = layout
-        else:
-            try:
-                import layouts
-                self._layout_handler = getattr(layouts, layout)
-                #self._layout_fn = layout       
-            except Exception, e:
-                print e
-                raise ValueError ("Required layout is not a function pointer nor a valid layout name.")
- 
-    def get_layout_fn(self):
-        return self._layout_handler
-
-    layout_fn = property(get_layout_fn, set_layout_fn)
 
     def __setattr__(self, attr, val):
         if hasattr(self, attr) or not getattr(self, "__closed__", 0):

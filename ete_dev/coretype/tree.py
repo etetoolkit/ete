@@ -1194,19 +1194,12 @@ class TreeNode(object):
         """
         try:
             from ete_dev.treeview import drawer
-            from ete_dev.treeview.main import TreeStyle
         except ImportError, e:
             print "'treeview' module could not be loaded.\n",e
             print "\n\n"
             print e
         else:
-            if not tree_style:
-                tree_style = TreeStyle()
-
-            if layout:
-                tree_style.set_layout_fn(layout)
-
-            drawer.show_tree(self, layout=layout, img_properties=tree_style)
+            drawer.show_tree(self, layout=layout, tree_style=tree_style)
 
     def render(self, file_name, layout=None, w=None, h=None, \
                        tree_style=None, units="px", dpi=300):
@@ -1230,20 +1223,14 @@ class TreeNode(object):
 
         try:
             from ete_dev.treeview import drawer
-            from ete_dev.treeview.main import TreeStyle
         except ImportError, e:
             print "'treeview' module could not be loaded.\n",e
             print "\n\n"
             print e
         else:
-            if not tree_style:
-                tree_style  = TreeStyle()
-
-            if layout:
-                tree_style.set_layout_fn(layout)
-            return drawer.render_tree(self, file_name, w=w, h=h, layout=layout, \
-                                   img_properties=tree_style, \
-                                   units=units)
+            return drawer.render_tree(self, file_name, w=w, h=h, 
+                                      layout=layout, tree_style=tree_style, 
+                                      units=units)
 
     def copy(self):
         """ 

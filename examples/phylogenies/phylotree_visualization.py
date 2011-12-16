@@ -34,5 +34,5 @@ recon_tree, events = genetree.reconcile(sptree)
 recon_tree.link_to_alignment(alg)
 
 # Visualize the reconciled tree
-recon_tree.render("phylotree.png", layout="phylogeny", w = 750)
+recon_tree.render("phylotree.png")
 

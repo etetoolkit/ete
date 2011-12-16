@@ -164,14 +164,3 @@ def large(node):
     # Color and style
     node.img_style["fgcolor"] = "#3333FF"
     node.img_style["size"] = 0
-
-
-# Labels to show in qt application menu
-layout_functions = {
-        "Basic": basic,
-        "Phylogenetic tree": phylogeny,
-        "Clustering heatmap": heatmap,
-        "Clustering validation (bars)": cluster_bars,
-        "Clustering validation (profiles)": cluster_cbars,
-        "Very large topology": large
-        }
