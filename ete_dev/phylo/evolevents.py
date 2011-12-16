@@ -34,7 +34,6 @@ class EvolEvent:
 
     :attr:`node` : link to the event node in the tree
 
-
     """
 
     def __init__(self):
