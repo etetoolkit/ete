@@ -1,7 +1,8 @@
 import re
-
+from sys import stderr
 from PyQt4  import QtCore, QtGui
 from PyQt4.QtGui import QPrinter
+from PyQt4.QtCore import QThread, SIGNAL
 try:
     from PyQt4 import QtOpenGL
     USE_GL = True
@@ -11,6 +12,7 @@ except ImportError:
 
 import _mainwindow, _search_dialog, _show_newick, _open_newick, _about
 from main import random_color, TreeStyle, save
+from ete_dev._ph import new_version
 import time
 
 def etime(f):
@@ -21,7 +23,24 @@ def etime(f):
         print time.time() - t1 
     return a_wrapper_accepting_arguments
 
+class CheckUpdates(QThread):
+    def run(self):
+        current, latest, tag = new_version()
+        if tag is None: 
+            tag = ""
+        msg = ""
+        if current and latest:
+            if current < latest:
+                msg = "New version available (rev%s): %s More info at http://ete.cgenomics.org." %\
+                    (latest, tag)
+            elif current == latest:
+                msg = "Up to date"
+        self.emit(SIGNAL("output(QString)"), msg)
+
 class _GUI(QtGui.QMainWindow):
+    def _updatestatus(self, msg):
+        self.main.statusbar.showMessage(msg)
+
     def __init__(self, scene, *args):
         QtGui.QMainWindow.__init__(self, *args)
         self.scene = scene
@@ -33,8 +52,12 @@ class _GUI(QtGui.QMainWindow):
         self.main = _mainwindow.Ui_MainWindow()
         self.main.setupUi(self)
 
-        self.view.centerOn(0,0)
+        # Check for updates
+        self.check = CheckUpdates()
+        self.check.start()
+        self.connect(self.check, SIGNAL("output(QString)"), self._updatestatus)
 
+        self.view.centerOn(0,0)
         if scene.img.show_branch_length: 
             self.main.actionBranchLength.setChecked(True)
         if scene.img.show_branch_support: 

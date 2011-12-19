@@ -72,4 +72,34 @@ def call():
             else:
                 print f.read()
 
+def new_version(module_name=None, current=None):
+    if not module_name:
+        module_name = __name__.split(".")[0]
+    try:
+        f = url.urlopen('http://ete.cgenomics.org/releases/ete2/%s.latest' 
+                        %module_name)
+    except url.HTTPError:
+        latest = None
+    else:
+        latest = int(f.read())
+        
+    news_url = 'http://ete.cgenomics.org/releases/ete2/%s.latest_news' %module_name
+    msg = read_content(news_url)
+        
+    if not current:
+        try:
+            current = int(__VERSION__.split("rev")[1])
+        except (IndexError, ValueError): 
+            current = None
+
+
+    return current, latest, msg
+
+def read_content(address):
+    try:
+        f = url.urlopen(address)
+    except url.HTTPError:
+        return None
+    else:
+        return f.read()
 
