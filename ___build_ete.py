@@ -289,7 +289,7 @@ if process_package:
      
     print "Creating tar.gz"
     _ex("cd %s; python ./setup.py sdist " %RELEASE_PATH) 
-     
+
     release= ask("Copy release to main server?", ["y","n"])
     if release=="y":
         print "Copying release to ete server..."
@@ -301,6 +301,17 @@ if process_package:
 
         print "Creating and submitting distribution to PyPI"
         _ex("cd %s; python ./setup.py sdist upload --show-response " %RELEASE_PATH) 
+
+
+    if ask("Update examples package in server?", ["y","n"]) == "y":
+        print "Creating examples package" 
+        _ex("cd %s; tar -zcf examples-%s.tar.gz examples/" %\
+                (RELEASE_PATH, MODULE_NAME) )
+
+        print "Copying examples to ete server..."
+        _ex("scp %s/examples-%s.tar.gz %s" %\
+                (RELEASE_PATH, MODULE_NAME, SERVER+":"+SERVER_RELEASES_PATH))
+
      
     announce = ask("publish tweet?", ["y","n"])
     if announce == "y":

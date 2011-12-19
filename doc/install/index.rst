@@ -1,6 +1,8 @@
 Download and Install
 **********************
 
+.. contents:: 
+
 GNU/Linux 
 ===========
 

@@ -71,6 +71,8 @@ What's new in ETE 2.1
    * Improvement: Faster prune function
    * Improvement: unicode support for tree files
    * Improvement: Added newick support for scientific notation in branch lengths
-* Improved documentation tutorial and reference guide!
-   * Better library reference 
-   * A set of examples is now provided with the installation package
+
+* Improved documentation and examples:
+  * Online and PDF tutorial 
+  * Better library reference 
+  * A set of examples is now provided with the installation package or `here <http://ete.cgenomics.org/releases/ete2/examples-ete2.tar.gz>`_
