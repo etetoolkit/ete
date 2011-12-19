@@ -137,7 +137,7 @@ print "Your installation ID is:", ETEID
 
 ete_version = open("VERSION").readline().strip()
 revision = ete_version.split("rev")[-1]
-mod_name = ete_version.split("rev")[0]
+mod_name = "ete_dev"
 
 long_description = open("README").read()
 long_description += open("INSTALL").read()
@@ -145,7 +145,7 @@ long_description.replace("ete_dev", mod_name)
 
 try:
     _s = setup(
-        name = mod_name,
+        name = "ete_dev",
         version = ete_version,
         packages = find_packages(),
         scripts = ['scripts/ete_dev'],
@@ -167,7 +167,7 @@ try:
         description = "A python Environment for phylogenetic Tree Exploration",
         long_description = long_description,
         classifiers = TAGS,
-        provides = [mod_name],
+        provides = ["ete_dev"],
         keywords = "bioinformatics phylogeny evolution phylogenomics genomics" 
         " tree clustering phylogenetics phylogenetic ete orthology" 
         " paralogy",
