@@ -1,8 +1,8 @@
 Download and Install
 **********************
 
-
-GNU/Linux ===========
+GNU/Linux 
+===========
 
 ETE requires python>=2.5 as well as several dependencies (required
 only to enable particular functions, but highly recommended):
@@ -91,3 +91,8 @@ The following recipe has been reported to work in MacOS 10.5.8 (thanks to Marco 
    By contrast, non-Macport python version is the one located in
    ``/Library/Frameworks/Python.framework/Versions/2.6/bin/python2.6``,
    so check that you are using the correct python executable.
+
+
+Older Versions
+================
+Older ETE versions can be found at http://ete.cgenomics.org/releases/ete2/
