@@ -1,18 +1,10 @@
 Download and Install
 **********************
 
-.. warning:: 
-   
-   Until the official stable version is released, you can download and
-   install the last 2.1 ETE (beta) version from:
-   http://pypi.python.org/pypi/ete2a1 Current version is fully usable
-   and pretty much stable. Please, report any bug that you may find. 
 
+GNU/Linux ===========
 
-GNU/Linux
-===========
-
-ETE requires python>=2.5 as well as several dependencies (Required
+ETE requires python>=2.5 as well as several dependencies (required
 only to enable particular functions, but highly recommended):
 
 - python-qt4 (>=4.5) [Enables tree visualization and image rendering]

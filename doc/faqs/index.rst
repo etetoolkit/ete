@@ -110,7 +110,7 @@ Can ETE draw circular trees?
 ----------------------------------
 
 Yes, starting from version 2.1, ete can render trees in circular
-mode. Currently, ETE version 2.1 is being tested and documented, but
-you can download it and use from http://pypi.python.org/pypi/ete2a1 or
-by executing "easy_install -U ete2a1".
+mode. Install the latest version from
+http://pypi.python.org/pypi/ete_dev or by executing ``easy_install -U
+ete_dev``.
 

@@ -123,7 +123,7 @@ SERVER_METAPKG_PATH = "/home/services/web/ete.cgenomics.org/releases/ete2/metapk
 METAPKG_JAIL_PATH = "/home/jhuerta/_Devel/ete_metapackage/etepkg_CheckBeforeRm"
 METAPKG_PATH = "/home/jhuerta/_Devel/ete_metapackage"
 RELEASES_BASE_PATH = "/tmp"
-MODULE_NAME = "ete2a1"
+MODULE_NAME = "ete2"
 REVISION = commands.getoutput("git log --pretty=format:'' | wc -l").strip()
 VERSION = MODULE_NAME + "rev" + REVISION
 VERSION_LOG = commands.getoutput("git log --pretty=format:'%s' | head -n1").strip()
