@@ -73,6 +73,6 @@ What's new in ETE 2.1
    * Improvement: Added newick support for scientific notation in branch lengths
 
 * Improved documentation and examples:
-  * Online and PDF tutorial 
-  * Better library reference 
-  * A set of examples is now provided with the installation package or `here <http://ete.cgenomics.org/releases/ete2/examples-ete2.tar.gz>`_
+   * Online and PDF tutorial 
+   * Better library reference 
+   * A set of examples is now provided with the installation package and `here <http://ete.cgenomics.org/releases/ete2/examples-ete2.tar.gz>`_

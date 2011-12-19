@@ -145,7 +145,7 @@ if os.path.exists(RELEASE_PATH):
     print RELEASE_PATH, "exists"
     overwrite = ask("Overwrite?",["y","n"])
     if overwrite=="y":
-        _ex("rm %s -r" %RELEASE_PATH)
+        _ex("rm %s -rf" %RELEASE_PATH)
     else:
         print "Aborted."
         sys.exit(-1)

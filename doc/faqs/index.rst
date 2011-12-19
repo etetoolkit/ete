@@ -9,16 +9,22 @@ How do I use ETE?
 
 From 2.1 version, ETE includes a basic standalone program that can be
 used to quickly visualize your trees. Type ``ete2`` in a terminal to
-access the program.
+access the program. For instance:
+
+  ``# ete2 "((A,B),C);"``
+
+or 
+
+  ``# ete2 mytreefile.nw``
+
 
 However, ETE is not a standalone program. The ``ete2`` script is a
-very simple implementation and does not allow for fancy customization. 
-
-The main goal of ETE is to provide a Python programming library, so
-you can create your own scripts to manipulate and visualize
-phylogenetic trees. Many examples are available `here
+very simple implementation and does not allow for fancy
+customization. The main goal of ETE is to provide a Python programming
+library, so you can create your own scripts to manipulate and
+visualize phylogenetic trees. Many examples are available `here
 <http:://ete.cgenomics.org/releases/ete2/examples-ete2.tar.gz>`_ and
-along the ETE tutorial.
+along with the ETE tutorial.
 
 
 Can ETE draw circular trees?

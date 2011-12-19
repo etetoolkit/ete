@@ -13,7 +13,7 @@ only to enable particular functions, but highly recommended):
 - python-mysqldb (>=1.2) [Enables programmatic access to PhylomeDB]
 - python-numpy (Required to work with clustering trees)
 - python-lxml [Required to work whit NexML and PhyloXML phylogenetic formats]
-- python-setuptools [Optional. Allows to install and upgrade ETE from PyPI repositories]
+- python-setuptools [Optional. Allows to install and upgrade ETE]
 
 
 Meeting dependencies (Debian based distributions)
@@ -27,7 +27,7 @@ can use the following shell command to install all dependencies:
 
 :: 
 
-  $ apt-get install python-numpy python-qt4 python-scipy python-mysqldb python-setuptools
+  $ apt-get install python-setuptools python-numpy python-qt4 python-scipy python-mysqldb python-lxml
 
 
 Meeting dependencies (other GNU/Linux distributions)
@@ -82,6 +82,7 @@ The following recipe has been reported to work in MacOS 10.5.8 (thanks to Marco 
      * py26-scipy
      * py26-pyqt4
      * py26-mysql
+     * py26-lxml
   4. Download the setup installer of the last ETE version (http://ete.cgenomics.org/releases/ete2), uncompress it, enter its folder and run: "sudo python setup.py install" Once the installation has finished,  you will be able to load ETE (import ete2) when running the "right" python binary.
 
 .. note:: 

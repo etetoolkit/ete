@@ -39,8 +39,8 @@ if __name__ == "__main__":
     # metavar - A name for the argument in usage messages.
     # dest - The name of the attribute to be added to the object returned by parse_args().
 
-    parser.add_argument('tree', metavar='trees', type=str, nargs=1,
-                      help='A tree file in newick format')
+    parser.add_argument('tree', metavar='tree_file', type=str, nargs=1,
+                      help='A tree file (or text string) in newick format.')
 
     parser.add_argument("-a", "--aln", dest="aln", 
                         type=str, 
