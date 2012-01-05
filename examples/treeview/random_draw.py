@@ -1,22 +1,9 @@
 import os
 
 from ete_dev import Tree, faces
-from ete_dev.treeview.main import TreeStyle, NodeStyle
+from ete_dev.treeview.main import TreeStyle, NodeStyle, random_color
 import colorsys
 import random
-
-def random_color(h=None):
-    if not h:
-        h = random.random()
-    s = 0.5
-    l = 0.5
-    return hls2hex(h, l, s)
-
-def rgb2hex(rgb):
-    return '#%02x%02x%02x' % rgb
-
-def hls2hex(h, l, s):
-    return rgb2hex( tuple(map(lambda x: int(x*255), colorsys.hls_to_rgb(h, l, s))))
 
 # ::::::::::::::
 # Layout actions

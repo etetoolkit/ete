@@ -586,25 +586,35 @@ class _TreeView(QtGui.QGraphicsView):
         else:
             self.scale(xfactor, yfactor)
 
-    def highlight_node(self, n, fullRegion=False):
+    def highlight_node(self, n, fullRegion=False, fg="red", bg="gray", permanent=False):
         self.unhighlight_node(n)
-        fgcolor = "red"
-        bgcolor = "gray"
         item = self.scene().n2i[n]
         hl = QtGui.QGraphicsRectItem(item.content)
         if fullRegion:
             hl.setRect(item.fullRegion)
         else:
             hl.setRect(item.nodeRegion)
-        hl.setPen(QtGui.QColor(fgcolor))
-        hl.setBrush(QtGui.QColor(bgcolor))
+        hl.setPen(QtGui.QColor(fg))
+        hl.setBrush(QtGui.QColor(bg))
         hl.setOpacity(0.2)
+        # save info in Scene
         self.n2hl[n] = hl
+        if permanent: 
+            item.highlighted = True
 
-    def unhighlight_node(self, n):
+    def unhighlight_node(self, n, reset=False):
         if n in self.n2hl:
-            self.scene().removeItem(self.n2hl[n])
-            del self.n2hl[n]
+            item = self.scene().n2i[n]
+            if not item.highlighted:
+                self.scene().removeItem(self.n2hl[n])
+                del self.n2hl[n]
+            elif reset:
+                self.scene().removeItem(self.n2hl[n])
+                del self.n2hl[n]
+                item.highlighted = False
+            else:
+                pass
+
 
     def wheelEvent(self,e):
         factor =  (-e.delta() / 360.0)
@@ -706,30 +716,28 @@ class _NodeActions(object):
 
 
     def hoverEnterEvent (self, e):
-        if not self.node: return
-        self.scene().view.highlight_node(self.node, fullRegion=True)
+        if self.node:
+            if self.node in self.scene().view.n2hl:
+                pass
+            else:
+                self.scene().view.highlight_node(self.node, fullRegion=True)
 
     def hoverLeaveEvent(self,e):
-        if not self.node: return
-        self.scene().view.unhighlight_node(self.node)
+        if self.node:
+            if self.node in self.scene().view.n2hl:
+                self.scene().view.unhighlight_node(self.node, reset=False)
             
     def mousePressEvent(self,e):
         pass
-
             
     def mouseDoubleClickEvent(self,e):
-        if not self.node: return
-        if not hasattr(self, "highlighted") or self.highlighted == False:
-            bg = self.scene().n2i[self.node]
-            bg.setPen(QtGui.QPen(QtGui.QColor("red")))
-            self.bufferPen = bg.pen()
-            bg.drawbg = True
-            self.highlighted = True
-        else:
-            bg = self.scene().n2i[self.node]
-            bg.setPen(self.bufferPen)
-            bg.drawbg = False
-            self.highlighed = False          
+        if self.node: 
+            item = self.scene().n2i[self.node]
+            if item.highlighted: 
+                self.scene().view.unhighlight_node(self.node, reset=True)
+            else:
+                self.scene().view.highlight_node(self.node, fullRegion=True, 
+                                                 bg=random_color(l=0.5, s=0.5), permanent=True)
 
     def showActionPopup(self):
         contextMenu = QtGui.QMenu()
@@ -810,7 +818,7 @@ class _NodeActions(object):
         n, ok = QtGui.QInputDialog.getInteger(None,"Populate partition","Number of nodes to add:",2,1)
         if ok:
             self.node.populate(n)
-            self.scene().set_style_from(self.scene().tree,self.scene().layout_func)
+            #self.scene().set_style_from(self.scene().tree,self.scene().layout_func)
             self.scene().draw()
 
     def set_start_node(self):
