@@ -4,7 +4,7 @@ from PyQt4.QtGui import QGraphicsSimpleTextItem, QGraphicsPixmapItem, \
     QGraphicsRectItem, QTransform, QBrush, QPen, QColor, QGraphicsItem
 
 from main import FACE_POSITIONS
-from qt4_gui import _NodeActions as _ActionDelegator
+from node_gui_actions import _NodeActions as _ActionDelegator
 
 class _TextFaceItem(QGraphicsSimpleTextItem, _ActionDelegator):
     def __init__(self, face, node, text):

@@ -2,7 +2,6 @@ import math
 import colorsys
 from PyQt4 import QtCore, QtGui
 from main import _leaf
-from qt4_gui import _NodeActions
 
 import time
 
