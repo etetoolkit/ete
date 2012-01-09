@@ -7,7 +7,7 @@ from configobj import ConfigObj, flatten_errors
 from validate import Validator
 
 import sys
-from utils import SeqGroup
+from utils import SeqGroup, AA, NT
 
 from master_task import Task
 from interface import app_wrapper
@@ -91,11 +91,19 @@ def main(args):
             # Loads seq lengths
             for seqname, seq, comment in SEQS.iter_entries():
                 seq2length[seqname] = len(seq)
+                if label == "nt_seed" and set(seq)-NT:
+                    error = "Unknown symbols [%s]. Seq [%s] in file [%s]" %\
+                        (''.join(set(seq)-NT), seqname, seq_file)
+                    raise ValueError(error)
+                elif label == "aa_seed" and set(seq)-AA:
+                    error = "Unknown symbols [%s]. Seq [%s] in file [%s]" %\
+                        (''.join(set(seq)-AA), seqname, seq_file)
+                    raise ValueError(error)
 
             for i,n in SEQS.id2name.iteritems():
                 if len(n)>10: 
                     SEQS.id2name[i] = n[:10]
-                    log.warning("sequence names %s was truncated to 10"
+                    log.warning("sequence name %s was truncated to 10"
                                 " chars: %s " %(n, n[:10]))
             values = SEQS.id2name.values()
             if len(values) != len(set(values)):
