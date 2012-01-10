@@ -4,7 +4,7 @@ import imp
 import logging
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from configobj import ConfigObj, flatten_errors
-from validate import Validator
+import validate
 
 import sys
 from utils import SeqGroup, AA, NT
@@ -45,6 +45,16 @@ __DESCRIPTION__ = """
 --------------------------------------------------------------------------------
 """ %(__VERSION__, __DATE__)
 
+def is_boolean_list(value, min=None, max=None):
+    untyped_value = validate.is_list(value, min, max)
+    typed_value = []
+    for v in untyped_value: 
+        try:
+            typed_value.append(validate.is_boolean(v))
+        except TypeError: 
+            VdtTypeError(v)
+    return typed_value
+
 def main(args):
     log = logging.getLogger("main")
     print __DESCRIPTION__
@@ -52,8 +62,10 @@ def main(args):
     configspec = ConfigObj("specs", 
                            list_values=False, _inspec=True)
 
-    config = ConfigObj("config", configspec=configspec)
-    val = Validator()
+    config = ConfigObj("config", configspec=configspec, list_values=True)
+    custom_types = {"boolean_list": is_boolean_list}
+    val = validate.Validator(custom_types)
+   
     check = config.validate(val)
     if not check:
         print flatten_errors(config, check)
