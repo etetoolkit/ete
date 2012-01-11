@@ -2,6 +2,7 @@
 import os
 import imp
 import logging
+from hashlib import md5
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from configobj import ConfigObj, flatten_errors
 import validate
@@ -39,7 +40,7 @@ __DESCRIPTION__ = """
       If you use this program for published work, please cite:
 
        Jaime Huerta-Cepas and Toni Gabaldon. Nested Phylogenetic
-       Reconstruction. XXX-XX. 2011.
+       Reconstruction. XXX-XX. 2012.
 
       Contact: jhuerta [at] crg.es, tgabaldon [at] crg.es
 --------------------------------------------------------------------------------
@@ -71,7 +72,8 @@ def main(args):
         print flatten_errors(config, check)
         raise ValueError("Error reading config file!")
 
-    base_dir = os.path.abspath(config["main"]["basedir"])
+    #base_dir = os.path.abspath(config["main"]["basedir"])
+    base_dir = args.outdir
     gallery_dir = os.path.join(base_dir, "gallery")
     snapshots_dir = os.path.join(base_dir, "tree_snapshots")
     try:
@@ -113,13 +115,35 @@ def main(args):
                     raise ValueError(error)
 
             for i,n in SEQS.id2name.iteritems():
-                if len(n)>10: 
+                if args.seq_rename:
+                    # This is a bit tricky. I want to generate 10 char
+                    # unique names that are identical for identical
+                    # original names. Hash functions cannot generate
+                    # less than 16 bits strings, so I will trust in
+                    # the first 10 chars. It is very unlikely to get a
+                    # collision even in large sets (million of
+                    # names.), but in such a case, I will rise an
+                    # error.
+                    name = md5(n).hexdigest()[:10]
+                    SEQS.id2name[i] = name
+                elif len(n)>10: 
                     SEQS.id2name[i] = n[:10]
                     log.warning("sequence name %s was truncated to 10"
                                 " chars: %s " %(n, n[:10]))
+
             values = SEQS.id2name.values()
             if len(values) != len(set(values)):
-                raise Exception("Duplicated sequence names, execution aborted.")
+                if args.seq_rename:
+                    raise Exception("Although collisions in the hash function"
+                                    " used to generate unique sequence names"
+                                    " are very unlikely, you found an exception!."
+                                    " You will have to change seq names manually.")
+                else:
+                    raise Exception("Duplicated sequence names, execution"
+                                    " aborted. Correct manually or set"
+                                    " automatic sequence renaming with"
+                                    " --seq_rename flag.")
+
             if visited_seqs and set(values) != visited_seqs:
                 raise Exception("Sequence names do not match between aa and"
                                 " nt files.")
@@ -164,6 +188,10 @@ if __name__ == "__main__":
                         type=str, required=True, 
                         help="""A valid config file to execute the pipeline""")
 
+    parser.add_argument("-o", "--outdir", dest="outdir", 
+                        type=str, required=True, 
+                        help="""Output ir for results.""")
+
     parser.add_argument("-a", "--aa-seed-file", dest="aa_seed_file", 
                         type=str, 
                         help="Initial multi sequence file with"
@@ -181,6 +209,11 @@ if __name__ == "__main__":
     parser.add_argument("-r", "--retry-error-jobs", dest="retry", 
                         action="store_true",
                         help="""Try to relaunch jobs marked as error """)
+
+    parser.add_argument("-sr", "--seq_rename", dest="seq_rename", 
+                        action="store_true",
+                        help="If used, seq names are internally converted"
+                        " to safe and unique 10 char identifiers.")
 
     parser.add_argument("-x", "--execute-inplace", dest="execute", 
                         action="store_true",
