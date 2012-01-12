@@ -2,6 +2,7 @@
 import os
 import imp
 import logging
+import numpy
 from hashlib import md5
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from configobj import ConfigObj, flatten_errors
@@ -9,6 +10,8 @@ import validate
 
 import sys
 from utils import SeqGroup, AA, NT
+from errors import ConfigError, DataError
+
 
 from master_task import Task
 from interface import app_wrapper
@@ -56,26 +59,56 @@ def is_boolean_list(value, min=None, max=None):
             VdtTypeError(v)
     return typed_value
 
+def is_positive_integer_list(value, min=None, max=None):
+    untyped_value = validate.is_list(value, min, max)
+    typed_value = []
+    for v in untyped_value: 
+        try:
+            typed_value.append(validate.is_integer(v))
+        except TypeError: 
+            VdtTypeError(v)
+        else:
+            if v < 0: 
+                VdtTypeError(v)
+    return typed_value
+
 def main(args):
     log = logging.getLogger("main")
     print __DESCRIPTION__
 
     configspec = ConfigObj("specs", 
                            list_values=False, _inspec=True)
-
     config = ConfigObj("config", configspec=configspec, list_values=True)
-    custom_types = {"boolean_list": is_boolean_list}
+    custom_types = {"boolean_list": is_boolean_list, 
+                    "positive_integer_list": is_positive_integer_list, 
+                    }
     val = validate.Validator(custom_types)
-   
     check = config.validate(val)
     if not check:
         print flatten_errors(config, check)
-        raise ValueError("Error reading config file!")
+        raise ConfigError("Bad config file")
 
+    # Check for unique max_seq config values
+    if len(config["main"]["npr_max_seqs"]) != \
+            len(set(config["main"]["npr_max_seqs"])):
+        raise ConfigError("Duplicated entries in 'npr_max_seqs'.")
+
+    # Check for unique max_seq config values
+    if config["main"]["npr_max_seqs"] != \
+            sorted(config["main"]["npr_max_seqs"]):
+        raise ConfigError("'npr_max_seqs' values must be in ascending order.")
+
+    # Check that fields are filled for all max_seq values
+    conf_keys = [v for v in config["main"] if v.startswith("npr_")]
+    if len(set([len(config["main"][v]) for v in conf_keys])) != 1:
+        raise ConfigError("Error reading config file:"
+                         " Unequal length of config table")
+    
     #base_dir = os.path.abspath(config["main"]["basedir"])
-    base_dir = args.outdir
+    base_dir = os.path.abspath(args.outdir)
     gallery_dir = os.path.join(base_dir, "gallery")
     snapshots_dir = os.path.join(base_dir, "tree_snapshots")
+
     try:
         os.makedirs(gallery_dir)
         os.makedirs(snapshots_dir)
@@ -106,13 +139,13 @@ def main(args):
             for seqname, seq, comment in SEQS.iter_entries():
                 seq2length[seqname] = len(seq)
                 if label == "nt_seed" and set(seq)-NT:
-                    error = "Unknown symbols [%s]. Seq [%s] in file [%s]" %\
+                    error = "Unknown symbols [%s] in sequence [%s] of file [%s]" %\
                         (''.join(set(seq)-NT), seqname, seq_file)
-                    raise ValueError(error)
+                    raise DataError(error)
                 elif label == "aa_seed" and set(seq)-AA:
-                    error = "Unknown symbols [%s]. Seq [%s] in file [%s]" %\
+                    error = "Unknown symbols [%s] in sequence[%s] of file [%s]" %\
                         (''.join(set(seq)-AA), seqname, seq_file)
-                    raise ValueError(error)
+                    raise DataError(error)
 
             for i,n in SEQS.id2name.iteritems():
                 if args.seq_rename:
@@ -134,18 +167,18 @@ def main(args):
             values = SEQS.id2name.values()
             if len(values) != len(set(values)):
                 if args.seq_rename:
-                    raise Exception("Although collisions in the hash function"
+                    raise DataError("Although collisions in the hash function"
                                     " used to generate unique sequence names"
                                     " are very unlikely, you found an exception!."
                                     " You will have to change seq names manually.")
                 else:
-                    raise Exception("Duplicated sequence names, execution"
+                    raise DataError("Duplicated sequence names, execution"
                                     " aborted. Correct manually or set"
                                     " automatic sequence renaming with"
                                     " --seq_rename flag.")
 
             if visited_seqs and set(values) != visited_seqs:
-                raise Exception("Sequence names do not match between aa and"
+                raise DataError("Sequence names do not match between aa and"
                                 " nt files.")
             visited_seqs.update(values)
             fullpath = os.path.join(base_dir, label+".fasta")
@@ -159,13 +192,33 @@ def main(args):
         for seqname, length in seq2aalength.iteritems():
             try:
                 if length != seq2ntlength[seqname]/3.0:
-                    raise ValueError("The length of [%s] CDS does not match"
+                    raise DataError("The length of [%s] CDS does not match"
                                      "with the protein sequence." %seqname)
             except KeyError:
-                raise ValueError("aa and nt files do not contain the same"
+                raise DataError("aa and nt files do not contain the same"
                                "sequence identifiers.")
-        
 
+    # Sequence lengths analysis
+    if seq2aalength:
+        all_len = seq2aalength.values()
+    else:
+        all_len = seq2ntlength.values()
+   
+    max_len = numpy.max(all_len)
+    min_len = numpy.min(all_len)
+    mean_len = numpy.mean(all_len)
+    std_len = numpy.std(all_len)
+    outliers = []
+    for v in all_len:
+        if abs(mean_len - v) >  (2 * std_len):
+            outliers.append(v)
+    log.info("Max sequence length:  %d" %max_len)
+    log.info("Min sequence length:  %d" %min_len)
+    log.info("Mean sequence length: %d +- %0.1f " %(mean_len, std_len))
+    if outliers:
+        log.warning("%d sequence lengths look like outliers" %len(outliers))
+
+    # Scheduling starts here
     schedule(config, template.pipeline, args.schedule_time, 
              args.execute, args.retry)
 
@@ -210,15 +263,15 @@ if __name__ == "__main__":
                         action="store_true",
                         help="""Try to relaunch jobs marked as error """)
 
-    parser.add_argument("-sr", "--seq_rename", dest="seq_rename", 
-                        action="store_true",
-                        help="If used, seq names are internally converted"
-                        " to safe and unique 10 char identifiers.")
-
     parser.add_argument("-x", "--execute-inplace", dest="execute", 
                         action="store_true",
                         help="Jobs are launched in the same machine"
                         " as in the program is called.")
+
+    parser.add_argument("-sr", "--seq_rename", dest="seq_rename", 
+                        action="store_true",
+                        help="If used, seq names are internally converted"
+                        " to safe and unique 10 char identifiers.")
 
     parser.add_argument("-U", "--ui", dest="enable_interface", 
                         action="store_true",
@@ -229,3 +282,5 @@ if __name__ == "__main__":
    
     # Start the application
     app_wrapper(main, args)
+
+
