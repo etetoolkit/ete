@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'open_newick.ui'
 #
-# Created: Wed Mar 16 17:21:27 2011
-#      by: PyQt4 UI code generator 4.6
+# Created: Tue Jan 10 15:56:56 2012
+#      by: PyQt4 UI code generator 4.7.2
 #
 # WARNING! All changes made in this file will be lost!
 

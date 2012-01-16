@@ -24,7 +24,7 @@ NODE_STYLE_DEFAULT = [
     ["fgcolor",          "#0030c1",    _COLOR_CHECKER                           ],
     ["bgcolor",          "#FFFFFF",    _COLOR_CHECKER                           ],
     ["node_bgcolor",     "#FFFFFF",    _COLOR_CHECKER                           ],
-    ["partition_bgcolor","#FFFFFF",    _COLOR_CHECKER                           ],
+    #["partition_bgcolor","#FFFFFF",    _COLOR_CHECKER                           ],
     ["faces_bgcolor",    "#FFFFFF",    _COLOR_CHECKER                           ],    
     ["vt_line_color",    "#000000",    _COLOR_CHECKER                           ],
     ["hz_line_color",    "#000000",    _COLOR_CHECKER                           ],

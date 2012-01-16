@@ -1,6 +1,7 @@
 import re
 from sys import stderr
 from PyQt4  import QtCore, QtGui
+from PyQt4.QtGui import QBrush, QPen
 from PyQt4.QtGui import QPrinter
 from PyQt4.QtCore import QThread, SIGNAL
 try:
@@ -11,7 +12,7 @@ except ImportError:
     USE_GL = False
 
 import _mainwindow, _search_dialog, _show_newick, _open_newick, _about
-from main import TreeStyle, save
+from main import TreeStyle, save, random_color
 from qt4_render import render
 from ete_dev._ph import new_version
 from ete_dev import Tree, TreeStyle
@@ -50,10 +51,9 @@ class _GUI(QtGui.QMainWindow):
         scene.view = self.view
         self.node_properties = _PropertiesDialog(scene)
         self.view.prop_table = self.node_properties
-
         self.main = _mainwindow.Ui_MainWindow()
         self.main.setupUi(self)
-
+        self.setWindowTitle("ETE Tree Browser")
         # Check for updates
         self.check = CheckUpdates()
         self.check.start()
@@ -321,9 +321,12 @@ class _TableItem(QtGui.QItemDelegate):
         QtGui.QItemDelegate.__init__(self, parent)
         self.propdialog = parent
 
-    def paint(self, painter, option, index):
+    def paint(self, painter, style, index):
         self.propdialog.tableView.setRowHeight(index.row(), 18)
-        QtGui.QItemDelegate.paint(self, painter, option, index)
+        val = index.data()
+        if getattr(val, "background", None):
+            painter.fillRect(style.rect, QtGui.QColor(val.background))
+        QtGui.QItemDelegate.paint(self, painter, style, index)
 
     def createEditor(self, parent, option, index):
         # Edit only values, not property names
@@ -384,11 +387,11 @@ class _PropertiesDialog(QtGui.QWidget):
         self.layout =  QtGui.QVBoxLayout()
         self.tableView = QtGui.QTableView()
         self.tableView.verticalHeader().setVisible(False)
-        self.tableView.horizontalHeader().setVisible(False)
-        self.tableView.setVerticalHeader(None)
+        #self.tableView.horizontalHeader().setVisible(True)
+        #self.tableView.setVerticalHeader(None)
         self.layout.addWidget(self.tableView)
         self.setLayout(self.layout)
-        self.tableView.setGeometry ( 0, 0, 200,200 )
+        self.tableView.setGeometry (0, 0, 200,200)
 
 
     def update_properties(self, node):
@@ -432,33 +435,29 @@ class _PropertiesDialog(QtGui.QWidget):
 
         total_props = len(self.prop2nodes) + len(self.style2nodes.keys())
         self.model = QtGui.QStandardItemModel(total_props, 2)
-        # self.tableView = QtGui.QTableView()
+        self.model.setHeaderData(0, QtCore.Qt.Horizontal, "Feature")
+        self.model.setHeaderData(1, QtCore.Qt.Horizontal, "Value")
         self.tableView.setModel(self.model)
         self.delegate = _TableItem(self)
         self.tableView.setItemDelegate(self.delegate)
 
         row = 0
         items = self.prop2nodes.items()
-        items.sort()
-
-        for name, nodes in items:#self.prop2nodes.iteritems():
+        for name, nodes in sorted(items):
             value= getattr(nodes[0],name)
 
             index1 = self.model.index(row, 0, QtCore.QModelIndex())
             index2 = self.model.index(row, 1, QtCore.QModelIndex())
-
-            self.model.setData(index1, QtCore.QVariant(name))
+            f = QtCore.QVariant(name)
             v = QtCore.QVariant(value)
+            self.model.setData(index1, f)
             self.model.setData(index2, v)
-
             self._prop_indexes.add( (index1, index2) )
             row +=1
 
         keys = self.style2nodes.keys()
-        keys.sort()
-        for name in keys:#self.style2nodes.iterkeys():
+        for name in sorted(keys):
             value= self.style2values[name][0]
-
             index1 = self.model.index(row, 0, QtCore.QModelIndex())
             index2 = self.model.index(row, 1, QtCore.QModelIndex())
 
@@ -542,8 +541,9 @@ class _TreeView(QtGui.QGraphicsView):
     def __init__(self,*args):
         QtGui.QGraphicsView.__init__(self,*args)
         self.n2hl = {}
+        self.focus_highlight = QtGui.QGraphicsRectItem()
         self.buffer_node = None
-
+        self.focus_node = None
 
         if USE_GL:
             print "USING GL"
@@ -619,7 +619,6 @@ class _TreeView(QtGui.QGraphicsView):
             else:
                 pass
 
-
     def wheelEvent(self,e):
         factor =  (-e.delta() / 360.0)
         if abs(factor)>=1:
@@ -650,22 +649,79 @@ class _TreeView(QtGui.QGraphicsView):
             else:
                 self.verticalScrollBar().setValue(self.verticalScrollBar().value()+20 )
 
+    def set_focus(self, node):
+        i = self.scene().n2i[node]
+        self.focus_highlight.setPen(QtGui.QColor("red"))
+        self.focus_highlight.setBrush(QtGui.QColor("SteelBlue"))
+        self.focus_highlight.setOpacity(0.2)
+        self.focus_highlight.setParentItem(i.content)
+        self.focus_highlight.setRect(i.fullRegion)
+        self.focus_highlight.setVisible(True)
+        self.prop_table.update_properties(node)
+        #self.focus_highlight.setRect(i.nodeRegion)
+        self.focus_node = node
+        self.update()    
+
+    def hide_focus(self):
+        self.focus_highlight.setVisible(False)
+       
+    
     def keyPressEvent(self,e):
         key = e.key()
+        control = e.modifiers() & QtCore.Qt.ControlModifier
         #print >>sys.stderr, "****** Pressed key: ", key, QtCore.Qt.LeftArrow
-        if key  == QtCore.Qt.Key_Left:
-            self.horizontalScrollBar().setValue(self.horizontalScrollBar().value()-20 )
-            self.update()
-        elif key  == QtCore.Qt.Key_Right:
-            self.horizontalScrollBar().setValue(self.horizontalScrollBar().value()+20 )
-            self.update()
-        elif key  == QtCore.Qt.Key_Up:
-            self.verticalScrollBar().setValue(self.verticalScrollBar().value()-20 )
-            self.update()
-        elif key  == QtCore.Qt.Key_Down:
-            self.verticalScrollBar().setValue(self.verticalScrollBar().value()+20 )
-            self.update()
+        if control:
+            if key  == QtCore.Qt.Key_Left:
+                self.horizontalScrollBar().setValue(self.horizontalScrollBar().value()-20 )
+                self.update()
+            elif key  == QtCore.Qt.Key_Right:
+                self.horizontalScrollBar().setValue(self.horizontalScrollBar().value()+20 )
+                self.update()
+            elif key  == QtCore.Qt.Key_Up:
+                self.verticalScrollBar().setValue(self.verticalScrollBar().value()-20 )
+                self.update()
+            elif key  == QtCore.Qt.Key_Down:
+                self.verticalScrollBar().setValue(self.verticalScrollBar().value()+20 )
+                self.update()
+        else:
+            if not self.focus_node: 
+                self.focus_node = self.scene().tree
+
+            if key == QtCore.Qt.Key_Left:
+                if self.focus_node.up:
+                    new_focus_node = self.focus_node.up
+                    self.set_focus(new_focus_node)
+            elif key == QtCore.Qt.Key_Right:
+                if self.focus_node.children:
+                    new_focus_node = self.focus_node.children[0]
+                    self.set_focus(new_focus_node)
+            elif key == QtCore.Qt.Key_Up:
+                if self.focus_node.up:
+                    i = self.focus_node.up.children.index(self.focus_node)
+                    if i>0:
+                        new_focus_node = self.focus_node.up.children[i-1]
+                        self.set_focus(new_focus_node)
+            elif key == QtCore.Qt.Key_Down:
+                if self.focus_node.up:
+                    i = self.focus_node.up.children.index(self.focus_node)
+                    if i < len(self.focus_node.up.children)-1:
+                        new_focus_node = self.focus_node.up.children[i+1]
+                        self.set_focus(new_focus_node)
+            elif key == QtCore.Qt.Key_Escape:
+                self.hide_focus()
+            elif key == QtCore.Qt.Key_Enter or\
+                    key == QtCore.Qt.Key_Return:
+                self.prop_table.tableView.setFocus()
+            elif key == QtCore.Qt.Key_Space:
+                self.highlight_node(self.focus_node, fullRegion=True, 
+                                    bg=random_color(l=0.5, s=0.5), 
+                                    permanent=True)
         QtGui.QGraphicsView.keyPressEvent(self,e)
+
+    def mouseReleaseEvent(self, e):
+        self.scene().view.hide_focus()
+        QtGui.QGraphicsView.mouseReleaseEvent(self,e)
+
 
 class _BasicNodeActions(object):
     """ Should be added as ActionDelegator """
@@ -689,12 +745,11 @@ class _BasicNodeActions(object):
 
     @staticmethod
     def mouseReleaseEvent(obj, e):
-        print "Released"
         if e.button() == QtCore.Qt.RightButton:
-            print obj.node
             obj.showActionPopup()
         elif e.button() == QtCore.Qt.LeftButton:
-            obj.scene().view.prop_table.update_properties(obj.node)
+            obj.scene().view.set_focus(obj.node)
+            #obj.scene().view.prop_table.update_properties(obj.node)
 
     @staticmethod            
     def hoverEnterEvent (self, e):
