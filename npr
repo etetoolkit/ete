@@ -147,6 +147,7 @@ def main(args):
                         (''.join(set(seq)-AA), seqname, seq_file)
                     raise DataError(error)
 
+            id2name = {}
             for i,n in SEQS.id2name.iteritems():
                 if args.seq_rename:
                     # This is a bit tricky. I want to generate 10 char
@@ -158,7 +159,9 @@ def main(args):
                     # names.), but in such a case, I will rise an
                     # error.
                     name = md5(n).hexdigest()[:10]
+                    id2name[name] = SEQS.id2name[i]
                     SEQS.id2name[i] = name
+
                 elif len(n)>10: 
                     SEQS.id2name[i] = n[:10]
                     log.warning("sequence name %s was truncated to 10"
@@ -184,6 +187,13 @@ def main(args):
             fullpath = os.path.join(base_dir, label+".fasta")
             seed_files[label] = fullpath
             SEQS.write(outfile=fullpath)
+
+    if id2name: 
+        id_conversion_file = os.path.join(base_dir, "id_conversion.txt")
+        CONV = open(id_conversion_file, "w")
+        CONV.write('\n'.join(["%s\t%s" %(i,v) 
+                              for i,v in id2name.iteritems()]))
+        CONV.close()
 
     config["main"]["aa_seed"] =  seed_files.get("aa_seed", None)
     config["main"]["nt_seed"] =  seed_files.get("nt_seed", None)
@@ -256,7 +266,7 @@ if __name__ == "__main__":
                         " nucleotide sequences")
 
     parser.add_argument("-t", "--schedule-time", dest="schedule_time", 
-                        type=int, default=1,
+                        type=float, default=1,
                         help="""Schedule time in seconds. """)
 
     parser.add_argument("-r", "--retry-error-jobs", dest="retry", 
