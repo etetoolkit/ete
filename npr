@@ -117,6 +117,9 @@ def main(args):
 
     config["main"]["basedir"] = base_dir
     Task.global_config["basedir"] = base_dir
+
+    config["main"]["_max_cores"] = args.maxcores
+   
     # Load pipeline
     pipeline_module = config["main"]["pipeline"]
     if os.path.isfile(pipeline_module):
@@ -265,9 +268,10 @@ if __name__ == "__main__":
                         help="Initial multi sequence file with"
                         " nucleotide sequences")
 
-    parser.add_argument("-t", "--schedule-time", dest="schedule_time", 
-                        type=float, default=1,
-                        help="""Schedule time in seconds. """)
+    parser.add_argument("-sr", "--seq_rename", dest="seq_rename", 
+                        action="store_true",
+                        help="If used, seq names are internally converted"
+                        " to safe and unique 10 char identifiers.")
 
     parser.add_argument("-r", "--retry-error-jobs", dest="retry", 
                         action="store_true",
@@ -278,11 +282,16 @@ if __name__ == "__main__":
                         help="Jobs are launched in the same machine"
                         " as in the program is called.")
 
-    parser.add_argument("-sr", "--seq_rename", dest="seq_rename", 
-                        action="store_true",
-                        help="If used, seq names are internally converted"
-                        " to safe and unique 10 char identifiers.")
+    parser.add_argument("-t", "--schedule-time", dest="schedule_time", 
+                        type=float, default=5,
+                        help="""Schedule time in seconds. """)
 
+    parser.add_argument("-m", "--maxcores", dest="maxcores", 
+                        type=int, default=1,
+                        help="Maximum number of CPU cores to available per machine."
+                        " If higher than 1, tasks with multithreding capabilities"
+                        " will be set appropriately.")
+    
     parser.add_argument("-U", "--ui", dest="enable_interface", 
                         action="store_true",
                         help="When used, log messages are redirected to the"
