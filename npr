@@ -4,14 +4,13 @@ import imp
 import logging
 import numpy
 from hashlib import md5
+
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from configobj import ConfigObj, flatten_errors
 import validate
 
-import sys
 from utils import SeqGroup, AA, NT
 from errors import ConfigError, DataError
-
 
 from master_task import Task
 from interface import app_wrapper
@@ -282,20 +281,26 @@ if __name__ == "__main__":
                         help="Jobs are launched in the same machine"
                         " as in the program is called.")
 
+    parser.add_argument("-sge", "--sge", dest="launch using SGE API", 
+                        action="store_true",
+                        help="Jobs will be launched using a Sun Grid Engine"
+                        " queue system.")
+    
     parser.add_argument("-t", "--schedule-time", dest="schedule_time", 
-                        type=float, default=5,
+                        type=float, default=5.0,
                         help="""Schedule time in seconds. """)
 
-    parser.add_argument("-m", "--maxcores", dest="maxcores", 
-                        type=int, default=1,
-                        help="Maximum number of CPU cores to available per machine."
-                        " If higher than 1, tasks with multithreding capabilities"
-                        " will be set appropriately.")
+    parser.add_argument("-m", "--maxcores", dest="maxcores", type=int,
+                        default=1, help="Maximum number of CPU cores"
+                        " available in the execution hosts. If higher"
+                        " than 1, tasks with multi-threading"
+                        " capabilities will be set appropriately.")
     
-    parser.add_argument("-U", "--ui", dest="enable_interface", 
-                        action="store_true",
-                        help="When used, log messages are redirected to the"
-                        " standard output and color based interface is disabled.")
+    parser.add_argument("-U", "--ui", dest="enable_interface",
+                        action="store_true", help="When used, a color"
+                        " based interface is launched to monitor NPR"
+                        " processes. This feature requires NCURSES"
+                        " libraries installed in your system.")
  
     args = parser.parse_args()
    
