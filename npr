@@ -230,9 +230,17 @@ def main(args):
     if outliers:
         log.warning("%d sequence lengths look like outliers" %len(outliers))
 
+    # how task will be executed
+    if args.execute:
+        execution ="insitu"
+    elif args.sge_execute:
+        execution = "sge"
+    else:
+        execution = None
+
     # Scheduling starts here
     schedule(config, template.pipeline, args.schedule_time, 
-             args.execute, args.retry)
+             execution, args.retry)
 
 if __name__ == "__main__":
     parser = ArgumentParser(description=__DESCRIPTION__, 
@@ -252,11 +260,14 @@ if __name__ == "__main__":
     parser.add_argument("-c", "--config", dest="configfile", 
                         type=str, required=True, 
                         help="""A valid config file to execute the pipeline""")
-
+    
+    
+    # Output data related flags
     parser.add_argument("-o", "--outdir", dest="outdir", 
                         type=str, required=True, 
-                        help="""Output ir for results.""")
+                        help="""Output directory for results.""")
 
+    # Input data related flags
     parser.add_argument("-a", "--aa-seed-file", dest="aa_seed_file", 
                         type=str, 
                         help="Initial multi sequence file with"
@@ -267,23 +278,25 @@ if __name__ == "__main__":
                         help="Initial multi sequence file with"
                         " nucleotide sequences")
 
-    parser.add_argument("-sr", "--seq_rename", dest="seq_rename", 
+    parser.add_argument("--seq_rename", dest="seq_rename", 
                         action="store_true",
                         help="If used, seq names are internally converted"
                         " to safe and unique 10 char identifiers.")
 
+    # Task execution related flags
     parser.add_argument("-r", "--retry-error-jobs", dest="retry", 
                         action="store_true",
                         help="""Try to relaunch jobs marked as error """)
-
-    parser.add_argument("-x", "--execute-inplace", dest="execute", 
+    
+    exec_group = parser.add_mutually_exclusive_group()
+    exec_group.add_argument("-x", "--insitu-execution", dest="execute", 
                         action="store_true",
                         help="Jobs are launched in the same machine"
                         " as in the program is called.")
 
-    parser.add_argument("-sge", "--sge", dest="launch using SGE API", 
-                        action="store_true",
-                        help="Jobs will be launched using a Sun Grid Engine"
+    exec_group.add_argument("-sge", dest="sge_execute",
+                        action="store_true", help="Jobs will be"
+                        " launched using the Sun Grid Engine"
                         " queue system.")
     
     parser.add_argument("-t", "--schedule-time", dest="schedule_time", 
@@ -295,13 +308,18 @@ if __name__ == "__main__":
                         " available in the execution hosts. If higher"
                         " than 1, tasks with multi-threading"
                         " capabilities will be set appropriately.")
-    
-    parser.add_argument("-U", "--ui", dest="enable_interface",
+
+    # Interface related flags
+    parser.add_argument("-u", "--ui", dest="enable_ui",
                         action="store_true", help="When used, a color"
                         " based interface is launched to monitor NPR"
                         " processes. This feature requires NCURSES"
                         " libraries installed in your system.")
- 
+
+    parser.add_argument("-v", "--verbosity", dest="verbosity",
+                        default = 1, type=int, choices=[0,1,2,3,4,5],
+                        help="0=very quiet, 4=very verbose. 5=debug")
+    
     args = parser.parse_args()
    
     # Start the application
