@@ -15,6 +15,7 @@ from errors import ConfigError, DataError
 from master_task import Task
 from interface import app_wrapper
 from scheduler import schedule
+import db
 
 try:
     module_path = os.path.split(__file__)[0]
@@ -107,10 +108,14 @@ def main(args):
     base_dir = os.path.abspath(args.outdir)
     gallery_dir = os.path.join(base_dir, "gallery")
     snapshots_dir = os.path.join(base_dir, "tree_snapshots")
-
+    sge_dir = os.path.join(base_dir, "sge_jobs")
+    config["main"]["sge_dir"] = sge_dir
+    config["main"]["gallery_dir"] = gallery_dir
+    config["main"]["snapshots_dir"] = snapshots_dir
     try:
         os.makedirs(gallery_dir)
         os.makedirs(snapshots_dir)
+        os.makedirs(sge_dir)
     except OSError:
         pass
 
@@ -118,7 +123,10 @@ def main(args):
     Task.global_config["basedir"] = base_dir
 
     config["main"]["_max_cores"] = args.maxcores
-   
+
+    # Initialize db
+    db.init_db(os.path.join(base_dir, "tasks.sqlite"))
+    
     # Load pipeline
     pipeline_module = config["main"]["pipeline"]
     if os.path.isfile(pipeline_module):
