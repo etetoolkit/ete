@@ -10,7 +10,7 @@ from nprlib.utils import basename, PhyloTree
 __all__ = ["Prottest"]
 
 class Prottest(ModelTesterTask):
-    def __init__(self, cladeid, alg_fasta_file, alg_phylip_file, conf):
+    def __init__(self, nodeid, alg_fasta_file, alg_phylip_file, conf):
         self.alg_phylip_file = alg_phylip_file
         self.alg_fasta_file = alg_fasta_file
         self.alg_basename = basename(self.alg_phylip_file)
@@ -25,7 +25,7 @@ class Prottest(ModelTesterTask):
             "--quiet": ""
             }
 
-        ModelTesterTask.__init__(self, cladeid, "mchooser", "Prottest", 
+        ModelTesterTask.__init__(self, nodeid, "mchooser", "Prottest", 
                       base_args, conf["prottest"])
 
         self.best_model = None
@@ -50,7 +50,7 @@ class Prottest(ModelTesterTask):
             args = self.args.copy()
             args["--model"] = m
             job = Job(self.conf["app"]["phyml"], args,
-                      parent_ids=[self.cladeid])
+                      parent_ids=[self.nodeid])
             self.jobs.append(job)
         log.log(26, self.models)
 

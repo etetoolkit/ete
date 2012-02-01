@@ -6,7 +6,7 @@ import db
 import logging
 log = logging.getLogger("main")
 
-from nprlib.utils import get_md5, basename, random_string, strip, pid_up, HOSTNAME
+from nprlib.utils import md5, basename, random_string, strip, pid_up, HOSTNAME
 
 class Job(object):
     ''' A generic program launcher.
@@ -48,10 +48,10 @@ class Job(object):
         self.jobname = jobname
         # generates an unique job identifier based on the params of
         # the app.
-        self.jobid = get_md5(','.join(sorted([get_md5(str(pair)) for pair in 
-                                              self.args.iteritems()])))
+        self.jobid = md5(','.join(sorted([md5(str(pair)) for pair in 
+                                           self.args.iteritems()])))
         if parent_ids:
-            self.jobid = get_md5(','.join(sorted(parent_ids+[self.jobid])))
+            self.jobid = md5(','.join(sorted(parent_ids+[self.jobid])))
 
         if not self.jobname:
             self.jobname = re.sub("[^0-9a-zA-Z]", "-", basename(self.bin))
@@ -119,7 +119,7 @@ class Job(object):
         #  R.unning
         #  L.ost
         if self.status not in set("DE"):
-            jinfo = db.get_job_info(self.jobid)
+            jinfo = db.get_task_info(self.jobid)
             self.host = jinfo.get("host", None) or ""
             self.pid = jinfo.get("pid", None) or ""
 
@@ -129,9 +129,9 @@ class Job(object):
             except IOError:
                 st = saved_status
             
-            if st is None:
-                db.add_job(self.jobid, status="W")
-                st = saved_status = "W"
+            #if st is None:
+            #    db.add_task(self.jobid, status="W")
+            #    st = saved_status = "W"
 
             # If this is in execution, tries to track the job
             if st in set("QRL"):
@@ -147,7 +147,7 @@ class Job(object):
                     st = "L"
         
             if st != saved_status:
-                db.update_job(self.jobid, status=st)
+                db.update_task(self.jobid, status=st)
             self.status = st
             
         return self.status

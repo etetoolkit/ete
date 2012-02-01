@@ -11,7 +11,7 @@ from nprlib.errors import RetryException
 __all__ = ["Trimal"]
 
 class Trimal(AlgCleanerTask):
-    def __init__(self, cladeid, seqtype, alg_fasta_file, alg_phylip_file, conf):
+    def __init__(self, nodeid, seqtype, alg_fasta_file, alg_phylip_file, conf):
         self.conf = conf
         self.seqtype = seqtype
         self.alg_fasta_file = alg_fasta_file
@@ -24,7 +24,7 @@ class Trimal(AlgCleanerTask):
             '-colnumbering': "", 
             }
         # Initialize task
-        AlgCleanerTask.__init__(self, cladeid, "acleaner", "Trimal", 
+        AlgCleanerTask.__init__(self, nodeid, "acleaner", "Trimal", 
                       base_args, conf["trimal"])
 
         self.init()
@@ -38,7 +38,7 @@ class Trimal(AlgCleanerTask):
         args = self.args.copy()
         args["-in"] = self.alg_fasta_file
         args["-out"] = "clean.alg.fasta"
-        job = Job(self.conf["app"]["trimal"], args, parent_ids=[self.cladeid])
+        job = Job(self.conf["app"]["trimal"], args, parent_ids=[self.nodeid])
         self.jobs.append(job)
 
     def finish(self):

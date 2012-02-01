@@ -13,13 +13,13 @@ from nprlib.utils import basename, PhyloTree, OrderedDict
 __all__ = ["Phyml"]
 
 class Phyml(TreeTask):
-    def __init__(self, cladeid, alg_file, model, seqtype, conf):
+    def __init__(self, nodeid, alg_file, model, seqtype, conf):
         base_args = OrderedDict({
                 "--model": "", 
                 "--no_memory_check": "", 
                 "--quiet": "" })
 
-        TreeTask.__init__(self, cladeid, "tree", "Phyml", 
+        TreeTask.__init__(self, nodeid, "tree", "Phyml", 
                       base_args, conf["phyml"])
 
         self.conf = conf
@@ -50,7 +50,7 @@ class Phyml(TreeTask):
         args["--model"] = self.model
         args["--datatype"] = self.seqtype
         args["--input"] = self.alg_basename
-        job = Job(self.conf["app"]["phyml"], args, parent_ids=[self.cladeid])
+        job = Job(self.conf["app"]["phyml"], args, parent_ids=[self.nodeid])
         self.jobs.append(job)
 
     def finish(self):

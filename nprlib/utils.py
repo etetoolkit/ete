@@ -47,13 +47,18 @@ GENCODE = {
     }
 
 # Aux functions (general)
-get_md5 = lambda x: hashlib.md5(x).hexdigest()
+md5 = lambda x: hashlib.md5(x).hexdigest()
 basename = lambda path: os.path.split(path)[-1]
 # Aux functions (task specific)
 get_raxml_mem = lambda taxa,sites: (taxa-2) * sites * (80 * 8) * 9.3132e-10
-get_cladeid = lambda seqids: get_md5(','.join(sorted(map(strip, seqids))))
 del_gaps = lambda seq: seq.replace("-","").replace(".", "")
 random_string = lambda N: ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(N))
+generate_id = lambda items: md5(','.join(sorted(items)))
+
+def generate_node_ids(target_seqs, out_seqs):
+    cladeid = generate_id(target_seqs)
+    nodeid = md5(','.join([cladeid, generate_id(out_seqs)]))
+    return nodeid, cladeid
 
 HOSTNAME = socket.gethostname()
 
@@ -81,7 +86,7 @@ def render_tree(tree, fname):
     npr_nodestyle = NodeStyle()
     npr_nodestyle["fgcolor"] = "red"
     for n in tree.traverse():
-        if hasattr(n, "cladeid"):
+        if hasattr(n, "nodeid"):
             n.set_style(npr_nodestyle)
     ts = TreeStyle()
     ts.show_leaf_name = True
@@ -117,3 +122,69 @@ def pid_up(pid):
     else:
         return True
 
+def print_as_table(rows, header=[], print_header=True, stdout=sys.stdout):
+    """ Print >>Stdout, a list matrix as a formated table. row must be a list of
+    dicts or lists."""
+
+    def _str(i):
+        if isinstance(i, float):
+            return "%0.2f" %i
+        else:
+            return str(i)
+
+    vtype = None
+    for v in rows:
+        if vtype != None and type(v)!=vtype:
+            raise "ValueError", "Mixed row types in input"
+        else:
+            vtype = type(v)
+	    
+    lengths  = {}
+    if vtype == list or vtype == tuple:
+        v_len = len(rows[0])
+        if header and len(header)!=v_len:
+            raise Exception("Bad header length")
+
+        # Get max size of each field
+        for i in xrange(v_len):
+            header_length = 0
+            if header != []:
+                header_length = len(_str(header[i]))
+            max_field_length = max( [ len(_str(r[i])) for r in rows] )
+            lengths[i] = max( [ header_length, max_field_length ] )
+
+        if header and print_header:
+            # Print >>Stdout, header names
+            for i in xrange(v_len):
+                print >>stdout, _str(header[i]).rjust(lengths[i])+" | ",
+            print >>stdout, ""
+            # Print >>Stdout, underlines
+            for i in xrange(v_len):
+                print >>stdout, "".rjust(lengths[i],"-")+" | ",
+            print >>stdout, ""
+        # Print >>Stdout, table lines
+        for r in rows:
+            for i in xrange(v_len):
+                print >>stdout, _str(r[i]).rjust(lengths[i])+" | ",
+            print >>stdout, ""
+
+    elif vtype == dict:
+        if header == []:
+            header = rows[0].keys()
+        for ppt in header:
+            lengths[ppt] = max( [len(_str(ppt))]+[ len(_str(p.get(ppt,""))) for p in rows])
+        if header:
+            for ppt in header:
+                    print >>stdout, _str(ppt).rjust(lengths[ppt])+" | ",
+            print >>stdout, ""
+            for ppt in header:
+                    print >>stdout, "".rjust(lengths[ppt],"-")+" | ",
+            print >>stdout, ""
+        page_counter = 0
+        for p in rows:
+            for ppt in header:
+                print >>stdout, _str(p.get(ppt,"")).rjust(lengths[ppt])+" | ",
+            print >>stdout, ""
+            page_counter +=1
+
+    

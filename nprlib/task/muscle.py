@@ -9,14 +9,14 @@ from nprlib.utils import SeqGroup, OrderedDict
 __all__ = ["Muscle"]
 
 class Muscle(AlgTask):
-    def __init__(self, cladeid, multiseq_file, seqtype, conf):
+    def __init__(self, nodeid, multiseq_file, seqtype, conf):
         # fixed Muscle options
         base_args = OrderedDict({
                 '-in': None,
                 '-out': None,
                 })
         # Initialize task
-        AlgTask.__init__(self, cladeid, "alg", "Muscle", 
+        AlgTask.__init__(self, nodeid, "alg", "Muscle", 
                       base_args, conf["muscle"])
 
         self.conf = conf
@@ -32,7 +32,7 @@ class Muscle(AlgTask):
         args = self.args.copy()
         args["-in"] = self.multiseq_file
         args["-out"] = "alg.fasta"
-        job = Job(self.conf["app"]["muscle"], args, parent_ids=[self.cladeid])
+        job = Job(self.conf["app"]["muscle"], args, parent_ids=[self.nodeid])
         self.jobs.append(job)
 
     def finish(self):

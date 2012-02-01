@@ -117,7 +117,7 @@ def process_task(task, main_tree, conf):
     aa_seed_file = conf["main"]["aa_seed"]
     nt_seed_file = conf["main"]["nt_seed"]
     seqtype = task.seqtype
-    cladeid = task.cladeid
+    nodeid = task.nodeid
     nseqs = task.nseqs
     sst = conf["main"]["DNA_sst"]
     sit = conf["main"]["DNA_sit"]
@@ -154,7 +154,7 @@ def process_task(task, main_tree, conf):
     
     new_tasks = []
     if ttype == "msf":
-        alg_task = _aligner(cladeid, task.multiseq_file,
+        alg_task = _aligner(nodeid, task.multiseq_file,
                            seqtype, conf)
         alg_task.nseqs = nseqs
         new_tasks.append(alg_task)
@@ -184,7 +184,7 @@ def process_task(task, main_tree, conf):
         task.std_ident = std
 
         if ttype == "alg" and _alg_cleaner:
-            next_task = _alg_cleaner(cladeid, seqtype, alg_fasta_file, 
+            next_task = _alg_cleaner(nodeid, seqtype, alg_fasta_file, 
                                      alg_phylip_file, conf)
         else:
             # Converts aa alignment into nt if necessary
@@ -202,12 +202,12 @@ def process_task(task, main_tree, conf):
                         nt_seed_file)
 
             if _model_tester:
-                next_task = _model_tester(cladeid,
+                next_task = _model_tester(nodeid,
                                          alg_fasta_file, 
                                          alg_phylip_file, 
                                          conf)
             else:
-                next_task = _tree_builder(cladeid, alg_phylip_file, None, 
+                next_task = _tree_builder(nodeid, alg_phylip_file, None, 
                                           seqtype, conf)
 
         next_task.nseqs = nseqs
@@ -218,13 +218,13 @@ def process_task(task, main_tree, conf):
         alg_phylip_file = task.alg_phylip_file
         model = task.get_best_model()
 
-        tree_task = _tree_builder(task.cladeid, alg_phylip_file, model, 
+        tree_task = _tree_builder(nodeid, alg_phylip_file, model, 
                                   seqtype, conf)
         tree_task.nseqs = nseqs
         new_tasks.append(tree_task)
 
     elif ttype == "tree":
-        treemerge_task = TreeMerger(cladeid, seqtype, task.tree_file, main_tree, conf)
+        treemerge_task = TreeMerger(nodeid, seqtype, task.tree_file, main_tree, conf)
         treemerge_task.nseqs = nseqs
         new_tasks.append(treemerge_task)
 
@@ -232,22 +232,33 @@ def process_task(task, main_tree, conf):
         if not task.set_a: 
             task.finish()
         main_tree = task.main_tree
-        for part in [task.set_a, task.set_b]:
-            part_cladeid, seqs, outgroups, fname = part
-            # Partition size limit
+
+        if conf["main"]["aa_seed"]:
+            source = SeqGroup(conf["main"]["aa_seed"])
+            source_seqtype = "aa"
+        else:
+            source = SeqGroup(conf["main"]["nt_seed"])
+            source_seqtype = "nt"
+
+        for seqs, outs in [task.set_a, task.set_b]:
             if len(seqs) >= int(conf["tree_merger"]["_min_size"]):
-                new_tasks.append(\
-                    Msf(part_cladeid, fname, seqtype))
-                print len(seqs)
+                msf_task = Msf(seqs, outs, seqtype=source_seqtype, source=source)
+                new_tasks.append(msf_task)
            
     return new_tasks, main_tree
 
 def pipeline(task, main_tree, conf):
     if not task:
         if conf["main"]["aa_seed"]:
-            new_tasks = [Msf(None, conf["main"]["aa_seed"], "aa")]
+            source = SeqGroup(conf["main"]["aa_seed"])
+            source_seqtype = "aa"
         else:
-            new_tasks = [Msf(None, conf["main"]["nt_seed"], "nt")]
+            source = SeqGroup(conf["main"]["nt_seed"])
+            source_seqtype = "nt"
+
+        new_tasks = [Msf(set(source.id2name.values()), set(),
+                         seqtype=source_seqtype,
+                         source = source)]
     else:
         new_tasks, main_tree = process_task(task, main_tree, conf)
 

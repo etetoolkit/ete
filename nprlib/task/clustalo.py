@@ -11,7 +11,7 @@ from nprlib.utils import read_fasta, OrderedDict
 __all__ = ["Clustalo"]
 
 class Clustalo(AlgTask):
-    def __init__(self, cladeid, multiseq_file, seqtype, conf):
+    def __init__(self, nodeid, multiseq_file, seqtype, conf):
         if seqtype != "aa":
             raise ValueError("Clustal Omega does only support aa seqtype")
         
@@ -21,7 +21,7 @@ class Clustalo(AlgTask):
                 '--outfmt': "fa",
                 })
         # Initialize task
-        AlgTask.__init__(self, cladeid, "alg", "Clustal-Omega", 
+        AlgTask.__init__(self, nodeid, "alg", "Clustal-Omega", 
                       base_args, conf["clustalo"])
 
         self.conf = conf
@@ -37,7 +37,7 @@ class Clustalo(AlgTask):
         args = self.args.copy()
         args["-i"] = self.multiseq_file
         args["-o"] = "alg.fasta"
-        job = Job(self.conf["app"]["clustalo"], args, parent_ids=[self.cladeid])
+        job = Job(self.conf["app"]["clustalo"], args, parent_ids=[self.nodeid])
         self.jobs.append(job)
 
     def finish(self):

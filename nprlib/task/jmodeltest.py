@@ -9,7 +9,7 @@ from nprlib.utils import basename, PhyloTree
 __all__ = ["JModeltest"]
 
 class JModeltest(ModelTesterTask):
-    def __init__(self, cladeid, alg_fasta_file, alg_phylip_file, conf):
+    def __init__(self, nodeid, alg_fasta_file, alg_phylip_file, conf):
         self.conf = conf
         base_args = {
             '-d': alg_fasta_file, 
@@ -20,7 +20,7 @@ class JModeltest(ModelTesterTask):
         else:
             task_type = "mchooser"
             
-        ModelTesterTask.__init__(self, cladeid, task_type, "Jmodeltest", base_args, args)
+        ModelTesterTask.__init__(self, nodeid, task_type, "Jmodeltest", base_args, args)
 
         # set app arguments and options
         self.alg_fasta_file = alg_fasta_file
@@ -37,7 +37,7 @@ class JModeltest(ModelTesterTask):
 
 
     def load_jobs(self):
-        tree_job = Job(self.conf["app"]["jmodeltest"], self.args, parent_ids=[self.cladeid])
+        tree_job = Job(self.conf["app"]["jmodeltest"], self.args, parent_ids=[self.nodeid])
         self.jobs.append(tree_job)
 
     def finish(self):
@@ -63,7 +63,7 @@ class JModeltest(ModelTesterTask):
         if self.ttype == "tree": 
             tree_job = self.jobs[-1]
             tree_file =  os.path.join(tree_job.jobdir,
-                                      "jModelTest_tree."+self.cladeid)
+                                      "jModelTest_tree."+self.nodeid)
             t.write(outfile=self.tree_file)
             self.model = best_model
         

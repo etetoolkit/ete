@@ -13,7 +13,7 @@ from nprlib.utils import basename, PhyloTree, OrderedDict
 __all__ = ["Raxml"]
 
 class Raxml(TreeTask):
-    def __init__(self, cladeid, alg_file, model, seqtype, conf):
+    def __init__(self, nodeid, alg_file, model, seqtype, conf):
         # PTHREADS version needs at least -T2, which is actually
         # similar to the normal version
         threads = int(conf["raxml"].get(
@@ -30,7 +30,7 @@ class Raxml(TreeTask):
             raxml_bin = conf["app"]["raxml"]
             base_args = OrderedDict()
 
-        TreeTask.__init__(self, cladeid, "tree", "RaxML", 
+        TreeTask.__init__(self, nodeid, "tree", "RaxML", 
                           base_args, conf["raxml"])
 
         self.raxml_bin = raxml_bin
@@ -58,13 +58,13 @@ class Raxml(TreeTask):
         self.tree_file = os.path.join(self.taskdir, "final_tree.nw")
 
         self.ml_tree_file = os.path.join(self.jobs[0].jobdir,
-                                    "RAxML_bestTree." + self.cladeid)
+                                    "RAxML_bestTree." + self.nodeid)
         
         if self.compute_alrt == "raxml":
             self.jobs[1].args["-t"] = self.ml_tree_file
             self.alrt_tree_file = os.path.join(self.jobs[1].jobdir,
                                                "RAxML_fastTreeSH_Support." +\
-                                                   self.cladeid)
+                                                   self.nodeid)
         elif self.compute_alrt == "phyml":
             fake_alg_file = os.path.join(self.jobs[1].jobdir, basename(self.alg_phylip_file))
             if os.path.exists(fake_alg_file):
@@ -85,8 +85,8 @@ class Raxml(TreeTask):
         args = self.args.copy()
         args["-s"] = self.alg_phylip_file
         args["-m"] = self.model_string
-        args["-n"] = self.cladeid
-        tree_job = Job(self.raxml_bin, args, parent_ids=[self.cladeid])
+        args["-n"] = self.nodeid
+        tree_job = Job(self.raxml_bin, args, parent_ids=[self.nodeid])
         tree_job.cores = self.threads
         self.jobs.append(tree_job)
 

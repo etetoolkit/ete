@@ -9,9 +9,9 @@ from nprlib.utils import SeqGroup, OrderedDict
 __all__ = ["Uhire"]
 
 class Uhire(AlgTask):
-    def __init__(self, cladeid, multiseq_file, seqtype, conf):
+    def __init__(self, nodeid, multiseq_file, seqtype, conf):
         # Initialize task
-        AlgTask.__init__(self, cladeid, "alg", "Usearch-Uhire", 
+        AlgTask.__init__(self, nodeid, "alg", "Usearch-Uhire", 
                       OrderedDict(), conf["uhire"])
 
         self.conf = conf
@@ -32,7 +32,7 @@ class Uhire(AlgTask):
             "--uhire": self.multiseq_file,
             }
         uhire_job = Job(self.conf["app"]["usearch"], uhire_args, "usearch-uhire",
-                        parent_ids=[self.cladeid])
+                        parent_ids=[self.nodeid])
 
         # Builds a muscle alignment for each of those clusters. (This
         # is a special job to align all clumps independently. The

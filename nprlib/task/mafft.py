@@ -9,9 +9,9 @@ from nprlib.utils import SeqGroup, OrderedDict
 __all__ = ["Mafft"]
 
 class Mafft(AlgTask):
-    def __init__(self, cladeid, multiseq_file, seqtype, conf):
+    def __init__(self, nodeid, multiseq_file, seqtype, conf):
         # Initialize task
-        AlgTask.__init__(self, cladeid, "alg", "Mafft", 
+        AlgTask.__init__(self, nodeid, "alg", "Mafft", 
                       OrderedDict(), conf["mafft"])
 
         self.conf = conf
@@ -29,7 +29,7 @@ class Mafft(AlgTask):
         # arguments is important, input file must be the last
         # one.
         args[""] = self.multiseq_file
-        job = Job(self.conf["app"]["mafft"], args, parent_ids=[self.cladeid])
+        job = Job(self.conf["app"]["mafft"], args, parent_ids=[self.nodeid])
         self.jobs.append(job)
 
     def finish(self):

@@ -13,7 +13,7 @@ from nprlib.utils import basename, PhyloTree, OrderedDict
 __all__ = ["FastTree"]
 
 class FastTree(TreeTask):
-    def __init__(self, cladeid, alg_file, model, seqtype, conf):
+    def __init__(self, nodeid, alg_file, model, seqtype, conf):
         self.conf = conf
         self.alg_phylip_file = alg_file
         self.alg_basename = basename(self.alg_phylip_file)
@@ -36,7 +36,7 @@ class FastTree(TreeTask):
         else:
             raise ValueError("Unknown seqtype %s" %self.seqtype)
 
-        TreeTask.__init__(self, cladeid, "tree", "FastTree", 
+        TreeTask.__init__(self, nodeid, "tree", "FastTree", 
                       base_args, conf["fasttree"])
 
         # input alg must be the last argument 
@@ -47,7 +47,7 @@ class FastTree(TreeTask):
 
     def load_jobs(self):
         args = self.args.copy()
-        job = Job(self.conf["app"]["fasttree"], args, parent_ids=[self.cladeid])
+        job = Job(self.conf["app"]["fasttree"], args, parent_ids=[self.nodeid])
         self.jobs.append(job)
 
     def finish(self):

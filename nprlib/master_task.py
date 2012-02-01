@@ -5,7 +5,7 @@ from collections import defaultdict
 from logger import logindent
 log = logging.getLogger("main")
 
-from nprlib.utils import (get_md5, merge_arg_dicts, PhyloTree, SeqGroup,
+from nprlib.utils import (md5, merge_arg_dicts, PhyloTree, SeqGroup,
                           checksum)
 from nprlib.master_job import Job
 from nprlib.errors import RetryException
@@ -42,12 +42,12 @@ class Task(object):
         for tag, value in self.args.iteritems():
             print tag,":", value
 
-    def __init__(self, cladeid, task_type, task_name, base_args={}, 
+    def __init__(self, nodeid, task_type, task_name, base_args={}, 
                  extra_args={}):
-        # Cladeid is used to identify the tree node associated with
+        # Nodeid is used to identify the tree node associated with
         # the task. It is calculated as a hash string based on the
         # list of sequence IDs grouped by the node.
-        self.cladeid = cladeid
+        self.nodeid = nodeid
 
         # task type: "alg|tree|acleaner|mchooser|etc."
         self.ttype = task_type
@@ -84,11 +84,6 @@ class Task(object):
 
     def get_status(self, sge_jobs=None):
         saved_status = db.get_task_status(self.taskid)
-        if saved_status is None:
-            db.add_task(self.taskid, status=self.status, ttype=self.tname)
-            saved_status = self.status
-            
-        #saved_status = self.get_saved_status()
         self.job_status = self.get_jobs_status(sge_jobs)
         job_status = set(self.job_status.keys())
 
@@ -134,13 +129,20 @@ class Task(object):
     def init(self):
         # Prepare required jobs
         self.load_jobs()
-
+        
         # Set task information, such as task working dir and taskid
         self.load_task_info()
 
         # Set the working dir for all jobs
         self.set_jobs_wd(self.taskdir)
 
+        db.add_task(tid=self.taskid, nid=self.nodeid, parent=self.nodeid,
+                    status="W", type="task", subtype=self.ttype, name=self.tname)
+        for j in self.jobs:
+            if isjob(j):
+                db.add_task(tid=j.jobid, nid=self.nodeid, parent=self.taskid,
+                            status="W", type="job", name=j.jobname)
+        
     def get_saved_status(self):
         try:
             return open(self.status_file, "ru").read(1)
@@ -181,11 +183,11 @@ class Task(object):
         # working path. Note that this prevents using.taskdir before
         # calling task.init()
         if not self.taskid:
-            unique_id = get_md5(','.join(sorted(
+            unique_id = md5(','.join(sorted(
                         [getattr(j, "jobid", "taskid") for j in self.jobs])))
             self.taskid = unique_id
 
-        self.taskdir = os.path.join(self.global_config["basedir"], self.cladeid,
+        self.taskdir = os.path.join(self.global_config["basedir"], self.nodeid,
                                self.tname+"_"+self.taskid)
 
         if not os.path.exists(self.taskdir):

@@ -57,7 +57,7 @@ def launch_jobs(jobs, conf):
         if match:
             jobid = match.groups()[0]
             for j, cmd in commands:
-                db.update_job(j.jobid, status = "Q", host="@sge", pid=jobid)
+                db.update_task(j.jobid, status = "Q", host="@sge", pid=jobid)
         else:
             raise SgeError(answer)
 

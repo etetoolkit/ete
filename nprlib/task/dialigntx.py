@@ -9,13 +9,13 @@ from nprlib.utils import SeqGroup, OrderedDict
 __all__ = ["Dialigntx"]
 
 class Dialigntx(AlgTask):
-    def __init__(self, cladeid, multiseq_file, seqtype, conf):
+    def __init__(self, nodeid, multiseq_file, seqtype, conf):
         # fixed options for running this task
         base_args = OrderedDict({
                 '': None,
                 })
         # Initialize task
-        AlgTask.__init__(self, cladeid, "alg", "DialignTX", 
+        AlgTask.__init__(self, nodeid, "alg", "DialignTX", 
                       base_args, conf["dialigntx"])
         
         self.conf = conf
@@ -30,7 +30,7 @@ class Dialigntx(AlgTask):
         # Only one Muscle job is necessary to run this task
         args = self.args.copy()
         args[''] = "%s %s" %(self.multiseq_file, "alg.fasta")
-        job = Job(self.conf["app"]["dialigntx"], args, parent_ids=[self.cladeid])
+        job = Job(self.conf["app"]["dialigntx"], args, parent_ids=[self.nodeid])
         self.jobs.append(job)
 
     def finish(self):
