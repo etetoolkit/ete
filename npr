@@ -5,17 +5,17 @@ import logging
 import numpy
 from hashlib import md5
 
-from argparse import ArgumentParser, RawDescriptionHelpFormatter
-from configobj import ConfigObj, flatten_errors
-import validate
+from nprlib.argparse import ArgumentParser, RawDescriptionHelpFormatter
+from nprlib.configobj import ConfigObj, flatten_errors
+from nprlib import validate
 
-from utils import SeqGroup, AA, NT
-from errors import ConfigError, DataError
+from nprlib.utils import SeqGroup, AA, NT
+from nprlib.errors import ConfigError, DataError
 
-from master_task import Task
-from interface import app_wrapper
-from scheduler import schedule
-import db
+from nprlib.master_task import Task
+from nprlib.interface import app_wrapper
+from nprlib.scheduler import schedule
+from nprlib import db
 
 import portable_apps as portable
     
@@ -93,10 +93,10 @@ def main(args):
     # setup portable apps
     
 
-    npr_path = os.path.realpath(config["app"]["npr_path"])
+    port_path = os.path.realpath(config["app"]["portables_path"])
     for k,v in config["app"].iteritems():
         if v == "npr-portable":
-            cmd = portable.get_call(k, npr_path) 
+            cmd = portable.get_call(k, port_path) 
             config["app"][k] = cmd
     print '\n'.join([str([i,j]) for i,j in config["app"].items()])
     #raw_input()
@@ -142,11 +142,10 @@ def main(args):
     
     # Load pipeline
     pipeline_module = config["main"]["pipeline"]
-    if os.path.isfile(pipeline_module):
-        template = imp.load_module("__main__.standard1", open(pipeline_module),
-                                   pipeline_module, ["py", "r", imp.PY_SOURCE])
+    if pipeline_module == "genetree":
+        from nprlib.template.standard1 import pipeline
     else:
-        imp.find_module("standard1", __path__)
+        print "PIPELINE NOT FOUND"
 
     # check nt_seed and aa_seed. Do they contain the same seqs?
     # format? names?
@@ -260,7 +259,7 @@ def main(args):
         execution = None
 
     # Scheduling starts here
-    schedule(config, template.pipeline, args.schedule_time, 
+    schedule(config, pipeline, args.schedule_time, 
              execution, args.retry)
 
 if __name__ == "__main__":
@@ -281,7 +280,6 @@ if __name__ == "__main__":
     parser.add_argument("-c", "--config", dest="configfile", 
                         type=str, required=True, 
                         help="""A valid config file to execute the pipeline""")
-    
     
     # Output data related flags
     parser.add_argument("-o", "--outdir", dest="outdir", 
