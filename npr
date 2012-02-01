@@ -17,6 +17,8 @@ from interface import app_wrapper
 from scheduler import schedule
 import db
 
+import portable_apps as portable
+    
 try:
     module_path = os.path.split(__file__)[0]
     __VERSION__ = open(os.path.join(module_path, "VERSION")).read().strip()
@@ -88,6 +90,17 @@ def main(args):
         print flatten_errors(config, check)
         raise ConfigError("Bad config file")
 
+    # setup portable apps
+    
+
+    npr_path = os.path.realpath(config["app"]["npr_path"])
+    for k,v in config["app"].iteritems():
+        if v == "npr-portable":
+            cmd = portable.get_call(k, npr_path) 
+            config["app"][k] = cmd
+    print '\n'.join([str([i,j]) for i,j in config["app"].items()])
+    #raw_input()
+        
     # Check for unique max_seq config values
     if len(config["main"]["npr_max_seqs"]) != \
             len(set(config["main"]["npr_max_seqs"])):
