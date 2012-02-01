@@ -138,7 +138,7 @@ def main(args):
     config["main"]["_max_cores"] = args.maxcores
 
     # Initialize db
-    db.init_db(os.path.join(base_dir, "tasks.sqlite"))
+    db.init_db(os.path.join(base_dir, "db.sqlite3"))
     
     # Load pipeline
     pipeline_module = config["main"]["pipeline"]
