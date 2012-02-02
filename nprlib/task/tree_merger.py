@@ -110,8 +110,16 @@ class TreeMerger(Task):
             up = target_node.up
             target_node.detach()
             up.add_child(ttree)
+
+        # Annotate current tree
+        node2names = get_node2content(mtree)
+        log.log(28, "Annotating new tree.")
+        for n, names in node2names.iteritems():
+            n.add_features(cladeid=generate_id(names))
+
         # Store merged tree
         self.main_tree = mtree
+
             
     def check(self):
         if os.path.exists(self.left_part_file) and \
@@ -150,13 +158,7 @@ def get_node2content(node, store={}):
 def select_outgroups(ttree, mtree, target_node, args):
     policy = args["_outgroup_policy"]
     min_outs = args["_outgroup_size"]
-    
-    tnode2names = get_node2content(ttree)
-    # Annotate current tree
-    log.log(28, "Annotating new tree.")
-    for n, names in tnode2names.iteritems():
-        n.add_features(cladeid=generate_id(names))
-    
+ 
     # Extract the two new partitions (potentially representing two
     # new iterations in the pipeline). Note that outgroup node, if
     # necessary, was detached previously.

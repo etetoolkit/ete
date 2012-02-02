@@ -174,12 +174,24 @@ def annotate_tree(t, clade2tasks):
     # Annotate cladeid in the whole tree
     for n in t.traverse():
         #n.add_features(cladeid=generate_id(n2names[n]))
+        if n.cladeid.startswith("045"):
+            print n
+            print n.get_leaf_names(), generate_id(n.get_leaf_names())
+            print n2names[n], generate_id(n2names[n])
+            raw_input()
+       
+        print n.cladeid, generate_id(n2names[n])
         cladeid2node[n.cladeid] = n
-        #print n.cladeid, n2names[n]
+
     npr_iter = 0
     for cladeid, alltasks in clade2tasks.iteritems():
         print cladeid, alltasks[0].target_seqs
-        n = cladeid2node[cladeid]
+        try:
+            n = cladeid2node[cladeid]
+        except:
+            print t.get_common_ancestor(alltasks[0].target_seqs)
+            print generate_id(alltasks[0].target_seqs)
+            t.show()
         for task in alltasks:
 
             params = ["%s %s" %(k,v) for k,v in  task.args.iteritems() 
