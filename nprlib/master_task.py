@@ -116,9 +116,8 @@ class Task(object):
             if not self.check():
                 log.error("Task check not passed")
                 st = "E"
-
         #self.save_status(st)
-        db.update_task(self.taskid, status=st)
+        #db.update_task(self.taskid, status=st)
         self.status = st
         return st
 
@@ -134,14 +133,16 @@ class Task(object):
         self.load_task_info()
 
         # Set the working dir for all jobs
-        self.set_jobs_wd(self.taskdir)
+        # self.set_jobs_wd(self.taskdir)
+        self.set_jobs_wd()
 
-        db.add_task(tid=self.taskid, nid=self.nodeid, parent=self.nodeid,
-                    status="W", type="task", subtype=self.ttype, name=self.tname)
-        for j in self.jobs:
-            if isjob(j):
-                db.add_task(tid=j.jobid, nid=self.nodeid, parent=self.taskid,
-                            status="W", type="job", name=j.jobname)
+        #if db.get_task_status(self.taskid) is None:
+        #    db.add_task(tid=self.taskid, nid=self.nodeid, parent=self.nodeid,
+        #                status="W", type="task", subtype=self.ttype, name=self.tname)
+        #for j in self.jobs:
+        #    if isjob(j) and db.get_task_status(j.jobid) is None:
+        #        db.add_task(tid=j.jobid, nid=self.nodeid, parent=self.taskid,
+        #                    status="W", type="job", name=j.jobname)
         
     def get_saved_status(self):
         try:
@@ -187,8 +188,12 @@ class Task(object):
                         [getattr(j, "jobid", "taskid") for j in self.jobs])))
             self.taskid = unique_id
 
-        self.taskdir = os.path.join(self.global_config["basedir"], self.nodeid,
-                               self.tname+"_"+self.taskid)
+        #self.taskdir = os.path.join(self.global_config["basedir"], self.nodeid,
+        #                       self.tname+"_"+self.taskid)
+
+        self.taskdir = os.path.join(self.global_config["basedir"], "tasks",
+                                    self.taskid)
+            
 
         if not os.path.exists(self.taskdir):
             os.makedirs(self.taskdir)
@@ -199,11 +204,13 @@ class Task(object):
     def save_status(self, status):
         open(self.status_file, "w").write(status)
 
-    def set_jobs_wd(self, path):
+    def set_jobs_wd(self):
         ''' Sets working directory of all sibling jobs '''
         for j in self.jobs:
             # Only if job is not another Task instance
-            if issubclass(Job, j.__class__):
+            if isjob(j):
+                path = os.path.join(self.global_config["basedir"], "tasks",
+                                    j.jobid)
                 j.set_jobdir(path)
 
     def retry(self):

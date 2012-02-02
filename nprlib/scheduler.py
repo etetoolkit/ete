@@ -9,6 +9,8 @@ log = logging.getLogger("main")
 from nprlib.utils import generate_id, render_tree, print_as_table, HOSTNAME 
 from nprlib.errors import ConfigError, DataError, TaskError
 from nprlib import db, sge
+from nprlib.master_task import isjob
+
 
 def sort_tasks(x, y):
     if getattr(x,"nseqs", 0) > getattr(y,"nseqs", 0):
@@ -30,7 +32,6 @@ def schedule(config, processer, schedule_time, execution, retry):
         dbnodes, dbtasks = db.report()
         print_as_table(dbnodes)
         print_as_table(dbtasks)
-
         
         cores_used = 0
         wait_time = 0.1 # Try to go fast unless running tasks
@@ -49,10 +50,10 @@ def schedule(config, processer, schedule_time, execution, retry):
         for task in pending_tasks:
             task.status = task.get_status(qstat_jobs)
             cores_used += task.cores_used
-           
             
         sge_jobs = []
         for task in sorted(pending_tasks, sort_tasks):
+            update_task_states(task)
             if task.ttype == "msf":
                 seqs = task.target_seqs
                 out_seqs = task.out_seqs
@@ -120,6 +121,8 @@ def schedule(config, processer, schedule_time, execution, retry):
                 new_tasks, main_tree = processer(task, main_tree, config)
                 logindent(-3)
                 pending_tasks.remove(task)
+                for ts in new_tasks:
+                    register_task(ts)
                 pending_tasks.extend(new_tasks)
                 
                 cladeid = db.get_cladeid(task.nodeid)
@@ -153,9 +156,8 @@ def schedule(config, processer, schedule_time, execution, retry):
                 #    img_file = os.path.join(config["main"]["basedir"], 
                 #                            "gallery", task.nodeid+".svg")
                 #    render_tree(main_tree, img_file)
-
-
         sge.launch_jobs(sge_jobs, config)
+        
         sleep(wait_time)
         print 
 
@@ -173,10 +175,10 @@ def annotate_tree(t, clade2tasks):
     for n in t.traverse():
         #n.add_features(cladeid=generate_id(n2names[n]))
         cladeid2node[n.cladeid] = n
-        print n.cladeid, n2names[n]
+        #print n.cladeid, n2names[n]
     npr_iter = 0
     for cladeid, alltasks in clade2tasks.iteritems():
-        print cladeid
+        print cladeid, alltasks[0].target_seqs
         n = cladeid2node[cladeid]
         for task in alltasks:
 
@@ -247,6 +249,7 @@ def get_node2content(node, store={}):
 
 def launch_detached(j, cmd):
     pid1 = os.fork()
+    j.status = "R"
     if pid1 == 0:
         pid2 = os.fork()
    
@@ -257,7 +260,6 @@ def launch_detached(j, cmd):
                 os.chdir("/")
                 os.umask(0)
                 P = Popen(cmd, shell=True)
-                db.update_task(j.jobid, pid=P.pid, host=HOSTNAME, status="R")
                 P.wait()
                 os._exit(0)
             else:
@@ -274,3 +276,22 @@ def launch_detached(j, cmd):
             os._exit(0)
     else:
         return
+
+def register_task(task):
+    if db.get_task_status(task.taskid) is None:
+        db.add_task(tid=task.taskid, nid=task.nodeid, parent=task.nodeid,
+                    status="W", type="task", subtype=task.ttype, name=task.tname)
+    for j in task.jobs:
+        if isjob(j) and db.get_task_status(j.jobid) is None:
+            db.add_task(tid=j.jobid, nid=task.nodeid, parent=task.taskid,
+                        status="W", type="job", name=j.jobname)
+        else:
+            register_task(j)
+
+def update_task_states(task):
+    for j in task.jobs:
+        if isjob(j):
+            db.update_task(j.jobid, status=j.status)
+        else:
+            update_task_states(j)
+    db.update_task(task.taskid, status=task.status)

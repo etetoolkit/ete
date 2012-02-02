@@ -59,7 +59,7 @@ class TreeMerger(Task):
                 outgroup = ttree & list(out_seqs)[0]
 
             ttree.set_outgroup(outgroup)
-            ttree = ttree.get_common_ancestor(core_seqs)
+            ttree = ttree.get_common_ancestor(target_seqs)
 
             # If out_seqs were taken from upper parts of the main
             # tree, discard them. Otherwise, keep them, because it
@@ -220,13 +220,14 @@ def select_outgroups(ttree, mtree, target_node, args):
     log.log(22, "Best outgroup for B: %s" %rank_outs_b[:5])
 
     missing_outs = min_outs - min(len(outs_a), len(outs_b))
-    if missing_outs > 0:
+    _node = target_node
+    while _node and min_outs - min(len(outs_a), len(outs_b)) > 0:
         # Try to extend outgroups using the upper tree
-        _node = target_node
-        while _node:
-            _extra = mnode2names[_node.get_sisters()[0]]
-            outs_a.extend(_extra)
-            outs_b.extend(_extra)
+        _extra = _node.get_sisters()[0].get_leaf_names()
+        outs_a.extend(_extra)
+        outs_b.extend(_extra)
+        _node = _node.up
+        
     outs_a = outs_a[:min_outs]
     outs_b = outs_b[:min_outs]
     

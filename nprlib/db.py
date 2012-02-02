@@ -134,7 +134,6 @@ def report():
     cursor.execute(cmd)
     tasks = cursor.fetchall()
     return nodes, tasks
-
     
     
 def commit():

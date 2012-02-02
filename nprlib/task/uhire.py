@@ -26,7 +26,7 @@ class Uhire(AlgTask):
     def load_jobs(self):
         # split the original set of sequences in clusters.
         uhire_args = {
-            "--clumpfasta": "../",
+            "--clumpfasta": "./",
             "--maxclump": "%s" %self.conf["uhire"]["_maxclump"],
             "--usersort": "",
             "--uhire": self.multiseq_file,
@@ -40,12 +40,14 @@ class Uhire(AlgTask):
         # important that there is no trailing lines at the end of the
         # command.)
         cmd = """
-        (cd ../;
-        mkdir clumpalgs/;
-        for fname in clump.* master;
-           do %s -in $fname -out clumpalgs/$fname -maxiters %s;
-        done;) """ %(self.conf["app"]["muscle"], 
-                     self.conf["uhire"]["_muscle_maxiters"])
+        (mkdir clumpalgs/;
+        for fname in %s/clump.* %s/master;
+           do %s -in $fname -out clumpalgs/`basename $fname` -maxiters %s;
+        done;) """ %(
+            os.path.join("../",uhire_job.jobid),
+            os.path.join("../",uhire_job.jobid),
+            self.conf["app"]["muscle"], 
+            self.conf["uhire"]["_muscle_maxiters"])
 
         alg_job = Job(cmd, {}, "uhire_muscle_algs", parent_ids=[uhire_job.jobid])
         alg_job.dependencies.add(uhire_job)
@@ -53,7 +55,7 @@ class Uhire(AlgTask):
         # Merge the cluster alignemnts into a single one
         umerge_args = {
             "--maxlen": self.conf["uhire"]["_max_seq_length"],
-            "--mergeclumps": "../clumpalgs/",
+            "--mergeclumps": "../%s/clumpalgs/" %alg_job.jobid,
             "--output": "alg.fasta",
             }
         umerge_job = Job(self.conf["app"]["usearch"], umerge_args, "usearch-umerge",

@@ -67,8 +67,11 @@ class Job(object):
         jobname = "%s_%s" %(basename(self.bin), self.jobid[:6])
         jobname = re.sub("[^0-9a-zA-Z]", "-",jobname)
 
-        self.jobdir = os.path.join(basepath, "%s_%s" %\
-                                       (self.jobname, self.jobid[:6]))
+        #self.jobdir = os.path.join(basepath, "%s_%s" %\
+        #                               (self.jobname, self.jobid[:6]))
+
+        self.jobdir = basepath
+        
         if not os.path.exists(self.jobdir):
             os.makedirs(self.jobdir)
         self.status_file = os.path.join(self.jobdir, "__status__")
@@ -122,13 +125,11 @@ class Job(object):
             jinfo = db.get_task_info(self.jobid)
             self.host = jinfo.get("host", None) or ""
             self.pid = jinfo.get("pid", None) or ""
-
-            saved_status = jinfo.get("status", None)
+            saved_status = jinfo.get("status")
             try:
                 st = open(self.status_file).read(1)
             except IOError:
                 st = saved_status
-            
             #if st is None:
             #    db.add_task(self.jobid, status="W")
             #    st = saved_status = "W"
@@ -146,8 +147,8 @@ class Job(object):
                 elif self.host == HOSTNAME and not pid_up(self.pid):
                     st = "L"
         
-            if st != saved_status:
-                db.update_task(self.jobid, status=st)
+            #if st != saved_status:
+            #    db.update_task(self.jobid, status=st)
             self.status = st
             
         return self.status
