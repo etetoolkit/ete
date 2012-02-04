@@ -50,10 +50,12 @@ def schedule(config, processer, schedule_time, execution, retry):
         for task in pending_tasks:
             task.status = task.get_status(qstat_jobs)
             cores_used += task.cores_used
-            
+            update_task_states(task)
+        db.commit()
+        
         sge_jobs = []
         for task in sorted(pending_tasks, sort_tasks):
-            update_task_states(task)
+
             if task.ttype == "msf":
                 seqs = task.target_seqs
                 out_seqs = task.out_seqs
@@ -174,24 +176,11 @@ def annotate_tree(t, clade2tasks):
     # Annotate cladeid in the whole tree
     for n in t.traverse():
         #n.add_features(cladeid=generate_id(n2names[n]))
-        if n.cladeid.startswith("045"):
-            print n
-            print n.get_leaf_names(), generate_id(n.get_leaf_names())
-            print n2names[n], generate_id(n2names[n])
-            raw_input()
-       
-        print n.cladeid, generate_id(n2names[n])
         cladeid2node[n.cladeid] = n
 
     npr_iter = 0
     for cladeid, alltasks in clade2tasks.iteritems():
-        print cladeid, alltasks[0].target_seqs
-        try:
-            n = cladeid2node[cladeid]
-        except:
-            print t.get_common_ancestor(alltasks[0].target_seqs)
-            print generate_id(alltasks[0].target_seqs)
-            t.show()
+        n = cladeid2node[cladeid]
         for task in alltasks:
 
             params = ["%s %s" %(k,v) for k,v in  task.args.iteritems() 

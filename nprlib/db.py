@@ -6,6 +6,11 @@ import base64
 conn = None
 cursor = None
 
+AUTOCOMMIT = False
+def autocommit():
+    if AUTOCOMMIT:
+        conn.commit()
+
 def encode(x):
     return base64.encodestring(cPickle.dumps(x))
 
@@ -66,7 +71,8 @@ def add_task(tid, nid, parent=None, status=None, type=None, subtype=None,
     cmd = ('INSERT INTO task (taskid, nodeid, parentid, status,'
            ' type, subtype, name) VALUES (%s);' %(values))
     cursor.execute(cmd)
-    conn.commit()
+
+    autocommit()
 
 def update_task(tid, **kargs):
     if kargs:
@@ -74,7 +80,7 @@ def update_task(tid, **kargs):
                        kargs.iteritems()])
         cmd = 'UPDATE task SET %s where taskid="%s";' %(values, tid)
         cursor.execute(cmd)
-        conn.commit()
+        autocommit()
 
 def get_task_status(tid):
     cmd = 'SELECT status FROM task WHERE taskid="%s"' %(tid)
@@ -108,7 +114,7 @@ def add_node(nodeid, cladeid, target_seqs, out_seqs):
     cmd = ('INSERT INTO node (nodeid, cladeid, target_seqs, out_seqs)'
            ' VALUES (%s);' %(values))
     cursor.execute(cmd)
-    conn.commit()
+    autocommit()
 
 def get_cladeid(nodeid):
     cmd = 'SELECT cladeid FROM node WHERE nodeid="%s"' %(nodeid)

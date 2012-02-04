@@ -26,9 +26,11 @@ class TreeMerger(Task):
         self.right_part_file = os.path.join(self.taskdir, "right.msf")
 
     def finish(self):
+        from ete2 import NodeStyle
         mtree = self.main_tree
         ttree = PhyloTree(self.task_tree_file)
-       
+        ttree.dist = 0
+        
         #log.debug("Task Tree: %s", ttree)
         #log.debug("Main Tree: %s", mtree)
 
@@ -38,9 +40,15 @@ class TreeMerger(Task):
         # seqs as the task tree
         if mtree:
             target_node = fast_search_node(cladeid, mtree)
+            st = NodeStyle()
+            st['fgcolor'] = 'red'
+            target_node.set_style(st)
+            print target_node
+            #mtree.show()
+            ttree.dist = target_node.dist
         else:
             target_node = None
-
+        
         # Root task_tree. If outgroup seqs are available, uses manual
         # rooting. Otherwise, it means that task_tree is the result of
         # the first iteration, so it will try automatic rooting based
@@ -57,16 +65,15 @@ class TreeMerger(Task):
                 outgroup = ttree.get_common_ancestor(out_seqs)
             else:
                 outgroup = ttree & list(out_seqs)[0]
-
+            print outgroup
             ttree.set_outgroup(outgroup)
             ttree = ttree.get_common_ancestor(target_seqs)
-
             # If out_seqs were taken from upper parts of the main
             # tree, discard them. Otherwise, keep them, because it
             # means that previous iteration returned a tree with the
             # same number of sister nodes as outgroups needed (so the
             # tree was reconstructed without anchor outgroups).
-            if out_seqs & target_seqs:
+            if not (out_seqs & target_seqs):
                 ttree.detach()
         else:
             log.log(28, "Rooting tree to the largest-best-supported node")
