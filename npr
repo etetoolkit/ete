@@ -213,10 +213,16 @@ def main(args):
     if id2name: 
         id_conversion_file = os.path.join(base_dir, "id_conversion.txt")
         CONV = open(id_conversion_file, "w")
-        CONV.write('\n'.join(["%s\t%s" %(i,v) 
-                              for i,v in id2name.iteritems()]))
+        for i,v in id2name.iteritems():
+            CONV.write("%s\t%s\n" %(i,v))
+            try:
+                db.add_seq_name(i, v)
+            except db.sqlite3.IntegrityError:
+                pass
+                
         CONV.close()
-
+        db.commit()
+        
     config["main"]["aa_seed"] =  seed_files.get("aa_seed", None)
     config["main"]["nt_seed"] =  seed_files.get("nt_seed", None)
 
