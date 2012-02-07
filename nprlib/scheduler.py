@@ -11,27 +11,30 @@ from nprlib.errors import ConfigError, DataError, TaskError
 from nprlib import db, sge
 from nprlib.master_task import isjob
 
-
-def sort_tasks(x, y):
-    if getattr(x,"nseqs", 0) > getattr(y,"nseqs", 0):
-        return 1
-    elif getattr(x,"nseqs", 0) < getattr(y,"nseqs", 0):
-        return -1
-    else:
-        return 0
-
 def schedule(config, processer, schedule_time, execution, retry):
+    def sort_tasks(x, y):
+        _x = getattr(x, "nseqs", 0)
+        _y = getattr(y, "nseqs", 0)
+        if _x > _y:
+            return 1
+        elif _x < _y:
+            return -1
+        else:
+            return 0
+   
     # Send seed files to processer to generate the initial task
+    nodeid2info = {}
     pending_tasks, main_tree = processer(None, None, 
-                                         config)
+                                         config, nodeid2info)
     clade2tasks = defaultdict(list)
+
     # Then enters into the pipeline.
     cores_total = config["main"]["_max_cores"]
 
     while pending_tasks:
         dbnodes, dbtasks = db.report()
-        print_as_table(dbnodes)
-        print_as_table(dbtasks)
+        #print_as_table(dbnodes)
+        print_as_table(dbtasks, fields=[0,3,4,5,6])
         
         cores_used = 0
         wait_time = 0.1 # Try to go fast unless running tasks
@@ -55,12 +58,17 @@ def schedule(config, processer, schedule_time, execution, retry):
         
         sge_jobs = []
         for task in sorted(pending_tasks, sort_tasks):
-
+            if task.nodeid not in nodeid2info:
+                nodeid2info[task.nodeid] = {}
             if task.ttype == "msf":
                 seqs = task.target_seqs
                 out_seqs = task.out_seqs
-                db.add_node(task.nodeid, task.cladeid,
-                            task.target_seqs, task.out_seqs)
+                try:
+                    db.add_node(task.nodeid, task.cladeid,
+                                task.target_seqs, task.out_seqs)
+                except db.sqlite3.IntegrityError:
+                    log.log(20, "node registered previously.")
+                    
             
             print
             set_logindent(1)
@@ -120,7 +128,8 @@ def schedule(config, processer, schedule_time, execution, retry):
                     
             elif task.status == "D":
                 logindent(3)
-                new_tasks, main_tree = processer(task, main_tree, config)
+                new_tasks, main_tree = processer(task, main_tree, config,
+                                                 nodeid2info)
                 logindent(-3)
                 pending_tasks.remove(task)
                 for ts in new_tasks:
@@ -135,6 +144,8 @@ def schedule(config, processer, schedule_time, execution, retry):
                 if retry:
                     log.log(28, "Remarking task as undone to retry")
                     task.retry()
+                    update_task_states(task)
+                    db.commit()
                 else:
                     raise TaskError(task)
 
@@ -148,10 +159,11 @@ def schedule(config, processer, schedule_time, execution, retry):
             # If last task processed a new tree node, dump snapshots
             if task.ttype == "treemerger":
                 log.info("Annotating tree")
-                npr_iter = annotate_tree(main_tree, clade2tasks)
+                user_tree = main_tree.copy()
+                npr_iter = annotate_tree(user_tree, clade2tasks, nodeid2info)
                 nw_file = os.path.join(config["main"]["basedir"],
                                        "tree_snapshots", "Iter_%05d.nw" %npr_iter)
-                main_tree.write(outfile=nw_file, features=[])
+                user_tree.write(outfile=nw_file, features=[])
                 
                 #if config["main"]["render_tree_images"]:
                 #    log.log(28, "Rendering tree image")
@@ -169,12 +181,13 @@ def schedule(config, processer, schedule_time, execution, retry):
     log.debug(str(main_tree))
     main_tree.show()
 
-def annotate_tree(t, clade2tasks):
+def annotate_tree(t, clade2tasks, nodeid2info):
     
     n2names = get_node2content(t)
     cladeid2node = {}
     # Annotate cladeid in the whole tree
     for n in t.traverse():
+        n.name = db.get_seq_name(n.name)
         #n.add_features(cladeid=generate_id(n2names[n]))
         cladeid2node[n.cladeid] = n
 
@@ -187,27 +200,31 @@ def annotate_tree(t, clade2tasks):
                       if not k.startswith("_")]
             params = " ".join(params)
 
-            if task.ttype == "msf":
-                n.add_features(nseqs=task.nseqs)
-            elif task.ttype == "acleaner":
+            n.add_features(nseqs=nodeid2info[task.nodeid]["nseqs"])
+                
+            if task.ttype == "acleaner":
                 n.add_features(clean_alg_mean_identn=task.mean_ident, 
                                clean_alg_std_ident=task.std_ident, 
                                clean_alg_max_ident=task.max_ident, 
                                clean_alg_min_ident=task.min_ident, 
                                clean_alg_type=task.tname, 
-                               clean_alg_cmd=params)
+                               clean_alg_cmd=params,
+                               clean_alg_path=task.clean_alg_fasta_file)
             elif task.ttype == "alg":
                 n.add_features(alg_mean_identn=task.mean_ident, 
                                alg_std_ident=task.std_ident, 
                                alg_max_ident=task.max_ident, 
                                alg_min_ident=task.min_ident, 
                                alg_type=task.tname, 
-                               alg_cmd=params)
+                               alg_cmd=params,
+                               alg_path=task.alg_fasta_file)
+
             elif task.ttype == "tree":
                 n.add_features(tree_model=task.model, 
                                tree_seqtype=task.seqtype, 
                                tree_type=task.tname, 
-                               tree_cmd=params)
+                               tree_cmd=params,
+                               tree_file=task.tree_file)
                 npr_iter += 1
             elif task.ttype == "mchooser":
                 n.add_features(modeltester_models=task.models, 
@@ -283,9 +300,10 @@ def register_task(task):
         db.add_task(tid=task.taskid, nid=task.nodeid, parent=task.nodeid,
                     status="W", type="task", subtype=task.ttype, name=task.tname)
     for j in task.jobs:
-        if isjob(j) and db.get_task_status(j.jobid) is None:
-            db.add_task(tid=j.jobid, nid=task.nodeid, parent=task.taskid,
-                        status="W", type="job", name=j.jobname)
+        if isjob(j):
+            if db.get_task_status(j.jobid) is None:
+                db.add_task(tid=j.jobid, nid=task.nodeid, parent=task.taskid,
+                            status="W", type="job", name=j.jobname)
         else:
             register_task(j)
 

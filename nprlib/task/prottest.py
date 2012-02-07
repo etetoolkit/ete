@@ -10,7 +10,8 @@ from nprlib.utils import basename, PhyloTree
 __all__ = ["Prottest"]
 
 class Prottest(ModelTesterTask):
-    def __init__(self, nodeid, alg_fasta_file, alg_phylip_file, conf):
+    def __init__(self, nodeid, alg_fasta_file, alg_phylip_file,
+                 constrain_tree, conf):
         self.alg_phylip_file = alg_phylip_file
         self.alg_fasta_file = alg_fasta_file
         self.alg_basename = basename(self.alg_phylip_file)

@@ -157,6 +157,7 @@ class Job(object):
         open(self.status_file, "w").write(status)
         
     def clean(self):
-        shutil.rmtree(self.jobdir)
+        if os.path.exists(self.jobdir):
+            shutil.rmtree(self.jobdir)
 
 

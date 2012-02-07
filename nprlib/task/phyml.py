@@ -13,16 +13,18 @@ from nprlib.utils import basename, PhyloTree, OrderedDict
 __all__ = ["Phyml"]
 
 class Phyml(TreeTask):
-    def __init__(self, nodeid, alg_file, model, seqtype, conf):
+    def __init__(self, nodeid, alg_file, constrain_tree, model, seqtype, conf):
         base_args = OrderedDict({
                 "--model": "", 
                 "--no_memory_check": "", 
-                "--quiet": "" })
+                "--quiet": "",
+                "--constrain_tree": ""})
 
         TreeTask.__init__(self, nodeid, "tree", "Phyml", 
                       base_args, conf["phyml"])
 
         self.conf = conf
+        self.constrain_tree = constrain_tree
         self.alg_phylip_file = alg_file
         self.alg_basename = basename(self.alg_phylip_file)
         if seqtype == "aa":
@@ -34,7 +36,7 @@ class Phyml(TreeTask):
 
         self.init()
         self.tree_file = os.path.join(self.taskdir, "final_tree.nw")
-        
+      
         # Phyml cannot write the output in a different directory that
         # the original alg file. So I use relative path to alg file
         # for processes and I create a symlink for each of the
@@ -50,6 +52,10 @@ class Phyml(TreeTask):
         args["--model"] = self.model
         args["--datatype"] = self.seqtype
         args["--input"] = self.alg_basename
+        if self.constrain_tree:
+            args["--constrain_tree"] = self.constrain_tree
+        else:
+            del args["--constrain_tree"]
         job = Job(self.conf["app"]["phyml"], args, parent_ids=[self.nodeid])
         self.jobs.append(job)
 

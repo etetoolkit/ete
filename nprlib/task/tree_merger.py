@@ -8,6 +8,13 @@ from nprlib.master_job import Job
 from nprlib.utils import load_node_size, PhyloTree, SeqGroup, generate_id
 from nprlib import db
 
+from ete_dev  import NodeStyle, TreeStyle
+st = NodeStyle()
+ts = TreeStyle
+st['fgcolor'] = 'red'
+st['size'] = 20
+
+
 __all__ = ["TreeMerger"]
 
 class TreeMerger(Task):
@@ -26,7 +33,7 @@ class TreeMerger(Task):
         self.right_part_file = os.path.join(self.taskdir, "right.msf")
 
     def finish(self):
-        from ete2 import NodeStyle
+
         mtree = self.main_tree
         ttree = PhyloTree(self.task_tree_file)
         ttree.dist = 0
@@ -40,12 +47,7 @@ class TreeMerger(Task):
         # seqs as the task tree
         if mtree:
             target_node = fast_search_node(cladeid, mtree)
-            st = NodeStyle()
-            st['fgcolor'] = 'red'
-            target_node.set_style(st)
-            print target_node
-            #mtree.show()
-            ttree.dist = target_node.dist
+
         else:
             target_node = None
         
@@ -65,16 +67,12 @@ class TreeMerger(Task):
                 outgroup = ttree.get_common_ancestor(out_seqs)
             else:
                 outgroup = ttree & list(out_seqs)[0]
-            print outgroup
-            ttree.set_outgroup(outgroup)
-            ttree = ttree.get_common_ancestor(target_seqs)
-            # If out_seqs were taken from upper parts of the main
-            # tree, discard them. Otherwise, keep them, because it
-            # means that previous iteration returned a tree with the
-            # same number of sister nodes as outgroups needed (so the
-            # tree was reconstructed without anchor outgroups).
-            if not (out_seqs & target_seqs):
-                ttree.detach()
+
+            if outgroup is not ttree:
+                ttree.set_outgroup(outgroup)
+                ttree = ttree.get_common_ancestor(target_seqs)
+            else:
+                raise ValueError("Outgroup was split")
         else:
             log.log(28, "Rooting tree to the largest-best-supported node")
             ttree.set_outgroup(ttree.get_midpoint_outgroup())
@@ -114,9 +112,15 @@ class TreeMerger(Task):
             # target = fast_search_node(self.cladeid, mtree)
             # Switch nodes in the main_tree so current tree topology
             # is incorporated.
+            #target_node.set_style(st)
+            #mtree.show()
+            #ttree.show()
+
             up = target_node.up
             target_node.detach()
             up.add_child(ttree)
+
+            #mtree.show()            
 
         # Annotate current tree
         node2names = get_node2content(mtree)
@@ -142,12 +146,10 @@ def fast_search_node(cladeid, tree):
             return n
 
 def root_distance_matrix(root):
-    root.dist = 0.0
     n2rdist = {root:0.0}
     for n in root.iter_descendants("preorder"):
         n2rdist[n] = n2rdist[n.up] + n.dist
     return n2rdist
-
 
 def get_node2content(node, store={}):
     for ch in node.children:

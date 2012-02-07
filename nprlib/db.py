@@ -55,6 +55,12 @@ def create_db():
     pid VARCHAR
     );
 
+    CREATE TABLE IF NOT EXISTS seqid2name(
+    seqid CHAR(32) PRIMARY KEY,
+    name VARCHAR(256)
+    );
+
+    
     CREATE INDEX IF NOT EXISTS i1 ON task(host, status);
     CREATE INDEX IF NOT EXISTS i2 ON task(nodeid, status);
     CREATE INDEX IF NOT EXISTS i3 ON task(parentid, status);
@@ -131,16 +137,26 @@ def get_node_info(nodeid):
     out_seqs = decode(out_seqs)
     return cladeid, target_seqs, out_seqs
 
-def report():
+def report(max_records=40):
     cmd = 'SELECT nodeid,cladeid FROM node;'
     cursor.execute(cmd)
     nodes = cursor.fetchall()
 
     cmd = 'SELECT * FROM task;'
     cursor.execute(cmd)
-    tasks = cursor.fetchall()
+    tasks = cursor.fetchall()[-max_records:]
     return nodes, tasks
-    
+
+def add_seq_name(seqid, name):
+    cmd = ('INSERT INTO seqid2name (seqid, name)'
+           ' VALUES ("%s", "%s");' %(seqid, name))
+    cursor.execute(cmd)
+    autocommit()
+
+def get_seq_name(seqid):
+    cmd = 'SELECT name FROM seqid2name WHERE seqid="%s"' %seqid
+    cursor.execute(cmd)
+    return (cursor.fetchone() or ["NoName_"+seqid])[0]
     
 def commit():
     conn.commit()

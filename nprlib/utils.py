@@ -15,12 +15,12 @@ except ImportError:
     from ordereddict import OrderedDict
 
 sys.path.insert(0, "/home/jhuerta/_Devel/ete/gui/")
-try:
-    from ete_dev import PhyloTree, SeqGroup, TreeStyle, NodeStyle, faces
-    from ete_dev.parser.fasta import read_fasta
-except ImportError:
-    from ete2 import PhyloTree, SeqGroup, TreeStyle, NodeStyle, faces
-    from ete2.parser.fasta import read_fasta
+#try:
+from ete_dev import PhyloTree, SeqGroup, TreeStyle, NodeStyle, faces
+from ete_dev.parser.fasta import read_fasta
+#except ImportError:
+#    from ete2 import PhyloTree, SeqGroup, TreeStyle, NodeStyle, faces
+#    from ete2.parser.fasta import read_fasta
     
 
 AA = set("ABCDEFGHIJKLMNPOQRSUTVWXYZ") | set("abcdefghijklmnpoqrsutvwxyz") 
@@ -122,10 +122,12 @@ def pid_up(pid):
     else:
         return True
 
-def print_as_table(rows, header=[], print_header=True, stdout=sys.stdout):
+def print_as_table(rows, header=None, fields=None, print_header=True, stdout=sys.stdout):
     """ Print >>Stdout, a list matrix as a formated table. row must be a list of
     dicts or lists."""
-
+    if header is None:
+        header = []
+        
     def _str(i):
         if isinstance(i, float):
             return "%0.2f" %i
@@ -141,31 +143,35 @@ def print_as_table(rows, header=[], print_header=True, stdout=sys.stdout):
 	    
     lengths  = {}
     if vtype == list or vtype == tuple:
-        v_len = len(rows[0])
+        v_len = len(fields) if fields else len(rows[0])
+        
         if header and len(header)!=v_len:
             raise Exception("Bad header length")
 
         # Get max size of each field
-        for i in xrange(v_len):
+        if not fields:
+            fields = range(v_len)
+        
+        for i,iv in enumerate(fields):
             header_length = 0
             if header != []:
                 header_length = len(_str(header[i]))
-            max_field_length = max( [ len(_str(r[i])) for r in rows] )
+            max_field_length = max( [ len(_str(r[iv])) for r in rows] )
             lengths[i] = max( [ header_length, max_field_length ] )
 
         if header and print_header:
             # Print >>Stdout, header names
-            for i in xrange(v_len):
+            for i in xrange(len(fields)):
                 print >>stdout, _str(header[i]).rjust(lengths[i])+" | ",
             print >>stdout, ""
             # Print >>Stdout, underlines
-            for i in xrange(v_len):
+            for i in xrange(len(fields)):
                 print >>stdout, "".rjust(lengths[i],"-")+" | ",
             print >>stdout, ""
         # Print >>Stdout, table lines
         for r in rows:
-            for i in xrange(v_len):
-                print >>stdout, _str(r[i]).rjust(lengths[i])+" | ",
+            for i,iv in enumerate(fields):
+                print >>stdout, _str(r[iv]).rjust(lengths[i])+" | ",
             print >>stdout, ""
 
     elif vtype == dict:

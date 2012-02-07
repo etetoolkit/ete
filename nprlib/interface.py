@@ -15,7 +15,6 @@ except ImportError:
 else:
     NCURSES = True
 
-
     
 class Screen(StringIO):
     # tags used to control color of strings and select buffer

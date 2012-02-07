@@ -1,3 +1,4 @@
+import os
 import numpy 
 import re
 import commands
@@ -40,6 +41,27 @@ def get_trimal_conservation(alg_file, trimal_bin):
     std =  numpy.std(conservation)
     return mean, std
 
+def get_statal_identity(alg_file, statal_bin):
+    output = commands.getoutput("%s -scolidentt -in %s" %\
+                                (statal_bin, alg_file))
+    ## Columns Identity Descriptive Statistics
+    #maxColIdentity	1
+    #minColIdentity	0.428571
+    #avgColIdentity	0.781853
+    #stdColIdentity	0.2229
+    print output
+    for line in output.split("\n"):
+        if line.startswith("#maxColIdentity"):
+            maxi = float(line.split()[1])
+        elif line.startswith("#minColIdentity"):
+            mini = float(line.split()[1])
+        elif line.startswith("#avgColIdentity"):
+            avgi = float(line.split()[1])
+        elif line.startswith("#stdColIdentity"):
+            stdi = float(line.split()[1])
+            break
+    return maxi, mini, avgi, stdi
+    
 def get_trimal_identity(alg_file, trimal_bin):
     #print "%s -sident -in %s" %\
     #    (trimal_bin, alg_file)
@@ -66,7 +88,7 @@ def get_identity(fname):
         values = states.values()
         if values:
             ident.append(float(max(values))/sum(values))
-    return (numpy.min(ident), numpy.max(ident), 
+    return (numpy.max(ident), numpy.min(ident), 
             numpy.mean(ident), numpy.std(ident))
 
          
@@ -113,16 +135,27 @@ def switch_to_codon(alg_fasta_file, alg_phylip_file, nt_seed_file,
         
     return alg_fasta_filename, alg_phylip_filename
 
-def process_task(task, main_tree, conf):
+def process_task(task, main_tree, conf, nodeid2info):
     aa_seed_file = conf["main"]["aa_seed"]
     nt_seed_file = conf["main"]["nt_seed"]
     seqtype = task.seqtype
     nodeid = task.nodeid
-    nseqs = task.nseqs
+    ttype = task.ttype
+    node_info = nodeid2info[nodeid]
+    nseqs = task.nseqs#node_info.get("nseqs", 0)
+    target_seqs = node_info.get("target_seqs", [])
+    out_seqs = node_info.get("out_seqs", [])
+    constrain_tree = None
+    constrain_tree_path = None
+    if out_seqs and len(out_seqs) > 1:
+        constrain_tree = "((%s), (%s));" %(','.join(out_seqs), 
+                                           ','.join(target_seqs))
+        constrain_tree_path = os.path.join(task.taskdir, "constrain.nw")
+                                           
+   
     sst = conf["main"]["DNA_sst"]
     sit = conf["main"]["DNA_sit"]
     sct = conf["main"]["DNA_sct"]
-    ttype = task.ttype
 
     # Loads application handlers according to current task size
     index = None
@@ -150,13 +183,16 @@ def process_task(task, main_tree, conf):
         _model_tester = n2class[conf["main"]["npr_aa_model_tester"][index]]
         _tree_builder = n2class[conf["main"]["npr_aa_tree_builder"][index]]
 
-    #print (nseqs, index, _alg_cleaner, _model_tester, _aligner, _tree_builder)
+    #print node_info, (nseqs, index, _alg_cleaner, _model_tester, _aligner, _tree_builder)
     
     new_tasks = []
     if ttype == "msf":
         alg_task = _aligner(nodeid, task.multiseq_file,
                            seqtype, conf)
-        alg_task.nseqs = nseqs
+        nodeid2info[nodeid]["nseqs"] = task.nseqs
+        nodeid2info[nodeid]["target_seqs"] = task.target_seqs
+        nodeid2info[nodeid]["out_seqs"] = task.out_seqs
+        alg_task.nseqs = task.nseqs
         new_tasks.append(alg_task)
 
     elif ttype == "alg" or ttype == "acleaner":
@@ -173,23 +209,30 @@ def process_task(task, main_tree, conf):
         #                                 conf["app"]["trimal"])
         # log.info("Conservation: %0.2f +-%0.2f", cons_mean, cons_std)
         # log.info("Max. Identity: %0.2f", max_identity)
-
-
-        mx, mn, mean, std = get_identity(task.alg_fasta_file)
+        import time
+        #t1 = time.time()
+        #mx, mn, mean, std = get_identity(task.alg_fasta_file)
+        #print time.time()-t1
+        #log.log(26, "Identity: max=%0.2f min=%0.2f mean=%0.2f +- %0.2f",
+        #        mx, mn, mean, std)
+        #t1 = time.time()
+        mx, mn, mean, std = get_statal_identity(task.alg_phylip_file,
+                                                conf["app"]["statal"])
+        #print time.time()-t1
         log.log(26, "Identity: max=%0.2f min=%0.2f mean=%0.2f +- %0.2f",
-                 mx, mn, mean, std)
+                mx, mn, mean, std)
         task.max_ident = mx
-        task.min_ident = mx
+        task.min_ident = mn
         task.mean_ident = mean
         task.std_ident = std
-
+        
         if ttype == "alg" and _alg_cleaner:
             next_task = _alg_cleaner(nodeid, seqtype, alg_fasta_file, 
                                      alg_phylip_file, conf)
         else:
             # Converts aa alignment into nt if necessary
             if seqtype == "aa" and nt_seed_file and \
-                    task.nseqs <= sst and task.mean_ident > sit:
+                    nseqs <= sst and task.mean_ident > sit:
 
                     log.log(26, "switching to codon alignment")
                     # Change seqtype config 
@@ -200,32 +243,39 @@ def process_task(task, main_tree, conf):
                     alg_fasta_file, alg_phylip_file = switch_to_codon(
                         task.alg_fasta_file, task.alg_phylip_file, 
                         nt_seed_file)
-
+            if constrain_tree:
+                open(constrain_tree_path, "w").write(constrain_tree)
+                                           
             if _model_tester:
                 next_task = _model_tester(nodeid,
-                                         alg_fasta_file, 
-                                         alg_phylip_file, 
-                                         conf)
+                                          alg_fasta_file, 
+                                          alg_phylip_file,
+                                          constrain_tree_path,
+                                          conf)
             else:
-                next_task = _tree_builder(nodeid, alg_phylip_file, None, 
+                print alg_phylip_file
+                next_task = _tree_builder(nodeid, alg_phylip_file, constrain_tree_path,
+                                          None,
                                           seqtype, conf)
-
-        next_task.nseqs = nseqs
+        next_task.nseqs = task.nseqs
         new_tasks.append(next_task)
 
     elif ttype == "mchooser":
         alg_fasta_file = task.alg_fasta_file
         alg_phylip_file = task.alg_phylip_file
         model = task.get_best_model()
-
-        tree_task = _tree_builder(nodeid, alg_phylip_file, model, 
+        if constrain_tree:
+                open(constrain_tree_path, "w").write(constrain_tree)
+                                          
+        tree_task = _tree_builder(nodeid, alg_phylip_file, constrain_tree_path,
+                                  model,
                                   seqtype, conf)
-        tree_task.nseqs = nseqs
+        tree_task.nseqs = task.nseqs
         new_tasks.append(tree_task)
 
     elif ttype == "tree":
         treemerge_task = TreeMerger(nodeid, seqtype, task.tree_file, main_tree, conf)
-        treemerge_task.nseqs = nseqs
+        treemerge_task.nseqs = task.nseqs
         new_tasks.append(treemerge_task)
 
     elif ttype == "treemerger":
@@ -247,7 +297,7 @@ def process_task(task, main_tree, conf):
            
     return new_tasks, main_tree
 
-def pipeline(task, main_tree, conf):
+def pipeline(task, main_tree, conf, nodeid2info):
     if not task:
         if conf["main"]["aa_seed"]:
             source = SeqGroup(conf["main"]["aa_seed"])
@@ -260,7 +310,7 @@ def pipeline(task, main_tree, conf):
                          seqtype=source_seqtype,
                          source = source)]
     else:
-        new_tasks, main_tree = process_task(task, main_tree, conf)
+        new_tasks, main_tree = process_task(task, main_tree, conf, nodeid2info)
 
     return new_tasks, main_tree
 

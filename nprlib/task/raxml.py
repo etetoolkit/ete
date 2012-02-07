@@ -13,7 +13,7 @@ from nprlib.utils import basename, PhyloTree, OrderedDict
 __all__ = ["Raxml"]
 
 class Raxml(TreeTask):
-    def __init__(self, nodeid, alg_file, model, seqtype, conf):
+    def __init__(self, nodeid, alg_file, constrain_tree,  model, seqtype, conf):
         # PTHREADS version needs at least -T2, which is actually
         # similar to the normal version
         threads = int(conf["raxml"].get(
@@ -36,6 +36,7 @@ class Raxml(TreeTask):
         self.raxml_bin = raxml_bin
         self.threads = threads
         self.conf = conf
+        self.constrain_tree = constrain_tree
         self.seqtype = seqtype
         self.alg_phylip_file = alg_file
         self.compute_alrt = conf["raxml"].get("_alrt_calculation", None)
@@ -86,6 +87,8 @@ class Raxml(TreeTask):
         args["-s"] = self.alg_phylip_file
         args["-m"] = self.model_string
         args["-n"] = self.nodeid
+        if self.constrain_tree:
+            args["-g"] = self.constrain_tree
         tree_job = Job(self.raxml_bin, args, parent_ids=[self.nodeid])
         tree_job.cores = self.threads
         self.jobs.append(tree_job)
@@ -111,6 +114,9 @@ class Raxml(TreeTask):
                 "--no_memory_check": "",
                 }
 
+            if self.constrain_tree:
+                alrt_args["--constrain_tree"] = self.constrain_tree
+            
             alrt_job = Job(self.conf["app"]["phyml"], alrt_args, parent_ids=[tree_job.jobid])
             alrt_job.dependencies.add(tree_job)
             self.jobs.append(alrt_job)

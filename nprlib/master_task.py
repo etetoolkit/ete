@@ -217,6 +217,8 @@ class Task(object):
         for job in self.jobs:
             if job.get_status() == "E":
                 job.clean()
+                job.status = "W"
+        self.status = "W"
 
     def iter_waiting_jobs(self):
         for j in self.jobs:
