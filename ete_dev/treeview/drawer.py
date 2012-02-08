@@ -1,4 +1,5 @@
 import types
+import signal
 
 from PyQt4  import QtGui
 from qt4_gui import _GUI, _PropertiesDialog, _BasicNodeActions
@@ -8,7 +9,6 @@ from ete_dev import Tree, PhyloTree, ClusterTree
 from main import TreeStyle, save
 from qt4_render import _TreeScene, render, get_tree_img_map
 from templates import _DEFAULT_STYLE, apply_template
-
 
 __all__ = ["show_tree", "render_tree"]
 
@@ -47,6 +47,9 @@ def show_tree(t, layout=None, tree_style=None):
     scene.addItem(scene.master_item)
     mainapp = _GUI(scene)
     mainapp.show()
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
+  
+
     _QApp.exec_()
 
 def render_tree(t, imgName, w=None, h=None, layout=None, \

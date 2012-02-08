@@ -294,7 +294,7 @@ class _GUI(QtGui.QMainWindow):
             imgName = str(F.selectedFiles()[0])
             if not imgName.endswith(".pdf"):
                 imgName += ".pdf"
-            self.scene.save(imgName, take_region=True)
+            save(imgName, take_region=True)
 
 
     @QtCore.pyqtSignature("")
@@ -315,7 +315,7 @@ class _GUI(QtGui.QMainWindow):
 
 # This function should be reviewed. Probably there are better ways to
 # do de same, or at least less messy ways... So far this is what I
-# have :)
+# have
 class _TableItem(QtGui.QItemDelegate):
     def __init__(self, parent=None):
         QtGui.QItemDelegate.__init__(self, parent)

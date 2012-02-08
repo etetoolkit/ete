@@ -646,7 +646,6 @@ def save(scene, imgName, w=None, h=None, dpi=300,\
         pp.setRenderHint(QPainter.Antialiasing)
         pp.setRenderHint(QPainter.TextAntialiasing)
         pp.setRenderHint(QPainter.SmoothPixmapTransform)
-
         scene.render(pp, targetRect, scene.sceneRect(), ratio_mode)
         pp.end()
         ii.save(imgName)
