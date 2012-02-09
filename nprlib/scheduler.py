@@ -98,8 +98,6 @@ def schedule(config, processer, schedule_time, execution, retry):
                 else:
                     log.log(24, "%s: %s", j.status, j)
             logindent(-2)
-
-
                 
             if task.status in set("WQRL"):
                 exec_type = getattr(task, "exec_type", execution)
