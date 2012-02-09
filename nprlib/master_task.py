@@ -216,8 +216,10 @@ class Task(object):
     def retry(self):
         for job in self.jobs:
             if job.get_status() == "E":
-                job.clean()
-                job.status = "W"
+                if isjob(job):
+                    job.clean()
+                elif istask(job):
+                    job.retry()
         self.status = "W"
 
     def iter_waiting_jobs(self):

@@ -49,7 +49,7 @@ def get_statal_identity(alg_file, statal_bin):
     #minColIdentity	0.428571
     #avgColIdentity	0.781853
     #stdColIdentity	0.2229
-    print output
+    #print output
     for line in output.split("\n"):
         if line.startswith("#maxColIdentity"):
             maxi = float(line.split()[1])
@@ -152,11 +152,6 @@ def process_task(task, main_tree, conf, nodeid2info):
                                            ','.join(target_seqs))
         constrain_tree_path = os.path.join(task.taskdir, "constrain.nw")
                                            
-   
-    sst = conf["main"]["DNA_sst"]
-    sit = conf["main"]["DNA_sit"]
-    sct = conf["main"]["DNA_sct"]
-
     # Loads application handlers according to current task size
     index = None
     index_slide = 0
@@ -171,17 +166,20 @@ def process_task(task, main_tree, conf, nodeid2info):
                 index = index_slide
             else:
                 index_slide += 1
-
+        #log.debug("INDEX %s %s %s", index, nseqs, max_seqs)
+        
     if seqtype == "nt": 
         _aligner = n2class[conf["main"]["npr_nt_aligner"][index]]
         _alg_cleaner = n2class[conf["main"]["npr_nt_alg_cleaner"][index]]
         _model_tester = n2class[conf["main"]["npr_nt_model_tester"][index]]
         _tree_builder = n2class[conf["main"]["npr_nt_tree_builder"][index]]
+        _aa_identity_thr = 1.0
     elif seqtype == "aa": 
         _aligner = n2class[conf["main"]["npr_aa_aligner"][index]]
         _alg_cleaner = n2class[conf["main"]["npr_aa_alg_cleaner"][index]]
         _model_tester = n2class[conf["main"]["npr_aa_model_tester"][index]]
         _tree_builder = n2class[conf["main"]["npr_aa_tree_builder"][index]]
+        _aa_identity_thr = conf["main"]["npr_max_aa_identity"][index]
 
     #print node_info, (nseqs, index, _alg_cleaner, _model_tester, _aligner, _tree_builder)
     
@@ -232,17 +230,16 @@ def process_task(task, main_tree, conf, nodeid2info):
         else:
             # Converts aa alignment into nt if necessary
             if seqtype == "aa" and nt_seed_file and \
-                    nseqs <= sst and task.mean_ident > sit:
-
-                    log.log(26, "switching to codon alignment")
-                    # Change seqtype config 
-                    seqtype = "nt"
-                    _model_tester = n2class[conf["main"]["npr_nt_model_tester"][index]]
-                    _aligner = n2class[conf["main"]["npr_nt_aligner"][index]]
-                    _tree_builder = n2class[conf["main"]["npr_nt_tree_builder"][index]]
-                    alg_fasta_file, alg_phylip_file = switch_to_codon(
-                        task.alg_fasta_file, task.alg_phylip_file, 
-                        nt_seed_file)
+               task.min_ident > _aa_identity_thr:
+                log.log(26, "switching to codon alignment")
+                # Change seqtype config 
+                seqtype = "nt"
+                _model_tester = n2class[conf["main"]["npr_nt_model_tester"][index]]
+                _aligner = n2class[conf["main"]["npr_nt_aligner"][index]]
+                _tree_builder = n2class[conf["main"]["npr_nt_tree_builder"][index]]
+                alg_fasta_file, alg_phylip_file = switch_to_codon(
+                    task.alg_fasta_file, task.alg_phylip_file, 
+                    nt_seed_file)
             if constrain_tree:
                 open(constrain_tree_path, "w").write(constrain_tree)
                                            
@@ -314,3 +311,31 @@ def pipeline(task, main_tree, conf, nodeid2info):
 
     return new_tasks, main_tree
 
+config_specs = """
+[main]
+DNA_sct = float()
+DNA_sst = integer()
+DNA_sit = float()
+
+render_tree_images = boolean()
+
+npr_max_seqs = positive_integer_list()
+
+npr_max_aa_identity = positive_float_list()
+
+npr_nt_alg_cleaner = list()
+npr_aa_alg_cleaner = list()
+
+npr_aa_aligner = list()
+npr_nt_aligner = list()
+
+npr_aa_tree_builder = list()
+npr_nt_tree_builder = list()
+
+npr_aa_model_tester = list()
+npr_nt_model_tester = list()
+
+[tree_merger]
+_min_size = integer()
+_outgroup_size = integer()
+"""

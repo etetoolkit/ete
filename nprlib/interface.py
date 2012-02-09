@@ -183,7 +183,7 @@ def init_curses(main_scr):
         w.idlok(True)
         w.scrollok(True)
     return WIN
-
+            
 def app_wrapper(func, args):
     global NCURSES
 
@@ -213,6 +213,20 @@ def app_wrapper(func, args):
     except:
         raise
 
+import Queue
+import threading
+class ExcThread(threading.Thread):
+    def __init__(self, bucket, *args, **kargs):
+        threading.Thread.__init__(self, *args, **kargs)
+        self.bucket = bucket
+          
+    def run(self):
+        try:
+            threading.Thread.run(self)
+        except Exception:
+            self.bucket.put(sys.exc_info())
+
+            
 def main(main_screen, func, args):
     """ Init logging and Screen. Then call main function """
 
@@ -228,15 +242,23 @@ def main(main_screen, func, args):
 
     # Call main function as lower thread
     if NCURSES:
-        import threading
-        import time
-        t = threading.Thread(target=func, args=[args])
+        exceptions = Queue.Queue()
+        t = ExcThread(bucket=exceptions, target=func, args=[args])
         t.daemon = True
         t.start()
         ln = 0           
         chars = "\\|/-\\|/-"
         cbuff = 1
-        while 1: 
+        while 1:
+            try:
+                exc = exceptions.get(block=False)
+            except Queue.Empty:
+                pass
+            else:
+                exc_type, exc_obj, exc_trace = exc
+                # deal with the exception
+                raise exc_obj
+
             mwin = screen.windows[0][0]
             key = mwin.getch()
             mwin.addstr(0, 0, "%s (%s) (%s)" %(key, screen.pos, screen.windows) + " "*50)

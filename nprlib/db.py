@@ -40,6 +40,9 @@ def create_db():
     cladeid CHAR(32),
     target_seqs TEXT,
     out_seqs TEXT,
+    target_size INTEGER,
+    out_size INTEGER,
+        
     current_task CHAR(32)
     );
         
@@ -52,7 +55,9 @@ def create_db():
     subtype VARCHAR,
     name VARCHAR,
     host VARCHAR,
-    pid VARCHAR
+    pid VARCHAR,
+    tm_start FLOAT,
+    tm_end FLOAT
     );
 
     CREATE TABLE IF NOT EXISTS seqid2name(
@@ -116,9 +121,10 @@ def get_sge_tasks():
 def add_node(nodeid, cladeid, target_seqs, out_seqs):
     values = ','.join(['"%s"' % (v or "") for v in
                        [nodeid, cladeid, encode(target_seqs),
-                        encode(out_seqs)]])
-    cmd = ('INSERT INTO node (nodeid, cladeid, target_seqs, out_seqs)'
-           ' VALUES (%s);' %(values))
+                        encode(out_seqs), len(target_seqs),
+                        len(out_seqs)]])
+    cmd = ('INSERT INTO node (nodeid, cladeid, target_seqs, out_seqs,'
+           ' target_size, out_size) VALUES (%s);' %(values))
     cursor.execute(cmd)
     autocommit()
 
@@ -138,14 +144,12 @@ def get_node_info(nodeid):
     return cladeid, target_seqs, out_seqs
 
 def report(max_records=40):
-    cmd = 'SELECT nodeid,cladeid FROM node;'
+    cmd = ('SELECT task.nodeid, task.status, type, subtype, name,'
+           ' target_size, out_size, TIME(tm_start), TIME(tm_end) FROM task '
+           ' left outer join node ON task.nodeid = node.nodeid;')
     cursor.execute(cmd)
-    nodes = cursor.fetchall()
-
-    cmd = 'SELECT * FROM task;'
-    cursor.execute(cmd)
-    tasks = cursor.fetchall()[-max_records:]
-    return nodes, tasks
+    report = cursor.fetchall()[-max_records:]
+    return report
 
 def add_seq_name(seqid, name):
     cmd = ('INSERT INTO seqid2name (seqid, name)'
@@ -157,6 +161,11 @@ def get_seq_name(seqid):
     cmd = 'SELECT name FROM seqid2name WHERE seqid="%s"' %seqid
     cursor.execute(cmd)
     return (cursor.fetchone() or ["NoName_"+seqid])[0]
+
+def get_all_task_states():
+    cmd = 'SELECT status FROM task'
+    cursor.execute(cmd)
+    return [v[0] for v in cursor.fetchall()]
     
 def commit():
     conn.commit()

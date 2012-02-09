@@ -159,5 +159,6 @@ class Job(object):
     def clean(self):
         if os.path.exists(self.jobdir):
             shutil.rmtree(self.jobdir)
+        self.status = "W"
 
 

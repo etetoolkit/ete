@@ -8,7 +8,7 @@ from nprlib.master_job import Job
 from nprlib.utils import load_node_size, PhyloTree, SeqGroup, generate_id
 from nprlib import db
 
-from ete_dev  import NodeStyle, TreeStyle
+from nprlib.utils import NodeStyle, TreeStyle
 st = NodeStyle()
 ts = TreeStyle
 st['fgcolor'] = 'red'
@@ -33,7 +33,6 @@ class TreeMerger(Task):
         self.right_part_file = os.path.join(self.taskdir, "right.msf")
 
     def finish(self):
-
         mtree = self.main_tree
         ttree = PhyloTree(self.task_tree_file)
         ttree.dist = 0
@@ -60,17 +59,22 @@ class TreeMerger(Task):
                      len(out_seqs))
 
             log.debug(out_seqs)
+            log.debug(target_seqs)
             if len(out_seqs) > 1:
                 # Root to a non-outgroup leave to leave all outgroups
                 # in one side.
-                ttree.set_outgroup(list(target_seqs)[0])
+                print ttree
                 outgroup = ttree.get_common_ancestor(out_seqs)
+                if outgroup is ttree:
+                    outgroup = ttree.get_common_ancestor(target_seqs)
+                print outgroup
             else:
                 outgroup = ttree & list(out_seqs)[0]
 
             if outgroup is not ttree:
                 ttree.set_outgroup(outgroup)
                 ttree = ttree.get_common_ancestor(target_seqs)
+                print ttree
             else:
                 raise ValueError("Outgroup was split")
         else:
@@ -225,10 +229,10 @@ def select_outgroups(ttree, mtree, target_node, args):
     outs_a = [e[1] for e in rank_outs_a]
     outs_b = [e[1] for e in rank_outs_b]
 
-    log.log(22, "Best distance to node A: %s" %best_dist_to_a)
-    log.log(22, "Best outgroup for A: %s" %rank_outs_a[:5])
-    log.log(22, "Best distance to node B: %s" %best_dist_to_b)
-    log.log(22, "Best outgroup for B: %s" %rank_outs_b[:5])
+    log.debug("Best distance to node A: %s" %best_dist_to_a)
+    log.debug("Best outgroup for A: %s" %rank_outs_a[:5])
+    log.debug("Best distance to node B: %s" %best_dist_to_b)
+    log.debug("Best outgroup for B: %s" %rank_outs_b[:5])
 
     missing_outs = min_outs - min(len(outs_a), len(outs_b))
     _node = target_node

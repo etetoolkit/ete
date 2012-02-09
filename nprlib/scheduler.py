@@ -6,7 +6,7 @@ import logging
 from logger import set_logindent, logindent
 log = logging.getLogger("main")
 
-from nprlib.utils import generate_id, render_tree, print_as_table, HOSTNAME 
+from nprlib.utils import generate_id, render_tree, print_as_table, HOSTNAME, md5
 from nprlib.errors import ConfigError, DataError, TaskError
 from nprlib import db, sge
 from nprlib.master_task import isjob
@@ -30,32 +30,35 @@ def schedule(config, processer, schedule_time, execution, retry):
 
     # Then enters into the pipeline.
     cores_total = config["main"]["_max_cores"]
-
+    task2retry = defaultdict(int)
+    sch_key = ""
     while pending_tasks:
-        dbnodes, dbtasks = db.report()
-        #print_as_table(dbnodes)
-        print_as_table(dbtasks, fields=[0,3,4,5,6])
+        #report = db.report()
+        #print_as_table(report)
         
         cores_used = 0
         wait_time = 0.1 # Try to go fast unless running tasks
         set_logindent(0)
-        log.log(28, ctime())
-        log.log(28, "Checking the status of %d tasks" %len(pending_tasks))
-        log.log(28, "------------------------------------")
+        log.log(28, "%s Checking the status of %d tasks" %(ctime(), len(pending_tasks)))
 
-        # Check task status and compute total cores being used
+        # ask SGE for running jobs
         if execution == "sge":
             sgeid2jobs = db.get_sge_tasks()
             qstat_jobs = sge.qstat()
         else:
             qstat_jobs = None
-      
+
+        # Check task status and compute total cores being used            
+        prev_sch_key = sch_key
         for task in pending_tasks:
             task.status = task.get_status(qstat_jobs)
             cores_used += task.cores_used
             update_task_states(task)
         db.commit()
-        
+        sch_key = md5(''.join(db.get_all_task_states()))+str(cores_used)
+        #if sch_key == prev_sch_key:
+        #    sleep(schedule_time)
+        #    continue
         sge_jobs = []
         for task in sorted(pending_tasks, sort_tasks):
             if task.nodeid not in nodeid2info:
@@ -68,7 +71,6 @@ def schedule(config, processer, schedule_time, execution, retry):
                                 task.target_seqs, task.out_seqs)
                 except db.sqlite3.IntegrityError:
                     log.log(20, "node registered previously.")
-                    
             
             print
             set_logindent(1)
@@ -88,16 +90,19 @@ def schedule(config, processer, schedule_time, execution, retry):
                             " continue execution with other pending tasks."
                             %task)
                 logindent(2)
+
+            logindent(2)
+            for j in task.jobs:
+                if j.status == "D":
+                    log.log(20, "%s: %s", j.status, j)
+                else:
+                    log.log(24, "%s: %s", j.status, j)
+            logindent(-2)
+
+
                 
             if task.status in set("WQRL"):
                 exec_type = getattr(task, "exec_type", execution)
-                # shows info about unfinished jobs
-                logindent(2)
-                for j in task.jobs:
-                    if j.status != "D":
-                        log.log(24, "%s: %s", j.status, j)
-                logindent(-2)
-
                 # Tries to send new jobs from this task
                 for j, cmd in task.iter_waiting_jobs():
                     if not check_cores(j, cores_used, cores_total, execution):
@@ -122,6 +127,8 @@ def schedule(config, processer, schedule_time, execution, retry):
                         j.sge = config["sge"]
                         sge_jobs.append((j,cmd))
                     else:
+                        task.status = "R"
+                        j.status = "R"
                         print cmd
                 if task.status in set("QRL"):
                     wait_time = schedule_time
@@ -135,14 +142,14 @@ def schedule(config, processer, schedule_time, execution, retry):
                 for ts in new_tasks:
                     register_task(ts)
                 pending_tasks.extend(new_tasks)
-                
                 cladeid = db.get_cladeid(task.nodeid)
                 clade2tasks[cladeid].append(task)
 
             elif task.status == "E":
                 log.error("Task contains errors")
-                if retry:
+                if retry and task not in task2retry:
                     log.log(28, "Remarking task as undone to retry")
+                    task2retry[task] += 1
                     task.retry()
                     update_task_states(task)
                     db.commit()

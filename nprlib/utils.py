@@ -15,12 +15,12 @@ except ImportError:
     from ordereddict import OrderedDict
 
 sys.path.insert(0, "/home/jhuerta/_Devel/ete/gui/")
-#try:
-from ete_dev import PhyloTree, SeqGroup, TreeStyle, NodeStyle, faces
-from ete_dev.parser.fasta import read_fasta
-#except ImportError:
-#    from ete2 import PhyloTree, SeqGroup, TreeStyle, NodeStyle, faces
-#    from ete2.parser.fasta import read_fasta
+try:
+    from ete_dev import PhyloTree, SeqGroup, TreeStyle, NodeStyle, faces
+    from ete_dev.parser.fasta import read_fasta
+except ImportError:
+    from ete2 import PhyloTree, SeqGroup, TreeStyle, NodeStyle, faces
+    from ete2.parser.fasta import read_fasta
     
 
 AA = set("ABCDEFGHIJKLMNPOQRSUTVWXYZ") | set("abcdefghijklmnpoqrsutvwxyz") 
