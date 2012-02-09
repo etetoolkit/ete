@@ -34,7 +34,7 @@ try:
 except: 
     __DATE__ = "unknown"
 
-__DESCRIPTION__ = """ 
+__DESCRIPTION__ = """
 --------------------------------------------------------------------------------
                  Nested Phylogenetic Reconstruction program.  
                           NPR-0.1%s(alpha), %s.
