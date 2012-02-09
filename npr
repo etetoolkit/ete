@@ -165,8 +165,13 @@ def main(args):
     # setup portable apps
     for k,v in config["app"].iteritems():
         if v == "built-in":
-            cmd = portable.get_call(k, APPSPATH, base_dir) 
-            config["app"][k] = cmd
+            if args.sge_execute:
+                _apps_path = os.path.realpath(config["sge"]["remote_npr_path"])
+                cmd = portable.get_call(k, _apps_path, base_dir) 
+                config["app"][k] = cmd
+            else:
+                cmd = portable.get_call(k, APPSPATH, base_dir) 
+                config["app"][k] = cmd
     log.debug('\n'.join(["%s\t%s" %(i,j) for i,j in config["app"].items()]))
 
     # Set number of CPUs available
@@ -330,12 +335,12 @@ if __name__ == "__main__":
                         help="Initial multi sequence file with"
                         " nucleotide sequences")
 
-    input_group.add_argument("--seq-rename", dest="seq_rename", 
+    input_group.add_argument("-rename", dest="seq_rename", 
                         action="store_true",
                         help="If used, seq names are internally converted"
-                        " to safe and unique 10 char identifiers.")
+                        " to get safe and unique 10 char identifiers.")
 
-    input_group.add_argument("--unalign", dest="unalign", 
+    input_group.add_argument("-unalign", dest="unalign", 
                         action="store_true",
                         help="If used, gaps in the orginal fasta file are"
                         " removed.")
