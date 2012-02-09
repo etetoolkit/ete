@@ -1,18 +1,21 @@
 #!/usr/bin/env python
+import sys
 import os
-import imp
-import logging
-import numpy
-from hashlib import md5
 from StringIO import StringIO
+from hashlib import md5
+import logging
 
+import numpy
+# This avoids installing nprlib module. npr script will find it in the
+# same directory in which it is
+NPRPATH = os.path.split(os.path.realpath(__file__))[0]
+APPSPATH = os.path.join(NPRPATH, "apps64")
+sys.path.insert(0, NPRPATH)
 from nprlib.argparse import ArgumentParser, RawDescriptionHelpFormatter
 from nprlib.configobj import ConfigObj, flatten_errors
 from nprlib import validate
-
 from nprlib.utils import SeqGroup, AA, NT
 from nprlib.errors import ConfigError, DataError
-
 from nprlib.master_task import Task
 from nprlib.interface import app_wrapper
 from nprlib.scheduler import schedule
@@ -50,6 +53,12 @@ __DESCRIPTION__ = """
       Contact: jhuerta [at] crg.es, tgabaldon [at] crg.es
 --------------------------------------------------------------------------------
 """ %(__VERSION__, __DATE__)
+
+def existing_file(value):
+    if os.path.isfile(value):
+        return value
+    else:
+        raise ConfigError("Not valid file")
 
 def is_boolean_list(value, min=None, max=None):
     untyped_value = validate.is_list(value, min, max)
@@ -154,16 +163,16 @@ def main(args):
     Task.global_config["basedir"] = base_dir
 
     # setup portable apps
-    port_path = os.path.realpath(config["app"]["portables_path"])
     for k,v in config["app"].iteritems():
-        if v == "npr-portable":
-            cmd = portable.get_call(k, port_path, base_dir) 
+        if v == "built-in":
+            cmd = portable.get_call(k, APPSPATH, base_dir) 
             config["app"][k] = cmd
-    log.debug('\n'.join([str([i,j]) for i,j in config["app"].items()]))
+    log.debug('\n'.join(["%s\t%s" %(i,j) for i,j in config["app"].items()]))
 
     # Set number of CPUs available
     config["main"]["_max_cores"] = args.maxcores
-
+    log.debug("Enabling %d CPU cores" %args.maxcores)
+    
     # Initialize db
     db.init_db(os.path.join(base_dir, "db.sqlite3"))
     
@@ -308,72 +317,80 @@ if __name__ == "__main__":
     # metavar - A name for the argument in usage messages.
     # dest - The name of the attribute to be added to the object returned by parse_args().
 
-    parser.add_argument("-c", "--config-file", dest="configfile", 
-                        type=str, required=True, 
-                        help="""NPR configuration file""")
-    
-    # Output data related flags
-    parser.add_argument("-o", "--outdir", dest="outdir", 
-                        type=str, required=True, 
-                        help="""Output directory for results.""")
-
+  
     # Input data related flags
-    parser.add_argument("-a", "--aa-seed-file", dest="aa_seed_file", 
-                        type=str, 
+    input_group = parser.add_argument_group('Input data options')
+    input_group.add_argument("-a", "--aa-seed-file", dest="aa_seed_file", 
+                        type=existing_file, 
                         help="Initial multi sequence file with"
                         " protein sequences")
 
-    parser.add_argument("-n", "--nt-seed-file", dest="nt_seed_file", 
-                        type=str, 
+    input_group.add_argument("-n", "--nt-seed-file", dest="nt_seed_file", 
+                        type=existing_file, 
                         help="Initial multi sequence file with"
                         " nucleotide sequences")
 
-    parser.add_argument("--seq-rename", dest="seq_rename", 
+    input_group.add_argument("--seq-rename", dest="seq_rename", 
                         action="store_true",
                         help="If used, seq names are internally converted"
                         " to safe and unique 10 char identifiers.")
 
-    parser.add_argument("--unalign", dest="unalign", 
+    input_group.add_argument("--unalign", dest="unalign", 
                         action="store_true",
                         help="If used, gaps in the orginal fasta file are"
                         " removed.")
+
+    # Output data related flags
+    output_group = parser.add_argument_group('Output data options')
+    output_group.add_argument("-o", "--outdir", dest="outdir", 
+                        type=str, required=True, 
+                        help="""Output directory for results.""")
     
     # Task execution related flags
-    parser.add_argument("-r", "--retry-error-jobs", dest="retry", 
+    exec_group = parser.add_argument_group('NPR execution options')
+
+    exec_group.add_argument("-c", "--config", dest="configfile", 
+                        type=existing_file, required=True, 
+                        help="NPR configuration file")
+       
+    exec_group.add_argument("-r", "--retry-error-jobs", dest="retry", 
                         action="store_true",
-                        help="""Try to relaunch jobs marked as error """)
+                        help="Try to relaunch, once more, jobs marked"
+                        " as error.")
     
-    exec_group = parser.add_mutually_exclusive_group()
-    exec_group.add_argument("-x", "--insitu-execution", dest="execute", 
+    exec_type_group = exec_group.add_mutually_exclusive_group()
+    exec_type_group.add_argument("-x", "--insitu-execution", dest="execute", 
                         action="store_true",
                         help="Jobs are launched in the same machine"
                         " as in the program is called.")
 
-    exec_group.add_argument("-sge", dest="sge_execute",
+    exec_type_group.add_argument("-sge", dest="sge_execute",
                         action="store_true", help="Jobs will be"
                         " launched using the Sun Grid Engine"
                         " queue system.")
     
-    parser.add_argument("-t", "--schedule-time", dest="schedule_time", 
+    exec_group.add_argument("-t", "--schedule-time", dest="schedule_time", 
                         type=float, default=5.0,
                         help="""Schedule time in seconds. """)
 
-    parser.add_argument("-m", "--maxcores", dest="maxcores", type=int,
+    exec_group.add_argument("-m", "--maxcores", dest="maxcores", type=int,
                         default=1, help="Maximum number of CPU cores"
                         " available in the execution hosts. If higher"
                         " than 1, tasks with multi-threading"
                         " capabilities will be set appropriately.")
 
     # Interface related flags
-    parser.add_argument("-u", "--ui", dest="enable_ui",
+    ui_group = exec_group.add_mutually_exclusive_group()
+    ui_group.add_argument("-u", "--ui", dest="enable_ui",
                         action="store_true", help="When used, a color"
                         " based interface is launched to monitor NPR"
                         " processes. This feature requires NCURSES"
                         " libraries installed in your system.")
 
-    parser.add_argument("-v", "--verbosity", dest="verbosity",
+    ui_group.add_argument("-v", "--verbosity", dest="verbosity",
                         default = 1, type=int, choices=[0,1,2,3,4,5],
-                        help="0=very quiet, 4=very verbose. 5=debug")
+                        help="Verbosity level: 0=very quiet, 4=very "
+                          " verbose, 5=debug.")
     
     args = parser.parse_args()
    
