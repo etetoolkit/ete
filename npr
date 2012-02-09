@@ -9,7 +9,7 @@ import numpy
 # This avoids installing nprlib module. npr script will find it in the
 # same directory in which it is
 NPRPATH = os.path.split(os.path.realpath(__file__))[0]
-APPSPATH = os.path.join(NPRPATH, "apps64")
+APPSPATH = os.path.join(NPRPATH, "apps/x64")
 sys.path.insert(0, NPRPATH)
 from nprlib.argparse import ArgumentParser, RawDescriptionHelpFormatter
 from nprlib.configobj import ConfigObj, flatten_errors
