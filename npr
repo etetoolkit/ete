@@ -4,6 +4,7 @@ import imp
 import logging
 import numpy
 from hashlib import md5
+from StringIO import StringIO
 
 from nprlib.argparse import ArgumentParser, RawDescriptionHelpFormatter
 from nprlib.configobj import ConfigObj, flatten_errors
@@ -16,8 +17,7 @@ from nprlib.master_task import Task
 from nprlib.interface import app_wrapper
 from nprlib.scheduler import schedule
 from nprlib import db
-
-import portable_apps as portable
+import nprlib.portable_apps as portable
     
 try:
     module_path = os.path.split(__file__)[0]
@@ -74,15 +74,40 @@ def is_positive_integer_list(value, min=None, max=None):
                 VdtTypeError(v)
     return typed_value
 
+def is_positive_float_list(value, min=None, max=None):
+    untyped_value = validate.is_list(value, min, max)
+    typed_value = []
+    for v in untyped_value: 
+        try:
+            typed_value.append(validate.is_float(v))
+        except TypeError: 
+            VdtTypeError(v)
+        else:
+            if v < 0: 
+                VdtTypeError(v)
+    return typed_value
+
+    
 def main(args):
     log = logging.getLogger("main")
     print __DESCRIPTION__
 
-    configspec = ConfigObj("specs", 
-                           list_values=False, _inspec=True)
-    config = ConfigObj("config", configspec=configspec, list_values=True)
+    config = ConfigObj(args.configfile, list_values=True)
+    try:
+        npr_template = config["template"]
+    except KeyError:
+        raise ConfigError("Bad config file. A template name or file should be specified.")
+   
+    if npr_template == "genetree":
+        from nprlib.template.genetree import pipeline, config_specs
+        config = ConfigObj(args.configfile, list_values=True,
+                           configspec=StringIO(config_specs))
+    else:
+        raise ConfigError("Bad template [%s]" %npr_template)
+       
     custom_types = {"boolean_list": is_boolean_list, 
-                    "positive_integer_list": is_positive_integer_list, 
+                    "positive_integer_list": is_positive_integer_list,
+                    "positive_float_list": is_positive_float_list, 
                     }
     val = validate.Validator(custom_types)
     check = config.validate(val)
@@ -90,17 +115,7 @@ def main(args):
         print flatten_errors(config, check)
         raise ConfigError("Bad config file")
 
-    # setup portable apps
-    
-
-    port_path = os.path.realpath(config["app"]["portables_path"])
-    for k,v in config["app"].iteritems():
-        if v == "npr-portable":
-            cmd = portable.get_call(k, port_path) 
-            config["app"][k] = cmd
-    print '\n'.join([str([i,j]) for i,j in config["app"].items()])
-    #raw_input()
-        
+       
     # Check for unique max_seq config values
     if len(config["main"]["npr_max_seqs"]) != \
             len(set(config["main"]["npr_max_seqs"])):
@@ -122,31 +137,36 @@ def main(args):
     gallery_dir = os.path.join(base_dir, "gallery")
     snapshots_dir = os.path.join(base_dir, "tree_snapshots")
     sge_dir = os.path.join(base_dir, "sge_jobs")
+    tmp_dir = os.path.join(base_dir, "tmp")
     config["main"]["sge_dir"] = sge_dir
+    config["main"]["tmp"] = tmp_dir
     config["main"]["gallery_dir"] = gallery_dir
     config["main"]["snapshots_dir"] = snapshots_dir
     try:
         os.makedirs(gallery_dir)
         os.makedirs(snapshots_dir)
         os.makedirs(sge_dir)
+        os.makedirs(tmp_dir)
     except OSError:
         pass
 
     config["main"]["basedir"] = base_dir
     Task.global_config["basedir"] = base_dir
 
+    # setup portable apps
+    port_path = os.path.realpath(config["app"]["portables_path"])
+    for k,v in config["app"].iteritems():
+        if v == "npr-portable":
+            cmd = portable.get_call(k, port_path, base_dir) 
+            config["app"][k] = cmd
+    log.debug('\n'.join([str([i,j]) for i,j in config["app"].items()]))
+
+    # Set number of CPUs available
     config["main"]["_max_cores"] = args.maxcores
 
     # Initialize db
     db.init_db(os.path.join(base_dir, "db.sqlite3"))
     
-    # Load pipeline
-    pipeline_module = config["main"]["pipeline"]
-    if pipeline_module == "genetree":
-        from nprlib.template.standard1 import pipeline
-    else:
-        print "PIPELINE NOT FOUND"
-
     # check nt_seed and aa_seed. Do they contain the same seqs?
     # format? names?
     visited_seqs = set()
@@ -158,7 +178,12 @@ def main(args):
         if seq_file: 
             SEQS = SeqGroup(seq_file)
             # Loads seq lengths
-            for seqname, seq, comment in SEQS.iter_entries():
+            for seqid, seq in SEQS.id2seq.iteritems():
+                seqname = SEQS.id2name[seqid]
+                if args.unalign:
+                    seq = seq.replace("-", "").replace(".", "")
+                    SEQS.id2seq[seqid] = seq
+                    
                 seq2length[seqname] = len(seq)
                 if label == "nt_seed" and set(seq)-NT:
                     error = "Unknown symbols [%s] in sequence [%s] of file [%s]" %\
@@ -283,9 +308,9 @@ if __name__ == "__main__":
     # metavar - A name for the argument in usage messages.
     # dest - The name of the attribute to be added to the object returned by parse_args().
 
-    parser.add_argument("-c", "--config", dest="configfile", 
+    parser.add_argument("-c", "--config-file", dest="configfile", 
                         type=str, required=True, 
-                        help="""A valid config file to execute the pipeline""")
+                        help="""NPR configuration file""")
     
     # Output data related flags
     parser.add_argument("-o", "--outdir", dest="outdir", 
@@ -303,11 +328,16 @@ if __name__ == "__main__":
                         help="Initial multi sequence file with"
                         " nucleotide sequences")
 
-    parser.add_argument("--seq_rename", dest="seq_rename", 
+    parser.add_argument("--seq-rename", dest="seq_rename", 
                         action="store_true",
                         help="If used, seq names are internally converted"
                         " to safe and unique 10 char identifiers.")
 
+    parser.add_argument("--unalign", dest="unalign", 
+                        action="store_true",
+                        help="If used, gaps in the orginal fasta file are"
+                        " removed.")
+    
     # Task execution related flags
     parser.add_argument("-r", "--retry-error-jobs", dest="retry", 
                         action="store_true",
