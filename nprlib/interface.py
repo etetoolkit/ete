@@ -15,6 +15,12 @@ except ImportError:
 else:
     NCURSES = True
 
+def safe_int(x):
+    try:
+        return int(x)
+    except TypeError:
+        return x
+   
     
 class Screen(StringIO):
     # tags used to control color of strings and select buffer
@@ -22,14 +28,17 @@ class Screen(StringIO):
     def __init__(self, windows):
         StringIO.__init__(self)
         self.windows = windows
+        self.autoscroll = {}
         self.pos = {}
+        self.lines = {}
         self.wrapper = TextWrapper(width=80, initial_indent="",
                                    subsequent_indent="         ",
                                    replace_whitespace=False)
         if NCURSES:
             for w in windows:
                 self.pos[w] = [0, 0]
-
+                self.autoscroll[w] = True
+                self.lines[w] = 0
     def scroll(self, win, vt, hz=0):
         line, col = self.pos[win]
 
@@ -95,8 +104,8 @@ class Screen(StringIO):
         formatstr = deque()
         for m in re.finditer(self.TAG, text):
             x1, x2  = m.span()
-            cindex = int(m.groups()[1])
-            windex = m.groups()[0]
+            cindex = safe_int(m.groups()[1])
+            windex = safe_int(m.groups()[0])
             formatstr.append([x1, x2, cindex, windex])
         if not formatstr:
             formatstr.append([None, 0, 1, 1])
@@ -115,16 +124,27 @@ class Screen(StringIO):
                 next_stop, next_start, next_cindex, next_windex = None, None, cindex, windex
 
             face = curses.color_pair(cindex)
-            win, dim = self.windows[int(windex)]
+            win, (h, w, sy, sx) = self.windows[windex]
+            ln, cn = self.pos[windex]
+            # Is this too inefficient? 
+            self.lines[windex] += text[start:next_stop].count("\n")
+            
+            if self.autoscroll[windex]:
+                scroll = self.lines[windex] - ln - h
+                if scroll > 0:
+                    self.scroll(windex, scroll)
+                        
             try:
                 win.addstr(text[start:next_stop], face)
             except curses.error: 
                 win.addstr("???")
+                
             start = next_start
             stop = next_stop
             cindex = next_cindex
             if next_windex is not None:
                 windex = next_windex
+        
         self.refresh()
 
     def resize_screen(self, s, frame):
@@ -225,7 +245,7 @@ class ExcThread(threading.Thread):
             threading.Thread.run(self)
         except Exception:
             self.bucket.put(sys.exc_info())
-
+            raise
             
 def main(main_screen, func, args):
     """ Init logging and Screen. Then call main function """
@@ -257,11 +277,12 @@ def main(main_screen, func, args):
             else:
                 exc_type, exc_obj, exc_trace = exc
                 # deal with the exception
+                #print exc_trace, exc_type, exc_obj
                 raise exc_obj
 
             mwin = screen.windows[0][0]
             key = mwin.getch()
-            mwin.addstr(0, 0, "%s (%s) (%s)" %(key, screen.pos, screen.windows) + " "*50)
+            mwin.addstr(0, 0, "%s (%s) (%s) (%s)" %(key, screen.pos, ["%s %s" %(i,w[1]) for i,w in screen.windows.items()], screen.lines) + " "*50)
             mwin.refresh()
             if key == 113: 
                 raise KeyboardInterrupt
@@ -303,7 +324,7 @@ def main(main_screen, func, args):
 
 def setup_layout(h, w):
     # Creates layout
-    header = 4
+    header = 2
     
     start_x = 0
     start_y = header
