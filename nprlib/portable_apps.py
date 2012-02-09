@@ -6,7 +6,7 @@ apps = {
     'clustalo'       : "%BIN%/clustalo",
     'trimal'         : "%BIN%/trimal",
     'readal'         : "%BIN%/readal",
-    'tcoffee'        : "export DIR_4_TCOFFEE=%BASE%/t_coffee_9_01 MAFFT_BINARIES=$BIN% TMP_4_TCOFFEE=%TMP% LOCKDIR_4_TCOFFEE=%TMP%  PERL5LIB=$PERL5LIB:$DIR_4_TCOFFEE/perl  && $DIR_4_TCOFFEE/bin/t_coffee",
+    'tcoffee'        : "export DIR_4_TCOFFEE=%BASE%/t_coffee_9_01 MAFFT_BINARIES=%BIN% TMP_4_TCOFFEE=%TMP% LOCKDIR_4_TCOFFEE=%TMP%  PERL5LIB=$PERL5LIB:$DIR_4_TCOFFEE/perl  && $DIR_4_TCOFFEE/bin/t_coffee",
     'phyml'          : "%BIN%/phyml",
     'raxml-pthreads' : "%BIN%/raxmlHPC-PTHREADS-SSE3",
     'raxml'          : "%BIN%/raxmlHPC-SSE3",
@@ -26,9 +26,9 @@ def get_call(appname, apps_path, exec_path):
     #linker_path = os.path.join(libpath, "ld-linux")
     bin_path = os.path.join(apps_path, "bin")
     tmp_path = os.path.join(exec_path, "tmp")
-    
+    apps_base = apps_path.rstrip("/x64").rstrip("/x32")
     cmd = re.sub("%BIN%", bin_path, cmd)
-    cmd = re.sub("%BASE%", apps_path, cmd)
+    cmd = re.sub("%BASE%", apps_base, cmd)
     cmd = re.sub("%TMP%", tmp_path, cmd)
     cmd = "export NPR_APP_PATH=%s; %s" %(apps_path, cmd) 
     return cmd
