@@ -22,15 +22,15 @@ def get_call(appname, apps_path, exec_path):
         cmd = apps[appname]
     except KeyError:
         return None
-    libpath = os.path.join(apps_path, "lib")
-    linker_path = os.path.join(libpath, "ld-linux")
+    #libpath = os.path.join(apps_path, "lib")
+    #linker_path = os.path.join(libpath, "ld-linux")
     bin_path = os.path.join(apps_path, "bin")
     tmp_path = os.path.join(exec_path, "tmp")
     
     cmd = re.sub("%BIN%", bin_path, cmd)
     cmd = re.sub("%BASE%", apps_path, cmd)
     cmd = re.sub("%TMP%", tmp_path, cmd)
-    cmd = "export LD_LIBRARY_PATH=%s; export LINKER_PATH=%s; %s" %(libpath, linker_path, cmd) 
+    cmd = "export NPR_APP_PATH=%s; %s" %(apps_path, cmd) 
     return cmd
   
     
