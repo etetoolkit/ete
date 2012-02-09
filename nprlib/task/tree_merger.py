@@ -63,18 +63,15 @@ class TreeMerger(Task):
             if len(out_seqs) > 1:
                 # Root to a non-outgroup leave to leave all outgroups
                 # in one side.
-                print ttree
                 outgroup = ttree.get_common_ancestor(out_seqs)
                 if outgroup is ttree:
                     outgroup = ttree.get_common_ancestor(target_seqs)
-                print outgroup
             else:
                 outgroup = ttree & list(out_seqs)[0]
 
             if outgroup is not ttree:
                 ttree.set_outgroup(outgroup)
                 ttree = ttree.get_common_ancestor(target_seqs)
-                print ttree
             else:
                 raise ValueError("Outgroup was split")
         else:

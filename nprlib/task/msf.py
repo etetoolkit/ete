@@ -31,8 +31,8 @@ class Msf(Task):
         self.target_seqs = target_seqs
         self.out_seqs = out_seqs
         if out_seqs & target_seqs:
-            print out_seqs
-            print target_seqs
+            log.error(out_seqs)
+            log.error(target_seqs)
             raise DataError("Outgroup seqs included in target seqs.")
 
         # Dump sequences into MSF

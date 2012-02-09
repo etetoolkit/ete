@@ -250,7 +250,6 @@ def process_task(task, main_tree, conf, nodeid2info):
                                           constrain_tree_path,
                                           conf)
             else:
-                print alg_phylip_file
                 next_task = _tree_builder(nodeid, alg_phylip_file, constrain_tree_path,
                                           None,
                                           seqtype, conf)
