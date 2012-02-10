@@ -5,6 +5,9 @@ from signal import signal, SIGWINCH
 from collections import deque
 from textwrap import TextWrapper
 
+import Queue
+import threading
+
 from nprlib.logger import get_main_log
 from nprlib.errors import *
 
@@ -20,8 +23,20 @@ def safe_int(x):
         return int(x)
     except TypeError:
         return x
-   
-    
+
+class ExcThread(threading.Thread):
+    def __init__(self, bucket, *args, **kargs):
+        threading.Thread.__init__(self, *args, **kargs)
+        self.bucket = bucket
+          
+    def run(self):
+        try:
+            threading.Thread.run(self)
+        except Exception:
+            self.bucket.put(sys.exc_info())
+            raise
+
+            
 class Screen(StringIO):
     # tags used to control color of strings and select buffer
     TAG = re.compile("@@(\d+)?,?(\d+):", re.MULTILINE)
@@ -31,15 +46,21 @@ class Screen(StringIO):
         self.autoscroll = {}
         self.pos = {}
         self.lines = {}
+        self.maxsize = {}
+        
         self.wrapper = TextWrapper(width=80, initial_indent="",
                                    subsequent_indent="         ",
                                    replace_whitespace=False)
+
         if NCURSES:
-            for w in windows:
-                self.pos[w] = [0, 0]
-                self.autoscroll[w] = True
-                self.lines[w] = 0
-    def scroll(self, win, vt, hz=0):
+            for windex in windows:
+                h, w = windows[windex][0].getmaxyx()
+                self.maxsize[windex] = (h, w)
+                self.pos[windex] = [0, 0]
+                self.autoscroll[windex] = True
+                self.lines[windex] = 0
+
+    def scroll(self, win, vt, hz=0, refresh=True):
         line, col = self.pos[win]
 
         hz_pos = col + hz
@@ -56,9 +77,10 @@ class Screen(StringIO):
 
         if line != vt_pos or col != hz_pos:
             self.pos[win] = [vt_pos, hz_pos]
-            self.refresh()
+            if refresh:
+                self.refresh()
 
-    def scroll_to(self, win, vt, hz=0):
+    def scroll_to(self, win, vt, hz=0, refresh=True):
         line, col = self.pos[win]
 
         hz_pos = hz
@@ -75,7 +97,8 @@ class Screen(StringIO):
 
         if line != vt_pos or col != hz_pos:
             self.pos[win] = [vt_pos, hz_pos]
-            self.refresh()
+            if refresh:
+                self.refresh()
 
     def refresh(self):
         for windex, (win, dim) in self.windows.iteritems():
@@ -84,7 +107,7 @@ class Screen(StringIO):
             if h is not None: 
                 win.touchwin()
                 win.noutrefresh(line, col, sy+1, sx+1, sy+h-2, sx+w-2)
-            else: 
+            else:
                 win.noutrefresh()
         curses.doupdate()
 
@@ -126,14 +149,24 @@ class Screen(StringIO):
             face = curses.color_pair(cindex)
             win, (h, w, sy, sx) = self.windows[windex]
             ln, cn = self.pos[windex]
-            # Is this too inefficient? 
-            self.lines[windex] += text[start:next_stop].count("\n")
-            
+            # Is this too inefficient?
+            new_lines = text[start:next_stop].count("\n")
+            self.lines[windex] += new_lines
+            if self.lines[windex] > self.maxsize[windex]:
+                _y, _x = win.getyx()
+                
+                for _i in self.lines[windex]-self.maxsize(windex):
+                    win.move(0,0)
+                    win.deleteln()
+                win.move(_y, _x)
+                
+            # Visual scroll
             if self.autoscroll[windex]:
                 scroll = self.lines[windex] - ln - h
                 if scroll > 0:
-                    self.scroll(windex, scroll)
-                        
+                    self.scroll(windex, scroll, refresh=False)
+                
+            
             try:
                 win.addstr(text[start:next_stop], face)
             except curses.error: 
@@ -191,14 +224,16 @@ def init_curses(main_scr):
     WIN[1] = [curses.newpad(5000, 1000), info_win]
     WIN[2] = [curses.newpad(5000, 1000), error_win]
     WIN[3] = [curses.newpad(5000, 1000), debug_win]
-     
+    
 
     #WIN[1], WIN[11] = newwin(h-1, w/2, 1,1)
     #WIN[2], WIN[12] = newwin(h-dbg_h-1, (w/2)-1, 1, (w/2)+2)
     #WIN[3], WIN[13] = newwin(dbg_h-1, (w/2)-1, h-dbg_h+1, (w/2)+2)
 
-    for w, dim in WIN.itervalues():
+    for windex, (w, dim) in WIN.iteritems():
         #w = WIN[i]
+        #w.bkgd(str(windex))
+        w.bkgd(" ")
         w.keypad(1)
         w.idlok(True)
         w.scrollok(True)
@@ -226,27 +261,13 @@ def app_wrapper(func, args):
                              %(e.value, e.value.taskdir))
         sys.exit(1)
     except KeyboardInterrupt:
-        print >>sys.stderr, ("\nProgram was interrupted."
-                             " IMPORTANT!: Launched jobs will keep"
-                             " running:")
+        print >>sys.stderr, ("\nProgram was interrupted.\n"
+                             "VERY IMPORTANT !!!: Note that launched"
+                             " jobs will keep running.")
         sys.exit(1)
     except:
         raise
 
-import Queue
-import threading
-class ExcThread(threading.Thread):
-    def __init__(self, bucket, *args, **kargs):
-        threading.Thread.__init__(self, *args, **kargs)
-        self.bucket = bucket
-          
-    def run(self):
-        try:
-            threading.Thread.run(self)
-        except Exception:
-            self.bucket.put(sys.exc_info())
-            raise
-            
 def main(main_screen, func, args):
     """ Init logging and Screen. Then call main function """
 
@@ -262,6 +283,7 @@ def main(main_screen, func, args):
 
     # Call main function as lower thread
     if NCURSES:
+        screen.refresh()
         exceptions = Queue.Queue()
         t = ExcThread(bucket=exceptions, target=func, args=[args])
         t.daemon = True
@@ -269,48 +291,54 @@ def main(main_screen, func, args):
         ln = 0           
         chars = "\\|/-\\|/-"
         cbuff = 1
-        while 1:
-            try:
-                exc = exceptions.get(block=False)
-            except Queue.Empty:
-                pass
-            else:
-                exc_type, exc_obj, exc_trace = exc
-                # deal with the exception
-                #print exc_trace, exc_type, exc_obj
-                raise exc_obj
-
-            mwin = screen.windows[0][0]
-            key = mwin.getch()
-            mwin.addstr(0, 0, "%s (%s) (%s) (%s)" %(key, screen.pos, ["%s %s" %(i,w[1]) for i,w in screen.windows.items()], screen.lines) + " "*50)
-            mwin.refresh()
-            if key == 113: 
-                raise KeyboardInterrupt
-            if key == 9: 
-                cbuff += 1
-                if cbuff>3: 
-                    cbuff = 1
-            elif key == curses.KEY_UP:
-                screen.scroll(cbuff, -1)
-            elif key == curses.KEY_DOWN:
-                screen.scroll(cbuff, 1)
-            elif key == curses.KEY_LEFT:
-                screen.scroll(cbuff, 0, -1)
-            elif key == curses.KEY_RIGHT:
-                screen.scroll(cbuff, 0, 1)
-            elif key == curses.KEY_NPAGE:
-                screen.scroll(cbuff, 10)
-            elif key == curses.KEY_PPAGE:
-                screen.scroll(cbuff, -10)
-            elif key == curses.KEY_END:
-                screen.scroll_to(cbuff, 999, 0)
-            elif key == curses.KEY_HOME:
-                screen.scroll_to(cbuff, 0, 0)
-            elif key == curses.KEY_RESIZE:
-                screen.resize_screen(None, None)
-            else:
-                pass
-            #screen.refresh()
+        try:
+            while 1:
+                try:
+                    exc = exceptions.get(block=False)
+                except Queue.Empty:
+                    pass
+                else:
+                    exc_type, exc_obj, exc_trace = exc
+                    # deal with the exception
+                    #print exc_trace, exc_type, exc_obj
+                    raise exc_obj
+     
+                mwin = screen.windows[0][0]
+                key = mwin.getch()
+                mwin.addstr(0, 0, "%s (%s) (%s) (%s)" %(key, screen.pos, ["%s %s" %(i,w[1]) for i,w in screen.windows.items()], screen.lines) + " "*50)
+                mwin.refresh()
+                if key == 113:
+                    # Fixes the problem of prints without newline char
+                    raise KeyboardInterrupt("Q Pressed")
+                if key == 9: 
+                    cbuff += 1
+                    if cbuff>3: 
+                        cbuff = 1
+                elif key == curses.KEY_UP:
+                    screen.scroll(cbuff, -1)
+                elif key == curses.KEY_DOWN:
+                    screen.scroll(cbuff, 1)
+                elif key == curses.KEY_LEFT:
+                    screen.scroll(cbuff, 0, -1)
+                elif key == curses.KEY_RIGHT:
+                    screen.scroll(cbuff, 0, 1)
+                elif key == curses.KEY_NPAGE:
+                    screen.scroll(cbuff, 10)
+                elif key == curses.KEY_PPAGE:
+                    screen.scroll(cbuff, -10)
+                elif key == curses.KEY_END:
+                    screen.scroll_to(cbuff, 999, 0)
+                elif key == curses.KEY_HOME:
+                    screen.scroll_to(cbuff, 0, 0)
+                elif key == curses.KEY_RESIZE:
+                    screen.resize_screen(None, None)
+                else:
+                    pass
+        except:
+            # fixes the problem of restoring screen when last print
+            # did not contain a newline char. WTF!
+            print "\n"
+            raise
 
         #while 1: 
         #    if ln >= len(chars):
@@ -324,7 +352,7 @@ def main(main_screen, func, args):
 
 def setup_layout(h, w):
     # Creates layout
-    header = 2
+    header = 4
     
     start_x = 0
     start_y = header

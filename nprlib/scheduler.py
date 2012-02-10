@@ -184,7 +184,7 @@ def schedule(config, processer, schedule_time, execution, retry):
                                        "final_tree.nw")
     main_tree.write(outfile=final_tree_file)
     log.debug(str(main_tree))
-    main_tree.show()
+    #main_tree.show()
 
 def annotate_tree(t, clade2tasks, nodeid2info):
     

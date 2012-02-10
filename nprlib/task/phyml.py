@@ -54,6 +54,7 @@ class Phyml(TreeTask):
         args["--input"] = self.alg_basename
         if self.constrain_tree:
             args["--constrain_tree"] = self.constrain_tree
+            args["-u"] = self.constrain_tree
         else:
             del args["--constrain_tree"]
         job = Job(self.conf["app"]["phyml"], args, parent_ids=[self.nodeid])
