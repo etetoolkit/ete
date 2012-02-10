@@ -9,7 +9,7 @@ import numpy
 # This avoids installing nprlib module. npr script will find it in the
 # same directory in which it is
 NPRPATH = os.path.split(os.path.realpath(__file__))[0]
-APPSPATH = os.path.join(NPRPATH, "apps/x64")
+APPSPATH = os.path.join(NPRPATH, "apps/x86-64")
 sys.path.insert(0, NPRPATH)
 from nprlib.argparse import ArgumentParser, RawDescriptionHelpFormatter
 from nprlib.configobj import ConfigObj, flatten_errors
@@ -20,7 +20,7 @@ from nprlib.master_task import Task
 from nprlib.interface import app_wrapper
 from nprlib.scheduler import schedule
 from nprlib import db
-import nprlib.portable_apps as portable
+from nprlib import apps
     
 try:
     module_path = os.path.split(__file__)[0]
@@ -34,25 +34,30 @@ try:
 except: 
     __DATE__ = "unknown"
 
-__DESCRIPTION__ = """
---------------------------------------------------------------------------------
+__DESCRIPTION__ = (
+"""--------------------------------------------------------------------------------
                  Nested Phylogenetic Reconstruction program.  
-                          NPR-0.1%s(alpha), %s.
+                          NPR-0.1%s(beta), %s.
 
-      @@2:NPR@@1: allows to reconstruct large phylogenies by means of
-      an iterative strategy that provides scalable resolution and
-      continuous update of tree topologies. In NPR, all internal nodes
-      in a tree are re-evaluated to optimize and fine tune the
-      parameters of phylogenetic inference.
+      NPR allows to reconstruct large phylogenies by means of an
+      iterative strategy that provides scalable resolution at the
+      different tree levels. Using NPR, all internal nodes in a tree
+      are re-evaluated to optimize and fine tune the parameters of the
+      phylogenetic inference.
 
-      If you use this program for published work, please cite:
+      If you use this program in a published work, please cite:
 
-       Jaime Huerta-Cepas and Toni Gabaldon. Nested Phylogenetic
-       Reconstruction. XXX-XX. 2012.
+        Jaime Huerta-Cepas and Toni Gabaldon. Nested Phylogenetic
+        Reconstruction. XXX-XX. 2012.
+
+      (Note that a list with the relevant programs, and their
+      citations, used in your specific analysis will be shown together
+      with your results.)
 
       Contact: jhuerta [at] crg.es, tgabaldon [at] crg.es
 --------------------------------------------------------------------------------
-""" %(__VERSION__, __DATE__)
+
+    """ %(__VERSION__, __DATE__))
 
 def existing_file(value):
     if os.path.isfile(value):
@@ -167,13 +172,15 @@ def main(args):
         if v == "built-in":
             if args.sge_execute:
                 _apps_path = os.path.realpath(config["sge"]["remote_npr_path"])
-                cmd = portable.get_call(k, _apps_path, base_dir) 
+                cmd = apps.get_call(k, _apps_path, base_dir) 
                 config["app"][k] = cmd
             else:
-                cmd = portable.get_call(k, APPSPATH, base_dir) 
+                cmd = apps.get_call(k, APPSPATH, base_dir) 
                 config["app"][k] = cmd
-    log.debug('\n'.join(["%s\t%s" %(i,j) for i,j in config["app"].items()]))
-
+    #log.debug('\n'.join(["%s\t%s" %(i,j) for i,j in config["app"].items()]))
+    if not args.nochecks:
+        apps.test_apps(config["app"])
+    
     # Set number of CPUs available
     config["main"]["_max_cores"] = args.maxcores
     log.debug("Enabling %d CPU cores" %args.maxcores)
@@ -233,8 +240,9 @@ def main(args):
                 if args.seq_rename:
                     raise DataError("Although collisions in the hash function"
                                     " used to generate unique sequence names"
-                                    " are very unlikely, you found an exception!."
-                                    " You will have to change seq names manually.")
+                                    " are very unlikely, you have found an "
+                                    " exception!. Please, change seq names "
+                                    " manually.")
                 else:
                     raise DataError("Duplicated sequence names, execution"
                                     " aborted. Correct manually or set"
@@ -392,6 +400,10 @@ if __name__ == "__main__":
                         " processes. This feature requires NCURSES"
                         " libraries installed in your system.")
 
+    ui_group.add_argument("-nochecks", dest="nochecks",
+                          action="store_true", 
+                          help="Skip application checks during the start-up")
+    
     ui_group.add_argument("-v", "--verbosity", dest="verbosity",
                         default = 1, type=int, choices=[0,1,2,3,4,5],
                         help="Verbosity level: 0=very quiet, 4=very "
