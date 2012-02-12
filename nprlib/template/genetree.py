@@ -287,9 +287,11 @@ def process_task(task, main_tree, conf, nodeid2info):
             source_seqtype = "nt"
 
         for seqs, outs in [task.set_a, task.set_b]:
-            if len(seqs) >= int(conf["tree_merger"]["_min_size"]):
-                msf_task = Msf(seqs, outs, seqtype=source_seqtype, source=source)
-                new_tasks.append(msf_task)
+            if (conf["_iters"] < int(conf["main"].get("max_iters", conf["_iters"]+1)) and 
+                len(seqs) >= int(conf["tree_merger"]["_min_size"])):
+                    msf_task = Msf(seqs, outs, seqtype=source_seqtype, source=source)
+                    new_tasks.append(msf_task)
+                    conf["_iters"] += 1
            
     return new_tasks, main_tree
 
@@ -305,22 +307,21 @@ def pipeline(task, main_tree, conf, nodeid2info):
         new_tasks = [Msf(set(source.id2name.values()), set(),
                          seqtype=source_seqtype,
                          source = source)]
+        conf["_iters"] = 1
     else:
         new_tasks, main_tree = process_task(task, main_tree, conf, nodeid2info)
 
     return new_tasks, main_tree
 
 config_specs = """
-[main]
-DNA_sct = float()
-DNA_sst = integer()
-DNA_sit = float()
 
+[main]
+max_iters = integer(minv=1)
 render_tree_images = boolean()
 
-npr_max_seqs = positive_integer_list()
+npr_max_seqs = integer_list(minv=0)
 
-npr_max_aa_identity = positive_float_list()
+npr_max_aa_identity = float_list(minv=0.0)
 
 npr_nt_alg_cleaner = list()
 npr_aa_alg_cleaner = list()
@@ -337,4 +338,6 @@ npr_nt_model_tester = list()
 [tree_merger]
 _min_size = integer()
 _outgroup_size = integer()
+
+
 """
