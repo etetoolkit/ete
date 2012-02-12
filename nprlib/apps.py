@@ -25,10 +25,10 @@ builtin_apps = {
 app2check = {
     'muscle'         : "|grep -i muscle|wc -l",
     'mafft'          : "--help|grep -i mafft|wc -l",
-    'clustalo'       : "--help|grep -i Omega|wc -l",
+    'clustalo'       : "--help|grep -i omega|wc -l",
     'trimal'         : "--version |grep -i trimal|wc -l",
     'readal'         : "--version |grep -i readal|wc -l",
-    'tcoffee'        : "-version|grep t_coffee|wc -l",
+    'tcoffee'        : "-version|grep -i 't-coffee'|wc -l",
     'phyml'          : "--help|grep -i phyml|wc -l",
     'raxml-pthreads' : "-help|grep -i raxml|wc -l",
     'raxml'          : "-help|grep -i raxml|wc -l",
@@ -63,3 +63,5 @@ def test_apps(apps):
             print "OK."
         else:
             print "Missing or nonfunctional."
+            log.debug(test_cmd)
+            log.debug(commands.getoutput(test_cmd.rstrip("wc -l")))
