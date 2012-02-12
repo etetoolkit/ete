@@ -21,7 +21,9 @@ def schedule(config, processer, schedule_time, execution, retry):
             return -1
         else:
             return 0
-   
+    execution, run_detached = execution
+    print execution, run_detached
+    
     # Send seed files to processer to generate the initial task
     nodeid2info = {}
     pending_tasks, main_tree = processer(None, None, 
@@ -109,7 +111,10 @@ def schedule(config, processer, schedule_time, execution, retry):
                     if exec_type == "insitu":
                         log.log(28, "Launching %s" %j)
                         try:
-                            launch_detached(j, cmd)
+                            if run_detached:
+                                launch_detached(j, cmd)
+                            else:
+                                P = Popen(cmd, shell=True)
                             log.debug("Command: %s", j.cmd_file)
                         except Exception:
                             task.save_status("E")
@@ -299,7 +304,7 @@ def launch_detached(j, cmd):
             os._exit(0)
     else:
         return
-
+        
 def register_task(task):
     if db.get_task_status(task.taskid) is None:
         db.add_task(tid=task.taskid, nid=task.nodeid, parent=task.nodeid,

@@ -261,9 +261,14 @@ def app_wrapper(func, args):
                              %(e.value, e.value.taskdir))
         sys.exit(1)
     except KeyboardInterrupt:
-        print >>sys.stderr, ("\nProgram was interrupted.\n"
-                             "VERY IMPORTANT !!!: Note that launched"
-                             " jobs will keep running.")
+        print >>sys.stderr, "\nProgram was interrupted."
+        if args.nodetach:
+            print >>sys.stderr, "Kill signal was sent to all running jobs"
+        else:
+            print >>sys.stderr, ("VERY IMPORTANT !!!: Note that launched"
+                                 " jobs will keep running. Use"
+                                 " the -nodetach option if you want to avoid"
+                                 " this behavior.")
         sys.exit(1)
     except:
         raise
