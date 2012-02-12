@@ -65,50 +65,63 @@ def existing_file(value):
     else:
         raise ConfigError("Not valid file")
 
-def is_boolean_list(value, min=None, max=None):
-    untyped_value = validate.is_list(value, min, max)
-    typed_value = []
-    for v in untyped_value: 
-        try:
-            typed_value.append(validate.is_boolean(v))
-        except TypeError: 
-            VdtTypeError(v)
+def check_number(value, cast, minv=0, maxv=None):
+    try:
+        typed_value = cast(value)
+    except ValueError:
+        raise ConfigError("Expected [%s] number. Found [%s]" %(cast, value))
+    else:
+        if (minv is not None and typed_value < cast(minv)) or \
+           (maxv is not None and typed_value > cast(maxv)):
+            _minv = minv if minv is not None else "any"
+            _maxv = maxv if maxv is not None else "any"
+            raise ConfigError("[%s] not in the range (%s,%s)" %
+                              (value, _minv, _maxv))
     return typed_value
 
-def is_positive_integer_list(value, min=None, max=None):
-    untyped_value = validate.is_list(value, min, max)
+def is_float(value, minv=None, maxv=None):
+    return check_number(value, float, minv, maxv)
+
+def is_integer(value, minv=None, maxv=None):
+    return check_number(value, int, minv, maxv)
+
+def is_list(value):
+    if not isinstance(value, list):
+        raise ConfigError("Expected a list of values. Found [%s]" %value)
+    return value
+    
+def is_boolean_list(value):
+    is_list(value)
     typed_value = []
-    for v in untyped_value: 
-        try:
-            typed_value.append(validate.is_integer(v))
-        except TypeError: 
-            VdtTypeError(v)
-        else:
-            if v < 0: 
-                VdtTypeError(v)
+    for v in value:
+        typed_value.append(check_number(v, bool, 0, 1))
+    return typed_value
+    
+def is_float_list(value, minv=0, maxv=None):
+    is_list(value)
+    typed_value = []
+    for v in value:
+        typed_value.append(check_number(v, float, minv, maxv))
     return typed_value
 
-def is_positive_float_list(value, min=None, max=None):
-    untyped_value = validate.is_list(value, min, max)
+def is_integer_list(value, minv=0, maxv=None):
+    is_list(value)
     typed_value = []
-    for v in untyped_value: 
-        try:
-            typed_value.append(validate.is_float(v))
-        except TypeError: 
-            VdtTypeError(v)
-        else:
-            if v < 0: 
-                VdtTypeError(v)
+    for v in value:
+        typed_value.append(check_number(v, int, minv, maxv))
     return typed_value
-
+   
     
 def main(args):
     log = logging.getLogger("main")
     print __DESCRIPTION__
 
+ 
     config = ConfigObj(args.configfile, list_values=True)
+
+ 
     try:
-        npr_template = config["template"]
+        npr_template = config["main"]["template"]
     except KeyError:
         raise ConfigError("Bad config file. A template name or file should be specified.")
    
@@ -120,15 +133,17 @@ def main(args):
         raise ConfigError("Bad template [%s]" %npr_template)
        
     custom_types = {"boolean_list": is_boolean_list, 
-                    "positive_integer_list": is_positive_integer_list,
-                    "positive_float_list": is_positive_float_list, 
+                    "integer_list": is_integer_list,
+                    "float_list": is_float_list,
+                    "float": is_float,
+                    "integer": is_integer,
+                    "list": is_list,
                     }
     val = validate.Validator(custom_types)
     check = config.validate(val)
     if not check:
         print flatten_errors(config, check)
         raise ConfigError("Bad config file")
-
        
     # Check for unique max_seq config values
     if len(config["main"]["npr_max_seqs"]) != \
@@ -138,13 +153,13 @@ def main(args):
     # Check for unique max_seq config values
     if config["main"]["npr_max_seqs"] != \
             sorted(config["main"]["npr_max_seqs"]):
+        print sorted(config["main"]["npr_max_seqs"])
         raise ConfigError("'npr_max_seqs' values must be in ascending order.")
 
     # Check that fields are filled for all max_seq values
     conf_keys = [v for v in config["main"] if v.startswith("npr_")]
     if len(set([len(config["main"][v]) for v in conf_keys])) != 1:
-        raise ConfigError("Error reading config file:"
-                         " Unequal length of config table")
+        raise ConfigError("Unequal length of main NPR config table.")
     
     #base_dir = os.path.abspath(config["main"]["basedir"])
     base_dir = os.path.abspath(args.outdir)
