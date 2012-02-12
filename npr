@@ -9,7 +9,7 @@ import numpy
 # This avoids installing nprlib module. npr script will find it in the
 # same directory in which it is
 NPRPATH = os.path.split(os.path.realpath(__file__))[0]
-APPSPATH = os.path.join(NPRPATH, "apps/x86-64")
+  
 sys.path.insert(0, NPRPATH)
 from nprlib.argparse import ArgumentParser, RawDescriptionHelpFormatter
 from nprlib.configobj import ConfigObj, flatten_errors
@@ -182,6 +182,15 @@ def main(args):
     config["main"]["basedir"] = base_dir
     Task.global_config["basedir"] = base_dir
 
+    if args.arch == "auto":
+        if sys.maxsize > 2**32:
+            arch = "64"
+        else:
+            arch = "32"
+    else:
+        arch = args.arch
+    
+    APPSPATH = os.path.join(NPRPATH, "apps/x86-%s" %arch)
     # setup portable apps
     for k,v in config["app"].iteritems():
         if v == "built-in":
@@ -194,6 +203,7 @@ def main(args):
                 config["app"][k] = cmd
     #log.debug('\n'.join(["%s\t%s" %(i,j) for i,j in config["app"].items()]))
     if not args.nochecks:
+        print "Testing x86-%s portable applications..." % arch
         apps.test_apps(config["app"])
     
     # Set number of CPUs available
@@ -421,6 +431,13 @@ if __name__ == "__main__":
                         " than 1, tasks with multi-threading"
                         " capabilities will be set appropriately.")
 
+    exec_group.add_argument("-arch", dest="arch",
+                            choices=["auto", "32", "64"],
+                            default="auto", help="Set the architecture of"
+                            " executuion hosts (needed only when using"
+                            " built-in applications.)")
+
+   
     # Interface related flags
     ui_group = exec_group.add_mutually_exclusive_group()
     ui_group.add_argument("-u", "--ui", dest="enable_ui",
