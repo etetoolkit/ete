@@ -320,12 +320,15 @@ def main(args):
 
     # how task will be executed
     if args.execute:
-        execution ="insitu"
+        if args.nodetach:
+            execution = ("insitu", False)
+        else:
+            execution =("insitu", True)
     elif args.sge_execute:
-        execution = "sge"
+        execution = ("sge", False)
     else:
-        execution = None
-
+        execution = (None, False)
+        
     # Scheduling starts here
     schedule(config, pipeline, args.schedule_time, 
              execution, args.retry)
@@ -396,6 +399,17 @@ if __name__ == "__main__":
                         action="store_true", help="Jobs will be"
                         " launched using the Sun Grid Engine"
                         " queue system.")
+
+    exec_type_group.add_argument("-nodetach", dest="nodetach",
+                        action="store_true", help="Jobs will not be"
+                        " detached from the main NPR process. This means that"
+                        " when npr execution is interrupted, all currently"
+                        " running jobs will die with it. Use this option if you"
+                        " want to execute the npr program as single shot job"
+                        "(i.e. send npr jobs to a cluster). Note that"
+                        "by default, npr runs in monitor mode, so"
+                        "launched jobs keeps running even when npr"
+                        "process is killed." )
     
     exec_group.add_argument("-t", "--schedule-time", dest="schedule_time", 
                         type=float, default=5.0,
