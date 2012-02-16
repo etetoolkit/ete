@@ -167,6 +167,7 @@ class Task(object):
                         self.cores_used += j.cores_used
                 elif st == "E":
                     log.log(20, "Error found in: %s", j)
+                    log.log(20, "  %s", j.jobdir)
             else:
                 all_states["D"] += 1
                     
@@ -178,13 +179,13 @@ class Task(object):
         ''' Initialize task information. It generates a unique taskID
         based on the sibling jobs and sets task working directory. ''' 
 
-        # Creates a task id based on its jobs and arguments. The same
-        # tasks, including the same parameters would raise the same
-        # id, so it is easy to check if a task is already done in the
-        # working path. Note that this prevents using.taskdir before
-        # calling task.init()
+        # Creates a task id based on its target node and job
+        # arguments. The same tasks, including the same parameters
+        # would raise the same id, so it is easy to check if a task is
+        # already done in the working path. Note that this prevents
+        # using.taskdir before calling task.init()
         if not self.taskid:
-            unique_id = md5(','.join(sorted(
+            unique_id = md5(','.join([self.nodeid]+sorted(
                         [getattr(j, "jobid", "taskid") for j in self.jobs])))
             self.taskid = unique_id
 

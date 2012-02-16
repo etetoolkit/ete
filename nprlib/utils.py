@@ -16,7 +16,10 @@ except ImportError:
 
 # ete_dev should be added to the python path by the npr script
 from ete_dev import PhyloTree, SeqGroup, TreeStyle, NodeStyle, faces
+from ete_dev.treeview import random_color
 from ete_dev.parser.fasta import read_fasta
+from ete_dev.treeview import drawer
+drawer.GUI_TIMEOUT = 1
 
 AA = set("ABCDEFGHIJKLMNPOQRSUTVWXYZ") | set("abcdefghijklmnpoqrsutvwxyz") 
 NT = set("ACGTURYKMSWBDHVN") | set("acgturykmswbdhvn")
@@ -187,5 +190,16 @@ def print_as_table(rows, header=None, fields=None, print_header=True, stdout=sys
                 print >>stdout, _str(p.get(ppt,"")).rjust(lengths[ppt])+" | ",
             print >>stdout, ""
             page_counter +=1
+            
+def get_node2content(node, store={}):
+    for ch in node.children:
+        get_node2content(ch, store=store)
 
-    
+    if node.children:
+        val = []
+        for ch in node.children:
+            val.extend(store[ch])
+        store[node] = val
+    else:
+        store[node] = [node.name]
+    return store

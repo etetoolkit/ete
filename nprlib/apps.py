@@ -58,7 +58,12 @@ def test_apps(apps):
     for name, cmd in apps.iteritems():
         print "Checking %20s..." %name,
         test_cmd = cmd+" 2>&1 "+app2check.get(name, "")
-        response = int(commands.getoutput(test_cmd))
+        out = commands.getoutput(test_cmd)
+        try:
+            response = int(out)
+        except ValueError:
+            response = 0
+        
         if response:
             print "OK."
         else:

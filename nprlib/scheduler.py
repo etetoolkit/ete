@@ -3,10 +3,11 @@ from subprocess import call, Popen
 from time import sleep, ctime
 from collections import defaultdict
 import logging
-from logger import set_logindent, logindent
 log = logging.getLogger("main")
 
-from nprlib.utils import generate_id, render_tree, print_as_table, HOSTNAME, md5
+from nprlib.logger import set_logindent, logindent
+from nprlib.utils import (generate_id, print_as_table, HOSTNAME, md5,
+                          get_node2content, PhyloTree, NodeStyle)
 from nprlib.errors import ConfigError, DataError, TaskError
 from nprlib import db, sge
 from nprlib.master_task import isjob
@@ -16,29 +17,30 @@ def schedule(config, processer, schedule_time, execution, retry):
         _x = getattr(x, "nseqs", 0)
         _y = getattr(y, "nseqs", 0)
         if _x > _y:
-            return 1
-        elif _x < _y:
             return -1
+        elif _x < _y:
+            return 1
         else:
             return 0
+
     execution, run_detached = execution
-    print execution, run_detached
-    
+    main_tree = None
+    npr_iter = 0
     # Send seed files to processer to generate the initial task
     nodeid2info = {}
-    pending_tasks, main_tree = processer(None, None, 
-                                         config, nodeid2info)
+    pending_tasks = processer(None, main_tree,
+                              config, nodeid2info)
+    initial_task = pending_tasks[0]
+    register_task(initial_task)
+    
     clade2tasks = defaultdict(list)
-
-    # Then enters into the pipeline.
+    # Then enters into the scheduling.
     cores_total = config["main"]["_max_cores"]
     task2retry = defaultdict(int)
-    sch_key = ""
+
     while pending_tasks:
-        #report = db.report()
-        #print_as_table(report)
-        
         cores_used = 0
+        sge_jobs = []
         wait_time = 0.1 # Try to go fast unless running tasks
         set_logindent(0)
         log.log(28, "%s Checking the status of %d tasks" %(ctime(), len(pending_tasks)))
@@ -51,20 +53,17 @@ def schedule(config, processer, schedule_time, execution, retry):
             qstat_jobs = None
 
         # Check task status and compute total cores being used            
-        prev_sch_key = sch_key
         for task in pending_tasks:
             task.status = task.get_status(qstat_jobs)
             cores_used += task.cores_used
             update_task_states(task)
         db.commit()
-        sch_key = md5(''.join(db.get_all_task_states()))+str(cores_used)
-        #if sch_key == prev_sch_key:
-        #    sleep(schedule_time)
-        #    continue
-        sge_jobs = []
+        
+        # Process waiting tasks
         for task in sorted(pending_tasks, sort_tasks):
             if task.nodeid not in nodeid2info:
                 nodeid2info[task.nodeid] = {}
+                
             if task.ttype == "msf":
                 seqs = task.target_seqs
                 out_seqs = task.out_seqs
@@ -72,8 +71,9 @@ def schedule(config, processer, schedule_time, execution, retry):
                     db.add_node(task.nodeid, task.cladeid,
                                 task.target_seqs, task.out_seqs)
                 except db.sqlite3.IntegrityError:
-                    log.log(20, "node registered previously.")
-            
+                    log.log(20, "node was registered previously.")
+
+            # Shows some task info
             print
             set_logindent(1)
             log.log(28, "(%s) %s" %(task.status, task))
@@ -138,12 +138,12 @@ def schedule(config, processer, schedule_time, execution, retry):
                     
             elif task.status == "D":
                 logindent(3)
-                new_tasks, main_tree = processer(task, main_tree, config,
+                new_tasks = processer(task, main_tree, config,
                                                  nodeid2info)
                 logindent(-3)
                 pending_tasks.remove(task)
                 for ts in new_tasks:
-                    register_task(ts)
+                    register_task(ts, parentid=task.taskid)
                 pending_tasks.extend(new_tasks)
                 cladeid = db.get_cladeid(task.nodeid)
                 clade2tasks[cladeid].append(task)
@@ -166,42 +166,38 @@ def schedule(config, processer, schedule_time, execution, retry):
             logindent(-2)
             log.log(26, "Cores in use: %s" %cores_used)
 
-            # If last task processed a new tree node, dump snapshots
+            # If task was a new tree node, update main tree and dump snapshot
             if task.ttype == "treemerger":
-                log.info("Annotating tree")
-                user_tree = main_tree.copy()
-                npr_iter = annotate_tree(user_tree, clade2tasks, nodeid2info)
+                npr_iter += 1
+                log.info("Dump iteration snapshot.")
+                main_tree = assembly_tree(config["main"]["basedir"],
+                                          clade2tasks, initial_task.taskid)
+                annotate_tree(main_tree, clade2tasks, nodeid2info, npr_iter)
+                nout= len(task.out_seqs)
+                ntarget = len(task.target_seqs)
                 nw_file = os.path.join(config["main"]["basedir"],
-                                       "tree_snapshots", "Iter_%05d.nw" %npr_iter)
-                user_tree.write(outfile=nw_file, features=[])
-                
-                #if config["main"]["render_tree_images"]:
-                #    log.log(28, "Rendering tree image")
-                #    img_file = os.path.join(config["main"]["basedir"], 
-                #                            "gallery", task.nodeid+".svg")
-                #    render_tree(main_tree, img_file)
+                                       "tree_snapshots", "Iter_%06d_%s_S_%s_O.nw" %
+                                       (npr_iter, ntarget, nout))
+                main_tree.write(outfile=nw_file, features=[])
+
         sge.launch_jobs(sge_jobs, config)
-        
         sleep(wait_time)
         print 
 
     final_tree_file = os.path.join(config["main"]["basedir"], \
                                        "final_tree.nw")
     main_tree.write(outfile=final_tree_file)
+    log.log(28, "Done")
     log.debug(str(main_tree))
-    #main_tree.show()
 
-def annotate_tree(t, clade2tasks, nodeid2info):
-    
+def annotate_tree(t, clade2tasks, nodeid2info, npr_iter):
     n2names = get_node2content(t)
     cladeid2node = {}
     # Annotate cladeid in the whole tree
     for n in t.traverse():
         n.name = db.get_seq_name(n.name)
-        #n.add_features(cladeid=generate_id(n2names[n]))
         cladeid2node[n.cladeid] = n
 
-    npr_iter = 0
     for cladeid, alltasks in clade2tasks.iteritems():
         n = cladeid2node[cladeid]
         for task in alltasks:
@@ -211,8 +207,12 @@ def annotate_tree(t, clade2tasks, nodeid2info):
             params = " ".join(params)
 
             n.add_features(nseqs=nodeid2info[task.nodeid]["nseqs"])
+
+            if task.ttype == "msf":
+                n.add_features(msf_outseqs=task.out_seqs,
+                               msf_file=task.multiseq_file)
                 
-            if task.ttype == "acleaner":
+            elif task.ttype == "acleaner":
                 n.add_features(clean_alg_mean_identn=task.mean_ident, 
                                clean_alg_std_ident=task.std_ident, 
                                clean_alg_max_ident=task.max_ident, 
@@ -234,19 +234,20 @@ def annotate_tree(t, clade2tasks, nodeid2info):
                                tree_seqtype=task.seqtype, 
                                tree_type=task.tname, 
                                tree_cmd=params,
-                               tree_file=task.tree_file)
-                npr_iter += 1
+                               tree_file=task.tree_file,
+                               npr_iter=npr_iter)
             elif task.ttype == "mchooser":
                 n.add_features(modeltester_models=task.models, 
                                modeltester_type=task.tname, 
                                modeltester_params=params, 
                                modeltester_bestmodel=task.get_best_model(), 
                                )
-            elif task.ttype == "tree_merger":
+            elif task.ttype == "treemerger":
                 n.add_features(treemerger_type=task.tname, 
-                               treemerger_hidden_outgroup=task.outgroup_topology, 
+                               treemerger_out_policy=task.out_policy,
+                               treemerger_min_outs=task.min_outs,
                                )
-    return npr_iter
+
                 
 
 def check_cores(j, cores_used, cores_total, execution):
@@ -304,18 +305,68 @@ def launch_detached(j, cmd):
             os._exit(0)
     else:
         return
+
+def assembly_tree(base_dir, clade2tasks, init_cid):
+    thread = set()
+    for tasks in clade2tasks.values():
+        thread.update(set([t.taskid for t in tasks]))
+    
+    tid2child = defaultdict(set)
+    info = {}
+    for fields in db.report(max_records=0):
+        tid, nid, pid, cid, status, ttype, tstype = fields[:7]
+        info[tid] = {
+            "status": status,
+            "type": ttype,
+            "stype": tstype, 
+            "cladeid": cid, 
+        }
+        tid2child[pid].add(tid)
+    child_tasks = [init_cid]
+    base_tree = None
+    cladeid2node = {}
+    highlight = NodeStyle()
+    highlight["fgcolor"]= "red"
+    highlight["size"]= 20
+    while child_tasks:
+        tid = child_tasks.pop(0)
+        if tid not in thread:
+            continue
+            
+        if info[tid]["type"] == "task" and info[tid]["stype"] == "treemerger" and info[tid]["status"] == "D":
+            task_tree = PhyloTree(os.path.join(base_dir, "tasks", tid, "pruned_tree.nw"))
+            n2content = get_node2content(task_tree)
         
-def register_task(task):
+            for n, content in n2content.iteritems():
+                n.cladeid = generate_id(content)
+            cid = info[tid]["cladeid"]
+            task_tree.set_style(highlight)            
+            if base_tree:
+                target_node = base_tree.search_nodes(cladeid=cid)[0]
+                parent_node = target_node.up
+
+                target_node.detach()
+                parent_node.add_child(task_tree)
+            else:
+                base_tree = task_tree
+                base_tree.dist = 0.0
+            #base_tree.show()
+        child_tasks.extend(list(tid2child.get(tid, set())))
+        
+    return base_tree
+    
+def register_task(task, parentid=None):
+
     if db.get_task_status(task.taskid) is None:
-        db.add_task(tid=task.taskid, nid=task.nodeid, parent=task.nodeid,
-                    status="W", type="task", subtype=task.ttype, name=task.tname)
+        db.add_task(tid=task.taskid, nid=task.nodeid, parent=parentid,
+                    status=task.status, type="task", subtype=task.ttype, name=task.tname)
     for j in task.jobs:
         if isjob(j):
             if db.get_task_status(j.jobid) is None:
                 db.add_task(tid=j.jobid, nid=task.nodeid, parent=task.taskid,
                             status="W", type="job", name=j.jobname)
         else:
-            register_task(j)
+            register_task(j, parentid=parentid)
 
 def update_task_states(task):
     for j in task.jobs:

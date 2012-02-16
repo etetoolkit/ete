@@ -50,6 +50,10 @@ class Job(object):
         # the app.
         self.jobid = md5(','.join(sorted([md5(str(pair)) for pair in 
                                            self.args.iteritems()])))
+
+        #print self.jobid, ','.join(sorted([str(pair) for pair in 
+        #                                   self.args.iteritems()]))
+        #print parent_ids
         if parent_ids:
             self.jobid = md5(','.join(sorted(parent_ids+[self.jobid])))
 

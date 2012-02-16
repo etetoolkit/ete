@@ -50,6 +50,7 @@ def get_statal_identity(alg_file, statal_bin):
     #avgColIdentity	0.781853
     #stdColIdentity	0.2229
     #print output
+    maxi, mini, avgi, stdi = [None]*4
     for line in output.split("\n"):
         if line.startswith("#maxColIdentity"):
             maxi = float(line.split()[1])
@@ -277,7 +278,6 @@ def process_task(task, main_tree, conf, nodeid2info):
     elif ttype == "treemerger":
         if not task.set_a: 
             task.finish()
-        main_tree = task.main_tree
 
         if conf["main"]["aa_seed"]:
             source = SeqGroup(conf["main"]["aa_seed"])
@@ -293,7 +293,7 @@ def process_task(task, main_tree, conf, nodeid2info):
                     new_tasks.append(msf_task)
                     conf["_iters"] += 1
            
-    return new_tasks, main_tree
+    return new_tasks
 
 def pipeline(task, main_tree, conf, nodeid2info):
     if not task:
@@ -309,9 +309,9 @@ def pipeline(task, main_tree, conf, nodeid2info):
                          source = source)]
         conf["_iters"] = 1
     else:
-        new_tasks, main_tree = process_task(task, main_tree, conf, nodeid2info)
+        new_tasks = process_task(task, main_tree, conf, nodeid2info)
 
-    return new_tasks, main_tree
+    return new_tasks
 
 config_specs = """
 

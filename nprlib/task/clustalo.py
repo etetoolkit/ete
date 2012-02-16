@@ -13,7 +13,7 @@ __all__ = ["Clustalo"]
 class Clustalo(AlgTask):
     def __init__(self, nodeid, multiseq_file, seqtype, conf):
         if seqtype != "aa":
-            raise ValueError("Clustal Omega does only support aa seqtype")
+            raise ValueError("Clustal Omega does only support nt seqtype")
         
         base_args = OrderedDict({
                 '-i': None,

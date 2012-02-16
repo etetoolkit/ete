@@ -5,7 +5,8 @@ log = logging.getLogger("main")
 
 from nprlib.master_task import Task
 from nprlib.master_job import Job
-from nprlib.utils import load_node_size, PhyloTree, SeqGroup, generate_id
+from nprlib.utils import (load_node_size, PhyloTree, SeqGroup, generate_id,
+                          get_node2content)
 from nprlib import db
 
 from nprlib.utils import NodeStyle, TreeStyle
@@ -28,28 +29,22 @@ class TreeMerger(Task):
         self.seqtype = seqtype
         self.set_a = None
         self.set_b = None
+        self.out_policy = self.args["_outgroup_policy"]
+        self.min_outs = self.args["_outgroup_size"]
         self.init()
         self.left_part_file = os.path.join(self.taskdir, "left.msf")
         self.right_part_file = os.path.join(self.taskdir, "right.msf")
-
+        self.pruned_tree = os.path.join(self.taskdir, "pruned_tree.nw")
+        
     def finish(self):
-        mtree = self.main_tree
         ttree = PhyloTree(self.task_tree_file)
         ttree.dist = 0
         
         #log.debug("Task Tree: %s", ttree)
-        #log.debug("Main Tree: %s", mtree)
 
         cladeid, target_seqs, out_seqs = db.get_node_info(self.nodeid)
-
-        # Locate current node in the main tree containing the same
-        # seqs as the task tree
-        if mtree:
-            target_node = fast_search_node(cladeid, mtree)
-
-        else:
-            target_node = None
-        
+        self.out_seqs = out_seqs
+        self.target_seqs = target_seqs
         # Root task_tree. If outgroup seqs are available, uses manual
         # rooting. Otherwise, it means that task_tree is the result of
         # the first iteration, so it will try automatic rooting based
@@ -58,8 +53,8 @@ class TreeMerger(Task):
             log.log(28, "Rooting tree using %d custom seqs" %
                      len(out_seqs))
 
-            log.debug(out_seqs)
-            log.debug(target_seqs)
+            log.debug("Out seqs:    %s", out_seqs)
+            log.debug("Target seqs: %s", target_seqs)
             if len(out_seqs) > 1:
                 # Root to a non-outgroup leave to leave all outgroups
                 # in one side.
@@ -96,8 +91,8 @@ class TreeMerger(Task):
             supports.reverse()
             ttree.set_outgroup(supports[0][2])
 
-        seqs_a, outs_a, seqs_b, outs_b = select_outgroups(ttree, mtree,
-                                                          target_node, self.args)
+        seqs_a, outs_a, seqs_b, outs_b = select_outgroups(ttree, self.main_tree,
+                                                          self.args)
         self.set_a = (seqs_a, outs_a)
         self.set_b = (seqs_b, outs_b)
         open(self.left_part_file, "w").write('\n'.join(
@@ -105,32 +100,7 @@ class TreeMerger(Task):
         open(self.right_part_file, "w").write('\n'.join(
             [','.join(seqs_b), ','.join(outs_b)]))
 
-        # Updates main tree with the results extracted from task_tree
-        if mtree is None:
-            mtree = ttree
-        else:
-            log.log(26, "Merging tree with previous iterations.")
-            # target = fast_search_node(self.cladeid, mtree)
-            # Switch nodes in the main_tree so current tree topology
-            # is incorporated.
-            #target_node.set_style(st)
-            #mtree.show()
-            #ttree.show()
-
-            up = target_node.up
-            target_node.detach()
-            up.add_child(ttree)
-
-            #mtree.show()            
-
-        # Annotate current tree
-        node2names = get_node2content(mtree)
-        log.log(28, "Annotating new tree.")
-        for n, names in node2names.iteritems():
-            n.add_features(cladeid=generate_id(names))
-
-        # Store merged tree
-        self.main_tree = mtree
+        ttree.write(outfile=self.pruned_tree)
 
             
     def check(self):
@@ -152,23 +122,10 @@ def root_distance_matrix(root):
         n2rdist[n] = n2rdist[n.up] + n.dist
     return n2rdist
 
-def get_node2content(node, store={}):
-    for ch in node.children:
-        get_node2content(ch, store=store)
-
-    if node.children:
-        val = []
-        for ch in node.children:
-            val.extend(store[ch])
-        store[node] = val
-    else:
-        store[node] = [node.name]
-    return store
-
-def select_outgroups(ttree, mtree, target_node, args):
+def select_outgroups(ttree, mtree, args):
     policy = args["_outgroup_policy"]
     min_outs = args["_outgroup_size"]
- 
+   
     # Extract the two new partitions (potentially representing two
     # new iterations in the pipeline). Note that outgroup node, if
     # necessary, was detached previously.
@@ -226,19 +183,27 @@ def select_outgroups(ttree, mtree, target_node, args):
     outs_a = [e[1] for e in rank_outs_a]
     outs_b = [e[1] for e in rank_outs_b]
 
-    log.debug("Best distance to node A: %s" %best_dist_to_a)
-    log.debug("Best outgroup for A: %s" %rank_outs_a[:5])
-    log.debug("Best distance to node B: %s" %best_dist_to_b)
-    log.debug("Best outgroup for B: %s" %rank_outs_b[:5])
+    log.debug("Rank outgroups for left side: %s" %\
+              ', '.join(['%s:%f' %(_n,_v) for _v,_n in rank_outs_a[:4]]))
+    log.debug("Rank outgroups for right side: %s" %\
+              ', '.join(['%s:%f' %(_n,_v) for _v,_n in rank_outs_b[:4]]))
 
     missing_outs = min_outs - min(len(outs_a), len(outs_b))
-    _node = target_node
-    while _node and min_outs - min(len(outs_a), len(outs_b)) > 0:
-        # Try to extend outgroups using the upper tree
-        _extra = _node.get_sisters()[0].get_leaf_names()
-        outs_a.extend(_extra)
-        outs_b.extend(_extra)
-        _node = _node.up
+
+    if mtree and min_outs - min(len(outs_a), len(outs_b)) > 0:
+        cladeid = generate_id(ttree.get_leaf_names())
+        # Fist, find task tree node within main tree
+        n2content = get_node2content(mtree)
+        _node = None
+        for _node, content in n2content.iteritems():
+            if generate_id(content) == cladeid:
+                break
+        # Now, add out seqs from sister group
+        while _node and min_outs - min(len(outs_a), len(outs_b)) > 0:
+            _extra = n2content[_node.get_sisters()[0]]
+            outs_a.extend(_extra)
+            outs_b.extend(_extra)
+            _node = _node.up
         
     outs_a = outs_a[:min_outs]
     outs_b = outs_b[:min_outs]

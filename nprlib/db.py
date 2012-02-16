@@ -56,6 +56,7 @@ def create_db():
     name VARCHAR,
     host VARCHAR,
     pid VARCHAR,
+    cores INTEGER,
     tm_start FLOAT,
     tm_end FLOAT
     );
@@ -143,8 +144,10 @@ def get_node_info(nodeid):
     out_seqs = decode(out_seqs)
     return cladeid, target_seqs, out_seqs
 
+
+    
 def report(max_records=40):
-    cmd = ('SELECT task.nodeid, task.status, type, subtype, name,'
+    cmd = ('SELECT task.taskid, task.nodeid, task.parentid, node.cladeid, task.status, type, subtype, name,'
            ' target_size, out_size, TIME(tm_start), TIME(tm_end) FROM task '
            ' left outer join node ON task.nodeid = node.nodeid;')
     cursor.execute(cmd)
@@ -160,7 +163,7 @@ def add_seq_name(seqid, name):
 def get_seq_name(seqid):
     cmd = 'SELECT name FROM seqid2name WHERE seqid="%s"' %seqid
     cursor.execute(cmd)
-    return (cursor.fetchone() or ["NoName_"+seqid])[0]
+    return (cursor.fetchone() or [seqid])[0]
 
 def get_all_task_states():
     cmd = 'SELECT status FROM task'
