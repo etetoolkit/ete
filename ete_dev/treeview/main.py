@@ -371,7 +371,7 @@ class TreeStyle(object):
         # distant leaf. If set, this value will be used to
         # automatically calculate the branch scale.  In practice,
         # increasing this number will cause an X-zoom in.
-        self.tree_width = 200
+        self.tree_width = None
 
         # Min separation, in pixels, between to adjacent branches
         self.min_leaf_separation = 1 
@@ -456,8 +456,11 @@ class TreeStyle(object):
 
         # A text string that will be draw as the Tree title
         self.title = FaceContainer()
-        self.__closed__ = 1
 
+        # PRIVATE values
+        self._scale = None
+        
+        self.__closed__ = 1
 
     def __setattr__(self, attr, val):
         if hasattr(self, attr) or not getattr(self, "__closed__", 0):

@@ -104,12 +104,12 @@ class _GUI(QtGui.QMainWindow):
 
     @QtCore.pyqtSignature("")
     def on_actionZoomInX_triggered(self):
-        self.scene.img.scale += self.scene.img.scale * 0.05
+        self.scene.img._scale += self.scene.img._scale * 0.05
         self.scene.draw()
 
     @QtCore.pyqtSignature("")
     def on_actionZoomOutX_triggered(self):
-        self.scene.img.scale -= self.scene.img.scale * 0.05
+        self.scene.img._scale -= self.scene.img._scale * 0.05
         self.scene.draw()
 
     @QtCore.pyqtSignature("")

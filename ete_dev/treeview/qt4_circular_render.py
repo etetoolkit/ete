@@ -269,7 +269,6 @@ def init_circular_node_item(node, n2i, n2f):
     #if node.up:
     #    item.setParentItem(n2i[node.up])
 
-
 def get_effective_height(n, n2i, n2f):
     down_h = n2f[n]["branch-bottom"].h
     up_h = n2f[n]["branch-top"].h
@@ -281,3 +280,29 @@ def get_effective_height(n, n2i, n2f):
     fullR = n2i[n].fullRegion
     center = fullR.height()/2
     return max(up_h, down_h)*2
+
+def get_optimal_tree_width(root_node, n2f, img, rot_step):
+    most_distant = 0
+    for lf in root_node.iter_leaves():
+        _n = lf
+        max_he = 0
+        while _n.up:
+            max_he = max([n2f[_n]["branch-right"].h,
+                     n2f[_n]["aligned"].h,
+                     _n.img_style["size"],
+                     sum([n2f[_n]["branch-top"].h,
+                         n2f[_n]["branch-bottom"].h,
+                         _n.img_style["hz_line_width"]]),
+                     max_he]
+                     )
+            _n = _n.up
+     
+        angle = (rot_step * math.pi)/180 # converts to radians
+        rad = (max_he/2.0) / math.tan(angle/2)
+        most_distant = max(most_distant, rad)
+    fnode, dist = root_node.get_closest_leaf(topology_only=\
+                                             img.force_topology)
+    return most_distant
+
+
+    
