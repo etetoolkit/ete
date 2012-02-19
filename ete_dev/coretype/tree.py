@@ -1162,12 +1162,14 @@ class TreeNode(object):
 
         outgroup.up = self
         outgroup2.up = self
+        # outgroup is always the first children. Some function my
+        # trust on this fact, so do no change this.
         self.children = [outgroup,outgroup2]
         middist = (outgroup2.dist + outgroup.dist)/2
         outgroup.dist = middist
         outgroup2.dist = middist
         outgroup2.support = outgroup.support
-        #self.children.sort()
+
     def unroot(self):
         """ 
         Unroots current node. This function is expected to be used on
