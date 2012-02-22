@@ -44,7 +44,7 @@ class Raxml(TreeTask):
 
         # Process raxml options
         model = model or conf["raxml"]["_aa_model"]
-        method = conf["raxml"].get("method", "GAMMA").upper()
+        method = conf["raxml"].get("_method", "GAMMA").upper()
         if seqtype.lower() == "aa":
             self.model_string =  'PROT%s%s' %(method, model.upper())
             self.model = model 
