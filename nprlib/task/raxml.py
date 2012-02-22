@@ -3,6 +3,7 @@ import sys
 import logging
 import re
 import shutil
+from glob import glob
 
 log = logging.getLogger("main")
 
@@ -67,10 +68,10 @@ class Raxml(TreeTask):
                                                "RAxML_fastTreeSH_Support." +\
                                                    self.nodeid)
         elif self.compute_alrt == "phyml":
-            fake_alg_file = os.path.join(self.jobs[1].jobdir, basename(self.alg_phylip_file))
-            if os.path.exists(fake_alg_file):
-                os.remove(fake_alg_file)
-            os.symlink(self.alg_phylip_file, fake_alg_file)
+            #fake_alg_file = os.path.join(self.jobs[1].jobdir, basename(self.alg_phylip_file))
+            #if os.path.exists(fake_alg_file):
+            #    os.remove(fake_alg_file)
+            #os.symlink(self.alg_phylip_file, fake_alg_file)
             self.jobs[1].args["-u"] = self.ml_tree_file
             self.alrt_tree_file = os.path.join(self.jobs[1].jobdir,
                                                basename(self.alg_phylip_file) +"_phyml_tree.txt")
@@ -97,7 +98,8 @@ class Raxml(TreeTask):
             alrt_args = tree_job.args.copy()
             alrt_args["-f"] =  "J"
             alrt_args["-t"] = None # It will be after init()
-            alrt_job = Job(self.raxml_bin, alrt_args, parent_ids=[tree_job.jobid])       
+            alrt_job = Job(self.raxml_bin, alrt_args,
+                           parent_ids=[tree_job.jobid], jobname="raxml-alrt")       
             alrt_job.dependencies.add(tree_job)
             alrt_job.cores = self.threads
             self.jobs.append(alrt_job)
@@ -105,19 +107,20 @@ class Raxml(TreeTask):
         elif self.compute_alrt == "phyml":
             alrt_args = {
                 "-o": "n",
+                "-i": self.alg_phylip_file,
                 "--bootstrap": "-2",
                 "-d": self.seqtype,
                 "-u": None,
                 "--model": self.model,
-                "--input": basename(self.alg_phylip_file), 
                 "--quiet": "",
                 "--no_memory_check": "",
                 }
 
             if self.constrain_tree:
-                alrt_args["--constrain_tree"] = self.constrain_tree
-            
-            alrt_job = Job(self.conf["app"]["phyml"], alrt_args, parent_ids=[tree_job.jobid])
+                alrt_args["--constraint_tree"] = self.constrain_tree
+               
+            alrt_job = Job(self.conf["app"]["phyml"], alrt_args,
+                           parent_ids=[tree_job.jobid], jobname="phyml-alrt")
             alrt_job.dependencies.add(tree_job)
             self.jobs.append(alrt_job)
 
@@ -129,6 +132,10 @@ class Raxml(TreeTask):
             return "%g:%s" %(support, dist)
          
         if self.compute_alrt:
+            if self.compute_alrt == "phyml":
+                for fname in glob(self.alg_phylip_file+"_phyml*"):
+                    shutil.move(fname, self.jobs[1].jobdir)
+            
             tree = open(self.alrt_tree_file).read().replace("\n", "")
             nw = re.subn(":(\d+\.\d+)\[(\d+)\]", parse_alrt, tree, re.MULTILINE)
             open(self.tree_file, "w").write(nw[0])

@@ -172,13 +172,15 @@ def schedule(config, processer, schedule_time, execution, retry):
                 log.info("Dump iteration snapshot.")
                 main_tree = assembly_tree(config["main"]["basedir"],
                                           clade2tasks, initial_task.taskid)
-                annotate_tree(main_tree, clade2tasks, nodeid2info, npr_iter)
+                # we change node names here
+                snapshot_tree = main_tree.copy()
+                annotate_tree(snapshot_tree, clade2tasks, nodeid2info, npr_iter)
                 nout= len(task.out_seqs)
                 ntarget = len(task.target_seqs)
                 nw_file = os.path.join(config["main"]["basedir"],
                                        "tree_snapshots", "Iter_%06d_%s_S_%s_O.nw" %
                                        (npr_iter, ntarget, nout))
-                main_tree.write(outfile=nw_file, features=[])
+                snapshot_tree.write(outfile=nw_file, features=[])
 
         sge.launch_jobs(sge_jobs, config)
         sleep(wait_time)
@@ -186,9 +188,9 @@ def schedule(config, processer, schedule_time, execution, retry):
 
     final_tree_file = os.path.join(config["main"]["basedir"], \
                                        "final_tree.nw")
-    main_tree.write(outfile=final_tree_file)
+    snapshot_tree.write(outfile=final_tree_file)
     log.log(28, "Done")
-    log.debug(str(main_tree))
+    log.debug(str(snapshot_tree))
 
 def annotate_tree(t, clade2tasks, nodeid2info, npr_iter):
     n2names = get_node2content(t)
@@ -235,6 +237,7 @@ def annotate_tree(t, clade2tasks, nodeid2info, npr_iter):
                                tree_type=task.tname, 
                                tree_cmd=params,
                                tree_file=task.tree_file,
+                               tree_constrain=task.constrain_tree,
                                npr_iter=npr_iter)
             elif task.ttype == "mchooser":
                 n.add_features(modeltester_models=task.models, 

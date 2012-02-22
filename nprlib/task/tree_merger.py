@@ -70,26 +70,37 @@ class TreeMerger(Task):
             else:
                 raise ValueError("Outgroup was split")
         else:
-            log.log(28, "Rooting tree to the largest-best-supported node")
-            ttree.set_outgroup(ttree.get_midpoint_outgroup())
-            # Pre load node size for better performance
-            load_node_size(ttree)
-            supports = []
-            for n in ttree.get_descendants("levelorder"):
-                if n.is_leaf():
-                    continue
-                st = n.get_sisters()
-                if len(st) == 1:
-                    min_size = min([st[0]._size, n._size])
-                    min_support = min([st[0].support, n.support])
-                    supports.append([min_support, min_size, n])
-                else:
-                    log.warning("Skipping multifurcation in basal tree")
-
-            # Roots to the best supported and larger partitions
-            supports.sort()
-            supports.reverse()
-            ttree.set_outgroup(supports[0][2])
+            #log.log(28, "Rooting tree to the largest-best-supported node")
+            #ttree.set_outgroup(ttree.get_midpoint_outgroup())
+            ## Pre load node size for better performance
+            #load_node_size(ttree)
+            #supports = []
+            #for n in ttree.get_descendants("levelorder"):
+            #    if n.is_leaf():
+            #        continue
+            #    st = n.get_sisters()
+            #    if len(st) == 1:
+            #        min_size = min([st[0]._size, n._size])
+            #        min_support = min([st[0].support, n.support])
+            #        supports.append([min_support, min_size, n])
+            #    else:
+            #        log.warning("Skipping multifurcation in basal tree")
+            # 
+            ## Roots to the best supported and larger partitions
+            #supports.sort()
+            #supports.reverse()
+            #ttree.set_outgroup(supports[0][2])
+            log.log(28, "Rooting tree to the farthest node")
+            rootdist = root_distance_matrix(ttree)
+            max_dist = 0
+            for n1 in ttree.iter_leaves():
+                sum_dist = 0
+                for n2 in ttree.iter_leaves():
+                    dist = rootdist[n1]+rootdist[n2]
+                    sum_dist += dist
+                if sum_dist >= max_dist:
+                    farthest_node = n1
+            ttree.set_outgroup(farthest_node)
 
         seqs_a, outs_a, seqs_b, outs_b = select_outgroups(ttree, self.main_tree,
                                                           self.args)
@@ -168,8 +179,9 @@ def select_outgroups(ttree, mtree, args):
     elif policy == "min_dist":
         dist_fn = numpy.min
 
-    best_dist_to_b = dist_fn([d[0] for d in  to_b_dists])
     best_dist_to_a = dist_fn([d[0] for d in  to_a_dists])
+    best_dist_to_b = dist_fn([d[0] for d in  to_b_dists])
+
 
     rank_outs_a = sorted(to_a_dists, 
                          lambda x,y: cmp(abs(x[0] - best_dist_to_a),
@@ -190,7 +202,7 @@ def select_outgroups(ttree, mtree, args):
 
     missing_outs = min_outs - min(len(outs_a), len(outs_b))
 
-    if mtree and min_outs - min(len(outs_a), len(outs_b)) > 0:
+    if mtree and (min_outs - min(len(outs_a), len(outs_b)) > 0):
         cladeid = generate_id(ttree.get_leaf_names())
         # Fist, find task tree node within main tree
         n2content = get_node2content(mtree)
@@ -199,7 +211,7 @@ def select_outgroups(ttree, mtree, args):
             if generate_id(content) == cladeid:
                 break
         # Now, add out seqs from sister group
-        while _node and min_outs - min(len(outs_a), len(outs_b)) > 0:
+        while _node.up and (min_outs - min(len(outs_a), len(outs_b)) > 0):
             _extra = n2content[_node.get_sisters()[0]]
             outs_a.extend(_extra)
             outs_b.extend(_extra)
@@ -212,7 +224,5 @@ def select_outgroups(ttree, mtree, args):
         log.log(28, "Outgroup size not possible for one or both children partitions.")
         
     return map(set, [seqs_a, outs_a, seqs_b, outs_b])
-
-
 
         

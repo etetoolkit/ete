@@ -18,7 +18,7 @@ class Phyml(TreeTask):
                 "--model": "", 
                 "--no_memory_check": "", 
                 "--quiet": "",
-                "--constrain_tree": ""})
+                "--constraint_tree": ""})
 
         TreeTask.__init__(self, nodeid, "tree", "Phyml", 
                       base_args, conf["phyml"])
@@ -53,10 +53,10 @@ class Phyml(TreeTask):
         args["--datatype"] = self.seqtype
         args["--input"] = self.alg_basename
         if self.constrain_tree:
-            args["--constrain_tree"] = self.constrain_tree
+            args["--constraint_tree"] = self.constrain_tree
             args["-u"] = self.constrain_tree
         else:
-            del args["--constrain_tree"]
+            del args["--constraint_tree"]
         job = Job(self.conf["app"]["phyml"], args, parent_ids=[self.nodeid])
         self.jobs.append(job)
 

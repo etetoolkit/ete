@@ -66,6 +66,7 @@ class Task(object):
         # or (W)aiting or (Un)Finished
         self.status_file = None
         self.inkey_file = None
+        self.info_file = None
         self.status = "W"
         self.all_status = None
         self._donejobs = set()
@@ -136,6 +137,11 @@ class Task(object):
         # self.set_jobs_wd(self.taskdir)
         self.set_jobs_wd()
 
+        OUT = open(self.info_file, "w")
+        for j in self.jobs:
+            print >>OUT, j, j.jobdir
+        OUT.close()
+        
         #if db.get_task_status(self.taskid) is None:
         #    db.add_task(tid=self.taskid, nid=self.nodeid, parent=self.nodeid,
         #                status="W", type="task", subtype=self.ttype, name=self.tname)
@@ -201,7 +207,8 @@ class Task(object):
 
         self.status_file = os.path.join(self.taskdir, "__status__")
         self.inkey_file = os.path.join(self.taskdir, "__inkey__")
-
+        self.info_file = os.path.join(self.taskdir, "__info__")
+        
     def save_status(self, status):
         open(self.status_file, "w").write(status)
 
