@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 import sys
 import os
+import shutil
 from StringIO import StringIO
 from hashlib import md5
+import filecmp
+
 import logging
 
 import numpy
@@ -116,9 +119,19 @@ def main(args):
     log = logging.getLogger("main")
     print __DESCRIPTION__
 
+    base_dir = os.path.abspath(args.outdir)
+    local_conf_file = os.path.join(base_dir, "pipeline.cfg")
+    if os.path.exists(base_dir):
+        if os.path.exists(local_conf_file):
+            if not args.override and \
+               not filecmp.cmp(args.configfile, local_conf_file):
+                raise ConfigError("Output directory seem to contain"
+                                  " a NPR execution using a different"
+                                  " config file [pipeline.cfg]. Use"
+                                  " --override option or change the "
+                                  " output path.")
  
     config = ConfigObj(args.configfile, list_values=True)
-
  
     try:
         npr_template = config["main"]["template"]
@@ -160,25 +173,8 @@ def main(args):
     conf_keys = [v for v in config["main"] if v.startswith("npr_")]
     if len(set([len(config["main"][v]) for v in conf_keys])) != 1:
         raise ConfigError("Unequal length of main NPR config table.")
-    
-    #base_dir = os.path.abspath(config["main"]["basedir"])
-    base_dir = os.path.abspath(args.outdir)
-    gallery_dir = os.path.join(base_dir, "gallery")
-    snapshots_dir = os.path.join(base_dir, "tree_snapshots")
-    sge_dir = os.path.join(base_dir, "sge_jobs")
-    tmp_dir = os.path.join(base_dir, "tmp")
-    config["main"]["sge_dir"] = sge_dir
-    config["main"]["tmp"] = tmp_dir
-    config["main"]["gallery_dir"] = gallery_dir
-    config["main"]["snapshots_dir"] = snapshots_dir
-    try:
-        os.makedirs(gallery_dir)
-        os.makedirs(snapshots_dir)
-        os.makedirs(sge_dir)
-        os.makedirs(tmp_dir)
-    except OSError:
-        pass
 
+    #Configure base directory for all tasks 
     config["main"]["basedir"] = base_dir
     Task.global_config["basedir"] = base_dir
 
@@ -209,10 +205,30 @@ def main(args):
     # Set number of CPUs available
     config["main"]["_max_cores"] = args.maxcores
     log.debug("Enabling %d CPU cores" %args.maxcores)
+
+    # Create dir structure
+    gallery_dir = os.path.join(base_dir, "gallery")
+    snapshots_dir = os.path.join(base_dir, "tree_snapshots")
+    sge_dir = os.path.join(base_dir, "sge_jobs")
+    tmp_dir = os.path.join(base_dir, "tmp")
+    config["main"]["sge_dir"] = sge_dir
+    config["main"]["tmp"] = tmp_dir
+    config["main"]["gallery_dir"] = gallery_dir
+    config["main"]["snapshots_dir"] = snapshots_dir
+    try:
+        os.makedirs(gallery_dir)
+        os.makedirs(snapshots_dir)
+        os.makedirs(sge_dir)
+        os.makedirs(tmp_dir)
+    except OSError:
+        pass
     
     # Initialize db
     db.init_db(os.path.join(base_dir, "db.sqlite3"))
-    
+
+    # Copy config file
+    shutil.copy(args.configfile, os.path.join(base_dir, "pipeline.cfg"))
+
     # check nt_seed and aa_seed. Do they contain the same seqs?
     # format? names?
     visited_seqs = set()
@@ -361,22 +377,22 @@ if __name__ == "__main__":
   
     # Input data related flags
     input_group = parser.add_argument_group('Input data options')
-    input_group.add_argument("-a", "--aa-seed-file", dest="aa_seed_file", 
+    input_group.add_argument("-a", "--aa_seed_file", dest="aa_seed_file", 
                         type=existing_file, 
                         help="Initial multi sequence file with"
                         " protein sequences")
 
-    input_group.add_argument("-n", "--nt-seed-file", dest="nt_seed_file", 
+    input_group.add_argument("-n", "--nt_seed_file", dest="nt_seed_file", 
                         type=existing_file, 
                         help="Initial multi sequence file with"
                         " nucleotide sequences")
 
-    input_group.add_argument("-rename", dest="seq_rename", 
+    input_group.add_argument("--seq_rename", dest="seq_rename", 
                         action="store_true",
                         help="If used, seq names are internally converted"
                         " to get safe and unique 10 char identifiers.")
 
-    input_group.add_argument("-unalign", dest="unalign", 
+    input_group.add_argument("--dealign", dest="unalign", 
                         action="store_true",
                         help="If used, gaps in the orginal fasta file are"
                         " removed.")
@@ -394,23 +410,23 @@ if __name__ == "__main__":
                         type=existing_file, required=True, 
                         help="NPR configuration file")
        
-    exec_group.add_argument("-r", "--retry-error-jobs", dest="retry", 
+    exec_group.add_argument("-r", "--retry_error_jobs", dest="retry", 
                         action="store_true",
                         help="Try to relaunch, once more, jobs marked"
                         " as error.")
     
     exec_type_group = exec_group.add_mutually_exclusive_group()
-    exec_type_group.add_argument("-x", "--insitu-execution", dest="execute", 
+    exec_type_group.add_argument("-x", "--execute_insitu", dest="execute", 
                         action="store_true",
                         help="Jobs are launched in the same machine"
                         " as in the program is called.")
 
-    exec_type_group.add_argument("-sge", dest="sge_execute",
+    exec_type_group.add_argument("--sge", dest="sge_execute",
                         action="store_true", help="Jobs will be"
                         " launched using the Sun Grid Engine"
                         " queue system.")
 
-    exec_type_group.add_argument("-nodetach", dest="nodetach",
+    exec_type_group.add_argument("--nodetach", dest="nodetach",
                         action="store_true", help="Jobs will not be"
                         " detached from the main NPR process. This means that"
                         " when npr execution is interrupted, all currently"
@@ -421,7 +437,7 @@ if __name__ == "__main__":
                         "launched jobs keeps running even when npr"
                         "process is killed." )
     
-    exec_group.add_argument("-t", "--schedule-time", dest="schedule_time", 
+    exec_group.add_argument("-t", "--schedule_time", dest="schedule_time", 
                         type=float, default=5.0,
                         help="""Schedule time in seconds. """)
 
@@ -431,7 +447,11 @@ if __name__ == "__main__":
                         " than 1, tasks with multi-threading"
                         " capabilities will be set appropriately.")
 
-    exec_group.add_argument("-arch", dest="arch",
+    exec_type_group.add_argument("-override", dest="override",
+                        action="store_true", help="" )
+
+    
+    exec_group.add_argument("--arch", dest="arch",
                             choices=["auto", "32", "64"],
                             default="auto", help="Set the architecture of"
                             " executuion hosts (needed only when using"
