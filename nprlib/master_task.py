@@ -260,7 +260,7 @@ class Task(object):
 
 class AlgTask(Task):
     def __repr__(self):
-        return class_repr(self, "AlgTask")
+        return class_repr(self, "@@5:AlgTask@@1:")
 
     def check(self):
         if os.path.exists(self.alg_fasta_file) and \
@@ -276,7 +276,7 @@ class AlgTask(Task):
 
 class AlgCleanerTask(Task):
     def __repr__(self):
-        return class_repr(self, "AlgCleanerTask")
+        return class_repr(self, "@@4:AlgCleanerTask@@1:")
 
     def check(self):
         if os.path.exists(self.clean_alg_fasta_file) and \
@@ -293,7 +293,7 @@ class AlgCleanerTask(Task):
 
 class ModelTesterTask(Task):
     def __repr__(self):
-        return class_repr(self, "ModelTesterTask")
+        return class_repr(self, "@@2:ModelTesterTask@@1:")
 
     def get_best_model(self):
         return open(self.best_model_file, "ru").read()
@@ -314,7 +314,7 @@ class ModelTesterTask(Task):
 
 class TreeTask(Task):
     def __repr__(self):
-        return class_repr(self, "TreeTask")
+        return class_repr(self, "@@3:TreeTask@@1:")
 
     def check(self):
         if os.path.exists(self.tree_file) and \

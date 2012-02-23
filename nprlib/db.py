@@ -61,6 +61,12 @@ def create_db():
     tm_end FLOAT
     );
 
+    CREATE TABLE IF NOT EXISTS task2child(
+    taskid CHAR(32),
+    child CHAR(32),
+    PRIMARY KEY(taskid, child)
+    );
+    
     CREATE TABLE IF NOT EXISTS seqid2name(
     seqid CHAR(32) PRIMARY KEY,
     name VARCHAR(256)
@@ -80,12 +86,27 @@ def add_task(tid, nid, parent=None, status=None, type=None, subtype=None,
              name=None):
     values = ','.join(['"%s"' % (v or "") for v in
               [tid, nid, parent, status, type, subtype, name]])
-    cmd = ('INSERT INTO task (taskid, nodeid, parentid, status,'
+    cmd = ('INSERT OR IGNORE INTO task (taskid, nodeid, parentid, status,'
            ' type, subtype, name) VALUES (%s);' %(values))
     cursor.execute(cmd)
 
     autocommit()
 
+def add_task2child(tid, child):
+    cmd = ('INSERT OR IGNORE INTO task2child (taskid, child)'
+           ' VALUES ("%s", "%s");' %(tid, child))
+    cursor.execute(cmd)
+    autocommit()
+
+def get_task2child_tree():
+    cmd = """SELECT tree.taskid, child, task.type, task.subtype,
+    task.name, task.status, node.cladeid FROM task2child AS tree
+    LEFT OUTER JOIN task, node ON task.taskid = tree.child AND node.nodeid = task.nodeid
+    """
+
+    cursor.execute(cmd)
+    return cursor.fetchall()
+        
 def update_task(tid, **kargs):
     if kargs:
         values = ', '.join(['%s="%s"' %(k,v) for k,v in
@@ -124,7 +145,7 @@ def add_node(nodeid, cladeid, target_seqs, out_seqs):
                        [nodeid, cladeid, encode(target_seqs),
                         encode(out_seqs), len(target_seqs),
                         len(out_seqs)]])
-    cmd = ('INSERT INTO node (nodeid, cladeid, target_seqs, out_seqs,'
+    cmd = ('INSERT OR IGNORE INTO node (nodeid, cladeid, target_seqs, out_seqs,'
            ' target_size, out_size) VALUES (%s);' %(values))
     cursor.execute(cmd)
     autocommit()
@@ -155,7 +176,7 @@ def report(max_records=40):
     return report
 
 def add_seq_name(seqid, name):
-    cmd = ('INSERT INTO seqid2name (seqid, name)'
+    cmd = ('INSERT OR IGNORE INTO seqid2name (seqid, name)'
            ' VALUES ("%s", "%s");' %(seqid, name))
     cursor.execute(cmd)
     autocommit()

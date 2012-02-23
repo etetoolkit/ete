@@ -8,6 +8,7 @@ import random
 import hashlib
 import logging
 log = logging.getLogger("main")
+DEBUG = lambda: log.level <= 10
 
 try: 
     from collections import OrderedDict
@@ -15,7 +16,7 @@ except ImportError:
     from ordereddict import OrderedDict
 
 # ete_dev should be added to the python path by the npr script
-from ete_dev import PhyloTree, SeqGroup, TreeStyle, NodeStyle, faces
+from ete_dev import PhyloTree, Tree, SeqGroup, TreeStyle, NodeStyle, faces
 from ete_dev.treeview import random_color
 from ete_dev.parser.fasta import read_fasta
 #from ete_dev.treeview import drawer
@@ -203,3 +204,23 @@ def get_node2content(node, store={}):
     else:
         store[node] = [node.name]
     return store
+
+
+def npr_layout(node):
+    if node.is_leaf():
+        name = faces.AttrFace("name", fsize=12)
+        faces.add_face_to_node(name, node, 0, "branch-right")
+    if "treemerger_type" in node.features:
+        faces.add_face_to_node(faces.AttrFace("alg_type", fsize=8), node, 0, "branch-top")
+        faces.add_face_to_node(faces.AttrFace("tree_type", fsize=8), node, 0, "branch-top")
+    if "treemerger_rf" in node.features:
+        faces.add_face_to_node(faces.AttrFace("treemerger_rf", fsize=8, ), node, 0, "branch-bottom")
+                               
+NPR_TREE_STYLE = TreeStyle()
+NPR_TREE_STYLE.layout_fn = npr_layout
+NPR_TREE_STYLE.show_leaf_name = False
+
+        
+        
+
+    

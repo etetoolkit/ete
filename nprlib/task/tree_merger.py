@@ -6,14 +6,11 @@ log = logging.getLogger("main")
 from nprlib.master_task import Task
 from nprlib.master_job import Job
 from nprlib.utils import (load_node_size, PhyloTree, SeqGroup, generate_id,
-                          get_node2content)
+                          get_node2content, NPR_TREE_STYLE, NodeStyle, DEBUG,
+                          faces)
 from nprlib import db
+from nprlib.errors import TaskError
 
-from nprlib.utils import NodeStyle, TreeStyle
-st = NodeStyle()
-ts = TreeStyle
-st['fgcolor'] = 'red'
-st['size'] = 20
 
 
 __all__ = ["TreeMerger"]
@@ -27,6 +24,7 @@ class TreeMerger(Task):
         self.task_tree_file = task_tree
         self.main_tree = main_tree
         self.seqtype = seqtype
+        self.rf = None, None # Robinson foulds to orig partition
         self.set_a = None
         self.set_b = None
         self.out_policy = self.args["_outgroup_policy"]
@@ -39,8 +37,6 @@ class TreeMerger(Task):
     def finish(self):
         ttree = PhyloTree(self.task_tree_file)
         ttree.dist = 0
-        
-        #log.debug("Task Tree: %s", ttree)
 
         cladeid, target_seqs, out_seqs = db.get_node_info(self.nodeid)
         self.out_seqs = out_seqs
@@ -53,43 +49,58 @@ class TreeMerger(Task):
             log.log(28, "Rooting tree using %d custom seqs" %
                      len(out_seqs))
 
-            log.debug("Out seqs:    %s", out_seqs)
-            log.debug("Target seqs: %s", target_seqs)
+            #log.log(22, "Out seqs:    %s", len(out_seqs))
+            #log.log(22, "Target seqs: %s", target_seqs)
             if len(out_seqs) > 1:
-                # Root to a non-outgroup leave to leave all outgroups
-                # in one side.
                 outgroup = ttree.get_common_ancestor(out_seqs)
+                # if out_seqs are not grouped in a single node
                 if outgroup is ttree:
-                    outgroup = ttree.get_common_ancestor(target_seqs)
+                    # root to target seqs and retry out_seqs
+                    target = ttree.get_common_ancestor(target_seqs)
+                    ttree.set_outgroup(target)
+                    outgroup = ttree.get_common_ancestor(out_seqs)
             else:
                 outgroup = ttree & list(out_seqs)[0]
 
             if outgroup is not ttree:
                 ttree.set_outgroup(outgroup)
+                
+                orig_target = self.main_tree.get_common_ancestor(target_seqs)
+                found_target = outgroup.get_sisters()[0]
+                self.rf = orig_target.robinson_foulds(found_target)
+                
+                if DEBUG():
+                    mtree = self.main_tree
+                    for _seq in out_seqs:
+                        tar =  mtree & _seq
+                        tar.img_style["fgcolor"]="green"
+                        tar.img_style["size"] = 12
+                        tar.img_style["shape"] = "circle"
+                    orig_target.img_style["bgcolor"] = "lightblue"
+                    NPR_TREE_STYLE.title.clear()
+                    NPR_TREE_STYLE.title.add_face( faces.TextFace("MainTree:"
+                        " Outgroup selection is mark in green.Red=optimized nodes ",
+                        fgcolor="blue"), 0)
+                    mtree.show(tree_style=NPR_TREE_STYLE)
+
+                    for _seq in out_seqs:
+                        tar =  ttree & _seq
+                        tar.img_style["fgcolor"]="green"
+                        tar.img_style["size"] = 12
+                        tar.img_style["shape"] = "circle"
+                    outgroup.img_style["fgcolor"]="lightgreen"
+                    outgroup.img_style["size"]= 12
+                    found_target.img_style["bgcolor"] = "lightblue"
+                    NPR_TREE_STYLE.title.clear()
+                    NPR_TREE_STYLE.title.add_face(faces.TextFace("Optimized node. Outgroup is in green and distance to original partition is shown", fgcolor="blue"), 0)
+                    found_target.add_face(faces.TextFace("RF=%s, (%s)"%(self.rf), fsize=8, ), 0, "branch-bottom")
+                    ttree.show(tree_style=NPR_TREE_STYLE)
+                   
                 ttree = ttree.get_common_ancestor(target_seqs)
+                outgroup.detach()
             else:
-                raise ValueError("Outgroup was split")
+                raise TaskError("Outgroup was split")
         else:
-            #log.log(28, "Rooting tree to the largest-best-supported node")
-            #ttree.set_outgroup(ttree.get_midpoint_outgroup())
-            ## Pre load node size for better performance
-            #load_node_size(ttree)
-            #supports = []
-            #for n in ttree.get_descendants("levelorder"):
-            #    if n.is_leaf():
-            #        continue
-            #    st = n.get_sisters()
-            #    if len(st) == 1:
-            #        min_size = min([st[0]._size, n._size])
-            #        min_support = min([st[0].support, n.support])
-            #        supports.append([min_support, min_size, n])
-            #    else:
-            #        log.warning("Skipping multifurcation in basal tree")
-            # 
-            ## Roots to the best supported and larger partitions
-            #supports.sort()
-            #supports.reverse()
-            #ttree.set_outgroup(supports[0][2])
             log.log(28, "Rooting tree to the farthest node")
             rootdist = root_distance_matrix(ttree)
             max_dist = 0
@@ -102,6 +113,12 @@ class TreeMerger(Task):
                     farthest_node = n1
             ttree.set_outgroup(farthest_node)
 
+            if DEBUG():
+                farthest_node.img_style["bgcolor"] = "lightblue"
+                NPR_TREE_STYLE.title.clear()
+                NPR_TREE_STYLE.title.add_face(faces.TextFace("First iteration split.", fgcolor="blue"), 0)
+                ttree.show(tree_style=NPR_TREE_STYLE)
+            
         seqs_a, outs_a, seqs_b, outs_b = select_outgroups(ttree, self.main_tree,
                                                           self.args)
         self.set_a = (seqs_a, outs_a)
@@ -195,9 +212,9 @@ def select_outgroups(ttree, mtree, args):
     outs_a = [e[1] for e in rank_outs_a]
     outs_b = [e[1] for e in rank_outs_b]
 
-    log.debug("Rank outgroups for left side: %s" %\
+    log.log(22, "Rank outgroups for left side: %s" %\
               ', '.join(['%s:%f' %(_n,_v) for _v,_n in rank_outs_a[:4]]))
-    log.debug("Rank outgroups for right side: %s" %\
+    log.log(22, "Rank outgroups for right side: %s" %\
               ', '.join(['%s:%f' %(_n,_v) for _v,_n in rank_outs_b[:4]]))
 
     missing_outs = min_outs - min(len(outs_a), len(outs_b))

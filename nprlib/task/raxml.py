@@ -96,6 +96,8 @@ class Raxml(TreeTask):
 
         if self.compute_alrt == "raxml":
             alrt_args = tree_job.args.copy()
+            if self.constrain_tree:
+                del alrt_args["-g"]
             alrt_args["-f"] =  "J"
             alrt_args["-t"] = None # It will be after init()
             alrt_job = Job(self.raxml_bin, alrt_args,
@@ -116,8 +118,8 @@ class Raxml(TreeTask):
                 "--no_memory_check": "",
                 }
 
-            if self.constrain_tree:
-                alrt_args["--constraint_tree"] = self.constrain_tree
+            #if self.constrain_tree:
+            #    alrt_args["--constraint_tree"] = self.constrain_tree
                
             alrt_job = Job(self.conf["app"]["phyml"], alrt_args,
                            parent_ids=[tree_job.jobid], jobname="phyml-alrt")
