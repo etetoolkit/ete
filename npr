@@ -14,7 +14,7 @@ import numpy
 NPRPATH = os.path.split(os.path.realpath(__file__))[0]
   
 sys.path.insert(0, NPRPATH)
-from nprlib.argparse import ArgumentParser, RawDescriptionHelpFormatter
+from nprlib import argparse 
 from nprlib.configobj import ConfigObj, flatten_errors
 from nprlib import validate
 from nprlib.utils import SeqGroup, AA, NT
@@ -357,11 +357,11 @@ def main(args):
         
     # Scheduling starts here
     schedule(config, pipeline, args.schedule_time, 
-             execution, args.retry)
+             execution, args.retry, args.debug)
 
 if __name__ == "__main__":
-    parser = ArgumentParser(description=__DESCRIPTION__, 
-                            formatter_class=RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(description=__DESCRIPTION__, 
+                            formatter_class=argparse.RawDescriptionHelpFormatter)
     # name or flags - Either a name or a list of option strings, e.g. foo or -f, --foo.
     # action - The basic type of action to be taken when this argument is encountered at the command line. (store, store_const, store_true, store_false, append, append_const, version)
     # nargs - The number of command-line arguments that should be consumed. (N, ? (one or default), * (all 1 or more), + (more than 1) )
@@ -447,9 +447,8 @@ if __name__ == "__main__":
                         " than 1, tasks with multi-threading"
                         " capabilities will be set appropriately.")
 
-    exec_type_group.add_argument("-override", dest="override",
+    exec_type_group.add_argument("--override", dest="override",
                         action="store_true", help="" )
-
     
     exec_group.add_argument("--arch", dest="arch",
                             choices=["auto", "32", "64"],
@@ -471,10 +470,17 @@ if __name__ == "__main__":
                           help="Skip application checks during the start-up")
     
     ui_group.add_argument("-v", "--verbosity", dest="verbosity",
-                        default = 1, type=int, choices=[0,1,2,3,4,5],
+                        default = 1, type=int, choices=[0,1,2,3,4],
                         help="Verbosity level: 0=very quiet, 4=very "
-                          " verbose, 5=debug.")
-    
+                          " verbose.")
+   
+    ui_group.add_argument("--debug", nargs="?",
+                          const="all",
+                          help="Starts a debugging"
+                          " session. A taskid can be provided, so"
+                          " debugging will start from such task on." 
+                          )
+        
     args = parser.parse_args()
    
     # Start the application
