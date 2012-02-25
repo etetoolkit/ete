@@ -276,7 +276,7 @@ def main(args):
                     log.warning("sequence name %s was truncated to 10"
                                 " chars: %s " %(n, n[:10]))
 
-            values = SEQS.id2name.values()
+            values = set(SEQS.id2name.values())
             if len(values) != len(set(values)):
                 if args.seq_rename:
                     raise DataError("Although collisions in the hash function"
@@ -289,10 +289,13 @@ def main(args):
                                     " aborted. Correct manually or set"
                                     " automatic sequence renaming with"
                                     " --seq_rename flag.")
-
-            if visited_seqs and set(values) != visited_seqs:
+                    
+            if visited_seqs and visited_seqs - values:
                 raise DataError("Sequence names do not match between aa and"
                                 " nt files.")
+            elif visited_seqs and values - visited_seqs:
+                log.warning("%d nucleotide sequences will not be used" % 
+                            len(values - visited_seqs))
             visited_seqs.update(values)
             fullpath = os.path.join(base_dir, label+".fasta")
             seed_files[label] = fullpath
@@ -465,7 +468,7 @@ if __name__ == "__main__":
                         " processes. This feature requires NCURSES"
                         " libraries installed in your system.")
 
-    ui_group.add_argument("-nochecks", dest="nochecks",
+    ui_group.add_argument("--nochecks", dest="nochecks",
                           action="store_true", 
                           help="Skip application checks during the start-up")
     
