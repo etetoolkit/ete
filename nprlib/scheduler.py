@@ -1,4 +1,5 @@
 import os
+import time
 from subprocess import call, Popen
 from time import sleep, ctime
 from collections import defaultdict
@@ -29,11 +30,10 @@ def schedule(config, processer, schedule_time, execution, retry, debug):
     npr_iter = 0
     # Send seed files to processer to generate the initial task
     nodeid2info = {}
-    pending_tasks = processer(None, main_tree,
+    pending_tasks, main_tree = processer(None, main_tree,
                               config, nodeid2info)
     initial_task = pending_tasks[0]
     register_task(initial_task)
-    print debug
     if debug == "all":
         log.setLevel(10)
    
@@ -45,9 +45,9 @@ def schedule(config, processer, schedule_time, execution, retry, debug):
     while pending_tasks:
         cores_used = 0
         sge_jobs = []
-        wait_time = 0.1 # Try to go fast unless running tasks
+        wait_time = 0.01 # Try to go fast unless running tasks
         set_logindent(0)
-        log.log(28, "%s Checking the status of %d tasks" %(ctime(), len(pending_tasks)))
+        log.log(28, "CHECK: (%s) %d tasks" %(ctime(), len(pending_tasks)))
 
         # ask SGE for running jobs
         if execution == "sge":
@@ -81,12 +81,12 @@ def schedule(config, processer, schedule_time, execution, retry, debug):
                     log.log(20, "node was registered previously.")
 
             # Shows some task info
-            print
+            log.log(26, "")
             set_logindent(1)
             log.log(28, "(%s) %s" %(task.status, task))
             logindent(2)
             st_info = ', '.join(["%d(%s)" %(v,k) for k,v in task.job_status.iteritems()])
-            log.log(28, "%d jobs: %s" %(len(task.jobs), st_info))
+            log.log(26, "%d jobs: %s" %(len(task.jobs), st_info))
             tdir = task.taskdir.replace(config["main"]["basedir"], "")
             tdir = tdir.lstrip("/")
             log.log(20, "TaskDir: %s" %tdir)
@@ -145,7 +145,7 @@ def schedule(config, processer, schedule_time, execution, retry, debug):
                     
             elif task.status == "D":
                 logindent(3)
-                new_tasks = processer(task, main_tree, config,
+                new_tasks, main_tree = processer(task, main_tree, config,
                                                  nodeid2info)
                 logindent(-3)
                 pending_tasks.remove(task)
@@ -180,9 +180,10 @@ def schedule(config, processer, schedule_time, execution, retry, debug):
                 log.info("Dump iteration snapshot.")
                 #main_tree = assembly_tree(config["main"]["basedir"],
                 #                          clade2tasks, initial_task.taskid)
-                main_tree = assembly_tree(config["main"]["basedir"],
-                                          initial_task.taskid, clade2tasks)
-                
+
+                #main_tree = assembly_tree(config["main"]["basedir"],
+                #                          initial_task.taskid, clade2tasks)
+
                 # we change node names here
                 annotate_tree(main_tree, clade2tasks, nodeid2info, npr_iter)
                 if DEBUG():
@@ -202,15 +203,13 @@ def schedule(config, processer, schedule_time, execution, retry, debug):
 
         sge.launch_jobs(sge_jobs, config)
         sleep(wait_time)
-        print 
+        log.log(26, "")
 
     final_tree_file = os.path.join(config["main"]["basedir"], \
                                        "final_tree.nw")
     snapshot_tree.write(outfile=final_tree_file)
     log.log(28, "Done")
     log.debug(str(snapshot_tree))
-
-
    
 def register_task(task, parentid=None):
  
@@ -290,6 +289,7 @@ def launch_detached(j, cmd):
         return
 
 def assembly_tree(base_dir, init_task, clade2tasks):
+
     noimaginationtoday = db.get_task2child_tree()
 
     current_tasks = set()
@@ -303,29 +303,36 @@ def assembly_tree(base_dir, init_task, clade2tasks):
             tid2node[tid].add_child(tid2node[ch])
             tid2node[ch].name = str(ch)
             tid2node[ch].add_features(ttype=str(ttype),
-                                  tsubtype=str(tsubtype), tstatus=str(tstatus))
+                                  tsubtype=str(tsubtype),
+                                      tstatus=str(tstatus), cladeid=str(clade))
     
     tasks_hierarchy = tid2node[init_task]
     #print tasks_hierarchy 
-    if DEBUG():
-        tasks_hierarchy.show()
+    #if DEBUG():
+    #    tasks_hierarchy.show()
     base_tree = None
-    highlight = NodeStyle()
-    highlight["fgcolor"]= "red"
-    highlight["size"]= 12
-    
-        
-    for tnode in tasks_hierarchy.get_descendants():
-        if tnode.name in current_tasks and tnode.tsubtype == "treemerger" and tnode.tstatus == "D":
-            task_tree = PhyloTree(os.path.join(base_dir, "tasks", tnode.name, "pruned_tree.nw"))
-            #print tnode.name, tnode.tsubtype
-            n2content = get_node2content(task_tree)
+    if DEBUG():
+        highlight = NodeStyle()
+        highlight["fgcolor"]= "red"
+        highlight["size"]= 12
 
-            for n, content in n2content.iteritems():
-                n.cladeid = generate_id(content)
-              
+    clade2node = {}
+    for tnode in tasks_hierarchy.get_descendants():
+        if tnode.name in current_tasks and tnode.tsubtype == "treemerger" and \
+           tnode.tstatus == "D":
+                
+            task_tree = PhyloTree(os.path.join(base_dir, "tasks", tnode.name, "pruned_tree.nw"))
+            # print tnode.name, tnode.tsubtype
+            #n2content = get_node2content(task_tree)
+            # 
+            #for n, content in n2content.iteritems():
+            #    n.cladeid = generate_id(content)
+                            
             if base_tree:
-                target_node = base_tree.search_nodes(cladeid=task_tree.cladeid)[0]
+                #target_node = base_tree.search_nodes(cladeid=tnode.cladeid)[0]
+                target_node = clade2node[tnode.cladeid]
+                # Set the distance to this partition from the prev iteration
+                task_tree.dist = target_node.dist
                 parent_node = target_node.up
                 target_node.detach()
                 parent_node.add_child(task_tree)
@@ -333,6 +340,15 @@ def assembly_tree(base_dir, init_task, clade2tasks):
             else:
                 base_tree = task_tree
                 base_tree.dist = 0.0
+
+            ch0 = task_tree.children[0]
+            ch1 = task_tree.children[1]
+            ch0.add_features(cladeid=generate_id(ch0.get_leaf_names()))
+            ch1.add_features(cladeid=generate_id(ch0.get_leaf_names()))
+            clade2node[tnode.cladeid] = task_tree
+            clade2node[ch0.cladeid] = ch0
+            clade2node[ch1.cladeid] = ch1
+                
             if DEBUG(): 
                 task_tree.set_style(highlight)
     return base_tree
@@ -348,7 +364,7 @@ def annotate_tree(t, clade2tasks, nodeid2info, npr_iter):
 
     for cladeid, alltasks in clade2tasks.iteritems():
         n = cladeid2node[cladeid]
-       
+        
         for task in alltasks:
             
             params = ["%s %s" %(k,v) for k,v in  task.args.iteritems() 
@@ -362,7 +378,7 @@ def annotate_tree(t, clade2tasks, nodeid2info, npr_iter):
                                msf_file=task.multiseq_file)
                 
             elif task.ttype == "acleaner":
-                n.add_features(clean_alg_mean_identn=task.mean_ident, 
+                n.add_features(clean_alg_mean_ident=task.mean_ident, 
                                clean_alg_std_ident=task.std_ident, 
                                clean_alg_max_ident=task.max_ident, 
                                clean_alg_min_ident=task.min_ident, 
@@ -370,7 +386,7 @@ def annotate_tree(t, clade2tasks, nodeid2info, npr_iter):
                                clean_alg_cmd=params,
                                clean_alg_path=task.clean_alg_fasta_file)
             elif task.ttype == "alg":
-                n.add_features(alg_mean_identn=task.mean_ident, 
+                n.add_features(alg_mean_ident=task.mean_ident, 
                                alg_std_ident=task.std_ident, 
                                alg_max_ident=task.max_ident, 
                                alg_min_ident=task.min_ident, 

@@ -9,7 +9,7 @@ from collections import defaultdict
 from nprlib.utils import del_gaps, GENCODE, PhyloTree, SeqGroup, TreeStyle
 from nprlib.task import (MetaAligner, Mafft, Muscle, Uhire, Dialigntx, FastTree,
                    Clustalo, Raxml, Phyml, JModeltest, Prottest, Trimal,
-                   TreeMerger, Msf)
+                   TreeSplitter, TreeSplitterWithOutgroups, Msf)
 from nprlib.errors import DataError
 
 log = logging.getLogger("main")
@@ -208,7 +208,7 @@ def process_task(task, main_tree, conf, nodeid2info):
         #                                 conf["app"]["trimal"])
         # log.info("Conservation: %0.2f +-%0.2f", cons_mean, cons_std)
         # log.info("Max. Identity: %0.2f", max_identity)
-        import time
+        #import time
         #t1 = time.time()
         #mx, mn, mean, std = get_identity(task.alg_fasta_file)
         #print time.time()-t1
@@ -231,7 +231,7 @@ def process_task(task, main_tree, conf, nodeid2info):
         else:
             # Converts aa alignment into nt if necessary
             if seqtype == "aa" and nt_seed_file and \
-               task.min_ident > _aa_identity_thr:
+               task.mean_ident > _aa_identity_thr:
                 log.log(26, "switching to codon alignment")
                 # Change seqtype config 
                 seqtype = "nt"
@@ -271,14 +271,19 @@ def process_task(task, main_tree, conf, nodeid2info):
         new_tasks.append(tree_task)
 
     elif ttype == "tree":
-        treemerge_task = TreeMerger(nodeid, seqtype, task.tree_file, main_tree, conf)
+        if conf["tree_splitter"]["_outgroup_size"]:
+            treemerge_task = TreeSplitterWithOutgroups(nodeid, seqtype, task.tree_file, main_tree, conf)
+        else:
+            treemerge_task = TreeSplitter(nodeid, seqtype, task.tree_file, main_tree, conf)
+
         treemerge_task.nseqs = task.nseqs
         new_tasks.append(treemerge_task)
 
     elif ttype == "treemerger":
         if not task.set_a: 
             task.finish()
-
+        main_tree = task.main_tree
+        
         if conf["main"]["aa_seed"]:
             source = SeqGroup(conf["main"]["aa_seed"])
             source_seqtype = "aa"
@@ -288,12 +293,12 @@ def process_task(task, main_tree, conf, nodeid2info):
 
         for seqs, outs in [task.set_a, task.set_b]:
             if (conf["_iters"] < int(conf["main"].get("max_iters", conf["_iters"]+1)) and 
-                len(seqs) >= int(conf["tree_merger"]["_min_size"])):
+                len(seqs) >= int(conf["tree_splitter"]["_min_size"])):
                     msf_task = Msf(seqs, outs, seqtype=source_seqtype, source=source)
                     new_tasks.append(msf_task)
                     conf["_iters"] += 1
            
-    return new_tasks
+    return new_tasks, main_tree
 
 def pipeline(task, main_tree, conf, nodeid2info):
     if not task:
@@ -309,9 +314,9 @@ def pipeline(task, main_tree, conf, nodeid2info):
                          source = source)]
         conf["_iters"] = 1
     else:
-        new_tasks = process_task(task, main_tree, conf, nodeid2info)
+        new_tasks, main_tree = process_task(task, main_tree, conf, nodeid2info)
 
-    return new_tasks
+    return new_tasks, main_tree
 
 config_specs = """
 
@@ -335,7 +340,7 @@ npr_nt_tree_builder = list()
 npr_aa_model_tester = list()
 npr_nt_model_tester = list()
 
-[tree_merger]
+[tree_splitter]
 _min_size = integer()
 _outgroup_size = integer()
 

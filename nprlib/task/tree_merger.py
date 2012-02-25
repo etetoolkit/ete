@@ -11,16 +11,14 @@ from nprlib.utils import (load_node_size, PhyloTree, SeqGroup, generate_id,
 from nprlib import db
 from nprlib.errors import TaskError
 
+__all__ = ["TreeSplitterWithOutgroups"]
 
-
-__all__ = ["TreeMerger"]
-
-class TreeMerger(Task):
+class TreeSplitterWithOutgroups(Task):
     def __init__(self, nodeid, seqtype, task_tree, main_tree, conf):
         # Initialize task
-        Task.__init__(self, nodeid, "treemerger", "Standard-TreeMerger")
+        Task.__init__(self, nodeid, "treemerger", "Outgroup-based-TreeSplitter")
         self.conf = conf
-        self.args = conf["tree_merger"]
+        self.args = conf["tree_splitter"]
         self.task_tree_file = task_tree
         self.main_tree = main_tree
         self.seqtype = seqtype
@@ -68,7 +66,7 @@ class TreeMerger(Task):
                 orig_target = self.main_tree.get_common_ancestor(target_seqs)
                 found_target = outgroup.get_sisters()[0]
                 self.rf = orig_target.robinson_foulds(found_target)
-                
+
                 if DEBUG():
                     mtree = self.main_tree
                     for _seq in out_seqs:
@@ -98,27 +96,39 @@ class TreeMerger(Task):
                    
                 ttree = ttree.get_common_ancestor(target_seqs)
                 outgroup.detach()
+
+                ttree.dist = orig_target.dist
+                parent = orig_target.up
+                orig_target.detach()
+                parent.add_child(ttree)
+              
             else:
                 raise TaskError("Outgroup was split")
         else:
-            log.log(28, "Rooting tree to the farthest node")
-            rootdist = root_distance_matrix(ttree)
-            max_dist = 0
-            for n1 in ttree.iter_leaves():
-                sum_dist = 0
-                for n2 in ttree.iter_leaves():
-                    dist = rootdist[n1]+rootdist[n2]
-                    sum_dist += dist
-                if sum_dist >= max_dist:
-                    farthest_node = n1
-            ttree.set_outgroup(farthest_node)
-
+            log.log(28, "Rooting tree to midpoint")
+            #rootdist = root_distance_matrix(ttree)
+            # max_dist = 0
+            # for n1 in ttree.iter_leaves():
+            #     sum_dist = 0
+            #     for n2 in ttree.iter_leaves():
+            #         dist = rootdist[n1]+rootdist[n2]
+            #         sum_dist += dist
+            #     if sum_dist >= max_dist:
+            #         farthest_node = n1
+            outgroup = ttree.get_midpoint_outgroup()
+            ttree.set_outgroup(outgroup)
+            self.main_tree = ttree
             if DEBUG():
-                farthest_node.img_style["bgcolor"] = "lightblue"
+                outgroup.img_style["bgcolor"] = "lightblue"
                 NPR_TREE_STYLE.title.clear()
                 NPR_TREE_STYLE.title.add_face(faces.TextFace("First iteration split.", fgcolor="blue"), 0)
                 ttree.show(tree_style=NPR_TREE_STYLE)
-            
+
+        ttree_content = ttree.get_node2content()
+        for n, content in ttree_content.iteritems():
+            cid = generate_id([_n.name for _n in content])
+            n.add_feature("cladeid", cid)
+                
         seqs_a, outs_a, seqs_b, outs_b = select_outgroups(ttree, self.main_tree,
                                                           self.args)
         self.set_a = (seqs_a, outs_a)
@@ -129,7 +139,6 @@ class TreeMerger(Task):
             [','.join(seqs_b), ','.join(outs_b)]))
 
         ttree.write(outfile=self.pruned_tree)
-
             
     def check(self):
         if os.path.exists(self.left_part_file) and \

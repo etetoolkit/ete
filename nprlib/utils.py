@@ -214,8 +214,23 @@ def npr_layout(node):
         faces.add_face_to_node(faces.AttrFace("alg_type", fsize=8), node, 0, "branch-top")
         faces.add_face_to_node(faces.AttrFace("tree_type", fsize=8), node, 0, "branch-top")
     if "treemerger_rf" in node.features:
-        faces.add_face_to_node(faces.AttrFace("treemerger_rf", fsize=8, ), node, 0, "branch-bottom")
-                               
+        faces.add_face_to_node(faces.AttrFace("treemerger_rf", fsize=8), node, 0, "branch-bottom")
+
+
+    support_radius= (1.0 - node.support) * 30
+    if support_radius > 6:
+        support_face = faces.CircleFace(support_radius, "red")
+        faces.add_face_to_node(support_face, node, 0, position = "float-behind")
+        support_face.opacity = 0.25
+    identity = 0.0
+    if "clean_alg_mean_identn" in node.features:
+        identity = node.clean_alg_mean_identn
+    elif "alg_mean_identn" in node.features:
+        identity = node.alg_mean_identn
+    if float(identity) >= 0.9:
+        node.img_style["bgcolor"] = "beige"
+
+        
 NPR_TREE_STYLE = TreeStyle()
 NPR_TREE_STYLE.layout_fn = npr_layout
 NPR_TREE_STYLE.show_leaf_name = False

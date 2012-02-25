@@ -31,7 +31,7 @@ class FastTree(TreeTask):
         base_args = OrderedDict()
         base_args["-nopr"] = ""
         if self.seqtype == "nt":
-            base_args["-nt"] = ""
+            base_args["-gtr -nt"] = ""
         elif self.seqtype == "aa":
             pass
         else:
@@ -40,8 +40,6 @@ class FastTree(TreeTask):
         TreeTask.__init__(self, nodeid, "tree", "FastTree", 
                       base_args, conf["fasttree"])
         self.init()
-        
-        
 
         self.tree_file = os.path.join(self.taskdir, "final_tree.nw")
         if self.constrain_tree:
@@ -60,6 +58,11 @@ class FastTree(TreeTask):
         
     def load_jobs(self):
         args = self.args.copy()
+
+        #temp fix p2x
+        if self.seqtype == "nt":
+            del args["-wag"]
+        
         if self.constrain_tree:
             args["-constraints"] = "constraint_alg.fasta"
         args[self.alg_phylip_file] = ""
