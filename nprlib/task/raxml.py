@@ -137,7 +137,7 @@ class Raxml(TreeTask):
             if self.compute_alrt == "phyml":
                 for fname in glob(self.alg_phylip_file+"_phyml*"):
                     shutil.move(fname, self.jobs[1].jobdir)
-                shutils.copy(self.alrt_tree_file, self.tree_file)
+                shutil.copy(self.alrt_tree_file, self.tree_file)
             else:
                 tree = open(self.alrt_tree_file).read().replace("\n", "")
                 nw = re.subn(":(\d+\.\d+)\[(\d+)\]", parse_alrt, tree, re.MULTILINE)

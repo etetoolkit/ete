@@ -297,8 +297,8 @@ def process_task(task, main_tree, conf, nodeid2info):
         processable_node = lambda _n: _n is not task.task_tree and _n.children and _n.support <= _min_branch_support
         n2content = main_tree.get_node2content()
         for node in task.task_tree.iter_leaves(is_leaf_fn=processable_node):
-            #print node.name, node.support
             seqs, outs = find_outgroups(node, n2content, conf["tree_splitter"])
+            #print node.name, node.support, len(seqs), len(outs), len(node)
             if (conf["_iters"] < int(conf["main"].get("max_iters", conf["_iters"]+1)) and 
                 len(seqs) >= int(conf["tree_splitter"]["_min_size"])):
                     msf_task = Msf(seqs, outs, seqtype=source_seqtype, source=source)

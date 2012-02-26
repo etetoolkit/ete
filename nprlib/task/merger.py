@@ -190,7 +190,7 @@ def find_outgroups(target, n2content, options):
     if options["_outgroup_size"]:
         partition = select_outgroups(target, n2content, options)
     else:
-        seqs = set([_n.name for _n in n2content[target.children[0]]])
+        seqs = set([_n.name for _n in n2content[target]])
         partition = (seqs, set())
     return partition
  
