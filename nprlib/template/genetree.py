@@ -292,21 +292,21 @@ def process_task(task, main_tree, conf, nodeid2info):
         if not task.task_tree:
             task.finish()
         main_tree = task.main_tree
-        print task.task_tree.get_ascii(attributes=["name", "support"])
-        print task.task_tree
+        #print task.task_tree.get_ascii(attributes=["name", "support"])
+        #print task.task_tree
         processable_node = lambda _n: _n is not task.task_tree and _n.children and _n.support <= _min_branch_support
         n2content = main_tree.get_node2content()
         for node in task.task_tree.iter_leaves(is_leaf_fn=processable_node):
-            print node.name, node.support
+            #print node.name, node.support
             seqs, outs = find_outgroups(node, n2content, conf["tree_splitter"])
             if (conf["_iters"] < int(conf["main"].get("max_iters", conf["_iters"]+1)) and 
                 len(seqs) >= int(conf["tree_splitter"]["_min_size"])):
                     msf_task = Msf(seqs, outs, seqtype=source_seqtype, source=source)
                     new_tasks.append(msf_task)
                     conf["_iters"] += 1
-                    print node.support, seqs, outs, processable_node(node)
+                    #print node.support, seqs, outs, processable_node(node)
 
-        print new_tasks   
+        #print new_tasks   
     return new_tasks, main_tree
 
 def pipeline(task, main_tree, conf, nodeid2info):
