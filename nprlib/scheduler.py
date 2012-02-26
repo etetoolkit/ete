@@ -410,8 +410,6 @@ def annotate_tree(t, clade2tasks, nodeid2info, npr_iter):
                                )
             elif task.ttype == "treemerger":
                 n.add_features(treemerger_type = task.tname, 
-                               treemerger_out_policy = task.out_policy,
-                               treemerger_min_outs =task.min_outs,
                                treemerger_rf = "RF=%s (%s)" %task.rf
                                )
                

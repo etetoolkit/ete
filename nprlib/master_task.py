@@ -139,7 +139,10 @@ class Task(object):
 
         OUT = open(self.info_file, "w")
         for j in self.jobs:
-            print >>OUT, j, j.jobdir
+            if isjob(j):
+                print >>OUT, j, j.jobdir
+            elif istask(j):
+                print >>OUT, j, j.taskdir
         OUT.close()
         
         #if db.get_task_status(self.taskid) is None:

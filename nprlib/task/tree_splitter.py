@@ -74,6 +74,8 @@ class TreeSplitter(Task):
             ttree.set_outgroup(outgroup)
             self.rf = target_node.robinson_foulds(ttree)
             ttree.dist = target_node.dist
+            ttree.support = target_node.support
+            
             parent = target_node.up
             target_node.detach()
             parent.add_child(ttree)

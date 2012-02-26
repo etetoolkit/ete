@@ -9,7 +9,7 @@ from collections import defaultdict
 from nprlib.utils import del_gaps, GENCODE, PhyloTree, SeqGroup, TreeStyle
 from nprlib.task import (MetaAligner, Mafft, Muscle, Uhire, Dialigntx, FastTree,
                    Clustalo, Raxml, Phyml, JModeltest, Prottest, Trimal,
-                   TreeSplitter, TreeSplitterWithOutgroups, Msf)
+                   TreeMerger, find_outgroups, Msf)
 from nprlib.errors import DataError
 
 log = logging.getLogger("main")
@@ -168,7 +168,8 @@ def process_task(task, main_tree, conf, nodeid2info):
             else:
                 index_slide += 1
         #log.debug("INDEX %s %s %s", index, nseqs, max_seqs)
-        
+                
+    _min_branch_support = conf["main"]["npr_min_branch_support"][index_slide]
     if seqtype == "nt": 
         _aligner = n2class[conf["main"]["npr_nt_aligner"][index]]
         _alg_cleaner = n2class[conf["main"]["npr_nt_alg_cleaner"][index]]
@@ -271,19 +272,16 @@ def process_task(task, main_tree, conf, nodeid2info):
         new_tasks.append(tree_task)
 
     elif ttype == "tree":
-        if conf["tree_splitter"]["_outgroup_size"]:
-            treemerge_task = TreeSplitterWithOutgroups(nodeid, seqtype, task.tree_file, main_tree, conf)
-        else:
-            treemerge_task = TreeSplitter(nodeid, seqtype, task.tree_file, main_tree, conf)
+        treemerge_task = TreeMerger(nodeid, seqtype, task.tree_file, main_tree, conf)
+        #if conf["tree_splitter"]["_outgroup_size"]:
+        #    treemerge_task = TreeSplitterWithOutgroups(nodeid, seqtype, task.tree_file, main_tree, conf)
+        #else:
+        #    treemerge_task = TreeSplitter(nodeid, seqtype, task.tree_file, main_tree, conf)
 
         treemerge_task.nseqs = task.nseqs
         new_tasks.append(treemerge_task)
 
     elif ttype == "treemerger":
-        if not task.set_a: 
-            task.finish()
-        main_tree = task.main_tree
-        
         if conf["main"]["aa_seed"]:
             source = SeqGroup(conf["main"]["aa_seed"])
             source_seqtype = "aa"
@@ -291,13 +289,24 @@ def process_task(task, main_tree, conf, nodeid2info):
             source = SeqGroup(conf["main"]["nt_seed"])
             source_seqtype = "nt"
 
-        for seqs, outs in [task.set_a, task.set_b]:
+        if not task.task_tree:
+            task.finish()
+        main_tree = task.main_tree
+        print task.task_tree.get_ascii(attributes=["name", "support"])
+        print task.task_tree
+        processable_node = lambda _n: _n is not task.task_tree and _n.children and _n.support <= _min_branch_support
+        n2content = main_tree.get_node2content()
+        for node in task.task_tree.iter_leaves(is_leaf_fn=processable_node):
+            print node.name, node.support
+            seqs, outs = find_outgroups(node, n2content, conf["tree_splitter"])
             if (conf["_iters"] < int(conf["main"].get("max_iters", conf["_iters"]+1)) and 
                 len(seqs) >= int(conf["tree_splitter"]["_min_size"])):
                     msf_task = Msf(seqs, outs, seqtype=source_seqtype, source=source)
                     new_tasks.append(msf_task)
                     conf["_iters"] += 1
-           
+                    print node.support, seqs, outs, processable_node(node)
+
+        print new_tasks   
     return new_tasks, main_tree
 
 def pipeline(task, main_tree, conf, nodeid2info):
@@ -325,6 +334,7 @@ max_iters = integer(minv=1)
 render_tree_images = boolean()
 
 npr_max_seqs = integer_list(minv=0)
+npr_min_branch_support = float_list(minv=0, maxv=1)
 
 npr_max_aa_identity = float_list(minv=0.0)
 
