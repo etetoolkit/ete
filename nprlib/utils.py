@@ -209,18 +209,23 @@ def get_node2content(node, store={}):
 def npr_layout(node):
     if node.is_leaf():
         name = faces.AttrFace("name", fsize=12)
-        faces.add_face_to_node(name, node, 0, "branch-right")
+        faces.add_face_to_node(name, node, 0, position="branch-right")
     if "treemerger_type" in node.features:
-        faces.add_face_to_node(faces.AttrFace("alg_type", fsize=8), node, 0, "branch-top")
-        faces.add_face_to_node(faces.AttrFace("tree_type", fsize=8), node, 0, "branch-top")
+        faces.add_face_to_node(faces.AttrFace("alg_type", fsize=8), node, 0, position="branch-top")
+        ttype=faces.AttrFace("tree_type", fsize=8, fgcolor="DarkBlue")
+        faces.add_face_to_node(ttype, node, 0, position="branch-top")
+        #ttype.background.color = "DarkOliveGreen"
+        
     if "treemerger_rf" in node.features:
-        faces.add_face_to_node(faces.AttrFace("treemerger_rf", fsize=8), node, 0, "branch-bottom")
+        faces.add_face_to_node(faces.AttrFace("treemerger_rf", fsize=8), node, 0, position="branch-bottom")
 
     support_radius= (1.0 - node.support) * 30
     if support_radius > 1:
         support_face = faces.CircleFace(support_radius, "red")
         faces.add_face_to_node(support_face, node, 0, position = "float-behind")
         support_face.opacity = 0.25
+        faces.add_face_to_node(faces.AttrFace("support", fsize=8), node, 0, position="branch-bottom")
+        
     identity = 0.0
     if "clean_alg_mean_identn" in node.features:
         identity = node.clean_alg_mean_identn

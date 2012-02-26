@@ -95,8 +95,6 @@ class TreeMerger(Task):
                 outgroup.add_face(faces.TextFace("DIST=%s" % partition_pairs[0][0]), 0, "branch-top")
                 NPR_TREE_STYLE.title.clear()
                 NPR_TREE_STYLE.title.add_face(faces.TextFace("Optimized node. Most similar outgroup with previous iteration is shown", fgcolor="blue"), 0)
-
-                ttree.add_face(faces.TextFace("RF=%s, (%s)"%(self.rf), fsize=8, ), 0, "branch-bottom")
                 ttree.show(tree_style=NPR_TREE_STYLE)
 
 
@@ -135,9 +133,7 @@ class TreeMerger(Task):
                     found_target.img_style["bgcolor"] = "lightblue"
                     NPR_TREE_STYLE.title.clear()
                     NPR_TREE_STYLE.title.add_face(faces.TextFace("Optimized node. Outgroup is in green and distance to original partition is shown", fgcolor="blue"), 0)
-                    found_target.add_face(faces.TextFace("RF=%s, (%s)"%(self.rf), fsize=8, ), 0, "branch-bottom")
                     ttree.show(tree_style=NPR_TREE_STYLE)
-
                     
                 ttree = ttree.get_common_ancestor(target_seqs)
                 outgroup.detach()
