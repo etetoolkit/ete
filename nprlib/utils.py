@@ -216,9 +216,8 @@ def npr_layout(node):
     if "treemerger_rf" in node.features:
         faces.add_face_to_node(faces.AttrFace("treemerger_rf", fsize=8), node, 0, "branch-bottom")
 
-
     support_radius= (1.0 - node.support) * 30
-    if support_radius > 6:
+    if support_radius > 1:
         support_face = faces.CircleFace(support_radius, "red")
         faces.add_face_to_node(support_face, node, 0, position = "float-behind")
         support_face.opacity = 0.25

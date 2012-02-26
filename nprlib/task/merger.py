@@ -85,10 +85,10 @@ class TreeMerger(Task):
                 NPR_TREE_STYLE.title.clear()
                 NPR_TREE_STYLE.title.add_face( faces.TextFace("MainTree: Pre iteration partition", fgcolor="blue"), 0)
                 mtree.show(tree_style=NPR_TREE_STYLE)
+
                 target_node.children[0].set_style(None)
                 target_node.children[1].set_style(None)
                 target_node.set_style(None)
-                
                 outgroup.img_style["fgcolor"]="Green"
                 outgroup.img_style["size"]= 12
                 ttree.img_style["bgcolor"] = "lightblue"
@@ -98,6 +98,7 @@ class TreeMerger(Task):
 
                 ttree.add_face(faces.TextFace("RF=%s, (%s)"%(self.rf), fsize=8, ), 0, "branch-bottom")
                 ttree.show(tree_style=NPR_TREE_STYLE)
+
 
         elif mtree and out_seqs:
             log.log(28, "Rooting tree using %d custom seqs" %
@@ -124,19 +125,6 @@ class TreeMerger(Task):
                 self.rf = orig_target.robinson_foulds(found_target)
 
                 if DEBUG():
-                    mtree = self.main_tree
-                    for _seq in out_seqs:
-                        tar =  mtree & _seq
-                        tar.img_style["fgcolor"]="green"
-                        tar.img_style["size"] = 12
-                        tar.img_style["shape"] = "circle"
-                    orig_target.img_style["bgcolor"] = "lightblue"
-                    NPR_TREE_STYLE.title.clear()
-                    NPR_TREE_STYLE.title.add_face( faces.TextFace("MainTree:"
-                        " Outgroup selection is mark in green.Red=optimized nodes ",
-                        fgcolor="blue"), 0)
-                    mtree.show(tree_style=NPR_TREE_STYLE)
-
                     for _seq in out_seqs:
                         tar =  ttree & _seq
                         tar.img_style["fgcolor"]="green"
@@ -149,7 +137,8 @@ class TreeMerger(Task):
                     NPR_TREE_STYLE.title.add_face(faces.TextFace("Optimized node. Outgroup is in green and distance to original partition is shown", fgcolor="blue"), 0)
                     found_target.add_face(faces.TextFace("RF=%s, (%s)"%(self.rf), fsize=8, ), 0, "branch-bottom")
                     ttree.show(tree_style=NPR_TREE_STYLE)
-                   
+
+                    
                 ttree = ttree.get_common_ancestor(target_seqs)
                 outgroup.detach()
 
@@ -174,6 +163,7 @@ class TreeMerger(Task):
                 NPR_TREE_STYLE.title.add_face(faces.TextFace("First iteration split.Outgroup is in green", fgcolor="blue"), 0)
                 ttree.show(tree_style=NPR_TREE_STYLE)
 
+
         # Reloads node2content of the rooted tree and generate cladeids
         ttree_content = ttree.get_node2content()
         for n, content in ttree_content.iteritems():
@@ -182,6 +172,11 @@ class TreeMerger(Task):
 
         ttree.write(outfile=self.pruned_tree)
         self.task_tree = ttree
+        if DEBUG():
+            for _n in self.main_tree.traverse():
+                _n.img_style = None
+
+        
         
     def check(self):
         if os.path.exists(self.pruned_tree):
@@ -268,6 +263,22 @@ def select_outgroups(target, n2content, options):
     
     if len(outs_a) < min_outs:
         log.log(28, "Outgroup size not reached.")
+
+    if DEBUG():
+        mtree = target.get_tree_root()
+        for _seq in outs_a:
+            tar =  mtree & _seq
+            tar.img_style["fgcolor"]="green"
+            tar.img_style["size"] = 12
+            tar.img_style["shape"] = "circle"
+        target.img_style["bgcolor"] = "lightblue"
+        NPR_TREE_STYLE.title.clear()
+        NPR_TREE_STYLE.title.add_face( faces.TextFace("MainTree:"
+            " Outgroup selection is mark in green.Red=optimized nodes ",
+            fgcolor="blue"), 0)
+        mtree.show(tree_style=NPR_TREE_STYLE)
+        for _n in mtree.traverse():
+            _n.img_style = None
         
     return set(seqs_a), set(outs_a)
 
