@@ -97,7 +97,6 @@ class TreeMerger(Task):
                 NPR_TREE_STYLE.title.add_face(faces.TextFace("Optimized node. Most similar outgroup with previous iteration is shown", fgcolor="blue"), 0)
                 ttree.show(tree_style=NPR_TREE_STYLE)
 
-
         elif mtree and out_seqs:
             log.log(28, "Rooting tree using %d custom seqs" %
             len(out_seqs))
@@ -138,8 +137,8 @@ class TreeMerger(Task):
                 ttree = ttree.get_common_ancestor(target_seqs)
                 outgroup.detach()
 
-                ttree.dist = orig_target.dist
-                ttree.support = orig_target.support
+                #ttree.dist = orig_target.dist
+                #ttree.support = orig_target.support
                 parent = orig_target.up
                 orig_target.detach()
                 parent.add_child(ttree)
@@ -171,14 +170,11 @@ class TreeMerger(Task):
         if DEBUG():
             for _n in self.main_tree.traverse():
                 _n.img_style = None
-
-        
         
     def check(self):
         if os.path.exists(self.pruned_tree):
             return True
         return False
-                             
 
 def root_distance_matrix(root):
     n2rdist = {root:0.0}

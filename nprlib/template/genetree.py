@@ -263,7 +263,7 @@ def process_task(task, main_tree, conf, nodeid2info):
         alg_phylip_file = task.alg_phylip_file
         model = task.get_best_model()
         if constrain_tree:
-                open(constrain_tree_path, "w").write(constrain_tree)
+            open(constrain_tree_path, "w").write(constrain_tree)
                                           
         tree_task = _tree_builder(nodeid, alg_phylip_file, constrain_tree_path,
                                   model,
@@ -294,16 +294,33 @@ def process_task(task, main_tree, conf, nodeid2info):
         main_tree = task.main_tree
         #print task.task_tree.get_ascii(attributes=["name", "support"])
         #print task.task_tree
-        processable_node = lambda _n: _n is not task.task_tree and _n.children and _n.support <= _min_branch_support
+        processable_node = lambda _n: (_n is not task.task_tree and
+                                       _n.children and
+                                       _n.support <= _min_branch_support)
         n2content = main_tree.get_node2content()
         for node in task.task_tree.iter_leaves(is_leaf_fn=processable_node):
-            seqs, outs = find_outgroups(node, n2content, conf["tree_splitter"])
+            # If we are optimizing only lowly supported nodes, and
+            # nodes are optimized without outgroup, our target node is
+            # actually the parent of the real target. Otherwise, go
+            # ahead with the target node.
+            if _min_branch_support < 1.0 and conf["tree_splitter"]["_outgroup_size"] == 0:
+                next_node = node.up
+            else:
+                next_node = node
+              
+            seqs, outs = find_outgroups(next_node, n2content, conf["tree_splitter"])
             #print node.name, node.support, len(seqs), len(outs), len(node)
             if (conf["_iters"] < int(conf["main"].get("max_iters", conf["_iters"]+1)) and 
                 len(seqs) >= int(conf["tree_splitter"]["_min_size"])):
                     msf_task = Msf(seqs, outs, seqtype=source_seqtype, source=source)
-                    new_tasks.append(msf_task)
-                    conf["_iters"] += 1
+                    # This prevents redoing nodes, something that can
+                    # occur when outgroup_size is 0 and we are trying
+                    # to optimize lowly supported nodes. When we
+                    # select the parent, the parent could have been
+                    # done already.
+                    if msf_task.nodeid not in nodeid2info:
+                        new_tasks.append(msf_task)
+                        conf["_iters"] += 1
                     #print node.support, seqs, outs, processable_node(node)
 
         #print new_tasks   
