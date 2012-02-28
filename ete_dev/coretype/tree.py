@@ -1016,6 +1016,37 @@ class TreeNode(object):
                     max_node = node
             return max_node, max_dist
 
+    def get_closest_leaf(self, topology_only=False):
+        """Returns node's closest descendant leaf and the distance to
+        it.
+
+        :argument False topology_only: If set to True, distance
+          between nodes will be referred to the number of nodes
+          between them. In other words, topological distance will be
+          used instead of branch length distances.
+
+        :return: A tuple containing the closest leaf referred to the
+          current node and the distance to it.
+
+        """
+        min_dist = None
+        min_node = None
+        if self.is_leaf():
+            return self, 0.0
+        else:
+            for ch in self.children:
+                node, d = ch.get_closest_leaf(topology_only=topology_only)
+                if topology_only:
+                    d += 1.0
+                else:
+                    d += ch.dist
+                if min_dist is None or d<min_dist:
+                    min_dist = d
+                    min_node = node
+            return min_node, min_dist
+
+
+            
     def get_midpoint_outgroup(self):
         """
         Returns the node that divides the current tree into two distance-balanced

@@ -40,6 +40,7 @@ def init_scene(t, layout, ts):
         _QApp = QtGui.QApplication(["ETE"])
 
     scene  = _TreeScene()
+    ts._scale = None
     return scene, ts
 
 def show_tree(t, layout=None, tree_style=None):
