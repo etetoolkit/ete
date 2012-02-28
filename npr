@@ -238,7 +238,7 @@ def main(args):
     for label, seq_file, seq2length in [["aa_seed", args.aa_seed_file, seq2aalength],
                                         ["nt_seed", args.nt_seed_file, seq2ntlength]]:
         if seq_file: 
-            SEQS = SeqGroup(seq_file)
+            SEQS = SeqGroup(seq_file, fix_duplicates=False)
             # Loads seq lengths
             for seqid, seq in SEQS.id2seq.iteritems():
                 seqname = SEQS.id2name[seqid]
@@ -341,9 +341,9 @@ def main(args):
     for v in all_len:
         if abs(mean_len - v) >  (2 * std_len):
             outliers.append(v)
-    log.info("Max sequence length:  %d" %max_len)
-    log.info("Min sequence length:  %d" %min_len)
-    log.info("Mean sequence length: %d +- %0.1f " %(mean_len, std_len))
+    log.log(28, "Max sequence length:  %d" %max_len)
+    log.log(28, "Min sequence length:  %d" %min_len)
+    log.log(28, "Mean sequence length: %d +- %0.1f " %(mean_len, std_len))
     if outliers:
         log.warning("%d sequence lengths look like outliers" %len(outliers))
 
@@ -435,13 +435,13 @@ if __name__ == "__main__":
                         " when npr execution is interrupted, all currently"
                         " running jobs will die with it. Use this option if you"
                         " want to execute the npr program as single shot job"
-                        "(i.e. send npr jobs to a cluster). Note that"
-                        "by default, npr runs in monitor mode, so"
-                        "launched jobs keeps running even when npr"
-                        "process is killed." )
+                        " (i.e. send npr jobs to a cluster). Note that"
+                        " by default, npr is executed in monitor mode, so"
+                        " launched jobs keeps running even when npr"
+                        " process is killed." )
     
     exec_group.add_argument("-t", "--schedule_time", dest="schedule_time", 
-                        type=float, default=5.0,
+                        type=float, default=30.0,
                         help="""Schedule time in seconds. """)
 
     exec_group.add_argument("-m", "--maxcores", dest="maxcores", type=int,
@@ -458,7 +458,6 @@ if __name__ == "__main__":
                             default="auto", help="Set the architecture of"
                             " executuion hosts (needed only when using"
                             " built-in applications.)")
-
    
     # Interface related flags
     ui_group = exec_group.add_mutually_exclusive_group()
@@ -473,7 +472,7 @@ if __name__ == "__main__":
                           help="Skip application checks during the start-up")
     
     ui_group.add_argument("-v", "--verbosity", dest="verbosity",
-                        default = 1, type=int, choices=[0,1,2,3,4],
+                        default = 0, type=int, choices=[0,1,2,3,4],
                         help="Verbosity level: 0=very quiet, 4=very "
                           " verbose.")
    
