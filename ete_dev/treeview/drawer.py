@@ -2,6 +2,7 @@ import types
 import signal
 
 from PyQt4  import QtGui
+from PyQt4  import QtCore
 from qt4_gui import _GUI, _PropertiesDialog, _BasicNodeActions
 
 import layouts
@@ -13,7 +14,11 @@ from templates import _DEFAULT_STYLE, apply_template
 __all__ = ["show_tree", "render_tree"]
 
 _QApp = None
+GUI_TIMEOUT = None
 
+def exit_gui(a,b):
+    _QApp.exit(0)
+        
 def init_scene(t, layout, ts):
     global _QApp
 
@@ -46,10 +51,13 @@ def show_tree(t, layout=None, tree_style=None):
     tree_item.setParentItem(scene.master_item)
     scene.addItem(scene.master_item)
     mainapp = _GUI(scene)
+    mainapp.showMaximized()
     mainapp.show()
     signal.signal(signal.SIGINT, signal.SIG_DFL)
-  
-
+    if GUI_TIMEOUT is not None:
+        signal.signal(signal.SIGALRM, exit_gui) 
+        signal.alarm(GUI_TIMEOUT) 
+   
     _QApp.exec_()
 
 def render_tree(t, imgName, w=None, h=None, layout=None, \

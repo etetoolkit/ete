@@ -1,3 +1,6 @@
+import random
+import colorsys
+
 SVG_COLORS = set([
     "indianred", # 	CD5C5C 	2059292
     "lightcoral", # 	F08080 	240128128

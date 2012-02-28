@@ -190,6 +190,7 @@ class NodeStyle(dict):
       
         if i not in VALID_NODE_STYLE_KEYS:
             raise ValueError("'%s' is not a valid keyword for a NodeStyle instance" %i)
+
         super(NodeStyle, self).__setitem__(i, v)
 
     #def clear(self):
@@ -315,7 +316,7 @@ class TreeStyle(object):
     :var 4 legend_position=4: TopLeft corner if 1, TopRight
       if 2, BottomLeft if 3, BottomRight if 4
     
-    :var title: A text string that will be draw as the Tree title
+    :var title: A Face container that can be used as tree title
 
     """
    
@@ -496,7 +497,7 @@ class FaceContainer(dict):
         self.setdefault(int(column), []).append(face)
 
 def _leaf(node):
-    collapsed = hasattr(node, "img_style") and not node.img_style["draw_descendants"]
+    collapsed = hasattr(node, "_img_style") and not node.img_style["draw_descendants"]
     return collapsed or node.is_leaf()
 
 def add_face_to_node(face, node, column, aligned=False, position="branch-right"):
@@ -512,7 +513,7 @@ def add_face_to_node(face, node, column, aligned=False, position="branch-right")
     :argument node: a tree node instance (:class:`Tree`, :class:`PhyloTree`, etc.)
     :argument column: An integer number starting from 0
     :argument "branch-right" position: Possible values are
-      "branch-right", "branch-top", "branch-bottom", "float", "aligned"
+      "branch-right", "branch-top", "branch-bottom", "float", "float-behind" and "aligned".
     """ 
 
     ## ADD HERE SOME TYPE CHECK FOR node and face
@@ -524,8 +525,6 @@ def add_face_to_node(face, node, column, aligned=False, position="branch-right")
     if getattr(node, "_temp_faces", None):
         getattr(node._temp_faces, position).add_face(face, column)
     else:
-        print node
-        print getattr(node, "_temp_faces", None)
         raise Exception("This function can only be called within a layout function. Use node.add_face() instead")
 
 def random_color(h=None, l=None, s=None):

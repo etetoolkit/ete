@@ -101,10 +101,18 @@ class _NodeItem(_EmptyItem):
         self.fullRegion = QtCore.QRectF()
         self.highlighted = False
 
-class _LineItem(QtGui.QGraphicsLineItem):
+class _NodeLineItem(QtGui.QGraphicsLineItem, _ActionDelegator):
+    def __init__(self, node, *args, **kargs):
+        self.node = node
+        QtGui.QGraphicsLineItem.__init__(self, *args, **kargs)
+        _ActionDelegator.__init__(self)
     def paint(self, painter, option, widget):
         QtGui.QGraphicsLineItem.paint(self, painter, option, widget)
 
+class _LineItem(QtGui.QGraphicsLineItem):
+    def paint(self, painter, option, widget):
+        QtGui.QGraphicsLineItem.paint(self, painter, option, widget)
+        
 class _PointerItem(QtGui.QGraphicsRectItem):
     def __init__(self, parent=None):
         QtGui.QGraphicsRectItem.__init__(self,0,0,0,0, parent)
@@ -195,12 +203,15 @@ class _TreeScene(QtGui.QGraphicsScene):
     #     QtGui.QGraphicsScene.mouseDoubleClickEvent(self,e)
 
     def draw(self):
-        tree_item, self.n2i, self.n2f = render(self.tree, self.img)
         if self.master_item:
             self.removeItem(self.master_item)
         self.master_item = _EmptyItem()
+        self.n2i = {}
+        self.n2f = {}
+        tree_item, self.n2i, self.n2f = render(self.tree, self.img)
         self.addItem(self.master_item)
         tree_item.setParentItem(self.master_item)
+        self.setSceneRect(tree_item.rect())
 
 def render(root_node, img, hide_root=False):
     mode = img.mode
@@ -228,7 +239,8 @@ def render(root_node, img, hide_root=False):
     parent.float_layer = _EmptyItem(parent)
     parent.float_behind_layer = _EmptyItem(parent)
 
-    TREE_LAYERS = [parent.bg_layer, parent.tree_layer, parent.float_layer]
+    TREE_LAYERS = [parent.bg_layer, parent.tree_layer,
+                   parent.float_layer, parent.float_behind_layer]
 
     parent.bg_layer.setZValue(0)
     parent.tree_layer.setZValue(2)
@@ -441,28 +453,29 @@ def add_scale(img, mainRect, parent):
         length=50
         scaleItem = _EmptyItem()
         customPen = QtGui.QPen(QtGui.QColor("black"), 1)
-        line = QtGui.QGraphicsLineItem(scaleItem)
-        line2 = QtGui.QGraphicsLineItem(scaleItem)
-        line3 = QtGui.QGraphicsLineItem(scaleItem)
-        line.setPen(customPen)
-        line2.setPen(customPen)
-        line3.setPen(customPen)
-
-        line.setLine(0, 5, length, 5)
-        line2.setLine(0, 0, 0, 10)
-        line3.setLine(length, 0, length, 10)
-        scale_text = "%0.2f" % (float(length) / img.scale)
-        scale = QtGui.QGraphicsSimpleTextItem(scale_text)
-        scale.setParentItem(scaleItem)
-        scale.setPos(0, 10)
 
         if img.force_topology:
-            wtext = "Force topology is enabled!\nBranch lengths do not represent original values."
+            wtext = "Force topology is enabled!\nBranch lengths do not represent real values."
             warning_text = QtGui.QGraphicsSimpleTextItem(wtext)
             warning_text.setFont(QtGui.QFont("Arial", 8))
             warning_text.setBrush( QtGui.QBrush(QtGui.QColor("darkred")))
             warning_text.setPos(0, 32)
             warning_text.setParentItem(scaleItem)
+        else:
+            line = QtGui.QGraphicsLineItem(scaleItem)
+            line2 = QtGui.QGraphicsLineItem(scaleItem)
+            line3 = QtGui.QGraphicsLineItem(scaleItem)
+            line.setPen(customPen)
+            line2.setPen(customPen)
+            line3.setPen(customPen)
+
+            line.setLine(0, 5, length, 5)
+            line2.setLine(0, 0, 0, 10)
+            line3.setLine(length, 0, length, 10)
+            scale_text = "%0.2f" % (float(length) / img.scale)
+            scale = QtGui.QGraphicsSimpleTextItem(scale_text)
+            scale.setParentItem(scaleItem)
+            scale.setPos(0, 10)
 
         scaleItem.setParentItem(parent)
         dw = max(0, length-mainRect.width())
@@ -541,7 +554,7 @@ def set_node_size(node, n2i, n2f, img):
 
     item = n2i[node]
     if img.force_topology:
-        branch_length = item.branch_length = float(scale)
+        branch_length = item.branch_length = 25
     else:
         branch_length = item.branch_length = float(node.dist * scale)
 
@@ -638,10 +651,11 @@ def render_node_content(node, n2i, n2f, img):
     set_pen_style(pen, style["hz_line_type"])
     pen.setColor(QtGui.QColor(style["hz_line_color"]))
     pen.setWidth(style["hz_line_width"])
-    pen.setCapStyle(QtCore.Qt.FlatCap)
+    #pen.setCapStyle(QtCore.Qt.FlatCap)
     #pen.setCapStyle(QtCore.Qt.RoundCap)
-    #pen.setJoinStyle(QtCore.Qt.RoundJoin)
+    pen.setJoinStyle(QtCore.Qt.RoundJoin)
     hz_line = _LineItem()
+    hz_line = _NodeLineItem(node)
     hz_line.setPen(pen)
 
     # the -vt_line_width is to solve small imperfections in line
@@ -734,8 +748,10 @@ def set_pen_style(pen, line_style):
         pen.setStyle(QtCore.Qt.DotLine)
 
 def set_style(n, layout_func):
-    if not isinstance(getattr(n, "img_style", None), NodeStyle):
-        n.img_style = NodeStyle()
+    #if not isinstance(getattr(n, "img_style", None), NodeStyle):
+    #    print "Style of", n.name ,"is None"
+    #    n.set_style()
+    #    n.img_style = NodeStyle()
        
     n._temp_faces = _FaceAreas()
 

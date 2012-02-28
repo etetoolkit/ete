@@ -1,7 +1,7 @@
 import re
 from sys import stderr
 from PyQt4  import QtCore, QtGui
-from PyQt4.QtGui import QBrush, QPen
+from PyQt4.QtGui import QBrush, QPen, QGraphicsRectItem
 from PyQt4.QtGui import QPrinter
 from PyQt4.QtCore import QThread, SIGNAL
 try:
@@ -17,6 +17,38 @@ from qt4_render import render
 from ete_dev._ph import new_version
 from ete_dev import Tree, TreeStyle
 import time
+
+class _SelectorItem(QtGui.QGraphicsRectItem):
+    def __init__(self):
+        self.Color = QtGui.QColor("blue")
+        self._active = False
+        QtGui.QGraphicsRectItem.__init__(self,0,0,0,0)
+
+    def paint(self, p, option, widget):
+        p.setPen(self.Color)
+        p.drawRect(self.rect().x(),self.rect().y(),self.rect().width(),self.rect().height())
+        return
+        # Draw info text
+        font = QtGui.QFont("Arial",13)
+        text = "%d selected."  % len(self.get_selected_nodes())
+        textR = QtGui.QFontMetrics(font).boundingRect(text)
+        if  self.rect().width() > textR.width() and \
+                self.rect().height() > textR.height()/2 and 0: # OJO !!!!
+            p.setPen(QtGui.QPen(self.Color))
+            p.setFont(QtGui.QFont("Arial",13))
+            p.drawText(self.rect().bottomLeft().x(),self.rect().bottomLeft().y(),text)
+
+    def get_selected_nodes(self):
+        selPath = QtGui.QPainterPath()
+        selPath.addRect(self.rect())
+        self.scene().setSelectionArea(selPath)
+        return [i.node for i in self.scene().selectedItems()]
+
+    def setActive(self,bool):
+        self._active = bool
+
+    def isActive(self):
+        return self._active
 
 def etime(f):
     def a_wrapper_accepting_arguments(*args, **kargs):
@@ -79,9 +111,8 @@ class _GUI(QtGui.QMainWindow):
         # its variables
         self.searchDialog._conf = _search_dialog.Ui_Dialog()
         self.searchDialog._conf.setupUi(self.searchDialog)
-
         self.scene.setItemIndexMethod(QtGui.QGraphicsScene.NoIndex)
-
+        
     @QtCore.pyqtSignature("")
     def on_actionETE_triggered(self):
         try:
@@ -135,13 +166,8 @@ class _GUI(QtGui.QMainWindow):
 
     @QtCore.pyqtSignature("")
     def on_actionFit2region_triggered(self):
-        if self.scene.highlighter.isVisible():
-            R = self.scene.highlighter.rect()
-        else:
-            R = self.scene.selector.rect()
+        R = self.view.selector.rect()
         if R.width()>0 and R.height()>0:
-
-
             self.view.fitInView(R.x(), R.y(), R.width(),\
                                     R.height(), QtCore.Qt.KeepAspectRatio)
 
@@ -545,6 +571,9 @@ class _TreeView(QtGui.QGraphicsView):
         self.buffer_node = None
         self.focus_node = None
 
+        self.selector = _SelectorItem()
+        self.scene().addItem(self.selector)
+        
         if USE_GL:
             print "USING GL"
             F = QtOpenGL.QGLFormat()
@@ -578,7 +607,7 @@ class _TreeView(QtGui.QGraphicsView):
         if (xfactor>1 and xscale>200000) or \
                 (yfactor>1 and yscale>200000):
             QtGui.QMessageBox.information(self, "!",\
-                                              "Hey! I'm not an electron microscope!")
+                                              "Hey! I'm not a microscope!")
             return
 
         # Do not allow to reduce scale to a value producing height or with smaller than 20 pixels
@@ -663,8 +692,8 @@ class _TreeView(QtGui.QGraphicsView):
         self.update()    
 
     def hide_focus(self):
-        self.focus_highlight.setVisible(False)
-       
+        return
+        #self.focus_highlight.setVisible(False)
     
     def keyPressEvent(self,e):
         key = e.key()
@@ -716,12 +745,41 @@ class _TreeView(QtGui.QGraphicsView):
                 self.highlight_node(self.focus_node, fullRegion=True, 
                                     bg=random_color(l=0.5, s=0.5), 
                                     permanent=True)
+
         QtGui.QGraphicsView.keyPressEvent(self,e)
 
     def mouseReleaseEvent(self, e):
         self.scene().view.hide_focus()
+        curr_pos = self.mapToScene(e.pos())
+
+        x = min(self.selector.startPoint.x(),curr_pos.x())
+        y = min(self.selector.startPoint.y(),curr_pos.y())
+        w = max(self.selector.startPoint.x(),curr_pos.x()) - x
+        h = max(self.selector.startPoint.y(),curr_pos.y()) - y
+        if self.selector.startPoint == curr_pos:
+            self.selector.setVisible(False)
+        self.selector.setActive(False)
         QtGui.QGraphicsView.mouseReleaseEvent(self,e)
 
+    def mousePressEvent(self,e):
+        pos = self.mapToScene(e.pos())
+        x, y = pos.x(), pos.y()
+        self.selector.setRect(x, y, 0,0)
+        self.selector.startPoint = QtCore.QPointF(x, y)
+        self.selector.setActive(True)
+        self.selector.setVisible(True)
+        QtGui.QGraphicsView.mousePressEvent(self,e)
+
+    def mouseMoveEvent(self,e):
+        curr_pos = self.mapToScene(e.pos())
+        if self.selector.isActive():
+            x = min(self.selector.startPoint.x(),curr_pos.x())
+            y = min(self.selector.startPoint.y(),curr_pos.y())
+            w = max(self.selector.startPoint.x(),curr_pos.x()) - x
+            h = max(self.selector.startPoint.y(),curr_pos.y()) - y
+            self.selector.setRect(x,y,w,h)
+        QtGui.QGraphicsView.mouseMoveEvent(self, e)
+        
 
 class _BasicNodeActions(object):
     """ Should be added as ActionDelegator """
@@ -758,5 +816,9 @@ class _BasicNodeActions(object):
     @staticmethod
     def hoverLeaveEvent(self,e):
         self.scene().view.unhighlight_node(self.node)
+
+
+
+
 
 
