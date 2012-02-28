@@ -107,7 +107,7 @@ def schedule(config, processer, schedule_time, execution, retry, debug):
                 else:
                     log.log(24, "%s: %s", j.status, j)
             logindent(-2)
-                
+            log.log(26, "Cores in use: %s" %cores_used)
             if task.status in set("WQRL"):
                 exec_type = getattr(task, "exec_type", execution)
                 # Tries to send new jobs from this task
@@ -156,6 +156,14 @@ def schedule(config, processer, schedule_time, execution, retry, debug):
                 cladeid = db.get_cladeid(task.nodeid)
                 clade2tasks[cladeid].append(task)
 
+                # If task was a new tree node, update main tree and dump snapshot
+                if task.ttype == "treemerger":
+                    npr_iter += 1
+                    log.info("Dump iteration snapshot.")
+                    snapshot_tree = dump_snapshot(config, task, npr_iter,
+                                                  main_tree, clade2tasks, nodeid2info)
+                break # Stop processing tasks, so I can resort them
+                
             elif task.status == "E":
                 log.error("Task contains errors")
                 if retry and task not in task2retry:
@@ -172,34 +180,7 @@ def schedule(config, processer, schedule_time, execution, retry, debug):
                 log.error("Unknown task state [%s].", task.status)
                 continue
             logindent(-2)
-            log.log(26, "Cores in use: %s" %cores_used)
 
-            # If task was a new tree node, update main tree and dump snapshot
-            if task.ttype == "treemerger":
-                npr_iter += 1
-                log.info("Dump iteration snapshot.")
-                #main_tree = assembly_tree(config["main"]["basedir"],
-                #                          clade2tasks, initial_task.taskid)
-
-                #main_tree = assembly_tree(config["main"]["basedir"],
-                #                          initial_task.taskid, clade2tasks)
-
-                # we change node names here
-                annotate_tree(main_tree, clade2tasks, nodeid2info, npr_iter)
-                if DEBUG():
-                    NPR_TREE_STYLE.title.clear()
-                    NPR_TREE_STYLE.title.add_face(faces.TextFace("Current iteration tree. red=optimized node", fgcolor="blue"), 0)
-                    main_tree.show(tree_style=NPR_TREE_STYLE)
-                    
-                snapshot_tree = main_tree.copy()
-                for n in snapshot_tree.iter_leaves():
-                    n.name = n.realname
-                nout= len(task.out_seqs)
-                ntarget = len(task.target_seqs)
-                nw_file = os.path.join(config["main"]["basedir"],
-                                       "tree_snapshots", "Iter_%06d_%s_S_%s_O.nw" %
-                                       (npr_iter, ntarget, nout))
-                snapshot_tree.write(outfile=nw_file, features=[])
 
         sge.launch_jobs(sge_jobs, config)
         sleep(wait_time)
@@ -210,7 +191,33 @@ def schedule(config, processer, schedule_time, execution, retry, debug):
     snapshot_tree.write(outfile=final_tree_file)
     log.log(28, "Done")
     log.debug(str(snapshot_tree))
-   
+
+def dump_snapshot(config, task, npr_iter, main_tree, clade2tasks, nodeid2info):
+    #main_tree = assembly_tree(config["main"]["basedir"],
+    #                          clade2tasks, initial_task.taskid)
+
+    #main_tree = assembly_tree(config["main"]["basedir"],
+    #                          initial_task.taskid, clade2tasks)
+
+    # we change node names here
+    annotate_tree(main_tree, clade2tasks, nodeid2info, npr_iter)
+    if DEBUG():
+        NPR_TREE_STYLE.title.clear()
+        NPR_TREE_STYLE.title.add_face(faces.TextFace("Current iteration tree. red=optimized node", fgcolor="blue"), 0)
+        main_tree.show(tree_style=NPR_TREE_STYLE)
+
+    snapshot_tree = main_tree.copy()
+    for n in snapshot_tree.iter_leaves():
+        n.name = n.realname
+    nout= len(task.out_seqs)
+    ntarget = len(task.target_seqs)
+    nw_file = os.path.join(config["main"]["basedir"],
+                           "tree_snapshots", "Iter_%06d_%s_%sseqs_%souts_%ssupport.nw" %
+                           (npr_iter, task.seqtype, ntarget, nout, task.pre_iter_support))
+    snapshot_tree.write(outfile=nw_file, features=[])
+    return snapshot_tree
+
+    
 def register_task(task, parentid=None):
  
     db.add_task(tid=task.taskid, nid=task.nodeid, parent=parentid,

@@ -215,6 +215,8 @@ def npr_layout(node):
         ttype=faces.AttrFace("tree_type", fsize=8, fgcolor="DarkBlue")
         faces.add_face_to_node(ttype, node, 0, position="branch-top")
         #ttype.background.color = "DarkOliveGreen"
+        node.img_style["size"] = 20
+        node.img_style["fgcolor"] = "red"
         
     if "treemerger_rf" in node.features:
         faces.add_face_to_node(faces.AttrFace("treemerger_rf", fsize=8), node, 0, position="branch-bottom")

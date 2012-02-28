@@ -24,6 +24,7 @@ class TreeMerger(Task):
         self.task_tree = None
         self.seqtype = seqtype
         self.rf = None, None # Robinson foulds to orig partition
+        self.pre_iter_support = None # support of the node pre-iteration
         self.init()
         self.pruned_tree = os.path.join(self.taskdir, "pruned_tree.nw")
         
@@ -68,6 +69,7 @@ class TreeMerger(Task):
             outgroup = partition_pairs[0][3]
             ttree.set_outgroup(outgroup)
             self.rf = target_node.robinson_foulds(ttree)
+            self.pre_iter_support = target_node.support
             ttree.dist = target_node.dist
             ttree.support = target_node.support
             
@@ -98,7 +100,7 @@ class TreeMerger(Task):
                 ttree.show(tree_style=NPR_TREE_STYLE)
 
         elif mtree and out_seqs:
-            log.log(28, "Rooting tree using %d custom seqs" %
+            log.log(26, "Rooting tree using %d custom seqs" %
             len(out_seqs))
 
             #log.log(22, "Out seqs:    %s", len(out_seqs))
@@ -120,7 +122,7 @@ class TreeMerger(Task):
                 orig_target = self.main_tree.get_common_ancestor(target_seqs)
                 found_target = outgroup.get_sisters()[0]
                 self.rf = orig_target.robinson_foulds(found_target)
-
+                
                 if DEBUG():
                     for _seq in out_seqs:
                         tar =  ttree & _seq
@@ -136,13 +138,13 @@ class TreeMerger(Task):
                     
                 ttree = ttree.get_common_ancestor(target_seqs)
                 outgroup.detach()
-
+                self.pre_iter_support = orig_target.support
                 #ttree.dist = orig_target.dist
                 #ttree.support = orig_target.support
                 parent = orig_target.up
                 orig_target.detach()
                 parent.add_child(ttree)
-              
+                
             else:
                 raise TaskError("Outgroup was split")
                

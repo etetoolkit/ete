@@ -77,7 +77,6 @@ def get_trimal_identity(alg_file, trimal_bin):
     return max_identity
 
 def get_identity(fname): 
-    log.log(28, "Calculating alg stats...")
     s = SeqGroup(fname)
     seqlen = len(s.id2seq.itervalues().next())
     ident = list()
