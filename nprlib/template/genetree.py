@@ -6,7 +6,7 @@ import logging
 import numpy
 from collections import defaultdict
 
-from nprlib.utils import del_gaps, GENCODE, PhyloTree, SeqGroup, TreeStyle
+from nprlib.utils import del_gaps, GENCODE, PhyloTree, SeqGroup, TreeStyle, generate_node_ids
 from nprlib.task import (MetaAligner, Mafft, Muscle, Uhire, Dialigntx, FastTree,
                    Clustalo, Raxml, Phyml, JModeltest, Prottest, Trimal,
                    TreeMerger, find_outgroups, Msf)
@@ -293,9 +293,24 @@ def process_task(task, main_tree, conf, nodeid2info):
         main_tree = task.main_tree
         #print task.task_tree.get_ascii(attributes=["name", "support"])
         #print task.task_tree
-        processable_node = lambda _n: (_n is not task.task_tree and
-                                       _n.children and
-                                       _n.support <= _min_branch_support)
+        # processable_node = lambda _n: (_n is not task.task_tree and
+        #                                _n.children and
+        #                                _n.support <= _min_branch_support)
+
+        def processable_node(_n):
+            if _n is not task.task_tree and _n.children and _n.support <= _min_branch_support:
+                if _min_branch_support < 1.0 and conf["tree_splitter"]["_outgroup_size"] == 0:
+                    _seq, _out = find_outgroups(_n.up, n2content, conf["tree_splitter"])
+                    _nid, _cid = generate_node_ids(_seq, _out)
+                    if _nid not in nodeid2info:
+                        return True
+                    else:
+                        return False
+                else:
+                    return True
+            else:
+                return False
+        
         n2content = main_tree.get_node2content()
         for node in task.task_tree.iter_leaves(is_leaf_fn=processable_node):
             # If we are optimizing only lowly supported nodes, and
@@ -306,7 +321,7 @@ def process_task(task, main_tree, conf, nodeid2info):
                 next_node = node.up
             else:
                 next_node = node
-              
+            
             seqs, outs = find_outgroups(next_node, n2content, conf["tree_splitter"])
             #print node.name, node.support, len(seqs), len(outs), len(node)
             if (conf["_iters"] < int(conf["main"].get("max_iters", conf["_iters"]+1)) and 
