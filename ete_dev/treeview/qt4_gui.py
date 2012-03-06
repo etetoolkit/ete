@@ -19,10 +19,10 @@ from ete_dev import Tree, TreeStyle
 import time
 
 class _SelectorItem(QtGui.QGraphicsRectItem):
-    def __init__(self):
+    def __init__(self, parent=None):
         self.Color = QtGui.QColor("blue")
         self._active = False
-        QtGui.QGraphicsRectItem.__init__(self,0,0,0,0)
+        QtGui.QGraphicsRectItem.__init__(self, 0, 0, 0, 0, parent=parent)
 
     def paint(self, p, option, widget):
         p.setPen(self.Color)
@@ -76,6 +76,10 @@ class _GUI(QtGui.QMainWindow):
     def _updatestatus(self, msg):
         self.main.statusbar.showMessage(msg)
 
+    def redraw(self):
+        self.scene.draw()
+        self.view.init_values()
+                
     def __init__(self, scene, *args):
         QtGui.QMainWindow.__init__(self, *args)
         self.scene = scene
@@ -138,17 +142,17 @@ class _GUI(QtGui.QMainWindow):
     @QtCore.pyqtSignature("")
     def on_actionZoomInX_triggered(self):
         self.scene.img._scale += self.scene.img._scale * 0.05
-        self.scene.draw()
+        self.redraw()
 
     @QtCore.pyqtSignature("")
     def on_actionZoomOutX_triggered(self):
         self.scene.img._scale -= self.scene.img._scale * 0.05
-        self.scene.draw()
+        self.redraw()
 
     @QtCore.pyqtSignature("")
     def on_actionZoomInY_triggered(self):
         self.scene.img.branch_vertical_margin += 5 
-        self.scene.draw()
+        self.redraw()
 
     @QtCore.pyqtSignature("")
     def on_actionZoomOutY_triggered(self):
@@ -158,7 +162,7 @@ class _GUI(QtGui.QMainWindow):
                 self.scene.img.branch_vertical_margin = margin
             else:
                 self.scene.img.branch_vertical_margin = 0.0
-            self.scene.draw()
+            self.redraw()
 
     @QtCore.pyqtSignature("")
     def on_actionFit2tree_triggered(self):
@@ -222,25 +226,25 @@ class _GUI(QtGui.QMainWindow):
     @QtCore.pyqtSignature("")
     def on_actionBranchLength_triggered(self):
         self.scene.img.show_branch_length ^= True
-        self.scene.draw()
+        self.redraw()
         self.view.centerOn(0,0)
 
     @QtCore.pyqtSignature("")
     def on_actionBranchSupport_triggered(self):
         self.scene.img.show_branch_support ^= True
-        self.scene.draw()
+        self.redraw()
         self.view.centerOn(0,0)
 
     @QtCore.pyqtSignature("")
     def on_actionLeafName_triggered(self):
         self.scene.img.show_leaf_name ^= True
-        self.scene.draw()
+        self.redraw()
         self.view.centerOn(0,0)
 
     @QtCore.pyqtSignature("")
     def on_actionForceTopology_triggered(self):
         self.scene.img.force_topology ^= True
-        self.scene.draw()
+        self.redraw()
         self.view.centerOn(0,0)
 
     @QtCore.pyqtSignature("")
@@ -254,17 +258,17 @@ class _GUI(QtGui.QMainWindow):
     @QtCore.pyqtSignature("")
     def on_actionChange_orientation_triggered(self):
         self.scene.props.orientation ^= 1
-        self.scene.draw()
+        self.redraw()
 
     @QtCore.pyqtSignature("")
     def on_actionShow_phenogram_triggered(self):
         self.scene.props.style = 0
-        self.scene.draw()
+        self.redraw()
 
     @QtCore.pyqtSignature("")
     def on_actionShowCladogram_triggered(self):
         self.scene.props.style = 1
-        self.scene.draw()
+        self.redraw()
 
     @QtCore.pyqtSignature("")
     def on_actionOpen_triggered(self):
@@ -283,7 +287,7 @@ class _GUI(QtGui.QMainWindow):
         else:
             self.scene.tree = t
             self.img = TreeStyle()
-            self.scene.draw()
+            self.redraw()
 
     @QtCore.pyqtSignature("")
     def on_actionSave_newick_triggered(self):
@@ -335,7 +339,7 @@ class _GUI(QtGui.QMainWindow):
                 print e
             else:
                 self.scene.tree = t
-                self.scene.draw()
+                self.redraw()
                 self.view.centerOn(0,0)
 
 
@@ -524,7 +528,7 @@ class _PropertiesDialog(QtGui.QWidget):
                     print e
                     break
         self.update_properties(self.node)
-        self.scene.draw()
+        self.redraw()
         return
 
 class NewickDialog(QtGui.QDialog):
@@ -550,7 +554,7 @@ class NewickDialog(QtGui.QDialog):
     def add_feature(self):
         aName = str(self._conf.attrName.text()).strip()
         if aName != '':
-            self._conf.features_list.addItem( aName)
+            self._conf.features_list.addItem(aName)
             self.update_newick()
     def del_feature(self):
         r = self._conf.features_list.currentRow()
@@ -566,13 +570,7 @@ class NewickDialog(QtGui.QDialog):
 class _TreeView(QtGui.QGraphicsView):
     def __init__(self,*args):
         QtGui.QGraphicsView.__init__(self,*args)
-        self.n2hl = {}
-        self.focus_highlight = QtGui.QGraphicsRectItem()
-        self.buffer_node = None
-        self.focus_node = None
-
-        self.selector = _SelectorItem()
-        self.scene().addItem(self.selector)
+        self.init_values()
         
         if USE_GL:
             print "USING GL"
@@ -594,6 +592,16 @@ class _TreeView(QtGui.QGraphicsView):
         #self.setOptimizationFlag (QtGui.QGraphicsView.DontClipPainter)
         #self.scene().setItemIndexMethod(QtGui.QGraphicsScene.NoIndex)
         #self.scene().setBspTreeDepth(24)
+
+    def init_values(self):
+        master_item = self.scene().master_item
+        self.n2hl = {}
+        self.focus_highlight = QtGui.QGraphicsRectItem(master_item)
+        self.buffer_node = None
+        self.focus_node = None
+        self.selector = _SelectorItem(master_item)
+        self.scene().addItem(self.selector)
+        
     def resizeEvent(self, e):
         QtGui.QGraphicsView.resizeEvent(self, e)
 

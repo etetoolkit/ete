@@ -150,65 +150,19 @@ class _TreeScene(QtGui.QGraphicsScene):
     def __init__(self):
         QtGui.QGraphicsScene.__init__(self)
         self.view = None
-        self.tree = None
 
-    def init_data(self, tree, img, n2i, n2f):
+    def init_values(self, tree, img, n2i, n2f):
         self.master_item = _EmptyItem()
-        self.view = None
         self.tree = tree
         self.n2i = n2i
         self.n2f = n2f
         self.img = img
 
-        # Initialize scene
-        self.buffer_node = None        # Used to copy and paste
-        self.pointer  = _PointerItem(self.master_item)
-        self.highlighter = QtGui.QGraphicsPathItem(self.master_item)
-
-        # Set the scene background
-        self.setBackgroundBrush(QtGui.QColor("white"))
-        #self.setBackgroundBrush(QtGui.QBrush(QtCore.Qt.NoBrush))
-
-
-    # def mousePressEvent(self,e):
-    #     pos = self.pointer.mapFromScene(e.scenePos())
-    #     self.pointer.setRect(pos.x(),pos.y(),10,10)
-    #     self.pointer.startPoint = QtCore.QPointF(pos.x(), pos.y())
-    #     self.pointer.setActive(True)
-    #     self.pointer.setVisible(True)
-    #     QtGui.QGraphicsScene.mousePressEvent(self,e)
-    #
-    # def mouseReleaseEvent(self,e):
-    #     curr_pos = self.pointer.mapFromScene(e.scenePos())
-    #     x = min(self.pointer.startPoint.x(),curr_pos.x())
-    #     y = min(self.pointer.startPoint.y(),curr_pos.y())
-    #     w = max(self.pointer.startPoint.x(),curr_pos.x()) - x
-    #     h = max(self.pointer.startPoint.y(),curr_pos.y()) - y
-    #     if self.pointer.startPoint == curr_pos:
-    #         self.pointer.setVisible(False)
-    #     self.pointer.setActive(False)
-    #     QtGui.QGraphicsScene.mouseReleaseEvent(self,e)
-    #
-    # def mouseMoveEvent(self,e):
-    #     curr_pos = self.pointer.mapFromScene(e.scenePos())
-    #     if self.pointer.isActive():
-    #         x = min(self.pointer.startPoint.x(),curr_pos.x())
-    #         y = min(self.pointer.startPoint.y(),curr_pos.y())
-    #         w = max(self.pointer.startPoint.x(),curr_pos.x()) - x
-    #         h = max(self.pointer.startPoint.y(),curr_pos.y()) - y
-    #         self.pointer.setRect(x,y,w,h)
-    #     QtGui.QGraphicsScene.mouseMoveEvent(self, e)
-    #
-    # def mouseDoubleClickEvent(self,e):
-    #     QtGui.QGraphicsScene.mouseDoubleClickEvent(self,e)
-
     def draw(self):
         if self.master_item:
             self.removeItem(self.master_item)
-        self.master_item = _EmptyItem()
-        self.n2i = {}
-        self.n2f = {}
-        tree_item, self.n2i, self.n2f = render(self.tree, self.img)
+        tree_item, n2i, n2f = render(self.tree, self.img)
+        self.init_values(self.tree, self.img, n2i, n2f)
         self.addItem(self.master_item)
         tree_item.setParentItem(self.master_item)
         self.setSceneRect(tree_item.rect())
@@ -288,7 +242,10 @@ def render(root_node, img, hide_root=False):
                 tree_width = 200
             fnode, dist = root_node.get_closest_leaf(topology_only=\
                                                      img.force_topology)
-            img._scale = tree_width / dist
+            if not dist:
+                img._scale = 1.0
+            else:
+                img._scale = tree_width / dist
     scale = img._scale
 
     
@@ -496,7 +453,7 @@ def add_scale(img, mainRect, parent):
             line.setLine(0, 5, length, 5)
             line2.setLine(0, 0, 0, 10)
             line3.setLine(length, 0, length, 10)
-            scale_text = "%0.2f" % (float(length) / img.scale)
+            scale_text = "%0.2f" % (float(length) / img._scale)
             scale = QtGui.QGraphicsSimpleTextItem(scale_text)
             scale.setParentItem(scaleItem)
             scale.setPos(0, 10)

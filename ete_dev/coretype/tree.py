@@ -1440,7 +1440,7 @@ class TreeNode(object):
             store[self] = [self]
         return store
 
-    def robinson_foulds(self, t2):
+    def robinson_foulds(self, t2, attr_t1="name", attr_t2="name"):
         """
         .. versionadded: 2.1
         
@@ -1452,8 +1452,18 @@ class TreeNode(object):
         t1 = self
         t1content = t1.get_node2content()
         t2content = t2.get_node2content()
-        r1 = set([",".join(sorted(map(lambda x: x.name, cont))) for cont in t1content.values()])
-        r2 = set([",".join(sorted(map(lambda x: x.name, cont))) for cont in t2content.values()])
+        valid_names = set([getattr(_n, attr_t1) for _n in t1content[t1]])
+        ref_names = set([getattr(_n, attr_t2) for _n in t2content[t2]])
+        if len(valid_names & ref_names) < 2:
+            print valid_names & ref_names
+            print self
+            raise ValueError("Trees share less than 2 nodes")
+        
+        r1 = set([",".join(sorted([getattr(_c, attr_t1) for _c in cont]))
+                  for cont in t1content.values()])
+        r2 = set([",".join(sorted([getattr(_c, attr_t2) for _c in cont
+                                   if getattr(_c, attr_t2) in valid_names]))
+                  for cont in t2content.values()])
 
         inters = r1.intersection(r2)
         if len(r1) == len(r2):

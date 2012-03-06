@@ -47,7 +47,7 @@ def show_tree(t, layout=None, tree_style=None):
     """ Interactively shows a tree."""
     scene, img = init_scene(t, layout, tree_style)
     tree_item, n2i, n2f = render(t, img)
-    scene.init_data(t, img, n2i, n2f)
+    scene.init_values(t, img, n2i, n2f)
 
     tree_item.setParentItem(scene.master_item)
     scene.addItem(scene.master_item)
@@ -67,7 +67,7 @@ def render_tree(t, imgName, w=None, h=None, layout=None, \
     scene, img = init_scene(t, layout, tree_style)
     tree_item, n2i, n2f = render(t, img)
 
-    scene.init_data(t, img, n2i, n2f)
+    scene.init_values(t, img, n2i, n2f)
     tree_item.setParentItem(scene.master_item)
     scene.master_item.setPos(0,0)
     scene.addItem(scene.master_item)
