@@ -6,7 +6,7 @@ import db
 import logging
 log = logging.getLogger("main")
 
-from nprlib.utils import md5, basename, random_string, strip, pid_up, HOSTNAME
+from nprlib.utils import md5, basename, strip, pid_up, HOSTNAME, GLOBALS
 
 class Job(object):
     ''' A generic program launcher.
@@ -46,14 +46,18 @@ class Job(object):
         self.cores = 1
         self.exec_type = "insitu"
         self.jobname = jobname
-        # generates an unique job identifier based on the params of
-        # the app.
-        self.jobid = md5(','.join(sorted([md5(str(pair)) for pair in 
-                                           self.args.iteritems()])))
 
-        #print self.jobid, ','.join(sorted([str(pair) for pair in 
-        #                                   self.args.iteritems()]))
-        #print parent_ids
+        # generates the unique job identifier based on the params of
+        # the app. Some params include path names that can prevent
+        # recycling the job, so a clean it.
+        clean = lambda x: basename(x) if GLOBALS["basedir"] in x else x
+        parsed_id_string = ["%s %s" %(clean(pair[0]), clean(pair[1]))
+                            for pair in self.args.iteritems()]
+        self.jobid = md5(','.join(sorted([md5(e) for e in
+                                          parsed_id_string])))
+
+        #self.jobid = md5(','.join(sorted([md5(str(pair)) for pair in 
+        #                                  self.args.iteritems()])))
         if parent_ids:
             self.jobid = md5(','.join(sorted(parent_ids+[self.jobid])))
 

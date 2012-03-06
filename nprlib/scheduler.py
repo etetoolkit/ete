@@ -9,7 +9,7 @@ log = logging.getLogger("main")
 from nprlib.logger import set_logindent, logindent
 from nprlib.utils import (generate_id, print_as_table, HOSTNAME, md5,
                           get_node2content, PhyloTree, NodeStyle, Tree, DEBUG,
-                          NPR_TREE_STYLE, faces)
+                          NPR_TREE_STYLE, faces, GLOBALS)
 from nprlib.errors import ConfigError, DataError, TaskError
 from nprlib import db, sge
 from nprlib.master_task import isjob
@@ -60,6 +60,7 @@ def schedule(config, processer, schedule_time, execution, retry, debug):
         for task in pending_tasks:
             if debug and log.level>10 and task.taskid.startswith(debug):
                 log.setLevel(10) #start debugging
+                log.debug("ENTERING IN DEBUGGING MODE")
                 
             task.status = task.get_status(qstat_jobs)
             cores_used += task.cores_used
@@ -87,7 +88,7 @@ def schedule(config, processer, schedule_time, execution, retry, debug):
             logindent(2)
             st_info = ', '.join(["%d(%s)" %(v,k) for k,v in task.job_status.iteritems()])
             log.log(26, "%d jobs: %s" %(len(task.jobs), st_info))
-            tdir = task.taskdir.replace(config["main"]["basedir"], "")
+            tdir = task.taskdir.replace(GLOBALS["basedir"], "")
             tdir = tdir.lstrip("/")
             log.log(20, "TaskDir: %s" %tdir)
             
@@ -186,19 +187,13 @@ def schedule(config, processer, schedule_time, execution, retry, debug):
         sleep(wait_time)
         log.log(26, "")
 
-    final_tree_file = os.path.join(config["main"]["basedir"], \
-                                       "final_tree.nw")
+    final_tree_file = os.path.join(GLOBALS["basedir"],
+                                   "final_tree.nw")
     snapshot_tree.write(outfile=final_tree_file)
     log.log(28, "Done")
     log.debug(str(snapshot_tree))
 
 def dump_snapshot(config, task, npr_iter, main_tree, clade2tasks, nodeid2info):
-    #main_tree = assembly_tree(config["main"]["basedir"],
-    #                          clade2tasks, initial_task.taskid)
-
-    #main_tree = assembly_tree(config["main"]["basedir"],
-    #                          initial_task.taskid, clade2tasks)
-
     # we change node names here
     annotate_tree(main_tree, clade2tasks, nodeid2info, npr_iter)
     if DEBUG():
@@ -211,15 +206,15 @@ def dump_snapshot(config, task, npr_iter, main_tree, clade2tasks, nodeid2info):
         n.name = n.realname
     nout= len(task.out_seqs)
     ntarget = len(task.target_seqs)
-    nw_file = os.path.join(config["main"]["basedir"],
-                           "tree_snapshots", "Iter_%06d_%s_%sseqs_%souts_%ssupport.nw" %
-                           (npr_iter, task.seqtype, ntarget, nout, task.pre_iter_support))
+    nw_file = os.path.join(GLOBALS["basedir"], "tree_snapshots",
+                           "Iter_%06d_%s_%sseqs_%souts_%ssupport.nw" %
+                           (npr_iter, task.seqtype, ntarget, nout,
+                            task.pre_iter_support))
     snapshot_tree.write(outfile=nw_file, features=[])
     return snapshot_tree
 
     
 def register_task(task, parentid=None):
- 
     db.add_task(tid=task.taskid, nid=task.nodeid, parent=parentid,
                 status=task.status, type="task", subtype=task.ttype, name=task.tname)
     for j in task.jobs:
@@ -296,7 +291,6 @@ def launch_detached(j, cmd):
         return
 
 def assembly_tree(base_dir, init_task, clade2tasks):
-
     noimaginationtoday = db.get_task2child_tree()
 
     current_tasks = set()

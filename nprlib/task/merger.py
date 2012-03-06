@@ -11,7 +11,7 @@ from nprlib.utils import (load_node_size, PhyloTree, SeqGroup, generate_id,
 from nprlib import db
 from nprlib.errors import TaskError
 
-__all__ = ["TreeMerger", "find_outgroups"]
+__all__ = ["TreeMerger", "select_outgroups"]
 
 class TreeMerger(Task):
     def __init__(self, nodeid, seqtype, task_tree, main_tree, conf):
@@ -35,7 +35,7 @@ class TreeMerger(Task):
         ttree = PhyloTree(self.task_tree_file)
         mtree = self.main_tree
         ttree.dist = 0
-        
+
         cladeid, target_seqs, out_seqs = db.get_node_info(self.nodeid)
         self.out_seqs = out_seqs
         self.target_seqs = target_seqs
@@ -44,6 +44,9 @@ class TreeMerger(Task):
         if mtree and not out_seqs:
             log.log(28, "Finding best scoring outgroup from previous iteration.")
             #cladeid = generate_id([n.name for n in ttree_content[ttree]])
+            if DEBUG():
+                print cladeid
+                mtree.show()
             target_node = mtree.search_nodes(cladeid=cladeid)[0]
             
             target_left = set([_n.name for _n in target_node.children[0]])
@@ -183,14 +186,6 @@ def root_distance_matrix(root):
     for n in root.iter_descendants("preorder"):
         n2rdist[n] = n2rdist[n.up] + n.dist
     return n2rdist
-        
-def find_outgroups(target, n2content, options):
-    if options["_outgroup_size"]:
-        partition = select_outgroups(target, n2content, options)
-    else:
-        seqs = set([_n.name for _n in n2content[target]])
-        partition = (seqs, set())
-    return partition
  
 def select_outgroups(target, n2content, options):
     if not target.up:
@@ -230,7 +225,9 @@ def select_outgroups(target, n2content, options):
         dist_fn = numpy.max
     elif policy == "min_dist":
         dist_fn = numpy.min
-
+    elif policy == "max_support":
+        dist_fn = None
+            
     best_dist_to_a = dist_fn([d[0] for d in  to_a_dists])
     rank_outs_a = sorted(to_a_dists, 
                          lambda x,y: cmp(abs(x[0] - best_dist_to_a),

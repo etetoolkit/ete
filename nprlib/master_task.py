@@ -6,7 +6,7 @@ from logger import logindent
 log = logging.getLogger("main")
 
 from nprlib.utils import (md5, merge_arg_dicts, PhyloTree, SeqGroup,
-                          checksum)
+                          checksum, GLOBALS)
 from nprlib.master_job import Job
 from nprlib.errors import RetryException
 from nprlib import db
@@ -22,8 +22,6 @@ def class_repr(cls, cls_name):
          (getattr(cls, "taskid", None) or "?")[:6])
 
 class Task(object):
-    global_config = {"basedir": "./test"}
-
     def _get_max_cores(self):
         return max([j.cores for j in self.jobs]) or 1
             
@@ -201,7 +199,7 @@ class Task(object):
         #self.taskdir = os.path.join(self.global_config["basedir"], self.nodeid,
         #                       self.tname+"_"+self.taskid)
 
-        self.taskdir = os.path.join(self.global_config["basedir"], "tasks",
+        self.taskdir = os.path.join(GLOBALS["basedir"], "tasks",
                                     self.taskid)
             
 
@@ -220,7 +218,7 @@ class Task(object):
         for j in self.jobs:
             # Only if job is not another Task instance
             if isjob(j):
-                path = os.path.join(self.global_config["basedir"], "tasks",
+                path = os.path.join(GLOBALS["basedir"], "tasks",
                                     j.jobid)
                 j.set_jobdir(path)
 

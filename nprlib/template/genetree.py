@@ -7,9 +7,10 @@ import numpy
 from collections import defaultdict
 
 from nprlib.utils import del_gaps, GENCODE, PhyloTree, SeqGroup, TreeStyle, generate_node_ids
-from nprlib.task import (MetaAligner, Mafft, Muscle, Uhire, Dialigntx, FastTree,
-                   Clustalo, Raxml, Phyml, JModeltest, Prottest, Trimal,
-                   TreeMerger, find_outgroups, Msf)
+from nprlib.task import (MetaAligner, Mafft, Muscle, Uhire, Dialigntx,
+                         FastTree, Clustalo, Raxml, Phyml, JModeltest,
+                         Prottest, Trimal, TreeMerger, select_outgroups,
+                         Msf)
 from nprlib.errors import DataError
 
 log = logging.getLogger("main")
@@ -31,8 +32,8 @@ n2class = {
     }
 
 def get_trimal_conservation(alg_file, trimal_bin):
-    output = commands.getoutput("%s -ssc -in %s" %\
-                                    (trimal_bin, alg_file))
+    output = commands.getoutput("%s -ssc -in %s" % (trimal_bin,
+                                                    alg_file))
     conservation = []
     for line in output.split("\n")[3:]:
         a, b = map(float, line.split())
@@ -42,8 +43,8 @@ def get_trimal_conservation(alg_file, trimal_bin):
     return mean, std
 
 def get_statal_identity(alg_file, statal_bin):
-    output = commands.getoutput("%s -scolidentt -in %s" %\
-                                (statal_bin, alg_file))
+    output = commands.getoutput("%s -scolidentt -in %s" % (statal_bin,
+                                                           alg_file))
     ## Columns Identity Descriptive Statistics
     #maxColIdentity	1
     #minColIdentity	0.428571
@@ -92,7 +93,7 @@ def get_identity(fname):
             numpy.mean(ident), numpy.std(ident))
 
          
-def switch_to_codon(alg_fasta_file, alg_phylip_file, nt_seed_file, 
+def switch_to_codon(alg_fasta_file, alg_phylip_file, nt_seed_file,
                     kept_columns=[]):
     GAP_CHARS = set(".-")
     NUCLEOTIDES = set("ATCG") 
@@ -169,6 +170,8 @@ def process_task(task, main_tree, conf, nodeid2info):
         #log.debug("INDEX %s %s %s", index, nseqs, max_seqs)
                 
     _min_branch_support = conf["main"]["npr_min_branch_support"][index_slide]
+    skip_outgroups = _min_branch_support < 1.0 and conf["tree_splitter"]["_outgroup_size"] == 0
+    
     if seqtype == "nt": 
         _aligner = n2class[conf["main"]["npr_nt_aligner"][index]]
         _alg_cleaner = n2class[conf["main"]["npr_nt_alg_cleaner"][index]]
@@ -195,9 +198,9 @@ def process_task(task, main_tree, conf, nodeid2info):
         new_tasks.append(alg_task)
 
     elif ttype == "alg" or ttype == "acleaner":
-        alg_fasta_file = getattr(task, "clean_alg_fasta_file", 
+        alg_fasta_file = getattr(task, "clean_alg_fasta_file",
                                  task.alg_fasta_file)
-        alg_phylip_file = getattr(task, "clean_alg_phylip_file", 
+        alg_phylip_file = getattr(task, "clean_alg_phylip_file",
                                   task.alg_phylip_file)
 
         # Calculate alignment stats           
@@ -239,7 +242,7 @@ def process_task(task, main_tree, conf, nodeid2info):
                 _aligner = n2class[conf["main"]["npr_nt_aligner"][index]]
                 _tree_builder = n2class[conf["main"]["npr_nt_tree_builder"][index]]
                 alg_fasta_file, alg_phylip_file = switch_to_codon(
-                    task.alg_fasta_file, task.alg_phylip_file, 
+                    task.alg_fasta_file, task.alg_phylip_file,
                     nt_seed_file)
             if constrain_tree:
                 open(constrain_tree_path, "w").write(constrain_tree)
@@ -298,10 +301,11 @@ def process_task(task, main_tree, conf, nodeid2info):
         #                                _n.support <= _min_branch_support)
 
         def processable_node(_n):
-            if _n is not task.task_tree and _n.children and _n.support <= _min_branch_support:
-                if _min_branch_support < 1.0 and conf["tree_splitter"]["_outgroup_size"] == 0:
-                    _seq, _out = find_outgroups(_n.up, n2content, conf["tree_splitter"])
-                    _nid, _cid = generate_node_ids(_seq, _out)
+            if (_n is not task.task_tree and _n.children and \
+                _n.support <= _min_branch_support):
+                if skip_outgroups:
+                    _seq = set([_i.name for _i in n2content[_n.up]])
+                    _nid, _cid = generate_node_ids(_seq, set())
                     if _nid not in nodeid2info:
                         return True
                     else:
@@ -312,17 +316,18 @@ def process_task(task, main_tree, conf, nodeid2info):
                 return False
         
         n2content = main_tree.get_node2content()
+        print len(task.main_tree), len(task.task_tree)
         for node in task.task_tree.iter_leaves(is_leaf_fn=processable_node):
             # If we are optimizing only lowly supported nodes, and
             # nodes are optimized without outgroup, our target node is
-            # actually the parent of the real target. Otherwise, go
-            # ahead with the target node.
-            if _min_branch_support < 1.0 and conf["tree_splitter"]["_outgroup_size"] == 0:
-                next_node = node.up
+            # actually the parent of the real target. Otherwise,
+            # select outgroups from sister partition.
+            if skip_outgroups:
+                seqs = set([_i.name for _i in n2content[node.up]])
+                outs = set()
             else:
-                next_node = node
-            
-            seqs, outs = find_outgroups(next_node, n2content, conf["tree_splitter"])
+                seqs, outs = select_outgroups(node, n2content, conf["tree_splitter"])
+
             #print node.name, node.support, len(seqs), len(outs), len(node)
             if (conf["_iters"] < int(conf["main"].get("max_iters", conf["_iters"]+1)) and 
                 len(seqs) >= int(conf["tree_splitter"]["_min_size"])):
@@ -333,6 +338,7 @@ def process_task(task, main_tree, conf, nodeid2info):
                     # select the parent, the parent could have been
                     # done already.
                     if msf_task.nodeid not in nodeid2info:
+                        nodeid2info[msf_task.nodeid] = {}
                         new_tasks.append(msf_task)
                         conf["_iters"] += 1
                     #print node.support, seqs, outs, processable_node(node)

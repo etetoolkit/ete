@@ -9,6 +9,7 @@ import hashlib
 import logging
 log = logging.getLogger("main")
 DEBUG = lambda: log.level <= 10
+GLOBALS = {}
 
 try: 
     from collections import OrderedDict

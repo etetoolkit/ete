@@ -86,14 +86,14 @@ def add_task(tid, nid, parent=None, status=None, type=None, subtype=None,
              name=None):
     values = ','.join(['"%s"' % (v or "") for v in
               [tid, nid, parent, status, type, subtype, name]])
-    cmd = ('INSERT OR IGNORE INTO task (taskid, nodeid, parentid, status,'
+    cmd = ('INSERT OR REPLACE INTO task (taskid, nodeid, parentid, status,'
            ' type, subtype, name) VALUES (%s);' %(values))
     cursor.execute(cmd)
 
     autocommit()
 
 def add_task2child(tid, child):
-    cmd = ('INSERT OR IGNORE INTO task2child (taskid, child)'
+    cmd = ('INSERT OR REPLACE INTO task2child (taskid, child)'
            ' VALUES ("%s", "%s");' %(tid, child))
     cursor.execute(cmd)
     autocommit()
@@ -145,7 +145,7 @@ def add_node(nodeid, cladeid, target_seqs, out_seqs):
                        [nodeid, cladeid, encode(target_seqs),
                         encode(out_seqs), len(target_seqs),
                         len(out_seqs)]])
-    cmd = ('INSERT OR IGNORE INTO node (nodeid, cladeid, target_seqs, out_seqs,'
+    cmd = ('INSERT OR REPLACE INTO node (nodeid, cladeid, target_seqs, out_seqs,'
            ' target_size, out_size) VALUES (%s);' %(values))
     cursor.execute(cmd)
     autocommit()
@@ -176,7 +176,7 @@ def report(max_records=40):
     return report
 
 def add_seq_name(seqid, name):
-    cmd = ('INSERT OR IGNORE INTO seqid2name (seqid, name)'
+    cmd = ('INSERT OR REPLACE INTO seqid2name (seqid, name)'
            ' VALUES ("%s", "%s");' %(seqid, name))
     cursor.execute(cmd)
     autocommit()
