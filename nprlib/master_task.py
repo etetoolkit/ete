@@ -196,9 +196,6 @@ class Task(object):
                         [getattr(j, "jobid", "taskid") for j in self.jobs])))
             self.taskid = unique_id
 
-        #self.taskdir = os.path.join(self.global_config["basedir"], self.nodeid,
-        #                       self.tname+"_"+self.taskid)
-
         self.taskdir = os.path.join(GLOBALS["basedir"], "tasks",
                                     self.taskid)
             

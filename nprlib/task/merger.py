@@ -44,9 +44,6 @@ class TreeMerger(Task):
         if mtree and not out_seqs:
             log.log(28, "Finding best scoring outgroup from previous iteration.")
             #cladeid = generate_id([n.name for n in ttree_content[ttree]])
-            if DEBUG():
-                print cladeid
-                mtree.show()
             target_node = mtree.search_nodes(cladeid=cladeid)[0]
             
             target_left = set([_n.name for _n in target_node.children[0]])
@@ -59,7 +56,6 @@ class TreeMerger(Task):
                     continue
                 left = set([_n.name for _n in content])
                 right =  everything - left
-
                 d1 = euc_dist(left, target_left)
                 d2 = euc_dist(left, target_right)
                 best_match = min(d1, d2)
@@ -75,10 +71,6 @@ class TreeMerger(Task):
             self.pre_iter_support = target_node.support
             ttree.dist = target_node.dist
             ttree.support = target_node.support
-            
-            parent = target_node.up
-            target_node.detach()
-            parent.add_child(ttree)
 
             if DEBUG():
                 target_node.children[0].img_style["fgcolor"] = "orange"
@@ -87,13 +79,20 @@ class TreeMerger(Task):
                 target_node.children[1].img_style["size"] = 20
                 target_node.img_style["bgcolor"] = "lightblue"
                 
-                NPR_TREE_STYLE.title.clear()
                 NPR_TREE_STYLE.title.add_face( faces.TextFace("MainTree: Pre iteration partition", fgcolor="blue"), 0)
                 mtree.show(tree_style=NPR_TREE_STYLE)
+                NPR_TREE_STYLE.title.clear()
 
                 target_node.children[0].set_style(None)
                 target_node.children[1].set_style(None)
                 target_node.set_style(None)
+
+            # Merge task and main trees
+            parent = target_node.up
+            target_node.detach()
+            parent.add_child(ttree)
+
+            if DEBUG():
                 outgroup.img_style["fgcolor"]="Green"
                 outgroup.img_style["size"]= 12
                 ttree.img_style["bgcolor"] = "lightblue"
@@ -147,7 +146,6 @@ class TreeMerger(Task):
                 parent = orig_target.up
                 orig_target.detach()
                 parent.add_child(ttree)
-                
             else:
                 raise TaskError("Outgroup was split")
                
@@ -165,7 +163,7 @@ class TreeMerger(Task):
 
 
         # Reloads node2content of the rooted tree and generate cladeids
-        ttree_content = ttree.get_node2content()
+        ttree_content = self.main_tree.get_node2content()
         for n, content in ttree_content.iteritems():
             cid = generate_id([_n.name for _n in content])
             n.add_feature("cladeid", cid)

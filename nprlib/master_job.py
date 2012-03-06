@@ -51,7 +51,7 @@ class Job(object):
         # the app. Some params include path names that can prevent
         # recycling the job, so a clean it.
         clean = lambda x: basename(x) if GLOBALS["basedir"] in x else x
-        parsed_id_string = ["%s %s" %(clean(pair[0]), clean(pair[1]))
+        parsed_id_string = ["%s %s" %(clean(str(pair[0])), clean(str(pair[1])))
                             for pair in self.args.iteritems()]
         self.jobid = md5(','.join(sorted([md5(e) for e in
                                           parsed_id_string])))

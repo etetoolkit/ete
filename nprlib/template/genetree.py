@@ -6,7 +6,8 @@ import logging
 import numpy
 from collections import defaultdict
 
-from nprlib.utils import del_gaps, GENCODE, PhyloTree, SeqGroup, TreeStyle, generate_node_ids
+from nprlib.utils import (del_gaps, GENCODE, PhyloTree, SeqGroup,
+                          TreeStyle, generate_node_ids, DEBUG, NPR_TREE_STYLE, faces)
 from nprlib.task import (MetaAligner, Mafft, Muscle, Uhire, Dialigntx,
                          FastTree, Clustalo, Raxml, Phyml, JModeltest,
                          Prottest, Trimal, TreeMerger, select_outgroups,
@@ -301,49 +302,46 @@ def process_task(task, main_tree, conf, nodeid2info):
         #                                _n.support <= _min_branch_support)
 
         def processable_node(_n):
-            if (_n is not task.task_tree and _n.children and \
-                _n.support <= _min_branch_support):
+            _isleaf = False
+            if _n is not task.task_tree:
                 if skip_outgroups:
-                    _seq = set([_i.name for _i in n2content[_n.up]])
-                    _nid, _cid = generate_node_ids(_seq, set())
-                    if _nid not in nodeid2info:
-                        return True
-                    else:
-                        return False
-                else:
-                    return True
-            else:
-                return False
+                    # If we are optimizing only lowly supported nodes, and
+                    # nodes are optimized without outgroup, our target node is
+                    # actually the parent of the real target. Otherwise,
+                    # select outgroups from sister partition.
+                    for _ch in _n.children:
+                        if _ch.support <= _min_branch_support:
+                            _isleaf = True
+                            break
+                elif _n.support <= _min_branch_support:
+                    _isleaf = True
+            return _isleaf
         
         n2content = main_tree.get_node2content()
-        print len(task.main_tree), len(task.task_tree)
         for node in task.task_tree.iter_leaves(is_leaf_fn=processable_node):
-            # If we are optimizing only lowly supported nodes, and
-            # nodes are optimized without outgroup, our target node is
-            # actually the parent of the real target. Otherwise,
-            # select outgroups from sister partition.
             if skip_outgroups:
-                seqs = set([_i.name for _i in n2content[node.up]])
+                seqs = set([_i.name for _i in n2content[node]])
                 outs = set()
             else:
                 seqs, outs = select_outgroups(node, n2content, conf["tree_splitter"])
 
-            #print node.name, node.support, len(seqs), len(outs), len(node)
             if (conf["_iters"] < int(conf["main"].get("max_iters", conf["_iters"]+1)) and 
                 len(seqs) >= int(conf["tree_splitter"]["_min_size"])):
                     msf_task = Msf(seqs, outs, seqtype=source_seqtype, source=source)
-                    # This prevents redoing nodes, something that can
-                    # occur when outgroup_size is 0 and we are trying
-                    # to optimize lowly supported nodes. When we
-                    # select the parent, the parent could have been
-                    # done already.
                     if msf_task.nodeid not in nodeid2info:
                         nodeid2info[msf_task.nodeid] = {}
                         new_tasks.append(msf_task)
                         conf["_iters"] += 1
-                    #print node.support, seqs, outs, processable_node(node)
+                    if DEBUG():
+                        node.img_style["fgcolor"] = "Green"
+                        node.img_style["size"] = 60
+                        node.add_face(faces.TextFace("%s" %conf["_iters"], fsize=24), 0, "branch-top")
+        if DEBUG():
+            task.task_tree.show(tree_style=NPR_TREE_STYLE)
+            for _n in task.main_tree.traverse():
+                _n.img_style = None
+           
 
-        #print new_tasks   
     return new_tasks, main_tree
 
 def pipeline(task, main_tree, conf, nodeid2info):
