@@ -260,12 +260,12 @@ def main(args):
             for i,n in SEQS.id2name.iteritems():
                 if args.seq_rename:
                     # This is a bit tricky. I want to generate 10 char
-                    # unique names that are identical for identical
-                    # original names. Hash functions cannot generate
-                    # less than 16 bits strings, so I will trust in
-                    # the first 10 chars. It is very unlikely to get a
-                    # collision even in large sets (million of
-                    # names.), but in such a case, I will rise an
+                    # unique names that are the always the same for
+                    # identical original names. Hash functions cannot
+                    # generate less than 16 bits strings, so I will
+                    # trust in the first 10 chars. It is very unlikely
+                    # to get a collision even in large sets (million
+                    # of names.), but in such a case, I will raise an
                     # error.
                     name = md5(n).hexdigest()[:10]
                     id2name[name] = SEQS.id2name[i]
