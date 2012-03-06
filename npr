@@ -17,7 +17,7 @@ sys.path.insert(0, NPRPATH)
 from nprlib import argparse 
 from nprlib.configobj import ConfigObj, flatten_errors
 from nprlib import validate
-from nprlib.utils import SeqGroup, AA, NT
+from nprlib.utils import SeqGroup, AA, NT, GLOBALS
 from nprlib.errors import ConfigError, DataError
 from nprlib.master_task import Task
 from nprlib.interface import app_wrapper
@@ -176,8 +176,8 @@ def main(args):
 
     #Configure base directory for all tasks 
     config["main"]["basedir"] = base_dir
-    Task.global_config["basedir"] = base_dir
-
+    GLOBALS["basedir"] = base_dir
+    
     if args.arch == "auto":
         if sys.maxsize > 2**32:
             arch = "64"
