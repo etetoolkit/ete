@@ -333,11 +333,15 @@ def process_task(task, main_tree, conf, nodeid2info):
                         new_tasks.append(msf_task)
                         conf["_iters"] += 1
                     if DEBUG():
-                        node.img_style["fgcolor"] = "Green"
-                        node.img_style["size"] = 60
-                        node.add_face(faces.TextFace("%s" %conf["_iters"], fsize=24), 0, "branch-top")
+                        NPR_TREE_STYLE.title.clear()
+                        NPR_TREE_STYLE.title.add_face( faces.TextFace("MainTree:"
+                                                                      "Gold color:Newly generated task nodes ",
+                                                                      fgcolor="blue"), 0)
+                        node.img_style["fgcolor"] = "Gold"
+                        node.img_style["size"] = 30
+                        #node.add_face(faces.TextFace("%s" %conf["_iters"], fsize=24), 0, "branch-top")
         if DEBUG():
-            task.task_tree.show(tree_style=NPR_TREE_STYLE)
+            task.main_tree.show(tree_style=NPR_TREE_STYLE)
             for _n in task.main_tree.traverse():
                 _n.img_style = None
            
@@ -388,6 +392,6 @@ npr_nt_model_tester = list()
 [tree_splitter]
 _min_size = integer()
 _outgroup_size = integer()
-
-
+_outgroup_min_support = float()
+_outgroup_topology_dist = boolean()
 """

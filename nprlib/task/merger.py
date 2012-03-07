@@ -141,8 +141,9 @@ class TreeMerger(Task):
                 ttree = ttree.get_common_ancestor(target_seqs)
                 outgroup.detach()
                 self.pre_iter_support = orig_target.support
-                #ttree.dist = orig_target.dist
-                #ttree.support = orig_target.support
+                # Use previous dist and support
+                ttree.dist = orig_target.dist
+                ttree.support = orig_target.support
                 parent = orig_target.up
                 orig_target.detach()
                 parent.add_child(ttree)
@@ -184,8 +185,29 @@ def root_distance_matrix(root):
     for n in root.iter_descendants("preorder"):
         n2rdist[n] = n2rdist[n.up] + n.dist
     return n2rdist
- 
-def select_outgroups(target, n2content, options):
+
+def distance_matrix(target, leaf_only=False, topology_only=False):
+    # Detect the root and the target branch
+    root = target
+    while root.up:
+        target_branch = root
+        root = root.up
+    # Calculate distances to the root
+    n2rdist = {root:0.0}        
+    for n in root.get_descendants("preorder"):
+        dist = 1.0 if topology_only else n.dist
+        n2rdist[n] = n2rdist[n.up] + dist
+
+    # Calculate distances to the target node
+    n2tdist = {}        
+    for n in root.traverse():
+        ancestor = root.get_common_ancestor(n, target)
+        if not leaf_only or n.is_leaf():
+            if ancestor != target:
+                n2tdist[n] = n2rdist[target] + n2rdist[n] - n2rdist[ancestor]
+    return n2rdist, n2tdist
+    
+def select_outgroups2(target, n2content, options):
     if not target.up:
         raise ValueError("Cannot select outgroups for root node")
     
@@ -208,8 +230,6 @@ def select_outgroups(target, n2content, options):
     n2rootdist = root_distance_matrix(target.up)
     for b_leaf in b.iter_leaves():
         dist = n2rootdist[b_leaf] + a.dist
-        #dist1 = b_leaf.get_distance(a)
-        #print dist, dist1
         to_a_dists.append([dist, b_leaf.name])
 
     # Then we can sort outgroups prioritizing sequences whose
@@ -270,5 +290,82 @@ def select_outgroups(target, n2content, options):
             _n.img_style = None
         
     return set(seqs_a), set(outs_a)
+        
+def select_outgroups(target, n2content, options):
+    name2dist = {"min": numpy.min, "max": numpy.max,
+                 "mean":numpy.mean, "median":numpy.median}
+    
+    if not target.up:
+        raise ValueError("Cannot select outgroups for root node")
+    
+    policy = options["_outgroup_policy"]
+    out_size = options["_outgroup_size"]
+    out_distfn = name2dist[options["_outgroup_dist"]]
+    topology_only = options["_outgroup_topology_dist"]
+    out_min_support = options["_outgroup_min_support"]
+    
+    if policy == "leaves":
+        leaf_only = True
+    else:
+        leaf_only = False
+    n2rootdist, n2targetdist = distance_matrix(target, leaf_only=leaf_only,
+                                               topology_only=topology_only)
+
+    max_dist = max(n2targetdist.values())
+    # normalize all distances from 0 to 1
+    n2normdist = dict([[n, n2targetdist[n]/max_dist] for n in n2targetdist])
+    ref_norm_dist = out_distfn(n2normdist.values())
+    n2refdist = dict([[n, abs(n2normdist[n] - ref_norm_dist)] for n in n2targetdist])
+    n2size = dict([[n, float(len(n2content[n]))] for n in n2targetdist])
+    n2sizedist = dict([ [n, (abs(n2size[n]-out_size)/(n2size[n]+out_size))]
+                        for n in n2targetdist])
+    def sort_by_best(x,y):
+        v = cmp(max([n2refdist[x], n2sizedist[x], n.support]),
+                max([n2refdist[y], n2sizedist[y], n.support]))
+        if v == 0:
+            v = cmp(n2sizedist[x], n2sizedist[y])
+        if v == 0:
+            v = cmp(n2refdist[x], n2refdist[y])
+        return v
+        
+    valid_nodes = [n for n in n2targetdist if n.support >= out_min_support and
+                   not n2content[n] & n2content[target]]
+    if not valid_nodes:
+        log.warning("Outgroup not could not satisfy min branch support")
+        valid_nodes = [n for n in n2targetdist if not n2content[n] & n2content[target]]
+    valid_nodes.sort(sort_by_best)
+    
+    if DEBUG():
+        for n in valid_nodes[:20]:
+            print ''.join(map(lambda x: "% 20s" %x,
+                              [n.name, len(n2content[n]), n2refdist[n], n2sizedist[n], n.support,
+                               max([n2refdist[n], n2sizedist[n], n.support])]))
+
+    seqs = [n.name for n in n2content[target]]
+    if policy == "node":
+        outs = [n.name for n in n2content[valid_nodes[0]]]
+    elif policy == "leaves":
+        outs = [n.name for n in valid_nodes[:out_size]]
+
+    if len(outs) < out_size:
+        log.log(28, "Outgroup size not reached.")
+
+    if DEBUG():
+        root = target.get_tree_root()
+        for _seq in outs:
+            tar =  root & _seq
+            tar.img_style["fgcolor"]="green"
+            tar.img_style["size"] = 12
+            tar.img_style["shape"] = "circle"
+        target.img_style["bgcolor"] = "lightblue"
+        NPR_TREE_STYLE.title.clear()
+        NPR_TREE_STYLE.title.add_face( faces.TextFace("MainTree:"
+            " Outgroup selection is mark in green.Red=optimized nodes ",
+            fgcolor="blue"), 0)
+        root.show(tree_style=NPR_TREE_STYLE)
+        for _n in root.traverse():
+            _n.img_style = None
+        
+    return set(seqs), set(outs)
 
         
