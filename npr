@@ -116,10 +116,10 @@ def is_integer_list(value, minv=0, maxv=None):
    
     
 def main(args):
+    base_dir = GLOBALS["basedir"]
     log = logging.getLogger("main")
     print __DESCRIPTION__
-
-    base_dir = os.path.abspath(args.outdir)
+ 
     local_conf_file = os.path.join(base_dir, "pipeline.cfg")
     if os.path.exists(base_dir):
         if os.path.exists(local_conf_file):
@@ -174,10 +174,6 @@ def main(args):
     if len(set([len(config["main"][v]) for v in conf_keys])) != 1:
         raise ConfigError("Unequal length of main NPR config table.")
 
-    #Configure base directory for all tasks 
-    config["main"]["basedir"] = base_dir
-    GLOBALS["basedir"] = base_dir
-    
     if args.arch == "auto":
         if sys.maxsize > 2**32:
             arch = "64"
@@ -379,13 +375,13 @@ if __name__ == "__main__":
 
   
     # Input data related flags
-    input_group = parser.add_argument_group('Input data options')
-    input_group.add_argument("-a", "--aa_seed_file", dest="aa_seed_file", 
+    input_group = parser.add_argument_group('INPUT OPTIONS:')
+    input_group.add_argument("-a", dest="aa_seed_file", 
                         type=existing_file, 
                         help="Initial multi sequence file with"
                         " protein sequences")
 
-    input_group.add_argument("-n", "--nt_seed_file", dest="nt_seed_file", 
+    input_group.add_argument("-n", dest="nt_seed_file", 
                         type=existing_file, 
                         help="Initial multi sequence file with"
                         " nucleotide sequences")
@@ -401,13 +397,13 @@ if __name__ == "__main__":
                         " removed.")
 
     # Output data related flags
-    output_group = parser.add_argument_group('Output data options')
+    output_group = parser.add_argument_group('OUTPUT OPTIONS:')
     output_group.add_argument("-o", "--outdir", dest="outdir", 
                         type=str, required=True, 
                         help="""Output directory for results.""")
     
     # Task execution related flags
-    exec_group = parser.add_argument_group('NPR execution options')
+    exec_group = parser.add_argument_group('EXECUTION OPTIONS:')
 
     exec_group.add_argument("-c", "--config", dest="configfile", 
                         type=existing_file, required=True, 
@@ -417,6 +413,16 @@ if __name__ == "__main__":
                         action="store_true",
                         help="Try to relaunch, once more, jobs marked"
                         " as error.")
+    
+    exec_group.add_argument("-m", "--maxcores", dest="maxcores", type=int,
+                        default=1, help="Maximum number of CPU cores"
+                        " available in the execution hosts. If higher"
+                        " than 1, tasks with multi-threading"
+                        " capabilities will be set appropriately.")
+
+    exec_group.add_argument("-t", "--schedule_time", dest="schedule_time", 
+                        type=float, default=30.0,
+                        help="""Schedule time in seconds. """)
     
     exec_type_group = exec_group.add_mutually_exclusive_group()
     exec_type_group.add_argument("-x", "--execute_insitu", dest="execute", 
@@ -429,7 +435,7 @@ if __name__ == "__main__":
                         " launched using the Sun Grid Engine"
                         " queue system.")
 
-    exec_type_group.add_argument("--nodetach", dest="nodetach",
+    exec_group.add_argument("--nodetach", dest="nodetach",
                         action="store_true", help="Jobs will not be"
                         " detached from the main NPR process. This means that"
                         " when npr execution is interrupted, all currently"
@@ -440,18 +446,9 @@ if __name__ == "__main__":
                         " launched jobs keeps running even when npr"
                         " process is killed." )
     
-    exec_group.add_argument("-t", "--schedule_time", dest="schedule_time", 
-                        type=float, default=30.0,
-                        help="""Schedule time in seconds. """)
-
-    exec_group.add_argument("-m", "--maxcores", dest="maxcores", type=int,
-                        default=1, help="Maximum number of CPU cores"
-                        " available in the execution hosts. If higher"
-                        " than 1, tasks with multi-threading"
-                        " capabilities will be set appropriately.")
-
-    exec_type_group.add_argument("--override", dest="override",
-                        action="store_true", help="" )
+    exec_group.add_argument("--override", dest="override",
+                            action="store_true",
+                            help="Overrides previous configuration files" )
     
     exec_group.add_argument("--arch", dest="arch",
                             choices=["auto", "32", "64"],
@@ -460,21 +457,21 @@ if __name__ == "__main__":
                             " built-in applications.)")
    
     # Interface related flags
-    ui_group = exec_group.add_mutually_exclusive_group()
-    ui_group.add_argument("-u", "--ui", dest="enable_ui",
+    ui_group = parser.add_argument_group("INTERFACE OPTIONS")
+    ui_group.add_argument("-u", dest="enable_ui",
                         action="store_true", help="When used, a color"
                         " based interface is launched to monitor NPR"
                         " processes. This feature requires NCURSES"
                         " libraries installed in your system.")
 
-    ui_group.add_argument("--nochecks", dest="nochecks",
-                          action="store_true", 
-                          help="Skip application checks during the start-up")
-    
-    ui_group.add_argument("-v", "--verbosity", dest="verbosity",
+    ui_group.add_argument("-v", dest="verbosity",
                         default = 0, type=int, choices=[0,1,2,3,4],
                         help="Verbosity level: 0=very quiet, 4=very "
                           " verbose.")
+    
+    ui_group.add_argument("--nochecks", dest="nochecks",
+                          action="store_true", 
+                          help="Skip application checks during the start-up")
    
     ui_group.add_argument("--debug", nargs="?",
                           const="all",
@@ -482,9 +479,14 @@ if __name__ == "__main__":
                           " session. A taskid can be provided, so"
                           " debugging will start from such task on." 
                           )
-        
+
+    ui_group.add_argument("--logfile", action="store_true",
+                          help="Log messages are also written into a file"
+                      )
+
+    
     args = parser.parse_args()
-   
+    GLOBALS["basedir"] = os.path.abspath(args.outdir)
     # Start the application
     app_wrapper(main, args)
 
