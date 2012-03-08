@@ -1,4 +1,5 @@
 import sys
+import os
 import re
 from StringIO import StringIO
 from signal import signal, SIGWINCH
@@ -9,6 +10,7 @@ import Queue
 import threading
 
 from nprlib.logger import get_main_log
+from nprlib.utils import GLOBALS
 from nprlib.errors import *
 
 try:
@@ -35,7 +37,6 @@ class ExcThread(threading.Thread):
         except Exception:
             self.bucket.put(sys.exc_info())
             raise
-
             
 class Screen(StringIO):
     # tags used to control color of strings and select buffer
@@ -47,7 +48,8 @@ class Screen(StringIO):
         self.pos = {}
         self.lines = {}
         self.maxsize = {}
-        
+        self.stdout = None
+        self.logfile = None
         self.wrapper = TextWrapper(width=80, initial_indent="",
                                    subsequent_indent="         ",
                                    replace_whitespace=False)
@@ -114,11 +116,20 @@ class Screen(StringIO):
     def write(self, text):
         if NCURSES: 
             self.write_curses(text)
+            if self.logfile:
+                text = re.sub(self.TAG, "", text)
+                self.write_log(text)
         else:
+            text = re.sub(self.TAG, "", text)
             self.write_normal(text)
-
+            if self.logfile:
+                self.write_log(text)
+            
+    def write_log(self, text):
+        self.logfile.write(text)
+        self.logfile.flush()
+            
     def write_normal(self, text):
-        text = re.sub(self.TAG, "", text)
         #_text = '\n'.join(self.wrapper.wrap(text))
         #self.stdout.write(_text+"\n")
         self.stdout.write(text)
@@ -281,6 +292,8 @@ def main(main_screen, func, args):
 
     # prints are handled by my Screen object
     screen.stdout = sys.stdout
+    if args.logfile: 
+        screen.logfile = open(os.path.join(GLOBALS["basedir"], "npr.log"), "w")
     sys.stdout = screen
 
     # Start logger, pointing to the selected screen
