@@ -9,7 +9,7 @@ log = logging.getLogger("main")
 from nprlib.logger import set_logindent, logindent
 from nprlib.utils import (generate_id, print_as_table, HOSTNAME, md5,
                           get_node2content, PhyloTree, NodeStyle, Tree, DEBUG,
-                          NPR_TREE_STYLE, faces, GLOBALS)
+                          NPR_TREE_STYLE, faces, GLOBALS, basename)
 from nprlib.errors import ConfigError, DataError, TaskError
 from nprlib import db, sge
 from nprlib.master_task import isjob
@@ -24,7 +24,10 @@ def schedule(config, processer, schedule_time, execution, retry, debug):
             return 1
         else:
             return 0
-            
+
+    # Clear info from previous runs
+    open(GLOBALS["iters_file"], "w")
+    
     execution, run_detached = execution
     main_tree = None
     npr_iter = 0
@@ -192,6 +195,7 @@ def schedule(config, processer, schedule_time, execution, retry, debug):
     snapshot_tree.write(outfile=final_tree_file)
     log.log(28, "Done")
     log.debug(str(snapshot_tree))
+   
 
 def dump_snapshot(config, task, npr_iter, main_tree, clade2tasks, nodeid2info):
     # we change node names here
@@ -206,13 +210,23 @@ def dump_snapshot(config, task, npr_iter, main_tree, clade2tasks, nodeid2info):
         n.name = n.realname
     nout= len(task.out_seqs)
     ntarget = len(task.target_seqs)
+    cladeid = generate_id(task.target_seqs)
+    iter_node = snapshot_tree.search_nodes(cladeid=cladeid)[0]
+    iter_node.add_features(iter_node=1)
     nw_file = os.path.join(GLOBALS["basedir"], "tree_snapshots",
                            "Iter_%06d_%s_%sseqs_%souts_%ssupport.nw" %
                            (npr_iter, task.seqtype, ntarget, nout,
                             task.pre_iter_support))
+    # Dump info about current iteration
+    OUT = open(nw_file+".info", "w")
+    for k in sorted(iter_node.features):
+        print >>OUT, "\t".join([k, str(getattr(iter_node, k))])
+    OUT.close()
+    # Dump iter tree with all its features
     snapshot_tree.write(outfile=nw_file, features=[])
+    # Track iterations of this run
+    open(GLOBALS["iters_file"], "a").write(basename(nw_file)+"\n")
     return snapshot_tree
-
     
 def register_task(task, parentid=None):
     db.add_task(tid=task.taskid, nid=task.nodeid, parent=parentid,

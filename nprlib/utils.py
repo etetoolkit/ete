@@ -206,6 +206,7 @@ def get_node2content(node, store={}):
         store[node] = [node.name]
     return store
 
+   
 
 def npr_layout(node):
     if node.is_leaf():
