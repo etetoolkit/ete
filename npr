@@ -358,6 +358,11 @@ def main(args):
     schedule(config, pipeline, args.schedule_time, 
              execution, args.retry, args.debug)
 
+    if args.compress:
+        cmd = "cd %s && find -t d -maxdepth 1 -exec tar -jcf {}.tar.bz2 {} \;" %GLOBALS["basedir"]
+        print cmd
+                
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__DESCRIPTION__, 
                             formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -401,6 +406,10 @@ if __name__ == "__main__":
     output_group.add_argument("-o", "--outdir", dest="outdir", 
                         type=str, required=True, 
                         help="""Output directory for results.""")
+
+    output_group.add_argument("--compress", action="store_true",
+                        help="Compress intermediate files when"
+                              " task is finished.")
     
     # Task execution related flags
     exec_group = parser.add_argument_group('EXECUTION OPTIONS:')
@@ -483,10 +492,14 @@ if __name__ == "__main__":
     ui_group.add_argument("--logfile", action="store_true",
                           help="Log messages are also written into a file"
                       )
-
     
     args = parser.parse_args()
+    
     GLOBALS["basedir"] = os.path.abspath(args.outdir)
+    GLOBALS["iters_file"] = os.path.join(GLOBALS["basedir"], "tree_snapshots", "last_run_iters.txt")
+    if not os.path.exists(GLOBALS["basedir"]):
+        os.makedirs(GLOBALS["basedir"])
+  
     # Start the application
     app_wrapper(main, args)
 
