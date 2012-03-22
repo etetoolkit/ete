@@ -538,7 +538,7 @@ class TreeNode(object):
             else:
                 if is_leaf_fn(n):
                     yield n
-
+                    
     def get_leaves(self, is_leaf_fn=None):
         """
         Returns the list of terminal nodes (leaves) under this node.
@@ -1432,12 +1432,12 @@ class TreeNode(object):
             ch.get_node2content(store=store)
 
         if self.children:
-            val = []
+            val = set()
             for ch in self.children:
-                val.extend(store[ch])
+                val.update(store[ch])
             store[self] = val
         else:
-            store[self] = [self]
+            store[self] = set([self])
         return store
 
     def robinson_foulds(self, t2, attr_t1="name", attr_t2="name"):

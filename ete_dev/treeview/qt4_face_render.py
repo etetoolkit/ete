@@ -26,7 +26,7 @@ class _BackgroundFaceItem(QGraphicsRectItem):
     def paint(self, painter, option, index):
         return
 
-class _FaceGroupItem(QGraphicsRectItem): # I resisted to name this FaceBookItem :) 
+class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem :) 
     def __init__(self, faces, node, as_grid=False):
 
         # This caused seg. faults. in some computers. No idea why.

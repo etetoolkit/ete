@@ -92,7 +92,6 @@ def new_version(module_name=None, current=None):
         except (IndexError, ValueError): 
             current = None
 
-
     return current, latest, msg
 
 def read_content(address):

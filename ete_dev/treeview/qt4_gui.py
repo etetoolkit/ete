@@ -82,18 +82,15 @@ class _GUI(QtGui.QMainWindow):
                 
     def __init__(self, scene, *args):
         QtGui.QMainWindow.__init__(self, *args)
+        self.main = _mainwindow.Ui_MainWindow()
+        self.main.setupUi(self)
+        self.setWindowTitle("ETE Tree Browser")
+        
         self.scene = scene
         self.view = _TreeView(scene)
         scene.view = self.view
         self.node_properties = _PropertiesDialog(scene)
         self.view.prop_table = self.node_properties
-        self.main = _mainwindow.Ui_MainWindow()
-        self.main.setupUi(self)
-        self.setWindowTitle("ETE Tree Browser")
-        # Check for updates
-        self.check = CheckUpdates()
-        self.check.start()
-        self.connect(self.check, SIGNAL("output(QString)"), self._updatestatus)
 
         self.view.centerOn(0,0)
         if scene.img.show_branch_length: 
@@ -116,6 +113,14 @@ class _GUI(QtGui.QMainWindow):
         self.searchDialog._conf = _search_dialog.Ui_Dialog()
         self.searchDialog._conf.setupUi(self.searchDialog)
         self.scene.setItemIndexMethod(QtGui.QGraphicsScene.NoIndex)
+
+        # Shows the whole tree by default
+        self.view.fitInView(self.scene.sceneRect(), QtCore.Qt.KeepAspectRatio)
+        
+        # Check for updates
+        self.check = CheckUpdates()
+        #self.check.start()
+        #self.connect(self.check, SIGNAL("output(QString)"), self._updatestatus)
         
     @QtCore.pyqtSignature("")
     def on_actionETE_triggered(self):
@@ -342,7 +347,22 @@ class _GUI(QtGui.QMainWindow):
                 self.redraw()
                 self.view.centerOn(0,0)
 
-
+    def keyPressEvent(self,e):
+        key = e.key()
+        control = e.modifiers() & QtCore.Qt.ControlModifier
+        if key == 77:
+            if self.isMaximized():
+                self.showNormal()
+            else:
+                self.showMaximized()
+        elif key >= 49 and key <= 58:
+            key = key - 48
+            m = self.view.matrix()
+            m.reset()
+            self.view.setMatrix(m)
+            self.view.scale(key, key)
+            
+                
 # This function should be reviewed. Probably there are better ways to
 # do de same, or at least less messy ways... So far this is what I
 # have
@@ -600,7 +620,6 @@ class _TreeView(QtGui.QGraphicsView):
         self.buffer_node = None
         self.focus_node = None
         self.selector = _SelectorItem(master_item)
-        self.scene().addItem(self.selector)
         
     def resizeEvent(self, e):
         QtGui.QGraphicsView.resizeEvent(self, e)
@@ -615,7 +634,7 @@ class _TreeView(QtGui.QGraphicsView):
         if (xfactor>1 and xscale>200000) or \
                 (yfactor>1 and yscale>200000):
             QtGui.QMessageBox.information(self, "!",\
-                                              "Hey! I'm not a microscope!")
+                                              "I will take the microscope!")
             return
 
         # Do not allow to reduce scale to a value producing height or with smaller than 20 pixels
@@ -753,7 +772,6 @@ class _TreeView(QtGui.QGraphicsView):
                 self.highlight_node(self.focus_node, fullRegion=True, 
                                     bg=random_color(l=0.5, s=0.5), 
                                     permanent=True)
-
         QtGui.QGraphicsView.keyPressEvent(self,e)
 
     def mouseReleaseEvent(self, e):

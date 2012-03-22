@@ -52,8 +52,11 @@ def show_tree(t, layout=None, tree_style=None):
     tree_item.setParentItem(scene.master_item)
     scene.addItem(scene.master_item)
     mainapp = _GUI(scene)
-    mainapp.showMaximized()
+    #print mainapp.scene.sceneRect().size()
+    #print mainapp.maximumSize()
     mainapp.show()
+    mainapp.on_actionFit2tree_triggered()
+    # Restore Ctrl-C behavior
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     if GUI_TIMEOUT is not None:
         signal.signal(signal.SIGALRM, exit_gui) 
@@ -61,6 +64,7 @@ def show_tree(t, layout=None, tree_style=None):
    
     _QApp.exec_()
 
+    
 def render_tree(t, imgName, w=None, h=None, layout=None, \
                     tree_style = None, header=None, units="px"):
     """ Render tree image into a file."""
