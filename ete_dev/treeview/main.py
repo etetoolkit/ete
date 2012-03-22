@@ -321,17 +321,21 @@ class TreeStyle(object):
     """
    
     def set_layout_fn(self, layout):
-        # Validates layout function
-        if type(layout) == types.FunctionType or\
-                type(layout) == types.MethodType or layout is None:
-            self._layout_handler = layout
+        self._layout_handler = []
+        if type(layout) not in set([list, set, tuple, frozenset]):
+            self._layout_handler.append(layout)
         else:
-            try:
-                import layouts
-                self._layout_handler = getattr(layouts, layout)
-            except Exception, e:
-                print e
-                raise ValueError ("Required layout is not a function pointer nor a valid layout name.")
+            for ly in layout:
+                # Validates layout function
+                if (type(ly) == types.FunctionType or type(ly) == types.MethodType or ly is None):
+                    self._layout_handler.append(layout)
+                else:
+                    import layouts 
+                    try:
+                        self._layout_handler.append(getattr(layouts, ly))
+                    except Exception, e:
+                        print e
+                        raise ValueError ("Required layout is not a function pointer nor a valid layout name.")
  
     def get_layout_fn(self):
         return self._layout_handler
@@ -352,7 +356,7 @@ class TreeStyle(object):
 
         # Layout function used to dynamically control the aspect of
         # nodes
-        self._layout_handler = None
+        self._layout_handler = []
         
         # 0= tree is drawn from left-to-right 1= tree is drawn from
         # right-to-left. This property only has sense when "r" mode

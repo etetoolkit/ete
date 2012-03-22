@@ -736,9 +736,9 @@ def set_style(n, layout_func):
     #    n.img_style = NodeStyle()
        
     n._temp_faces = _FaceAreas()
-
-    if layout_func:
-        layout_func(n)
+    
+    for func in layout_func:
+        func(n)
 
 def render_floatings(n2i, n2f, img, float_layer, float_behind_layer):
     #floating_faces = [ [node, fb["float"]] for node, fb in n2f.iteritems() if "float" in fb]
