@@ -200,7 +200,7 @@ class TreeNode(object):
         if isinstance(item, self.__class__):
             return item in set(self.get_descendants())
         elif type(item)==str:
-            return item in set([n.name for n in self.get_descendants()])
+            return item in set([n.name for n in self.traverse()])
 
     def __len__(self):
         """Node len returns number of children."""
