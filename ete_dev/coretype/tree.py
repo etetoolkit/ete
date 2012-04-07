@@ -632,7 +632,7 @@ class TreeNode(object):
         while node is not None:
             yield node
             if not is_leaf_fn or not is_leaf_fn(node):
-                to_visit.extendleft(node.children) 
+                to_visit.extendleft(reversed(node.children))
             try:
                 node = to_visit.popleft()
             except:

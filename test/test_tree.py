@@ -210,18 +210,24 @@ class Test_Coretype_Tree(unittest.TestCase):
         self.assert_(t in set([n for n in t.traverse("preorder")]))
 
         # Check order or visiting nodes
-        t = Tree("(((A, B)C, (D, E)F)G, (H, (I, J)K)L)M;", format=1)
-        postorder = [c for c in "ABCDEFGHIJKLM"]
-        preorder = [c for c in reversed(postorder)]
-        levelorder = [c for c in "MGLCFHKABDEIJ"]
+
+        t = Tree("((3,4)2,(6,7)5)1;", format=1)
+        #t = Tree("(((A, B)C, (D, E)F)G, (H, (I, J)K)L)M;", format=1)
+        #postorder = [c for c in "ABCDEFGHIJKLM"]
+        #preorder =  [c for c in reversed(postorder)]
+        #levelorder = [c for c in "MGLCFHKABDEIJ"]
+        postorder = "3426751"
+        preorder = "1234567"
+        levelorder = "1253467"
+                
         self.assertEqual(preorder, 
-                          [n.name for n in t.traverse("preorder")])
+                          ''.join([n.name for n in t.traverse("preorder")]))
 
         self.assertEqual(postorder, 
-                          [n.name for n in t.traverse("postorder")])
+                         ''.join([n.name for n in t.traverse("postorder")]))
 
         self.assertEqual(levelorder, 
-                          [n.name for n in t.traverse("levelorder")])
+                         ''.join([n.name for n in t.traverse("levelorder")]))
 
         # Swap childs
         n = t.get_children()
