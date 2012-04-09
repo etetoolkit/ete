@@ -6,8 +6,9 @@ Download and Install
 GNU/Linux 
 ===========
 
-ETE requires python>=2.5 as well as several dependencies (required
-only to enable particular functions, but highly recommended):
+ETE requires python>=2.5 (python 3 is not supported) as well as several
+dependencies (required only to enable particular functions, but highly
+recommended):
 
 - python-qt4 (>=4.5) [Enables tree visualization and image rendering]
 - python-mysqldb (>=1.2) [Enables programmatic access to PhylomeDB]
