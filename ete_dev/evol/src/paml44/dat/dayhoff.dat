@@ -1,0 +1,132 @@
+      
+ 27									    
+ 98  32									    
+120   0 905								    
+ 36  23   0   0								    
+ 89 246 103 134   0							    
+198   1 148 1153  0 716							    
+240   9 139 125  11  28  81						    
+ 23 240 535  86  28 606  43  10						    
+ 65  64  77  24  44  18  61   0   7					    
+ 41  15  34   0   0  73  11   7  44 257					    
+ 26 464 318  71   0 153  83  27  26  46  18				    
+ 72  90   1   0   0 114  30  17   0 336 527 243				    
+ 18  14  14   0   0   0   0  15  48 196 157   0  92			    
+250 103  42  13  19 153  51  34  94  12  32  33  17  11			    
+409 154 495  95 161  56  79 234  35  24  17  96  62  46 245		    
+371  26 229  66  16  53  34  30  22 192  33 136 104  13  78 550		    
+  0 201  23   0   0   0   0   0  27   0  46   0   0  76   0  75   0	    
+ 24   8  95   0  96   0  22   0 127  37  28  13   0 698   0  34  42  61	    
+208  24  15  18  49  35  37  54  44 889 175  10 258  12  48  30 157   0  28 
+
+0.087127 0.040904 0.040432 0.046872 0.033474 0.038255 0.049530
+0.088612 0.033618 0.036886 0.085357 0.080482 0.014753 0.039772
+0.050680 0.069577 0.058542 0.010494 0.029916 0.064718
+
+Ala Arg Asn Asp Cys Gln Glu Gly His Ile Leu Lys Met Phe Pro Ser Thr Trp Tyr Val
+
+S_ij = S_ji and PI_i for the Dayhoff model, with the rate Q_ij=S_ij*PI_j
+The rest of the file is not used.
+Prepared by Z. Yang, March 1995.
+
+
+See the following reference for notation used here:
+
+Yang, Z., R. Nielsen and M. Hasegawa. 1998. Models of amino acid substitution and
+applications to mitochondrial protein evolution. Mol. Biol. Evol. 15:1600-1611.
+
+
+-----------------------------------------------------------------------
+
+     
+ 30									   
+109  17									   
+154   0 532								   
+ 33  10   0   0 							   
+ 93 120  50  76   0							   
+266   0  94 831   0 422							   
+579  10 156 162  10  30 112						   
+ 21 103 226  43  10 243  23  10 					   
+ 66  30  36  13  17   8  35   0   3					   
+ 95  17  37   0   0  75  15  17  40 253					   
+ 57 477 322  85   0 147 104  60  23  43  39				   
+ 29  17   0   0   0  20   7   7   0  57 207  90				   
+ 20   7   7   0   0   0   0  17  20  90 167   0  17 			   
+345  67  27  10  10  93  40  49  50   7  43  43   4   7			   
+772 137 432  98 117  47  86 450  26  20  32 168  20  40 269		   
+590  20 169  57  10  37  31  50  14 129  52 200  28  10  73 696		   
+  0  27   3   0   0   0   0   0   3   0  13   0   0  10   0  17  0	   
+ 20   3  36   0  30   0  10   0  40  13  23  10   0 260   0  22  23  6	   
+365  20  13  17  33  27  37  97  30 661 303  17  77  10  50  43 186  0  17  
+ A   R   N   D   C   Q   E   G   H   I   L   K   M   F   P   S   T   W   Y  V
+Ala Arg Asn Asp Cys Gln Glu Gly His Ile Leu Lys Met Phe Pro Ser Thr Trp Tyr Val
+
+Accepted point mutations (x10) Figure 80 (Dayhoff 1978)
+-------------------------------------------------------
+
+A 100 /* Ala */		    A 0.087 /* Ala */
+R  65 /* Arg */		    R 0.041 /* Arg */
+N 134 /* Asn */		    N 0.040 /* Asn */
+D 106 /* Asp */		    D 0.047 /* Asp */
+C  20 /* Cys */		    C 0.033 /* Cys */
+Q  93 /* Gln */		    Q 0.038 /* Gln */
+E 102 /* Glu */		    E 0.050 /* Glu */
+G  49 /* Gly */             G 0.089 /* Gly */
+H  66 /* His */		    H 0.034 /* His */
+I  96 /* Ile */		    I 0.037 /* Ile */
+L  40 /* Leu */		    L 0.085 /* Leu */
+K  56 /* Lys */		    K 0.081 /* Lys */
+M  94 /* Met */		    M 0.015 /* Met */
+F  41 /* Phe */		    F 0.040 /* Phe */
+P  56 /* Pro */		    P 0.051 /* Pro */
+S 120 /* Ser */		    S 0.070 /* Ser */
+T  97 /* Thr */		    T 0.058 /* Thr */
+W  18 /* Trp */		    W 0.010 /* Trp */
+Y  41 /* Tyr */		    Y 0.030 /* Tyr */
+V  74 /* Val */		    V 0.065 /* Val */
+
+scale factor = SUM_OF_PRODUCT = 75.246
+
+
+Relative Mutability         The equilibrium freqs.
+(Table 21)		    Table 22    
+(Dayhoff 1978)		    Dayhoff (1978)        
+----------------------------------------------------------------
+
+
+
+Some notes from 1995, for those technical people:
+
+I managed to find some notes I wrote in 1995.  The symbols are not
+that comprehensible now, but you can get the basic idea, I think.  
+
+(1) Construction of P(0.01), for 1 PAM
+    p_ij(0.01) = m_i * A_{ij}/\sum_k{A_{ik}} / 7524.6
+
+(2) Eigensolution of P(0.01) = exp{Q*0.01}
+    P(0.01) = U diag{\lambda...} U^{-1}
+
+    Then 
+    Q = U diag{100*log{\lambda}...} U^{-1}
+
+
+I did not use the PAM transition probabilities as rates assuming 0.01
+is close to 0, but instead take them as P(0.01) to recover the rate
+matrix, and as we expect, the rates are more different from each other
+than the p_ij(0.01) are.
+
+I seem to recall that I thought some details in the Dayhoff paper and
+the Kishino et al. (1990) paper were not entirely right.  I think I
+thought that Q should be a symmetrical matrix, right-multiplied by a
+diagonal matrix, while either Dayhoff or Kishino or both used
+left-multiplication.
+
+As far as I know, codeml and protml give very similar (but not
+identical, I think) results under the Dayhoff model.
+
+My jones.dat file is not based on the Jones et al. (1992) paper, but
+is based on an updated data set sent to me by David Jones.  So codeml
+and protml gave different results under JTT, but ranking of trees was
+not affected for the data set I tested.
+
+Ziheng Yang

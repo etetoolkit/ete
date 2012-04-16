@@ -1,0 +1,114 @@
+
+0.2 
+0.2 0.2 
+1 4 500 
+254 36 98 11 
+0.2 154 262 0.2 0.2 
+0.2 0.2 183 862 0.2 262 
+200 0.2 121 12 81 3 44 
+0.2 41 180 0.2 12 314 15 0.2 
+26 2 21 7 63 11 7 3 0.2 
+4 2 13 1 79 16 2 1 6 515 
+0.2 209 467 2 0.2 349 106 0.2 0.2 3 4 
+121 5 79 0.2 312 67 0.2 56 0.2 515 885 106 
+13 5 20 0.2 184 0.2 0.2 1 14 118 263 11 322 
+49 0.2 17 0.2 0.2 39 8 0.2 1 0.2 12 17 5 15 
+673 3 398 44 664 52 31 226 11 7 8 144 112 36 87 
+244 0.2 166 0.2 183 44 43 0.2 19 204 48 70 289 14 47 660 
+0.2 0.2 8 0.2 22 7 11 2 0.2 0.2 21 16 71 54 0.2 2 0.2 
+1 4 251 0.2 72 87 8 9 191 12 20 117 71 792 18 30 46 38 
+340 0.2 23 0.2 350 0.2 14 3 0.2 1855 85 26 281 52 32 61 544 0.2 2 
+
+0.054116 0.018227 0.039903 0.020160 0.009709 0.018781 0.024289 0.068183 0.024518 0.092638 
+0.148658 0.021718 0.061453 0.088668 0.041826 0.091030 0.049194 0.029786 0.039443 0.057700 
+
+
+
+// this is the end of the file. The rest are notes. 
+
+Ala Arg Asn Asp Cys Gln Glu Gly His Ile Leu Lys Met Phe Pro Ser Thr Trp Tyr Val 
+
+This model has been derived from 36 artropoda mitochondrial genomes. 
+
+Each gene of the given species was aligned individually. Then, alignments of the whole set 
+of 13 genes where concatenated and passed through GBlocks (Castresana, 2000, in JME) with 
+parameters and output: 
+
+Minimum Number Of Sequences For A Conserved Position: 20 
+Minimum Number Of Sequences For A Flanking Position: 32 
+Maximum Number Of Contiguous Nonconserved Positions: 8 
+Minimum Length Of A Block: 10 
+Allowed Gap Positions: With Half 
+Use Similarity Matrices: Yes 
+
+Flank positions of the 40 selected block(s) 
+Flanks: [6 22] [26 44] [61 70] [77 143] [145 185] [208 236] [309 640] 
+[644 802] [831 941] [956 966] [973 1062] [1085 1339] [1343 1702] 
+[1754 1831] [1840 1911] [1916 1987] [2011 2038] [2097 2118] [2125 2143] 
+[2179 2215] [2243 2268] [2277 2288] [2333 2347] [2476 2518] [2539 2558] 
+[2600 2613] [2637 2672] [2738 2759] [2784 2839] [2882 2924] [2948 3097] 
+[3113 3123] [3210 3235] [3239 3322] [3348 3392] [3406 3526] [3588 3617] 
+[3660 3692] [3803 3830] [3909 3928] 
+
+New number of positions in MtArt-strict.phy.fasta-gb: <b> 2664 </b> (67% of the original 3933 positions) 
+
+The species included in the analysis were: 
+Harpiosquilla harpax [NCBI_TaxID 287944] 
+Ixodes uriae [NCBI_TaxID 59655] 
+Heptathela hangzhouensis [NCBI_TaxID 216259] 
+Triops longicaudatus [NCBI_TaxID 58777] 
+Gryllotalpa orientalis [NCBI_TaxID 213494] 
+lepidopsocid RS-2001 [NCBI_TaxID 159971] 
+Locusta migratoria [NCBI_TaxID 7004] 
+Drosophila yakuba [NCBI_TaxID 7245] 
+Ostrinia furnacalis [NCBI_TaxID 93504] 
+Megabalanus volcano [NCBI_TaxID 266495] 
+Periplaneta fuliginosa [NCBI_TaxID 36977] 
+Thermobia domestica [NCBI_TaxID 89055] 
+Aleurochiton aceris [NCBI_TaxID 266942] 
+Schizaphis graminum [NCBI_TaxID 13262] 
+Pteronarcys princeps [NCBI_TaxID 285953] 
+Aleurodicus dugesii [NCBI_TaxID 30099] 
+Pollicipes polymerus [NCBI_TaxID 36137] 
+Gomphiocephalus hodgsoni [NCBI_TaxID 221270] 
+Habronattus oregonensis [NCBI_TaxID 130930] 
+Speleonectes tulumensis [NCBI_TaxID 84346] 
+Hutchinsoniella macracantha [NCBI_TaxID 84335] 
+Haemaphysalis flava [NCBI_TaxID 181088] 
+Scutigera coleoptrata [NCBI_TaxID 29022] 
+Vargula hilgendorfii [NCBI_TaxID 6674] 
+Tricholepidion gertschi [NCBI_TaxID 89825] 
+Varroa destructor [NCBI_TaxID 109461] 
+Bombyx mandarina [NCBI_TaxID 7092] 
+Thyropygus sp. [NCBI_TaxID 174155] 
+Tribolium castaneum [NCBI_TaxID 7070] 
+Pagurus longicarpus [NCBI_TaxID 111067] 
+Limulus polyphemus [NCBI_TaxID 6850] 
+Tetrodontophora bielanensis [NCBI_TaxID 48717] 
+Penaeus monodon [NCBI_TaxID 6687] 
+Daphnia pulex [NCBI_TaxID 6669] 
+Apis mellifera [NCBI_TaxID 7469] 
+Anopheles gambiae [NCBI_TaxID 7165] 
+
+The topology used for inferring the model was: 
+
+(((Daph_pulex,Trio_longi),((((((Aleu_aceri,Aleu_duges),Schi_grami),lepi_RS_20), 
+((((Ostr_furna,Bomb_manda),(Dros_yakub,Anop_gambi)),Apis_melli),Trib_casta)), 
+((Gryl_orien,Locu_migra),(Pter_princ,Peri_fulig))),(Tric_gerts,Ther_domes)), 
+(Scut_coleo,Thyr_sp),Varg_hilge,Hutc_macra,((((Ixod_uriae,Haem_flava),Varr_destr), 
+(Habr_orego,Hept_hangz)),Limu_polyp),(Poll_polym,Mega_volca),(Gomp_hodgs,Tetr_biela), 
+((Pagu_longi,Pena_monod),Harp_harpa),Spel_tulum)); 
+
+Note this is not the ML topology but the consensus one (based on morphological data, 
+phylogenetic reconstruction using nuclear genes, etc). Where relationships are 
+not clear, a polytomy was introduced (it contains quite a lot of polytomies!). 
+
+The model was estimated using Ziheng Yang's Paml software package. 
+A four-categorized gamma distribution was used to account for heterogeneity (alpha 
+was estimated to be 0.47821). Sites with ambiguity data were taken into account.
+
+
+Reference
+
+Abascal, F., D. Posada, and R. Zardoya. 2007. MtArt: A new Model of
+amino acid replacement for Arthropoda. Mol. Biol. Evol. 24:1-5.
