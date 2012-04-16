@@ -10,7 +10,7 @@ __email__   = "francois@barrabin.org"
 __licence__ = "GPLv3"
 __version__ = "0.0"
 
-from ete_dev      import faces
+from ete_dev.treeview  import faces
 
 
 def evol_layout(node):

@@ -11,6 +11,7 @@ from sys import stderr
 from coretype.tree import *
 from coretype.seqgroup import *
 from phylo.phylotree import *
+from evol.evoltree import *
 from webplugin.webapp import *
 from phyloxml import Phyloxml, PhyloxmlTree
 from nexml import Nexml, NexmlTree

@@ -15,4 +15,6 @@ Current modules:
    reference_phylomedb
    reference_seqgroup
    reference_webplugin
+   reference_evol
+
 
