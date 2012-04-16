@@ -1,8 +1,8 @@
-.. currentmodule:: ete_dev.nexml
-
 .. moduleauthor:: Jaime Huerta-Cepas
 
 .. versionadded:: 2.1
+
+.. currentmodule:: ete_dev
 
 NeXML 
 ************************

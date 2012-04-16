@@ -1,15 +1,12 @@
-import sys
+from ete_dev import Tree, faces, AttrFace, TreeStyle, NodeStyle
 
-from ete_dev import Tree, faces, TreeStyle, NodeStyle
-
-def mylayout(node):
-    # If node is a leaf, add the nodes name and a its scientific
-    # name
+def layout(node):
+    # If node is a leaf, add the nodes name and a its scientific name
     if node.is_leaf():
-        faces.add_face_to_node(faces.AttrFace("name"), node, column=0)
+        faces.add_face_to_node(AttrFace("name"), node, column=0)
 
 t = Tree()
-t.populate(int(sys.argv[1]))
+t.populate(8)
 
 # Node style handling is no longer limited to layout functions. You
 # can now create fixed node styles and use them many times, save them
@@ -54,8 +51,9 @@ style2["hz_line_type"] = 1
 for l in t.iter_leaves():
     l.img_style = style2
 
-# ETE 2.1 has now support for general image properties 
-S = TreeStyle()
-S.mode =  "r" 
-t.show(mylayout, tree_style=S)
+
+ts = TreeStyle()
+ts.layout_fn = layout
+ts.show_leaf_name = False
+t.render("node_style.png", w=400, tree_style=ts)
 

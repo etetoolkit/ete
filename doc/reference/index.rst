@@ -14,5 +14,5 @@ Current modules:
    reference_phyloxml
    reference_phylomedb
    reference_seqgroup
-
+   reference_webplugin
 

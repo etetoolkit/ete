@@ -332,7 +332,7 @@ def _read_node_data(subnw, current_node, node_type,format):
         raise NewickError, "Unexpected leaf node format:\n\t"+ subnw[0:50]
     return
 
-def write_newick(node, features=[], format=1, _is_root=True):
+def write_newick(node, features=None, format=1, _is_root=True):
     """ Recursively reads a tree structure and returns its NHX
     representation. """
     newick = ""
@@ -361,7 +361,7 @@ def write_newick(node, features=[], format=1, _is_root=True):
         newick += ";"
     return newick
 
-def _get_features_string(self, features=[]):
+def _get_features_string(self, features=None):
     """ Generates the extended newick string NHX with extra data about
     a node. """
     string = ""

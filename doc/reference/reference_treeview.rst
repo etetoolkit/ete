@@ -1,11 +1,9 @@
 .. module:: ete_dev.treeview
 
-treeview module 
+Treeview module 
 *************************
 
 .. contents::
-
-
 
 Tree style
 ====================
@@ -14,7 +12,6 @@ Tree style
 
 .. autoclass:: ete_dev.FaceContainer
    :members:
-
 
 Node style
 =====================
@@ -59,7 +56,11 @@ Node faces
    :members:
    :no-undoc-members:
 
-.. autoclass:: ete_dev.ItemFace
+.. autoclass:: ete_dev.StaticItemFace
+   :members:
+   :no-undoc-members:
+
+.. autoclass:: ete_dev.DynamicItemFace
    :members:
    :no-undoc-members:
 

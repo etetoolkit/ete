@@ -1,9 +1,11 @@
-import sys
+# We will need to create Qt4 items
 from PyQt4 import QtCore
 from PyQt4.QtGui import QGraphicsRectItem, QGraphicsSimpleTextItem, \
     QGraphicsEllipseItem, QColor, QPen, QBrush
+
 from ete_dev import Tree, faces, TreeStyle, NodeStyle
 
+# To play with random colors
 import colorsys
 import random
 
@@ -18,7 +20,7 @@ class InteractiveItem(QGraphicsRectItem):
     def hoverEnterEvent (self, e):
         # There are many ways of adding interactive elements. With the
         # following code, I show/hide a text item over my custom
-        # ItemFace
+        # DynamicItemFace
         if not self.label: 
             self.label = QGraphicsRectItem()
             self.label.setParentItem(self)
@@ -37,32 +39,30 @@ class InteractiveItem(QGraphicsRectItem):
         if self.label: 
             self.label.setVisible(False)
 
-
-
 def random_color(h=None):
+    """Generates a random color in RGB format.""" 
     if not h:
         h = random.random()
     s = 0.5
     l = 0.5
-    return hls2hex(h, l, s)
+    return _hls2hex(h, l, s)
 
-def rgb2hex(rgb):
-    return '#%02x%02x%02x' % rgb
-
-def hls2hex(h, l, s):
-    return rgb2hex( tuple(map(lambda x: int(x*255), colorsys.hls_to_rgb(h, l, s))))
-
+def _hls2hex(h, l, s):
+    return '#%02x%02x%02x' %tuple(map(lambda x: int(x*255), 
+                                      colorsys.hls_to_rgb(h, l, s)))
 
 def ugly_name_face(node, *args, **kargs):
+    """ This is my item generator. It must receive a node object, and
+    returns a Qt4 graphics item that can be used as a node face.
+    """
 
     # receive an arbitrary number of arguments, in this case width and
     # height of the faces
     width = args[0][0]
     height = args[0][1]
 
-    # Creates a main master Item that will contain all other elements
-
-    # Items can be standard QGraphicsItem
+    ## Creates a main master Item that will contain all other elements
+    ## Items can be standard QGraphicsItem
     # masterItem = QGraphicsRectItem(0, 0, width, height)
     
     # Or your custom Items, in which you can re-implement interactive
@@ -100,16 +100,18 @@ def master_ly(node):
         # the constructor function that returns a QGraphicsItem. It
         # will be used to draw the Face. Next arguments are arbitrary,
         # and they will be forwarded to the constructor Face function.
-        F = faces.ItemFace(ugly_name_face, 100, 50)
+        F = faces.DynamicItemFace(ugly_name_face, 100, 50)
         faces.add_face_to_node(F, node, 0, position="aligned")
   
-size = int(sys.argv[1])
+
 t = Tree()
-t.populate(size, reuse_names=False)
+t.populate(8, reuse_names=False)
 
-I = TreeStyle()
-I.layout_fn = master_ly
-I.title.add_face(faces.TextFace("Drawing your own Qt Faces", fsize=15), 0)
+ts = TreeStyle()
+ts.layout_fn = master_ly
+ts.title.add_face(faces.TextFace("Drawing your own Qt Faces", fsize=15), 0)
 
-t.show(None, tree_style=I)
 
+t.render("item_faces.png", h=400, tree_style=ts)
+# The interactive features are only available using the GUI
+t.show(tree_style=ts)

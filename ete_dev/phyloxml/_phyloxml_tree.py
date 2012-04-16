@@ -2,7 +2,7 @@
 This module implements the interoperability between Phylogeny and
 Clade attributes in the phyloXMl schema and the ETE Tree objects.
 
-The PhyloXMLTree class should be use as a substitute for base Clade
+The PhyloxmlTree class should be use as a substitute for base Clade
 and Phylogeny classes.
 
 """
@@ -11,7 +11,7 @@ import sys
 from _phyloxml import Clade, Phylogeny, Confidence, Tag_pattern_
 from ete_dev import PhyloTree
 
-class PhyloXMLTree(PhyloTree):
+class PhyloxmlTree(PhyloTree):
     ''' PhyloTree object supporting phyloXML format. '''
 
     def __repr__(self):
@@ -62,7 +62,7 @@ class PhyloXMLTree(PhyloTree):
             self.phyloxml_clade.add_confidence(self.__support)
         else:
             self.phyloxml_clade = phyloxml_clade
-        super(PhyloXMLTree, self).__init__(**kargs)
+        super(PhyloxmlTree, self).__init__(**kargs)
 
     def build(self, node):
         nodetype = Tag_pattern_.match(node.tag).groups()[-1]

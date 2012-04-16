@@ -2,6 +2,7 @@ import colorsys
 import random
 import re
 import types 
+from sys import stderr
 
 from PyQt4.QtGui import *
 from PyQt4 import QtCore
@@ -87,7 +88,6 @@ class _Background(object):
             return bg
         else:
             return None
-        
 
 
 class _ActionDelegator(object):
@@ -169,8 +169,27 @@ class NodeStyle(dict):
     #    #        self["_faces"][pos][col] = list(faces)
 
     def __setitem__(self, i, v):
+        # keeps compatible with ETE 2.0 version
+        if i == "line_type":
+            print >>stderr, "WARNING: [%s] keyword is deprecated and it has been replaced by %s." %\
+                (i, "[hz_line_type, vt_line_type]")
+            print >>stderr, "WARNING: Support for this keyword will be removed in next ETE versions."
+            super(NodeStyle, self).__setitem__("hz_line_type", v)
+            i = "vt_line_type"
+
+        if i == "vlwidth":
+            i = "vt_line_width"
+            print >>stderr, "WARNING: [%s] keyword is deprecated and it has been replaced by %s." %\
+                (i, "[vt_line_width]")
+            print >>stderr, "WARNING: Support for this keyword will be removed in next ETE versions."
+        if i == "hlwidth":
+            i = "hz_line_width"
+            print >>stderr, "WARNING: [%s] keyword is deprecated and it has been replaced by %s." %\
+                (i, "[hz_line_width]")
+            print >>stderr, "WARNING: Support for this keyword will be removed in next ETE versions."
+      
         if i not in VALID_NODE_STYLE_KEYS:
-            raise ValueError("'%s' is not a valid key for a NodeStyle instance" %i)
+            raise ValueError("'%s' is not a valid keyword for a NodeStyle instance" %i)
         super(NodeStyle, self).__setitem__(i, v)
 
     #def clear(self):
@@ -179,6 +198,8 @@ class NodeStyle(dict):
 class TreeStyle(object):
     """ 
     .. versionadded:: 2.1
+
+    .. currentmodule:: ete_dev
 
     Contains all the general image properties used to render a tree
 
@@ -225,7 +246,7 @@ class TreeStyle(object):
 
     :var 0 arc_start: When circular trees are drawn, this defines
       the starting angle (in degrees) from which leaves are
-      distribute (clock-wise) around the total arc. 0 = 3 o'clock
+      distributed (clock-wise) around the total arc. 0 = 3 o'clock
 
     :var 360 arc_span: Total arc used to draw circular trees (in
       degrees)
@@ -283,13 +304,11 @@ class TreeStyle(object):
 
     Initialize aligned face headers
 
-    .. currentmodule:: ete_dev.treeview
+    :var aligned_header: a :class:`FaceContainer` aligned to the end
+      of the tree and placed at the top part.
 
-    :var aligned_header: a :class:`FaceContainer` with the header faces added
-      to the aligned faces grid.
-
-    :var aligned_foot: a :class:`FaceContainer` with the foot faces added
-      to the aligned faces grid.
+    :var aligned_foot: a :class:`FaceContainer` aligned to the end
+      of the tree and placed at the bottom part.
 
     :var legend: a :class:`FaceContainer` with an arbitrary number of faces
       representing the legend of the figure. 
@@ -300,6 +319,24 @@ class TreeStyle(object):
 
     """
    
+    def set_layout_fn(self, layout):
+        # Validates layout function
+        if type(layout) == types.FunctionType or\
+                type(layout) == types.MethodType or layout is None:
+            self._layout_handler = layout
+        else:
+            try:
+                import layouts
+                self._layout_handler = getattr(layouts, layout)
+            except Exception, e:
+                print e
+                raise ValueError ("Required layout is not a function pointer nor a valid layout name.")
+ 
+    def get_layout_fn(self):
+        return self._layout_handler
+
+    layout_fn = property(get_layout_fn, set_layout_fn)
+
     def __init__(self):
         # :::::::::::::::::::::::::
         # TREE SHAPE AND SIZE
@@ -314,7 +351,7 @@ class TreeStyle(object):
 
         # Layout function used to dynamically control the aspect of
         # nodes
-        self.layout_fn = None
+        self._layout_handler = None
         
         # 0= tree is drawn from left-to-right 1= tree is drawn from
         # right-to-left. This property only has sense when "r" mode
@@ -345,7 +382,7 @@ class TreeStyle(object):
         self.branch_vertical_margin = 0
 
         # When circular trees are drawn, this defines the starting
-        # angle (in degrees) from which leaves are distribute
+        # angle (in degrees) from which leaves are distributed
         # (clock-wise) around the total arc. 0 = 3 o'clock
         self.arc_start = 0 
 
@@ -421,25 +458,6 @@ class TreeStyle(object):
         self.title = FaceContainer()
         self.__closed__ = 1
 
-    def set_layout_fn(self, layout):
-        # Validates layout function
-        if type(layout) == types.FunctionType or\
-                type(layout) == types.MethodType or layout is None:
-            #self._layout_fn = layout       
-            self._layout_handler = layout
-        else:
-            try:
-                import layouts
-                self._layout_handler = getattr(layouts, layout)
-                #self._layout_fn = layout       
-            except Exception, e:
-                print e
-                raise ValueError ("Required layout is not a function pointer nor a valid layout name.")
- 
-    def get_layout_fn(self):
-        return self._layout_handler
-
-    layout_fn = property(get_layout_fn, set_layout_fn)
 
     def __setattr__(self, attr, val):
         if hasattr(self, attr) or not getattr(self, "__closed__", 0):
@@ -491,7 +509,7 @@ def add_face_to_node(face, node, column, aligned=False, position="branch-right")
 
     .. currentmodule:: ete_dev
 
-    :argument node: a tree node instance (:class:`TreeNode`, :class:`phylo.PhyloNode`, etc.)
+    :argument node: a tree node instance (:class:`Tree`, :class:`PhyloTree`, etc.)
     :argument column: An integer number starting from 0
     :argument "branch-right" position: Possible values are
       "branch-right", "branch-top", "branch-bottom", "float", "aligned"
@@ -510,16 +528,19 @@ def add_face_to_node(face, node, column, aligned=False, position="branch-right")
         print getattr(node, "_temp_faces", None)
         raise Exception("This function can only be called within a layout function. Use node.add_face() instead")
 
-def random_color(base=None):
-    s = 0.5#random.random()
-    v = 0.5+random.random()/2
-    s = random.random()
-    v = random.random()
-    if not base:
-        base = random.random()
-    R, G, B = map(lambda x: int(100*x), colorsys.hsv_to_rgb(base, s, v))
-    return "#%s%s%s" %(hex(R)[2:], hex(G)[2:], hex(B)[2:])
+def random_color(h=None, l=None, s=None):
+    def rgb2hex(rgb):
+        return '#%02x%02x%02x' % rgb
+    def hls2hex(h, l, s):
+        return rgb2hex( tuple(map(lambda x: int(x*255), colorsys.hls_to_rgb(h, l, s))))
 
+    if not h:
+        h = random.random()
+    if not s: 
+        s = 0.5
+    if not l:
+        l = 0.5
+    return hls2hex(h, l, s)
 
 def set_pen_style(pen, line_style):
     if line_style == 0:

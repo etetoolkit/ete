@@ -4,6 +4,7 @@
 
 The Programmable Tree Drawing Engine
 ************************************
+.. _drawing:
 
 .. contents::
 
@@ -322,8 +323,8 @@ Several types of node faces are provided by the main :mod:`ete_dev`
 module, ranging from simple text (:class:`TextFace`) and geometric
 shapes (:class:`CircleFace`), to molecular sequence representations
 (:class:`SequenceFace`), heatmaps and profile plots
-(:class:`ProfileFace`). **A complete list of available faces can be
-found at the :mod:`ete_dev.treeview` reference page**.
+(:class:`ProfileFace`). A complete list of available faces can be
+found at the :mod:`ete_dev.treeview` reference page..
 
 Faces position
 ^^^^^^^^^^^^^^^^
@@ -448,8 +449,56 @@ collection of rules controlling how different nodes should be drawn.
 
 
 Combining styles, faces and layouts
---------------------------------------------
+=====================================
 
-.. warning::
-   Under construction, sorry :(
-   More complex examples will be added!
+Examples are probably the best way to show how ETE works: 
+
+Fixed node styles
+-------------------
+
+ .. figure:: ../../examples/treeview/node_style.png
+
+ .. literalinclude:: ../../examples/treeview/node_style.py
+
+
+Node backgrounds
+-------------------
+
+ .. figure:: ../../examples/treeview/node_background.png
+
+ .. literalinclude:: ../../examples/treeview/node_background.py
+
+Img Faces
+-------------------
+
+ .. figure:: ../../examples/treeview/img_faces/img_faces.png
+
+Note that images are attached to terminal and internal nodes. 
+
+ .. literalinclude:: ../../examples/treeview/img_faces/img_faces.py
+
+
+Bubble tree maps
+-------------------
+
+ .. figure:: ../../examples/treeview/bubble_map.png
+
+ .. literalinclude:: ../../examples/treeview/bubble_map.py
+
+Trees within trees
+-------------------
+
+ .. figure:: ../../examples/treeview/tree_faces.png
+
+ .. literalinclude:: ../../examples/treeview/tree_faces.py
+
+
+Creating your custom interactive Item faces
+-------------------------------------------
+
+ .. figure:: ../../examples/treeview/item_faces.png 
+ 
+Note that item faces shown in this image are not static. When the tree
+is view using the tree.show() method, you can interact with items.
+
+ .. literalinclude:: ../../examples/treeview/item_faces.py

@@ -36,7 +36,7 @@ parser.add_option("-v", "--verbose", dest="verbose", \
                       action="store_true", \
                       help="It shows the commands that are executed at every step.")
 
-parser.add_option("-q", "--quite", dest="simulate", \
+parser.add_option("-s", "--simulate", dest="simulate", \
                       action="store_true", \
                       help="Do not actually do anything. ")
 
@@ -123,8 +123,10 @@ SERVER_METAPKG_PATH = "/home/services/web/ete.cgenomics.org/releases/ete2/metapk
 METAPKG_JAIL_PATH = "/home/jhuerta/_Devel/ete_metapackage/etepkg_CheckBeforeRm"
 METAPKG_PATH = "/home/jhuerta/_Devel/ete_metapackage"
 RELEASES_BASE_PATH = "/tmp"
-MODULE_NAME = "ete2a1"
-VERSION = MODULE_NAME+"rev"+commands.getoutput("git log --pretty=format:'' | wc -l").strip()
+MODULE_NAME = "ete2"
+MODULE_RELEASE = "2.1"
+REVISION = commands.getoutput("git log --pretty=format:'' | wc -l").strip()
+VERSION = MODULE_RELEASE+ "rev" + REVISION
 VERSION_LOG = commands.getoutput("git log --pretty=format:'%s' | head -n1").strip()
 RELEASE_NAME = MODULE_NAME+"-"+VERSION
 RELEASE_PATH = os.path.join(RELEASES_BASE_PATH, RELEASE_NAME)
@@ -143,7 +145,7 @@ if os.path.exists(RELEASE_PATH):
     print RELEASE_PATH, "exists"
     overwrite = ask("Overwrite?",["y","n"])
     if overwrite=="y":
-        _ex("rm %s -r" %RELEASE_PATH)
+        _ex("rm %s -rf" %RELEASE_PATH)
     else:
         print "Aborted."
         sys.exit(-1)
@@ -185,7 +187,8 @@ _ex('find %s/ete_dev/ -name \'*.py\' -exec  python ___put_disclaimer.py {} \;' %
 print "*** Fixing imports..."
 _ex('find %s -name \'*.py\' -o -name \'*.rst\'| xargs perl -e "s/ete_dev/ete2_tester/g" -p -i' %\
         (RELEASE_PATH))
-
+_ex('cp %s/scripts/ete_dev %s/scripts/ete2_tester' %\
+              (RELEASE_PATH, RELEASE_PATH))
 _ex('mv %s/ete_dev %s/ete2_tester' %(RELEASE_PATH, RELEASE_PATH))
 _ex('cd %s; python setup.py build --build-lib=build/lib' %(RELEASE_PATH))
 
@@ -197,23 +200,34 @@ if options.unitest:
 
 if options.test_examples:
     # Check tutorial examples
-    'find %s/examples/ -name "*.py" -exec python {} \;'
-
-    for filename in os.listdir("%s/examples/*/" %RELEASE_PATH):
-        error_examples = []
-        if filename.endswith(".py"):
-            print "Testing", filename
-            s = _ex('export PYTHONPATH="%s/build/lib/"; python %s/doc/tutorial/examples/%s;' %\
-                    (RELEASE_PATH, RELEASE_PATH, filename), interrupt=False)
-            if s != 0:
-                error_examples.append(filename)
-    print len(error_examples), "examples caused problems", error_examples
+    exfiles = commands.getoutput('find %s/examples/ -name "*.py"' %\
+            RELEASE_PATH).split("\n")
+    error_examples = []
+    for filename in exfiles:
+        print "Testing", filename
+        path = os.path.split(filename)[0]
+        cmd = 'cd %s; PYTHONPATH="%s/build/lib/" python %s' %\
+            (path, RELEASE_PATH, filename)
+        print cmd
+        s = _ex(cmd, interrupt=False)
+        if s != 0:
+            error_examples.append(filename)
+    print len(error_examples), "examples caused problems"
+    print '\n'.join(map(str, error_examples))
+    if ask("Continue?", ["y","n"]) == "n":
+        exit(-1)
 
 
 # Re-establish module name
 _ex('mv %s/ete2_tester %s' %(RELEASE_PATH, RELEASE_MODULE_PATH))
-_ex('find %s -name \'*.py\' -o -name \'*.rst\'| xargs perl -e "s/ete2_tester/%s/g" -p -i' %\
+_ex('rm %s/scripts/ete2_tester' % (RELEASE_PATH))
+_ex('find %s -name \'*.py\' -o -name \'*.rst\' | xargs perl -e "s/ete2_tester/%s/g" -p -i' %\
               (RELEASE_PATH, MODULE_NAME) )
+_ex('find %s/scripts/ -type f | xargs perl -e "s/ete_dev/%s/g" -p -i' %\
+              (RELEASE_PATH, MODULE_NAME) )
+
+_ex('mv %s/scripts/ete_dev %s/scripts/%s' %\
+              (RELEASE_PATH, RELEASE_PATH,  MODULE_NAME) )
 _ex('cd %s; python setup.py build' %(RELEASE_PATH))
 
 print "Cleaning doc dir:"
@@ -275,21 +289,32 @@ if process_package:
      
     print "Creating tar.gz"
     _ex("cd %s; python ./setup.py sdist " %RELEASE_PATH) 
-     
+
     release= ask("Copy release to main server?", ["y","n"])
     if release=="y":
-        print "Creating and submitting distribution to PyPI"
-        _ex("cd %s; python ./setup.py sdist upload --show-response " %RELEASE_PATH) 
         print "Copying release to ete server..."
         _ex("scp %s/dist/%s.tar.gz %s" %\
                 (RELEASE_PATH, RELEASE_NAME, SERVER+":"+SERVER_RELEASES_PATH))
+
         print "Updating releases table..."
-        _ex("ssh %s 'cd %s; sh update_downloads.sh'" %(SERVER, SERVER_RELEASES_PATH))
-     
+        _ex("ssh %s 'cd %s; echo %s > %s.latest; sh update_downloads.sh;'" %(SERVER, SERVER_RELEASES_PATH, REVISION, MODULE_NAME))
+
+        print "Creating and submitting distribution to PyPI"
+        _ex("cd %s; python ./setup.py sdist upload --show-response " %RELEASE_PATH) 
+
+
+    if ask("Update examples package in server?", ["y","n"]) == "y":
+        print "Creating examples package" 
+        _ex("cd %s; tar -zcf examples-%s.tar.gz examples/" %\
+                (RELEASE_PATH, MODULE_NAME) )
+
+        print "Copying examples to ete server..."
+        _ex("scp %s/examples-%s.tar.gz %s" %\
+                (RELEASE_PATH, MODULE_NAME, SERVER+":"+SERVER_RELEASES_PATH))
+
      
     announce = ask("publish tweet?", ["y","n"])
     if announce == "y":
         msg = ask(default=VERSION_LOG)
-        
         if ask("publish tweet?", ["y","n"]) == "y":
             _ex("twitter -eetetoolkit set %s" %msg) 

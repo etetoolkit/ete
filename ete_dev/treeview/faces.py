@@ -108,9 +108,10 @@ _ntbgcolors = {
     ' ':"#FFFFFF"
 }
 
-__all__ = ["Face", "TextFace", "AttrFace", "ImgFace",\
-               "ProfileFace", "SequenceFace", "TreeFace",\
-               "RandomFace", "ItemFace", "CircleFace", "PieChartFace", "BarChartFace"]
+__all__ = ["Face", "TextFace", "AttrFace", "ImgFace",
+           "ProfileFace", "SequenceFace", "TreeFace",
+           "RandomFace", "DynamicItemFace", "StaticItemFace",
+           "CircleFace", "PieChartFace", "BarChartFace"]
 
 class Face(object):
     """ 
@@ -206,22 +207,18 @@ class TextFace(Face):
     :argument ftype:    Font type, e.g. Arial, Verdana, Courier
     :argument fsize:    Font size, e.g. 10,12,6, (default=10)
     :argument fgcolor:  Foreground font color. RGB code or name in :data:`SVG_COLORS` 
-    :argument bgcolor:  Backgroung font color. RGB code or  name in :data:`SVG_COLORS` 
     :argument penwidth: Penwdith used to draw the text.
     :argument fstyle: "normal" or "italic" 
     """
 
-    def __init__(self, text, ftype="Verdana", fsize=10, fgcolor="#000000", bgcolor=None, penwidth=0, fstyle="normal"):
+    def __init__(self, text, ftype="Verdana", fsize=10, fgcolor="#000000", penwidth=0, fstyle="normal"):
 
         Face.__init__(self)
 
-        if bgcolor is None:
-            bgcolor = QtCore.Qt.transparent
         self.pixmap = None
         self.type = "text"
 
         self.text = str(text)
-        self.bgcolor = bgcolor
         self.fgcolor = fgcolor
         self.ftype = ftype 
         self.fsize = fsize
@@ -260,7 +257,6 @@ class AttrFace(TextFace):
     :argument ftype:    Font type, e.g. Arial, Verdana, Courier, (default="Verdana")
     :argument fsize:    Font size, e.g. 10,12,6, (default=10)
     :argument fgcolor:  Foreground font color. RGB code or name in :data:`SVG_COLORS` 
-    :argument bgcolor:  Backgroung font color. RGB code or name in :data:`SVG_COLORS` 
     :argument penwidth: Penwdith used to draw the text. (default is 0)
     :argument text_prefix: text_rendered before attribute value
     :argument text_suffix: text_rendered after attribute value
@@ -270,9 +266,9 @@ class AttrFace(TextFace):
     """
 
     def __init__(self, attr, ftype="Verdana", fsize=10, fgcolor="#000000", \
-                     bgcolor=None, penwidth=0, text_prefix="", text_suffix="", formatter=None, fstyle="normal"):
+                     penwidth=0, text_prefix="", text_suffix="", formatter=None, fstyle="normal"):
         Face.__init__(self)
-        TextFace.__init__(self, "", ftype, fsize, fgcolor, bgcolor, penwidth, fstyle)
+        TextFace.__init__(self, "", ftype, fsize, fgcolor, penwidth, fstyle)
         self.attr     = attr
         self.type     = "text"
         self.text_prefix = text_prefix
@@ -821,7 +817,7 @@ class TreeFace(Face):
     """ 
     .. versionadded:: 2.1
 
-    Creates a Face containing a Tree object. 
+    Creates a Face containing a Tree object. Yes, a tree within a tree :)
 
     :argument tree: An ETE Tree instance (Tree, PhyloTree, etc...)
     :argument tree_style: A TreeStyle instance defining how tree show be drawn 
@@ -894,14 +890,46 @@ class CircleFace(Face):
     def _height(self):
         return self.item.rect().height()
 
-class ItemFace(Face):
+
+class StaticItemFace(Face):
     """
     .. versionadded:: 2.1
 
-    Creates a QtGraphicsItem Face. 
+    Creates a face based on an external QtGraphicsItem object.
+    QGraphicsItem object is expected to be independent from tree node
+    properties, so its content is assumed to be static (drawn only
+    once, no updates when tree changes). 
 
-    :arguments constructor: A pointer to a function or methods
-      returning a QGraphicsItem based object
+    :arguments item: an object based on QGraphicsItem
+    """
+    def __init__(self, item):
+        Face.__init__(self)
+        self.type = "item"
+        self.item = item
+
+    def update_items(self):
+        return 
+
+    def _width(self):
+        return self.item.rect().width()
+
+    def _height(self):
+        return self.item.rect().height()
+
+
+class DynamicItemFace(Face):
+    """
+    .. versionadded:: 2.1
+
+    Creates a face based on an external QGraphicsItem object whose
+    content depends on the node that is linked to. 
+
+    :arguments constructor: A pointer to a method (function or class
+      constructor) returning a QGraphicsItem based
+      object. "constructor" method is expected to receive a node
+      instance as the first argument. The rest of arguments passed to
+      ItemFace are optional and will passed also to the constructor
+      function.
     """
 
     def __init__(self, constructor, *args, **kargs):
@@ -953,6 +981,7 @@ class BackgroundFace(Face):
 
     def _height(self):
         return self.min_height
+
 
 class _PieChartItem(QtGui.QGraphicsRectItem):
     def __init__(self, percents, width, height, colors):
@@ -1032,6 +1061,7 @@ class BarChartFace(Face):
 
     def _height(self):
         return self.item.rect().height()
+
 
 class _BarChartItem(QtGui.QGraphicsRectItem):
     def __init__(self, values, deviations, width, height, colors, labels, max_value):

@@ -1,3 +1,5 @@
+.. module:: ete_dev.parser.seqgroup
+
 Seqgroup class
 ==================
 

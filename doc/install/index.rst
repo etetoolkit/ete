@@ -1,25 +1,20 @@
 Download and Install
 **********************
 
-.. warning:: 
-   
-   Until the official stable version is released, you can download and
-   install the last 2.1 ETE (beta) version from:
-   http://pypi.python.org/pypi/ete2a1 Current version is fully usable
-   and pretty much stable. Please, report any bug that you may find. 
+.. contents:: 
 
-
-GNU/Linux
+GNU/Linux 
 ===========
 
-ETE requires python>=2.5 as well as several dependencies (Required
-only to enable particular functions, but highly recommended):
+ETE requires python>=2.5 (python 3 is not supported) as well as several
+dependencies (required only to enable particular functions, but highly
+recommended):
 
 - python-qt4 (>=4.5) [Enables tree visualization and image rendering]
 - python-mysqldb (>=1.2) [Enables programmatic access to PhylomeDB]
 - python-numpy (Required to work with clustering trees)
 - python-lxml [Required to work whit NexML and PhyloXML phylogenetic formats]
-- python-setuptools [Optional. Allows to install and upgrade ETE from PyPI repositories]
+- python-setuptools [Optional. Allows to install and upgrade ETE]
 
 
 Meeting dependencies (Debian based distributions)
@@ -33,7 +28,7 @@ can use the following shell command to install all dependencies:
 
 :: 
 
-  $ apt-get install python-numpy python-qt4 python-scipy python-mysqldb python-setuptools
+  $ apt-get install python-setuptools python-numpy python-qt4 python-scipy python-mysqldb python-lxml
 
 
 Meeting dependencies (other GNU/Linux distributions)
@@ -88,6 +83,7 @@ The following recipe has been reported to work in MacOS 10.5.8 (thanks to Marco 
      * py26-scipy
      * py26-pyqt4
      * py26-mysql
+     * py26-lxml
   4. Download the setup installer of the last ETE version (http://ete.cgenomics.org/releases/ete2), uncompress it, enter its folder and run: "sudo python setup.py install" Once the installation has finished,  you will be able to load ETE (import ete2) when running the "right" python binary.
 
 .. note:: 
@@ -99,3 +95,8 @@ The following recipe has been reported to work in MacOS 10.5.8 (thanks to Marco 
    By contrast, non-Macport python version is the one located in
    ``/Library/Frameworks/Python.framework/Versions/2.6/bin/python2.6``,
    so check that you are using the correct python executable.
+
+
+Older Versions
+================
+Older ETE versions can be found at http://ete.cgenomics.org/releases/ete2/

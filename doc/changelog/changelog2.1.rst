@@ -3,6 +3,9 @@ What's new in ETE 2.1
 
 .. currentmodule:: ete_dev
 
+* A basic standalone tree visualization program called "ete_dev" is now
+  installed along with the package. 
+
 * The drawing engine has been completely rewritten to provide the
   following new features:
 
@@ -18,7 +21,7 @@ What's new in ETE 2.1
   * Added new face positions **float**, **branch-top** and
     **branch-bottom**. See tutorial (:ref:`sec:node_faces`) for more details.
 
-  * Added several *face attributes*:
+  * Added several :class:`Face` attributes:
 
     * face border
     * face background color
@@ -30,7 +33,7 @@ What's new in ETE 2.1
   * Added new face types:
      * :class:`CircleFace` (basic circle/sphere forms)
      * :class:`TreeFace` (trees within trees)
-     * :class:`ItemFace` (create custom and interactive QtGraphicsItems)
+     * :class:`StaticItemFace` and :class:`DynamicItemFace` (create custom and interactive QtGraphicsItems)
   * Improved faces:
      * :class:`AttrFace` accepts prefix and suffix text, as well as a
        text formatter function. :attr:`fstyle` argument can be set to
@@ -47,13 +50,15 @@ What's new in ETE 2.1
    * Added :func:`TreeNode.sort_descendants`: sort tree branches according to node names.
    * Added :func:`TreeNode.ladderize`: sort tree branches according to partition size
    * Added :func:`TreeNode.get_partitions`: return the set of all possible partitions grouping leaf nodes
-   * nodes can now be fully exported using cPickle 
-   * newick parser can read distances and support values using scientific notation
+   * Tree nodes can now be fully exported using cPickle 
+   * Newick parser can read and export branch distances and support values using scientific notation
    * :func:`TreeNode.swap_childs` method has changed to :func:`TreeNode.swap_children`
 * Added :mod:`ete_dev.nexml` module (read and write nexml format)
 * Added :mod:`ete_dev.phyloxml` module (read and write phyloxml format)
 * Added :mod:`ete_dev.webplugin` module: Allows to create interactive web tree applications 
+* Tree visualization GUI checks now for newer version of the ETE package.
 * Added :class:`PhylomeDB3Connector`
+                         
 * Added :func:`PhyloNode.get_farthest_oldest_node` function, which allows to find the best outgroup node in a tree, even if it is an internal node.
 * Bug Fixes and improvements: 
    * Fix: :func:`TreeNode.get_common_ancestor` accepts a single argument (node or list of nodes) instead of a succession or nodes. It can also return the path of each node to the parent.
@@ -66,6 +71,8 @@ What's new in ETE 2.1
    * Improvement: Faster prune function
    * Improvement: unicode support for tree files
    * Improvement: Added newick support for scientific notation in branch lengths
-* Improved documentation tutorial and reference guide!
-   * A better library reference 
-   * New examples section
+
+* Improved documentation and examples:
+   * Online and PDF tutorial 
+   * Better library reference 
+   * A set of examples is now provided with the installation package and `here <http://ete.cgenomics.org/releases/ete2/examples-ete2.tar.gz>`_

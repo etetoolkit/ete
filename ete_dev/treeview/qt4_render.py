@@ -738,6 +738,7 @@ def set_style(n, layout_func):
         n.img_style = NodeStyle()
        
     n._temp_faces = _FaceAreas()
+
     if layout_func:
         layout_func(n)
     

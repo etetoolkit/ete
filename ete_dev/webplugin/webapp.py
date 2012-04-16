@@ -7,6 +7,11 @@ from hashlib import md5
 ALL = ["WebTreeApplication"]
 
 class WebTreeApplication(object):
+    """ Provides a basic WSGI application object which can handle ETE
+        tree visualization and interactions.  Please, see the
+        webplugin example provided with the ETE installation package
+        (http://pypi.python.org/pypi/ete_dev)."""
+
     def __init__(self):
         # Redirects normal output msgs to stderr, since stdout in web
         # application is for the browser
@@ -35,26 +40,37 @@ class WebTreeApplication(object):
             }
 
     def set_tree_size(self, w, h, units="px"):
+        """ Fix the size of tree image """
         self._width = w
         self._height = h
         self._size_units = units
 
     def set_external_app_handler(self, handler):
+        """ Sets a custom function that will extend current WSGI
+        application."""
         self._external_app_handler = handler
 
     def set_external_tree_renderer(self, handler):
+        """ If the tree needs to be processed every time is going to
+        be drawn, the task can be delegated. """
         self._custom_tree_renderer = handler
 
     def register_action(self, name, target, handler, checker, html_generator):
+        """ Adds a new web interactive function associated to tree
+        nodes. """
         self.actions.append([name, target, handler, checker, html_generator])
 
     def set_tree_loader(self, TreeConstructor):
+        """ Delegate tree constructor. It allows to customize the Tree
+        class used to create new tree instances. """
         self._tree = TreeConstructor
 
     def set_default_layout_fn(self, layout_fn):
+        """ Fix the layout function used to render the tree. """
         self._layout = layout_fn
 
     def set_tree_style(self, handler):
+        """ Fix a :class:`TreeStyle` instance to render tree images. """
         self._tree_style = handler
 
     def _get_html_map(self, img_map, treeid, mapid, tree):

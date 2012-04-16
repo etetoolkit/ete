@@ -36,6 +36,8 @@ except ImportError:
 else:
     TREEVIEW = True
 
+
+
 __all__ = ["Tree", "TreeNode"]
 
 DEFAULT_COMPACT = False
@@ -60,7 +62,7 @@ class TreeNode(object):
     :argument newick: Path to the file containing the tree or, alternatively,
        the text string containing the same information.
 
-    :argument format: subnewick format 
+    :argument 0 format: subnewick format 
 
       .. table::                                               
 
@@ -124,7 +126,7 @@ class TreeNode(object):
         else:
             raise ValueError, "children:wrong type"
 
-    #: Branch length distance to parent node. Default = 1
+    #: Branch length distance to parent node. Default = 0.0
     dist = property(fget=_get_dist, fset=_set_dist)
     #: Branch support for current node
     support = property(fget=_get_support, fset=_set_support)
@@ -198,7 +200,7 @@ class TreeNode(object):
         if isinstance(item, self.__class__):
             return item in set(self.get_descendants())
         elif type(item)==str:
-            return item in set([n.name for n in self.get_descendants()])
+            return item in set([n.name for n in self.traverse()])
 
     def __len__(self):
         """Node len returns number of children."""
@@ -630,7 +632,7 @@ class TreeNode(object):
         while node is not None:
             yield node
             if not is_leaf_fn or not is_leaf_fn(node):
-                to_visit.extendleft(node.children) 
+                to_visit.extendleft(reversed(node.children))
             try:
                 node = to_visit.popleft()
             except:
@@ -1024,7 +1026,21 @@ class TreeNode(object):
                 current = current.up
         return current
 
-    def populate(self, size, names_library=[], reuse_names=False, random_dist=False): 
+    def populate(self, size, names_library=None, reuse_names=False, 
+                 random_branches=False): 
+        """
+        Generates a random topology by populating current node.
+
+        :argument None names_library: If provided, names library
+          (list, set, dict, etc.) will be used to name nodes.
+
+        :argument False reuse_names: If True, node names will not be
+          necessarily unique, which makes the process a bit more
+          efficient.
+
+        :argument False random: If True, branch distances and support
+          values will be randomized.
+        """
         NewNode = self.__class__
 
         if len(self.children) > 1: 
@@ -1048,7 +1064,7 @@ class TreeNode(object):
             c1 = p.add_child()
             c2 = p.add_child()
             next.extend([c1, c2])
-            if random_dist:
+            if random_branches:
                 c1.dist = random.random()
                 c2.dist = random.random()
                 c1.support = random.random()
@@ -1056,7 +1072,8 @@ class TreeNode(object):
 
         # next contains leaf nodes
         charset =  "abcdefghijklmnopqrstuvwxyz"
-        names_library = deque(names_library)
+        if names_library:
+            names_library = deque(names_library)
         for n in next:
             if names_library:
                 if reuse_names: 
@@ -1067,54 +1084,6 @@ class TreeNode(object):
                 tname = ''.join(random.sample(charset,5))
             n.name = tname
             
-    def old_populate(self, size, names_library=[], reuse_names=False):
-        """
-        Populates the partition under this node with a given number
-        of leaves. Internal nodes are added as required.
-
-        :argument size: number of leaf nodes to add to the current
-            tree structure.
-
-        :argument [] names_library: a list of names that can be used
-          to create new nodes.
-
-        :argument False reuse_name: If True, new node names are not
-          necessarily unique.
-
-        """
-
-        charset =  "abcdefghijklmnopqrstuvwxyz"
-        
-        prev_size = len(self)
-        terminal_nodes = set(self.get_leaves())
-        silly_nodes = set([n for n in self.traverse() \
-                           if len(n)==1 and n.children!=[]])
-
-        if self.is_leaf():
-            size -=1
-        names_library = set(names_library)
-        while len(terminal_nodes) != size+prev_size:
-            try:
-                target = random.sample(silly_nodes, 1)[0]
-                silly_nodes.remove(target)
-            except ValueError:
-                target = random.sample(terminal_nodes, 1)[0]
-                terminal_nodes.remove(target)
-                silly_nodes.add(target)
-                if target is not self:
-                    names_library.add(target.name)
-                    #target.name = "NoName"
-
-            if len(names_library)>0:
-                tname = random.sample(names_library,1)[0]
-                if not reuse_names:
-                    names_library.remove(tname)
-
-            else:
-                tname = ''.join(random.sample(charset,5))
-            tdist = random.random()
-            new_node = target.add_child( name=tname, dist=tdist )
-            terminal_nodes.add(new_node)
 
     def set_outgroup(self, outgroup):
         """
@@ -1193,12 +1162,14 @@ class TreeNode(object):
 
         outgroup.up = self
         outgroup2.up = self
+        # outgroup is always the first children. Some function my
+        # trust on this fact, so do no change this.
         self.children = [outgroup,outgroup2]
         middist = (outgroup2.dist + outgroup.dist)/2
         outgroup.dist = middist
         outgroup2.dist = middist
         outgroup2.support = outgroup.support
-        #self.children.sort()
+
     def unroot(self):
         """ 
         Unroots current node. This function is expected to be used on
@@ -1225,19 +1196,12 @@ class TreeNode(object):
         """
         try:
             from ete_dev.treeview import drawer
-            from ete_dev.treeview.main import TreeStyle
         except ImportError, e:
             print "'treeview' module could not be loaded.\n",e
             print "\n\n"
             print e
         else:
-            if not tree_style:
-                tree_style = TreeStyle()
-
-            if layout:
-                tree_style.set_layout_fn(layout)
-
-            drawer.show_tree(self, layout=layout, img_properties=tree_style)
+            drawer.show_tree(self, layout=layout, tree_style=tree_style)
 
     def render(self, file_name, layout=None, w=None, h=None, \
                        tree_style=None, units="px", dpi=300):
@@ -1261,20 +1225,14 @@ class TreeNode(object):
 
         try:
             from ete_dev.treeview import drawer
-            from ete_dev.treeview.main import TreeStyle
         except ImportError, e:
             print "'treeview' module could not be loaded.\n",e
             print "\n\n"
             print e
         else:
-            if not tree_style:
-                tree_style  = TreeStyle()
-
-            if layout:
-                tree_style.set_layout_fn(layout)
-            return drawer.render_tree(self, file_name, w=w, h=h, layout=layout, \
-                                   img_properties=tree_style, \
-                                   units=units)
+            return drawer.render_tree(self, file_name, w=w, h=h, 
+                                      layout=layout, tree_style=tree_style, 
+                                      units=units)
 
     def copy(self):
         """ 
@@ -1547,14 +1505,16 @@ class TreeNode(object):
         if type(node_style) is NodeStyle:
             self.img_style = node_style
        
+    def phonehome(self):
+        from ete_dev import _ph
+        _ph.call()
 
 def _translate_nodes(root, *nodes):
-    
     name2node = dict([ [n, None] for n in nodes if type(n) is str])
     for n in root.traverse():
         if n.name in name2node:
             if name2node[n.name] is not None:
-                raise ValueError, "Ambiguos node name: "+str(n.name)
+                raise ValueError, "Ambiguous node name: "+str(n.name)
             else:
                 name2node[n.name] = n
 
@@ -1585,7 +1545,7 @@ def OLD_translate_nodes(root, *nodes):
             if len(mnodes) == 0:
                 raise ValueError, "Node name not found: "+str(n)
             elif len(mnodes)>1:
-                raise ValueError, "Ambiguos node name: "+str(n)
+                raise ValueError, "Ambiguous node name: "+str(n)
             else:
                 target_nodes.append(mnodes[0])
         elif type(n) != root.__class__:
@@ -1621,5 +1581,6 @@ def asRphylo(ETE_tree):
     R.library("ape")
     return R['read.tree'](text=ETE_tree.write())
 
-# An alias for the :class:`TreeNode` class
+# Alias
+#: .. currentmodule:: ete_dev
 Tree = TreeNode

@@ -121,13 +121,16 @@ def read_arraytable(matrix_file, mtype="float", arraytable_object = None):
     A._link_names2matrix(vmatrix)
     return A
 
-def write_arraytable(A, fname, colnames=[]):
-    if colnames == []:
+def write_arraytable(A, fname, colnames=None):
+    if colnames is None:
+        colnames = []
+    elif colnames == []:
         colnames = A.colNames
+
     matrix = A.get_several_column_vectors(colnames)
     matrix = matrix.swapaxes(0,1)
     OUT = open(fname,"w")
-    print >>OUT, '\t'.join(["#NAMES"]+colnames)
+    print >>OUT, '\t'.join(["#NAMES"] + colnames)
     counter = 0
     for rname in A.rowNames:
         print >>OUT, '\t'.join(map(str,[rname]+matrix[counter].tolist()))

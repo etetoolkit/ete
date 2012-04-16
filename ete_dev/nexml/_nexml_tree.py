@@ -10,7 +10,7 @@ class Children(list):
         item.nexml_edge.target = self.node.nexml_node.id
         item.nexml_edge.source = item.nexml_node.id
 
-class NexMLTree(PhyloTree):
+class NexmlTree(PhyloTree):
     """ 
     Special PhyloTree object with nexml support 
     """
@@ -73,7 +73,7 @@ class NexMLTree(PhyloTree):
         self.nexml_edge.add_meta(self._nexml_support)
 
         # Initialize empty PhyloTree
-        super(NexMLTree, self).__init__()
+        super(NexmlTree, self).__init__()
 
         if alignment:
             self.link_to_alignment(alignment, alg_format)
@@ -147,4 +147,4 @@ class NexMLTree(PhyloTree):
             item_.export(outfile, level, item_.name, namespace_)
 
 # end class AbstractTreeSub
-NexMLNode = NexMLTree
+NexmlNode = NexmlTree

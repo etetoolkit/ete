@@ -4,16 +4,36 @@ Frequently Asked Questions (FAQs)
 GENERAL
 ============
 
-How do I start ETE?
+How do I use ETE?
 -----------------------------------------------------------------
 
-ETE is not a standalone program, so you cannot just start it. ETE is a
-Python library, so you will need to create your own scripts and use
-ETE as a module (i.e. from ete2 import Tree).
+From 2.1 version, ETE includes a basic standalone program that can be
+used to quickly visualize your trees. Type ``ete2`` in a terminal to
+access the program. For instance:
 
-However, many example files are available. Many can be directly
-executed to perform specific actions, while others can be used as
-templates to learn how to perform certain actions.
+  ``# ete2 "((A,B),C);"``
+
+or 
+
+  ``# ete2 mytreefile.nw``
+
+
+However, ETE is not a standalone program. The ``ete2`` script is a
+very simple implementation and does not allow for fancy
+customization. The main goal of ETE is to provide a Python programming
+library, so you can create your own scripts to manipulate and
+visualize phylogenetic trees. Many examples are available `here
+<http:://ete.cgenomics.org/releases/ete2/examples-ete2.tar.gz>`_ and
+along with the ETE tutorial.
+
+
+Can ETE draw circular trees?
+----------------------------------
+
+Yes, starting from version 2.1, ete can render trees in circular
+mode. Install the latest version from
+http://pypi.python.org/pypi/ete_dev or by executing ``easy_install -U
+ete_dev``.
 
 How do I find a leaf by its name?
 -----------------------------------------------------------------
@@ -59,17 +79,17 @@ How do I visit all leaves within a tree?
 What's the difference between **get_leaves()** and **iter_leaves()**?
 -----------------------------------------------------------------------
 
-All "get_" methods (get_leaves, get_descendants, etc.) return an
+All get\_ methods (get_leaves, get_descendants, etc.) return an
 independent list of items. This means that tree traversing is fully
-performed before returning the result.  In contrast, "iter_" methods
+performed before returning the result.  In contrast, iter\_ methods
 return one item at a time, saving memory and, increasing the
 performance of some operations.
 
 Note also that tree topology cannot be modified while iterating
-methods are being executed. This limitation does not apply for "get_"
+methods are being executed. This limitation does not apply for get\_
 methods.
 
-In addition, "get_" methods can be used to cache tree browsing paths
+In addition, get\_ methods can be used to cache tree browsing paths
 (the order in which nodes must be visited), so the same tree
 traversing operations don't need to be repeated:
 
@@ -84,8 +104,6 @@ traversing operations don't need to be repeated:
   for n in nodes_in_preorder:
       pass # Do something else
   
-
-
 
 How do I export tree node annotations using the Newick format?
 ---------------------------------------------------------------
@@ -106,11 +124,14 @@ If you want all node features to be exported in the newick string, use
    tree.write(features=[])
 
 
-Can ETE draw circular trees?
-----------------------------------
+How do I export tree images as SVG
+-----------------------------------------------------------------
 
-Yes, starting from version 2.1, ete can render trees in circular
-mode. Currently, ETE version 2.1 is being tested and documented, but
-you can download it and use from http://pypi.python.org/pypi/ete2a1 or
-by executing "easy_install -U ete2a1".
+Image format is automatically detected from the filename extension.
+The following code will automatically render the tree as a vector
+image.
+
+::
+                
+        tree.render("mytree.svg")
 
