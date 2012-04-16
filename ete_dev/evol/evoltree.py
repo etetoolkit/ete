@@ -38,8 +38,8 @@ from warnings import warn
 
 from ete_dev               import PhyloNode
 from ete_dev               import SeqGroup
+from ete_dev.evol          import __path__ as ete_path
 from ete_dev.evol          import evol_layout
-from ete_dev.evol          import __path__
 from ete_dev.evol.model    import Model, PARAMS, AVAIL
 from ete_dev.evol.utils    import translate
 from ete_dev.parser.newick import write_newick
@@ -59,7 +59,7 @@ class EvolNode (PhyloNode):
 
     def __init__ (self, newick=None, alignment=None, alg_format="fasta",
                  sp_naming_function=_parse_species, format=0, 
-                  binpath=os.path.join(os.getcwd(), "bin")
+                  binpath=os.path.join(ete_path[0], "bin")
                   ):
         '''
         freebranch: path to find codeml output of freebranch model.
@@ -85,42 +85,63 @@ class EvolNode (PhyloNode):
             self.sort_descendants()
         self.mark_tree([])
 
+        
     def _label_as_paml (self):
         '''
         to label tree as paml, nearly walking man over the tree algorithm
         WARNING: sorted names in same order that sequence
         WARNING: depends on tree topology conformation, not the same after a swap
         '''
+        def __label_internal_nodes(self, paml_id):
+            for node in self.get_children():
+                if node.is_leaf():
+                    continue
+                paml_id += 1
+                node.add_feature ('paml_id', paml_id)
+                __label_internal_nodes(node, paml_id)
         paml_id = 1
         for leaf in sorted (self, key=lambda x: x.name):
             leaf.add_feature ('paml_id', paml_id)
             paml_id += 1
         self.add_feature ('paml_id', paml_id)
-        node = self
-        while True:
-            node = node.get_children()[0]
-            if node.is_leaf():
-                node = node.up
-                while hasattr (node.get_children()[1], 'paml_id'):
-                    node = node.up
-                    if not node:
-                        break
-                if not node:
-                    break
-                node = node.get_children()[1]
-            if not hasattr (node, 'paml_id'):
-                paml_id += 1
-                node.add_feature ('paml_id', paml_id)
-        def get_descendant_by_pamlid (idname):
-            '''
-            returns node list corresponding to a given idname
-            '''
-            for n in self.iter_descendants():
-                if n.paml_id == idname:
-                    return n
-            if self.paml_id == idname:
-                return self
-        vars (self)['get_descendant_by_pamlid'] = get_descendant_by_pamlid
+        __label_internal_nodes(self, paml_id)
+    
+    ## def _label_as_paml (self):
+    ##     '''
+    ##     to label tree as paml, nearly walking man over the tree algorithm
+    ##     WARNING: sorted names in same order that sequence
+    ##     WARNING: depends on tree topology conformation, not the same after a swap
+    ##     '''
+    ##     paml_id = 1
+    ##     for leaf in sorted (self, key=lambda x: x.name):
+    ##         leaf.add_feature ('paml_id', paml_id)
+    ##         paml_id += 1
+    ##     self.add_feature ('paml_id', paml_id)
+    ##     node = self
+    ##     while True:
+    ##         node = node.get_children()[0]
+    ##         if node.is_leaf():
+    ##             node = node.up
+    ##             while hasattr (node.get_children()[1], 'paml_id'):
+    ##                 node = node.up
+    ##                 if not node:
+    ##                     break
+    ##             if not node:
+    ##                 break
+    ##             node = node.get_children()[1]
+    ##         if not hasattr (node, 'paml_id'):
+    ##             paml_id += 1
+    ##             node.add_feature ('paml_id', paml_id)
+    ##     def get_descendant_by_pamlid (idname):
+    ##         '''
+    ##         returns node list corresponding to a given idname
+    ##         '''
+    ##         for n in self.iter_descendants():
+    ##             if n.paml_id == idname:
+    ##                 return n
+    ##         if self.paml_id == idname:
+    ##             return self
+    ##     vars (self)['get_descendant_by_pamlid'] = get_descendant_by_pamlid
 
     def __write_algn(self, fullpath):
         """
