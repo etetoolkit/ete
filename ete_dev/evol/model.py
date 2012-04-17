@@ -51,6 +51,18 @@ class Model:
         if path:
             self._load (path)
 
+    def __str__(self):
+        '''
+        to print nice info
+        '''
+        return ''' Evolutionary Model %s:
+        log likelihood      : %s
+        number of parameters: %s
+        ''' % (self.name,
+               self.lnL if 'lnL' in self.stats else 'None',
+               self.np  if 'np'  in self.stats else 'None'
+        )
+
     def _load (self, path):
         '''
         parse outfiles and load in model object

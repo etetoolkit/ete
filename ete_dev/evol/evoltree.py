@@ -55,7 +55,16 @@ def _parse_species (name):
 
 class EvolNode (PhyloNode):
     """ Re-implementation of the standart TreeNode instance. It adds
-    attributes and methods to work with phylogentic trees. """
+    attributes and methods to work with phylogentic trees.
+
+    :argument newick: path to tree in newick format, can also be a string
+    :argument alignment: path to alignment, can also be a string.
+    :argument fasta alg_format: alignment format.
+    :argument sp_naming_function: function to infer species name.
+    :argument format: type of newick format
+    :argument binpath: path to binaries, in case codeml or SLR are not in global path.
+    
+    """
 
     def __init__ (self, newick=None, alignment=None, alg_format="fasta",
                  sp_naming_function=_parse_species, format=0, 
@@ -165,8 +174,26 @@ class EvolNode (PhyloNode):
         seq_group.write (outfile=fullpath, format='paml')
 
     def run_model (self, model_name, ctrl_string='', keep=True, **kwargs):
-        ''' To compute evolutionnary models with paml
-        extra parameters should be in '''
+        '''
+        To compute evolutionnary models.     e.g.: b_free_lala.vs.lele, will launch one free branch model, and store 
+        it in "WORK_DIR/b_free_lala.vs.lele" directory
+        
+        WARNING: this functionality needs to create a working directory in "rep"
+        
+        WARNING: you need to have codeml and/or SLR in your path
+
+        The models available are:
+
+        +----------+-----------------------------+-----------------+
+        |Model name| description                 | kind            |
+        +==========+=============================+=================+\n%s
+        
+        :argument model_name: a string like "model-name[.some-secondary-name]" (e.g.: "fb.my_first_try", or just "fb")
+                              * model-name is compulsory, is the name of the model (see table above for the full list)
+                              * the second part is accessory, it is to avoid over-writing models with the same name.
+        :argument ctrl_string: list of parameters that can be used as control file.
+        :argument kwargs: extra parameters should be one of: %s.
+        '''
         from subprocess import Popen, PIPE
         model_obj = Model(model_name, self, **kwargs)
         fullpath = os.path.join (self.workdir, model_obj.name)
@@ -201,22 +228,15 @@ class EvolNode (PhyloNode):
         if keep:
             setattr (model_obj, 'run', run)
             self.link_to_evol_model (os.path.join(fullpath,'out'), model_obj)
-    run_model.__doc__ += '''%s
-    to run paml, needs tree linked to alignment.
-    model name needs to start by one of:
-%s
-    
-    e.g.: b_free_lala.vs.lele, will launch one free branch model, and store 
-    it in "WORK_DIR/b_free_lala.vs.lele" directory
-    
-    WARNING: this functionality needs to create a working directory in "rep"
-    WARNING: you need to have codeml in your path
-    starting values of omega, alpha etc...
-    ''' % ('['+', '.join (PARAMS.keys())+']\n', '\n'.join (map (lambda x: \
-    '           * %-9s %-18s model at  %-15s level.' % \
-    ('"%s"' % (x), AVAIL[x]['evol'], AVAIL[x]['typ']), \
-    sorted (sorted (AVAIL.keys()), cmp=lambda x, y : \
-    cmp(AVAIL[x]['typ'], AVAIL[y]['typ']), reverse=True))))
+    sep = '\n        +----------+-----------------------------+-----------------+\n'
+    run_model.__doc__ = run_model.__doc__ % \
+                        (sep.join(map (lambda x: \
+                                       '        | %-8s | %-27s | %-15s |' % \
+                                       ('%s' % (x), AVAIL[x]['evol'], AVAIL[x]['typ']),
+                                       sorted (sorted (AVAIL.keys()), cmp=lambda x, y : \
+                                               cmp(AVAIL[x]['typ'], AVAIL[y]['typ']),
+                                               reverse=True))) + sep,
+                         ', '.join (PARAMS.keys()))
 
 
     def link_to_alignment (self, alignment, alg_format="paml",
@@ -333,17 +353,18 @@ class EvolNode (PhyloNode):
         if len (self._models) == 1:
             self.change_dist_to_evol ('bL', model, fill=True)
 
-        def get_evol_model (modelname):
-            '''
-            returns one precomputed model
-            '''
-            try:
-                return self._models [modelname]
-            except KeyError:
-                warn ("Model %s not found." % (modelname))
-                
-        if not hasattr (self, "get_evol_model"):
-            vars (self)["get_evol_model"] = get_evol_model
+    def get_evol_model (self, modelname):
+        '''
+        returns one precomputed model
+        
+        :argument modelname: string of the name of a model object stored
+        :returns: Model object
+        '''
+        try:
+            return self._models [modelname]
+        except KeyError:
+            warn ("Model %s not found." % (modelname))
+            
 
     def write (self, features=None, outfile=None, format=10):
         """ Returns the newick-PAML representation of this node

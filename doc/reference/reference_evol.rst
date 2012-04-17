@@ -1,7 +1,7 @@
 .. module:: ete_dev.phylo
 
 ================
-PhyloTree class
+EvolTree class
 ================
 
 .. autoclass:: ete_dev.EvolNode
@@ -11,4 +11,4 @@ PhyloTree class
 
 .. autoclass:: ete_dev.EvolTree
 
-.. autoclass:: ete_dev.evol.model
+.. autoclass:: ete_dev.evol.Model

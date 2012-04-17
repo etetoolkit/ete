@@ -12,20 +12,28 @@ __version__ = "0.0"
 
 
 
-from ete_dev.evol import EvolTree
-from ete_dev.evol.treeview.layout import evol_clean_layout
-from ete_dev      import faces, TreeImageProperties
-from random       import random as rnd
-from model        import Model
-from copy         import deepcopy
+from ete_dev.evol             import EvolTree
+from ete_dev.treeview.layouts import evol_clean_layout
+from ete_dev                  import faces, TreeStyle
+from random                   import random as rnd
+from model                    import Model
+from copy                     import deepcopy
+from ete_dev                  import __path__ as ete_path
 
-WRKDIR = 'examples/data/protamine/PRM1/'
+WRKDIR = ete_path[0] + '/../examples/evol/data/protamine/PRM1/'
 
 def main():
     """
     main function
     """
 
+    print 'testing paml alignment parser'
+    try:
+        test_paml_parser()
+        print 'OK'
+    except:
+        print 'ERROR'
+    
     print 'link to already runned data.'
     tree = EvolTree (WRKDIR + 'tree.nw')
     tree.workdir = 'examples/data/protamine/PRM1/paml/'
@@ -69,8 +77,8 @@ def main():
     tree.show (histfaces=['M2','M2.a', 'M2.b', 'M2.c', 'M2.d'], layout=evol_clean_layout)
 
     # run codeml
-    TREE_PATH    = "examples/data/S_example/measuring_S_tree.nw"
-    ALG_PATH     = "examples/data/S_example/alignment_S_measuring_evol.fasta"
+    TREE_PATH    = ete_path[0] + '/../examples/evol/data/S_example/measuring_S_tree.nw'
+    ALG_PATH     = ete_path[0] + '/../examples/evol/data/S_example/alignment_S_measuring_evol.fasta'
     WORKING_PATH = "/tmp/ete2-codeml_example/"
     
     tree = EvolTree (TREE_PATH)
@@ -78,22 +86,22 @@ def main():
     tree.workdir = (WORKING_PATH)
     tree.run_model ('fb_anc')
 
-    I = TreeImageProperties()
-    I.force_topology             = False
-    I.tree_width                 = 200
-    I.draw_aligned_faces_as_grid = True
-    I.draw_guidelines            = True
-    I.guideline_type             = 2
-    I.guideline_color            = "#CCCCCC"
-    I.complete_branch_lines      = True
+    I = TreeStyle()
+    I.force_topology                      = False
+    I.tree_width                          = 200
+    I.draw_aligned_faces_as_table         = True
+    I.draw_guiding_lines                  = True
+    I.guiding_lines_type                  = 2
+    I.guiding_lines_color                 = "#CCCCCC"
+    I.complete_branch_lines_when_necesary = True
     for n in sorted (tree.get_descendants()+[tree],
                      key=lambda x: x.paml_id):
         if n.is_leaf(): continue
         anc_face = faces.SequenceFace (n.sequence, 'aa', fsize=11, aabg={})
-        I.aligned_foot.add_face(anc_face, 1)
-        I.aligned_foot.add_face(faces.TextFace('paml_id: #%d '%(n.paml_id)), 0)
+        n.add_face(anc_face, column=1, position='aligned')
+        n.add_face(faces.TextFace('paml_id: #%d '%(n.paml_id)), column=0, position='aligned')
     print 'display result of bs_anc model, with ancestral amino acid sequences.'
-    tree.show(img_properties=I)
+    tree.show(tree_style=I)
 
     tree.run_model ('M1')
     tree.run_model ('M2')
@@ -153,7 +161,7 @@ def main():
         if tomark:
             tree.mark_tree([node._nid], ['#1'])
     print tree.write()
-    tree.link_to_alignment ('examples/data/CladeModelNoOG/ECP_EDN_15.nuc',
+    tree.link_to_alignment (ete_path[0] + '/../examples/evol/data/CladeModelNoOG/ECP_EDN_15.nuc',
                             alg_format='paml')
     # run free branch just to lose time
     tree.run_model ('fb')
@@ -169,7 +177,7 @@ def main():
 
 
     tree = EvolTree ('((((Hylobates_EDN,(Orang_EDN,(Gorilla_EDN,(Chimp_EDN,Human_EDN)))),(Macaq_EDN,(Cercopith_EDN,(Macaq2_EDN,Papio_EDN)))),(Orang_ECP,((Macaq_ECP,Macaq2_ECP),(Goril_ECP,Chimp_ECP,Human_ECP)))),OwlMonkey_EDN,Tamarin_EDN);')
-    tree.link_to_alignment ('examples/data/CladeModelOG/ECP_EDN_17.nuc',
+    tree.link_to_alignment (ete_path[0] + '/../examples/evol/data/CladeModelOG/ECP_EDN_17.nuc',
                             alg_format='paml')
     tree.run_model ('fb.17spe')
 
@@ -182,7 +190,7 @@ def random_swap(tree):
     '''
     for node in tree.iter_descendants():
         if int (rnd()*100)%3:
-            node.swap_childs()
+            node.swap_children()
     
 def check_annotation (tree):
     '''
@@ -194,6 +202,35 @@ def check_annotation (tree):
             break
     print 'Labelling ok!'
 
+def test_paml_parser():
+    alignments = ['''  3 6
+seq1
+ATGATG
+seq2
+ATGATG
+seq3
+ATGATG
+''',
+'''  3 6
+>seq1
+ATGATG
+>seq2
+ATGATG
+>seq3
+ATGATG
 
+''',
+'''>seq1
+ATGATG
+>seq2
+ATGATG
+>seq3
+ATGATG
+''']
+    for ali in alignments:
+        t = EvolTree('((seq1,seq2),seq3);')
+        t.link_to_alignment(ali)
+
+    
 if __name__ == "__main__":
     exit(main())
