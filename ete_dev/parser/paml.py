@@ -45,19 +45,24 @@ def read_paml (source, obj=None):
         _source = iter(source.split("\n"))
 
     seq_name = None
+    num_seq = 0
+    len_seq = 0
+    in_seq  = False
     for line in _source:
         line = line.strip()
         if line.startswith('#') or not line:
             continue
         # Reads seq number
-        elif line.startswith('>'):
+        elif line.startswith('>') or ((num_seq and len_seq) and not in_seq):
+            print line
+            line = line.replace('>','')
             # Checks if previous name had seq
             if seq_id>-1 and SC.id2seq[seq_id] == "":
                 raise Exception, "No sequence found for "+seq_name
 
             seq_id += 1
             # Takes header info
-            seq_header_fields = map(string.strip, line[1:].split("\t"))
+            seq_header_fields = map(string.strip, line.split("\t"))
             seq_name = seq_header_fields[0]
 
             # Checks for duplicated seq names
@@ -73,19 +78,28 @@ def read_paml (source, obj=None):
             SC.name2id[seq_name]  = seq_id
             SC.id2comment[seq_id] = seq_header_fields[1:]
             names.add(seq_name)
-
+            in_seq = True
         else:
             if seq_name is None:
                 if search ('^[0-9]+  *[0-9]+$', line):
+                    num_seq, len_seq = line.strip().split()
+                    num_seq = int(num_seq)
+                    len_seq = int(len_seq)
                     continue
                 if line.startswith('\n'):
                     continue
                 raise Exception, "Error reading sequences: Wrong format.\n"+line
-            # removes all white spaces in line
-            s = line.strip().replace(" ","")
+            elif in_seq:
+                # removes all white spaces in line
+                s = line.strip().replace(" ","")
 
-            # append to seq_string
-            SC.id2seq[seq_id] += s
+                # append to seq_string
+                SC.id2seq[seq_id] += s
+                if len_seq:
+                    if len(SC.id2seq[seq_id]) == len_seq:
+                        in_seq=False
+                    elif len(SC.id2seq[seq_id]) > len_seq:
+                        raise  Exception, "Error reading sequences: Wrong sequence length.\n"+line
 
     if seq_name and SC.id2seq[seq_id] == "":
         print >>STDERR, seq_name,"has no sequence"
