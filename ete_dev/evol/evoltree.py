@@ -105,6 +105,17 @@ class EvolNode (PhyloNode):
             paml_id += 1
         self.add_feature ('paml_id', paml_id)
         __label_internal_nodes(self, paml_id)
+        
+        def get_descendant_by_pamlid (idname):
+            '''
+            returns node list corresponding to a given idname
+            '''
+            for n in self.iter_descendants():
+                if n.paml_id == idname:
+                    return n
+            if self.paml_id == idname:
+                return self
+        vars (self)['get_descendant_by_pamlid'] = get_descendant_by_pamlid
     
     ## def _label_as_paml (self):
     ##     '''
