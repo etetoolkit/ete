@@ -59,8 +59,7 @@ class EvolNode (PhyloNode):
 
     def __init__ (self, newick=None, alignment=None, alg_format="fasta",
                  sp_naming_function=_parse_species, format=0, 
-                  binpath=os.path.join(ete_path[0], "bin")
-                  ):
+                  binpath=''):
         '''
         freebranch: path to find codeml output of freebranch model.
         '''

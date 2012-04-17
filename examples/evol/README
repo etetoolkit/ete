@@ -1,0 +1,9 @@
+
+BEFORE ALL:
+
+you should have codeml and slr in your path:
+
+ * CodeML, you can downalod it from http://abacus.gene.ucl.ac.uk/software/paml.html
+ * SLR, from here: http://www.ebi.ac.uk/goldman-srv/SLR/
+
+download, compile and install both of the programs, in order to be able to run the examples.
