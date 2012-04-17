@@ -30,7 +30,7 @@ tree.run_model('M1')
 for leaf in tree:
     leaf._nid
     print '\n---------\nNow working with leaf ' + leaf.name
-    tree.mark_tree ([leaf._nid], ['#1'])
+    tree.mark_tree ([leaf._nid], marks=['#1'])
     print tree.write()
     # to organize a bit, we name model with the name of the marked node
     # any character after the dot, in model name, is not taken into account

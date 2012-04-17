@@ -28,7 +28,7 @@ tree.run_model ('M2')
 
 print '\n\ncomparison of models M1 and M2, pvalue: ' + str(tree.get_most_likely ('M2','M1'))
 
-tree.show()
+#tree.show()
 
 print 'by default the hist represented is this one:'
 

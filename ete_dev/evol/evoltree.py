@@ -292,7 +292,7 @@ class EvolNode (PhyloNode):
         e.g.: t=Tree.mark_tree([2,3], marks=["#1","#2"])
         '''
         from re import match
-        node_ids = map (str , node_ids)
+        node_ids = map (int , node_ids)
         if kargs.has_key('marks'):
             marks = list(kargs['marks'])
         else:

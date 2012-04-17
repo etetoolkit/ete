@@ -54,7 +54,6 @@ def read_paml (source, obj=None):
             continue
         # Reads seq number
         elif line.startswith('>') or ((num_seq and len_seq) and not in_seq):
-            print line
             line = line.replace('>','')
             # Checks if previous name had seq
             if seq_id>-1 and SC.id2seq[seq_id] == "":
