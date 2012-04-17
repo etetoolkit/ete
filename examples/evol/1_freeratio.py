@@ -58,7 +58,7 @@ raw_input ('finally have a look to two layouts availalble to display free-ratio:
 tree.show()
 
 # have to import layou
-from ete_dev.evol.treeview.layout import evol_clean_layout
+from ete_dev.treeview.layouts import evol_clean_layout
 
 print '(omega in dark red, 100*(dN)/100*(dS), in grey)'
 tree.show (layout=evol_clean_layout)

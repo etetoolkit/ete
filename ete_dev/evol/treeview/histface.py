@@ -313,10 +313,6 @@ class LineFaceBG (faces.Face):
                        y-line* self.mean/self.meanVal+2, str(line))
 
 
-
-
-
-
 class ErrorLineFace (faces.Face):
     """
     Creates a Histogram object, usually related to a sequence object

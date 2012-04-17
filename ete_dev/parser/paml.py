@@ -27,7 +27,36 @@ from sys import stderr as STDERR
 from re import search
 
 def read_paml (source, obj=None):
-    """ Reads a collection of sequences econded in PAML format."""
+    """ Reads a collection of sequences econded in PAML format... that is, something between PHYLIP and fasta
+
+     3 6
+    seq1
+    ATGATG
+    seq2
+    ATGATG
+    seq3
+    ATGATG
+
+    or
+
+     3 6
+    >seq1
+    ATGATG
+    >seq2
+    ATGATG
+    >seq3
+    ATGATG
+
+    or
+
+    >seq1
+    ATGATG
+    >seq2
+    ATGATG
+    >seq3
+    ATGATG
+    
+    """
 
     if obj is None:
         from ete_dev.coretype import seqgroup

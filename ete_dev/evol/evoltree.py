@@ -36,14 +36,14 @@ Yang, Z. 2007.
 import os
 from warnings import warn
 
-from ete_dev               import PhyloNode
-from ete_dev               import SeqGroup
-from ete_dev.evol          import __path__ as ete_path
-from ete_dev.evol          import evol_layout
-from ete_dev.evol.model    import Model, PARAMS, AVAIL
-from ete_dev.evol.utils    import translate
-from ete_dev.parser.newick import write_newick
-from ete_dev.treeview      import TreeStyle
+from ete_dev                  import PhyloNode
+from ete_dev                  import SeqGroup
+from ete_dev.evol             import __path__ as ete_path
+from ete_dev.treeview.layouts import evol_layout
+from ete_dev.evol.model       import Model, PARAMS, AVAIL
+from ete_dev.evol.utils       import translate
+from ete_dev.parser.newick    import write_newick
+from ete_dev.treeview         import TreeStyle
 
 __all__ = ["EvolNode", "EvolTree"]
 
