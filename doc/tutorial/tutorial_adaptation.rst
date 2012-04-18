@@ -18,6 +18,8 @@ you should have codeml and slr in your path:
 
 download, compile and install both of the programs, in order to be able to run the examples.
 
+**This class is essentialy to interact with external programs, it is strongly recommended to read their corresponding documentations.**
+
 Overview
 ================
 
@@ -181,6 +183,7 @@ and to display the results:
 
 when a site model is computed, an histface is automatically generated. Thus with this call, what we are doing is to draw the default histface corresponding to the model named M2.lala. This is the result:
 
+
 .. _M2_default-fig:
 
 .. figure:: ../ex_figures/M2_default.png
@@ -255,9 +258,22 @@ The most usual comparison, and perhaps the most robust, is the comparison of mod
 
   pval = tree.get_most_likely ('M2','M1')
 
+  model2 = tree.get_evol_model('M2')
+
+  print model2
+
+  # Evolutionary Model M2:
+  #        log likelihood       : -517.824749
+  #        number of parameters : 11
+  #        sites inference      : BEB, NEB
+  #        sites classes        : 
+  #           proportions: p0=0.98794   p1=0.00000   p2=0.01206   
+  #           w          : w0=0.09887   w1=1.00000   w2=178.86153 
+  #        branches             : 
+  #           mark: #0, omega: 2.25526440485   , nodes paml_ids: 6 4 2 7 1 3  
+
   if pval < 0.05:
     print 'M2 model wins.'
-    model2 = tree.get_evol_model('M2')
     for s in range(len(model2.sites['BEB']['aa'])):
       if model2.sites['BEB']['p2'][s] > 0.95:
         print 'positively selected site %s at position: %s, with probability: %s' % (model2.sites['BEB']['aa'][s], s+1, model2.sites['BEB']['p2'][s])
@@ -302,8 +318,21 @@ And the comparison between free-branch and neutral-branch models will tell us if
   tree.run_model ('b_neut')
   tree.run_model ('M0')
 
+  bfree = tree.get_evol_model('b_free')
+
+  print b_free
+
+  # Evolutionary Model b_free.234:
+  #      log likelihood       : -525.690213
+  #      number of parameters : 9
+  #      sites inference      : None
+  #      sites classes        : None
+  #      branches             : 
+  #        mark: #0, omega: 0.157280451975  , nodes paml_ids: 6 4 2
+  #        mark: #1, omega: 0.118462858241  , nodes paml_ids: 7 1 3
+
+
   if tree.get_most_likely ('b_free', 'M0') < 0.05:
-      bfree = tree.get_evol_model('b_free')
       # branch models have a branches dictionary were keys corresponds to paml_id of nodes in the tree
       # select one of the marked branches
       frg_node = tree.search_nodes(_nid=2)[0]
@@ -356,6 +385,18 @@ this example shows how to run it over all branches in the tree:
       tree.mark_tree (map (lambda x: x._nid, tree.get_descendants()),
                       marks=[''] * len (tree.get_descendants()), verbose=True)
 
+  print tree.get_evol_model('bsA')
+
+  # Evolutionary Model bsA.Hylobates_lar:
+  #        log likelihood       : -521.20329
+  #        number of parameters : 11
+  #        sites inference      : BEB, NEB
+  #        sites classes        : 
+  #           foreground w: f0=0.06451   f1=1.00000   f2=3.16215   f3=3.16215   
+  #           proportions : p0=0.00000   p1=0.00000   p2=0.94827   p3=0.05172   
+  #           background w: b0=0.06451   b1=1.00000   b2=0.06451   b3=1.00000   
+  #        branches             : 
+  #           None
 
 
 References

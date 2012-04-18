@@ -61,13 +61,32 @@ class Model:
         '''
         to print nice info
         '''
+        marks = {}
+        rootid = self._tree.paml_id
+        if self._tree:
+            for m in set([n.mark for n in self._tree.iter_descendants()]):
+                marks[m] = [n.paml_id for n in self._tree.search_nodes(mark=m) if not n.paml_id == rootid]
         return ''' Evolutionary Model %s:
-        log likelihood      : %s
-        number of parameters: %s
+        log likelihood       : %s
+        number of parameters : %s
+        sites inference      : %s
+        sites classes        : \n           %s
+        branches             : \n           %s
         ''' % (self.name,
                self.lnL if 'lnL' in self.stats else 'None',
-               self.np  if 'np'  in self.stats else 'None'
-        )
+               self.np  if 'np'  in self.stats else 'None',
+               ', '.join(self.sites.keys())  if self.sites else 'None',
+               '\n           '.join(['%-12s: %s '%(t,
+                                                   ' '.join(['%s%s=%-9s' % \
+                                                            (t[0], j, i) \
+                                                            for j, i in enumerate (self.classes[t])
+                                                        ]))\
+                                     for t in [t for t in self.classes]]) if self.classes else 'None',
+               '\n           '.join(['mark:%s, omega: %-16s, nodes paml_ids: %s' % (m if m else ' #0',
+                                                                                    self.branches[marks[m][0]]['w'],
+                                                                                    ' '.join([str(i) for i in marks[m]])) \
+                                     for m in marks]) if self.branches else 'None'
+           )
 
     def _load (self, path):
         '''
