@@ -99,6 +99,7 @@ class EvolNode (PhyloNode):
         to label tree as paml, nearly walking man over the tree algorithm
         WARNING: sorted names in same order that sequence
         WARNING: depends on tree topology conformation, not the same after a swap
+        activates the function get_descendants_by_pamlid
         '''
         def __label_internal_nodes(self, paml_id):
             for node in self.get_children():
@@ -125,42 +126,6 @@ class EvolNode (PhyloNode):
                 return self
         vars (self)['get_descendant_by_pamlid'] = get_descendant_by_pamlid
     
-    ## def _label_as_paml (self):
-    ##     '''
-    ##     to label tree as paml, nearly walking man over the tree algorithm
-    ##     WARNING: sorted names in same order that sequence
-    ##     WARNING: depends on tree topology conformation, not the same after a swap
-    ##     '''
-    ##     paml_id = 1
-    ##     for leaf in sorted (self, key=lambda x: x.name):
-    ##         leaf.add_feature ('paml_id', paml_id)
-    ##         paml_id += 1
-    ##     self.add_feature ('paml_id', paml_id)
-    ##     node = self
-    ##     while True:
-    ##         node = node.get_children()[0]
-    ##         if node.is_leaf():
-    ##             node = node.up
-    ##             while hasattr (node.get_children()[1], 'paml_id'):
-    ##                 node = node.up
-    ##                 if not node:
-    ##                     break
-    ##             if not node:
-    ##                 break
-    ##             node = node.get_children()[1]
-    ##         if not hasattr (node, 'paml_id'):
-    ##             paml_id += 1
-    ##             node.add_feature ('paml_id', paml_id)
-    ##     def get_descendant_by_pamlid (idname):
-    ##         '''
-    ##         returns node list corresponding to a given idname
-    ##         '''
-    ##         for n in self.iter_descendants():
-    ##             if n.paml_id == idname:
-    ##                 return n
-    ##         if self.paml_id == idname:
-    ##             return self
-    ##     vars (self)['get_descendant_by_pamlid'] = get_descendant_by_pamlid
 
     def __write_algn(self, fullpath):
         """
@@ -173,6 +138,7 @@ class EvolNode (PhyloNode):
             seq_group.name2id [n.name   ] = n.paml_id
         seq_group.write (outfile=fullpath, format='paml')
 
+        
     def run_model (self, model_name, ctrl_string='', keep=True, **kwargs):
         '''
         To compute evolutionnary models.     e.g.: b_free_lala.vs.lele, will launch one free branch model, and store 
@@ -185,7 +151,7 @@ class EvolNode (PhyloNode):
         The models available are:
 
         +----------+-----------------------------+-----------------+
-        |Model name| description                 | kind            |
+        |Model name| description                 | Model kind      |
         +==========+=============================+=================+\n%s
         
         :argument model_name: a string like "model-name[.some-secondary-name]" (e.g.: "fb.my_first_try", or just "fb")
@@ -243,6 +209,12 @@ class EvolNode (PhyloNode):
                            nucleotides=True):
         '''
         same function as for phyloTree, but translate sequences if nucleotides
+        nucleotidic sequence is kept under node.nt_sequence
+
+        :argument alignment: path to alignment or string
+        :argument alg_format: one of fasta phylip or paml
+        :argument True alignment: set to False in case we want to keep it untranslated
+        
         '''
         super(EvolTree, self).link_to_alignment(alignment,
                                                 alg_format=alg_format)
@@ -254,8 +226,13 @@ class EvolNode (PhyloNode):
 
     def show(self, layout=evol_layout, tree_style=None, histfaces=None):
         '''
-        call super show
+        call super show of PhyloTree
         histface should be a list of models to be displayes as histfaces
+
+        :argument layout: a layout function
+        :argument None tree_style: tree_style object
+        :argument Nonehistface: an histogram face function. This is only to plot selective pressure among sites
+    
         '''
         if not tree_style:
             ts = TreeStyle()
@@ -275,13 +252,18 @@ class EvolNode (PhyloNode):
                 else:
                     ts.aligned_foot.add_face (\
                         mdl.properties['histface'], 1)
-        super(EvolTree, self).show(layout=layout,
-                                     tree_style=ts)
+        super(EvolTree, self).show(layout=layout, tree_style=ts)
+    
 
     def render (self, file_name, layout=evol_layout, w=None, h=None,
                 tree_style=None, header=None, histfaces=None):
         '''
         call super show adding up and down faces
+
+        :argument layout: a layout function
+        :argument None tree_style: tree_style object
+        :argument Nonehistface: an histogram face function. This is only to plot selective pressure among sites
+
         '''
         if not tree_style:
             ts = TreeStyle()
@@ -308,7 +290,15 @@ class EvolNode (PhyloNode):
         '''
         function to mark branches on tree in order that paml could interpret it.
         takes a "marks" argument that should be a list of #1,#1,#2
-        e.g.: t=Tree.mark_tree([2,3], marks=["#1","#2"])
+        e.g.:
+        ::
+        
+          t=Tree.mark_tree([2,3], marks=["#1","#2"])
+
+        :argument node_ids: list of node ids (have a look to node._nid)
+        :argument False verbose: warn if marks do not correspond to codeml standard
+        :argument kargs: mainly for the marks key-word which needs a list of marks (marks=['#1', '#2'])
+        
         '''
         from re import match
         node_ids = map (int , node_ids)
@@ -336,6 +326,10 @@ class EvolNode (PhyloNode):
           * free-branch model ('fb') will append evol values to tree
           * Site models (M0, M1, M2, M7, M8) will give evol values by site
             and likelihood
+        
+        :argument path: path to outfile containing model computation result
+        :argument model: either the name of a model, or a Model object (usually empty)
+        
         '''
         if type (model) == str :
             model = Model (model, self, path)
@@ -367,18 +361,9 @@ class EvolNode (PhyloNode):
             
 
     def write (self, features=None, outfile=None, format=10):
-        """ Returns the newick-PAML representation of this node
-        topology. Several arguments control the way in which extra
-        data is shown for every node:
+        """
+        Inherits from Tree but adds the tenth format, that allows to display marks for CodeML.
 
-        features: a list of feature names that want to be shown
-        (when available) for every node.
-
-        'format' defines the newick standard used to encode the
-        tree. See tutorial for details.
-
-        Example:
-             t.get_newick(["species","name"], format=1)
         """
         from re import sub
         if int (format)==11:
@@ -395,36 +380,54 @@ class EvolNode (PhyloNode):
             return nwk
         else:
             return nwk
+    write.__doc__ += super(PhyloNode, PhyloNode()).write.__doc__.replace('argument format',
+                                                                         'argument 10 format')
 
+    
     def get_most_likely (self, altn, null):
         '''
         Returns pvalue of LRT between alternative model and null model.
         
         usual comparison are:
-         * altern vs null model
-         ------------------------
-         * M2     vs M1     -> PS on sites (M2 prone to miss some sites)
-                               ref: Yang 2000
-         * M3     vs M0     -> test of variability among sites
-         * M8     vs M7     -> PS on sites
-                               ref: Yang 2000
-         * M8     vs M8a    -> RX on sites?? think so....
-         * bsA    vs bsA1   -> PS on sites on specific branch
-                               ref: Zhang 2005
-         * bsA    vs M1     -> RX on sites on specific branch
-                               ref: Zhang 2005
-         * bsC    vs M1     -> different omegas on clades branches sites
-                               ref: Yang Nielsen 2002
-         * bsD    vs M3     -> different omegas on clades branches sites
-                               ref: Yang Nielsen 2002
-                                    Bielawski 2004
-         * b_free vs b_neut -> foreground branch not neutral (w != 1)
-                              - RX if P<0.05 (means that w on frg=1)
-                              - PS if P>0.05 and wfrg>1
-                              - CN if P>0.05 and wfrg>1
-                               ref: Yang Nielsen 2002
-         * b_free vs M0     -> different ratio on branches
-                               ref: Yang Nielsen 2002
+
+        +-----------+-------+------------------------------------------+
+        |Alternative| Null  | Test                                     |
+        +===========+=======+==========================================+
+        | M2        | M1    | PS on sites (M2 prone to miss some sites)|
+        |           |       | (Yang 2000)                              |
+        +-----------+-------+------------------------------------------+
+        | M3        | M0    | test of variability among sites          |
+        +-----------+-------+------------------------------------------+
+        | M8        | M7    | PS on sites                              |
+        |           |       | (Yang 2000)                              |
+        +-----------+-------+------------------------------------------+
+        | M8        | M8a   | RX on sites?? think so....               |
+        +-----------+-------+------------------------------------------+
+        | bsA       | bsA1  | PS on sites on specific branch           |
+        |           |       | (Zhang 2005)                             |
+        +-----------+-------+------------------------------------------+
+        | bsA       | M1    | RX on sites on specific branch           |
+        |           |       | (Zhang 2005)                             |
+        +-----------+-------+------------------------------------------+
+        | bsC       | M1    | different omegas on clades branches sites|
+        |           |       | ref: Yang Nielsen 2002                   |
+        +-----------+-------+------------------------------------------+
+        | bsD       | M3    | different omegas on clades branches sites|
+        |           |       | (Yang Nielsen 2002, Bielawski 2004)      |
+        +-----------+-------+------------------------------------------+
+        | b_free    | b_neut| foreground branch not neutral (w != 1)   |
+        |           |       |  - RX if P<0.05 (means that w on frg=1)  |
+        |           |       |  - PS if P>0.05 and wfrg>1               |
+        |           |       |  - CN if P>0.05 and wfrg>1               |
+        |           |       |  (Yang Nielsen 2002)                     |
+        +-----------+-------+------------------------------------------+
+        | b_free    | M0    | different ratio on branches              |
+        |           |       | (Yang Nielsen 2002)                      |
+        +-----------+-------+------------------------------------------+
+
+        :argument altn: model with higher number of parameters (np)
+        :argument null: model with lower number of parameters (np)
+        
         '''
         altn = self.get_evol_model (altn)
         null = self.get_evol_model (null)
@@ -445,8 +448,12 @@ class EvolNode (PhyloNode):
 
     def change_dist_to_evol (self, evol, model, fill=False):
         '''
-        change dist/branch length of the tree to a given evolutionnary
-        varaiable (dN, dS, w or bL), default is bL.
+        change dist/branch length of the tree to a given evolutionary
+        variable (dN, dS, w or bL), default is bL.
+
+        :argument evol: evolutionary variable
+        :argument model: Model object from which to retrieve evolutionary variables
+        :argument False fill: do not affects only dist parameter, each node will be annotated with all evolutionary variables (nodel.dN, node.w...).
         '''
         # branch-site outfiles do not give specific branch info
         if not model.branches:

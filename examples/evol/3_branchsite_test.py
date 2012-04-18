@@ -21,8 +21,8 @@ print tree
 
 raw_input ('\n   tree and alignment loaded\nHit some key, to start computation of branch site models A and A1 on each branch.\n')
 
-print 'running model M1, for camparison with branch-site models...'
-tree.run_model('M1')
+print 'running model M0, for camparison with branch-site models...'
+tree.run_model('M0')
 
 # each node/leaf has two kind of identifiers _nid and paml_id, to mark nodes we have to specify
 # the _nid of the nodes we want to mark, and the kind of mark in this way:
@@ -40,7 +40,7 @@ for leaf in tree:
     tree.run_model ('bsA1.' + leaf.name)
     print 'p-value of positive selection for sites on this branch is: '
     ps = tree.get_most_likely ('bsA.' + leaf.name, 'bsA1.'+ leaf.name)
-    rx = tree.get_most_likely ('bsA1.'+ leaf.name, 'M1')
+    rx = tree.get_most_likely ('bsA1.'+ leaf.name, 'M0')
     print str (ps)
     print 'p-value of relaxation for sites on this branch is: '
     print str (rx)
@@ -49,7 +49,7 @@ for leaf in tree:
     elif rx<0.05 and ps>=0.05:
         print 'we have relaxation on sites on this branch'
     else:
-        print 'no signal detected on this branch, best fit for M1'
+        print 'no signal detected on this branch, best fit for M0'
     print '\nclean tree, remove marks'
     tree.mark_tree (map (lambda x: x._nid, tree.get_descendants()),
                     marks=[''] * len (tree.get_descendants()), verbose=True)

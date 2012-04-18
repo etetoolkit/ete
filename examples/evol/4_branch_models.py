@@ -49,14 +49,14 @@ print 'running branch free...'
 tree.run_model ('b_free.234')
 print 'running branch neut...'
 tree.run_model ('b_neut.234')
-print 'running M1 (all branches have the save value of omega)...'
-tree.run_model ('M1')
+print 'running M0 (all branches have the save value of omega)...'
+tree.run_model ('M0')
 
 raw_input ('''Now we can do comparisons...
 Compare first if we have one or 2 rates of evolution among phylogeny.
-LRT between b_free and M1 (that is one or two rates of omega value)
+LRT between b_free and M0 (that is one or two rates of omega value)
 p-value ofthis comparison is:''')
-print tree.get_most_likely ('b_free.234', 'M1')
+print tree.get_most_likely ('b_free.234', 'M0')
 
 raw_input ('''
 Now test if foreground rate is significantly different of 1.
@@ -67,7 +67,7 @@ negative selection. And finally if models are not significantly diferent
 we should accept null hypothesis that omega value on marked branches is
 equal to 1, what would be a signal of relaxation.
 p-value for difference in rates between marked branches and the rest:''')
-print tree.get_most_likely ('b_free.234', 'M1')
+print tree.get_most_likely ('b_free.234', 'M0')
 print 'p-value representing significance that omega is different of 1:'
 print tree.get_most_likely ('b_free.234', 'b_neut.234')
 

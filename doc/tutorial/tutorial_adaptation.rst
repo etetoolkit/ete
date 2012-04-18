@@ -8,6 +8,16 @@ Testing Evolutionary Hypothesis
 .. contents::
 
 
+BEFORE ALL:
+=============
+
+you should have codeml and slr in your path:
+
+ * CodeML, you can downalod it from http://abacus.gene.ucl.ac.uk/software/paml.html
+ * SLR, from here: http://www.ebi.ac.uk/goldman-srv/SLR/
+
+download, compile and install both of the programs, in order to be able to run the examples.
+
 Overview
 ================
 
@@ -156,7 +166,195 @@ With here :math:`\omega` ratios in red and also in gray the *dN* and *dS* values
 Site model
 -----------
 
+Another way to look at selective pressures, is to compute directly along the alignment, the value of :math:`\omega` for a whole column (putting all leaves together). For doing this, we can use for example the model M2 of CodeML or directly use SLR. As before we just have to:
 
+::
+
+  tree.run_model('M2.lala')
+  tree.run_model('SLR.lele')
+
+and to display the results:
+
+::
+
+  tree.show (histfaces=['M2'])
+
+when a site model is computed, an histface is automatically generated. Thus with this call, what we are doing is to draw the default histface corresponding to the model named M2.lala. This is the result:
+
+.. _M2_default-fig:
+
+.. figure:: ../ex_figures/M2_default.png
+  :scale: 100 %
+
+However customizing this face is feasible:
+
+::
+
+  col2 = {'NS' : 'white', 'RX' : 'white',
+        'RX+': 'white', 'CN' : 'white',
+        'CN+': 'white', 'PS' : 'white', 'PS+': 'white'}
+
+
+  model2.set_histface (up=False, typ='error', col=col2, lines = [2.5, 1.0, 4.0, 0.5], header = 'Many lines, error boxes, background black', col_lines=['orange', 'yellow', 'red', 'cyan'])
+
+  tree.show(histfaces=['M2.lala'])
+
+
+.. _M2_error-fig:
+
+.. figure:: ../ex_figures/M2_error-box.png
+  :scale: 100 %
+
+or:
+
+::
+
+  model2 = tree.get_evol_model ('M2.lala')
+
+  col2 = {'NS' : 'white', 'RX' : 'white',
+          'RX+': 'white', 'CN' : 'white',
+          'CN+': 'white', 'PS' : 'white', 'PS+': 'white'}
+
+  model2.set_histface (up=False, typ='protamine', lines = [1.0,0.3], col_lines=['black','grey'], extras=['+','-',' ',' ',' ',':P', ' ',' ']*2+[' ']*(len(tree.get_leaves()[0].sequence)-16))
+
+  tree.show(histfaces=['M2.lala'])
+
+
+.. _M2_super_profesional-fig:
+
+.. figure:: ../ex_figures/M2_super_profesional.png
+  :scale: 100 %
+
+
+The col dictionary contains the colors for sites detected to be under positive selection (PS), relaxation (RX), or conserved (CN). However, it is not a good idea to use them now as we do not know if there is indeed positive selection.
+
+To be able to accept M2 results we will have to test this model against a null model.
+
+
+Hypothesis Testing
+===================
+
+In order to know if the parameters estimated under a given model a reliable, we have to compare its likelihood to a null model.
+
+Usually, the alternative model is a model that estimates the proportion of sites with :math:`\omega > 1` and we compare its likelihood with a null model, usually a model that do not (letting :math:`\omega <= 1`). This comparison is done through a likelihood ratio test. If the alternative model has the best fit than we are able to accept the possibility of :math:`\omega > 1`.
+
+To see a non-exhaustive list of famous comparison see the documentation of the function: :func:`ete_dev.EvolNode.get_most_likely`
+
+
+Test on sites
+--------------
+
+In order to know if some sites are significantly under positive selection, relaxed or conserved we have usually to compare 2 models. However using the model "SLR" we can directly infer positive selection or relaxation through the SLR program [massingham2005]_.
+
+The most usual comparison, and perhaps the most robust, is the comparison of models M2 and M1.
+
+::
+
+  tree.run_model ('M1')
+  tree.run_model ('M2')
+
+  pval = tree.get_most_likely ('M2','M1')
+
+  if pval < 0.05:
+    print 'M2 model wins.'
+    model2 = tree.get_evol_model('M2')
+    for s in range(len(model2.sites['BEB']['aa'])):
+      if model2.sites['BEB']['p2'][s] > 0.95:
+        print 'positively selected site %s at position: %s, with probability: %s' % (model2.sites['BEB']['aa'][s], s+1, model2.sites['BEB']['p2'][s])
+  else:
+    print 'M1 model is not rejected'
+
+  # M2 model wins.
+  # positively selected site P at position: 81, with probability: 0.96293
+
+Each sites model, contains a dictionary 'model.sites' in which are stored the results of CodeML. These are displayed through the histface, but they are still accessible by digging a bit. 'site' dictionary usually contains the result of the NEB and BEB analysis (prefer the BEB when available). For each of BEB and NEB, the probability of belonging from one category of site is summarized by 'p0', 'p1' and 'p2' in the case of M2 model that have only 3 class of sites (p0, the probability of belonging to the first class of sites with :math:`\omega < 1`; p1, the probability of belonging to the second class of sites with :math:`\omega = 1`; p2, the probability of belonging to the third class of sites with :math:`\omega > 1`). *For details on the models and outputs, it is recommended to read PAML documentation.*
+
+
+Test on branches
+------------------
+
+CodeML allows to test models that infer different selective pressures on a set of given branches. To do it, some branches of the tree are marked (usually with strings like this: '#1'). This is how to do it with ETE:
+
+::
+
+  marks = ['2', '3', '4']
+
+  # mark a group of branches
+  tree.mark_tree (marks, ['#1', '#1', '#1'])
+  print tree.write ()
+
+  # ((Hylobates_lar,(Gorilla_gorilla #1,Pan_troglodytes #1) #1),Papio_cynocephalus);
+
+By doing this a branch model will compute different :math:`\omega` values in mark branches (usually called foreground :math:`\omega_{frg}`) and in the rest of the tree (usually called background :math:`\omega_{bkg}`).
+
+Two kinds of branch models are usually used:
+  * the free-branch model: were :math:`\omega_{frg}` and :math:`\omega_{bkg}` are free
+  * the neutral-branch model: were :math:`\omega_{frg}` is fixed to one.
+  * the M0 model: were all branches evolve at the same rate.
+
+The comparison between free-branch and M0, will tell us if foreground branches have an :math:`\omega` significantly different from the rest of the tree.
+
+And the comparison between free-branch and neutral-branch models will tell us if :math:`\omega_{frg}` is significantly higher than 1.
+
+::
+
+  tree.run_model ('b_free')
+  tree.run_model ('b_neut')
+  tree.run_model ('M0')
+
+  if tree.get_most_likely ('b_free', 'M0') < 0.05:
+      bfree = tree.get_evol_model('b_free')
+      # branch models have a branches dictionary were keys corresponds to paml_id of nodes in the tree
+      # select one of the marked branches
+      frg_node = tree.search_nodes(_nid=2)[0]
+      frg_pamlid = frg_node.paml_id 
+      w_frg = bfree.branches[frg_pamlid]['w']
+      # select one of the unmarked branches
+      bkg_node = tree.search_nodes(_nid=1)[0]
+      bkg_pamlid = bkg_node.paml_id 
+      w_bkg = bfree.branches[bkg_pamlid]['w']
+      print 'foreground branches evolving at omega value of %s significantly diferent from %s.' % (w_frg, w_bkg)
+
+  if  tree.get_most_likely ('b_free', 'b_neut') < 0.05:
+      print 'foreground branches are significantly different from 1.'
+
+*for the given example, background and foreground are not different...*
+
+Test on branch-sites
+---------------------
+
+An other popular test is the branch-site test contrasting model A and A1. This test allows to detect genes with some sites under positive selection.
+
+this example shows how to run it over all branches in the tree:
+
+::
+
+  for leaf in tree:
+      leaf._nid
+      print '\n---------\nNow working with leaf ' + leaf.name
+      tree.mark_tree ([leaf._nid], marks=['#1'])
+      print tree.write()
+      # to organize a bit, we name model with the name of the marked node
+      # any character after the dot, in model name, is not taken into account
+      # for computation. (have a look in /tmp/ete2.../bsA.. directory)
+      print 'running model bsA and bsA1'
+      tree.run_model ('bsA.'+ leaf.name)
+      tree.run_model ('bsA1.' + leaf.name)
+      print 'p-value of positive selection for sites on this branch is: '
+      ps = tree.get_most_likely ('bsA.' + leaf.name, 'bsA1.'+ leaf.name)
+      rx = tree.get_most_likely ('bsA1.'+ leaf.name, 'M1')
+      print str (ps)
+      print 'p-value of relaxation for sites on this branch is: '
+      print str (rx)
+      if ps<0.05 and float (bsA.wfrg2a)>1:
+          print 'we have positive selection on sites on this branch'
+      elif rx<0.05 and ps>=0.05:
+          print 'we have relaxation on sites on this branch'
+      else:
+          print 'no signal detected on this branch, best fit for M1'
+      print '\nclean tree, remove marks'
+      tree.mark_tree (map (lambda x: x._nid, tree.get_descendants()),
+                      marks=[''] * len (tree.get_descendants()), verbose=True)
 
 
 
@@ -165,3 +363,5 @@ References
 
 
 .. [yang2007] Yang, Z., PAML 4: phylogenetic analysis by maximum likelihood. Molecular biology and evolution 24: 1586-91. (2007)
+
+.. [massingham2005] Massingham T. and Goldman N. Detecting amino acid sites under positive selection and purifying selection. Genetics 169: 1853-1762. (2005)
