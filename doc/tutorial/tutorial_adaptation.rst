@@ -13,7 +13,7 @@ BEFORE ALL:
 
 You should have codeml and slr in your path:
 
- * CodeML, you can downalod it from http://abacus.gene.ucl.ac.uk/software/paml.html
+ * CodeML, you can download it from http://abacus.gene.ucl.ac.uk/software/paml.html
  * SLR, from here: http://www.ebi.ac.uk/goldman-srv/SLR/
 
 Download, compile and install both of the programs, in order to be able to run the examples.
@@ -40,7 +40,7 @@ Evolutionary variables that are used to summary selective pressures are, of cour
 The working directory
 ---------------------
 
-EvolTree works mainly as PhyloTree, thus it needs a tree and an alignment. However as you are going to run external programs over it, **a working directory needs to be defined**. By default tree.workdir is "/tmp/ete2-codeml/", but it is recommended to change it to a more usefull path. 
+EvolTree works mainly as PhyloTree, thus it needs a tree and an alignment. However as you are going to run external programs over it, **a working directory needs to be defined**. By default tree.workdir is "/tmp/ete2-codeml/", but it is recommended to change it to a more useful path. 
 
 Jobs will be stored in the workdir, and you will be able to load pre-computed evolutionary models from there.
 
@@ -239,7 +239,7 @@ or:
   :scale: 100 %
 
 
-The col dictionary contains the colors for sites detected to be under positive selection (PS), relaxation (RX), or conserved (CN). However, it is not a good idea to use them now as we do not know if there is indeed positive selection.
+The col dictionary contains the colours for sites detected to be under positive selection (PS), relaxation (RX), or conserved (CN). However, it is not a good idea to use them now as we do not know if there is indeed positive selection.
 
 To be able to accept M2 results we will have to test this model against a null model.
 
