@@ -435,7 +435,96 @@ When an evolutionary model is computed, the output is stored in *tree.workdir* a
 
 *Note:* :func:`ete_dev.EvolNode.link_to_evol_model` is also able to load directly :class:`ete_dev.evol.Model` objects.
 
-.. , thus, all output files generated do not need to be kept, only a `pickle or cPickle <http://docs.python.org/library/pickle.html>`_ of the model for example.
+Indeed all output files generated do not need to be kept, only a `pickle or cPickle <http://docs.python.org/library/pickle.html>`_ of the model for example.
+
+Thus we can save a tree with all Models computed, after having run some models:
+
+::
+
+  # assume we already have run some models:
+  for model in  tree._models:
+      print tree.get_evol_model(model)
+
+  #  Evolutionary Model M2.example:
+  #         log likelihood       : -517.824749
+  #         number of parameters : 11
+  #         sites inference      : BEB, NEB
+  #         sites classes        : 
+  #            proportions : p0=0.98794   p1=0.00000   p2=0.01206   
+  #            w           : w0=0.09887   w1=1.00000   w2=178.86192 
+  #         branches             : 
+  #            mark: #0, omega: 2.25526864047   , nodes paml_ids: 6 4 2 7 1 3
+  #         
+  #  Evolutionary Model M1.example:
+  #         log likelihood       : -521.541845
+  #         number of parameters : 9
+  #         sites inference      : NEB
+  #         sites classes        : 
+  #            proportions : p0=0.94075   p1=0.05925   
+  #            w           : w0=0.07025   w1=1.00000   
+  #         branches             : 
+  #            mark: #0, omega: 0.125334579074  , nodes paml_ids: 6 4 2 7 1 3
+
+  # we save the whole tree into my_tree.pik
+  from cPickle import dump
+
+  out = open('my_tree.pik', 'w')
+  dump (tree, out)
+  out.close()
+
+and load them:
+
+::
+
+  from cPickle import load
+
+  
+  out = open('my_tree.pik')
+  tree = load(out)
+  out.close()
+
+  # and here the same result
+  for model in  tree._models:
+      print tree.get_evol_model(model)
+
+  #  Evolutionary Model M2.example:
+  #         log likelihood       : -517.824749
+  #         number of parameters : 11
+  #         sites inference      : BEB, NEB
+  #         sites classes        : 
+  #            proportions : p0=0.98794   p1=0.00000   p2=0.01206   
+  #            w           : w0=0.09887   w1=1.00000   w2=178.86192 
+  #         branches             : 
+  #            mark: #0, omega: 2.25526864047   , nodes paml_ids: 6 4 2 7 1 3
+  #         
+  #  Evolutionary Model M1.example:
+  #         log likelihood       : -521.541845
+  #         number of parameters : 9
+  #         sites inference      : NEB
+  #         sites classes        : 
+  #            proportions : p0=0.94075   p1=0.05925   
+  #            w           : w0=0.07025   w1=1.00000   
+  #         branches             : 
+  #            mark: #0, omega: 0.125334579074  , nodes paml_ids: 6 4 2 7 1 3
+
+this also can be done for one model alone:
+
+::
+
+  from cPickle import dump, load
+
+  m2_to_save = tree.get_evol_model('M2.example')
+
+  out = open ('m2.pik', 'w')
+  dump(m2_to_save, out)
+  out.close()
+
+  # and then load it
+  out = open ('m2.pik')
+  m2_to_save = dump(out)
+  out.close()
+
+  tree.link_to_evol_model(m2_to_save)
 
 
 References
