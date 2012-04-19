@@ -25,18 +25,21 @@ def etime(f):
 
 class CheckUpdates(QThread):
     def run(self):
-        current, latest, tag = new_version()
-        if tag is None: 
-            tag = ""
-        msg = ""
-        if current and latest:
-            if current < latest:
-                msg = "New version available (rev%s): %s More info at http://ete.cgenomics.org." %\
-                    (latest, tag)
-            elif current == latest:
-                msg = "Up to date"
-        self.emit(SIGNAL("output(QString)"), msg)
-
+        try:
+            current, latest, tag = new_version()
+            if tag is None: 
+                tag = ""
+            msg = ""
+            if current and latest:
+                if current < latest:
+                    msg = "New version available (rev%s): %s More info at http://ete.cgenomics.org." %\
+                        (latest, tag)
+                elif current == latest:
+                    msg = "Up to date"
+            self.emit(SIGNAL("output(QString)"), msg)
+        except Exception:
+            pass
+            
 class _GUI(QtGui.QMainWindow):
     def _updatestatus(self, msg):
         self.main.statusbar.showMessage(msg)
