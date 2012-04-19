@@ -23,13 +23,14 @@
 import copy
 from evolevents import EvolEvent
 
+
 def get_reconciled_tree(node, sptree, events):
     """ Returns the recoliation gene tree with a provided species
     topology """
 
-    if len(node.children)==2:
+    if len(node.children) == 2:
         # First visit childs
-        morphed_childs =[]
+        morphed_childs = []
         for ch in node.children:
             mc, ev = get_reconciled_tree(ch, sptree, events)
             morphed_childs.append(mc)
@@ -38,11 +39,11 @@ def get_reconciled_tree(node, sptree, events):
         # topology. Remember tree is visited on recursive post-order
         sp_child_0 = morphed_childs[0].get_species()
         sp_child_1 = morphed_childs[1].get_species()
-        all_species =  sp_child_1 | sp_child_0
+        all_species = sp_child_1 | sp_child_0
 
         # If childs represents a duplication (duplicated species)
         # Check that both are reconciliated to the same species
-        if len(sp_child_0 & sp_child_1)>0:
+        if len(sp_child_0 & sp_child_1) > 0:
             newnode = copy.deepcopy(node)
             newnode.up = None
             newnode.children = []
@@ -53,8 +54,8 @@ def get_reconciled_tree(node, sptree, events):
             newmorphed1, matchnode = _replace_on_template(template, morphed_childs[1])
             newnode.add_child(newmorphed0)
             newnode.add_child(newmorphed1)
-            newnode.add_feature("evoltype","D")
-            node.add_feature("evoltype","D")
+            newnode.add_feature("evoltype", "D")
+            node.add_feature("evoltype", "D")
             e = EvolEvent()
             e.etype = "D"
             e.inparalogs = node.children[0].get_leaf_names()
@@ -86,7 +87,7 @@ def get_reconciled_tree(node, sptree, events):
     elif len(node.children)==0:
         return copy.deepcopy(node), events
     else:
-        raise ValueError, "Algorithm can only work with binary trees."
+        raise ValueError("Algorithm can only work with binary trees.")
 
 def _replace_on_template(orig_template, node):
     template = copy.deepcopy(orig_template)

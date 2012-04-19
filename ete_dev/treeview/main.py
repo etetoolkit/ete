@@ -258,7 +258,7 @@ class TreeStyle(object):
 
     **TREE BRANCHES**
 
-    :var True complete_branch_lines_when_necesary: True or False.
+    :var True complete_branch_lines_when_necessary: True or False.
       When top-branch and bottom-branch faces are larger than
       branch length, branch line can be completed. Also, when
       circular trees are drawn
@@ -402,7 +402,7 @@ class TreeStyle(object):
         # When top-branch and bottom-branch faces are larger than
         # branch length, branch line can be completed. Also, when
         # circular trees are drawn, 
-        self.complete_branch_lines_when_necesary = True
+        self.complete_branch_lines_when_necessary = True
         self.extra_branch_line_type = 2 # 0 solid, 1 dashed, 2 dotted
         self.extra_branch_line_color = "gray" 
 

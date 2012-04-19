@@ -649,7 +649,7 @@ def render_node_content(node, n2i, n2f, img):
     hz_line.setLine(0, center, 
                     branch_length, center)
 
-    if img.complete_branch_lines_when_necesary:
+    if img.complete_branch_lines_when_necessary:
 
         extra_line = _LineItem(branch_length, center, ball_start_x, center)
         pen = QtGui.QPen()
