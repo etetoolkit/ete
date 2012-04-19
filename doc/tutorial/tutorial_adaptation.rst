@@ -11,12 +11,12 @@ Testing Evolutionary Hypothesis
 BEFORE ALL:
 =============
 
-you should have codeml and slr in your path:
+You should have codeml and slr in your path:
 
  * CodeML, you can downalod it from http://abacus.gene.ucl.ac.uk/software/paml.html
  * SLR, from here: http://www.ebi.ac.uk/goldman-srv/SLR/
 
-download, compile and install both of the programs, in order to be able to run the examples.
+Download, compile and install both of the programs, in order to be able to run the examples.
 
 **This class is essentialy to interact with external programs, it is strongly recommended to read their corresponding documentations.**
 
@@ -25,7 +25,7 @@ Overview
 
 An other aspect in the study of evolutionary history, is the analysis of selective pressures accounting for the conservation or degeneration of **protein coding genes**.
 
-The :class:`EvolTree` class is an extension of the class :class:`PhyloTree` that implements mainly bindings to the PAML package [yang2007]_ but also to the SLR program.
+The :class:`EvolTree` class is an extension of the class :class:`PhyloTree` that implements mainly bindings to the PAML package [yang2007]_ but also to the SLR program [massingham2005]_.
 
 Evolutionary variables that are used to summary selective pressures are, of course the branch-length (*bL*) already available in :class:`PhyloTree`, but also the rate of non-synonymous mutations (*dN*), the rate of synonymous mutations (*dS*) and finally the :math:`\omega` ratio: 
 
@@ -35,6 +35,14 @@ Evolutionary variables that are used to summary selective pressures are, of cour
   \begin{eqnarray}
     \omega = \frac{dN}{dS}
   \end{eqnarray}
+
+
+The working directory
+---------------------
+
+EvolTree works mainly as PhyloTree, thus it needs a tree and an alignment. However as you are going to run external programs over it, **a working directory needs to be defined**. By default tree.workdir is "/tmp/ete2-codeml/", but it is recommended to change it to a more usefull path. 
+
+Jobs will be stored in the workdir, and you will be able to load pre-computed evolutionary models from there.
 
 
 Descriptive analysis
@@ -48,7 +56,7 @@ In order to identify the evolutionary trends in a phylogenetic tree, one can eit
 Branch model
 --------------
 
-As for :class:`PhyloTree`, we first load the tree and alignment:
+As for :class:`PhyloTree`, we first load the tree and alignment (and you working directory, if you want to save a copy of your jobs):
 
 ::
   
@@ -64,6 +72,8 @@ As for :class:`PhyloTree`, we first load the tree and alignment:
   ATGGCCAGGTACAGATGCTGTCGCAGCCAGAGCCGCAGCAGATGTTACCGGCAGAGCCGGAGCAGGTGTTACCGGCAGAGACAAAGCCAGAGCCGGAGCAGATGCTACCGGCAGAGCCAAAGCCGGAGCAGGTGTTACCGGCAGAGACAAAGAAGTCGCAGACGTAGGCGGAGGAGCTGCCAGACACGGAGGAGAGCCATGAGGTGCTGCCGCCGCAGGTACAGACTGAGACGTAGAAGACCCTATCATATTGTATCT
   >Pan_troglodytes
   ATGGCCAGGTACAGATGCTGTCGCAGCCAGAGCCGGAGCAGATGTTACCGGCAGAGACGGAGCAGGTGTTACCGGCAAAGGCAAAGCCAAAGTCGGAGCAGATGTTACCGGCAGAGCCAGAGACGGAGCAGGTGTTACCGGCAAAGACAAAGAAGTCGCAGACGAAGGCGACGGAGCTGCCAGACACGGAGGAGAGCCATGAGGTGCTGCCGCCGCAGGTACAGACTGAGACGTAAAAGATGTTACCATATTGTATCT''')  
+
+  tree.workdir = '/path_to/my_working_directory/'
 
 Once loaded we are able to compute selective pressure among the tree according to an evolutionary model. In this case, we will use free-ratio model:
 ::
@@ -397,6 +407,35 @@ this example shows how to run it over all branches in the tree:
   #           background w: b0=0.06451   b1=1.00000   b2=0.06451   b3=1.00000   
   #        branches             : 
   #           None
+
+
+Utilities
+==========
+
+Load precomputed evolutionary model
+------------------------------------
+
+When an evolutionary model is computed, the output is stored in *tree.workdir* and can be load afterwards. Inside *tree.workdir*, a new directory is created for each model you compute (if each model has a different name), thus to load one model:
+
+::
+
+  from ete_dev import EvolTree
+
+  tree = EvolTree("((Hylobates_lar,(Gorilla_gorilla,Pan_troglodytes)),Papio_cynocephalus);")
+  
+  tree.link_to_alignment ('''>Hylobates_lar
+  ATGGCCAGGTACAGATGCTGCCGCAGCCAGAGCCGGAGCAGATGTTACCGCCAGAGCCGGAGCAGATGTTACCGCCAGAGGCAAAGCCAGAGTCGGAGCAGATGTTACCGCCAGAGCCAGAGCCGGAGCAGATGTTACCGCCAGAGACAAAGAAGTCGGAGACGAAGGAGGCGGAGCTGCCAGACACGGAGGAGAGCCATGAGGTGT---CGCCGCAGGTACAGGCTGAGACGTAGAAGCTGTTACCACATTGTATCT
+  >Papio_cynocephalus
+  ATGGCCAGGTACAGATGCTGCCGCAGCCAGAGCCGAAGCAGATGCTATCGCCAGAGCCGGAGCAGATGTAACCGCCAGAGACAGAGCCAAAGCCGGAGAAGCTGCTATCGCCAGAGCCAAAGCCGGAGCAGATGTTACCGCCAGAGACAGAGAAGTCGTAGACGAAGGAGGCGACGCTGCCAGACACGGAGGAGAGCCATGAGGTGCTTCCGCCGCAGGTACAGGCTGAGGCGTAGGAGGCCCTATCACATCGTGTCT
+  >Gorilla_gorilla
+  ATGGCCAGGTACAGATGCTGTCGCAGCCAGAGCCGCAGCAGATGTTACCGGCAGAGCCGGAGCAGGTGTTACCGGCAGAGACAAAGCCAGAGCCGGAGCAGATGCTACCGGCAGAGCCAAAGCCGGAGCAGGTGTTACCGGCAGAGACAAAGAAGTCGCAGACGTAGGCGGAGGAGCTGCCAGACACGGAGGAGAGCCATGAGGTGCTGCCGCCGCAGGTACAGACTGAGACGTAGAAGACCCTATCATATTGTATCT
+  >Pan_troglodytes
+  ATGGCCAGGTACAGATGCTGTCGCAGCCAGAGCCGGAGCAGATGTTACCGGCAGAGACGGAGCAGGTGTTACCGGCAAAGGCAAAGCCAAAGTCGGAGCAGATGTTACCGGCAGAGCCAGAGACGGAGCAGGTGTTACCGGCAAAGACAAAGAAGTCGCAGACGAAGGCGACGGAGCTGCCAGACACGGAGGAGAGCCATGAGGTGCTGCCGCCGCAGGTACAGACTGAGACGTAAAAGATGTTACCATATTGTATCT''')  
+  tree.link_to_evol_model('/path_to/my_working_directory/fb.best/out')
+
+*Note:* :func:`ete_dev.EvolNode.link_to_evol_model` is also able to load directly :class:`ete_dev.evol.Model` objects.
+
+.. , thus, all output files generated do not need to be kept, only a `pickle or cPickle <http://docs.python.org/library/pickle.html>`_ of the model for example.
 
 
 References
