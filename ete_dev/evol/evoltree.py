@@ -94,6 +94,14 @@ class EvolNode (PhyloNode):
         self.mark_tree([])
 
         
+    def __label_internal_nodes(self, paml_id=None):
+        for node in self.get_children():
+            if node.is_leaf():
+                continue
+            paml_id += 1
+            node.add_feature ('paml_id', paml_id)
+            node.__label_internal_nodes(paml_id)
+
     def _label_as_paml (self):
         '''
         to label tree as paml, nearly walking man over the tree algorithm
@@ -101,31 +109,26 @@ class EvolNode (PhyloNode):
         WARNING: depends on tree topology conformation, not the same after a swap
         activates the function get_descendants_by_pamlid
         '''
-        def __label_internal_nodes(self, paml_id):
-            for node in self.get_children():
-                if node.is_leaf():
-                    continue
-                paml_id += 1
-                node.add_feature ('paml_id', paml_id)
-                __label_internal_nodes(node, paml_id)
         paml_id = 1
         for leaf in sorted (self, key=lambda x: x.name):
             leaf.add_feature ('paml_id', paml_id)
             paml_id += 1
         self.add_feature ('paml_id', paml_id)
-        __label_internal_nodes(self, paml_id)
+        self.__label_internal_nodes(paml_id)
         
-        def get_descendant_by_pamlid (idname):
-            '''
-            returns node list corresponding to a given idname
-            '''
+    def get_descendant_by_pamlid (self, idname):
+        '''
+        returns node list corresponding to a given idname
+        '''
+        try:
             for n in self.iter_descendants():
                 if n.paml_id == idname:
                     return n
             if self.paml_id == idname:
                 return self
-        vars (self)['get_descendant_by_pamlid'] = get_descendant_by_pamlid
-    
+        except AttributeError:
+            warn('Should be first labelled as paml ' + \
+                 '(automatically done when alignemnt is loaded)')
 
     def __write_algn(self, fullpath):
         """
@@ -311,9 +314,9 @@ class EvolNode (PhyloNode):
                 continue
             if node._nid in node_ids:
                 if ('.' in marks[node_ids.index(node._nid)] or \
-                       match ('#[0-9][0-9]*', \
+                       match ('#[0-9]+', \
                               marks[node_ids.index(node._nid)])==None)\
-                              and not kargs.has_key('silent') and not verbose:
+                              and verbose:
                     warn ('WARNING: marks should be "#" sign directly '+\
                           'followed by integer\n' + self.mark_tree.func_doc)
                 node.add_feature('mark', ' '+marks[node_ids.index(node._nid)])
