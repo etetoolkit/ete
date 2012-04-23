@@ -13,3 +13,5 @@ Contents:
    tutorial_phylomedb
    tutorial_xml
    tutorial_webplugin
+   tutorial_adaptation
+

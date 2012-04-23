@@ -39,6 +39,7 @@ class CheckUpdates(QThread):
             self.emit(SIGNAL("output(QString)"), msg)
         except Exception:
             pass
+
             
 class _GUI(QtGui.QMainWindow):
     def _updatestatus(self, msg):
