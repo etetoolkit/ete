@@ -33,6 +33,9 @@ class Prottest(ModelTesterTask):
         self.seqtype = "aa"
         self.models = self.conf["prottest"]["_models"]
         self.init()
+        self.post_init()
+        
+    def post_init(self):
         self.best_model_file = os.path.join(self.taskdir, "best_model.txt")
         self.tree_file = None #os.path.join(self.taskdir, "final_tree.nw")
 
@@ -53,7 +56,7 @@ class Prottest(ModelTesterTask):
             job = Job(self.conf["app"]["phyml"], args,
                       parent_ids=[self.nodeid])
             self.jobs.append(job)
-        log.log(26, self.models)
+        log.log(26, "Models to test %s", self.models)
 
     def finish(self):
         lks = []

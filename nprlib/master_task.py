@@ -42,6 +42,7 @@ class Task(object):
 
     def __init__(self, nodeid, task_type, task_name, base_args={}, 
                  extra_args={}):
+        
         # Nodeid is used to identify the tree node associated with
         # the task. It is calculated as a hash string based on the
         # list of sequence IDs grouped by the node.
@@ -67,9 +68,6 @@ class Task(object):
         self.info_file = None
         self.status = "W"
         self.all_status = None
-        self._donejobs = set()
-        self._running_jobs = set()
-        self.dependencies = set()
 
         # keeps a counter of how many cores are being used by running jobs
         self.cores_used = 0
@@ -77,9 +75,6 @@ class Task(object):
         # Initialize job arguments 
         self.args = merge_arg_dicts(extra_args, base_args, parent=self)
 
-        # List of associated jobs necessary to complete the task. Job
-        # and Task classes are accepted as elements in the list.
-        self.jobs = []
 
     def get_status(self, sge_jobs=None):
         saved_status = db.get_task_status(self.taskid)
@@ -125,6 +120,15 @@ class Task(object):
         open(self.inkey_file, "w").write(input_key)
 
     def init(self):
+
+        # List of associated jobs necessary to complete the task. Job
+        # and Task classes are accepted as elements in the list.
+        self.jobs = []
+       
+        self._donejobs = set()
+        self._running_jobs = set()
+        self.dependencies = set()
+       
         # Prepare required jobs
         self.load_jobs()
         
@@ -227,6 +231,7 @@ class Task(object):
                 elif istask(job):
                     job.retry()
         self.status = "W"
+        #self.post_init()
 
     def iter_waiting_jobs(self):
         for j in self.jobs:
@@ -255,7 +260,13 @@ class Task(object):
         expected results are available. '''
         return True
 
+    def post_init(self):
+        '''Customizable function. Put here or the initialization steps
+        that must run after init (load_jobs, taskid, etc). 
+        '''
 
+
+        
 class AlgTask(Task):
     def __repr__(self):
         return class_repr(self, "@@5:AlgTask@@1:")

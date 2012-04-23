@@ -18,12 +18,12 @@ log = logging.getLogger("main")
 
 n2class = {
     "none": None, 
-    "meta_aligner":MetaAligner, 
-    "mafft":Mafft, 
-    "muscle":Muscle, 
-    "uhire":Uhire, 
-    "dialigntx":Dialigntx, 
-    "fasttree":FastTree, 
+    "meta_aligner": MetaAligner, 
+    "mafft": Mafft, 
+    "muscle": Muscle, 
+    "uhire": Uhire, 
+    "dialigntx": Dialigntx, 
+    "fasttree": FastTree, 
     "clustalo": Clustalo, 
     "raxml": Raxml,
     "phyml": Phyml,
@@ -31,6 +31,7 @@ n2class = {
     "prottest": Prottest,
     "trimal": Trimal
     }
+
 
 def get_trimal_conservation(alg_file, trimal_bin):
     output = commands.getoutput("%s -ssc -in %s" % (trimal_bin,
@@ -40,9 +41,10 @@ def get_trimal_conservation(alg_file, trimal_bin):
         a, b = map(float, line.split())
         conservation.append(b)
     mean = numpy.mean(conservation)
-    std =  numpy.std(conservation)
+    std = numpy.std(conservation)
     return mean, std
 
+    
 def get_statal_identity(alg_file, statal_bin):
     output = commands.getoutput("%s -scolidentt -in %s" % (statal_bin,
                                                            alg_file))
@@ -52,7 +54,7 @@ def get_statal_identity(alg_file, statal_bin):
     #avgColIdentity	0.781853
     #stdColIdentity	0.2229
     #print output
-    maxi, mini, avgi, stdi = [None]*4
+    maxi, mini, avgi, stdi = [None] * 4
     for line in output.split("\n"):
         if line.startswith("#maxColIdentity"):
             maxi = float(line.split()[1])
@@ -64,6 +66,7 @@ def get_statal_identity(alg_file, statal_bin):
             stdi = float(line.split()[1])
             break
     return maxi, mini, avgi, stdi
+
     
 def get_trimal_identity(alg_file, trimal_bin):
     #print "%s -sident -in %s" %\
@@ -78,6 +81,7 @@ def get_trimal_identity(alg_file, trimal_bin):
             max_identity = float(m.groups()[0])
     return max_identity
 
+    
 def get_identity(fname): 
     s = SeqGroup(fname)
     seqlen = len(s.id2seq.itervalues().next())
@@ -93,15 +97,36 @@ def get_identity(fname):
     return (numpy.max(ident), numpy.min(ident), 
             numpy.mean(ident), numpy.std(ident))
 
+    
+def get_seqs_identity(alg, seqs):
+    ''' Returns alg statistics regarding a set of sequences'''
+    seqlen = len(alg.get_seq(seqs[0]))
+    ident = list()
+    for i in xrange(seqlen):
+        states = defaultdict(int)
+        for seq_id in seqs:
+            seq = alg.get_seq(seq_id)
+            if seq[i] != "-":
+                states[seq[i]] += 1
+        values = states.values()
+        if values:
+            ident.append(float(max(values))/sum(values))
+    return (numpy.max(ident), numpy.min(ident), 
+            numpy.mean(ident), numpy.std(ident))
+    
          
 def switch_to_codon(alg_fasta_file, alg_phylip_file, nt_seed_file,
-                    kept_columns=[]):
+                    kept_columns=None):
     GAP_CHARS = set(".-")
     NUCLEOTIDES = set("ATCG") 
     # Check conservation of columns. If too many identities,
     # switch to codon alignment and make the tree with DNA. 
     # Mixed models is another possibility.
-    kept_columns = set(map(int, kept_columns))
+    if kept_columns:
+        kept_columns = set(map(int, kept_columns))
+    else:
+        kept_columns = []
+
     all_nt_alg = SeqGroup(nt_seed_file)
     aa_alg = SeqGroup(alg_fasta_file)
     nt_alg = SeqGroup()
@@ -199,6 +224,11 @@ def process_task(task, main_tree, conf, nodeid2info):
         new_tasks.append(alg_task)
 
     elif ttype == "alg" or ttype == "acleaner":
+        if ttype == "alg":
+            nodeid2info[nodeid]["alg_path"] = task.alg_fasta_file
+        elif ttype == "acleaner":
+            nodeid2info[nodeid]["alg_clean_path"] = task.clean_alg_fasta_file
+        
         alg_fasta_file = getattr(task, "clean_alg_fasta_file",
                                  task.alg_fasta_file)
         alg_phylip_file = getattr(task, "clean_alg_phylip_file",
@@ -221,6 +251,7 @@ def process_task(task, main_tree, conf, nodeid2info):
         #t1 = time.time()
         mx, mn, mean, std = get_statal_identity(task.alg_phylip_file,
                                                 conf["app"]["statal"])
+        
         #print time.time()-t1
         log.log(26, "Identity: max=%0.2f min=%0.2f mean=%0.2f +- %0.2f",
                 mx, mn, mean, std)
@@ -300,11 +331,13 @@ def process_task(task, main_tree, conf, nodeid2info):
         # processable_node = lambda _n: (_n is not task.task_tree and
         #                                _n.children and
         #                                _n.support <= _min_branch_support)
-
         def processable_node(_n):
+            ''' Returns true if node is suitable for NPR '''
             _isleaf = False
             if _n is not task.task_tree:
-                if skip_outgroups:
+                if _n.seqs_mean_ident >= conf["tree_splitter"]["_max_seq_identity"]:
+                    _is_leaf = False
+                elif skip_outgroups:
                     # If we are optimizing only lowly supported nodes, and
                     # nodes are optimized without outgroup, our target node is
                     # actually the parent of the real target. Otherwise,
@@ -318,6 +351,18 @@ def process_task(task, main_tree, conf, nodeid2info):
             return _isleaf
         
         n2content = main_tree.get_node2content()
+
+        # Loads information about sequence similarity in each internal
+        # node. This info will be used by processable_node()
+        alg_path = nodeid2info[nodeid].get("clean_alg_path",
+                                           nodeid2info[nodeid]["alg_path"])
+        ALG = SeqGroup(alg_path)
+        for n in task.task_tree.traverse(): 
+            content = n2content[n]
+            mx, mn, avg, std = get_seqs_identity(ALG, [node.name for node in content])
+            n.add_features(seqs_max_ident=mx, seqs_min_ident=mn,
+                           seqs_mean_ident=avg, seqs_std_ident=std)
+        
         for node in task.task_tree.iter_leaves(is_leaf_fn=processable_node):
             if skip_outgroups:
                 seqs = set([_i.name for _i in n2content[node]])
@@ -391,6 +436,7 @@ npr_nt_model_tester = list()
 
 [tree_splitter]
 _min_size = integer()
+_max_seq_identity = float()
 _outgroup_size = integer()
 _outgroup_min_support = float()
 _outgroup_topology_dist = boolean()

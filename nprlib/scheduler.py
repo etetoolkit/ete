@@ -1,20 +1,31 @@
 import os
-import time
-from subprocess import call, Popen
+from subprocess import Popen
 from time import sleep, ctime
 from collections import defaultdict
+import re
 import logging
 log = logging.getLogger("main")
 
 from nprlib.logger import set_logindent, logindent
-from nprlib.utils import (generate_id, print_as_table, HOSTNAME, md5,
-                          get_node2content, PhyloTree, NodeStyle, Tree, DEBUG,
-                          NPR_TREE_STYLE, faces, GLOBALS, basename)
-from nprlib.errors import ConfigError, DataError, TaskError
+from nprlib.utils import (generate_id, PhyloTree, NodeStyle, Tree,
+                          DEBUG, NPR_TREE_STYLE, faces, GLOBALS,
+                          basename)
+from nprlib.errors import ConfigError, TaskError
 from nprlib import db, sge
 from nprlib.master_task import isjob
 
+
+def rpath(fullpath):
+    'Returns relative path of a task file (if possible)'
+    m = re.search("/(tasks/.+)", fullpath)
+    if m:
+        return m.groups()[0]
+    else:
+        return fullpath
+
+
 def schedule(config, processer, schedule_time, execution, retry, debug):
+
     def sort_tasks(x, y):
         _x = getattr(x, "nseqs", 0)
         _y = getattr(y, "nseqs", 0)
@@ -27,7 +38,7 @@ def schedule(config, processer, schedule_time, execution, retry, debug):
 
     # Clear info from previous runs
     open(GLOBALS["iters_file"], "w")
-    
+
     execution, run_detached = execution
     main_tree = None
     npr_iter = 0
@@ -39,18 +50,18 @@ def schedule(config, processer, schedule_time, execution, retry, debug):
     register_task(initial_task)
     if debug == "all":
         log.setLevel(10)
-   
+
     clade2tasks = defaultdict(list)
     # Then enters into the scheduling.
     cores_total = config["main"]["_max_cores"]
     task2retry = defaultdict(int)
-        
+
     while pending_tasks:
         cores_used = 0
         sge_jobs = []
         wait_time = 0.01 # Try to go fast unless running tasks
         set_logindent(0)
-        log.log(28, "CHECK: (%s) %d tasks" %(ctime(), len(pending_tasks)))
+        log.log(28, "CHECK: (%s) %d tasks" % (ctime(), len(pending_tasks)))
 
         # ask SGE for running jobs
         if execution == "sge":
@@ -59,25 +70,23 @@ def schedule(config, processer, schedule_time, execution, retry, debug):
         else:
             qstat_jobs = None
 
-        # Check task status and compute total cores being used            
+        # Check task status and compute total cores being used
         for task in pending_tasks:
-            if debug and log.level>10 and task.taskid.startswith(debug):
+            if debug and log.level > 10 and task.taskid.startswith(debug):
                 log.setLevel(10) #start debugging
                 log.debug("ENTERING IN DEBUGGING MODE")
-                
+
             task.status = task.get_status(qstat_jobs)
             cores_used += task.cores_used
             update_task_states(task)
         db.commit()
-        
+
         # Process waiting tasks
         for task in sorted(pending_tasks, sort_tasks):
             if task.nodeid not in nodeid2info:
                 nodeid2info[task.nodeid] = {}
-                
+
             if task.ttype == "msf":
-                seqs = task.target_seqs
-                out_seqs = task.out_seqs
                 try:
                     db.add_node(task.nodeid, task.cladeid,
                                 task.target_seqs, task.out_seqs)
@@ -87,9 +96,10 @@ def schedule(config, processer, schedule_time, execution, retry, debug):
             # Shows some task info
             log.log(26, "")
             set_logindent(1)
-            log.log(28, "(%s) %s" %(task.status, task))
+            log.log(28, "(%s) %s" % (task.status, task))
             logindent(2)
-            st_info = ', '.join(["%d(%s)" %(v,k) for k,v in task.job_status.iteritems()])
+            st_info = ', '.join(["%d(%s)" % (v, k) for k, v in
+                                 task.job_status.iteritems()])
             log.log(26, "%d jobs: %s" %(len(task.jobs), st_info))
             tdir = task.taskdir.replace(GLOBALS["basedir"], "")
             tdir = tdir.lstrip("/")
@@ -125,7 +135,8 @@ def schedule(config, processer, schedule_time, execution, retry, debug):
                             if run_detached:
                                 launch_detached(j, cmd)
                             else:
-                                P = Popen(cmd, shell=True)
+                                running_proc = Popen(cmd, shell=True)
+                                GLOBALS["running_jobs"].append(j.status_file)
                             log.debug("Command: %s", j.cmd_file)
                         except Exception:
                             task.save_status("E")
@@ -139,7 +150,7 @@ def schedule(config, processer, schedule_time, execution, retry, debug):
                         task.status = "R"
                         j.status = "R"
                         j.sge = config["sge"]
-                        sge_jobs.append((j,cmd))
+                        sge_jobs.append((j, cmd))
                     else:
                         task.status = "R"
                         j.status = "R"
@@ -164,8 +175,10 @@ def schedule(config, processer, schedule_time, execution, retry, debug):
                 if task.ttype == "treemerger":
                     npr_iter += 1
                     log.info("Dump iteration snapshot.")
-                    snapshot_tree = dump_snapshot(config, task, npr_iter,
-                                                  main_tree, clade2tasks, nodeid2info)
+                    snapshot_tree = dump_snapshot(task, npr_iter,
+                                                  main_tree,
+                                                  clade2tasks,
+                                                  nodeid2info)
                 break # Stop processing tasks, so I can resort them
                 
             elif task.status == "E":
@@ -174,6 +187,8 @@ def schedule(config, processer, schedule_time, execution, retry, debug):
                     log.log(28, "Remarking task as undone to retry")
                     task2retry[task] += 1
                     task.retry()
+                    task.init()
+                    task.post_init()
                     update_task_states(task)
                     db.commit()
                 else:
@@ -184,7 +199,6 @@ def schedule(config, processer, schedule_time, execution, retry, debug):
                 log.error("Unknown task state [%s].", task.status)
                 continue
             logindent(-2)
-
 
         sge.launch_jobs(sge_jobs, config)
         sleep(wait_time)
@@ -197,7 +211,7 @@ def schedule(config, processer, schedule_time, execution, retry, debug):
     log.debug(str(snapshot_tree))
    
 
-def dump_snapshot(config, task, npr_iter, main_tree, clade2tasks, nodeid2info):
+def dump_snapshot(task, npr_iter, main_tree, clade2tasks, nodeid2info):
     # we change node names here
     annotate_tree(main_tree, clade2tasks, nodeid2info, npr_iter)
     if DEBUG():
@@ -227,6 +241,7 @@ def dump_snapshot(config, task, npr_iter, main_tree, clade2tasks, nodeid2info):
     # Track iterations of this run
     open(GLOBALS["iters_file"], "a").write(basename(nw_file)+"\n")
     return snapshot_tree
+
     
 def register_task(task, parentid=None):
     db.add_task(tid=task.taskid, nid=task.nodeid, parent=parentid,
@@ -238,6 +253,7 @@ def register_task(task, parentid=None):
             
         else:
             register_task(j, parentid=parentid)
+
 
 def update_task_states(task):
     for j in task.jobs:
@@ -261,18 +277,6 @@ def check_cores(j, cores_used, cores_total, execution):
     else:
         return True
     
-def get_node2content(node, store={}):
-    for ch in node.children:
-        get_node2content(ch, store=store)
-
-    if node.children:
-        val = []
-        for ch in node.children:
-            val.extend(store[ch])
-        store[node] = val
-    else:
-        store[node] = [node.name]
-    return store
 
 def launch_detached(j, cmd):
     pid1 = os.fork()
@@ -370,7 +374,6 @@ def assembly_tree(base_dir, init_task, clade2tasks):
        
     
 def annotate_tree(t, clade2tasks, nodeid2info, npr_iter):
-    n2names = get_node2content(t)
     cladeid2node = {}
     # Annotate cladeid in the whole tree
     for n in t.traverse():
@@ -387,7 +390,7 @@ def annotate_tree(t, clade2tasks, nodeid2info, npr_iter):
             params = " ".join(params)
 
             n.add_features(nseqs=nodeid2info[task.nodeid]["nseqs"])
-
+            
             if task.ttype == "msf":
                 n.add_features(msf_outseqs=task.out_seqs,
                                msf_file=task.multiseq_file)
@@ -399,7 +402,7 @@ def annotate_tree(t, clade2tasks, nodeid2info, npr_iter):
                                clean_alg_min_ident=task.min_ident, 
                                clean_alg_type=task.tname, 
                                clean_alg_cmd=params,
-                               clean_alg_path=task.clean_alg_fasta_file)
+                               clean_alg_path=rpath(task.clean_alg_fasta_file))
             elif task.ttype == "alg":
                 n.add_features(alg_mean_ident=task.mean_ident, 
                                alg_std_ident=task.std_ident, 
@@ -407,14 +410,14 @@ def annotate_tree(t, clade2tasks, nodeid2info, npr_iter):
                                alg_min_ident=task.min_ident, 
                                alg_type=task.tname, 
                                alg_cmd=params,
-                               alg_path=task.alg_fasta_file)
+                               alg_path=rpath(task.alg_fasta_file))
 
             elif task.ttype == "tree":
                 n.add_features(tree_model=task.model, 
                                tree_seqtype=task.seqtype, 
                                tree_type=task.tname, 
                                tree_cmd=params,
-                               tree_file=task.tree_file,
+                               tree_file=rpath(task.tree_file),
                                tree_constrain=task.constrain_tree,
                                npr_iter=npr_iter)
             elif task.ttype == "mchooser":
@@ -424,9 +427,8 @@ def annotate_tree(t, clade2tasks, nodeid2info, npr_iter):
                                modeltester_bestmodel=task.get_best_model(), 
                                )
             elif task.ttype == "treemerger":
-                n.add_features(treemerger_type = task.tname, 
-                               treemerger_rf = "RF=%s (%s)" %task.rf
-                               )
+                n.add_features(treemerger_type=task.tname, 
+                               treemerger_rf="RF=%s (%s)" % task.rf)
                
 
 

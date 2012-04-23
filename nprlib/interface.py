@@ -2,7 +2,7 @@ import sys
 import os
 import re
 from StringIO import StringIO
-from signal import signal, SIGWINCH
+from signal import signal, SIGWINCH, SIGKILL, SIGTERM
 from collections import deque
 from textwrap import TextWrapper
 
@@ -274,12 +274,20 @@ def app_wrapper(func, args):
     except KeyboardInterrupt:
         print >>sys.stderr, "\nProgram was interrupted."
         if args.nodetach:
-            print >>sys.stderr, "Kill signal was sent to all running jobs"
+            print >>sys.stderr, "Kill signal is being sent to all running jobs"
         else:
             print >>sys.stderr, ("VERY IMPORTANT !!!: Note that launched"
                                  " jobs will keep running. Use"
                                  " the -nodetach option if you want to avoid"
                                  " this behavior.")
+        for status_file in GLOBALS["running_jobs"]:
+            try:
+                if open(status_file).readline().strip() == "R":
+                    open(status_file, "w").write("E")
+            except Exception, e:
+                print e
+            else:
+                print >>sys.stderr, status_file, "has been marked as error"
         sys.exit(1)
     except:
         raise

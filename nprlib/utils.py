@@ -1,20 +1,21 @@
 import sys
 import os
 import socket
-from subprocess import Popen
+import string
 from string import strip
-import string 
 import random
 import hashlib
 import logging
 log = logging.getLogger("main")
 DEBUG = lambda: log.level <= 10
-GLOBALS = {}
+GLOBALS = {
+    "running_jobs": []
+}
 
 try: 
     from collections import OrderedDict
 except ImportError: 
-    from ordereddict import OrderedDict
+    from nprlib.ordereddict import OrderedDict
 
 # ete_dev should be added to the python path by the npr script
 from ete_dev import PhyloTree, Tree, SeqGroup, TreeStyle, NodeStyle, faces
@@ -23,7 +24,7 @@ from ete_dev.parser.fasta import read_fasta
 #from ete_dev.treeview import drawer
 #drawer.GUI_TIMEOUT = 1
 
-AA = set("ABCDEFGHIJKLMNPOQRSUTVWXYZ") | set("abcdefghijklmnpoqrsutvwxyz") 
+AA = set("ABCDEFGHIJKLMNPOQRSUTVWXYZ*") | set("abcdefghijklmnpoqrsutvwxyz") 
 NT = set("ACGTURYKMSWBDHVN") | set("acgturykmswbdhvn")
 
 GENCODE = {
@@ -52,23 +53,40 @@ basename = lambda path: os.path.split(path)[-1]
 # Aux functions (task specific)
 get_raxml_mem = lambda taxa,sites: (taxa-2) * sites * (80 * 8) * 9.3132e-10
 del_gaps = lambda seq: seq.replace("-","").replace(".", "")
-random_string = lambda N: ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(N))
+random_string = lambda N: ''.join(random.choice(string.ascii_uppercase +
+                                  string.digits) for x in range(N))
 generate_id = lambda items: md5(','.join(sorted(items)))
 
+HOSTNAME = socket.gethostname()
+
+def ask(string, valid_values, default=-1, case_sensitive=False):
+    """ Asks for a keyborad answer """
+    v = None
+    if not case_sensitive:
+        valid_values = [value.lower() for value in valid_values]
+    while v not in valid_values:
+        v = raw_input("%s [%s]" % (string,','.join(valid_values) ))
+        if v == '' and default>=0:
+            v = valid_values[default]
+        if not case_sensitive:
+            v = v.lower()
+    return v
+
+    
 def generate_node_ids(target_seqs, out_seqs):
     cladeid = generate_id(target_seqs)
     nodeid = md5(','.join([cladeid, generate_id(out_seqs)]))
     return nodeid, cladeid
 
-HOSTNAME = socket.gethostname()
-
+    
 def merge_arg_dicts(source, target, parent=""):
     for k,v in source.iteritems(): 
         if not k.startswith("_"): 
             if k not in target:
                 target[k] = v
             else:
-                log.warning("%s: [%s] argument cannot be manually set" %(parent,k))
+                log.warning("%s: [%s] argument cannot be manually set",
+                            parent,k)
     return target
 
 def load_node_size(n):
@@ -98,7 +116,7 @@ def render_tree(tree, fname):
 
     tree.dist = 0
     tree.sort_descendants()
-    tree.render(fname, tree_style = ts, w = 700)
+    tree.render(fname, tree_style=ts, w=700)
 
 def checksum(*fnames):
     block_size=2**20
@@ -137,10 +155,10 @@ def print_as_table(rows, header=None, fields=None, print_header=True, stdout=sys
     vtype = None
     for v in rows:
         if vtype != None and type(v)!=vtype:
-            raise "ValueError", "Mixed row types in input"
+            raise ValueError("Mixed row types in input")
         else:
             vtype = type(v)
-	    
+
     lengths  = {}
     if vtype == list or vtype == tuple:
         v_len = len(fields) if fields else len(rows[0])
@@ -181,19 +199,20 @@ def print_as_table(rows, header=None, fields=None, print_header=True, stdout=sys
             lengths[ppt] = max( [len(_str(ppt))]+[ len(_str(p.get(ppt,""))) for p in rows])
         if header:
             for ppt in header:
-                    print >>stdout, _str(ppt).rjust(lengths[ppt])+" | ",
+                print >>stdout, _str(ppt).rjust(lengths[ppt])+" | ",
             print >>stdout, ""
             for ppt in header:
-                    print >>stdout, "".rjust(lengths[ppt],"-")+" | ",
+                print >>stdout, "".rjust(lengths[ppt],"-")+" | ",
             print >>stdout, ""
-        page_counter = 0
+
         for p in rows:
             for ppt in header:
                 print >>stdout, _str(p.get(ppt,"")).rjust(lengths[ppt])+" | ",
             print >>stdout, ""
             page_counter +=1
             
-def get_node2content(node, store={}):
+def get_node2content(node, store=None):
+    if not store: store = {}
     for ch in node.children:
         get_node2content(ch, store=store)
 
@@ -205,13 +224,17 @@ def get_node2content(node, store={}):
     else:
         store[node] = [node.name]
     return store
-
    
 
 def npr_layout(node):
     if node.is_leaf():
         name = faces.AttrFace("name", fsize=12)
         faces.add_face_to_node(name, node, 0, position="branch-right")
+        if hasattr(node, "sequence"):
+            seq_face = faces.SeqFace(node.sequence, [])
+            faces.add_face_to_node(seq_face, node, 0, position="aligned")
+
+        
     if "treemerger_type" in node.features:
         faces.add_face_to_node(faces.AttrFace("alg_type", fsize=8), node, 0, position="branch-top")
         ttype=faces.AttrFace("tree_type", fsize=8, fgcolor="DarkBlue")
@@ -226,24 +249,23 @@ def npr_layout(node):
     support_radius= (1.0 - node.support) * 30
     if support_radius > 1:
         support_face = faces.CircleFace(support_radius, "red")
-        faces.add_face_to_node(support_face, node, 0, position = "float-behind")
+        faces.add_face_to_node(support_face, node, 0, position="float-behind")
         support_face.opacity = 0.25
         faces.add_face_to_node(faces.AttrFace("support", fsize=8), node, 0, position="branch-bottom")
         
-    identity = 0.0
+
     if "clean_alg_mean_identn" in node.features:
         identity = node.clean_alg_mean_identn
     elif "alg_mean_identn" in node.features:
         identity = node.alg_mean_identn
-    if float(identity) >= 0.9:
-        node.img_style["bgcolor"] = "beige"
 
+    if "highlighted" in node.features:
+        node.img_style["bgcolor"] = "LightCyan"
+        
         
 NPR_TREE_STYLE = TreeStyle()
 NPR_TREE_STYLE.layout_fn = npr_layout
 NPR_TREE_STYLE.show_leaf_name = False
 
-        
-        
 
     
