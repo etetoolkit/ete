@@ -47,7 +47,7 @@ def merge_dicts(source, target):
 
 def get_subtrees(n, parent=None):
     subtrees = {}
-
+  
     def is_dup(n):
         return getattr(n, "evoltype", None) == "D"
     
@@ -65,18 +65,25 @@ def get_subtrees(n, parent=None):
             _n.detach()
 
         freaks = [_n for _n in n.iter_descendants() if
-                  len(_n.children)==1 or (is_dup(n) and not _n.children)]
+                  len(_n.children)==1 or (not hasattr(_n, "_leaf") and not _n.children)]
         for s in freaks:
             s.delete(prevent_nondicotomic=True)
 
+        # Clean node structure to prevent nodes with only one child
         while len(n.children) == 1:
             n = n.children[0]
             n.detach()
-
-        subtrees[n] = parent
-
+            
+        if not n.children and not hasattr(n, "_leaf"): 
+            pass
+            #print n, getattr(n, "evoltype", None)
+        else:
+            subtrees[n] = parent
+            parent = n
+            
         for _n in to_visit:
-            merge_dicts(get_subtrees(_n, parent=n), subtrees)
+            merge_dicts(get_subtrees(_n, parent=parent), subtrees)
+                
     return subtrees
 
 def assembly_sp_trees(subtrees):
@@ -407,13 +414,20 @@ class PhyloNode(TreeNode):
         """
         t = self.copy()
         if autodetect_duplications:
+            dups = 0
             n2content, n2species = t.get_node2species()
             #print "Detecting dups"
             for node in n2content:
                 sp_subtotal = sum([len(n2species[_ch]) for _ch in node.children])
                 if  len(n2species[node]) > 1 and len(n2species[node]) != sp_subtotal:
                     node.add_features(evoltype="D")
-
+                    dups += 1
+                elif node.is_leaf():
+                    node._leaf = True
+            #print dups
+        else:
+            for node in t.iter_leaves():
+                node._leaf = True
         all_subtrees = get_subtrees(t)
         sp_trees = assembly_sp_trees(all_subtrees)
         return sp_trees
