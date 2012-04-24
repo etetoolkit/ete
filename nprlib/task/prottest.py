@@ -5,7 +5,7 @@ log = logging.getLogger("main")
 
 from nprlib.master_task import ModelTesterTask
 from nprlib.master_job import Job
-from nprlib.utils import basename, PhyloTree
+from nprlib.utils import basename, PhyloTree, GLOBALS
 
 __all__ = ["Prottest"]
 
@@ -16,11 +16,19 @@ class Prottest(ModelTesterTask):
         self.alg_fasta_file = alg_fasta_file
         self.alg_basename = basename(self.alg_phylip_file)
         self.conf = conf
+        self.lk_mode = self.conf["prottest"]["_lk_mode"]
+        if self.lk_mode == "raxml":
+            phyml_optimization = "n"
+        elif self.lk_mode == "phyml":
+            phyml_optimization = "lr"
+        else:
+            raise ValueError("Choose a valid lk_mode value (raxml or phyml)")
+
         base_args = {
             "--datatype": "aa",
             "--input": self.alg_basename,
             "--bootstrap": "0",
-            "-o": "lr",
+            "-o": phyml_optimization,
             "--model": None, # I will iterate over this value when
                              # creating jobs
             "--quiet": ""
@@ -43,8 +51,8 @@ class Prottest(ModelTesterTask):
         # the original alg file. So I use relative path to alg file
         # for processes and I create a symlink for each of the
         # instances.
-        for j in self.jobs:
-            fake_alg_file = os.path.join(j.jobdir, self.alg_basename)
+        for job in self.jobs:
+            fake_alg_file = os.path.join(job.jobdir, self.alg_basename)
             if os.path.exists(fake_alg_file):
                 os.remove(fake_alg_file)
             os.symlink(self.alg_phylip_file, fake_alg_file)
@@ -54,24 +62,51 @@ class Prottest(ModelTesterTask):
             args = self.args.copy()
             args["--model"] = m
             job = Job(self.conf["app"]["phyml"], args,
-                      parent_ids=[self.nodeid])
+                      parent_ids=[self.nodeid], jobname="phyml-bionj")
+            job.flag = "phyml"
             self.jobs.append(job)
+
+            if self.lk_mode == "raxml":
+                raxml_args = {
+                    "-f": "e", 
+                    "-s": self.alg_basename,
+                    "-m": "PROTGAMMA%s" % m,
+                    "-n": self.alg_basename+"."+m,
+                    "-t": os.path.join(GLOBALS["basedir"], "tasks", job.jobid,
+                                       self.alg_basename+"_phyml_tree.txt")
+                    }
+                raxml_job = Job(self.conf["app"]["raxml"], raxml_args,
+                                parent_ids=[job.jobid], jobname="raxml-tree-optimize")
+                raxml_job.dependencies.add(job)
+                raxml_job.flag = "raxml"
+                raxml_job.model = m
+                self.jobs.append(raxml_job)
+            
         log.log(26, "Models to test %s", self.models)
 
     def finish(self):
         lks = []
-        for j in self.jobs:
-            tree_file = os.path.join(j.jobdir,
-                                     self.alg_basename+"_phyml_tree.txt")
-            stats_file = os.path.join(j.jobdir,
-                                      self.alg_basename+"_phyml_stats.txt")
-            tree = PhyloTree(tree_file)
-            m = re.search('Log-likelihood:\s+(-?\d+\.\d+)',
-                          open(stats_file).read())
-            lk = float(m.groups()[0])
-            tree.add_feature("lk", lk)
-            tree.add_feature("model", j.args["--model"])
-            lks.append([float(tree.lk), tree.model, tree])
+        if self.lk_mode == "phyml":
+            for job in [j for j in self.jobs if j.flag == "phyml"]:
+                tree_file = os.path.join(job.jobdir,
+                                         self.alg_basename+"_phyml_tree.txt")
+                stats_file = os.path.join(j.jobdir,
+                                          self.alg_basename+"_phyml_stats.txt")
+                tree = PhyloTree(tree_file)
+                m = re.search('Log-likelihood:\s+(-?\d+\.\d+)',
+                              open(stats_file).read())
+                lk = float(m.groups()[0])
+                tree.add_feature("lk", lk)
+                tree.add_feature("model", job.args["--model"])
+                lks.append([float(tree.lk), tree.model, tree])
+        elif self.lk_mode == "raxml":
+            for job in [j for j in self.jobs if j.flag == "raxml"]:
+                lk = open(os.path.join(job.jobdir, "RAxML_log.%s"
+                                       %job.args["-n"])).readline().split()[1]
+                tree = PhyloTree(job.args["-t"])
+                tree.add_feature("lk", lk)
+                tree.add_feature("model", job.model)
+                lks.append([lk, tree.model, tree])
         lks.sort()
         lks.reverse()
         # choose the model with higher likelihood

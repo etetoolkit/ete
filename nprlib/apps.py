@@ -12,7 +12,7 @@ builtin_apps = {
     'trimal'         : "%BIN%/trimal",
     'readal'         : "%BIN%/readal",
     'tcoffee'        : "export DIR_4_TCOFFEE=%BASE%/t_coffee_9_01 MAFFT_BINARIES=%BIN% TMP_4_TCOFFEE=%TMP% LOCKDIR_4_TCOFFEE=%TMP%  PERL5LIB=$PERL5LIB:$DIR_4_TCOFFEE/perl  && %BIN%/t_coffee",
-    'phyml'          : "%BIN%/phyml",
+    'phyml'          : "%BIN%/phyml_svn",
     'raxml-pthreads' : "%BIN%/raxmlHPC-PTHREADS-SSE3_730",
     'raxml'          : "%BIN%/raxmlHPC-SSE3_730",
     'jmodeltest'     : "JMODELTEST_HOME=%BASE%/jmodeltest2; cd $JMODELTEST_HOME; java -jar $JMODELTEST_HOME/jModelTest.jar",
