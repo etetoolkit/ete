@@ -1,3 +1,6 @@
+import random
+import colorsys
+
 SVG_COLORS = set([
     "indianred", # 	CD5C5C 	2059292
     "lightcoral", # 	F08080 	240128128
@@ -142,3 +145,19 @@ SVG_COLORS = set([
     "slategray", # 	708090 	112128144
     "darkslategray", # 	2F4F4F 	477979
     "black"] ) # 	000000 	000
+
+def random_color(h=None, l=None, s=None):
+    def rgb2hex(rgb):
+        return '#%02x%02x%02x' % rgb
+    def hls2hex(h, l, s):
+        return rgb2hex( tuple(map(lambda x: int(x*255), colorsys.hls_to_rgb(h, l, s))))
+
+    if not h:
+        h = random.random()
+    if not s: 
+        s = 0.5
+    if not l:
+        l = 0.5
+    return hls2hex(h, l, s)
+
+

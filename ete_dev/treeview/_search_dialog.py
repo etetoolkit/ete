@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'search_dialog.ui'
 #
-# Created: Wed Mar 16 17:21:28 2011
-#      by: PyQt4 UI code generator 4.6
+# Created: Tue Jan 10 15:56:57 2012
+#      by: PyQt4 UI code generator 4.7.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -43,6 +43,7 @@ class Ui_Dialog(object):
         self.attrName.setObjectName("attrName")
         self.attrValue = QtGui.QLineEdit(Dialog)
         self.attrValue.setGeometry(QtCore.QRect(440, 10, 113, 25))
+        self.attrValue.setText("")
         self.attrValue.setObjectName("attrValue")
         self.label_2 = QtGui.QLabel(Dialog)
         self.label_2.setGeometry(QtCore.QRect(270, 10, 61, 20))

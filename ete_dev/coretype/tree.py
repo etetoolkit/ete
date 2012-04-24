@@ -115,7 +115,7 @@ class TreeNode(object):
         if type(value) == type(self) or value is None:
             self._up = value
         else:
-            raise ValueError, "up: wrong type"
+            raise ValueError("bad node_up type")
 
     def _get_children(self):
         return self._children
@@ -124,8 +124,20 @@ class TreeNode(object):
            len(set([type(n)==type(self) for n in value]))<2:
             self._children = value
         else:
-            raise ValueError, "children:wrong type"
+            raise ValueError("bad children type")
 
+    def _get_style(self):
+        if self._img_style is None:
+            self._set_style(None)
+           
+        return self._img_style
+
+    def _set_style(self, value):
+        self.set_style(value)
+            
+    #: Branch length distance to parent node. Default = 0.0
+    img_style = property(fget=_get_style, fset=_set_style)
+             
     #: Branch length distance to parent node. Default = 0.0
     dist = property(fget=_get_dist, fset=_set_dist)
     #: Branch support for current node
@@ -149,7 +161,7 @@ class TreeNode(object):
         self._up = None
         self._dist = 1.0
         self._support = 1.0
-
+        self._img_style = None
         self.features = set([])
         # Add basic features
         self.add_features(name="NoName")
@@ -526,7 +538,7 @@ class TreeNode(object):
             else:
                 if is_leaf_fn(n):
                     yield n
-
+                    
     def get_leaves(self, is_leaf_fn=None):
         """
         Returns the list of terminal nodes (leaves) under this node.
@@ -606,7 +618,7 @@ class TreeNode(object):
         """
         Iterate over all desdecendant nodes. 
         """
-        if not is_leaf_fn or not is_leaf_fn(ch):
+        if not is_leaf_fn or not is_leaf_fn(self):
             for ch in self.children:
                 for node in ch._iter_descendants_postorder():
                     yield node
@@ -1004,6 +1016,37 @@ class TreeNode(object):
                     max_node = node
             return max_node, max_dist
 
+    def get_closest_leaf(self, topology_only=False):
+        """Returns node's closest descendant leaf and the distance to
+        it.
+
+        :argument False topology_only: If set to True, distance
+          between nodes will be referred to the number of nodes
+          between them. In other words, topological distance will be
+          used instead of branch length distances.
+
+        :return: A tuple containing the closest leaf referred to the
+          current node and the distance to it.
+
+        """
+        min_dist = None
+        min_node = None
+        if self.is_leaf():
+            return self, 0.0
+        else:
+            for ch in self.children:
+                node, d = ch.get_closest_leaf(topology_only=topology_only)
+                if topology_only:
+                    d += 1.0
+                else:
+                    d += ch.dist
+                if min_dist is None or d<min_dist:
+                    min_dist = d
+                    min_node = node
+            return min_node, min_dist
+
+
+            
     def get_midpoint_outgroup(self):
         """
         Returns the node that divides the current tree into two distance-balanced
@@ -1244,11 +1287,15 @@ class TreeNode(object):
         self.up = parent
         return new_node
 
-    def _asciiArt(self, char1='-', show_internal=True, compact=False):
+    def _asciiArt(self, char1='-', show_internal=True, compact=False, attributes=None):
         """
         Returns the ASCII representation of the tree. Code taken from the
         PyCogent GPL project.
         """
+        if not attributes:
+            attributes = ["name"]
+        node_name = ', '.join(map(str, [getattr(self, v, "?") for v in attributes]))
+       
         LEN = 5
         PAD = ' ' * LEN
         PA = ' ' * (LEN-1)
@@ -1262,7 +1309,7 @@ class TreeNode(object):
                     char2 = '\\'
                 else:
                     char2 = '-'
-                (clines, mid) = c._asciiArt(char2, show_internal, compact)
+                (clines, mid) = c._asciiArt(char2, show_internal, compact, attributes)
                 mids.append(mid+len(result))
                 result.extend(clines)
                 if not compact:
@@ -1276,20 +1323,20 @@ class TreeNode(object):
             result = [p+l for (p,l) in zip(prefixes, result)]
             if show_internal:
                 stem = result[mid]
-                result[mid] = stem[0] + self.name + stem[len(self.name)+1:]
+                result[mid] = stem[0] + node_name + stem[len(node_name)+1:]
             return (result, mid)
         else:
-            return ([char1 + '-' + self.name], 0)
+            return ([char1 + '-' + node_name], 0)
 
-    def get_ascii(self, show_internal=True, compact=False):
+    def get_ascii(self, show_internal=True, compact=False, attributes=None):
         """
         Returns a string containing an ascii drawing of the tree.
 
         :argument show_internal: includes internal edge names.
         :argument compact: use exactly one line per tip.
         """
-        (lines, mid) = self._asciiArt(
-                show_internal=show_internal, compact=compact)
+        (lines, mid) = self._asciiArt(show_internal=show_internal,
+                                      compact=compact, attributes=attributes)
         return '\n'+'\n'.join(lines)
 
 
@@ -1335,7 +1382,7 @@ class TreeNode(object):
            #                          \-b
 
         """
-
+       
         if not self.is_leaf():
             n2s = {}
             for n in self.get_children():
@@ -1363,54 +1410,71 @@ class TreeNode(object):
         criteria should be added to sort nodes.
         unique id is stored in _nid
         """
-        from hashlib import md5
-        for n in self.traverse(strategy="postorder"):
-            if n.is_leaf():
-                key = md5(str(n.name)).hexdigest()
-                n.__idname = key
-            else:
-                key = md5 (str (\
-                    sorted ([c.__idname for c in n.children]))).hexdigest()
-                n.__idname=key
-                children = [[c.__idname, c] for c in n.children]
-                children.sort() # sort list by idname
-                n.children = [item[1] for item in children]
-            counter = 1
-        for n in self.traverse(strategy="postorder"):
-            n.add_features(_nid=counter)
-            counter += 1
 
+        node2content = self.get_node2content()
+        def sort_by_content(x, y):
+            return cmp(str(sorted([i.name for i in node2content[x]])),
+                       str(sorted([i.name for i in node2content[y]])))
 
+        for n in self.traverse():
+            if not n.is_leaf():
+                n.children.sort(sort_by_content)
+        return node2content
 
-    def sort_descendants(self):
+    def get_node2content(self, store=None):
         """ 
-        .. versionadded: 2.1 
-
-        This function sort the branches of a given tree by
-        considerening node names. After the tree is sorted, nodes are
-        labeled using ascendent numbers.  This can be used to ensure that
-        nodes in a tree with the same node names are always labeled in
-        the same way.  Note that if duplicated names are present, extra
-        criteria should be added to sort nodes.
-        unique id is stored in _nid
+        .. versionadded: 2.1
+        EXPERIMENTAL METHOD!
+        Returns a dictionary with the preloaded content of each descendant.
         """
-        from hashlib import md5
-        for n in self.traverse(strategy="postorder"):
-            if n.is_leaf():
-                key = md5(str(n.name)).hexdigest()
-                n.__idname = key
-            else:
-                key = md5 (str (\
-                    sorted ([c.__idname for c in n.children]))).hexdigest()
-                n.__idname=key
-                children = [[c.__idname, c] for c in n.children]
-                children.sort() # sort list by idname
-                n.children = [item[1] for item in children]
-            counter = 1
-        for n in self.traverse(strategy="postorder"):
-            n.add_features(_nid=counter)
-            counter += 1
+        if store is None:
+            store = {}
+            
+        for ch in self.children:
+            ch.get_node2content(store=store)
 
+        if self.children:
+            val = set()
+            for ch in self.children:
+                val.update(store[ch])
+            store[self] = val
+        else:
+            store[self] = set([self])
+        return store
+
+    def robinson_foulds(self, t2, attr_t1="name", attr_t2="name"):
+        """
+        .. versionadded: 2.1
+        
+        Returns the Robinson-Foulds topological distance between this and another node.
+
+        :returns: (RF distance, Max.RF distance)
+        """
+        
+        t1 = self
+        t1content = t1.get_node2content()
+        t2content = t2.get_node2content()
+        valid_names = set([getattr(_n, attr_t1) for _n in t1content[t1]])
+        ref_names = set([getattr(_n, attr_t2) for _n in t2content[t2]])
+        if len(valid_names & ref_names) < 2:
+            print valid_names & ref_names
+            print self
+            raise ValueError("Trees share less than 2 nodes")
+        
+        r1 = set([",".join(sorted([getattr(_c, attr_t1) for _c in cont]))
+                  for cont in t1content.values()])
+        r2 = set([",".join(sorted([getattr(_c, attr_t2) for _c in cont
+                                   if getattr(_c, attr_t2) in valid_names]))
+                  for cont in t2content.values()])
+
+        inters = r1.intersection(r2)
+        if len(r1) == len(r2):
+                rf = (len(r1) - len(inters)) * 2
+        else :
+                rf = (len(r1) - len(inters)) + (len(r2) - len(inters))
+        rf_max = len(r1) + len(r2)
+        return rf, rf_max
+        
     def get_partitions(self):
         """ 
         .. versionadded: 2.1
@@ -1502,8 +1566,13 @@ class TreeNode(object):
 
         Set 'node_style' as the fixed style for the current node.
         """
-        if type(node_style) is NodeStyle:
-            self.img_style = node_style
+        if TREEVIEW:
+            if node_style is None:
+                node_style = NodeStyle()
+            if type(node_style) is NodeStyle:
+                self._img_style = node_style
+        else:
+            raise ValueError("Treeview module is disabled")
        
     def phonehome(self):
         from ete_dev import _ph
@@ -1584,3 +1653,8 @@ def asRphylo(ETE_tree):
 # Alias
 #: .. currentmodule:: ete_dev
 Tree = TreeNode
+
+
+
+
+    

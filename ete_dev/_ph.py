@@ -23,7 +23,7 @@ def call():
     try:
         f = url.urlopen('http://ete.cgenomics.org/et_phone_home.php?VERSION=%s&ID=%s' 
                 %(__VERSION__, __ETEID__))
-    except url.HTTPError:
+    except:
         print "No answer :(" 
     else:
         print "Got answer!" 
@@ -33,7 +33,7 @@ def call():
         try:
             f = url.urlopen('http://ete.cgenomics.org/releases/ete2/%s.latest' 
                     %module_name)
-        except url.HTTPError:
+        except:
             latest = None
         else:
             latest = int(f.read())
@@ -67,7 +67,7 @@ def call():
             try:
                 f = url.urlopen('http://ete.cgenomics.org/et_phone_home.php?VERSION=%s&ID=%s&MSG=%s' 
                                 %(__VERSION__, __ETEID__, msg))
-            except url.HTTPError:
+            except:
                 print "Message could be delivered :("
             else:
                 print f.read()
@@ -78,7 +78,7 @@ def new_version(module_name=None, current=None):
     try:
         f = url.urlopen('http://ete.cgenomics.org/releases/ete2/%s.latest' 
                         %module_name)
-    except url.HTTPError:
+    except:
         latest = None
     else:
         latest = int(f.read())
@@ -92,13 +92,12 @@ def new_version(module_name=None, current=None):
         except (IndexError, ValueError): 
             current = None
 
-
     return current, latest, msg
 
 def read_content(address):
     try:
         f = url.urlopen(address)
-    except url.HTTPError:
+    except:
         return None
     else:
         return f.read()
