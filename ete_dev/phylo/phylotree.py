@@ -30,7 +30,8 @@ features to the the node instances.
 import sys
 import os
 import re
-
+import itertools
+from collections import defaultdict
 from ete_dev import TreeNode, SeqGroup
 from ete_dev.treeview.main import  TreeStyle
 from reconciliation import get_reconciled_tree
@@ -45,6 +46,66 @@ def merge_dicts(source, target):
     for k, v in source.iteritems():
         target[k] = v
 
+def get_subtrees2(node, parent=None):
+    #import pdb; pdb.set_trace()
+    def is_dup(n):
+        return getattr(n, "evoltype", None) == "D"
+    
+    if is_dup(node):
+        sp_trees = []
+        for ch in node.children:
+            sp_trees.extend(get_subtrees2(ch))
+        return sp_trees
+        
+    # saves a list of duplication nodes under current node
+    dups = []
+    for _n in node.iter_leaves(is_leaf_fn=is_dup):
+        if is_dup(_n):
+            dups.append(_n)
+
+    if dups: 
+        # detach inner duplication nodes and stores their anchor point
+        subtrees = []
+        for dp in dups:
+            # The real node to attach sibling subtress
+            anchor = dp.up
+            dp.detach()
+            
+            duptrees = []
+            #get all sibling sptrees in each side of the
+            #duplication. Each subtree is pointed to its anchor
+            for ch in dp.children:
+                for subt in get_subtrees2(ch):
+                    subt.up = anchor
+                    duptrees.append(subt)
+
+            #all posible sptrees under this duplication are stored
+            subtrees.append(duptrees)
+            
+        # Generates all combinations of subtrees in sibling duplications
+        sp_trees = []
+        for comb in itertools.product(*subtrees):
+            #each subtree is attached to its anchor point and make a copy
+            #of the final sp tree
+            for subt in comb:
+                #anchor = subt2anchor[subt]
+                if subt.up:
+                    subt.up.children.append(subt)
+                    #print subt.up
+                else:
+                    sp_trees.append(subt)
+                                     
+            sp_trees.append(node.copy())
+            # Clear current node
+            for subt in comb:
+                subt.detach()
+    else:
+        node = node.detach()
+        sp_trees = [node]
+
+    return sp_trees
+        
+        
 def get_subtrees(n, parent=None):
     subtrees = {}
   
@@ -428,8 +489,8 @@ class PhyloNode(TreeNode):
         else:
             for node in t.iter_leaves():
                 node._leaf = True
-        all_subtrees = get_subtrees(t)
-        sp_trees = assembly_sp_trees(all_subtrees)
+        sp_trees = get_subtrees2(t)
+        #sp_trees = assembly_sp_trees(all_subtrees)
         return sp_trees
 
     def get_node2species(self):
