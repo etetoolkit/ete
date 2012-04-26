@@ -46,7 +46,7 @@ def merge_dicts(source, target):
     for k, v in source.iteritems():
         target[k] = v
 
-def get_subtrees2(node, parent=None):
+def get_subtrees(node):
     #import pdb; pdb.set_trace()
     def is_dup(n):
         return getattr(n, "evoltype", None) == "D"
@@ -54,7 +54,7 @@ def get_subtrees2(node, parent=None):
     if is_dup(node):
         sp_trees = []
         for ch in node.children:
-            sp_trees.extend(get_subtrees2(ch))
+            sp_trees.extend(get_subtrees(ch))
         return sp_trees
         
     # saves a list of duplication nodes under current node
@@ -75,7 +75,7 @@ def get_subtrees2(node, parent=None):
             #get all sibling sptrees in each side of the
             #duplication. Each subtree is pointed to its anchor
             for ch in dp.children:
-                for subt in get_subtrees2(ch):
+                for subt in get_subtrees(ch):
                     subt.up = anchor
                     duptrees.append(subt)
 
@@ -105,20 +105,17 @@ def get_subtrees2(node, parent=None):
         node = node.copy()
         node.detach()
         sp_trees = [node]
-
     return sp_trees
-        
-        
-def get_subtrees(n, parent=None):
-    subtrees = {}
-  
+               
+def get_subparts(n):
     def is_dup(n):
         return getattr(n, "evoltype", None) == "D"
-    
+        
+    subtrees = []
     if is_dup(n):
         for ch in n.get_children():
             ch.detach()
-            merge_dicts(get_subtrees(ch, parent=parent), subtrees)
+            subtrees.extend(get_subtrees(ch))
     else:
         to_visit = []
         for _n in n.iter_leaves(is_leaf_fn=is_dup):
@@ -140,29 +137,13 @@ def get_subtrees(n, parent=None):
             
         if not n.children and not hasattr(n, "_leaf"): 
             pass
-            #print n, getattr(n, "evoltype", None)
         else:
-            subtrees[n] = parent
-            parent = n
+            subtrees.append(n)
             
         for _n in to_visit:
-            merge_dicts(get_subtrees(_n, parent=parent), subtrees)
+            subtrees.extend(get_subtrees(_n))
                 
     return subtrees
-
-def assembly_sp_trees(subtrees):
-    sp_trees = []
-    for t in  set(subtrees.keys()) - set(subtrees.values()):
-        parent = subtrees[t]
-        subt = t.copy()
-        while parent:
-            next_subt = PhyloTree()
-            next_subt.add_child(subt)
-            next_subt.add_child(parent.copy())
-            subt = next_subt
-            parent = subtrees[parent]
-        sp_trees.append(subt)
-    return sp_trees
     
     
 class PhyloNode(TreeNode):
@@ -492,8 +473,7 @@ class PhyloNode(TreeNode):
         else:
             for node in t.iter_leaves():
                 node._leaf = True
-        sp_trees = get_subtrees2(t)
-        #sp_trees = assembly_sp_trees(all_subtrees)
+        sp_trees= get_subtrees(t)
         return sp_trees
 
     def get_node2species(self):
