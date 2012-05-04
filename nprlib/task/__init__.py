@@ -4,8 +4,6 @@ from muscle import *
 from trimal import *
 from raxml import *
 from prottest import *
-from tree_splitter import *
-from tree_merger import *
 from merger import *
 from jmodeltest import *
 from phyml import *

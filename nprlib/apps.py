@@ -67,6 +67,6 @@ def test_apps(apps):
         if response:
             print "OK."
         else:
-            print "Missing or nonfunctional."
+            print "Missing or not functional."
             #log.debug(test_cmd)
             #log.debug(commands.getoutput(test_cmd.rstrip("wc -l")))

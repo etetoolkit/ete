@@ -9,7 +9,7 @@ log = logging.getLogger("main")
 from nprlib.logger import set_logindent, logindent
 from nprlib.utils import (generate_id, PhyloTree, NodeStyle, Tree,
                           DEBUG, NPR_TREE_STYLE, faces, GLOBALS,
-                          basename)
+                          basename, read_time_file)
 from nprlib.errors import ConfigError, TaskError
 from nprlib import db, sge
 from nprlib.master_task import isjob
@@ -254,11 +254,18 @@ def register_task(task, parentid=None):
         else:
             register_task(j, parentid=parentid)
 
-
 def update_task_states(task):
     for j in task.jobs:
         if isjob(j):
-            db.update_task(j.jobid, status=j.status)
+            start = None
+            end = None
+            if j.status == "D":
+                try:
+                    start, end = read_time_file(j.time_file)
+                except Exception, e:
+                    log.warning("Execution time could not be loaded into DB: %s", j.jobid[:6])
+                    log.warning(e)
+            db.update_task(j.jobid, status=j.status, tm_start=start, tm_end=end )
         else:
             update_task_states(j)
     db.update_task(task.taskid, status=task.status)

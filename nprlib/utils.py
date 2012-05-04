@@ -6,6 +6,9 @@ from string import strip
 import random
 import hashlib
 import logging
+import time
+import datetime
+import re
 log = logging.getLogger("main")
 DEBUG = lambda: log.level <= 10
 GLOBALS = {
@@ -23,6 +26,8 @@ from ete_dev.treeview import random_color
 from ete_dev.parser.fasta import read_fasta
 #from ete_dev.treeview import drawer
 #drawer.GUI_TIMEOUT = 1
+
+TIME_FORMAT = '%a %b %d %H:%M:%S %Y'
 
 AA = set("ABCDEFGHIJKLMNPOQRSUTVWXYZ*") | set("abcdefghijklmnpoqrsutvwxyz") 
 NT = set("ACGTURYKMSWBDHVN") | set("acgturykmswbdhvn")
@@ -118,6 +123,33 @@ def render_tree(tree, fname):
     tree.sort_descendants()
     tree.render(fname, tree_style=ts, w=700)
 
+def sec2time(secs):
+    return str(datetime.timedelta(seconds=secs))
+    
+def read_time_file(fname):
+    INFO_TIME = open(fname)
+
+    try:
+        l1 = INFO_TIME.readline().strip()
+        l1 = l1.replace("CEST", "") # TEMP FIX
+        l1 = l1.replace("EDT", "") # TEMP FIX
+        start = time.mktime(time.strptime(l1, TIME_FORMAT))
+    except Exception, e:
+        start = ""
+        log.warning("execution time: %s", e)
+        
+    try:
+        l2 = INFO_TIME.readline().strip()
+        l2 = l1.replace("CEST", "") # TEMP FIX
+        l2 = l1.replace("EDT", "") # TEMP FIX
+        end = time.mktime(time.strptime(l2, TIME_FORMAT))
+    except Exception, e:
+        end = ""
+        log.warning("execution time: %s", e)
+        
+    INFO_TIME.close()
+    return start, end
+    
 def checksum(*fnames):
     block_size=2**20
     hash = hashlib.md5()
@@ -140,6 +172,7 @@ def pid_up(pid):
     else:
         return True
 
+
 def print_as_table(rows, header=None, fields=None, print_header=True, stdout=sys.stdout):
     """ Print >>Stdout, a list matrix as a formated table. row must be a list of
     dicts or lists."""
@@ -152,6 +185,12 @@ def print_as_table(rows, header=None, fields=None, print_header=True, stdout=sys
         else:
             return str(i)
 
+    def _safe_len(i):
+        return len(re.sub('\\033\[\d+m', '',  _str(i)))
+
+    def _safe_rjust(s, just):
+        return (" " * (just - _safe_len(s))) + s
+        
     vtype = None
     for v in rows:
         if vtype != None and type(v)!=vtype:
@@ -173,8 +212,9 @@ def print_as_table(rows, header=None, fields=None, print_header=True, stdout=sys
         for i,iv in enumerate(fields):
             header_length = 0
             if header != []:
-                header_length = len(_str(header[i]))
-            max_field_length = max( [ len(_str(r[iv])) for r in rows] )
+                #header_length = len(_str(header[i]))
+                header_length = _safe_len(header[i])
+            max_field_length = max( [_safe_len(r[iv]) for r in rows] )
             lengths[i] = max( [ header_length, max_field_length ] )
 
         if header and print_header:
@@ -189,17 +229,18 @@ def print_as_table(rows, header=None, fields=None, print_header=True, stdout=sys
         # Print >>Stdout, table lines
         for r in rows:
             for i,iv in enumerate(fields):
-                print >>stdout, _str(r[iv]).rjust(lengths[i])+" | ",
+                #print >>stdout, _str(r[iv]).rjust(lengths[i])+" | ",
+                print >>stdout, _safe_rjust(_str(r[iv]), lengths[i])+" | ",
             print >>stdout, ""
 
     elif vtype == dict:
         if header == []:
             header = rows[0].keys()
         for ppt in header:
-            lengths[ppt] = max( [len(_str(ppt))]+[ len(_str(p.get(ppt,""))) for p in rows])
+            lengths[ppt] = max( [_safe_len(_str(ppt))]+[ _safe_len(_str(p.get(ppt,""))) for p in rows])
         if header:
             for ppt in header:
-                print >>stdout, _str(ppt).rjust(lengths[ppt])+" | ",
+                print >>stdout, _safe_rjust(_str(ppt), lengths[ppt])+" | ",
             print >>stdout, ""
             for ppt in header:
                 print >>stdout, "".rjust(lengths[ppt],"-")+" | ",
@@ -207,9 +248,10 @@ def print_as_table(rows, header=None, fields=None, print_header=True, stdout=sys
 
         for p in rows:
             for ppt in header:
-                print >>stdout, _str(p.get(ppt,"")).rjust(lengths[ppt])+" | ",
+                print >>stdout, _safe_rjust(_str(p.get(ppt,""), lengths[ppt]))+" | ",
             print >>stdout, ""
             page_counter +=1
+        
             
 def get_node2content(node, store=None):
     if not store: store = {}

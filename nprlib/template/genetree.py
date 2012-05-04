@@ -7,7 +7,8 @@ import numpy
 from collections import defaultdict
 
 from nprlib.utils import (del_gaps, GENCODE, PhyloTree, SeqGroup,
-                          TreeStyle, generate_node_ids, DEBUG, NPR_TREE_STYLE, faces)
+                          TreeStyle, generate_node_ids, DEBUG,
+                          NPR_TREE_STYLE, faces)
 from nprlib.task import (MetaAligner, Mafft, Muscle, Uhire, Dialigntx,
                          FastTree, Clustalo, Raxml, Phyml, JModeltest,
                          Prottest, Trimal, TreeMerger, select_outgroups,
@@ -146,11 +147,13 @@ def switch_to_codon(alg_fasta_file, alg_phylip_file, nt_seed_file,
                 ntalgseq.append(codon)
                 # If codon does not contain unknown symbols, check
                 # that translation is correct
-                if not (set(codon) - NUCLEOTIDES) and GENCODE[codon] != ch:
-                    log.error("[%s] CDS does not match protein sequence:"
-                              " %s = %s not %s at pos %d" %\
-                                  (seqname, codon, GENCODE[codon], ch, nt_pos))
-                    raise ValueError()
+
+                # NOT WORKING ON ALTERNATIVE TABLES
+                # if not (set(codon) - NUCLEOTIDES) and GENCODE[codon] != ch:
+                #     log.error("[%s] CDS does not match protein sequence:"
+                #               " %s = %s not %s at pos %d" %\
+                #                   (seqname, codon, GENCODE[codon], ch, nt_pos))
+                #     raise ValueError()
 
         ntalgseq = "".join(ntalgseq)
         nt_alg.set_seq(seqname, ntalgseq)
@@ -196,7 +199,7 @@ def process_task(task, main_tree, conf, nodeid2info):
         #log.debug("INDEX %s %s %s", index, nseqs, max_seqs)
                 
     _min_branch_support = conf["main"]["npr_min_branch_support"][index_slide]
-    skip_outgroups = _min_branch_support < 1.0 and conf["tree_splitter"]["_outgroup_size"] == 0
+    skip_outgroups = conf["tree_splitter"]["_outgroup_size"] == 0
     
     if seqtype == "nt": 
         _aligner = n2class[conf["main"]["npr_nt_aligner"][index]]
@@ -326,27 +329,29 @@ def process_task(task, main_tree, conf, nodeid2info):
         if not task.task_tree:
             task.finish()
         main_tree = task.main_tree
-        #print task.task_tree.get_ascii(attributes=["name", "support"])
-        #print task.task_tree
-        # processable_node = lambda _n: (_n is not task.task_tree and
-        #                                _n.children and
-        #                                _n.support <= _min_branch_support)
+
         def processable_node(_n):
-            ''' Returns true if node is suitable for NPR '''
+            """ Returns true if node is suitable for NPR """
             _isleaf = False
             if _n is not task.task_tree:
                 if _n.seqs_mean_ident >= conf["tree_splitter"]["_max_seq_identity"]:
+                    # If sequences are too similar, do not optimize
+                    # this node even if it is lowly supported
                     _is_leaf = False
-                elif skip_outgroups:
-                    # If we are optimizing only lowly supported nodes, and
-                    # nodes are optimized without outgroup, our target node is
-                    # actually the parent of the real target. Otherwise,
-                    # select outgroups from sister partition.
+                elif skip_outgroups and _min_branch_support <= 1.0:
+                    # If we are optimizing only lowly supported nodes,
+                    # and nodes are optimized without outgroup, our
+                    # target node is actually the parent of lowly
+                    # supported nodes. Therefore, I check if support
+                    # is low in children nodes, and return this node
+                    # if so.
                     for _ch in _n.children:
                         if _ch.support <= _min_branch_support:
                             _isleaf = True
                             break
                 elif _n.support <= _min_branch_support:
+                    # If sequences are different enough and node is
+                    # not well supported, optimize it. 
                     _isleaf = True
             return _isleaf
         

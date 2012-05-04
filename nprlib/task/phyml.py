@@ -58,6 +58,7 @@ class Phyml(TreeTask):
         else:
             del args["--constraint_tree"]
         job = Job(self.conf["app"]["phyml"], args, parent_ids=[self.nodeid])
+        job.jobname += "-"+self.model
         self.jobs.append(job)
 
     def finish(self):

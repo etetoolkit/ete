@@ -165,14 +165,15 @@ def get_node_info(nodeid):
     out_seqs = decode(out_seqs)
     return cladeid, target_seqs, out_seqs
 
-
     
-def report(max_records=40):
+def report(start=-40, max_records=40):
     cmd = ('SELECT task.taskid, task.nodeid, task.parentid, node.cladeid, task.status, type, subtype, name,'
-           ' target_size, out_size, TIME(tm_start), TIME(tm_end) FROM task '
+           ' target_size, out_size, tm_end-tm_start, tm_start, tm_end FROM task '
            ' left outer join node ON task.nodeid = node.nodeid;')
     cursor.execute(cmd)
-    report = cursor.fetchall()[-max_records:]
+    report = cursor.fetchall()
+
+    report = report[start:max_records]
     return report
 
 def add_seq_name(seqid, name):

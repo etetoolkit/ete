@@ -62,7 +62,8 @@ class Prottest(ModelTesterTask):
             args = self.args.copy()
             args["--model"] = m
             job = Job(self.conf["app"]["phyml"], args,
-                      parent_ids=[self.nodeid], jobname="phyml-bionj")
+                      parent_ids=[self.nodeid])
+            job.jobname += "-bionj-" + m
             job.flag = "phyml"
             self.jobs.append(job)
 
@@ -76,7 +77,8 @@ class Prottest(ModelTesterTask):
                                        self.alg_basename+"_phyml_tree.txt")
                     }
                 raxml_job = Job(self.conf["app"]["raxml"], raxml_args,
-                                parent_ids=[job.jobid], jobname="raxml-tree-optimize")
+                                parent_ids=[job.jobid])
+                raxml_job.jobname += "-lk-optimize"
                 raxml_job.dependencies.add(job)
                 raxml_job.flag = "raxml"
                 raxml_job.model = m

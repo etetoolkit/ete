@@ -6,7 +6,8 @@ import db
 import logging
 log = logging.getLogger("main")
 
-from nprlib.utils import md5, basename, strip, pid_up, HOSTNAME, GLOBALS
+from nprlib.utils import (md5, basename, strip, pid_up, HOSTNAME,
+                          GLOBALS, TIME_FORMAT)
 
 class Job(object):
     ''' A generic program launcher.
@@ -109,11 +110,13 @@ class Job(object):
         launch_cmd = ' '.join([self.bin] + ["%s %s" %(k,v) for k,v in self.args.iteritems() if v is not None])
         lines = [
             "#!/bin/sh",
-            " (echo R > %s && date > %s) &&" %(self.status_file, self.time_file),
+            " (echo R > %s && date +'%s' > %s) &&" %(self.status_file,
+                                                     TIME_FORMAT,
+                                                     self.time_file),
             " (cd %s && %s && (echo D > %s; %s) || (echo E > %s; %s));" %\
                 (self.jobdir, launch_cmd,  self.status_file, self.ifdone_cmd, 
                  self.status_file, self.iffail_cmd), 
-            " date >> %s; " %(self.time_file),
+            " date +'%s' >> %s; " %(TIME_FORMAT, self.time_file),
             ]
         script = '\n'.join(lines)
         if not os.path.exists(self.jobdir):

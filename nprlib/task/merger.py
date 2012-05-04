@@ -207,102 +207,22 @@ def distance_matrix(target, leaf_only=False, topology_only=False):
                 n2tdist[n] = n2rdist[target] + n2rdist[n] - n2rdist[ancestor]
     return n2rdist, n2tdist
     
-def select_outgroups2(target, n2content, options):
-    if not target.up:
-        raise ValueError("Cannot select outgroups for root node")
-    
-    policy = options["_outgroup_policy"]
-    min_outs = options["_outgroup_size"]
-   
-    a = target
-    b = target.get_sisters()[0]
-
-    # Sequences grouped by each of the partitions
-    seqs_a = [_n.name for _n in n2content[a]]
-    seqs_b = [_n.name for _n in n2content[b]]
-
-    # To detect the best outgroups of each of the new partitions
-    # (a and b), I calculate the branch length distances from them
-    # (a and b) to all leaf nodes in its corresponding sister
-    # node.
-    log.log(26, "Calculating node distances to current partition...")
-    to_a_dists = []
-    n2rootdist = root_distance_matrix(target.up)
-    for b_leaf in b.iter_leaves():
-        dist = n2rootdist[b_leaf] + a.dist
-        to_a_dists.append([dist, b_leaf.name])
-
-    # Then we can sort outgroups prioritizing sequences whose
-    # distances are close to the mean (avoiding the closest and
-    # farthest sequences).
-    if policy == "mean_dist":
-        dist_fn = numpy.mean
-    elif policy == "median_dist":
-        dist_fn = numpy.median
-    elif policy == "max_dist":
-        dist_fn = numpy.max
-    elif policy == "min_dist":
-        dist_fn = numpy.min
-    elif policy == "max_support":
-        dist_fn = None
-            
-    best_dist_to_a = dist_fn([d[0] for d in  to_a_dists])
-    rank_outs_a = sorted(to_a_dists, 
-                         lambda x,y: cmp(abs(x[0] - best_dist_to_a),
-                                         abs(y[0] - best_dist_to_a),
-                                         ))
-
-    outs_a = [e[1] for e in rank_outs_a]
-
-    log.log(22, "Outgroups ranking: %s" %\
-              ', '.join(['%s:%f' %(_n,_v) for _v,_n in rank_outs_a[:4]]))
-
-    missing_outs = min_outs - len(outs_a)
-
-    # Tries to complete outgroups with previous iterations
-    if missing_outs > 0:
-        _node = target.up
-        # Now, add out seqs from sister group
-        while _node.up and (min_outs-len(outs_a)) > 0:
-            _extra = [_n.name for _n in n2content[_node.get_sisters()[0]]]
-            outs_a.extend(_extra)
-            _node = _node.up
-        
-    outs_a = outs_a[:min_outs]
-    
-    if len(outs_a) < min_outs:
-        log.log(28, "Outgroup size not reached.")
-
-    if DEBUG():
-        mtree = target.get_tree_root()
-        for _seq in outs_a:
-            tar =  mtree & _seq
-            tar.img_style["fgcolor"]="green"
-            tar.img_style["size"] = 12
-            tar.img_style["shape"] = "circle"
-        target.img_style["bgcolor"] = "lightblue"
-        NPR_TREE_STYLE.title.clear()
-        NPR_TREE_STYLE.title.add_face( faces.TextFace("MainTree:"
-            " Outgroup selection is mark in green.Red=optimized nodes ",
-            fgcolor="blue"), 0)
-        mtree.show(tree_style=NPR_TREE_STYLE)
-        for _n in mtree.traverse():
-            _n.img_style = None
-        
-    return set(seqs_a), set(outs_a)
         
 def select_outgroups(target, n2content, options):
     name2dist = {"min": numpy.min, "max": numpy.max,
                  "mean":numpy.mean, "median":numpy.median}
     
-    if not target.up:
-        raise ValueError("Cannot select outgroups for root node")
     
     policy = options["_outgroup_policy"]
     out_size = options["_outgroup_size"]
     out_distfn = name2dist[options["_outgroup_dist"]]
     topology_only = options["_outgroup_topology_dist"]
     out_min_support = options["_outgroup_min_support"]
+
+    if not target.up:
+        raise ValueError("Cannot select outgroups for root node!")
+    if not out_size:
+        raise ValueError("You are trying to set 0 outgroups!")
     
     if policy == "leaves":
         leaf_only = True

@@ -91,6 +91,7 @@ class Raxml(TreeTask):
         if self.constrain_tree:
             args["-g"] = self.constrain_tree
         tree_job = Job(self.raxml_bin, args, parent_ids=[self.nodeid])
+        tree_job.jobname += "-"+self.model_string
         tree_job.cores = self.threads
         self.jobs.append(tree_job)
 
@@ -101,7 +102,8 @@ class Raxml(TreeTask):
             alrt_args["-f"] =  "J"
             alrt_args["-t"] = None # It will be after init()
             alrt_job = Job(self.raxml_bin, alrt_args,
-                           parent_ids=[tree_job.jobid], jobname="raxml-alrt")       
+                           parent_ids=[tree_job.jobid])
+            alrt_job.jobname += "-alrt"
             alrt_job.dependencies.add(tree_job)
             alrt_job.cores = self.threads
             self.jobs.append(alrt_job)
@@ -122,7 +124,8 @@ class Raxml(TreeTask):
             #    alrt_args["--constraint_tree"] = self.constrain_tree
                
             alrt_job = Job(self.conf["app"]["phyml"], alrt_args,
-                           parent_ids=[tree_job.jobid], jobname="phyml-alrt")
+                           parent_ids=[tree_job.jobid])
+            alrt_job.jobname += "-alrt"
             alrt_job.dependencies.add(tree_job)
             self.jobs.append(alrt_job)
 

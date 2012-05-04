@@ -163,7 +163,9 @@ def root_distance_matrix(root):
 def select_outgroups(ttree, mtree, args):
     policy = args["_outgroup_policy"]
     min_outs = args["_outgroup_size"]
-   
+    if not min_outs:
+        raise ValueError("You are trying to select 0 outgroups!")
+    
     # Extract the two new partitions (potentially representing two
     # new iterations in the pipeline). Note that outgroup node, if
     # necessary, was detached previously.
