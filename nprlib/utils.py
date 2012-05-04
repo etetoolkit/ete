@@ -76,7 +76,6 @@ def ask(string, valid_values, default=-1, case_sensitive=False):
         if not case_sensitive:
             v = v.lower()
     return v
-
     
 def generate_node_ids(target_seqs, out_seqs):
     cladeid = generate_id(target_seqs)
@@ -140,8 +139,8 @@ def read_time_file(fname):
         
     try:
         l2 = INFO_TIME.readline().strip()
-        l2 = l1.replace("CEST", "") # TEMP FIX
-        l2 = l1.replace("EDT", "") # TEMP FIX
+        l2 = l2.replace("CEST", "") # TEMP FIX
+        l2 = l2.replace("EDT", "") # TEMP FIX
         end = time.mktime(time.strptime(l2, TIME_FORMAT))
     except Exception, e:
         end = ""

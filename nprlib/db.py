@@ -172,8 +172,11 @@ def report(start=-40, max_records=40):
            ' left outer join node ON task.nodeid = node.nodeid;')
     cursor.execute(cmd)
     report = cursor.fetchall()
-
-    report = report[start:max_records]
+    end = start+max_records if start >= 0 else start+max_records
+    if end == 0:
+        end = -1
+    print start, end
+    report = report[start:end]
     return report
 
 def add_seq_name(seqid, name):
