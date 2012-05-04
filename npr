@@ -42,9 +42,9 @@ __DESCRIPTION__ = (
                           NPR-0.1%s(beta), %s.
 
       NPR allows to reconstruct large phylogenies by means of an
-      iterative strategy that provides scalable resolution at the
-      different tree levels. Using NPR, all internal nodes in a tree
-      are re-evaluated to optimize and fine tune the parameters of the
+      iterative strategy that provides scalable resolution along the
+      different tree levels. Using NPR, internal nodes are
+      re-evaluated to optimize and fine tune the parameters of the
       phylogenetic inference.
 
       If you use this program in a published work, please cite:
@@ -52,9 +52,9 @@ __DESCRIPTION__ = (
         Jaime Huerta-Cepas and Toni Gabaldon. Nested Phylogenetic
         Reconstruction. XXX-XX. 2012.
 
-      (Note that a list with the relevant programs, and their
-      citations, used in your specific analysis will be shown together
-      with your results.)
+      (Note that a list of external programs used to complete the
+      necessary computations will be shown shown together with your
+      results.)
 
       Contact: jhuerta [at] crg.es, tgabaldon [at] crg.es
 --------------------------------------------------------------------------------
@@ -317,11 +317,11 @@ def main(args):
             try:
                 if length != seq2ntlength[seqname]/3.0:
                     raise DataError("The length of [%s] CDS does not match"
-                                     "with the protein sequence." %seqname)
+                                     " protein sequence." %seqname)
             except KeyError:
                 raise DataError("aa and nt files do not contain the same"
                                "sequence identifiers.")
-
+                
     # Sequence lengths analysis
     if seq2aalength:
         all_len = seq2aalength.values()
