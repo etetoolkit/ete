@@ -1411,6 +1411,61 @@ class TreeNode(object):
             n.add_features(_nid=counter)
             counter += 1
 
+    def get_node2content(self, store=None):
+        """ 
+        .. versionadded: 2.x
+        EXPERIMENTAL METHOD!
+        Returns a dictionary with the preloaded content of each descendant.
+        """
+        if store is None:
+            store = {}
+            
+        for ch in self.children:
+            ch.get_node2content(store=store)
+
+        if self.children:
+            val = set()
+            for ch in self.children:
+                val.update(store[ch])
+            store[self] = val
+        else:
+            store[self] = set([self])
+        return store
+
+            
+    def robinson_foulds(self, t2, attr_t1="name", attr_t2="name"):
+        """
+        .. versionadded: 2.x
+        
+        Returns the Robinson-Foulds topological distance between this and another node.
+
+        :returns: (RF distance, Max.RF distance)
+        """
+        
+        t1 = self
+        t1content = t1.get_node2content()
+        t2content = t2.get_node2content()
+        valid_names = set([getattr(_n, attr_t1) for _n in t1content[t1]])
+        ref_names = set([getattr(_n, attr_t2) for _n in t2content[t2]])
+        if len(valid_names & ref_names) < 2:
+            print valid_names & ref_names
+            print self
+            raise ValueError("Trees share less than 2 nodes")
+        
+        r1 = set([",".join(sorted([getattr(_c, attr_t1) for _c in cont]))
+                  for cont in t1content.values()])
+        r2 = set([",".join(sorted([getattr(_c, attr_t2) for _c in cont
+                                   if getattr(_c, attr_t2) in valid_names]))
+                  for cont in t2content.values()])
+
+        inters = r1.intersection(r2)
+        if len(r1) == len(r2):
+                rf = (len(r1) - len(inters)) * 2
+        else :
+                rf = (len(r1) - len(inters)) + (len(r2) - len(inters))
+        rf_max = len(r1) + len(r2)
+        return rf, rf_max
+
     def get_partitions(self):
         """ 
         .. versionadded: 2.1
