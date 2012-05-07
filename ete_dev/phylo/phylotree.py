@@ -476,6 +476,39 @@ class PhyloNode(TreeNode):
         sp_trees= get_subtrees(t)
         return sp_trees
 
+    def split_by_dups(self, autodetect_duplications=True):
+        """Returns the list of all subtrees resulting from splitting
+        current tree by its duplication nodes.
+
+        :argument True autodetect_duplications: If True, duplication
+        nodes will be automatically detected using the Species Overlap
+        algorithm. If False, duplication nodes are expected to contain
+        the attribute "evoltype=D".
+
+        :returns: species_trees
+
+        .. versionadded: 2.x
+
+        """
+        t = self.copy()
+        if autodetect_duplications:
+            dups = 0
+            n2content, n2species = t.get_node2species()
+            #print "Detecting dups"
+            for node in n2content:
+                sp_subtotal = sum([len(n2species[_ch]) for _ch in node.children])
+                if  len(n2species[node]) > 1 and len(n2species[node]) != sp_subtotal:
+                    node.add_features(evoltype="D")
+                    dups += 1
+                elif node.is_leaf():
+                    node._leaf = True
+            #print dups
+        else:
+            for node in t.iter_leaves():
+                node._leaf = True
+        sp_trees= get_subparts(t)
+        return sp_trees
+        
     def get_node2species(self):
         """
         Returns two dictionaries of node instances in which values
