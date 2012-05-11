@@ -354,7 +354,7 @@ def process_task(task, main_tree, conf, nodeid2info):
                     # not well supported, optimize it. 
                     _isleaf = True
             return _isleaf
-        
+        log.log(20, "Loading tree content...")
         n2content = main_tree.get_node2content()
 
         # Loads information about sequence similarity in each internal
@@ -362,6 +362,7 @@ def process_task(task, main_tree, conf, nodeid2info):
         alg_path = nodeid2info[nodeid].get("clean_alg_path",
                                            nodeid2info[nodeid]["alg_path"])
         ALG = SeqGroup(alg_path)
+        log.log(20, "Finding next NPR nodes...")
         for n in task.task_tree.traverse(): 
             content = n2content[n]
             mx, mn, avg, std = get_seqs_identity(ALG, [node.name for node in content])

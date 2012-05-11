@@ -61,6 +61,7 @@ del_gaps = lambda seq: seq.replace("-","").replace(".", "")
 random_string = lambda N: ''.join(random.choice(string.ascii_uppercase +
                                   string.digits) for x in range(N))
 generate_id = lambda items: md5(','.join(sorted(items)))
+generate_runid = lambda: md5(str(time.time()*random.random()))[:8]
 
 HOSTNAME = socket.gethostname()
 

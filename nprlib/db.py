@@ -166,10 +166,17 @@ def get_node_info(nodeid):
     return cladeid, target_seqs, out_seqs
 
     
-def report(start=-40, max_records=40):
+def report(start=-40, max_records=40, filter_status=None):
+    filters = ""
+    if filter_status:
+        st = ','.join(map(lambda x: "'%s'"%x, list(filter_status)))
+        if st:
+            filters +=  "WHERE status NOT IN (%s)" %st
+    
     cmd = ('SELECT task.taskid, task.nodeid, task.parentid, node.cladeid, task.status, type, subtype, name,'
            ' target_size, out_size, tm_end-tm_start, tm_start, tm_end FROM task '
-           ' left outer join node ON task.nodeid = node.nodeid;')
+           ' LEFT OUTER JOIN node ON task.nodeid = node.nodeid %s;' %filters)
+
     cursor.execute(cmd)
     report = cursor.fetchall()
     end = start+max_records if start >= 0 else start+max_records

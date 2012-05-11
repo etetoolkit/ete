@@ -24,6 +24,8 @@ class TreeMerger(Task):
         self.task_tree = None
         self.seqtype = seqtype
         self.rf = None, None # Robinson foulds to orig partition
+        self.outgroup_match_dist = 0.0
+        self.outgroup_match = ""
         self.pre_iter_support = None # support of the node pre-iteration
         self.init()
         self.pruned_tree = os.path.join(self.taskdir, "pruned_tree.nw")
@@ -44,10 +46,10 @@ class TreeMerger(Task):
         if mtree and not out_seqs:
             log.log(28, "Finding best scoring outgroup from previous iteration.")
             #cladeid = generate_id([n.name for n in ttree_content[ttree]])
-            target_node = mtree.search_nodes(cladeid=cladeid)[0]
+            orig_target = mtree.search_nodes(cladeid=cladeid)[0]
             
-            target_left = set([_n.name for _n in target_node.children[0]])
-            target_right = set([_n.name for _n in target_node.children[1]])
+            target_left = set([_n.name for _n in orig_target.children[0]])
+            target_right = set([_n.name for _n in orig_target.children[1]])
 
             partition_pairs = []
             everything = set([_n.name for _n in ttree_content[ttree]])
@@ -62,34 +64,34 @@ class TreeMerger(Task):
                 partition_pairs.append([best_match, left, right, n])
 
             partition_pairs.sort()
-            #if DEBUG():
-            #    print '\n'.join(map(str, partition_pairs))
-                
+            
+            self.outgroup_match_dist = partition_pairs[0][0]
+            self.outgroup_match = '   '.join( [','.join(partition_pairs[0][1]),
+                                   ','.join(partition_pairs[0][2])] )
             outgroup = partition_pairs[0][3]
             ttree.set_outgroup(outgroup)
-            self.rf = target_node.robinson_foulds(ttree)
-            self.pre_iter_support = target_node.support
-            ttree.dist = target_node.dist
-            ttree.support = target_node.support
+      
+            ttree.dist = orig_target.dist
+            ttree.support = orig_target.support
 
             if DEBUG():
-                target_node.children[0].img_style["fgcolor"] = "orange"
-                target_node.children[0].img_style["size"] = 20
-                target_node.children[1].img_style["fgcolor"] = "orange"
-                target_node.children[1].img_style["size"] = 20
-                target_node.img_style["bgcolor"] = "lightblue"
+                orig_target.children[0].img_style["fgcolor"] = "orange"
+                orig_target.children[0].img_style["size"] = 20
+                orig_target.children[1].img_style["fgcolor"] = "orange"
+                orig_target.children[1].img_style["size"] = 20
+                orig_target.img_style["bgcolor"] = "lightblue"
                 
                 NPR_TREE_STYLE.title.add_face( faces.TextFace("MainTree: Pre iteration partition", fgcolor="blue"), 0)
                 mtree.show(tree_style=NPR_TREE_STYLE)
                 NPR_TREE_STYLE.title.clear()
 
-                target_node.children[0].set_style(None)
-                target_node.children[1].set_style(None)
-                target_node.set_style(None)
+                orig_target.children[0].set_style(None)
+                orig_target.children[1].set_style(None)
+                orig_target.set_style(None)
 
             # Merge task and main trees
-            parent = target_node.up
-            target_node.detach()
+            parent = orig_target.up
+            orig_target.detach()
             parent.add_child(ttree)
 
             if DEBUG():
@@ -103,7 +105,7 @@ class TreeMerger(Task):
 
         elif mtree and out_seqs:
             log.log(26, "Rooting tree using %d custom seqs" %
-            len(out_seqs))
+                   len(out_seqs))
 
             #log.log(22, "Out seqs:    %s", len(out_seqs))
             #log.log(22, "Target seqs: %s", target_seqs)
@@ -123,7 +125,6 @@ class TreeMerger(Task):
                 
                 orig_target = self.main_tree.get_common_ancestor(target_seqs)
                 found_target = outgroup.get_sisters()[0]
-                self.rf = orig_target.robinson_foulds(found_target)
                 
                 if DEBUG():
                     for _seq in out_seqs:
@@ -155,6 +156,7 @@ class TreeMerger(Task):
             outgroup = ttree.get_midpoint_outgroup()
             ttree.set_outgroup(outgroup)
             self.main_tree = ttree
+            orig_target = ttree
             if DEBUG():
                 outgroup.img_style["size"] = 20
                 outgroup.img_style["fgcolor"] = "green"
@@ -162,7 +164,12 @@ class TreeMerger(Task):
                 NPR_TREE_STYLE.title.add_face(faces.TextFace("First iteration split.Outgroup is in green", fgcolor="blue"), 0)
                 ttree.show(tree_style=NPR_TREE_STYLE)
 
+        tn = orig_target.copy()
+        self.pre_iter_task_tree = tn
+        self.rf = orig_target.robinson_foulds(ttree)
+        self.pre_iter_support = orig_target.support
 
+                
         # Reloads node2content of the rooted tree and generate cladeids
         ttree_content = self.main_tree.get_node2content()
         for n, content in ttree_content.iteritems():

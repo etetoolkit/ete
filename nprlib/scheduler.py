@@ -14,7 +14,6 @@ from nprlib.errors import ConfigError, TaskError
 from nprlib import db, sge
 from nprlib.master_task import isjob
 
-
 def rpath(fullpath):
     'Returns relative path of a task file (if possible)'
     m = re.search("/(tasks/.+)", fullpath)
@@ -23,7 +22,7 @@ def rpath(fullpath):
     else:
         return fullpath
 
-
+        
 def schedule(config, processer, schedule_time, execution, retry, debug):
 
     def sort_tasks(x, y):
@@ -174,7 +173,7 @@ def schedule(config, processer, schedule_time, execution, retry, debug):
                 # If task was a new tree node, update main tree and dump snapshot
                 if task.ttype == "treemerger":
                     npr_iter += 1
-                    log.info("Dump iteration snapshot.")
+                    log.log(28, "Dump iteration snapshot.")
                     snapshot_tree = dump_snapshot(task, npr_iter,
                                                   main_tree,
                                                   clade2tasks,
@@ -201,7 +200,9 @@ def schedule(config, processer, schedule_time, execution, retry, debug):
             logindent(-2)
 
         sge.launch_jobs(sge_jobs, config)
-        sleep(wait_time)
+        if wait_time:
+            log.log(28, "Wating %s seconds" %wait_time)
+            sleep(wait_time)
         log.log(26, "")
 
     final_tree_file = os.path.join(GLOBALS["basedir"],
@@ -209,37 +210,52 @@ def schedule(config, processer, schedule_time, execution, retry, debug):
     snapshot_tree.write(outfile=final_tree_file)
     log.log(28, "Done")
     log.debug(str(snapshot_tree))
-   
+  
 
 def dump_snapshot(task, npr_iter, main_tree, clade2tasks, nodeid2info):
     # we change node names here
-    annotate_tree(main_tree, clade2tasks, nodeid2info, npr_iter)
+    snapshot_tree = main_tree.copy()
+    task_tree = task.task_tree.copy()
+    pretask_tree = task.pre_iter_task_tree.copy()
+           
+    annotate_tree(snapshot_tree, clade2tasks, nodeid2info, npr_iter)
+    annotate_tree(task_tree, {}, nodeid2info, npr_iter)
+    annotate_tree(pretask_tree, {}, nodeid2info, npr_iter)
+        
     if DEBUG():
         NPR_TREE_STYLE.title.clear()
         NPR_TREE_STYLE.title.add_face(faces.TextFace("Current iteration tree. red=optimized node", fgcolor="blue"), 0)
-        main_tree.show(tree_style=NPR_TREE_STYLE)
+        snapshot_tree.show(tree_style=NPR_TREE_STYLE)
+      
 
-    snapshot_tree = main_tree.copy()
-    for n in snapshot_tree.iter_leaves():
-        n.name = n.realname
     nout= len(task.out_seqs)
     ntarget = len(task.target_seqs)
     cladeid = generate_id(task.target_seqs)
     iter_node = snapshot_tree.search_nodes(cladeid=cladeid)[0]
     iter_node.add_features(iter_node=1)
-    nw_file = os.path.join(GLOBALS["basedir"], "tree_snapshots",
-                           "Iter_%06d_%s_%sseqs_%souts_%ssupport.nw" %
-                           (npr_iter, task.seqtype, ntarget, nout,
+    base_fname = os.path.join(GLOBALS["basedir"], "tree_snapshots",
+                           "%s_Iter_%06d_%s_%sseqs_%souts_%ssupport" %
+                           (GLOBALS["runid"], npr_iter, task.seqtype, ntarget, nout,
                             task.pre_iter_support))
+    nw_file = base_fname + ".nw"
+    nhx_file = base_fname + ".nhx"
+    
+    task_file = base_fname + ".npr.nw"
+    pretask_file = base_fname + ".prenpr.nw"
+        
     # Dump info about current iteration
-    OUT = open(nw_file+".info", "w")
+    OUT = open(base_fname+".info", "w")
     for k in sorted(iter_node.features):
         print >>OUT, "\t".join([k, str(getattr(iter_node, k))])
     OUT.close()
     # Dump iter tree with all its features
-    snapshot_tree.write(outfile=nw_file, features=[])
+    snapshot_tree.write(outfile=nw_file)
+    snapshot_tree.write(outfile=nhx_file, features=[])
+    task_tree.write(outfile=task_file, features=[])
+    pretask_tree.write(outfile=pretask_file, features=[])
+        
     # Track iterations of this run
-    open(GLOBALS["iters_file"], "a").write(basename(nw_file)+"\n")
+    open(GLOBALS["iters_file"], "a").write(basename(base_fname)+"\n")
     return snapshot_tree
 
     
@@ -384,8 +400,11 @@ def annotate_tree(t, clade2tasks, nodeid2info, npr_iter):
     cladeid2node = {}
     # Annotate cladeid in the whole tree
     for n in t.traverse():
-        n.add_feature("realname", db.get_seq_name(n.name))
-        cladeid2node[n.cladeid] = n
+        if n.is_leaf():
+            n.add_feature("realname", db.get_seq_name(n.name))
+            n.name = n.realname
+        if hasattr(n, "cladeid"):
+            cladeid2node[n.cladeid] = n
 
     for cladeid, alltasks in clade2tasks.iteritems():
         n = cladeid2node[cladeid]
@@ -435,7 +454,10 @@ def annotate_tree(t, clade2tasks, nodeid2info, npr_iter):
                                )
             elif task.ttype == "treemerger":
                 n.add_features(treemerger_type=task.tname, 
-                               treemerger_rf="RF=%s (%s)" % task.rf)
+                               treemerger_rf="RF=%s (%s)" % task.rf,
+                               treemerger_out_match_dist = task.outgroup_match_dist,
+                               treemerger_out_match = task.outgroup_match,
+                )
                
 
 
