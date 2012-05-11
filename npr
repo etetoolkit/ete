@@ -16,7 +16,7 @@ sys.path.insert(0, NPRPATH)
 from nprlib import argparse 
 from nprlib.configobj import ConfigObj, flatten_errors
 from nprlib import validate
-from nprlib.utils import SeqGroup, AA, NT, GLOBALS
+from nprlib.utils import SeqGroup, generate_runid,  AA, NT, GLOBALS
 from nprlib.errors import ConfigError, DataError
 from nprlib.master_task import Task
 from nprlib.interface import app_wrapper
@@ -502,6 +502,7 @@ if __name__ == "__main__":
 
     GLOBALS["basedir"] = os.path.abspath(args.outdir)
     GLOBALS["iters_file"] = os.path.join(GLOBALS["basedir"], "tree_snapshots", "last_run_iters.txt")
+    GLOBALS["runid"] = generate_runid()
     if not os.path.exists(GLOBALS["basedir"]):
         os.makedirs(GLOBALS["basedir"])
   
