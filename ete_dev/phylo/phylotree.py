@@ -120,7 +120,7 @@ def get_subparts(n):
     if is_dup(n):
         for ch in n.get_children():
             ch.detach()
-            subtrees.extend(get_subtrees(ch))
+            subtrees.extend(get_subparts(ch))
     else:
         to_visit = []
         for _n in n.iter_leaves(is_leaf_fn=is_dup):
@@ -146,7 +146,7 @@ def get_subparts(n):
             subtrees.append(n)
             
         for _n in to_visit:
-            subtrees.extend(get_subtrees(_n))
+            subtrees.extend(get_subparts(_n))
                 
     return subtrees
     

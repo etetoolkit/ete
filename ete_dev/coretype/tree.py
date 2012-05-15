@@ -37,8 +37,6 @@ except ImportError:
 else:
     TREEVIEW = True
 
-
-
 __all__ = ["Tree", "TreeNode"]
 
 DEFAULT_COMPACT = False
@@ -1187,26 +1185,28 @@ class TreeNode(object):
                                       units=units)
 
     def copy(self, method="cpickle"):
-        """Returns a copy of the current node. 
+        """.. versionadded: 2.1
 
-        :argument cpickle method: Protocol used to copy the node
+        Returns a copy of the current node.
+
+        :var cpickle method: Protocol used to copy the node
         structure:
 
-           * "newick": Tree topology, node names, branch lengths and
+           - "newick": Tree topology, node names, branch lengths and
              branch support values will be copied based on the newick
              format representation.
         
-           * "newick-extended": Tree topology and all node features
+           - "newick-extended": Tree topology and all node features
              will be copied based on the extended newick format
              representation. Only registered node features will be
              copied. Note also that features will be converted to text
              strings.
 
-           * "cpickle": The whole node structure and its content is
+           - "cpickle": The whole node structure and its content is
              copied based on cPickle object serialization (recommended
              for full tree copies)
         
-           * "deepcopy": The whole node structure and its content is
+           - "deepcopy": The whole node structure and its content is
              copied based on the "copy" Python functionality (this is
              the slowest method)
 
@@ -1229,7 +1229,7 @@ class TreeNode(object):
             raise ValuerError("Invalid copy method")
             
         return new_node
-
+        
     def _asciiArt(self, char1='-', show_internal=True, compact=False, attributes=None):
         """
         Returns the ASCII representation of the tree. Code taken from the
@@ -1246,7 +1246,9 @@ class TreeNode(object):
             mids = []
             result = []
             for c in self.children:
-                if c is self.children[0]:
+                if len(self.children) == 1:
+                    char2 = '/'
+                elif c is self.children[0]:
                     char2 = '/'
                 elif c is self.children[-1]:
                     char2 = '\\'
