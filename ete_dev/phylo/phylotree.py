@@ -94,17 +94,22 @@ def get_subtrees(node):
                     #print subt.up
                 else:
                     sp_trees.append(subt)
+            back_up = node.up
+            node.up = None
             _node = node.copy()
-            _node.detach()
+            node.up = back_up
+            #_node.detach()
             sp_trees.append(_node)
             # Clear current node
             for subt in comb:
                 subt.up.children.pop(-1)
-                
     else:
-        node = node.copy()
-        node.detach()
-        sp_trees = [node]
+        back_up = node.up
+        node.up = None
+        _node = node.copy()
+        node.up = back_up
+        #node.detach()
+        sp_trees = [_node]
     return sp_trees
                
 def get_subparts(n):

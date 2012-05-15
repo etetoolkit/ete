@@ -21,8 +21,9 @@
 #
 # #END_LICENSE#############################################################
 import os
+import cPickle
 import random
-import copy 
+import copy
 from collections import deque 
 
 from ete_dev.parser.newick import read_newick, write_newick
@@ -1185,14 +1186,48 @@ class TreeNode(object):
                                       layout=layout, tree_style=tree_style, 
                                       units=units)
 
-    def copy(self):
-        """ 
-        Returns an exact and complete copy of current node.
+    def copy(self, method="cpickle"):
+        """Returns a copy of the current node. 
+
+        :argument cpickle method: Protocol used to copy the node
+        structure:
+
+           * "newick": Tree topology, node names, branch lengths and
+             branch support values will be copied based on the newick
+             format representation.
+        
+           * "newick-extended": Tree topology and all node features
+             will be copied based on the extended newick format
+             representation. Only registered node features will be
+             copied. Note also that features will be converted to text
+             strings.
+
+           * "cpickle": The whole node structure and its content is
+             copied based on cPickle object serialization (recommended
+             for full tree copies)
+        
+           * "deepcopy": The whole node structure and its content is
+             copied based on the "copy" Python functionality (this is
+             the slowest method)
+
         """
-        parent = self.up
-        self.up = None
-        new_node = copy.deepcopy(self)
-        self.up = parent
+        if method=="newick":
+            new_node = Tree(self.write(features=["name"]))
+        elif method=="newick-extended":
+            new_node = Tree(self.write(features=[]))
+        elif method == "deepcopy":
+            parent = self.up
+            self.up = None
+            new_node = copy.deepcopy(self)
+            self.up = parent
+        elif method == "cpickle":
+            parent = self.up
+            self.up = None
+            new_node = cPickle.loads(cPickle.dumps(self, 2))
+            self.up = parent
+        else:
+            raise ValuerError("Invalid copy method")
+            
         return new_node
 
     def _asciiArt(self, char1='-', show_internal=True, compact=False, attributes=None):
