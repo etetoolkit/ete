@@ -43,7 +43,7 @@ def init_scene(t, layout, ts):
     ts._scale = None
     return scene, ts
 
-def show_tree(t, layout=None, tree_style=None):
+def show_tree(t, layout=None, tree_style=None, win_name=None):
     """ Interactively shows a tree."""
     scene, img = init_scene(t, layout, tree_style)
     tree_item, n2i, n2f = render(t, img)
@@ -52,8 +52,9 @@ def show_tree(t, layout=None, tree_style=None):
     tree_item.setParentItem(scene.master_item)
     scene.addItem(scene.master_item)
     mainapp = _GUI(scene)
-    #print mainapp.scene.sceneRect().size()
-    #print mainapp.maximumSize()
+    if win_name:
+        mainapp.setObjectName(win_name)
+        
     mainapp.show()
     mainapp.on_actionFit2tree_triggered()
     # Restore Ctrl-C behavior

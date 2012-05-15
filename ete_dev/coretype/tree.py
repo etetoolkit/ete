@@ -21,8 +21,9 @@
 #
 # #END_LICENSE#############################################################
 import os
+import cPickle
 import random
-import copy 
+import copy
 from collections import deque 
 
 from ete_dev.parser.newick import read_newick, write_newick
@@ -35,8 +36,6 @@ except ImportError:
     TREEVIEW = False
 else:
     TREEVIEW = True
-
-
 
 __all__ = ["Tree", "TreeNode"]
 
@@ -716,7 +715,6 @@ class TreeNode(object):
         nw = write_newick(self, features = features, format=format)
         if outfile is not None:
             open(outfile, "w").write(nw)
-            return nw
         else:
             return nw
 
@@ -728,55 +726,6 @@ class TreeNode(object):
         while root.up is not None:
             root = root.up
         return root
-
-    def get_common_ancestor_OLD(self, *target_nodes):
-        """ 
-        Returns the first common ancestor between this node and a given
-        list of 'target_nodes'.
-
-        **Examples:**
-
-        ::
-
-          t = tree.Tree("(((A:0.1, B:0.01):0.001, C:0.0001):1.0[&&NHX:name=common], (D:0.00001):0.000001):2.0[&&NHX:name=root];")
-          A = t.get_descendants_by_name("A")[0]
-          C = t.get_descendants_by_name("C")[0]
-          common =  A.get_common_ancestor(C)
-          print common.name
-
-        """
-        
-        if len(target_nodes) == 1 and type(target_nodes[0]) \
-                in set([set, tuple, list, frozenset]):
-            target_nodes = target_nodes[0]
-
-        # Convert node names into node instances
-        target_nodes = _translate_nodes(self, *target_nodes)
-
-        # If only one node is provided, use self as the second target
-        if type(target_nodes) != list:
-            target_nodes = [target_nodes, self]
-        elif len(target_nodes)==1:
-            target_nodes = tree_nodes.append(self)
-
-        start = target_nodes[-1]
-        targets = set(target_nodes)
-        nodes_bellow = set([start]+start.get_descendants())
-        current = start
-        prev_node = start
-        while current is not None:
-            # all nodes under current (skip vissited)
-            new_nodes = [n for s in current.children for n in s.traverse() \
-                           if s is not prev_node]+[current]
-            nodes_bellow.update(new_nodes)
-            if targets.issubset(nodes_bellow):
-                break
-            else:
-                prev_node = current
-                current = current.up
-
-        
-        return current
 
     def get_common_ancestor(self, *target_nodes, **kargs):
         """ 
@@ -1231,7 +1180,7 @@ class TreeNode(object):
             else:
                 raise TreeError, "Cannot unroot a tree with only two leaves"
 
-    def show(self, layout=None, tree_style=None):
+    def show(self, layout=None, tree_style=None, name="ETE"):
         """ 
         Starts an interative session to visualize current node
         structure using provided layout and TreeStyle.
@@ -1244,7 +1193,8 @@ class TreeNode(object):
             print "\n\n"
             print e
         else:
-            drawer.show_tree(self, layout=layout, tree_style=tree_style)
+            drawer.show_tree(self, layout=layout,
+                             tree_style=tree_style, win_name=name)
 
     def render(self, file_name, layout=None, w=None, h=None, \
                        tree_style=None, units="px", dpi=300):
@@ -1277,16 +1227,52 @@ class TreeNode(object):
                                       layout=layout, tree_style=tree_style, 
                                       units=units)
 
-    def copy(self):
-        """ 
-        Returns an exact and complete copy of current node.
-        """
-        parent = self.up
-        self.up = None
-        new_node = copy.deepcopy(self)
-        self.up = parent
-        return new_node
+    def copy(self, method="cpickle"):
+        """.. versionadded: 2.1
 
+        Returns a copy of the current node.
+
+        :var cpickle method: Protocol used to copy the node
+        structure:
+
+           - "newick": Tree topology, node names, branch lengths and
+             branch support values will be copied based on the newick
+             format representation.
+        
+           - "newick-extended": Tree topology and all node features
+             will be copied based on the extended newick format
+             representation. Only registered node features will be
+             copied. Note also that features will be converted to text
+             strings.
+
+           - "cpickle": The whole node structure and its content is
+             copied based on cPickle object serialization (recommended
+             for full tree copies)
+        
+           - "deepcopy": The whole node structure and its content is
+             copied based on the "copy" Python functionality (this is
+             the slowest method)
+
+        """
+        if method=="newick":
+            new_node = Tree(self.write(features=["name"]))
+        elif method=="newick-extended":
+            new_node = Tree(self.write(features=[]))
+        elif method == "deepcopy":
+            parent = self.up
+            self.up = None
+            new_node = copy.deepcopy(self)
+            self.up = parent
+        elif method == "cpickle":
+            parent = self.up
+            self.up = None
+            new_node = cPickle.loads(cPickle.dumps(self, 2))
+            self.up = parent
+        else:
+            raise ValuerError("Invalid copy method")
+            
+        return new_node
+        
     def _asciiArt(self, char1='-', show_internal=True, compact=False, attributes=None):
         """
         Returns the ASCII representation of the tree. Code taken from the
@@ -1303,7 +1289,9 @@ class TreeNode(object):
             mids = []
             result = []
             for c in self.children:
-                if c is self.children[0]:
+                if len(self.children) == 1:
+                    char2 = '/'
+                elif c is self.children[0]:
                     char2 = '/'
                 elif c is self.children[-1]:
                     char2 = '\\'
@@ -1442,9 +1430,10 @@ class TreeNode(object):
             store[self] = set([self])
         return store
 
+            
     def robinson_foulds(self, t2, attr_t1="name", attr_t2="name"):
         """
-        .. versionadded: 2.1
+        .. versionadded: 2.x
         
         Returns the Robinson-Foulds topological distance between this and another node.
 
@@ -1454,27 +1443,27 @@ class TreeNode(object):
         t1 = self
         t1content = t1.get_node2content()
         t2content = t2.get_node2content()
-        valid_names = set([getattr(_n, attr_t1) for _n in t1content[t1]])
+        target_names = set([getattr(_n, attr_t1) for _n in t1content[t1]])
         ref_names = set([getattr(_n, attr_t2) for _n in t2content[t2]])
-        if len(valid_names & ref_names) < 2:
-            print valid_names & ref_names
-            print self
+        common_names = target_names & ref_names
+        if len(common_names) < 2:
             raise ValueError("Trees share less than 2 nodes")
-        
-        r1 = set([",".join(sorted([getattr(_c, attr_t1) for _c in cont]))
+                            
+        r1 = set([",".join(sorted([getattr(_c, attr_t1) for _c in cont
+                                   if getattr(_c, attr_t1) in common_names]))
                   for cont in t1content.values()])
         r2 = set([",".join(sorted([getattr(_c, attr_t2) for _c in cont
-                                   if getattr(_c, attr_t2) in valid_names]))
+                                   if getattr(_c, attr_t2) in common_names]))
                   for cont in t2content.values()])
-
+                      
         inters = r1.intersection(r2)
         if len(r1) == len(r2):
                 rf = (len(r1) - len(inters)) * 2
         else :
                 rf = (len(r1) - len(inters)) + (len(r2) - len(inters))
         rf_max = len(r1) + len(r2)
-        return rf, rf_max
-        
+        return rf, rf_max, ref_names, target_names, r1, r2
+
     def get_partitions(self):
         """ 
         .. versionadded: 2.1
