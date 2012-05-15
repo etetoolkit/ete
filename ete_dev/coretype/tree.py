@@ -605,7 +605,7 @@ class TreeNode(object):
         """
         Iterate over all desdecendant nodes. 
         """
-        if not is_leaf_fn or not is_leaf_fn(ch):
+        if not is_leaf_fn or not is_leaf_fn(self):
             for ch in self.children:
                 for node in ch._iter_descendants_postorder():
                     yield node
