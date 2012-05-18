@@ -7,7 +7,7 @@ from hashlib import md5
 import filecmp
 import logging
 import numpy
-
+import time
 # This avoids installing nprlib module. npr script will find it in the
 # same directory in which it is
 NPRPATH = os.path.split(os.path.realpath(__file__))[0]
@@ -202,21 +202,21 @@ def main(args):
 
     # Create dir structure
     gallery_dir = os.path.join(base_dir, "gallery")
-    snapshots_dir = os.path.join(base_dir, "tree_snapshots")
+    snapshots_dir = os.path.join(base_dir, "tree_snapshots",
+                                 time.strftime("%a_%b_%y_%H:%M:%S"))
     sge_dir = os.path.join(base_dir, "sge_jobs")
     tmp_dir = os.path.join(base_dir, "tmp")
-    config["main"]["sge_dir"] = sge_dir
-    config["main"]["tmp"] = tmp_dir
-    config["main"]["gallery_dir"] = gallery_dir
-    config["main"]["snapshots_dir"] = snapshots_dir
-    try:
-        os.makedirs(gallery_dir)
-        os.makedirs(snapshots_dir)
-        os.makedirs(sge_dir)
-        os.makedirs(tmp_dir)
-    except OSError:
-        pass
-    
+    tasks_dir = os.path.join(base_dir, "tasks")
+    GLOBALS["sge_dir"] = sge_dir
+    GLOBALS["tmp"] = tmp_dir
+    GLOBALS["gallery_dir"] = gallery_dir
+    GLOBALS["snapshots_dir"] = snapshots_dir
+    GLOBALS["tasks_dir"] = tasks_dir
+    for dirname in [gallery_dir, snapshots_dir, sge_dir, tmp_dir, tasks_dir]:
+        try:
+            os.makedirs(dirname)
+        except OSError:
+            log.warning("Using existing dir: %s", dirname)
     # Initialize db
     db.init_db(os.path.join(base_dir, "db.sqlite3"))
 
