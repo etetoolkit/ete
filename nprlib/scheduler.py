@@ -22,7 +22,6 @@ def rpath(fullpath):
     else:
         return fullpath
 
-        
 def schedule(config, processer, schedule_time, execution, retry, debug):
 
     def sort_tasks(x, y):
@@ -36,7 +35,7 @@ def schedule(config, processer, schedule_time, execution, retry, debug):
             return 0
 
     # Clear info from previous runs
-    open(GLOBALS["iters_file"], "w")
+    open(os.path.join(GLOBALS["basedir"], "runid"), "w").write(GLOBALS["runid"])
 
     execution, run_detached = execution
     main_tree = None
@@ -86,11 +85,9 @@ def schedule(config, processer, schedule_time, execution, retry, debug):
                 nodeid2info[task.nodeid] = {}
 
             if task.ttype == "msf":
-                try:
-                    db.add_node(task.nodeid, task.cladeid,
-                                task.target_seqs, task.out_seqs)
-                except db.sqlite3.IntegrityError:
-                    log.log(20, "node was registered previously.")
+                db.add_node(GLOBALS["runid"], task.nodeid,
+                            task.cladeid, task.target_seqs,
+                            task.out_seqs)
 
             # Shows some task info
             log.log(26, "")
@@ -173,12 +170,14 @@ def schedule(config, processer, schedule_time, execution, retry, debug):
                 # If task was a new tree node, update main tree and dump snapshot
                 if task.ttype == "treemerger":
                     npr_iter += 1
-                    log.log(28, "Dump iteration snapshot.")
-                    snapshot_tree = dump_snapshot(task, npr_iter,
-                                                  main_tree,
-                                                  clade2tasks,
-                                                  nodeid2info)
-                break # Stop processing tasks, so I can resort them
+                    log.log(28, "Saving task tree...")
+                    annotate_node(task.task_tree, clade2tasks,
+                                  nodeid2info, npr_iter) 
+                    db.update_node(task.nodeid, 
+                                   GLOBALS["runid"],
+                                   newick=db.encode(task.task_tree))
+                    db.commit()
+                break # Stop processing tasks, so I can sort them by size
                 
             elif task.status == "E":
                 log.error("Task contains errors")
@@ -207,57 +206,12 @@ def schedule(config, processer, schedule_time, execution, retry, debug):
 
     final_tree_file = os.path.join(GLOBALS["basedir"],
                                    "final_tree.nw")
-    snapshot_tree.write(outfile=final_tree_file)
+
+    for n in main_tree.iter_leaves():
+        n.name = n.realname
+    main_tree.write(outfile=final_tree_file)
+   
     log.log(28, "Done")
-    log.debug(str(snapshot_tree))
-  
-
-def dump_snapshot(task, npr_iter, main_tree, clade2tasks, nodeid2info):
-    # we change node names here
-    snapshot_tree = main_tree.copy()
-    task_tree = task.task_tree.copy()
-    pretask_tree = task.pre_iter_task_tree.copy()
-           
-    annotate_tree(snapshot_tree, clade2tasks, nodeid2info, npr_iter)
-    annotate_tree(task_tree, {}, nodeid2info, npr_iter)
-    annotate_tree(pretask_tree, {}, nodeid2info, npr_iter)
-        
-    if DEBUG():
-        NPR_TREE_STYLE.title.clear()
-        NPR_TREE_STYLE.title.add_face(faces.TextFace("Current iteration tree. red=optimized node", fgcolor="blue"), 0)
-        snapshot_tree.show(tree_style=NPR_TREE_STYLE)
-      
-
-    nout= len(task.out_seqs)
-    ntarget = len(task.target_seqs)
-    cladeid = generate_id(task.target_seqs)
-    iter_node = snapshot_tree.search_nodes(cladeid=cladeid)[0]
-    iter_node.add_features(iter_node=1)
-    base_fname = os.path.join(GLOBALS["basedir"], "tree_snapshots",
-                           "%s_Iter_%06d_%s_%sseqs_%souts_%ssupport" %
-                           (GLOBALS["runid"], npr_iter, task.seqtype, ntarget, nout,
-                            task.pre_iter_support))
-    nw_file = base_fname + ".nw"
-    nhx_file = base_fname + ".nhx"
-    
-    task_file = base_fname + ".npr.nw"
-    pretask_file = base_fname + ".prenpr.nw"
-        
-    # Dump info about current iteration
-    OUT = open(base_fname+".info", "w")
-    for k in sorted(iter_node.features):
-        print >>OUT, "\t".join([k, str(getattr(iter_node, k))])
-    OUT.close()
-    # Dump iter tree with all its features
-    snapshot_tree.write(outfile=nw_file)
-    snapshot_tree.write(outfile=nhx_file, features=[])
-    task_tree.write(outfile=task_file, features=[])
-    pretask_tree.write(outfile=pretask_file, features=[])
-        
-    # Track iterations of this run
-    open(GLOBALS["iters_file"], "a").write(basename(base_fname)+"\n")
-    return snapshot_tree
-
     
 def register_task(task, parentid=None):
     db.add_task(tid=task.taskid, nid=task.nodeid, parent=parentid,
@@ -331,181 +285,65 @@ def launch_detached(j, cmd):
     else:
         return
 
-def assembly_tree(base_dir, init_task, clade2tasks):
-    noimaginationtoday = db.get_task2child_tree()
-
-    current_tasks = set()
-    for tasks in clade2tasks.itervalues():
-        current_tasks.update([_task.taskid for _task in tasks])
-    
-    tid2node = defaultdict(Tree)
-    for tid, ch, ttype, tsubtype, tname, tstatus, clade in noimaginationtoday:
-        #print tid, ch, clade, tsubtype
-        if ch in current_tasks:
-            tid2node[tid].add_child(tid2node[ch])
-            tid2node[ch].name = str(ch)
-            tid2node[ch].add_features(ttype=str(ttype),
-                                  tsubtype=str(tsubtype),
-                                      tstatus=str(tstatus), cladeid=str(clade))
-    
-    tasks_hierarchy = tid2node[init_task]
-    #print tasks_hierarchy 
-    #if DEBUG():
-    #    tasks_hierarchy.show()
-    base_tree = None
-    if DEBUG():
-        highlight = NodeStyle()
-        highlight["fgcolor"]= "red"
-        highlight["size"]= 12
-
-    clade2node = {}
-    for tnode in tasks_hierarchy.get_descendants():
-        if tnode.name in current_tasks and tnode.tsubtype == "treemerger" and \
-           tnode.tstatus == "D":
-                
-            task_tree = PhyloTree(os.path.join(base_dir, "tasks", tnode.name, "pruned_tree.nw"))
-            # print tnode.name, tnode.tsubtype
-            #n2content = get_node2content(task_tree)
-            # 
-            #for n, content in n2content.iteritems():
-            #    n.cladeid = generate_id(content)
-                            
-            if base_tree:
-                #target_node = base_tree.search_nodes(cladeid=tnode.cladeid)[0]
-                target_node = clade2node[tnode.cladeid]
-                # Set the distance to this partition from the prev iteration
-                task_tree.dist = target_node.dist
-                parent_node = target_node.up
-                target_node.detach()
-                parent_node.add_child(task_tree)
-                
-            else:
-                base_tree = task_tree
-                base_tree.dist = 0.0
-
-            ch0 = task_tree.children[0]
-            ch1 = task_tree.children[1]
-            ch0.add_features(cladeid=generate_id(ch0.get_leaf_names()))
-            ch1.add_features(cladeid=generate_id(ch0.get_leaf_names()))
-            clade2node[tnode.cladeid] = task_tree
-            clade2node[ch0.cladeid] = ch0
-            clade2node[ch1.cladeid] = ch1
-                
-            if DEBUG(): 
-                task_tree.set_style(highlight)
-    return base_tree
-       
-    
-def annotate_tree(t, clade2tasks, nodeid2info, npr_iter):
+def annotate_node(t, clade2tasks, nodeid2info, npr_iter):
     cladeid2node = {}
     # Annotate cladeid in the whole tree
     for n in t.traverse():
         if n.is_leaf():
             n.add_feature("realname", db.get_seq_name(n.name))
-            n.name = n.realname
+            #n.name = n.realname
         if hasattr(n, "cladeid"):
             cladeid2node[n.cladeid] = n
 
-    for cladeid, alltasks in clade2tasks.iteritems():
-        n = cladeid2node[cladeid]
-        
-        for task in alltasks:
-            
-            params = ["%s %s" %(k,v) for k,v in  task.args.iteritems() 
-                      if not k.startswith("_")]
-            params = " ".join(params)
+    alltasks = clade2tasks[t.cladeid]
+    n = cladeid2node[t.cladeid]
+    for task in alltasks:
 
-            n.add_features(nseqs=nodeid2info[task.nodeid]["nseqs"])
-            
-            if task.ttype == "msf":
-                n.add_features(msf_outseqs=task.out_seqs,
-                               msf_file=task.multiseq_file)
-                
-            elif task.ttype == "acleaner":
-                n.add_features(clean_alg_mean_ident=task.mean_ident, 
-                               clean_alg_std_ident=task.std_ident, 
-                               clean_alg_max_ident=task.max_ident, 
-                               clean_alg_min_ident=task.min_ident, 
-                               clean_alg_type=task.tname, 
-                               clean_alg_cmd=params,
-                               clean_alg_path=rpath(task.clean_alg_fasta_file))
-            elif task.ttype == "alg":
-                n.add_features(alg_mean_ident=task.mean_ident, 
-                               alg_std_ident=task.std_ident, 
-                               alg_max_ident=task.max_ident, 
-                               alg_min_ident=task.min_ident, 
-                               alg_type=task.tname, 
-                               alg_cmd=params,
-                               alg_path=rpath(task.alg_fasta_file))
+        params = ["%s %s" %(k,v) for k,v in  task.args.iteritems() 
+                  if not k.startswith("_")]
+        params = " ".join(params)
 
-            elif task.ttype == "tree":
-                n.add_features(tree_model=task.model, 
-                               tree_seqtype=task.seqtype, 
-                               tree_type=task.tname, 
-                               tree_cmd=params,
-                               tree_file=rpath(task.tree_file),
-                               tree_constrain=task.constrain_tree,
-                               npr_iter=npr_iter)
-            elif task.ttype == "mchooser":
-                n.add_features(modeltester_models=task.models, 
-                               modeltester_type=task.tname, 
-                               modeltester_params=params, 
-                               modeltester_bestmodel=task.get_best_model(), 
-                               )
-            elif task.ttype == "treemerger":
-                n.add_features(treemerger_type=task.tname, 
-                               treemerger_rf="RF=%s (%s)" % task.rf,
-                               treemerger_out_match_dist = task.outgroup_match_dist,
-                               treemerger_out_match = task.outgroup_match,
-                )
-               
+        n.add_features(nseqs=nodeid2info[task.nodeid]["nseqs"])
 
+        if task.ttype == "msf":
+            n.add_features(msf_outseqs=task.out_seqs,
+                           msf_file=task.multiseq_file)
 
-# def assembly_tree_old(base_dir, clade2tasks, init_cid):
-#     thread = set()
-#     for tasks in clade2tasks.values():
-#         thread.update(set([t.taskid for t in tasks]))
-    
-#     tid2child = defaultdict(set)
-#     info = {}
-#     for fields in db.report(max_records=0):
-#         tid, nid, pid, cid, status, ttype, tstype = fields[:7]
-#         info[tid] = {
-#             "status": status,
-#             "type": ttype,
-#             "stype": tstype, 
-#             "cladeid": cid, 
-#         }
-#         tid2child[pid].add(tid)
-#     child_tasks = [init_cid]
-#     base_tree = None
-#     cladeid2node = {}
-#     highlight = NodeStyle()
-#     highlight["fgcolor"]= "red"
-#     highlight["size"]= 20
-#     while child_tasks:
-#         tid = child_tasks.pop(0)
-#         if tid not in thread:
-#             continue
-            
-#         if info[tid]["type"] == "task" and info[tid]["stype"] == "treemerger" and info[tid]["status"] == "D":
-#             task_tree = PhyloTree(os.path.join(base_dir, "tasks", tid, "pruned_tree.nw"))
-#             n2content = get_node2content(task_tree)
-        
-#             for n, content in n2content.iteritems():
-#                 n.cladeid = generate_id(content)
-#             cid = info[tid]["cladeid"]
-#             task_tree.set_style(highlight)            
-#             if base_tree:
-#                 target_node = base_tree.search_nodes(cladeid=cid)[0]
-#                 parent_node = target_node.up
+        elif task.ttype == "acleaner":
+            n.add_features(clean_alg_mean_ident=task.mean_ident, 
+                           clean_alg_std_ident=task.std_ident, 
+                           clean_alg_max_ident=task.max_ident, 
+                           clean_alg_min_ident=task.min_ident, 
+                           clean_alg_type=task.tname, 
+                           clean_alg_cmd=params,
+                           clean_alg_path=rpath(task.clean_alg_fasta_file))
+        elif task.ttype == "alg":
+            n.add_features(alg_mean_ident=task.mean_ident, 
+                           alg_std_ident=task.std_ident, 
+                           alg_max_ident=task.max_ident, 
+                           alg_min_ident=task.min_ident, 
+                           alg_type=task.tname, 
+                           alg_cmd=params,
+                           alg_path=rpath(task.alg_fasta_file))
 
-#                 target_node.detach()
-#                 parent_node.add_child(task_tree)
-#             else:
-#                 base_tree = task_tree
-#                 base_tree.dist = 0.0
-#             #base_tree.show()
-#         child_tasks.extend(list(tid2child.get(tid, set())))
-#        
-#    return base_tree
+        elif task.ttype == "tree":
+            n.add_features(tree_model=task.model, 
+                           tree_seqtype=task.seqtype, 
+                           tree_type=task.tname, 
+                           tree_cmd=params,
+                           tree_file=rpath(task.tree_file),
+                           tree_constrain=task.constrain_tree,
+                           npr_iter=npr_iter)
+        elif task.ttype == "mchooser":
+            n.add_features(modeltester_models=task.models, 
+                           modeltester_type=task.tname, 
+                           modeltester_params=params, 
+                           modeltester_bestmodel=task.get_best_model(), 
+                           )
+        elif task.ttype == "treemerger":
+            n.add_features(treemerger_type=task.tname, 
+                           treemerger_rf="RF=%s [%s]" %(task.rf[0], task.rf[1]),
+                           treemerger_out_match_dist = task.outgroup_match_dist,
+                           treemerger_out_match = task.outgroup_match,
+            )
+

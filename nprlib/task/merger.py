@@ -44,13 +44,18 @@ class TreeMerger(Task):
 
         ttree_content = ttree.get_node2content()
         if mtree and not out_seqs:
+            mtree_content = mtree.get_node2content()
             log.log(28, "Finding best scoring outgroup from previous iteration.")
             #cladeid = generate_id([n.name for n in ttree_content[ttree]])
-            orig_target = mtree.search_nodes(cladeid=cladeid)[0]
-            
-            target_left = set([_n.name for _n in orig_target.children[0]])
-            target_right = set([_n.name for _n in orig_target.children[1]])
-
+            #orig_target = mtree.search_nodes(cladeid=cladeid)[0]
+            #target_left = set([_n.name for _n in orig_target.children[0]])
+            #target_right = set([_n.name for _n in orig_target.children[1]])
+            for _n in mtree_content:
+                if _n.cladeid == cladeid:
+                    orig_target = _n 
+            target_left = set([_n.name for _n in mtree_content[orig_target.children[0]]])
+            target_right = set([_n.name for _n in mtree_content[orig_target.children[1]]])
+                    
             partition_pairs = []
             everything = set([_n.name for _n in ttree_content[ttree]])
             for n, content in ttree_content.iteritems():
@@ -66,8 +71,10 @@ class TreeMerger(Task):
             partition_pairs.sort()
             
             self.outgroup_match_dist = partition_pairs[0][0]
-            self.outgroup_match = '   '.join( [','.join(partition_pairs[0][1]),
-                                   ','.join(partition_pairs[0][2])] )
+            #self.outgroup_match = '#'.join( ['|'.join(partition_pairs[0][1]),
+            #                      '|'.join(partition_pairs[0][2])] )
+
+            
             outgroup = partition_pairs[0][3]
             ttree.set_outgroup(outgroup)
       

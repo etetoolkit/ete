@@ -114,7 +114,7 @@ def get_seqs_identity(alg, seqs):
             ident.append(float(max(values))/sum(values))
     return (numpy.max(ident), numpy.min(ident), 
             numpy.mean(ident), numpy.std(ident))
-    
+   
          
 def switch_to_codon(alg_fasta_file, alg_phylip_file, nt_seed_file,
                     kept_columns=None):
@@ -332,8 +332,15 @@ def process_task(task, main_tree, conf, nodeid2info):
 
         def processable_node(_n):
             """ Returns true if node is suitable for NPR """
+            
             _isleaf = False
             if _n is not task.task_tree:
+                if not hasattr(_n, "seqs_mean_ident"):
+                    log.log(20, "Calculating node sequence stats...")
+                    mx, mn, avg, std = get_seqs_identity(ALG, [__n.name for __n in n2content[_n]])
+                    _n.add_features(seqs_max_ident=mx, seqs_min_ident=mn,
+                                   seqs_mean_ident=avg, seqs_std_ident=std)
+                
                 if _n.seqs_mean_ident >= conf["tree_splitter"]["_max_seq_identity"]:
                     # If sequences are too similar, do not optimize
                     # this node even if it is lowly supported
@@ -361,15 +368,18 @@ def process_task(task, main_tree, conf, nodeid2info):
         # node. This info will be used by processable_node()
         alg_path = nodeid2info[nodeid].get("clean_alg_path",
                                            nodeid2info[nodeid]["alg_path"])
+        #log.log(20, "Loading by-node sequence similarity...")
         ALG = SeqGroup(alg_path)
-        log.log(20, "Finding next NPR nodes...")
-        for n in task.task_tree.traverse(): 
-            content = n2content[n]
-            mx, mn, avg, std = get_seqs_identity(ALG, [node.name for node in content])
-            n.add_features(seqs_max_ident=mx, seqs_min_ident=mn,
-                           seqs_mean_ident=avg, seqs_std_ident=std)
-        
+        #for n in task.task_tree.traverse(): 
+        #    content = n2content[n]
+        #    mx, mn, avg, std = get_seqs_identity(ALG, [node.name for node in content])
+        #    n.add_features(seqs_max_ident=mx, seqs_min_ident=mn,
+        #                   seqs_mean_ident=avg, seqs_std_ident=std)
+            
+        log.log(20, "Finding next NPR nodes...")        
         for node in task.task_tree.iter_leaves(is_leaf_fn=processable_node):
+            log.log(20, "Found processable node. Supports: %0.2f (children=%s)",
+                    node.support, ','.join(["%0.2f" % ch.support for ch in node.children]))
             if skip_outgroups:
                 seqs = set([_i.name for _i in n2content[node]])
                 outs = set()

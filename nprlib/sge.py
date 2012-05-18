@@ -11,12 +11,13 @@ log = logging.getLogger("main")
 
 from nprlib import db
 from nprlib.errors import SgeError
+from nprlib.utils import GLOBALS
 OK_PATTERN = 'Your job-array ([\d]+).\d+\-\d+:\d+ \("[^"]*"\) has been submitted'
 DEFAULT_SGE_CELL = "cgenomics"
 
 def launch_jobs(jobs, conf):
     # Group jobs with identical config
-    sge_path = conf["main"]["sge_dir"]
+    sge_path = GLOBALS["sge_dir"]
     
     conf2jobs = defaultdict(list)
     for j, cmd in jobs:
