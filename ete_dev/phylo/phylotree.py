@@ -30,7 +30,8 @@ features to the the node instances.
 import sys
 import os
 import re
-
+import itertools
+from collections import defaultdict
 from ete_dev import TreeNode, SeqGroup
 from ete_dev.treeview.main import  TreeStyle
 from reconciliation import get_reconciled_tree
@@ -41,6 +42,115 @@ __all__ = ["PhyloNode", "PhyloTree"]
 def _parse_species(name):
     return name[:3]
 
+def merge_dicts(source, target):
+    for k, v in source.iteritems():
+        target[k] = v
+
+def get_subtrees(node):
+    #import pdb; pdb.set_trace()
+    def is_dup(n):
+        return getattr(n, "evoltype", None) == "D"
+    
+    if is_dup(node):
+        sp_trees = []
+        for ch in node.children:
+            sp_trees.extend(get_subtrees(ch))
+        return sp_trees
+        
+    # saves a list of duplication nodes under current node
+    dups = []
+    for _n in node.iter_leaves(is_leaf_fn=is_dup):
+        if is_dup(_n):
+            dups.append(_n)
+
+    if dups: 
+        # detach inner duplication nodes and stores their anchor point
+        subtrees = []
+        for dp in dups:
+            # The real node to attach sibling subtress
+            anchor = dp.up
+            dp.detach()
+            
+            duptrees = []
+            #get all sibling sptrees in each side of the
+            #duplication. Each subtree is pointed to its anchor
+            for ch in dp.children:
+                for subt in get_subtrees(ch):
+                    subt.up = anchor
+                    duptrees.append(subt)
+
+            #all posible sptrees under this duplication are stored
+            subtrees.append(duptrees)
+            
+        # Generates all combinations of subtrees in sibling duplications
+        sp_trees = []
+        for comb in itertools.product(*subtrees):
+            #each subtree is attached to its anchor point and make a copy
+            #of the final sp tree
+            for subt in comb:
+                #anchor = subt2anchor[subt]
+                if subt.up:
+                    subt.up.children.append(subt)
+                    #print subt.up
+                else:
+                    sp_trees.append(subt)
+            back_up = node.up
+            node.up = None
+            _node = node.copy()
+            node.up = back_up
+            #_node.detach()
+            sp_trees.append(_node)
+            # Clear current node
+            for subt in comb:
+                subt.up.children.pop(-1)
+    else:
+        back_up = node.up
+        node.up = None
+        _node = node.copy()
+        node.up = back_up
+        #node.detach()
+        sp_trees = [_node]
+    return sp_trees
+               
+def get_subparts(n):
+    def is_dup(n):
+        return getattr(n, "evoltype", None) == "D"
+        
+    subtrees = []
+    if is_dup(n):
+        for ch in n.get_children():
+            ch.detach()
+            subtrees.extend(get_subparts(ch))
+    else:
+        to_visit = []
+        for _n in n.iter_leaves(is_leaf_fn=is_dup):
+            if is_dup(_n):
+                to_visit.append(_n)
+
+        for _n in to_visit:
+            _n.detach()
+
+        freaks = [_n for _n in n.iter_descendants() if
+                  len(_n.children)==1 or (not hasattr(_n, "_leaf") and not _n.children)]
+        for s in freaks:
+            s.delete(prevent_nondicotomic=True)
+
+        # Clean node structure to prevent nodes with only one child
+        while len(n.children) == 1:
+            n = n.children[0]
+            n.detach()
+            
+        if not n.children and not hasattr(n, "_leaf"): 
+            pass
+        else:
+            subtrees.append(n)
+            
+        for _n in to_visit:
+            subtrees.extend(get_subparts(_n))
+                
+    return subtrees
+    
+    
 class PhyloNode(TreeNode):
     """ 
     .. currentmodule:: ete_dev
@@ -337,6 +447,113 @@ class PhyloNode(TreeNode):
                 outgroup_size = size
 
         return outgroup_node
+
+    def get_speciation_trees(self, autodetect_duplications=True):
+        """Returns a list of all species-tree-topologies contained
+        in the current gene tree.
+
+        :argument True autodetect_duplications: If True, duplication
+        nodes will be automatically detected using the Species Overlap
+        algorithm. If False, duplication nodes are expected to contain
+        the attribute "evoltype=D".
+
+        :returns: species_trees
+
+        .. versionadded: 2.x
+
+        """
+        t = self.copy()
+        if autodetect_duplications:
+            dups = 0
+            n2content, n2species = t.get_node2species()
+            #print "Detecting dups"
+            for node in n2content:
+                sp_subtotal = sum([len(n2species[_ch]) for _ch in node.children])
+                if  len(n2species[node]) > 1 and len(n2species[node]) != sp_subtotal:
+                    node.add_features(evoltype="D")
+                    dups += 1
+                elif node.is_leaf():
+                    node._leaf = True
+            #print dups
+        else:
+            for node in t.iter_leaves():
+                node._leaf = True
+        sp_trees= get_subtrees(t)
+        return sp_trees
+
+    def split_by_dups(self, autodetect_duplications=True):
+        """Returns the list of all subtrees resulting from splitting
+        current tree by its duplication nodes.
+
+        :argument True autodetect_duplications: If True, duplication
+        nodes will be automatically detected using the Species Overlap
+        algorithm. If False, duplication nodes are expected to contain
+        the attribute "evoltype=D".
+
+        :returns: species_trees
+
+        .. versionadded: 2.x
+
+        """
+        t = self.copy()
+        if autodetect_duplications:
+            dups = 0
+            n2content, n2species = t.get_node2species()
+            #print "Detecting dups"
+            for node in n2content:
+                sp_subtotal = sum([len(n2species[_ch]) for _ch in node.children])
+                if  len(n2species[node]) > 1 and len(n2species[node]) != sp_subtotal:
+                    node.add_features(evoltype="D")
+                    dups += 1
+                elif node.is_leaf():
+                    node._leaf = True
+            #print dups
+        else:
+            for node in t.iter_leaves():
+                node._leaf = True
+        sp_trees= get_subparts(t)
+        return sp_trees
+        
+    def get_node2species(self):
+        """
+        Returns two dictionaries of node instances in which values
+        are the leaf content and the species content of each
+        instance.
+
+        :returns: node2content, node2species
+        
+        .. versionadded: 2.x
+        """
+      
+        n2content = self.get_node2content()
+        n2species = {}
+        for n, content in n2content.iteritems():
+            n2species[n] = set([_n.species for _n in content])
+        return n2content, n2species
+        
+    def get_node2content(self, store=None):
+        """ 
+        Returns a dictionary of node instances in which values
+        are the leaf content of each node.
+
+        .. versionadded: 2.x
+        
+        """
+        if store is None:
+            store = {}
+            
+        for ch in self.children:
+            ch.get_node2content(store=store)
+
+        if self.children:
+            val = set()
+            for ch in self.children:
+                val.update(store[ch])
+            store[self] = val
+        else:
+            store[self] = set([self])
+        return store
+       
 
 
 #: .. currentmodule:: ete_dev

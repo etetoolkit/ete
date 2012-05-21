@@ -6,7 +6,7 @@ from PyQt4.QtCore import QThread, SIGNAL
 try:
     from PyQt4 import QtOpenGL
     USE_GL = True
-    USE_GL = False # Temporarily disabled
+    #USE_GL = False # Temporarily disabled
 except ImportError:
     USE_GL = False
 
@@ -37,9 +37,10 @@ class CheckUpdates(QThread):
                 elif current == latest:
                     msg = "Up to date"
             self.emit(SIGNAL("output(QString)"), msg)
-        except:
+        except Exception:
             pass
 
+            
 class _GUI(QtGui.QMainWindow):
     def _updatestatus(self, msg):
         self.main.statusbar.showMessage(msg)

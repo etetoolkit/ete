@@ -37,7 +37,7 @@ def init_scene(t, layout, ts):
     scene  = _TreeScene()
     return scene, ts
 
-def show_tree(t, layout=None, tree_style=None):
+def show_tree(t, layout=None, tree_style=None, win_name=None):
     """ Interactively shows a tree."""
     scene, img = init_scene(t, layout, tree_style)
     tree_item, n2i, n2f = render(t, img)
@@ -46,6 +46,9 @@ def show_tree(t, layout=None, tree_style=None):
     tree_item.setParentItem(scene.master_item)
     scene.addItem(scene.master_item)
     mainapp = _GUI(scene)
+    if win_name:
+        mainapp.setObjectName(win_name)
+        
     mainapp.show()
     _QApp.exec_()
 
