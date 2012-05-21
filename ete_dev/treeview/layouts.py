@@ -203,11 +203,11 @@ def evol_layout(node):
     if hasattr(node,"extras"):
         faces.add_face_to_node( faces.AttrFace("extras", "Arial", 7, \
                                                "#000000", None), node, 2 )
-    if node.is_leaf():
-        if hasattr (node, "sequence"):
-            seqface =  faces.SequenceFace(node.sequence, interactive=True,
-                                          codon=node.nt_sequence)
-            faces.add_face_to_node(seqface, node, 1, aligned=True)
+    #if node.is_leaf():
+    if hasattr (node, "sequence"):
+        seqface =  faces.SequenceFace(node.sequence, interactive=True,
+                                      codon=node.nt_sequence)
+        faces.add_face_to_node(seqface, node, 1, aligned=True)
 
             
 def evol_clean_layout(node):

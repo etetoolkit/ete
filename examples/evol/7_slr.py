@@ -28,8 +28,8 @@ tree.run_model ('SLR')
 
 slr = tree.get_evol_model ('SLR')
 
-slr.set_histface (up=False, typ='protamine',
-                  lines = [1.0,0.3], col_lines=['black','grey'])
+slr.set_histface (up=False, kind='curve',errors=True,
+                  hlines = [1.0,0.3], hlines_col=['black','grey'])
 
 tree.show (histfaces=['SLR'])
 

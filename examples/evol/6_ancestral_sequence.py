@@ -24,6 +24,7 @@ print tree
 print '\nRunning free-ratio model with calculation of ancestral sequences...'
 
 tree.run_model ('fb_anc')
+#tree.link_to_evol_model('/tmp/ete2-codeml/fb_anc/out', 'fb')
 
 I = TreeStyle()
 I.force_topology             = False
@@ -36,7 +37,7 @@ I.complete_branch_lines_when_necesary = True
 for n in sorted (tree.get_descendants()+[tree],
                  key=lambda x: x.paml_id):
     if n.is_leaf(): continue
-    anc_face = faces.SequenceFace (n.sequence, 'aa', fsize=11, aabg={})
+    anc_face = faces.SequenceFace (n.sequence, 'aa', fsize=10, bg_colors={})
     I.aligned_foot.add_face(anc_face, 1)
     I.aligned_foot.add_face(faces.TextFace('paml_id: #%d '%(n.paml_id),
                                            fsize=8), 0)

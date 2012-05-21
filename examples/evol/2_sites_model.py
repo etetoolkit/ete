@@ -38,24 +38,23 @@ print 'but we can choose betwen manya others...'
 
 model2 = tree.get_evol_model ('M2')
 
-col2 = {'NS' : 'white', 'RX' : 'white',
-        'RX+': 'white', 'CN' : 'white',
-        'CN+': 'white', 'PS' : 'white', 'PS+': 'white'}
+col2 = {'NS' : 'black', 'RX' : 'black',
+        'RX+': 'black', 'CN' : 'black',
+        'CN+': 'black', 'PS' : 'black', 'PS+': 'black'}
 
 
-model2.set_histface (up=False, typ='error', col=col2, lines = [2.5, 1.0, 4.0, 0.5], header = 'Many lines, error boxes, background black',
-                     col_lines=['orange', 'yellow', 'red', 'cyan'])
+model2.set_histface (up=False, kind='curve', colors=col2, ylim=[0,4], hlines = [2.5, 1.0, 4.0, 0.5], header = 'Many lines, error boxes, background black',
+                     hlines_col=['orange', 'yellow', 'red', 'cyan'], errors=True)
 
 tree.show(histfaces=['M2'])
 
-model2.set_histface (up=False, typ='protamine', lines = [1.0,0.3], col_lines=['black','grey'],
-                 extras=['+','-',' ',' ',' ',':P', ' ',' ']*2+[' ']*(len(tree.get_leaves()[0].sequence)-16))
+model2.set_histface (up=False, kind='stick', hlines = [1.0,0.3], hlines_col=['black','grey'])
 tree.show(histfaces=['M2'])
 
 col = {'NS' : 'grey', 'RX' : 'black',
        'RX+': 'grey', 'CN' : 'black',
        'CN+': 'grey', 'PS' : 'black', 'PS+': 'black'}
-model2.set_histface (up=False, typ='hist', col=col, lines = [1.0,0.3], col_lines=['black','grey'])
+model2.set_histface (up=False, kind='bar', colors=col, hlines=[1.0,0.3], hlines_col=['black','grey'])
 
 tree.show(histfaces=['M2'])
 

@@ -3,7 +3,11 @@ from PyQt4       import QtCore
 from PyQt4.QtGui import QGraphicsRectItem, QColor, QPen, QBrush
 from PyQt4.QtGui import QGraphicsSimpleTextItem, QFont
 
-from ete_dev import faces, TreeStyle, EvolTree, PhyloTree, TextFace
+try:
+    from ete_dev import EvolTree
+except:
+    pass
+from ete_dev import faces, TreeStyle, PhyloTree, TextFace
 from random import random
 
 _aafgcolors = {
@@ -274,31 +278,54 @@ def test_layout_phylo_nt(node):
 
             
 if __name__ == "__main__":
-    tree = EvolTree("(Orangutan,Human,Chimp);")
-    tree.link_to_alignment("""
-    >Human
-    GAC GCA CGG TGG CAC AAC GTA AAA TTA AGA TGT GAA TTG AGA ACT CTG AAA AAA 
-    TTG GGA CTG GTC GGC TTC AAG GCA GTA AGT CAA TTC GTA ATA CGT CGT GCG
-    >Chimp
-    CAC GCC CGA TGG CTC AAC GAA AAG TTA AGA TGC GAA TTG AGA ACT CTG AAA AAA
-    TTG GGA CTG GAC GGC TAC AAG GCA GTA AGT CAG TAC GTT AAA GGT CGT GCG
-    >Orangutan
-    GAT GCA CGC TGG ATC AAC GAA AAG TTA AGA TGC GTA TCG AGA ACT CTG AAA AAA
-    TTG GGA CTG GAC GGC TAC AAG GGA GTA AGT CAA TAC GTT AAA GGT CGT CCG
-    """)
-    #try:
-    #    tree.run_model("fb")
-    #    tree.run_model("M2")
-    #except:
-    #    pass
-    tree.dist = 0
-    ts = TreeStyle()
-    ts.title.add_face(TextFace("Example for EvolTree, interactivity shows codons", fsize=15), column=0)
-    ts.layout_fn = test_layout_evol
-    #try:
-    #    tree.show(tree_style=ts, histfaces=["M2"])
-    #except:
-    tree.show(tree_style=ts)
+    try:
+        tree = EvolTree("(Orangutan,Human,Chimp);")
+        tree.link_to_alignment("""
+        >Human
+        GAC GCA CGG TGG CAC AAC GTA AAA TTA AGA TGT GAA TTG AGA ACT CTG AAA AAA 
+        TTG GGA CTG GTC GGC TTC AAG GCA GTA AGT CAA TTC GTA ATA CGT CGT GCG
+        >Chimp
+        CAC GCC CGA TGG CTC AAC GAA AAG TTA AGA TGC GAA TTG AGA ACT CTG AAA AAA
+        TTG GGA CTG GAC GGC TAC AAG GCA GTA AGT CAG TAC GTT AAA GGT CGT GCG
+        >Orangutan
+        GAT GCA CGC TGG ATC AAC GAA AAG TTA AGA TGC GTA TCG AGA ACT CTG AAA AAA
+        TTG GGA CTG GAC GGC TAC AAG GGA GTA AGT CAA TAC GTT AAA GGT CGT CCG
+        """)
+        #try:
+        #    tree.run_model("fb")
+        #    tree.run_model("M2")
+        #except:
+        #    pass
+        tree.dist = 0
+        ts = TreeStyle()
+        ts.title.add_face(TextFace("Example for EvolTree, interactivity shows codons", fsize=15), column=0)
+        ts.layout_fn = test_layout_evol
+        #try:
+        #    tree.show(tree_style=ts, histfaces=["M2"])
+        #except:
+        tree.show(tree_style=ts)
+    except:
+        tree = PhyloTree('(Orangutan,Human,Chimp);')
+        tree.link_to_alignment("""
+                               >Chimp
+                               HARWLNEKLRCELRTLKKLGLDGYKAVSQYVKGRA
+                               >Orangutan
+                               DARWINEKLRCVSRTLKKLGLDGYKGVSQYVKGRP
+                               >Human
+                               DARWHNVKLRCELRTLKKLGLVGFKAVSQFVIRRA
+                               """)
+        nt_sequences = {"Human"    : "GACGCACGGTGGCACAACGTAAAATTAAGATGTGAATTGAGAACTCTGAAAAAATTGGGACTGGTCGGCTTCAAGGCAGTAAGTCAATTCGTAATACGTCGTGCG",
+                        "Chimp"    : "CACGCCCGATGGCTCAACGAAAAGTTAAGATGCGAATTGAGAACTCTGAAAAAATTGGGACTGGACGGCTACAAGGCAGTAAGTCAGTACGTTAAAGGTCGTGCG",
+                        "Orangutan": "GATGCACGCTGGATCAACGAAAAGTTAAGATGCGTATCGAGAACTCTGAAAAAATTGGGACTGGACGGCTACAAGGGAGTAAGTCAATACGTTAAAGGTCGTCCG"
+                    }
+        for l in nt_sequences:
+            (tree & l).nt_sequence = nt_sequences[l]
+        tree.dist = 0
+        ts = TreeStyle()
+        ts.title.add_face(TextFace("Example for nucleotides...", fsize=15), column=0)
+        ts.layout_fn = test_layout_evol
+        
+        tree.show(tree_style=ts)
         
     tree = PhyloTree('(Orangutan,Human,Chimp);')
     tree.link_to_alignment(">Human\n"       + ''.join([_aabgcolors.keys()[int(random() * len (_aabgcolors))] for _ in xrange (100000)]) + \
@@ -322,22 +349,4 @@ if __name__ == "__main__":
     
     tree.show(tree_style=ts)
     
-    tree.link_to_alignment("""
-    >Human
-    GAC GCA CGG TGG CAC AAC GTA AAA TTA AGA TGT GAA TTG AGA ACT CTG AAA AAA 
-    TTG GGA CTG GTC GGC TTC AAG GCA GTA AGT CAA TTC GTA ATA CGT CGT GCG
-    >Chimp
-    CAC GCC CGA TGG CTC AAC GAA AAG TTA AGA TGC GAA TTG AGA ACT CTG AAA AAA
-    TTG GGA CTG GAC GGC TAC AAG GCA GTA AGT CAG TAC GTT AAA GGT CGT GCG
-    >Orangutan
-    GAT GCA CGC TGG ATC AAC GAA AAG TTA AGA TGC GTA TCG AGA ACT CTG AAA AAA
-    TTG GGA CTG GAC GGC TAC AAG GGA GTA AGT CAA TAC GTT AAA GGT CGT CCG
-    """)
-    
-    tree.dist = 0
-    ts = TreeStyle()
-    ts.title.add_face(TextFace("Example for nucleotides...", fsize=15), column=0)
-    ts.layout_fn = test_layout_phylo_nt
-    
-    tree.show(tree_style=ts)
     

@@ -130,9 +130,8 @@ class Model:
             params[key] = change
         self.properties ['params'] = params
         
-    def set_histface (self, up=True, lines=[1.0,0.3], header='',
-                      col_lines=None, kind='bar', errors=False,
-                      col=None, col_width=11):
+    def set_histface (self, up=True, hlines=[1.0,0.3], kind='bar',
+                      errors=False, colors=None, **kwargs):
         '''
         To add histogram face for a given site mdl (M1, M2, M7, M8)
         can choose to put it up or down the tree.
@@ -151,8 +150,8 @@ class Model:
         if self.sites == None:
             warn ("WARNING: model %s not computed." % (self.name))
             return None
-        if header == '':
-            header = 'Omega value for sites under %s model' % (self.name)
+        if not 'header' in kwargs:
+            kwargs['header'] = 'Omega value for sites under %s model' % (self.name)
         if self.sites.has_key ('BEB'):
             bayes = 'BEB'
         elif self.sites.has_key ('NEB'):
@@ -160,19 +159,18 @@ class Model:
         else:
             bayes = 'SLR'
         colors = colorize_rst(self.sites [bayes]['pv'], self.name,
-                              self.sites[bayes]['class'], col=col)
+                              self.sites[bayes]['class'], col=colors)
+        if not 'ylim' in kwargs:
+            kwargs['ylim'] = (0,2)
         if errors:
             errors=self.sites[bayes]['se'] if self.sites[bayes].has_key ('se') else None
         self.properties ['histface'] = SequencePlotFace(self.sites [bayes]['w'],
-                                                        hlines=lines,
-                                                        hlines_col=col_lines,
+                                                        hlines=hlines,
                                                         colors=colors,
-                                                        header=header,
                                                         errors=errors,
-                                                        ylim=(0,2),
                                                         ylabel=u'Omega (\u03c9)',
                                                         kind=kind,
-                                                        col_width=col_width)
+                                                        **kwargs)
         if up:
             setattr (self.properties ['histface'], 'up', True)
         else:

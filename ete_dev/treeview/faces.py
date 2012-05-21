@@ -840,7 +840,7 @@ class StaticItemFace(Face):
         return self.item.rect().height()
         
 
-class SequenceFace(StaticItemFace):
+class SequenceFace(StaticItemFace, Face):
     """ Creates a new molecular sequence face object.
 
 
@@ -1294,16 +1294,17 @@ class SequencePlotFace(StaticItemFace):
     """
     To draw plots, usually correlated to columns in alignment
 
-    :argument values: a list of values
+    :argument      values    : a list of values
     :argument None errors    : a list of errors associated to each value. elements of the list can contain a list with lower and upper error, if they are different.
     :argument None colors    : a list of colors associated to each value
     :argument None header    : a title for the plot
+    :argument bar  kind      : kind of plot, one of bar, curve or sticks.
     :argument None fsize     : font size for header and labels
     :argument 100  height    : height of the plot (excluding labels)
     :argument None hlines    : list of y values of horizontal dashed lines to be drawn across plot
     :argument None hlines_col: list of colors associated to each horizontal line
     :argument None col_width : width of a column in the alignment
-    :argument red error_col  : color of error bars
+    :argument red  error_col : color of error bars
     
     """
     def __init__(self, values, errors=None, colors=None, header='',
@@ -1340,13 +1341,14 @@ class SequencePlotFace(StaticItemFace):
             else:
                 self._up_err = [float(e)  for e in self.errors]
                 self._dw_err = [float(-e) for e in self.errors]
-        
         if kind == 'bar':
             self.draw_fun = self.draw_bar
         elif kind == 'stick':
             self.draw_fun = self.draw_stick
         elif kind == 'curve':
             self.draw_fun = self.draw_curve
+        else:
+            raise('kind %s not yet implemented... ;)'%kind)
         
         self.hlines     = [float(h) for h in hlines] if hlines else [1.0]
         self.hlines_col = hlines_col if hlines_col else ['black']*len(self.hlines)
@@ -1364,7 +1366,7 @@ class SequencePlotFace(StaticItemFace):
         # draw lines
         for line, col in zip(self.hlines, self.hlines_col):
             self.draw_hlines(line, col)
-        # draw histogram
+        # draw plot
         width = self.col_w
         for i, val in enumerate(self.values):
             self.draw_fun(width * i + self.col_w / 2 , val, i)
@@ -1503,29 +1505,30 @@ class SequencePlotFace(StaticItemFace):
             lineItem.setPen(QtGui.QPen(QtGui.QColor(self.colors[i]),2))
         
     def draw_stick(self, x, y, i):
-        lineItem = QtGui.QGraphicsLineItem(0, self.height, 0, self.coordY(y),
-                                     parent=self.item)
+        lineItem = QtGui.QGraphicsLineItem(0, self.coordY(self.ylim[0]),
+                                           0, self.coordY(y),
+                                           parent=self.item)
         lineItem.setX(x)
         lineItem.setPen(QtGui.QPen(QtGui.QColor(self.colors[i]),2))
 
     def draw_errors(self, x, i):
         lower = self.values[i]+self._dw_err[i]
         upper = self.values[i]+self._up_err[i]
-        lineItem = QtGui.QGraphicsLineItem(0, self.coordY(lower), 0, self.coordY(upper),
-                                           parent=self.item)
+        lineItem = QtGui.QGraphicsLineItem(0, self.coordY(lower), 0,
+                                           self.coordY(upper), parent=self.item)
         lineItem.setX(x)
         lineItem.setPen(QtGui.QPen(QtGui.QColor('black'),1))
         
     def draw_curve(self, x, y, i):
         # top line
         lineItem = QtGui.QGraphicsLineItem(0, self.coordY(y), 4,
-                                     self.coordY(y), parent=self.item)
+                                           self.coordY(y), parent=self.item)
         lineItem.setX(x-2)
         lineItem.setPen(QtGui.QPen(QtGui.QColor(self.colors[i]),2))
         if i > 0:
             prev = self.values[i-1] if i>0 else self.values[i]
             lineItem = QtGui.QGraphicsLineItem(0, self.coordY(prev), self.col_w-4,
-                                         self.coordY(y), parent=self.item)
+                                               self.coordY(y), parent=self.item)
             lineItem.setX(x - self.col_w+2)
             lineItem.setPen(QtGui.QPen(QtGui.QColor(self.colors[i]),2))
 
