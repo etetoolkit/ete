@@ -118,7 +118,7 @@ class _FaceGroupItem(QGraphicsRectItem): # I resisted to name this FaceBookItem 
             self.r2max_h = r2max_h
 
         self.as_grid = as_grid
-        self.update_columns_size()
+        #self.update_columns_size()
         return self.c2max_w, self.r2max_h
   
 

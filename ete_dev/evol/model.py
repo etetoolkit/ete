@@ -14,6 +14,7 @@ from warnings import warn
 
 from ete_dev.evol.control import PARAMS, AVAIL
 from ete_dev.evol.parser  import parse_paml, parse_rst, get_ancestor, parse_slr
+from ete_dev.treeview.faces import SequencePlotFace
 
 class Model:
     '''Evolutionary model.
@@ -129,9 +130,9 @@ class Model:
             params[key] = change
         self.properties ['params'] = params
         
-    def set_histface (self, up=True, lines=[1.0], header='',
-                      col_lines=['grey'], typ='hist',
-                      col=None, extras=[''], col_width=11):
+    def set_histface (self, up=True, lines=[1.0,0.3], header='',
+                      col_lines=None, kind='bar', errors=False,
+                      col=None, col_width=11):
         '''
         To add histogram face for a given site mdl (M1, M2, M7, M8)
         can choose to put it up or down the tree.
@@ -147,15 +148,6 @@ class Model:
                    'PS' : 'orange',
                    'PS+': 'red'    }
         '''
-        from ete_dev.evol import colorize_rst
-        if typ   == 'hist':
-            from ete_dev.evol import HistFace as face
-        elif typ == 'line':
-            from ete_dev.evol import LineFaceBG as face
-        elif typ == 'error':
-            from ete_dev.evol import ErrorLineFace as face
-        elif typ == 'protamine':
-            from ete_dev.evol import ErrorLineProtamineFace as face
         if self.sites == None:
             warn ("WARNING: model %s not computed." % (self.name))
             return None
@@ -167,17 +159,20 @@ class Model:
             bayes = 'NEB'
         else:
             bayes = 'SLR'
-        self.properties ['histface'] = \
-                        face (values = self.sites [bayes]['w'], 
-                              lines = lines, col_lines=col_lines,
-                              colors=colorize_rst(self.sites [bayes]['pv'],
-                                                  self.name,
-                                                  self.sites[bayes]['class'],
-                                                  col=col),
-                              header=header,
-                              errors=[] if not self.sites[bayes].has_key ('se')\
-                              else self.sites[bayes]['se'],
-                              extras=extras, col_width=col_width)
+        colors = colorize_rst(self.sites [bayes]['pv'], self.name,
+                              self.sites[bayes]['class'], col=col)
+        if errors:
+            errors=self.sites[bayes]['se'] if self.sites[bayes].has_key ('se') else None
+        self.properties ['histface'] = SequencePlotFace(self.sites [bayes]['w'],
+                                                        hlines=lines,
+                                                        hlines_col=col_lines,
+                                                        colors=colors,
+                                                        header=header,
+                                                        errors=errors,
+                                                        ylim=(0,2),
+                                                        ylabel=u'Omega (\u03c9)',
+                                                        kind=kind,
+                                                        col_width=col_width)
         if up:
             setattr (self.properties ['histface'], 'up', True)
         else:
@@ -226,6 +221,55 @@ def check_name(model):
     if AVAIL.has_key (sub ('\..*', '', model)):
         return model, AVAIL [sub ('\..*', '', model)]
 
+
+
+def colorize_rst(vals, winner, classes,col=None):
+    '''
+    Colorize function, that take in argument a list of values
+    corresponding to a list of classes and returns a list of
+    colors to paint histogram.
+    '''
+    col = {'NS' : 'grey',
+           'RX' : 'green',
+           'RX+': 'green',
+           'CN' : 'cyan',
+           'CN+': 'blue',
+           'PS' : 'orange',
+           'PS+': 'red'} if col==None else col
+    colors = []
+    for i in range (0, len (vals)):
+        class1 = classes[i] #int(sub('\/.*', '', sub('\(', '', classes[i])))
+        class2 = max (classes)# int(sub('.*\/', '', sub('\)', '', classes[i])))
+        pval = float (vals[i])
+        if pval < 0.95:
+            colors.append(col['NS'])
+        elif (class1 != class2 and class1 != 1) \
+                 and (winner == 'M2' or winner == 'M8' or winner == 'SLR'):
+            if pval < 0.99:
+                colors.append(col['RX'])
+            else:
+                colors.append(col['RX+'])
+        elif class1 == 1:
+            if pval < 0.99:
+                colors.append(col['CN'])
+            else:
+                colors.append(col['CN+'])
+        elif class1 == class2 and (winner == 'M2' or winner == 'M8' or winner == 'SLR'):
+            if pval < 0.99:
+                colors.append(col['PS'])
+            else:
+                colors.append(col['PS+'])
+        elif class1 == class2:
+            if pval < 0.99:
+                colors.append(col['RX'])
+            else:
+                colors.append(col['RX+'])
+        else:
+            colors.append(col['NS'])
+    return colors
+
+
+        
 sep = '\n        +----------+-----------------------------+-----------------+\n'
 Model.__doc__ = Model.__doc__ % \
                     (sep.join(map (lambda x: \
@@ -234,8 +278,3 @@ Model.__doc__ = Model.__doc__ % \
                                    sorted (sorted (AVAIL.keys()), cmp=lambda x, y : \
                                            cmp(AVAIL[x]['typ'], AVAIL[y]['typ']),
                                            reverse=True))) + sep)
-#Model.__doc__ += '\n%s\n' % '\n'.join (map (lambda x: \
-#        '           * %-9s model of %-18s at  %-12s level.' % \
-#        ('"%s"' % (x), AVAIL[x]['evol'], AVAIL[x]['typ']), \
-#        sorted (sorted (AVAIL.keys()), cmp=lambda x, y : \
-#        cmp(AVAIL[x]['typ'], AVAIL[y]['typ']), reverse=True)))

@@ -44,7 +44,7 @@ col2 = {'NS' : 'white', 'RX' : 'white',
 
 
 model2.set_histface (up=False, typ='error', col=col2, lines = [2.5, 1.0, 4.0, 0.5], header = 'Many lines, error boxes, background black',
-                  col_lines=['orange', 'yellow', 'red', 'cyan'])
+                     col_lines=['orange', 'yellow', 'red', 'cyan'])
 
 tree.show(histfaces=['M2'])
 

@@ -208,6 +208,17 @@ class EvolNode (PhyloNode):
                          ', '.join (PARAMS.keys()))
 
 
+    #def test_codon_model(self):
+    #    for c_frq in range(4):
+    #        self.run_model('M0.model_test-'+str(c_frq), CodonFreq=c_frq)
+    #    if self.get_most_likely('M0.model_test-1', 'M0.model_test-0') > 0.05:
+    #        
+    #    self.get_most_likely('M0.model_test-2', 'M0.model_test-0')
+    #    self.get_most_likely('M0.model_test-3', 'M0.model_test-0')
+    #    self.get_most_likely('M0.model_test-2', 'M0.model_test-1')
+    #    self.get_most_likely('M0.model_test-3', 'M0.model_test-1')
+    #    self.get_most_likely('M0.model_test-3', 'M0.model_test-2')
+
     def link_to_alignment (self, alignment, alg_format="paml",
                            nucleotides=True):
         '''
@@ -247,7 +258,9 @@ class EvolNode (PhyloNode):
                     mdl = self.get_evol_model (hist)
                 except AttributeError:
                     warn ('model %s not computed' % (hist))
-                if not mdl.properties.has_key ('histface'):
+                if len(histfaces)>1 and histfaces.index(hist)!=0:
+                    mdl.set_histface (up=False)
+                else:
                     mdl.set_histface ()
                 if mdl.properties ['histface'].up:
                     ts.aligned_header.add_face (\
@@ -278,8 +291,7 @@ class EvolNode (PhyloNode):
                     mdl = self.get_evol_model (hist)
                 except AttributeError:
                     warn ('model %s not computed' % (hist))
-                if mdl.histface is None:
-                    mdl.set_histface()
+                mdl.set_histface()
                 if mdl.histface.up:
                     ts.aligned_header.add_face (mdl.histface, 1)
                 else:

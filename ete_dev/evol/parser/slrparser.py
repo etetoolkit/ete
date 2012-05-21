@@ -49,6 +49,6 @@ def parse_slr (slrout):
         except IndexError:
             SLR['note'  ].append('')
         if not seN == '':
-            SLR['se'].append ([float (SLR['w'][-1]) - float (line.split()[4]),
-                               float (line.split()[5]) - float (SLR['w'][-1])])
+            SLR['se'].append ([float (SLR['w'][-1]) - float (line.split()[seN]),
+                               float (line.split()[seP]) - float (SLR['w'][-1])])
     return {'sites': {'SLR': SLR}}
