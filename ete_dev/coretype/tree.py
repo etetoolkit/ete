@@ -1212,9 +1212,9 @@ class TreeNode(object):
 
         """
         if method=="newick":
-            new_node = Tree(self.write(features=["name"]))
+            new_node = self.__class__(self.write(features=["name"]))
         elif method=="newick-extended":
-            new_node = Tree(self.write(features=[]))
+            new_node = self.__class__(self.write(features=[]))
         elif method == "deepcopy":
             parent = self.up
             self.up = None

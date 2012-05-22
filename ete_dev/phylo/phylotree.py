@@ -42,11 +42,21 @@ __all__ = ["PhyloNode", "PhyloTree"]
 def _parse_species(name):
     return name[:3]
 
+def is_dup(n):
+    return getattr(n, "evoltype", None) == "D"
+
+def get_subtrees_iterative(tree):
+    #import pdb; pdb.set_trace()
+    for th in path_to_root(tree):
+        print th
+        
+    return []
+    
 def merge_dicts(source, target):
     for k, v in source.iteritems():
         target[k] = v
 
-def get_subtrees(node):
+def get_subtrees(node, full_copy=False):
     #import pdb; pdb.set_trace()
     def is_dup(n):
         return getattr(n, "evoltype", None) == "D"
@@ -54,7 +64,7 @@ def get_subtrees(node):
     if is_dup(node):
         sp_trees = []
         for ch in node.children:
-            sp_trees.extend(get_subtrees(ch))
+            sp_trees.extend(get_subtrees(ch, full_copy=full_copy))
         return sp_trees
         
     # saves a list of duplication nodes under current node
@@ -75,7 +85,9 @@ def get_subtrees(node):
             #get all sibling sptrees in each side of the
             #duplication. Each subtree is pointed to its anchor
             for ch in dp.children:
-                for subt in get_subtrees(ch):
+                for subt in get_subtrees(ch, full_copy=full_copy):
+                    if not full_copy:
+                        subt = node.__class__(subt)
                     subt.up = anchor
                     duptrees.append(subt)
 
@@ -94,22 +106,28 @@ def get_subtrees(node):
                     #print subt.up
                 else:
                     sp_trees.append(subt)
-            back_up = node.up
-            node.up = None
-            _node = node.copy()
-            node.up = back_up
-            #_node.detach()
+            if full_copy:
+                 back_up = node.up
+                 node.up = None
+                 _node = node.copy()
+                 node.up = back_up
+            else:
+                _node = node.write(format=9, features=["name", "evoltype"])
             sp_trees.append(_node)
             # Clear current node
             for subt in comb:
                 subt.up.children.pop(-1)
     else:
-        back_up = node.up
-        node.up = None
-        _node = node.copy()
-        node.up = back_up
+        if full_copy:
+            back_up = node.up
+            node.up = None
+            _node = node.copy()
+            node.up = back_up
+        else:
+            _node = node.write(format=9, features=["name", "evoltype"])
         #node.detach()
         sp_trees = [_node]
+        
     return sp_trees
                
 def get_subparts(n):
@@ -448,7 +466,7 @@ class PhyloNode(TreeNode):
 
         return outgroup_node
 
-    def get_speciation_trees(self, autodetect_duplications=True):
+    def get_speciation_trees(self, autodetect_duplications=True, full_copy=False):
         """Returns a list of all species-tree-topologies contained
         in the current gene tree.
 
@@ -478,8 +496,15 @@ class PhyloNode(TreeNode):
         else:
             for node in t.iter_leaves():
                 node._leaf = True
-        sp_trees= get_subtrees(t)
-        return sp_trees
+        sp_trees = get_subtrees(t, full_copy=full_copy)
+
+        #for nw in sp_trees:
+        #    yield self.__class__(nw)
+        if full_copy:
+            return sp_trees
+        else:
+            return [self.__class__(nw) for nw in sp_trees]
+
 
     def split_by_dups(self, autodetect_duplications=True):
         """Returns the list of all subtrees resulting from splitting
@@ -553,8 +578,6 @@ class PhyloNode(TreeNode):
         else:
             store[self] = set([self])
         return store
-       
-
 
 #: .. currentmodule:: ete_dev
 #

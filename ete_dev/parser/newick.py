@@ -193,10 +193,14 @@ def read_newick(newick, root_node=None, format=0):
         else:
             nw = newick
         nw = nw.strip()
-        if not nw.startswith('(') or not nw.endswith(';'):
+        if not nw.startswith('(') and nw.endswith(';'):
+            return _read_node_data(nw, root_node, "internal", format)
+        elif not nw.startswith('(') or not nw.endswith(';'):
             raise NewickError, \
             'Unexisting tree file or Malformed newick tree structure.'
-        return _read_newick_from_string(nw, root_node, format)
+        else:
+            return _read_newick_from_string(nw, root_node, format)
+
     else:
         raise NewickError, \
             "'newick' argument must be either a filename or a newick string."
@@ -342,7 +346,8 @@ def write_newick(node, features=None, format=1, _is_root=True):
 
         newick += format_node(node, "leaf", format)
         newick += _get_features_string(node, features)
-        return newick
+        #return newick
+        
     else:
         if node.children:
             newick+= "("
@@ -357,6 +362,7 @@ def write_newick(node, features=None, format=1, _is_root=True):
                 newick += _get_features_string(node, features)
             else:
                 newick += ','
+                
     if _is_root:
         newick += ";"
     return newick
