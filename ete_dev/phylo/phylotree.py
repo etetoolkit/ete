@@ -79,14 +79,11 @@ def get_subtrees(tree, full_copy=False):
             del n2subtrees[ch.nid]
             
         #print n.nid, subtrees, len(n2subtrees)
-    sp_trees = []
     for nw in n2subtrees[tree.nid]:
         t = PhyloTree(str(nw)+";")
         for leaf in t.iter_leaves():
             leaf.name = nid2node[int(leaf.name)].name
-        sp_trees.append(t)
-        
-    return sp_trees
+        yield t
     
 def merge_dicts(source, target):
     for k, v in source.iteritems():
@@ -562,7 +559,7 @@ class PhyloNode(TreeNode):
         else:
             for node in t.iter_leaves():
                 node._leaf = True
-        sp_trees= get_subparts(t)
+        sp_trees = get_subparts(t)
         return sp_trees
         
     def get_node2species(self):
