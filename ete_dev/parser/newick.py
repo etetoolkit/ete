@@ -194,7 +194,8 @@ def read_newick(newick, root_node=None, format=0):
             nw = newick
         nw = nw.strip()
         if not nw.startswith('(') and nw.endswith(';'):
-            return _read_node_data(nw, root_node, "internal", format)
+            return _read_node_data(nw, root_node, "single", format)
+            
         elif not nw.startswith('(') or not nw.endswith(';'):
             raise NewickError, \
             'Unexisting tree file or Malformed newick tree structure.'
@@ -279,12 +280,15 @@ def _parse_extra_features(node, NHX_string):
             raise ValueError, e
         node.add_feature(pname, pvalue)
 
-def _read_node_data(subnw, current_node, node_type,format):
+def _read_node_data(subnw, current_node, node_type, format):
     """ Reads a leaf node from a subpart of the original newick
     tree """
 
-    if node_type == "leaf":
-        node = current_node.add_child()
+    if node_type == "leaf" or node_type == "single":
+        if node_type == "leaf":
+            node = current_node.add_child()
+        else:
+            node = current_node
         container1 = NW_FORMAT[format][0][0]
         container2 = NW_FORMAT[format][1][0]
         converterFn1 = NW_FORMAT[format][0][1]
