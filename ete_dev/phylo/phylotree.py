@@ -81,8 +81,8 @@ def get_subtrees(tree, full_copy=False, features=None):
         n2subtrees[n2nid[n]] = subtrees
         for ch in n.children:
             del n2subtrees[n2nid[ch]]
-            
-    return len(n2subtrees), len(dups), iter_sptrees(n2subtrees[n2nid[tree]], nid2node, features)
+    sp_trees = n2subtrees[n2nid[tree]]
+    return len(sp_trees), len(dups), iter_sptrees(sp_trees, nid2node, features)
 
 def iter_sptrees(sptrees, nid2node, features=None, full_map=True):
     """ Loads and map the species trees returned by get_subtrees"""
