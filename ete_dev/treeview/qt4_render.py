@@ -98,6 +98,8 @@ class _NodeItem(_EmptyItem):
         self.node = node
         self.nodeRegion = QtCore.QRectF()
         self.facesRegion = QtCore.QRectF()
+        self.branchFacesRegion = QtCore.QRectF()
+        self.branchRegion = QtCore.QRectF()
         self.fullRegion = QtCore.QRectF()
         self.highlighted = False
 
@@ -203,11 +205,16 @@ class _TreeScene(QtGui.QGraphicsScene):
         tree_item.setParentItem(self.master_item)
 
 def render(root_node, img, hide_root=False):
+    '''main render function. hide_root option is used when render
+    trees as Faces
+
+    '''
+    
     mode = img.mode
     orientation = img.orientation
 
     arc_span = img.arc_span
-    last_rotation = img.arc_start
+
     layout_fn = img._layout_handler
 
     parent = _TreeItem()
@@ -227,10 +234,6 @@ def render(root_node, img, hide_root=False):
     parent.float_behind_layer.setZValue(1)
     parent.float_layer.setZValue(3)
 
-    visited = set()
-    to_visit = []
-    to_visit.append(root_node)
-
     # This could be used to handle aligned faces in internal
     # nodes.
     virtual_leaves = 0
@@ -242,6 +245,7 @@ def render(root_node, img, hide_root=False):
     if img.show_leaf_name:
         na_face = faces.AttrFace("name", fsize=10, ftype="Arial", fgcolor="black")
 
+    
     for n in root_node.traverse():
         set_style(n, layout_fn)
 
@@ -258,75 +262,29 @@ def render(root_node, img, hide_root=False):
             virtual_leaves += 1
 
         update_node_faces(n, n2f, img)
-
+        
     rot_step = float(arc_span) / virtual_leaves
     #rot_step = float(arc_span) / len([n for n in root_node.traverse() if _leaf(n)])
 
-    # Set branch scale
-    if not img._scale:
-        if img.scale:
-            img._scale = img.scale
-        else:
-            if img.tree_width:
-                tree_width =  img.tree_width
-            elif img.mode == "c":
-                tree_width = crender.get_optimal_tree_width(root_node, n2f, img,
-                                                            rot_step)
-            else:
-                tree_width = 200
-            fnode, dist = root_node.get_closest_leaf(topology_only=\
-                                                     img.force_topology)
-            img._scale = tree_width / dist
-    scale = img._scale
+    # create items and calculate node dimensions skipping branch lengths
+    init_items(root_node, parent, n2i, n2f, img, rot_step, hide_root)
 
+    # Calculate optimal branch length
+    if mode == 'r':
+        scale = max([i.widths[1]/n.dist for n,i in n2i.iteritems()])
+    else:
+        scale = 20
+    #scale = 20
+    img._scale = scale
     
-    # ::: Precalculate values :::
-    depth = 1
-    while to_visit:
-        node = to_visit[-1]
-        finished = True
-        if node not in n2i:
-            # Set style according to layout function
-            item = n2i[node] = _NodeItem(node, parent.tree_layer)
-            item.setZValue(depth)
-            depth += 1
-
-            if node is root_node and hide_root:
-                pass
-            else:
-                set_node_size(node, n2i, n2f, img)
-
-        if not _leaf(node):
-            # visit children starting from left to right. Very
-            #  important!! check all children[-1] and children[0]
-            for c in reversed(node.children):
-                if c not in visited:
-                    to_visit.append(c)
-                    finished = False
-            # :: pre-order code here ::
-        if not finished:
-            continue
-        else:
-            to_visit.pop(-1)
-            visited.add(node)
-
-        # :: Post-order visits. Leaves are already visited here ::
-        if mode == "c":
-            if _leaf(node):
-                crender.init_circular_leaf_item(node, n2i, n2f, last_rotation, rot_step)
-                last_rotation += rot_step
-            else:
-                crender.init_circular_node_item(node, n2i, n2f)
-
-        elif mode == "r":
-            if _leaf(node):
-                rrender.init_rect_leaf_item(node, n2i, n2f)
-            else:
-                rrender.init_rect_node_item(node, n2i, n2f)
-
+    # Set branch length in all NodeItems and update dimensions
+    update_branch_lengths(root_node, n2i, n2f, img, scale)
+    
+    # Draw node content
+    for node in root_node.traverse():
         if node is not root_node or not hide_root:
             render_node_content(node, n2i, n2f, img)
-
+            
     mainRect = parent.rect()
 
     if mode == "c":
@@ -340,7 +298,6 @@ def render(root_node, img, hide_root=False):
         tree_radius = iwidth
 
     # The order by which the following methods IS IMPORTANT
-
     render_floatings(n2i, n2f, img, parent.float_layer, parent.float_behind_layer)
 
     aligned_region_width = render_aligned_faces(img, mainRect, parent.tree_layer, n2i, n2f)
@@ -375,7 +332,7 @@ def render(root_node, img, hide_root=False):
         frame.setPen(QtGui.QPen(QtCore.Qt.NoPen))
     else:
         frame.setPen(QtGui.QPen(QtGui.QColor("black")))
-
+        
     return frame, n2i, n2f
 
 def adjust_faces_to_tranformations(img, mainRect, n2i, n2f, tree_layers):
@@ -625,6 +582,7 @@ def render_node_content(node, n2i, n2f, img):
     ball_size = style["size"]
     lw = style["vt_line_width"]
     ball_start_x = nodeR.width() - facesR.width() - ball_size - lw
+    #ball_start_x = item.widths[0] + item.widths[1]
 
     if ball_size:
         if node.img_style["shape"] == "sphere":
@@ -701,8 +659,7 @@ def render_node_content(node, n2i, n2f, img):
             c1 = first_child_part.start_y + first_child_part.center
             c2 = last_child_part.start_y + last_child_part.center
             fx = nodeR.width()-node.img_style["vt_line_width"]/2
-            vt_line.setLine(fx, c1,\
-                                fx, c2)
+            vt_line.setLine(fx, c1, fx, c2)
 
         pen = QtGui.QPen()
         set_pen_style(pen, style["vt_line_type"])
@@ -923,4 +880,134 @@ def get_tree_img_map(n2i):
     return {"nodes": node_list, "faces": face_list}
 
 
+def init_items(root_node, parent, n2i, n2f, img, rot_step, hide_root):
+    # ::: Precalculate values :::
+    visited = set()
+    to_visit = []
+    to_visit.append(root_node)
+    last_rotation = img.arc_start
+    depth = 1
+    while to_visit:
+        node = to_visit[-1]
+        finished = True
+        if node not in n2i:
+            # Set style according to layout function
+            item = n2i[node] = _NodeItem(node, parent.tree_layer)
+            depth += 1
 
+            item.setZValue(depth)
+            if node is root_node and hide_root:
+                pass
+            else:
+                init_node_dimensions(node, item, n2f[node], img)
+                #set_node_size(node, n2i, n2f, img)
+
+        if not _leaf(node):
+            # visit children starting from left to right. Very
+            #  important!! check all children[-1] and children[0]
+            for c in reversed(node.children):
+                if c not in visited:
+                    to_visit.append(c)
+                    finished = False
+            # :: pre-order code here ::
+        if not finished:
+            continue
+        else:
+            to_visit.pop(-1)
+            visited.add(node)
+
+        # :: Post-order visits. Leaves are already visited here ::
+        if img.mode == "c":
+            if _leaf(node):
+                crender.init_circular_leaf_item(node, n2i, n2f, last_rotation, rot_step)
+                last_rotation += rot_step
+            else:
+                crender.init_circular_node_item(node, n2i, n2f)
+
+        elif img.mode == "r":
+            if _leaf(node):
+                rrender.init_rect_leaf_item(node, n2i, n2f)
+            else:
+                rrender.init_rect_node_item(node, n2i, n2f)
+
+
+def init_node_dimensions(node, item, faceblock, img):
+    """Calculates width and height of all different subparts and faces
+    of a given node. Branch lengths are not taken into account, so some
+    dimensions must be adjusted after setting a valid scale.
+    """
+    
+    min_separation = img.min_leaf_separation
+    aligned_height = 0
+    aligned_width = 0
+    if _leaf(node):
+        if img.mode == "r":
+            aligned_height = faceblock["aligned"].h
+            aligned_width = faceblock["aligned"].w
+        elif img.mode == "c":
+            # aligned faces in circular mode are adjusted afterwords. The
+            # min radius of the largest aligned faces will be calculated.
+            pass
+
+    ## Calculate dimensions of the different node regions
+    ##
+    ##
+    ##                                |  
+    ##                                |        ------ 
+    ##          b-top       --------- |        |    | 
+    ##    --------------- O |b-right| |        |alg | 
+    ##          b-bottom    --------- |        |    | 
+    ##                                |        ------ 
+    ##                                |       
+    ##                                        
+    ##      0     1       2     3     4           5   
+    ##
+    # widths
+    w0 = 0
+    w1 = max(faceblock["branch-bottom"].w, faceblock["branch-top"].w)
+    w2 = node.img_style["size"]
+    w3 = faceblock["branch-right"].w
+    w4 = node.img_style["vt_line_width"]
+    w5 = 0
+    # heights
+    h0 = node.img_style["hz_line_width"]
+    h1 = node.img_style["hz_line_width"] + faceblock["branch-top"].h + faceblock["branch-bottom"].h
+    h2 = node.img_style["size"]
+    h3 = faceblock["branch-right"].h
+    h4 = 0
+    h5 = aligned_height
+
+    item.heights = [h0, h1, h2, h3, h4, h5]
+    item.widths = [w0, w1, w2, w3, w4, w5]
+
+    # Calculate total node size
+    total_w = sum([w0, w1, w2, w3, w4]) # do not count aligned faces
+    max_h = max(item.heights + [min_separation])
+    # correct possible unbalanced block in branch faces
+    h_imbalance = abs(faceblock["branch-top"].h - faceblock["branch-bottom"].h)
+    if h_imbalance + h1 > max_h:
+        max_h += h_imbalance
+        
+    item.facesRegion.setRect(0, 0, w3, max_h)
+    item.nodeRegion.setRect(0, 0, total_w, max_h)
+    item.fullRegion.setRect(0, 0, total_w, max_h)
+
+def update_branch_lengths(tree, n2i, n2f, img, scale):
+    for node in tree.traverse("postorder"):
+        item = n2i[node]
+        item.branch_length = node.dist * scale
+        item.si = item.nodeRegion.width()
+        w0 = 0
+        if item.branch_length > item.widths[1]:
+            w0 = item.widths[0] = item.branch_length - item.widths[1]
+            item.nodeRegion.adjust(0, 0, w0, 0)
+            
+        child_width = 0
+        for ch in node.children:
+            child_width = max(child_width, n2i[ch].fullRegion.width())
+            if w0 and img.mode == "r":
+                n2i[ch].translate(w0, 0)
+            print n2i[ch].si, n2i[ch].nodeRegion.width()
+        item.fullRegion.setWidth(item.nodeRegion.width() + child_width)
+
+        

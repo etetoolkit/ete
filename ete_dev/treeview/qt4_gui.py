@@ -6,7 +6,7 @@ from PyQt4.QtCore import QThread, SIGNAL
 try:
     from PyQt4 import QtOpenGL
     USE_GL = True
-    USE_GL = False # Temporarily disabled
+    #USE_GL = False # Temporarily disabled
 except ImportError:
     USE_GL = False
 
@@ -549,8 +549,8 @@ class _TreeView(QtGui.QGraphicsView):
             F = QtOpenGL.QGLFormat()
             F.setSampleBuffers(True)
             print F.sampleBuffers()
-            self.setViewport(QtOpenGL.QGLWidget(F))
-            self.setRenderHints(QtGui.QPainter.Antialiasing)
+            self.setViewport(QtOpenGL.QGLWidget())
+            self.setRenderHints(QtGui.QPainter.Antialiasing or QtGui.QPainter.SmoothPixmapTransform )
         else:
             self.setRenderHints(QtGui.QPainter.Antialiasing or QtGui.QPainter.SmoothPixmapTransform )
 
@@ -564,6 +564,7 @@ class _TreeView(QtGui.QGraphicsView):
         #self.setOptimizationFlag (QtGui.QGraphicsView.DontClipPainter)
         #self.scene().setItemIndexMethod(QtGui.QGraphicsScene.NoIndex)
         #self.scene().setBspTreeDepth(24)
+
     def resizeEvent(self, e):
         QtGui.QGraphicsView.resizeEvent(self, e)
 

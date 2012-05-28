@@ -3,7 +3,7 @@ import colorsys
 from PyQt4 import QtCore, QtGui
 from main import _leaf
 from qt4_gui import _NodeActions
-
+from collections import deque
 import time
 
 class _LineItem(QtGui.QGraphicsLineItem):
@@ -173,15 +173,15 @@ def get_min_radius(w, h, a, xoffset):
     return r, off
 
 def render_circular(root_node, n2i, rot_step):
-    to_visit = []
-    to_visit.append(root_node)
+    #to_visit = deque()
+    #to_visit.append(root_node)
     max_r = 0.0
-    while to_visit:
-        node = to_visit.pop(0)
-
-        if not _leaf(node):
-            to_visit.extend(node.children)
-
+    for node in root_node.traverse('preorder'):
+    #while to_visit:
+    #    node = to_visit.popleft()
+    # 
+    #    if not _leaf(node):
+    #        to_visit.extend(node.children)
         item = n2i[node]
         w = item.nodeRegion.width()
         h = item.effective_height
@@ -237,7 +237,6 @@ def render_circular(root_node, n2i, rot_step):
             if xoffset:
                 for i in item.movable_items:
                     i.moveBy(xoffset, 0)
-                
             
     n2i[root_node].max_r = max_r
     return max_r
@@ -304,5 +303,43 @@ def get_optimal_tree_width(root_node, n2f, img, rot_step):
                                              img.force_topology)
     return most_distant
 
+def calculate_optimal_scale(root_node, n2i, rot_step):
+    best_scale = 0.0
+    max_r = 0.0
+    n2radius = {}
+    n2cumdist = {}
+    for node in root_node.traverse('preorder'):
+        item = n2i[node]
+        bl = node.dist * best_scale
+        
+        # at this point, nodeRegion width does not count branch length
+        w = item.nodeRegion.width() + bl
+        h = item.effective_height
 
-    
+        if node is not root_node:
+            parent_radius = n2radius[node.up]
+            cumdist = n2cumdist[node.up]
+        else:
+            parent_radius = 0
+            cumdist = 0
+
+        if _leaf(node):
+            angle = rot_step
+        else:
+            angle = item.angle_span
+
+        # Could I calculate 3 min radius? line, line faces
+            
+        r, xoffset = get_min_radius(w, h, angle, parent_radius)
+
+        if xoffset:
+            pass
+            
+        n2radius[node] = r
+        n2cumdist = cumdist + node.dist
+
+
+        max_r = max(max_r, r)
+        
+                    
+    return best_scale, max_r
