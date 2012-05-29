@@ -310,10 +310,8 @@ def calculate_optimal_scale(root_node, n2i, rot_step):
     n2cumdist = {}
     for node in root_node.traverse('preorder'):
         item = n2i[node]
-        bl = node.dist * best_scale
         
-        # at this point, nodeRegion width does not count branch length
-        w = item.nodeRegion.width() + bl
+        w = item.nodeRegion.width()
         h = item.effective_height
 
         if node is not root_node:
@@ -327,11 +325,9 @@ def calculate_optimal_scale(root_node, n2i, rot_step):
             angle = rot_step
         else:
             angle = item.angle_span
-
-        # Could I calculate 3 min radius? line, line faces
             
         r, xoffset = get_min_radius(w, h, angle, parent_radius)
-
+        
         if xoffset:
             pass
             

@@ -244,7 +244,6 @@ def render(root_node, img, hide_root=False):
         su_face = faces.AttrFace("support", fsize=8, ftype="Arial", fgcolor="darkred", formatter = "%0.3g")
     if img.show_leaf_name:
         na_face = faces.AttrFace("name", fsize=10, ftype="Arial", fgcolor="black")
-
     
     for n in root_node.traverse():
         set_style(n, layout_fn)
@@ -264,29 +263,29 @@ def render(root_node, img, hide_root=False):
         update_node_faces(n, n2f, img)
         
     rot_step = float(arc_span) / virtual_leaves
-    #rot_step = float(arc_span) / len([n for n in root_node.traverse() if _leaf(n)])
-
-    # create items and calculate node dimensions skipping branch lengths
-    init_items(root_node, parent, n2i, n2f, img, rot_step, hide_root)
 
     # Calculate optimal branch length
-    if mode == 'r':
-        scale = max([i.widths[1]/n.dist for n,i in n2i.iteritems()])
+    if img.scale is None:
+        # create items and calculate node dimensions skipping branch lengths
+        init_items(root_node, parent, n2i, n2f, img, rot_step, hide_root)
+        if mode == 'r':
+            img._scale = max([(i.widths[1]/(n.dist or 1.0)) for n,i in n2i.iteritems()]) or 20
+        else:
+            img._scale = 20
+        # Set branch length in all NodeItems and update dimensions
+        update_branch_lengths(root_node, n2i, n2f, img)
     else:
-        scale = 20
-    #scale = 20
-    img._scale = scale
-    
-    # Set branch length in all NodeItems and update dimensions
-    update_branch_lengths(root_node, n2i, n2f, img, scale)
-    
+        # create items and calculate node dimensions CONSIDERING branch lengths
+        img._scale = img.scale
+        init_items(root_node, parent, n2i, n2f, img, rot_step, hide_root)
+       
     # Draw node content
     for node in root_node.traverse():
         if node is not root_node or not hide_root:
             render_node_content(node, n2i, n2f, img)
-            
-    mainRect = parent.rect()
 
+    # Adjust content to rect or circular layout
+    mainRect = parent.rect()
     if mode == "c":
         tree_radius = crender.render_circular(root_node, n2i, rot_step)
         mainRect.adjust(-tree_radius, -tree_radius, tree_radius, tree_radius)
@@ -297,24 +296,28 @@ def render(root_node, img, hide_root=False):
         mainRect.adjust(0, 0, iwidth, iheight)
         tree_radius = iwidth
 
-    # The order by which the following methods IS IMPORTANT
+    # Add extra layers: aligned faces, floating faces, node
+    # backgrounds, etc. The order by which the following methods are
+    # called IS IMPORTANT
     render_floatings(n2i, n2f, img, parent.float_layer, parent.float_behind_layer)
 
     aligned_region_width = render_aligned_faces(img, mainRect, parent.tree_layer, n2i, n2f)
 
     render_backgrounds(img, mainRect, parent.bg_layer, n2i, n2f)
 
+    # rotate if necessary in circular images. flip and adjust if mirror orientation. 
     adjust_faces_to_tranformations(img, mainRect, n2i, n2f, TREE_LAYERS)
 
+    # Rotate main image if necessary
     parent.setRect(mainRect)
     parent.setPen(QtGui.QPen(QtCore.Qt.NoPen))
-
     if img.rotation:
         rect = parent.boundingRect()
         x =  rect.x() + rect.width()/2
         y =  rect.y() +  rect.height()/2
         parent.setTransform(QtGui.QTransform().translate(x, y).rotate(img.rotation).translate(-x, -y))
 
+    # Creates the main tree item that will act as frame for the whole image
     frame = QtGui.QGraphicsRectItem()
     parent.setParentItem(frame)
     mainRect = parent.mapToScene(mainRect).boundingRect()
@@ -322,6 +325,7 @@ def render(root_node, img, hide_root=False):
     mainRect.adjust(-img.margin_left, -img.margin_top, \
                          img.margin_right, img.margin_bottom)
 
+    # Add extra components and adjust mainRect to them
     add_legend(img, mainRect, frame)
     add_title(img, mainRect, frame)
     add_scale(img, mainRect, frame)
@@ -948,7 +952,7 @@ def init_node_dimensions(node, item, faceblock, img):
             # aligned faces in circular mode are adjusted afterwords. The
             # min radius of the largest aligned faces will be calculated.
             pass
-
+    item.branch_length = (node.dist * img._scale) if img._scale else 0
     ## Calculate dimensions of the different node regions
     ##
     ##
@@ -963,8 +967,8 @@ def init_node_dimensions(node, item, faceblock, img):
     ##      0     1       2     3     4           5   
     ##
     # widths
-    w0 = 0
     w1 = max(faceblock["branch-bottom"].w, faceblock["branch-top"].w)
+    w0 = item.branch_length - w1 if item.branch_length > w1 else 0
     w2 = node.img_style["size"]
     w3 = faceblock["branch-right"].w
     w4 = node.img_style["vt_line_width"]
@@ -992,10 +996,10 @@ def init_node_dimensions(node, item, faceblock, img):
     item.nodeRegion.setRect(0, 0, total_w, max_h)
     item.fullRegion.setRect(0, 0, total_w, max_h)
 
-def update_branch_lengths(tree, n2i, n2f, img, scale):
+def update_branch_lengths(tree, n2i, n2f, img):
     for node in tree.traverse("postorder"):
         item = n2i[node]
-        item.branch_length = node.dist * scale
+        item.branch_length = node.dist * img._scale
         item.si = item.nodeRegion.width()
         w0 = 0
         if item.branch_length > item.widths[1]:
