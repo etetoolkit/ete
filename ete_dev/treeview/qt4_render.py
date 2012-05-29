@@ -271,7 +271,10 @@ def render(root_node, img, hide_root=False):
         if mode == 'r':
             img._scale = max([(i.widths[1]/(n.dist or 1.0)) for n,i in n2i.iteritems()]) or 20
         else:
-            img._scale = 20
+            img._scale = crender.calculate_optimal_scale(root_node, n2i, rot_step)
+            print "OPTIMAL circular scale", img._scale
+            if not img._scale:
+                img._scale = 20
         # Set branch length in all NodeItems and update dimensions
         update_branch_lengths(root_node, n2i, n2f, img)
     else:
@@ -287,7 +290,7 @@ def render(root_node, img, hide_root=False):
     # Adjust content to rect or circular layout
     mainRect = parent.rect()
     if mode == "c":
-        tree_radius = crender.render_circular(root_node, n2i, rot_step)
+        tree_radius = crender.render_circular(root_node, n2i, rot_step, img)
         mainRect.adjust(-tree_radius, -tree_radius, tree_radius, tree_radius)
 
     else:
@@ -1011,7 +1014,6 @@ def update_branch_lengths(tree, n2i, n2f, img):
             child_width = max(child_width, n2i[ch].fullRegion.width())
             if w0 and img.mode == "r":
                 n2i[ch].translate(w0, 0)
-            print n2i[ch].si, n2i[ch].nodeRegion.width()
         item.fullRegion.setWidth(item.nodeRegion.width() + child_width)
 
         

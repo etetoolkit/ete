@@ -6,7 +6,7 @@ from PyQt4.QtCore import QThread, SIGNAL
 try:
     from PyQt4 import QtOpenGL
     USE_GL = True
-    #USE_GL = False # Temporarily disabled
+    USE_GL = False # Temporarily disabled
 except ImportError:
     USE_GL = False
 

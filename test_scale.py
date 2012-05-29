@@ -2,6 +2,7 @@ import random
 import sys
 sys.path.insert(0, "./")
 from ete_dev import Tree, TreeStyle, faces
+from ete_dev.treeview.main import random_color
 
 def layout(node):
     node.img_style["size"] = 5
@@ -28,6 +29,17 @@ def layout(node):
     f = faces.CircleFace(23, "blue")
     f.opacity = 0.3
     faces.add_face_to_node(f, node, 0, position="float-behind")
+
+def layout2(node):
+    if not node.is_leaf():
+        #node.img_style["size"] = random.randint(40, 200)
+        node.img_style["size"] = node.size
+        node.img_style["bgcolor"] = random_color()
+    node.img_style["hz_line_width"] = 0
+    node.img_style["vt_line_width"] = 0
+    #if node.is_leaf():
+    #    f = faces.CircleFace(50, "red")
+    #    faces.add_face_to_node(f, node, 0, position="aligned")
         
 
 ts = TreeStyle()
@@ -36,11 +48,37 @@ ts.layout_fn = layout
 ts.show_leaf_name = False
 ts.show_border = True
 ts.draw_guiding_lines = False
-ts.scale = 60
+ts.show_scale = True
+#ts.scale = 60
 t = Tree()
 t.dist = 0
-t.populate(4, random_branches=True)
+
+t.size = 0
+for x in xrange(100):
+    n = t.add_child()
+    n2 = n.add_child()
+    n3 = n2.add_child()
+    n.size = 5
+    n2.size = 10
+    n3.size = 10
+    n2.dist = 0.1
+    
+#t.populate(100)#, random_branches=True)
 t.write(outfile="test.nw")
+ts.layout_fn = layout2
+
+t.show(tree_style=ts)
+ts.scale = 1
+sys.exit()
+t.show(tree_style=ts)
+
+for x in xrange(30):
+    t = Tree()
+    t.dist = 0
+    t.populate(100, random_branches=True)
+    t.render("/tmp/kk.png", tree_style=ts)
+sys.exit()
+ts.layout_fn = layout
 t.show(tree_style=ts)
 ts.mode = "r"
 t.show(tree_style=ts)

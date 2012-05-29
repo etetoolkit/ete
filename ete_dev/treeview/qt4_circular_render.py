@@ -151,14 +151,15 @@ def get_min_radius(w, h, a, xoffset):
     """ returns the radius and X-displacement required to render a
     rectangle (w,h) within and given angle (a)."""
 
-    angle = (a * math.pi)/180 # converts to radians
-    b = (xoffset+w) 
-    a = h/2
+    # converts to radians
+    angle = (a * math.pi) / 180 
+    b = xoffset + w
+    a = h / 2
     off = 0
     if xoffset:
-        effective_angle = math.atan(a/xoffset)
-        if effective_angle > angle/2 and angle/2 < math.pi:
-            off = a / math.tan(angle/2)
+        effective_angle = math.atan(a / xoffset)
+        if effective_angle > angle / 2 and angle / 2 < math.pi:
+            off = a / math.tan(angle / 2) 
             bb = off + w 
             r = math.sqrt(a**2 + bb**2) 
             off = max (off, xoffset) - xoffset
@@ -170,6 +171,7 @@ def get_min_radius(w, h, a, xoffset):
         effective_angle = math.asin(a/r1)
         r2 = w / math.cos(effective_angle)
         r = r1+r2
+        
     return r, off
 
 def render_circular(root_node, n2i, rot_step):
@@ -199,6 +201,9 @@ def render_circular(root_node, n2i, rot_step):
             #full_angle = abs(item.full_end - item.full_start)
 
         r, xoffset = get_min_radius(w, h, angle, parent_radius)
+        if xoffset:
+            print "SI", xtra
+
         rotate_and_displace(item.content, item.rotation, h, parent_radius)
         item.radius = r
         max_r = max(max_r, r)
@@ -228,9 +233,9 @@ def render_circular(root_node, n2i, rot_step):
                 if xtra > 0:
                     xtra = xoffset + xtra
                 else:
-                    xtra = xoffset 
+                    xtra = xoffset
                 item.extra_branch_line.setLine(item.branch_length, item.center,\
-                                                   item.branch_length + xtra , item.center)
+                                               item.branch_length + xtra , item.center)
                 item.nodeRegion.setWidth(item.nodeRegion.width()+xtra)
 
             # And moves elements 
@@ -254,14 +259,24 @@ def init_circular_leaf_item(node, n2i, n2f, last_rotation, rot_step):
 
 def init_circular_node_item(node, n2i, n2f):
     item = n2i[node]
-    first_c = n2i[node.children[0]]
-    last_c = n2i[node.children[-1]]
-    rot_start = first_c.rotation
-    rot_end = last_c.rotation
-    item.angle_span = rot_end - rot_start
-    item.rotation = rot_start + ((rot_end - rot_start) / 2)
-    item.full_start = first_c.full_start
-    item.full_end = last_c.full_end
+    if len(node.children) >1: 
+        first_c = n2i[node.children[0]]
+        last_c = n2i[node.children[-1]]
+        rot_start = first_c.rotation
+        rot_end = last_c.rotation 
+        item.angle_span = rot_end - rot_start
+        item.rotation = rot_start + ((rot_end - rot_start) / 2)
+        item.full_start = first_c.full_start
+        item.full_end = last_c.full_end
+    else:
+        child = n2i[node.children[0]]
+        rot_start = child.full_start
+        rot_end = child.full_end
+        item.angle_span = child.angle_span
+        item.rotation = rot_start + ((rot_end - rot_start) / 2)
+        item.full_start = child.full_start
+        item.full_end = child.full_end
+    
     #item.center = item.nodeRegion.height()/2
     item.effective_height = get_effective_height(node, n2i, n2f)
     item.center = item.effective_height/2
@@ -304,13 +319,14 @@ def get_optimal_tree_width(root_node, n2f, img, rot_step):
     return most_distant
 
 def calculate_optimal_scale(root_node, n2i, rot_step):
-    best_scale = 0.0
-    max_r = 0.0
     n2radius = {}
     n2cumdist = {}
+    n2xoffset = {}
+    visited_nodes = []
     for node in root_node.traverse('preorder'):
-        item = n2i[node]
+        visited_nodes.append(node)
         
+        item = n2i[node]
         w = item.nodeRegion.width()
         h = item.effective_height
 
@@ -327,15 +343,91 @@ def calculate_optimal_scale(root_node, n2i, rot_step):
             angle = item.angle_span
             
         r, xoffset = get_min_radius(w, h, angle, parent_radius)
+        n2xoffset[node] = xoffset
+        n2radius[node] = r 
+        n2cumdist[node] = cumdist + node.dist
         
-        if xoffset:
-            pass
-            
-        n2radius[node] = r
-        n2cumdist = cumdist + node.dist
+    best_scale = 0
+    n2cumoffset = {}
+    for n in visited_nodes:
+        parent_pos_clean = n2radius[n.up] if n is not root_node else 0
+        parent_pos_real = (n2cumdist[n.up] * best_scale) if n is not root_node else 0
+        parent_pos_real += parent_pos_clean
+        node_pos = parent_pos_real + (n.dist * best_scale)
+        min_node_pos = parent_pos_clean + n2xoffset[n]
+        
+        print min_node_pos, node_pos
+        n.add_features(_min_node_pos=min_node_pos,
+                       _ex_node_pos=node_pos,
+                       _parent_pos=parent_pos_real,
+                       _parent_pos_clean=parent_pos_clean)
+        
+        if node_pos < min_node_pos:
+            scale = (min_node_pos - parent_pos_clean)  / n2cumdist[n]
+            if scale < best_scale:
+                print "oops"
+            best_scale = scale
 
 
+    for n in visited_nodes:
+        item = n2i[n]
+        parent_pos_clean = n2radius[n.up] if n is not root_node else 0
+        parent_pos_real = (n2cumdist[n.up] * best_scale) if n is not root_node else 0
+        parent_pos_real += parent_pos_clean
+        node_pos = parent_pos_real + (n.dist * best_scale)
+        item.radius = node_pos + item.nodeRegion.width()
+
+    return best_scale
+        
+    #offsets = sorted([(off, n) for n, off in n2xoffset.iteritems()])
+    #return (offsets[-1][0] / n2cumdist[offsets[-1][1]])
+    #print offsets[-1][1].dist
+    #return offsets[-1][0] / offsets[-1][1].dist
+    # 
+    #return max([off/n.dist for n, off in n2xoffset.iteritems() if n.dist])
+    # 
+    #return best_scale
+
+
+def render_circular(root_node, n2i, rot_step, img):
+    max_r = 0.0
+    for node in root_node.traverse('preorder'):
+        item = n2i[node]
+        w = item.nodeRegion.width()
+        h = item.effective_height
+
+        parent_radius = n2i[node.up].radius if node.up else 0 
+        angle = rot_step if _leaf(node) else item.angle_span
+
+        rotate_and_displace(item.content, item.rotation, h, parent_radius)
+        
+        r = n2i[node].radius
+        
+        node.add_features(_node_start=parent_radius,
+                          _content_start=parent_radius+(node.dist * img._scale),
+                          _node_end=r)
         max_r = max(max_r, r)
-        
-                    
-    return best_scale, max_r
+
+        if not _leaf(node) and len(node.children) > 1:
+            first_c = n2i[node.children[0]]
+            last_c = n2i[node.children[-1]]
+            # Vertical arc Line
+            rot_end = n2i[node.children[-1]].rotation
+            rot_start = n2i[node.children[0]].rotation
+
+            C = item.vt_line
+            C.setParentItem(item)
+            path = QtGui.QPainterPath()
+            # Counter clock wise
+            path.arcMoveTo(-r, -r, r * 2, r * 2, 360 - rot_start - angle)
+            path.arcTo(-r, -r, r*2, r * 2, 360 - rot_start - angle, angle)
+            # Faces
+            C.setPath(path)
+            item.static_items.append(C)
+
+            
+    n2i[root_node].max_r = max_r
+    return max_r
+
+
+    
