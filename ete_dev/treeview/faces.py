@@ -1025,7 +1025,7 @@ class PieChartFace(StaticItemFace):
         self.item = None
         self.percents = percents
         if not colors:
-            colors = COLOR_SCHEMES["Paired"]
+            colors = COLOR_SCHEMES["paired"]
         self.colors =  colors
         self.width = width
         self.height = height
@@ -1052,15 +1052,21 @@ class BarChartFace(Face):
     :arguments colors: a list of colors (same length as percents)
    
     """
-    def __init__(self, values, deviations, width, height, colors=None, labels=None, min_value=0, max_value=None):
+    def __init__(self, values, deviations=None, width=200, height=100, colors=None, labels=None, min_value=0, max_value=None):
         Face.__init__(self)
         self.type = "item"
         self.item = None
         self.values = values
-        self.deviations = deviations
+        if not deviations:
+            self.deviations = [0] * len(values)
+        else:
+            self.deviations = deviations
+
         if not colors:
-            colors = COLOR_SCHEMES["Paired"]
+            colors = COLOR_SCHEMES["paired"]
         self.colors =  colors
+       
+        
         self.width = width
         self.height = height
         self.labels = labels
@@ -1087,7 +1093,6 @@ class _BarChartItem(QtGui.QGraphicsRectItem):
     def __init__(self, values, deviations, width, height, colors, labels, min_value, max_value):
         QtGui.QGraphicsRectItem.__init__(self, 0, 0, width, height)
         self.values = values
-        self.deviations = deviations
         self.colors = colors
         self.width = width
         self.height = height
@@ -1097,6 +1102,7 @@ class _BarChartItem(QtGui.QGraphicsRectItem):
         self.labels = labels
         self.max_value = max_value
         self.min_value = min_value
+        self.deviations = deviations
         
     def paint(self, p, option, widget):
         colors = self.colors
