@@ -1025,7 +1025,7 @@ class PieChartFace(StaticItemFace):
         self.item = None
         self.percents = percents
         if not colors:
-            colors = COLOR_SCHEMES["Set3"][12]
+            colors = COLOR_SCHEMES["Paired"]
         self.colors =  colors
         self.width = width
         self.height = height
@@ -1059,7 +1059,7 @@ class BarChartFace(Face):
         self.values = values
         self.deviations = deviations
         if not colors:
-            colors = COLOR_SCHEMES["Paired"][12]
+            colors = COLOR_SCHEMES["Paired"]
         self.colors =  colors
         self.width = width
         self.height = height
@@ -1091,8 +1091,8 @@ class _BarChartItem(QtGui.QGraphicsRectItem):
         self.colors = colors
         self.width = width
         self.height = height
-        self.draw_border = True
-        self.draw_grid = True
+        self.draw_border = False
+        self.draw_grid = False
         self.draw_scale = True
         self.labels = labels
         self.max_value = max_value
