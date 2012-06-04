@@ -24,7 +24,7 @@
 from PyQt4 import QtCore, QtGui
 from numpy import isfinite as _isfinite, ceil
 
-from main import add_face_to_node, _Background, _Border
+from main import add_face_to_node, _Background, _Border, COLOR_SCHEMES
 
 isfinite = lambda n: n and _isfinite(n)
 
@@ -1016,7 +1016,7 @@ class PieChartFace(StaticItemFace):
     :arguments colors: a list of colors (same length as percents)
    
     """
-    def __init__(self, percents, width, height, colors, line_color=None):
+    def __init__(self, percents, width, height, colors=None, line_color=None):
         Face.__init__(self)
         if sum(percents) != 100:
             raise ValueError("PieChartItem: percentage values should sum up 100")
@@ -1024,6 +1024,8 @@ class PieChartFace(StaticItemFace):
         self.type = "item"
         self.item = None
         self.percents = percents
+        if not colors:
+            colors = COLOR_SCHEMES["Set3"][12]
         self.colors =  colors
         self.width = width
         self.height = height
@@ -1050,12 +1052,14 @@ class BarChartFace(Face):
     :arguments colors: a list of colors (same length as percents)
    
     """
-    def __init__(self, values, deviations, width, height, colors, labels=None, min_value=0, max_value=None):
+    def __init__(self, values, deviations, width, height, colors=None, labels=None, min_value=0, max_value=None):
         Face.__init__(self)
         self.type = "item"
         self.item = None
         self.values = values
         self.deviations = deviations
+        if not colors:
+            colors = COLOR_SCHEMES["Paired"][12]
         self.colors =  colors
         self.width = width
         self.height = height
