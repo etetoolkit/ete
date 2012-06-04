@@ -1062,6 +1062,10 @@ class BarChartFace(Face):
         self.labels = labels
         self.max_value = max_value
         self.min_value = min_value
+        self.margin_left = 1
+        self.margin_right = 1
+        self.margin_top = 2
+        self.margin_bottom = 2
         
     def update_items(self):
         self.item = _BarChartItem(self.values, self.deviations, self.width,
@@ -1083,8 +1087,8 @@ class _BarChartItem(QtGui.QGraphicsRectItem):
         self.colors = colors
         self.width = width
         self.height = height
-        self.draw_border = False
-        self.draw_grid = False
+        self.draw_border = True
+        self.draw_grid = True
         self.draw_scale = True
         self.labels = labels
         self.max_value = max_value
@@ -1110,6 +1114,7 @@ class _BarChartItem(QtGui.QGraphicsRectItem):
             min_value = 0
             
         scale_length = 0
+        scale_margin = 2
         if self.draw_scale: 
             p.setFont(QtGui.QFont("Verdana", 8))
             max_string = "%g" %max_value
@@ -1121,7 +1126,7 @@ class _BarChartItem(QtGui.QGraphicsRectItem):
             min_string_metrics = fm.boundingRect(QtCore.QRect(), \
                                                  QtCore.Qt.AlignLeft, \
                                                  min_string)
-            scale_length = 2 + max(max_string_metrics.width(),
+            scale_length = scale_margin + max(max_string_metrics.width(),
                               min_string_metrics.width())
         
 
@@ -1141,14 +1146,14 @@ class _BarChartItem(QtGui.QGraphicsRectItem):
 
         if self.draw_border:
             p.setPen(QtGui.QColor("black"))
-            p.drawRect(x, y, real_width, height - 1)
+            p.drawRect(x, y, real_width + scale_margin - 1 , height)
             
         if self.draw_scale: 
-            p.drawText(real_width +2, max_string_metrics.height(), max_string)
-            p.drawText(real_width +2, height - 2, min_string)
-            p.drawLine(real_width +2, 0, real_width, height)
-            p.drawLine(real_width +2, 0, real_width + 4, y)
-            p.drawLine(real_width +2, height, real_width + 4, height)
+            p.drawText(real_width + scale_margin, max_string_metrics.height(), max_string)
+            p.drawText(real_width + scale_margin, height - 2, min_string)
+            p.drawLine(real_width + scale_margin - 1, 0, real_width + scale_margin - 1, height)
+            p.drawLine(real_width + scale_margin - 1, 0, real_width + scale_margin + 2, y)
+            p.drawLine(real_width + scale_margin - 1, height, real_width + scale_margin + 2, height)
             
         if self.draw_grid: 
             dashedPen = QtGui.QPen(QtGui.QBrush(QtGui.QColor("#ddd")), 0)
