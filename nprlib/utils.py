@@ -27,6 +27,7 @@ from ete_dev.parser.fasta import read_fasta
 #from ete_dev.treeview import drawer
 #drawer.GUI_TIMEOUT = 1
 
+
 TIME_FORMAT = '%a %b %d %H:%M:%S %Y'
 
 AA = set("ABCDEFGHIJKLMNPOQRSUTVWXYZ*") | set("abcdefghijklmnpoqrsutvwxyz") 
@@ -303,7 +304,14 @@ def npr_layout(node):
 
     if "highlighted" in node.features:
         node.img_style["bgcolor"] = "LightCyan"
-        
+
+    if "improve" in node.features:
+        color = "orange" if float(node.improve) < 0 else "green"
+        if float(node.improve) == 0:
+            color = "blue"
+             
+        support_face = faces.CircleFace(200, color)        
+        faces.add_face_to_node(support_face, node, 0, position="float-behind")
         
 NPR_TREE_STYLE = TreeStyle()
 NPR_TREE_STYLE.layout_fn = npr_layout
