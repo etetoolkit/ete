@@ -984,23 +984,29 @@ class BackgroundFace(Face):
 
 
 class _PieChartItem(QtGui.QGraphicsRectItem):
-    def __init__(self, percents, width, height, colors):
+    def __init__(self, percents, width, height, colors, line_color=None):
         QtGui.QGraphicsRectItem.__init__(self, 0, 0, width, height)
         self.percents = percents
         self.colors = colors
+        self.line_color = line_color
+        
     def paint(self, painter, option, widget):
         a = 5760
         angle_start = 0
+        if not self.line_color:
+            painter.setPen(QtCore.Qt.NoPen)
+        else:
+            painter.setPen(QtGui.QColor(self.line_color))
+            
         for i, p in enumerate(self.percents):
             col = self.colors[i]
             painter.setBrush(QtGui.QBrush(QtGui.QColor(col)))
-            painter.setPen(QtCore.Qt.NoPen)
             angle_span = (p/100.) * a
             painter.drawPie(self.rect(), angle_start, angle_span )
             angle_start += angle_span
 
 
-class PieChartFace(Face):
+class PieChartFace(StaticItemFace):
     """ 
     .. versionadded:: 2.2
 
@@ -1010,17 +1016,22 @@ class PieChartFace(Face):
     :arguments colors: a list of colors (same length as percents)
    
     """
-    def __init__(self, percents, width, height, colors):
+    def __init__(self, percents, width, height, colors, line_color=None):
         Face.__init__(self)
+        if sum(percents) != 100:
+            raise ValueError("PieChartItem: percentage values should sum up 100")
+
         self.type = "item"
         self.item = None
         self.percents = percents
         self.colors =  colors
         self.width = width
         self.height = height
-
+        self.line_color = line_color
+        
     def update_items(self):
-        self.item = _PieChartItem(self.percents, self.width, self.height, self.colors)
+        self.item = _PieChartItem(self.percents, self.width,
+                                  self.height, self.colors, self.line_color)
         
     def _width(self):
         return self.item.rect().width()
@@ -1039,7 +1050,7 @@ class BarChartFace(Face):
     :arguments colors: a list of colors (same length as percents)
    
     """
-    def __init__(self, values, deviations, width, height, colors, labels, max_value):
+    def __init__(self, values, deviations, width, height, colors, labels=None, min_value=0, max_value=None):
         Face.__init__(self)
         self.type = "item"
         self.item = None
@@ -1050,11 +1061,12 @@ class BarChartFace(Face):
         self.height = height
         self.labels = labels
         self.max_value = max_value
-
+        self.min_value = min_value
+        
     def update_items(self):
         self.item = _BarChartItem(self.values, self.deviations, self.width,
                                   self.height, self.colors, self.labels, 
-                                  self.max_value)
+                                  self.min_value, self.max_value)
         
     def _width(self):
         return self.item.rect().width()
@@ -1064,7 +1076,7 @@ class BarChartFace(Face):
 
 
 class _BarChartItem(QtGui.QGraphicsRectItem):
-    def __init__(self, values, deviations, width, height, colors, labels, max_value):
+    def __init__(self, values, deviations, width, height, colors, labels, min_value, max_value):
         QtGui.QGraphicsRectItem.__init__(self, 0, 0, width, height)
         self.values = values
         self.deviations = deviations
@@ -1076,32 +1088,50 @@ class _BarChartItem(QtGui.QGraphicsRectItem):
         self.draw_scale = True
         self.labels = labels
         self.max_value = max_value
-
-    def paint(self, p, option, widget):
-
+        self.min_value = min_value
         
-
+    def paint(self, p, option, widget):
         colors = self.colors
         values = self.values
         deviations = self.deviations
+
         spacer = 3
-        scale_length = self.draw_scale * 40
-        width = self.width - scale_length
         spacing_length = (spacer*(len(values)-1))
         height=  self.height 
+        
         if self.max_value is None:
             max_value = max([v+d for v,d in zip(values, deviations) if isfinite(v)])
         else:
             max_value = self.max_value
 
-        min_value = 0
-        x_alpha = float((width - spacing_length) / (len(values))) 
+        if self.min_value is None:
+            min_value = min([v+d for v,d in zip(values, deviations) if isfinite(v)])
+        else:
+            min_value = 0
+            
+        scale_length = 0
+        if self.draw_scale: 
+            p.setFont(QtGui.QFont("Verdana", 8))
+            max_string = "%g" %max_value
+            min_string = "%g" %min_value
+            fm = QtGui.QFontMetrics(p.font())
+            max_string_metrics = fm.boundingRect(QtCore.QRect(), \
+                                                 QtCore.Qt.AlignLeft, \
+                                                 max_string)
+            min_string_metrics = fm.boundingRect(QtCore.QRect(), \
+                                                 QtCore.Qt.AlignLeft, \
+                                                 min_string)
+            scale_length = 2 + max(max_string_metrics.width(),
+                              min_string_metrics.width())
+        
+
+        real_width = self.width - scale_length
+        x_alpha = float((real_width - spacing_length) / (len(values))) 
         if x_alpha < 1:
-            print scale_length + spacing_length + len(values)
             raise ValueError("BarChartFace is too small")
         
         y_alpha = float ( (height-1) / float(max_value - min_value) )
-        x2 = 0 
+        x = 0 
         y  = 0
 
         # Mean and quartiles y positions
@@ -1111,24 +1141,28 @@ class _BarChartItem(QtGui.QGraphicsRectItem):
 
         if self.draw_border:
             p.setPen(QtGui.QColor("black"))
-            p.drawRect(x2, y, width, height - 1)
+            p.drawRect(x, y, real_width, height - 1)
+            
         if self.draw_scale: 
-            p.setFont(QtGui.QFont("Verdana", 8))
-            p.drawText(width, y + 10,"%0.3f" %max_value)
-            p.drawText(width, y + height,"%0.3f" %min_value)
+            p.drawText(real_width +2, max_string_metrics.height(), max_string)
+            p.drawText(real_width +2, height - 2, min_string)
+            p.drawLine(real_width +2, 0, real_width, height)
+            p.drawLine(real_width +2, 0, real_width + 4, y)
+            p.drawLine(real_width +2, height, real_width + 4, height)
+            
         if self.draw_grid: 
             dashedPen = QtGui.QPen(QtGui.QBrush(QtGui.QColor("#ddd")), 0)
             dashedPen.setStyle(QtCore.Qt.DashLine)
             p.setPen(dashedPen)
-            p.drawLine(x2+1, mean_line_y, width - 2, mean_line_y )
-            p.drawLine(x2+1, line2_y, width - 2, line2_y )
-            p.drawLine(x2+1, line3_y, width - 2, line3_y )
+            p.drawLine(x+1, mean_line_y, real_width - 2, mean_line_y )
+            p.drawLine(x+1, line2_y, real_width - 2, line2_y )
+            p.drawLine(x+1, line3_y, real_width - 2, line3_y )
 
         # Draw bars
         for pos in xrange(len(values)):
             # first and second X pixel positions
-            x1 = x2
-            x2 = x1 + x_alpha + spacer
+            x1 = x
+            x = x1 + x_alpha + spacer
 
             std =  deviations[pos]
             val = values[pos]
@@ -1156,9 +1190,9 @@ class _BarChartItem(QtGui.QGraphicsRectItem):
                 p.drawLine(center_x + 1, height - dev_down_y1, center_x -1, height - dev_down_y1)
 
             if self.labels: 
-                p.save();
-                p.translate(x1, -height-30);
-                p.rotate(90);
-                p.drawText(0, 0, self.labels[pos]);
-                p.restore();
+                p.save()
+                p.translate(x1, -height-30)
+                p.rotate(90)
+                p.drawText(0, 0, str(self.labels[pos]))
+                p.restore()
 
