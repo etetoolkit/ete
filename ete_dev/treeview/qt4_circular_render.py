@@ -175,18 +175,38 @@ rectangle (w,h) within and given angle (a)."""
 
 def get_min_radius(w, h, a, xoffset):
     """ returns the radius and X-displacement required to render a
-    rectangle (w,h) within and given angle (a)."""
+    rectangle (w,h) within and given angle (a).
+        
+                  |\
+                  | \
+                  |  \
+                  |   \
+                  |    \                                                   
+                  |    |\                      sin(A) = a/r
+                  |    | \                                                 
+                  |    |  \                    cos(A) = b/r
+                  |    |   \                                               
+      effective_a |    |    \                  tan(A) = a/b
+                  |   a|     \ r                                           
+  (what should be |    |      \                                            
+   before placing |    |       \                                           
+   the face)      |    |        \                                          
+                  |_   |        /\                                         
+                  |_|__|_______|_A\                                        
+                   off      b    
 
-    angle = (a * math.pi)/180/2 # converts to radians
-    b = (xoffset+w)
-    a = h/2
+    """
+    angle = a * math.pi / 180 / 2 # converts to radians
+    b = xoffset + w
+    a = h / 2
     off = 0
     if xoffset:
-        tan = math.tan(angle)
-        effective_a = tan * b
-        #print 'xoff: %.3f, w: %.3f,  h: %.3f,  eff_a: %.3f,' % (xoffset, w, h,effective_a)
-        if effective_a < a: off = a/tan - b 
-        r = b+off
+        if angle < math.pi:
+            tan = math.tan(angle)
+            effective_a = tan * b
+            if effective_a < a:
+                off = a / tan - b + h
+        r = b + off
     else:
         # It happens on root nodes
         r1 = math.sqrt(a**2 + b**2) 
