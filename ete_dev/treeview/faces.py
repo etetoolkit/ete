@@ -1133,7 +1133,7 @@ class _PieChartItem(QtGui.QGraphicsRectItem):
             angle_start += angle_span
 
 
-class PieChartFace(StaticItemFace):
+class PieChartFace(StaticItemFace,Face):
     """ 
     .. versionadded:: 2.2
 
@@ -1145,7 +1145,7 @@ class PieChartFace(StaticItemFace):
     """
     def __init__(self, percents, width, height, colors=None, line_color=None):
         Face.__init__(self)
-        if sum(percents) != 100:
+        if round(sum(percents),3) != 100:
             raise ValueError("PieChartItem: percentage values should sum up 100")
 
         self.type = "item"

@@ -145,25 +145,48 @@ def rotate_and_displace(item, rotation, height, offset):
     t.translate(0, - (height / 2))
     t.translate(offset, 0)
     item.setTransform(t)
+    
+def get_min_radius_bad(w, h, a, xoffset):
+    """ returns the radius and X-displacement required to render a
+rectangle (w,h) within and given angle (a)."""
 
+    # converts to radians
+    angle = (a * math.pi) / 180
+    b = xoffset + w
+    a = h / 2
+    off = 0
+    if xoffset:
+        effective_angle = math.atan(a / xoffset)
+        if effective_angle > angle / 2 and angle / 2 < math.pi:
+            off = a / math.tan(angle / 2)
+            bb = off + w
+            r = math.sqrt(a**2 + bb**2)
+            off = max (off, xoffset) - xoffset
+        else:
+            r = math.sqrt(a**2 + b**2)
+    else:
+        # It happens on root nodes
+        r1 = math.sqrt(a**2 + b**2)
+        effective_angle = math.asin(a/r1)
+        r2 = w / math.cos(effective_angle)
+        r = r1+r2
+        
+    return r, off
 
 def get_min_radius(w, h, a, xoffset):
     """ returns the radius and X-displacement required to render a
     rectangle (w,h) within and given angle (a)."""
 
-    angle = (a * math.pi)/180 # converts to radians
-    b = (xoffset+w) 
+    angle = (a * math.pi)/180/2 # converts to radians
+    b = (xoffset+w)
     a = h/2
     off = 0
     if xoffset:
-        effective_angle = math.atan(a/xoffset)
-        if effective_angle > angle/2 and angle/2 < math.pi:
-            off = a / math.tan(angle/2)
-            bb = off + w 
-            r = math.sqrt(a**2 + bb**2) 
-            off = max (off, xoffset) - xoffset
-        else:
-            r = math.sqrt(a**2 + b**2) 
+        tan = math.tan(angle)
+        effective_a = tan * b
+        #print 'xoff: %.3f, w: %.3f,  h: %.3f,  eff_a: %.3f,' % (xoffset, w, h,effective_a)
+        if effective_a < a: off = a/tan - b 
+        r = b+off
     else:
         # It happens on root nodes
         r1 = math.sqrt(a**2 + b**2) 
@@ -195,10 +218,10 @@ def render_circular(root_node, n2i, rot_step):
             angle = rot_step
         else:
             angle = item.angle_span
+            #angle = rot_step
             #full_angle = angle
             #full_angle = abs(item.full_end - item.full_start)
-
-        r, xoffset = get_min_radius(w, h, angle, parent_radius)
+        r, xoffset = get_min_radius(w, h, rot_step, parent_radius)
         rotate_and_displace(item.content, item.rotation, h, parent_radius)
         item.radius = r
         max_r = max(max_r, r)
@@ -228,14 +251,15 @@ def render_circular(root_node, n2i, rot_step):
                 if xtra > 0:
                     xtra = xoffset + xtra
                 else:
-                    xtra = xoffset 
-                item.extra_branch_line.setLine(item.branch_length, item.center,\
-                                                   item.branch_length + xtra , item.center)
+                    xtra = xoffset
+                item.extra_branch_line.setLine(item.branch_length, item.center,
+                                               item.branch_length + xtra , item.center)
                 item.nodeRegion.setWidth(item.nodeRegion.width()+xtra)
 
             # And moves elements 
             if xoffset:
                 for i in item.movable_items:
+                    #i.moveBy(xoffset, 0)
                     i.moveBy(xoffset, 0)
                 
             
