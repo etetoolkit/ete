@@ -4,7 +4,7 @@ sys.path.insert(0, "./")
 from ete_dev import Tree, TreeStyle, faces
 
 def layout(node):
-    node.img_style["size"] = random.randint(5,40)
+    node.img_style["size"] = random.randint(5,100)
     node.img_style["hz_line_width"] = 0
     node.img_style["vt_line_width"] = 0
     if node.is_leaf():
@@ -22,6 +22,7 @@ ts.show_leaf_name = False
 ts.draw_guiding_lines = False
 t = Tree()
 t.populate(100, random_branches=True)
+t.dist = 0
 t.write(outfile="test.nw")
 t.show(tree_style=ts)
 

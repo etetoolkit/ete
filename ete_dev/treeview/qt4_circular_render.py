@@ -264,10 +264,12 @@ def init_circular_node_item(node, n2i, n2f):
         last_c = n2i[node.children[-1]]
         rot_start = first_c.rotation
         rot_end = last_c.rotation 
-        item.angle_span = rot_end - rot_start
+        #item.angle_span = rot_end - rot_start
         item.rotation = rot_start + ((rot_end - rot_start) / 2)
         item.full_start = first_c.full_start
         item.full_end = last_c.full_end
+        item.angle_span = item.full_end - item.full_start
+        
     else:
         child = n2i[node.children[0]]
         rot_start = child.full_start
@@ -337,18 +339,22 @@ def render_circular(root_node, n2i, rot_step):
         max_r = max(max_r, r)
 
         if not _leaf(node) and len(node.children) > 1:
+
             first_c = n2i[node.children[0]]
             last_c = n2i[node.children[-1]]
             # Vertical arc Line
             rot_end = n2i[node.children[-1]].rotation
             rot_start = n2i[node.children[0]].rotation
-
+            rot_span = abs(rot_end - rot_start)
             C = item.vt_line
             C.setParentItem(item)
             path = QtGui.QPainterPath()
             # Counter clock wise
-            path.arcMoveTo(-r, -r, r * 2, r * 2, 360 - rot_start - angle)
-            path.arcTo(-r, -r, r*2, r * 2, 360 - rot_start - angle, angle)
+            #path.arcMoveTo(-r, -r, r * 2, r * 2, 360 - rot_start - angle)
+            #path.arcTo(-r, -r, r*2, r * 2, 360 - rot_start - angle, angle)
+            path.arcMoveTo(-r, -r, r * 2, r * 2, 360 - rot_start - rot_span)
+            path.arcTo(-r, -r, r*2, r * 2, 360 - rot_start - rot_span, rot_span)
+            
             # Faces
             C.setPath(path)
             item.static_items.append(C)
