@@ -200,19 +200,12 @@ def get_min_radius(w, h, a, xoffset):
     b = xoffset + w
     a = h / 2
     off = 0
-    if xoffset:
-        if angle < math.pi:
-            tan = math.tan(angle)
-            effective_a = tan * b
-            if effective_a < a:
-                off = a / tan - b + h
-        r = b + off
-    else:
-        # It happens on root nodes
-        r1 = math.sqrt(a**2 + b**2) 
-        effective_angle = math.asin(a/r1)
-        r2 = w / math.cos(effective_angle)
-        r = r1+r2
+    if angle < math.pi:
+        tan = math.tan(angle)
+        effective_a = tan * b
+        if effective_a < a:
+            off = a / tan - b + h
+    r = b + off
     return r, off
 
 def render_circular(root_node, n2i, rot_step):
