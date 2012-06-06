@@ -57,11 +57,13 @@ t.size = 0
 for x in xrange(100):
     n = t.add_child()
     n2 = n.add_child()
-    n3 = n.add_child()
+    #n3 = n.add_child()
     #n4 = n2.add_child()
     #n5 = n3.add_child()
     n.size = 50
-    #n2.size = 500
+    
+    n2.size = 10
+    #n2.dist = 0.1
     #n2.size = 1
     #n3.size = 1
     #n2.dist = 0.5

@@ -394,6 +394,7 @@ def calculate_optimal_scale(root_node, n2i, rot_step):
         n2sumdist[node] = n2sumdist.get(node.up, 0) + node.dist
         c = r - (parent_radius + xoffset + w)
         n2sumwidth[node] = n2sumwidth.get(node.up, 0) + w + c
+        #print len(node), node.name, n2minradius[node], n2sumwidth[node]
         
     best_scale = None
     n2realradius= {}
@@ -402,8 +403,9 @@ def calculate_optimal_scale(root_node, n2i, rot_step):
         w = item.nodeRegion.width()
         h = item.effective_height
 
-        if not best_scale:
+        if best_scale is None:
             best_scale = n2offset[node] / node.dist if node.dist else 0.0
+            print len(node), node.name, node.dist, best_scale
             print n2minradius[node], best_scale
             n2realradius[node] = n2minradius[node]
         else:
