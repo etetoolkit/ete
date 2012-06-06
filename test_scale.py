@@ -31,10 +31,10 @@ def layout(node):
     faces.add_face_to_node(f, node, 0, position="float-behind")
 
 def layout2(node):
-    if not node.is_leaf():
-        #node.img_style["size"] = random.randint(40, 200)
+    #node.img_style["size"] = random.randint(40, 200)
+    if hasattr(node, "size"):
         node.img_style["size"] = node.size
-        node.img_style["bgcolor"] = random_color()
+    node.img_style["bgcolor"] = random_color()
     node.img_style["hz_line_width"] = 0
     node.img_style["vt_line_width"] = 0
     #if node.is_leaf():
@@ -57,16 +57,18 @@ t.size = 0
 for x in xrange(100):
     n = t.add_child()
     n2 = n.add_child()
-    n3 = n2.add_child()
-    n.size = 5
-    n2.size = 10
-    n3.size = 10
-    n2.dist = 0.1
+    n3 = n.add_child()
+    #n4 = n2.add_child()
+    #n5 = n3.add_child()
+    n.size = 50
+    #n2.size = 500
+    #n2.size = 1
+    #n3.size = 1
+    #n2.dist = 0.5
     
 #t.populate(100)#, random_branches=True)
-t.write(outfile="test.nw")
+#t.write(outfile="test.nw")
 ts.layout_fn = layout2
-
 t.show(tree_style=ts)
 ts.scale = 1
 sys.exit()

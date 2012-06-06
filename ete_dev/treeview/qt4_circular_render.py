@@ -168,13 +168,13 @@ def get_min_radius(w, h, a, xoffset):
     else:
         # It happens on root nodes
         r1 = math.sqrt(a**2 + b**2) 
-        effective_angle = math.asin(a/r1)
-        r2 = w / math.cos(effective_angle)
-        r = r1+r2
+        #effective_angle = math.asin(a/r1)
+        #r2 = w / math.cos(effective_angle)
+        r = r1#+r2
         
     return r, off
 
-def render_circular(root_node, n2i, rot_step):
+def render_circular_old(root_node, n2i, rot_step):
     #to_visit = deque()
     #to_visit.append(root_node)
     max_r = 0.0
@@ -202,7 +202,7 @@ def render_circular(root_node, n2i, rot_step):
 
         r, xoffset = get_min_radius(w, h, angle, parent_radius)
         if xoffset:
-            print "SI", xtra
+            print "SI", xoffset
 
         rotate_and_displace(item.content, item.rotation, h, parent_radius)
         item.radius = r
@@ -318,78 +318,9 @@ def get_optimal_tree_width(root_node, n2f, img, rot_step):
                                              img.force_topology)
     return most_distant
 
-def calculate_optimal_scale(root_node, n2i, rot_step):
-    n2radius = {}
-    n2cumdist = {}
-    n2xoffset = {}
-    visited_nodes = []
-    for node in root_node.traverse('preorder'):
-        visited_nodes.append(node)
-        
-        item = n2i[node]
-        w = item.nodeRegion.width()
-        h = item.effective_height
-
-        if node is not root_node:
-            parent_radius = n2radius[node.up]
-            cumdist = n2cumdist[node.up]
-        else:
-            parent_radius = 0
-            cumdist = 0
-
-        if _leaf(node):
-            angle = rot_step
-        else:
-            angle = item.angle_span
-            
-        r, xoffset = get_min_radius(w, h, angle, parent_radius)
-        n2xoffset[node] = xoffset
-        n2radius[node] = r 
-        n2cumdist[node] = cumdist + node.dist
-        
-    best_scale = 0
-    n2cumoffset = {}
-    for n in visited_nodes:
-        parent_pos_clean = n2radius[n.up] if n is not root_node else 0
-        parent_pos_real = (n2cumdist[n.up] * best_scale) if n is not root_node else 0
-        parent_pos_real += parent_pos_clean
-        node_pos = parent_pos_real + (n.dist * best_scale)
-        min_node_pos = parent_pos_clean + n2xoffset[n]
-        
-        print min_node_pos, node_pos
-        n.add_features(_min_node_pos=min_node_pos,
-                       _ex_node_pos=node_pos,
-                       _parent_pos=parent_pos_real,
-                       _parent_pos_clean=parent_pos_clean)
-        
-        if node_pos < min_node_pos:
-            scale = (min_node_pos - parent_pos_clean)  / n2cumdist[n]
-            if scale < best_scale:
-                print "oops"
-            best_scale = scale
 
 
-    for n in visited_nodes:
-        item = n2i[n]
-        parent_pos_clean = n2radius[n.up] if n is not root_node else 0
-        parent_pos_real = (n2cumdist[n.up] * best_scale) if n is not root_node else 0
-        parent_pos_real += parent_pos_clean
-        node_pos = parent_pos_real + (n.dist * best_scale)
-        item.radius = node_pos + item.nodeRegion.width()
-
-    return best_scale
-        
-    #offsets = sorted([(off, n) for n, off in n2xoffset.iteritems()])
-    #return (offsets[-1][0] / n2cumdist[offsets[-1][1]])
-    #print offsets[-1][1].dist
-    #return offsets[-1][0] / offsets[-1][1].dist
-    # 
-    #return max([off/n.dist for n, off in n2xoffset.iteritems() if n.dist])
-    # 
-    #return best_scale
-
-
-def render_circular(root_node, n2i, rot_step, img):
+def render_circular(root_node, n2i, rot_step):
     max_r = 0.0
     for node in root_node.traverse('preorder'):
         item = n2i[node]
@@ -400,12 +331,9 @@ def render_circular(root_node, n2i, rot_step, img):
         angle = rot_step if _leaf(node) else item.angle_span
 
         rotate_and_displace(item.content, item.rotation, h, parent_radius)
-        
+
         r = n2i[node].radius
         
-        node.add_features(_node_start=parent_radius,
-                          _content_start=parent_radius+(node.dist * img._scale),
-                          _node_end=r)
         max_r = max(max_r, r)
 
         if not _leaf(node) and len(node.children) > 1:
@@ -430,4 +358,69 @@ def render_circular(root_node, n2i, rot_step, img):
     return max_r
 
 
-    
+def calculate_optimal_scale(root_node, n2i, rot_step):
+    n2minradius = {}
+    n2offset = {}
+    n2sumdist = {}
+    n2sumwidth = {}
+    visited_nodes = []
+    # Calcula la posicion minima de los elementos
+    for node in root_node.traverse('preorder'):
+        visited_nodes.append(node)
+        item = n2i[node]
+        
+        w = item.nodeRegion.width()
+        h = item.effective_height
+
+        if node is not root_node:
+            parent_radius = n2minradius[node.up]
+        else:
+            parent_radius = 0
+
+        if _leaf(node):
+            angle = rot_step
+        else:
+            angle = item.angle_span
+            
+        r, xoffset = get_min_radius(w, h, angle, parent_radius)
+        n2offset[node] = xoffset
+        n2minradius[node] = r
+        n2sumdist[node] = n2sumdist.get(node.up, 0) + node.dist
+        c = r - (parent_radius + xoffset + w)
+        n2sumwidth[node] = n2sumwidth.get(node.up, 0) + w + c
+        
+    best_scale = None
+    n2realradius= {}
+    for node in visited_nodes:
+        item = n2i[node]
+        w = item.nodeRegion.width()
+        h = item.effective_height
+
+        if not best_scale:
+            best_scale = n2offset[node] / node.dist if node.dist else 0.0
+            print n2minradius[node], best_scale
+            n2realradius[node] = n2minradius[node]
+        else:
+            #current_start = n2realradius[node.up] + (node.dist * best_scale)
+            current_start = n2sumdist[node] * best_scale + n2sumwidth[node.up]
+            min_start = n2minradius[node.up] + n2offset[node]
+            if current_start < min_start:
+                print "OOps adjusting scale"
+                # Aqui la ecuacion. Esto es solo una aproximacion al
+                # resultado que infravalora el resultado real.
+                old_scale = best_scale
+                best_scale = (min_start - n2sumwidth[node.up]) / n2sumdist[node]
+                #for n in n2realradius:
+                #    off = (n.dist * best_scale) - (n.dist * old_scale)
+                #    #print off
+                #    n2realradius[n] += off
+                current_start = n2realradius[node.up] + (node.dist * best_scale)
+                
+            n2realradius[node] = math.sqrt((current_start + w)**2 + (h/2)**2)
+            
+    for node in visited_nodes:
+        item = n2i[node]
+        current_start = n2sumdist[node] * best_scale + n2sumwidth[node]
+        item.radius = current_start
+        
+    return best_scale

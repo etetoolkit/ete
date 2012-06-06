@@ -265,7 +265,9 @@ def render(root_node, img, hide_root=False):
     rot_step = float(arc_span) / virtual_leaves
 
     # Calculate optimal branch length
-    if img.scale is None:
+    if img._scale is not None:
+        init_items(root_node, parent, n2i, n2f, img, rot_step, hide_root)
+    elif img.scale is None:
         # create items and calculate node dimensions skipping branch lengths
         init_items(root_node, parent, n2i, n2f, img, rot_step, hide_root)
         if mode == 'r':
@@ -274,6 +276,7 @@ def render(root_node, img, hide_root=False):
             img._scale = crender.calculate_optimal_scale(root_node, n2i, rot_step)
             print "OPTIMAL circular scale", img._scale
             if not img._scale:
+                print "OPTIMAL circular scale corrected to 20"
                 img._scale = 20
         # Set branch length in all NodeItems and update dimensions
         update_branch_lengths(root_node, n2i, n2f, img)
@@ -290,7 +293,7 @@ def render(root_node, img, hide_root=False):
     # Adjust content to rect or circular layout
     mainRect = parent.rect()
     if mode == "c":
-        tree_radius = crender.render_circular(root_node, n2i, rot_step, img)
+        tree_radius = crender.render_circular(root_node, n2i, rot_step)
         mainRect.adjust(-tree_radius, -tree_radius, tree_radius, tree_radius)
 
     else:
