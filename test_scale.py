@@ -33,7 +33,11 @@ def layout(node):
 def layout2(node):
     #node.img_style["size"] = random.randint(40, 200)
     if hasattr(node, "size"):
-        node.img_style["size"] = node.size
+        f = faces.PieChartFace([100], 50, node.size, ["blue"])
+        faces.add_face_to_node(f, node, 0, position="branch-right")
+        
+        #node.img_style["size"] = node.size
+        
     node.img_style["bgcolor"] = random_color()
     node.img_style["hz_line_width"] = 0
     node.img_style["vt_line_width"] = 0
@@ -58,11 +62,12 @@ for x in xrange(100):
     n = t.add_child()
     n2 = n.add_child()
     #n3 = n.add_child()
-    #n4 = n2.add_child()
-    #n5 = n3.add_child()
+    n3 = n2.add_child()
+    n5 = n3.add_child()
     n.size = 50
-    
-    n2.size = 10
+    n2.size = 50
+    n3.size = 50
+    n5.size = 50
     #n2.dist = 0.1
     #n2.size = 1
     #n3.size = 1

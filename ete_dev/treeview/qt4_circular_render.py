@@ -145,12 +145,12 @@ def rotate_and_displace(item, rotation, height, offset):
     item.setTransform(t)
 
 
-def get_min_radius(w, h, a, xoffset):
+def get_min_radius(w, h, angle, xoffset):
     """ returns the radius and X-displacement required to render a
     rectangle (w,h) within and given angle (a)."""
 
     # converts to radians
-    angle = (a * math.pi) / 180 
+    angle = (angle * math.pi) / 180 
     b = xoffset + w
     a = h / 2
     off = 0
@@ -186,10 +186,10 @@ def render_circular(root_node, n2i, rot_step):
             r = item.radius
             xoffset = 0
         else:
-            r, xoffset = get_min_radius(w, h, angle, parent_radius)
+            r, xoffset = get_min_radius(w - item.branch_length, h, angle, parent_radius + item.branch_length)
             item.radius = r
-            print "parent", parent_radius , "mio", item.radius, "branch", item.branch_length
-        if xoffset:
+            
+        if xoffset: # DEBUG ONLY. IF Scale is correct, this should not be printed
             print "Offset detected in node", xoffset
 
         rotate_and_displace(item.content, item.rotation, h, parent_radius)
@@ -228,7 +228,6 @@ def render_circular(root_node, n2i, rot_step):
 
             # And moves elements 
             if xoffset:
-                print "SI"
                 for i in item.movable_items:
                     i.moveBy(xoffset, 0)
 
@@ -265,8 +264,6 @@ def render_circular_old(root_node, n2i, rot_step):
             #full_angle = abs(item.full_end - item.full_start)
 
         r, xoffset = get_min_radius(w, h, angle, parent_radius)
-        if xoffset:
-            print "SI", xoffset
 
         rotate_and_displace(item.content, item.rotation, h, parent_radius)
         item.radius = r

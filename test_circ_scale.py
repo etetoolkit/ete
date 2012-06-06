@@ -12,10 +12,11 @@ def layout(node):
         #node.img_style["size"] = random.randint(50, 50)
         f = faces.AttrFace("name", fsize=20)
         faces.add_face_to_node(f, node, 0, position="aligned")
-        
+
+        #f = faces.CircleFace(20, "red")
         f = faces.AttrFace("name", fsize=20)
         faces.add_face_to_node(f, node, 0, position="branch-right")
-        f.border.width = 1
+        f.border.width = 0
     node.img_style["bgcolor"] = random_color()
 
 ts = TreeStyle()
