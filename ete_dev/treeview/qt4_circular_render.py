@@ -11,8 +11,6 @@ class _LineItem(QtGui.QGraphicsLineItem):
         #painter.setClipRect( option.exposedRect )
         QtGui.QGraphicsLineItem.paint(self, painter, option, widget)
 
-
-
 # Performance tests!!
 TIME  = [0]
 def etime(f):
@@ -174,6 +172,72 @@ def get_min_radius(w, h, a, xoffset):
         
     return r, off
 
+def render_circular(root_node, n2i, rot_step):
+    max_r = 0.0
+    for node in root_node.traverse('preorder'):
+        item = n2i[node]
+        w = item.nodeRegion.width()
+        h = item.effective_height
+
+        parent_radius = n2i[node.up].radius if node.up else 0 
+        angle = rot_step if _leaf(node) else item.angle_span
+
+        if hasattr(item, "radius"):
+            r = item.radius
+            xoffset = 0
+        else:
+            r, xoffset = get_min_radius(w, h, angle, parent_radius)
+            item.radius = r
+            print "parent", parent_radius , "mio", item.radius, "branch", item.branch_length
+        if xoffset:
+            print "Offset detected in node", xoffset
+
+        rotate_and_displace(item.content, item.rotation, h, parent_radius)
+        
+        max_r = max(max_r, r)
+
+        if not _leaf(node) and len(node.children) > 1:
+            first_c = n2i[node.children[0]]
+            last_c = n2i[node.children[-1]]
+            # Vertical arc Line
+            rot_end = n2i[node.children[-1]].rotation
+            rot_start = n2i[node.children[0]].rotation
+            rot_span = abs(rot_end - rot_start)
+            C = item.vt_line
+            C.setParentItem(item)
+            path = QtGui.QPainterPath()
+            # Counter clock wise
+            path.arcMoveTo(-r, -r, r * 2, r * 2, 360 - rot_start - rot_span)
+            path.arcTo(-r, -r, r*2, r * 2, 360 - rot_start - rot_span, rot_span)
+            # Faces
+            C.setPath(path)
+            item.static_items.append(C)
+
+
+        if hasattr(item, "content"):
+            # If applies, it sets the length of the extra branch length
+            if item.extra_branch_line:
+                xtra =  item.extra_branch_line.line().dx()
+                if xtra > 0:
+                    xtra = xoffset + xtra
+                else:
+                    xtra = xoffset
+                item.extra_branch_line.setLine(item.branch_length, item.center,\
+                                               item.branch_length + xtra , item.center)
+                item.nodeRegion.setWidth(item.nodeRegion.width()+xtra)
+
+            # And moves elements 
+            if xoffset:
+                print "SI"
+                for i in item.movable_items:
+                    i.moveBy(xoffset, 0)
+
+            
+            
+    n2i[root_node].max_r = max_r
+    return max_r
+
+    
 def render_circular_old(root_node, n2i, rot_step):
     #to_visit = deque()
     #to_visit.append(root_node)
@@ -320,48 +384,6 @@ def get_optimal_tree_width(root_node, n2f, img, rot_step):
                                              img.force_topology)
     return most_distant
 
-
-
-def render_circular(root_node, n2i, rot_step):
-    max_r = 0.0
-    for node in root_node.traverse('preorder'):
-        item = n2i[node]
-        w = item.nodeRegion.width()
-        h = item.effective_height
-
-        parent_radius = n2i[node.up].radius if node.up else 0 
-        angle = rot_step if _leaf(node) else item.angle_span
-
-        rotate_and_displace(item.content, item.rotation, h, parent_radius)
-
-        r = n2i[node].radius
-        
-        max_r = max(max_r, r)
-
-        if not _leaf(node) and len(node.children) > 1:
-
-            first_c = n2i[node.children[0]]
-            last_c = n2i[node.children[-1]]
-            # Vertical arc Line
-            rot_end = n2i[node.children[-1]].rotation
-            rot_start = n2i[node.children[0]].rotation
-            rot_span = abs(rot_end - rot_start)
-            C = item.vt_line
-            C.setParentItem(item)
-            path = QtGui.QPainterPath()
-            # Counter clock wise
-            #path.arcMoveTo(-r, -r, r * 2, r * 2, 360 - rot_start - angle)
-            #path.arcTo(-r, -r, r*2, r * 2, 360 - rot_start - angle, angle)
-            path.arcMoveTo(-r, -r, r * 2, r * 2, 360 - rot_start - rot_span)
-            path.arcTo(-r, -r, r*2, r * 2, 360 - rot_start - rot_span, rot_span)
-            
-            # Faces
-            C.setPath(path)
-            item.static_items.append(C)
-
-            
-    n2i[root_node].max_r = max_r
-    return max_r
 
 
 def calculate_optimal_scale(root_node, n2i, rot_step):
