@@ -117,7 +117,8 @@ class _GUI(QtGui.QMainWindow):
 
     @QtCore.pyqtSignature("")
     def on_actionZoomInY_triggered(self):
-        self.scene.img.branch_vertical_margin += 5 
+        self.scene.img.branch_vertical_margin += 5
+        self.scene.img._scale = None
         self.scene.draw()
 
     @QtCore.pyqtSignature("")
@@ -197,24 +198,28 @@ class _GUI(QtGui.QMainWindow):
     @QtCore.pyqtSignature("")
     def on_actionBranchLength_triggered(self):
         self.scene.img.show_branch_length ^= True
+        self.scene.img._scale = None
         self.scene.draw()
         self.view.centerOn(0,0)
 
     @QtCore.pyqtSignature("")
     def on_actionBranchSupport_triggered(self):
         self.scene.img.show_branch_support ^= True
+        self.scene.img._scale = None
         self.scene.draw()
         self.view.centerOn(0,0)
 
     @QtCore.pyqtSignature("")
     def on_actionLeafName_triggered(self):
         self.scene.img.show_leaf_name ^= True
+        self.scene.img._scale = None
         self.scene.draw()
         self.view.centerOn(0,0)
 
     @QtCore.pyqtSignature("")
     def on_actionForceTopology_triggered(self):
         self.scene.img.force_topology ^= True
+        self.scene.img._scale = None
         self.scene.draw()
         self.view.centerOn(0,0)
 

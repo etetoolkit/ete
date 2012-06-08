@@ -651,12 +651,12 @@ def render_node_content(node, n2i, n2f, img):
     # Attach branch-bottom faces to child
     fblock_b = n2f[node]["branch-bottom"]
     fblock_b.render()
-    fblock_b.setPos(0, center + style["hz_line_width"]/2)
+    fblock_b.setPos(item.widths[0], center + style["hz_line_width"]/2)
 
     # Attach branch-top faces to child
     fblock_t = n2f[node]["branch-top"]
     fblock_t.render()
-    fblock_t.setPos(0, center-fblock_t.h-style["hz_line_width"]/2)
+    fblock_t.setPos(item.widths[0], center - fblock_t.h - style["hz_line_width"]/2)
 
     # Vertical line
     if not _leaf(node):
