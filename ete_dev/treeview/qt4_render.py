@@ -280,6 +280,7 @@ def render(root_node, img, hide_root=False):
                 img._scale = 20
         # Set branch length in all NodeItems and update dimensions
         update_branch_lengths(root_node, n2i, n2f, img)
+        init_items(root_node, parent, n2i, n2f, img, rot_step, hide_root)
     else:
         # create items and calculate node dimensions CONSIDERING branch lengths
         img._scale = img.scale

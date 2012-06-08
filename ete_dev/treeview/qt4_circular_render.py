@@ -166,8 +166,8 @@ def get_min_radius(w, h, angle, xoffset):
     else:
         # It happens on root nodes
         r1 = math.sqrt(a**2 + b**2) 
-        #effective_angle = math.asin(a/r1)
-        #r2 = w / math.cos(effective_angle)
+        effective_angle = math.asin(a/r1)
+        r2 = w / math.cos(effective_angle)
         r = r1#+r2
         
     return r, off
@@ -189,6 +189,7 @@ def render_circular(root_node, n2i, rot_step):
         else:
             r, xoffset = get_min_radius(w, h, angle, parent_radius + item.widths[0])
             item.radius = r
+            node.add_features(rad=item.radius)
             
         if xoffset: # DEBUG ONLY. IF Scale is correct, this should not be printed
             print "Offset detected in node", xoffset
@@ -294,7 +295,7 @@ def calculate_optimal_scale(root_node, n2i, rot_step):
         visited_nodes.append(node)
         
         item = n2i[node]
-        w = sum(item.widths[1:4])
+        w = sum(item.widths[0:4])
         h = item.effective_height
 
         if node is not root_node:
@@ -310,50 +311,46 @@ def calculate_optimal_scale(root_node, n2i, rot_step):
         r, xoffset = get_min_radius(w, h, angle, parent_radius)
         # versed sine
         vs = r - (parent_radius + xoffset + w)
-        n2offset[node] = xoffset + item.widths[1]
         n2minradius[node] = r 
         n2sumdist[node] = n2sumdist.get(node.up, 0) + node.dist 
 
         # I will fix versed sine, although it would be slightly
         # changing with larger scales.
-        n2sumwidth[node] = n2sumwidth.get(node.up, 0) + sum(item.widths[2:4]) #+ vs
+        n2sumwidth[node] = n2sumwidth.get(node.up, 0) + sum(item.widths[2:4]) + vs
+
         
     best_scale = None
-    n2realradius= {}
     for node in visited_nodes:
         item = n2i[node]
-        # width of everything except branch length. See
-        # get_node_dimensions function.
-        w = sum(item.widths[2:4])
-        h = item.effective_height
-
         if best_scale is None:
-            best_scale = n2offset[node] / node.dist if node.dist else 0.0
-            print len(node), node.name, node.dist, best_scale
-            print n2minradius[node], best_scale
-            n2realradius[node] = n2minradius[node]
+            best_scale = (n2minradius[node] - n2sumwidth[node]) / node.dist if node.dist else 0.0
         else:
             # Caculates the start of this node elements using current
             # best_scale. If scale is not enough, recalculate a larger
             # one.
-            current_start = n2sumdist[node] * best_scale + n2sumwidth[node.up]
-            min_start = n2minradius[node.up] + n2offset[node]
-            if current_start < min_start:
-                print "OOps adjusting scale"
-                old_scale = best_scale
-                # This is a simplification of the real ecuation needed
+            current_rad = n2sumdist[node] * best_scale + n2sumwidth[node]
+                
+            # Apply the next if only if you want to adjust scale to branch faces
+            if item.widths[1] > node.dist * best_scale:
+                best_scale = item.widths[1] / node.dist
+                print "OOps adjusting scale because  branch-faces", node.dist, best_scale, item.widths[1]
+            if current_rad < n2minradius[node]:
+                # This is a simplification of the real ecuacion needed
                 # to calculate the best scale. Given that I'm not
                 # taking into account the versed sine of each parent
                 # node, the equation is actually very simple.
-                best_scale = (min_start - n2sumwidth[node.up]) / n2sumdist[node]
-                current_start = n2realradius[node.up] + (node.dist * best_scale)
+                best_scale = (n2minradius[node] - n2sumwidth[node]) / n2sumdist[node]
+                print "OOps adjusting scale", node.dist, best_scale
+
+
                 
-            #n2realradius[node] = math.sqrt((current_start + w)**2 + (h/2)**2)
-            n2realradius[node] = math.sqrt((min_start + w)**2 + (h/2)**2)
-            
     for node in visited_nodes:
-        item = n2i[node]
-        current_start = n2sumdist[node] * best_scale + n2sumwidth[node]
-        item.radius = current_start
-        
+    #    item = n2i[node]
+    #    h = item.effective_height
+    #    a = n2sumdist[node] * best_scale + n2sumwidth.get(node) 
+    #    b = h/2
+    #    radius = math.sqrt(a**2 + b**2)
+        node.add_features(min_rad=n2minradius[node])
+    #    if not node.up:
+    #        print "ROOT", a, b, item.radius
     return best_scale

@@ -23,10 +23,13 @@ ts = TreeStyle()
 ts.mode = "c"
 ts.layout_fn = layout 
 ts.show_leaf_name = False
+ts.show_branch_length = True
 ts.draw_guiding_lines = False
 t = Tree()
-t.populate(100, random_branches=True)
-t.dist = 0
+t.populate(80, random_branches=True, branch_range=(0.3, 0.7))
+t.dist = 0.000
+dists = [n.dist for n in t.traverse() if n.dist != 0]
+print max(dists), min(dists)
 t.write(outfile="test.nw")
 t.show(tree_style=ts)
 

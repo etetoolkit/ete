@@ -33,12 +33,15 @@ def layout(node):
 def layout2(node):
     #node.img_style["size"] = random.randint(40, 200)
     if hasattr(node, "size"):
-        f = faces.PieChartFace([100], 50, node.size, ["blue"])
+        f = faces.PieChartFace([100], node.size[0], node.size[1], ["blue"])
         faces.add_face_to_node(f, node, 0, position="branch-top")
+        faces.add_face_to_node(f, node, 0, position="branch-bottom")
+        #f = faces.PieChartFace([100], node.size[0]*3, node.size[0]*3, ["blue"])
+        #faces.add_face_to_node(f, node, 0, position="branch-right")
         f.border.width = 0
         
-        #node.img_style["size"] = node.size
-        
+        node.img_style["size"] = 10
+        node.img_style["shape"] = "square"
     node.img_style["bgcolor"] = random_color()
     node.img_style["hz_line_width"] = 0
     node.img_style["vt_line_width"] = 0
@@ -58,17 +61,17 @@ ts.show_scale = True
 t = Tree()
 t.dist = 0
 
-t.size = 0
+t.size = 0,0
 for x in xrange(100):
     n = t.add_child()
-    n2 = n.add_child()
+    #n2 = n.add_child()
     #n3 = n.add_child()
-    n3 = n2.add_child()
-    n5 = n3.add_child()
-    n.size = 10
-    n2.size = 10
-    n3.size = 10
-    n5.size = 10
+    #n3 = n2.add_child()
+    #n5 = n3.add_child()
+    n.size = (10, 10)
+    #n2.size = 10
+    #n3.size = 10
+    #n5.size = 10
     #n2.dist = 0.1
     #n2.size = 1
     #n3.size = 1
