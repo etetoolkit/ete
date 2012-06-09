@@ -163,7 +163,7 @@ class TreeNode(object):
         self._img_style = None
         self.features = set([])
         # Add basic features
-        self.add_features(name="NoName")
+        self.add_features(name="")
         self.features.update(["dist", "support"])
 
         # Initialize tree
@@ -1280,7 +1280,7 @@ class TreeNode(object):
         """
         if not attributes:
             attributes = ["name"]
-        node_name = ', '.join(map(str, [getattr(self, v, "?") for v in attributes]))
+        node_name = ', '.join(map(str, [getattr(self, v, "") for v in attributes]))
        
         LEN = 5
         PAD = ' ' * LEN
