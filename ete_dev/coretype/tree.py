@@ -1424,7 +1424,77 @@ class TreeNode(object):
             store[self] = set([self])
         return store
 
+    def hmg(self, t2, attr_t1="name", attr_t2="name"):
+        """
+        """
+        t1 = self
+        t1content = t1.get_node2content()
+        t2content = t2.get_node2content()
+        target_names = set([getattr(_n, attr_t1) for _n in t1content[t1]])
+        ref_names = set([getattr(_n, attr_t2) for _n in t2content[t2]])
+        common_names = target_names & ref_names
+        if len(common_names) < 2:
+            raise ValueError("Trees share less than 2 nodes")
+
+        t1_attr_content = dict([(n, set([getattr(leaf, attr_t1) for leaf
+                                     in cont if getattr(leaf, attr_t1) in
+                                     common_names])) for n, cont in
+                                t1content.iteritems() ])
+        t2_attr_content = dict([(n, set([getattr(leaf, attr_t2) for leaf
+                                     in cont if getattr(leaf, attr_t2) in
+                                     common_names])) for n, cont in
+                                t2content.iteritems() ])
+
+        n2track = {}
+        for n in t1.iter_leaves():
+            n2track[n.name] = set()
+            _n = n
+            while _n:
+                n2track[n.name].add(_n)
+                _n = _n.up
             
+        def common_ancestor(node_names, n2content):
+            bysize = lambda x, y: cmp(len(n2content[x]), len(n2content[y]))
+            common = None
+            for node in node_names:
+                if common is None: 
+                    common = set(n2track[node])
+                else:
+                    common &= n2track[node]
+            common = list(common)
+            common.sort(bysize)
+            return common[0]
+        
+        refnode2target = {}
+        for node, ref_content in t2_attr_content.iteritems():
+            if not ref_content:
+                continue
+            #candidates = [(len(target_content), target_content) for
+            #              target_content in t1_attr_content.itervalues() if
+            #              not (ref_content - target_content)]
+            #candidates.sort()
+            #match = candidates[0][1]
+
+            #match = t1content[t1.get_common_ancestor(ref_content)]
+            match = t1_attr_content[common_ancestor(ref_content, t1content)]
+            #if match == match2:
+            #    print ref_content
+            #    print t1
+            #    print "REAL", match
+            #    print "NEW", match2
+            #    raw_input("NOP")
+                
+            #print ref_content, node
+            #print candidates
+            #dist = len(match) - float(len(ref_content))
+            #dist = (len(candidates[0][1]) / float(len(ref_content))) - 1
+            dist = (len(match) - len(ref_content)) / float(len(match))
+            
+            #print candidates[0][1],  ref_content
+            refnode2target[node] = dist
+
+        return refnode2target
+       
     def robinson_foulds(self, t2, attr_t1="name", attr_t2="name"):
         """
         .. versionadded: 2.x
@@ -1442,7 +1512,7 @@ class TreeNode(object):
         common_names = target_names & ref_names
         if len(common_names) < 2:
             raise ValueError("Trees share less than 2 nodes")
-                            
+
         r1 = set([",".join(sorted([getattr(_c, attr_t1) for _c in cont
                                    if getattr(_c, attr_t1) in common_names]))
                   for cont in t1content.values()])
