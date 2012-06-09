@@ -24,7 +24,7 @@ import os
 import string
 from sys import stderr as STDERR
 
-def read_fasta(source, obj=None, header_delimiter="\t"):
+def read_fasta(source, obj=None, header_delimiter="\t", fix_duplicates=True):
     """ Reads a collection of sequences econded in FASTA format."""
 
     if obj is None:
@@ -59,7 +59,7 @@ def read_fasta(source, obj=None, header_delimiter="\t"):
             seq_name = seq_header_fields[0]
 
             # Checks for duplicated seq names
-            if seq_name in names:
+            if fix_duplicates and seq_name in names:
                 tag = str(len([k for k in SC.name2id.keys() if k.endswith(seq_name)]))
                 old_name = seq_name
                 seq_name = tag+"_"+seq_name

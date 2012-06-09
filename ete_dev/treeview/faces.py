@@ -111,7 +111,7 @@ _ntbgcolors = {
 __all__ = ["Face", "TextFace", "AttrFace", "ImgFace",
            "ProfileFace", "SequenceFace", "TreeFace",
            "RandomFace", "DynamicItemFace", "StaticItemFace",
-           "CircleFace", "PieChartFace", "BarChartFace"]
+           "CircleFace", "PieChartFace", "BarChartFace", "SeqFace"]
 
 class Face(object):
     """ 
@@ -1211,3 +1211,117 @@ class _BarChartItem(QtGui.QGraphicsRectItem):
                 p.drawText(0, 0, str(self.labels[pos]))
                 p.restore()
 
+
+
+class SeqFace(Face):
+    def __init__(self, seq, motifs=None, seqtype="aa"):
+        Face.__init__(self)
+        self.motifs = motifs or []
+        self.seq  = seq
+        
+        self.style = seqtype
+        self.aafg = _aafgcolors
+        self.aabg = _aabgcolors
+        self.ntfg = _ntfgcolors
+        self.ntbg = _ntbgcolors
+
+        self.type2info = {"s": [2, 12],
+                          "m": [10, 12],
+                          "*": [2, 12],
+                      }
+
+        self.regions = make_regions(self.seq, self.motifs)
+        
+    def update_pixmap(self):
+        #regions = []
+        #for r in self.regions:
+        #    last_end = 0
+        #    if r[2] == "s":
+        #        for same_letter in re.finditer("((.)\\2{2}\\2+)", self.seq[r[0]:r[1]]):
+        #            start, end =  same_letter.span()
+        #            if start > last_end + 1:
+        #                regions.append([last_end, start, r[2]])
+        #            regions.append([start, end, "*"])
+        #            last_end = end
+        #    if last_end < r[1]:
+        #        regions.append([last_end, r[1], r[2]])
+        regions = self.regions
+        w, h = 0, 0
+        for r in regions:
+            rw, rh = self.type2info[r[2]]
+            w += rw * (r[1]-r[0])
+            h = max(h, rh)
+
+        self.pixmap = QtGui.QPixmap(w, h)
+        self.pixmap.fill()
+        p = QtGui.QPainter(self.pixmap)
+
+        pen = QtGui.QPen()
+        #pen.setWidth(0)
+        brush = QtGui.QBrush()
+        p.setPen(pen)
+        p.setBrush(brush)
+        QColor = QtGui.QColor
+        x = 0                
+        for r in regions:
+            rw, rh = self.type2info[r[2]]
+            y = (h/2) - (rh/2) # draw vertically centered
+
+            if r[2] == "*":
+                # Performance increase if a group by blocks?
+                letter = self.seq[r[0]].upper()
+                rw = rw * (r[1]-r[0])
+                if self.style=="nt":
+                    bgcolor = self.ntbg.get(letter, "#eeeeee")
+                else:
+                    bgcolor = self.aabg.get(letter, "#eeeeee")
+                if letter == "-":
+                    pass #p.drawRect(x, y, rw*), rh)
+                else:
+                    p.fillRect(x, y, rw, rh, QColor(bgcolor))
+                x += rw
+                a
+            else:
+                for pos in xrange(r[0], r[1]):
+                    letter = self.seq[pos].upper()
+                    #print letter,
+                    if self.style=="nt":
+                        bgcolor = self.ntbg.get(letter, "#eeeeee")
+                    else:
+                        bgcolor = self.aabg.get(letter, "#eeeeee")
+
+                    if letter in(["-","."]):
+                        #pen.setColor(QColor("black"))
+                        #p.drawLine(x, h/2, x+rw, h/2)
+                        pass # skip gaps
+                    else:
+                        p.fillRect(x, y, rw, rh, QColor(bgcolor))
+                    x += rw
+        p.end()
+
+def make_regions(seq, motifs):
+    poswidth = 2
+    posheight = 4
+    motifposwidth = 12
+    motifposheight = 12
+    
+    #Sort regions
+    regions = []
+    current_pos = 0
+    end = 0
+    for mf in motifs:
+        start, end = mf
+        start -= 1
+        if start < current_pos:
+            print current_pos, start, mf
+            raise ValueError("Overlaping motifs are not supported")
+        if start > current_pos:
+            regions.append([current_pos, start, "s"])
+        regions.append([start, end, "m"])
+        current_pos = end
+    if len(seq) > end:
+        regions.append([end, len(seq), "s"])
+    
+    return regions
+
+                

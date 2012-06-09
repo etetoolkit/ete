@@ -25,8 +25,8 @@ import faces
 
 def basic(node):
     if node.is_leaf():
-        node.img_style["size"]=1
-        node.img_style["shape"] = "circle"
+        #node.img_style["size"]=1
+        #node.img_style["shape"] = "circle"
         faces.add_face_to_node(faces.AttrFace("name","Arial",10,"#4f8f0f",None), node, 0 )
 
 def phylogeny(node):

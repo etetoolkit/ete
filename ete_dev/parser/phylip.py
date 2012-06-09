@@ -24,7 +24,8 @@ import os
 import re
 from sys import stderr as STDERR
 
-def read_phylip(source, interleaved=True, obj=None, relaxed=False):
+def read_phylip(source, interleaved=True, obj=None,
+                relaxed=False, fix_duplicates=True):
     if obj is None:
         from ete_dev.coretype import SeqGroup
         SG = SeqGroup()
@@ -65,8 +66,7 @@ def read_phylip(source, interleaved=True, obj=None, relaxed=False):
                         m = re.match("^(.{10})(.+)", line)
                     if m:
                         name = m.groups()[0].strip()
-                        if name in SG.name2id:
-
+                        if fix_duplicates and name in SG.name2id:
                             tag = str(len([k for k in SG.name2id.keys() \
                                               if k.endswith(name)]))
                             old_name = name
@@ -102,7 +102,7 @@ def read_phylip(source, interleaved=True, obj=None, relaxed=False):
                         seq = re.sub("\s","",m.groups()[1])
                         SG.id2seq[id_counter] = seq
                         SG.id2name[id_counter] = name
-                        if name in SG.name2id:
+                        if fix_duplicates and name in SG.name2id:
                             tag = str(len([k for k in SG.name2id.keys() \
                                               if k.endswith(name)]))
                             old_name = name
