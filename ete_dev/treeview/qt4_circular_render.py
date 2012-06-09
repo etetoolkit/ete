@@ -1,39 +1,15 @@
 import math
 import colorsys
 from PyQt4 import QtCore, QtGui
-from main import _leaf
+from main import _leaf, tracktime
 from qt4_gui import _NodeActions
 from collections import deque
-import time
 
 class _LineItem(QtGui.QGraphicsLineItem):
     def paint(self, painter, option, widget):
         #painter.setClipRect( option.exposedRect )
         QtGui.QGraphicsLineItem.paint(self, painter, option, widget)
 
-# Performance tests!!
-TIME  = [0]
-def etime(f):
-    def a_wrapper_accepting_arguments(*args, **kargs):
-        global TIME
-        t1 = time.time()
-        f(*args, **kargs)
-        print ".",
-        TIME[0] = TIME[0] + time.time() - t1 
-    return a_wrapper_accepting_arguments
-         
-COUNTER = 0
-def reset_counter():
-    global COUNTER
-    COUNTER = 0
-
-def print_counter():
-    global COUNTER
-    print "Paintings:", COUNTER
-
-def increase():
-    global COUNTER
-    COUNTER += 1
 
 class ArcPartition(QtGui.QGraphicsPathItem):
     def __init__(self, parent=None):
@@ -159,15 +135,18 @@ def get_min_radius(w, h, angle, xoffset):
         if effective_angle > angle / 2 and angle / 2 < math.pi:
             off = a / math.tan(angle / 2) 
             bb = off + w 
-            r = math.sqrt(a**2 + bb**2) 
+            #r = math.sqrt(a**2 + bb**2)
+            r = math.hypot(a, bb)
             off = max (off, xoffset) - xoffset
         else:
-            r = math.sqrt(a**2 + b**2) 
+            #r = math.sqrt(a**2 + b**2)
+            r = math.hypot(a, b)
     else:
         # It happens on root nodes
-        r1 = math.sqrt(a**2 + b**2) 
-        effective_angle = math.asin(a/r1)
-        r2 = w / math.cos(effective_angle)
+        #r1 = math.sqrt(a**2 + b**2)
+        r1 = math.hypot(a, b)
+        #effective_angle = math.asin(a/r1)
+        #r2 = w / math.cos(effective_angle)
         r = r1#+r2
         
     return r, off
@@ -282,10 +261,12 @@ def get_effective_height(n, n2i, n2f):
     fullR = n2i[n].fullRegion
     center = fullR.height()/2
     return max(up_h, down_h)*2
-
-def calculate_optimal_scale(root_node, n2i, rot_step):
+    
+@tracktime
+def calculate_optimal_scale(root_node, n2i, rot_step, img):
+    """ Seems to be fast. 0.5s from a tree of 10.000 leaves""" 
+    
     n2minradius = {}
-    n2offset = {}
     n2sumdist = {}
     n2sumwidth = {}
     visited_nodes = []
@@ -295,29 +276,20 @@ def calculate_optimal_scale(root_node, n2i, rot_step):
         visited_nodes.append(node)
         
         item = n2i[node]
-        w = sum(item.widths[0:4])
+        # Uses size of all node parts, except branch length
+        w = sum(item.widths[1:4])
         h = item.effective_height
 
-        if node is not root_node:
-            parent_radius = n2minradius[node.up]
-        else:
-            parent_radius = 0
-
-        if _leaf(node):
-            angle = rot_step
-        else:
-            angle = item.angle_span
+        parent_radius = n2minradius.get(node.up, 0)
+        angle = rot_step if node.is_leaf() else item.angle_span
             
         r, xoffset = get_min_radius(w, h, angle, parent_radius)
-        # versed sine
-        vs = r - (parent_radius + xoffset + w)
         n2minradius[node] = r 
         n2sumdist[node] = n2sumdist.get(node.up, 0) + node.dist 
-
-        # I will fix versed sine, although it would be slightly
-        # changing with larger scales.
-        n2sumwidth[node] = n2sumwidth.get(node.up, 0) + sum(item.widths[2:4]) + vs
-
+        # versed sine: the little extra line needed to complete the
+        # radius.
+        #vs = r - (parent_radius + xoffset + w)
+        n2sumwidth[node] = n2sumwidth.get(node.up, 0) + sum(item.widths[2:4]) #+ vs
         
     best_scale = None
     for node in visited_nodes:
@@ -325,15 +297,10 @@ def calculate_optimal_scale(root_node, n2i, rot_step):
         if best_scale is None:
             best_scale = (n2minradius[node] - n2sumwidth[node]) / node.dist if node.dist else 0.0
         else:
-            # Caculates the start of this node elements using current
-            # best_scale. If scale is not enough, recalculate a larger
-            # one.
+            #Whats the expected radius of this node?
             current_rad = n2sumdist[node] * best_scale + n2sumwidth[node]
-                
-            # Apply the next if only if you want to adjust scale to branch faces
-            if item.widths[1] > node.dist * best_scale:
-                best_scale = item.widths[1] / node.dist
-                print "OOps adjusting scale because  branch-faces", node.dist, best_scale, item.widths[1]
+
+            # If too small, it means we need to increase scale.
             if current_rad < n2minradius[node]:
                 # This is a simplification of the real ecuacion needed
                 # to calculate the best scale. Given that I'm not
@@ -342,15 +309,18 @@ def calculate_optimal_scale(root_node, n2i, rot_step):
                 best_scale = (n2minradius[node] - n2sumwidth[node]) / n2sumdist[node]
                 print "OOps adjusting scale", node.dist, best_scale
 
-
+            # If the width of branch top/bottom faces is not covered,
+            # we can also increase the scale to adjust it. This may
+            # produce huge scales, so let's keep it optional
+            if img.optimal_scale_level == "full" and \
+               item.widths[1] > node.dist * best_scale:
+                best_scale = item.widths[1] / node.dist
+                print "OOps adjusting scale because  branch-faces", node.dist, best_scale, item.widths[1]
                 
-    for node in visited_nodes:
+    #for node in visited_nodes:
     #    item = n2i[node]
     #    h = item.effective_height
     #    a = n2sumdist[node] * best_scale + n2sumwidth.get(node) 
     #    b = h/2
-    #    radius = math.sqrt(a**2 + b**2)
-        node.add_features(min_rad=n2minradius[node])
-    #    if not node.up:
-    #        print "ROOT", a, b, item.radius
+    #    item.radius = math.sqrt(a**2 + b**2)
     return best_scale

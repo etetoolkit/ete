@@ -52,6 +52,7 @@ def layout2(node):
 
 ts = TreeStyle()
 ts.mode = "c"
+ts.arc_span = 170
 ts.layout_fn = layout 
 ts.show_leaf_name = False
 ts.show_border = True
@@ -64,11 +65,14 @@ t.dist = 0
 t.size = 0,0
 for x in xrange(100):
     n = t.add_child()
-    #n2 = n.add_child()
-    #n3 = n.add_child()
-    #n3 = n2.add_child()
-    #n5 = n3.add_child()
+    n2 = n.add_child()
+    n3 = n.add_child()
+    n4 = n2.add_child()
+    n5 = n3.add_child()
     n.size = (10, 10)
+    n2.size = (10, 70)
+    n3.size = (40, 40)
+    n4.size = (10, 10)
     #n2.size = 10
     #n3.size = 10
     #n5.size = 10

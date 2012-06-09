@@ -9,6 +9,16 @@ from PyQt4 import QtCore
 
 from svg_colors import SVG_COLORS
 
+import time
+def tracktime(f):
+    def a_wrapper_accepting_arguments(*args, **kargs):
+        t1 = time.time()
+        r = f(*args, **kargs)
+        print "                         -> TIME:", f.func_name, time.time() - t1
+        return r
+    return a_wrapper_accepting_arguments
+
+
 _LINE_TYPE_CHECKER = lambda x: x in (0,1,2)
 _SIZE_CHECKER = lambda x: isinstance(x, int)
 _COLOR_MATCH = re.compile("^#[A-Fa-f\d]{6}$")
@@ -196,8 +206,7 @@ class NodeStyle(dict):
     #    super(NodeStyle, self).__setitem__("_faces", {})
 
 class TreeStyle(object):
-    """ 
-    .. versionadded:: 2.1
+    """.. versionadded:: 2.1
 
     .. currentmodule:: ete_dev
 
@@ -224,18 +233,24 @@ class TreeStyle(object):
     
     :var 0 rotation: Tree figure will be rotate X degrees (clock-wise rotation)
 
-    :var None scale: Scale used to convert branch lengths to
-      pixels. If 'None', the scale will be calculated using the
-      "tree_width" attribute (read bellow)
+    :var None scale: Scale used to draw branch lengths. If None, it will 
+      be automatically selected. 
 
+    :var "mid" optimal_scale_level: Two levels of automatic branch
+      scale detection are available: "mid" and "full". In **"full"**
+      mode, branch scale will me adjusted to fully avoid dotted lines
+      in the tree image. In other words, scale will be increased until
+      the extra space necessary to allocated all branch-top/bottom
+      faces and branch-right faces (in circular mode) is covered by
+      legacy branches. Note, however, that the optimal scale in trees
+      with very unbalanced branch lengths might be huge. If **"mid"**
+      mode is selected, optimal scale will only satisfy the space
+      necessary to allocate branch-right faces in circular trees. Some
+      dotted lines (artificial offsets) will still appear when
+      branch-top/bottom faces are larger than branch length.  Both
+      options apply only when "scale" is set to None (automatic).
 
-    :var 200 tree_width: Total width, in pixels, that tree
-      branches are allowed to used. This is, the distance in
-      pixels from root to the most distant leaf. If set, this
-      value will be used to automatically calculate the branch
-      scale.  In practice, increasing this number will cause an
-      X-zoom in.
-
+    
     :var 1 min_leaf_separation: Min separation, in pixels, between
       two adjacent branches
 
@@ -362,17 +377,12 @@ class TreeStyle(object):
         self.rotation = 0 
        
         # Scale used to convert branch lengths to pixels. If 'None',
-        # the scale will be calculated using the "tree_width"
-        # attribute (read bellow)
+        # the scale will be automatically calculated.
         self.scale = None
-
-        # Total width, in pixels, that tree branches are allowed to
-        # used. This is, the distance in pixels from root to the most
-        # distant leaf. If set, this value will be used to
-        # automatically calculate the branch scale.  In practice,
-        # increasing this number will cause an X-zoom in.
-        self.tree_width = None
-
+        
+        # mid, or full
+        self.optimal_scale_level = "mid" 
+        
         # Min separation, in pixels, between to adjacent branches
         self.min_leaf_separation = 1 
 

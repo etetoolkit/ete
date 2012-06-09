@@ -6,7 +6,7 @@ from PyQt4 import QtCore, QtGui, QtSvg
 import qt4_circular_render as crender
 import qt4_rect_render as rrender
 
-from main import _leaf, NodeStyle, _FaceAreas
+from main import _leaf, NodeStyle, _FaceAreas, tracktime
 from qt4_gui import _NodeActions as _ActionDelegator
 from qt4_face_render import update_node_faces, _FaceGroupItem, _TextFaceItem
 import faces
@@ -163,39 +163,6 @@ class _TreeScene(QtGui.QGraphicsScene):
         self.setBackgroundBrush(QtGui.QColor("white"))
         #self.setBackgroundBrush(QtGui.QBrush(QtCore.Qt.NoBrush))
 
-
-    # def mousePressEvent(self,e):
-    #     pos = self.pointer.mapFromScene(e.scenePos())
-    #     self.pointer.setRect(pos.x(),pos.y(),10,10)
-    #     self.pointer.startPoint = QtCore.QPointF(pos.x(), pos.y())
-    #     self.pointer.setActive(True)
-    #     self.pointer.setVisible(True)
-    #     QtGui.QGraphicsScene.mousePressEvent(self,e)
-    #
-    # def mouseReleaseEvent(self,e):
-    #     curr_pos = self.pointer.mapFromScene(e.scenePos())
-    #     x = min(self.pointer.startPoint.x(),curr_pos.x())
-    #     y = min(self.pointer.startPoint.y(),curr_pos.y())
-    #     w = max(self.pointer.startPoint.x(),curr_pos.x()) - x
-    #     h = max(self.pointer.startPoint.y(),curr_pos.y()) - y
-    #     if self.pointer.startPoint == curr_pos:
-    #         self.pointer.setVisible(False)
-    #     self.pointer.setActive(False)
-    #     QtGui.QGraphicsScene.mouseReleaseEvent(self,e)
-    #
-    # def mouseMoveEvent(self,e):
-    #     curr_pos = self.pointer.mapFromScene(e.scenePos())
-    #     if self.pointer.isActive():
-    #         x = min(self.pointer.startPoint.x(),curr_pos.x())
-    #         y = min(self.pointer.startPoint.y(),curr_pos.y())
-    #         w = max(self.pointer.startPoint.x(),curr_pos.x()) - x
-    #         h = max(self.pointer.startPoint.y(),curr_pos.y()) - y
-    #         self.pointer.setRect(x,y,w,h)
-    #     QtGui.QGraphicsScene.mouseMoveEvent(self, e)
-    #
-    # def mouseDoubleClickEvent(self,e):
-    #     QtGui.QGraphicsScene.mouseDoubleClickEvent(self,e)
-
     def draw(self):
         tree_item, self.n2i, self.n2f = render(self.tree, self.img)
         if self.master_item:
@@ -203,13 +170,12 @@ class _TreeScene(QtGui.QGraphicsScene):
         self.master_item = _EmptyItem()
         self.addItem(self.master_item)
         tree_item.setParentItem(self.master_item)
-
+@tracktime
 def render(root_node, img, hide_root=False):
     '''main render function. hide_root option is used when render
     trees as Faces
 
     '''
-    
     mode = img.mode
     orientation = img.orientation
 
@@ -271,16 +237,18 @@ def render(root_node, img, hide_root=False):
         # create items and calculate node dimensions skipping branch lengths
         init_items(root_node, parent, n2i, n2f, img, rot_step, hide_root)
         if mode == 'r':
-            img._scale = max([(i.widths[1]/(n.dist or 1.0)) for n,i in n2i.iteritems()]) or 20
+            if img.optimal_scale_level == "full":
+                img._scale = max([(i.widths[1]/n.dist) for n,i in n2i.iteritems() if n.dist])
+            else:
+                #fixed_widths = ([i.nodeRegion.width() for n,i in n2i.iteritems()])
+                farthest, dist = root_node.get_farthest_leaf()
+                img._scale =  400.0 / dist
+            update_branch_lengths(root_node, n2i, n2f, img)
         else:
-            img._scale = crender.calculate_optimal_scale(root_node, n2i, rot_step)
+            img._scale = crender.calculate_optimal_scale(root_node, n2i, rot_step, img)
             print "OPTIMAL circular scale", img._scale
-            if not img._scale:
-                print "OPTIMAL circular scale corrected to 20"
-                img._scale = 20
-        # Set branch length in all NodeItems and update dimensions
-        update_branch_lengths(root_node, n2i, n2f, img)
-        init_items(root_node, parent, n2i, n2f, img, rot_step, hide_root)
+            update_branch_lengths(root_node, n2i, n2f, img)
+            init_items(root_node, parent, n2i, n2f, img, rot_step, hide_root)
     else:
         # create items and calculate node dimensions CONSIDERING branch lengths
         img._scale = img.scale
@@ -430,7 +398,8 @@ def add_scale(img, mainRect, parent):
         line.setLine(0, 5, length, 5)
         line2.setLine(0, 0, 0, 10)
         line3.setLine(length, 0, length, 10)
-        scale_text = "%0.2f" % (float(length) / img._scale)
+        scale_text = "%0.2f" % (float(length) / img._scale if
+                                img._scale else 0.0)
         scale = QtGui.QGraphicsSimpleTextItem(scale_text)
         scale.setParentItem(scaleItem)
         scale.setPos(0, 10)
@@ -891,7 +860,7 @@ def get_tree_img_map(n2i):
         nid += 1
     return {"nodes": node_list, "faces": face_list}
 
-
+@tracktime
 def init_items(root_node, parent, n2i, n2f, img, rot_step, hide_root):
     # ::: Precalculate values :::
     visited = set()
@@ -1008,8 +977,8 @@ def update_branch_lengths(tree, n2i, n2f, img):
     for node in tree.traverse("postorder"):
         item = n2i[node]
         item.branch_length = node.dist * img._scale
-        item.si = item.nodeRegion.width()
         w0 = 0
+        
         if item.branch_length > item.widths[1]:
             w0 = item.widths[0] = item.branch_length - item.widths[1]
             item.nodeRegion.adjust(0, 0, w0, 0)
