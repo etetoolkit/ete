@@ -160,20 +160,33 @@ class TreeMerger(Task):
                
         else:
             def sort_outgroups(x,y):
-                v = cmp(x.support, y.support)
-                if v == 0:
+                # higher support first
+                v = -1 * cmp(x.support, y.support)
+                   
+                if not v:
+                #    # Sort by optimal size
+                #    #v = cmp(abs(optimal_out_size - len(ttree_content[x])),
+                #    #        abs(optimal_out_size - len(ttree_content[y])))
+                    v = -1 * cmp(len(ttree_content[x]), len(ttree_content[y]))
+                    
+                # If equal supports, sort by closeness to midpoint
+                if not v: 
                     v = cmp(n2targetdist[x], n2targetdist[y])
-                if v == 0:
-                    v = cmp(len(ttree_content[x]), len(ttree_content[y]))
+                   
+                    
                 return v
-            
+                            
+            optimal_out_size = self.args["_min_size"]
             log.log(28, "Rooting close to midpoint.")
             outgroup = ttree.get_midpoint_outgroup()
             n2rootdist, n2targetdist = distance_matrix(outgroup, leaf_only=False,
-                                                       topology_only=True)
-            
-            valid_nodes = n2targetdist.keys()
+                                                       topology_only=False)
+            #del n2targetdist[ttree]
+            valid_nodes = [n for n in ttree_content.keys() if n is not ttree]
             valid_nodes.sort(sort_outgroups)
+            #for n in valid_nodes[:10]:
+            #    print n, n.support, len(ttree_content[n]), n2targetdist[n]
+            
             best_outgroup = valid_nodes[0]
                                    
             ttree.set_outgroup(best_outgroup)
@@ -181,9 +194,11 @@ class TreeMerger(Task):
             orig_target = ttree
             if DEBUG():
                 outgroup.img_style["size"] = 20
-                outgroup.img_style["fgcolor"] = "green"
+                outgroup.img_style["fgcolor"] = "lightgreen"
+                best_outgroup.img_style["size"] = 20
+                best_outgroup.img_style["fgcolor"] = "green"
                 NPR_TREE_STYLE.title.clear()
-                NPR_TREE_STYLE.title.add_face(faces.TextFace("First iteration split.Outgroup is in green", fgcolor="blue"), 0)
+                NPR_TREE_STYLE.title.add_face(faces.TextFace("First iteration split. midpoint outgroup is in lightgreen, selected in green", fgcolor="blue"), 0)
                 ttree.show(tree_style=NPR_TREE_STYLE)
 
         tn = orig_target.copy()
@@ -232,8 +247,8 @@ def distance_matrix(target, leaf_only=False, topology_only=False):
     for n in root.traverse():
         ancestor = root.get_common_ancestor(n, target)
         if not leaf_only or n.is_leaf():
-            if ancestor != target:
-                n2tdist[n] = n2rdist[target] + n2rdist[n] - n2rdist[ancestor]
+            #if ancestor != target:
+            n2tdist[n] = n2rdist[target] + n2rdist[n] - n2rdist[ancestor]
     return n2rdist, n2tdist
     
         
@@ -315,6 +330,70 @@ def select_outgroups(target, n2content, options):
         NPR_TREE_STYLE.title.clear()
         NPR_TREE_STYLE.title.add_face( faces.TextFace("MainTree:"
             " Outgroup selection is mark in green.Red=optimized nodes ",
+            fgcolor="blue"), 0)
+        root.show(tree_style=NPR_TREE_STYLE)
+        for _n in root.traverse():
+            _n.img_style = None
+        
+    return set(seqs), set(outs)
+      
+def select_outgroups(target, n2content, options):
+    """Given a set of target sequences, find the best set of out
+    sequences to use. Several ways can be selected to find out
+    sequences:
+    """
+    
+    name2dist = {"min": numpy.min, "max": numpy.max,
+                 "mean":numpy.mean, "median":numpy.median}
+    
+    
+    policy = options["_outgroup_policy"]
+    optimal_out_size = options["_outgroup_size"]
+    topology_only = options["_outgroup_topology_dist"]
+    out_min_support = options["_outgroup_min_support"]
+
+    if not target.up:
+        raise ValueError("Cannot select outgroups for root node!")
+    if not optimal_out_size:
+        raise ValueError("You are trying to set 0 outgroups!")
+    
+    n2rootdist, n2targetdist = distance_matrix(target, leaf_only=False,
+                                               topology_only=False)
+
+    score = lambda _n: (_n.support,
+                        #len(n2content[_n])/float(optimal_out_size),
+                        1 - (abs(optimal_out_size - len(n2content[_n])) / float(max(optimal_out_size, len(n2content[_n])))),
+                        1 - (n2targetdist[_n]/max_dist))
+    
+    def sort_outgroups(x,y):
+        return cmp(min(score(x)), min(score(y)))
+        
+    del n2targetdist[target.get_tree_root()]
+    max_dist = max(n2targetdist.values())
+
+    valid_nodes = [n for n in n2targetdist if not n2content[n] & n2content[target]]
+    valid_nodes.sort(sort_outgroups, reverse=True)
+    best_outgroup = valid_nodes[0]
+
+    #for n in valid_nodes:
+    #    print n, score(n)
+    
+    seqs = [n.name for n in n2content[target]]
+    outs = [n.name for n in n2content[best_outgroup]]
+    
+    log.log(28, "Selected outgroup size: %s support: %s ", len(outs), score(best_outgroup))
+
+    if DEBUG():
+        root = target.get_tree_root()
+        for _seq in outs:
+            tar =  root & _seq
+            tar.img_style["fgcolor"]="green"
+            tar.img_style["size"] = 12
+            tar.img_style["shape"] = "circle"
+        target.img_style["bgcolor"] = "lightblue"
+        NPR_TREE_STYLE.title.clear()
+        NPR_TREE_STYLE.title.add_face( faces.TextFace("MainTree:"
+            " Outgroup selection is mark in green. Red=optimized nodes ",
             fgcolor="blue"), 0)
         root.show(tree_style=NPR_TREE_STYLE)
         for _n in root.traverse():
