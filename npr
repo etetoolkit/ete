@@ -202,17 +202,14 @@ def main(args):
 
     # Create dir structure
     gallery_dir = os.path.join(base_dir, "gallery")
-    snapshots_dir = os.path.join(base_dir, "tree_snapshots",
-                                 time.strftime("%a_%b_%y_%H:%M:%S"))
     sge_dir = os.path.join(base_dir, "sge_jobs")
     tmp_dir = os.path.join(base_dir, "tmp")
     tasks_dir = os.path.join(base_dir, "tasks")
     GLOBALS["sge_dir"] = sge_dir
     GLOBALS["tmp"] = tmp_dir
     GLOBALS["gallery_dir"] = gallery_dir
-    GLOBALS["snapshots_dir"] = snapshots_dir
     GLOBALS["tasks_dir"] = tasks_dir
-    for dirname in [gallery_dir, snapshots_dir, sge_dir, tmp_dir, tasks_dir]:
+    for dirname in [gallery_dir, sge_dir, tmp_dir, tasks_dir]:
         try:
             os.makedirs(dirname)
         except OSError:
@@ -501,7 +498,6 @@ if __name__ == "__main__":
     
 
     GLOBALS["basedir"] = os.path.abspath(args.outdir)
-    GLOBALS["iters_file"] = os.path.join(GLOBALS["basedir"], "tree_snapshots", "last_run_iters.txt")
     GLOBALS["runid"] = generate_runid()
     if not os.path.exists(GLOBALS["basedir"]):
         os.makedirs(GLOBALS["basedir"])
