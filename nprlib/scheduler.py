@@ -209,6 +209,7 @@ def schedule(config, processer, schedule_time, execution, retry, debug):
 
     for n in main_tree.iter_leaves():
         n.name = n.realname
+    log.log(28, "writing final_tree")
     main_tree.write(outfile=final_tree_file)
    
     log.log(28, "Done")

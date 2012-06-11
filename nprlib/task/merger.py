@@ -159,9 +159,24 @@ class TreeMerger(Task):
                 raise TaskError("Outgroup was split")
                
         else:
-            log.log(28, "Rooting to midpoint.")
+            def sort_outgroups(x,y):
+                v = cmp(x.support, y.support)
+                if v == 0:
+                    v = cmp(n2targetdist[x], n2targetdist[y])
+                if v == 0:
+                    v = cmp(len(ttree_content[x]), len(ttree_content[y]))
+                return v
+            
+            log.log(28, "Rooting close to midpoint.")
             outgroup = ttree.get_midpoint_outgroup()
-            ttree.set_outgroup(outgroup)
+            n2rootdist, n2targetdist = distance_matrix(outgroup, leaf_only=False,
+                                                       topology_only=True)
+            
+            valid_nodes = n2targetdist.keys()
+            valid_nodes.sort(sort_outgroups)
+            best_outgroup = valid_nodes[0]
+                                   
+            ttree.set_outgroup(best_outgroup)
             self.main_tree = ttree
             orig_target = ttree
             if DEBUG():
@@ -223,6 +238,11 @@ def distance_matrix(target, leaf_only=False, topology_only=False):
     
         
 def select_outgroups(target, n2content, options):
+    """Given a set of target sequences, find the best set of out
+    sequences to use. Several ways can be selected to find out
+    sequences:
+    """
+    
     name2dist = {"min": numpy.min, "max": numpy.max,
                  "mean":numpy.mean, "median":numpy.median}
     
@@ -301,5 +321,4 @@ def select_outgroups(target, n2content, options):
             _n.img_style = None
         
     return set(seqs), set(outs)
-
-        
+      

@@ -197,11 +197,13 @@ def report(runid, start=-40, max_records=40, filter_status=None):
 
     execute(cmd)
     report = cursor.fetchall()
-    end = start+max_records if start >= 0 else start+max_records
-    if end == 0:
-        end = -1
+    end = start + max_records
     print start, end
-    report = report[start:end]
+    if end == 0:
+        report = report[start:]
+    else:
+        report = report[start:end]
+
     return report
 
 def add_seq_name(seqid, name):

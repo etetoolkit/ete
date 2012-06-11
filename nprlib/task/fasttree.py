@@ -45,10 +45,19 @@ class FastTree(TreeTask):
         if self.constrain_tree:
             t = PhyloTree(self.constrain_tree)
             cons_alg = ""
-            for x in t.children[0].get_leaf_names():
-                cons_alg += ">%s\n1\n" %x
-            for x in t.children[1].get_leaf_names():
-                cons_alg += ">%s\n0\n" %x
+
+            if len(t.children) > 2:
+                for ch in t.children:
+                    if not ch.is_leaf():
+                        for x in ch.get_leaf_names():
+                            cons_alg += ">%s\n1\n" %x
+                    else:
+                        cons_alg += ">%s\n0\n" %ch.name
+            else:
+                for x in t.children[0].get_leaf_names():
+                    cons_alg += ">%s\n1\n" %x
+                for x in t.children[1].get_leaf_names():
+                    cons_alg += ">%s\n0\n" %x
             
             C = open(os.path.join(self.jobs[0].jobdir, "constraint_alg.fasta"), "w")
             C.write(cons_alg)

@@ -178,8 +178,11 @@ def process_task(task, main_tree, conf, nodeid2info):
     constrain_tree = None
     constrain_tree_path = None
     if out_seqs and len(out_seqs) > 1:
-        constrain_tree = "((%s), (%s));" %(','.join(out_seqs), 
+        #constrain_tree = "((%s), (%s));" %(','.join(out_seqs), 
+        #                                   ','.join(target_seqs))
+        constrain_tree = "(%s, (%s));" %(','.join(out_seqs), 
                                            ','.join(target_seqs))
+        
         constrain_tree_path = os.path.join(task.taskdir, "constrain.nw")
                                            
     # Loads application handlers according to current task size
