@@ -962,7 +962,10 @@ def init_node_dimensions(node, item, faceblock, img):
 
     # Calculate total node size
     total_w = sum([w0, w1, w2, w3, w4]) # do not count aligned faces
-    max_h = max(item.heights[:4] + [min_separation])
+    if img.mode == "c":
+        max_h = max(item.heights[:4] + [min_separation])
+    elif img.mode == "r":
+        max_h = max(item.heights + [min_separation])
    
     # correct possible unbalanced block in branch faces
     h_imbalance = abs(faceblock["branch-top"].h - faceblock["branch-bottom"].h)
