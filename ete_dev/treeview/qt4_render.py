@@ -782,6 +782,7 @@ def render_aligned_faces(img, mainRect, parent, n2i, n2f):
     elif img.mode == "c" and not img.allow_face_overlap:
         angle = n2i[maxh_node].angle_span
         rad, off = crender.get_min_radius(1, maxh, angle, tree_end_x)
+        print "MIN RAD", rad
         extra_width += rad - tree_end_x
         tree_end_x = rad
 
@@ -919,18 +920,13 @@ def init_node_dimensions(node, item, faceblock, img):
     """
     
     min_separation = img.min_leaf_separation
-    aligned_height = 0
-    aligned_width = 0
     if _leaf(node):
-        if img.mode == "r":
-            aligned_height = faceblock["aligned"].h
-            aligned_width = faceblock["aligned"].w
-        elif img.mode == "c":
-            # aligned faces in circular mode are adjusted afterwords. The
-            # min radius of the largest aligned faces will be calculated.
-            aligned_height = faceblock["aligned"].h
-            aligned_width = faceblock["aligned"].w
-            pass
+        aligned_height = faceblock["aligned"].h
+        aligned_width = faceblock["aligned"].w
+    else:
+        aligned_height = 0
+        aligned_width = 0
+        
     ndist =  1.0 if img.force_topology else node.dist
     item.branch_length = (ndist * img._scale) if img._scale else 0
     ## Calculate dimensions of the different node regions
@@ -966,7 +962,8 @@ def init_node_dimensions(node, item, faceblock, img):
 
     # Calculate total node size
     total_w = sum([w0, w1, w2, w3, w4]) # do not count aligned faces
-    max_h = max(item.heights + [min_separation])
+    max_h = max(item.heights[:4] + [min_separation])
+   
     # correct possible unbalanced block in branch faces
     h_imbalance = abs(faceblock["branch-top"].h - faceblock["branch-bottom"].h)
     if h_imbalance + h1 > max_h:
