@@ -92,6 +92,5 @@ t2.hz_align = 1
 # visible in "rect" mode.
 
 I.mode =  "r" #(rectangular)
-I.tree_width= 50
 t.show(mylayout, tree_style=I)
 
