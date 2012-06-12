@@ -11,6 +11,7 @@ from main import TreeStyle, save
 from qt4_render import _TreeScene, render, get_tree_img_map
 from templates import _DEFAULT_STYLE, apply_template
 
+
 __all__ = ["show_tree", "render_tree"]
 
 _QApp = None

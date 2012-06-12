@@ -1018,10 +1018,10 @@ class TreeNode(object):
                 current = current.up
         return current
 
-    def populate(self, size, names_library=None, reuse_names=False, 
-                 random_branches=False): 
-        """
-        Generates a random topology by populating current node.
+    def populate(self, size, names_library=None, reuse_names=False,
+                 random_branches=False, branch_range=(0,1),
+                 support_range=(0,1)): 
+        """Generates a random topology by populating current node.
 
         :argument None names_library: If provided, names library
           (list, set, dict, etc.) will be used to name nodes.
@@ -1030,8 +1030,16 @@ class TreeNode(object):
           necessarily unique, which makes the process a bit more
           efficient.
 
-        :argument False random: If True, branch distances and support
+        :argument False random_branches: If True, branch distances and support
           values will be randomized.
+        
+        :argument (0,1) branch_range: If random_branches is True, this
+        range of values will be used to generate random distances.
+
+        :argument (0,1) support_range: If random_branches is True,
+        this range of values will be used to generate random branch
+        support values.
+
         """
         NewNode = self.__class__
 
@@ -1057,10 +1065,10 @@ class TreeNode(object):
             c2 = p.add_child()
             next.extend([c1, c2])
             if random_branches:
-                c1.dist = random.random()
-                c2.dist = random.random()
-                c1.support = random.random()
-                c2.support = random.random()
+                c1.dist = random.uniform(*branch_range)
+                c2.dist = random.uniform(*branch_range)
+                c1.support = random.uniform(*branch_range)
+                c2.support = random.uniform(*branch_range)
 
         # next contains leaf nodes
         charset =  "abcdefghijklmnopqrstuvwxyz"

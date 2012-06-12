@@ -7,7 +7,7 @@ from PyQt4.QtCore import QThread, SIGNAL
 try:
     from PyQt4 import QtOpenGL
     USE_GL = True
-    #USE_GL = False # Temporarily disabled
+    USE_GL = False # Temporarily disabled
 except ImportError:
     USE_GL = False
 
@@ -115,6 +115,7 @@ class _GUI(QtGui.QMainWindow):
         # its variables
         self.searchDialog._conf = _search_dialog.Ui_Dialog()
         self.searchDialog._conf.setupUi(self.searchDialog)
+
         self.scene.setItemIndexMethod(QtGui.QGraphicsScene.NoIndex)
 
         # Shows the whole tree by default
@@ -159,7 +160,8 @@ class _GUI(QtGui.QMainWindow):
 
     @QtCore.pyqtSignature("")
     def on_actionZoomInY_triggered(self):
-        self.scene.img.branch_vertical_margin += 5 
+        self.scene.img.branch_vertical_margin += 5
+        self.scene.img._scale = None
         self.redraw()
 
     @QtCore.pyqtSignature("")
@@ -234,24 +236,28 @@ class _GUI(QtGui.QMainWindow):
     @QtCore.pyqtSignature("")
     def on_actionBranchLength_triggered(self):
         self.scene.img.show_branch_length ^= True
+        self.scene.img._scale = None
         self.redraw()
         self.view.centerOn(0,0)
 
     @QtCore.pyqtSignature("")
     def on_actionBranchSupport_triggered(self):
         self.scene.img.show_branch_support ^= True
+        self.scene.img._scale = None
         self.redraw()
         self.view.centerOn(0,0)
 
     @QtCore.pyqtSignature("")
     def on_actionLeafName_triggered(self):
         self.scene.img.show_leaf_name ^= True
+        self.scene.img._scale = None
         self.redraw()
         self.view.centerOn(0,0)
 
     @QtCore.pyqtSignature("")
     def on_actionForceTopology_triggered(self):
         self.scene.img.force_topology ^= True
+        self.scene.img._scale = None
         self.redraw()
         self.view.centerOn(0,0)
 

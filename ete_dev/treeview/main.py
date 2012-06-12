@@ -9,6 +9,16 @@ from PyQt4 import QtCore
 
 from svg_colors import SVG_COLORS, COLOR_SCHEMES
 
+import time
+def tracktime(f):
+    def a_wrapper_accepting_arguments(*args, **kargs):
+        t1 = time.time()
+        r = f(*args, **kargs)
+        print "                         -> TIME:", f.func_name, time.time() - t1
+        return r
+    return a_wrapper_accepting_arguments
+
+
 _LINE_TYPE_CHECKER = lambda x: x in (0,1,2)
 _SIZE_CHECKER = lambda x: isinstance(x, int)
 _COLOR_MATCH = re.compile("^#[A-Fa-f\d]{6}$")
@@ -225,18 +235,24 @@ class TreeStyle(object):
     
     :var 0 rotation: Tree figure will be rotate X degrees (clock-wise rotation)
 
-    :var None scale: Scale used to convert branch lengths to
-      pixels. If 'None', the scale will be calculated using the
-      "tree_width" attribute (read bellow)
+    :var None scale: Scale used to draw branch lengths. If None, it will 
+      be automatically selected. 
 
+    :var "mid" optimal_scale_level: Two levels of automatic branch
+      scale detection are available: "mid" and "full". In **"full"**
+      mode, branch scale will me adjusted to fully avoid dotted lines
+      in the tree image. In other words, scale will be increased until
+      the extra space necessary to allocated all branch-top/bottom
+      faces and branch-right faces (in circular mode) is covered by
+      legacy branches. Note, however, that the optimal scale in trees
+      with very unbalanced branch lengths might be huge. If **"mid"**
+      mode is selected, optimal scale will only satisfy the space
+      necessary to allocate branch-right faces in circular trees. Some
+      dotted lines (artificial offsets) will still appear when
+      branch-top/bottom faces are larger than branch length.  Both
+      options apply only when "scale" is set to None (automatic).
 
-    :var 200 tree_width: Total width, in pixels, that tree
-      branches are allowed to used. This is, the distance in
-      pixels from root to the most distant leaf. If set, this
-      value will be used to automatically calculate the branch
-      scale.  In practice, increasing this number will cause an
-      X-zoom in.
-
+    
     :var 1 min_leaf_separation: Min separation, in pixels, between
       two adjacent branches
 
@@ -367,17 +383,12 @@ class TreeStyle(object):
         self.rotation = 0 
        
         # Scale used to convert branch lengths to pixels. If 'None',
-        # the scale will be calculated using the "tree_width"
-        # attribute (read bellow)
+        # the scale will be automatically calculated.
         self.scale = None
-
-        # Total width, in pixels, that tree branches are allowed to
-        # used. This is, the distance in pixels from root to the most
-        # distant leaf. If set, this value will be used to
-        # automatically calculate the branch scale.  In practice,
-        # increasing this number will cause an X-zoom in.
-        self.tree_width = None
-
+        
+        # mid, or full
+        self.optimal_scale_level = "mid" 
+        
         # Min separation, in pixels, between to adjacent branches
         self.min_leaf_separation = 1 
 
@@ -467,6 +478,7 @@ class TreeStyle(object):
         
         self.__closed__ = 1
 
+
     def __setattr__(self, attr, val):
         if hasattr(self, attr) or not getattr(self, "__closed__", 0):
             if TREE_STYLE_CHECKER.get(attr, lambda x: True)(val):
@@ -532,7 +544,7 @@ def add_face_to_node(face, node, column, aligned=False, position="branch-right")
     if getattr(node, "_temp_faces", None):
         getattr(node._temp_faces, position).add_face(face, column)
     else:
-        raise Exception("This function can only be called within a layout function. Use node.add_face() instead")
+         raise Exception("This function can only be called within a layout function. Use node.add_face() instead")
 
 def random_color(h=None, l=None, s=None):
     def rgb2hex(rgb):
@@ -652,6 +664,7 @@ def save(scene, imgName, w=None, h=None, dpi=300,\
         pp.setRenderHint(QPainter.Antialiasing)
         pp.setRenderHint(QPainter.TextAntialiasing)
         pp.setRenderHint(QPainter.SmoothPixmapTransform)
+
         scene.render(pp, targetRect, scene.sceneRect(), ratio_mode)
         pp.end()
         ii.save(imgName)
