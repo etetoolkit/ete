@@ -241,7 +241,7 @@ def render(root_node, img, hide_root=False):
                 img._scale = max([(i.widths[1]/n.dist) for n,i in n2i.iteritems() if n.dist])
             else:
                 #fixed_widths = ([i.nodeRegion.width() for n,i in n2i.iteritems()])
-                farthest, dist = root_node.get_farthest_leaf()
+                farthest, dist = root_node.get_farthest_leaf(topology_only=img.force_topology)
                 img._scale =  400.0 / dist
             update_branch_lengths(root_node, n2i, n2f, img)
         else:
@@ -929,7 +929,8 @@ def init_node_dimensions(node, item, faceblock, img):
             # aligned faces in circular mode are adjusted afterwords. The
             # min radius of the largest aligned faces will be calculated.
             pass
-    item.branch_length = (node.dist * img._scale) if img._scale else 0
+    ndist =  1.0 if img.force_topology else node.dist
+    item.branch_length = (ndist * img._scale) if img._scale else 0
     ## Calculate dimensions of the different node regions
     ##
     ##
@@ -976,7 +977,8 @@ def init_node_dimensions(node, item, faceblock, img):
 def update_branch_lengths(tree, n2i, n2f, img):
     for node in tree.traverse("postorder"):
         item = n2i[node]
-        item.branch_length = node.dist * img._scale
+        ndist = 1.0 if img.force_topology else node.dist
+        item.branch_length = ndist * img._scale
         w0 = 0
         
         if item.branch_length > item.widths[1]:

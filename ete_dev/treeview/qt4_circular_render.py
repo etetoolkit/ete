@@ -274,7 +274,7 @@ def calculate_optimal_scale(root_node, n2i, rot_step, img):
     # decir, sin tener en cuenta branch lengths.
     for node in root_node.traverse('preorder'):
         visited_nodes.append(node)
-        
+        ndist = node.dist if not img.force_topology else 1.0
         item = n2i[node]
         # Uses size of all node parts, except branch length
         w = sum(item.widths[1:4])
@@ -285,7 +285,7 @@ def calculate_optimal_scale(root_node, n2i, rot_step, img):
             
         r, xoffset = get_min_radius(w, h, angle, parent_radius)
         n2minradius[node] = r 
-        n2sumdist[node] = n2sumdist.get(node.up, 0) + node.dist 
+        n2sumdist[node] = n2sumdist.get(node.up, 0) + ndist 
         # versed sine: the little extra line needed to complete the
         # radius.
         #vs = r - (parent_radius + xoffset + w)
@@ -294,8 +294,9 @@ def calculate_optimal_scale(root_node, n2i, rot_step, img):
     best_scale = None
     for node in visited_nodes:
         item = n2i[node]
+        ndist = node.dist if not img.force_topology else 1.0
         if best_scale is None:
-            best_scale = (n2minradius[node] - n2sumwidth[node]) / node.dist if node.dist else 0.0
+            best_scale = (n2minradius[node] - n2sumwidth[node]) / ndist if ndist else 0.0
         else:
             #Whats the expected radius of this node?
             current_rad = n2sumdist[node] * best_scale + n2sumwidth[node]
@@ -307,15 +308,15 @@ def calculate_optimal_scale(root_node, n2i, rot_step, img):
                 # taking into account the versed sine of each parent
                 # node, the equation is actually very simple.
                 best_scale = (n2minradius[node] - n2sumwidth[node]) / n2sumdist[node]
-                print "OOps adjusting scale", node.dist, best_scale
+                print "OOps adjusting scale", ndist, best_scale
 
             # If the width of branch top/bottom faces is not covered,
             # we can also increase the scale to adjust it. This may
             # produce huge scales, so let's keep it optional
             if img.optimal_scale_level == "full" and \
-               item.widths[1] > node.dist * best_scale:
-                best_scale = item.widths[1] / node.dist
-                print "OOps adjusting scale because  branch-faces", node.dist, best_scale, item.widths[1]
+               item.widths[1] > ndist * best_scale:
+                best_scale = item.widths[1] / ndist
+                print "OOps adjusting scale because  branch-faces", ndist, best_scale, item.widths[1]
                 
     #for node in visited_nodes:
     #    item = n2i[node]
