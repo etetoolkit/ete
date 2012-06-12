@@ -928,6 +928,8 @@ def init_node_dimensions(node, item, faceblock, img):
         elif img.mode == "c":
             # aligned faces in circular mode are adjusted afterwords. The
             # min radius of the largest aligned faces will be calculated.
+            aligned_height = faceblock["aligned"].h
+            aligned_width = faceblock["aligned"].w
             pass
     ndist =  1.0 if img.force_topology else node.dist
     item.branch_length = (ndist * img._scale) if img._scale else 0

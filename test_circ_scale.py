@@ -26,7 +26,7 @@ ts.show_leaf_name = False
 ts.show_branch_length = True
 ts.draw_guiding_lines = False
 ts.optimal_scale_level = "mid"
-ts.scale = 0.0
+ts.scale = None
 t = Tree()
 t.populate(50, random_branches=True, branch_range=(0, 0.7))
 t.dist = 0

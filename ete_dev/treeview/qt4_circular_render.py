@@ -156,7 +156,7 @@ def render_circular(root_node, n2i, rot_step):
     for node in root_node.traverse('preorder'):
         item = n2i[node]
         #w = item.nodeRegion.width()
-        w = sum(item.widths[1:4])
+        w = sum(item.widths[1:5])
         h = item.effective_height
 
         parent_radius = n2i[node.up].radius if node.up else 0 
@@ -277,7 +277,7 @@ def calculate_optimal_scale(root_node, n2i, rot_step, img):
         ndist = node.dist if not img.force_topology else 1.0
         item = n2i[node]
         # Uses size of all node parts, except branch length
-        w = sum(item.widths[1:4])
+        w = sum(item.widths[1:5])
         h = item.effective_height
 
         parent_radius = n2minradius.get(node.up, 0)
@@ -289,7 +289,7 @@ def calculate_optimal_scale(root_node, n2i, rot_step, img):
         # versed sine: the little extra line needed to complete the
         # radius.
         #vs = r - (parent_radius + xoffset + w)
-        n2sumwidth[node] = n2sumwidth.get(node.up, 0) + sum(item.widths[2:4]) #+ vs
+        n2sumwidth[node] = n2sumwidth.get(node.up, 0) + sum(item.widths[2:5]) #+ vs
         
     best_scale = None
     for node in visited_nodes:
