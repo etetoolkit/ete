@@ -184,12 +184,13 @@ def main(args):
     # setup portable apps
     for k,v in config["app"].iteritems():
         if v == "built-in":
+            cores = str(config.get(k, {}).get("_max_cores", 1))
             if args.sge_execute:
                 _apps_path = os.path.realpath(config["sge"]["remote_npr_path"])
-                cmd = apps.get_call(k, _apps_path, base_dir) 
+                cmd = apps.get_call(k, _apps_path, base_dir, cores) 
                 config["app"][k] = cmd
             else:
-                cmd = apps.get_call(k, APPSPATH, base_dir) 
+                cmd = apps.get_call(k, APPSPATH, base_dir, cores) 
                 config["app"][k] = cmd
     #log.debug('\n'.join(["%s\t%s" %(i,j) for i,j in config["app"].items()]))
     if not args.nochecks:
