@@ -179,8 +179,12 @@ class TreeMerger(Task):
             optimal_out_size = self.args["_min_size"]
             log.log(28, "Rooting close to midpoint.")
             outgroup = ttree.get_midpoint_outgroup()
-            n2rootdist, n2targetdist = distance_matrix(outgroup, leaf_only=False,
-                                                       topology_only=False)
+            # n2rootdist, n2targetdist = distance_matrix(outgroup, leaf_only=False,
+            #                                            topology_only=False)
+            n2targetdist = distance_matrix_new(outgroup, leaf_only=False,
+                                               topology_only=False)
+
+            
             #del n2targetdist[ttree]
             valid_nodes = [n for n in ttree_content.keys() if n is not ttree]
             valid_nodes.sort(sort_outgroups)
@@ -188,7 +192,7 @@ class TreeMerger(Task):
             #    print n, n.support, len(ttree_content[n]), n2targetdist[n]
             
             best_outgroup = valid_nodes[0]
-                                   
+            log.log(28, "Rooting to node of size %s", len(ttree_content[best_outgroup]))                       
             ttree.set_outgroup(best_outgroup)
             self.main_tree = ttree
             orig_target = ttree
@@ -250,9 +254,38 @@ def distance_matrix(target, leaf_only=False, topology_only=False):
             #if ancestor != target:
             n2tdist[n] = n2rdist[target] + n2rdist[n] - n2rdist[ancestor]
     return n2rdist, n2tdist
+
+
+def distance_matrix_new(target, leaf_only=False, topology_only=False):
+
+    
+    t = target.get_tree_root()
+    real_outgroup = t.children[0]
+    t.set_outgroup(target)
+        
+    n2dist = {target:0}
+    for n in target.get_descendants("preorder"):
+        n2dist[n] = n2dist[n.up] + n.dist
+
+    sister = target.get_sisters()[0]
+    n2dist[sister] = sister.dist + target.dist
+    for n in sister.get_descendants("preorder"):
+        n2dist[n] = n2dist[n.up] + n.dist
+
+    t.set_outgroup(real_outgroup)
+
+    ## Slow Test. 
+    # for n in t.get_descendants():
+    #     if float(str(target.get_distance(n))) != float(str(n2dist[n])):
+    #         print n
+    #         print target.get_distance(n), n2dist[n]
+    #         raw_input("ERROR")
+
+    
+    return n2dist
     
         
-def select_outgroups(target, n2content, options):
+def select_outgroups_old(target, n2content, options):
     """Given a set of target sequences, find the best set of out
     sequences to use. Several ways can be selected to find out
     sequences:
@@ -357,9 +390,19 @@ def select_outgroups(target, n2content, options):
     if not optimal_out_size:
         raise ValueError("You are trying to set 0 outgroups!")
     
-    n2rootdist, n2targetdist = distance_matrix(target, leaf_only=False,
+    n2targetdist = distance_matrix_new(target, leaf_only=False,
                                                topology_only=False)
 
+    #kk, test = distance_matrix(target, leaf_only=False,
+    #                       topology_only=False)
+
+    #for x in test:
+    #    if test[x] != n2targetdist[x]:
+    #        print x
+    #        print test[x],  n2targetdist[x]
+    #        print x.get_distance(target)
+    #        raw_input("ERROR!")
+        
     score = lambda _n: (_n.support,
                         #len(n2content[_n])/float(optimal_out_size),
                         1 - (abs(optimal_out_size - len(n2content[_n])) / float(max(optimal_out_size, len(n2content[_n])))),
@@ -368,7 +411,7 @@ def select_outgroups(target, n2content, options):
     def sort_outgroups(x,y):
         return cmp(min(score(x)), min(score(y)))
         
-    del n2targetdist[target.get_tree_root()]
+    #del n2targetdist[target.get_tree_root()]
     max_dist = max(n2targetdist.values())
 
     valid_nodes = [n for n in n2targetdist if not n2content[n] & n2content[target]]

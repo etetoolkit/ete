@@ -338,12 +338,16 @@ def process_task(task, main_tree, conf, nodeid2info):
             
             _isleaf = False
             if _n is not task.task_tree:
-                if not hasattr(_n, "seqs_mean_ident"):
-                    log.log(20, "Calculating node sequence stats...")
-                    mx, mn, avg, std = get_seqs_identity(ALG, [__n.name for __n in n2content[_n]])
-                    _n.add_features(seqs_max_ident=mx, seqs_min_ident=mn,
-                                   seqs_mean_ident=avg, seqs_std_ident=std)
-                
+                if conf["tree_splitter"]["_max_seq_identity"] < 1.0: 
+                    if not hasattr(_n, "seqs_mean_ident"):
+                        log.log(20, "Calculating node sequence stats...")
+                        mx, mn, avg, std = get_seqs_identity(ALG, [__n.name for __n in n2content[_n]])
+                        _n.add_features(seqs_max_ident=mx, seqs_min_ident=mn,
+                                       seqs_mean_ident=avg, seqs_std_ident=std)
+                else:
+                    _n.add_features(seqs_max_ident=None, seqs_min_ident=None,
+                                    seqs_mean_ident=None, seqs_std_ident=None)
+
                 if _n.seqs_mean_ident >= conf["tree_splitter"]["_max_seq_identity"]:
                     # If sequences are too similar, do not optimize
                     # this node even if it is lowly supported
@@ -381,6 +385,7 @@ def process_task(task, main_tree, conf, nodeid2info):
             
         log.log(20, "Finding next NPR nodes...")        
         for node in task.task_tree.iter_leaves(is_leaf_fn=processable_node):
+            #print len(n2content[node])
             log.log(20, "Found processable node. Supports: %0.2f (children=%s)",
                     node.support, ','.join(["%0.2f" % ch.support for ch in node.children]))
             if skip_outgroups:

@@ -18,7 +18,7 @@ builtin_apps = {
     'jmodeltest'     : "JMODELTEST_HOME=%BASE%/jmodeltest2; cd $JMODELTEST_HOME; java -jar $JMODELTEST_HOME/jModelTest.jar",
     'dialigntx'      : "%BIN%/dialign-tx %BASE%/DIALIGN-TX_1.0.2/conf",
     'usearch'        : "%BIN%/usearch",
-    'fasttree'       : "%BIN%/FastTree",
+    'fasttree'       : "export OMP_NUM_THREADS=%CORES%; %BIN%/FastTree",   
     'statal'         : "%BIN%/statal",
     }
 
@@ -40,18 +40,20 @@ app2check = {
     }
 
 
-def get_call(appname, apps_path, exec_path):
+def get_call(appname, apps_path, exec_path, cores):
     try:
         cmd = builtin_apps[appname]
     except KeyError:
         return None
+       
     bin_path = os.path.join(apps_path, "bin")
     tmp_path = os.path.join(exec_path, "tmp")
     apps_base = apps_path.rstrip("/x86-64").rstrip("/x86-32")
     cmd = re.sub("%BIN%", bin_path, cmd)
     cmd = re.sub("%BASE%", apps_base, cmd)
     cmd = re.sub("%TMP%", tmp_path, cmd)
-    cmd = "export NPR_APP_PATH=%s; %s" %(apps_path, cmd) 
+    cmd = re.sub("%CORES%", cores, cmd)
+    cmd = "export NPR_APP_PATH=%s; %s" %(apps_path, cmd)
     return cmd
   
 def test_apps(apps):

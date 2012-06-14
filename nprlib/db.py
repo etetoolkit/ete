@@ -1,3 +1,4 @@
+import time
 from collections import defaultdict
 import sqlite3
 import cPickle
@@ -185,11 +186,11 @@ def get_runid_nodes(runid):
     
     
 def report(runid, start=-40, max_records=40, filter_status=None):
-    filters = ""
+    filters = "WHERE runid='%s' " %runid
     if filter_status:
         st = ','.join(map(lambda x: "'%s'"%x, list(filter_status)))
         if st:
-            filters +=  "WHERE status NOT IN (%s)" %st
+            filters +=  "AND status NOT IN (%s)" %st
     
     cmd = ('SELECT task.taskid, task.nodeid, task.parentid, node.cladeid, task.status, type, subtype, name,'
            ' target_size, out_size, tm_end-tm_start, tm_start, tm_end FROM task '
