@@ -227,7 +227,7 @@ def init_circular_leaf_item(node, n2i, n2f, last_rotation, rot_step):
 
 def init_circular_node_item(node, n2i, n2f):
     item = n2i[node]
-    if len(node.children) >1: 
+    if len(node.children) > 1: 
         first_c = n2i[node.children[0]]
         last_c = n2i[node.children[-1]]
         rot_start = first_c.rotation
@@ -241,7 +241,8 @@ def init_circular_node_item(node, n2i, n2f):
         rot_start = child.full_start
         rot_end = child.full_end
         item.angle_span = child.angle_span
-        item.rotation = rot_start + ((rot_end - rot_start) / 2)
+        item.rotation = child.rotation
+        #item.rotation = rot_start + ((rot_end - rot_start) / 2)
         item.full_start = child.full_start
         item.full_end = child.full_end
     
