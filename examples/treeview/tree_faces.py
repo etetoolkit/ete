@@ -1,8 +1,10 @@
 import random
 from ete_dev import Tree, TreeStyle, NodeStyle, faces, AttrFace, TreeFace
 
+# Tree Style used to render small trees used as leaf faces
 small_ts = TreeStyle()
 small_ts.show_leaf_name = True
+small_ts.scale = 10
 
 def layout(node):
     if node.is_leaf():
