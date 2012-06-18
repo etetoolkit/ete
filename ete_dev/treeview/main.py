@@ -214,87 +214,91 @@ class TreeStyle(object):
 
     Contains all the general image properties used to render a tree
 
-    **TREE SHAPE AND IMAGE DESIGN**
-        
-    :var "r" mode: Valid modes are 'c'(ircular)  or 'r'(ectangular).
-
-    :var "False" allow_face_overlap: This option applies only for
-      circular mode. It prevents aligned faces to overlap each other
-      by increasing the radius of the circular tree. In very large
-      trees, this may produce huge image representations. By setting
-      this option to *True*, you will obtain smaller images in which
-      aligned faces (typically node names) may overlap. 
+    **-- About tree design --**
 
     :var None layout_fn: Layout function used to dynamically control
       the aspect of nodes. Valid values are: None or a pointer to a method,
       function, etc.
-                   
+    
+    **-- About tree shape --**
+        
+    :var "r" mode: Valid modes are 'c'(ircular)  or 'r'(ectangular).
+
     :var 0 orientation: If 0, tree is drawn from left-to-right. If
        1, tree is drawn from right-to-left. This property only makes
        sense when "r" mode is used.
     
-    :var 0 rotation: Tree figure will be rotate X degrees (clock-wise rotation)
-
-    :var None scale: Scale used to draw branch lengths. If None, it will 
-      be automatically selected. 
-
-    :var "mid" optimal_scale_level: Two levels of automatic branch
-      scale detection are available: "mid" and "full". In **"full"**
-      mode, branch scale will me adjusted to fully avoid dotted lines
-      in the tree image. In other words, scale will be increased until
-      the extra space necessary to allocated all branch-top/bottom
-      faces and branch-right faces (in circular mode) is covered by
-      legacy branches. Note, however, that the optimal scale in trees
-      with very unbalanced branch lengths might be huge. If **"mid"**
-      mode is selected, optimal scale will only satisfy the space
-      necessary to allocate branch-right faces in circular trees. Some
-      dotted lines (artificial offsets) will still appear when
-      branch-top/bottom faces are larger than branch length.  Both
-      options apply only when "scale" is set to None (automatic).
-
+    :var 0 rotation: Tree figure will be rotate X degrees (clock-wise
+       rotation).
     
     :var 1 min_leaf_separation: Min separation, in pixels, between
       two adjacent branches
 
-    :var 0 branch_vertical_margin: Leaf branch separation margin,
-      in pixels. This will add a separation of X pixels between
-      adjacent leaf branches. In practice this produces a Y-zoom
-      in.
+    :var 0 branch_vertical_margin: Leaf branch separation margin, in
+      pixels. This will add a separation of X pixels between adjacent
+      leaf branches. In practice, increasing this value work as
+      increasing Y axis scale.
 
-    :var 0 arc_start: When circular trees are drawn, this defines
-      the starting angle (in degrees) from which leaves are
-      distributed (clock-wise) around the total arc. 0 = 3 o'clock
+    :var 0 arc_start: When circular trees are drawn, this defines the
+      starting angle (in degrees) from which leaves are distributed
+      (clock-wise) around the total arc span (0 = 3 o'clock).
 
     :var 359 arc_span: Total arc used to draw circular trees (in
-      degrees)
+      degrees).
 
-    :var 0 margin_left: Left tree image margin, in pixels
-    :var 0 margin_right: Right tree image margin, in pixels
-    :var 0 margin_top: Top tree image margin, in pixels
-    :var 0 margin_bottom: Bottom tree image margin, in pixels
+    :var 0 margin_left: Left tree image margin, in pixels.
+    :var 0 margin_right: Right tree image margin, in pixels.
+    :var 0 margin_top: Top tree image margin, in pixels.
+    :var 0 margin_bottom: Bottom tree image margin, in pixels.
 
-    **TREE BRANCHES**
+    **-- About Tree branches --**
 
+    :var None scale: Scale used to draw branch lengths. If None, it will 
+      be automatically calculated. 
+
+    :var "mid" optimal_scale_level: Two levels of automatic branch
+      scale detection are available: :attr:`"mid"` and
+      :attr:`"full"`. In :attr:`full` mode, branch scale will me
+      adjusted to fully avoid dotted lines in the tree image. In other
+      words, scale will be increased until the extra space necessary
+      to allocated all branch-top/bottom faces and branch-right faces
+      (in circular mode) is covered by legacy branches. Note, however,
+      that the optimal scale in trees with very unbalanced branch
+      lengths might be huge. If :attr:`"mid"` mode is selected,
+      optimal scale will only satisfy the space necessary to allocate
+      branch-right faces in circular trees. Some dotted lines
+      (artificial branch offsets) will still appear when
+      branch-top/bottom faces are larger than branch length. Note that
+      both options apply only when :attr:`scale` is set to None
+      (automatic).
+    
     :var True complete_branch_lines_when_necessary: True or False.
       When top-branch and bottom-branch faces are larger than
       branch length, branch line can be completed. Also, when
       circular trees are drawn
-    :var 2 extra_branch_line_type:  0 solid, 1 dashed, 2 dotted
+    :var 2 extra_branch_line_type:  0=solid, 1=dashed, 2=dotted
     :var "gray" extra_branch_line_color": RGB code or name in
       :data:`SVG_COLORS`
     
     :var False force_topology: Convert tree branches to a fixed length, thus allowing to
       observe the topology of tight nodes
 
-
     :var True draw_guiding_lines: Draw guidelines from leaf nodes
       to aligned faces
     
-    :var 2 guiding_lines_type: 0 solid, 1 dashed, 2 dotted
+    :var 2 guiding_lines_type: 0=solid, 1=dashed, 2=dotted.
+    
     :var "gray" guiding_lines_color: RGB code or name in :data:`SVG_COLORS` 
 
-    **FACES**
+    **-- About node faces --**
 
+    :var False allow_face_overlap: If True, node faces are not taken
+      into account to scale circular tree images, just like many other
+      visualization programs. Overlapping among branch elements (such
+      as node labels) will be therefore ignored, although tree size
+      will be a lot smaller. Note that in most cases, manual setting
+      of tree scale will be also necessary.
+    
     :var True draw_aligned_faces_as_table: Aligned faces will be
       drawn as a table, considering all columns in all node faces.
 
@@ -303,7 +307,7 @@ class TreeStyle(object):
       parent faces. This can be reversed by setting this attribute
       to false.
 
-    **Addons**
+    **-- Addons --**
 
     :var False show_border: Draw a border around the whole tree
 
@@ -319,8 +323,17 @@ class TreeStyle(object):
     :var False show_branch_support: Automatically adds branch
       support text in the bottom of tree branches
 
-    Initialize aligned face headers
+    **-- Tree surroundings --**
+    
+    The following options are actually Face containers, so graphical
+    elements can be added just as it is done with nodes. In example,
+    to add tree legend:
+    
+       ::
 
+          TreeStyle.legend.add_face(CircleFace(10, "red"), column=0)
+          TreeStyle.legend.add_face(TextFace("0.5 support"), column=1)
+    
     :var aligned_header: a :class:`FaceContainer` aligned to the end
       of the tree and placed at the top part.
 

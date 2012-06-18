@@ -167,7 +167,7 @@ class _TreeScene(QtGui.QGraphicsScene):
         tree_item.setParentItem(self.master_item)
         self.setSceneRect(tree_item.rect())
 
-@tracktime
+#@tracktime
 def render(root_node, img, hide_root=False):
     '''main render function. hide_root option is used when render
     trees as Faces
@@ -245,7 +245,7 @@ def render(root_node, img, hide_root=False):
             update_branch_lengths(root_node, n2i, n2f, img)
         else:
             img._scale = crender.calculate_optimal_scale(root_node, n2i, rot_step, img)
-            print "OPTIMAL circular scale", img._scale
+            #print "OPTIMAL circular scale", img._scale
             update_branch_lengths(root_node, n2i, n2f, img)
             init_items(root_node, parent, n2i, n2f, img, rot_step, hide_root)
     else:
@@ -253,7 +253,7 @@ def render(root_node, img, hide_root=False):
         img._scale = img.scale
         init_items(root_node, parent, n2i, n2f, img, rot_step, hide_root)
         
-    print "USING scale", img._scale
+    #print "USING scale", img._scale
     # Draw node content
     for node in root_node.traverse():
         if node is not root_node or not hide_root:
@@ -399,8 +399,10 @@ def add_scale(img, mainRect, parent):
         line.setLine(0, 5, length, 5)
         line2.setLine(0, 0, 0, 10)
         line3.setLine(length, 0, length, 10)
-        scale_text = "%0.2f" % (float(length) / img._scale if
-                                img._scale else 0.0)
+
+        length_text = float(length) / img._scale if img._scale else 0.0
+        #scale_text = "%0.2f\n(1 branch unit = %d pixels)" % (length_text, round(img._scale))
+        scale_text = "%0.2f" % (length_text)
         scale = QtGui.QGraphicsSimpleTextItem(scale_text)
         scale.setParentItem(scaleItem)
         scale.setPos(0, 10)
@@ -432,8 +434,6 @@ def add_scale(img, mainRect, parent):
         dw = max(0, length-mainRect.width())
         scaleItem.setPos(mainRect.bottomLeft())
         mainRect.adjust(0,0,dw, length)
-
-
 
 def rotate_inverted_faces(n2i, n2f, img):
     for node, faceblock in n2f.iteritems():
@@ -799,7 +799,10 @@ def render_aligned_faces(img, mainRect, parent, n2i, n2f):
             fb_head.flip_hz()
             fb_foot.flip_hz()
 
-    elif img.mode == "c" and not img.allow_face_overlap:
+    # if no scale provided in circular mode, optimal scale is expected
+    # to provide the correct ending point to start drawing aligned
+    # faces.
+    elif img.mode == "c" and img.scale and not img.allow_face_overlap:
         angle = n2i[maxh_node].angle_span
         rad, off = crender.get_min_radius(1, maxh, angle, tree_end_x)
         extra_width += rad - tree_end_x
@@ -880,7 +883,7 @@ def get_tree_img_map(n2i):
         nid += 1
     return {"nodes": node_list, "faces": face_list}
 
-@tracktime
+#@tracktime
 def init_items(root_node, parent, n2i, n2f, img, rot_step, hide_root):
     # ::: Precalculate values :::
     visited = set()
@@ -976,6 +979,10 @@ def init_node_dimensions(node, item, faceblock, img):
     h4 = 0
     h5 = aligned_height
 
+    # ignore face heights if requested
+    if img.mode == "c" and img.allow_face_overlap:
+        h1, h3, h5 = 0, 0, 0
+    
     item.heights = [h0, h1, h2, h3, h4, h5]
     item.widths = [w0, w1, w2, w3, w4, w5]
 

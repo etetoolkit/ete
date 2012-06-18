@@ -389,7 +389,6 @@ class documentation. Here is a very simple example:
      # Basic tree style
      ts = TreeStyle()
      ts.show_leaf_name = True
-     ts.tree_width = 80
     
      # Creates two faces
      hola = TextFace("hola")
