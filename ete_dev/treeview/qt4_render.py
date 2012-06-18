@@ -737,7 +737,8 @@ def render_floatings(n2i, n2f, img, float_layer, float_behind_layer):
                 #crender.rotate_and_displace(fb, item.rotation, fb.h, item.radius - item.nodeRegion.width())
 
             elif img.mode == "r":
-                fb.setPos(item.content.mapToScene(0, item.center-(fb.h/2)))
+                start = item.branch_length + xtra - fb.w #if fb.w < item.branch_length else 0.0
+                fb.setPos(item.content.mapToScene(start, item.center - (fb.h/2)))
 
             z = item.zValue()
             if not img.children_faces_on_top:

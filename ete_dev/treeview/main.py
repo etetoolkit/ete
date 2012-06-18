@@ -265,7 +265,7 @@ class TreeStyle(object):
       the starting angle (in degrees) from which leaves are
       distributed (clock-wise) around the total arc. 0 = 3 o'clock
 
-    :var 360 arc_span: Total arc used to draw circular trees (in
+    :var 359 arc_span: Total arc used to draw circular trees (in
       degrees)
 
     :var 0 margin_left: Left tree image margin, in pixels
@@ -403,7 +403,7 @@ class TreeStyle(object):
         self.arc_start = 0 
 
         # Total arc used to draw circular trees (in degrees)
-        self.arc_span = 360
+        self.arc_span = 359
 
         # Margins around tree picture
         self.margin_left = 1
