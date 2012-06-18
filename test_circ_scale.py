@@ -17,9 +17,9 @@ def layout(node):
         #f = faces.CircleFace(20, "red")
         #f = faces.AttrFace("name", fsize=20)
         f = faces.TextFace("NAME", fsize=10)
-        faces.add_face_to_node(f, node, 0, position="branch-right")
+        #faces.add_face_to_node(f, node, 0, position="branch-right")
         f.border.width = 0
-    #node.img_style["bgcolor"] = random_color()
+    node.img_style["bgcolor"] = random_color()
 
 ts = TreeStyle()
 ts.mode = "c"
@@ -33,16 +33,16 @@ ts.draw_guiding_lines = False
 ts.optimal_scale_level = "mid"
 ts.extra_branch_line_color = "red"
 
-ts.scale = 5
+ts.scale = 30
 t = Tree()
-t.populate(20, random_branches=True, branch_range=(0, 0.7))
+t.populate(100, random_branches=True, branch_range=(0, 0.7))
 t.dist = 0
 dists = [n.dist for n in t.traverse() if n.dist != 0]
-print max(dists), min(dists)
+#print max(dists), min(dists)
 t.write(outfile="test.nw")
-for s in [5, None]:
-    ts.scale = s
-    t.render("img_scale_%s.png" %s, tree_style = ts, w=600)
+#for s in [5, None]:
+#    ts.scale = s
+#    t.render("img_scale_%s.png" %s, tree_style = ts, w=600)
 t.show(tree_style=ts)
 
 

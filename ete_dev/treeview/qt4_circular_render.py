@@ -170,8 +170,8 @@ def render_circular(root_node, n2i, rot_step):
             item.radius = r
             node.add_features(rad=item.radius)
 
-        if xoffset: # DEBUG ONLY. IF Scale is correct, this should not be printed
-            print "Offset detected in node", xoffset
+        #if xoffset: # DEBUG ONLY. IF Scale is correct, this should not be printed
+        #    print "Offset detected in node", xoffset
 
         rotate_and_displace(item.content, item.rotation, h, parent_radius)
         
@@ -213,7 +213,6 @@ def render_circular(root_node, n2i, rot_step):
                     i.moveBy(xoffset, 0)
             
     n2i[root_node].max_r = max_r
-    print "MAX R", max_r
     return max_r
 
 def init_circular_leaf_item(node, n2i, n2f, last_rotation, rot_step):
@@ -264,9 +263,9 @@ def get_effective_height(n, n2i, n2f):
     center = fullR.height()/2
     return max(up_h, down_h)*2
     
-@tracktime
+#@tracktime
 def calculate_optimal_scale(root_node, n2i, rot_step, img):
-    """ Seems to be fast. 0.5s from a tree of 10.000 leaves""" 
+    """ Note: Seems to be fast. 0.5s from a tree of 10.000 leaves""" 
     
     n2minradius = {}
     n2sumdist = {}
@@ -308,7 +307,7 @@ def calculate_optimal_scale(root_node, n2i, rot_step, img):
                 # taking into account the versed sine of each parent
                 # node, the equation is actually very simple.
                 best_scale = (n2minradius[node] - n2sumwidth[node]) / n2sumdist[node]
-                print "OOps adjusting scale", ndist, best_scale, n2minradius[node], current_rad, item.heights[5], node.name
+                #print "OOps adjusting scale", ndist, best_scale, n2minradius[node], current_rad, item.heights[5], node.name
 
             # If the width of branch top/bottom faces is not covered,
             # we can also increase the scale to adjust it. This may
@@ -316,24 +315,22 @@ def calculate_optimal_scale(root_node, n2i, rot_step, img):
             if img.optimal_scale_level == "full" and \
                item.widths[1] > ndist * best_scale:
                 best_scale = item.widths[1] / ndist
-                print "OOps adjusting scale because  branch-faces", ndist, best_scale, item.widths[1]
-
+                #print "OOps adjusting scale because  branch-faces", ndist, best_scale, item.widths[1]
 
     # Adjust scale for aligned faces
-    aligned_h = [(n2i[node].heights[5], node) for node in visited_nodes]
-    aligned_h.sort(reverse=True)
-    maxh, maxh_node = aligned_h[0]
-    angle = n2i[maxh_node].angle_span
-    rad, off = get_min_radius(1, maxh, angle, 0.0001)
-    print "MIN RAD, OPTR", rad
-    min_scale = None
-    for node in visited_nodes:
-        if n2i[node].heights[5]:
-            new_scale = (rad - n2sumwidth[node]) / n2sumdist[node]
-            min_scale = min(new_scale, min_scale) if min_scale is not None else new_scale
-    if min_scale >  best_scale:
-        best_scale = min_scale
-
+    if not img.allow_face_overlap:
+        aligned_h = [(n2i[node].heights[5], node) for node in visited_nodes]
+        aligned_h.sort(reverse=True)
+        maxh, maxh_node = aligned_h[0]
+        angle = n2i[maxh_node].angle_span
+        rad, off = get_min_radius(1, maxh, angle, 0.0001)
+        min_scale = None
+        for node in visited_nodes:
+            if n2i[node].heights[5]:
+                new_scale = (rad - n2sumwidth[node]) / n2sumdist[node]
+                min_scale = min(new_scale, min_scale) if min_scale is not None else new_scale
+        if min_scale >  best_scale:
+            best_scale = min_scale
     
     #for node in visited_nodes:
     #    item = n2i[node]

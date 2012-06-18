@@ -170,7 +170,7 @@ class _TreeScene(QtGui.QGraphicsScene):
         self.master_item = _EmptyItem()
         self.addItem(self.master_item)
         tree_item.setParentItem(self.master_item)
-@tracktime
+#@tracktime
 def render(root_node, img, hide_root=False):
     '''main render function. hide_root option is used when render
     trees as Faces
@@ -246,7 +246,7 @@ def render(root_node, img, hide_root=False):
             update_branch_lengths(root_node, n2i, n2f, img)
         else:
             img._scale = crender.calculate_optimal_scale(root_node, n2i, rot_step, img)
-            print "OPTIMAL circular scale", img._scale
+            #print "OPTIMAL circular scale", img._scale
             update_branch_lengths(root_node, n2i, n2f, img)
             init_items(root_node, parent, n2i, n2f, img, rot_step, hide_root)
     else:
@@ -254,7 +254,7 @@ def render(root_node, img, hide_root=False):
         img._scale = img.scale
         init_items(root_node, parent, n2i, n2f, img, rot_step, hide_root)
         
-    print "USING scale", img._scale
+    #print "USING scale", img._scale
     # Draw node content
     for node in root_node.traverse():
         if node is not root_node or not hide_root:
@@ -418,8 +418,6 @@ def add_scale(img, mainRect, parent):
         dw = max(0, length-mainRect.width())
         scaleItem.setPos(mainRect.bottomLeft())
         mainRect.adjust(0,0,dw, length)
-
-
 
 def rotate_inverted_faces(n2i, n2f, img):
     for node, faceblock in n2f.iteritems():
@@ -781,10 +779,12 @@ def render_aligned_faces(img, mainRect, parent, n2i, n2f):
             fb_head.flip_hz()
             fb_foot.flip_hz()
 
-    elif img.mode == "c" and not img.allow_face_overlap:
+    # if no scale provided in circular mode, optimal scale is expected
+    # to provide the correct ending point to start drawing aligned
+    # faces.
+    elif img.mode == "c" and img.scale and not img.allow_face_overlap:
         angle = n2i[maxh_node].angle_span
         rad, off = crender.get_min_radius(1, maxh, angle, tree_end_x)
-        print "MIN RAD", rad
         extra_width += rad - tree_end_x
         tree_end_x = rad
 
@@ -863,7 +863,7 @@ def get_tree_img_map(n2i):
         nid += 1
     return {"nodes": node_list, "faces": face_list}
 
-@tracktime
+#@tracktime
 def init_items(root_node, parent, n2i, n2f, img, rot_step, hide_root):
     # ::: Precalculate values :::
     visited = set()
