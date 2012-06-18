@@ -28,7 +28,9 @@ ts.draw_guiding_lines = False
 ts.optimal_scale_level = "mid"
 ts.scale = None
 t = Tree()
-t.populate(50, random_branches=True, branch_range=(0, 0.7))
+k = t.add_child()
+k = k.add_child()
+k.populate(50, random_branches=True, branch_range=(0, 0.7))
 t.dist = 0
 dists = [n.dist for n in t.traverse() if n.dist != 0]
 print max(dists), min(dists)
