@@ -398,8 +398,9 @@ def add_scale(img, mainRect, parent):
         line.setLine(0, 5, length, 5)
         line2.setLine(0, 0, 0, 10)
         line3.setLine(length, 0, length, 10)
-        scale_text = "%0.2f" % (float(length) / img._scale if
-                                img._scale else 0.0)
+
+        length_text = float(length) / img._scale if img._scale else 0.0
+        scale_text = "%0.2f\n(1 branch unit = %d pixels)" % (length_text, round(img._scale))
         scale = QtGui.QGraphicsSimpleTextItem(scale_text)
         scale.setParentItem(scaleItem)
         scale.setPos(0, 10)
@@ -957,6 +958,10 @@ def init_node_dimensions(node, item, faceblock, img):
     h4 = 0
     h5 = aligned_height
 
+    # ignore face heights if requested
+    if img.mode == "c" and img.allow_face_overlap:
+        h1, h3, h5 = 0, 0, 0
+    
     item.heights = [h0, h1, h2, h3, h4, h5]
     item.widths = [w0, w1, w2, w3, w4, w5]
 

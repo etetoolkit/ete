@@ -216,12 +216,12 @@ class TreeStyle(object):
         
     :var "r" mode: Valid modes are 'c'(ircular)  or 'r'(ectangular).
 
-    :var "False" allow_face_overlap: This option applies only for
-      circular mode. It prevents aligned faces to overlap each other
-      by increasing the radius of the circular tree. In very large
-      trees, this may produce huge image representations. By setting
-      this option to *True*, you will obtain smaller images in which
-      aligned faces (typically node names) may overlap. 
+    :var False allow_face_overlap: If True, node faces are not taken
+      into account to scale circular tree images, just like many other
+      visualization programs. Overlapping among branch elements (such
+      as node labels) will be therefore ignored, although tree size
+      will be a lot smaller. Note that in most cases, manual setting
+      of tree scale will be also necessary.
 
     :var None layout_fn: Layout function used to dynamically control
       the aspect of nodes. Valid values are: None or a pointer to a method,
@@ -234,22 +234,22 @@ class TreeStyle(object):
     :var 0 rotation: Tree figure will be rotate X degrees (clock-wise rotation)
 
     :var None scale: Scale used to draw branch lengths. If None, it will 
-      be automatically selected. 
+      be automatically calculated. 
 
     :var "mid" optimal_scale_level: Two levels of automatic branch
-      scale detection are available: "mid" and "full". In **"full"**
-      mode, branch scale will me adjusted to fully avoid dotted lines
-      in the tree image. In other words, scale will be increased until
-      the extra space necessary to allocated all branch-top/bottom
-      faces and branch-right faces (in circular mode) is covered by
-      legacy branches. Note, however, that the optimal scale in trees
-      with very unbalanced branch lengths might be huge. If **"mid"**
-      mode is selected, optimal scale will only satisfy the space
-      necessary to allocate branch-right faces in circular trees. Some
-      dotted lines (artificial offsets) will still appear when
-      branch-top/bottom faces are larger than branch length.  Both
-      options apply only when "scale" is set to None (automatic).
-
+      scale detection are available: :attr:`"mid"` and :attr:`"full"`. In
+      :attr:`full` mode, branch scale will me adjusted to fully avoid
+      dotted lines in the tree image. In other words, scale will be
+      increased until the extra space necessary to allocated all
+      branch-top/bottom faces and branch-right faces (in circular
+      mode) is covered by legacy branches. Note, however, that the
+      optimal scale in trees with very unbalanced branch lengths might
+      be huge. If :attr:`"mid"` mode is selected, optimal scale will
+      only satisfy the space necessary to allocate branch-right faces
+      in circular trees. Some dotted lines (artificial branch offsets)
+      will still appear when branch-top/bottom faces are larger than
+      branch length. Note that both options apply only when "scale" is
+      set to None (automatic).
     
     :var 1 min_leaf_separation: Min separation, in pixels, between
       two adjacent branches
