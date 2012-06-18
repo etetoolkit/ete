@@ -265,7 +265,6 @@ def render(root_node, img, hide_root=False):
     if mode == "c":
         tree_radius = crender.render_circular(root_node, n2i, rot_step)
         mainRect.adjust(-tree_radius, -tree_radius, tree_radius, tree_radius)
-
     else:
         iwidth = n2i[root_node].fullRegion.width()
         iheight = n2i[root_node].fullRegion.height()
@@ -301,6 +300,14 @@ def render(root_node, img, hide_root=False):
     mainRect.adjust(-img.margin_left, -img.margin_top, \
                          img.margin_right, img.margin_bottom)
 
+    # Fix negative coordinates, so main item always starts at 0,0
+    topleft  = mainRect.topLeft()
+    _x = abs(topleft.x()) if topleft.x() < 0 else 0
+    _y = abs(topleft.y()) if topleft.y() < 0 else 0
+    if _x or _y:
+        parent.moveBy(_x, _y)
+        mainRect.adjust(_x, _y, _x, _y)
+        
     # Add extra components and adjust mainRect to them
     add_legend(img, mainRect, frame)
     add_title(img, mainRect, frame)
@@ -312,7 +319,8 @@ def render(root_node, img, hide_root=False):
         frame.setPen(QtGui.QPen(QtCore.Qt.NoPen))
     else:
         frame.setPen(QtGui.QPen(QtGui.QColor("black")))
-        
+
+    
     return frame, n2i, n2f
 
 def adjust_faces_to_tranformations(img, mainRect, n2i, n2f, tree_layers):
@@ -712,8 +720,7 @@ def render_floatings(n2i, n2f, img, float_layer, float_behind_layer):
 
             if img.mode == "c":
                 # Floatings are positioned over branches
-                crender.rotate_and_displace(fb, item.rotation, fb.h, item.radius - item.nodeRegion.width()+ xtra)
-
+                crender.rotate_and_displace(fb, item.rotation, fb.h, item.radius - item.nodeRegion.width() + xtra)
                 # Floatings are positioned starting from the node circle
                 #crender.rotate_and_displace(fb, item.rotation, fb.h, item.radius - item.nodeRegion.width())
 
