@@ -1622,10 +1622,10 @@ class TreeNode(object):
         if position not in FACE_POSITIONS:
             raise ValueError("face position not in %s" %FACE_POSITIONS)
         
-        if Face in face.__class__.__bases__:
+        if isinstance(face, Face):
             getattr(self._faces, position).add_face(face, column=column)
         else:
-            raise ValueError("'face' must be a Face or inherited instance")
+            raise ValueError("not a Face instance")
 
     def set_style(self, node_style):
         """

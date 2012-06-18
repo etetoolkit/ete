@@ -103,15 +103,19 @@ def master_ly(node):
         F = faces.DynamicItemFace(ugly_name_face, 100, 50)
         faces.add_face_to_node(F, node, 0, position="aligned")
   
+def get_example_tree():
+        
+    t = Tree()
+    t.populate(8, reuse_names=False)
 
-t = Tree()
-t.populate(8, reuse_names=False)
-
-ts = TreeStyle()
-ts.layout_fn = master_ly
-ts.title.add_face(faces.TextFace("Drawing your own Qt Faces", fsize=15), 0)
-
-
-t.render("item_faces.png", h=400, tree_style=ts)
-# The interactive features are only available using the GUI
-t.show(tree_style=ts)
+    ts = TreeStyle()
+    ts.layout_fn = master_ly
+    ts.title.add_face(faces.TextFace("Drawing your own Qt Faces", fsize=15), 0)
+    return t, ts
+    
+if __name__ == "__main__":
+    t, ts = get_example_tree()
+    
+    #t.render("item_faces.png", h=400, tree_style=ts)
+    # The interactive features are only available using the GUI
+    t.show(tree_style=ts)
