@@ -400,7 +400,8 @@ def add_scale(img, mainRect, parent):
         line3.setLine(length, 0, length, 10)
 
         length_text = float(length) / img._scale if img._scale else 0.0
-        scale_text = "%0.2f\n(1 branch unit = %d pixels)" % (length_text, round(img._scale))
+        #scale_text = "%0.2f\n(1 branch unit = %d pixels)" % (length_text, round(img._scale))
+        scale_text = "%0.2f" % (length_text)
         scale = QtGui.QGraphicsSimpleTextItem(scale_text)
         scale.setParentItem(scaleItem)
         scale.setPos(0, 10)
