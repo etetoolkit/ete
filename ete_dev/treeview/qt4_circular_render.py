@@ -156,10 +156,10 @@ def render_circular(root_node, n2i, rot_step):
     max_r = 0.0
     for node in root_node.traverse('preorder'):
         item = n2i[node]
-        w = sum(item.widths[1:4])
+        w = sum(item.widths[1:5])
         h = item.effective_height
 
-        parent_radius = n2i[node.up].radius if node.up else 0 
+        parent_radius = n2i[node.up].radius if node.up else item.xoff
         angle = rot_step if _leaf(node) else item.angle_span
 
         if hasattr(item, "radius"):
@@ -188,8 +188,9 @@ def render_circular(root_node, n2i, rot_step):
             C.setParentItem(item)
             path = QtGui.QPainterPath()
             # Counter clock wise
-            path.arcMoveTo(-r, -r, r * 2, r * 2, 360 - rot_start - rot_span)
-            path.arcTo(-r, -r, r*2, r * 2, 360 - rot_start - rot_span, rot_span)
+            start = r - node.img_style["vt_line_width"]/2
+            path.arcMoveTo(-start, -start, start * 2, start * 2, 360 - rot_start - rot_span)
+            path.arcTo(-start, -start, start * 2, start * 2, 360 - rot_start - rot_span, rot_span)
             # Faces
             C.setPath(path)
             item.static_items.append(C)
@@ -278,7 +279,7 @@ def calculate_optimal_scale(root_node, n2i, rot_step, img):
         ndist = node.dist if not img.force_topology else 1.0
         item = n2i[node]
         # Uses size of all node parts, except branch length
-        w = sum(item.widths[1:4])
+        w = sum(item.widths[1:5])
         h = item.effective_height
         parent_radius = n2minradius.get(node.up, 0)
         angle = rot_step if node.is_leaf() else item.angle_span
@@ -289,34 +290,20 @@ def calculate_optimal_scale(root_node, n2i, rot_step, img):
         # versed sine: the little extra line needed to complete the
         # radius.
         #vs = r - (parent_radius + xoffset + w)
-        n2sumwidth[node] = n2sumwidth.get(node.up, 0) + sum(item.widths[2:4]) #+ vs
-        
-    best_scale = None
-    min_scale = 400 / max(n2sumdist.values())
-    if root_node.dist == 0.0: 
-        max_root_opening = 50
-    else:
-        max_root_opening = None
+        n2sumwidth[node] = n2sumwidth.get(node.up, 0) + sum(item.widths[2:5]) #+ vs
+
+    min_scale = 200 / max(n2sumdist.values())
     root_opening = 0.0
-    
     most_distant = max(n2sumdist.values())
+    best_scale = None
     for node in visited_nodes:
         item = n2i[node]
         ndist = node.dist if not img.force_topology else 1.0
         if best_scale is None:
-            best_scale = (n2minradius[node] - n2sumwidth[node]) / ndist if ndist else min_scale
+            best_scale = (n2minradius[node] - n2sumwidth[node]) / ndist if ndist else 0.0
         else:
             #Whats the expected radius of this node?
             current_rad = n2sumdist[node] * best_scale + (n2sumwidth[node] + root_opening)
-
-            # Could I fit it by opening the tree center?
-            #if max_root_opening is not None:
-            #    #tree_width = most_distant * best_scale
-            #    #max_root_opening = tree_width / 2
-            #    _root_opening =  max_root_opening - (n2minradius[node] - current_rad)
-            #    if _root_opening > 0:
-            #        root_opening = min(max_root_opening, _root_opening)
-            #        current_rad = n2sumdist[node] * best_scale + (n2sumwidth[node] + root_opening)
                     
             # If still too small, it means we need to increase scale.
             if current_rad < n2minradius[node]:
@@ -324,9 +311,9 @@ def calculate_optimal_scale(root_node, n2i, rot_step, img):
                 # to calculate the best scale. Given that I'm not
                 # taking into account the versed sine of each parent
                 # node, the equation is actually very simple.
-                if max_root_opening: 
-                    best_scale = (n2minradius[node] - (n2sumwidth[node])) / (n2sumdist[node] + (most_distant/4))
-                    root_opening = (most_distant * best_scale) / 4
+                if img.root_opening_factor: 
+                    best_scale = (n2minradius[node] - (n2sumwidth[node])) / (n2sumdist[node] + (most_distant * img.root_opening_factor))
+                    root_opening = most_distant * best_scale * img.root_opening_factor
                 else:
                     best_scale = (n2minradius[node] - (n2sumwidth[node]) + root_opening) / n2sumdist[node]
                 print "OOps adjusting scale", ndist, best_scale, n2minradius[node], current_rad, item.heights[5], node.name
@@ -355,7 +342,10 @@ def calculate_optimal_scale(root_node, n2i, rot_step, img):
             best_scale = min_alg_scale
             
     if root_opening:
-        n2i[root_node].widths[2] += root_opening
+        n2i[root_node].nodeRegion.adjust(root_opening, 0, root_opening, 0)
+        n2i[root_node].fullRegion.adjust(root_opening, 0, root_opening, 0)
+        n2i[root_node].xoff = root_opening
+        #n2i[root_node].widths[0] += root_opening
     print root_opening
     #for node in visited_nodes:
     #    item = n2i[node]
@@ -363,7 +353,6 @@ def calculate_optimal_scale(root_node, n2i, rot_step, img):
     #    a = n2sumdist[node] * best_scale + n2sumwidth.get(node) 
     #    b = h/2
     #    item.radius = math.sqrt(a**2 + b**2)
-
-
-    print "min scale", min_scale
+    print "root opening", root_opening
+    #best_scale = max(best_scale, min_scale)
     return best_scale

@@ -269,12 +269,21 @@ class TreeStyle(object):
       branch-top/bottom faces are larger than branch length. Note that
       both options apply only when :attr:`scale` is set to None
       (automatic).
+
+    :var 0.25 root_opening_factor: (from 0 to 1). How much the center of
+      a circular tree could be opened when adjusting optimal scale, referred
+      to the total tree length. By default (0.25), a blank space up to 4
+      times smaller than the tree width could be used to calculate the
+      optimal tree scale. Alternatively, a value of 0 would mean that root node should
+      always be tightly adjusted to the center of the tree.
     
     :var True complete_branch_lines_when_necessary: True or False.
       When top-branch and bottom-branch faces are larger than
       branch length, branch line can be completed. Also, when
       circular trees are drawn
+    
     :var 2 extra_branch_line_type:  0=solid, 1=dashed, 2=dotted
+    
     :var "gray" extra_branch_line_color": RGB code or name in
       :data:`SVG_COLORS`
     
@@ -392,7 +401,11 @@ class TreeStyle(object):
         # Scale used to convert branch lengths to pixels. If 'None',
         # the scale will be automatically calculated.
         self.scale = None
-        
+
+        # How much the center of a circular tree can be opened,
+        # referred to the total tree length.
+        self.root_opening_factor = 0.25
+            
         # mid, or full
         self.optimal_scale_level = "mid" 
         

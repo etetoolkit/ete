@@ -242,7 +242,6 @@ def render(root_node, img, hide_root=False):
             if img.optimal_scale_level == "full":
                 img._scale = max([(i.widths[1]/n.dist) for n,i in n2i.iteritems() if n.dist])
             else:
-                #fixed_widths = ([i.nodeRegion.width() for n,i in n2i.iteritems()])
                 farthest, dist = root_node.get_farthest_leaf(topology_only=img.force_topology)
                 img._scale =  400.0 / dist
             update_branch_lengths(root_node, n2i, n2f, img)
@@ -570,10 +569,12 @@ def render_node_content(node, n2i, n2f, img):
 
     # Node points
     ball_size = style["size"]
-    lw = style["vt_line_width"]
-    ball_start_x = nodeR.width() - facesR.width() - ball_size - lw
-    #ball_start_x = item.widths[0] + item.widths[1]
-
+    
+    vlw = style["vt_line_width"] if not _leaf(node) else 0.0
+    
+    face_start_x = nodeR.width() - facesR.width() - vlw
+    ball_start_x = face_start_x - ball_size 
+    
     if ball_size:
         if node.img_style["shape"] == "sphere":
             node_ball = _SphereItem(node)
@@ -599,6 +600,7 @@ def render_node_content(node, n2i, n2f, img):
     pen.setWidth(style["hz_line_width"])
     pen.setCapStyle(QtCore.Qt.FlatCap)
     #pen.setCapStyle(QtCore.Qt.RoundCap)
+    #pen.setCapStyle(QtCore.Qt.SquareCap)
     #pen.setJoinStyle(QtCore.Qt.RoundJoin)
     hz_line = _LineItem()
     hz_line.setPen(pen)
@@ -624,8 +626,7 @@ def render_node_content(node, n2i, n2f, img):
     # Attach branch-right faces to child
     fblock_r = n2f[node]["branch-right"]
     fblock_r.render()
-    fblock_r.setPos(nodeR.width() - facesR.width(), \
-                        center-fblock_r.h/2)
+    fblock_r.setPos(face_start_x, center-fblock_r.h/2)
 
     # Attach branch-bottom faces to child
     fblock_b = n2f[node]["branch-bottom"]
@@ -648,14 +649,16 @@ def render_node_content(node, n2i, n2f, img):
             last_child_part = n2i[node.children[-1]]
             c1 = first_child_part.start_y + first_child_part.center
             c2 = last_child_part.start_y + last_child_part.center
-            fx = nodeR.width()-node.img_style["vt_line_width"]/2
+            fx = nodeR.width() - vlw /2
             vt_line.setLine(fx, c1, fx, c2)
 
         pen = QtGui.QPen()
         set_pen_style(pen, style["vt_line_type"])
         pen.setColor(QtGui.QColor(style["vt_line_color"]))
         pen.setWidth(style["vt_line_width"])
-        pen.setCapStyle(QtCore.Qt.FlatCap)
+        #pen.setCapStyle(QtCore.Qt.FlatCap)
+        pen.setCapStyle(QtCore.Qt.RoundCap)
+        #pen.setCapStyle(QtCore.Qt.SquareCap)
         vt_line.setPen(pen)
         item.vt_line = vt_line
     else:
@@ -945,19 +948,21 @@ def init_node_dimensions(node, item, faceblock, img):
     ##                                |  
     ##                                |        ------ 
     ##          b-top       --------- |        |    | 
-    ##    --------------- O |b-right| |        |alg | 
+    ## xoff-------------- O |b-right| |        |alg | 
     ##          b-bottom    --------- |        |    | 
     ##                                |        ------ 
     ##                                |       
     ##                                        
     ##      0     1       2     3     4           5   
     ##
+
+    item.xoff = 0.0
     # widths
     w1 = max(faceblock["branch-bottom"].w, faceblock["branch-top"].w)
     w0 = item.branch_length - w1 if item.branch_length > w1 else 0
     w2 = node.img_style["size"]
     w3 = faceblock["branch-right"].w
-    w4 = node.img_style["vt_line_width"]
+    w4 = node.img_style["vt_line_width"] if not _leaf(node) else 0.0
     w5 = 0
     # heights
     h0 = node.img_style["hz_line_width"]
@@ -966,7 +971,7 @@ def init_node_dimensions(node, item, faceblock, img):
     h3 = faceblock["branch-right"].h
     h4 = 0
     h5 = aligned_height
-
+    
     # ignore face heights if requested
     if img.mode == "c" and img.allow_face_overlap:
         h1, h3, h5 = 0, 0, 0
@@ -975,7 +980,7 @@ def init_node_dimensions(node, item, faceblock, img):
     item.widths = [w0, w1, w2, w3, w4, w5]
 
     # Calculate total node size
-    total_w = sum([w0, w1, w2, w3, w4]) # do not count aligned faces
+    total_w = sum([w0, w1, w2, w3, w4, item.xoff]) # do not count aligned faces
 	
     if img.mode == "c":
         max_h = max(item.heights[:4] + [min_separation])
