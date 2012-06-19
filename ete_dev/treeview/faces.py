@@ -285,19 +285,34 @@ class AttrFace(TextFace):
                                      self.text_suffix]))
 
 class ImgFace(Face):
-    """ 
-    Creates a new image face object.
+    """Creates a node Face using an external image file.
 
-    :argument img_file: Image file in png,jpg,bmp format
+    :argument img_file: path to the image file. 
+    :argument None width: if provided, image will be scaled to this width (in pixels)
+    :argument None height: if provided, image will be scaled to this height (in pixels)
+
+    If only one dimension value (width or height) is provided, the other
+    will be calculated to keep aspect ratio. 
 
     """
-    def __init__(self,img_file):
+    
+    def __init__(self, img_file, width=None, height=None):
         Face.__init__(self)
         self.img_file = img_file
-
+        self.width = width
+        self.height = height
+        
     def update_pixmap(self):
-        self.load_pixmap_from_file(self.img_file)
-
+        self.pixmap = QtGui.QPixmap(self.img_file)
+        
+        if self.width or self.height:
+            w, h = self.width, self.height
+            ratio = self.pixmap.width() / float(self.pixmap.height())
+            if not w:
+                w = ratio * h
+            if not h:
+                h = w  / ratio
+            self.pixmap = self.pixmap.scaled(w, h)
 
 class ProfileFace(Face):
     """ 
