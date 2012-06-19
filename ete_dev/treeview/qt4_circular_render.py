@@ -316,7 +316,7 @@ def calculate_optimal_scale(root_node, n2i, rot_step, img):
                     root_opening = most_distant * best_scale * img.root_opening_factor
                 else:
                     best_scale = (n2minradius[node] - (n2sumwidth[node]) + root_opening) / n2sumdist[node]
-                print "OOps adjusting scale", ndist, best_scale, n2minradius[node], current_rad, item.heights[5], node.name
+                #print "OOps adjusting scale", ndist, best_scale, n2minradius[node], current_rad, item.heights[5], node.name
 
             # If the width of branch top/bottom faces is not covered,
             # we can also increase the scale to adjust it. This may
@@ -324,7 +324,7 @@ def calculate_optimal_scale(root_node, n2i, rot_step, img):
             if img.optimal_scale_level == "full" and \
                item.widths[1] > ndist * best_scale:
                 best_scale = item.widths[1] / ndist
-                print "OOps adjusting scale because  branch-faces", ndist, best_scale, item.widths[1]
+                #print "OOps adjusting scale because  branch-faces", ndist, best_scale, item.widths[1]
 
     # Adjust scale for aligned faces
     if not img.allow_face_overlap:
@@ -346,13 +346,13 @@ def calculate_optimal_scale(root_node, n2i, rot_step, img):
         n2i[root_node].fullRegion.adjust(root_opening, 0, root_opening, 0)
         n2i[root_node].xoff = root_opening
         #n2i[root_node].widths[0] += root_opening
-    print root_opening
+
     #for node in visited_nodes:
     #    item = n2i[node]
     #    h = item.effective_height
     #    a = n2sumdist[node] * best_scale + n2sumwidth.get(node) 
     #    b = h/2
     #    item.radius = math.sqrt(a**2 + b**2)
-    print "root opening", root_opening
+    #print "root opening", root_opening
     #best_scale = max(best_scale, min_scale)
     return best_scale

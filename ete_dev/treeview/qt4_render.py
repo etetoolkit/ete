@@ -255,7 +255,7 @@ def render(root_node, img, hide_root=False):
         img._scale = img.scale
         init_items(root_node, parent, n2i, n2f, img, rot_step, hide_root)
         
-    print "USING scale", img._scale
+    #print "USING scale", img._scale
     # Draw node content
     for node in root_node.traverse():
         if node is not root_node or not hide_root:
