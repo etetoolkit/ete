@@ -154,7 +154,7 @@ def get_min_radius(w, h, angle, xoffset):
 
 def render_circular(root_node, n2i, rot_step):
     max_r = 0.0
-    for node in root_node.traverse('preorder'):
+    for node in root_node.traverse('preorder', is_leaf_fn=_leaf):
         item = n2i[node]
         w = sum(item.widths[1:5])
         h = item.effective_height
@@ -274,7 +274,7 @@ def calculate_optimal_scale(root_node, n2i, rot_step, img):
     visited_nodes = []
     # Calcula la posicion minima de los elementos (con scale=0, es
     # decir, sin tener en cuenta branch lengths.
-    for node in root_node.traverse('preorder'):
+    for node in root_node.traverse('preorder', is_leaf_fn=_leaf):
         visited_nodes.append(node)
         ndist = node.dist if not img.force_topology else 1.0
         item = n2i[node]
@@ -282,7 +282,7 @@ def calculate_optimal_scale(root_node, n2i, rot_step, img):
         w = sum(item.widths[1:5])
         h = item.effective_height
         parent_radius = n2minradius.get(node.up, 0)
-        angle = rot_step if node.is_leaf() else item.angle_span
+        angle = rot_step if _leaf(node) else item.angle_span
             
         r, xoffset = get_min_radius(w, h, angle, parent_radius)
         n2minradius[node] = r 

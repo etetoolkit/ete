@@ -3,7 +3,7 @@ from PyQt4 import QtCore, QtGui
 from PyQt4.QtGui import QGraphicsSimpleTextItem, QGraphicsPixmapItem, \
     QGraphicsRectItem, QTransform, QBrush, QPen, QColor, QGraphicsItem
 
-from main import FACE_POSITIONS
+from main import FACE_POSITIONS, _leaf
 from qt4_gui import _NodeActions as _ActionDelegator
 
 class _TextFaceItem(QGraphicsSimpleTextItem, _ActionDelegator):
@@ -269,9 +269,3 @@ def update_node_faces(node, n2f, img):
     node._temp_faces = None
         
     return faceblock
-
-def _leaf(node):
-    collapsed = hasattr(node, "img_style") and not node.img_style["draw_descendants"]
-    return collapsed or node.is_leaf()
-
-

@@ -5,7 +5,7 @@ from ete_dev import Tree, TreeStyle, faces
 from ete_dev.treeview.main import random_color
 
 def layout(node):
-    #node.img_style["size"] = random.randint(5,100)
+    node.img_style["size"] = random.randint(5,100)
     node.img_style["hz_line_width"] = 5
     node.img_style["vt_line_width"] = 10
     if node.is_leaf():
@@ -36,7 +36,7 @@ ts.root_opening_factor = 0.25
 ts.show_border = True
 ts.scale = None
 t = Tree()
-t.populate(100, random_branches=True, branch_range=(0, 0.7))
+t.populate(5, random_branches=True, branch_range=(0, 0.7))
 t.dist = 0.0
 dists = [n.dist for n in t.traverse() if n.dist != 0]
 #print max(dists), min(dists)

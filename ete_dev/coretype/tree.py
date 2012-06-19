@@ -601,17 +601,17 @@ class TreeNode(object):
             return self._iter_descendants_levelorder(is_leaf_fn=is_leaf_fn)
         elif strategy=="postorder":
             return self._iter_descendants_postorder(is_leaf_fn=is_leaf_fn)
-
+            
     def _iter_descendants_postorder(self, is_leaf_fn=None):
         """
-        Iterate over all desdecendant nodes. 
+        Iterate over all desdecendant nodes.
         """
-        if not is_leaf_fn or not is_leaf_fn(ch):
+        if not is_leaf_fn or not is_leaf_fn(self):
             for ch in self.children:
-                for node in ch._iter_descendants_postorder():
+                for node in ch._iter_descendants_postorder(is_leaf_fn=is_leaf_fn):
                     yield node
         yield self
-
+        
     def _iter_descendants_levelorder(self, is_leaf_fn=None):
         """ 
         Iterate over all desdecendant nodes. 
