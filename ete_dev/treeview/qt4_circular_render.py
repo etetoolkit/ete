@@ -292,22 +292,44 @@ def calculate_optimal_scale(root_node, n2i, rot_step, img):
         n2sumwidth[node] = n2sumwidth.get(node.up, 0) + sum(item.widths[2:4]) #+ vs
         
     best_scale = None
+    min_scale = 400 / max(n2sumdist.values())
+    if root_node.dist == 0.0: 
+        max_root_opening = 50
+    else:
+        max_root_opening = None
+    root_opening = 0.0
+    
+    most_distant = max(n2sumdist.values())
     for node in visited_nodes:
         item = n2i[node]
         ndist = node.dist if not img.force_topology else 1.0
         if best_scale is None:
-            best_scale = (n2minradius[node] - n2sumwidth[node]) / ndist if ndist else 0.0
+            best_scale = (n2minradius[node] - n2sumwidth[node]) / ndist if ndist else min_scale
         else:
             #Whats the expected radius of this node?
-            current_rad = n2sumdist[node] * best_scale + n2sumwidth[node]
-            # If too small, it means we need to increase scale.
+            current_rad = n2sumdist[node] * best_scale + (n2sumwidth[node] + root_opening)
+
+            # Could I fit it by opening the tree center?
+            #if max_root_opening is not None:
+            #    #tree_width = most_distant * best_scale
+            #    #max_root_opening = tree_width / 2
+            #    _root_opening =  max_root_opening - (n2minradius[node] - current_rad)
+            #    if _root_opening > 0:
+            #        root_opening = min(max_root_opening, _root_opening)
+            #        current_rad = n2sumdist[node] * best_scale + (n2sumwidth[node] + root_opening)
+                    
+            # If still too small, it means we need to increase scale.
             if current_rad < n2minradius[node]:
                 # This is a simplification of the real ecuacion needed
                 # to calculate the best scale. Given that I'm not
                 # taking into account the versed sine of each parent
                 # node, the equation is actually very simple.
-                best_scale = (n2minradius[node] - n2sumwidth[node]) / n2sumdist[node]
-                #print "OOps adjusting scale", ndist, best_scale, n2minradius[node], current_rad, item.heights[5], node.name
+                if max_root_opening: 
+                    best_scale = (n2minradius[node] - (n2sumwidth[node])) / (n2sumdist[node] + (most_distant/4))
+                    root_opening = (most_distant * best_scale) / 4
+                else:
+                    best_scale = (n2minradius[node] - (n2sumwidth[node]) + root_opening) / n2sumdist[node]
+                print "OOps adjusting scale", ndist, best_scale, n2minradius[node], current_rad, item.heights[5], node.name
 
             # If the width of branch top/bottom faces is not covered,
             # we can also increase the scale to adjust it. This may
@@ -315,7 +337,7 @@ def calculate_optimal_scale(root_node, n2i, rot_step, img):
             if img.optimal_scale_level == "full" and \
                item.widths[1] > ndist * best_scale:
                 best_scale = item.widths[1] / ndist
-                #print "OOps adjusting scale because  branch-faces", ndist, best_scale, item.widths[1]
+                print "OOps adjusting scale because  branch-faces", ndist, best_scale, item.widths[1]
 
     # Adjust scale for aligned faces
     if not img.allow_face_overlap:
@@ -324,18 +346,24 @@ def calculate_optimal_scale(root_node, n2i, rot_step, img):
         maxh, maxh_node = aligned_h[0]
         angle = n2i[maxh_node].angle_span
         rad, off = get_min_radius(1, maxh, angle, 0.0001)
-        min_scale = None
+        min_alg_scale = None
         for node in visited_nodes:
             if n2i[node].heights[5]:
-                new_scale = (rad - n2sumwidth[node]) / n2sumdist[node]
-                min_scale = min(new_scale, min_scale) if min_scale is not None else new_scale
-        if min_scale >  best_scale:
-            best_scale = min_scale
-    
+                new_scale = (rad - (n2sumwidth[node] + root_opening)) / n2sumdist[node]
+                min_alg_scale = min(new_scale, min_alg_scale) if min_alg_scale is not None else new_scale
+        if min_alg_scale >  best_scale:
+            best_scale = min_alg_scale
+            
+    if root_opening:
+        n2i[root_node].widths[2] += root_opening
+    print root_opening
     #for node in visited_nodes:
     #    item = n2i[node]
     #    h = item.effective_height
     #    a = n2sumdist[node] * best_scale + n2sumwidth.get(node) 
     #    b = h/2
     #    item.radius = math.sqrt(a**2 + b**2)
+
+
+    print "min scale", min_scale
     return best_scale

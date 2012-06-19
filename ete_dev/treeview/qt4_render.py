@@ -170,6 +170,8 @@ class _TreeScene(QtGui.QGraphicsScene):
         self.master_item = _EmptyItem()
         self.addItem(self.master_item)
         tree_item.setParentItem(self.master_item)
+        self.setSceneRect(tree_item.rect())
+        
 #@tracktime
 def render(root_node, img, hide_root=False):
     '''main render function. hide_root option is used when render
@@ -254,7 +256,7 @@ def render(root_node, img, hide_root=False):
         img._scale = img.scale
         init_items(root_node, parent, n2i, n2f, img, rot_step, hide_root)
         
-    #print "USING scale", img._scale
+    print "USING scale", img._scale
     # Draw node content
     for node in root_node.traverse():
         if node is not root_node or not hide_root:
@@ -319,7 +321,6 @@ def render(root_node, img, hide_root=False):
         frame.setPen(QtGui.QPen(QtCore.Qt.NoPen))
     else:
         frame.setPen(QtGui.QPen(QtGui.QColor("black")))
-
     
     return frame, n2i, n2f
 
