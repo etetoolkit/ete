@@ -6,7 +6,7 @@ from PyQt4.QtCore import QThread, SIGNAL
 try:
     from PyQt4 import QtOpenGL
     USE_GL = True
-    #USE_GL = False # Temporarily disabled
+    USE_GL = False # Temporarily disabled
 except ImportError:
     USE_GL = False
 
@@ -39,7 +39,6 @@ class CheckUpdates(QThread):
             self.emit(SIGNAL("output(QString)"), msg)
         except Exception:
             pass
-
             
 class _GUI(QtGui.QMainWindow):
     def _updatestatus(self, msg):
@@ -108,17 +107,18 @@ class _GUI(QtGui.QMainWindow):
 
     @QtCore.pyqtSignature("")
     def on_actionZoomInX_triggered(self):
-        self.scene.img.scale += self.scene.img.scale * 0.05
+        self.scene.img._scale += self.scene.img._scale * 0.05
         self.scene.draw()
 
     @QtCore.pyqtSignature("")
     def on_actionZoomOutX_triggered(self):
-        self.scene.img.scale -= self.scene.img.scale * 0.05
+        self.scene.img._scale -= self.scene.img._scale * 0.05
         self.scene.draw()
 
     @QtCore.pyqtSignature("")
     def on_actionZoomInY_triggered(self):
-        self.scene.img.branch_vertical_margin += 5 
+        self.scene.img.branch_vertical_margin += 5
+        self.scene.img._scale = None
         self.scene.draw()
 
     @QtCore.pyqtSignature("")
@@ -198,24 +198,28 @@ class _GUI(QtGui.QMainWindow):
     @QtCore.pyqtSignature("")
     def on_actionBranchLength_triggered(self):
         self.scene.img.show_branch_length ^= True
+        self.scene.img._scale = None
         self.scene.draw()
         self.view.centerOn(0,0)
 
     @QtCore.pyqtSignature("")
     def on_actionBranchSupport_triggered(self):
         self.scene.img.show_branch_support ^= True
+        self.scene.img._scale = None
         self.scene.draw()
         self.view.centerOn(0,0)
 
     @QtCore.pyqtSignature("")
     def on_actionLeafName_triggered(self):
         self.scene.img.show_leaf_name ^= True
+        self.scene.img._scale = None
         self.scene.draw()
         self.view.centerOn(0,0)
 
     @QtCore.pyqtSignature("")
     def on_actionForceTopology_triggered(self):
         self.scene.img.force_topology ^= True
+        self.scene.img._scale = None
         self.scene.draw()
         self.view.centerOn(0,0)
 
@@ -550,8 +554,8 @@ class _TreeView(QtGui.QGraphicsView):
             F = QtOpenGL.QGLFormat()
             F.setSampleBuffers(True)
             print F.sampleBuffers()
-            self.setViewport(QtOpenGL.QGLWidget(F))
-            self.setRenderHints(QtGui.QPainter.Antialiasing)
+            self.setViewport(QtOpenGL.QGLWidget())
+            self.setRenderHints(QtGui.QPainter.Antialiasing or QtGui.QPainter.SmoothPixmapTransform )
         else:
             self.setRenderHints(QtGui.QPainter.Antialiasing or QtGui.QPainter.SmoothPixmapTransform )
 
@@ -565,6 +569,7 @@ class _TreeView(QtGui.QGraphicsView):
         #self.setOptimizationFlag (QtGui.QGraphicsView.DontClipPainter)
         #self.scene().setItemIndexMethod(QtGui.QGraphicsScene.NoIndex)
         #self.scene().setBspTreeDepth(24)
+
     def resizeEvent(self, e):
         QtGui.QGraphicsView.resizeEvent(self, e)
 

@@ -21,9 +21,8 @@
 #
 # #END_LICENSE#############################################################
 import os
-import cPickle
 import random
-import copy
+import copy 
 from collections import deque 
 
 from ete_dev.parser.newick import read_newick, write_newick
@@ -36,6 +35,8 @@ except ImportError:
     TREEVIEW = False
 else:
     TREEVIEW = True
+
+
 
 __all__ = ["Tree", "TreeNode"]
 
@@ -605,7 +606,7 @@ class TreeNode(object):
         """
         Iterate over all desdecendant nodes. 
         """
-        if not is_leaf_fn or not is_leaf_fn(self):
+        if not is_leaf_fn or not is_leaf_fn(ch):
             for ch in self.children:
                 for node in ch._iter_descendants_postorder():
                     yield node
@@ -703,6 +704,7 @@ class TreeNode(object):
         nw = write_newick(self, features = features, format=format)
         if outfile is not None:
             open(outfile, "w").write(nw)
+            return nw
         else:
             return nw
 
@@ -714,6 +716,55 @@ class TreeNode(object):
         while root.up is not None:
             root = root.up
         return root
+
+    def get_common_ancestor_OLD(self, *target_nodes):
+        """ 
+        Returns the first common ancestor between this node and a given
+        list of 'target_nodes'.
+
+        **Examples:**
+
+        ::
+
+          t = tree.Tree("(((A:0.1, B:0.01):0.001, C:0.0001):1.0[&&NHX:name=common], (D:0.00001):0.000001):2.0[&&NHX:name=root];")
+          A = t.get_descendants_by_name("A")[0]
+          C = t.get_descendants_by_name("C")[0]
+          common =  A.get_common_ancestor(C)
+          print common.name
+
+        """
+        
+        if len(target_nodes) == 1 and type(target_nodes[0]) \
+                in set([set, tuple, list, frozenset]):
+            target_nodes = target_nodes[0]
+
+        # Convert node names into node instances
+        target_nodes = _translate_nodes(self, *target_nodes)
+
+        # If only one node is provided, use self as the second target
+        if type(target_nodes) != list:
+            target_nodes = [target_nodes, self]
+        elif len(target_nodes)==1:
+            target_nodes = tree_nodes.append(self)
+
+        start = target_nodes[-1]
+        targets = set(target_nodes)
+        nodes_bellow = set([start]+start.get_descendants())
+        current = start
+        prev_node = start
+        while current is not None:
+            # all nodes under current (skip vissited)
+            new_nodes = [n for s in current.children for n in s.traverse() \
+                           if s is not prev_node]+[current]
+            nodes_bellow.update(new_nodes)
+            if targets.issubset(nodes_bellow):
+                break
+            else:
+                prev_node = current
+                current = current.up
+
+        
+        return current
 
     def get_common_ancestor(self, *target_nodes, **kargs):
         """ 
@@ -953,6 +1004,37 @@ class TreeNode(object):
                     max_node = node
             return max_node, max_dist
 
+    def get_closest_leaf(self, topology_only=False):
+        """Returns node's closest descendant leaf and the distance to
+        it.
+
+        :argument False topology_only: If set to True, distance
+          between nodes will be referred to the number of nodes
+          between them. In other words, topological distance will be
+          used instead of branch length distances.
+
+        :return: A tuple containing the closest leaf referred to the
+          current node and the distance to it.
+
+        """
+        min_dist = None
+        min_node = None
+        if self.is_leaf():
+            return self, 0.0
+        else:
+            for ch in self.children:
+                node, d = ch.get_closest_leaf(topology_only=topology_only)
+                if topology_only:
+                    d += 1.0
+                else:
+                    d += ch.dist
+                if min_dist is None or d<min_dist:
+                    min_dist = d
+                    min_node = node
+            return min_node, min_dist
+
+
+            
     def get_midpoint_outgroup(self):
         """
         Returns the node that divides the current tree into two distance-balanced
@@ -975,10 +1057,10 @@ class TreeNode(object):
                 current = current.up
         return current
 
-    def populate(self, size, names_library=None, reuse_names=False, 
-                 random_branches=False): 
-        """
-        Generates a random topology by populating current node.
+    def populate(self, size, names_library=None, reuse_names=False,
+                 random_branches=False, branch_range=(0,1),
+                 support_range=(0,1)): 
+        """Generates a random topology by populating current node.
 
         :argument None names_library: If provided, names library
           (list, set, dict, etc.) will be used to name nodes.
@@ -987,8 +1069,16 @@ class TreeNode(object):
           necessarily unique, which makes the process a bit more
           efficient.
 
-        :argument False random: If True, branch distances and support
+        :argument False random_branches: If True, branch distances and support
           values will be randomized.
+        
+        :argument (0,1) branch_range: If random_branches is True, this
+        range of values will be used to generate random distances.
+
+        :argument (0,1) support_range: If random_branches is True,
+        this range of values will be used to generate random branch
+        support values.
+
         """
         NewNode = self.__class__
 
@@ -1014,10 +1104,10 @@ class TreeNode(object):
             c2 = p.add_child()
             next.extend([c1, c2])
             if random_branches:
-                c1.dist = random.random()
-                c2.dist = random.random()
-                c1.support = random.random()
-                c2.support = random.random()
+                c1.dist = random.uniform(*branch_range)
+                c2.dist = random.uniform(*branch_range)
+                c1.support = random.uniform(*branch_range)
+                c2.support = random.uniform(*branch_range)
 
         # next contains leaf nodes
         charset =  "abcdefghijklmnopqrstuvwxyz"
@@ -1137,7 +1227,7 @@ class TreeNode(object):
             else:
                 raise TreeError, "Cannot unroot a tree with only two leaves"
 
-    def show(self, layout=None, tree_style=None, name="ETE"):
+    def show(self, layout=None, tree_style=None):
         """ 
         Starts an interative session to visualize current node
         structure using provided layout and TreeStyle.
@@ -1150,8 +1240,7 @@ class TreeNode(object):
             print "\n\n"
             print e
         else:
-            drawer.show_tree(self, layout=layout,
-                             tree_style=tree_style, win_name=name)
+            drawer.show_tree(self, layout=layout, tree_style=tree_style)
 
     def render(self, file_name, layout=None, w=None, h=None, \
                        tree_style=None, units="px", dpi=300):
@@ -1184,61 +1273,21 @@ class TreeNode(object):
                                       layout=layout, tree_style=tree_style, 
                                       units=units)
 
-    def copy(self, method="cpickle"):
-        """.. versionadded: 2.1
-
-        Returns a copy of the current node.
-
-        :var cpickle method: Protocol used to copy the node
-        structure:
-
-           - "newick": Tree topology, node names, branch lengths and
-             branch support values will be copied based on the newick
-             format representation.
-        
-           - "newick-extended": Tree topology and all node features
-             will be copied based on the extended newick format
-             representation. Only registered node features will be
-             copied. Note also that features will be converted to text
-             strings.
-
-           - "cpickle": The whole node structure and its content is
-             copied based on cPickle object serialization (recommended
-             for full tree copies)
-        
-           - "deepcopy": The whole node structure and its content is
-             copied based on the "copy" Python functionality (this is
-             the slowest method)
-
+    def copy(self):
+        """ 
+        Returns an exact and complete copy of current node.
         """
-        if method=="newick":
-            new_node = self.__class__(self.write(features=["name"]))
-        elif method=="newick-extended":
-            new_node = self.__class__(self.write(features=[]))
-        elif method == "deepcopy":
-            parent = self.up
-            self.up = None
-            new_node = copy.deepcopy(self)
-            self.up = parent
-        elif method == "cpickle":
-            parent = self.up
-            self.up = None
-            new_node = cPickle.loads(cPickle.dumps(self, 2))
-            self.up = parent
-        else:
-            raise ValuerError("Invalid copy method")
-            
+        parent = self.up
+        self.up = None
+        new_node = copy.deepcopy(self)
+        self.up = parent
         return new_node
-        
-    def _asciiArt(self, char1='-', show_internal=True, compact=False, attributes=None):
+
+    def _asciiArt(self, char1='-', show_internal=True, compact=False):
         """
         Returns the ASCII representation of the tree. Code taken from the
         PyCogent GPL project.
         """
-        if not attributes:
-            attributes = ["name"]
-        node_name = ', '.join(map(str, [getattr(self, v, "?") for v in attributes]))
-       
         LEN = 5
         PAD = ' ' * LEN
         PA = ' ' * (LEN-1)
@@ -1246,15 +1295,13 @@ class TreeNode(object):
             mids = []
             result = []
             for c in self.children:
-                if len(self.children) == 1:
-                    char2 = '/'
-                elif c is self.children[0]:
+                if c is self.children[0]:
                     char2 = '/'
                 elif c is self.children[-1]:
                     char2 = '\\'
                 else:
                     char2 = '-'
-                (clines, mid) = c._asciiArt(char2, show_internal, compact, attributes)
+                (clines, mid) = c._asciiArt(char2, show_internal, compact)
                 mids.append(mid+len(result))
                 result.extend(clines)
                 if not compact:
@@ -1268,20 +1315,20 @@ class TreeNode(object):
             result = [p+l for (p,l) in zip(prefixes, result)]
             if show_internal:
                 stem = result[mid]
-                result[mid] = stem[0] + node_name + stem[len(node_name)+1:]
+                result[mid] = stem[0] + self.name + stem[len(self.name)+1:]
             return (result, mid)
         else:
-            return ([char1 + '-' + node_name], 0)
+            return ([char1 + '-' + self.name], 0)
 
-    def get_ascii(self, show_internal=True, compact=False, attributes=None):
+    def get_ascii(self, show_internal=True, compact=False):
         """
         Returns a string containing an ascii drawing of the tree.
 
         :argument show_internal: includes internal edge names.
         :argument compact: use exactly one line per tip.
         """
-        (lines, mid) = self._asciiArt(show_internal=show_internal,
-                                      compact=compact, attributes=attributes)
+        (lines, mid) = self._asciiArt(
+                show_internal=show_internal, compact=compact)
         return '\n'+'\n'.join(lines)
 
 
@@ -1403,61 +1450,6 @@ class TreeNode(object):
             n.add_features(_nid=counter)
             counter += 1
 
-    def get_node2content(self, store=None):
-        """ 
-        .. versionadded: 2.x
-        EXPERIMENTAL METHOD!
-        Returns a dictionary with the preloaded content of each descendant.
-        """
-        if store is None:
-            store = {}
-            
-        for ch in self.children:
-            ch.get_node2content(store=store)
-
-        if self.children:
-            val = set()
-            for ch in self.children:
-                val.update(store[ch])
-            store[self] = val
-        else:
-            store[self] = set([self])
-        return store
-
-            
-    def robinson_foulds(self, t2, attr_t1="name", attr_t2="name"):
-        """
-        .. versionadded: 2.x
-        
-        Returns the Robinson-Foulds topological distance between this and another node.
-
-        :returns: (RF distance, Max.RF distance)
-        """
-        
-        t1 = self
-        t1content = t1.get_node2content()
-        t2content = t2.get_node2content()
-        target_names = set([getattr(_n, attr_t1) for _n in t1content[t1]])
-        ref_names = set([getattr(_n, attr_t2) for _n in t2content[t2]])
-        common_names = target_names & ref_names
-        if len(common_names) < 2:
-            raise ValueError("Trees share less than 2 nodes")
-                            
-        r1 = set([",".join(sorted([getattr(_c, attr_t1) for _c in cont
-                                   if getattr(_c, attr_t1) in common_names]))
-                  for cont in t1content.values()])
-        r2 = set([",".join(sorted([getattr(_c, attr_t2) for _c in cont
-                                   if getattr(_c, attr_t2) in common_names]))
-                  for cont in t2content.values()])
-                      
-        inters = r1.intersection(r2)
-        if len(r1) == len(r2):
-                rf = (len(r1) - len(inters)) * 2
-        else :
-                rf = (len(r1) - len(inters)) + (len(r2) - len(inters))
-        rf_max = len(r1) + len(r2)
-        return rf, rf_max, ref_names, target_names, r1, r2
-
     def get_partitions(self):
         """ 
         .. versionadded: 2.1
@@ -1538,10 +1530,10 @@ class TreeNode(object):
         if position not in FACE_POSITIONS:
             raise ValueError("face position not in %s" %FACE_POSITIONS)
         
-        if Face in face.__class__.__bases__:
+        if isinstance(face, Face):
             getattr(self._faces, position).add_face(face, column=column)
         else:
-            raise ValueError("'face' must be a Face or inherited instance")
+            raise ValueError("not a Face instance")
 
     def set_style(self, node_style):
         """

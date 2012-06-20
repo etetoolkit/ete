@@ -5,7 +5,7 @@ Treeview module
 
 .. contents::
 
-Tree style
+TreeStyle
 ====================
 
 .. autoclass:: ete_dev.TreeStyle
@@ -13,13 +13,13 @@ Tree style
 .. autoclass:: ete_dev.FaceContainer
    :members:
 
-Node style
+NodeStyle
 =====================
 
 .. autoclass:: ete_dev.NodeStyle
 
 
-Node faces
+Faces
 =========================
 
 .. autofunction:: add_face_to_node
@@ -64,12 +64,11 @@ Node faces
    :members:
    :no-undoc-members:
 
+Color names
+=================
 
-Supported colors names
-=========================
+.. py:data:: SVG_COLORS
 
-.. toctree::
-   :maxdepth: 2
+   Apart from RGB color codes, the following SVG color names are supported:
 
-   reference_svgcolors
-
+ .. image:: ../svg_colors.png

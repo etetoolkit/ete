@@ -21,7 +21,7 @@
 #
 # #END_LICENSE#############################################################
 import numpy
-import faces 
+import faces
 
 def basic(node):
     if node.is_leaf():

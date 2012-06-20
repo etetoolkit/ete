@@ -2,7 +2,6 @@ import random
 from ete_dev import Tree, TreeStyle, NodeStyle, faces, AttrFace, TreeFace
 
 small_ts = TreeStyle()
-small_ts.tree_width = 100
 small_ts.show_leaf_name = True
 
 def layout(node):

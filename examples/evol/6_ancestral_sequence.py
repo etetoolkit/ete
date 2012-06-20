@@ -28,12 +28,10 @@ tree.run_model ('fb_anc')
 
 I = TreeStyle()
 I.force_topology             = False
-I.tree_width                 = 200
 I.draw_aligned_faces_as_table = True
 I.draw_guiding_lines = True
 I.guiding_lines_type = 2
 I.guiding_lines_color = "#CCCCCC"
-I.complete_branch_lines_when_necesary = True
 for n in sorted (tree.get_descendants()+[tree],
                  key=lambda x: x.paml_id):
     if n.is_leaf(): continue

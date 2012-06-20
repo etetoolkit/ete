@@ -193,15 +193,10 @@ def read_newick(newick, root_node=None, format=0):
         else:
             nw = newick
         nw = nw.strip()
-        if not nw.startswith('(') and nw.endswith(';'):
-            return _read_node_data(nw, root_node, "single", format)
-            
-        elif not nw.startswith('(') or not nw.endswith(';'):
+        if not nw.startswith('(') or not nw.endswith(';'):
             raise NewickError, \
             'Unexisting tree file or Malformed newick tree structure.'
-        else:
-            return _read_newick_from_string(nw, root_node, format)
-
+        return _read_newick_from_string(nw, root_node, format)
     else:
         raise NewickError, \
             "'newick' argument must be either a filename or a newick string."
@@ -280,15 +275,12 @@ def _parse_extra_features(node, NHX_string):
             raise ValueError, e
         node.add_feature(pname, pvalue)
 
-def _read_node_data(subnw, current_node, node_type, format):
+def _read_node_data(subnw, current_node, node_type,format):
     """ Reads a leaf node from a subpart of the original newick
     tree """
 
-    if node_type == "leaf" or node_type == "single":
-        if node_type == "leaf":
-            node = current_node.add_child()
-        else:
-            node = current_node
+    if node_type == "leaf":
+        node = current_node.add_child()
         container1 = NW_FORMAT[format][0][0]
         container2 = NW_FORMAT[format][1][0]
         converterFn1 = NW_FORMAT[format][0][1]
@@ -350,8 +342,7 @@ def write_newick(node, features=None, format=1, _is_root=True):
 
         newick += format_node(node, "leaf", format)
         newick += _get_features_string(node, features)
-        #return newick
-        
+        return newick
     else:
         if node.children:
             newick+= "("
@@ -366,7 +357,6 @@ def write_newick(node, features=None, format=1, _is_root=True):
                 newick += _get_features_string(node, features)
             else:
                 newick += ','
-                
     if _is_root:
         newick += ";"
     return newick

@@ -237,13 +237,13 @@ def search_by_feature(tree, search_term):
 
 def branch_info(aindex, nodeid, treeid, text, node):
     ''' It shows some info of the node in the popup menu '''
-    return '''
+    return """
            <li style="background:#eee; font-size:8pt;">
            <div style="text-align:left;font-weight:bold;">
             NODE ACTIONS
            </div>
             (<b>Branch: </b>%0.3f <b>Support:</b> %0.3f)<br>
-           </li>'''  %\
+           </li>"""  %\
         (node.dist, node.support)
 
 def search_in_ensmbl(aindex, nodeid, treeid, text, node):
@@ -257,14 +257,14 @@ def search_in_ensmbl(aindex, nodeid, treeid, text, node):
 def external_links_divider(aindex, nodeid, treeid, text, node):
     ''' Used to show a separator in the popup menu'''
     if node.is_leaf():
-        return '''<li
+        return """<li
         style="background:#eee;font-size:8pt;"><b>External
-        links</b></li>'''
+        links</b></li>"""
     else:
         return ""
 
 def topology_action_divider(aindex, nodeid, treeid, text, node):
-    return '''<li style="background:#eee;"><b>Tree node actions</b></li>'''
+    return """<li style="background:#eee;"><b>Tree node actions</b></li>"""
 
 # ==============================================================================
 # TREE RENDERER
@@ -345,14 +345,14 @@ def tree_renderer(tree, treeid, application):
                 text_features_avail.setdefault(f, 0)
                 text_features_avail[f] = text_features_avail[f] + 1 
 
-    html_features = '''
+    html_features = """
       <div id="tree_features_box">
       <div class="tree_box_header">Available tree features
       <img src="/webplugin/close.png" onclick='$(this).closest("#tree_features_box").hide();'>
       </div>
       <form action='javascript: set_tree_features("", "", "");'>
 
-      '''
+      """
 
     for fkey, counter in text_features_avail.iteritems():
         if fkey in asked_features:
@@ -368,7 +368,7 @@ def tree_renderer(tree, treeid, application):
  #       html_features += '<td><INPUT size=7 type="text"></td> <td><input size=7 type="text"></td> <td><input size=7 type="text"></td>  <td><input size=1 type="text"></td><br>'
         #html_features += "</tr>"
 
-    html_features += '''<input type="submit" value="Refresh" 
+    html_features += """<input type="submit" value="Refresh" 
                         onclick='javascript:
                                 // This piece of js code extracts the checked features from menu and redraw the tree sending such information
                                 var allVals = [];
@@ -378,29 +378,29 @@ def tree_renderer(tree, treeid, application):
                                 }});
                                 draw_tree("%s", "", "#img1", {"show_features": allVals.join(",")} );'
                        > 
-                       </form></div>''' %(treeid)
+                       </form></div>""" %(treeid)
 
-    features_button = '''
+    features_button = """
      <li><a href="#" onclick='show_box(event, $(this).closest("#tree_panel").children("#tree_features_box"));'>
      <img width=16 height=16 src="/webplugin/icon_tools.png" alt="Select Tree features">
-     </a></li>'''
+     </a></li>"""
 
-    download_button = '''
+    download_button = """
      <li><a href="/webplugin/tmp/%s.png" target="_blank">
      <img width=16 height=16 src="/webplugin/icon_attachment.png" alt="Download tree image">
-     </a></li>''' %(treeid)
+     </a></li>""" %(treeid)
 
-    search_button = '''
+    search_button = """
       <li><a href="#" onclick='javascript:
           var box = $(this).closest("#tree_panel").children("#search_in_tree_box");
           show_box(event, box); '>
       <img width=16 height=16 src="/webplugin/icon_search.png" alt="Search in tree">
-      </a></li>'''
+      </a></li>"""
 
-    clean_search_button = '''
+    clean_search_button = """
       <li><a href="#" onclick='run_action("%s", "", %s, "clean::clean");'>
       <img width=16 height=16 src="/webplugin/icon_cancel_search.png" alt="Clear search results">
-      </a></li>''' %\
+      </a></li>""" %\
         (treeid, 0)
 
     buttons = '<div id="ete_tree_buttons">' +\
@@ -412,7 +412,7 @@ def tree_renderer(tree, treeid, application):
         search_select += '<option value="%s">%s</option>' %(fkey,fkey)
     search_select += '</select>'
 
-    search_form = '''
+    search_form = """
      <div id="search_in_tree_box">
      <div class="tree_box_header"> Search in Tree
      <img src="/webplugin/close.png" onclick='$(this).closest("#search_in_tree_box").hide();'>
@@ -429,8 +429,8 @@ def tree_renderer(tree, treeid, application):
      </form>
      <i> (Press ENTER to initiate the search)</i>
      </div>
-     ''' %\
-        (treeid, 0, search_select) # 0 is the action index associated'
+     """ %\
+        (treeid, 0, search_select) # 0 is the action index associated
                                    # to the search functionality. This
                                    # means that this action is the
                                    # first to be registered in WebApplication.

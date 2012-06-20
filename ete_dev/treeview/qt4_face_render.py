@@ -118,7 +118,7 @@ class _FaceGroupItem(QGraphicsRectItem): # I resisted to name this FaceBookItem 
             self.r2max_h = r2max_h
 
         self.as_grid = as_grid
-        #self.update_columns_size()
+        self.update_columns_size()
         return self.c2max_w, self.r2max_h
   
 
@@ -179,8 +179,15 @@ class _FaceGroupItem(QGraphicsRectItem): # I resisted to name this FaceBookItem 
                         # Vertically at bottom
                         y_offset = (max_h - h) 
 
-                obj.setPos(x + f.margin_left + x_offset,\
-                               y + y_offset + f.margin_top)
+                # Correct cases in which object faces has negative
+                # starting points
+                #obj_rect = obj.boundingRect()
+                #_pos = obj_rect.topLeft()
+                #_x = abs(_pos.x()) if _pos.x() < 0 else 0
+                #_y = abs(_pos.y()) if _pos.y() < 0 else 0
+
+                obj.setPos(x + f.margin_left + x_offset,
+                           y + y_offset + f.margin_top)
 
                 obj.rotable = f.rotable
                 f.inner_background.apply(obj)

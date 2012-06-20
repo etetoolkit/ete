@@ -1,6 +1,7 @@
 import types
 
-from PyQt4  import QtGui
+from PyQt4 import QtGui, QtSvg
+from PyQt4 import QtCore
 from qt4_gui import _GUI, _PropertiesDialog, _BasicNodeActions
 
 import layouts
@@ -35,9 +36,10 @@ def init_scene(t, layout, ts):
         _QApp = QtGui.QApplication(["ETE"])
 
     scene  = _TreeScene()
+    ts._scale = None
     return scene, ts
 
-def show_tree(t, layout=None, tree_style=None, win_name=None):
+def show_tree(t, layout=None, tree_style=None):
     """ Interactively shows a tree."""
     scene, img = init_scene(t, layout, tree_style)
     tree_item, n2i, n2f = render(t, img)
@@ -45,10 +47,30 @@ def show_tree(t, layout=None, tree_style=None, win_name=None):
 
     tree_item.setParentItem(scene.master_item)
     scene.addItem(scene.master_item)
+    
+    size = tree_item.rect()
+    w, h = size.width(), size.height()
+    
+    svg = QtSvg.QSvgGenerator()
+    svg.setFileName("test.svg")
+    svg.setSize(QtCore.QSize(w, h))
+    svg.setViewBox(size)
+
+    
+    pp = QtGui.QPainter()
+    pp.begin(svg)
+    #pp.setRenderHint(QtGui.QPainter.Antialiasing)
+    #pp.setRenderHint(QtGui.QPainter.TextAntialiasing)
+    #pp.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
+    scene.render(pp, tree_item.rect(), tree_item.rect(), QtCore.Qt.KeepAspectRatio)
+    pp.end()
+
+    img = QtSvg.QGraphicsSvgItem("test.svg")
+    #img.setParentItem(scene.master_item)
+    #scene.removeItem(tree_item)
+    #tree_item.setVisible(False)
+    
     mainapp = _GUI(scene)
-    if win_name:
-        mainapp.setObjectName(win_name)
-        
     mainapp.show()
     _QApp.exec_()
 
