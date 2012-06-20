@@ -6,7 +6,7 @@ from PyQt4 import QtCore, QtGui, QtSvg
 import qt4_circular_render as crender
 import qt4_rect_render as rrender
 
-from main import _leaf, NodeStyle, _FaceAreas, tracktime
+from main import _leaf, NodeStyle, _FaceAreas, tracktime, TreeStyle
 from node_gui_actions import _NodeActions as _ActionDelegator
 from qt4_face_render import update_node_faces, _FaceGroupItem, _TextFaceItem
 from templates import _DEFAULT_STYLE, apply_template
