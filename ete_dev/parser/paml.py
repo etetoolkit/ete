@@ -26,7 +26,7 @@ import string
 from sys import stderr as STDERR
 from re import search
 
-def read_paml (source, obj=None):
+def read_paml (source, obj=None, header_delimiter="\t", fix_duplicates=True):
     """ Reads a collection of sequences econded in PAML format... that is, something between PHYLIP and fasta
 
      3 6
@@ -90,11 +90,11 @@ def read_paml (source, obj=None):
 
             seq_id += 1
             # Takes header info
-            seq_header_fields = map(string.strip, line.split("\t"))
+            seq_header_fields = map(string.strip, line.split(header_delimiter))
             seq_name = seq_header_fields[0]
 
             # Checks for duplicated seq names
-            if seq_name in names:
+            if fix_duplicates and seq_name in names:
                 tag = str(len([k for k in SC.name2id.keys() if k.endswith(seq_name)]))
                 old_name = seq_name
                 seq_name = tag+"_"+seq_name

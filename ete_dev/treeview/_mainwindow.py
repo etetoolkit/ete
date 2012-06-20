@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'ete_qt4app.ui'
 #
-# Created: Wed Mar 16 17:21:28 2011
-#      by: PyQt4 UI code generator 4.6
+# Created: Tue Jan 10 15:56:57 2012
+#      by: PyQt4 UI code generator 4.7.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -30,11 +30,13 @@ class Ui_MainWindow(object):
         self.toolBar = QtGui.QToolBar(MainWindow)
         self.toolBar.setEnabled(True)
         self.toolBar.setObjectName("toolBar")
-        MainWindow.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
+        MainWindow.addToolBar(QtCore.Qt.ToolBarArea(QtCore.Qt.TopToolBarArea), self.toolBar)
         self.actionOpen = QtGui.QAction(MainWindow)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/ete icons/fileopen.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionOpen.setIcon(icon)
+        font = QtGui.QFont()
+        self.actionOpen.setFont(font)
         self.actionOpen.setObjectName("actionOpen")
         self.actionPaste_newick = QtGui.QAction(MainWindow)
         self.actionPaste_newick.setObjectName("actionPaste_newick")

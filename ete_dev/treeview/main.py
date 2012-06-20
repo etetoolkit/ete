@@ -7,7 +7,7 @@ from sys import stderr
 from PyQt4.QtGui import *
 from PyQt4 import QtCore
 
-from svg_colors import SVG_COLORS
+from svg_colors import SVG_COLORS, COLOR_SCHEMES
 
 import time
 def tracktime(f):
@@ -28,13 +28,13 @@ _BOOL_CHECKER =  lambda x: isinstance(x, bool) or x in (0,1)
 
 FACE_POSITIONS = set(["branch-right", "branch-top", "branch-bottom", "float", "float-behind", "aligned"])
 
-__all__  = ["NodeStyle", "TreeStyle", "FaceContainer", "_leaf", "add_face_to_node"]
+__all__  = ["NodeStyle", "TreeStyle", "FaceContainer", "_leaf", "add_face_to_node", "COLOR_SCHEMES"]
 
 NODE_STYLE_DEFAULT = [
     ["fgcolor",          "#0030c1",    _COLOR_CHECKER                           ],
     ["bgcolor",          "#FFFFFF",    _COLOR_CHECKER                           ],
     ["node_bgcolor",     "#FFFFFF",    _COLOR_CHECKER                           ],
-    ["partition_bgcolor","#FFFFFF",    _COLOR_CHECKER                           ],
+    #["partition_bgcolor","#FFFFFF",    _COLOR_CHECKER                           ],
     ["faces_bgcolor",    "#FFFFFF",    _COLOR_CHECKER                           ],    
     ["vt_line_color",    "#000000",    _COLOR_CHECKER                           ],
     ["hz_line_color",    "#000000",    _COLOR_CHECKER                           ],
@@ -200,13 +200,15 @@ class NodeStyle(dict):
       
         if i not in VALID_NODE_STYLE_KEYS:
             raise ValueError("'%s' is not a valid keyword for a NodeStyle instance" %i)
+
         super(NodeStyle, self).__setitem__(i, v)
 
     #def clear(self):
     #    super(NodeStyle, self).__setitem__("_faces", {})
 
 class TreeStyle(object):
-    """.. versionadded:: 2.1
+    """ 
+    .. versionadded:: 2.1
 
     .. currentmodule:: ete_dev
 
@@ -241,7 +243,7 @@ class TreeStyle(object):
       starting angle (in degrees) from which leaves are distributed
       (clock-wise) around the total arc span (0 = 3 o'clock).
 
-    :var 360 arc_span: Total arc used to draw circular trees (in
+    :var 359 arc_span: Total arc used to draw circular trees (in
       degrees).
 
     :var 0 margin_left: Left tree image margin, in pixels.
@@ -343,22 +345,26 @@ class TreeStyle(object):
     :var 4 legend_position=4: TopLeft corner if 1, TopRight
       if 2, BottomLeft if 3, BottomRight if 4
     
-    :var title: A text string that will be draw as the Tree title
+    :var title: A Face container that can be used as tree title
 
     """
    
     def set_layout_fn(self, layout):
-        # Validates layout function
-        if type(layout) == types.FunctionType or\
-                type(layout) == types.MethodType or layout is None:
-            self._layout_handler = layout
+        self._layout_handler = []
+        if type(layout) not in set([list, set, tuple, frozenset]):
+            self._layout_handler.append(layout)
         else:
-            try:
-                import layouts
-                self._layout_handler = getattr(layouts, layout)
-            except Exception, e:
-                print e
-                raise ValueError ("Required layout is not a function pointer nor a valid layout name.")
+            for ly in layout:
+                # Validates layout function
+                if (type(ly) == types.FunctionType or type(ly) == types.MethodType or ly is None):
+                    self._layout_handler.append(layout)
+                else:
+                    import layouts 
+                    try:
+                        self._layout_handler.append(getattr(layouts, ly))
+                    except Exception, e:
+                        print e
+                        raise ValueError ("Required layout is not a function pointer nor a valid layout name.")
  
     def get_layout_fn(self):
         return self._layout_handler
@@ -379,7 +385,7 @@ class TreeStyle(object):
 
         # Layout function used to dynamically control the aspect of
         # nodes
-        self._layout_handler = None
+        self._layout_handler = []
         
         # 0= tree is drawn from left-to-right 1= tree is drawn from
         # right-to-left. This property only has sense when "r" mode
@@ -410,7 +416,7 @@ class TreeStyle(object):
         self.arc_start = 0 
 
         # Total arc used to draw circular trees (in degrees)
-        self.arc_span = 360
+        self.arc_span = 359
 
         # Margins around tree picture
         self.margin_left = 1
@@ -485,6 +491,7 @@ class TreeStyle(object):
         
         self.__closed__ = 1
 
+
     def __setattr__(self, attr, val):
         if hasattr(self, attr) or not getattr(self, "__closed__", 0):
             if TREE_STYLE_CHECKER.get(attr, lambda x: True)(val):
@@ -522,7 +529,7 @@ class FaceContainer(dict):
         self.setdefault(int(column), []).append(face)
 
 def _leaf(node):
-    collapsed = hasattr(node, "img_style") and not node.img_style["draw_descendants"]
+    collapsed = hasattr(node, "_img_style") and not node.img_style["draw_descendants"]
     return collapsed or node.is_leaf()
 
 def add_face_to_node(face, node, column, aligned=False, position="branch-right"):
@@ -538,7 +545,7 @@ def add_face_to_node(face, node, column, aligned=False, position="branch-right")
     :argument node: a tree node instance (:class:`Tree`, :class:`PhyloTree`, etc.)
     :argument column: An integer number starting from 0
     :argument "branch-right" position: Possible values are
-      "branch-right", "branch-top", "branch-bottom", "float", "aligned"
+      "branch-right", "branch-top", "branch-bottom", "float", "float-behind" and "aligned".
     """ 
 
     ## ADD HERE SOME TYPE CHECK FOR node and face
@@ -550,9 +557,7 @@ def add_face_to_node(face, node, column, aligned=False, position="branch-right")
     if getattr(node, "_temp_faces", None):
         getattr(node._temp_faces, position).add_face(face, column)
     else:
-        print node
-        print getattr(node, "_temp_faces", None)
-        raise Exception("This function can only be called within a layout function. Use node.add_face() instead")
+         raise Exception("This function can only be called within a layout function. Use node.add_face() instead")
 
 def random_color(h=None, l=None, s=None):
     def rgb2hex(rgb):

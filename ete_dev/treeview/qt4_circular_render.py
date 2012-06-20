@@ -2,8 +2,8 @@ import math
 import colorsys
 from PyQt4 import QtCore, QtGui
 from main import _leaf, tracktime
-from qt4_gui import _NodeActions
-from collections import deque
+from node_gui_actions import _NodeActions
+
 
 class _LineItem(QtGui.QGraphicsLineItem):
     def paint(self, painter, option, widget):
@@ -196,6 +196,7 @@ def render_circular(root_node, n2i, rot_step):
 
 
         if hasattr(item, "content"):
+
             # If applies, it sets the length of the extra branch length
             if item.extra_branch_line:
                 xtra =  item.extra_branch_line.line().dx()
@@ -211,6 +212,7 @@ def render_circular(root_node, n2i, rot_step):
             if xoffset:
                 for i in item.movable_items:
                     i.moveBy(xoffset, 0)
+                
             
     n2i[root_node].max_r = max_r
     return max_r
@@ -221,8 +223,10 @@ def init_circular_leaf_item(node, n2i, n2f, last_rotation, rot_step):
     item.full_start = last_rotation - (rot_step / 2)
     item.full_end = last_rotation + (rot_step / 2)
     item.angle_span = rot_step
+    #item.center = item.nodeRegion.height() / 2
     item.effective_height = get_effective_height(node, n2i, n2f)
     item.center = item.effective_height/2
+    #item.setParentItem(n2i[node.up])
 
 def init_circular_node_item(node, n2i, n2f):
     item = n2i[node]

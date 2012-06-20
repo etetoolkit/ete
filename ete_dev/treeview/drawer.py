@@ -1,7 +1,8 @@
 import types
+import signal
 
-from PyQt4 import QtGui, QtSvg
-from PyQt4 import QtCore
+from PyQt4  import QtGui
+from PyQt4  import QtCore
 from qt4_gui import _GUI, _PropertiesDialog, _BasicNodeActions
 
 import layouts
@@ -14,7 +15,11 @@ from templates import _DEFAULT_STYLE, apply_template
 __all__ = ["show_tree", "render_tree"]
 
 _QApp = None
+GUI_TIMEOUT = None
 
+def exit_gui(a,b):
+    _QApp.exit(0)
+        
 def init_scene(t, layout, ts):
     global _QApp
 
@@ -39,48 +44,36 @@ def init_scene(t, layout, ts):
     ts._scale = None
     return scene, ts
 
-def show_tree(t, layout=None, tree_style=None):
+def show_tree(t, layout=None, tree_style=None, win_name=None):
     """ Interactively shows a tree."""
     scene, img = init_scene(t, layout, tree_style)
     tree_item, n2i, n2f = render(t, img)
-    scene.init_data(t, img, n2i, n2f)
+    scene.init_values(t, img, n2i, n2f)
 
     tree_item.setParentItem(scene.master_item)
     scene.addItem(scene.master_item)
-    
-    size = tree_item.rect()
-    w, h = size.width(), size.height()
-    
-    svg = QtSvg.QSvgGenerator()
-    svg.setFileName("test.svg")
-    svg.setSize(QtCore.QSize(w, h))
-    svg.setViewBox(size)
-
-    
-    pp = QtGui.QPainter()
-    pp.begin(svg)
-    #pp.setRenderHint(QtGui.QPainter.Antialiasing)
-    #pp.setRenderHint(QtGui.QPainter.TextAntialiasing)
-    #pp.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
-    scene.render(pp, tree_item.rect(), tree_item.rect(), QtCore.Qt.KeepAspectRatio)
-    pp.end()
-
-    img = QtSvg.QGraphicsSvgItem("test.svg")
-    #img.setParentItem(scene.master_item)
-    #scene.removeItem(tree_item)
-    #tree_item.setVisible(False)
-    
     mainapp = _GUI(scene)
+    if win_name:
+        mainapp.setObjectName(win_name)
+        
     mainapp.show()
+    mainapp.on_actionFit2tree_triggered()
+    # Restore Ctrl-C behavior
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
+    if GUI_TIMEOUT is not None:
+        signal.signal(signal.SIGALRM, exit_gui) 
+        signal.alarm(GUI_TIMEOUT) 
+   
     _QApp.exec_()
 
+    
 def render_tree(t, imgName, w=None, h=None, layout=None, \
                     tree_style = None, header=None, units="px"):
     """ Render tree image into a file."""
     scene, img = init_scene(t, layout, tree_style)
     tree_item, n2i, n2f = render(t, img)
 
-    scene.init_data(t, img, n2i, n2f)
+    scene.init_values(t, img, n2i, n2f)
     tree_item.setParentItem(scene.master_item)
     scene.master_item.setPos(0,0)
     scene.addItem(scene.master_item)

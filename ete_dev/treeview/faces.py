@@ -24,7 +24,7 @@
 from PyQt4 import QtCore, QtGui
 from numpy import isfinite as _isfinite, ceil
 
-from main import add_face_to_node, _Background, _Border
+from main import add_face_to_node, _Background, _Border, COLOR_SCHEMES
 
 isfinite = lambda n: n and _isfinite(n)
 
@@ -111,7 +111,8 @@ _ntbgcolors = {
 __all__ = ["Face", "TextFace", "AttrFace", "ImgFace",
            "ProfileFace", "SequenceFace", "TreeFace",
            "RandomFace", "DynamicItemFace", "StaticItemFace",
-           "CircleFace", "PieChartFace", "BarChartFace"]
+           "CircleFace", "PieChartFace", "BarChartFace",
+           "SequencePlotFace"]
 
 class Face(object):
     """ 
@@ -285,19 +286,34 @@ class AttrFace(TextFace):
                                      self.text_suffix]))
 
 class ImgFace(Face):
-    """ 
-    Creates a new image face object.
+    """Creates a node Face using an external image file.
 
-    :argument img_file: Image file in png,jpg,bmp format
+    :argument img_file: path to the image file. 
+    :argument None width: if provided, image will be scaled to this width (in pixels)
+    :argument None height: if provided, image will be scaled to this height (in pixels)
+
+    If only one dimension value (width or height) is provided, the other
+    will be calculated to keep aspect ratio. 
 
     """
-    def __init__(self,img_file):
+    
+    def __init__(self, img_file, width=None, height=None):
         Face.__init__(self)
         self.img_file = img_file
-
+        self.width = width
+        self.height = height
+        
     def update_pixmap(self):
-        self.load_pixmap_from_file(self.img_file)
-
+        self.pixmap = QtGui.QPixmap(self.img_file)
+        
+        if self.width or self.height:
+            w, h = self.width, self.height
+            ratio = self.pixmap.width() / float(self.pixmap.height())
+            if not w:
+                w = ratio * h
+            if not h:
+                h = w  / ratio
+            self.pixmap = self.pixmap.scaled(w, h)
 
 class ProfileFace(Face):
     """ 
@@ -735,6 +751,7 @@ class ProfileFace(Face):
             return float(v)
 
 
+
 class OLD_SequenceFace(Face):
     """ Creates a new molecular sequence face object.
 
@@ -813,159 +830,6 @@ class OLD_SequenceFace(Face):
             x += float(width)/len(self.seq)
         p.end()
 
-
-class StaticItemFace(Face):
-    """
-    .. versionadded:: 2.1
-
-    Creates a face based on an external QtGraphicsItem object.
-    QGraphicsItem object is expected to be independent from tree node
-    properties, so its content is assumed to be static (drawn only
-    once, no updates when tree changes). 
-
-    :arguments item: an object based on QGraphicsItem
-    """
-    def __init__(self, item):
-        Face.__init__(self)
-        self.type = "item"
-        self.item = item
-
-    def update_items(self):
-        return 
-
-    def _width(self):
-        return self.item.rect().width()
-
-    def _height(self):
-        return self.item.rect().height()
-        
-
-class SequenceFace(StaticItemFace, Face):
-    """ Creates a new molecular sequence face object.
-
-
-    :argument seq:  Sequence string to be drawn
-    :argument seqtype: Type of sequence: "nt" or "aa"
-    :argument fsize:   Font size,  (default=10)
-
-    You can set custom colors for amino-acids or nucleotides: 
-
-    :argument None  codon       : a string that corresponds to the reverse translation of the amino-acid sequence
-    :argument None  col_w       : width of the column (if col_w is lower than font size, letter wont be displayed)
-    :argument None  fg_colors   : dictionary of colors for foreground, with as keys each possible character in sequences, and as value the colors
-    :argument None  bg_colors   : dictionary of colors for background, with as keys each possible character in sequences, and as value the colors
-    :argument 3     alt_col_w   : works together with special_col option, defines the width of given columns
-    :argument None  special_col : list of lists containing the bounds of columns to be displayed with alt_col_w as width
-    :argument False interactive : more info can be displayed when mouse over sequence
-
-    """
-    def __init__(self, seq, seqtype="aa", fsize=10,
-                 fg_colors=None, bg_colors=None,
-                 codon=None, col_w=None, alt_col_w=3,
-                 special_col=None, interactive=False):
-        self.seq         = seq
-        self.codon       = codon
-        self.fsize       = fsize
-        self.style       = seqtype
-        self.col_w       = float(self.fsize + 1) if col_w is None else float(col_w)
-        self.alt_col_w   = float(alt_col_w)
-        self.special_col = special_col if special_col else []
-        self.width       = 0 # will store the width of the whole sequence
-        self.interact    = interactive
-
-        if self.style == "aa":
-            if not fg_colors:
-                fg_colors = _aafgcolors
-            if not bg_colors:
-                bg_colors = _aabgcolors
-        else:
-            if not fg_colors:
-                fg_colors = _ntfgcolors
-            if not bg_colors:
-                bg_colors = _ntbgcolors
-
-        self.fg_col = self.__init_col(fg_colors)
-        self.bg_col = self.__init_col(bg_colors)
-            
-        # for future?
-        self.row_h       = 13.0
-
-        super(SequenceFace,
-              self).__init__(QtGui.QGraphicsRectItem(0, 0, self.width,
-                                                     self.row_h))
-
-    def __init_col(self, color_dic):
-        """to speed up the drawing of colored rectangles and characters"""
-        new_color_dic = {}
-        for car in color_dic:
-            new_color_dic[car] = QtGui.QBrush(QtGui.QColor(color_dic[car]))
-        return new_color_dic
-        
-    def update_items(self):
-        #self.item = QGraphicsRectItem(0,0,self._total_w, self.row_h)
-        seq_width = 0
-        nopen = QtGui.QPen(QtCore.Qt.NoPen)
-        font = QtGui.QFont("Courier", self.fsize)
-        rect_cls = self.InteractiveLetterItem if self.interact \
-                   else QtGui.QGraphicsRectItem
-        for i, letter in enumerate(self.seq):
-            width = self.col_w
-            for m in self.special_col:
-                if m[0] < i <= m[1]:
-                    width = self.alt_col_w
-                    break
-            #load interactive item if called correspondingly
-            rectItem = rect_cls(0, 0, width, self.row_h, parent=self.item)
-            rectItem.setX(seq_width) # to give correct X to children item
-            rectItem.setBrush(self.bg_col[letter])
-            rectItem.setPen(nopen)
-            if self.interact:
-                if self.codon:
-                    rectItem.codon = '%s, %d: %s' % (self.seq[i], i,
-                                                     self.codon[i*3:i*3+3])
-                else:
-                    rectItem.codon = '%s, %d' % (self.seq[i], i)
-            # write letter if enough space
-            if width >= self.fsize:
-                text = QtGui.QGraphicsSimpleTextItem(letter, parent=rectItem)
-                text.setFont(font)
-                text.setBrush(self.fg_col[letter])
-                # Center text according to rectItem size
-                tw = text.boundingRect().width()
-                th = text.boundingRect().height()
-                text.setPos((width - tw)/2, (self.row_h - th)/2)
-            seq_width += width
-        self.width = seq_width
-
-    class InteractiveLetterItem(QtGui.QGraphicsRectItem):
-        """This is a class"""
-        def __init__(self, *arg, **karg):
-            QtGui.QGraphicsRectItem.__init__(self, *arg, **karg)
-            self.codon = None
-            self.label = None
-            self.setAcceptsHoverEvents(True)
-    
-        def hoverEnterEvent (self, e):
-            """ when mouse is over"""
-            if not self.label:
-                self.label = QtGui.QGraphicsRectItem(parent=self)
-                #self.label.setY(-18)
-                self.label.setX(11)
-                self.label.setBrush(QtGui.QBrush(QtGui.QColor("white")))
-                self.label.text = QtGui.QGraphicsSimpleTextItem(parent=self.label)
-    
-            self.setZValue(1)
-            self.label.text.setText(self.codon)
-            self.label.setRect(self.label.text.boundingRect())
-            self.label.setVisible(True)
-    
-        def hoverLeaveEvent(self, e):
-            """when mouse leaves area"""
-            if self.label: 
-                self.label.setVisible(False)
-                self.setZValue(0)
-
-        
 class TreeFace(Face):
     """ 
     .. versionadded:: 2.1
@@ -1044,6 +908,32 @@ class CircleFace(Face):
         return self.item.rect().height()
 
 
+class StaticItemFace(Face):
+    """
+    .. versionadded:: 2.1
+
+    Creates a face based on an external QtGraphicsItem object.
+    QGraphicsItem object is expected to be independent from tree node
+    properties, so its content is assumed to be static (drawn only
+    once, no updates when tree changes). 
+
+    :arguments item: an object based on QGraphicsItem
+    """
+    def __init__(self, item):
+        Face.__init__(self)
+        self.type = "item"
+        self.item = item
+
+    def update_items(self):
+        return 
+
+    def _width(self):
+        return self.item.rect().width()
+
+    def _height(self):
+        return self.item.rect().height()
+
+
 class DynamicItemFace(Face):
     """
     .. versionadded:: 2.1
@@ -1111,23 +1001,29 @@ class BackgroundFace(Face):
 
 
 class _PieChartItem(QtGui.QGraphicsRectItem):
-    def __init__(self, percents, width, height, colors):
+    def __init__(self, percents, width, height, colors, line_color=None):
         QtGui.QGraphicsRectItem.__init__(self, 0, 0, width, height)
         self.percents = percents
         self.colors = colors
+        self.line_color = line_color
+        
     def paint(self, painter, option, widget):
         a = 5760
         angle_start = 0
+        if not self.line_color:
+            painter.setPen(QtCore.Qt.NoPen)
+        else:
+            painter.setPen(QtGui.QColor(self.line_color))
+            
         for i, p in enumerate(self.percents):
             col = self.colors[i]
             painter.setBrush(QtGui.QBrush(QtGui.QColor(col)))
-            painter.setPen(QtCore.Qt.NoPen)
             angle_span = (p/100.) * a
             painter.drawPie(self.rect(), angle_start, angle_span )
             angle_start += angle_span
 
 
-class PieChartFace(Face):
+class PieChartFace(StaticItemFace):
     """ 
     .. versionadded:: 2.2
 
@@ -1137,20 +1033,24 @@ class PieChartFace(Face):
     :arguments colors: a list of colors (same length as percents)
    
     """
-    def __init__(self, percents, width, height, colors):
+    def __init__(self, percents, width, height, colors=None, line_color=None):
         Face.__init__(self)
-        if round(sum(percents),3) != 100:
+        if sum(percents) != 100:
             raise ValueError("PieChartItem: percentage values should sum up 100")
 
         self.type = "item"
         self.item = None
         self.percents = percents
+        if not colors:
+            colors = COLOR_SCHEMES["paired"]
         self.colors =  colors
         self.width = width
         self.height = height
-
+        self.line_color = line_color
+        
     def update_items(self):
-        self.item = _PieChartItem(self.percents, self.width, self.height, self.colors)
+        self.item = _PieChartItem(self.percents, self.width,
+                                  self.height, self.colors, self.line_color)
         
     def _width(self):
         return self.item.rect().width()
@@ -1169,22 +1069,35 @@ class BarChartFace(Face):
     :arguments colors: a list of colors (same length as percents)
    
     """
-    def __init__(self, values, deviations, width, height, colors, labels, max_value):
+    def __init__(self, values, deviations=None, width=200, height=100, colors=None, labels=None, min_value=0, max_value=None):
         Face.__init__(self)
         self.type = "item"
         self.item = None
         self.values = values
-        self.deviations = deviations
+        if not deviations:
+            self.deviations = [0] * len(values)
+        else:
+            self.deviations = deviations
+
+        if not colors:
+            colors = COLOR_SCHEMES["paired"]
         self.colors =  colors
+       
+        
         self.width = width
         self.height = height
         self.labels = labels
         self.max_value = max_value
-
+        self.min_value = min_value
+        self.margin_left = 1
+        self.margin_right = 1
+        self.margin_top = 2
+        self.margin_bottom = 2
+        
     def update_items(self):
         self.item = _BarChartItem(self.values, self.deviations, self.width,
                                   self.height, self.colors, self.labels, 
-                                  self.max_value)
+                                  self.min_value, self.max_value)
         
     def _width(self):
         return self.item.rect().width()
@@ -1194,10 +1107,9 @@ class BarChartFace(Face):
 
 
 class _BarChartItem(QtGui.QGraphicsRectItem):
-    def __init__(self, values, deviations, width, height, colors, labels, max_value):
+    def __init__(self, values, deviations, width, height, colors, labels, min_value, max_value):
         QtGui.QGraphicsRectItem.__init__(self, 0, 0, width, height)
         self.values = values
-        self.deviations = deviations
         self.colors = colors
         self.width = width
         self.height = height
@@ -1206,32 +1118,52 @@ class _BarChartItem(QtGui.QGraphicsRectItem):
         self.draw_scale = True
         self.labels = labels
         self.max_value = max_value
-
-    def paint(self, p, option, widget):
-
+        self.min_value = min_value
+        self.deviations = deviations
         
-
+    def paint(self, p, option, widget):
         colors = self.colors
         values = self.values
         deviations = self.deviations
+
         spacer = 3
-        scale_length = self.draw_scale * 40
-        width = self.width - scale_length
         spacing_length = (spacer*(len(values)-1))
         height=  self.height 
+        
         if self.max_value is None:
             max_value = max([v+d for v,d in zip(values, deviations) if isfinite(v)])
         else:
             max_value = self.max_value
 
-        min_value = 0
-        x_alpha = float((width - spacing_length) / (len(values))) 
+        if self.min_value is None:
+            min_value = min([v+d for v,d in zip(values, deviations) if isfinite(v)])
+        else:
+            min_value = 0
+            
+        scale_length = 0
+        scale_margin = 2
+        if self.draw_scale: 
+            p.setFont(QtGui.QFont("Verdana", 8))
+            max_string = "%g" %max_value
+            min_string = "%g" %min_value
+            fm = QtGui.QFontMetrics(p.font())
+            max_string_metrics = fm.boundingRect(QtCore.QRect(), \
+                                                 QtCore.Qt.AlignLeft, \
+                                                 max_string)
+            min_string_metrics = fm.boundingRect(QtCore.QRect(), \
+                                                 QtCore.Qt.AlignLeft, \
+                                                 min_string)
+            scale_length = scale_margin + max(max_string_metrics.width(),
+                              min_string_metrics.width())
+        
+
+        real_width = self.width - scale_length
+        x_alpha = float((real_width - spacing_length) / (len(values))) 
         if x_alpha < 1:
-            print scale_length + spacing_length + len(values)
             raise ValueError("BarChartFace is too small")
         
         y_alpha = float ( (height-1) / float(max_value - min_value) )
-        x2 = 0 
+        x = 0 
         y  = 0
 
         # Mean and quartiles y positions
@@ -1241,24 +1173,28 @@ class _BarChartItem(QtGui.QGraphicsRectItem):
 
         if self.draw_border:
             p.setPen(QtGui.QColor("black"))
-            p.drawRect(x2, y, width, height - 1)
+            p.drawRect(x, y, real_width + scale_margin - 1 , height)
+            
         if self.draw_scale: 
-            p.setFont(QtGui.QFont("Verdana", 8))
-            p.drawText(width, y + 10,"%0.3f" %max_value)
-            p.drawText(width, y + height,"%0.3f" %min_value)
+            p.drawText(real_width + scale_margin, max_string_metrics.height(), max_string)
+            p.drawText(real_width + scale_margin, height - 2, min_string)
+            p.drawLine(real_width + scale_margin - 1, 0, real_width + scale_margin - 1, height)
+            p.drawLine(real_width + scale_margin - 1, 0, real_width + scale_margin + 2, y)
+            p.drawLine(real_width + scale_margin - 1, height, real_width + scale_margin + 2, height)
+            
         if self.draw_grid: 
             dashedPen = QtGui.QPen(QtGui.QBrush(QtGui.QColor("#ddd")), 0)
             dashedPen.setStyle(QtCore.Qt.DashLine)
             p.setPen(dashedPen)
-            p.drawLine(x2+1, mean_line_y, width - 2, mean_line_y )
-            p.drawLine(x2+1, line2_y, width - 2, line2_y )
-            p.drawLine(x2+1, line3_y, width - 2, line3_y )
+            p.drawLine(x+1, mean_line_y, real_width - 2, mean_line_y )
+            p.drawLine(x+1, line2_y, real_width - 2, line2_y )
+            p.drawLine(x+1, line3_y, real_width - 2, line3_y )
 
         # Draw bars
         for pos in xrange(len(values)):
             # first and second X pixel positions
-            x1 = x2
-            x2 = x1 + x_alpha + spacer
+            x1 = x
+            x = x1 + x_alpha + spacer
 
             std =  deviations[pos]
             val = values[pos]
@@ -1286,43 +1222,154 @@ class _BarChartItem(QtGui.QGraphicsRectItem):
                 p.drawLine(center_x + 1, height - dev_down_y1, center_x -1, height - dev_down_y1)
 
             if self.labels: 
-                p.save();
-                p.translate(x1, -height-30);
-                p.rotate(90);
-                p.drawText(0, 0, self.labels[pos]);
-                p.restore();
+                p.save()
+                p.translate(x1, -height-30)
+                p.rotate(90)
+                p.drawText(0, 0, str(self.labels[pos]))
+                p.restore()
 
+
+
+class SeqFace(Face):
+    def __init__(self, seq, motifs=None, seqtype="aa"):
+        Face.__init__(self)
+        self.motifs = motifs or []
+        self.seq  = seq
+        
+        self.style = seqtype
+        self.aafg = _aafgcolors
+        self.aabg = _aabgcolors
+        self.ntfg = _ntfgcolors
+        self.ntbg = _ntbgcolors
+
+        self.type2info = {"s": [2, 12],
+                          "m": [10, 12],
+                          "*": [2, 12],
+                      }
+
+        self.regions = make_regions(self.seq, self.motifs)
+        
+    def update_pixmap(self):
+        #regions = []
+        #for r in self.regions:
+        #    last_end = 0
+        #    if r[2] == "s":
+        #        for same_letter in re.finditer("((.)\\2{2}\\2+)", self.seq[r[0]:r[1]]):
+        #            start, end =  same_letter.span()
+        #            if start > last_end + 1:
+        #                regions.append([last_end, start, r[2]])
+        #            regions.append([start, end, "*"])
+        #            last_end = end
+        #    if last_end < r[1]:
+        #        regions.append([last_end, r[1], r[2]])
+        regions = self.regions
+        w, h = 0, 0
+        for r in regions:
+            rw, rh = self.type2info[r[2]]
+            w += rw * (r[1]-r[0])
+            h = max(h, rh)
+
+        self.pixmap = QtGui.QPixmap(w, h)
+        self.pixmap.fill()
+        p = QtGui.QPainter(self.pixmap)
+
+        pen = QtGui.QPen()
+        #pen.setWidth(0)
+        brush = QtGui.QBrush()
+        p.setPen(pen)
+        p.setBrush(brush)
+        QColor = QtGui.QColor
+        x = 0                
+        for r in regions:
+            rw, rh = self.type2info[r[2]]
+            y = (h/2) - (rh/2) # draw vertically centered
+
+            if r[2] == "*":
+                # Performance increase if a group by blocks?
+                letter = self.seq[r[0]].upper()
+                rw = rw * (r[1]-r[0])
+                if self.style=="nt":
+                    bgcolor = self.ntbg.get(letter, "#eeeeee")
+                else:
+                    bgcolor = self.aabg.get(letter, "#eeeeee")
+                if letter == "-":
+                    pass #p.drawRect(x, y, rw*), rh)
+                else:
+                    p.fillRect(x, y, rw, rh, QColor(bgcolor))
+                x += rw
+                a
+            else:
+                for pos in xrange(r[0], r[1]):
+                    letter = self.seq[pos].upper()
+                    #print letter,
+                    if self.style=="nt":
+                        bgcolor = self.ntbg.get(letter, "#eeeeee")
+                    else:
+                        bgcolor = self.aabg.get(letter, "#eeeeee")
+
+                    if letter in(["-","."]):
+                        #pen.setColor(QColor("black"))
+                        #p.drawLine(x, h/2, x+rw, h/2)
+                        pass # skip gaps
+                    else:
+                        p.fillRect(x, y, rw, rh, QColor(bgcolor))
+                    x += rw
+        p.end()
+
+def make_regions(seq, motifs):
+    poswidth = 2
+    posheight = 4
+    motifposwidth = 12
+    motifposheight = 12
+    
+    #Sort regions
+    regions = []
+    current_pos = 0
+    end = 0
+    for mf in motifs:
+        start, end = mf
+        start -= 1
+        if start < current_pos:
+            print current_pos, start, mf
+            raise ValueError("Overlaping motifs are not supported")
+        if start > current_pos:
+            regions.append([current_pos, start, "s"])
+        regions.append([start, end, "m"])
+        current_pos = end
+    if len(seq) > end:
+        regions.append([end, len(seq), "s"])
+    
+    return regions
 
 class SequencePlotFace(StaticItemFace):
     """
     To draw plots, usually correlated to columns in alignment
-
-    :argument      values    : a list of values
-    :argument None errors    : a list of errors associated to each value. elements of the list can contain a list with lower and upper error, if they are different.
-    :argument None colors    : a list of colors associated to each value
-    :argument None header    : a title for the plot
-    :argument bar  kind      : kind of plot, one of bar, curve or sticks.
-    :argument None fsize     : font size for header and labels
-    :argument 100  height    : height of the plot (excluding labels)
-    :argument None hlines    : list of y values of horizontal dashed lines to be drawn across plot
+    
+    :argument values : a list of values
+    :argument None errors : a list of errors associated to each value. elements of the list can contain a list with lower and upper error, if they are different.
+    :argument None colors : a list of colors associated to each value
+    :argument None header : a title for the plot
+    :argument bar kind : kind of plot, one of bar, curve or sticks.
+    :argument None fsize : font size for header and labels
+    :argument 100 height : height of the plot (excluding labels)
+    :argument None hlines : list of y values of horizontal dashed lines to be drawn across plot
     :argument None hlines_col: list of colors associated to each horizontal line
     :argument None col_width : width of a column in the alignment
-    :argument red  error_col : color of error bars
-    
+    :argument red error_col : color of error bars
     """
     def __init__(self, values, errors=None, colors=None, header='',
                  fsize=9, height = 100, hlines=None, kind='bar',
                  hlines_col = None, extras=None, col_width=11,
                  ylim=None, xlabel='', ylabel=''):
         
-        self.col_w  = float(col_width)
+        self.col_w = float(col_width)
         self.height = height
         self.values = [float(v) for v in values]
-        self.width  = self.col_w * len (self.values)
+        self.width = self.col_w * len (self.values)
         self.errors = errors if errors else []
         self.colors = colors if colors else ['gray'] * len(self.values)
         self.header = header
-        self.fsize  = fsize
+        self.fsize = fsize
         if ylim:
             self.ylim = tuple((float(y) for y in ylim))
         else:
@@ -1339,10 +1386,10 @@ class SequencePlotFace(StaticItemFace):
 
         if self.errors:
             if type(self.errors[0]) is list or type(self.errors[0]) is tuple:
-                self._up_err = [float(e[1])  for e in self.errors]
+                self._up_err = [float(e[1]) for e in self.errors]
                 self._dw_err = [float(-e[0]) for e in self.errors]
             else:
-                self._up_err = [float(e)  for e in self.errors]
+                self._up_err = [float(e) for e in self.errors]
                 self._dw_err = [float(-e) for e in self.errors]
         if kind == 'bar':
             self.draw_fun = self.draw_bar
@@ -1353,7 +1400,7 @@ class SequencePlotFace(StaticItemFace):
         else:
             raise('kind %s not yet implemented... ;)'%kind)
         
-        self.hlines     = [float(h) for h in hlines] if hlines else [1.0]
+        self.hlines = [float(h) for h in hlines] if hlines else [1.0]
         self.hlines_col = hlines_col if hlines_col else ['black']*len(self.hlines)
 
         self.extras = extras if extras else ['']
@@ -1449,9 +1496,9 @@ class SequencePlotFace(StaticItemFace):
         
     def coordY(self, y):
         """
-        return the transformation of Y according to mean value
-        (that is last element of lines)
-        """
+return the transformation of Y according to mean value
+(that is last element of lines)
+"""
         y_offset = 30
         if self.ylim[1] <= y: return y_offset
         if self.ylim[1] == 0: return self.height + y_offset
@@ -1536,4 +1583,126 @@ class SequencePlotFace(StaticItemFace):
             lineItem.setPen(QtGui.QPen(QtGui.QColor(self.colors[i]),2))
 
 
+class SequenceFace(StaticItemFace, Face):
+    """ Creates a new molecular sequence face object.
+
+
+:argument seq: Sequence string to be drawn
+:argument seqtype: Type of sequence: "nt" or "aa"
+:argument fsize: Font size, (default=10)
+
+You can set custom colors for amino-acids or nucleotides:
+
+:argument None codon : a string that corresponds to the reverse translation of the amino-acid sequence
+:argument None col_w : width of the column (if col_w is lower than font size, letter wont be displayed)
+:argument None fg_colors : dictionary of colors for foreground, with as keys each possible character in sequences, and as value the colors
+:argument None bg_colors : dictionary of colors for background, with as keys each possible character in sequences, and as value the colors
+:argument 3 alt_col_w : works together with special_col option, defines the width of given columns
+:argument None special_col : list of lists containing the bounds of columns to be displayed with alt_col_w as width
+:argument False interactive : more info can be displayed when mouse over sequence
+
+"""
+    def __init__(self, seq, seqtype="aa", fsize=10,
+                 fg_colors=None, bg_colors=None,
+                 codon=None, col_w=None, alt_col_w=3,
+                 special_col=None, interactive=False):
+        self.seq = seq
+        self.codon = codon
+        self.fsize = fsize
+        self.style = seqtype
+        self.col_w = float(self.fsize + 1) if col_w is None else float(col_w)
+        self.alt_col_w = float(alt_col_w)
+        self.special_col = special_col if special_col else []
+        self.width = 0 # will store the width of the whole sequence
+        self.interact = interactive
+
+        if self.style == "aa":
+            if not fg_colors:
+                fg_colors = _aafgcolors
+            if not bg_colors:
+                bg_colors = _aabgcolors
+        else:
+            if not fg_colors:
+                fg_colors = _ntfgcolors
+            if not bg_colors:
+                bg_colors = _ntbgcolors
+
+        self.fg_col = self.__init_col(fg_colors)
+        self.bg_col = self.__init_col(bg_colors)
             
+        # for future?
+        self.row_h = 13.0
+
+        super(SequenceFace,
+              self).__init__(QtGui.QGraphicsRectItem(0, 0, self.width,
+                                                     self.row_h))
+
+    def __init_col(self, color_dic):
+        """to speed up the drawing of colored rectangles and characters"""
+        new_color_dic = {}
+        for car in color_dic:
+            new_color_dic[car] = QtGui.QBrush(QtGui.QColor(color_dic[car]))
+        return new_color_dic
+        
+    def update_items(self):
+        #self.item = QGraphicsRectItem(0,0,self._total_w, self.row_h)
+        seq_width = 0
+        nopen = QtGui.QPen(QtCore.Qt.NoPen)
+        font = QtGui.QFont("Courier", self.fsize)
+        rect_cls = self.InteractiveLetterItem if self.interact \
+                   else QtGui.QGraphicsRectItem
+        for i, letter in enumerate(self.seq):
+            width = self.col_w
+            for m in self.special_col:
+                if m[0] < i <= m[1]:
+                    width = self.alt_col_w
+                    break
+            #load interactive item if called correspondingly
+            rectItem = rect_cls(0, 0, width, self.row_h, parent=self.item)
+            rectItem.setX(seq_width) # to give correct X to children item
+            rectItem.setBrush(self.bg_col[letter])
+            rectItem.setPen(nopen)
+            if self.interact:
+                if self.codon:
+                    rectItem.codon = '%s, %d: %s' % (self.seq[i], i,
+                                                     self.codon[i*3:i*3+3])
+                else:
+                    rectItem.codon = '%s, %d' % (self.seq[i], i)
+            # write letter if enough space
+            if width >= self.fsize:
+                text = QtGui.QGraphicsSimpleTextItem(letter, parent=rectItem)
+                text.setFont(font)
+                text.setBrush(self.fg_col[letter])
+                # Center text according to rectItem size
+                tw = text.boundingRect().width()
+                th = text.boundingRect().height()
+                text.setPos((width - tw)/2, (self.row_h - th)/2)
+            seq_width += width
+        self.width = seq_width
+    class InteractiveLetterItem(QtGui.QGraphicsRectItem):
+        """This is a class"""
+        def __init__(self, *arg, **karg):
+            QtGui.QGraphicsRectItem.__init__(self, *arg, **karg)
+            self.codon = None
+            self.label = None
+            self.setAcceptsHoverEvents(True)
+    
+        def hoverEnterEvent (self, e):
+            """ when mouse is over"""
+            if not self.label:
+                self.label = QtGui.QGraphicsRectItem(parent=self)
+                #self.label.setY(-18)
+                self.label.setX(11)
+                self.label.setBrush(QtGui.QBrush(QtGui.QColor("white")))
+                self.label.text = QtGui.QGraphicsSimpleTextItem(parent=self.label)
+    
+            self.setZValue(1)
+            self.label.text.setText(self.codon)
+            self.label.setRect(self.label.text.boundingRect())
+            self.label.setVisible(True)
+    
+        def hoverLeaveEvent(self, e):
+            """when mouse leaves area"""
+            if self.label:
+                self.label.setVisible(False)
+                self.setZValue(0)

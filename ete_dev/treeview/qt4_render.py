@@ -7,18 +7,18 @@ import qt4_circular_render as crender
 import qt4_rect_render as rrender
 
 from main import _leaf, NodeStyle, _FaceAreas, tracktime
-from qt4_gui import _NodeActions as _ActionDelegator
+from node_gui_actions import _NodeActions as _ActionDelegator
 from qt4_face_render import update_node_faces, _FaceGroupItem, _TextFaceItem
 import faces
 
 ## | General scheme of node content
 ## |==========================================================================================================================|
-## |                                                fullRegion                                                                |
+## |                                                fullRegion                                                                |       
 ## |             nodeRegion                  |================================================================================|
-## |                                         |                                fullRegion                                     ||
+## |                                         |                                fullRegion                                     || 
 ## |                                         |        nodeRegion                     |=======================================||
 ## |                                         |                                       |         fullRegion                   |||
-## |                                         |                                       |         nodeRegion                   |||
+## |                                         |                                       |         nodeRegion                   ||| 
 ## |                                         |                         |             |branch_length | nodeSize | facesRegion|||
 ## |                                         | branch_length | nodesize|faces-right  |=======================================||
 ## |                                         |                         |(facesRegion)|=======================================||
@@ -98,15 +98,21 @@ class _NodeItem(_EmptyItem):
         self.node = node
         self.nodeRegion = QtCore.QRectF()
         self.facesRegion = QtCore.QRectF()
-        self.branchFacesRegion = QtCore.QRectF()
-        self.branchRegion = QtCore.QRectF()
         self.fullRegion = QtCore.QRectF()
         self.highlighted = False
+
+class _NodeLineItem(QtGui.QGraphicsLineItem, _ActionDelegator):
+    def __init__(self, node, *args, **kargs):
+        self.node = node
+        QtGui.QGraphicsLineItem.__init__(self, *args, **kargs)
+        _ActionDelegator.__init__(self)
+    def paint(self, painter, option, widget):
+        QtGui.QGraphicsLineItem.paint(self, painter, option, widget)
 
 class _LineItem(QtGui.QGraphicsLineItem):
     def paint(self, painter, option, widget):
         QtGui.QGraphicsLineItem.paint(self, painter, option, widget)
-
+        
 class _PointerItem(QtGui.QGraphicsRectItem):
     def __init__(self, parent=None):
         QtGui.QGraphicsRectItem.__init__(self,0,0,0,0, parent)
@@ -144,32 +150,23 @@ class _TreeScene(QtGui.QGraphicsScene):
     def __init__(self):
         QtGui.QGraphicsScene.__init__(self)
         self.view = None
-        self.tree = None
 
-    def init_data(self, tree, img, n2i, n2f):
+    def init_values(self, tree, img, n2i, n2f):
         self.master_item = _EmptyItem()
-        self.view = None
         self.tree = tree
         self.n2i = n2i
         self.n2f = n2f
         self.img = img
 
-        # Initialize scene
-        self.buffer_node = None        # Used to copy and paste
-        self.pointer  = _PointerItem(self.master_item)
-        self.highlighter = QtGui.QGraphicsPathItem(self.master_item)
-
-        # Set the scene background
-        self.setBackgroundBrush(QtGui.QColor("white"))
-        #self.setBackgroundBrush(QtGui.QBrush(QtCore.Qt.NoBrush))
-
     def draw(self):
-        tree_item, self.n2i, self.n2f = render(self.tree, self.img)
         if self.master_item:
             self.removeItem(self.master_item)
-        self.master_item = _EmptyItem()
+        tree_item, n2i, n2f = render(self.tree, self.img)
+        self.init_values(self.tree, self.img, n2i, n2f)
         self.addItem(self.master_item)
         tree_item.setParentItem(self.master_item)
+        self.setSceneRect(tree_item.rect())
+
 #@tracktime
 def render(root_node, img, hide_root=False):
     '''main render function. hide_root option is used when render
@@ -192,7 +189,8 @@ def render(root_node, img, hide_root=False):
     parent.float_layer = _EmptyItem(parent)
     parent.float_behind_layer = _EmptyItem(parent)
 
-    TREE_LAYERS = [parent.bg_layer, parent.tree_layer, parent.float_layer]
+    TREE_LAYERS = [parent.bg_layer, parent.tree_layer,
+                   parent.float_layer, parent.float_behind_layer]
 
     parent.bg_layer.setZValue(0)
     parent.tree_layer.setZValue(2)
@@ -210,7 +208,7 @@ def render(root_node, img, hide_root=False):
         su_face = faces.AttrFace("support", fsize=8, ftype="Arial", fgcolor="darkred", formatter = "%0.3g")
     if img.show_leaf_name:
         na_face = faces.AttrFace("name", fsize=10, ftype="Arial", fgcolor="black")
-    
+
     for n in root_node.traverse():
         set_style(n, layout_fn)
 
@@ -227,8 +225,9 @@ def render(root_node, img, hide_root=False):
             virtual_leaves += 1
 
         update_node_faces(n, n2f, img)
-        
+
     rot_step = float(arc_span) / virtual_leaves
+    #rot_step = float(arc_span) / len([n for n in root_node.traverse() if _leaf(n)])
 
     # Calculate optimal branch length
     if img._scale is not None:
@@ -242,7 +241,7 @@ def render(root_node, img, hide_root=False):
             else:
                 #fixed_widths = ([i.nodeRegion.width() for n,i in n2i.iteritems()])
                 farthest, dist = root_node.get_farthest_leaf(topology_only=img.force_topology)
-                img._scale =  (400.0 / dist) if dist else 400
+                img._scale =  400.0 / dist
             update_branch_lengths(root_node, n2i, n2f, img)
         else:
             img._scale = crender.calculate_optimal_scale(root_node, n2i, rot_step, img)
@@ -262,6 +261,7 @@ def render(root_node, img, hide_root=False):
 
     # Adjust content to rect or circular layout
     mainRect = parent.rect()
+
     if mode == "c":
         tree_radius = crender.render_circular(root_node, n2i, rot_step)
         mainRect.adjust(-tree_radius, -tree_radius, tree_radius, tree_radius)
@@ -286,6 +286,7 @@ def render(root_node, img, hide_root=False):
     # Rotate main image if necessary
     parent.setRect(mainRect)
     parent.setPen(QtGui.QPen(QtCore.Qt.NoPen))
+
     if img.rotation:
         rect = parent.boundingRect()
         x =  rect.x() + rect.width()/2
@@ -320,7 +321,6 @@ def render(root_node, img, hide_root=False):
     else:
         frame.setPen(QtGui.QPen(QtGui.QColor("black")))
 
-    
     return frame, n2i, n2f
 
 def adjust_faces_to_tranformations(img, mainRect, n2i, n2f, tree_layers):
@@ -415,12 +415,27 @@ def add_scale(img, mainRect, parent):
         scale.setPos(0, 10)
 
         if img.force_topology:
-            wtext = "Force topology is enabled!\nBranch lengths do not represent original values."
+            wtext = "Force topology is enabled!\nBranch lengths do not represent real values."
             warning_text = QtGui.QGraphicsSimpleTextItem(wtext)
             warning_text.setFont(QtGui.QFont("Arial", 8))
             warning_text.setBrush( QtGui.QBrush(QtGui.QColor("darkred")))
             warning_text.setPos(0, 32)
             warning_text.setParentItem(scaleItem)
+        else:
+            line = QtGui.QGraphicsLineItem(scaleItem)
+            line2 = QtGui.QGraphicsLineItem(scaleItem)
+            line3 = QtGui.QGraphicsLineItem(scaleItem)
+            line.setPen(customPen)
+            line2.setPen(customPen)
+            line3.setPen(customPen)
+
+            line.setLine(0, 5, length, 5)
+            line2.setLine(0, 0, 0, 10)
+            line3.setLine(length, 0, length, 10)
+            scale_text = "%0.2f" % (float(length) / img._scale)
+            scale = QtGui.QGraphicsSimpleTextItem(scale_text)
+            scale.setParentItem(scaleItem)
+            scale.setPos(0, 10)
 
         scaleItem.setParentItem(parent)
         dw = max(0, length-mainRect.width())
@@ -497,7 +512,7 @@ def set_node_size(node, n2i, n2f, img):
 
     item = n2i[node]
     if img.force_topology:
-        branch_length = item.branch_length = float(scale)
+        branch_length = item.branch_length = 25
     else:
         branch_length = item.branch_length = float(node.dist * scale)
 
@@ -596,10 +611,11 @@ def render_node_content(node, n2i, n2f, img):
     set_pen_style(pen, style["hz_line_type"])
     pen.setColor(QtGui.QColor(style["hz_line_color"]))
     pen.setWidth(style["hz_line_width"])
-    pen.setCapStyle(QtCore.Qt.FlatCap)
+    #pen.setCapStyle(QtCore.Qt.FlatCap)
     #pen.setCapStyle(QtCore.Qt.RoundCap)
-    #pen.setJoinStyle(QtCore.Qt.RoundJoin)
+    pen.setJoinStyle(QtCore.Qt.RoundJoin)
     hz_line = _LineItem()
+    hz_line = _NodeLineItem(node)
     hz_line.setPen(pen)
 
     # the -vt_line_width is to solve small imperfections in line
@@ -691,13 +707,15 @@ def set_pen_style(pen, line_style):
         pen.setStyle(QtCore.Qt.DotLine)
 
 def set_style(n, layout_func):
-    if not isinstance(getattr(n, "img_style", None), NodeStyle):
-        n.img_style = NodeStyle()
-
+    #if not isinstance(getattr(n, "img_style", None), NodeStyle):
+    #    print "Style of", n.name ,"is None"
+    #    n.set_style()
+    #    n.img_style = NodeStyle()
+       
     n._temp_faces = _FaceAreas()
-
-    if layout_func:
-        layout_func(n)
+    
+    for func in layout_func:
+        func(n)
 
 def render_floatings(n2i, n2f, img, float_layer, float_behind_layer):
     #floating_faces = [ [node, fb["float"]] for node, fb in n2f.iteritems() if "float" in fb]
@@ -725,7 +743,8 @@ def render_floatings(n2i, n2f, img, float_layer, float_behind_layer):
                 #crender.rotate_and_displace(fb, item.rotation, fb.h, item.radius - item.nodeRegion.width())
 
             elif img.mode == "r":
-                fb.setPos(item.content.mapToScene(0, item.center-(fb.h/2)))
+                start = item.branch_length + xtra - fb.w #if fb.w < item.branch_length else 0.0
+                fb.setPos(item.content.mapToScene(start, item.center - (fb.h/2)))
 
             z = item.zValue()
             if not img.children_faces_on_top:
@@ -975,7 +994,6 @@ def init_node_dimensions(node, item, faceblock, img):
 
     # Calculate total node size
     total_w = sum([w0, w1, w2, w3, w4]) # do not count aligned faces
-	
     if img.mode == "c":
         max_h = max(item.heights[:4] + [min_separation])
     elif img.mode == "r":

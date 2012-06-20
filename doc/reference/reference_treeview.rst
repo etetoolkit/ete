@@ -5,7 +5,7 @@ Treeview module
 
 .. contents::
 
-TreeStyle
+**TreeStyle**
 ====================
 
 .. autoclass:: ete_dev.TreeStyle
@@ -13,13 +13,13 @@ TreeStyle
 .. autoclass:: ete_dev.FaceContainer
    :members:
 
-NodeStyle
+**NodeStyle**
 =====================
 
 .. autoclass:: ete_dev.NodeStyle
 
 
-Faces
+Node **Faces**
 =========================
 
 .. autofunction:: add_face_to_node
@@ -63,6 +63,7 @@ Faces
 .. autoclass:: ete_dev.DynamicItemFace
    :members:
    :no-undoc-members:
+
 
 Color names
 =================

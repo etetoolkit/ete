@@ -21,8 +21,9 @@
 #
 # #END_LICENSE#############################################################
 import os
+import cPickle
 import random
-import copy 
+import copy
 from collections import deque 
 
 from ete_dev.parser.newick import read_newick, write_newick
@@ -35,8 +36,6 @@ except ImportError:
     TREEVIEW = False
 else:
     TREEVIEW = True
-
-
 
 __all__ = ["Tree", "TreeNode"]
 
@@ -124,8 +123,20 @@ class TreeNode(object):
            len(set([type(n)==type(self) for n in value]))<2:
             self._children = value
         else:
-            raise ValueError, "children:wrong type"
+            raise ValueError("bad children type")
 
+    def _get_style(self):
+        if self._img_style is None:
+            self._set_style(None)
+           
+        return self._img_style
+
+    def _set_style(self, value):
+        self.set_style(value)
+            
+    #: Branch length distance to parent node. Default = 0.0
+    img_style = property(fget=_get_style, fset=_set_style)
+             
     #: Branch length distance to parent node. Default = 0.0
     dist = property(fget=_get_dist, fset=_set_dist)
     #: Branch support for current node
@@ -149,10 +160,10 @@ class TreeNode(object):
         self._up = None
         self._dist = 1.0
         self._support = 1.0
-
+        self._img_style = None
         self.features = set([])
         # Add basic features
-        self.add_features(name="NoName")
+        self.add_features(name="")
         self.features.update(["dist", "support"])
 
         # Initialize tree
@@ -526,7 +537,7 @@ class TreeNode(object):
             else:
                 if is_leaf_fn(n):
                     yield n
-
+                    
     def get_leaves(self, is_leaf_fn=None):
         """
         Returns the list of terminal nodes (leaves) under this node.
@@ -606,7 +617,7 @@ class TreeNode(object):
         """
         Iterate over all desdecendant nodes. 
         """
-        if not is_leaf_fn or not is_leaf_fn(ch):
+        if not is_leaf_fn or not is_leaf_fn(self):
             for ch in self.children:
                 for node in ch._iter_descendants_postorder():
                     yield node
@@ -704,7 +715,6 @@ class TreeNode(object):
         nw = write_newick(self, features = features, format=format)
         if outfile is not None:
             open(outfile, "w").write(nw)
-            return nw
         else:
             return nw
 
@@ -716,55 +726,6 @@ class TreeNode(object):
         while root.up is not None:
             root = root.up
         return root
-
-    def get_common_ancestor_OLD(self, *target_nodes):
-        """ 
-        Returns the first common ancestor between this node and a given
-        list of 'target_nodes'.
-
-        **Examples:**
-
-        ::
-
-          t = tree.Tree("(((A:0.1, B:0.01):0.001, C:0.0001):1.0[&&NHX:name=common], (D:0.00001):0.000001):2.0[&&NHX:name=root];")
-          A = t.get_descendants_by_name("A")[0]
-          C = t.get_descendants_by_name("C")[0]
-          common =  A.get_common_ancestor(C)
-          print common.name
-
-        """
-        
-        if len(target_nodes) == 1 and type(target_nodes[0]) \
-                in set([set, tuple, list, frozenset]):
-            target_nodes = target_nodes[0]
-
-        # Convert node names into node instances
-        target_nodes = _translate_nodes(self, *target_nodes)
-
-        # If only one node is provided, use self as the second target
-        if type(target_nodes) != list:
-            target_nodes = [target_nodes, self]
-        elif len(target_nodes)==1:
-            target_nodes = tree_nodes.append(self)
-
-        start = target_nodes[-1]
-        targets = set(target_nodes)
-        nodes_bellow = set([start]+start.get_descendants())
-        current = start
-        prev_node = start
-        while current is not None:
-            # all nodes under current (skip vissited)
-            new_nodes = [n for s in current.children for n in s.traverse() \
-                           if s is not prev_node]+[current]
-            nodes_bellow.update(new_nodes)
-            if targets.issubset(nodes_bellow):
-                break
-            else:
-                prev_node = current
-                current = current.up
-
-        
-        return current
 
     def get_common_ancestor(self, *target_nodes, **kargs):
         """ 
@@ -1057,10 +1018,10 @@ class TreeNode(object):
                 current = current.up
         return current
 
-    def populate(self, size, names_library=None, reuse_names=False,
-                 random_branches=False, branch_range=(0,1),
-                 support_range=(0,1)): 
-        """Generates a random topology by populating current node.
+    def populate(self, size, names_library=None, reuse_names=False, 
+                 random_branches=False): 
+        """
+        Generates a random topology by populating current node.
 
         :argument None names_library: If provided, names library
           (list, set, dict, etc.) will be used to name nodes.
@@ -1227,7 +1188,7 @@ class TreeNode(object):
             else:
                 raise TreeError, "Cannot unroot a tree with only two leaves"
 
-    def show(self, layout=None, tree_style=None):
+    def show(self, layout=None, tree_style=None, name="ETE"):
         """ 
         Starts an interative session to visualize current node
         structure using provided layout and TreeStyle.
@@ -1240,7 +1201,8 @@ class TreeNode(object):
             print "\n\n"
             print e
         else:
-            drawer.show_tree(self, layout=layout, tree_style=tree_style)
+            drawer.show_tree(self, layout=layout,
+                             tree_style=tree_style, win_name=name)
 
     def render(self, file_name, layout=None, w=None, h=None, \
                        tree_style=None, units="px", dpi=300):
@@ -1273,21 +1235,61 @@ class TreeNode(object):
                                       layout=layout, tree_style=tree_style, 
                                       units=units)
 
-    def copy(self):
-        """ 
-        Returns an exact and complete copy of current node.
-        """
-        parent = self.up
-        self.up = None
-        new_node = copy.deepcopy(self)
-        self.up = parent
-        return new_node
+    def copy(self, method="cpickle"):
+        """.. versionadded: 2.1
 
-    def _asciiArt(self, char1='-', show_internal=True, compact=False):
+        Returns a copy of the current node.
+
+        :var cpickle method: Protocol used to copy the node
+        structure:
+
+           - "newick": Tree topology, node names, branch lengths and
+             branch support values will be copied based on the newick
+             format representation.
+        
+           - "newick-extended": Tree topology and all node features
+             will be copied based on the extended newick format
+             representation. Only registered node features will be
+             copied. Note also that features will be converted to text
+             strings.
+
+           - "cpickle": The whole node structure and its content is
+             copied based on cPickle object serialization (recommended
+             for full tree copies)
+        
+           - "deepcopy": The whole node structure and its content is
+             copied based on the "copy" Python functionality (this is
+             the slowest method)
+
+        """
+        if method=="newick":
+            new_node = self.__class__(self.write(features=["name"]))
+        elif method=="newick-extended":
+            new_node = self.__class__(self.write(features=[]))
+        elif method == "deepcopy":
+            parent = self.up
+            self.up = None
+            new_node = copy.deepcopy(self)
+            self.up = parent
+        elif method == "cpickle":
+            parent = self.up
+            self.up = None
+            new_node = cPickle.loads(cPickle.dumps(self, 2))
+            self.up = parent
+        else:
+            raise ValuerError("Invalid copy method")
+            
+        return new_node
+        
+    def _asciiArt(self, char1='-', show_internal=True, compact=False, attributes=None):
         """
         Returns the ASCII representation of the tree. Code taken from the
         PyCogent GPL project.
         """
+        if not attributes:
+            attributes = ["name"]
+        node_name = ', '.join(map(str, [getattr(self, v, "") for v in attributes]))
+       
         LEN = 5
         PAD = ' ' * LEN
         PA = ' ' * (LEN-1)
@@ -1295,13 +1297,15 @@ class TreeNode(object):
             mids = []
             result = []
             for c in self.children:
-                if c is self.children[0]:
+                if len(self.children) == 1:
+                    char2 = '/'
+                elif c is self.children[0]:
                     char2 = '/'
                 elif c is self.children[-1]:
                     char2 = '\\'
                 else:
                     char2 = '-'
-                (clines, mid) = c._asciiArt(char2, show_internal, compact)
+                (clines, mid) = c._asciiArt(char2, show_internal, compact, attributes)
                 mids.append(mid+len(result))
                 result.extend(clines)
                 if not compact:
@@ -1315,20 +1319,20 @@ class TreeNode(object):
             result = [p+l for (p,l) in zip(prefixes, result)]
             if show_internal:
                 stem = result[mid]
-                result[mid] = stem[0] + self.name + stem[len(self.name)+1:]
+                result[mid] = stem[0] + node_name + stem[len(node_name)+1:]
             return (result, mid)
         else:
-            return ([char1 + '-' + self.name], 0)
+            return ([char1 + '-' + node_name], 0)
 
-    def get_ascii(self, show_internal=True, compact=False):
+    def get_ascii(self, show_internal=True, compact=False, attributes=None):
         """
         Returns a string containing an ascii drawing of the tree.
 
         :argument show_internal: includes internal edge names.
         :argument compact: use exactly one line per tip.
         """
-        (lines, mid) = self._asciiArt(
-                show_internal=show_internal, compact=compact)
+        (lines, mid) = self._asciiArt(show_internal=show_internal,
+                                      compact=compact, attributes=attributes)
         return '\n'+'\n'.join(lines)
 
 
@@ -1374,7 +1378,7 @@ class TreeNode(object):
            #                          \-b
 
         """
-
+       
         if not self.is_leaf():
             n2s = {}
             for n in self.get_children():
@@ -1419,36 +1423,140 @@ class TreeNode(object):
             n.add_features(_nid=counter)
             counter += 1
 
+        node2content = self.get_node2content()
+        def sort_by_content(x, y):
+            return cmp(str(sorted([i.name for i in node2content[x]])),
+                       str(sorted([i.name for i in node2content[y]])))
 
+        for n in self.traverse():
+            if not n.is_leaf():
+                n.children.sort(sort_by_content)
+        return node2content
 
-    def sort_descendants(self):
+    def get_node2content(self, store=None):
         """ 
-        .. versionadded: 2.1 
-
-        This function sort the branches of a given tree by
-        considerening node names. After the tree is sorted, nodes are
-        labeled using ascendent numbers.  This can be used to ensure that
-        nodes in a tree with the same node names are always labeled in
-        the same way.  Note that if duplicated names are present, extra
-        criteria should be added to sort nodes.
-        unique id is stored in _nid
+        .. versionadded: 2.1
+        EXPERIMENTAL METHOD!
+        Returns a dictionary with the preloaded content of each descendant.
         """
-        from hashlib import md5
-        for n in self.traverse(strategy="postorder"):
-            if n.is_leaf():
-                key = md5(str(n.name)).hexdigest()
-                n.__idname = key
-            else:
-                key = md5 (str (\
-                    sorted ([c.__idname for c in n.children]))).hexdigest()
-                n.__idname=key
-                children = [[c.__idname, c] for c in n.children]
-                children.sort() # sort list by idname
-                n.children = [item[1] for item in children]
-            counter = 1
-        for n in self.traverse(strategy="postorder"):
-            n.add_features(_nid=counter)
-            counter += 1
+        if store is None:
+            store = {}
+            
+        for ch in self.children:
+            ch.get_node2content(store=store)
+
+        if self.children:
+            val = set()
+            for ch in self.children:
+                val.update(store[ch])
+            store[self] = val
+        else:
+            store[self] = set([self])
+        return store
+
+    def hmg(self, t2, attr_t1="name", attr_t2="name"):
+        """
+        """
+        t1 = self
+        t1content = t1.get_node2content()
+        t2content = t2.get_node2content()
+        target_names = set([getattr(_n, attr_t1) for _n in t1content[t1]])
+        ref_names = set([getattr(_n, attr_t2) for _n in t2content[t2]])
+        common_names = target_names & ref_names
+        if len(common_names) < 2:
+            raise ValueError("Trees share less than 2 nodes")
+
+        t1_attr_content = dict([(n, set([getattr(leaf, attr_t1) for leaf
+                                     in cont if getattr(leaf, attr_t1) in
+                                     common_names])) for n, cont in
+                                t1content.iteritems() ])
+        t2_attr_content = dict([(n, set([getattr(leaf, attr_t2) for leaf
+                                     in cont if getattr(leaf, attr_t2) in
+                                     common_names])) for n, cont in
+                                t2content.iteritems() ])
+
+        n2track = {}
+        for n in t1.iter_leaves():
+            n2track[n.name] = set()
+            _n = n
+            while _n:
+                n2track[n.name].add(_n)
+                _n = _n.up
+            
+        def common_ancestor(node_names, n2content):
+            bysize = lambda x, y: cmp(len(n2content[x]), len(n2content[y]))
+            common = None
+            for node in node_names:
+                if common is None: 
+                    common = set(n2track[node])
+                else:
+                    common &= n2track[node]
+            common = list(common)
+            common.sort(bysize)
+            return common[0]
+        
+        refnode2target = {}
+        for node, ref_content in t2_attr_content.iteritems():
+            if not ref_content:
+                continue
+            #candidates = [(len(target_content), target_content) for
+            #              target_content in t1_attr_content.itervalues() if
+            #              not (ref_content - target_content)]
+            #candidates.sort()
+            #match = candidates[0][1]
+
+            #match = t1content[t1.get_common_ancestor(ref_content)]
+            match = t1_attr_content[common_ancestor(ref_content, t1content)]
+            #if match == match2:
+            #    print ref_content
+            #    print t1
+            #    print "REAL", match
+            #    print "NEW", match2
+            #    raw_input("NOP")
+                
+            #print ref_content, node
+            #print candidates
+            #dist = len(match) - float(len(ref_content))
+            #dist = (len(candidates[0][1]) / float(len(ref_content))) - 1
+            dist = (len(match) - len(ref_content)) / float(len(match))
+            
+            #print candidates[0][1],  ref_content
+            refnode2target[node] = dist
+
+        return refnode2target
+       
+    def robinson_foulds(self, t2, attr_t1="name", attr_t2="name"):
+        """
+        .. versionadded: 2.x
+        
+        Returns the Robinson-Foulds topological distance between this and another node.
+
+        :returns: (RF distance, Max.RF distance)
+        """
+        
+        t1 = self
+        t1content = t1.get_node2content()
+        t2content = t2.get_node2content()
+        target_names = set([getattr(_n, attr_t1) for _n in t1content[t1]])
+        ref_names = set([getattr(_n, attr_t2) for _n in t2content[t2]])
+        common_names = target_names & ref_names
+        if len(common_names) < 2:
+            raise ValueError("Trees share less than 2 nodes")
+
+        r1 = set([",".join(sorted([getattr(_c, attr_t1) for _c in cont
+                                   if getattr(_c, attr_t1) in common_names]))
+                  for cont in t1content.values()])
+        r2 = set([",".join(sorted([getattr(_c, attr_t2) for _c in cont
+                                   if getattr(_c, attr_t2) in common_names]))
+                  for cont in t2content.values()])
+                      
+        inters = r1.intersection(r2)
+        if len(r1) == len(r2):
+                rf = (len(r1) - len(inters)) * 2
+        else :
+                rf = (len(r1) - len(inters)) + (len(r2) - len(inters))
+        rf_max = len(r1) + len(r2)
+        return rf, rf_max, ref_names, target_names, r1, r2
 
     def get_partitions(self):
         """ 
@@ -1541,8 +1649,13 @@ class TreeNode(object):
 
         Set 'node_style' as the fixed style for the current node.
         """
-        if type(node_style) is NodeStyle:
-            self.img_style = node_style
+        if TREEVIEW:
+            if node_style is None:
+                node_style = NodeStyle()
+            if type(node_style) is NodeStyle:
+                self._img_style = node_style
+        else:
+            raise ValueError("Treeview module is disabled")
        
     def phonehome(self):
         from ete_dev import _ph
@@ -1623,3 +1736,8 @@ def asRphylo(ETE_tree):
 # Alias
 #: .. currentmodule:: ete_dev
 Tree = TreeNode
+
+
+
+
+    

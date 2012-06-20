@@ -15,7 +15,7 @@ def layout(node):
 t = Tree()
 ts = TreeStyle()
 ts.layout_fn = layout
-ts.mode = "r"
+ts.mode = "c"
 ts.show_leaf_name = False
 
 t.populate(10)
