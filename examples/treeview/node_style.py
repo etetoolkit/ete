@@ -61,5 +61,6 @@ def get_example_tree():
     
 if __name__ == "__main__":
     t, ts = get_example_tree()
-    t.render("node_style.png", w=400, tree_style=ts)
+    t.show(tree_style=ts)
+    #t.render("node_style.png", w=400, tree_style=ts)
 
