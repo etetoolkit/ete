@@ -21,6 +21,7 @@ def layout(node):
         f.border.width = 0
     #node.img_style["bgcolor"] = random_color()
 
+Tree().show()
 ts = TreeStyle()
 ts.mode = "c"
 ts.layout_fn = layout 
@@ -36,7 +37,7 @@ ts.root_opening_factor = 0.25
 ts.show_border = True
 ts.scale = None
 t = Tree()
-t.populate(5, random_branches=True, branch_range=(0, 0.7))
+t.populate(5, random_branches=True, branch_range=(0, 0))
 t.dist = 0.0
 dists = [n.dist for n in t.traverse() if n.dist != 0]
 #print max(dists), min(dists)

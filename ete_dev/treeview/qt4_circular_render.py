@@ -292,9 +292,10 @@ def calculate_optimal_scale(root_node, n2i, rot_step, img):
         #vs = r - (parent_radius + xoffset + w)
         n2sumwidth[node] = n2sumwidth.get(node.up, 0) + sum(item.widths[2:5]) #+ vs
 
-    min_scale = 200 / max(n2sumdist.values())
     root_opening = 0.0
     most_distant = max(n2sumdist.values())
+    if most_distant == 0: return 0.0
+    
     best_scale = None
     for node in visited_nodes:
         item = n2i[node]
