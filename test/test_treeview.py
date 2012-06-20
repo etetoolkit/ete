@@ -8,6 +8,9 @@ from ete_dev.treeview.main import random_color, _NODE_TYPE_CHECKER, FACE_POSITIO
 sys.path.insert(0, "../examples/treeview")
 import face_grid, bubble_map, item_faces, node_style, node_background, face_positions
 
+sys.path.insert(0, "../examples/phylogenies")
+import phylotree_visualization
+
 main_tree = Tree()
 main_tree.dist = 0
 
@@ -40,6 +43,11 @@ t, ts = face_positions.get_example_tree()
 t_fpos = TreeFace(t, ts)
 n = main_tree.add_child()
 n.add_face(t_fpos, 0, "aligned")
+
+t, ts = phylotree_visualization.get_example_tree()
+t_phylo = TreeFace(t, ts)
+n = main_tree.add_child()
+n.add_face(t_phylo, 0, "aligned")
 
 
 ms = TreeStyle()

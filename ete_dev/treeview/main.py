@@ -681,4 +681,3 @@ def save(scene, imgName, w=None, h=None, dpi=300,\
         scene.render(pp, targetRect, scene.sceneRect(), ratio_mode)
         pp.end()
         ii.save(imgName)
-

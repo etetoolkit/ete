@@ -848,11 +848,12 @@ class TreeFace(Face):
         self.item = None
 
     def update_items(self):
-        from qt4_render import render
+        from qt4_render import render, init_tree_style
+        ts = init_tree_style(self.root_node, self.img)
         hide_root = False
         if self.root_node is self.node:
             hide_root = True
-        self.item, self.n2i, self.n2f = render(self.root_node, self.img, hide_root)
+        self.item, self.n2i, self.n2f = render(self.root_node, ts, hide_root)
 
     def _width(self):
         return self.item.rect().width()
