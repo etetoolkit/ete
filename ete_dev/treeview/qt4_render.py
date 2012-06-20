@@ -9,6 +9,7 @@ import qt4_rect_render as rrender
 from main import _leaf, NodeStyle, _FaceAreas, tracktime
 from node_gui_actions import _NodeActions as _ActionDelegator
 from qt4_face_render import update_node_faces, _FaceGroupItem, _TextFaceItem
+from templates import _DEFAULT_STYLE, apply_template
 import faces
 
 ## | General scheme of node content
@@ -1026,4 +1027,18 @@ def update_branch_lengths(tree, n2i, n2f, img):
                 n2i[ch].translate(w0, 0)
         item.fullRegion.setWidth(item.nodeRegion.width() + child_width)
 
-        
+def init_tree_style(t, ts):
+    if not ts:
+        ts = TreeStyle()
+
+    if not ts.layout_fn:
+        cl = t.__class__
+        try:
+            ts_template = _DEFAULT_STYLE[cl]
+        except KeyError, e:
+            pass
+        else:
+            apply_template(ts, ts_template)
+
+    return ts
+
