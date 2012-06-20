@@ -242,7 +242,7 @@ def render(root_node, img, hide_root=False):
             else:
                 #fixed_widths = ([i.nodeRegion.width() for n,i in n2i.iteritems()])
                 farthest, dist = root_node.get_farthest_leaf(topology_only=img.force_topology)
-                img._scale =  400.0 / dist
+                img._scale =  (400.0 / dist) if dist else 4
             update_branch_lengths(root_node, n2i, n2f, img)
         else:
             img._scale = crender.calculate_optimal_scale(root_node, n2i, rot_step, img)
