@@ -10,7 +10,7 @@ install:
   - /usr/bin/yes | sudo python setup.py install 2>&1 | tail
 
 # command to run tests, e.g. python setup.py test
-script:  python test/test_all.py
+script:  test/test_all.py
 
 branches:
   only:
