@@ -62,7 +62,7 @@ class Test_Coretype_Tree(unittest.TestCase):
 
     def test_tree_manipulation(self):
         """ tests operations which modify tree topology """
-        nw_tree = "((NoName:1,Turtle:1.3)1:1,(A:0.3,B:2.4)1:0.43);"
+        nw_tree = "((:1,Turtle:1.3)1:1,(A:0.3,B:2.4)1:0.43);"
 
         # Manipulate Topologys
         # Adding and removing nodes (add_child, remove_child,

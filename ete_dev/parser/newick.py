@@ -75,12 +75,12 @@ NW_FORMAT = {
   0: [['name', str, True],  ["dist", float, True],    ['support', float, True],   ["dist", float, True]], # Flexible with support
   1: [['name', str, True],  ["dist", float, True],    ['name', str, True],      ["dist", float, True]], # Flexible with internal node names
   2: [['name', str, False], ["dist", float, False],   ['support', float, False],  ["dist", float, False]],# Strict with support values
-  3: [['name', str, False], ["dist", float, False],   ['name', str, False],     ["dist", float, False]], # Strict with internal node names
+  3: [['name', str, False], ["dist", float, False],   ['name', str, True],     ["dist", float, False]], # Strict with internal node names
   4: [['name', str, False], ["dist", float, False],   [None, None, False],        [None, None, False]],
   5: [['name', str, False], ["dist", float, False],   [None, None, False],        ["dist", float, False]],
   6: [['name', str, False], [None, None, False],      [None, None, False],        ["dist", float, False]],
-  7: [['name', str, False], ["dist", float, False],   ["name", str, False],       [None, None, False]],
-  8: [['name', str, False], [None, None, False],      ["name", str, False],       [None, None, False]],
+  7: [['name', str, False], [None, None, False],   ["name", str, True],       [None, None, False]],
+  8: [['name', str, False], [None, None, False],      [None, None, False],       [None, None, False]],
   9: [['name', str, False], [None, None, False],      [None, None, False],        [None, None, False]], # Only topology with node names
   100: [[None, None, False],  [None, None, False],      [None, None, False],        [None, None, False]] # Only Topology
 }
@@ -193,10 +193,15 @@ def read_newick(newick, root_node=None, format=0):
         else:
             nw = newick
         nw = nw.strip()
-        if not nw.startswith('(') or not nw.endswith(';'):
+        if not nw.startswith('(') and nw.endswith(';'):
+            return _read_node_data(nw, root_node, "single", format)
+            
+        elif not nw.startswith('(') or not nw.endswith(';'):
             raise NewickError, \
             'Unexisting tree file or Malformed newick tree structure.'
-        return _read_newick_from_string(nw, root_node, format)
+        else:
+            return _read_newick_from_string(nw, root_node, format)
+
     else:
         raise NewickError, \
             "'newick' argument must be either a filename or a newick string."
@@ -275,12 +280,15 @@ def _parse_extra_features(node, NHX_string):
             raise ValueError, e
         node.add_feature(pname, pvalue)
 
-def _read_node_data(subnw, current_node, node_type,format):
+def _read_node_data(subnw, current_node, node_type, format):
     """ Reads a leaf node from a subpart of the original newick
     tree """
 
-    if node_type == "leaf":
-        node = current_node.add_child()
+    if node_type == "leaf" or node_type == "single":
+        if node_type == "leaf":
+            node = current_node.add_child()
+        else:
+            node = current_node
         container1 = NW_FORMAT[format][0][0]
         container2 = NW_FORMAT[format][1][0]
         converterFn1 = NW_FORMAT[format][0][1]
@@ -342,7 +350,8 @@ def write_newick(node, features=None, format=1, _is_root=True):
 
         newick += format_node(node, "leaf", format)
         newick += _get_features_string(node, features)
-        return newick
+        #return newick
+        
     else:
         if node.children:
             newick+= "("
@@ -357,6 +366,7 @@ def write_newick(node, features=None, format=1, _is_root=True):
                 newick += _get_features_string(node, features)
             else:
                 newick += ','
+                
     if _is_root:
         newick += ";"
     return newick

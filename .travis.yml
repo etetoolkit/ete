@@ -7,17 +7,12 @@ python:
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install: 
   - sudo apt-get install python-numpy python-scipy python-mysqldb python-lxml
-  - sudo apt-get install python-qt4
+  - sudo apt-get install python-qt4 python-qt4-dev
   - sudo apt-get autoremove
   - sudo apt-get autoclean
   - sudo apt-get install python-numpy python-scipy python-mysqldb python-lxml
   - sudo apt-get install python-qt4
   - /usr/bin/yes | sudo python setup.py install
-
-before_script:
-
-  - python -c 'from PyQt4 import QtCore, QtGui; print dir(QtGui)'
-  - python -c 'import PyQt4; print PyQt4.__file__'
 
 # command to run tests, e.g. python setup.py test
 script:  python test/test_all.py
