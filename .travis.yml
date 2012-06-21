@@ -20,7 +20,7 @@ before_script:
   - python -c 'import PyQt4; print PyQt4.__file__'
 
 # command to run tests, e.g. python setup.py test
-script:  python test.py
+script:  python test/test.py
 
 branches:
   only:
