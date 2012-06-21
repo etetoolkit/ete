@@ -11,6 +11,7 @@ install:
 
 before_script:
 
+  - python -c 'import QtCore;import QtGui; print dir(QtGui)'
   - python -c 'from PyQt4 import QtCore, QtGui; print dir(QtGui)'
   - python -c 'import PyQt4; print PyQt4.__file__'
 
