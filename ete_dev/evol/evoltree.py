@@ -43,7 +43,12 @@ from ete_dev.treeview.layouts import evol_layout
 from ete_dev.evol.model       import Model, PARAMS, AVAIL
 from ete_dev.evol.utils       import translate
 from ete_dev.parser.newick    import write_newick
-from ete_dev.treeview         import TreeStyle
+try:
+    from ete_dev.treeview         import TreeStyle
+except ImportError:
+    TREEVIEW = False
+else:
+    TREEVIEW = True
 
 __all__ = ["EvolNode", "EvolTree"]
 
@@ -276,28 +281,31 @@ class EvolNode (PhyloNode):
         :argument Nonehistface: an histogram face function. This is only to plot selective pressure among sites
     
         '''
-        if not tree_style:
-            ts = TreeStyle()
-        else: 
-            ts = tree_style
-        if histfaces:
-            for hist in histfaces:
-                try:
-                    mdl = self.get_evol_model (hist)
-                except AttributeError:
-                    warn ('model %s not computed' % (hist))
-                if not 'histface' in mdl.properties:
-                    if len(histfaces)>1 and histfaces.index(hist)!=0:
-                        mdl.set_histface (up=False)
+        if TREEVIEW:
+            if not tree_style:
+                ts = TreeStyle()
+            else: 
+                ts = tree_style
+            if histfaces:
+                for hist in histfaces:
+                    try:
+                        mdl = self.get_evol_model (hist)
+                    except AttributeError:
+                        warn ('model %s not computed' % (hist))
+                    if not 'histface' in mdl.properties:
+                        if len(histfaces)>1 and histfaces.index(hist)!=0:
+                            mdl.set_histface (up=False)
+                        else:
+                            mdl.set_histface ()
+                    if mdl.properties ['histface'].up:
+                        ts.aligned_header.add_face (\
+                            mdl.properties['histface'], 1)
                     else:
-                        mdl.set_histface ()
-                if mdl.properties ['histface'].up:
-                    ts.aligned_header.add_face (\
-                        mdl.properties['histface'], 1)
-                else:
-                    ts.aligned_foot.add_face (\
-                        mdl.properties['histface'], 1)
-        super(EvolTree, self).show(layout=layout, tree_style=ts)
+                        ts.aligned_foot.add_face (\
+                            mdl.properties['histface'], 1)
+            super(EvolTree, self).show(layout=layout, tree_style=ts)
+        else:
+            raise ValueError("Treeview module is disabled")
     
 
     def render (self, file_name, layout=evol_layout, w=None, h=None,
@@ -310,25 +318,27 @@ class EvolNode (PhyloNode):
         :argument Nonehistface: an histogram face function. This is only to plot selective pressure among sites
 
         '''
-        if not tree_style:
-            ts = TreeStyle()
-        else: 
-            ts = tree_style
-        if histfaces:
-            for hist in histfaces:
-                try:
-                    mdl = self.get_evol_model (hist)
-                except AttributeError:
-                    warn ('model %s not computed' % (hist))
-                mdl.set_histface()
-                if mdl.histface.up:
-                    ts.aligned_header.add_face (mdl.histface, 1)
-                else:
-                    ts.aligned_foot.add_face (mdl.histface, 1)
-        return super(EvolTree, self).render(file_name, layout=layout,
-                                            tree_style=ts,
-                                            w=w, h=h)
-        
+        if TREEVIEW:
+            if not tree_style:
+                ts = TreeStyle()
+            else: 
+                ts = tree_style
+            if histfaces:
+                for hist in histfaces:
+                    try:
+                        mdl = self.get_evol_model (hist)
+                    except AttributeError:
+                        warn ('model %s not computed' % (hist))
+                    mdl.set_histface()
+                    if mdl.histface.up:
+                        ts.aligned_header.add_face (mdl.histface, 1)
+                    else:
+                        ts.aligned_foot.add_face (mdl.histface, 1)
+            return super(EvolTree, self).render(file_name, layout=layout,
+                                                tree_style=ts,
+                                                w=w, h=h)
+        else:
+            raise ValueError("Treeview module is disabled")
 
     def mark_tree (self, node_ids, verbose=False, **kargs):
         '''

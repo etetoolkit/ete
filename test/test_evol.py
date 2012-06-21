@@ -54,7 +54,7 @@ class TestEvolEvolTree(unittest.TestCase):
 
     def test_load_model(self):
         tree = EvolTree (WRKDIR + 'tree.nw')
-        tree.workdir = 'examples/data/protamine/PRM1/paml/'
+        tree.workdir = 'examples/evol/data/protamine/PRM1/paml/'
         tree.link_to_evol_model (WRKDIR + 'paml/fb/fb.out', 'fb')
         tree.link_to_evol_model (WRKDIR + 'paml/M1/M1.out', 'M1')
         tree.link_to_evol_model (WRKDIR + 'paml/M2/M2.out', 'M2')
@@ -72,7 +72,7 @@ class TestEvolEvolTree(unittest.TestCase):
 
     def test_get_most_likely(self):
         tree = EvolTree (WRKDIR + 'tree.nw')
-        tree.workdir = 'examples/data/protamine/PRM1/paml/'
+        tree.workdir = 'examples/evol/data/protamine/PRM1/paml/'
         tree.link_to_evol_model (WRKDIR + 'paml/M1/M1.out', 'M1')
         tree.link_to_evol_model (WRKDIR + 'paml/M2/M2.out', 'M2')
         self.assertEqual(tree.get_most_likely ('M2','M1'),
@@ -80,14 +80,14 @@ class TestEvolEvolTree(unittest.TestCase):
 
     def test_labelling_tree(self):
         tree = EvolTree (WRKDIR + 'tree.nw')
-        tree.workdir = 'examples/data/protamine/PRM1/paml/'
+        tree.workdir = 'examples/evol/data/protamine/PRM1/paml/'
         random_swap(tree)
         tree.link_to_evol_model (WRKDIR + 'paml/fb/fb.out', 'fb')
         self.assert_(check_annotation (tree))
         
     def test_deep_copy(self):
         tree = EvolTree (WRKDIR + 'tree.nw')
-        tree.workdir = 'examples/data/protamine/PRM1/paml/'
+        tree.workdir = 'examples/evol/data/protamine/PRM1/paml/'
         tree.link_to_evol_model (WRKDIR + 'paml/fb/fb.out', 'fb')
         fba = deepcopy (tree.get_evol_model('fb'))
         tree._models['fb.a'] = fba
@@ -96,7 +96,7 @@ class TestEvolEvolTree(unittest.TestCase):
                      )
     def test_call_histface(self):
         tree = EvolTree (WRKDIR + 'tree.nw')
-        tree.workdir = 'examples/data/protamine/PRM1/paml/'
+        tree.workdir = 'examples/evol/data/protamine/PRM1/paml/'
         tree.link_to_alignment  (WRKDIR + 'alignments.fasta_ali')
         tree.link_to_evol_model (WRKDIR + 'paml/M2/M2.out', 'M2.a')
         col =  {'NS' : 'grey', 'RX' : 'black',
@@ -118,7 +118,7 @@ class TestEvolEvolTree(unittest.TestCase):
                          "<class 'ete_dev.treeview.faces.SequencePlotFace'>")
 
     def test_run_codeml(self):
-        tree = EvolTree('((seq1,seq2),seq3);')
+        tree = EvolTree('((seq1,seq2),seq3);', binpath= os.getcwd() + '/bin/')
         tree.link_to_alignment('>seq1\nATGCTG\n>seq2\nATGCTG\n>seq3\nTTGATG\n')
         tree.run_model('fb')
         self.assert_('CODONML' in tree.get_evol_model('fb').run)
@@ -127,7 +127,7 @@ class TestEvolEvolTree(unittest.TestCase):
         self.assert_('lnL' in tree.get_evol_model('fb').run)
 
     def test_run_slr(self):
-        tree = EvolTree('((seq1,seq2),seq3);')
+        tree = EvolTree('((seq1,seq2),seq3);', binpath=os.getcwd() + '/bin/')
         tree.link_to_alignment('>seq1\nCTGATTCTT\n>seq2\nCTGATTCTT\n>seq3\nATGATTCTT\n')
         tree.run_model('SLR')
         self.assert_('Sitewise Likelihood R' in tree.get_evol_model('SLR').run)

@@ -14,7 +14,12 @@ from warnings import warn
 
 from ete_dev.evol.control import PARAMS, AVAIL
 from ete_dev.evol.parser  import parse_paml, parse_rst, get_ancestor, parse_slr
-from ete_dev.treeview.faces import SequencePlotFace
+try:
+    from ete_dev.treeview.faces import SequencePlotFace
+except ImportError:
+    TREEVIEW = False
+else:
+    TREEVIEW = True
 
 class Model:
     '''Evolutionary model.
@@ -164,17 +169,20 @@ class Model:
             kwargs['ylim'] = (0,2)
         if errors:
             errors=self.sites[bayes]['se'] if self.sites[bayes].has_key ('se') else None
-        self.properties ['histface'] = SequencePlotFace(self.sites [bayes]['w'],
-                                                        hlines=hlines,
-                                                        colors=colors,
-                                                        errors=errors,
-                                                        ylabel=u'Omega (\u03c9)',
-                                                        kind=kind,
-                                                        **kwargs)
-        if up:
-            setattr (self.properties ['histface'], 'up', True)
+        if TREEVIEW:
+            self.properties ['histface'] = SequencePlotFace(self.sites [bayes]['w'],
+                                                            hlines=hlines,
+                                                            colors=colors,
+                                                            errors=errors,
+                                                            ylabel=u'Omega (\u03c9)',
+                                                            kind=kind,
+                                                            **kwargs)
+            if up:
+                setattr (self.properties ['histface'], 'up', True)
+            else:
+                setattr (self.properties ['histface'], 'up', False)
         else:
-            setattr (self.properties ['histface'], 'up', False)
+            self.properties ['histface'] = None
 
             
     def get_ctrl_string(self, outfile=None):
