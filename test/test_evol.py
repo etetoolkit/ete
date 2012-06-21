@@ -19,6 +19,8 @@ from cPickle                  import load, dump
 import os
 
 WRKDIR = 'examples/evol/data/protamine/PRM1/'
+BINDIR = os.getcwd() + '/bin/'
+print BINDIR
 
 def random_swap(tree):
     '''
@@ -118,7 +120,7 @@ class TestEvolEvolTree(unittest.TestCase):
                          "<class 'ete_dev.treeview.faces.SequencePlotFace'>")
 
     def test_run_codeml(self):
-        tree = EvolTree('((seq1,seq2),seq3);', binpath= os.getcwd() + '/bin/')
+        tree = EvolTree('((seq1,seq2),seq3);', binpath= BINDIR)
         tree.link_to_alignment('>seq1\nATGCTG\n>seq2\nATGCTG\n>seq3\nTTGATG\n')
         tree.run_model('fb')
         self.assert_('CODONML' in tree.get_evol_model('fb').run)
@@ -127,7 +129,7 @@ class TestEvolEvolTree(unittest.TestCase):
         self.assert_('lnL' in tree.get_evol_model('fb').run)
 
     def test_run_slr(self):
-        tree = EvolTree('((seq1,seq2),seq3);', binpath=os.getcwd() + '/bin/')
+        tree = EvolTree('((seq1,seq2),seq3);', binpath= BINDIR)
         tree.link_to_alignment('>seq1\nCTGATTCTT\n>seq2\nCTGATTCTT\n>seq3\nATGATTCTT\n')
         tree.run_model('SLR')
         self.assert_('Sitewise Likelihood R' in tree.get_evol_model('SLR').run)
