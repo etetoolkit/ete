@@ -6,7 +6,12 @@ python:
 
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install: 
-  - sudo apt-get install python-qt4 python-numpy python-scipy python-mysqldb python-lxml
+  - sudo /usr/bin/yes | apt-get install python-numpy python-scipy python-mysqldb python-lxml
+  - sudo /usr/bin/yes | apt-get install python-qt4
+  - sudo /usr/bin/yes | apt-get autoremove
+  - sudo /usr/bin/yes | apt-get autoclean
+  - sudo /usr/bin/yes | apt-get install python-numpy python-scipy python-mysqldb python-lxml
+  - sudo /usr/bin/yes | apt-get install python-qt4
   - /usr/bin/yes | sudo python setup.py install
 
 before_script:
