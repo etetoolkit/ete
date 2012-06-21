@@ -15,7 +15,6 @@ import unittest
 from ete_dev.evol             import EvolTree
 from random                   import random as rnd
 from copy                     import deepcopy
-from ete_dev                  import __path__ as ete_path
 from cPickle                  import load, dump
 import os
 
@@ -137,7 +136,7 @@ class TestEvolEvolTree(unittest.TestCase):
         self.assert_('lnL' in tree.get_evol_model('SLR').run)
 
     def test_marking_trees(self):
-        TREE_PATH = ete_path[0] + '/../examples/evol/data/S_example/'
+        TREE_PATH = 'examples/evol/data/S_example/'
         tree = EvolTree (TREE_PATH + 'measuring_S_tree.nw')
         self.assertEqual(tree.write(),
                          '((Hylobates_lar,(Gorilla_gorilla,Pan_troglodytes)),Papio_cynocephalus);')
