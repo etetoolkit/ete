@@ -19,6 +19,8 @@ from ete_dev                  import __path__ as ete_path
 from cPickle                  import load, dump
 import os
 
+WRKDIR = 'examples/evol/data/protamine/PRM1/'
+
 def random_swap(tree):
     '''
     swap randomly tree, to make sure labelling as paml is well done
@@ -52,7 +54,6 @@ class TestEvolEvolTree(unittest.TestCase):
             self.assertEqual((t & 'seq3').nt_sequence, 'ATGTTT')
 
     def test_load_model(self):
-        WRKDIR = ete_path[0] + '/../examples/evol/data/protamine/PRM1/'
         tree = EvolTree (WRKDIR + 'tree.nw')
         tree.workdir = 'examples/data/protamine/PRM1/paml/'
         tree.link_to_evol_model (WRKDIR + 'paml/fb/fb.out', 'fb')
@@ -71,7 +72,6 @@ class TestEvolEvolTree(unittest.TestCase):
         self.assert_(' #194' in str(tree.get_evol_model('fb')))
 
     def test_get_most_likely(self):
-        WRKDIR = ete_path[0] + '/../examples/evol/data/protamine/PRM1/'
         tree = EvolTree (WRKDIR + 'tree.nw')
         tree.workdir = 'examples/data/protamine/PRM1/paml/'
         tree.link_to_evol_model (WRKDIR + 'paml/M1/M1.out', 'M1')
@@ -80,7 +80,6 @@ class TestEvolEvolTree(unittest.TestCase):
                          6.3280740347111373e-10)
 
     def test_labelling_tree(self):
-        WRKDIR = ete_path[0] + '/../examples/evol/data/protamine/PRM1/'
         tree = EvolTree (WRKDIR + 'tree.nw')
         tree.workdir = 'examples/data/protamine/PRM1/paml/'
         random_swap(tree)
@@ -88,7 +87,6 @@ class TestEvolEvolTree(unittest.TestCase):
         self.assert_(check_annotation (tree))
         
     def test_deep_copy(self):
-        WRKDIR = ete_path[0] + '/../examples/evol/data/protamine/PRM1/'
         tree = EvolTree (WRKDIR + 'tree.nw')
         tree.workdir = 'examples/data/protamine/PRM1/paml/'
         tree.link_to_evol_model (WRKDIR + 'paml/fb/fb.out', 'fb')
@@ -98,7 +96,6 @@ class TestEvolEvolTree(unittest.TestCase):
                          str(tree.get_evol_model('fb'))
                      )
     def test_call_histface(self):
-        WRKDIR = ete_path[0] + '/../examples/evol/data/protamine/PRM1/'
         tree = EvolTree (WRKDIR + 'tree.nw')
         tree.workdir = 'examples/data/protamine/PRM1/paml/'
         tree.link_to_alignment  (WRKDIR + 'alignments.fasta_ali')
@@ -153,7 +150,6 @@ class TestEvolEvolTree(unittest.TestCase):
                          '((Hylobates_lar,(Gorilla_gorilla,Pan_troglodytes)),Papio_cynocephalus);')
 
     def test_pickling(self):
-        WRKDIR = ete_path[0] + '/../examples/evol/data/protamine/PRM1/'
         tree = EvolTree (WRKDIR + 'tree.nw')
         tree.workdir = 'examples/data/protamine/PRM1/paml/'
         tree.link_to_alignment  (WRKDIR + 'alignments.fasta_ali')
