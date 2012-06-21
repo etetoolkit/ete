@@ -39,6 +39,20 @@ def check_annotation (tree):
             raise Exception ('Error, unable to label with paml ids')
     return True
 
+def which(program):
+    def is_exe(fpath):
+        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+    fpath, fname = os.path.split(program)
+    if fpath:
+        if is_exe(program):
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            exe_file = os.path.join(path, program)
+            if is_exe(exe_file):
+                return exe_file
+    return None
 
 class TestEvolEvolTree(unittest.TestCase):
     """Tests EvolTree basics"""
@@ -120,22 +134,24 @@ class TestEvolEvolTree(unittest.TestCase):
                          "<class 'ete_dev.treeview.faces.SequencePlotFace'>")
 
     def test_run_codeml(self):
-        tree = EvolTree('((seq1,seq2),seq3);', binpath= BINDIR)
-        tree.link_to_alignment('>seq1\nATGCTG\n>seq2\nATGCTG\n>seq3\nTTGATG\n')
-        tree.run_model('fb')
-        self.assert_('CODONML' in tree.get_evol_model('fb').run)
-        self.assert_('Time used:' in tree.get_evol_model('fb').run)
-        self.assert_('end of tree file' in tree.get_evol_model('fb').run)
-        self.assert_('lnL' in tree.get_evol_model('fb').run)
+        if which('codeml'):
+            tree = EvolTree('((seq1,seq2),seq3);')
+            tree.link_to_alignment('>seq1\nATGCTG\n>seq2\nATGCTG\n>seq3\nTTGATG\n')
+            tree.run_model('fb')
+            self.assert_('CODONML' in tree.get_evol_model('fb').run)
+            self.assert_('Time used:' in tree.get_evol_model('fb').run)
+            self.assert_('end of tree file' in tree.get_evol_model('fb').run)
+            self.assert_('lnL' in tree.get_evol_model('fb').run)
 
     def test_run_slr(self):
-        tree = EvolTree('((seq1,seq2),seq3);', binpath= BINDIR)
-        tree.link_to_alignment('>seq1\nCTGATTCTT\n>seq2\nCTGATTCTT\n>seq3\nATGATTCTT\n')
-        tree.run_model('SLR')
-        self.assert_('Sitewise Likelihood R' in tree.get_evol_model('SLR').run)
-        self.assert_('Positively selected s' in tree.get_evol_model('SLR').run)
-        self.assert_('Conserved sites' in tree.get_evol_model('SLR').run)
-        self.assert_('lnL' in tree.get_evol_model('SLR').run)
+        if which('Slr'):
+            tree = EvolTree('((seq1,seq2),seq3);')
+            tree.link_to_alignment('>seq1\nCTGATTCTT\n>seq2\nCTGATTCTT\n>seq3\nATGATTCTT\n')
+            tree.run_model('SLR')
+            self.assert_('Sitewise Likelihood R' in tree.get_evol_model('SLR').run)
+            self.assert_('Positively selected s' in tree.get_evol_model('SLR').run)
+            self.assert_('Conserved sites' in tree.get_evol_model('SLR').run)
+            self.assert_('lnL' in tree.get_evol_model('SLR').run)
 
     def test_marking_trees(self):
         TREE_PATH = 'examples/evol/data/S_example/'
