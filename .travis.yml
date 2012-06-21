@@ -9,6 +9,11 @@ install:
   - sudo apt-get install python-qt4 python-numpy python-scipy python-mysqldb python-lxml
   - /usr/bin/yes | sudo python setup.py install
 
+before_script:
+
+  - python -c 'from PyQt4 import QtCore, QtGui; print dir(QtGui)'
+  - python -c 'import PyQt4; print PyQt4.__file__'
+
 # command to run tests, e.g. python setup.py test
 script:  python test.py
 
