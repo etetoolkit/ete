@@ -12,7 +12,7 @@ from test_phylotree import *
 from test_arraytable import *
 try:
     from test_clustertree import *
-except ImportError:
+except NameError: # case numpy is not installed
     pass
 from test_r_bindings import *
 from test_evol import *
