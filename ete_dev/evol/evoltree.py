@@ -39,7 +39,6 @@ from warnings import warn
 from ete_dev                  import PhyloNode
 from ete_dev                  import SeqGroup
 from ete_dev.evol             import __path__ as ete_path
-from ete_dev.treeview.layouts import evol_layout
 from ete_dev.evol.model       import Model, PARAMS, AVAIL
 from ete_dev.evol.utils       import translate
 from ete_dev.parser.newick    import write_newick
@@ -271,7 +270,7 @@ class EvolNode (PhyloNode):
                 leaf.sequence = translate(leaf.nt_sequence)
         self._label_as_paml()
 
-    def show(self, layout=evol_layout, tree_style=None, histfaces=None):
+    def show(self, layout=None, tree_style=None, histfaces=None):
         '''
         call super show of PhyloTree
         histface should be a list of models to be displayes as histfaces
@@ -308,7 +307,7 @@ class EvolNode (PhyloNode):
             raise ValueError("Treeview module is disabled")
     
 
-    def render (self, file_name, layout=evol_layout, w=None, h=None,
+    def render (self, file_name, layout=None, w=None, h=None,
                 tree_style=None, header=None, histfaces=None):
         '''
         call super show adding up and down faces
