@@ -489,9 +489,9 @@ class EvolNode (PhyloNode):
             return 1.0
         try:
             if hasattr (altn, 'lnL') and hasattr (null, 'lnL'):
-                from scipy.stats import chisqprob
-                return chisqprob(2*(altn.lnL - null.lnL),
-                                 df=(altn.np - null.np))
+                from ete_dev.evol.utils import chi_high
+                return chi_high(2*(altn.lnL - null.lnL),
+                                df=(altn.np - null.np))
             else:
                 return 1
         except KeyError:

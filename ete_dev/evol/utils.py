@@ -3,7 +3,9 @@
 # Creation Date: 2010/04/22 16:05:46
 
 
+from __future__ import division
 from ete_dev import Tree
+from numpy import log, exp
 
 def get_rooting(tol, seed_species, agename = False):
     '''
@@ -137,3 +139,149 @@ def translate(sequence):
                             break
             proteinseq += aa
     return proteinseq
+
+
+# reused from pycogent
+ROUND_ERROR = 1e-14
+MAXLOG =  7.09782712893383996843E2
+big = 4.503599627370496e15
+MACHEP =  1.11022302462515654042E-16
+
+def chi_high(x, df):
+    """Returns right-hand tail of chi-square distribution (x to infinity).
+    
+    df, the degrees of freedom, ranges from 1 to infinity (assume integers).
+    Typically, df is (r-1)*(c-1) for a r by c table.
+    
+    Result ranges from 0 to 1.
+    
+    See Cephes docs for details.
+    """
+    x = fix_rounding_error(x)
+    
+    if x < 0:
+        raise ValueError, "chi_high: x must be >= 0 (got %s)." % x
+    if df < 1:
+        raise ValueError, "chi_high: df must be >= 1 (got %s)." % df
+    return igamc(df/2, x/2)
+
+def fix_rounding_error(x):
+    """If x is almost in the range 0-1, fixes it.
+
+    Specifically, if x is between -ROUND_ERROR and 0, returns 0.
+    If x is between 1 and 1+ROUND_ERROR, returns 1.
+    """
+    if -ROUND_ERROR < x < 0:
+        return 0
+    elif 1 < x < 1+ROUND_ERROR:
+        return 1
+    else:
+        return x
+        
+def igamc(a,x):
+    """Complemented incomplete Gamma integral: see Cephes docs."""
+    if x <= 0 or a <= 0:
+        return 1
+    if x < 1 or x < a:
+        return 1 - igam(a, x)
+    ax = a * log(x) - x - lgam(a)
+    if ax < -MAXLOG:    #underflow
+        return 0
+    ax = exp(ax)
+    #continued fraction
+    y = 1 - a
+    z = x + y + 1
+    c = 0
+    pkm2 = 1
+    qkm2 = x
+    pkm1 = x + 1
+    qkm1 = z * x
+    ans = pkm1/qkm1
+
+    while 1:
+        c += 1
+        y += 1
+        z += 2
+        yc = y * c
+        pk = pkm1 * z - pkm2 * yc
+        qk = qkm1 * z - qkm2 * yc
+        if qk != 0:
+            r = pk/qk
+            t = abs((ans-r)/r)
+            ans = r
+        else:
+            t = 1
+        pkm2 = pkm1
+        pkm1 = pk
+        qkm2 = qkm1
+        qkm1 = qk
+        if abs(pk) > big:
+            pkm2 *= biginv
+            pkm1 *= biginv
+            qkm2 *= biginv
+            qkm1 *= biginv
+        if t <= MACHEP:
+            break
+    return ans * ax
+
+def lgam(x):
+    """Natural log of the gamma fuction: see Cephes docs for details"""
+    sgngam = 1
+    if x < -34:
+        q = -x
+        w = lgam(q)
+        p = floor(q)
+        if p == q:
+            raise OverflowError, "lgam returned infinity."
+        i = p
+        if i & 1 == 0:
+            sgngam = -1
+        else:
+            sgngam = 1
+        z = q - p
+        if z > 0.5:
+            p += 1
+            z = p - q
+        z = q * sin(PI * z)
+        if z == 0:
+            raise OverflowError, "lgam returned infinity."
+        z = LOGPI - log(z) - w
+        return z
+    if x < 13:
+        z = 1
+        p = 0
+        u = x
+        while u >= 3:
+            p -= 1
+            u = x + p
+            z *= u
+        while u < 2:
+            if u == 0:
+                raise OverflowError, "lgam returned infinity."
+            z /= u
+            p += 1
+            u = x + p
+        if z < 0:
+            sgngam = -1
+            z = -z
+        else:
+            sgngam = 1
+        if u == 2:
+            return log(z)
+        p -= 2
+        x = x + p
+        p = x * polevl(x, GB)/polevl(x,GC)
+        return log(z) + p
+    if x > MAXLGM:
+        raise OverflowError, "Too large a value of x in lgam."
+    q = (x - 0.5) * log(x) - x + LS2PI
+    if x > 1.0e8:
+        return q
+    p = 1/(x*x)
+    if x >= 1000:
+        q += ((  7.9365079365079365079365e-4 * p
+                -2.7777777777777777777778e-3) *p
+                + 0.0833333333333333333333) / x
+    else:
+        q += polevl(p, GA)/x
+    return q
