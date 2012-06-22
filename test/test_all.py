@@ -11,9 +11,11 @@ from test_seqgroup import *
 from test_phylotree import *
 from test_arraytable import *
 try:
-    from test_clustertree import *
-except NameError: # case numpy is not installed
+    import numpy
+except ImportError: # case numpy is not installed
     pass
+else:
+    from test_clustertree import *
 from test_r_bindings import *
 from test_evol import *
 
