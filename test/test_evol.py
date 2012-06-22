@@ -122,16 +122,21 @@ class TestEvolEvolTree(unittest.TestCase):
                 'RX+': 'white', 'CN' : 'white',
                 'CN+': 'white', 'PS' : 'white', 'PS+': 'white'}
         M2a = tree.get_evol_model('M2.a')
-        M2a.set_histface (up=False, kind='stick', hlines=[1.0, 0.3],
-                          hlines_col=['red','grey'], header='ugliest face')
-        M2a.set_histface (up=False, kind='curve', colors=col2,errors=True,
-                          hlines = [2.5, 1.0, 4.0, 0.5],
-                          header = 'Many lines, error boxes, background black',
-                          hlines_col=['orange', 'yellow', 'red', 'cyan'])
-        M2a.set_histface (up=False, kind='bar', hlines = [1.0, 0.3],
-                          hlines_col=['black','grey'],colors=col)
-        self.assertEqual(str(type(M2a.properties['histface'])),
-                         "<class 'ete_dev.treeview.faces.SequencePlotFace'>")
+        try:
+            import PyQt4
+        except ImportError:
+            pass
+        else:
+            M2a.set_histface (up=False, kind='stick', hlines=[1.0, 0.3],
+                              hlines_col=['red','grey'], header='ugliest face')
+            M2a.set_histface (up=False, kind='curve', colors=col2,errors=True,
+                              hlines = [2.5, 1.0, 4.0, 0.5],
+                              header = 'Many lines, error boxes, background black',
+                              hlines_col=['orange', 'yellow', 'red', 'cyan'])
+            M2a.set_histface (up=False, kind='bar', hlines = [1.0, 0.3],
+                              hlines_col=['black','grey'],colors=col)
+            self.assertEqual(str(type(M2a.properties['histface'])),
+                             "<class 'ete_dev.treeview.faces.SequencePlotFace'>")
 
     def test_run_codeml(self):
         if which('codeml'):
