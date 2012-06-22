@@ -5,7 +5,7 @@
 
 from __future__ import division
 from ete_dev import Tree
-from numpy import log, exp
+from math import log, exp
 
 def get_rooting(tol, seed_species, agename = False):
     '''
