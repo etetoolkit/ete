@@ -91,8 +91,8 @@ class TestEvolEvolTree(unittest.TestCase):
         tree.workdir = 'examples/evol/data/protamine/PRM1/paml/'
         tree.link_to_evol_model (WRKDIR + 'paml/M1/M1.out', 'M1')
         tree.link_to_evol_model (WRKDIR + 'paml/M2/M2.out', 'M2')
-        self.assertEqual(tree.get_most_likely ('M2','M1'),
-                         6.3280740347111373e-10)
+        self.assertEqual(round(tree.get_most_likely ('M2','M1'),16),
+                         round(6.3280740347111373e-10,16))
 
     def test_labelling_tree(self):
         tree = EvolTree (WRKDIR + 'tree.nw')
