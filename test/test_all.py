@@ -10,7 +10,10 @@ from test_tree import *
 from test_seqgroup import *
 from test_phylotree import *
 from test_arraytable import *
-from test_clustertree import *
+try:
+    from test_clustertree import *
+except ImportError:
+    pass
 from test_r_bindings import *
 from test_evol import *
 
