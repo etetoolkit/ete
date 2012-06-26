@@ -21,10 +21,10 @@ tree.link_to_alignment ('data/S_example/alignment_S_measuring_evol.fasta')
 
 print tree
 
-print '\nRunning free-ratio model with calculation of ancestral sequences...'
+print '\n Running free-ratio model with calculation of ancestral sequences...'
 
 tree.run_model ('fb_anc')
-#tree.link_to_evol_model('/tmp/ete2-codeml/fb_anc/out', 'fb')
+#tree.link_to_evol_model('/tmp/ete2-codeml/fb_anc/out', 'fb_anc')
 
 I = TreeStyle()
 I.force_topology             = False
@@ -33,11 +33,11 @@ I.draw_guiding_lines = True
 I.guiding_lines_type = 2
 I.guiding_lines_color = "#CCCCCC"
 for n in sorted (tree.get_descendants()+[tree],
-                 key=lambda x: x.paml_id):
+                 key=lambda x: x.node_id):
     if n.is_leaf(): continue
     anc_face = faces.SequenceFace (n.sequence, 'aa', fsize=10, bg_colors={})
     I.aligned_foot.add_face(anc_face, 1)
-    I.aligned_foot.add_face(faces.TextFace('paml_id: #%d '%(n.paml_id),
+    I.aligned_foot.add_face(faces.TextFace('node_id: #%d '%(n.node_id),
                                            fsize=8), 0)
 print 'display result of bs_anc model, with ancestral amino acid sequences.'
 tree.show(tree_style=I)

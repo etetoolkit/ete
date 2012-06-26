@@ -25,7 +25,7 @@ print tree
 print 'Tree and alignment loaded.'
 raw_input ('Tree will be mark in order to contrast Gorilla and Chimpanzee as foreground \nspecies.')
 
-marks = ['2', '3', '4']
+marks = ['1', '3', '7']
 
 tree.mark_tree (marks, ['#1'] * 3)
 print tree.write ()
@@ -46,9 +46,9 @@ free branch models, 2 groups of branches, one with Gorilla and
 chimp, the other with the rest of the phylogeny
 '''
 print 'running branch free...'
-tree.run_model ('b_free.234')
+tree.run_model ('b_free.137')
 print 'running branch neut...'
-tree.run_model ('b_neut.234')
+tree.run_model ('b_neut.137')
 print 'running M0 (all branches have the save value of omega)...'
 tree.run_model ('M0')
 
@@ -56,29 +56,29 @@ raw_input ('''Now we can do comparisons...
 Compare first if we have one or 2 rates of evolution among phylogeny.
 LRT between b_free and M0 (that is one or two rates of omega value)
 p-value ofthis comparison is:''')
-print tree.get_most_likely ('b_free.234', 'M0')
+print tree.get_most_likely ('b_free.137', 'M0')
 
 raw_input ('''
 Now test if foreground rate is significantly different of 1.
 (b_free with significantly better likelihood than b_neut)
 if significantly different, and higher than one, we will be under
-posisitve selection, if different and lower than 1 we will be under
-negative selection. And finally if models are not significantly diferent
+positive selection, if different and lower than 1 we will be under
+negative selection. And finally if models are not significantly different
 we should accept null hypothesis that omega value on marked branches is
 equal to 1, what would be a signal of relaxation.
 p-value for difference in rates between marked branches and the rest:''')
-print tree.get_most_likely ('b_free.234', 'M0')
+print tree.get_most_likely ('b_free.137', 'M0')
 print 'p-value representing significance that omega is different of 1:'
-print tree.get_most_likely ('b_free.234', 'b_neut.234')
+print tree.get_most_likely ('b_free.137', 'b_neut.137')
 
 print 'value of omega in marked branch (frg branch):'
-b_free = tree.get_evol_model ('b_free.234')
+b_free = tree.get_evol_model ('b_free.137')
 print b_free.branches[1]['w']
 
 print 'and value of omega for background: '
 print b_free.branches[2]['w']
 
-print 'we will now run 2 branch models over this tree, one letting the omega \nvalue of foregroung species to be free, and the other fixing it at one.'
+print 'we will now run 2 branch models over this tree, one letting the omega \nvalue of foreground species to be free, and the other fixing it at one.'
 
 
 

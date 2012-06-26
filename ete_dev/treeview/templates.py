@@ -13,7 +13,7 @@ phylogeny = {
 
 evol = {
     "layout_fn": layouts.evol_layout, 
-     "show_leaf_name":False, 
+     "show_leaf_name":True, 
      "draw_guiding_lines":False
     }
 

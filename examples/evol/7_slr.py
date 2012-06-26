@@ -2,7 +2,7 @@
 """
 06 Feb 2011
 
-use slr to compuet evilutionnary rates
+use slr to compute evolutionary rates
 """
 
 __author__  = "Francois-Jose Serra"

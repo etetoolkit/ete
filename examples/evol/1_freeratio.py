@@ -20,11 +20,11 @@ print tree
 
 raw_input ('\n   tree loaded, hit some key.\n')
 
-print 'Now, it is necessary to link this tree to an alignement:'
+print 'Now, it is necessary to link this tree to an alignment:'
 
 tree.link_to_alignment ('data/S_example/alignment_S_measuring_evol.fasta')
 
-raw_input ('\n   alignement loaded, hit some key to see.\n')
+raw_input ('\n   alignment loaded, hit some key to see.\n')
 
 tree.show()
 
@@ -54,7 +54,7 @@ print 'Have a look to log likelihood value of this model, and number of paramete
 print 'lnL: %s and np: %s' % (fb.lnL, fb.np)
 raw_input ('hit some key...')
 
-raw_input ('finally have a look to two layouts availalble to display free-ratio:')
+raw_input ('finally have a look to two layouts available to display free-ratio:')
 tree.show()
 
 # have to import layou

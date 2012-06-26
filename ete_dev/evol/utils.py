@@ -145,6 +145,7 @@ def translate(sequence):
 ROUND_ERROR = 1e-14
 MAXLOG =  7.09782712893383996843E2
 big = 4.503599627370496e15
+biginv =  2.22044604925031308085e-16
 MACHEP =  1.11022302462515654042E-16
 
 def chi_high(x, df):
@@ -285,3 +286,139 @@ def lgam(x):
     else:
         q += polevl(p, GA)/x
     return q
+
+def polevl(x, coef):
+    """evaluates a polynomial y = C_0 + C_1x + C_2x^2 + ... + C_Nx^N
+    
+    Coefficients are stored in reverse order, i.e. coef[0] = C_N
+    """
+    result = 0
+    for c in coef:
+        result = result * x + c
+    return result
+
+
+
+def igamc(a,x):
+    """Complemented incomplete Gamma integral: see Cephes docs."""
+    if x <= 0 or a <= 0:
+        return 1
+    if x < 1 or x < a:
+        return 1 - igam(a, x)
+    ax = a * log(x) - x - lgam(a)
+    if ax < -MAXLOG:    #underflow
+        return 0
+    ax = exp(ax)
+    #continued fraction
+    y = 1 - a
+    z = x + y + 1
+    c = 0
+    pkm2 = 1
+    qkm2 = x
+    pkm1 = x + 1
+    qkm1 = z * x
+    ans = pkm1/qkm1
+
+    while 1:
+        c += 1
+        y += 1
+        z += 2
+        yc = y * c
+        pk = pkm1 * z - pkm2 * yc
+        qk = qkm1 * z - qkm2 * yc
+        if qk != 0:
+            r = pk/qk
+            t = abs((ans-r)/r)
+            ans = r
+        else:
+            t = 1
+        pkm2 = pkm1
+        pkm1 = pk
+        qkm2 = qkm1
+        qkm1 = qk
+        if abs(pk) > big:
+            pkm2 *= biginv
+            pkm1 *= biginv
+            qkm2 *= biginv
+            qkm1 *= biginv
+        if t <= MACHEP:
+            break
+    return ans * ax
+
+def igam(a, x):
+    """Left tail of incomplete gamma function: see Cephes docs for details"""
+    if x <= 0 or a <= 0:
+        return 0
+    if x > 1 and x > a:
+        return 1 - igamc(a,x)
+
+    #Compute x**a * exp(x) / Gamma(a)
+
+    ax = a * log(x) - x - lgam(a)
+    if ax < -MAXLOG:    #underflow
+        return 0.0
+    ax = exp(ax)
+
+    #power series
+    r = a
+    c = 1
+    ans = 1
+    while 1:
+        r += 1
+        c *= x/r
+        ans += c
+        if c/ans <= MACHEP:
+            break
+    
+    return ans * ax / a
+
+#Coefficients for Gamma follow:
+GA = [
+        8.11614167470508450300E-4,
+        -5.95061904284301438324E-4,
+        7.93650340457716943945E-4,
+        -2.77777777730099687205E-3,
+        8.33333333333331927722E-2,
+    ]
+
+GB = [
+        -1.37825152569120859100E3,
+        -3.88016315134637840924E4,
+        -3.31612992738871184744E5,
+        -1.16237097492762307383E6,
+        -1.72173700820839662146E6,
+        -8.53555664245765465627E5,
+    ]
+
+GC = [
+        1.00000000000000000000E0,
+        -3.51815701436523470549E2,
+        -1.70642106651881159223E4,
+        -2.20528590553854454839E5,
+        -1.13933444367982507207E6,
+        -2.53252307177582951285E6,
+        -2.01889141433532773231E6,
+    ]
+
+GP = [
+        1.60119522476751861407E-4,
+        1.19135147006586384913E-3,
+        1.04213797561761569935E-2,
+        4.76367800457137231464E-2,
+        2.07448227648435975150E-1,
+        4.94214826801497100753E-1,
+        9.99999999999999996796E-1,
+    ]
+
+GQ = [
+        -2.31581873324120129819E-5,
+        5.39605580493303397842E-4,
+        -4.45641913851797240494E-3,
+        1.18139785222060435552E-2,
+        3.58236398605498653373E-2,
+        -2.34591795718243348568E-1,
+        7.14304917030273074085E-2,
+        1.00000000000000000320E0,
+    ]
+
+biginv =  2.22044604925031308085e-16

@@ -27,15 +27,16 @@ class Model:
     Zihen Yang says, it is good to try with different starting values...
     model linked to tree by _tree variable
     results of calculation are stored in dictionaries:
-     * branches: w dN dS bL by mean of their paml_id
+     * branches: w dN dS bL by mean of their node_id
      * sites   : values at each site.
      * classes : classes of sites and proportions
      * stats   : lnL number of parameters kappa value and codon frequencies stored here.
     
     available models are:
-        +----------+-----------------------------+-----------------+
-        |Model name| description                 | Model kind      |
-        +==========+=============================+=================+\n%s
+        =========== ============================= ==================
+        Model name  Description                   Model kind       
+        =========== ============================= ==================\n%s
+        =========== ============================= ==================\n
 
     :argument model_name: string with model name. Add a dot followed by anything at the end of the string in order to extend the name of the model and avoid overwriting.
     :argument None tree: a Tree object
@@ -60,6 +61,7 @@ class Model:
                 arg = not arg
             params[key] = arg
         self._change_params (params)
+        self.__check_marks()
         if path:
             self._load (path)
 
@@ -67,31 +69,26 @@ class Model:
         '''
         to print nice info
         '''
-        marks = {}
-        rootid = self._tree.paml_id
-        if self._tree:
-            has_mark = any([n.mark for n in self._tree.iter_descendants()])
-            is_branch = True if self.branches else False
-            if is_branch and has_mark:
-                for m in set([n.mark for n in self._tree.iter_descendants()]):
-                    marks[m if m else ' #0'] = [n.paml_id for n in \
-                                                self._tree.search_nodes(mark=m) \
-                                                if not n.paml_id == rootid]
-            elif is_branch:
-                for b in self.branches:
-                    marks[' #'+str(b)] = [b]
         str_mark = ''
-        str_line = '\n           mark:%-5s, omega: %-10s, nodes paml_ids: %s'
-        for m in marks:
-            nids = ' '.join([str(i) for i in marks[m]])
-            str_mark +=  str_line % (m, self.branches[marks[m][0]]['w'], nids)
+        str_line = '\n        mark:%-5s, omega: %-10s, node_ids: %-4s, name: %s'
+        for i, node in enumerate(self._tree.traverse()):
+            if node.is_root(): 
+                str_mark += str_line % (self.branches[node.node_id]['mark'],
+                                        'None',
+                                        node.node_id, node.name or 'ROOT')
+            else:
+                str_mark += str_line % (self.branches[node.node_id]['mark'],
+                                        self.branches[node.node_id].get('w',
+                                                                        'None'),
+                                        node.node_id, node.name or 'EDGE')
         str_site = ''
-        str_line = '\n           %-12s: %s '
+        str_line = '\n        %-12s: %s '
         if self.classes:
             for t in [t for t in self.classes]:
                 str_site += str_line % (t, ' '.join(['%s%s=%-9s' % (t[0], j, i)\
                                                      for j, i in \
-                                                     enumerate(self.classes[t])]))
+                                                     enumerate(self.classes[t])]
+                                                ))
         return ''' Evolutionary Model %s:
         log likelihood       : %s
         number of parameters : %s
@@ -106,6 +103,22 @@ class Model:
                str_mark if self.branches else 'None'
            )
 
+
+    def __check_marks(self):
+        """
+        checks if tree is marked and if model allows marks.
+        fill up branches dict with marks
+        """
+        has_mark = any([n.mark for n in self._tree.iter_descendants()])
+        for i, node in enumerate(self._tree.traverse()):
+            #if node.is_root(): continue
+            if has_mark and self.properties['allow_mark']:
+                self.branches[node.node_id] = {'mark': node.mark or ' #0'}
+            elif 'branch' in self.properties['typ']:
+                self.branches[node.node_id] = {'mark': ' #'+str(i)}
+            else:
+                self.branches[node.node_id] = {'mark': ''}
+        
     def _load (self, path):
         '''
         parse outfiles and load in model object
@@ -135,7 +148,7 @@ class Model:
             params[key] = change
         self.properties ['params'] = params
         
-    def set_histface (self, up=True, hlines=[1.0,0.3], kind='bar',
+    def set_histface (self, up=True, hlines=(1.0, 0.3), kind='bar',
                       errors=False, colors=None, **kwargs):
         '''
         To add histogram face for a given site mdl (M1, M2, M7, M8)
@@ -156,33 +169,33 @@ class Model:
             warn ("WARNING: model %s not computed." % (self.name))
             return None
         if not 'header' in kwargs:
-            kwargs['header'] = 'Omega value for sites under %s model' % (self.name)
+            kwargs['header'] = 'Omega value for sites under %s model' % \
+                               (self.name)
         if self.sites.has_key ('BEB'):
-            bayes = 'BEB'
+            val = 'BEB'
         elif self.sites.has_key ('NEB'):
-            bayes = 'NEB'
+            val = 'NEB'
         else:
-            bayes = 'SLR'
-        colors = colorize_rst(self.sites [bayes]['pv'], self.name,
-                              self.sites[bayes]['class'], col=colors)
+            val = 'SLR'
+        colors = colorize_rst(self.sites [val]['pv'], self.name,
+                              self.sites[val]['class'], col=colors)
         if not 'ylim' in kwargs:
-            kwargs['ylim'] = (0,2)
+            kwargs['ylim'] = (0, 2)
         if errors:
-            errors=self.sites[bayes]['se'] if self.sites[bayes].has_key ('se') else None
+            errors = self.sites[val]['se'] if self.sites[val].has_key('se')\
+                     else None
         if TREEVIEW:
-            self.properties ['histface'] = SequencePlotFace(self.sites [bayes]['w'],
-                                                            hlines=hlines,
-                                                            colors=colors,
-                                                            errors=errors,
-                                                            ylabel=u'Omega (\u03c9)',
-                                                            kind=kind,
-                                                            **kwargs)
+            hist = SequencePlotFace(self.sites[val]['w'], hlines=hlines,
+                                    colors=colors, errors=errors,
+                                    ylabel=u'Omega (\u03c9)', kind=kind,
+                                    **kwargs)
             if up:
-                setattr (self.properties ['histface'], 'up', True)
+                setattr (hist, 'up', True)
             else:
-                setattr (self.properties ['histface'], 'up', False)
+                setattr (hist, 'up', False)
         else:
-            self.properties ['histface'] = None
+            hist = None
+        self.properties['histface'] = hist
 
             
     def get_ctrl_string(self, outfile=None):
@@ -200,21 +213,22 @@ class Model:
             sep = self.properties ['sep']
         else:
             sep = ' = '
-        for p in ['seqfile', 'treefile', 'outfile']:
-            string += '%15s%s%s\n' % (p, sep, str(self.properties ['params'][p]))
+        for prm in ['seqfile', 'treefile', 'outfile']:
+            string += '%15s%s%s\n' % (prm, sep,
+                                      str(self.properties['params'][prm]))
         string += '\n'
-        for p in sorted (self.properties ['params'].keys(), cmp=lambda x, y: \
+        for prm in sorted (self.properties ['params'].keys(), cmp=lambda x, y: \
                         cmp(sub('fix_', '', x.lower()),
                             sub ('fix_', '', y.lower()))):
-            if p in ['seqfile', 'treefile', 'outfile']:
+            if prm in ['seqfile', 'treefile', 'outfile']:
                 continue
-            if str(self.properties ['params'][p]).startswith('*'):
+            if str(self.properties ['params'][prm]).startswith('*'):
                 continue
                 #string += ' *'+'%13s = %s\n' \
                 #          % (p, str(self.properties ['params'][p])[1:])
             else:
-                string += '%15s%s%s\n' % (p, sep,
-                                          str (self.properties ['params'][p]))
+                string += '%15s%s%s\n' % (prm, sep,
+                                          str (self.properties ['params'][prm]))
         if outfile == None:
             return string
         else:
@@ -229,28 +243,27 @@ def check_name(model):
 
 
 
-def colorize_rst(vals, winner, classes,col=None):
+def colorize_rst(vals, winner, classes, col=None):
     '''
     Colorize function, that take in argument a list of values
     corresponding to a list of classes and returns a list of
     colors to paint histogram.
     '''
-    col = {'NS' : 'grey',
-           'RX' : 'green',
-           'RX+': 'green',
-           'CN' : 'cyan',
-           'CN+': 'blue',
-           'PS' : 'orange',
-           'PS+': 'red'} if col==None else col
+    col = col or {'NS' : 'grey',
+                  'RX' : 'green',
+                  'RX+': 'green',
+                  'CN' : 'cyan',
+                  'CN+': 'blue',
+                  'PS' : 'orange',
+                  'PS+': 'red'}
     colors = []
-    for i in range (0, len (vals)):
+    for i in xrange (0, len (vals)):
         class1 = classes[i] #int(sub('\/.*', '', sub('\(', '', classes[i])))
         class2 = max (classes)# int(sub('.*\/', '', sub('\)', '', classes[i])))
         pval = float (vals[i])
         if pval < 0.95:
             colors.append(col['NS'])
-        elif (class1 != class2 and class1 != 1) \
-                 and (winner == 'M2' or winner == 'M8' or winner == 'SLR'):
+        elif (class1 not in [class2, 1]) and (winner in ['M2', 'M8', 'SLR']):
             if pval < 0.99:
                 colors.append(col['RX'])
             else:
@@ -260,7 +273,7 @@ def colorize_rst(vals, winner, classes,col=None):
                 colors.append(col['CN'])
             else:
                 colors.append(col['CN+'])
-        elif class1 == class2 and (winner == 'M2' or winner == 'M8' or winner == 'SLR'):
+        elif class1 == class2 and (winner in ['M2', 'M8', 'SLR']):
             if pval < 0.99:
                 colors.append(col['PS'])
             else:
@@ -275,12 +288,12 @@ def colorize_rst(vals, winner, classes,col=None):
     return colors
 
 
-        
-sep = '\n        +----------+-----------------------------+-----------------+\n'
+
 Model.__doc__ = Model.__doc__ % \
-                    (sep.join(map (lambda x: \
-                                   '        | %-8s | %-27s | %-15s |' % \
-                                   ('%s' % (x), AVAIL[x]['evol'], AVAIL[x]['typ']),
-                                   sorted (sorted (AVAIL.keys()), cmp=lambda x, y : \
-                                           cmp(AVAIL[x]['typ'], AVAIL[y]['typ']),
-                                           reverse=True))) + sep)
+                ('\n'.join([ '          %-8s   %-27s   %-15s  ' % \
+                             ('%s' % (x), AVAIL[x]['evol'], AVAIL[x]['typ']) \
+                             for x in sorted (sorted (AVAIL.keys()),
+                                              cmp=lambda x, y: \
+                                              cmp(AVAIL[x]['typ'],
+                                                  AVAIL[y]['typ']),
+                                              reverse=True)]))

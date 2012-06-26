@@ -2,7 +2,7 @@
 """
 15 Nov 2010
 
-simple example to mark a tree and comput branch-site test of positive selection
+simple example to mark a tree and compute branch-site test of positive selection
 """
 
 __author__  = "Francois-Jose Serra"
@@ -21,16 +21,16 @@ print tree
 
 raw_input ('\n   tree and alignment loaded\nHit some key, to start computation of branch site models A and A1 on each branch.\n')
 
-print 'running model M0, for camparison with branch-site models...'
+print 'running model M0, for comparison with branch-site models...'
 tree.run_model('M0')
 
-# each node/leaf has two kind of identifiers _nid and paml_id, to mark nodes we have to specify
-# the _nid of the nodes we want to mark, and the kind of mark in this way:
+# each node/leaf has two kind of identifiers node_id and paml_id, to mark nodes we have to specify
+# the node_id of the nodes we want to mark, and the kind of mark in this way:
 
 for leaf in tree:
-    leaf._nid
+    leaf.node_id
     print '\n---------\nNow working with leaf ' + leaf.name
-    tree.mark_tree ([leaf._nid], marks=['#1'])
+    tree.mark_tree ([leaf.node_id], marks=['#1'])
     print tree.write()
     # to organize a bit, we name model with the name of the marked node
     # any character after the dot, in model name, is not taken into account
@@ -51,7 +51,7 @@ for leaf in tree:
     else:
         print 'no signal detected on this branch, best fit for M0'
     print '\nclean tree, remove marks'
-    tree.mark_tree (map (lambda x: x._nid, tree.get_descendants()),
+    tree.mark_tree (map (lambda x: x.node_id, tree.get_descendants()),
                     marks=[''] * len (tree.get_descendants()), verbose=True)
 
 # nothing working yet to get which sites are under positive selection/relaxation,

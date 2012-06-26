@@ -32,10 +32,10 @@ def random_swap(tree):
     
 def check_annotation (tree):
     '''
-    check each node is labelled with a paml_id
+    check each node is labelled with a node_id
     '''
     for node in tree.iter_descendants():
-        if not hasattr (node, 'paml_id'):
+        if not hasattr (node, 'node_id'):
             raise Exception ('Error, unable to label with paml ids')
     return True
 
@@ -79,12 +79,12 @@ class TestEvolEvolTree(unittest.TestCase):
         tree.link_to_alignment  (WRKDIR + 'alignments.fasta_ali')
         self.assertEqual(sorted(tree._models.keys()),
                          sorted(['fb', 'M1', 'M2', 'M7', 'M8']))
-        self.assertEqual(len (tree.get_evol_model('M2').branches), 193)
+        self.assertEqual(len (tree.get_evol_model('M2').branches), 194)
         self.assertEqual(tree.get_evol_model('fb').lnL, -3265.316569)
         self.assert_('proportions' in str(tree.get_evol_model('M2')))
         self.assert_('p2=' in str(tree.get_evol_model('M2')))
         self.assert_('proportions' not in str(tree.get_evol_model('fb')))
-        self.assert_(' #194' in str(tree.get_evol_model('fb')))
+        self.assert_(' #193' in str(tree.get_evol_model('fb')))
 
     def test_get_most_likely(self):
         tree = EvolTree (WRKDIR + 'tree.nw')
@@ -147,6 +147,7 @@ class TestEvolEvolTree(unittest.TestCase):
             self.assert_('Time used:' in tree.get_evol_model('fb').run)
             self.assert_('end of tree file' in tree.get_evol_model('fb').run)
             self.assert_('lnL' in tree.get_evol_model('fb').run)
+            self.assert_(tree.get_descendants()[0].w > 0)
 
     def test_run_slr(self):
         if which('Slr'):
@@ -163,10 +164,10 @@ class TestEvolEvolTree(unittest.TestCase):
         tree = EvolTree (TREE_PATH + 'measuring_S_tree.nw')
         self.assertEqual(tree.write(),
                          '((Hylobates_lar,(Gorilla_gorilla,Pan_troglodytes)),Papio_cynocephalus);')
-        tree.mark_tree ([2, 3, 4] + [1, 5], marks=['#1']*3 + ['#2']*2, verbose=True)
+        tree.mark_tree ([1, 3, 7] + [2, 6], marks=['#1']*3 + ['#2']*2, verbose=True)
         self.assertEqual(tree.write().replace(' ', ''),
                          '((Hylobates_lar#2,(Gorilla_gorilla#1,Pan_troglodytes#1)#1)#2,Papio_cynocephalus);')
-        tree.mark_tree (map (lambda x: x._nid, tree.get_descendants()),
+        tree.mark_tree (map (lambda x: x.node_id, tree.get_descendants()),
                         marks=[''] * len (tree.get_descendants()), verbose=False)
         self.assertEqual(tree.write().replace(' ', ''),
                          '((Hylobates_lar,(Gorilla_gorilla,Pan_troglodytes)),Papio_cynocephalus);')

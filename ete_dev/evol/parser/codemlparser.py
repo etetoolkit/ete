@@ -131,12 +131,12 @@ def get_ancestor (pamout, model):
         if line.startswith ('node #'):
             pamlid, seq = re.sub ('node#([0-9]+)([A-Z]*)\n', '\\1\t\\2',
                                   re.sub (' ', '', line)).split ('\t')
-            n = model._tree.get_descendant_by_pamlid (int (pamlid))
+            n = model._tree.get_descendant_by_node_id (int (pamlid))
             n.add_feature ('nt_sequence', seq)
         elif line.startswith ('Node #'):
             pamlid, seq = re.sub ('Node#([0-9]+)([A-Z]*)\n', '\\1\t\\2',
                                   re.sub (' ', '', line)).split ('\t')
-            n = model._tree.get_descendant_by_pamlid (int (pamlid))
+            n = model._tree.get_descendant_by_node_id (int (pamlid))
             n.add_feature ('sequence', seq)
         elif line.startswith ('Counts of changes at sites'):
             break
@@ -189,7 +189,7 @@ def parse_paml (pamout, model):
         # get labels of internal branches
         if line.count('..') >= 2:
             labels = re.findall ('\d+\.\.\d+', line + ' ')
-            _get_paml_labels (model._tree, labels, pamout)
+            _check_paml_labels (model._tree, labels, pamout, model)
             continue
         # retrieve kappa
         if line.startswith ('kappa '):
@@ -214,7 +214,7 @@ def _get_values(model, line):
     vals = line.split()
     # store values under paml_id
     paml_id = int (vals[0].split('..')[1])
-    model.branches [paml_id] = {
+    model.branches[paml_id].update({
         'bL'  : float (vals [1]),
         'N'   : float (vals [2]),
         'S'   : float (vals [3]),
@@ -223,11 +223,12 @@ def _get_values(model, line):
         'dS'  : float (vals [6]),
         'SEdN': float (vals[vals.index ('dN') + 4]) if 'dN' in line else None,
         'SEdS': float (vals[vals.index ('dS') + 4]) if 'dS' in line else None
-        }
+        })
 
-def _get_paml_labels (tree, paml_labels, pamout):
+def _check_paml_labels (tree, paml_labels, pamout, model):
     '''
      * check paml labels
+    Should not be necessary if all codeml is run through ETE.
     '''
     try:
         relations = sorted (map (lambda x: map( int, x.split('..')),
@@ -238,34 +239,49 @@ def _get_paml_labels (tree, paml_labels, pamout):
     # check that labelling corresponds with paml...
     for rel in relations:
         try:
-            node = tree.search_nodes(paml_id=rel[1])[0]
-            if int (node.up.paml_id) != int (rel[0]):
-                #warn ('WARNING: labelling does not correspond!!\n' + \
-                #      '         Getting them from ' + pamout)
-                get_labels_from_paml(tree, relations, pamout)
+            node = tree.get_descendant_by_node_id(rel[1])
+            if int (node.up.node_id) != int (rel[0]):
+                warn ('WARNING: labelling does not correspond!!\n' + \
+                      '         Getting them from ' + pamout)
+                _get_labels_from_paml(tree, relations, pamout, model)
                 break
         except IndexError:
-            #warn ('ERROR: labelling does not correspond!!\n' + \
-            #      '       Getting them from ' + pamout)
-            get_labels_from_paml(tree, relations, pamout)
+            # if unable to find one node, relabel the whole tree
+            print rel
+            warn ('ERROR: labelling does not correspond!!\n' + \
+                  '       Getting them from ' + pamout)
+            _get_labels_from_paml(tree, relations, pamout, model)
 
-def get_labels_from_paml (tree, relations, pamout):
+def _get_labels_from_paml (tree, relations, pamout, model):
     '''
     in case problem in labelling... and of course it is not my fault...
-    retrieve paml_ids from outfile... from relations line.
+    retrieve node_ids from outfile... from relations line.
+    This may occur when loading a model that was run outside ETE.
     '''
+    from copy import copy
+    old2new = {}
+    # label leaves
     for line in open (pamout, 'r').readlines():
-        # label leaves
         if re.search ('^#[0-9][0-9]*:', line):
             nam, paml_id = re.sub ('#([0-9]+): (.*)', '\\2 \\1',
                                    line.strip()).split()
-            tree.search_nodes (name=nam)[0].add_feature ('paml_id',
-                                                         int (paml_id))
+            node = (tree & nam)
+            old2new[node.node_id] = int(paml_id)
+            node.add_feature ('node_id', int(paml_id))
         if line.startswith ('Sums of codon'):
             break
-    tree.add_feature ('paml_id', int (len (tree) + 1))
-    for n in tree.traverse(strategy='postorder'):
-        if n.is_root():
-            continue
-        n.up.paml_id = filter (lambda x: x[1]==n.paml_id, relations)[0][0]
+    # label the root
+    tree.add_feature ('node_id', int (len (tree) + 1))
+    # label other internal nodes
+    for node in tree.traverse(strategy='postorder'):
+        if node.is_root(): continue
+        paml_id = filter (lambda x: x[1]==node.node_id, relations)[0][0]
+        old2new[node.up.node_id] = paml_id
+        node.up.node_id = paml_id
+    ### change keys in branches dict of model
+    branches = copy(model.branches)
+    for b in model.branches:
+        model.branches[b] = branches[old2new[b]]
+                
 
+            

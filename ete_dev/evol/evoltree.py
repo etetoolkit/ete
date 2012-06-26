@@ -80,7 +80,7 @@ class EvolNode (PhyloNode):
         self._name = "NoName"
         self._speciesFunction = None
         self.img_prop = None
-        self.workdir = '/tmp/ete2-codeml/'
+        self.workdir = '/tmp/ete2-tmp/'
         self.execpath = binpath
         self._models = {}
         # Caution! native __init__ has to be called after setting
@@ -94,17 +94,20 @@ class EvolNode (PhyloNode):
             self.link_to_alignment(alignment, alg_format)
         if newick:
             self.set_species_naming_function(sp_naming_function)
-            self.sort_descendants() 
+            self._label_as_paml()
         self.mark_tree([])
 
         
-    def __label_internal_nodes(self, paml_id=None):
+    def __label_internal_nodes(self, nid=None):
+        """
+        nid needs to be a list in order to keep count through recursivity
+        """
         for node in self.get_children():
             if node.is_leaf():
                 continue
-            paml_id += 1
-            node.add_feature ('paml_id', paml_id)
-            node.__label_internal_nodes(paml_id)
+            nid[0] += 1
+            node.add_feature ('node_id', nid[0])
+            node.__label_internal_nodes(nid)
 
     def _label_as_paml (self):
         '''
@@ -113,54 +116,31 @@ class EvolNode (PhyloNode):
         WARNING: depends on tree topology conformation, not the same after a swap
         activates the function get_descendants_by_pamlid
         '''
-        paml_id = 1
+        nid = 1
+        # check we do not have dupplicated names in tree
+        if (len(self)) != len(set(self.get_leaf_names())):
+            duplis = [n for n in self.get_leaf_names() if self.get_leaf_names().count(n)>1]
+            raise Exception('EvolTree require unique names for leaves', duplis)
+        # put ids
         for leaf in sorted (self, key=lambda x: x.name):
-            leaf.add_feature ('paml_id', paml_id)
-            paml_id += 1
-        self.add_feature ('paml_id', paml_id)
-        self.__label_internal_nodes(paml_id)
+            leaf.add_feature ('node_id', nid)
+            nid += 1
+        self.add_feature ('node_id', nid)
+        self.__label_internal_nodes([nid])
         
-    def get_descendant_by_pamlid (self, idname):
+    def get_descendant_by_node_id (self, idname):
         '''
         returns node list corresponding to a given idname
         '''
         try:
             for n in self.iter_descendants():
-                if n.paml_id == idname:
+                if n.node_id == idname:
                     return n
-            if self.paml_id == idname:
+            if self.node_id == idname:
                 return self
         except AttributeError:
             warn('Should be first labelled as paml ' + \
                  '(automatically done when alignemnt is loaded)')
-
-    def sort_descendants(self):
-        """
-        TODO: use paml_ids everywhere
-        This function sort the branches of a given tree by
-        considerening node names. After the tree is sorted, nodes are
-        labeled using ascendent numbers.  This can be used to ensure that
-        nodes in a tree with the same node names are always labeled in
-        the same way.  Note that if duplicated names are present, extra
-        criteria should be added to sort nodes.
-        unique id is stored in _nid
-        """
-        from hashlib import md5
-        for n in self.traverse(strategy="postorder"):
-            if n.is_leaf():
-                key = md5(str(n.name)).hexdigest()
-                n.__idname = key
-            else:
-                key = md5 (str (\
-                    sorted ([c.__idname for c in n.children]))).hexdigest()
-                n.__idname=key
-                children = [[c.__idname, c] for c in n.children]
-                children.sort() # sort list by idname
-                n.children = [item[1] for item in children]
-            counter = 1
-        for n in self.traverse(strategy="postorder"):
-            n.add_features(_nid=str(counter))
-            counter += 1
         
     def __write_algn(self, fullpath):
         """
@@ -168,9 +148,9 @@ class EvolNode (PhyloNode):
         """
         seq_group = SeqGroup ()
         for n in self:
-            seq_group.id2seq  [n.paml_id] = n.nt_sequence
-            seq_group.id2name [n.paml_id] = n.name
-            seq_group.name2id [n.name   ] = n.paml_id
+            seq_group.id2seq  [n.node_id] = n.nt_sequence
+            seq_group.id2name [n.node_id] = n.name
+            seq_group.name2id [n.name   ] = n.node_id
         seq_group.write (outfile=fullpath, format='paml')
 
         
@@ -185,9 +165,10 @@ class EvolNode (PhyloNode):
 
         The models available are:
 
-        +----------+-----------------------------+-----------------+
-        |Model name| description                 | Model kind      |
-        +==========+=============================+=================+\n%s
+        =========== ============================= ==================
+        Model name  Description                   Model kind       
+        =========== ============================= ==================\n%s
+        =========== ============================= ==================\n
         
         :argument model_name: a string like "model-name[.some-secondary-name]" (e.g.: "fb.my_first_try", or just "fb")
                               * model-name is compulsory, is the name of the model (see table above for the full list)
@@ -229,14 +210,14 @@ class EvolNode (PhyloNode):
         if keep:
             setattr (model_obj, 'run', run)
             self.link_to_evol_model (os.path.join(fullpath,'out'), model_obj)
-    sep = '\n        +----------+-----------------------------+-----------------+\n'
+    sep = '\n'
     run_model.__doc__ = run_model.__doc__ % \
                         (sep.join(map (lambda x: \
-                                       '        | %-8s | %-27s | %-15s |' % \
+                                       '          %-8s   %-27s   %-15s  ' % \
                                        ('%s' % (x), AVAIL[x]['evol'], AVAIL[x]['typ']),
                                        sorted (sorted (AVAIL.keys()), cmp=lambda x, y : \
                                                cmp(AVAIL[x]['typ'], AVAIL[y]['typ']),
-                                               reverse=True))) + sep,
+                                               reverse=True))),
                          ', '.join (PARAMS.keys()))
 
 
@@ -268,7 +249,6 @@ class EvolNode (PhyloNode):
             leaf.nt_sequence = str(leaf.sequence)
             if nucleotides:
                 leaf.sequence = translate(leaf.nt_sequence)
-        self._label_as_paml()
 
     def show(self, layout=None, tree_style=None, histfaces=None):
         '''
@@ -348,28 +328,28 @@ class EvolNode (PhyloNode):
         
           t=Tree.mark_tree([2,3], marks=["#1","#2"])
 
-        :argument node_ids: list of node ids (have a look to node._nid)
+        :argument node_ids: list of node ids (have a look to node.node_id)
         :argument False verbose: warn if marks do not correspond to codeml standard
         :argument kargs: mainly for the marks key-word which needs a list of marks (marks=['#1', '#2'])
         
         '''
         from re import match
-        node_ids = map (str , node_ids)
+        node_ids = map (int , node_ids)
         if kargs.has_key('marks'):
             marks = list(kargs['marks'])
         else:
             marks = ['#1']*len (node_ids)
         for node in self.traverse():
-            if not hasattr (node, '_nid'):
+            if not hasattr (node, 'node_id'):
                 continue
-            if node._nid in node_ids:
-                if ('.' in marks[node_ids.index(node._nid)] or \
+            if node.node_id in node_ids:
+                if ('.' in marks[node_ids.index(node.node_id)] or \
                        match ('#[0-9]+', \
-                              marks[node_ids.index(node._nid)])==None)\
+                              marks[node_ids.index(node.node_id)])==None)\
                               and verbose:
                     warn ('WARNING: marks should be "#" sign directly '+\
                           'followed by integer\n' + self.mark_tree.func_doc)
-                node.add_feature('mark', ' '+marks[node_ids.index(node._nid)])
+                node.add_feature('mark', ' '+marks[node_ids.index(node.node_id)])
             elif not 'mark' in node.features:
                 node.add_feature('mark', '')
 
@@ -397,7 +377,7 @@ class EvolNode (PhyloNode):
         if not os.path.isfile(path):
             warn ("ERROR: not a file: " + path)
             return 1
-        if len (self._models) == 1:
+        if len (self._models) == 1 and model.properties['exec']=='codeml':
             self.change_dist_to_evol ('bL', model, fill=True)
 
     def get_evol_model (self, modelname):
@@ -443,40 +423,31 @@ class EvolNode (PhyloNode):
         
         usual comparison are:
 
-        +-----------+-------+------------------------------------------+
-        |Alternative| Null  | Test                                     |
-        +===========+=======+==========================================+
-        | M2        | M1    | PS on sites (M2 prone to miss some sites)|
-        |           |       | (Yang 2000)                              |
-        +-----------+-------+------------------------------------------+
-        | M3        | M0    | test of variability among sites          |
-        +-----------+-------+------------------------------------------+
-        | M8        | M7    | PS on sites                              |
-        |           |       | (Yang 2000)                              |
-        +-----------+-------+------------------------------------------+
-        | M8        | M8a   | RX on sites?? think so....               |
-        +-----------+-------+------------------------------------------+
-        | bsA       | bsA1  | PS on sites on specific branch           |
-        |           |       | (Zhang 2005)                             |
-        +-----------+-------+------------------------------------------+
-        | bsA       | M1    | RX on sites on specific branch           |
-        |           |       | (Zhang 2005)                             |
-        +-----------+-------+------------------------------------------+
-        | bsC       | M1    | different omegas on clades branches sites|
-        |           |       | ref: Yang Nielsen 2002                   |
-        +-----------+-------+------------------------------------------+
-        | bsD       | M3    | different omegas on clades branches sites|
-        |           |       | (Yang Nielsen 2002, Bielawski 2004)      |
-        +-----------+-------+------------------------------------------+
-        | b_free    | b_neut| foreground branch not neutral (w != 1)   |
-        |           |       |  - RX if P<0.05 (means that w on frg=1)  |
-        |           |       |  - PS if P>0.05 and wfrg>1               |
-        |           |       |  - CN if P>0.05 and wfrg>1               |
-        |           |       |  (Yang Nielsen 2002)                     |
-        +-----------+-------+------------------------------------------+
-        | b_free    | M0    | different ratio on branches              |
-        |           |       | (Yang Nielsen 2002)                      |
-        +-----------+-------+------------------------------------------+
+        ============ ======= =========================================== 
+         Alternative  Null    Test                                      
+        ============ ======= =========================================== 
+          M2          M1      PS on sites (M2 prone to miss some sites) 
+                              (Yang 2000)                               
+          M3          M0      test of variability among sites           
+          M8          M7      PS on sites                               
+                              (Yang 2000)                               
+          M8          M8a     RX on sites?? think so....                
+          bsA         bsA1    PS on sites on specific branch            
+                              (Zhang 2005)                              
+          bsA         M1      RX on sites on specific branch            
+                              (Zhang 2005)                              
+          bsC         M1      different omegas on clades branches sites 
+                              ref: Yang Nielsen 2002                    
+          bsD         M3      different omegas on clades branches sites 
+                              (Yang Nielsen 2002, Bielawski 2004)       
+          b_free      b_neut  foreground branch not neutral (w != 1)    
+                               - RX if P<0.05 (means that w on frg=1)   
+                               - PS if P>0.05 and wfrg>1                
+                               - CN if P>0.05 and wfrg>1                
+                               (Yang Nielsen 2002)                      
+          b_free      M0      different ratio on branches               
+                              (Yang Nielsen 2002)                       
+        ============ ======= =========================================== 
 
         :argument altn: model with higher number of parameters (np)
         :argument null: model with lower number of parameters (np)
@@ -512,10 +483,12 @@ class EvolNode (PhyloNode):
         if not model.branches:
             return
         for node in self.iter_descendants():
-            node.dist = model.branches [node.paml_id][evol]
+            if not evol in model.branches[node.node_id]:
+                continue
+            node.dist = model.branches[node.node_id][evol]
             if fill:
                 for e in ['dN', 'dS', 'w', 'bL']:
-                    node.add_feature (e, model.branches [node.paml_id][e])
+                    node.add_feature (e, model.branches [node.node_id][e])
 
 
 # cosmetic alias

@@ -137,10 +137,13 @@ def read_paml (source, obj=None, header_delimiter="\t", fix_duplicates=True):
     return SC
 
 def write_paml(sequences, outfile = None, seqwidth = 80):
-    """ Writes a SeqGroup python object using PAML format. """
+    """
+    Writes a SeqGroup python object using PAML format.
+    sequences are ordered, because PAML labels tree according to this.
+    """
     text =  ' %d %d\n' % (len (sequences), len (sequences.get_entries()[0][1]))
     text += '\n'.join(["%s\n%s" %( "\t".join([name]+comment), _seq2str(seq)) for
-                       name, seq, comment in sequences])
+                       name, seq, comment in sorted(sequences)])
     if outfile is not None:
         OUT = open(outfile,"w")
         OUT.write(text)
