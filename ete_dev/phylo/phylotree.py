@@ -33,7 +33,6 @@ import re
 import itertools
 from collections import defaultdict
 from ete_dev import TreeNode, SeqGroup
-from ete_dev.treeview.main import  TreeStyle
 from reconciliation import get_reconciled_tree
 import spoverlap
 
