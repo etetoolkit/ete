@@ -75,12 +75,12 @@ NW_FORMAT = {
   0: [['name', str, True],  ["dist", float, True],    ['support', float, True],   ["dist", float, True]], # Flexible with support
   1: [['name', str, True],  ["dist", float, True],    ['name', str, True],      ["dist", float, True]], # Flexible with internal node names
   2: [['name', str, False], ["dist", float, False],   ['support', float, False],  ["dist", float, False]],# Strict with support values
-  3: [['name', str, False], ["dist", float, False],   ['name', str, True],     ["dist", float, False]], # Strict with internal node names
+  3: [['name', str, False], ["dist", float, False],   ['name', str, False],     ["dist", float, False]], # Strict with internal node names
   4: [['name', str, False], ["dist", float, False],   [None, None, False],        [None, None, False]],
   5: [['name', str, False], ["dist", float, False],   [None, None, False],        ["dist", float, False]],
   6: [['name', str, False], [None, None, False],      [None, None, False],        ["dist", float, False]],
-  7: [['name', str, False], [None, None, False],   ["name", str, True],       [None, None, False]],
-  8: [['name', str, False], [None, None, False],      [None, None, False],       [None, None, False]],
+  7: [['name', str, False], ["dist", float, False],   ["name", str, False],       [None, None, False]],
+  8: [['name', str, False], [None, None, False],      ["name", str, False],       [None, None, False]],
   9: [['name', str, False], [None, None, False],      [None, None, False],        [None, None, False]], # Only topology with node names
   100: [[None, None, False],  [None, None, False],      [None, None, False],        [None, None, False]] # Only Topology
 }
