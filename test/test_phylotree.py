@@ -180,9 +180,10 @@ class Test_phylo_module(unittest.TestCase):
         # Scans the tree using the species overlap algorithm
         seed = t.search_nodes(name="Hsa_001")[0]
         events = seed.get_my_evol_events()
-
+        
         # Check that duplications are detected
         dup1 = t.get_common_ancestor("Hsa_001", "Hsa_004")
+        print dup1
         self.assertEqual(dup1.evoltype, "D")
 
         # This duplication is not in the seed path
@@ -267,7 +268,8 @@ class Test_phylo_module(unittest.TestCase):
         # Check that reconcilied tree nodes have the correct lables:
         # gene loss, duplication, etc.
         expected_recon = "((Dme_001:1,Dme_002:1)1:1[&&NHX:evoltype=D],(((Cfa_001:1,Mms_001:1)1:1[&&NHX:evoltype=S],((Hsa_001:1,Ptr_001:1)1:1[&&NHX:evoltype=S],Mmu_001:1)1:1[&&NHX:evoltype=S])1:1[&&NHX:evoltype=S],((Mms:1[&&NHX:evoltype=L],Cfa:1[&&NHX:evoltype=L])1:1[&&NHX:evoltype=L],(((Hsa:1[&&NHX:evoltype=L],Ptr_002:1)1:1[&&NHX:evoltype=L],Mmu:1[&&NHX:evoltype=L])1:1[&&NHX:evoltype=L],((Ptr:1[&&NHX:evoltype=L],Hsa_002:1)1:1[&&NHX:evoltype=L],Mmu_002:1)1:1[&&NHX:evoltype=S])1:1[&&NHX:evoltype=D])1:1[&&NHX:evoltype=L])1:1[&&NHX:evoltype=D])[&&NHX:evoltype=S];"
-        self.assertEqual(recon_tree.write(["evoltype"]), expected_recon)
+
+        self.assertEqual(recon_tree.write(["evoltype"], format=9), PhyloTree(expected_recon).write(features=["evoltype"],format=9))
 
     def test_miscelaneus(self):
         """ Test several things """
@@ -308,8 +310,8 @@ class Test_phylo_module(unittest.TestCase):
         expected_root = t.search_nodes(name="Dme_002")[0]
         expected_root.dist += 2.3
         self.assertEqual(t.get_farthest_oldest_leaf(sp2age), expected_root)
-        print t
-        print t.get_farthest_oldest_node(sp2age)
+        #print t
+        #print t.get_farthest_oldest_node(sp2age)
 
 
         # Check get species functions

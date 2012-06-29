@@ -279,7 +279,7 @@ class PhyloNode(TreeNode):
     species = property(fget = _get_species, fset = _set_species)
 
     def __init__(self, newick=None, alignment=None, alg_format="fasta", \
-                 sp_naming_function=_parse_species, format=0):
+                 sp_naming_function=_parse_species, format=0, **kargs):
 
         # _update names?
         self._name = "NoName"
@@ -287,7 +287,7 @@ class PhyloNode(TreeNode):
         self._speciesFunction = None
         # Caution! native __init__ has to be called after setting
         # _speciesFunction to None!!
-        TreeNode.__init__(self, newick=newick, format=format)
+        TreeNode.__init__(self, newick=newick, format=format, **kargs)
 
         # This will be only executed after reading the whole tree,
         # because the argument 'alignment' is not passed to the

@@ -62,16 +62,16 @@ class Test_Coretype_Tree(unittest.TestCase):
 
     def test_tree_manipulation(self):
         """ tests operations which modify tree topology """
-        nw_tree = "((NoName:1,Turtle:1.3)1:1,(A:0.3,B:2.4)1:0.43);"
+        nw_tree = "((Hola:1,Turtle:1.3)1:1,(A:0.3,B:2.4)1:0.43);"
 
         # Manipulate Topologys
         # Adding and removing nodes (add_child, remove_child,
         # add_sister, remove_sister). The resulting neiwck tree should
         # match the nw_tree defined before.
         t = Tree()
-        c1 = t.add_child()
-        c2 = t.add_child(dist=0.43)
-        n = TreeNode()
+        c1 = t.add_child(dist=1, support=1)
+        c2 = t.add_child(dist=0.43, support=1)
+        n = TreeNode(name="Hola", dist=1, support=1)
         _n = c1.add_child(n)
         c3 = _n.add_sister(name="Turtle", dist="1.3")
         c4 = c2.add_child(name="A", dist="0.3")
@@ -128,7 +128,7 @@ class Test_Coretype_Tree(unittest.TestCase):
         t1 = Tree("(((A, B), C)[&&NHX:name=I], (D, F)[&&NHX:name=J])[&&NHX:name=root];")
         D1 = t1.search_nodes(name="D")[0]
         t1.prune(["A","B"])
-        self.assertEqual( t1.write(), "(A:1,B:1);")
+        self.assertEqual( t1.write(), "(A:0,B:0);")
 
         
         t_fuzzy = Tree("(((A,B), C),(D,E));")
@@ -286,7 +286,25 @@ class Test_Coretype_Tree(unittest.TestCase):
             #self.assertEqual(t.write(), nw_original) 
         d3 = YGR138C.get_distance(YGR028W)
         self.assertEqual(d1, d3)
-          
+
+
+    def test_tree_navigation(self):
+        t = Tree("(((A, B)H, C)I, (D, F)J)root;", format=1)
+        postorder = [n.name for n in t.traverse("postorder")]
+        preorder = [n.name for n in t.traverse("preorder")]
+        levelorder = [n.name for n in t.traverse("levelorder")]
+
+        self.assertEqual(postorder, ['A', 'B', 'H', 'C', 'I', 'D', 'F', 'J', 'root'])
+        self.assertEqual(preorder, ['root', 'I', 'H', 'A', 'B', 'C', 'J', 'D', 'F'])
+        self.assertEqual(levelorder, ['root', 'I', 'J', 'H', 'C', 'D', 'F', 'A', 'B'])
+        ancestors = [n.name for n in (t&"B").get_ancestors()]
+        self.assertEqual(ancestors, ["H", "I", "root"])
+        self.assertEqual(t.get_ancestors(), [])
+
+        # add something of is_leaf_fn etc...
+        
+
+        
     def test_rooting(self):
         """ Check branch support and distances after rooting """
 
@@ -362,37 +380,37 @@ class Test_Coretype_Tree(unittest.TestCase):
         dist = set([round(l.get_distance(t), 6) for l in t.iter_leaves()])
         self.assertEqual(dist, set([200.0]))
 
-    def test_traversing_speed(self):
-        return
-        for x in xrange(10):
-            t = Tree()
-            t.populate(100000)
+    # def test_traversing_speed(self):
+    #     return
+    #     for x in xrange(10):
+    #         t = Tree()
+    #         t.populate(100000)
 
-            leaves = t.get_leaves()
-            sample = random.sample(leaves, 100)
+    #         leaves = t.get_leaves()
+    #         sample = random.sample(leaves, 100)
 
-            t1 = time.time()
-            a = t.get_common_ancestor_OLD(sample)
-            t2 = time.time() - t1
-            print "OLD get common", t2
+    #         t1 = time.time()
+    #         a = t.get_common_ancestor_OLD(sample)
+    #         t2 = time.time() - t1
+    #         print "OLD get common", t2
 
-            t1 = time.time()
-            b = t.get_common_ancestor(sample)
-            t2 = time.time() - t1
-            print "NEW get common", t2
+    #         t1 = time.time()
+    #         b = t.get_common_ancestor(sample)
+    #         t2 = time.time() - t1
+    #         print "NEW get common", t2
 
-            self.assertEqual(a, b)
+    #         self.assertEqual(a, b)
 
 
-            t1 = time.time()
-            [n for n in t._iter_descendants_postorder_OLD()]
-            t2 = time.time() - t1
-            print "OLD postorder", t2
+    #         t1 = time.time()
+    #         [n for n in t._iter_descendants_postorder_OLD()]
+    #         t2 = time.time() - t1
+    #         print "OLD postorder", t2
 
-            t1 = time.time()
-            [n for n in t._iter_descendants_postorder()]
-            t2 = time.time() - t1
-            print "NEW postorder", t2
+    #         t1 = time.time()
+    #         [n for n in t._iter_descendants_postorder()]
+    #         t2 = time.time() - t1
+    #         print "NEW postorder", t2
 
 if __name__ == '__main__':
     unittest.main()
