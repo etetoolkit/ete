@@ -4,6 +4,8 @@
 # #END_LICENSE#############################################################
 
 import unittest
+import sys
+sys.path.insert('../.')
 
 from datasets import *
 from test_tree import *
