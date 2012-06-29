@@ -32,7 +32,6 @@ import os
 import re
 
 from ete_dev import TreeNode, SeqGroup
-from ete_dev.treeview.main import  TreeStyle
 from reconciliation import get_reconciled_tree
 import spoverlap
 
