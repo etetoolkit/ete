@@ -19,7 +19,9 @@ def get_example_tree():
 
 
     t = Tree("((((a1,a2),a3), ((b1,b2),(b3,b4))), ((c1,c2),c3));")
-
+    for n in t.traverse():
+        n.dist = 0
+    
     n1 = t.get_common_ancestor("a1", "a2", "a3")
     n1.set_style(nst1)
     n2 = t.get_common_ancestor("b1", "b2", "b3", "b4")
@@ -33,6 +35,7 @@ def get_example_tree():
     ts.show_leaf_name = False
 
     ts.mode = "c"
+    ts.root_opening_factor = 1
     return t, ts
     
 if __name__ == "__main__":
