@@ -172,6 +172,7 @@ class _GUI(QtGui.QMainWindow):
                 self.scene.img.branch_vertical_margin = margin
             else:
                 self.scene.img.branch_vertical_margin = 0.0
+            self.scene.img._scale = None
             self.redraw()
 
     @QtCore.pyqtSignature("")
@@ -220,8 +221,8 @@ class _GUI(QtGui.QMainWindow):
             elif mType == 7:
                 cmpFn = lambda x,y: re.search(y, x)
 
-            for n in self.scene.tree.traverse():
-                if setup.leaves_only.isChecked() and not n.is_leaf():
+            for n in self.scene.tree.traverse(is_leaf_fn=_leaf):
+                if setup.leaves_only.isChecked() and not _leaf(n):
                     continue
                 if hasattr(n, aName) \
                         and cmpFn(getattr(n, aName), aValue ):
@@ -557,6 +558,7 @@ class _PropertiesDialog(QtGui.QWidget):
                     print e
                     break
         self.update_properties(self.node)
+        self.scene.img._scale = None
         self.redraw()
         return
 

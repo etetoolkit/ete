@@ -262,21 +262,28 @@ class TreeStyle(object):
       adjusted to fully avoid dotted lines in the tree image. In other
       words, scale will be increased until the extra space necessary
       to allocated all branch-top/bottom faces and branch-right faces
-      (in circular mode) is covered by legacy branches. Note, however,
+      (in circular mode) is covered by real branches. Note, however,
       that the optimal scale in trees with very unbalanced branch
-      lengths might be huge. If :attr:`"mid"` mode is selected,
+      lengths might be huge. If :attr:`"mid"` mode is selected (as it is by default),
       optimal scale will only satisfy the space necessary to allocate
       branch-right faces in circular trees. Some dotted lines
       (artificial branch offsets) will still appear when
       branch-top/bottom faces are larger than branch length. Note that
       both options apply only when :attr:`scale` is set to None
       (automatic).
+
+    :var 0.25 root_opening_factor: (from 0 to 1). It defines how much the center of
+      a circular tree could be opened when adjusting optimal scale, referred
+      to the total tree length. By default (0.25), a blank space up to 4
+      times smaller than the tree width could be used to calculate the
+      optimal tree scale. A 0 value would mean that root node should
+      always be tightly adjusted to the center of the tree.
     
     :var True complete_branch_lines_when_necessary: True or False.
-      When top-branch and bottom-branch faces are larger than
-      branch length, branch line can be completed. Also, when
-      circular trees are drawn
+      Draws an extra line (dotted by default) to complete branch lengths when the space to cover is larger than the branch itself.
+        
     :var 2 extra_branch_line_type:  0=solid, 1=dashed, 2=dotted
+    
     :var "gray" extra_branch_line_color": RGB code or name in
       :data:`SVG_COLORS`
     
@@ -295,7 +302,7 @@ class TreeStyle(object):
     :var False allow_face_overlap: If True, node faces are not taken
       into account to scale circular tree images, just like many other
       visualization programs. Overlapping among branch elements (such
-      as node labels) will be therefore ignored, although tree size
+      as node labels) will be therefore ignored, and tree size
       will be a lot smaller. Note that in most cases, manual setting
       of tree scale will be also necessary.
     
@@ -398,7 +405,11 @@ class TreeStyle(object):
         # Scale used to convert branch lengths to pixels. If 'None',
         # the scale will be automatically calculated.
         self.scale = None
-        
+
+        # How much the center of a circular tree can be opened,
+        # referred to the total tree length.
+        self.root_opening_factor = 0.25
+            
         # mid, or full
         self.optimal_scale_level = "mid" 
         
