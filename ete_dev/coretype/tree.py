@@ -1059,6 +1059,11 @@ class TreeNode(object):
                 c2.dist = random.uniform(*branch_range)
                 c1.support = random.uniform(*branch_range)
                 c2.support = random.uniform(*branch_range)
+            else:
+                c1.dist = 1.0
+                c2.dist = 1.0
+                c1.support = 1.0
+                c2.support = 1.0
 
         # next contains leaf nodes
         charset =  "abcdefghijklmnopqrstuvwxyz"
