@@ -794,7 +794,7 @@ def render_aligned_faces(img, mainRect, parent, n2i, n2f):
     # if no scale provided in circular mode, optimal scale is expected
     # to provide the correct ending point to start drawing aligned
     # faces.
-    elif img.mode == "c" and img.scale and not img.allow_face_overlap:
+    elif img.mode == "c" and (img.scale or img._scale == 0) and not img.allow_face_overlap:
         angle = n2i[maxh_node].angle_span
         rad, off = crender.get_min_radius(1, maxh, angle, tree_end_x)
         extra_width += rad - tree_end_x
