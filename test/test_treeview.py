@@ -1,7 +1,7 @@
 import random
 import sys
 sys.path.insert(0, "../")
-from ete_dev import Tree, TreeStyle, NodeStyle
+from ete_dev import Tree, TreeStyle, NodeStyle, PhyloTree
 from ete_dev.treeview.faces import *
 from ete_dev.treeview.main import random_color, _NODE_TYPE_CHECKER, FACE_POSITIONS
 
@@ -40,6 +40,43 @@ t, ts = face_positions.get_example_tree()
 t_fpos = TreeFace(t, ts)
 n = main_tree.add_child()
 n.add_face(t_fpos, 0, "aligned")
+
+# Test orphan nodes and trees with 0 branch length
+t, ts = Tree(), TreeStyle()
+t.populate(5)
+for n in t.traverse():
+    n.dist = 0
+temp_tface = TreeFace(t, ts)
+n = main_tree.add_child()
+n.add_face(temp_tface, 0, "aligned")
+
+ts.optimal_scale_level = "full"
+temp_tface = TreeFace(t, ts)
+n = main_tree.add_child()
+n.add_face(temp_tface, 0, "aligned")
+
+ts = TreeStyle()
+t.populate(5)
+ts.mode = "c"
+temp_tface = TreeFace(t, ts)
+n = main_tree.add_child()
+n.add_face(temp_tface, 0, "aligned")
+
+ts.optimal_scale_level = "full"
+temp_tface = TreeFace(t, ts)
+n = main_tree.add_child()
+n.add_face(temp_tface, 0, "aligned")
+
+t, ts = Tree(), TreeStyle()
+temp_tface = TreeFace(Tree(), ts)
+n = main_tree.add_child()
+n.add_face(temp_tface, 0, "aligned")
+
+t, ts = Tree(), TreeStyle()
+ts.mode = "c"
+temp_tface = TreeFace(Tree(), ts)
+n = main_tree.add_child()
+n.add_face(temp_tface, 0, "aligned")
 
 
 ms = TreeStyle()

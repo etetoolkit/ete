@@ -241,7 +241,8 @@ def render(root_node, img, hide_root=False):
         init_items(root_node, parent, n2i, n2f, img, rot_step, hide_root)
         if mode == 'r':
             if img.optimal_scale_level == "full":
-                img._scale = max([(i.widths[1]/n.dist) for n,i in n2i.iteritems() if n.dist])
+                scales = [(i.widths[1]/n.dist) for n,i in n2i.iteritems() if n.dist]
+                img._scale = max(scales) if scales else 0.0
             else:
                 farthest, dist = root_node.get_farthest_leaf(topology_only=img.force_topology)
                 img._scale =  400.0 / dist if dist else 0.0
