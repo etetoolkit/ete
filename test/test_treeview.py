@@ -43,15 +43,26 @@ n.add_face(t_fpos, 0, "aligned")
 
 # Test orphan nodes and trees with 0 branch length
 t, ts = Tree(), TreeStyle()
-t.populate(25)
+t.populate(5)
 for n in t.traverse():
     n.dist = 0
 temp_tface = TreeFace(t, ts)
 n = main_tree.add_child()
 n.add_face(temp_tface, 0, "aligned")
 
-t, ts = Tree(), TreeStyle()
+ts.optimal_scale_level = "full"
+temp_tface = TreeFace(t, ts)
+n = main_tree.add_child()
+n.add_face(temp_tface, 0, "aligned")
+
+ts = TreeStyle()
+t.populate(5)
 ts.mode = "c"
+temp_tface = TreeFace(t, ts)
+n = main_tree.add_child()
+n.add_face(temp_tface, 0, "aligned")
+
+ts.optimal_scale_level = "full"
 temp_tface = TreeFace(t, ts)
 n = main_tree.add_child()
 n.add_face(temp_tface, 0, "aligned")
@@ -61,28 +72,11 @@ temp_tface = TreeFace(Tree(), ts)
 n = main_tree.add_child()
 n.add_face(temp_tface, 0, "aligned")
 
-
-# Test orphan nodes and trees with 0 branch length
-t, ts = PhyloTree(), TreeStyle()
-t.populate(25)
-for n in t.traverse():
-    n.dist = 0
-temp_tface = TreeFace(t, ts)
-n = main_tree.add_child()
-n.add_face(temp_tface, 0, "aligned")
-
-t, ts = PhyloTree(), TreeStyle()
+t, ts = Tree(), TreeStyle()
 ts.mode = "c"
-temp_tface = TreeFace(t, ts)
+temp_tface = TreeFace(Tree(), ts)
 n = main_tree.add_child()
 n.add_face(temp_tface, 0, "aligned")
-
-t, ts = PhyloTree(), TreeStyle()
-temp_tface = TreeFace(PhyloTree(), ts)
-n = main_tree.add_child()
-n.add_face(temp_tface, 0, "aligned")
-
-
 
 
 ms = TreeStyle()
