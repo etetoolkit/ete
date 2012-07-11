@@ -102,7 +102,7 @@ def get_evol_events_from_leaf(node, sos_thr=0.0):
         event.inparalogs  = set([n.name for n in browsed_leaves if n.species == ref_spcs])
 
         # If species overlap: duplication
-        if score >sos_thr and d > 0.0:
+        if score > sos_thr:# and d > 0.0: Removed branch control. 
             event.node = current.up
             event.etype = "D"
             event.outparalogs = set([n.name for n in sister_leaves  if n.species == ref_spcs])

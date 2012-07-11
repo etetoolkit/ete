@@ -42,4 +42,4 @@ except ImportError, e:
 
 # Do not modify the following line. It will be checked during
 # installation
-__ETEID__="25f61de2715613acb504ae424fc60612"
+__ETEID__="b3161546b9700c6ac1d2ae883b40cec8"

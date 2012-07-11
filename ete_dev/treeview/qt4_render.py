@@ -160,6 +160,8 @@ class _TreeScene(QtGui.QGraphicsScene):
         self.img = img
 
     def draw(self):
+        self.img._scale = None
+        tree_item, self.n2i, self.n2f = render(self.tree, self.img)
         if self.master_item:
             self.removeItem(self.master_item)
         tree_item, n2i, n2f = render(self.tree, self.img)
@@ -209,8 +211,8 @@ def render(root_node, img, hide_root=False):
         su_face = faces.AttrFace("support", fsize=8, ftype="Arial", fgcolor="darkred", formatter = "%0.3g")
     if img.show_leaf_name:
         na_face = faces.AttrFace("name", fsize=10, ftype="Arial", fgcolor="black")
-
-    for n in root_node.traverse():
+    
+    for n in root_node.traverse(is_leaf_fn=_leaf):
         set_style(n, layout_fn)
 
         if img.show_branch_length:
@@ -238,11 +240,11 @@ def render(root_node, img, hide_root=False):
         init_items(root_node, parent, n2i, n2f, img, rot_step, hide_root)
         if mode == 'r':
             if img.optimal_scale_level == "full":
-                img._scale = max([(i.widths[1]/n.dist) for n,i in n2i.iteritems() if n.dist])
+                scales = [(i.widths[1]/n.dist) for n,i in n2i.iteritems() if n.dist]
+                img._scale = max(scales) if scales else 0.0
             else:
-                #fixed_widths = ([i.nodeRegion.width() for n,i in n2i.iteritems()])
                 farthest, dist = root_node.get_farthest_leaf(topology_only=img.force_topology)
-                img._scale =  (400.0 / dist) if dist else 4
+                img._scale =  400.0 / dist if dist else 0.0
             update_branch_lengths(root_node, n2i, n2f, img)
         else:
             img._scale = crender.calculate_optimal_scale(root_node, n2i, rot_step, img)
@@ -256,7 +258,7 @@ def render(root_node, img, hide_root=False):
         
     #print "USING scale", img._scale
     # Draw node content
-    for node in root_node.traverse():
+    for node in root_node.traverse(is_leaf_fn=_leaf):
         if node is not root_node or not hide_root:
             render_node_content(node, n2i, n2f, img)
 
@@ -321,7 +323,7 @@ def render(root_node, img, hide_root=False):
         frame.setPen(QtGui.QPen(QtCore.Qt.NoPen))
     else:
         frame.setPen(QtGui.QPen(QtGui.QColor("black")))
-
+    
     return frame, n2i, n2f
 
 def adjust_faces_to_tranformations(img, mainRect, n2i, n2f, tree_layers):
@@ -433,7 +435,7 @@ def add_scale(img, mainRect, parent):
             line.setLine(0, 5, length, 5)
             line2.setLine(0, 0, 0, 10)
             line3.setLine(length, 0, length, 10)
-            scale_text = "%0.2f" % (float(length) / img._scale)
+            #scale_text = "%0.2f" % (float(length) / img._scale)
             scale = QtGui.QGraphicsSimpleTextItem(scale_text)
             scale.setParentItem(scaleItem)
             scale.setPos(0, 10)
@@ -585,10 +587,12 @@ def render_node_content(node, n2i, n2f, img):
 
     # Node points
     ball_size = style["size"]
-    lw = style["vt_line_width"]
-    ball_start_x = nodeR.width() - facesR.width() - ball_size - lw
-    #ball_start_x = item.widths[0] + item.widths[1]
-
+    
+    vlw = style["vt_line_width"] if not _leaf(node) and len(node.children) > 1 else 0.0
+    
+    face_start_x = nodeR.width() - facesR.width() - vlw
+    ball_start_x = face_start_x - ball_size 
+    
     if ball_size:
         if node.img_style["shape"] == "sphere":
             node_ball = _SphereItem(node)
@@ -614,7 +618,8 @@ def render_node_content(node, n2i, n2f, img):
     pen.setWidth(style["hz_line_width"])
     #pen.setCapStyle(QtCore.Qt.FlatCap)
     #pen.setCapStyle(QtCore.Qt.RoundCap)
-    pen.setJoinStyle(QtCore.Qt.RoundJoin)
+    #pen.setCapStyle(QtCore.Qt.SquareCap)
+    #pen.setJoinStyle(QtCore.Qt.RoundJoin)
     hz_line = _LineItem()
     hz_line = _NodeLineItem(node)
     hz_line.setPen(pen)
@@ -640,8 +645,7 @@ def render_node_content(node, n2i, n2f, img):
     # Attach branch-right faces to child
     fblock_r = n2f[node]["branch-right"]
     fblock_r.render()
-    fblock_r.setPos(nodeR.width() - facesR.width(), \
-                        center-fblock_r.h/2)
+    fblock_r.setPos(face_start_x, center-fblock_r.h/2)
 
     # Attach branch-bottom faces to child
     fblock_b = n2f[node]["branch-bottom"]
@@ -664,14 +668,16 @@ def render_node_content(node, n2i, n2f, img):
             last_child_part = n2i[node.children[-1]]
             c1 = first_child_part.start_y + first_child_part.center
             c2 = last_child_part.start_y + last_child_part.center
-            fx = nodeR.width()-node.img_style["vt_line_width"]/2
+            fx = nodeR.width() - vlw /2
             vt_line.setLine(fx, c1, fx, c2)
 
         pen = QtGui.QPen()
         set_pen_style(pen, style["vt_line_type"])
         pen.setColor(QtGui.QColor(style["vt_line_color"]))
         pen.setWidth(style["vt_line_width"])
-        pen.setCapStyle(QtCore.Qt.FlatCap)
+        #pen.setCapStyle(QtCore.Qt.FlatCap)
+        pen.setCapStyle(QtCore.Qt.RoundCap)
+        pen.setCapStyle(QtCore.Qt.SquareCap)
         vt_line.setPen(pen)
         item.vt_line = vt_line
     else:
@@ -809,7 +815,7 @@ def render_aligned_faces(img, mainRect, parent, n2i, n2f):
     # if no scale provided in circular mode, optimal scale is expected
     # to provide the correct ending point to start drawing aligned
     # faces.
-    elif img.mode == "c" and img.scale and not img.allow_face_overlap:
+    elif img.mode == "c" and (img.scale or img._scale == 0) and not img.allow_face_overlap:
         angle = n2i[maxh_node].angle_span
         rad, off = crender.get_min_radius(1, maxh, angle, tree_end_x)
         extra_width += rad - tree_end_x
@@ -949,6 +955,7 @@ def init_node_dimensions(node, item, faceblock, img):
     """
     
     min_separation = img.min_leaf_separation
+
     if _leaf(node):
         aligned_height = faceblock["aligned"].h
         aligned_width = faceblock["aligned"].w
@@ -964,19 +971,21 @@ def init_node_dimensions(node, item, faceblock, img):
     ##                                |  
     ##                                |        ------ 
     ##          b-top       --------- |        |    | 
-    ##    --------------- O |b-right| |        |alg | 
+    ## xoff-------------- O |b-right| |        |alg | 
     ##          b-bottom    --------- |        |    | 
     ##                                |        ------ 
     ##                                |       
     ##                                        
     ##      0     1       2     3     4           5   
     ##
+
+    item.xoff = 0.0
     # widths
     w1 = max(faceblock["branch-bottom"].w, faceblock["branch-top"].w)
     w0 = item.branch_length - w1 if item.branch_length > w1 else 0
     w2 = node.img_style["size"]
     w3 = faceblock["branch-right"].w
-    w4 = node.img_style["vt_line_width"]
+    w4 = node.img_style["vt_line_width"] if not _leaf(node) and len(node.children) > 1 else 0.0
     w5 = 0
     # heights
     h0 = node.img_style["hz_line_width"]
@@ -985,7 +994,7 @@ def init_node_dimensions(node, item, faceblock, img):
     h3 = faceblock["branch-right"].h
     h4 = 0
     h5 = aligned_height
-
+    
     # ignore face heights if requested
     if img.mode == "c" and img.allow_face_overlap:
         h1, h3, h5 = 0, 0, 0
@@ -994,12 +1003,15 @@ def init_node_dimensions(node, item, faceblock, img):
     item.widths = [w0, w1, w2, w3, w4, w5]
 
     # Calculate total node size
-    total_w = sum([w0, w1, w2, w3, w4]) # do not count aligned faces
+    total_w = sum([w0, w1, w2, w3, w4, item.xoff]) # do not count aligned faces
+	
     if img.mode == "c":
         max_h = max(item.heights[:4] + [min_separation])
     elif img.mode == "r":
         max_h = max(item.heights + [min_separation])
-   
+
+    max_h += img.branch_vertical_margin
+        
     # correct possible unbalanced block in branch faces
     h_imbalance = abs(faceblock["branch-top"].h - faceblock["branch-bottom"].h)
     if h_imbalance + h1 > max_h:
@@ -1010,7 +1022,7 @@ def init_node_dimensions(node, item, faceblock, img):
     item.fullRegion.setRect(0, 0, total_w, max_h)
 
 def update_branch_lengths(tree, n2i, n2f, img):
-    for node in tree.traverse("postorder"):
+    for node in tree.traverse("postorder", is_leaf_fn=_leaf):
         item = n2i[node]
         ndist = 1.0 if img.force_topology else node.dist
         item.branch_length = ndist * img._scale
@@ -1021,10 +1033,11 @@ def update_branch_lengths(tree, n2i, n2f, img):
             item.nodeRegion.adjust(0, 0, w0, 0)
             
         child_width = 0
-        for ch in node.children:
-            child_width = max(child_width, n2i[ch].fullRegion.width())
-            if w0 and img.mode == "r":
-                n2i[ch].translate(w0, 0)
+        if not _leaf(node):
+            for ch in node.children:
+                child_width = max(child_width, n2i[ch].fullRegion.width())
+                if w0 and img.mode == "r":
+                    n2i[ch].translate(w0, 0)
         item.fullRegion.setWidth(item.nodeRegion.width() + child_width)
 
 def init_tree_style(t, ts):

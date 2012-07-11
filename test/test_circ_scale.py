@@ -5,9 +5,9 @@ from ete_dev import Tree, TreeStyle, faces
 from ete_dev.treeview.main import random_color
 
 def layout(node):
-    #node.img_style["size"] = random.randint(5,100)
-    node.img_style["hz_line_width"] = 0
-    node.img_style["vt_line_width"] = 0
+    node.img_style["size"] = random.randint(5,100)
+    node.img_style["hz_line_width"] = 5
+    node.img_style["vt_line_width"] = 10
     if node.is_leaf():
         #node.img_style["size"] = random.randint(50, 50)
         f = faces.TextFace("alignedFace", fsize=8, fgcolor="blue")
@@ -19,8 +19,9 @@ def layout(node):
         f = faces.TextFace("NAME", fsize=10)
         #faces.add_face_to_node(f, node, 0, position="branch-right")
         f.border.width = 0
-    node.img_style["bgcolor"] = random_color()
+    #node.img_style["bgcolor"] = random_color()
 
+#Tree().show()
 ts = TreeStyle()
 ts.mode = "c"
 ts.layout_fn = layout 
@@ -32,11 +33,12 @@ ts.arc_start = -70
 ts.draw_guiding_lines = False
 ts.optimal_scale_level = "mid"
 ts.extra_branch_line_color = "red"
-
-ts.scale = 30
+ts.root_opening_factor = 0.50
+ts.show_border = True
+ts.scale = None
 t = Tree()
-t.populate(100, random_branches=True, branch_range=(0, 0.7))
-t.dist = 0
+t.populate(200, random_branches=True, branch_range=(0, 0))
+t.dist = 0.0
 dists = [n.dist for n in t.traverse() if n.dist != 0]
 #print max(dists), min(dists)
 t.write(outfile="test.nw")

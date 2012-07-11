@@ -337,7 +337,7 @@ def _read_node_data(subnw, current_node, node_type, format):
                 and data[2].startswith("[&&NHX"):
             _parse_extra_features(node, data[2])
     else:
-        raise NewickError, "Unexpected leaf node format:\n\t"+ subnw[0:50]
+        raise NewickError, "Unexpected leaf node format:\n\t"+ subnw[0:50] + "[%s]" %format
     return
 
 def write_newick(node, features=None, format=1, _is_root=True):

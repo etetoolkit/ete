@@ -41,6 +41,9 @@ __all__ = ["Tree", "TreeNode"]
 
 DEFAULT_COMPACT = False
 DEFAULT_SHOWINTERNAL = False
+DEFAULT_DIST = 0.0
+DEFAULT_SUPPORT = 0.0
+DEFAULT_NAME = None
 
 class TreeError(Exception):
     """
@@ -114,7 +117,7 @@ class TreeNode(object):
         if type(value) == type(self) or value is None:
             self._up = value
         else:
-            raise ValueError, "up: wrong type"
+            raise ValueError("bad node_up type")
 
     def _get_children(self):
         return self._children
@@ -155,17 +158,20 @@ class TreeNode(object):
     faces = property(fget=lambda self: self._faces, \
                          fset=_set_face_areas)
 
-    def __init__(self, newick=None, format=0):
+    def __init__(self, newick=None, format=0, dist=DEFAULT_DIST,
+                 support=DEFAULT_SUPPORT, name=DEFAULT_NAME):
         self._children = []
         self._up = None
-        self._dist = 1.0
-        self._support = 1.0
+        self._dist = 0.0
+        self._support = 0.0 
         self._img_style = None
         self.features = set([])
         # Add basic features
-        self.add_features(name="")
-        self.features.update(["dist", "support"])
-
+        self.features.update(["dist", "support", "name"])
+        self.dist = dist
+        self.support = support
+        self.name = name if name is not None else "edge"
+        
         # Initialize tree
         if newick is not None:
             read_newick(newick, root_node = self, format=format)
@@ -259,31 +265,14 @@ class TreeNode(object):
         """
         if child is None:
             child = self.__class__()
-
-        # This prevents from circular connections, but it would take too
-        # much time to check it every time a node is creted.
-        #
-        # if self in child:
-        #  raise ValueError, "child is an ancestor of current node"
-
+        
         if name is not None:
-            try:
-                child.add_feature("name", str(name))
-            except ValueError:
-                raise TreeError, "Node's name has to be a string"
-
+            child.name = name
         if dist is not None:
-            try:
-                child.add_feature("dist", float(dist))
-            except ValueError:
-                raise TreeError, "Node's dist has must be a float number"
-
+            child.dist = dist
         if support is not None:
-            try:
-                child.add_feature("support", float(support))
-            except ValueError:
-                raise TreeError, "Node's support must be a float number"
-
+            child.support = support
+            
         self.children.append(child)
         child.up = self
         return child
@@ -612,17 +601,17 @@ class TreeNode(object):
             return self._iter_descendants_levelorder(is_leaf_fn=is_leaf_fn)
         elif strategy=="postorder":
             return self._iter_descendants_postorder(is_leaf_fn=is_leaf_fn)
-
+            
     def _iter_descendants_postorder(self, is_leaf_fn=None):
         """
-        Iterate over all desdecendant nodes. 
+        Iterate over all desdecendant nodes.
         """
         if not is_leaf_fn or not is_leaf_fn(self):
             for ch in self.children:
-                for node in ch._iter_descendants_postorder():
+                for node in ch._iter_descendants_postorder(is_leaf_fn=is_leaf_fn):
                     yield node
         yield self
-
+        
     def _iter_descendants_levelorder(self, is_leaf_fn=None):
         """ 
         Iterate over all desdecendant nodes. 
@@ -649,26 +638,27 @@ class TreeNode(object):
             except:
                 node = None
 
-    # def _iter_descendants_postorder_OLD(self):
-    #     """
-    #     Iterative version. Slower.
-    #     """
-    #     current = self
-    #     end = self.up
-    #     visited_childs = set([])
-    #     while current is not end:
-    #         childs = False
-    #         for c in current.children:
-    #             if c not in visited_childs:
-    #                 childs = True
-    #                 current = c
-    #                 break
-    #         if not childs:
-    #             visited_childs.add(current)
-    #             yield current
-    #             current = current.up
+    def iter_ancestors(self):
+        '''versionadded: 2.2
+        
+        Iterates over the list of all ancestor nodes from current node
+        to the tree root.
 
+        '''
+        node = self
+        while node.up is not None:
+            yield node.up
+            node = node.up
 
+    def get_ancestors(self):
+        '''versionadded: 2.2
+
+        Returns the list of all ancestor nodes from current node to
+        the tree root.
+
+        '''
+        return [n for n in self.iter_ancestors()]
+            
     def describe(self):
         """ 
         Prints general information about this node and its
@@ -1018,10 +1008,10 @@ class TreeNode(object):
                 current = current.up
         return current
 
-    def populate(self, size, names_library=None, reuse_names=False, 
-                 random_branches=False): 
-        """
-        Generates a random topology by populating current node.
+    def populate(self, size, names_library=None, reuse_names=False,
+                 random_branches=False, branch_range=(0,1),
+                 support_range=(0,1)): 
+        """Generates a random topology by populating current node.
 
         :argument None names_library: If provided, names library
           (list, set, dict, etc.) will be used to name nodes.
@@ -1069,6 +1059,11 @@ class TreeNode(object):
                 c2.dist = random.uniform(*branch_range)
                 c1.support = random.uniform(*branch_range)
                 c2.support = random.uniform(*branch_range)
+            else:
+                c1.dist = 1.0
+                c2.dist = 1.0
+                c1.support = 1.0
+                c2.support = 1.0
 
         # next contains leaf nodes
         charset =  "abcdefghijklmnopqrstuvwxyz"
@@ -1406,22 +1401,6 @@ class TreeNode(object):
         criteria should be added to sort nodes.
         unique id is stored in _nid
         """
-        from hashlib import md5
-        for n in self.traverse(strategy="postorder"):
-            if n.is_leaf():
-                key = md5(str(n.name)).hexdigest()
-                n.__idname = key
-            else:
-                key = md5 (str (\
-                    sorted ([c.__idname for c in n.children]))).hexdigest()
-                n.__idname=key
-                children = [[c.__idname, c] for c in n.children]
-                children.sort() # sort list by idname
-                n.children = [item[1] for item in children]
-            counter = 1
-        for n in self.traverse(strategy="postorder"):
-            n.add_features(_nid=counter)
-            counter += 1
 
         node2content = self.get_node2content()
         def sort_by_content(x, y):
