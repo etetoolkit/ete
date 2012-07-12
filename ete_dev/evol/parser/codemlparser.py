@@ -50,10 +50,11 @@ def parse_rst (path):
         if line.startswith ('Positively '):
             typ = None
         # continue if we are not in table
-        if not re.match ('^ *[0-9]+ [A-Z*] ', line) or typ == None:
+        if not re.match ('^ *[0-9]+ [A-Z*-] ', line) or typ == None:
             continue
         # line to list
-        line = re.sub ('[()+-]', '', line.strip ()).split ()
+        line = line.replace(' +- ', ' ')
+        line = re.sub ('[()]', '', line.strip()).split()
         # get amino-acid
         sites [typ].setdefault ('aa', []).append (line[1])
         # get site class probability

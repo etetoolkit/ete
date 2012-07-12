@@ -197,9 +197,6 @@ def evol_layout(node):
             node.img_style["fgcolor"] = "#E9BF00"
         if node._w  < 0.2 :
             node.img_style["fgcolor"] = "#000000"
-    else:
-        node.dist = float(0)
-        node.support = float(0)
     if hasattr(node,"extras"):
         faces.add_face_to_node( faces.AttrFace("extras", "Arial", 7, \
                                                "#000000", None), node, 2 )

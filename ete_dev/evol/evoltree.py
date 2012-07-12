@@ -77,28 +77,19 @@ class EvolNode (PhyloNode):
         freebranch: path to find codeml output of freebranch model.
         '''
         # _update names?
-        self._name = "NoName"
-        self._speciesFunction = None
-        self.img_prop = None
         self.workdir = '/tmp/ete2-tmp/'
         self.execpath = binpath
         self._models = {}
-        # Caution! native __init__ has to be called after setting
-        # _speciesFunction to None!!
+
         PhyloNode.__init__(self, newick=newick, format=format)
 
-        # This will be only executed after reading the whole tree,
-        # because the argument 'alignment' is not passed to the
-        # PhyloNode constructor during parsing
-        if alignment:
-            self.link_to_alignment(alignment, alg_format)
         if newick:
-            self.set_species_naming_function(sp_naming_function)
             self._label_as_paml()
+        # initialize node marks
         self.mark_tree([])
 
         
-    def __label_internal_nodes(self, nid=None):
+    def _label_internal_nodes(self, nid=None):
         """
         nid needs to be a list in order to keep count through recursivity
         """
@@ -107,7 +98,7 @@ class EvolNode (PhyloNode):
                 continue
             nid[0] += 1
             node.add_feature ('node_id', nid[0])
-            node.__label_internal_nodes(nid)
+            node._label_internal_nodes(nid)
 
     def _label_as_paml (self):
         '''
@@ -126,7 +117,7 @@ class EvolNode (PhyloNode):
             leaf.add_feature ('node_id', nid)
             nid += 1
         self.add_feature ('node_id', nid)
-        self.__label_internal_nodes([nid])
+        self._label_internal_nodes([nid])
         
     def get_descendant_by_node_id (self, idname):
         '''
@@ -203,7 +194,7 @@ class EvolNode (PhyloNode):
             warn ("ERROR: codeml not found!!!\n" + \
                   "       define your variable EvolTree.execpath")
             return 1
-        if 'error' in run:
+        if 'error' in run or 'Error' in run:
             warn ("ERROR: inside codeml!!\n" + run)
             return 1
         os.chdir(hlddir)
@@ -245,7 +236,12 @@ class EvolNode (PhyloNode):
         '''
         super(EvolTree, self).link_to_alignment(alignment,
                                                 alg_format=alg_format)
+        check_len = 0
         for leaf in self.iter_leaves():
+            seq_len = len(str(leaf.sequence))
+            if check_len and check_len != seq_len:
+                warn('WARNING: sequences with different lengths found!')
+            check_len = seq_len
             leaf.nt_sequence = str(leaf.sequence)
             if nucleotides:
                 leaf.sequence = translate(leaf.nt_sequence)
@@ -396,7 +392,7 @@ class EvolNode (PhyloNode):
     def write (self, features=None, outfile=None, format=10):
         """
         Inherits from Tree but adds the tenth format, that allows to display marks for CodeML.
-
+        TODO: internal writting format need to be something like 0
         """
         from re import sub
         if int (format)==11:
