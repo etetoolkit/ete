@@ -304,11 +304,17 @@ class EvolNode (PhyloNode):
                         mdl = self.get_evol_model (hist)
                     except AttributeError:
                         warn ('model %s not computed' % (hist))
-                    mdl.set_histface()
-                    if mdl.histface.up:
-                        ts.aligned_header.add_face (mdl.histface, 1)
+                    if not 'histface' in mdl.properties:
+                        if len(histfaces)>1 and histfaces.index(hist)!=0:
+                            mdl.set_histface (up=False)
+                        else:
+                            mdl.set_histface ()
+                    if mdl.properties ['histface'].up:
+                        ts.aligned_header.add_face (\
+                            mdl.properties['histface'], 1)
                     else:
-                        ts.aligned_foot.add_face (mdl.histface, 1)
+                        ts.aligned_foot.add_face (\
+                            mdl.properties['histface'], 1)
             return super(EvolTree, self).render(file_name, layout=layout,
                                                 tree_style=ts,
                                                 w=w, h=h)

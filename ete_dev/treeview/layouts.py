@@ -227,7 +227,8 @@ def evol_clean_layout(node):
         #    leaface.margin_right = 10
         #    faces.add_face_to_node (leaface, node, 0)
         if hasattr (node, "sequence"):
-            seqface =  faces.SequenceFace(node.sequence, "aa", 11)
+            seqface =  faces.SequenceFace(node.sequence, interactive=True,
+                                          codon=node.nt_sequence)
             faces.add_face_to_node(seqface, node, 1, aligned=True)
     if hasattr (node, 'dN'):
         faces.add_face_to_node (faces.TextFace('%.4f'%(node.w), fsize=6,
