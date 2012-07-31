@@ -319,7 +319,7 @@ class TreeNode(object):
                 sister = sisters.pop(0)
             return self.up.remove_child(sister)
 
-    def delete(self, prevent_nondicotomic=True):
+    def delete(self, prevent_nondicotomic=True, preserve_branch_length=False):
         """
         Deletes node from the tree structure. Notice that this
         method makes 'disapear' the node from the tree structure. This
@@ -348,13 +348,17 @@ class TreeNode(object):
         parent = self.up
         if parent:
             for ch in self.children:
+                if preserve_branch_length:
+                    ch.dist += self.dist
                 parent.add_child(ch)
+
             parent.remove_child(self)
 
-        # Avoids the parents with only one child
+        # Avoids parents with only one child
         if prevent_nondicotomic and parent and\
               len(parent.children)<2:
-            parent.delete(prevent_nondicotomic=False)
+            parent.delete(prevent_nondicotomic=False,
+                          preserve_branch_length=preserve_branch_length)
 
 
     def detach(self):
@@ -373,15 +377,18 @@ class TreeNode(object):
         return self
 
 
-    def prune(self, nodes):
-        """
-        Prunes the topology of a node in order to conserve only a
+    def prune(self, nodes, preserve_branch_length=False):
+        """Prunes the topology of a node in order to conserve only a
         selected list of leaf or internal nodes. The minimum number of
         internal nodes (the deepest as possible) are kept to conserve
         the topological relationship among the provided list of nodes.
 
         :var nodes: a list of node names or node objects that must be kept
-
+        
+        :var False preserve_branch_length: If True, branch lengths of
+        the deleted nodes are added to remaining children nodes, thus
+        keeping original node distances.
+        
         **Examples:**
 
         ::
@@ -390,6 +397,7 @@ class TreeNode(object):
           node_C = t.search_nodes(name="C")[0]
           t.prune(["A","D", node_C])
           print t
+
         """
         def cmp_nodes(x, y):
             # if several nodes are in the same path of two kept nodes,
@@ -445,7 +453,8 @@ class TreeNode(object):
 
         for n in [self]+self.get_descendants():
             if n not in to_keep: 
-                n.delete(prevent_nondicotomic=False)
+                n.delete(prevent_nondicotomic=False,
+                         preserve_branch_length=preserve_branch_length)
 
     def swap_children(self):
         """
@@ -1007,7 +1016,7 @@ class TreeNode(object):
             else:
                 current = current.up
         return current
-
+        
     def populate(self, size, names_library=None, reuse_names=False,
                  random_branches=False, branch_range=(0,1),
                  support_range=(0,1)): 
