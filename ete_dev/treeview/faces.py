@@ -1034,8 +1034,9 @@ class PieChartFace(StaticItemFace):
     """
     def __init__(self, percents, width, height, colors=None, line_color=None):
         Face.__init__(self)
-        if sum(percents) != 100:
-            raise ValueError("PieChartItem: percentage values should sum up 100")
+        print round(sum(percents))
+        if round(sum(percents)) > 100:
+            raise ValueError("PieChartItem: percentage values > 100")
 
         self.type = "item"
         self.item = None

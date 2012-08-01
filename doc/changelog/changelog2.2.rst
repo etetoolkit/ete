@@ -34,6 +34,8 @@ What's new in ETE 2.2
 
   * Added :func:`PhyloNode.get_age_balanced_outgroup`
 
+* News on Image rendering 
+
 * News on Faces
 
   SeqFace improvements
