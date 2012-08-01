@@ -62,8 +62,6 @@ class FastTree(TreeTask):
             C = open(os.path.join(self.jobs[0].jobdir, "constraint_alg.fasta"), "w")
             C.write(cons_alg)
             C.close()
-
-
         
     def load_jobs(self):
         args = self.args.copy()

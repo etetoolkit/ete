@@ -54,6 +54,7 @@ class Job(object):
         clean = lambda x: basename(x) if GLOBALS["basedir"] in x else x
         parsed_id_string = ["%s %s" %(clean(str(pair[0])), clean(str(pair[1])))
                             for pair in self.args.iteritems()]
+        #print '\n'.join(map(str, self.args.items()))
         self.jobid = md5(','.join(sorted([md5(e) for e in
                                           parsed_id_string])))
 

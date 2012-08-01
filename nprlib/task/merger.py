@@ -114,6 +114,8 @@ class TreeMerger(Task):
             log.log(26, "Rooting tree using %d custom seqs" %
                    len(out_seqs))
 
+            self.outgroup_match = '|'.join(out_seqs)
+                        
             #log.log(22, "Out seqs:    %s", len(out_seqs))
             #log.log(22, "Target seqs: %s", target_seqs)
             if len(out_seqs) > 1:
@@ -405,11 +407,25 @@ def select_outgroups(target, n2content, options):
         
     score = lambda _n: (_n.support,
                         #len(n2content[_n])/float(optimal_out_size),
-                        1 - (abs(optimal_out_size - len(n2content[_n])) / float(max(optimal_out_size, len(n2content[_n])))),
-                        1 - (n2targetdist[_n]/max_dist))
+                        1 - (abs(optimal_out_size - len(n2content[_n])) / float(max(optimal_out_size, len(n2content[_n])))), # outgroup size
+                        1 - (n2targetdist[_n]/max_dist) #outgroup proximity to target
+                        ) 
     
     def sort_outgroups(x,y):
-        return cmp(min(score(x)), min(score(y)))
+        score_x = set(score(x))
+        score_y = set(score(y))
+        while score_x:
+            min_score_x = min(score_x)
+            v = cmp(min_score_x, min(score_y))
+            if v == 0:
+                score_x.discard(min_score_x)
+                score_y.discard(min_score_x)
+            else:
+                break
+        # If still equal, sort by cladid to maintain reproducibility
+        if v == 0:
+            v = cmp(x.cladeid, y.cladeid)
+        return v
         
     #del n2targetdist[target.get_tree_root()]
     max_dist = max(n2targetdist.values())
@@ -418,14 +434,13 @@ def select_outgroups(target, n2content, options):
     valid_nodes.sort(sort_outgroups, reverse=True)
     best_outgroup = valid_nodes[0]
 
-    #for n in valid_nodes:
-    #    print n, score(n)
-    
     seqs = [n.name for n in n2content[target]]
     outs = [n.name for n in n2content[best_outgroup]]
     
     log.log(28, "Selected outgroup size: %s support: %s ", len(outs), score(best_outgroup))
-
+    for x in valid_nodes[:10]:
+        print score(x), min(score(x))
+        
     if DEBUG():
         root = target.get_tree_root()
         for _seq in outs:

@@ -17,8 +17,7 @@ class Raxml(TreeTask):
     def __init__(self, nodeid, alg_file, constrain_tree,  model, seqtype, conf):
         # PTHREADS version needs at least -T2, which is actually
         # similar to the normal version
-        threads = int(conf["raxml"].get(
-                "_max_cores", conf["main"]["_max_cores"]))
+        threads = int(conf["raxml"].get("_max_cores", conf["main"]["_max_cores"]))
 
         if threads > conf["main"]["_max_cores"]:
             threads = conf["main"]["_max_cores"]
@@ -26,10 +25,9 @@ class Raxml(TreeTask):
                         threads)
         if threads > 1:
             raxml_bin = conf["app"]["raxml-pthreads"]
-            base_args = OrderedDict({"-T": threads})
         else:
             raxml_bin = conf["app"]["raxml"]
-            base_args = OrderedDict()
+        base_args = OrderedDict()
 
         TreeTask.__init__(self, nodeid, "tree", "RaxML", 
                           base_args, conf["raxml"])
