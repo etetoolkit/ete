@@ -4,6 +4,7 @@ import os
 import shutil
 from StringIO import StringIO
 from hashlib import md5
+from collections import defaultdict
 import filecmp
 import logging
 import numpy
@@ -138,6 +139,10 @@ def main(args):
    
     if npr_template == "genetree":
         from nprlib.template.genetree import pipeline, config_specs
+        config = ConfigObj(args.configfile, list_values=True,
+                           configspec=StringIO(config_specs))
+    elif npr_template == "sptree":
+        from nprlib.template.sptree import pipeline, config_specs
         config = ConfigObj(args.configfile, list_values=True,
                            configspec=StringIO(config_specs))
     else:
@@ -353,7 +358,8 @@ def main(args):
         execution = (None, False)
         
     # Scheduling starts here
-    schedule(config, pipeline, args.schedule_time, 
+    GLOBALS["config"] = config
+    schedule(pipeline, args.schedule_time, 
              execution, args.retry, args.debug)
 
     if args.compress:
@@ -501,10 +507,9 @@ if __name__ == "__main__":
 
     GLOBALS["basedir"] = os.path.abspath(args.outdir)
     GLOBALS["runid"] = generate_runid()
+    GLOBALS["nodeinfo"] = defaultdict(dict)
     if not os.path.exists(GLOBALS["basedir"]):
         os.makedirs(GLOBALS["basedir"])
   
     # Start the application
     app_wrapper(main, args)
-
-
