@@ -13,3 +13,4 @@ from dialigntx import *
 from uhire import *
 from fasttree import *
 
+from concat_alg import *

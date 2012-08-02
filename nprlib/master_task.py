@@ -170,12 +170,21 @@ class Task(object):
         ''' Check the status of all children jobs. '''
         self.cores_used = 0
         all_states = defaultdict(int)
+        new_jobs = []
         for j in self.jobs:
             if j not in self._donejobs:
                 st = j.get_status(sge_jobs)
                 all_states[st] += 1
                 if st == "D":
                     self._donejobs.add(j)
+
+                    if istask(j) and j.task_processor:
+                        # process task right here new tasks will be
+                        # added as new jobs.
+                        jobs_to_be_added = j.task_processor(j)
+                        all_states["W"] += len(jobs_to_be_added)
+                        new_jobs.extend(jobs_to_be_added)
+                        
                 elif st in set("QRL"):
                     if isjob(j) and not j.host.startswith("@sge"):
                         self.cores_used += j.cores
@@ -186,9 +195,11 @@ class Task(object):
                     log.log(20, "  %s", j.jobdir)
             else:
                 all_states["D"] += 1
-                    
+                
+        self.jobs.extend(new_jobs)
+                
         if not all_states:
-            all_states["D"] +=1 
+            all_states["D"] +=1
         return all_states
 
     def load_task_info(self):
@@ -340,3 +351,18 @@ class TreeTask(Task):
         self.dump_inkey_file(self.alg_phylip_file)
 
 
+class ConcatAlgTask(Task):
+    def __repr__(self):
+        return class_repr(self, "@@5:ConcatAlgTask@@1:")
+
+    def check(self):
+        if os.path.exists(self.alg_fasta_file) and \
+                os.path.exists(self.alg_phylip_file) and \
+                os.path.getsize(self.alg_fasta_file) and \
+                os.path.getsize(self.alg_phylip_file):
+            return True
+        return False
+
+    def finish(self):
+        self.dump_inkey_file(self.alg_fasta_file, 
+                             self.alg_phylip_file)

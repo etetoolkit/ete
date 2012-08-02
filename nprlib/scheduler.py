@@ -22,7 +22,8 @@ def rpath(fullpath):
     else:
         return fullpath
 
-def schedule(config, processor, schedule_time, execution, retry, debug):
+def schedule(init_processor, schedule_time, execution, retry, debug):
+    config = GLOBALS["config"]
 
     def sort_tasks(x, y):
         _x = getattr(x, "nseqs", 0)
@@ -41,9 +42,8 @@ def schedule(config, processor, schedule_time, execution, retry, debug):
     main_tree = None
     npr_iter = 0
     # Send seed files to processor to generate the initial task
-    nodeid2info = {}
-    pending_tasks, main_tree = processor(None, main_tree,
-                              config, nodeid2info)
+    nodeid2info = GLOBALS["nodeinfo"]
+    pending_tasks = init_processor(None)
     initial_task = pending_tasks[0]
     register_task(initial_task)
     if debug == "all":
@@ -57,7 +57,7 @@ def schedule(config, processor, schedule_time, execution, retry, debug):
     while pending_tasks:
         cores_used = 0
         sge_jobs = []
-        wait_time = 0.01 # Try to go fast unless running tasks
+        wait_time = 0.01 # Try to go fast unless we wait for running tasks
         set_logindent(0)
         log.log(28, "CHECK: (%s) %d tasks" % (ctime(), len(pending_tasks)))
 
@@ -77,17 +77,18 @@ def schedule(config, processor, schedule_time, execution, retry, debug):
             task.status = task.get_status(qstat_jobs)
             cores_used += task.cores_used
             update_task_states(task)
+
         db.commit()
 
         # Process waiting tasks
         for task in sorted(pending_tasks, sort_tasks):
-            if task.nodeid not in nodeid2info:
-                nodeid2info[task.nodeid] = {}
+            #if task.nodeid not in nodeid2info:
+            #    nodeid2info[task.nodeid] = {}
 
-            if task.ttype == "msf":
-                db.add_node(GLOBALS["runid"], task.nodeid,
-                            task.cladeid, task.target_seqs,
-                            task.out_seqs)
+            #if task.ttype == "msf":
+            #    db.add_node(GLOBALS["runid"], task.nodeid,
+            #                task.cladeid, task.target_seqs,
+            #                task.out_seqs)
 
             # Shows some task info
             log.log(26, "")
@@ -156,8 +157,8 @@ def schedule(config, processor, schedule_time, execution, retry, debug):
                     
             elif task.status == "D":
                 logindent(3)
-                new_tasks, main_tree = task.task_processor(task, main_tree, config,
-                                                           nodeid2info)
+                new_tasks = init_processor(task)
+
                 logindent(-3)
                 pending_tasks.remove(task)
                 for ts in new_tasks:
@@ -166,8 +167,9 @@ def schedule(config, processor, schedule_time, execution, retry, debug):
                 pending_tasks.extend(new_tasks)
                 cladeid = db.get_cladeid(task.nodeid)
                 clade2tasks[cladeid].append(task)
-
-                # If task was a new tree node, update main tree and dump snapshot
+                main_tree = task.main_tree
+                # If task was a new tree node, update main tree and
+                # dump snapshot
                 if task.ttype == "treemerger":
                     npr_iter += 1
                     log.log(28, "Saving task tree...")
@@ -226,6 +228,7 @@ def register_task(task, parentid=None):
             register_task(j, parentid=parentid)
 
 def update_task_states(task):
+    print task, task.taskid, task.status
     for j in task.jobs:
         if isjob(j):
             start = None

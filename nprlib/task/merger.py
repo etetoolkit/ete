@@ -14,13 +14,13 @@ from nprlib.errors import TaskError
 __all__ = ["TreeMerger", "select_outgroups"]
 
 class TreeMerger(Task):
-    def __init__(self, nodeid, seqtype, task_tree, main_tree, conf):
+    def __init__(self, nodeid, seqtype, task_tree, conf):
         # Initialize task
         Task.__init__(self, nodeid, "treemerger", "TreeMerger")
         self.conf = conf
         self.args = conf["tree_splitter"]
         self.task_tree_file = task_tree
-        self.main_tree = main_tree
+        self.main_tree = None
         self.task_tree = None
         self.seqtype = seqtype
         self.rf = None, None # Robinson foulds to orig partition

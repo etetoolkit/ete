@@ -137,7 +137,8 @@ class Job(object):
             jinfo = db.get_task_info(self.jobid)
             self.host = jinfo.get("host", None) or ""
             self.pid = jinfo.get("pid", None) or ""
-            saved_status = jinfo.get("status")
+            saved_status = jinfo.get("status", "W")
+            
             try:
                 st = open(self.status_file).read(1)
             except IOError:
@@ -162,7 +163,7 @@ class Job(object):
             #if st != saved_status:
             #    db.update_task(self.jobid, status=st)
             self.status = st
-            
+
         return self.status
 
     def save_status(self, status):

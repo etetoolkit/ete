@@ -14,6 +14,8 @@ from nprlib.task import (MetaAligner, Mafft, Muscle, Uhire, Dialigntx,
                          Prottest, Trimal, TreeMerger, select_outgroups,
                          Msf)
 from nprlib.errors import DataError
+from nprlib.utils import GLOBALS
+from nprlib import db
 
 log = logging.getLogger("main")
 
@@ -165,7 +167,7 @@ def switch_to_codon(alg_fasta_file, alg_phylip_file, nt_seed_file,
         
     return alg_fasta_filename, alg_phylip_filename
 
-def process_task(task, main_tree, conf, nodeid2info):
+def process_task(task, conf, nodeid2info):
     aa_seed_file = conf["main"]["aa_seed"]
     nt_seed_file = conf["main"]["nt_seed"]
     seqtype = task.seqtype
@@ -227,7 +229,13 @@ def process_task(task, main_tree, conf, nodeid2info):
         nodeid2info[nodeid]["target_seqs"] = task.target_seqs
         nodeid2info[nodeid]["out_seqs"] = task.out_seqs
         alg_task.nseqs = task.nseqs
+        alg_task.main_tree = task.main_tree
         new_tasks.append(alg_task)
+        
+        db.add_node(GLOBALS["runid"], task.nodeid,
+                    task.cladeid, task.target_seqs,
+                    task.out_seqs)
+       
 
     elif ttype == "alg" or ttype == "acleaner":
         if ttype == "alg":
@@ -296,6 +304,7 @@ def process_task(task, main_tree, conf, nodeid2info):
                                           None,
                                           seqtype, conf)
         next_task.nseqs = task.nseqs
+        next_task.main_tree = task.main_tree
         new_tasks.append(next_task)
 
     elif ttype == "mchooser":
@@ -309,16 +318,18 @@ def process_task(task, main_tree, conf, nodeid2info):
                                   model,
                                   seqtype, conf)
         tree_task.nseqs = task.nseqs
+        tree_task.main_tree = task.main_tree
         new_tasks.append(tree_task)
 
     elif ttype == "tree":
-        treemerge_task = TreeMerger(nodeid, seqtype, task.tree_file, main_tree, conf)
+        treemerge_task = TreeMerger(nodeid, seqtype, task.tree_file, conf)
         #if conf["tree_splitter"]["_outgroup_size"]:
         #    treemerge_task = TreeSplitterWithOutgroups(nodeid, seqtype, task.tree_file, main_tree, conf)
         #else:
         #    treemerge_task = TreeSplitter(nodeid, seqtype, task.tree_file, main_tree, conf)
 
         treemerge_task.nseqs = task.nseqs
+        treemerge_task.main_tree = task.main_tree
         new_tasks.append(treemerge_task)
 
     elif ttype == "treemerger":
@@ -398,6 +409,7 @@ def process_task(task, main_tree, conf, nodeid2info):
                 len(seqs) >= int(conf["tree_splitter"]["_min_size"])):
                     msf_task = Msf(seqs, outs, seqtype=source_seqtype, source=source)
                     if msf_task.nodeid not in nodeid2info:
+                        msf_task.main_tree = main_tree
                         nodeid2info[msf_task.nodeid] = {}
                         new_tasks.append(msf_task)
                         conf["_iters"] += 1
@@ -413,11 +425,16 @@ def process_task(task, main_tree, conf, nodeid2info):
             task.main_tree.show(tree_style=NPR_TREE_STYLE)
             for _n in task.main_tree.traverse():
                 _n.img_style = None
-           
 
-    return new_tasks, main_tree
+    # Clone processor, in case tasks belong to a side workflow
+    for ta in new_tasks:
+        ta.task_processor = task.task_processor
+        
+    return new_tasks
 
-def pipeline(task, main_tree, conf, nodeid2info):
+def pipeline(task):
+    conf = GLOBALS["config"]
+    nodeid2info = GLOBALS["nodeinfo"]
     if not task:
         if conf["main"]["aa_seed"]:
             source = SeqGroup(conf["main"]["aa_seed"])
@@ -426,14 +443,17 @@ def pipeline(task, main_tree, conf, nodeid2info):
             source = SeqGroup(conf["main"]["nt_seed"])
             source_seqtype = "nt"
 
-        new_tasks = [Msf(set(source.id2name.values()), set(),
-                         seqtype=source_seqtype,
-                         source = source)]
+        initial_task = Msf(set(source.id2name.values()), set(),
+                           seqtype=source_seqtype,
+                           source = source)
+        
+        initial_task.main_tree = main_tree = None
+        new_tasks = [initial_task]
         conf["_iters"] = 1
     else:
-        new_tasks, main_tree = process_task(task, main_tree, conf, nodeid2info)
+        new_tasks  = process_task(task, conf, nodeid2info)
 
-    return new_tasks, main_tree
+    return new_tasks
 
 config_specs = """
 

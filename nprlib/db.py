@@ -116,9 +116,8 @@ def update_task(tid, **kargs):
         values = ', '.join(['%s="%s"' %(k,v) for k,v in
                        kargs.iteritems()])
         cmd = 'UPDATE task SET %s where taskid="%s";' %(values, tid)
-        execute(cmd)
         autocommit()
-
+        
 def update_node(nid, runid, **kargs):
     if kargs:
         values = ', '.join(['%s="%s"' %(k,v) for k,v in
