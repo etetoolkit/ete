@@ -42,6 +42,11 @@ class Task(object):
 
     def __init__(self, nodeid, task_type, task_name, base_args={}, 
                  extra_args={}):
+
+
+        # This define which task-processor should be used
+        # (i.e. genetree, sptree).
+        self.task_processor = None
         
         # Nodeid is used to identify the tree node associated with
         # the task. It is calculated as a hash string based on the

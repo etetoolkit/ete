@@ -22,7 +22,7 @@ def rpath(fullpath):
     else:
         return fullpath
 
-def schedule(config, processer, schedule_time, execution, retry, debug):
+def schedule(config, processor, schedule_time, execution, retry, debug):
 
     def sort_tasks(x, y):
         _x = getattr(x, "nseqs", 0)
@@ -40,9 +40,9 @@ def schedule(config, processer, schedule_time, execution, retry, debug):
     execution, run_detached = execution
     main_tree = None
     npr_iter = 0
-    # Send seed files to processer to generate the initial task
+    # Send seed files to processor to generate the initial task
     nodeid2info = {}
-    pending_tasks, main_tree = processer(None, main_tree,
+    pending_tasks, main_tree = processor(None, main_tree,
                               config, nodeid2info)
     initial_task = pending_tasks[0]
     register_task(initial_task)
@@ -156,8 +156,8 @@ def schedule(config, processer, schedule_time, execution, retry, debug):
                     
             elif task.status == "D":
                 logindent(3)
-                new_tasks, main_tree = processer(task, main_tree, config,
-                                                 nodeid2info)
+                new_tasks, main_tree = task.task_processor(task, main_tree, config,
+                                                           nodeid2info)
                 logindent(-3)
                 pending_tasks.remove(task)
                 for ts in new_tasks:
