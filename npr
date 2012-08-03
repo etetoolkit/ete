@@ -508,6 +508,7 @@ if __name__ == "__main__":
     GLOBALS["basedir"] = os.path.abspath(args.outdir)
     GLOBALS["runid"] = generate_runid()
     GLOBALS["nodeinfo"] = defaultdict(dict)
+    GLOBALS["threadinfo"] = defaultdict(dict)
     if not os.path.exists(GLOBALS["basedir"]):
         os.makedirs(GLOBALS["basedir"])
   
