@@ -9,57 +9,55 @@ log = logging.getLogger("main")
 from nprlib.logger import set_logindent, logindent
 from nprlib.utils import (generate_id, PhyloTree, NodeStyle, Tree,
                           DEBUG, NPR_TREE_STYLE, faces, GLOBALS,
-                          basename, read_time_file)
+                          basename)
 from nprlib.errors import ConfigError, TaskError
 from nprlib import db, sge
-from nprlib.master_task import isjob
+from nprlib.master_task import isjob, update_task_states_recursively
 
-def rpath(fullpath):
-    'Returns relative path of a task file (if possible)'
-    m = re.search("/(tasks/.+)", fullpath)
-    if m:
-        return m.groups()[0]
+def sort_tasks(x, y):
+    _x = getattr(x, "nseqs", 0)
+    _y = getattr(y, "nseqs", 0)
+    if _x > _y:
+        return -1
+    elif _x < _y:
+        return 1
     else:
-        return fullpath
-
-def schedule(init_processor, schedule_time, execution, retry, debug):
-    config = GLOBALS["config"]
-
-    def sort_tasks(x, y):
-        _x = getattr(x, "nseqs", 0)
-        _y = getattr(y, "nseqs", 0)
-        if _x > _y:
-            return -1
-        elif _x < _y:
-            return 1
-        else:
-            return 0
-
-    # Clear info from previous runs
-    open(os.path.join(GLOBALS["basedir"], "runid"), "w").write(GLOBALS["runid"])
-
-    execution, run_detached = execution
-    main_tree = None
-    npr_iter = 0
-    # Send seed files to processor to generate the initial task
-    nodeid2info = GLOBALS["nodeinfo"]
-    pending_tasks = init_processor(None)
-    initial_task = pending_tasks[0]
-    register_task(initial_task)
+        return 0
+        
+def schedule(workflow_task_processor, schedule_time, execution, retry, debug):
+    # Adjust debug mode
     if debug == "all":
         log.setLevel(10)
 
-    clade2tasks = defaultdict(list)
-    # Then enters into the scheduling.
+    ## ===================================
+    ## INITIALIZE BASIC VARS AND SHORTCUTS
+    nodeid2info = GLOBALS["nodeinfo"]
+    config = GLOBALS["config"]
     cores_total = config["main"]["_max_cores"]
-    task2retry = defaultdict(int)
-
+    execution, run_detached = execution
+    # keeps the count of how many times an error task has been retried
+    task2retry = defaultdict(int) 
+    npr_iter = 0
+    main_tree = None   
+    ## END OF VARS AND SHORTCUTS
+    ## ===================================
+   
+    # Feeds pending task with the first task of the workflow 
+    pending_tasks = workflow_task_processor(None)
+    main_thread_id = pending_tasks[0].threadid
+    # Clear info from previous runs
+    open(os.path.join(GLOBALS["basedir"], "runid"), "w").write(main_thread_id)
+    
+    # Enters into task scheduling
     while pending_tasks:
         cores_used = 0
         sge_jobs = []
-        wait_time = 0.01 # Try to go fast unless we wait for running tasks
+        wait_time = 0.01
+
+        ## ================================
+        ## CHECK AND UPDATE CURRENT TASKS
         set_logindent(0)
-        log.log(28, "CHECK: (%s) %d tasks" % (ctime(), len(pending_tasks)))
+        log.log(28, "CHECKING: (%s) %d tasks" % (ctime(), len(pending_tasks)))
 
         # ask SGE for running jobs
         if execution == "sge":
@@ -68,57 +66,24 @@ def schedule(init_processor, schedule_time, execution, retry, debug):
         else:
             qstat_jobs = None
 
-        # Check task status and compute total cores being used
+        # Check task status, update new states and compute total cores
+        # being used
         for task in pending_tasks:
             if debug and log.level > 10 and task.taskid.startswith(debug):
                 log.setLevel(10) #start debugging
                 log.debug("ENTERING IN DEBUGGING MODE")
-
             task.status = task.get_status(qstat_jobs)
             cores_used += task.cores_used
-            update_task_states(task)
-
+            update_task_states_recursively(task)
         db.commit()
-
+        ## END CHECK AND UPDATE CURRENT TASKS
+        ## ================================
+        
         # Process waiting tasks
         for task in sorted(pending_tasks, sort_tasks):
-            #if task.nodeid not in nodeid2info:
-            #    nodeid2info[task.nodeid] = {}
-
-            #if task.ttype == "msf":
-            #    db.add_node(GLOBALS["runid"], task.nodeid,
-            #                task.cladeid, task.target_seqs,
-            #                task.out_seqs)
-
-            # Shows some task info
-            log.log(26, "")
-            set_logindent(1)
-            log.log(28, "(%s) %s" % (task.status, task))
-            logindent(2)
-            st_info = ', '.join(["%d(%s)" % (v, k) for k, v in
-                                 task.job_status.iteritems()])
-            log.log(26, "%d jobs: %s" %(len(task.jobs), st_info))
-            tdir = task.taskdir.replace(GLOBALS["basedir"], "")
-            tdir = tdir.lstrip("/")
-            log.log(20, "TaskDir: %s" %tdir)
-            
-            if task.status == "L":
-                logindent(-2)
-                log.warning("Some jobs within the task [%s] are marked as (L)ost,"
-                            " meaning that although they look as running,"
-                            " its execution could not be tracked. NPR will"
-                            " continue execution with other pending tasks."
-                            %task)
-                logindent(2)
-
-            logindent(2)
-            for j in task.jobs:
-                if j.status == "D":
-                    log.log(20, "%s: %s", j.status, j)
-                else:
-                    log.log(24, "%s: %s", j.status, j)
-            logindent(-2)
+            show_task_info(task)
             log.log(26, "Cores in use: %s" %cores_used)
+            
             if task.status in set("WQRL"):
                 exec_type = getattr(task, "exec_type", execution)
                 # Tries to send new jobs from this task
@@ -157,29 +122,15 @@ def schedule(init_processor, schedule_time, execution, retry, debug):
                     
             elif task.status == "D":
                 logindent(3)
-                new_tasks = init_processor(task)
-
+                new_tasks = workflow_task_processor(task)
                 logindent(-3)
-                pending_tasks.remove(task)
-                for ts in new_tasks:
-                    db.add_task2child(task.taskid, ts.taskid)
-                    register_task(ts, parentid=task.taskid)
-                pending_tasks.extend(new_tasks)
-                cladeid = db.get_cladeid(task.nodeid)
-                clade2tasks[cladeid].append(task)
                 main_tree = task.main_tree
-                # If task was a new tree node, update main tree and
-                # dump snapshot
-                if task.ttype == "treemerger":
-                    npr_iter += 1
-                    log.log(28, "Saving task tree...")
-                    annotate_node(task.task_tree, clade2tasks,
-                                  nodeid2info, npr_iter) 
-                    db.update_node(task.nodeid, 
-                                   GLOBALS["runid"],
-                                   newick=db.encode(task.task_tree))
-                    db.commit()
-                break # Stop processing tasks, so I can sort them by size
+                # Update list of tasks
+                pending_tasks.remove(task)
+                pending_tasks.extend(new_tasks)
+                # Stop processing tasks, so I can sort new and old
+                # tasks by size
+                break 
                 
             elif task.status == "E":
                 log.error("Task contains errors")
@@ -189,7 +140,7 @@ def schedule(init_processor, schedule_time, execution, retry, debug):
                     task.retry()
                     task.init()
                     task.post_init()
-                    update_task_states(task)
+                    update_task_states_recursively(task)
                     db.commit()
                 else:
                     raise TaskError(task)
@@ -215,36 +166,36 @@ def schedule(init_processor, schedule_time, execution, retry, debug):
     main_tree.write(outfile=final_tree_file)
    
     log.log(28, "Done")
+      
+def show_task_info(task):
+    log.log(26, "")
+    set_logindent(1)
+    log.log(28, "(%s) %s" % (task.status, task))
+    logindent(2)
+    st_info = ', '.join(["%d(%s)" % (v, k) for k, v in
+                         task.job_status.iteritems()])
+    log.log(26, "%d jobs: %s" %(len(task.jobs), st_info))
+    tdir = task.taskdir.replace(GLOBALS["basedir"], "")
+    tdir = tdir.lstrip("/")
+    log.log(20, "TaskDir: %s" %tdir)
+    if task.status == "L":
+        logindent(-2)
+        log.warning("Some jobs within the task [%s] are marked as (L)ost,"
+                    " meaning that although they look as running,"
+                    " its execution could not be tracked. NPR will"
+                    " continue execution with other pending tasks."
+                    %task)
+        logindent(2)
+    logindent(2)
+    # Shows task job counter
+    for j in task.jobs:
+        if j.status == "D":
+            log.log(20, "%s: %s", j.status, j)
+        else:
+            log.log(24, "%s: %s", j.status, j)
+    logindent(-2)
+
     
-def register_task(task, parentid=None):
-    db.add_task(tid=task.taskid, nid=task.nodeid, parent=parentid,
-                status=task.status, type="task", subtype=task.ttype, name=task.tname)
-    for j in task.jobs:
-        if isjob(j):
-            db.add_task(tid=j.jobid, nid=task.nodeid, parent=task.taskid,
-                        status="W", type="job", name=j.jobname)
-            
-        else:
-            register_task(j, parentid=parentid)
-
-def update_task_states(task):
-    print task, task.taskid, task.status
-    for j in task.jobs:
-        if isjob(j):
-            start = None
-            end = None
-            if j.status == "D":
-                try:
-                    start, end = read_time_file(j.time_file)
-                except Exception, e:
-                    log.warning("Execution time could not be loaded into DB: %s", j.jobid[:6])
-                    log.warning(e)
-            db.update_task(j.jobid, status=j.status, tm_start=start, tm_end=end )
-        else:
-            update_task_states(j)
-    db.update_task(task.taskid, status=task.status)
-        
-
 def check_cores(j, cores_used, cores_total, execution):
     if j.cores > cores_total:
         raise ConfigError("Job [%s] is trying to be executed using [%d] cores."
@@ -288,66 +239,4 @@ def launch_detached(j, cmd):
             os._exit(0)
     else:
         return
-
-def annotate_node(t, clade2tasks, nodeid2info, npr_iter):
-    cladeid2node = {}
-    # Annotate cladeid in the whole tree
-    for n in t.traverse():
-        if n.is_leaf():
-            n.add_feature("realname", db.get_seq_name(n.name))
-            #n.name = n.realname
-        if hasattr(n, "cladeid"):
-            cladeid2node[n.cladeid] = n
-
-    alltasks = clade2tasks[t.cladeid]
-    n = cladeid2node[t.cladeid]
-    for task in alltasks:
-
-        params = ["%s %s" %(k,v) for k,v in  task.args.iteritems() 
-                  if not k.startswith("_")]
-        params = " ".join(params)
-
-        n.add_features(nseqs=nodeid2info[task.nodeid]["nseqs"])
-
-        if task.ttype == "msf":
-            n.add_features(msf_outseqs=task.out_seqs,
-                           msf_file=task.multiseq_file)
-
-        elif task.ttype == "acleaner":
-            n.add_features(clean_alg_mean_ident=task.mean_ident, 
-                           clean_alg_std_ident=task.std_ident, 
-                           clean_alg_max_ident=task.max_ident, 
-                           clean_alg_min_ident=task.min_ident, 
-                           clean_alg_type=task.tname, 
-                           clean_alg_cmd=params,
-                           clean_alg_path=rpath(task.clean_alg_fasta_file))
-        elif task.ttype == "alg":
-            n.add_features(alg_mean_ident=task.mean_ident, 
-                           alg_std_ident=task.std_ident, 
-                           alg_max_ident=task.max_ident, 
-                           alg_min_ident=task.min_ident, 
-                           alg_type=task.tname, 
-                           alg_cmd=params,
-                           alg_path=rpath(task.alg_fasta_file))
-
-        elif task.ttype == "tree":
-            n.add_features(tree_model=task.model, 
-                           tree_seqtype=task.seqtype, 
-                           tree_type=task.tname, 
-                           tree_cmd=params,
-                           tree_file=rpath(task.tree_file),
-                           tree_constrain=task.constrain_tree,
-                           npr_iter=npr_iter)
-        elif task.ttype == "mchooser":
-            n.add_features(modeltester_models=task.models, 
-                           modeltester_type=task.tname, 
-                           modeltester_params=params, 
-                           modeltester_bestmodel=task.get_best_model(), 
-                           )
-        elif task.ttype == "treemerger":
-            n.add_features(treemerger_type=task.tname, 
-                           treemerger_rf="RF=%s [%s]" %(task.rf[0], task.rf[1]),
-                           treemerger_out_match_dist = task.outgroup_match_dist,
-                           treemerger_out_match = task.outgroup_match,
-            )
 

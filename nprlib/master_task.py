@@ -6,7 +6,7 @@ from logger import logindent
 log = logging.getLogger("main")
 
 from nprlib.utils import (md5, merge_arg_dicts, PhyloTree, SeqGroup,
-                          checksum, GLOBALS)
+                          checksum, read_time_file, GLOBALS)
 from nprlib.master_job import Job
 from nprlib.errors import RetryException
 from nprlib import db
@@ -42,8 +42,7 @@ class Task(object):
 
     def __init__(self, nodeid, task_type, task_name, base_args={}, 
                  extra_args={}):
-
-
+        
         # This define which task-processor should be used
         # (i.e. genetree, sptree).
         self.task_processor = None
@@ -79,7 +78,6 @@ class Task(object):
         
         # Initialize job arguments 
         self.args = merge_arg_dicts(extra_args, base_args, parent=self)
-
 
     def get_status(self, sge_jobs=None):
         saved_status = db.get_task_status(self.taskid)
@@ -366,3 +364,34 @@ class ConcatAlgTask(Task):
     def finish(self):
         self.dump_inkey_file(self.alg_fasta_file, 
                              self.alg_phylip_file)
+
+
+    
+def register_task_recursively(task, parentid=None):
+    db.add_task(tid=task.taskid, nid=task.nodeid, parent=parentid,
+                status=task.status, type="task", subtype=task.ttype, name=task.tname)
+    for j in task.jobs:
+        if isjob(j):
+            db.add_task(tid=j.jobid, nid=task.nodeid, parent=task.taskid,
+                        status="W", type="job", name=j.jobname)
+            
+        else:
+            register_task_recursively(j, parentid=parentid)
+
+def update_task_states_recursively(task):
+    for j in task.jobs:
+        if isjob(j):
+            start = None
+            end = None
+            if j.status == "D":
+                try:
+                    start, end = read_time_file(j.time_file)
+                except Exception, e:
+                    log.warning("Execution time could not be loaded into DB: %s", j.jobid[:6])
+                    log.warning(e)
+            db.update_task(j.jobid, status=j.status, tm_start=start, tm_end=end)
+        else:
+            update_task_states_recursively(j)
+    db.update_task(task.taskid, status=task.status)
+
+        

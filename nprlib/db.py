@@ -95,7 +95,7 @@ def add_task(tid, nid, parent=None, status=None, type=None, subtype=None,
     execute(cmd)
 
     autocommit()
-
+    
 def add_task2child(tid, child):
     cmd = ('INSERT OR REPLACE INTO task2child (taskid, child)'
            ' VALUES ("%s", "%s");' %(tid, child))
@@ -116,6 +116,7 @@ def update_task(tid, **kargs):
         values = ', '.join(['%s="%s"' %(k,v) for k,v in
                        kargs.iteritems()])
         cmd = 'UPDATE task SET %s where taskid="%s";' %(values, tid)
+        execute(cmd)
         autocommit()
         
 def update_node(nid, runid, **kargs):
@@ -237,3 +238,4 @@ def execute(cmd):
             retry +=1
         else:
             return s
+

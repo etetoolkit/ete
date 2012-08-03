@@ -13,9 +13,11 @@ from nprlib.task import (MetaAligner, Mafft, Muscle, Uhire, Dialigntx,
                          FastTree, Clustalo, Raxml, Phyml, JModeltest,
                          Prottest, Trimal, TreeMerger, select_outgroups,
                          Msf)
+
 from nprlib.errors import DataError
-from nprlib.utils import GLOBALS
+from nprlib.utils import GLOBALS, rpath, generate_runid
 from nprlib import db
+from nprlib.master_task import register_task_recursively
 
 log = logging.getLogger("main")
 
@@ -35,6 +37,66 @@ n2class = {
     "trimal": Trimal
     }
 
+def annotate_node(t, final_task):
+    cladeid2node = {}
+    # Annotate cladeid in the whole tree
+    for n in t.traverse():
+        if n.is_leaf():
+            n.add_feature("realname", db.get_seq_name(n.name))
+            #n.name = n.realname
+        if hasattr(n, "cladeid"):
+            cladeid2node[n.cladeid] = n
+
+    alltasks = GLOBALS["nodeinfo"][final_task.nodeid]["tasks"]
+    npr_iter = GLOBALS["threadinfo"][final_task.threadid]["last_iter"]
+    n = cladeid2node[t.cladeid]
+    n.add_features(nseqs=final_task.nseqs)
+    for task in alltasks:
+        params = ["%s %s" %(k,v) for k,v in  task.args.iteritems() 
+                  if not k.startswith("_")]
+        params = " ".join(params)
+
+        if task.ttype == "msf":
+            n.add_features(msf_outseqs=task.out_seqs,
+                           msf_file=task.multiseq_file)
+
+        elif task.ttype == "acleaner":
+            n.add_features(clean_alg_mean_ident=task.mean_ident, 
+                           clean_alg_std_ident=task.std_ident, 
+                           clean_alg_max_ident=task.max_ident, 
+                           clean_alg_min_ident=task.min_ident, 
+                           clean_alg_type=task.tname, 
+                           clean_alg_cmd=params,
+                           clean_alg_path=rpath(task.clean_alg_fasta_file))
+        elif task.ttype == "alg":
+            n.add_features(alg_mean_ident=task.mean_ident, 
+                           alg_std_ident=task.std_ident, 
+                           alg_max_ident=task.max_ident, 
+                           alg_min_ident=task.min_ident, 
+                           alg_type=task.tname, 
+                           alg_cmd=params,
+                           alg_path=rpath(task.alg_fasta_file))
+
+        elif task.ttype == "tree":
+            n.add_features(tree_model=task.model, 
+                           tree_seqtype=task.seqtype, 
+                           tree_type=task.tname, 
+                           tree_cmd=params,
+                           tree_file=rpath(task.tree_file),
+                           tree_constrain=task.constrain_tree,
+                           npr_iter=npr_iter)
+        elif task.ttype == "mchooser":
+            n.add_features(modeltester_models=task.models, 
+                           modeltester_type=task.tname, 
+                           modeltester_params=params, 
+                           modeltester_bestmodel=task.get_best_model(), 
+                           )
+        elif task.ttype == "treemerger":
+            n.add_features(treemerger_type=task.tname, 
+                           treemerger_rf="RF=%s [%s]" %(task.rf[0], task.rf[1]),
+                           treemerger_out_match_dist = task.outgroup_match_dist,
+                           treemerger_out_match = task.outgroup_match,
+            )
 
 def get_trimal_conservation(alg_file, trimal_bin):
     output = commands.getoutput("%s -ssc -in %s" % (trimal_bin,
@@ -232,10 +294,10 @@ def process_task(task, conf, nodeid2info):
         alg_task.main_tree = task.main_tree
         new_tasks.append(alg_task)
         
-        db.add_node(GLOBALS["runid"], task.nodeid,
+        # Register node 
+        db.add_node(task.threadid, task.nodeid,
                     task.cladeid, task.target_seqs,
                     task.out_seqs)
-       
 
     elif ttype == "alg" or ttype == "acleaner":
         if ttype == "alg":
@@ -344,6 +406,20 @@ def process_task(task, conf, nodeid2info):
             task.finish()
         main_tree = task.main_tree
 
+        log.log(28, "Saving task tree...")
+        
+        current_iter = GLOBALS["threadinfo"][task.threadid].get("last_iter", 0)
+        if not current_iter:
+            GLOBALS["threadinfo"][task.threadid]["last_iter"] = 1
+        else:
+            GLOBALS["threadinfo"][task.threadid]["last_iter"] += 1
+            
+        annotate_node(task.task_tree, task) 
+        db.update_node(nid=task.nodeid, 
+                       runid=task.threadid,
+                       newick=db.encode(task.task_tree))
+        db.commit()
+        
         def processable_node(_n):
             """ Returns true if node is suitable for NPR """
             
@@ -425,10 +501,6 @@ def process_task(task, conf, nodeid2info):
             task.main_tree.show(tree_style=NPR_TREE_STYLE)
             for _n in task.main_tree.traverse():
                 _n.img_style = None
-
-    # Clone processor, in case tasks belong to a side workflow
-    for ta in new_tasks:
-        ta.task_processor = task.task_processor
         
     return new_tasks
 
@@ -447,12 +519,25 @@ def pipeline(task):
                            seqtype=source_seqtype,
                            source = source)
         
-        initial_task.main_tree = main_tree = None
+        initial_task.main_tree = None
+        initial_task.threadid = generate_runid()
         new_tasks = [initial_task]
         conf["_iters"] = 1
     else:
         new_tasks  = process_task(task, conf, nodeid2info)
 
+    # Basic registration and processing of newly generated tasks
+    parent_taskid = task.taskid if task else None
+    for ts in new_tasks:
+        register_task_recursively(ts, parentid=parent_taskid)
+        db.add_task2child(parent_taskid, ts.taskid)
+        # sort task by nodeid
+        nodeid2info[ts.nodeid].setdefault("tasks", []).append(ts)
+        if task:
+            # Clone processor, in case tasks belong to a side workflow
+            ts.task_processor = task.task_processor
+            ts.threadid = task.threadid
+            
     return new_tasks
 
 config_specs = """

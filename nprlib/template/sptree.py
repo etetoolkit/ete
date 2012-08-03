@@ -14,7 +14,9 @@ from nprlib.task import (MetaAligner, Mafft, Muscle, Uhire, Dialigntx,
                          Prottest, Trimal, TreeMerger, select_outgroups,
                          Msf, ConcatAlg)
 from nprlib.errors import DataError
-from nprlib.utils import GLOBALS
+from nprlib.utils import GLOBALS, generate_runid
+from nprlib import db
+from nprlib.master_task import register_task_recursively
 
 log = logging.getLogger("main")
 
@@ -121,19 +123,37 @@ def pipeline(task):
 
         sample_cogs = [set(all_seqids), set(all_seqids[:-2]), set(all_seqids[:-3])]
         
-        node_id, clade_id = generate_node_ids(all_seqids, set())
-        initial_task = ConcatAlg(node_id, sample_cogs, set(),
+
+        initial_task = ConcatAlg("SPTREE_TEST_ID", sample_cogs, set(),
                                  seqtype=source_seqtype, source=source)
 
         initial_task.main_tree = main_tree = None
+        initial_task.threadid = generate_runid()
+
+        # Register node 
+        db.add_node(initial_task.threadid, initial_task.nodeid,
+                    initial_task.cladeid, "NA", "NA")
+
+        
         new_tasks = [initial_task]
         conf["_iters"] = 1
     else:
         new_tasks  = process_task(task, conf, nodeid2info)
 
+    # Basic registration and processing of newly generated tasks
+    parent_taskid = task.taskid if task else None
+    for ts in new_tasks:
+        register_task_recursively(ts, parentid=parent_taskid)
+        db.add_task2child(parent_taskid, ts.taskid)
+        # sort task by nodeid
+        nodeid2info[ts.nodeid].setdefault("tasks", []).append(ts)
+        if task:
+            # Clone processor, in case tasks belong to a side workflow
+            ts.task_processor = task.task_processor
+            ts.threadid = task.threadid
+        
     return new_tasks
     
-
 config_specs = """
 
 [main]

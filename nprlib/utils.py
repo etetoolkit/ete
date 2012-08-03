@@ -66,6 +66,14 @@ generate_runid = lambda: md5(str(time.time()*random.random()))
 
 HOSTNAME = socket.gethostname()
 
+def rpath(fullpath):
+    'Returns relative path of a task file (if possible)'
+    m = re.search("/(tasks/.+)", fullpath)
+    if m:
+        return m.groups()[0]
+    else:
+        return fullpath
+
 def ask(string, valid_values, default=-1, case_sensitive=False):
     """ Asks for a keyborad answer """
     v = None
