@@ -15,8 +15,8 @@ from nprlib import db, sge
 from nprlib.master_task import isjob, update_task_states_recursively
 
 def sort_tasks(x, y):
-    _x = getattr(x, "nseqs", 0)
-    _y = getattr(y, "nseqs", 0)
+    _x = getattr(x, "size", 0)
+    _y = getattr(y, "size", 0)
     if _x > _y:
         return -1
     elif _x < _y:
@@ -124,6 +124,7 @@ def schedule(workflow_task_processor, schedule_time, execution, retry, debug):
                 logindent(3)
                 new_tasks = workflow_task_processor(task)
                 logindent(-3)
+                
                 main_tree = task.main_tree
                 # Update list of tasks
                 pending_tasks.remove(task)

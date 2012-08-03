@@ -25,7 +25,9 @@ class ConcatAlg(ConcatAlgTask):
         self.init()
 
     def load_jobs(self):
+        # I want a phylognetic tree for each cog
         from nprlib.template.genetree import pipeline
+        
         for co in self.cogs:
             # get sequences
             #db.get_sequences(co)
@@ -38,13 +40,13 @@ class ConcatAlg(ConcatAlgTask):
             job = Msf(co, set(),
                       seqtype = self.seqtype,
                       source = self.source)
-
-            # This converts the job in a workflow job. AS soon as task
-            # is done, it will be processed and new tasks will be
-            # registered as new jobs.
             job.main_tree = None
-            job.task_processor = pipeline
             job.threadid = generate_runid()
+            # This converts the job in a workflow job. As soon as a
+            # task is done, it will be automatically processed and the
+            # new tasks will be registered as new jobs.
+            job.task_processor = pipeline
+
             self.jobs.append(job) 
 
     def finish(self):

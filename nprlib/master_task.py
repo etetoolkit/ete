@@ -14,13 +14,20 @@ from nprlib import db
 isjob = lambda j: isinstance(j, Job)
 istask = lambda j: isinstance(j, Task)
 
-def class_repr(cls, cls_name):
-    """ Human readable representation of NPR tasks.""" 
+def genetree_class_repr(cls, cls_name):
+    """ Human readable representation of NPR genetree tasks.""" 
     return "%s (%s seqs, %s, %s)" %\
-        (cls_name, getattr(cls, "nseqs", None) or 0,
+        (cls_name, getattr(cls, "size", None) or 0,
          cls.tname, 
          (getattr(cls, "taskid", None) or "?")[:6])
 
+def sptree_class_repr(cls, cls_name):
+    """ Human readable representation of NPR sptree tasks.""" 
+    return "%s (%s species, %s, %s)" %\
+        (cls_name, getattr(cls, "size", None) or 0,
+         cls.tname, 
+         (getattr(cls, "taskid", None) or "?")[:6])
+    
 class Task(object):
     def _get_max_cores(self):
         return max([j.cores for j in self.jobs]) or 1
@@ -28,7 +35,7 @@ class Task(object):
     cores = property(_get_max_cores,None)
     
     def __repr__(self):
-        return class_repr(self, "Task")
+        return sptree_class_repr(self, "Task")
 
     def print_summary(self):
         print "Type:", self.ttype
@@ -279,11 +286,14 @@ class Task(object):
         that must run after init (load_jobs, taskid, etc). 
         '''
 
+class MsfTask(Task):
+    def __repr__(self):
+        return genetree_class_repr(self, "@@5:MultiSeqTask@@1:")
 
         
 class AlgTask(Task):
     def __repr__(self):
-        return class_repr(self, "@@5:AlgTask@@1:")
+        return genetree_class_repr(self, "@@5:AlgTask@@1:")
 
     def check(self):
         if os.path.exists(self.alg_fasta_file) and \
@@ -299,7 +309,7 @@ class AlgTask(Task):
 
 class AlgCleanerTask(Task):
     def __repr__(self):
-        return class_repr(self, "@@4:AlgCleanerTask@@1:")
+        return genetree_class_repr(self, "@@4:AlgCleanerTask@@1:")
 
     def check(self):
         if os.path.exists(self.clean_alg_fasta_file) and \
@@ -316,7 +326,7 @@ class AlgCleanerTask(Task):
 
 class ModelTesterTask(Task):
     def __repr__(self):
-        return class_repr(self, "@@2:ModelTesterTask@@1:")
+        return genetree_class_repr(self, "@@2:ModelTesterTask@@1:")
 
     def get_best_model(self):
         return open(self.best_model_file, "ru").read()
@@ -337,7 +347,7 @@ class ModelTesterTask(Task):
 
 class TreeTask(Task):
     def __repr__(self):
-        return class_repr(self, "@@3:TreeTask@@1:")
+        return genetree_class_repr(self, "@@3:TreeTask@@1:")
 
     def check(self):
         if os.path.exists(self.tree_file) and \
@@ -351,7 +361,7 @@ class TreeTask(Task):
 
 class ConcatAlgTask(Task):
     def __repr__(self):
-        return class_repr(self, "@@5:ConcatAlgTask@@1:")
+        return sptree_class_repr(self, "@@5:ConcatAlgTask@@1:")
 
     def check(self):
         if os.path.exists(self.alg_fasta_file) and \

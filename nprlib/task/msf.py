@@ -2,14 +2,14 @@ import os
 import logging
 log = logging.getLogger("main")
 
-from nprlib.master_task import Task
+from nprlib.master_task import MsfTask
 from nprlib.master_job import Job
 from nprlib.utils import PhyloTree, SeqGroup, md5, generate_node_ids
 from nprlib.errors import DataError
 
 __all__ = ["Msf"]
 
-class Msf(Task):
+class Msf(MsfTask):
     def __init__(self, target_seqs, out_seqs, seqtype, source):
         # Nodeid represents the whole group of sequences (used to
         # compute task unique ids). Cladeid represents target
@@ -17,7 +17,7 @@ class Msf(Task):
         # an independent set of tasks.
         node_id, clade_id = generate_node_ids(target_seqs, out_seqs)
         # Initialize task
-        Task.__init__(self, node_id, "msf", "MSF")
+        MsfTask.__init__(self, node_id, "msf", "MSF")
 
         # taskid does not depend on jobs, so I set it manually
         self.taskid = node_id
@@ -37,7 +37,7 @@ class Msf(Task):
 
         # Dump sequences into MSF
         all_seqs = self.target_seqs | self.out_seqs
-        self.nseqs = len(all_seqs)
+        self.size = len(all_seqs)
         fasta = '\n'.join([">%s\n%s" % (n, source.get_seq(n))
                            for n in all_seqs])
         open(self.multiseq_file, "w").write(fasta)

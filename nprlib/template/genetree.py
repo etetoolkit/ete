@@ -50,7 +50,7 @@ def annotate_node(t, final_task):
     alltasks = GLOBALS["nodeinfo"][final_task.nodeid]["tasks"]
     npr_iter = GLOBALS["threadinfo"][final_task.threadid]["last_iter"]
     n = cladeid2node[t.cladeid]
-    n.add_features(nseqs=final_task.nseqs)
+    n.add_features(size=final_task.size)
     for task in alltasks:
         params = ["%s %s" %(k,v) for k,v in  task.args.iteritems() 
                   if not k.startswith("_")]
@@ -236,7 +236,7 @@ def process_task(task, conf, nodeid2info):
     nodeid = task.nodeid
     ttype = task.ttype
     node_info = nodeid2info[nodeid]
-    nseqs = task.nseqs#node_info.get("nseqs", 0)
+    size = task.size#node_info.get("size", 0)
     target_seqs = node_info.get("target_seqs", [])
     out_seqs = node_info.get("out_seqs", [])
     constrain_tree = None
@@ -257,13 +257,13 @@ def process_task(task, conf, nodeid2info):
             max_seqs = conf["main"]["npr_max_seqs"][index_slide]
         except IndexError:
             raise DataError("Number of seqs [%d] not considered"
-                             " in current config" %nseqs)
+                             " in current config" %size)
         else:
-            if nseqs <= max_seqs:
+            if size <= max_seqs:
                 index = index_slide
             else:
                 index_slide += 1
-        #log.debug("INDEX %s %s %s", index, nseqs, max_seqs)
+        #log.debug("INDEX %s %s %s", index, size, max_seqs)
                 
     _min_branch_support = conf["main"]["npr_min_branch_support"][index_slide]
     skip_outgroups = conf["tree_splitter"]["_outgroup_size"] == 0
@@ -281,16 +281,16 @@ def process_task(task, conf, nodeid2info):
         _tree_builder = n2class[conf["main"]["npr_aa_tree_builder"][index]]
         _aa_identity_thr = conf["main"]["npr_max_aa_identity"][index]
 
-    #print node_info, (nseqs, index, _alg_cleaner, _model_tester, _aligner, _tree_builder)
+    #print node_info, (size, index, _alg_cleaner, _model_tester, _aligner, _tree_builder)
     
     new_tasks = []
     if ttype == "msf":
         alg_task = _aligner(nodeid, task.multiseq_file,
                            seqtype, conf)
-        nodeid2info[nodeid]["nseqs"] = task.nseqs
+        nodeid2info[nodeid]["size"] = task.size
         nodeid2info[nodeid]["target_seqs"] = task.target_seqs
         nodeid2info[nodeid]["out_seqs"] = task.out_seqs
-        alg_task.nseqs = task.nseqs
+        alg_task.size = task.size
         alg_task.main_tree = task.main_tree
         new_tasks.append(alg_task)
         
@@ -365,7 +365,7 @@ def process_task(task, conf, nodeid2info):
                 next_task = _tree_builder(nodeid, alg_phylip_file, constrain_tree_path,
                                           None,
                                           seqtype, conf)
-        next_task.nseqs = task.nseqs
+        next_task.size = task.size
         next_task.main_tree = task.main_tree
         new_tasks.append(next_task)
 
@@ -379,7 +379,7 @@ def process_task(task, conf, nodeid2info):
         tree_task = _tree_builder(nodeid, alg_phylip_file, constrain_tree_path,
                                   model,
                                   seqtype, conf)
-        tree_task.nseqs = task.nseqs
+        tree_task.size = task.size
         tree_task.main_tree = task.main_tree
         new_tasks.append(tree_task)
 
@@ -390,7 +390,7 @@ def process_task(task, conf, nodeid2info):
         #else:
         #    treemerge_task = TreeSplitter(nodeid, seqtype, task.tree_file, main_tree, conf)
 
-        treemerge_task.nseqs = task.nseqs
+        treemerge_task.size = task.size
         treemerge_task.main_tree = task.main_tree
         new_tasks.append(treemerge_task)
 
@@ -489,6 +489,7 @@ def process_task(task, conf, nodeid2info):
                         nodeid2info[msf_task.nodeid] = {}
                         new_tasks.append(msf_task)
                         conf["_iters"] += 1
+                        
                     if DEBUG():
                         NPR_TREE_STYLE.title.clear()
                         NPR_TREE_STYLE.title.add_face( faces.TextFace("MainTree:"

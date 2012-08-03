@@ -46,7 +46,7 @@ class Trimal(AlgCleanerTask):
         # interleaved phylip format. Both files, fasta and phylip,
         # remain accessible.
         alg = SeqGroup(self.clean_alg_fasta_file)
-        if len(alg) != self.nseqs:
+        if len(alg) != self.size:
             log.warning("Trimming was to aggressive and some"
                         " sequences were removed. Params will"
                         " be changed to keep at least 50% of the alg")

@@ -6,15 +6,9 @@ import logging
 import numpy
 from collections import defaultdict
 
-from nprlib.utils import (del_gaps, GENCODE, PhyloTree, SeqGroup,
-                          TreeStyle, generate_node_ids, DEBUG,
-                          NPR_TREE_STYLE, faces)
-from nprlib.task import (MetaAligner, Mafft, Muscle, Uhire, Dialigntx,
-                         FastTree, Clustalo, Raxml, Phyml, JModeltest,
-                         Prottest, Trimal, TreeMerger, select_outgroups,
-                         Msf, ConcatAlg)
+from nprlib.task import ConcatAlg
 from nprlib.errors import DataError
-from nprlib.utils import GLOBALS, generate_runid
+from nprlib.utils import GLOBALS, generate_runid, SeqGroup
 from nprlib import db
 from nprlib.master_task import register_task_recursively
 
@@ -22,18 +16,7 @@ log = logging.getLogger("main")
 
 n2class = {
     "none": None, 
-    "meta_aligner": MetaAligner, 
-    "mafft": Mafft, 
-    "muscle": Muscle, 
-    "uhire": Uhire, 
-    "dialigntx": Dialigntx, 
-    "fasttree": FastTree, 
-    "clustalo": Clustalo, 
-    "raxml": Raxml,
-    "phyml": Phyml,
-    "jmodeltest": JModeltest,
-    "prottest": Prottest,
-    "trimal": Trimal
+    "concat_alg": ConcatAlg, 
     }
 
 def process_task(task, conf, nodeid2info):
@@ -41,7 +24,7 @@ def process_task(task, conf, nodeid2info):
     nodeid = task.nodeid
     ttype = task.ttype
     node_info = nodeid2info[nodeid]
-    nseqs = task.nseqs
+    size = task.size
     target_seqs = node_info.get("target_seqs", [])
     out_seqs = node_info.get("out_seqs", [])
     constrain_tree = None
@@ -60,13 +43,13 @@ def process_task(task, conf, nodeid2info):
             max_seqs = conf["main"]["npr_max_seqs"][index_slide]
         except IndexError:
             raise DataError("Number of seqs [%d] not considered"
-                             " in current config" %nseqs)
+                             " in current config" %size)
         else:
-            if nseqs <= max_seqs:
+            if size <= max_seqs:
                 index = index_slide
             else:
                 index_slide += 1
-        #log.debug("INDEX %s %s %s", index, nseqs, max_seqs)
+        #log.debug("INDEX %s %s %s", index, size, max_seqs)
                 
     _min_branch_support = conf["main"]["npr_min_branch_support"][index_slide]
     skip_outgroups = conf["tree_splitter"]["_outgroup_size"] == 0
@@ -84,7 +67,7 @@ def process_task(task, conf, nodeid2info):
         _tree_builder = n2class[conf["main"]["npr_aa_tree_builder"][index]]
         _aa_identity_thr = conf["main"]["npr_max_aa_identity"][index]
 
-    #print node_info, (nseqs, index, _alg_cleaner, _model_tester, _aligner, _tree_builder)
+    #print node_info, (size, index, _alg_cleaner, _model_tester, _aligner, _tree_builder)
     new_tasks = []
     if ttype == "cog_selector":
         task.species
@@ -133,7 +116,6 @@ def pipeline(task):
         # Register node 
         db.add_node(initial_task.threadid, initial_task.nodeid,
                     initial_task.cladeid, "NA", "NA")
-
         
         new_tasks = [initial_task]
         conf["_iters"] = 1
