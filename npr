@@ -17,7 +17,7 @@ sys.path.insert(0, NPRPATH)
 from nprlib import argparse 
 from nprlib.configobj import ConfigObj, flatten_errors
 from nprlib import validate
-from nprlib.utils import SeqGroup, generate_runid,  AA, NT, GLOBALS
+from nprlib.utils import strip, SeqGroup, generate_runid,  AA, NT, GLOBALS
 from nprlib.errors import ConfigError, DataError
 from nprlib.master_task import Task
 from nprlib.interface import app_wrapper
@@ -44,7 +44,7 @@ __DESCRIPTION__ = (
 
       NPR allows to reconstruct large phylogenies by means of an
       iterative strategy that provides scalable resolution along the
-      different tree levels. Using NPR, internal nodes are
+      different levels of a tree. At each iteration, internal nodes are
       re-evaluated to optimize and fine tune the parameters of the
       phylogenetic inference.
 
@@ -57,7 +57,7 @@ __DESCRIPTION__ = (
       necessary computations will be shown shown together with your
       results.)
 
-      Contact: jhuerta [at] crg.es, tgabaldon [at] crg.es
+      Contact: jhuerta [at] crg.es & tgabaldon [at] crg.es
 --------------------------------------------------------------------------------
 
     """ %(__VERSION__, __DATE__))
@@ -141,7 +141,7 @@ def main(args):
         from nprlib.template.genetree import pipeline, config_specs
         config = ConfigObj(args.configfile, list_values=True,
                            configspec=StringIO(config_specs))
-    elif npr_template == "sptree":
+    elif npr_template == "sptree":    
         from nprlib.template.sptree import pipeline, config_specs
         config = ConfigObj(args.configfile, list_values=True,
                            configspec=StringIO(config_specs))
@@ -169,7 +169,7 @@ def main(args):
     # Check for unique max_seq config values
     if config["main"]["npr_max_seqs"] != \
             sorted(config["main"]["npr_max_seqs"]):
-        print sorted(config["main"]["npr_max_seqs"])
+        #print sorted(config["main"]["npr_max_seqs"])
         raise ConfigError("'npr_max_seqs' values must be in ascending order.")
 
     # Check that fields are filled for all max_seq values
@@ -226,13 +226,20 @@ def main(args):
 
     # Copy config file
     shutil.copy(args.configfile, os.path.join(base_dir, "pipeline.cfg"))
-
+        
+    if npr_template == "sptree" and not args.ortho_pairs:
+        raise ConfigError("Species tree workflow requires a list"
+                          " of orthologous gene/protein pairs to be"
+                          " supplied through the --ortho-pair"
+                          " argument.")
+    
     # check nt_seed and aa_seed. Do they contain the same seqs?
     # format? names?
     visited_seqs = set()
     seed_files = {}
     seq2aalength = {}
     seq2ntlength = {}
+    log.log(28, "Checking sequences integrity...")
     for label, seq_file, seq2length in [["aa_seed", args.aa_seed_file, seq2aalength],
                                         ["nt_seed", args.nt_seed_file, seq2ntlength]]:
         if seq_file: 
@@ -247,11 +254,11 @@ def main(args):
                 seq2length[seqname] = len(seq)
                 if label == "nt_seed" and set(seq)-NT:
                     error = "Unknown symbols [%s] in sequence [%s] of file [%s]" %\
-                        (''.join(set(seq)-NT), seqname, seq_file)
+                        (''.join(set(seq) - NT), seqname, seq_file)
                     raise DataError(error)
                 elif label == "aa_seed" and set(seq)-AA:
                     error = "Unknown symbols [%s] in sequence[%s] of file [%s]" %\
-                        (''.join(set(seq)-AA), seqname, seq_file)
+                        (''.join(set(seq) - AA), seqname, seq_file)
                     raise DataError(error)
 
             id2name = {}
@@ -272,7 +279,7 @@ def main(args):
                 elif len(n)>10: 
                     SEQS.id2name[i] = n[:10]
                     log.warning("sequence name %s was truncated to 10"
-                                " chars: %s " %(n, n[:10]))
+                                " chars: [%s]" %(n, n[:10]))
 
             values = set(SEQS.id2name.values())
             if len(values) != len(set(values)):
@@ -300,7 +307,30 @@ def main(args):
             seed_files[label] = fullpath
             SEQS.write(outfile=fullpath)
 
-    if id2name: 
+    all_species = set()
+    if npr_template == "sptree" and args.ortho_pairs:
+        log.log(28, "Loading ortho pairs into database...")
+        for line in open(args.ortho_pairs):
+            name1, name2 = line.strip().split("\t")
+            tax1, seq1 = map(strip, name1.split(args.spname_delimiter))
+            tax2, seq2 = map(strip, name2.split(args.spname_delimiter))
+            all_species.update([tax1, tax2])
+            for realname in name1, name2:
+                name = realname
+                if args.seq_rename:
+                    name = md5(realname).hexdigest()[:10]
+                if name not in visited_seqs:
+                    raise DataError("Sequence of %s not found" %(realname))
+
+            #print (tax1, seq1), (tax2, seq2)
+            (tax1, seq1), (tax2, seq2) = sorted([(tax1,seq1), (tax2,seq2)])
+            #print (tax1, seq1), (tax2, seq2)
+            
+            db.add_ortho_pair(tax1, seq1, tax2, seq2)
+    config["main"]["target_species"] = all_species
+            
+    if id2name:
+        log.log(28, "Loading sequences into database...")
         id_conversion_file = os.path.join(base_dir, "id_conversion.txt")
         CONV = open(id_conversion_file, "w")
         for i,v in id2name.iteritems():
@@ -308,18 +338,18 @@ def main(args):
             try:
                 db.add_seq_name(i, v)
             except db.sqlite3.IntegrityError:
-                pass
+                raise DataError("Error when adding seq names to DB")
                 
         CONV.close()
         db.commit()
         
-    config["main"]["aa_seed"] =  seed_files.get("aa_seed", None)
-    config["main"]["nt_seed"] =  seed_files.get("nt_seed", None)
+    config["main"]["aa_seed"] = seed_files.get("aa_seed", None)
+    config["main"]["nt_seed"] = seed_files.get("nt_seed", None)
 
     if seq2ntlength and seq2aalength:
         for seqname, length in seq2aalength.iteritems():
             try:
-                if length != seq2ntlength[seqname]/3.0:
+                if length != seq2ntlength[seqname] / 3.0:
                     raise DataError("The length of [%s] CDS does not match"
                                      " protein sequence." %seqname)
             except KeyError:
@@ -396,16 +426,30 @@ if __name__ == "__main__":
                         help="Initial multi sequence file with"
                         " nucleotide sequences")
 
-    input_group.add_argument("--seq_rename", dest="seq_rename", 
-                        action="store_true",
-                        help="If used, seq names are internally converted"
-                        " to get safe and unique 10 char identifiers.")
+    input_group.add_argument("--no-seq-rename", dest="seq_rename", 
+                        action="store_false",
+                        help="If used, sequence names will not be"
+                             " internally converted to 10 character"
+                             " identifiers .")
 
     input_group.add_argument("--dealign", dest="unalign", 
                         action="store_true",
                         help="If used, gaps in the orginal fasta file are"
                         " removed.")
 
+    input_group.add_argument("--ortho-pairs", dest="ortho_pairs", 
+                        type=existing_file, 
+                        help="File containing all one2one orthologous"
+                             " relationships among the species of interest.")
+
+    input_group.add_argument("--spname-delimiter", dest="spname_delimiter", 
+                        type=str, default="_",
+                        help="In sptree mode, spname_delimiter is used to split"
+                             " the name of sequences into species code and"
+                             " sequence identifier (i.e. HUMAN_p53)."
+                             " Note that species name must precede seq.identifier."
+                        )
+    
     # Output data related flags
     output_group = parser.add_argument_group('OUTPUT OPTIONS:')
     output_group.add_argument("-o", "--outdir", dest="outdir", 
@@ -503,7 +547,6 @@ if __name__ == "__main__":
 
     if not args.aa_seed_file and not args.nt_seed_file:
         parser.error('At least one input file argument (-a, -n) is required')
-    
 
     GLOBALS["basedir"] = os.path.abspath(args.outdir)
     GLOBALS["runid"] = generate_runid()
