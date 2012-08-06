@@ -3,7 +3,6 @@ import sys
 import os
 import shutil
 from StringIO import StringIO
-from hashlib import md5
 from collections import defaultdict
 import filecmp
 import logging
@@ -17,7 +16,7 @@ sys.path.insert(0, NPRPATH)
 from nprlib import argparse 
 from nprlib.configobj import ConfigObj, flatten_errors
 from nprlib import validate
-from nprlib.utils import strip, SeqGroup, generate_runid,  AA, NT, GLOBALS
+from nprlib.utils import strip, SeqGroup, generate_runid,  AA, NT, GLOBALS, encode_seqname
 from nprlib.errors import ConfigError, DataError
 from nprlib.master_task import Task
 from nprlib.interface import app_wrapper
@@ -240,9 +239,10 @@ def main(args):
     seq2aalength = {}
     seq2ntlength = {}
     log.log(28, "Checking sequences integrity...")
-    for label, seq_file, seq2length in [["aa_seed", args.aa_seed_file, seq2aalength],
-                                        ["nt_seed", args.nt_seed_file, seq2ntlength]]:
-        if seq_file: 
+    for seqtype, seq_file, seq2length in [["aa", args.aa_seed_file, seq2aalength],
+                                        ["nt", args.nt_seed_file, seq2ntlength]]:
+        if seq_file:
+            GLOBALS["seqtypes"].add(seqtype)
             SEQS = SeqGroup(seq_file, fix_duplicates=False)
             # Loads seq lengths
             for seqid, seq in SEQS.id2seq.iteritems():
@@ -250,13 +250,13 @@ def main(args):
                 if args.unalign:
                     seq = seq.replace("-", "").replace(".", "")
                     SEQS.id2seq[seqid] = seq
-                    
+
                 seq2length[seqname] = len(seq)
-                if label == "nt_seed" and set(seq)-NT:
+                if seqtype == "nt" and set(seq) - NT:
                     error = "Unknown symbols [%s] in sequence [%s] of file [%s]" %\
                         (''.join(set(seq) - NT), seqname, seq_file)
                     raise DataError(error)
-                elif label == "aa_seed" and set(seq)-AA:
+                elif seqtype == "aa" and set(seq) - AA:
                     error = "Unknown symbols [%s] in sequence[%s] of file [%s]" %\
                         (''.join(set(seq) - AA), seqname, seq_file)
                     raise DataError(error)
@@ -272,12 +272,13 @@ def main(args):
                     # to get a collision even in large sets (million
                     # of names.), but in such a case, I will raise an
                     # error.
-                    name = md5(n).hexdigest()[:10]
+                    name = encode_seqname(n)
                     id2name[name] = SEQS.id2name[i]
                     SEQS.id2name[i] = name
-
+                    SEQS.name2id[name] = i
                 elif len(n)>10: 
                     SEQS.id2name[i] = n[:10]
+                    SEQS.name2id[n[:10]] = i
                     log.warning("sequence name %s was truncated to 10"
                                 " chars: [%s]" %(n, n[:10]))
 
@@ -294,7 +295,7 @@ def main(args):
                                     " aborted. Correct manually or set"
                                     " automatic sequence renaming with"
                                     " --seq_rename flag.")
-                    
+
             if visited_seqs and visited_seqs - values:
                 print visited_seqs - values
                 raise DataError("Sequence names do not match between aa and"
@@ -302,11 +303,13 @@ def main(args):
             elif visited_seqs and values - visited_seqs:
                 log.warning("%d nucleotide sequences will not be used" % 
                             len(values - visited_seqs))
-            visited_seqs.update(values)
-            fullpath = os.path.join(base_dir, label+".fasta")
-            seed_files[label] = fullpath
-            SEQS.write(outfile=fullpath)
-
+            elif not visited_seqs: # aa
+                visited_seqs.update(values)
+               
+            log.log(26, "Loading %d %s sequences", len(visited_seqs), seqtype)
+            for name in visited_seqs:
+                db.add_seq(name, SEQS.get_seq(name), seqtype)
+                
     all_species = set()
     if npr_template == "sptree" and args.ortho_pairs:
         log.log(28, "Loading ortho pairs into database...")
@@ -318,7 +321,7 @@ def main(args):
             for realname in name1, name2:
                 name = realname
                 if args.seq_rename:
-                    name = md5(realname).hexdigest()[:10]
+                    name = encode_seqname(realname)
                 if name not in visited_seqs:
                     raise DataError("Sequence of %s not found" %(realname))
 
@@ -327,10 +330,11 @@ def main(args):
             #print (tax1, seq1), (tax2, seq2)
             
             db.add_ortho_pair(tax1, seq1, tax2, seq2)
-    config["main"]["target_species"] = all_species
-            
+        GLOBALS["target_species"] = all_species
+    else:
+        GLOBALS["target_sequences"] = visited_seqs
+        
     if id2name:
-        log.log(28, "Loading sequences into database...")
         id_conversion_file = os.path.join(base_dir, "id_conversion.txt")
         CONV = open(id_conversion_file, "w")
         for i,v in id2name.iteritems():
@@ -342,9 +346,7 @@ def main(args):
                 
         CONV.close()
         db.commit()
-        
-    config["main"]["aa_seed"] = seed_files.get("aa_seed", None)
-    config["main"]["nt_seed"] = seed_files.get("nt_seed", None)
+       
 
     if seq2ntlength and seq2aalength:
         for seqname, length in seq2aalength.iteritems():
@@ -552,6 +554,11 @@ if __name__ == "__main__":
     GLOBALS["runid"] = generate_runid()
     GLOBALS["nodeinfo"] = defaultdict(dict)
     GLOBALS["threadinfo"] = defaultdict(dict)
+    GLOBALS["seqtypes"] = set()
+    GLOBALS["target_species"] = None
+    GLOBALS["target_sequences"] = None
+    GLOBALS["spname_delimiter"] = args.spname_delimiter
+    
     if not os.path.exists(GLOBALS["basedir"]):
         os.makedirs(GLOBALS["basedir"])
   
