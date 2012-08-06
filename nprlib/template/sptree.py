@@ -6,7 +6,7 @@ import logging
 import numpy
 from collections import defaultdict
 
-from nprlib.task import ConcatAlg
+from nprlib.task import ConcatAlg, BrhCogSelector
 from nprlib.errors import DataError
 from nprlib.utils import GLOBALS, generate_runid, SeqGroup
 from nprlib import db
@@ -102,14 +102,14 @@ def pipeline(task):
             source = SeqGroup(conf["main"]["nt_seed"])
             source_seqtype = "nt"
 
-        all_seqids = source.id2name.values()
-
-        sample_cogs = [set(all_seqids), set(all_seqids[:-2]), set(all_seqids[:-3])]
+        #all_seqids = source.id2name.values()
+        #sample_cogs = [set(all_seqids), set(all_seqids[:-2]), set(all_seqids[:-3])]
+        #initial_task = ConcatAlg("SPTREE_TEST_ID", sample_cogs, set(),
+        #                         seqtype=source_seqtype, source=source)
         
-
-        initial_task = ConcatAlg("SPTREE_TEST_ID", sample_cogs, set(),
-                                 seqtype=source_seqtype, source=source)
-
+        initial_task = BrhCogSelector(conf["main"]["target_species"],
+                                      set(), "aa")
+                                    
         initial_task.main_tree = main_tree = None
         initial_task.threadid = generate_runid()
 

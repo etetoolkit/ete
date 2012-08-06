@@ -75,6 +75,15 @@ def create_db():
     seqid CHAR(32) PRIMARY KEY,
     name VARCHAR(256)
     );
+
+    CREATE TABLE IF NOT EXISTS ortho_pair(
+    taxid1 CHAR(16), 
+    seqid1 CHAR(16),
+    taxid2 CHAR(16),
+    seqid2 CHAR(16),
+    score FLOAT DEFAULT(1.0),
+    PRIMARY KEY(taxid1, seqid1, taxid2, seqid2)
+    );
     
     CREATE INDEX IF NOT EXISTS i1 ON task(host, status);
     CREATE INDEX IF NOT EXISTS i2 ON task(nodeid, status);
@@ -82,6 +91,9 @@ def create_db():
     CREATE INDEX IF NOT EXISTS i4 ON task(status, host, pid);
 
     CREATE INDEX IF NOT EXISTS i5 ON node(runid, cladeid);
+
+    CREATE INDEX IF NOT EXISTS i6 ON ortho_pair (taxid1, taxid2, score);
+    CREATE INDEX IF NOT EXISTS i7 ON ortho_pair (taxid1, seqid1, taxid2, seqid2, score);
     
     '''
     cursor.executescript(job_table)
@@ -107,10 +119,12 @@ def get_task2child_tree():
     task.name, task.status, node.cladeid FROM task2child AS tree
     LEFT OUTER JOIN task, node ON task.taskid = tree.child AND node.nodeid = task.nodeid
     """
-
     execute(cmd)
     return cursor.fetchall()
-        
+
+def get_species_name(spcode):
+    return spcode
+    
 def update_task(tid, **kargs):
     if kargs:
         values = ', '.join(['%s="%s"' %(k,v) for k,v in
@@ -218,6 +232,12 @@ def get_seq_name(seqid):
     execute(cmd)
     return (cursor.fetchone() or [seqid])[0]
 
+def add_ortho_pair(taxid1, seqid1, taxid2, seqid2):
+    cmd = ('INSERT OR REPLACE INTO ortho_pair (taxid1, seqid1, taxid2, seqid2)'
+           ' VALUES ("%s", "%s", "%s", "%s");' %(taxid1, seqid1, taxid2, seqid2))
+    execute(cmd)
+    autocommit()
+    
 def get_all_task_states():
     cmd = 'SELECT status FROM task'
     execute(cmd)

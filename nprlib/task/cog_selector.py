@@ -1,76 +1,76 @@
+import numpy
+from StringIO import StringIO
+
 import logging
 log = logging.getLogger("main")
 
 from nprlib.master_task import Task
 from nprlib.errors import DataError
+from nprlib.utils import print_as_table, generate_node_ids
+from nprlib import db
 
-__all__ = ["CogSelector"]
+__all__ = ["BrhCogSelector"]
 
-class CogSelector(Task):
-    def __init__(self, species, out_species, seqtype,
-                 cog_selection_fn=brh_cogs):
+class BrhCogSelector(Task):
+    def __init__(self, target_sp, out_sp, seqtype):
         
-        node_id, clade_id = generate_node_ids(species, out_species)
-
+        node_id, clade_id = generate_node_ids(target_sp, out_sp)
         # Initialize task
         Task.__init__(self, node_id, "cog_selector", "Cog-Selector")
 
         # taskid does not depend on jobs, so I set it manually
         self.taskid = node_id
         self.init()
-
-        self.cog_selection_fn = cog_selection_fn
-        
+       
         # Clusters of Ortholog Groups
-        self.cogs = []
-
+        all_species = target_sp | out_sp
+        self.size = len(all_species)
+            
+        cogs = brh_cogs(db, all_species)
+                  
     def check(self):
         if os.path.exists(self.multiseq_file):
             return True
         return False
-
-def brh_cogs(species, min_coverage=0.1, missing_factor=0.0, \
-             seed_sp=None, log=None):
+        
+def brh_cogs(DB, species, min_score=0.3, missing_factor=0.5, \
+             seed_sp=None):
     """It scans all precalculate BRH relationships among the species
        passed as an argument, and detects Clusters of Orthologs
        according to several criteria:
 
-       min_coverage: the min coverage/overalp value required for a
+       min_score: the min coverage/overalp value required for a
        blast to be a reliable hit.
 
        missing_factor: the min percentage of species in which a
        given seq must have  orthologs.
 
     """
+    log.log(28, "Searching BRH orthologs")
     species = set(map(str, species))
 
-    if not log:
-        logger = Logger()
-        log = logger.log
-
     # Check SP_SIZE to select best seed
-
-    sp2size = dict([[int(s), DB.get_proteome_size(s)] for s in species])
-
-    for s, size in sp2size.iteritems():
-        if size < MIN_PROTEOME_SIZE:
-            log(1, "%s proteome size = %s" %(DB.get_species_name(s),size), -1)
-
-    all_sizes = sp2size.values()
-    log(1, "avg proteome size = %0.2f min=%0.2f max=%0.2f" %\
-            (numpy.mean(all_sizes), min(all_sizes), max(all_sizes)))
+    #sp2size = dict([[int(s), DB.get_proteome_size(s)] for s in species])
+    # 
+    #for s, size in sp2size.iteritems():
+    #    if size < MIN_PROTEOME_SIZE:
+    #        log(1, "%s proteome size = %s" %(s,size), -1)
+    # 
+    #all_sizes = sp2size.values()
+    #log(1, "avg proteome size = %0.2f min=%0.2f max=%0.2f" %\
+    #        (numpy.mean(all_sizes), min(all_sizes), max(all_sizes)))
 
     if type(seed_sp) in set([str, int]):
         sp_to_test = [str(seed_sp)]
-    elif seed_sp == []: # Test all seeds
+    elif seed_sp is None: # Test all seeds
         sp_to_test = list(species)
-    else: 
-        sorted_sp = sorted(sp2size.items(), lambda x,y: cmp(x[1],y[1]))
-        sp_to_test = [sorted_sp[-1][0]]
-        name = DB.get_species_name(sp_to_test[0])
-        psize = sp2size[sp_to_test[0]]
-        log(1, "Using %s as search seed. Proteome size=%s genes" %\
-                (name, psize))
+    #else: 
+    #    sorted_sp = sorted(sp2size.items(), lambda x,y: cmp(x[1],y[1]))
+    #    sp_to_test = [sorted_sp[-1][0]]
+    #    name = DB.get_species_name(sp_to_test[0])
+    #    psize = sp2size[sp_to_test[0]]
+    #    log(1, "Using %s as search seed. Proteome size=%s genes" %\
+    #            (name, psize))
     
     # if raw_input("Press to continue...")== "c":
     #    return None
@@ -79,27 +79,29 @@ def brh_cogs(species, min_coverage=0.1, missing_factor=0.0, \
     # specified.
     print "Getting COG candidates." 
     best_cogs_selection = []
+    quote = lambda _x: '"%s"' %_x
+    
     for j, seed in enumerate(sp_to_test):
-        print "\tTesting", DB.get_species_name(seed), j, "/", len(sp_to_test)
-        species_side1 = ','.join(map(str, [s for s in species if str(s)>str(seed)]))
-        species_side2 = ','.join(map(str, [s for s in species if str(s)<str(seed)]))
+        print "\tTesting", DB.get_species_name(seed), j+1, "/", len(sp_to_test)
+        species_side1 = ','.join(map(quote, [s for s in species if str(s)>str(seed)]))
+        species_side2 = ','.join(map(quote, [s for s in species if str(s)<str(seed)]))
         candidates1 = []
         candidates2 = []
         # SELECT all ids with matches in the target species, and
         # return the total number of species covered by each of
         # such ids.
         if species_side1 != "":
-            cmd = """SELECT id1, count(taxid2) from brh WHERE
-            taxid1=%s AND taxid2 IN (%s) AND coverage>=%s GROUP BY id1""" %\
-            (seed, species_side1, min_coverage)
-            DB.listSQL.execute(cmd)
-            candidates1 = DB.listSQL.fetchall()
+            cmd = """SELECT seqid1, count(taxid2) from ortho_pair WHERE
+            taxid1="%s" AND taxid2 IN (%s) AND score>=%s GROUP BY seqid1""" %\
+            (seed, species_side1, min_score)
+            DB.cursor.execute(cmd)
+            candidates1 = DB.cursor.fetchall()
         if species_side2 != "":
-            cmd = """SELECT id2, count(taxid1) from brh WHERE
-            taxid2=%s AND taxid1 IN (%s) AND coverage>=%s GROUP BY id2""" %\
-            (seed, species_side2, min_coverage)
-            DB.listSQL.execute(cmd)
-            candidates2 = DB.listSQL.fetchall()
+            cmd = """SELECT seqid2, count(taxid1) from ortho_pair WHERE
+            taxid2="%s" AND taxid1 IN (%s) AND score>=%s GROUP BY seqid2""" %\
+            (seed, species_side2, min_score)
+            DB.cursor.execute(cmd)
+            candidates2 = DB.cursor.fetchall()
 
         seqid2spcs = {}
         for seqid, spcounter in set(candidates1)|set(candidates2):
@@ -108,41 +110,42 @@ def brh_cogs(species, min_coverage=0.1, missing_factor=0.0, \
         # From the previously selected ids, filter out those that are
         # two small (few species). For this, I check what cogs pass missing_factor.
         cogs_selection = []
-        for missing_species_allowed in xrange(0, int(round(len(species)*missing_factor))+1):
+        for missing_species_allowed in xrange(0, int(round(len(species) * missing_factor))+1):
             # filtered_candidates = set([seqid for seqid, counter in seqid2spcs.iteritems() \
             #                           if counter>len(species)*(1-missing_factor)])
 
             filtered_candidates = set([seqid for seqid, counter in seqid2spcs.iteritems() \
-                                       if counter>=len(species)-missing_species_allowed-1]) # -1 is to avoid counting seed 
+                                       if counter >= len(species) - missing_species_allowed - 1]) # -1 is to avoid counting seed 
 
-            filtered_ids = ','.join(map(str, filtered_candidates))
-            valid_species = ','.join(map(str, [s for s in species]))
-
+            filtered_ids = ','.join(map(quote, filtered_candidates))
+            valid_species = ','.join(map(quote, [s for s in species]))
+            print len(filtered_candidates), len(seqid2spcs)
+            print len(species) - missing_species_allowed - 1
             # Now, lets see how many species we cover with the
             # filtered list of ids, and how well is each species
             # represented.
-            sp2hits = {}            
+            sp2hits = {}
             if filtered_ids != "":
-                cmd = """SELECT taxid2, count(id1) from brh WHERE
-                taxid1=%s AND id1 IN (%s) AND taxid2 IN (%s) AND coverage>=%s GROUP BY taxid2""" %\
-                (seed, filtered_ids, valid_species, min_coverage)
-                if DB.listSQL.execute(cmd):
-                    for record in DB.listSQL.fetchall():
+                cmd = """SELECT taxid2, count(seqid1) from ortho_pair WHERE
+                taxid1="%s" AND seqid1 IN (%s) AND taxid2 IN (%s) AND score>=%s GROUP BY taxid2""" %\
+                (seed, filtered_ids, valid_species, min_score)
+                if DB.cursor.execute(cmd):
+                    for record in DB.cursor.fetchall():
                         sp2hits[record[0]] = sp2hits.get(record[0], 0) + record[1]
 
-                cmd = """SELECT taxid1, count(id2) from brh WHERE
-                taxid2=%s AND id2 IN (%s) AND  taxid1 IN (%s) AND coverage>=%s GROUP BY taxid1""" %\
-                (seed, filtered_ids, valid_species, min_coverage)
-                if DB.listSQL.execute(cmd):
-                    for record in DB.listSQL.fetchall():
+                cmd = """SELECT taxid1, count(seqid2) from ortho_pair WHERE
+                taxid2="%s" AND seqid2 IN (%s) AND  taxid1 IN (%s) AND score>=%s GROUP BY taxid1""" %\
+                (seed, filtered_ids, valid_species, min_score)
+                if DB.cursor.execute(cmd):
+                    for record in DB.cursor.fetchall():
                         sp2hits[record[0]] = sp2hits.get(record[0], 0) + record[1]
-       
-   
-                species_side1 = ','.join(map(str, [s for s in species if str(s)>str(seed)]))
-                species_side2 = ','.join(map(str, [s for s in species if str(s)<str(seed)]))
+
+                species_side1 = ','.join(map(quote, [s for s in species if str(s)>str(seed)]))
+                species_side2 = ','.join(map(quote, [s for s in species if str(s)<str(seed)]))
                 visited_seqids = set()
                 all_cogs = []
                 visited_seqids = set()
+
                 for c1, seqid in enumerate(filtered_candidates):
                     # Avoid to detect the same COG
                     seedname = str(seed)+":"+str(seqid)
@@ -150,19 +153,19 @@ def brh_cogs(species, min_coverage=0.1, missing_factor=0.0, \
                         continue
                     COG = [seedname]
                     if species_side1 != "":
-                        cmd = """ SELECT taxid2, id2 FROM brh WHERE 
-                             taxid1=%s AND id1=%s AND taxid2 IN (%s) AND coverage>=%s""" % \
-                            (seed, seqid, species_side1, min_coverage)
-                        DB.listSQL.execute(cmd)
-                        COG += [str(r[0])+":"+str(r[1]) for r in  DB.listSQL.fetchall()]
+                        cmd = """ SELECT taxid2, seqid2 from ortho_pair WHERE 
+                             taxid1="%s" AND seqid1="%s" AND taxid2 IN (%s) AND score>=%s""" % \
+                            (seed, seqid, species_side1, min_score)
+                        DB.cursor.execute(cmd)
+                        COG += [str(r[0])+":"+str(r[1]) for r in  DB.cursor.fetchall()]
 
                     if species_side2 != "":
-                        cmd = """SELECT taxid1, id1 from brh WHERE
-                            taxid2=%s AND id2=%s AND taxid1 IN (%s) AND coverage>=%s""" %\
-                            (seed, seqid, species_side2, min_coverage)
+                        cmd = """SELECT taxid1, seqid1 from ortho_pair WHERE
+                            taxid2="%s" AND seqid2="%s" AND taxid1 IN (%s) AND score>=%s""" %\
+                            (seed, seqid, species_side2, min_score)
 
-                        DB.listSQL.execute(cmd)
-                        COG += [str(r[0])+":"+str(r[1]) for r in  DB.listSQL.fetchall()]
+                        DB.cursor.execute(cmd)
+                        COG += [str(r[0])+":"+str(r[1]) for r in  DB.cursor.fetchall()]
 
                     # This ensure that once an id has been used to form a COG,
                     # none of the members will be rescaned
@@ -172,6 +175,7 @@ def brh_cogs(species, min_coverage=0.1, missing_factor=0.0, \
                 cogs_selection.append([seed, missing_species_allowed, all_cogs, sp2hits])
             else:
                 pass
+
         cogs, cogs_analysis = get_best_selection(cogs_selection, species)
         best_cogs_selection.append(cogs)
     print "\tFinal cogs:"
