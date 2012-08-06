@@ -192,12 +192,13 @@ def switch_to_codon(alg_fasta_file, alg_phylip_file, nt_seed_file,
     else:
         kept_columns = []
 
-    all_nt_alg = SeqGroup(nt_seed_file)
+    #all_nt_alg = SeqGroup(nt_seed_file)
     aa_alg = SeqGroup(alg_fasta_file)
     nt_alg = SeqGroup()
 
     for seqname, aaseq, comments in aa_alg.iter_entries():
-        ntseq = all_nt_alg.get_seq(seqname).upper()
+        #ntseq = all_nt_alg.get_seq(seqname).upper()
+        ntseq = db.get_seq(seqname, "nt").upper()
         ntalgseq = []
         nt_pos = 0
         for pos, ch in enumerate(aaseq):
@@ -230,8 +231,6 @@ def switch_to_codon(alg_fasta_file, alg_phylip_file, nt_seed_file,
     return alg_fasta_filename, alg_phylip_filename
 
 def process_task(task, conf, nodeid2info):
-    aa_seed_file = conf["main"]["aa_seed"]
-    nt_seed_file = conf["main"]["nt_seed"]
     seqtype = task.seqtype
     nodeid = task.nodeid
     ttype = task.ttype
@@ -341,7 +340,7 @@ def process_task(task, conf, nodeid2info):
                                      alg_phylip_file, conf)
         else:
             # Converts aa alignment into nt if necessary
-            if seqtype == "aa" and nt_seed_file and \
+            if seqtype == "aa" and "nt" in GLOBALS["seqtypes"] and \
                task.mean_ident > _aa_identity_thr:
                 log.log(26, "switching to codon alignment")
                 # Change seqtype config 
@@ -395,12 +394,7 @@ def process_task(task, conf, nodeid2info):
         new_tasks.append(treemerge_task)
 
     elif ttype == "treemerger":
-        if conf["main"]["aa_seed"]:
-            source = SeqGroup(conf["main"]["aa_seed"])
-            source_seqtype = "aa"
-        else:
-            source = SeqGroup(conf["main"]["nt_seed"])
-            source_seqtype = "nt"
+        source_seqtype = "aa" if len(GLOBALS["seqtypes"]) > 1 else "nt"
 
         if not task.task_tree:
             task.finish()
@@ -483,7 +477,7 @@ def process_task(task, conf, nodeid2info):
 
             if (conf["_iters"] < int(conf["main"].get("max_iters", conf["_iters"]+1)) and 
                 len(seqs) >= int(conf["tree_splitter"]["_min_size"])):
-                    msf_task = Msf(seqs, outs, seqtype=source_seqtype, source=source)
+                    msf_task = Msf(seqs, outs, seqtype=source_seqtype)
                     if msf_task.nodeid not in nodeid2info:
                         msf_task.main_tree = main_tree
                         nodeid2info[msf_task.nodeid] = {}
@@ -508,17 +502,11 @@ def process_task(task, conf, nodeid2info):
 def pipeline(task):
     conf = GLOBALS["config"]
     nodeid2info = GLOBALS["nodeinfo"]
+    all_seqs = GLOBALS["target_sequences"]
+    source_seqtype = "aa" if len(GLOBALS["seqtypes"]) > 1 else "nt"
     if not task:
-        if conf["main"]["aa_seed"]:
-            source = SeqGroup(conf["main"]["aa_seed"])
-            source_seqtype = "aa"
-        else:
-            source = SeqGroup(conf["main"]["nt_seed"])
-            source_seqtype = "nt"
-
-        initial_task = Msf(set(source.id2name.values()), set(),
-                           seqtype=source_seqtype,
-                           source = source)
+        initial_task = Msf(set(all_seqs), set(),
+                           seqtype=source_seqtype)
         
         initial_task.main_tree = None
         initial_task.threadid = generate_runid()

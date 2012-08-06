@@ -7,10 +7,12 @@ from nprlib.master_job import Job
 from nprlib.utils import PhyloTree, SeqGroup, md5, generate_node_ids
 from nprlib.errors import DataError
 
+from nprlib import db
+
 __all__ = ["Msf"]
 
 class Msf(MsfTask):
-    def __init__(self, target_seqs, out_seqs, seqtype, source):
+    def __init__(self, target_seqs, out_seqs, seqtype):
         # Nodeid represents the whole group of sequences (used to
         # compute task unique ids). Cladeid represents target
         # sequences. Same cladeid with different outgroups would mean
@@ -38,10 +40,9 @@ class Msf(MsfTask):
         # Dump sequences into MSF
         all_seqs = self.target_seqs | self.out_seqs
         self.size = len(all_seqs)
-        fasta = '\n'.join([">%s\n%s" % (n, source.get_seq(n))
+        fasta = '\n'.join([">%s\n%s" % (n, db.get_seq(n, seqtype))
                            for n in all_seqs])
         open(self.multiseq_file, "w").write(fasta)
-
 
     def check(self):
         if os.path.exists(self.multiseq_file):

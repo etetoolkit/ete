@@ -6,10 +6,12 @@ log = logging.getLogger("main")
 
 from nprlib.master_task import Task
 from nprlib.errors import DataError
-from nprlib.utils import print_as_table, generate_node_ids
+from nprlib.utils import GLOBALS, print_as_table, generate_node_ids, encode_seqname
 from nprlib import db
 
 __all__ = ["BrhCogSelector"]
+
+quote = lambda _x: '"%s"' %_x
 
 class BrhCogSelector(Task):
     def __init__(self, target_sp, out_sp, seqtype):
@@ -19,6 +21,10 @@ class BrhCogSelector(Task):
         Task.__init__(self, node_id, "cog_selector", "Cog-Selector")
 
         # taskid does not depend on jobs, so I set it manually
+        self.cladeid = clade_id
+        self.seqtype = seqtype
+        self.target_sp = target_sp
+        self.out_sp = out_sp
         self.taskid = node_id
         self.init()
        
@@ -26,14 +32,18 @@ class BrhCogSelector(Task):
         all_species = target_sp | out_sp
         self.size = len(all_species)
             
-        cogs = brh_cogs(db, all_species)
-                  
+        cogs, cog_analysis = brh_cogs(db, all_species)
+        self.cog_analysis = cog_analysis
+        self.cogs = []
+        for co in cogs:
+            self.cogs.append(map(encode_seqname, co))
+        
     def check(self):
-        if os.path.exists(self.multiseq_file):
+        if len(self.cogs) > 1:
             return True
         return False
         
-def brh_cogs(DB, species, min_score=0.3, missing_factor=0.5, \
+def brh_cogs(DB, species, min_score=0.3, missing_factor=0.0, \
              seed_sp=None):
     """It scans all precalculate BRH relationships among the species
        passed as an argument, and detects Clusters of Orthologs
@@ -49,62 +59,59 @@ def brh_cogs(DB, species, min_score=0.3, missing_factor=0.5, \
     log.log(28, "Searching BRH orthologs")
     species = set(map(str, species))
 
-    # Check SP_SIZE to select best seed
-    #sp2size = dict([[int(s), DB.get_proteome_size(s)] for s in species])
-    # 
-    #for s, size in sp2size.iteritems():
-    #    if size < MIN_PROTEOME_SIZE:
-    #        log(1, "%s proteome size = %s" %(s,size), -1)
-    # 
-    #all_sizes = sp2size.values()
-    #log(1, "avg proteome size = %0.2f min=%0.2f max=%0.2f" %\
-    #        (numpy.mean(all_sizes), min(all_sizes), max(all_sizes)))
-
     if type(seed_sp) in set([str, int]):
         sp_to_test = [str(seed_sp)]
-    elif seed_sp is None: # Test all seeds
+    elif seed_sp is []: # Test all seeds
         sp_to_test = list(species)
-    #else: 
-    #    sorted_sp = sorted(sp2size.items(), lambda x,y: cmp(x[1],y[1]))
-    #    sp_to_test = [sorted_sp[-1][0]]
-    #    name = DB.get_species_name(sp_to_test[0])
-    #    psize = sp2size[sp_to_test[0]]
-    #    log(1, "Using %s as search seed. Proteome size=%s genes" %\
-    #            (name, psize))
-    
-    # if raw_input("Press to continue...")== "c":
-    #    return None
-
+    else:
+        cmd = """SELECT taxid1, count(*) from ortho_pair GROUP BY taxid1"""
+        cmd2 = """SELECT taxid2, count(*) from ortho_pair GROUP BY taxid2"""
+        db.cursor.execute(cmd)
+        sp2size = {}
+        for tax, counter in db.cursor.fetchall():
+            sp2size[tax] = counter
+        db.cursor.execute(cmd2)            
+        for tax, counter in db.cursor.fetchall():
+            sp2size[tax] = sp2size.get(tax, 0) + counter
+        
+        sorted_sp = sorted(sp2size.items(), lambda x,y: cmp(x[1],y[1]))
+        log.log(24, sorted_sp[:6])
+        largest_sp = sorted_sp[-1][0]
+        sp_to_test = [largest_sp]
+        log.log(28, "Using %s as search seed. Proteome size=%s genes" %\
+            (largest_sp, sp2size[largest_sp]))
+        
     # The following loop tests each possible seed if none is
     # specified.
-    print "Getting COG candidates." 
+    log.log(28, "Identifying Clusters of Orthologs groups (COGs)")
     best_cogs_selection = []
-    quote = lambda _x: '"%s"' %_x
     
     for j, seed in enumerate(sp_to_test):
-        print "\tTesting", DB.get_species_name(seed), j+1, "/", len(sp_to_test)
+        log.log(26,"\tTesting new seed species:%s (%d/%d)", DB.get_species_name(seed), j+1, len(sp_to_test))
         species_side1 = ','.join(map(quote, [s for s in species if str(s)>str(seed)]))
         species_side2 = ','.join(map(quote, [s for s in species if str(s)<str(seed)]))
         candidates1 = []
         candidates2 = []
-        # SELECT all ids with matches in the target species, and
+        # Select all ids with matches in the target species, and
         # return the total number of species covered by each of
         # such ids.
         if species_side1 != "":
             cmd = """SELECT seqid1, count(taxid2) from ortho_pair WHERE
-            taxid1="%s" AND taxid2 IN (%s) AND score>=%s GROUP BY seqid1""" %\
+            taxid1="%s" AND taxid2 IN (%s) AND score >= %s GROUP BY seqid1""" %\
             (seed, species_side1, min_score)
             DB.cursor.execute(cmd)
             candidates1 = DB.cursor.fetchall()
+
         if species_side2 != "":
             cmd = """SELECT seqid2, count(taxid1) from ortho_pair WHERE
-            taxid2="%s" AND taxid1 IN (%s) AND score>=%s GROUP BY seqid2""" %\
+            taxid2="%s" AND taxid1 IN (%s) AND score >= %s GROUP BY seqid2""" %\
             (seed, species_side2, min_score)
             DB.cursor.execute(cmd)
             candidates2 = DB.cursor.fetchall()
-
+            
         seqid2spcs = {}
-        for seqid, spcounter in set(candidates1)|set(candidates2):
+        #for seqid, spcounter in set(candidates1)|set(candidates2):
+        for seqid, spcounter in candidates1 + candidates2:
             seqid2spcs[seqid] = seqid2spcs.get(seqid, 0) + spcounter
 
         # From the previously selected ids, filter out those that are
@@ -116,11 +123,8 @@ def brh_cogs(DB, species, min_score=0.3, missing_factor=0.5, \
 
             filtered_candidates = set([seqid for seqid, counter in seqid2spcs.iteritems() \
                                        if counter >= len(species) - missing_species_allowed - 1]) # -1 is to avoid counting seed 
-
             filtered_ids = ','.join(map(quote, filtered_candidates))
             valid_species = ','.join(map(quote, [s for s in species]))
-            print len(filtered_candidates), len(seqid2spcs)
-            print len(species) - missing_species_allowed - 1
             # Now, lets see how many species we cover with the
             # filtered list of ids, and how well is each species
             # represented.
@@ -148,7 +152,7 @@ def brh_cogs(DB, species, min_score=0.3, missing_factor=0.5, \
 
                 for c1, seqid in enumerate(filtered_candidates):
                     # Avoid to detect the same COG
-                    seedname = str(seed)+":"+str(seqid)
+                    seedname = str(seed)+GLOBALS["spname_delimiter"]+str(seqid)
                     if seedname in visited_seqids: 
                         continue
                     COG = [seedname]
@@ -157,7 +161,7 @@ def brh_cogs(DB, species, min_score=0.3, missing_factor=0.5, \
                              taxid1="%s" AND seqid1="%s" AND taxid2 IN (%s) AND score>=%s""" % \
                             (seed, seqid, species_side1, min_score)
                         DB.cursor.execute(cmd)
-                        COG += [str(r[0])+":"+str(r[1]) for r in  DB.cursor.fetchall()]
+                        COG += [str(r[0])+GLOBALS["spname_delimiter"]+str(r[1]) for r in  DB.cursor.fetchall()]
 
                     if species_side2 != "":
                         cmd = """SELECT taxid1, seqid1 from ortho_pair WHERE
@@ -165,7 +169,7 @@ def brh_cogs(DB, species, min_score=0.3, missing_factor=0.5, \
                             (seed, seqid, species_side2, min_score)
 
                         DB.cursor.execute(cmd)
-                        COG += [str(r[0])+":"+str(r[1]) for r in  DB.cursor.fetchall()]
+                        COG += [str(r[0])+GLOBALS["spname_delimiter"]+str(r[1]) for r in  DB.cursor.fetchall()]
 
                     # This ensure that once an id has been used to form a COG,
                     # none of the members will be rescaned
@@ -178,57 +182,57 @@ def brh_cogs(DB, species, min_score=0.3, missing_factor=0.5, \
 
         cogs, cogs_analysis = get_best_selection(cogs_selection, species)
         best_cogs_selection.append(cogs)
-    print "\tFinal cogs:"
+    log.log(28, "\tFinal cogs:")
     cogs, cogs_analysis = get_best_selection(best_cogs_selection, species)
     return cogs[2], cogs_analysis
 
+def _compare_cog_selection(cs1, cs2):
+    seed_1, missing_sp_allowed_1, candidates_1, sp2hits_1 = cs1
+    seed_2, missing_sp_allowed_2, candidates_2, sp2hits_2 = cs2
+
+    score_1, min_cov_1, max_cov_1, median_cov_1, cov_std_1, cog_cov_1 = get_cog_score(candidates_1, sp2hits_1, median_cogs)
+    score_2, min_cov_2, max_cov_2, median_cov_2, cov_std_2, cog_cov_2 = get_cog_score(candidates_2, sp2hits_2, median_cogs)
+
+    sp_represented_1 = len(sp2hits_1)
+    sp_represented_2 = len(sp2hits_1)
+    cmp_rpr = cmp(sp_represented_1, sp_represented_2)
+    if cmp_rpr == 1:
+        return 1
+    elif cmp_rpr == -1:
+        return -1
+    else:
+        cmp_score = cmp(score_1, score_2)
+        if cmp_score == 1:
+            return 1
+        elif cmp_score == -1:
+            return -1
+        else:
+            cmp_mincov = cmp(min_cov_1, min_cov_2)
+            if cmp_mincov == 1: 
+                return 1
+            elif cmp_mincov == -1: 
+                return -1 
+            else:
+                cmp_maxcov = cmp(max_cov_1, max_cov_2)
+                if cmp_maxcov == 1: 
+                    return 1
+                elif cmp_maxcov == -1: 
+                    return -1 
+                else:
+                    cmp_cand = cmp(len(candidates_1), len(candidates_2))
+                    if cmp_cand == 1:
+                        return 1
+                    elif cmp_cand == -1:
+                        return -1
+                    else:
+                        return 0 
+   
 
 def get_best_selection(cogs_selections, species):
     min_score = 0.5
    
     max_cogs = numpy.max([len(data[2]) for data in cogs_selections])
     median_cogs = numpy.median([len(data[2]) for data in cogs_selections])
-
-    def _compare_cog_selection(cs1, cs2):
-        seed_1, missing_sp_allowed_1, candidates_1, sp2hits_1 = cs1
-        seed_2, missing_sp_allowed_2, candidates_2, sp2hits_2 = cs2
-
-        score_1, min_cov_1, max_cov_1, median_cov_1, cov_std_1, cog_cov_1 = get_cog_score(candidates_1, sp2hits_1, median_cogs)
-        score_2, min_cov_2, max_cov_2, median_cov_2, cov_std_2, cog_cov_2 = get_cog_score(candidates_2, sp2hits_2, median_cogs)
-
-        sp_represented_1 = len(sp2hits_1)
-        sp_represented_2 = len(sp2hits_1)
-        cmp_rpr = cmp(sp_represented_1, sp_represented_2)
-        if cmp_rpr == 1:
-            return 1
-        elif cmp_rpr == -1:
-            return -1
-        else:
-            cmp_score = cmp(score_1, score_2)
-            if cmp_score == 1:
-                return 1
-            elif cmp_score == -1:
-                return -1
-            else:
-                cmp_mincov = cmp(min_cov_1, min_cov_2)
-                if cmp_mincov == 1: 
-                    return 1
-                elif cmp_mincov == -1: 
-                    return -1 
-                else:
-                    cmp_maxcov = cmp(max_cov_1, max_cov_2)
-                    if cmp_maxcov == 1: 
-                        return 1
-                    elif cmp_maxcov == -1: 
-                        return -1 
-                    else:
-                        cmp_cand = cmp(len(candidates_1), len(candidates_2))
-                        if cmp_cand == 1:
-                            return 1
-                        elif cmp_cand == -1:
-                            return -1
-                        else:
-                            return 0 
 
     cogs_selections.sort(_compare_cog_selection)            
     cogs_selections.reverse()
@@ -286,7 +290,7 @@ def _analyze_cog_selection(all_cogs):
     size2cogs = {}
     for cog in all_cogs:
         for seq in cog:
-            sp = seq.split(":")[0]
+            sp = seq.split(GLOBALS["spname_delimiter"])[0]
             sp2cogcount[sp] = sp2cogcount.setdefault(sp, 0)+1
         size2cogs.setdefault(len(cog), []).append(cog)
 
@@ -332,5 +336,3 @@ def get_cog_score(candidates, sp2hits, max_cogs):
     score = numpy.min([nfactor, cog_mean_cov, min_cov])
     return score, min_cov, max_cov, median_cov, cov_std, cog_cov 
 
-
-        

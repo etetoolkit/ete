@@ -12,14 +12,13 @@ from nprlib.utils import basename, PhyloTree, GLOBALS, generate_runid
 __all__ = ["ConcatAlg"]
 
 class ConcatAlg(ConcatAlgTask):
-    def __init__(self, nodeid, cogs, ourgroups, seqtype, source):
+    def __init__(self, nodeid, cogs, seqtype):
         base_args = {}
         ConcatAlgTask.__init__(self, nodeid, "concat_alg", "ConcatAlg", 
                       base_args)
         self.cogs = cogs
         self.cladeid = "UNSET"
         self.seqtype = seqtype
-        self.source = source
         self.alg_fasta_file = ""
         self.alg_phylip_file = ""
         self.init()
@@ -28,7 +27,7 @@ class ConcatAlg(ConcatAlgTask):
         # I want a phylognetic tree for each cog
         from nprlib.template.genetree import pipeline
         
-        for co in self.cogs:
+        for co in self.cogs[:5]:
             # get sequences
             #db.get_sequences(co)
             pass
@@ -37,16 +36,15 @@ class ConcatAlg(ConcatAlgTask):
             pass
             
             # register each msf task
-            job = Msf(co, set(),
-                      seqtype = self.seqtype,
-                      source = self.source)
+            job = Msf(set(co), set(),
+                      seqtype = self.seqtype)
             job.main_tree = None
             job.threadid = generate_runid()
+            
             # This converts the job in a workflow job. As soon as a
             # task is done, it will be automatically processed and the
             # new tasks will be registered as new jobs.
             job.task_processor = pipeline
-
             self.jobs.append(job) 
 
     def finish(self):

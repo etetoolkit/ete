@@ -55,6 +55,7 @@ GENCODE = {
 
 # Aux functions (general)
 md5 = lambda x: hashlib.md5(x).hexdigest()
+encode_seqname = lambda x: md5(x)[:10]
 basename = lambda path: os.path.split(path)[-1]
 # Aux functions (task specific)
 get_raxml_mem = lambda taxa,sites: (taxa-2) * sites * (80 * 8) * 9.3132e-10

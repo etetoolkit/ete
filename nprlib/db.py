@@ -73,16 +73,26 @@ def create_db():
     
     CREATE TABLE IF NOT EXISTS seqid2name(
     seqid CHAR(32) PRIMARY KEY,
-    name VARCHAR(256)
+    name VARCHAR(32)
     );
 
     CREATE TABLE IF NOT EXISTS ortho_pair(
-    taxid1 CHAR(16), 
-    seqid1 CHAR(16),
-    taxid2 CHAR(16),
-    seqid2 CHAR(16),
+    taxid1 VARCHAR(16), 
+    seqid1 VARCHAR(16),
+    taxid2 VARCHAR(16),
+    seqid2 VARCHAR(16),
     score FLOAT DEFAULT(1.0),
     PRIMARY KEY(taxid1, seqid1, taxid2, seqid2)
+    );
+
+    CREATE TABLE IF NOT EXISTS nt_seq(
+    seqid CHAR(10) PRIMARY KEY, 
+    seq TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS aa_seq(
+    seqid CHAR(10) PRIMARY KEY, 
+    seq TEXT
     );
     
     CREATE INDEX IF NOT EXISTS i1 ON task(host, status);
@@ -232,6 +242,17 @@ def get_seq_name(seqid):
     execute(cmd)
     return (cursor.fetchone() or [seqid])[0]
 
+def add_seq(seqid, seq, seqtype):
+    cmd = 'INSERT OR REPLACE INTO %s_seq (seqid, seq) VALUES ("%s", "%s")' %(seqtype, seqid, seq)
+    execute(cmd)
+    autocommit()
+
+def get_seq(seqid, seqtype):
+    cmd = 'SELECT seq FROM %s_seq WHERE seqid = "%s";' %(seqtype, seqid)
+    execute(cmd)
+    return cursor.fetchone()[0]
+        
+    
 def add_ortho_pair(taxid1, seqid1, taxid2, seqid2):
     cmd = ('INSERT OR REPLACE INTO ortho_pair (taxid1, seqid1, taxid2, seqid2)'
            ' VALUES ("%s", "%s", "%s", "%s");' %(taxid1, seqid1, taxid2, seqid2))
