@@ -6,6 +6,7 @@ from StringIO import StringIO
 from collections import defaultdict
 import filecmp
 import logging
+log = None
 import numpy
 import time
 # This avoids installing nprlib module. npr script will find it in the
@@ -114,6 +115,7 @@ def is_integer_list(value, minv=0, maxv=None):
     return typed_value
     
 def main(args):
+    global log
     base_dir = GLOBALS["basedir"]
     log = logging.getLogger("main")
     print __DESCRIPTION__
@@ -220,8 +222,6 @@ def main(args):
             os.makedirs(dirname)
         except OSError:
             log.warning("Using existing dir: %s", dirname)
-    # Initialize db
-    db.init_db(os.path.join(base_dir, "db.sqlite3"))
 
     # Copy config file
     shutil.copy(args.configfile, os.path.join(base_dir, "pipeline.cfg"))
@@ -231,7 +231,52 @@ def main(args):
                           " of orthologous gene/protein pairs to be"
                           " supplied through the --ortho-pair"
                           " argument.")
-    
+        
+    GLOBALS["seqtypes"] = set()
+    if args.aa_seed_file:
+        GLOBALS["seqtypes"].add("aa")
+    if args.nt_seed_file:
+        GLOBALS["seqtypes"].add("nt")
+
+    # Initialize db
+    GLOBALS["db_file"]  = os.path.join(base_dir, "db.sqlite3")
+    if not os.path.exists(GLOBALS["db_file"]):
+        db.init_db(os.path.join(GLOBALS["db_file"]))           
+        check_and_load_sequences(args, base_dir, npr_template)
+    else:
+        db.init_db(os.path.join(GLOBALS["db_file"]))
+        log.log(28, "Skipping check and load sequences (using existent database)")
+        if npr_template == "sptree":
+            GLOBALS["target_species"] = db.get_all_species()
+        elif npr_template == "genetree":
+            if "aa" in GLOBALS["seqtypes"]:
+                GLOBALS["target_sequences"] = db.get_all_seqids("aa")
+            else:
+                GLOBALS["target_sequences"] = db.get_all_seqids("nt")
+                
+    # how task will be executed
+    if args.execute:
+        if args.nodetach:
+            execution = ("insitu", False)
+        else:
+            execution =("insitu", True)
+    elif args.sge_execute:
+        execution = ("sge", False)
+    else:
+        execution = (None, False)
+        
+    # Scheduling starts here
+    GLOBALS["config"] = config
+    schedule(pipeline, args.schedule_time, 
+             execution, args.retry, args.debug)
+
+    if args.compress:
+        log.log(20, "Compressing files from intermediate steps...")
+        cmd = "cd %s && find -t d -maxdepth 1 -exec tar -jcf {}.tar.bz2 {} \;" %GLOBALS["basedir"]
+        print cmd
+                
+
+def check_and_load_sequences(args, base_dir, npr_template):
     # check nt_seed and aa_seed. Do they contain the same seqs?
     # format? names?
     visited_seqs = set()
@@ -247,6 +292,12 @@ def main(args):
             # Loads seq lengths
             for seqid, seq in SEQS.id2seq.iteritems():
                 seqname = SEQS.id2name[seqid]
+                
+                # Clear symbols
+                seq = seq.replace(".", "-")
+                seq = seq.replace("*", "X")
+                SEQS.id2seq[seqid] = seq                               
+                
                 if args.unalign:
                     seq = seq.replace("-", "").replace(".", "")
                     SEQS.id2seq[seqid] = seq
@@ -378,28 +429,11 @@ def main(args):
     if outliers:
         log.warning("%d sequence lengths look like outliers" %len(outliers))
 
-    # how task will be executed
-    if args.execute:
-        if args.nodetach:
-            execution = ("insitu", False)
-        else:
-            execution =("insitu", True)
-    elif args.sge_execute:
-        execution = ("sge", False)
-    else:
-        execution = (None, False)
+
+
+
+
         
-    # Scheduling starts here
-    GLOBALS["config"] = config
-    schedule(pipeline, args.schedule_time, 
-             execution, args.retry, args.debug)
-
-    if args.compress:
-        log.log(20, "Compressing files from intermediate steps...")
-        cmd = "cd %s && find -t d -maxdepth 1 -exec tar -jcf {}.tar.bz2 {} \;" %GLOBALS["basedir"]
-        print cmd
-                
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__DESCRIPTION__, 
                             formatter_class=argparse.RawDescriptionHelpFormatter)
