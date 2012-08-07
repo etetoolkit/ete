@@ -98,7 +98,8 @@ def pipeline(task):
             # Clone processor, in case tasks belong to a side workflow
             ts.task_processor = task.task_processor
             ts.threadid = task.threadid
-        
+            ts.main_tree = task.main_tree
+            
     return new_tasks
     
 config_specs = """

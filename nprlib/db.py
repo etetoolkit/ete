@@ -242,6 +242,14 @@ def get_seq_name(seqid):
     execute(cmd)
     return (cursor.fetchone() or [seqid])[0]
 
+def get_all_seqids(seqtype):
+    cmd = 'SELECT seqid FROM %s_seq;' %seqtype
+    execute(cmd)
+    seqids = set()
+    for sid in cursor.fetchall():
+        seqids.add(sid[0])
+    return seqids
+    
 def add_seq(seqid, seq, seqtype):
     cmd = 'INSERT OR REPLACE INTO %s_seq (seqid, seq) VALUES ("%s", "%s")' %(seqtype, seqid, seq)
     execute(cmd)
@@ -251,13 +259,20 @@ def get_seq(seqid, seqtype):
     cmd = 'SELECT seq FROM %s_seq WHERE seqid = "%s";' %(seqtype, seqid)
     execute(cmd)
     return cursor.fetchone()[0]
-        
     
 def add_ortho_pair(taxid1, seqid1, taxid2, seqid2):
     cmd = ('INSERT OR REPLACE INTO ortho_pair (taxid1, seqid1, taxid2, seqid2)'
            ' VALUES ("%s", "%s", "%s", "%s");' %(taxid1, seqid1, taxid2, seqid2))
     execute(cmd)
     autocommit()
+
+def get_all_species():
+    cmd = 'SELECT DISTINCT taxid1, taxid2 FROM ortho_pair;'
+    execute(cmd)
+    species = set()
+    for t1, t2 in cursor.fetchall():
+        species.update([t1, t2])
+    return species
     
 def get_all_task_states():
     cmd = 'SELECT status FROM task'

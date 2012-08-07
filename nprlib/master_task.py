@@ -186,9 +186,11 @@ class Task(object):
                     if istask(j) and j.task_processor:
                         # process task right here new tasks will be
                         # added as new jobs.
-                        jobs_to_be_added = j.task_processor(j)
-                        all_states["W"] += len(jobs_to_be_added)
-                        new_jobs.extend(jobs_to_be_added)
+                        for new_job in j.task_processor(j):
+                            # In case the job is already done 
+                            new_st = new_job.get_status()
+                            all_states[new_st] += 1
+                            new_jobs.append(new_job)
                         
                 elif st in set("QRL"):
                     if isjob(j) and not j.host.startswith("@sge"):
@@ -197,7 +199,9 @@ class Task(object):
                         self.cores_used += j.cores_used
                 elif st == "E":
                     log.log(20, "Error found in: %s", j)
-                    log.log(20, "  %s", j.jobdir)
+                    errorpath = j.jobdir if isjob(j) else j.taskdir
+                    log.log(20, "  %s", errorpath)
+                        
             else:
                 all_states["D"] += 1
                 
