@@ -14,7 +14,7 @@ import time
 NPRPATH = os.path.split(os.path.realpath(__file__))[0]
 
 sys.path.insert(0, NPRPATH)
-from nprlib import argparse 
+from nprlib import argparse
 from nprlib.configobj import ConfigObj, flatten_errors
 from nprlib import validate
 from nprlib.utils import strip, SeqGroup, generate_runid,  AA, NT, GLOBALS, encode_seqname
@@ -24,28 +24,28 @@ from nprlib.interface import app_wrapper
 from nprlib.scheduler import schedule
 from nprlib import db
 from nprlib import apps
-    
+from nprlib.template.common import CONFIG_SPECS
 try:
     module_path = os.path.split(__file__)[0]
     __VERSION__ = open(os.path.join(module_path, "VERSION")).read().strip()
-except: 
+except:
     __VERSION__ = "unknown"
 
 try:
     module_path = os.path.split(__file__)[0]
     __DATE__ = open(os.path.join(module_path, "DATE")).read().strip()
-except: 
+except:
     __DATE__ = "unknown"
 
 __DESCRIPTION__ = (
 """--------------------------------------------------------------------------------
-                 Nested Phylogenetic Reconstruction program.  
+                 Nested Phylogenetic Reconstruction program.
                           NPR-0.1%s(beta), %s.
 
       NPR allows to reconstruct large phylogenies by means of an
       iterative strategy that provides scalable resolution along the
-      different levels of a tree. At each iteration, internal nodes are
-      re-evaluated to optimize and fine tune the parameters of the
+      different levels of a tree. At each iteration, internal nodes
+      are re-evaluated to optimize and fine tune the parameters of the
       phylogenetic inference.
 
       If you use this program in a published work, please cite:
@@ -87,19 +87,19 @@ def is_float(value, minv=None, maxv=None):
 
 def is_integer(value, minv=None, maxv=None):
     return check_number(value, int, minv, maxv)
-
+    
 def is_list(value):
     if not isinstance(value, list):
         raise ConfigError("Expected a list of values. Found [%s]" %value)
     return value
-    
+
 def is_boolean_list(value):
     is_list(value)
     typed_value = []
     for v in value:
         typed_value.append(check_number(v, bool, 0, 1))
     return typed_value
-    
+
 def is_float_list(value, minv=0, maxv=None):
     is_list(value)
     typed_value = []
@@ -113,13 +113,24 @@ def is_integer_list(value, minv=0, maxv=None):
     for v in value:
         typed_value.append(check_number(v, int, minv, maxv))
     return typed_value
+
+def is_correlative_integer_list(value, minv=1, maxv=None):
+    is_list(value)
+    typed_value = []
+    last_value = 0
+    for v in value:
+        typed_value.append(check_number(v, int, minv, maxv))
+        if v <= last_value:
+            return False
+        last_value = v
+    return typed_value
     
 def main(args):
     global log
     base_dir = GLOBALS["basedir"]
     log = logging.getLogger("main")
     print __DESCRIPTION__
- 
+
     local_conf_file = os.path.join(base_dir, "pipeline.cfg")
     if os.path.exists(base_dir):
         if os.path.exists(local_conf_file):
@@ -128,29 +139,26 @@ def main(args):
                 raise ConfigError("Output directory seem to contain"
                                   " a NPR execution using a different"
                                   " config file [pipeline.cfg]. Use"
-                                  " --override option or change the "
+                                  " --override option or change the"
                                   " output path.")
- 
-    config = ConfigObj(args.configfile, list_values=True)
- 
+
     try:
-        npr_template = config["main"]["template"]
-    except KeyError:
-        raise ConfigError("Bad config file. A template name or file should be specified.")
-   
-    if npr_template == "genetree":
-        from nprlib.template.genetree import pipeline, config_specs
         config = ConfigObj(args.configfile, list_values=True,
-                           configspec=StringIO(config_specs))
-    elif npr_template == "sptree":    
-        from nprlib.template.sptree import pipeline, config_specs
-        config = ConfigObj(args.configfile, list_values=True,
-                           configspec=StringIO(config_specs))
+                           configspec=StringIO(CONFIG_SPECS))
+    except Exception, e:
+        raise ConfigError(str(e))
+
+    npr_template = config["main"].get("template", None)
+    if npr_template == "sptree":
+        from nprlib.template.sptree import pipeline
+    elif npr_template == "genetree":
+        from nprlib.template.genetree import pipeline
     else:
-        raise ConfigError("Bad template [%s]" %npr_template)
-       
-    custom_types = {"boolean_list": is_boolean_list, 
+        raise ConfigError("Bad config file. A template name or file should be specified.")
+
+    custom_types = {"boolean_list": is_boolean_list,
                     "integer_list": is_integer_list,
+                    "correlative_integer_list": is_correlative_integer_list,
                     "float_list": is_float_list,
                     "float": is_float,
                     "integer": is_integer,
@@ -160,23 +168,14 @@ def main(args):
     check = config.validate(val)
     if not check:
         print flatten_errors(config, check)
-        raise ConfigError("Bad config file")
-       
-    # Check for unique max_seq config values
-    if len(config["main"]["npr_max_seqs"]) != \
-            len(set(config["main"]["npr_max_seqs"])):
-        raise ConfigError("Duplicated entries in 'npr_max_seqs'.")
-
-    # Check for unique max_seq config values
-    if config["main"]["npr_max_seqs"] != \
-            sorted(config["main"]["npr_max_seqs"]):
-        #print sorted(config["main"]["npr_max_seqs"])
-        raise ConfigError("'npr_max_seqs' values must be in ascending order.")
+        raise ConfigError("Errors found when parsing config file")
 
     # Check that fields are filled for all max_seq values
-    conf_keys = [v for v in config["main"] if v.startswith("npr_")]
-    if len(set([len(config["main"][v]) for v in conf_keys])) != 1:
-        raise ConfigError("Unequal length of main NPR config table.")
+    for flow_name in ["sptree", "genetree"]:
+        npr_config = [len(v) for k, v in config[flow_name].iteritems()
+                      if type(v) == list]
+        if len(set(npr_config)) != 1:
+            raise ConfigError("Unequal length of main NPR config table.")
 
     if args.arch == "auto":
         if sys.maxsize > 2**32:
@@ -185,7 +184,7 @@ def main(args):
             arch = "32"
     else:
         arch = args.arch
-    
+
     APPSPATH = os.path.join(NPRPATH, "apps/x86-%s" %arch)
     # setup portable apps
     for k,v in config["app"].iteritems():
@@ -194,16 +193,16 @@ def main(args):
             cores = str(min(args.maxcores, cores))
             if args.sge_execute:
                 _apps_path = os.path.realpath(config["sge"]["remote_npr_path"])
-                cmd = apps.get_call(k, _apps_path, base_dir, cores) 
+                cmd = apps.get_call(k, _apps_path, base_dir, cores)
                 config["app"][k] = cmd
             else:
-                cmd = apps.get_call(k, APPSPATH, base_dir, cores) 
+                cmd = apps.get_call(k, APPSPATH, base_dir, cores)
                 config["app"][k] = cmd
     #log.debug('\n'.join(["%s\t%s" %(i,j) for i,j in config["app"].items()]))
     if not args.nochecks:
         print "Testing x86-%s portable applications..." % arch
         apps.test_apps(config["app"])
-    
+
     # Set number of CPUs available
     config["main"]["_max_cores"] = args.maxcores
     log.debug("Enabling %d CPU cores" %args.maxcores)
@@ -225,13 +224,13 @@ def main(args):
 
     # Copy config file
     shutil.copy(args.configfile, os.path.join(base_dir, "pipeline.cfg"))
-        
+
     if npr_template == "sptree" and not args.ortho_pairs:
         raise ConfigError("Species tree workflow requires a list"
                           " of orthologous gene/protein pairs to be"
                           " supplied through the --ortho-pair"
                           " argument.")
-        
+
     GLOBALS["seqtypes"] = set()
     if args.aa_seed_file:
         GLOBALS["seqtypes"].add("aa")
@@ -241,11 +240,11 @@ def main(args):
     # Initialize db
     GLOBALS["db_file"]  = os.path.join(base_dir, "db.sqlite3")
     if not os.path.exists(GLOBALS["db_file"]):
-        db.init_db(os.path.join(GLOBALS["db_file"]))           
+        db.init_db(os.path.join(GLOBALS["db_file"]))
         check_and_load_sequences(args, base_dir, npr_template)
     else:
         db.init_db(os.path.join(GLOBALS["db_file"]))
-        log.log(28, "Skipping check and load sequences (using existent database)")
+        log.warning("Skipping check and load sequences (using existent database)")
         if npr_template == "sptree":
             GLOBALS["target_species"] = db.get_all_species()
         elif npr_template == "genetree":
@@ -253,7 +252,7 @@ def main(args):
                 GLOBALS["target_sequences"] = db.get_all_seqids("aa")
             else:
                 GLOBALS["target_sequences"] = db.get_all_seqids("nt")
-                
+            
     # how task will be executed
     if args.execute:
         if args.nodetach:
@@ -264,17 +263,18 @@ def main(args):
         execution = ("sge", False)
     else:
         execution = (None, False)
-        
+
     # Scheduling starts here
     GLOBALS["config"] = config
-    schedule(pipeline, args.schedule_time, 
+    schedule(pipeline, args.schedule_time,
              execution, args.retry, args.debug)
 
     if args.compress:
         log.log(20, "Compressing files from intermediate steps...")
-        cmd = "cd %s && find -t d -maxdepth 1 -exec tar -jcf {}.tar.bz2 {} \;" %GLOBALS["basedir"]
+        cmd = "cd %s && find -t d -maxdepth 1 -exec tar -jcf {}.tar.bz2 {} \;" %\
+              GLOBALS["basedir"]
         print cmd
-                
+
 
 def check_and_load_sequences(args, base_dir, npr_template):
     # check nt_seed and aa_seed. Do they contain the same seqs?
@@ -292,12 +292,12 @@ def check_and_load_sequences(args, base_dir, npr_template):
             # Loads seq lengths
             for seqid, seq in SEQS.id2seq.iteritems():
                 seqname = SEQS.id2name[seqid]
-                
+
                 # Clear symbols
                 seq = seq.replace(".", "-")
                 seq = seq.replace("*", "X")
-                SEQS.id2seq[seqid] = seq                               
-                
+                SEQS.id2seq[seqid] = seq
+
                 if args.unalign:
                     seq = seq.replace("-", "").replace(".", "")
                     SEQS.id2seq[seqid] = seq
@@ -327,7 +327,7 @@ def check_and_load_sequences(args, base_dir, npr_template):
                     id2name[name] = SEQS.id2name[i]
                     SEQS.id2name[i] = name
                     SEQS.name2id[name] = i
-                elif len(n)>10: 
+                elif len(n)>10:
                     SEQS.id2name[i] = n[:10]
                     SEQS.name2id[n[:10]] = i
                     log.warning("sequence name %s was truncated to 10"
@@ -352,15 +352,15 @@ def check_and_load_sequences(args, base_dir, npr_template):
                 raise DataError("Sequence names do not match between aa and"
                                 " nt files.")
             elif visited_seqs and values - visited_seqs:
-                log.warning("%d nucleotide sequences will not be used" % 
+                log.warning("%d nucleotide sequences will not be used" %
                             len(values - visited_seqs))
             elif not visited_seqs: # aa
                 visited_seqs.update(values)
-               
+
             log.log(26, "Loading %d %s sequences", len(visited_seqs), seqtype)
             for name in visited_seqs:
                 db.add_seq(name, SEQS.get_seq(name), seqtype)
-                
+
     all_species = set()
     if npr_template == "sptree" and args.ortho_pairs:
         log.log(28, "Loading ortho pairs into database...")
@@ -379,12 +379,12 @@ def check_and_load_sequences(args, base_dir, npr_template):
             #print (tax1, seq1), (tax2, seq2)
             (tax1, seq1), (tax2, seq2) = sorted([(tax1,seq1), (tax2,seq2)])
             #print (tax1, seq1), (tax2, seq2)
-            
+
             db.add_ortho_pair(tax1, seq1, tax2, seq2)
         GLOBALS["target_species"] = all_species
     else:
         GLOBALS["target_sequences"] = visited_seqs
-        
+
     if id2name:
         id_conversion_file = os.path.join(base_dir, "id_conversion.txt")
         CONV = open(id_conversion_file, "w")
@@ -394,10 +394,10 @@ def check_and_load_sequences(args, base_dir, npr_template):
                 db.add_seq_name(i, v)
             except db.sqlite3.IntegrityError:
                 raise DataError("Error when adding seq names to DB")
-                
+
         CONV.close()
         db.commit()
-       
+
 
     if seq2ntlength and seq2aalength:
         for seqname, length in seq2aalength.iteritems():
@@ -408,13 +408,13 @@ def check_and_load_sequences(args, base_dir, npr_template):
             except KeyError:
                 raise DataError("aa and nt files do not contain the same"
                                "sequence identifiers.")
-                
+
     # Sequence lengths analysis
     if seq2aalength:
         all_len = seq2aalength.values()
     else:
         all_len = seq2ntlength.values()
-   
+
     max_len = numpy.max(all_len)
     min_len = numpy.min(all_len)
     mean_len = numpy.mean(all_len)
@@ -433,14 +433,14 @@ def check_and_load_sequences(args, base_dir, npr_template):
 
 
 
-        
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description=__DESCRIPTION__, 
-                            formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(description=__DESCRIPTION__,
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
     # name or flags - Either a name or a list of option strings, e.g. foo or -f, --foo.
     # action - The basic type of action to be taken when this argument is encountered at the command line. (store, store_const, store_true, store_false, append, append_const, version)
     # nargs - The number of command-line arguments that should be consumed. (N, ? (one or default), * (all 1 or more), + (more than 1) )
-    # const - A constant value required by some action and nargs selections. 
+    # const - A constant value required by some action and nargs selections.
     # default - The value produced if the argument is absent from the command line.
     # type - The type to which the command-line argument should be converted.
     # choices - A container of the allowable values for the argument.
@@ -449,77 +449,77 @@ if __name__ == "__main__":
     # metavar - A name for the argument in usage messages.
     # dest - The name of the attribute to be added to the object returned by parse_args().
 
-  
+
     # Input data related flags
     input_group = parser.add_argument_group('INPUT OPTIONS:')
-    input_group.add_argument("-a", dest="aa_seed_file", 
-                        type=existing_file, 
+    input_group.add_argument("-a", dest="aa_seed_file",
+                        type=existing_file,
                         help="Initial multi sequence file with"
                         " protein sequences")
 
-    input_group.add_argument("-n", dest="nt_seed_file", 
-                        type=existing_file, 
+    input_group.add_argument("-n", dest="nt_seed_file",
+                        type=existing_file,
                         help="Initial multi sequence file with"
                         " nucleotide sequences")
 
-    input_group.add_argument("--no-seq-rename", dest="seq_rename", 
+    input_group.add_argument("--no-seq-rename", dest="seq_rename",
                         action="store_false",
                         help="If used, sequence names will not be"
                              " internally converted to 10 character"
                              " identifiers .")
 
-    input_group.add_argument("--dealign", dest="unalign", 
+    input_group.add_argument("--dealign", dest="unalign",
                         action="store_true",
                         help="If used, gaps in the orginal fasta file are"
                         " removed.")
 
-    input_group.add_argument("--ortho-pairs", dest="ortho_pairs", 
-                        type=existing_file, 
+    input_group.add_argument("--ortho-pairs", dest="ortho_pairs",
+                        type=existing_file,
                         help="File containing all one2one orthologous"
                              " relationships among the species of interest.")
 
-    input_group.add_argument("--spname-delimiter", dest="spname_delimiter", 
+    input_group.add_argument("--spname-delimiter", dest="spname_delimiter",
                         type=str, default="_",
                         help="In sptree mode, spname_delimiter is used to split"
                              " the name of sequences into species code and"
                              " sequence identifier (i.e. HUMAN_p53)."
                              " Note that species name must precede seq.identifier."
                         )
-    
+
     # Output data related flags
     output_group = parser.add_argument_group('OUTPUT OPTIONS:')
-    output_group.add_argument("-o", "--outdir", dest="outdir", 
-                        type=str, required=True, 
+    output_group.add_argument("-o", "--outdir", dest="outdir",
+                        type=str, required=True,
                         help="""Output directory for results.""")
 
     output_group.add_argument("--compress", action="store_true",
                         help="Compress intermediate files when"
                               " task is finished.")
-    
+
     # Task execution related flags
     exec_group = parser.add_argument_group('EXECUTION OPTIONS:')
 
-    exec_group.add_argument("-c", "--config", dest="configfile", 
-                        type=existing_file, required=True, 
+    exec_group.add_argument("-c", "--config", dest="configfile",
+                        type=existing_file, required=True,
                         help="NPR configuration file")
-       
-    exec_group.add_argument("-r", "--retry_error_jobs", dest="retry", 
+
+    exec_group.add_argument("-r", "--retry_error_jobs", dest="retry",
                         action="store_true",
                         help="Try to relaunch, once more, jobs marked"
                         " as error.")
-    
+
     exec_group.add_argument("-m", "--maxcores", dest="maxcores", type=int,
                         default=1, help="Maximum number of CPU cores"
                         " available in the execution hosts. If higher"
                         " than 1, tasks with multi-threading"
                         " capabilities will be set appropriately.")
 
-    exec_group.add_argument("-t", "--schedule_time", dest="schedule_time", 
+    exec_group.add_argument("-t", "--schedule_time", dest="schedule_time",
                         type=float, default=30.0,
                         help="""Schedule time in seconds. """)
-    
+
     exec_type_group = exec_group.add_mutually_exclusive_group()
-    exec_type_group.add_argument("-x", "--execute_insitu", dest="execute", 
+    exec_type_group.add_argument("-x", "--execute_insitu", dest="execute",
                         action="store_true",
                         help="Jobs are launched in the same machine"
                         " as in the program is called.")
@@ -539,17 +539,17 @@ if __name__ == "__main__":
                         " by default, npr is executed in monitor mode, so"
                         " launched jobs keeps running even when npr"
                         " process is killed." )
-    
+
     exec_group.add_argument("--override", dest="override",
                             action="store_true",
                             help="Overrides previous configuration files" )
-    
+
     exec_group.add_argument("--arch", dest="arch",
                             choices=["auto", "32", "64"],
                             default="auto", help="Set the architecture of"
                             " executuion hosts (needed only when using"
                             " built-in applications.)")
-   
+
     # Interface related flags
     ui_group = parser.add_argument_group("INTERFACE OPTIONS")
     ui_group.add_argument("-u", dest="enable_ui",
@@ -563,22 +563,22 @@ if __name__ == "__main__":
                         default = 0, type=int, choices=[0,1,2,3,4],
                         help="Verbosity level: 0=very quiet, 4=very "
                           " verbose.")
-    
+
     ui_group.add_argument("--nochecks", dest="nochecks",
-                          action="store_true", 
+                          action="store_true",
                           help="Skip application checks during the start-up")
-   
+
     ui_group.add_argument("--debug", nargs="?",
                           const="all",
                           help="Starts a debugging"
                           " session. A taskid can be provided, so"
-                          " debugging will start from such task on." 
+                          " debugging will start from such task on."
                           )
 
     ui_group.add_argument("--logfile", action="store_true",
                           help="Log messages are also written into a file"
                       )
-    
+
     args = parser.parse_args()
 
     if not args.aa_seed_file and not args.nt_seed_file:
@@ -592,9 +592,9 @@ if __name__ == "__main__":
     GLOBALS["target_species"] = None
     GLOBALS["target_sequences"] = None
     GLOBALS["spname_delimiter"] = args.spname_delimiter
-    
+
     if not os.path.exists(GLOBALS["basedir"]):
         os.makedirs(GLOBALS["basedir"])
-  
+
     # Start the application
     app_wrapper(main, args)
