@@ -11,7 +11,7 @@ from nprlib.utils import (load_node_size, PhyloTree, SeqGroup, generate_id,
 from nprlib import db
 from nprlib.errors import TaskError
 
-__all__ = ["TreeMerger", "select_outgroups"]
+__all__ = ["TreeMerger"]
 
 class TreeMerger(Task):
     def __init__(self, nodeid, seqtype, task_tree, conf):
@@ -38,7 +38,7 @@ class TreeMerger(Task):
         mtree = self.main_tree
         ttree.dist = 0
 
-        cladeid, target_seqs, out_seqs = db.get_node_info(self.nodeid)
+        cladeid, target_seqs, out_seqs = db.get_node_info(self.threadid, self.nodeid)
         self.out_seqs = out_seqs
         self.target_seqs = target_seqs
 
@@ -134,7 +134,7 @@ class TreeMerger(Task):
                 
                 orig_target = self.main_tree.get_common_ancestor(target_seqs)
                 found_target = outgroup.get_sisters()[0]
-                
+
                 if DEBUG():
                     for _seq in out_seqs:
                         tar =  ttree & _seq
@@ -259,8 +259,6 @@ def distance_matrix(target, leaf_only=False, topology_only=False):
 
 
 def distance_matrix_new(target, leaf_only=False, topology_only=False):
-
-    
     t = target.get_tree_root()
     real_outgroup = t.children[0]
     t.set_outgroup(target)
@@ -282,180 +280,7 @@ def distance_matrix_new(target, leaf_only=False, topology_only=False):
     #         print n
     #         print target.get_distance(n), n2dist[n]
     #         raw_input("ERROR")
-
-    
     return n2dist
     
         
-def select_outgroups_old(target, n2content, options):
-    """Given a set of target sequences, find the best set of out
-    sequences to use. Several ways can be selected to find out
-    sequences:
-    """
-    
-    name2dist = {"min": numpy.min, "max": numpy.max,
-                 "mean":numpy.mean, "median":numpy.median}
-    
-    
-    policy = options["_outgroup_policy"]
-    out_size = options["_outgroup_size"]
-    out_distfn = name2dist[options["_outgroup_dist"]]
-    topology_only = options["_outgroup_topology_dist"]
-    out_min_support = options["_outgroup_min_support"]
-
-    if not target.up:
-        raise ValueError("Cannot select outgroups for root node!")
-    if not out_size:
-        raise ValueError("You are trying to set 0 outgroups!")
-    
-    if policy == "leaves":
-        leaf_only = True
-    else:
-        leaf_only = False
-    n2rootdist, n2targetdist = distance_matrix(target, leaf_only=leaf_only,
-                                               topology_only=topology_only)
-
-    max_dist = max(n2targetdist.values())
-    # normalize all distances from 0 to 1
-    n2normdist = dict([[n, n2targetdist[n]/max_dist] for n in n2targetdist])
-    ref_norm_dist = out_distfn(n2normdist.values())
-    n2refdist = dict([[n, abs(n2normdist[n] - ref_norm_dist)] for n in n2targetdist])
-    n2size = dict([[n, float(len(n2content[n]))] for n in n2targetdist])
-    n2sizedist = dict([ [n, (abs(n2size[n]-out_size)/(n2size[n]+out_size))]
-                        for n in n2targetdist])
-    def sort_by_best(x,y):
-        v = cmp(max([n2refdist[x], n2sizedist[x], n.support]),
-                max([n2refdist[y], n2sizedist[y], n.support]))
-        if v == 0:
-            v = cmp(n2sizedist[x], n2sizedist[y])
-        if v == 0:
-            v = cmp(n2refdist[x], n2refdist[y])
-        return v
-        
-    valid_nodes = [n for n in n2targetdist if n.support >= out_min_support and
-                   not n2content[n] & n2content[target]]
-    if not valid_nodes:
-        log.warning("Outgroup not could not satisfy min branch support")
-        valid_nodes = [n for n in n2targetdist if not n2content[n] & n2content[target]]
-    valid_nodes.sort(sort_by_best)
-    
-    if DEBUG():
-        for n in valid_nodes[:20]:
-            print ''.join(map(lambda x: "% 20s" %x,
-                              [n.name, len(n2content[n]), n2refdist[n], n2sizedist[n], n.support,
-                               max([n2refdist[n], n2sizedist[n], n.support])]))
-
-    seqs = [n.name for n in n2content[target]]
-    if policy == "node":
-        outs = [n.name for n in n2content[valid_nodes[0]]]
-    elif policy == "leaves":
-        outs = [n.name for n in valid_nodes[:out_size]]
-
-    if len(outs) < out_size:
-        log.log(28, "Outgroup size not reached.")
-
-    if DEBUG():
-        root = target.get_tree_root()
-        for _seq in outs:
-            tar =  root & _seq
-            tar.img_style["fgcolor"]="green"
-            tar.img_style["size"] = 12
-            tar.img_style["shape"] = "circle"
-        target.img_style["bgcolor"] = "lightblue"
-        NPR_TREE_STYLE.title.clear()
-        NPR_TREE_STYLE.title.add_face( faces.TextFace("MainTree:"
-            " Outgroup selection is mark in green.Red=optimized nodes ",
-            fgcolor="blue"), 0)
-        root.show(tree_style=NPR_TREE_STYLE)
-        for _n in root.traverse():
-            _n.img_style = None
-        
-    return set(seqs), set(outs)
-      
-def select_outgroups(target, n2content, options):
-    """Given a set of target sequences, find the best set of out
-    sequences to use. Several ways can be selected to find out
-    sequences:
-    """
-    
-    name2dist = {"min": numpy.min, "max": numpy.max,
-                 "mean":numpy.mean, "median":numpy.median}
-    
-    
-    policy = options["_outgroup_policy"]
-    optimal_out_size = options["_outgroup_size"]
-    topology_only = options["_outgroup_topology_dist"]
-    out_min_support = options["_outgroup_min_support"]
-
-    if not target.up:
-        raise ValueError("Cannot select outgroups for root node!")
-    if not optimal_out_size:
-        raise ValueError("You are trying to set 0 outgroups!")
-    
-    n2targetdist = distance_matrix_new(target, leaf_only=False,
-                                               topology_only=False)
-
-    #kk, test = distance_matrix(target, leaf_only=False,
-    #                       topology_only=False)
-
-    #for x in test:
-    #    if test[x] != n2targetdist[x]:
-    #        print x
-    #        print test[x],  n2targetdist[x]
-    #        print x.get_distance(target)
-    #        raw_input("ERROR!")
-        
-    score = lambda _n: (_n.support,
-                        #len(n2content[_n])/float(optimal_out_size),
-                        1 - (abs(optimal_out_size - len(n2content[_n])) / float(max(optimal_out_size, len(n2content[_n])))), # outgroup size
-                        1 - (n2targetdist[_n]/max_dist) #outgroup proximity to target
-                        ) 
-    
-    def sort_outgroups(x,y):
-        score_x = set(score(x))
-        score_y = set(score(y))
-        while score_x:
-            min_score_x = min(score_x)
-            v = cmp(min_score_x, min(score_y))
-            if v == 0:
-                score_x.discard(min_score_x)
-                score_y.discard(min_score_x)
-            else:
-                break
-        # If still equal, sort by cladid to maintain reproducibility
-        if v == 0:
-            v = cmp(x.cladeid, y.cladeid)
-        return v
-        
-    #del n2targetdist[target.get_tree_root()]
-    max_dist = max(n2targetdist.values())
-
-    valid_nodes = [n for n in n2targetdist if not n2content[n] & n2content[target]]
-    valid_nodes.sort(sort_outgroups, reverse=True)
-    best_outgroup = valid_nodes[0]
-
-    seqs = [n.name for n in n2content[target]]
-    outs = [n.name for n in n2content[best_outgroup]]
-    
-    log.log(28, "Selected outgroup size: %s support: %s ", len(outs), score(best_outgroup))
-    for x in valid_nodes[:10]:
-        print score(x), min(score(x))
-        
-    if DEBUG():
-        root = target.get_tree_root()
-        for _seq in outs:
-            tar =  root & _seq
-            tar.img_style["fgcolor"]="green"
-            tar.img_style["size"] = 12
-            tar.img_style["shape"] = "circle"
-        target.img_style["bgcolor"] = "lightblue"
-        NPR_TREE_STYLE.title.clear()
-        NPR_TREE_STYLE.title.add_face( faces.TextFace("MainTree:"
-            " Outgroup selection is mark in green. Red=optimized nodes ",
-            fgcolor="blue"), 0)
-        root.show(tree_style=NPR_TREE_STYLE)
-        for _n in root.traverse():
-            _n.img_style = None
-        
-    return set(seqs), set(outs)
       

@@ -23,8 +23,8 @@ class BrhCogSelector(Task):
         # taskid does not depend on jobs, so I set it manually
         self.cladeid = clade_id
         self.seqtype = seqtype
-        self.target_sp = target_sp
-        self.out_sp = out_sp
+        self.targets = target_sp
+        self.outgroups = out_sp
         self.taskid = node_id
         self.init()
        

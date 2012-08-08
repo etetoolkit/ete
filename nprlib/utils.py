@@ -1,5 +1,7 @@
 import sys
-import os
+from os import kill
+from os.path import join as pjoin
+from os.path import split as psplit
 import socket
 import string
 from string import strip
@@ -56,7 +58,7 @@ GENCODE = {
 # Aux functions (general)
 md5 = lambda x: hashlib.md5(x).hexdigest()
 encode_seqname = lambda x: md5(x)[:10]
-basename = lambda path: os.path.split(path)[-1]
+basename = lambda path: psplit(path)[-1]
 # Aux functions (task specific)
 get_raxml_mem = lambda taxa,sites: (taxa-2) * sites * (80 * 8) * 9.3132e-10
 del_gaps = lambda seq: seq.replace("-","").replace(".", "")
@@ -176,7 +178,7 @@ def checksum(*fnames):
 def pid_up(pid):        
     """ Check For the existence of a unix pid. """
     try:
-        os.kill(int(pid), 0)
+        kill(int(pid), 0)
     except OSError:
         return False
     else:

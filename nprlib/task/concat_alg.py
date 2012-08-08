@@ -1,4 +1,4 @@
-import os
+from os.path import join as pjoin 
 import logging
 from collections import defaultdict
 log = logging.getLogger("main")
@@ -24,15 +24,15 @@ class ConcatAlg(ConcatAlgTask):
         self.default_model = "JTT"
         self.init()
         
-        self.alg_fasta_file = os.path.join(self.taskdir, "final_alg.fasta")
-        self.alg_phylip_file = os.path.join(self.taskdir, "final_alg.iphylip")
-        self.partitions_file = os.path.join(self.taskdir, "final_alg.regions")
+        self.alg_fasta_file = pjoin(self.taskdir, "final_alg.fasta")
+        self.alg_phylip_file = pjoin(self.taskdir, "final_alg.iphylip")
+        self.partitions_file = pjoin(self.taskdir, "final_alg.regions")
         
     def load_jobs(self):
         # I want a single phylognetic tree for each cog
         from nprlib.template.genetree import pipeline
         
-        for co in self.cogs[:5]:
+        for co in self.cogs[:2]:
             # Register a new msf task for each COG
             job = Msf(set(co), set(),
                       seqtype = self.seqtype)
@@ -57,10 +57,10 @@ class ConcatAlg(ConcatAlgTask):
             elif job.ttype == "mchooser":
                 self.job2model[job.nodeid] = job.best_model
         if self.cog_ids - set(self.job2alg):
-            raise TaskError("Missing %s alignments" %len(self.cog_ids - set(self.job2alg)))
+            raise TaskError("Missing %s alignments" %\
+                            len(self.cog_ids - set(self.job2alg)))
 
-        alg_data = [(self.job2alg[nid], self.job2model.get(nid, self.default_model))
-                     for nid in self.job2alg]
+        alg_data = [(self.job2alg[nid], self.job2model.get(nid, self.default_model)) for nid in self.job2alg]
         filenames, models = zip(*alg_data)
 
         mainalg, partitions, sp2alg, species = get_concatanted_alg(filenames,

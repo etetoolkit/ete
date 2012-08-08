@@ -31,7 +31,6 @@ def schedule(workflow_task_processor, schedule_time, execution, retry, debug):
 
     ## ===================================
     ## INITIALIZE BASIC VARS AND SHORTCUTS
-    nodeid2info = GLOBALS["nodeinfo"]
     config = GLOBALS["config"]
     cores_total = config["main"]["_max_cores"]
     execution, run_detached = execution

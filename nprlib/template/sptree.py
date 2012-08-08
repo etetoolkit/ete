@@ -1,134 +1,120 @@
 import os
-import numpy 
-import re
-import commands
 import logging
-import numpy
 from collections import defaultdict
 
-from nprlib.task import ConcatAlg, BrhCogSelector
+from nprlib.task import TreeMerger
+from nprlib.utils import GLOBALS, generate_runid, SeqGroup, pjoin
+
 from nprlib.errors import DataError
-from nprlib.utils import GLOBALS, generate_runid, SeqGroup
 from nprlib import db
-from nprlib.master_task import register_task_recursively
+from nprlib.template.common import process_new_tasks, IterConfig
 
 log = logging.getLogger("main")
 
-n2class = {
-    "none": None, 
-    "concat_alg": ConcatAlg, 
-    }
-
-def process_task(task, conf, nodeid2info):
-    seqtype = task.seqtype
-    nodeid = task.nodeid
-    ttype = task.ttype
-    node_info = nodeid2info[nodeid]
-    size = task.size
-    target_seqs = node_info.get("target_seqs", [])
-    out_seqs = node_info.get("out_seqs", [])
-    constrain_tree = None
-    constrain_tree_path = None
-    if out_seqs and len(out_seqs) > 1:
-        constrain_tree = "(%s, (%s));" %(','.join(out_seqs), 
-                                           ','.join(target_seqs))
-      
-        constrain_tree_path = os.path.join(task.taskdir, "constrain.nw")
-        print constrain_tree
-
-    #print node_info, (size, index, _alg_cleaner, _model_tester, _aligner, _tree_builder)
+def process_task(task, npr_conf, nodeid2info):
+    conf = GLOBALS["config"]
+    
     new_tasks = []
+    threadid, nodeid, seqtype, ttype = (task.threadid, task.nodeid,
+                                        task.seqtype, task.ttype)
+    cladeid, targets, outgroups = db.get_node_info(threadid, nodeid)
+    
     if ttype == "cog_selector":
-        # register concat alg
-        concat_job = ConcatAlg(nodeid, task.cogs, seqtype)
+        # register concat alignment task
+        concat_job = npr_conf.alg_concatenator(nodeid, task.cogs, seqtype)
         concat_job.size = task.size
         new_tasks.append(concat_job)
-        
+       
     elif ttype == "concat_alg":
-        # register concat tree
-        pass
-    elif ttype == "concat_tree":
-        # register concat_Tree split and merge 
-        pass
-    elif ttype == "concat_tree_merge":
-        # for each algjob in cogs, concatenate them and register a new tree task
-        pass
-    elif ttype == "treemerger":
-        # GET NEW NPR NODES
-        pass
-        #FOR EACH SET OF SPECIES, SELECT COGS AND CREATE A CONCATALG TASK
-        pass
+        # register tree for concat alignment, using constraint tree if
+        # necessary
+        constrain_tree_path = None 
+        if outgroups and len(outgroups) > 1:
+            constrain_tree_path = pjoin(task.taskdir,
+                                        "constrain_tree.nw")
+            newick = "(%s, (%s));" %(','.join(outgroups), ','.join(targets))
+            open(constrain_tree_path, "w").write(newick)
+           
+        tree_task = npr_conf.tree_builder(nodeid,
+                                          task.alg_phylip_file,
+                                          constrain_tree_path, "JTT",
+                                          seqtype, conf)
+        tree_task.size = task.size
+        new_tasks.append(tree_task)
+        
+    elif ttype == "tree":
+        merger_task = TreeMerger(nodeid, seqtype, task.tree_file, conf)
+        new_tasks.append(merger_task)
 
+    elif ttype == "treemerger":
+        # Lets merge with main tree
+        if not task.task_tree:
+            task.finish()
+
+        log.log(28, "Saving task tree...")
+        annotate_node(task.task_tree, task) 
+        db.update_node(nid=task.nodeid, 
+                       runid=task.threadid,
+                       newick=db.encode(task.task_tree))
+        db.commit()
+
+        # Add new nodes
+        source_seqtype = "aa" if "aa" in GLOBALS["seqtypes"] else "nt"
+        ttree, mtree = task.task_tree, task.main_tree
+        current_iter = get_iternumber(task.threadid)
+        # Loads information about sequence similarity in each internal
+        # node. This info will be used by processable_node()
+        alg_path = node_info.get("clean_alg_path", node_info["alg_path"])
+        if current_iter < conf["genetree"].get("max_iters", current_iter + 1):
+            for node, seqs, outs in split_tree(ttree, mtree, alg_path, npr_conf):
+                if current_iter < conf["genetree"].get("max_iters", current_iter + 1):
+                    new_node = npr_conf.cog_selector(seqs, outs, source_seqtype)
+                    if new_task_node.nodeid not in nodeid2info:
+                        new_tasks.append(new_task_node)
+                        current_iter =  inc_iternumber(task.threadid) # Register node
+                        db.add_node(task.threadid,
+                                    new_task_node.nodeid, new_task_node.cladeid,
+                                    new_task_node.target_seqs,
+                                    new_task_node.out_seqs)
+
+                        if DEBUG():
+                            NPR_TREE_STYLE.title.clear()
+                            NPR_TREE_STYLE.title.add_face( faces.TextFace("MainTree:"
+                                                                      "Gold color:Newly generated task nodes ",
+                                                                      fgcolor="blue"), 0)
+                            node.img_style["fgcolor"] = "Gold"
+                            node.img_style["size"] = 30
+        if DEBUG():
+            task.main_tree.show(tree_style=NPR_TREE_STYLE)
+            for _n in task.main_tree.traverse():
+                _n.img_style = None
+        
     return new_tasks
+      
 
 
 def pipeline(task):
-    conf = GLOBALS["config"]
+    # Points to npr parameters according to task properties
     nodeid2info = GLOBALS["nodeinfo"]
     if not task:
-        #all_seqids = source.id2name.values()
-        #sample_cogs = [set(all_seqids), set(all_seqids[:-2]), set(all_seqids[:-3])]
-        #initial_task = ConcatAlg("SPTREE_TEST_ID", sample_cogs, set(),
-        #                         seqtype=source_seqtype, source=source)
-        
-        initial_task = BrhCogSelector(GLOBALS["target_species"],
-                                      set(), "aa")
-                                    
+        source_seqtype = "aa" if "aa" in GLOBALS["seqtypes"] else "nt"
+        npr_conf = IterConfig("sptree",
+                              len(GLOBALS["target_species"]),
+                              source_seqtype)
+        initial_task = npr_conf.cog_selector(GLOBALS["target_species"],
+                                             set(), source_seqtype)
         initial_task.main_tree = main_tree = None
         initial_task.threadid = generate_runid()
-
         # Register node 
         db.add_node(initial_task.threadid, initial_task.nodeid,
-                    initial_task.cladeid, initial_task.target_sp,
-                    initial_task.out_sp)
+                    initial_task.cladeid, initial_task.targets,
+                    initial_task.outgroups)
         
         new_tasks = [initial_task]
-        conf["_iters"] = 1
     else:
-        new_tasks  = process_task(task, conf, nodeid2info)
+        npr_conf = IterConfig("sptree", task.size, task.seqtype)
+        new_tasks  = process_task(task, npr_conf, nodeid2info)
 
-    # Basic registration and processing of newly generated tasks
-    parent_taskid = task.taskid if task else None
-    for ts in new_tasks:
-        register_task_recursively(ts, parentid=parent_taskid)
-        db.add_task2child(parent_taskid, ts.taskid)
-        # sort task by nodeid
-        nodeid2info[ts.nodeid].setdefault("tasks", []).append(ts)
-        if task:
-            # Clone processor, in case tasks belong to a side workflow
-            ts.task_processor = task.task_processor
-            ts.threadid = task.threadid
-            ts.main_tree = task.main_tree
-            
+    process_new_tasks(task, new_tasks)
     return new_tasks
     
-config_specs = """
-
-[main]
-max_iters = integer(minv=1)
-render_tree_images = boolean()
-
-npr_max_seqs = integer_list(minv=0)
-npr_min_branch_support = float_list(minv=0, maxv=1)
-
-npr_max_aa_identity = float_list(minv=0.0)
-
-npr_nt_alg_cleaner = list()
-npr_aa_alg_cleaner = list()
-
-npr_aa_aligner = list()
-npr_nt_aligner = list()
-
-npr_aa_tree_builder = list()
-npr_nt_tree_builder = list()
-
-npr_aa_model_tester = list()
-npr_nt_model_tester = list()
-
-[tree_splitter]
-_min_size = integer()
-_max_seq_identity = float()
-_outgroup_size = integer()
-_outgroup_min_support = float()
-_outgroup_topology_dist = boolean()
-"""

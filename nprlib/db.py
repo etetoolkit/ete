@@ -47,7 +47,7 @@ def create_db():
     target_size INTEGER,
     out_size INTEGER,
     newick BLOB,
-    PRIMARY KEY (nodeid, runid)
+    PRIMARY KEY (runid, nodeid)
     );
          
     CREATE TABLE IF NOT EXISTS task(
@@ -177,11 +177,11 @@ def get_sge_tasks():
         pid2jobs[pid].append(tid)
     return pid2jobs
 
-def add_node(runid, nodeid, cladeid, target_seqs, out_seqs):
+def add_node(runid, nodeid, cladeid, targets, outgroups):
     values = ','.join(['"%s"' % (v or "") for v in
-                       [nodeid, cladeid, encode(target_seqs),
-                        encode(out_seqs), len(target_seqs),
-                        len(out_seqs), runid]])
+                       [nodeid, cladeid, encode(targets),
+                        encode(outgroups), len(targets),
+                        len(outgroups), runid]])
     cmd = ('INSERT OR REPLACE INTO node (nodeid, cladeid, target_seqs, out_seqs,'
            ' target_size, out_size, runid) VALUES (%s);' %(values))
     execute(cmd)
@@ -191,16 +191,17 @@ def get_cladeid(nodeid):
     cmd = 'SELECT cladeid FROM node WHERE nodeid="%s"' %(nodeid)
     execute(cmd)
     return (cursor.fetchone() or [])[0]
-       
 
-def get_node_info(nodeid):
+def get_node_info(threadid, nodeid):
     cmd = ('SELECT cladeid, target_seqs, out_seqs FROM'
-           ' node WHERE nodeid="%s"' %(nodeid))
+           ' node WHERE runid="%s" AND nodeid="%s"' %(threadid,
+           nodeid))
+
     execute(cmd)
-    cladeid, target_seqs, out_seqs = cursor.fetchone()
-    target_seqs = decode(target_seqs)
-    out_seqs = decode(out_seqs)
-    return cladeid, target_seqs, out_seqs
+    cladeid, targets, outgroups = cursor.fetchone()
+    targets = decode(targets)
+    outgroups = decode(outgroups)
+    return cladeid, targets, outgroups
 
 def get_runid_nodes(runid):
     cmd = ('SELECT cladeid, newick, target_size FROM node'

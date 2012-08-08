@@ -3,39 +3,21 @@ import numpy
 import re
 import commands
 import logging
-import numpy
-from collections import defaultdict
 
 from nprlib.utils import (del_gaps, GENCODE, PhyloTree, SeqGroup,
                           TreeStyle, generate_node_ids, DEBUG,
                           NPR_TREE_STYLE, faces)
-from nprlib.task import (MetaAligner, Mafft, Muscle, Uhire, Dialigntx,
-                         FastTree, Clustalo, Raxml, Phyml, JModeltest,
-                         Prottest, Trimal, TreeMerger, select_outgroups,
-                         Msf)
+from nprlib.task import TreeMerger, Msf
 
 from nprlib.errors import DataError
 from nprlib.utils import GLOBALS, rpath, generate_runid
 from nprlib import db
 from nprlib.master_task import register_task_recursively
+from nprlib.template.common import (IterConfig, inc_iternumber,
+                                    get_iternumber, split_tree,
+                                    process_new_tasks)
 
 log = logging.getLogger("main")
-
-n2class = {
-    "none": None, 
-    "meta_aligner": MetaAligner, 
-    "mafft": Mafft, 
-    "muscle": Muscle, 
-    "uhire": Uhire, 
-    "dialigntx": Dialigntx, 
-    "fasttree": FastTree, 
-    "clustalo": Clustalo, 
-    "raxml": Raxml,
-    "phyml": Phyml,
-    "jmodeltest": JModeltest,
-    "prottest": Prottest,
-    "trimal": Trimal
-    }
 
 def annotate_node(t, final_task):
     cladeid2node = {}
@@ -48,7 +30,7 @@ def annotate_node(t, final_task):
             cladeid2node[n.cladeid] = n
 
     alltasks = GLOBALS["nodeinfo"][final_task.nodeid]["tasks"]
-    npr_iter = GLOBALS["threadinfo"][final_task.threadid]["last_iter"]
+    npr_iter = get_iternumber(final_task.threadid)
     n = cladeid2node[t.cladeid]
     n.add_features(size=final_task.size)
     for task in alltasks:
@@ -147,37 +129,6 @@ def get_trimal_identity(alg_file, trimal_bin):
     return max_identity
 
     
-def get_identity(fname): 
-    s = SeqGroup(fname)
-    seqlen = len(s.id2seq.itervalues().next())
-    ident = list()
-    for i in xrange(seqlen):
-        states = defaultdict(int)
-        for seq in s.id2seq.itervalues():
-            if seq[i] != "-":
-                states[seq[i]] += 1
-        values = states.values()
-        if values:
-            ident.append(float(max(values))/sum(values))
-    return (numpy.max(ident), numpy.min(ident), 
-            numpy.mean(ident), numpy.std(ident))
-
-    
-def get_seqs_identity(alg, seqs):
-    ''' Returns alg statistics regarding a set of sequences'''
-    seqlen = len(alg.get_seq(seqs[0]))
-    ident = list()
-    for i in xrange(seqlen):
-        states = defaultdict(int)
-        for seq_id in seqs:
-            seq = alg.get_seq(seq_id)
-            if seq[i] != "-":
-                states[seq[i]] += 1
-        values = states.values()
-        if values:
-            ident.append(float(max(values))/sum(values))
-    return (numpy.max(ident), numpy.min(ident), 
-            numpy.mean(ident), numpy.std(ident))
    
          
 def switch_to_codon(alg_fasta_file, alg_phylip_file, nt_seed_file,
@@ -230,7 +181,8 @@ def switch_to_codon(alg_fasta_file, alg_phylip_file, nt_seed_file,
         
     return alg_fasta_filename, alg_phylip_filename
 
-def process_task(task, conf, nodeid2info):
+def process_task(task, npr_conf, nodeid2info):
+    conf = GLOBALS["config"]
     seqtype = task.seqtype
     nodeid = task.nodeid
     ttype = task.ttype
@@ -248,55 +200,17 @@ def process_task(task, conf, nodeid2info):
         
         constrain_tree_path = os.path.join(task.taskdir, "constrain.nw")
                                            
-    # Loads application handlers according to current task size
-    index = None
-    index_slide = 0
-    while index is None: 
-        try: 
-            max_seqs = conf["main"]["npr_max_seqs"][index_slide]
-        except IndexError:
-            raise DataError("Number of seqs [%d] not considered"
-                             " in current config" %size)
-        else:
-            if size <= max_seqs:
-                index = index_slide
-            else:
-                index_slide += 1
-        #log.debug("INDEX %s %s %s", index, size, max_seqs)
-                
-    _min_branch_support = conf["main"]["npr_min_branch_support"][index_slide]
-    skip_outgroups = conf["tree_splitter"]["_outgroup_size"] == 0
-    
-    if seqtype == "nt": 
-        _aligner = n2class[conf["main"]["npr_nt_aligner"][index]]
-        _alg_cleaner = n2class[conf["main"]["npr_nt_alg_cleaner"][index]]
-        _model_tester = n2class[conf["main"]["npr_nt_model_tester"][index]]
-        _tree_builder = n2class[conf["main"]["npr_nt_tree_builder"][index]]
-        _aa_identity_thr = 1.0
-    elif seqtype == "aa": 
-        _aligner = n2class[conf["main"]["npr_aa_aligner"][index]]
-        _alg_cleaner = n2class[conf["main"]["npr_aa_alg_cleaner"][index]]
-        _model_tester = n2class[conf["main"]["npr_aa_model_tester"][index]]
-        _tree_builder = n2class[conf["main"]["npr_aa_tree_builder"][index]]
-        _aa_identity_thr = conf["main"]["npr_max_aa_identity"][index]
-
-    #print node_info, (size, index, _alg_cleaner, _model_tester, _aligner, _tree_builder)
     
     new_tasks = []
     if ttype == "msf":
-        alg_task = _aligner(nodeid, task.multiseq_file,
-                           seqtype, conf)
+        alg_task = npr_conf.aligner(nodeid, task.multiseq_file,
+                                    seqtype, conf)
         nodeid2info[nodeid]["size"] = task.size
         nodeid2info[nodeid]["target_seqs"] = task.target_seqs
         nodeid2info[nodeid]["out_seqs"] = task.out_seqs
         alg_task.size = task.size
-        alg_task.main_tree = task.main_tree
         new_tasks.append(alg_task)
         
-        # Register node 
-        db.add_node(task.threadid, task.nodeid,
-                    task.cladeid, task.target_seqs,
-                    task.out_seqs)
 
     elif ttype == "alg" or ttype == "acleaner":
         if ttype == "alg":
@@ -335,37 +249,36 @@ def process_task(task, conf, nodeid2info):
         task.mean_ident = mean
         task.std_ident = std
         
-        if ttype == "alg" and _alg_cleaner:
-            next_task = _alg_cleaner(nodeid, seqtype, alg_fasta_file, 
-                                     alg_phylip_file, conf)
+        if ttype == "alg" and npr_conf.alg_cleaner:
+            next_task = npr_conf.alg_cleaner(nodeid, seqtype,
+                                             alg_fasta_file,
+                                             alg_phylip_file, conf)
         else:
             # Converts aa alignment into nt if necessary
             if seqtype == "aa" and "nt" in GLOBALS["seqtypes"] and \
-               task.mean_ident > _aa_identity_thr:
+               task.mean_ident > npr_conf.switch_aa_similarity:
                 log.log(26, "switching to codon alignment")
-                # Change seqtype config 
+                # Change seqtype config
+                npr_conf = IterConfig("genetree", task.size, "nt")
                 seqtype = "nt"
-                _model_tester = n2class[conf["main"]["npr_nt_model_tester"][index]]
-                _aligner = n2class[conf["main"]["npr_nt_aligner"][index]]
-                _tree_builder = n2class[conf["main"]["npr_nt_tree_builder"][index]]
                 alg_fasta_file, alg_phylip_file = switch_to_codon(
                     task.alg_fasta_file, task.alg_phylip_file,
                     nt_seed_file)
+                
             if constrain_tree:
                 open(constrain_tree_path, "w").write(constrain_tree)
                                            
-            if _model_tester:
-                next_task = _model_tester(nodeid,
-                                          alg_fasta_file, 
-                                          alg_phylip_file,
-                                          constrain_tree_path,
-                                          conf)
+            if npr_conf.model_tester:
+                next_task = npr_conf.model_tester(nodeid,
+                                                  alg_fasta_file,
+                                                  alg_phylip_file,
+                                                  constrain_tree_path, conf)
             else:
-                next_task = _tree_builder(nodeid, alg_phylip_file, constrain_tree_path,
-                                          None,
-                                          seqtype, conf)
+                next_task = npr_conf.tree_builder(nodeid,
+                                                  alg_phylip_file,
+                                                  constrain_tree_path, None,
+                                                  seqtype, conf)
         next_task.size = task.size
-        next_task.main_tree = task.main_tree
         new_tasks.append(next_task)
 
     elif ttype == "mchooser":
@@ -375,11 +288,10 @@ def process_task(task, conf, nodeid2info):
         if constrain_tree:
             open(constrain_tree_path, "w").write(constrain_tree)
                                           
-        tree_task = _tree_builder(nodeid, alg_phylip_file, constrain_tree_path,
-                                  model,
-                                  seqtype, conf)
+        tree_task = npr_conf.tree_builder(nodeid, alg_phylip_file,
+                                          constrain_tree_path, model, seqtype,
+                                          conf)
         tree_task.size = task.size
-        tree_task.main_tree = task.main_tree
         new_tasks.append(tree_task)
 
     elif ttype == "tree":
@@ -390,30 +302,79 @@ def process_task(task, conf, nodeid2info):
         #    treemerge_task = TreeSplitter(nodeid, seqtype, task.tree_file, main_tree, conf)
 
         treemerge_task.size = task.size
-        treemerge_task.main_tree = task.main_tree
         new_tasks.append(treemerge_task)
 
     elif ttype == "treemerger":
-        source_seqtype = "aa" if len(GLOBALS["seqtypes"]) > 1 else "nt"
-
         if not task.task_tree:
             task.finish()
-        main_tree = task.main_tree
 
         log.log(28, "Saving task tree...")
-        
-        current_iter = GLOBALS["threadinfo"][task.threadid].get("last_iter", 0)
-        if not current_iter:
-            GLOBALS["threadinfo"][task.threadid]["last_iter"] = 1
-        else:
-            GLOBALS["threadinfo"][task.threadid]["last_iter"] += 1
-            
         annotate_node(task.task_tree, task) 
         db.update_node(nid=task.nodeid, 
                        runid=task.threadid,
                        newick=db.encode(task.task_tree))
         db.commit()
+
+        source_seqtype = "aa" if "aa" in GLOBALS["seqtypes"] else "nt"
+        ttree, mtree = task.task_tree, task.main_tree
+        current_iter = get_iternumber(task.threadid)
+        # Loads information about sequence similarity in each internal
+        # node. This info will be used by processable_node()
+        alg_path = node_info.get("clean_alg_path", node_info["alg_path"])
+        if current_iter < conf["genetree"].get("max_iters", current_iter + 1):
+            for node, seqs, outs in split_tree(ttree, mtree, alg_path, npr_conf):
+                if current_iter < conf["genetree"].get("max_iters", current_iter + 1):
+                    new_task_node = Msf(seqs, outs, seqtype=source_seqtype)
+                    if new_task_node.nodeid not in nodeid2info:
+                        new_tasks.append(new_task_node)
+                        current_iter = inc_iternumber(task.threadid) # Register node
+                        db.add_node(task.threadid,
+                                    new_task_node.nodeid, new_task_node.cladeid,
+                                    new_task_node.target_seqs,
+                                    new_task_node.out_seqs)
+                        
+                        if DEBUG():
+                            NPR_TREE_STYLE.title.clear()
+                            NPR_TREE_STYLE.title.add_face( faces.TextFace("MainTree:"
+                                                                      "Gold color:Newly generated task nodes ",
+                                                                      fgcolor="blue"), 0)
+                            node.img_style["fgcolor"] = "Gold"
+                            node.img_style["size"] = 30
+        if DEBUG():
+            task.main_tree.show(tree_style=NPR_TREE_STYLE)
+            for _n in task.main_tree.traverse():
+                _n.img_style = None
+                
+    return new_tasks
+
+def pipeline(task):
+    nodeid2info = GLOBALS["nodeinfo"]
+    if not task:
+        source_seqtype = "aa" if "aa" in GLOBALS["seqtypes"] else "nt"
+        all_seqs = GLOBALS["target_sequences"]
+        initial_task = Msf(set(all_seqs), set(),
+                           seqtype=source_seqtype)
         
+        initial_task.main_tree = None
+        initial_task.threadid = generate_runid()
+
+        # Register node 
+        db.add_node(initial_task.threadid, initial_task.nodeid,
+                    initial_task.cladeid, initial_task.target_seqs,
+                    initial_task.out_seqs)
+        
+        new_tasks = [initial_task]
+    else:
+        npr_conf = IterConfig("genetree", task.size, task.seqtype)
+        new_tasks  = process_task(task, npr_conf, nodeid2info)
+
+    process_new_tasks(task, new_tasks)
+    return new_tasks
+
+
+
+
+def OLD_STUFF():
         def processable_node(_n):
             """ Returns true if node is suitable for NPR """
             
@@ -475,7 +436,7 @@ def process_task(task, conf, nodeid2info):
             else:
                 seqs, outs = select_outgroups(node, n2content, conf["tree_splitter"])
 
-            if (conf["_iters"] < int(conf["main"].get("max_iters", conf["_iters"]+1)) and 
+            if (conf["_iters"] < int(conf["genetree"].get("max_iters", conf["_iters"]+1)) and 
                 len(seqs) >= int(conf["tree_splitter"]["_min_size"])):
                     msf_task = Msf(seqs, outs, seqtype=source_seqtype)
                     if msf_task.nodeid not in nodeid2info:
@@ -496,66 +457,4 @@ def process_task(task, conf, nodeid2info):
             task.main_tree.show(tree_style=NPR_TREE_STYLE)
             for _n in task.main_tree.traverse():
                 _n.img_style = None
-        
-    return new_tasks
-
-def pipeline(task):
-    conf = GLOBALS["config"]
-    nodeid2info = GLOBALS["nodeinfo"]
-    all_seqs = GLOBALS["target_sequences"]
-    source_seqtype = "aa" if len(GLOBALS["seqtypes"]) > 1 else "nt"
-    if not task:
-        initial_task = Msf(set(all_seqs), set(),
-                           seqtype=source_seqtype)
-        
-        initial_task.main_tree = None
-        initial_task.threadid = generate_runid()
-        new_tasks = [initial_task]
-        conf["_iters"] = 1
-    else:
-        new_tasks  = process_task(task, conf, nodeid2info)
-
-    # Basic registration and processing of newly generated tasks
-    parent_taskid = task.taskid if task else None
-    for ts in new_tasks:
-        register_task_recursively(ts, parentid=parent_taskid)
-        db.add_task2child(parent_taskid, ts.taskid)
-        # sort task by nodeid
-        nodeid2info[ts.nodeid].setdefault("tasks", []).append(ts)
-        if task:
-            # Clone processor, in case tasks belong to a side workflow
-            ts.task_processor = task.task_processor
-            ts.threadid = task.threadid
-            
-    return new_tasks
-
-config_specs = """
-
-[main]
-max_iters = integer(minv=1)
-render_tree_images = boolean()
-
-npr_max_seqs = integer_list(minv=0)
-npr_min_branch_support = float_list(minv=0, maxv=1)
-
-npr_max_aa_identity = float_list(minv=0.0)
-
-npr_nt_alg_cleaner = list()
-npr_aa_alg_cleaner = list()
-
-npr_aa_aligner = list()
-npr_nt_aligner = list()
-
-npr_aa_tree_builder = list()
-npr_nt_tree_builder = list()
-
-npr_aa_model_tester = list()
-npr_nt_model_tester = list()
-
-[tree_splitter]
-_min_size = integer()
-_max_seq_identity = float()
-_outgroup_size = integer()
-_outgroup_min_support = float()
-_outgroup_topology_dist = boolean()
-"""
+                
