@@ -97,10 +97,14 @@ class IterConfig(dict):
             v = "%s_%s" %(self.seqtype, v)
             
         try:
-            value = dict.__getitem__(self, v)[self.index]
+            value = dict.__getitem__(self, v)
         except KeyError, e:
             return None
         else:
+            # If list, let's take the correct element
+            if type(value) == list:
+                value = value[self.index]
+                
             if type(value) != str:
                 return value
             elif value.lower() == "none":
@@ -114,6 +118,7 @@ def process_new_tasks(task, new_tasks):
     # Basic registration and processing of newly generated tasks
     parent_taskid = task.taskid if task else None
     for ts in new_tasks:
+        log.log(24, "Registering new task: %s", ts)
         register_task_recursively(ts, parentid=parent_taskid)
         db.add_task2child(parent_taskid, ts.taskid)
         # sort task by nodeid
@@ -166,11 +171,21 @@ def get_seqs_identity(alg, seqs):
 
     
 def split_tree(task_tree, main_tree, alg_path, npr_conf):
+    """Browses a task tree from root to leaves and yields next
+    suitable nodes for NPR iterations. Each yielded node comes with
+    the set of target and outgroup tips. 
+    """
+    
     def processable_node(_n):
-        """ Returns true if node is suitable for NPR """
+        """This an internal function that returns true if a given node
+        is suitable for a NPR iteration. It can be used as
+        "is_leaf_fn" when traversing a tree.
+
+        Note it uses variables within the split tree function.
+        """
         _isleaf = False
-        if _n is not task_tree:
-            if npr_conf.max_seq_simiarity < 1.0: 
+        if len(n2content[_n]) > 2 and _n is not task_tree:
+            if ALG and npr_conf.max_seq_simiarity < 1.0: 
                 if not hasattr(_n, "seqs_mean_ident"):
                     log.log(20, "Calculating node sequence stats...")
 
@@ -205,9 +220,11 @@ def split_tree(task_tree, main_tree, alg_path, npr_conf):
         
     log.log(20, "Loading tree content...")
     n2content = main_tree.get_node2content()
-    
-    #log.log(20, "Loading by-node sequence similarity...")
-    ALG = SeqGroup(alg_path)
+    if alg_path: 
+        log.log(20, "Loading by-node sequence similarity...")
+        ALG = SeqGroup(alg_path)
+    else:
+        ALG = None
     #for n in task.task_tree.traverse(): 
     #    content = n2content[n]
     #    mx, mn, avg, std = get_seqs_identity(ALG, [node.name for node in content])
@@ -216,8 +233,7 @@ def split_tree(task_tree, main_tree, alg_path, npr_conf):
 
     log.log(20, "Finding next NPR nodes...")        
     for node in task_tree.iter_leaves(is_leaf_fn=processable_node):
-        log.log(20, "Found processable node. Supports: %0.2f (children=%s)",
-                node.support, ','.join(["%0.2f" % ch.support for ch in node.children]))
+       
         if npr_conf.outgroup_size == 0:
             seqs = set([_i.name for _i in n2content[node]])
             outs = set()
@@ -225,6 +241,34 @@ def split_tree(task_tree, main_tree, alg_path, npr_conf):
             seqs, outs = select_outgroups(node, n2content, npr_conf)
         yield node, seqs, outs
 
+def get_next_npr_node(threadid, ttree, mtree, alg_path, npr_conf):
+    current_iter = get_iternumber(threadid)
+    if npr_conf.max_iters and current_iter >= npr_conf.max_iters:
+        return
+        
+    for node, seqs, outs in split_tree(ttree, mtree, alg_path, npr_conf):
+        if npr_conf.max_iters and current_iter < npr_conf.max_iters:
+
+            if DEBUG():
+                NPR_TREE_STYLE.title.clear()
+                NPR_TREE_STYLE.title.add_face(faces.TextFace("MainTree:"
+                                                             "Gold color:Newly generated task nodes",
+                                                             fgcolor="blue"), 0)
+                node.img_style["fgcolor"] = "Gold"
+                node.img_style["size"] = 30
+            log.log(20, "Found processable node. Supports: %0.2f (children=%s)",
+                    node.support, ','.join(["%0.2f" % ch.support
+                                            for ch in node.children]))
+            # Yield new iteration
+            inc_iternumber(threadid)
+            yield node, seqs, outs
+                    
+    if DEBUG():
+        mtree.show(tree_style=NPR_TREE_STYLE)
+        for _n in mtree.traverse():
+            _n.img_style = None
+
+        
       
 def select_outgroups(target, n2content, options):
     """Given a set of target sequences, find the best set of out
@@ -292,8 +336,8 @@ def select_outgroups(target, n2content, options):
     outs = [n.name for n in n2content[best_outgroup]]
     
     log.log(28, "Selected outgroup size: %s support: %s ", len(outs), score(best_outgroup))
-    for x in valid_nodes[:10]:
-        print score(x), min(score(x))
+    #for x in valid_nodes[:10]:
+    #    print score(x), min(score(x))
         
     if DEBUG():
         root = target.get_tree_root()

@@ -8,6 +8,7 @@ from nprlib.master_task import ConcatAlgTask
 from nprlib.master_job import Job
 from nprlib.utils import SeqGroup, GLOBALS, generate_runid, strip
 from nprlib import db
+from nprlib.errors import TaskError
 
 __all__ = ["ConcatAlg"]
 
@@ -57,8 +58,9 @@ class ConcatAlg(ConcatAlgTask):
             elif job.ttype == "mchooser":
                 self.job2model[job.nodeid] = job.best_model
         if self.cog_ids - set(self.job2alg):
-            raise TaskError("Missing %s alignments" %\
-                            len(self.cog_ids - set(self.job2alg)))
+            log.error("Missing %s algs", len(self.cog_ids -
+                                             set(self.job2alg)))
+            raise TaskError(self)
 
         alg_data = [(self.job2alg[nid], self.job2model.get(nid, self.default_model)) for nid in self.job2alg]
         filenames, models = zip(*alg_data)
@@ -69,7 +71,8 @@ class ConcatAlg(ConcatAlgTask):
         mainalg.write(outfile=self.alg_fasta_file, format="fasta")
         mainalg.write(outfile=self.alg_phylip_file, format="iphylip_relaxed")
         open(self.partitions_file, "w").write('\n'.join(partitions))
-        
+        print '\n'.join(partitions)
+                        
 def get_species_code(name, splitter, field):
     # By default, taxid is the first par of the seqid, separated by
     # underscore
@@ -79,7 +82,6 @@ def get_concatanted_alg(alg_filenames, models=None,
                         sp_field=0, sp_delimiter="_", 
                         kill_thr=0.0, 
                         keep_species=set()):
-
     # Concat alg container 
     concat = SeqGroup()
     # Used to store different model partitions
@@ -136,7 +138,7 @@ def get_concatanted_alg(alg_filenames, models=None,
     # Create concat alg
     concat.id2seq = defaultdict(list)
     for sp in sorted(valid_species):
-        log.info("processing [%s]" %sp)
+        log.log(20, "Concatenating sequences of [%s]" %sp)
         for alg in sorted_algs:
             seq = alg.sp2seq.get(sp, "-" * alg.seqlength)
             concat.id2seq[sp].append(seq)

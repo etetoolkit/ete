@@ -67,7 +67,9 @@ class MetaAligner(AlgTask):
         self.init()
         self.alg_fasta_file = os.path.join(self.taskdir, "final_alg.fasta")
         self.alg_phylip_file = os.path.join(self.taskdir, "final_alg.iphylip")
-
+        # After init (and load_jobs), I can adjust size of sibling jobs
+        #for job in self.jobs:
+        #    job.size = self.size
 
     def load_jobs(self):
         multiseq_file_r = self.multiseq_file+".reversed"
@@ -85,13 +87,12 @@ class MetaAligner(AlgTask):
                              self.conf)
             self.jobs.append(task1)
             all_alg_files.append(task1.alg_fasta_file)
-            #task1.size = self.size
+            
             # Alg of the reverse
             task2 = _aligner(self.nodeid, multiseq_file_r, self.seqtype,
                              self.conf)
             task2.dependencies.add(first)
             self.jobs.append(task2)
-            #task2.size = self.size
             
             # Restore reverse alg
             task3 = seq_reverser_job(task2.alg_fasta_file,
@@ -100,7 +101,6 @@ class MetaAligner(AlgTask):
                                      parent_ids=[task2.taskid])
             task3.dependencies.add(task2)
             self.jobs.append(task3)
-            #task3.size = self.size
             
             all_alg_files.append(task2.alg_fasta_file+".reverse")
             mcoffee_parents.extend([task1.taskid, task2.taskid])
@@ -110,7 +110,6 @@ class MetaAligner(AlgTask):
                              self.conf, parent_ids=mcoffee_parents)
         final_task.dependencies.update(self.jobs)
         self.jobs.append(final_task)
-        #final_task.size = self.size
         
     def finish(self):
         final_task = self.jobs[-1]

@@ -33,20 +33,20 @@ class Prottest(ModelTesterTask):
                              # creating jobs
             "--quiet": ""
             }
-
-        ModelTesterTask.__init__(self, nodeid, "mchooser", "Prottest", 
+        self.models = self.conf["prottest"]["_models"]
+        task_name = "Prottest-[%s]" %','.join(self.models)
+        ModelTesterTask.__init__(self, nodeid, "mchooser", task_name, 
                       base_args, conf["prottest"])
-
+        
         self.best_model = None
         self.seqtype = "aa"
-        self.models = self.conf["prottest"]["_models"]
         self.init()
         self.post_init()
         
     def post_init(self):
         self.best_model_file = os.path.join(self.taskdir, "best_model.txt")
         self.tree_file = None #os.path.join(self.taskdir, "final_tree.nw")
-
+        
         # Phyml cannot write the output in a different directory that
         # the original alg file. So I use relative path to alg file
         # for processes and I create a symlink for each of the
@@ -83,8 +83,6 @@ class Prottest(ModelTesterTask):
                 raxml_job.flag = "raxml"
                 raxml_job.model = m
                 self.jobs.append(raxml_job)
-            
-        log.log(26, "Models to test %s", self.models)
 
     def finish(self):
         lks = []
@@ -115,6 +113,7 @@ class Prottest(ModelTesterTask):
         best_model = lks[-1][1]
         best_tree = lks[-1][2]
         open(self.best_model_file, "w").write(best_model)
+        self.best_model = best_model
         if self.tree_file:
             tree.write(self.tree_file)
         ModelTesterTask.finish(self)

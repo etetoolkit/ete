@@ -3,7 +3,7 @@ import logging
 import os
 log = logging.getLogger("main")
 
-from nprlib.master_task import Task
+from nprlib.master_task import TreeMergeTask
 from nprlib.master_job import Job
 from nprlib.utils import (load_node_size, PhyloTree, SeqGroup, generate_id,
                           get_node2content, NPR_TREE_STYLE, NodeStyle, DEBUG,
@@ -13,10 +13,10 @@ from nprlib.errors import TaskError
 
 __all__ = ["TreeMerger"]
 
-class TreeMerger(Task):
+class TreeMerger(TreeMergeTask):
     def __init__(self, nodeid, seqtype, task_tree, conf):
         # Initialize task
-        Task.__init__(self, nodeid, "treemerger", "TreeMerger")
+        TreeMergeTask.__init__(self, nodeid, "treemerger", "TreeMerger")
         self.conf = conf
         self.args = conf["tree_splitter"]
         self.task_tree_file = task_tree

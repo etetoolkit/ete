@@ -19,13 +19,30 @@ except ImportError:
     NCURSES = False
 else:
     NCURSES = True
-
+    
+# CONVERT shell colors to the same curses palette
+SHELL_COLORS = {
+    "10": '\033[1;37;41m', # white on red
+    "11": '\033[1;37;43m', # white on yellow
+    "12": '\033[1;37;45m', # white on magenta
+    "6": '\033[94m', # blue
+    "3": '\033[92m', # green
+    "4": '\033[93m', # yellow
+    "5": '\033[91m', # red
+    "2": "\033[35m", # magenta
+    "1": "\033[0m", # white
+    "0": "\033[0m", # end
+}
+    
 def safe_int(x):
     try:
         return int(x)
     except TypeError:
         return x
 
+def shell_colorify_match(match):
+    return SHELL_COLORS[match.groups()[1]]
+        
 class ExcThread(threading.Thread):
     def __init__(self, bucket, *args, **kargs):
         threading.Thread.__init__(self, *args, **kargs)
@@ -120,7 +137,11 @@ class Screen(StringIO):
                 text = re.sub(self.TAG, "", text)
                 self.write_log(text)
         else:
-            text = re.sub(self.TAG, "", text)
+            if GLOBALS["color_shell"]: 
+                text = re.sub(self.TAG, shell_colorify_match, text)
+            else:
+                text = re.sub(self.TAG, "", text)
+                
             self.write_normal(text)
             if self.logfile:
                 self.write_log(text)
@@ -222,8 +243,11 @@ def init_curses(main_scr):
     curses.init_pair(3, curses.COLOR_GREEN, curses.COLOR_BLACK)
     curses.init_pair(4, curses.COLOR_YELLOW, curses.COLOR_BLACK)
     curses.init_pair(5, curses.COLOR_RED, curses.COLOR_BLACK)
-    curses.init_pair(6, curses.COLOR_RED, curses.COLOR_WHITE)
-
+    curses.init_pair(6, curses.COLOR_RED, curses.COLOR_BLACK)
+    curses.init_pair(10, curses.COLOR_WHITE, curses.COLOR_RED)
+    curses.init_pair(11, curses.COLOR_WHITE, curses.COLOR_YELLOW)
+    curses.init_pair(12, curses.COLOR_WHITE, curses.COLOR_MAGENTA)
+    
     WIN = {}
     main = main_scr
     h, w = main.getmaxyx()

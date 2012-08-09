@@ -68,6 +68,7 @@ def schedule(workflow_task_processor, schedule_time, execution, retry, debug):
         # Check task status, update new states and compute total cores
         # being used
         for task in pending_tasks:
+            show_task_info(task)
             if debug and log.level > 10 and task.taskid.startswith(debug):
                 log.setLevel(10) #start debugging
                 log.debug("ENTERING IN DEBUGGING MODE")
@@ -80,7 +81,7 @@ def schedule(workflow_task_processor, schedule_time, execution, retry, debug):
         
         # Process waiting tasks
         for task in sorted(pending_tasks, sort_tasks):
-            show_task_info(task)
+
             log.log(26, "Cores in use: %s" %cores_used)
             
             if task.status in set("WQRL"):
@@ -187,12 +188,12 @@ def show_task_info(task):
                     %task)
         logindent(2)
     logindent(2)
-    # Shows task job counter
+    # Shows details about jobs
     for j in task.jobs:
         if j.status == "D":
-            log.log(20, "%s: %s", j.status, j)
+            log.log(20, "(%s): %s", j.status, j)
         else:
-            log.log(24, "%s: %s", j.status, j)
+            log.log(24, "(%s): %s", j.status, j)
     logindent(-2)
 
     
@@ -203,7 +204,7 @@ def check_cores(j, cores_used, cores_total, execution):
                           " Use the --multicore option to enable more cores." %
                           (j, j.cores, cores_total))
     elif execution =="insitu" and j.cores > cores_total-cores_used:
-        log.log(22, "Job [%s] is waiting for [%d] core(s)" 
+        log.log(22, "Job [%s] awaiting [%d] core(s)" 
                  % (j, j.cores))
         return False
     else:

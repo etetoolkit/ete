@@ -1,10 +1,9 @@
 import os
 import logging
+log = logging.getLogger("main")
 from collections import defaultdict
 
-from logger import logindent
-log = logging.getLogger("main")
-
+from nprlib.logger import logindent
 from nprlib.utils import (md5, merge_arg_dicts, PhyloTree, SeqGroup,
                           checksum, read_time_file, GLOBALS)
 from nprlib.master_job import Job
@@ -28,6 +27,14 @@ def sptree_class_repr(cls, cls_name):
          cls.tname, 
          (getattr(cls, "taskid", None) or "?")[:6])
     
+def generic_class_repr(cls, cls_name):
+    """ Human readable representation of NPR sptree tasks.""" 
+    return "%s (%s tips, %s, %s)" %\
+        (cls_name, getattr(cls, "size", None) or 0,
+         cls.tname, 
+         (getattr(cls, "taskid", None) or "?")[:6])
+
+    
 class Task(object):
     def _get_max_cores(self):
         return max([j.cores for j in self.jobs]) or 1
@@ -35,7 +42,7 @@ class Task(object):
     cores = property(_get_max_cores,None)
     
     def __repr__(self):
-        return sptree_class_repr(self, "Task")
+        return generic_class_repr(self, "Task")
 
     def print_summary(self):
         print "Type:", self.ttype
@@ -83,19 +90,24 @@ class Task(object):
         # keeps a counter of how many cores are being used by running jobs
         self.cores_used = 0
         
+        self.job_status = {}
+        
         # Initialize job arguments 
         self.args = merge_arg_dicts(extra_args, base_args, parent=self)
 
     def get_status(self, sge_jobs=None):
+        logindent(2)
         saved_status = db.get_task_status(self.taskid)
         self.job_status = self.get_jobs_status(sge_jobs)
         job_status = set(self.job_status.keys())
-
         if job_status == set("D") and saved_status != "D":
+            logindent(-2)
             log.log(20, "Processing done task: %s", self)
+            logindent(2)
             try:
                 self.finish()
             except RetryException:
+                logindent(-2)
                 return "W"
             else:
                 st = "D"
@@ -120,9 +132,11 @@ class Task(object):
             if not self.check():
                 log.error("Task check not passed")
                 st = "E"
+                
         #self.save_status(st)
         #db.update_task(self.taskid, status=st)
         self.status = st
+        logindent(-2)
         return st
 
     def dump_inkey_file(self, *files):
@@ -175,23 +189,21 @@ class Task(object):
         ''' Check the status of all children jobs. '''
         self.cores_used = 0
         all_states = defaultdict(int)
-        new_jobs = []
-        for j in self.jobs:
+        jobs_to_check = list(reversed(self.jobs))
+        while jobs_to_check:
+            j = jobs_to_check.pop()
+            logindent(1)
             if j not in self._donejobs:
                 st = j.get_status(sge_jobs)
                 all_states[st] += 1
                 if st == "D":
                     self._donejobs.add(j)
-
+                    # If task has an internal worflow processor,
+                    # launch it and populate with new jobs
                     if istask(j) and j.task_processor:
-                        # process task right here new tasks will be
-                        # added as new jobs.
                         for new_job in j.task_processor(j):
-                            # In case the job is already done 
-                            new_st = new_job.get_status()
-                            all_states[new_st] += 1
-                            new_jobs.append(new_job)
-                        
+                            jobs_to_check.append(new_job)
+                            self.jobs.append(new_job)
                 elif st in set("QRL"):
                     if isjob(j) and not j.host.startswith("@sge"):
                         self.cores_used += j.cores
@@ -201,11 +213,10 @@ class Task(object):
                     log.log(20, "Error found in: %s", j)
                     errorpath = j.jobdir if isjob(j) else j.taskdir
                     log.log(20, "  %s", errorpath)
-                        
             else:
                 all_states["D"] += 1
-                
-        self.jobs.extend(new_jobs)
+            logindent(-1)              
+
                 
         if not all_states:
             all_states["D"] +=1
@@ -292,8 +303,7 @@ class Task(object):
 
 class MsfTask(Task):
     def __repr__(self):
-        return genetree_class_repr(self, "@@5:MultiSeqTask@@1:")
-
+        return genetree_class_repr(self, "@@6:MultiSeqTask@@1:")
         
 class AlgTask(Task):
     def __repr__(self):
@@ -351,7 +361,7 @@ class ModelTesterTask(Task):
 
 class TreeTask(Task):
     def __repr__(self):
-        return genetree_class_repr(self, "@@3:TreeTask@@1:")
+        return generic_class_repr(self, "@@3:TreeTask@@1:")
 
     def check(self):
         if os.path.exists(self.tree_file) and \
@@ -362,6 +372,10 @@ class TreeTask(Task):
     def finish(self):
         self.dump_inkey_file(self.alg_phylip_file)
 
+class TreeMergeTask(Task):
+    def __repr__(self):
+        return generic_class_repr(self, "@@3:TreeMergeTask@@1:")
+       
 
 class ConcatAlgTask(Task):
     def __repr__(self):
@@ -375,11 +389,15 @@ class ConcatAlgTask(Task):
             return True
         return False
 
-    def finish(self):
-        self.dump_inkey_file(self.alg_fasta_file, 
-                             self.alg_phylip_file)
+class CogSelectorTask(Task):
+    def __repr__(self):
+        return sptree_class_repr(self, "@@6:CogSelectorTask@@1:")
 
-
+    def check(self):
+        if len(self.cogs) > 1:
+            return True
+        return False
+        
     
 def register_task_recursively(task, parentid=None):
     db.add_task(tid=task.taskid, nid=task.nodeid, parent=parentid,

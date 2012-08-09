@@ -4,7 +4,7 @@ from StringIO import StringIO
 import logging
 log = logging.getLogger("main")
 
-from nprlib.master_task import Task
+from nprlib.master_task import CogSelectorTask
 from nprlib.errors import DataError
 from nprlib.utils import GLOBALS, print_as_table, generate_node_ids, encode_seqname
 from nprlib import db
@@ -13,12 +13,12 @@ __all__ = ["BrhCogSelector"]
 
 quote = lambda _x: '"%s"' %_x
 
-class BrhCogSelector(Task):
+class BrhCogSelector(CogSelectorTask):
     def __init__(self, target_sp, out_sp, seqtype):
         
         node_id, clade_id = generate_node_ids(target_sp, out_sp)
         # Initialize task
-        Task.__init__(self, node_id, "cog_selector", "Cog-Selector")
+        CogSelectorTask.__init__(self, node_id, "cog_selector", "Cog-Selector")
 
         # taskid does not depend on jobs, so I set it manually
         self.cladeid = clade_id
@@ -27,21 +27,19 @@ class BrhCogSelector(Task):
         self.outgroups = out_sp
         self.taskid = node_id
         self.init()
-       
-        # Clusters of Ortholog Groups
-        all_species = target_sp | out_sp
-        self.size = len(all_species)
-            
+
+        self.size = len(target_sp | out_sp)
+        self.cog_analysis = None
+        self.cogs = None
+        
+    def finish(self):
+        all_species = self.targets | self.outgroups
         cogs, cog_analysis = brh_cogs(db, all_species)
         self.cog_analysis = cog_analysis
         self.cogs = []
         for co in cogs:
             self.cogs.append(map(encode_seqname, co))
         
-    def check(self):
-        if len(self.cogs) > 1:
-            return True
-        return False
         
 def brh_cogs(DB, species, min_score=0.3, missing_factor=0.0, \
              seed_sp=None):
@@ -56,7 +54,7 @@ def brh_cogs(DB, species, min_score=0.3, missing_factor=0.0, \
        given seq must have  orthologs.
 
     """
-    log.log(28, "Searching BRH orthologs")
+    log.log(26, "Searching BRH orthologs")
     species = set(map(str, species))
 
     if type(seed_sp) in set([str, int]):
