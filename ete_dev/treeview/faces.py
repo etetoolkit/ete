@@ -797,7 +797,6 @@ class SequenceFace(Face):
         self.ntfg = ntfg
         self.ntbg = ntbg
 
-
     def update_pixmap(self):
         font = QtGui.QFont("Courier", self.fsize)
         fm = QtGui.QFontMetrics(font)
