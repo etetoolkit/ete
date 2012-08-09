@@ -592,7 +592,8 @@ if __name__ == "__main__":
     GLOBALS["target_species"] = None
     GLOBALS["target_sequences"] = None
     GLOBALS["spname_delimiter"] = args.spname_delimiter
-
+    GLOBALS["color_shell"] = True
+    
     if not os.path.exists(GLOBALS["basedir"]):
         os.makedirs(GLOBALS["basedir"])
 
