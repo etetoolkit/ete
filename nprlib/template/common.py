@@ -242,18 +242,13 @@ def split_tree(task_tree, main_tree, alg_path, npr_conf):
         master_node = trees_to_browse.pop()
         root_content = set([leaf.name for leaf in n2content[master_node]])
         for node in master_node.iter_leaves(is_leaf_fn=processable_node):
-            print node
             if npr_conf.outgroup_size == 0:
                 seqs = set([_i.name for _i in n2content[node]])
                 outs = set()
             else:
                 seqs, outs = select_outgroups(node, n2content, npr_conf)
-            log.log(28, "%s %s", seqs, outs)
-            log.log(28, "%s", seqs | outs)
-            log.log(28, "%s", root_content)
-
             if seqs | outs == root_content:
-                log.log(28, "discarding NPR !!!!!111")
+                log.log(24, "Discarding NPR node due to identity with its parent")
                 trees_to_browse.append(node)
             else:
                 yield node, seqs, outs
@@ -274,9 +269,8 @@ def get_next_npr_node(threadid, ttree, mtree, alg_path, npr_conf):
                                                              fgcolor="blue"), 0)
                 node.img_style["fgcolor"] = "Gold"
                 node.img_style["size"] = 30
-            log.log(20, "Found processable node. Supports: %0.2f (children=%s)",
-                    node.support, ','.join(["%0.2f" % ch.support
-                                            for ch in node.children]))
+
+            log.log(28, "Selected node = targets:%s outgroups: %s ", len(seqs), len(outs))
             # Yield new iteration
             inc_iternumber(threadid)
             yield node, seqs, outs
@@ -352,8 +346,14 @@ def select_outgroups(target, n2content, options):
 
     seqs = [n.name for n in n2content[target]]
     outs = [n.name for n in n2content[best_outgroup]]
+   
+    log.log(20, "Found possible outgroup. Size:%s Score(support,size,dist):%s", len(outs), score(best_outgroup))
+   
+    log.log(20, "Supports: %0.2f (children=%s)", best_outgroup.support,
+            ','.join(["%0.2f" % ch.support for ch in
+                      best_outgroup.children]))
+
     
-    log.log(28, "Selected outgroup size: %s support: %s ", len(outs), score(best_outgroup))
     #for x in valid_nodes[:10]:
     #    print score(x), min(score(x))
         

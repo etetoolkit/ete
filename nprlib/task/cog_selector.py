@@ -14,7 +14,7 @@ __all__ = ["BrhCogSelector"]
 quote = lambda _x: '"%s"' %_x
 
 class BrhCogSelector(CogSelectorTask):
-    def __init__(self, target_sp, out_sp, seqtype):
+    def __init__(self, target_sp, out_sp, seqtype, conf):
         
         node_id, clade_id = generate_node_ids(target_sp, out_sp)
         # Initialize task

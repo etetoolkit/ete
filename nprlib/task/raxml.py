@@ -9,7 +9,7 @@ log = logging.getLogger("main")
 
 from nprlib.master_task import TreeTask
 from nprlib.master_job import Job
-from nprlib.utils import basename, PhyloTree, OrderedDict
+from nprlib.utils import basename, PhyloTree, OrderedDict, GLOBALS
 
 __all__ = ["Raxml"]
 
@@ -17,10 +17,11 @@ class Raxml(TreeTask):
     def __init__(self, nodeid, alg_file, constrain_tree,  model, seqtype, conf):
         # PTHREADS version needs at least -T2, which is actually
         # similar to the normal version
-        threads = int(conf["raxml"].get("_max_cores", conf["main"]["_max_cores"]))
+        max_cores = GLOBALS["_max_cores"]
+        threads = int(conf["raxml"].get("_max_cores", max_cores))
 
-        if threads > conf["main"]["_max_cores"]:
-            threads = conf["main"]["_max_cores"]
+        if threads > max_cores:
+            threads = max_cores
             log.warning("RAxML execution will be limited to [%d] threads." %
                         threads)
         if threads > 1:

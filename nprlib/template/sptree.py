@@ -58,7 +58,8 @@ def process_task(task, npr_conf, nodeid2info):
     new_tasks = []    
     if ttype == "cog_selector":
         # register concat alignment task
-        concat_job = npr_conf.alg_concatenator(nodeid, task.cogs, seqtype)
+        concat_job = npr_conf.alg_concatenator(nodeid, task.cogs,
+                                               seqtype, conf)
         concat_job.size = task.size
         new_tasks.append(concat_job)
        
@@ -104,7 +105,8 @@ def process_task(task, npr_conf, nodeid2info):
                                                   mtree, None, npr_conf):
             log.log(28, "Adding new node: %s seqs, %s outgroups",
                     len(seqs), len(outs))
-            new_task_node = npr_conf.cog_selector(seqs, outs, source_seqtype)
+            new_task_node = npr_conf.cog_selector(seqs, outs,
+                                                  source_seqtype, conf)
             new_tasks.append(new_task_node)
             db.add_node(threadid,
                         new_task_node.nodeid, new_task_node.cladeid,
@@ -124,7 +126,7 @@ def pipeline(task):
                               len(GLOBALS["target_species"]),
                               source_seqtype)
         initial_task = npr_conf.cog_selector(GLOBALS["target_species"],
-                                             set(), source_seqtype)
+                                             set(), source_seqtype, GLOBALS["config"])
         initial_task.main_tree = main_tree = None
         initial_task.threadid = generate_runid()
         # Register node 

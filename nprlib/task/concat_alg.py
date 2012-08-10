@@ -13,8 +13,9 @@ from nprlib.errors import TaskError
 __all__ = ["ConcatAlg"]
 
 class ConcatAlg(ConcatAlgTask):
-    def __init__(self, nodeid, cogs, seqtype):
-        self.cogs_hard_limit = conf["alg_concat"]["_max_cogs"]
+    def __init__(self, nodeid, cogs, seqtype, conf):
+        self.cogs_hard_limit = int(conf["alg_concat"]["_max_cogs"])
+        print conf["alg_concat"]["_max_cogs"]
         base_args = {}
         base_args["_max_cogs"] = self.cogs_hard_limit
         

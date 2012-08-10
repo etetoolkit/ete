@@ -32,7 +32,7 @@ def schedule(workflow_task_processor, schedule_time, execution, retry, debug):
     ## ===================================
     ## INITIALIZE BASIC VARS AND SHORTCUTS
     config = GLOBALS["config"]
-    cores_total = config["main"]["_max_cores"]
+    cores_total = GLOBALS["_max_cores"]
     execution, run_detached = execution
     # keeps the count of how many times an error task has been retried
     task2retry = defaultdict(int) 
