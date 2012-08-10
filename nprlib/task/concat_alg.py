@@ -14,7 +14,10 @@ __all__ = ["ConcatAlg"]
 
 class ConcatAlg(ConcatAlgTask):
     def __init__(self, nodeid, cogs, seqtype):
+        self.cogs_hard_limit = conf["alg_concat"]["_max_cogs"]
         base_args = {}
+        base_args["_max_cogs"] = self.cogs_hard_limit
+        
         ConcatAlgTask.__init__(self, nodeid, "concat_alg", "ConcatAlg", 
                       base_args)
         self.cogs = cogs
@@ -28,12 +31,14 @@ class ConcatAlg(ConcatAlgTask):
         self.alg_fasta_file = pjoin(self.taskdir, "final_alg.fasta")
         self.alg_phylip_file = pjoin(self.taskdir, "final_alg.iphylip")
         self.partitions_file = pjoin(self.taskdir, "final_alg.regions")
+
+
         
     def load_jobs(self):
         # I want a single phylognetic tree for each cog
         from nprlib.template.genetree import pipeline
         
-        for co in self.cogs[:2]:
+        for co in self.cogs[:self.cogs_hard_limit]:
             # Register a new msf task for each COG
             job = Msf(set(co), set(),
                       seqtype = self.seqtype)

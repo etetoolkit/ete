@@ -181,10 +181,12 @@ def split_tree(task_tree, main_tree, alg_path, npr_conf):
         is suitable for a NPR iteration. It can be used as
         "is_leaf_fn" when traversing a tree.
 
-        Note it uses variables within the split tree function.
+        Note that this function uses several variables which change
+        within split_tree function.
+
         """
         _isleaf = False
-        if len(n2content[_n]) > 2 and _n is not task_tree:
+        if len(n2content[_n]) > 2 and _n is not master_node:
             if ALG and npr_conf.max_seq_simiarity < 1.0: 
                 if not hasattr(_n, "seqs_mean_ident"):
                     log.log(20, "Calculating node sequence stats...")
@@ -231,15 +233,31 @@ def split_tree(task_tree, main_tree, alg_path, npr_conf):
     #    n.add_features(seqs_max_ident=mx, seqs_min_ident=mn,
     #                   seqs_mean_ident=avg, seqs_std_ident=std)
 
-    log.log(20, "Finding next NPR nodes...")        
-    for node in task_tree.iter_leaves(is_leaf_fn=processable_node):
-       
-        if npr_conf.outgroup_size == 0:
-            seqs = set([_i.name for _i in n2content[node]])
-            outs = set()
-        else:
-            seqs, outs = select_outgroups(node, n2content, npr_conf)
-        yield node, seqs, outs
+    log.log(20, "Finding next NPR nodes...")
+    # task_tree is actually a node in main_tree, since it has been
+    # already merged
+    trees_to_browse = [task_tree]
+    
+    while trees_to_browse: 
+        master_node = trees_to_browse.pop()
+        root_content = set([leaf.name for leaf in n2content[master_node]])
+        for node in master_node.iter_leaves(is_leaf_fn=processable_node):
+            print node
+            if npr_conf.outgroup_size == 0:
+                seqs = set([_i.name for _i in n2content[node]])
+                outs = set()
+            else:
+                seqs, outs = select_outgroups(node, n2content, npr_conf)
+            log.log(28, "%s %s", seqs, outs)
+            log.log(28, "%s", seqs | outs)
+            log.log(28, "%s", root_content)
+
+            if seqs | outs == root_content:
+                log.log(28, "discarding NPR !!!!!111")
+                trees_to_browse.append(node)
+            else:
+                yield node, seqs, outs
+            
 
 def get_next_npr_node(threadid, ttree, mtree, alg_path, npr_conf):
     current_iter = get_iternumber(threadid)

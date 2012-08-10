@@ -39,6 +39,7 @@ class BrhCogSelector(CogSelectorTask):
         self.cogs = []
         for co in cogs:
             self.cogs.append(map(encode_seqname, co))
+        self.cogs.sort()
         
         
 def brh_cogs(DB, species, min_score=0.3, missing_factor=0.0, \

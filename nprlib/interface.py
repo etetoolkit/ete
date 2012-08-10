@@ -23,12 +23,12 @@ else:
 # CONVERT shell colors to the same curses palette
 SHELL_COLORS = {
     "10": '\033[1;37;41m', # white on red
-    "11": '\033[1;37;43m', # white on yellow
+    "11": '\033[1;37;43m', # white on orange
     "12": '\033[1;37;45m', # white on magenta
-    "6": '\033[94m', # blue
-    "3": '\033[92m', # green
-    "4": '\033[93m', # yellow
-    "5": '\033[91m', # red
+    "6": '\033[34m', # blue
+    "3": '\033[32m', # green
+    "4": '\033[33m', # orange
+    "5": '\033[31m', # red
     "2": "\033[35m", # magenta
     "1": "\033[0m", # white
     "0": "\033[0m", # end
