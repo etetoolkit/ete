@@ -15,10 +15,18 @@ quote = lambda _x: '"%s"' %_x
 
 class BrhCogSelector(CogSelectorTask):
     def __init__(self, target_sp, out_sp, seqtype, conf):
+
+        self.seed = conf["brh_cog"]["_seed"]
+        self.missing_factor = float(conf["brh_cog"]["_species_missing_factor"])
+        base_args = {
+            "_seed": self.seed,
+            "_missing_factor": self.missing_factor
+        }
         
         node_id, clade_id = generate_node_ids(target_sp, out_sp)
         # Initialize task
-        CogSelectorTask.__init__(self, node_id, "cog_selector", "Cog-Selector")
+        CogSelectorTask.__init__(self, node_id, "cog_selector",
+                                 "Cog-Selector", base_args)
 
         # taskid does not depend on jobs, so I set it manually
         self.cladeid = clade_id
@@ -34,7 +42,10 @@ class BrhCogSelector(CogSelectorTask):
         
     def finish(self):
         all_species = self.targets | self.outgroups
-        cogs, cog_analysis = brh_cogs(db, all_species)
+        
+        cogs, cog_analysis = brh_cogs(db, all_species,
+                                      missing_factor=self.missing_factor,
+                                      seed_sp=self.seed)
         self.cog_analysis = cog_analysis
         self.cogs = []
         for co in cogs:
@@ -58,11 +69,9 @@ def brh_cogs(DB, species, min_score=0.3, missing_factor=0.0, \
     log.log(26, "Searching BRH orthologs")
     species = set(map(str, species))
 
-    if type(seed_sp) in set([str, int]):
-        sp_to_test = [str(seed_sp)]
-    elif seed_sp is []: # Test all seeds
+    if seed_sp == "auto":
         sp_to_test = list(species)
-    else:
+    elif seed_sp == "largest":
         cmd = """SELECT taxid1, count(*) from ortho_pair GROUP BY taxid1"""
         cmd2 = """SELECT taxid2, count(*) from ortho_pair GROUP BY taxid2"""
         db.cursor.execute(cmd)
@@ -79,6 +88,8 @@ def brh_cogs(DB, species, min_score=0.3, missing_factor=0.0, \
         sp_to_test = [largest_sp]
         log.log(28, "Using %s as search seed. Proteome size=%s genes" %\
             (largest_sp, sp2size[largest_sp]))
+    else:
+        sp_to_test = [str(seed_sp)]
         
     # The following loop tests each possible seed if none is
     # specified.
@@ -119,7 +130,7 @@ def brh_cogs(DB, species, min_score=0.3, missing_factor=0.0, \
         for missing_species_allowed in xrange(0, int(round(len(species) * missing_factor))+1):
             # filtered_candidates = set([seqid for seqid, counter in seqid2spcs.iteritems() \
             #                           if counter>len(species)*(1-missing_factor)])
-
+            #log.log(20, "Evaluating COGs when allowing %s missing species", missing_species_allowed)
             filtered_candidates = set([seqid for seqid, counter in seqid2spcs.iteritems() \
                                        if counter >= len(species) - missing_species_allowed - 1]) # -1 is to avoid counting seed 
             filtered_ids = ','.join(map(quote, filtered_candidates))
@@ -185,51 +196,52 @@ def brh_cogs(DB, species, min_score=0.3, missing_factor=0.0, \
     cogs, cogs_analysis = get_best_selection(best_cogs_selection, species)
     return cogs[2], cogs_analysis
 
-def _compare_cog_selection(cs1, cs2):
-    seed_1, missing_sp_allowed_1, candidates_1, sp2hits_1 = cs1
-    seed_2, missing_sp_allowed_2, candidates_2, sp2hits_2 = cs2
-
-    score_1, min_cov_1, max_cov_1, median_cov_1, cov_std_1, cog_cov_1 = get_cog_score(candidates_1, sp2hits_1, median_cogs)
-    score_2, min_cov_2, max_cov_2, median_cov_2, cov_std_2, cog_cov_2 = get_cog_score(candidates_2, sp2hits_2, median_cogs)
-
-    sp_represented_1 = len(sp2hits_1)
-    sp_represented_2 = len(sp2hits_1)
-    cmp_rpr = cmp(sp_represented_1, sp_represented_2)
-    if cmp_rpr == 1:
-        return 1
-    elif cmp_rpr == -1:
-        return -1
-    else:
-        cmp_score = cmp(score_1, score_2)
-        if cmp_score == 1:
-            return 1
-        elif cmp_score == -1:
-            return -1
-        else:
-            cmp_mincov = cmp(min_cov_1, min_cov_2)
-            if cmp_mincov == 1: 
-                return 1
-            elif cmp_mincov == -1: 
-                return -1 
-            else:
-                cmp_maxcov = cmp(max_cov_1, max_cov_2)
-                if cmp_maxcov == 1: 
-                    return 1
-                elif cmp_maxcov == -1: 
-                    return -1 
-                else:
-                    cmp_cand = cmp(len(candidates_1), len(candidates_2))
-                    if cmp_cand == 1:
-                        return 1
-                    elif cmp_cand == -1:
-                        return -1
-                    else:
-                        return 0 
    
 
 def get_best_selection(cogs_selections, species):
+
+    def _compare_cog_selection(cs1, cs2):
+        seed_1, missing_sp_allowed_1, candidates_1, sp2hits_1 = cs1
+        seed_2, missing_sp_allowed_2, candidates_2, sp2hits_2 = cs2
+
+        score_1, min_cov_1, max_cov_1, median_cov_1, cov_std_1, cog_cov_1 = get_cog_score(candidates_1, sp2hits_1, median_cogs)
+        score_2, min_cov_2, max_cov_2, median_cov_2, cov_std_2, cog_cov_2 = get_cog_score(candidates_2, sp2hits_2, median_cogs)
+
+        sp_represented_1 = len(sp2hits_1)
+        sp_represented_2 = len(sp2hits_1)
+        cmp_rpr = cmp(sp_represented_1, sp_represented_2)
+        if cmp_rpr == 1:
+            return 1
+        elif cmp_rpr == -1:
+            return -1
+        else:
+            cmp_score = cmp(score_1, score_2)
+            if cmp_score == 1:
+                return 1
+            elif cmp_score == -1:
+                return -1
+            else:
+                cmp_mincov = cmp(min_cov_1, min_cov_2)
+                if cmp_mincov == 1: 
+                    return 1
+                elif cmp_mincov == -1: 
+                    return -1 
+                else:
+                    cmp_maxcov = cmp(max_cov_1, max_cov_2)
+                    if cmp_maxcov == 1: 
+                        return 1
+                    elif cmp_maxcov == -1: 
+                        return -1 
+                    else:
+                        cmp_cand = cmp(len(candidates_1), len(candidates_2))
+                        if cmp_cand == 1:
+                            return 1
+                        elif cmp_cand == -1:
+                            return -1
+                        else:
+                            return 0 
+    
     min_score = 0.5
-   
     max_cogs = numpy.max([len(data[2]) for data in cogs_selections])
     median_cogs = numpy.median([len(data[2]) for data in cogs_selections])
 
@@ -259,7 +271,7 @@ def get_best_selection(cogs_selections, species):
             best_cog_selection = i
             flag = "*"
         else:
-            flag = ""
+            flag = " "
         data = (candidates, 
                 flag+"%10s" %seed, \
                     missing_sp_allowed, \

@@ -102,8 +102,10 @@ def create_db():
 
     CREATE INDEX IF NOT EXISTS i5 ON node(runid, cladeid);
 
-    CREATE INDEX IF NOT EXISTS i6 ON ortho_pair (taxid1, taxid2, score);
-    CREATE INDEX IF NOT EXISTS i7 ON ortho_pair (taxid1, seqid1, taxid2, seqid2, score);
+    CREATE INDEX IF NOT EXISTS i6 ON ortho_pair (taxid1, seqid1, taxid2, score);
+    CREATE INDEX IF NOT EXISTS i7 ON ortho_pair (taxid2, seqid2, taxid1, score);
+    CREATE INDEX IF NOT EXISTS i8 ON ortho_pair (taxid1, seqid1, taxid2, score);
+    CREATE INDEX IF NOT EXISTS i9 ON ortho_pair (taxid2, seqid2, taxid1, score);
     
     '''
     cursor.executescript(job_table)

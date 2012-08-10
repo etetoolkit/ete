@@ -32,8 +32,6 @@ class ConcatAlg(ConcatAlgTask):
         self.alg_fasta_file = pjoin(self.taskdir, "final_alg.fasta")
         self.alg_phylip_file = pjoin(self.taskdir, "final_alg.iphylip")
         self.partitions_file = pjoin(self.taskdir, "final_alg.regions")
-
-
         
     def load_jobs(self):
         # I want a single phylognetic tree for each cog
