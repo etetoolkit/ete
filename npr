@@ -148,7 +148,7 @@ def main(args):
     except Exception, e:
         raise ConfigError(str(e))
 
-    npr_template = config["main"].get("template", None)
+    npr_template = args.workflow 
     if npr_template == "sptree":
         from nprlib.template.sptree import pipeline
     elif npr_template == "genetree":
@@ -204,7 +204,7 @@ def main(args):
         apps.test_apps(config["app"])
 
     # Set number of CPUs available
-    config["main"]["_max_cores"] = args.maxcores
+    GLOBALS["_max_cores"] = args.maxcores
     log.debug("Enabling %d CPU cores" %args.maxcores)
 
     # Create dir structure
@@ -485,6 +485,11 @@ if __name__ == "__main__":
                              " sequence identifier (i.e. HUMAN_p53)."
                              " Note that species name must precede seq.identifier."
                         )
+
+    input_group.add_argument("-w", dest="workflow",
+                        choices=["sptree", "genetree"],
+                        required=True,
+                        help="Defines phylogenetic workflow")
 
     # Output data related flags
     output_group = parser.add_argument_group('OUTPUT OPTIONS:')
