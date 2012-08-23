@@ -239,7 +239,12 @@ def add_seq_name(seqid, name):
            ' VALUES ("%s", "%s");' %(seqid, name))
     execute(cmd)
     autocommit()
-
+    
+def add_seq_name_table(entries):
+    cmd = 'INSERT OR REPLACE INTO seqid2name (seqid, name) VALUES (?, ?)'
+    cursor.executemany(cmd, entries)
+    autocommit()
+    
 def get_seq_name(seqid):
     cmd = 'SELECT name FROM seqid2name WHERE seqid="%s"' %seqid
     execute(cmd)
@@ -258,6 +263,11 @@ def add_seq(seqid, seq, seqtype):
     execute(cmd)
     autocommit()
 
+def add_seq_table(entries, seqtype):
+    cmd = 'INSERT OR REPLACE INTO %s_seq (seqid, seq) VALUES (?, ?)' %seqtype
+    cursor.executemany(cmd, entries)
+    autocommit()
+    
 def get_seq(seqid, seqtype):
     cmd = 'SELECT seq FROM %s_seq WHERE seqid = "%s";' %(seqtype, seqid)
     execute(cmd)
@@ -269,6 +279,11 @@ def add_ortho_pair(taxid1, seqid1, taxid2, seqid2, score):
     execute(cmd)
     autocommit()
 
+def add_ortho_pair_table(entries):
+    cmd = 'INSERT OR REPLACE INTO ortho_pair (taxid1, seqid1, taxid2, seqid2, score) VALUES (?, ?, ?, ?, ?)' 
+    cursor.executemany(cmd, entries)
+    autocommit()
+    
 def get_all_species():
     cmd = 'SELECT DISTINCT taxid1, taxid2 FROM ortho_pair;'
     execute(cmd)
