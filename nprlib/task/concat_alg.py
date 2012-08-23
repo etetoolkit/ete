@@ -78,7 +78,7 @@ class ConcatAlg(ConcatAlgTask):
         mainalg.write(outfile=self.alg_fasta_file, format="fasta")
         mainalg.write(outfile=self.alg_phylip_file, format="iphylip_relaxed")
         open(self.partitions_file, "w").write('\n'.join(partitions))
-        log.log(26, "Modeled regions: \n"+'\n'.join(partitions)
+        log.log(26, "Modeled regions: \n"+'\n'.join(partitions))
                         
 def get_species_code(name, splitter, field):
     # By default, taxid is the first par of the seqid, separated by
