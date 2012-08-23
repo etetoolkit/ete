@@ -298,7 +298,11 @@ def check_and_load_sequences(args, base_dir, npr_template):
     if npr_template == "sptree" and args.ortho_pairs:
         log.log(28, "Loading ortho pairs into database...")
         for line in open(args.ortho_pairs):
-            name1, name2 = line.strip().split("\t")
+            try:
+                name1, name2, pair_score = map(strip, line.split("\t"))
+            except ValueError:
+                name1, name2 = map(strip, line.split("\t"))
+                pair_score = 1.0
             tax1, seq1 = map(strip, name1.split(args.spname_delimiter))
             tax2, seq2 = map(strip, name2.split(args.spname_delimiter))
 
@@ -306,7 +310,7 @@ def check_and_load_sequences(args, base_dir, npr_template):
                set([tax1,tax2]).issubset(GLOBALS["target_species"]):
                 # add ortho pair to DB
                 (tax1, seq1), (tax2, seq2) = sorted([(tax1,seq1), (tax2,seq2)])
-                db.add_ortho_pair(tax1, seq1, tax2, seq2)
+                db.add_ortho_pair(tax1, seq1, tax2, seq2, pair_score)
                 # keep a list of target seqs and species
                 all_species.update([tax1, tax2])
                 for realname in name1, name2:
