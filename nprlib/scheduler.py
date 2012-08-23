@@ -80,9 +80,10 @@ def schedule(workflow_task_processor, schedule_time, execution, retry, debug):
         ## ================================
         
         # Process waiting tasks
+        launched_tasks = 0
         for task in sorted(pending_tasks, sort_tasks):
 
-            log.log(26, "Cores in use: %s" %cores_used)
+            log.log(28, "Cores in use: %s/%s", cores_used, cores_total)
             
             if task.status in set("WQRL"):
                 exec_type = getattr(task, "exec_type", execution)
@@ -92,7 +93,8 @@ def schedule(workflow_task_processor, schedule_time, execution, retry, debug):
                         continue
                     
                     if exec_type == "insitu":
-                        log.log(28, "Launching %s" %j)
+                        log.log(24, "Launching %s" %j)
+                        launched_tasks += 1
                         try:
                             if run_detached:
                                 launch_detached(j, cmd)
@@ -118,8 +120,9 @@ def schedule(workflow_task_processor, schedule_time, execution, retry, debug):
                         j.status = "R"
                         print cmd
                 if task.status in set("QRL"):
-                    wait_time = schedule_time
-                    
+                    wait_time = schedule_time 
+                log.log(28, "Launched %s tasks. Busy cores %s", launched_tasks, cores_used)
+                
             elif task.status == "D":
                 logindent(3)
                 new_tasks = workflow_task_processor(task)

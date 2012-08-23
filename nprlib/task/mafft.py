@@ -16,8 +16,7 @@ class Mafft(AlgTask):
 
         self.conf = conf
         self.seqtype = seqtype
-        self.multiseq_file = multiseq_file
-
+        self.multiseq_file = multiseq_file     
         self.init()
 
         self.alg_fasta_file = os.path.join(self.taskdir, "final_alg.fasta")
@@ -30,6 +29,7 @@ class Mafft(AlgTask):
         # one.
         args[""] = self.multiseq_file
         job = Job(self.conf["app"]["mafft"], args, parent_ids=[self.nodeid])
+        job.cores = self.conf["threading"]["mafft"]
         self.jobs.append(job)
 
     def finish(self):

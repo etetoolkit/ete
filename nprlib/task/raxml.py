@@ -17,22 +17,19 @@ class Raxml(TreeTask):
     def __init__(self, nodeid, alg_file, constrain_tree,  model, seqtype, conf):
         # PTHREADS version needs at least -T2, which is actually
         # similar to the normal version
-        max_cores = GLOBALS["_max_cores"]
-        threads = int(conf["raxml"].get("_max_cores", max_cores))
-
-        if threads > max_cores:
-            threads = max_cores
-            log.warning("RAxML execution will be limited to [%d] threads." %
-                        threads)
-        if threads > 1:
-            raxml_bin = conf["app"]["raxml-pthreads"]
-        else:
-            raxml_bin = conf["app"]["raxml"]
+       
         base_args = OrderedDict()
-
         TreeTask.__init__(self, nodeid, "tree", "RaxML", 
                           base_args, conf["raxml"])
 
+        max_cores = GLOBALS["_max_cores"]
+        if conf["raxml"]["_app"] == "raxml-pthreads":
+            threads = conf["threading"].get("raxml-pthreads")
+            raxml_bin = conf["app"]["raxml-pthreads"]
+        elif conf["raxml"]["_app"] == "raxml":
+            threads = 1
+            raxml_bin = conf["app"]["raxml"]
+        
         self.raxml_bin = raxml_bin
         self.threads = threads
         self.conf = conf
@@ -78,11 +75,6 @@ class Raxml(TreeTask):
             self.alrt_tree_file = None
 
     def load_jobs(self):
-        if self.threads > 1:
-            bin = self.conf["app"]["raxml-pthreads"]
-        else:
-            bin = self.conf["app"]["raxml"]
-        
         args = self.args.copy()
         args["-s"] = self.alg_phylip_file
         args["-m"] = self.model_string

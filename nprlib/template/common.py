@@ -257,6 +257,7 @@ def split_tree(task_tree, main_tree, alg_path, npr_conf):
 def get_next_npr_node(threadid, ttree, mtree, alg_path, npr_conf):
     current_iter = get_iternumber(threadid)
     if npr_conf.max_iters and current_iter >= npr_conf.max_iters:
+        log.log(28, "Maximum number of iterations reached!")
         return
         
     for node, seqs, outs in split_tree(ttree, mtree, alg_path, npr_conf):

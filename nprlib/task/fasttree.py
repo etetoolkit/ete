@@ -39,6 +39,7 @@ class FastTree(TreeTask):
 
         TreeTask.__init__(self, nodeid, "tree", "FastTree", 
                       base_args, conf["fasttree"])
+
         self.init()
 
         self.tree_file = os.path.join(self.taskdir, "final_tree.nw")
@@ -74,7 +75,7 @@ class FastTree(TreeTask):
             args["-constraints"] = "constraint_alg.fasta"
         args[self.alg_phylip_file] = ""
         job = Job(self.conf["app"]["fasttree"], args, parent_ids=[self.nodeid])
-      
+        job.cores = self.conf["threading"]["fasttree"]
         self.jobs.append(job)
 
     def finish(self):

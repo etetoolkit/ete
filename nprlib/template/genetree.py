@@ -253,7 +253,7 @@ def process_task(task, npr_conf, nodeid2info):
         task.min_ident = mn
         task.mean_ident = mean
         task.std_ident = std
-        
+        next_task = None
         if ttype == "alg" and npr_conf.alg_cleaner:
             next_task = npr_conf.alg_cleaner(nodeid, seqtype,
                                              alg_fasta_file,
@@ -278,26 +278,28 @@ def process_task(task, npr_conf, nodeid2info):
                                                   alg_fasta_file,
                                                   alg_phylip_file,
                                                   constrain_tree_path, conf)
-            else:
+            elif npr_conf.tree_builder:
                 next_task = npr_conf.tree_builder(nodeid,
                                                   alg_phylip_file,
                                                   constrain_tree_path, None,
                                                   seqtype, conf)
-        next_task.size = task.size
-        new_tasks.append(next_task)
+        if next_task:
+            next_task.size = task.size
+            new_tasks.append(next_task)
 
     elif ttype == "mchooser":
-        alg_fasta_file = task.alg_fasta_file
-        alg_phylip_file = task.alg_phylip_file
-        model = task.get_best_model()
-        if constrain_tree:
-            open(constrain_tree_path, "w").write(constrain_tree)
-                                          
-        tree_task = npr_conf.tree_builder(nodeid, alg_phylip_file,
-                                          constrain_tree_path, model, seqtype,
-                                          conf)
-        tree_task.size = task.size
-        new_tasks.append(tree_task)
+        if npr_conf.tree_builder:
+            alg_fasta_file = task.alg_fasta_file
+            alg_phylip_file = task.alg_phylip_file
+            model = task.get_best_model()
+            if constrain_tree:
+                open(constrain_tree_path, "w").write(constrain_tree)
+
+            tree_task = npr_conf.tree_builder(nodeid, alg_phylip_file,
+                                              constrain_tree_path, model, seqtype,
+                                              conf)
+            tree_task.size = task.size
+            new_tasks.append(tree_task)
 
     elif ttype == "tree":
         treemerge_task = TreeMerger(nodeid, seqtype, task.tree_file, conf)

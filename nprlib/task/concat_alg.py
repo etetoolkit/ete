@@ -15,7 +15,6 @@ __all__ = ["ConcatAlg"]
 class ConcatAlg(ConcatAlgTask):
     def __init__(self, nodeid, cogs, seqtype, conf):
         self.cogs_hard_limit = int(conf["alg_concat"]["_max_cogs"])
-        print conf["alg_concat"]["_max_cogs"]
         base_args = {}
         base_args["_max_cogs"] = self.cogs_hard_limit
         
@@ -26,7 +25,11 @@ class ConcatAlg(ConcatAlgTask):
         self.cog_ids = set()
         self.job2alg = {}
         self.job2model = {}
-        self.default_model = "JTT"
+        if seqtype == "aa":
+            self.default_model = conf["alg_concat"]["_default_aa_model"]
+        elif seqtype == "nt":
+            self.default_model = conf["alg_concat"]["_default_nt_model"]
+        
         self.init()
         
         self.alg_fasta_file = pjoin(self.taskdir, "final_alg.fasta")
@@ -75,7 +78,7 @@ class ConcatAlg(ConcatAlgTask):
         mainalg.write(outfile=self.alg_fasta_file, format="fasta")
         mainalg.write(outfile=self.alg_phylip_file, format="iphylip_relaxed")
         open(self.partitions_file, "w").write('\n'.join(partitions))
-        print '\n'.join(partitions)
+        log.log(26, "Modeled regions: \n"+'\n'.join(partitions)
                         
 def get_species_code(name, splitter, field):
     # By default, taxid is the first par of the seqid, separated by
