@@ -295,22 +295,24 @@ def check_and_load_sequences(args, base_dir, npr_template):
     all_species = set()
     target_seqs = set()
     seq2username = {}
+    ortho_pairs = []
     if npr_template == "sptree" and args.ortho_pairs:
-        log.log(28, "Loading ortho pairs into database...")
+        log.log(28, "Scanning orthologs pairs into database...")
         for line in open(args.ortho_pairs):
             try:
                 name1, name2, pair_score = map(strip, line.split("\t"))
             except ValueError:
                 name1, name2 = map(strip, line.split("\t"))
                 pair_score = 1.0
-            tax1, seq1 = map(strip, name1.split(args.spname_delimiter))
-            tax2, seq2 = map(strip, name2.split(args.spname_delimiter))
+            tax1, seq1 = name1.split(args.spname_delimiter)
+            tax2, seq2 = name2.split(args.spname_delimiter)
 
             if not GLOBALS["target_species"] or \
                set([tax1,tax2]).issubset(GLOBALS["target_species"]):
                 # add ortho pair to DB
                 (tax1, seq1), (tax2, seq2) = sorted([(tax1,seq1), (tax2,seq2)])
-                db.add_ortho_pair(tax1, seq1, tax2, seq2, pair_score)
+                ortho_pairs.append([tax1, seq1, tax2, seq2, pair_score])
+                #db.add_ortho_pair(tax1, seq1, tax2, seq2, pair_score)
                 # keep a list of target seqs and species
                 all_species.update([tax1, tax2])
                 for realname in name1, name2:
@@ -320,11 +322,13 @@ def check_and_load_sequences(args, base_dir, npr_template):
                         seq2username[codename] = name
                         name = codename
                     target_seqs.add(name)
+        log.log(28, "Loading %d ortholog pairs." %len(target_seqs))
+        db.add_ortho_pair_table(ortho_pairs)
         db.commit()
-        log.log(28, "%d pairs uploaded." %len(target_seqs))
+
         if GLOBALS["target_species"]: 
             if GLOBALS["target_species"] - all_species:
-                log.warning("No orthologous pairs were found for the following species: %s", 
+                log.warning("No ortholog pairs were found for the following species: %s", 
                             GLOBALS["target_species"] - all_species)
             elif all_species - GLOBALS["target_species"]:
                 ValueError("Inconsistency found when loading species. Please report.")
@@ -387,7 +391,7 @@ def check_and_load_sequences(args, base_dir, npr_template):
                 
     if skipped_seqs:
         log.warning("%d sequences will not be used since they do not" 
-                    " match any orthologous pair or are not present"
+                    " match any ortholog pair or are not present"
                     " in the aa seed file." %skipped_seqs)
         
     error = ""
@@ -472,12 +476,14 @@ def check_and_load_sequences(args, base_dir, npr_template):
                         " [npr_error.log]")
     else:
         log.log(28, "Loading %d sequence name translations..." %len(seq2username))
-        for k, v in seq2username.iteritems():
-            db.add_seq_name(k, v)            
+        db.add_seq_name_table(seq2username.items())
+        #for k, v in seq2username.iteritems():
+        #    db.add_seq_name(k, v)            
         for seqtype in GLOBALS["seqtypes"]:
             log.log(28, "Loading %d %s sequences..." %(len(seq2seq[seqtype]), seqtype))
-            for k, seq in seq2seq[seqtype].iteritems():
-                db.add_seq(k, seq, seqtype)
+            db.add_seq_table(seq2seq[seqtype].items(), seqtype)
+            #for k, seq in seq2seq[seqtype].iteritems():
+            #    db.add_seq(k, seq, seqtype)
         db.commit()
     if npr_template == "genetree":
         GLOBALS["target_sequences"] = set(visited_seqs[source_seqtype])
@@ -548,7 +554,7 @@ if __name__ == "__main__":
 
     input_group.add_argument("--spfile", dest="spfile",
                         type=existing_file,
-                        help="If specified, only the sequences and orthologous"
+                        help="If specified, only the sequences and ortholog"
                              " pairs matching the group of species in this file"
                              " (one species code per line) will be used. ")
    
