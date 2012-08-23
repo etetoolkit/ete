@@ -263,9 +263,9 @@ def get_seq(seqid, seqtype):
     execute(cmd)
     return cursor.fetchone()[0]
     
-def add_ortho_pair(taxid1, seqid1, taxid2, seqid2):
-    cmd = ('INSERT OR REPLACE INTO ortho_pair (taxid1, seqid1, taxid2, seqid2)'
-           ' VALUES ("%s", "%s", "%s", "%s");' %(taxid1, seqid1, taxid2, seqid2))
+def add_ortho_pair(taxid1, seqid1, taxid2, seqid2, score):
+    cmd = ('INSERT OR REPLACE INTO ortho_pair (taxid1, seqid1, taxid2, seqid2, score)'
+           ' VALUES ("%s", "%s", "%s", "%s", %s);' %(taxid1, seqid1, taxid2, seqid2, score))
     execute(cmd)
     autocommit()
 

@@ -18,9 +18,11 @@ class BrhCogSelector(CogSelectorTask):
 
         self.seed = conf["brh_cog"]["_seed"]
         self.missing_factor = float(conf["brh_cog"]["_species_missing_factor"])
+        self.min_orthology_score = float(conf["brh_cog"]["_min_orthology_score"])
         base_args = {
             "_seed": self.seed,
-            "_missing_factor": self.missing_factor
+            "_missing_factor": self.missing_factor,
+            "_min_orthology_score": self.min_orthology_score
         }
         
         node_id, clade_id = generate_node_ids(target_sp, out_sp)
@@ -45,6 +47,7 @@ class BrhCogSelector(CogSelectorTask):
         
         cogs, cog_analysis = brh_cogs(db, all_species,
                                       missing_factor=self.missing_factor,
+                                      min_score=self.min_orthology_score,
                                       seed_sp=self.seed)
         self.cog_analysis = cog_analysis
         self.cogs = []
