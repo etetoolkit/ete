@@ -16,13 +16,14 @@ ETE tree viewer.
 
 NAME_FONT_SIZE = 14
 LEAF_NAME_POSITION = "branch-right"
-SHOW_LEAF_NAMES = True
+
+LEAF_ATTRIBUTES = {"name": 1}
 
 def master_layout(node):
-    if node.is_leaf() and SHOW_LEAF_NAMES:
-        N = faces.AttrFace("name", fsize=NAME_FONT_SIZE)
+    for aname, pos in LEAF_ATTRIBUTES.iteritems():
+        N = faces.AttrFace(aname, fsize=NAME_FONT_SIZE)
         N.margin_left = 2
-        faces.add_face_to_node(N, node, 0, position=LEAF_NAME_POSITION)
+        faces.add_face_to_node(N, node, pos, position=LEAF_NAME_POSITION)
         
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__DESCRIPTION__, 
@@ -149,7 +150,7 @@ if __name__ == "__main__":
         ts.show_branch_support = True
 
     if args.hide_names:
-        SHOW_LEAF_NAMES = False
+        del LEAF_ATTRIBUTES["name"]
 
     # scale the tree
     if not args.height: 
