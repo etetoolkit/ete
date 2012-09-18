@@ -101,17 +101,10 @@ __all__ = ["Face", "TextFace", "AttrFace", "ImgFace",
            "CircleFace", "PieChartFace", "BarChartFace", "SeqMotifFace"]
 
 class Face(object):
-    """ 
-    Standard definition of a Face node object.
+    """Base Face object. All Face types (i.e. TextFace, SeqMotifFace,
+    etc.) inherit the following options:
 
-    This class is not functional and it should only be used to create
-    other face objects. By inheriting this class, you set all the
-    essential attributes, however the update_pixmap() function is
-    required to be reimplemented for convenience.
-
-    User adjustable properties: 
-
-    :param 0 margin_left: in pixels 
+    :param 0 margin_left: in pixels
     :param 0 margin_right: in pixels
     :param 0 margin_top: in pixels
     :param 0 margin_bottom: in pixels 
@@ -120,26 +113,24 @@ class Face(object):
       (i.e. when circular mode is enabled and face occupies an inverted position.)
     :param 0 hz_align: 0 left, 1 center, 2 right
     :param 1 vt_align: 0 top, 1 center, 2 bottom
-    :param background: background of face plus its margins
-    :param inner_background: background of the face
+    :param background.color: background color of face plus all its margins.
+    :param inner_background.color: background color of the face excluding margins
+    :param border: Border around face margins.
+    :param inner_border: Border around face excluding margins.
+    
+    **border and inner_border sub-parameters:**
+    
+    :param 0 (inner\_)border.type: 0=solid, 1=dashed, 2=dotted
+    :param None (inner\_)border.width: a positive integer number. Zero
+                             indicates a cosmetic pen. This means that
+                             the pen width is always drawn one pixel
+                             wide, independent of the transformation
+                             set on the painter. A "None" value means
+                             invisible border.
+    :param black (inner\_)border.color: RGB or color name in :data:`SVG_COLORS`
 
-    :param None border: Border around face margins. Integer number
-                        representing the width of the face border line
-                        in pixels.  A line width of zero indicates a
-                        cosmetic pen. This means that the pen width is
-                        always drawn one pixel wide, independent of
-                        the transformation set on the painter. A
-                        "None" value means invisible border.
-
-    :param None inner_border: Border around face . Integer number
-                              representing the width of the face
-                              border line in pixels.  A line width of
-                              zero indicates a cosmetic pen. This
-                              means that the pen width is always drawn
-                              one pixel wide, independent of the
-                              transformation set on the painter. A
-                              "None" value means invisible border.
-
+    See also specific options for each face type.
+    
     """
 
     def __init__(self):
@@ -190,15 +181,15 @@ class TextFace(Face):
 
     .. currentmodule:: ete_dev
     
-    :argument text:     Text to be drawn
-    :argument ftype:    Font type, e.g. Arial, Verdana, Courier
-    :argument fsize:    Font size, e.g. 10,12,6, (default=10)
-    :argument fgcolor:  Foreground font color. RGB code or name in :data:`SVG_COLORS` 
-    :argument penwidth: Penwdith used to draw the text.
-    :argument fstyle: "normal" or "italic" 
+    :param text:     Text to be drawn
+    :param ftype:    Font type, e.g. Arial, Verdana, Courier
+    :param fsize:    Font size, e.g. 10,12,6, (default=10)
+    :param fgcolor:  Foreground font color. RGB code or color name in :data:`SVG_COLORS` 
+    :param penwidth: Penwdith used to draw the text.
+    :param fstyle: "normal" or "italic" 
     """
 
-    def __init__(self, text, ftype="Verdana", fsize=10, fgcolor="#000000", penwidth=0, fstyle="normal"):
+    def __init__(self, text, ftype="Verdana", fsize=10, fgcolor="black", penwidth=0, fstyle="normal"):
 
         Face.__init__(self)
 
@@ -240,19 +231,19 @@ class AttrFace(TextFace):
     Dynamic text Face. Text rendered is taken from the value of a
     given node attribute.
 
-    :argument attr:     Node's attribute that will be drawn as text
-    :argument ftype:    Font type, e.g. Arial, Verdana, Courier, (default="Verdana")
-    :argument fsize:    Font size, e.g. 10,12,6, (default=10)
-    :argument fgcolor:  Foreground font color. RGB code or name in :data:`SVG_COLORS` 
-    :argument penwidth: Penwdith used to draw the text. (default is 0)
-    :argument text_prefix: text_rendered before attribute value
-    :argument text_suffix: text_rendered after attribute value
-    :argument formatter: a text string defining a python formater to
+    :param attr:     Node's attribute that will be drawn as text
+    :param ftype:    Font type, e.g. Arial, Verdana, Courier, (default="Verdana")
+    :param fsize:    Font size, e.g. 10,12,6, (default=10)
+    :param fgcolor:  Foreground font color. RGB code or name in :data:`SVG_COLORS` 
+    :param penwidth: Penwdith used to draw the text. (default is 0)
+    :param text_prefix: text_rendered before attribute value
+    :param text_suffix: text_rendered after attribute value
+    :param formatter: a text string defining a python formater to
       process the attribute value before renderer. e.g. "%0.2f"
-    :argument fstyle: "normal" or "italic" 
+    :param fstyle: "normal" or "italic" 
     """
 
-    def __init__(self, attr, ftype="Verdana", fsize=10, fgcolor="#000000", \
+    def __init__(self, attr, ftype="Verdana", fsize=10, fgcolor="black", \
                      penwidth=0, text_prefix="", text_suffix="", formatter=None, fstyle="normal"):
         Face.__init__(self)
         TextFace.__init__(self, "", ftype, fsize, fgcolor, penwidth, fstyle)
@@ -274,9 +265,9 @@ class AttrFace(TextFace):
 class ImgFace(Face):
     """Creates a node Face using an external image file.
 
-    :argument img_file: path to the image file. 
-    :argument None width: if provided, image will be scaled to this width (in pixels)
-    :argument None height: if provided, image will be scaled to this height (in pixels)
+    :param img_file: path to the image file. 
+    :param None width: if provided, image will be scaled to this width (in pixels)
+    :param None height: if provided, image will be scaled to this height (in pixels)
 
     If only one dimension value (width or height) is provided, the other
     will be calculated to keep aspect ratio. 
@@ -305,14 +296,14 @@ class ProfileFace(Face):
     """ 
     A profile Face for ClusterNodes 
 
-    :argument max_v: maximum value used to build the build the plot scale.
-    :argument max_v: minimum value used to build the build the plot scale.
-    :argument center_v: Center value used to scale plot and heatmap.
-    :argument 200 width:  Plot width in pixels. 
-    :argument 40 height: Plot width in pixels. 
-    :argument lines style: Plot style: "lines", "bars", "cbars" or "heatmap".
+    :param max_v: maximum value used to build the build the plot scale.
+    :param max_v: minimum value used to build the build the plot scale.
+    :param center_v: Center value used to scale plot and heatmap.
+    :param 200 width:  Plot width in pixels. 
+    :param 40 height: Plot width in pixels. 
+    :param lines style: Plot style: "lines", "bars", "cbars" or "heatmap".
 
-    :argument 2 colorscheme: colors used to create the gradient from
+    :param 2 colorscheme: colors used to create the gradient from
       min values to max values. 0=green & blue; 1=green & red; 2=red &
       blue. In all three cases, missing values are rendered in black
       and transition color (values=center) is white.
@@ -713,7 +704,7 @@ class ProfileFace(Face):
                 mean1 = self.fit_to_scale( mean_vector[pos]        )
                 # Set heatmap color
                 if not isfinite(mean1):
-                    customColor = QColor("#000000")
+                    customColor = QColor("black")
                 elif mean1>self.center_v:
                     color_index = abs(int(ceil(((self.center_v-mean1)*100)/(self.max_value-self.center_v))))
                     customColor = colors[100 + color_index]
@@ -741,22 +732,22 @@ class SequenceFace(Face):
     """ Creates a new molecular sequence face object.
 
 
-    :argument seq:  Sequence string to be drawn
-    :argument seqtype: Type of sequence: "nt" or "aa"
-    :argument fsize:   Font size,  (default=10)
+    :param seq:  Sequence string to be drawn
+    :param seqtype: Type of sequence: "nt" or "aa"
+    :param fsize:   Font size,  (default=10)
 
     You can set custom colors for aminoacids or nucleotides: 
 
-    :argument aafg: a dictionary in which keys are aa codes and values
+    :param aafg: a dictionary in which keys are aa codes and values
       are foreground RGB colors
 
-    :argument aabg: a dictionary in which keys are aa codes and values
+    :param aabg: a dictionary in which keys are aa codes and values
       are background RGB colors
 
-    :argument ntfg: a dictionary in which keys are nucleotides codes
+    :param ntfg: a dictionary in which keys are nucleotides codes
       and values are foreground RGB colors
 
-    :argument ntbg: a dictionary in which keys are nucleotides codes and values
+    :param ntbg: a dictionary in which keys are nucleotides codes and values
       are background RGB colors
 
     """
@@ -802,11 +793,11 @@ class SequenceFace(Face):
         for letter in self.seq:
             letter = letter.upper()
             if self.style=="nt":
-                letter_brush = QBrush(QColor(self.ntbg.get(letter,"#ffffff" )))
-                letter_pen = QPen(QColor(self.ntfg.get(letter, "#000000")))
+                letter_brush = QBrush(QColor(self.ntbg.get(letter,"white" )))
+                letter_pen = QPen(QColor(self.ntfg.get(letter, "black")))
             else:
-                letter_brush = QBrush(QColor(self.aabg.get(letter,"#ffffff" )))
-                letter_pen = QPen(QColor(self.aafg.get(letter,"#000000" )))
+                letter_brush = QBrush(QColor(self.aabg.get(letter,"white" )))
+                letter_pen = QPen(QColor(self.aafg.get(letter,"black" )))
 
             p.setPen(letter_pen)
             p.fillRect(x,0,width, height,letter_brush)
@@ -820,8 +811,8 @@ class TreeFace(Face):
 
     Creates a Face containing a Tree object. Yes, a tree within a tree :)
 
-    :argument tree: An ETE Tree instance (Tree, PhyloTree, etc...)
-    :argument tree_style: A TreeStyle instance defining how tree show be drawn 
+    :param tree: An ETE Tree instance (Tree, PhyloTree, etc...)
+    :param tree_style: A TreeStyle instance defining how tree show be drawn 
     
     """
     def __init__(self, tree, tree_style):
@@ -867,9 +858,9 @@ class CircleFace(Face):
 
     Creates a Circle or Sphere Face.
 
-    :arguments radius: integer number defining the radius of the face
-    :arguments color: Color used to fill the circle. RGB code or name in :data:`SVG_COLORS` 
-    :arguments "circle" style: Valid values are "circle" or "sphere"
+    :param radius: integer number defining the radius of the face
+    :param color: Color used to fill the circle. RGB code or name in :data:`SVG_COLORS` 
+    :param "circle" style: Valid values are "circle" or "sphere"
     """
 
     def __init__(self, radius, color, style="circle"):
@@ -902,7 +893,7 @@ class StaticItemFace(Face):
     properties, so its content is assumed to be static (drawn only
     once, no updates when tree changes). 
 
-    :arguments item: an object based on QGraphicsItem
+    :param item: an object based on QGraphicsItem
     """
     def __init__(self, item):
         Face.__init__(self)
@@ -926,7 +917,7 @@ class DynamicItemFace(Face):
     Creates a face based on an external QGraphicsItem object whose
     content depends on the node that is linked to. 
 
-    :arguments constructor: A pointer to a method (function or class
+    :param constructor: A pointer to a method (function or class
       constructor) returning a QGraphicsItem based
       object. "constructor" method is expected to receive a node
       instance as the first argument. The rest of arguments passed to
@@ -1012,10 +1003,10 @@ class PieChartFace(StaticItemFace):
     """ 
     .. versionadded:: 2.2
 
-    :arguments percents: a list of values summing up 100. 
-    :arguments width: width of the piechart 
-    :arguments height: height of the piechart
-    :arguments colors: a list of colors (same length as percents)
+    :param percents: a list of values summing up 100. 
+    :param width: width of the piechart 
+    :param height: height of the piechart
+    :param colors: a list of colors (same length as percents)
    
     """
     def __init__(self, percents, width, height, colors=None, line_color=None):
@@ -1049,10 +1040,10 @@ class BarChartFace(Face):
     """ 
     .. versionadded:: 2.2
 
-    :arguments percents: a list of values summing up 100. 
-    :arguments width: width of the piechart 
-    :arguments height: height of the piechart
-    :arguments colors: a list of colors (same length as percents)
+    :param percents: a list of values summing up 100. 
+    :param width: width of the piechart 
+    :param height: height of the piechart
+    :param colors: a list of colors (same length as percents)
    
     """
     def __init__(self, values, deviations=None, width=200, height=100, colors=None, labels=None, min_value=0, max_value=None):
@@ -1267,7 +1258,7 @@ class SequenceItem(QGraphicsRectItem):
         self.seqtype = seqtype
         self.poswidth = poswidth
         self.posheight = posheight
-        self.draw_text = True
+        self.draw_text = draw_text
         if seqtype == "aa":
             self.fg = _aafgcolors
             self.bg = _aabgcolors
@@ -1275,10 +1266,11 @@ class SequenceItem(QGraphicsRectItem):
             self.fg = _ntfgcolors
             self.bg = _ntbgcolors
         self.setRect(0, 0, len(seq) * poswidth, posheight)
-        
+
     def paint(self, p, option, widget):
         x, y = 0, 0
-        p.setFont(QFont("Courier", min(self.poswidth, self.posheight) - 2))
+        fsize = (min(self.poswidth, self.posheight) - 2)
+        p.setFont(QFont("Courier", fsize))
         p.setPen(QColor("black"))
         for letter in self.seq:
             br = QBrush(QColor(self.bg.get(letter, "white")))
@@ -1286,51 +1278,57 @@ class SequenceItem(QGraphicsRectItem):
             if self.draw_text and self.poswidth > 8:
                 p.drawText(x + 2, self.posheight - 2, letter)
             x += self.poswidth
-        
+            
 class SeqMotifFace(StaticItemFace):
-    """
+    """.. versionadded:: 2.2
 
     Creates a face based on an amino acid or nucleotide sequence and a
     list of motif regions.
 
-    :arguments None seq: a text string containing an aa or nt
-        sequence.
+    :param None seq: a text string containing an aa or nt sequence. If
+        not provided, ``seq`` and ``compactseq`` motif modes will not be
+        available.
 
-    :arguments None motifs: a list of motif regions referred to
-        original sequence. Each motif is defined as a list
-        containing the following information:
-        :code:
-        [seq.start, seq.end, shape, width, height, fgcolor, bgcolor]
+    :param None motifs: a list of motif regions referred to original
+        sequence. Each motif is defined as a list containing the
+        following information:
 
-        seq.start = motif start position referred to the full sequence
-        seq.end = motif end position referred to the full sequence
-
-        shape = Shape used to draw the motif. Available options are:
-
-        "o"  = circle or ellipse
-        ">"  = triangle (base to the left)
-        "<"  = triangle (base to the left)
-        "^"  = triangle (base at bottom)
-        "v"  = triangle (base on top )
-        "<>" = diamond
-        "[]" = rectangle
-        "()" = round corner rectangle
-        "seq" = Show a color and the corresponding letter of each sequence position
-        "compactseq" = Show a color for each sequence position
+        ::
     
-        width = total width of the motif (or sequence position width if seq motif type)
-        height = total height of the motif (or sequence position height if seq motif type)
-        fgcolor = color for the motif shape border
-        bgcolor = motif background color. Color code or name can be preceded with the "rgradient:" tag to create a radial gradient effect.
+          motifs = [[seq.start, seq.end, shape, width, height, fgcolor, bgcolor],
+                   [seq.start, seq.end, shape, width, height, fgcolor, bgcolor],
+                   ...
+                  ]
+    
+        Where:
+    
+         * **seq.start:** Motif start position referred to the full sequence
+         * **seq.end:** Motif end position referred to the full sequence
+         * **shape:** Shape used to draw the motif. Available values are:
+    
+            * ``o`` = circle or ellipse
+            * ``>``  = triangle (base to the left)
+            * ``<``  = triangle (base to the left)
+            * ``^``  = triangle (base at bottom)
+            * ``v``  = triangle (base on top )
+            * ``<>`` = diamond
+            * ``[]`` = rectangle
+            * ``()`` = round corner rectangle
+            * ``seq`` = Show a color and the corresponding letter of each sequence position
+            * ``compactseq`` = Show a color for each sequence position
+               
+         * **width:** total width of the motif (or sequence position width if seq motif type)
+         * **height:** total height of the motif (or sequence position height if seq motif type)
+         * **fgcolor:** color for the motif shape border
+         * **bgcolor:** motif background color. Color code or name can be preceded with the "rgradient:" tag to create a radial gradient effect.
 
-    :arguments line intermotif_space: How should spaces among motifs be filled. Available values are: "line", "blank", "none" and "seq", "compactseq".
-    :arguments none seq_tail: How should remaining tail sequence be drawn. Available values are: "line", "seq", "compactseq" or "none"
+    :param line intermotif_space: How should spaces among motifs be filled. Available values are: "line", "blank", "none" and "seq", "compactseq".
+    :param none seq_tail: How should remaining tail sequence be drawn. Available values are: "line", "seq", "compactseq" or "none"
 
     """
 
     def __init__(self, seq=None, motifs=None, seqtype="aa",
                  intermotif_space="line", seq_tail="none"):
-
         
         StaticItemFace.__init__(self, None)
         self.seq  = seq or []

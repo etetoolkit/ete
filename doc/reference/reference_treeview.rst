@@ -48,6 +48,18 @@ Faces
    :members:
    :no-undoc-members:
 
+.. autoclass:: ete_dev.SeqMotifFace
+   :members:
+   :no-undoc-members:
+
+.. autoclass:: ete_dev.BarChartFace
+   :members:
+   :no-undoc-members:
+
+.. autoclass:: ete_dev.PieChartFace
+   :members:
+   :no-undoc-members:
+
 .. autoclass:: ete_dev.ProfileFace
    :members:
    :no-undoc-members:

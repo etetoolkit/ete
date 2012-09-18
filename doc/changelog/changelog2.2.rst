@@ -27,32 +27,37 @@ What's new in ETE 2.2
   * Added :func:`PhyloNode.get_speciation_trees` method, which returns
     all possible species topologies present in a gene family tree.
 
-  * :func:`PhyloNode.split_by_dup`
+  * Added :func:`PhyloNode.split_by_dup` method, which returns a list
+    of partial subtrees resulting from splitting a tree at duplication
+    nodes.
 
-  * Return the distance between a species tree and a gene tree with
-    multiple duplications using Treeko distance.
+  * !!! Return the distance between a species tree and a gene tree
+    with multiple duplications using Treeko distance.
 
-  * Added :func:`PhyloNode.get_age_balanced_outgroup`
+  * Added :func:`PhyloNode.get_age_balanced_outgroup`, a better way to
+    root gene trees based on species content and size of duplications.
 
 * News on Image rendering 
 
 * News on Faces
 
-  SeqFace improvements
-  ImgFace accepts scaling
-  added COLOR_SCHEMES
-  improved ChartFaces
-  rectFace
+  * SeqMotifFace improves SequenceFace (now deprecated and not
+    maintained) and allows to draw motifs.
+  * ImgFace accepts scaling
+  * Added COLOR_SCHEMES
+  * PieChartFace
+  * BarChartFace
+  * rectFace
 
 * GUI
 
-    Allows image region selection 
-    Allows zoom of selected nodes or image regions
-    Ctrl-C will now interrupt the GUI application. 
-    Added keyboard-based node navigation
-    Fixed 'paste newick' functionality
+    * Allows image region selection 
+    * Allows zoom of selected nodes or image regions
+    * :kbd:`C-x C-f` will now interrupt the GUI application. 
+    * Added keyboard-based node navigation
+    * Fixed 'paste newick' functionality
 
 * New EvolTree module
 
-    Added new Tree class method :class:`EvolTree`, implementing a number of
+    * Added new Tree class method :class:`EvolTree`, implementing a number of
     options for selection tests.

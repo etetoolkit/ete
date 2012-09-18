@@ -476,7 +476,6 @@ Note that images are attached to terminal and internal nodes.
 
  .. literalinclude:: ../../examples/treeview/img_faces/img_faces.py
 
-
 Bubble tree maps
 -------------------
 
@@ -490,6 +489,13 @@ Trees within trees
  .. figure:: ../../examples/treeview/tree_faces.png
 
  .. literalinclude:: ../../examples/treeview/tree_faces.py
+
+Phylogenetic trees and sequence domains
+--------------------------------------------
+
+ .. figure:: ../../examples/treeview/seq_motif_faces.png
+
+ .. literalinclude:: ../../examples/treeview/seq_motif_faces.py
 
 
 Creating your custom interactive Item faces
