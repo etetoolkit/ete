@@ -174,7 +174,8 @@ class Face(object):
 
     def update_pixmap(self):
         pass
-
+     
+        
 class TextFace(Face):
     """ 
     Static text Face object
@@ -961,21 +962,6 @@ class RandomFace(Face):
     def _height(self):
         return self.tree_partition.rect().height()
 
-
-class BackgroundFace(Face):
-    def __init__(self, min_width=0, min_height=0):
-        Face.__init__(self)
-        self.type = "background"
-        self.min_height = min_height
-        self.min_height = min_width
-
-    def _width(self):
-        return self.min_width
-
-    def _height(self):
-        return self.min_height
-
-
 class _PieChartItem(QGraphicsRectItem):
     def __init__(self, percents, width, height, colors, line_color=None):
         QGraphicsRectItem.__init__(self, 0, 0, width, height)
@@ -1451,3 +1437,6 @@ class SeqMotifFace(StaticItemFace):
             
         self.item.setRect(0, 0, width, max_h)
         self.item.setPen(QPen(Qt.NoPen))
+
+
+        

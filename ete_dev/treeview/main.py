@@ -84,7 +84,7 @@ class _Background(object):
     """
     def __init__(self):
         self.color = None
-
+        
     def apply(self, item):
         if self.color: 
             r = item.boundingRect()
