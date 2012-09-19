@@ -177,8 +177,7 @@ class Face(object):
      
         
 class TextFace(Face):
-    """ 
-    Static text Face object
+    """Static text Face object
 
     .. currentmodule:: ete_dev
     
@@ -188,7 +187,11 @@ class TextFace(Face):
     :param fgcolor:  Foreground font color. RGB code or color name in :data:`SVG_COLORS` 
     :param penwidth: Penwdith used to draw the text.
     :param fstyle: "normal" or "italic"
-    :param False tight_text: If True, the boundaries of the text box are calculated more accurately. 
+    
+    :param True tight_text: When False, boundaries of the text are
+    approximated according to general font metrics, producing slightly
+    worse aligned text faces but improving the performance of tree
+    visualization in scenes with a lot of text faces.
     """
         
     def _load_bounding_rect(self):
@@ -221,7 +224,7 @@ class TextFace(Face):
     text = property(_get_text, _set_text)
     def __init__(self, text, ftype="Verdana", fsize=10,
                  fgcolor="black", penwidth=0, fstyle="normal",
-                 tight_text=False):
+                 tight_text=True):
         self._text = ""
         self._bounding_rect = None
         Face.__init__(self)
@@ -291,7 +294,7 @@ class AttrFace(TextFace):
     def __init__(self, attr, ftype="Verdana", fsize=10,
                  fgcolor="black", penwidth=0, text_prefix="",
                  text_suffix="", formatter=None, fstyle="normal",
-                 tight_text=False):
+                 tight_text=True):
         
         Face.__init__(self)
         TextFace.__init__(self, None, ftype, fsize, fgcolor, penwidth,
