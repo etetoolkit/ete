@@ -148,6 +148,7 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
                     font = f._get_font()
                     obj.setFont(font)
                     obj.setBrush(QBrush(QColor(f.fgcolor)))
+                    obj.real_rect = f.get_real_rect()
                     
                 elif f.type == "item":
                     obj = f.item
@@ -222,23 +223,29 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
         "rotates item over its own center"
         for obj in self.childItems():
             if hasattr(obj, "rotable") and obj.rotable:
-                rect = obj.boundingRect()
-                x =  rect.width()/2
-                y =  rect.height()/2
-                obj.setTransform(QTransform().translate(x, y).rotate(rotation).translate(-x, -y))
+                if hasattr(obj, "real_rect"):
+                    # to avoid incorrect rotation of tightgly wrapped
+                    # text items
+                    yoff = obj.face.get_bounding_rect().y()
+                    rect = obj.real_rect
+                else:
+                    rect = obj.boundingRect()
+                x = rect.width() / 2 
+                y = rect.height() / 2
+                obj.setTransform(QTransform().translate(x, y).rotate(rotation).translate(-x, -y -yoff * 2))
 
     def flip_hz(self):
         for obj in self.childItems():
             rect = obj.boundingRect()
-            x =  rect.width()/2
-            y =  rect.height()/2
+            x =  rect.width() / 2
+            y =  rect.height() / 2
             obj.setTransform(QTransform().translate(x, y).scale(-1,1).translate(-x, -y))
 
     def flip_vt(self):
         for obj in self.childItems():
             rect = obj.boundingRect()
-            x =  rect.width()/2
-            y =  rect.height()/2
+            x =  rect.width() / 2
+            y =  rect.height() / 2
             obj.setTransform(QTransform().translate(x, y).scale(1,-1).translate(-x, -y))
 
 def update_node_faces(node, n2f, img):

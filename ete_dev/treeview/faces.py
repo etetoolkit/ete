@@ -196,20 +196,23 @@ class TextFace(Face):
         
     def _load_bounding_rect(self):
         fm = QFontMetrics(self._get_font())
+        tx_w = fm.width(self.get_text())
         if self.tight_text:
             textr = fm.tightBoundingRect(self.get_text())
             down = textr.height() + textr.y()
             up = textr.height() - down
             asc = fm.ascent()
-
-            des = fm.descent() + 1
+            des = fm.descent()
             center = (asc + des) / 2.0
             xcenter = ((up+down)/2.0) + asc - up
-            self._bounding_rect = QRectF(0, asc - up, fm.width(self.get_text()), textr.height())
+
+            self._bounding_rect = QRectF(0, asc - up, tx_w, textr.height())
+            self._real_rect = QRectF(0, 0, tx_w, textr.height())
         else:
             textr = fm.boundingRect(self.get_text())
-            self._bounding_rect = QRectF(0, 0, fm.width(self.get_text()), textr.height())
-    
+            self._bounding_rect = QRectF(0, 0, tx_w, textr.height())
+            self._real_rect = QRectF(0, 0, tx_w, textr.height())
+            
     def _get_text(self):
         return self._text
         
@@ -221,12 +224,19 @@ class TextFace(Face):
             self._load_bounding_rect()
         return self._bounding_rect
         
+    def get_real_rect(self):
+        if not self._real_rect:
+            self._load_bounding_rect()
+        return self._bounding_rect
+        
     text = property(_get_text, _set_text)
     def __init__(self, text, ftype="Verdana", fsize=10,
                  fgcolor="black", penwidth=0, fstyle="normal",
                  tight_text=True):
         self._text = ""
         self._bounding_rect = None
+        self._real_rect = None
+        
         Face.__init__(self)
         self.pixmap = None
         self.type = "text"
@@ -238,7 +248,7 @@ class TextFace(Face):
         self.tight_text = tight_text
         if text:
             self.text = text
-        
+
     def _get_font(self):
         font = QFont(self.ftype, self.fsize)
         if self.fstyle == "italic":
@@ -290,6 +300,13 @@ class AttrFace(TextFace):
             self._load_bounding_rect()
             self._bounding_rect_text = current_text
         return self._bounding_rect
+
+    def get_real_rect(self):
+        current_text = self.get_text()
+        if current_text != self._bounding_rect_text:
+            self._load_bounding_rect()
+            self._bounding_rect_text = current_text
+        return self._real_rect
     
     def __init__(self, attr, ftype="Verdana", fsize=10,
                  fgcolor="black", penwidth=0, text_prefix="",
@@ -305,7 +322,7 @@ class AttrFace(TextFace):
         self.text_suffix = text_suffix
         self.attr_formatter = formatter
         self._bounding_rect_text = ""
-
+        
 class ImgFace(Face):
     """Creates a node Face using an external image file.
 
