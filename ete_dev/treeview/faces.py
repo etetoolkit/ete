@@ -193,11 +193,12 @@ class TextFace(Face):
         
     def _load_bounding_rect(self):
         fm = QFontMetrics(self._get_font())
-        if self.tight_text: 
+        if self.tight_text:
             textr = fm.tightBoundingRect(self.get_text())
             down = textr.height() + textr.y()
             up = textr.height() - down
             asc = fm.ascent()
+
             des = fm.descent() + 1
             center = (asc + des) / 2.0
             xcenter = ((up+down)/2.0) + asc - up
@@ -211,9 +212,10 @@ class TextFace(Face):
         
     def _set_text(self, txt):
         self._text = txt
-        self._load_bounding_rect()
         
     def get_bounding_rect(self):
+        if not self._bounding_rect:
+            self._load_bounding_rect()
         return self._bounding_rect
         
     text = property(_get_text, _set_text)
@@ -221,7 +223,7 @@ class TextFace(Face):
                  fgcolor="black", penwidth=0, fstyle="normal",
                  tight_text=False):
         self._text = ""
-        
+        self._bounding_rect = None
         Face.__init__(self)
         self.pixmap = None
         self.type = "text"
