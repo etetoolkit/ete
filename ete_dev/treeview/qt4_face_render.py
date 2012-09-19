@@ -11,6 +11,9 @@ class _TextFaceItem(QGraphicsSimpleTextItem, _ActionDelegator):
         QGraphicsSimpleTextItem.__init__(self, text)
         _ActionDelegator.__init__(self)
         self.node = node
+        self.face = face
+    def boundingRect(self):
+        return self.face.get_bounding_rect()
 
 class _ImgFaceItem(QGraphicsPixmapItem, _ActionDelegator):
     def __init__(self, face, node, pixmap):
@@ -25,7 +28,7 @@ class _BackgroundFaceItem(QGraphicsRectItem):
 
     def paint(self, painter, option, index):
         return
-
+        
 class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem :) 
     def __init__(self, faces, node, as_grid=False):
 
@@ -130,7 +133,7 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
             if self.as_grid:
                 y = 0
             else:
-                y = (self.h - self.c2height.get(c,0))/2
+                y = (self.h - self.c2height.get(c,0)) / 2
 
             for r, f in enumerate(faces):
                 w, h = self.sizes[c][r]
@@ -145,6 +148,7 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
                     font = f._get_font()
                     obj.setFont(font)
                     obj.setBrush(QBrush(QColor(f.fgcolor)))
+                    
                 elif f.type == "item":
                     obj = f.item
                 else:
@@ -154,7 +158,6 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
                 obj.setAcceptsHoverEvents(True)
                 obj.setParentItem(self)
 
-                # relative alignemnt of faces
                 x_offset, y_offset = 0, 0 
                
                 if max_w > w:
@@ -185,19 +188,22 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
                 #_pos = obj_rect.topLeft()
                 #_x = abs(_pos.x()) if _pos.x() < 0 else 0
                 #_y = abs(_pos.y()) if _pos.y() < 0 else 0
+                          
 
+                text_y_offset = -f.get_bounding_rect().y() if f.type == "text" else 0 
+                    
                 obj.setPos(x + f.margin_left + x_offset,
-                           y + y_offset + f.margin_top)
-
+                           y + y_offset + f.margin_top + text_y_offset)
+                
                 obj.rotable = f.rotable
                 f.inner_background.apply(obj)
                 f.inner_border.apply(obj)
 
                 bg = f.background.apply(obj)
                 border = f.border.apply(obj)
-                if border: 
-                    border.setRect(x, y, max_w, max_h)
-                    border.setParentItem(self)
+                #if border:
+                #    border.setRect(x, y, max_w, max_h)
+                #    border.setParentItem(self)
                 if bg:
                     bg.setRect(x, y, max_w, max_h)
                     bg.setParentItem(self)

@@ -187,23 +187,53 @@ class TextFace(Face):
     :param fsize:    Font size, e.g. 10,12,6, (default=10)
     :param fgcolor:  Foreground font color. RGB code or color name in :data:`SVG_COLORS` 
     :param penwidth: Penwdith used to draw the text.
-    :param fstyle: "normal" or "italic" 
+    :param fstyle: "normal" or "italic"
+    :param False tight_text: If True, the boundaries of the text box are calculated more accurately. 
     """
-
-    def __init__(self, text, ftype="Verdana", fsize=10, fgcolor="black", penwidth=0, fstyle="normal"):
-
+        
+    def _load_bounding_rect(self):
+        fm = QFontMetrics(self._get_font())
+        if self.tight_text: 
+            textr = fm.tightBoundingRect(self.get_text())
+            down = textr.height() + textr.y()
+            up = textr.height() - down
+            asc = fm.ascent()
+            des = fm.descent() + 1
+            center = (asc + des) / 2.0
+            xcenter = ((up+down)/2.0) + asc - up
+            self._bounding_rect = QRectF(0, asc - up, fm.width(self.get_text()), textr.height())
+        else:
+            textr = fm.boundingRect(self.get_text())
+            self._bounding_rect = QRectF(0, 0, fm.width(self.get_text()), textr.height())
+    
+    def _get_text(self):
+        return self._text
+        
+    def _set_text(self, txt):
+        self._text = txt
+        self._load_bounding_rect()
+        
+    def get_bounding_rect(self):
+        return self._bounding_rect
+        
+    text = property(_get_text, _set_text)
+    def __init__(self, text, ftype="Verdana", fsize=10,
+                 fgcolor="black", penwidth=0, fstyle="normal",
+                 tight_text=False):
+        self._text = ""
+        
         Face.__init__(self)
-
         self.pixmap = None
         self.type = "text"
-
-        self.text = str(text)
         self.fgcolor = fgcolor
         self.ftype = ftype 
         self.fsize = fsize
         self.fstyle = fstyle
         self.penwidth = penwidth
-
+        self.tight_text = tight_text
+        if text:
+            self.text = text
+        
     def _get_font(self):
         font = QFont(self.ftype, self.fsize)
         if self.fstyle == "italic":
@@ -213,18 +243,13 @@ class TextFace(Face):
         return font
 
     def _height(self):
-        fm = QFontMetrics(self._get_font())
-        h =  fm.boundingRect(QRect(), \
-                                 Qt.AlignLeft, \
-                                 self.get_text()).height()
-        return h
+        return self.get_bounding_rect().height()
 
     def _width(self):
-        fm = QFontMetrics(self._get_font())
-        return fm.size(Qt.AlignTop, self.get_text()).width()
+        return self.get_bounding_rect().width()
 
     def get_text(self):
-        return self.text
+        return self._text
 
 class AttrFace(TextFace):
     """ 
@@ -243,25 +268,38 @@ class AttrFace(TextFace):
       process the attribute value before renderer. e.g. "%0.2f"
     :param fstyle: "normal" or "italic" 
     """
-
-    def __init__(self, attr, ftype="Verdana", fsize=10, fgcolor="black", \
-                     penwidth=0, text_prefix="", text_suffix="", formatter=None, fstyle="normal"):
-        Face.__init__(self)
-        TextFace.__init__(self, "", ftype, fsize, fgcolor, penwidth, fstyle)
-        self.attr     = attr
-        self.type     = "text"
-        self.text_prefix = text_prefix
-        self.text_suffix = text_suffix
-        self.attr_formatter = formatter
-
+   
     def get_text(self):
         if self.attr_formatter:
             text = self.attr_formatter % getattr(self.node, self.attr)
         else:
             text = str(getattr(self.node, self.attr))
-        return ''.join(map(str, [self.text_prefix, \
+        text = ''.join(map(str, [self.text_prefix, \
                                      text, \
                                      self.text_suffix]))
+        return text
+        
+    def get_bounding_rect(self):
+        current_text = self.get_text()
+        if current_text != self._bounding_rect_text:
+            self._load_bounding_rect()
+            self._bounding_rect_text = current_text
+        return self._bounding_rect
+    
+    def __init__(self, attr, ftype="Verdana", fsize=10,
+                 fgcolor="black", penwidth=0, text_prefix="",
+                 text_suffix="", formatter=None, fstyle="normal",
+                 tight_text=False):
+        
+        Face.__init__(self)
+        TextFace.__init__(self, None, ftype, fsize, fgcolor, penwidth,
+                          fstyle, tight_text)
+        self.attr = attr
+        self.type  = "text"
+        self.text_prefix = text_prefix
+        self.text_suffix = text_suffix
+        self.attr_formatter = formatter
+        self._bounding_rect_text = ""
 
 class ImgFace(Face):
     """Creates a node Face using an external image file.
