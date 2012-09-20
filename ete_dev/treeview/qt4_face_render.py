@@ -12,8 +12,10 @@ class _TextFaceItem(QGraphicsSimpleTextItem, _ActionDelegator):
         _ActionDelegator.__init__(self)
         self.node = node
         self.face = face
+        self._bounding_rect = self.face.get_bounding_rect()
+        self._real_rect = self.face.get_real_rect()
     def boundingRect(self):
-        return self.face.get_bounding_rect()
+        return self._bounding_rect
 
 class _ImgFaceItem(QGraphicsPixmapItem, _ActionDelegator):
     def __init__(self, face, node, pixmap):
@@ -148,8 +150,6 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
                     font = f._get_font()
                     obj.setFont(font)
                     obj.setBrush(QBrush(QColor(f.fgcolor)))
-                    obj.real_rect = f.get_real_rect()
-                    
                 elif f.type == "item":
                     obj = f.item
                 else:
@@ -190,8 +190,7 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
                 #_x = abs(_pos.x()) if _pos.x() < 0 else 0
                 #_y = abs(_pos.y()) if _pos.y() < 0 else 0
                           
-
-                text_y_offset = -f.get_bounding_rect().y() if f.type == "text" else 0 
+                text_y_offset = -obj.boundingRect().y() if f.type == "text" else 0 
                     
                 obj.setPos(x + f.margin_left + x_offset,
                            y + y_offset + f.margin_top + text_y_offset)
@@ -223,17 +222,23 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
         "rotates item over its own center"
         for obj in self.childItems():
             if hasattr(obj, "rotable") and obj.rotable:
-                if hasattr(obj, "real_rect"):
+                if hasattr(obj, "_real_rect"):
                     # to avoid incorrect rotation of tightgly wrapped
-                    # text items
-                    yoff = obj.face.get_bounding_rect().y()
-                    rect = obj.real_rect
+                    # text items we need to rotate using the real
+                    # wrapping rect and revert y_text correction.
+                    yoff = obj.boundingRect().y()
+                    rect = obj._real_rect
+                    # OJO!! this only works for the rotation of text
+                    # faces in circular mode. Other cases are
+                    # unexplored!!
+                    obj.moveBy(0, yoff*2)
                 else:
+                    yoff = None
                     rect = obj.boundingRect()
                 x = rect.width() / 2 
                 y = rect.height() / 2
-                obj.setTransform(QTransform().translate(x, y).rotate(rotation).translate(-x, -y -yoff * 2))
-
+                obj.setTransform(QTransform().translate(x, y).rotate(rotation).translate(-x, -y))
+                
     def flip_hz(self):
         for obj in self.childItems():
             rect = obj.boundingRect()

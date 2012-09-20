@@ -194,9 +194,11 @@ class TextFace(Face):
     visualization in scenes with a lot of text faces.
     """
         
-    def _load_bounding_rect(self):
+    def _load_bounding_rect(self, txt=None):
+        if txt is None:
+            txt= self.get_text()
         fm = QFontMetrics(self._get_font())
-        tx_w = fm.width(self.get_text())
+        tx_w = fm.width(txt)
         if self.tight_text:
             textr = fm.tightBoundingRect(self.get_text())
             down = textr.height() + textr.y()
@@ -205,11 +207,10 @@ class TextFace(Face):
             des = fm.descent()
             center = (asc + des) / 2.0
             xcenter = ((up+down)/2.0) + asc - up
-
             self._bounding_rect = QRectF(0, asc - up, tx_w, textr.height())
             self._real_rect = QRectF(0, 0, tx_w, textr.height())
         else:
-            textr = fm.boundingRect(self.get_text())
+            textr = fm.boundingRect(txt)
             self._bounding_rect = QRectF(0, 0, tx_w, textr.height())
             self._real_rect = QRectF(0, 0, tx_w, textr.height())
             
@@ -297,14 +298,14 @@ class AttrFace(TextFace):
     def get_bounding_rect(self):
         current_text = self.get_text()
         if current_text != self._bounding_rect_text:
-            self._load_bounding_rect()
+            self._load_bounding_rect(current_text)
             self._bounding_rect_text = current_text
         return self._bounding_rect
 
     def get_real_rect(self):
         current_text = self.get_text()
         if current_text != self._bounding_rect_text:
-            self._load_bounding_rect()
+            self._load_bounding_rect(current_text)
             self._bounding_rect_text = current_text
         return self._real_rect
     
