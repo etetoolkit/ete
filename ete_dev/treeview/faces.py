@@ -853,6 +853,7 @@ class SequenceFace(Face):
 
         for letter in self.seq:
             letter = letter.upper()
+               
             if self.style=="nt":
                 letter_brush = QBrush(QColor(self.ntbg.get(letter,"white" )))
                 letter_pen = QPen(QColor(self.ntfg.get(letter, "black")))
@@ -1321,7 +1322,9 @@ class SequenceItem(QGraphicsRectItem):
         for letter in self.seq:
             br = QBrush(QColor(self.bg.get(letter, "white")))
             p.fillRect(x, 0, self.poswidth, self.posheight, br)
-            if self.draw_text and self.poswidth > 8:
+            if letter == "-" or letter == ".":
+                p.drawLine(x, self.posheight/2, x+self.poswidth, self.posheight/2)
+            elif self.draw_text and self.poswidth > 8:
                 p.drawText(x + 2, self.posheight - 2, letter)
             x += self.poswidth
             
@@ -1368,19 +1371,21 @@ class SeqMotifFace(StaticItemFace):
          * **fgcolor:** color for the motif shape border
          * **bgcolor:** motif background color. Color code or name can be preceded with the "rgradient:" tag to create a radial gradient effect.
 
-    :param line intermotif_space: How should spaces among motifs be filled. Available values are: "line", "blank", "none" and "seq", "compactseq".
-    :param none seq_tail: How should remaining tail sequence be drawn. Available values are: "line", "seq", "compactseq" or "none"
-
+    :param line intermotif_format: How should spaces among motifs be filled. Available values are: "line", "blank", "none" and "seq", "compactseq".
+    :param none seqtail_format: How should remaining tail sequence be drawn. Available values are: "line", "seq", "compactseq" or "none"
+    :param compactseq seq_format: How should sequence be rendered in case no motif regions are provided. Available values are: "seq" and "compactseq"
     """
 
     def __init__(self, seq=None, motifs=None, seqtype="aa",
-                 intermotif_space="line", seq_tail="none"):
+                 intermotif_format="line", seqtail_format="none",
+                 seq_format="compactseq"):
         
         StaticItemFace.__init__(self, None)
         self.seq  = seq or []
         self.motifs = motifs
-        self.intermotif_space = intermotif_space
-        self.seq_tail = seq_tail
+        self.intermotif_format = intermotif_format
+        self.seqtail_format = seqtail_format
+        self.seq_format = seq_format
         if seqtype == "aa":
             self.fg = _aafgcolors
             self.bg = _aabgcolors
@@ -1393,9 +1398,14 @@ class SeqMotifFace(StaticItemFace):
     def build_regions(self): 
         # Sort regions
         seq = self.seq or []
-        motifs = self.motifs or [[1, len(seq), "seq", 10, 10, "black", None]]
+        motifs = self.motifs
+        if not motifs:
+            if self.seq_format == "seq":
+                motifs = [[1, len(seq), "seq", 10, 10, None, None]]
+            elif self.seq_format == "compactseq":
+                motifs = [[1, len(seq), "compactseq", 1, 10, None, None]]
         motifs.sort()
-        intermotif = self.intermotif_space
+        intermotif = self.intermotif_format
         self.regions = []
         current_pos = 0
         end = 0
@@ -1422,11 +1432,11 @@ class SeqMotifFace(StaticItemFace):
             current_pos = end
 
         if len(seq) > end:
-            if self.seq_tail == "line":
+            if self.seqtail_format == "line":
                 self.regions.append([end, len(seq), "-", 1, 1, "black", None])
-            elif self.seq_tail == "seq":
+            elif self.seqtail_format == "seq":
                 self.regions.append([end, len(seq), "seq", 10, 10, None, None])
-            elif self.seq_tail == "compactseq":
+            elif self.seqtail_format == "compactseq":
                 self.regions.append([end, len(seq), "compactseq", 1, 10, None, None])
                 
     def update_items(self):

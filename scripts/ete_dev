@@ -34,9 +34,13 @@ def master_layout(node):
     node.img_style["fgcolor"] = "steelblue"
     if node.is_leaf():
         for aname, pos in LEAF_ATTRIBUTES.iteritems():
-            N = faces.AttrFace(aname, fsize=NAME_FONT_SIZE)
-            N.margin_left = 1
-            faces.add_face_to_node(N, node, pos, position=LEAF_NAME_POSITION)
+            if aname == "sequence":
+                N = faces.SeqMotifFace(node.sequence, seq_format="compactseq")
+                faces.add_face_to_node(N, node, pos, position="aligned")
+            else:
+                N = faces.AttrFace(aname, fsize=NAME_FONT_SIZE)
+                N.margin_left = 1
+                faces.add_face_to_node(N, node, pos, position=LEAF_NAME_POSITION)
     else:
         for aname, pos in INTERNAL_ATTRIBUTES.iteritems():
             N = faces.AttrFace(aname, fsize=NAME_FONT_SIZE)
@@ -146,11 +150,11 @@ if __name__ == "__main__":
     
     phylo_gr = parser.add_argument_group("PHYLOGENETIC OPTIONS\n=================")
     
-    phylo_gr.add_argument("-a", "--aln", dest="aln", 
+    phylo_gr.add_argument("-alg", dest="alg", 
                         type=str, 
                         help="""Multiple sequence alignment.""")
 
-    phylo_gr.add_argument("-af", "--aln-format", dest="aln_format", 
+    phylo_gr.add_argument("--alg-format", dest="alg_format", 
                         type=str, default="fasta",
                         help="""fasta, phylip, iphylip, relaxed_iphylip, relaxed_phylip.""")
     
@@ -180,9 +184,10 @@ if __name__ == "__main__":
     else:
         t = PhyloTree(tfile)        
 
-    if args.aln:
-        t.link_to_alignment(args.aln, format=args.aln_format)
-
+    if args.alg:
+        t.link_to_alignment(args.alg, alg_format=args.alg_format)
+        LEAF_ATTRIBUTES["sequence"] = 1
+        
     if args.species_discovery_regexp:
         SPCODE_REGEXP = re.compile(args.species_discovery_regexp)
         t.set_species_naming_function(user_species_naming_function)
