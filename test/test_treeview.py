@@ -97,18 +97,18 @@ def layout(node):
         CONT = 0
     if node.is_leaf():
         node.img_style["size"] = 0
-        F2= AttrFace("name", tight_text=False)
+        F2= AttrFace("name", tight_text=True)
         F= TextFace(chars[CONT], tight_text=True)
         F.inner_border.width = 0
         F2.inner_border.width = 0
-        faces.add_face_to_node(F ,node, 0, position="branch-right")
+        #faces.add_face_to_node(F ,node, 0, position="branch-right")
         faces.add_face_to_node(F2 ,node, 1, position="branch-right")
         CONT += 1
 t = Tree()
-t.populate(10)
+t.populate(500, random_branches=True)
 ts = TreeStyle()
 ts.layout_fn = layout
-ts.mode = "r"
+ts.mode = "c"
 ts.show_leaf_name = False
 
 temp_tface = TreeFace(t, ts)
