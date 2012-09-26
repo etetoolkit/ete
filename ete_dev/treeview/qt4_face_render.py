@@ -11,6 +11,11 @@ class _TextFaceItem(QGraphicsSimpleTextItem, _ActionDelegator):
         QGraphicsSimpleTextItem.__init__(self, text)
         _ActionDelegator.__init__(self)
         self.node = node
+        self.face = face
+        self._bounding_rect = self.face.get_bounding_rect()
+        self._real_rect = self.face.get_real_rect()
+    def boundingRect(self):
+        return self._bounding_rect
 
 class _ImgFaceItem(QGraphicsPixmapItem, _ActionDelegator):
     def __init__(self, face, node, pixmap):
@@ -25,7 +30,7 @@ class _BackgroundFaceItem(QGraphicsRectItem):
 
     def paint(self, painter, option, index):
         return
-
+        
 class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem :) 
     def __init__(self, faces, node, as_grid=False):
 
@@ -130,7 +135,7 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
             if self.as_grid:
                 y = 0
             else:
-                y = (self.h - self.c2height.get(c,0))/2
+                y = (self.h - self.c2height.get(c,0)) / 2
 
             for r, f in enumerate(faces):
                 w, h = self.sizes[c][r]
@@ -154,7 +159,6 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
                 obj.setAcceptsHoverEvents(True)
                 obj.setParentItem(self)
 
-                # relative alignemnt of faces
                 x_offset, y_offset = 0, 0 
                
                 if max_w > w:
@@ -185,19 +189,21 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
                 #_pos = obj_rect.topLeft()
                 #_x = abs(_pos.x()) if _pos.x() < 0 else 0
                 #_y = abs(_pos.y()) if _pos.y() < 0 else 0
-
+                          
+                text_y_offset = -obj.boundingRect().y() if f.type == "text" else 0 
+                    
                 obj.setPos(x + f.margin_left + x_offset,
-                           y + y_offset + f.margin_top)
-
+                           y + y_offset + f.margin_top + text_y_offset)
+                
                 obj.rotable = f.rotable
                 f.inner_background.apply(obj)
                 f.inner_border.apply(obj)
 
                 bg = f.background.apply(obj)
                 border = f.border.apply(obj)
-                if border: 
-                    border.setRect(x, y, max_w, max_h)
-                    border.setParentItem(self)
+                #if border:
+                #    border.setRect(x, y, max_w, max_h)
+                #    border.setParentItem(self)
                 if bg:
                     bg.setRect(x, y, max_w, max_h)
                     bg.setParentItem(self)
@@ -216,23 +222,35 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
         "rotates item over its own center"
         for obj in self.childItems():
             if hasattr(obj, "rotable") and obj.rotable:
-                rect = obj.boundingRect()
-                x =  rect.width()/2
-                y =  rect.height()/2
+                if hasattr(obj, "_real_rect"):
+                    # to avoid incorrect rotation of tightgly wrapped
+                    # text items we need to rotate using the real
+                    # wrapping rect and revert y_text correction.
+                    yoff = obj.boundingRect().y()
+                    rect = obj._real_rect
+                    # OJO!! this only works for the rotation of text
+                    # faces in circular mode. Other cases are
+                    # unexplored!!
+                    obj.moveBy(0, yoff*2)
+                else:
+                    yoff = None
+                    rect = obj.boundingRect()
+                x = rect.width() / 2 
+                y = rect.height() / 2
                 obj.setTransform(QTransform().translate(x, y).rotate(rotation).translate(-x, -y))
-
+                
     def flip_hz(self):
         for obj in self.childItems():
             rect = obj.boundingRect()
-            x =  rect.width()/2
-            y =  rect.height()/2
+            x =  rect.width() / 2
+            y =  rect.height() / 2
             obj.setTransform(QTransform().translate(x, y).scale(-1,1).translate(-x, -y))
 
     def flip_vt(self):
         for obj in self.childItems():
             rect = obj.boundingRect()
-            x =  rect.width()/2
-            y =  rect.height()/2
+            x =  rect.width() / 2
+            y =  rect.height() / 2
             obj.setTransform(QTransform().translate(x, y).scale(1,-1).translate(-x, -y))
 
 def update_node_faces(node, n2f, img):

@@ -1,7 +1,7 @@
 import random
 import sys
 sys.path.insert(0, "../")
-from ete_dev import Tree, TreeStyle, NodeStyle, PhyloTree
+from ete_dev import Tree, TreeStyle, NodeStyle, PhyloTree, faces
 from ete_dev.treeview.faces import *
 from ete_dev.treeview.main import random_color, _NODE_TYPE_CHECKER, FACE_POSITIONS
 
@@ -88,10 +88,37 @@ n = main_tree.add_child()
 n.add_face(temp_tface, 0, "aligned")
 
 
+# TEST TIGHT TEST WRAPPING
+CONT = 0
+chars = ["." "p", "j", "jJ"]
+def layout(node):
+    global CONT
+    if CONT >= len(chars):
+        CONT = 0
+    if node.is_leaf():
+        node.img_style["size"] = 0
+        F2= AttrFace("name", tight_text=True)
+        F= TextFace(chars[CONT], tight_text=True)
+        F.inner_border.width = 0
+        F2.inner_border.width = 0
+        #faces.add_face_to_node(F ,node, 0, position="branch-right")
+        faces.add_face_to_node(F2 ,node, 1, position="branch-right")
+        CONT += 1
+t = Tree()
+t.populate(500, random_branches=True)
+ts = TreeStyle()
+ts.layout_fn = layout
+ts.mode = "c"
+ts.show_leaf_name = False
+
+temp_tface = TreeFace(t, ts)
+n = main_tree.add_child()
+n.add_face(temp_tface, 0, "aligned")
+
+# MAIN TREE
+
 ms = TreeStyle()
 ms.mode = "r"
 ms.show_leaf_name = False
-main_tree.show(tree_style=ms)
- 
+main_tree.show(tree_style=ms)        
 
-        

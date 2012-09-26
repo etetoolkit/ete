@@ -70,7 +70,7 @@ class SeqGroup(object):
     def __iter__(self):
         return self.iter_entries()
 
-    def __init__(self, sequences = None , format="fasta", fix_duplicates=True):
+    def __init__(self, sequences=None , format="fasta", fix_duplicates=True):
         self.parsers = {
             "fasta": [read_fasta, write_fasta, {}],
             "phylip": [read_phylip, write_phylip, {"interleaved":False, "relaxed":False}],

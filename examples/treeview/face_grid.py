@@ -2,7 +2,7 @@ from ete_dev import Tree, TextFace, NodeStyle, TreeStyle
 
 def get_example_tree():
     t = Tree("((a,b),c);")
-
+    
     right_c0_r0 = TextFace("right_col0_row0")
     right_c0_r1 = TextFace("right_col0_row1")
     right_c1_r0 = TextFace("right_col1_row0")

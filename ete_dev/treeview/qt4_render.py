@@ -450,7 +450,7 @@ def rotate_inverted_faces(n2i, n2f, img):
         item = n2i[node]
         if item.rotation > 90 and item.rotation < 270:
             for pos, fb in faceblock.iteritems():
-                fb.rotate(180)
+                fb.rotate(181)
 
 def render_backgrounds(img, mainRect, bg_layer, n2i, n2f):
 

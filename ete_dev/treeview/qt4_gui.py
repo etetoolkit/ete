@@ -26,6 +26,7 @@ class _SelectorItem(QtGui.QGraphicsRectItem):
 
     def paint(self, p, option, widget):
         p.setPen(self.Color)
+        p.setBrush(QtGui.QBrush(QtCore.Qt.NoBrush))
         p.drawRect(self.rect().x(),self.rect().y(),self.rect().width(),self.rect().height())
         return
         # Draw info text

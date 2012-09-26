@@ -78,9 +78,9 @@ print b_free.branches[1]['w']
 print 'and value of omega for background: '
 print b_free.branches[2]['w']
 
-print 'we will now run 2 branch models over this tree, one letting the omega \nvalue of foreground species to be free, and the other fixing it at one.'
+print 'we will now run 2 branch models over this tree, one letting the omega \nvalue of foreground species to be free, and the other fixing it at one.\n'
 
-
+print "The End."
 
 
 

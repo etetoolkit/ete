@@ -11,22 +11,46 @@ except:
 from ete_dev import PhyloTree, TreeStyle, faces
 
 __DESCRIPTION__ = """
-ETE tree viewer. 
+The ETE tree viewer. 
 """
 
 NAME_FONT_SIZE = 14
 LEAF_NAME_POSITION = "branch-right"
-SHOW_LEAF_NAMES = True
+
+LEAF_ATTRIBUTES = {"name": 1}
+INTERNAL_ATTRIBUTES = {}
+
+SPCODE_REGEXP = None
+def user_species_naming_function(name):
+    try:
+        return SPCODE_REGEXP.search(name).groups()[0]
+    except Exception:
+        print >>sys.stderr, "Unable to capture species code in: ", name
+        return "Unknown"
 
 def master_layout(node):
-    if node.is_leaf() and SHOW_LEAF_NAMES:
-        N = faces.AttrFace("name", fsize=NAME_FONT_SIZE)
-        N.margin_left = 2
-        faces.add_face_to_node(N, node, 0, position=LEAF_NAME_POSITION)
+    node.img_style["size"] = 5
+    node.img_style["shape"] = "square"
+    node.img_style["fgcolor"] = "steelblue"
+    if node.is_leaf():
+        for aname, pos in LEAF_ATTRIBUTES.iteritems():
+            if aname == "sequence":
+                N = faces.SeqMotifFace(node.sequence, seq_format="compactseq")
+                faces.add_face_to_node(N, node, pos, position="aligned")
+            else:
+                N = faces.AttrFace(aname, fsize=NAME_FONT_SIZE)
+                N.margin_left = 1
+                faces.add_face_to_node(N, node, pos, position=LEAF_NAME_POSITION)
+    else:
+        for aname, pos in INTERNAL_ATTRIBUTES.iteritems():
+            N = faces.AttrFace(aname, fsize=NAME_FONT_SIZE)
+            N.margin_left = 1
+            faces.add_face_to_node(N, node, pos, position=LEAF_NAME_POSITION)
+        
         
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__DESCRIPTION__, 
-                            formatter_class=argparse.RawDescriptionHelpFormatter)
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
     # name or flags - Either a name or a list of option strings, e.g. foo or -f, --foo.
     # action - The basic type of action to be taken when this argument is encountered at the command line. (store, store_const, store_true, store_false, append, append_const, version)
     # nargs - The number of command-line arguments that should be consumed. (N, ? (one or default), * (all 1 or more), + (more than 1) )
@@ -39,83 +63,119 @@ if __name__ == "__main__":
     # metavar - A name for the argument in usage messages.
     # dest - The name of the attribute to be added to the object returned by parse_args().
 
-    parser.add_argument('tree', metavar='tree_file', type=str, nargs=1,
+    input_gr = parser.add_argument_group("TREE INPUT OPTIONS\n=================")
+    
+    input_gr.add_argument('tree', metavar='tree_file', type=str, nargs=1,
                       help='A tree file (or text string) in newick format.')
 
-    parser.add_argument("-a", "--aln", dest="aln", 
-                        type=str, 
-                        help="""Multi sequence alignment""")
-
-    parser.add_argument("-af", "--aln-format", dest="aln_format", 
-                        type=str, default="fasta",
-                        help="""fasta, phylip, iphylip, relaxed_iphylip, relaxed_phylip""")
-
-    parser.add_argument("-m", "--mode", dest="mode", 
+    input_gr.add_argument("--raxml", dest="raxml", 
+                        action="store_true",
+                        help="""Process newick as raxml bootstrap values""")
+    
+    img_gr = parser.add_argument_group("TREE IMAGE OPTIONS\n=================")
+        
+    img_gr.add_argument("-m", "--mode", dest="mode", 
                         choices=["c", "r"], default="r",
                         help="""(r)ectangular or (c)ircular visualization""")
+  
 
-    parser.add_argument("-r", "--root", dest="root", 
-                        type=str, nargs="*",
-                        help="Roots the tree to the node grouping the list"
-                        " of nodes provided (space separated)""")
-
-    parser.add_argument("-i", "--image", dest="image", 
+    img_gr.add_argument("-i", "--image", dest="image", 
                         type=str, 
                         help="Render tree image instead of showing it. A filename "
                         " should be provided. PDF, SVG and PNG file extensions are"
                         " supported (i.e. -i tree.svg)"
                         )
 
-    parser.add_argument("-Iw", "--width", dest="width", 
+    img_gr.add_argument("-Iw", "--width", dest="width", 
                         type=int, default=0, 
-                        help="width of the rendered image in pixels (see --size-units)"
+                        help="width of the rendered image in pixels (see --size-units)."
                         )
 
-    parser.add_argument("-Ih", "--height", dest="height", 
+    img_gr.add_argument("-Ih", "--height", dest="height", 
                         type=int, default=0,
-                        help="height of the rendered image in pixels (see --size-units)"
+                        help="height of the rendered image in pixels (see --size-units)."
                         )
 
-    parser.add_argument("-Ir", "--resolution", dest="resolution", 
+    img_gr.add_argument("-Ir", "--resolution", dest="resolution", 
                         type=int, default=300,
                         help="Resolution if the tree image (DPI)"
                         )
 
-    parser.add_argument("-Iu", "--size-units", dest="size_units", 
+    img_gr.add_argument("-Iu", "--size-units", dest="size_units", 
                         choices=["px", "mm", "in"], default="px",
                         help="Units used to specify the size of the image."
                         " (px:pixels, mm:millimeters, in:inches). "
                         )
 
-    parser.add_argument("-Sm", "--min-branch-separation", dest="branch_separation", 
+    img_gr.add_argument("-mbs", "--min-branch-separation", dest="branch_separation", 
                         type=int, default = 3, 
-                        help="Min number of pixels to separate branches vertically"
+                        help="Min number of pixels to separate branches vertically."
                         )
 
-    parser.add_argument("-b", "--bootstrap", dest="bootstrap", 
+    img_gr.add_argument("-ss", "--show-support", dest="show_support", 
                         action="store_true",
-                        help="""Shows branch support values""")
+                        help="""Shows branch bootstrap/support values""")
 
-    parser.add_argument("-N", "--hide-names", dest="hide_names", 
+    img_gr.add_argument("-sbl", "--branch-length", dest="show_branch_length", 
                         action="store_true",
-                        help="""Hide leaf names""")
+                        help="""Show branch lengths.""")
 
-    parser.add_argument("-l", "--ladderize", dest="ladderize", 
+    img_gr.add_argument("-ft", "--force-topology", dest="force_topology", 
                         action="store_true",
-                        help="""Sort branches by size""")
+                        help="""Force branch length to have a minimum length in the image""")
 
-    parser.add_argument("-S", "--do-not-sort", dest="not_sort", 
+    img_gr.add_argument("-hln", "--hide-leaf-names", dest="hide_leaf_names", 
                         action="store_true",
-                        help="""do not sort branches by node names (respects order in newick)""")
+                        help="""Hide leaf names.""")
 
-    parser.add_argument("-rx", "--raxml", dest="raxml", 
+    img_gr.add_argument("-sin", "--show-internal-names", dest="show_internal_names", 
                         action="store_true",
-                        help="""Process newick as raxml bootstrap values""")
+                        help="""Show the name attribute of all internal nodes.""")
 
+    edit_gr = parser.add_argument_group("TREE EDIT OPTIONS\n=================")
+    
+    edit_gr.add_argument("-r", "--root", dest="root", 
+                         type=str, nargs="*",
+                         help="Roots the tree to the node grouping the list"
+                         " of node names provided (space separated). In example:"
+                         "'--root human rat mouse'")
+    
+    edit_gr.add_argument("-s", "--sort-branches", dest="sort", 
+                        action="store_true",
+                        help="""Sort branches according to node names.""")
+
+    edit_gr.add_argument("-l", "--ladderize", dest="ladderize", 
+                        action="store_true",
+                        help="""Sort branches by partition size.""")
+    
+    phylo_gr = parser.add_argument_group("PHYLOGENETIC OPTIONS\n=================")
+    
+    phylo_gr.add_argument("-alg", dest="alg", 
+                        type=str, 
+                        help="""Multiple sequence alignment.""")
+
+    phylo_gr.add_argument("--alg-format", dest="alg_format", 
+                        type=str, default="fasta",
+                        help="""fasta, phylip, iphylip, relaxed_iphylip, relaxed_phylip.""")
+    
+    phylo_gr.add_argument("--sp-discovery", dest="species_discovery_regexp", 
+                          type=str, default="^[^_]+_(.+)",
+                          help="Perl regular expression to capture species"
+                          " code from node names. By default, node names"
+                          " are expected to follow the NAME_SPCODE format = '^[^_]+_(.+)' ")
+        
+    phylo_gr.add_argument("--dump-subtrees", dest="subtrees_output_file", 
+                          type=str, 
+                          help="Returns a file containing all possible species subtrees"
+                               " contained in a given gene tree ")
+        
     args = parser.parse_args()
 
     tfile = args.tree[0]
 
+    if args.ladderize and args.sort:
+        raise ValueError("--sort-branches and --ladderize options are mutually exclusive")
+    
     if args.raxml:
         nw = re.sub(":(\d+\.\d+)\[(\d+)\]", ":\\1[&&NHX:bootstrap=\\2]", open(tfile).read())
         t = PhyloTree(nw)
@@ -124,16 +184,18 @@ if __name__ == "__main__":
     else:
         t = PhyloTree(tfile)        
 
-    if args.aln:
-        t.link_to_alignment(args.aln, format=args.aln_format)
-
+    if args.alg:
+        t.link_to_alignment(args.alg, alg_format=args.alg_format)
+        LEAF_ATTRIBUTES["sequence"] = 1
+        
+    if args.species_discovery_regexp:
+        SPCODE_REGEXP = re.compile(args.species_discovery_regexp)
+        t.set_species_naming_function(user_species_naming_function)
+        
     if args.ladderize:
         t.ladderize()
-
-    if not args.not_sort:
+    if args.sort:
         t.sort_descendants()
-
-    t.dist = 0
 
     if args.root:
         if len(args.root) > 1:
@@ -141,15 +203,35 @@ if __name__ == "__main__":
         else:
             outgroup = t & args.root[0]
         t.set_outgroup(outgroup)
+
+    # EXTRACT INFO
+
+    if args.subtrees_output_file:
+        ntrees, ndups, treeiter = t.get_speciation_trees()
+        print >>sys.stderr, "Found %d duplication nodes. Dumping %d sutrees..." %(ndups, ntrees)
+        OUT = open(args.subtrees_output_file, "w")
+        for tree in treeiter:
+            print >>OUT, tree.write()
+        OUT.close()
+
+    # VISUALIZATION
+        
     ts = TreeStyle()
     ts.mode = args.mode
     ts.show_leaf_name = False
     ts.branch_vertical_margin = args.branch_separation
-    if args.bootstrap:
+    if args.show_support:
         ts.show_branch_support = True
+    if args.show_branch_length:
+        ts.show_branch_length = True
+    if args.force_topology:
+        ts.force_topology = True
+        
+    if args.hide_leaf_names:
+        del LEAF_ATTRIBUTES["name"]
 
-    if args.hide_names:
-        SHOW_LEAF_NAMES = False
+    if args.show_internal_names:
+        INTERNAL_ATTRIBUTES["name"] = 1
 
     # scale the tree
     if not args.height: 

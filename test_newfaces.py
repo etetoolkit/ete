@@ -8,6 +8,10 @@ def layout(node):
         F.border.width = None
         F.opacity = 0.8
         faces.add_face_to_node(F,node, 0, position="branch-right")
+        F.background.color = "indianred"
+        x = faces.TextFace("hola")
+        faces.add_face_to_node(x,node, 1, position="branch-right")
+        x.background.color = "blue"
     else:
         F= faces.BarChartFace([40,20,70,100,30,40,50,40,70,12], min_value=0, colors=COLOR_SCHEMES["spectral"])
         faces.add_face_to_node(F,node, 0, position="branch-top")
@@ -15,7 +19,7 @@ def layout(node):
 t = Tree()
 ts = TreeStyle()
 ts.layout_fn = layout
-ts.mode = "c"
+ts.mode = "r"
 ts.show_leaf_name = False
 
 t.populate(10)

@@ -130,6 +130,20 @@ class Test_Coretype_Tree(unittest.TestCase):
         t1.prune(["A","B"])
         self.assertEqual( t1.write(), "(A:0,B:0);")
 
+        # test prune preserving distances
+        for i in xrange(3):
+            t = Tree()
+            t.populate(50, random_branches=True)
+            distances = {}
+            for a in t.iter_leaves():
+                for b in t.iter_leaves():
+                    distances[(a,b)] = round(a.get_distance(b), 10)
+
+            to_keep = set(random.sample(t.get_leaves(), 10))
+            t.prune(to_keep, preserve_branch_length=True)
+            for a,b in distances:
+                if a in to_keep and b in to_keep:
+                    self.assertEqual(distances[(a,b)], round(a.get_distance(b), 10))
         
         t_fuzzy = Tree("(((A,B), C),(D,E));")
         orig_nw = t_fuzzy.write()
