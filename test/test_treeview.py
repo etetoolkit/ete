@@ -105,7 +105,7 @@ def layout(node):
         faces.add_face_to_node(F2 ,node, 1, position="branch-right")
         CONT += 1
 t = Tree()
-t.populate(500, random_branches=True)
+t.populate(20, random_branches=True)
 ts = TreeStyle()
 ts.layout_fn = layout
 ts.mode = "c"
