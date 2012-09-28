@@ -166,8 +166,6 @@ def brh_cogs(DB, species, min_score=0.3, missing_factor=0.0, \
                 for c1, seqid in enumerate(filtered_candidates):
                     # Avoid to detect the same COG
                     seedname = str(seed)+GLOBALS["spname_delimiter"]+str(seqid)
-                    if seedname in visited_seqids: 
-                        continue
                     COG = [seedname]
                     if species_side1 != "":
                         cmd = """ SELECT taxid2, seqid2 from ortho_pair WHERE 

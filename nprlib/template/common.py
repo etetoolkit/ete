@@ -248,7 +248,7 @@ def split_tree(task_tree, main_tree, alg_path, npr_conf):
             else:
                 seqs, outs = select_outgroups(node, n2content, npr_conf)
             if seqs | outs == root_content:
-                log.log(24, "Discarding NPR node due to identity with its parent")
+                log.log(28, "Discarding NPR node due to identity with its parent")
                 trees_to_browse.append(node)
             else:
                 yield node, seqs, outs
