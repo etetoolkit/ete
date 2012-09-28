@@ -26,6 +26,7 @@ from nprlib import db
 from nprlib import apps
 from nprlib.template.common import CONFIG_SPECS
 from nprlib.logger import logindent
+from nprlib.citation import Citator
 
 try:
     module_path = os.path.split(__file__)[0]
@@ -242,6 +243,7 @@ def main(args):
 
     if npr_template == "sptree" and args.spfile:
         GLOBALS["target_species"] = set([line.strip() for line in open(args.spfile)])
+        log.log(28, "Enabling NPR for %d species", len(GLOBALS["target_species"]))
 
 
     GLOBALS["db_file"]  = os.path.join(base_dir, "db.sqlite3")
@@ -296,7 +298,7 @@ def check_and_load_orthologs(args):
     target_seqs = set()
     ortho_pairs = []
 
-    log.log(28, "Scanning orthologs pairs from file...")
+    log.log(28, "Reading ortholog pairs from file...")
 
     for c1, line in enumerate(open(args.ortho_pairs)):
         if c1%10000 == 0:
@@ -328,6 +330,7 @@ def check_and_load_orthologs(args):
         elif all_species - GLOBALS["target_species"]:
             ValueError("Inconsistency found when loading species. Please report.")
     else:
+        log.log(28, "Enabling NPR for %d species", len(all_species))
         GLOBALS["target_species"] = all_species
     return target_seqs
 
@@ -693,7 +696,8 @@ if __name__ == "__main__":
     GLOBALS["target_sequences"] = set()
     GLOBALS["spname_delimiter"] = args.spname_delimiter
     GLOBALS["color_shell"] = True
-
+    GLOBALS["citator"] = Citator()
+    
     if not os.path.exists(GLOBALS["basedir"]):
         os.makedirs(GLOBALS["basedir"])
 
