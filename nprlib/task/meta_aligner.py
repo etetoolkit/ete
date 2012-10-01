@@ -5,7 +5,7 @@ log = logging.getLogger("main")
 
 from nprlib.master_task import AlgTask
 from nprlib.master_job import Job
-from nprlib.utils import SeqGroup, OrderedDict, checksum
+from nprlib.utils import SeqGroup, OrderedDict, checksum, GLOBALS
 import __init__ as task
 
 __all__ = ["MetaAligner"]
@@ -23,6 +23,10 @@ def seq_reverser_job(multiseq_file, outfile, trimal_bin, parent_ids):
 
 class MCoffee(AlgTask):
     def __init__(self, nodeid, seqtype, all_alg_files, conf, parent_ids):
+        GLOBALS["citator"].add("Wallace IM, O'Sullivan O, Higgins DG, Notredame C.",
+                               "M-Coffee: combining multiple sequence alignment methods with T-Coffee.",
+                               "Nucleic Acids Res. 2006 Mar 23;34(6):1692-9.")
+
         base_args = OrderedDict({
                 "-output": "fasta",
                 "-aln": ' '.join(all_alg_files)
@@ -63,14 +67,13 @@ class MetaAligner(AlgTask):
         self.conf = conf
         self.seqtype = seqtype
         self.multiseq_file = multiseq_file
-
+        self.size = GLOBALS["nodeinfo"][nodeid].get("size", 0)
+        
         self.init()
         self.alg_fasta_file = os.path.join(self.taskdir, "final_alg.fasta")
         self.alg_phylip_file = os.path.join(self.taskdir, "final_alg.iphylip")
-        # After init (and load_jobs), I can adjust size of sibling jobs
-        #for job in self.jobs:
-        #    job.size = self.size
 
+        
     def load_jobs(self):
         multiseq_file_r = self.multiseq_file+".reversed"
         first = seq_reverser_job(self.multiseq_file, multiseq_file_r, 
@@ -85,12 +88,14 @@ class MetaAligner(AlgTask):
             # Normal alg
             task1 = _aligner(self.nodeid, self.multiseq_file, self.seqtype,
                              self.conf)
+            task1.size = self.size
             self.jobs.append(task1)
             all_alg_files.append(task1.alg_fasta_file)
             
             # Alg of the reverse
             task2 = _aligner(self.nodeid, multiseq_file_r, self.seqtype,
                              self.conf)
+            task2.size = self.size
             task2.dependencies.add(first)
             self.jobs.append(task2)
             

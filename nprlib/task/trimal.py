@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 import sys
 import logging
@@ -5,13 +6,17 @@ log = logging.getLogger("main")
 
 from nprlib.master_task import AlgCleanerTask
 from nprlib.master_job import Job
-from nprlib.utils import SeqGroup
+from nprlib.utils import SeqGroup, GLOBALS
 from nprlib.errors import RetryException
 
 __all__ = ["Trimal"]
 
 class Trimal(AlgCleanerTask):
     def __init__(self, nodeid, seqtype, alg_fasta_file, alg_phylip_file, conf):
+        GLOBALS["citator"].add(u"Capella-Gutiérrez S, Silla-Martínez JM, Gabaldón T.",
+                               "trimAl: a tool for automated alignment trimming in large-scale phylogenetic analyses.",
+                               "Bioinformatics. 2009 Aug 1;25(15):1972-3. Epub 2009 Jun 8. PubMed PMID: 19505945;")
+                               
         self.conf = conf
         self.seqtype = seqtype
         self.alg_fasta_file = alg_fasta_file

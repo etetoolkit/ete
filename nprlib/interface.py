@@ -131,7 +131,9 @@ class Screen(StringIO):
         curses.doupdate()
 
     def write(self, text):
-        if NCURSES: 
+        if isinstance(text, unicode):
+            text = text.encode(self.stdout.encoding)
+        if NCURSES:
             self.write_curses(text)
             if self.logfile:
                 text = re.sub(self.TAG, "", text)
@@ -197,8 +199,7 @@ class Screen(StringIO):
                 scroll = self.lines[windex] - ln - h
                 if scroll > 0:
                     self.scroll(windex, scroll, refresh=False)
-                
-            
+                            
             try:
                 win.addstr(text[start:next_stop], face)
             except curses.error: 

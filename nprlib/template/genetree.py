@@ -206,12 +206,12 @@ def process_task(task, npr_conf, nodeid2info):
                     task.nodeid, task.cladeid,
                     task.target_seqs,
                     task.out_seqs)
-        
-        alg_task = npr_conf.aligner(nodeid, task.multiseq_file,
-                                    seqtype, conf)
+       
         nodeid2info[nodeid]["size"] = task.size
         nodeid2info[nodeid]["target_seqs"] = task.target_seqs
         nodeid2info[nodeid]["out_seqs"] = task.out_seqs
+        alg_task = npr_conf.aligner(nodeid, task.multiseq_file,
+                                    seqtype, conf)
         alg_task.size = task.size
         new_tasks.append(alg_task)
 

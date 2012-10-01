@@ -8,12 +8,16 @@ log = logging.getLogger("main")
 
 from nprlib.master_task import TreeTask
 from nprlib.master_job import Job
-from nprlib.utils import basename, PhyloTree, OrderedDict
+from nprlib.utils import basename, PhyloTree, OrderedDict, GLOBALS
 
 __all__ = ["Phyml"]
 
 class Phyml(TreeTask):
     def __init__(self, nodeid, alg_file, constrain_tree, model, seqtype, conf):
+        GLOBALS["citator"].add("Guindon S, Dufayard JF, Lefort V, Anisimova M, Hordijk W, Gascuel O.",
+                               "New algorithms and methods to estimate maximum-likelihood phylogenies: assessing the performance of PhyML 3.0.",
+                               "Syst Biol. 2010 May;59(3):307-21. Epub 2010 Mar 29. PubMed PMID: 20525638.")
+        
         base_args = OrderedDict({
                 "--model": "", 
                 "--no_memory_check": "", 

@@ -4,12 +4,16 @@ log = logging.getLogger("main")
 
 from nprlib.master_task import AlgTask
 from nprlib.master_job import Job
-from nprlib.utils import SeqGroup, OrderedDict
+from nprlib.utils import SeqGroup, OrderedDict, GLOBALS
 
 __all__ = ["Dialigntx"]
 
 class Dialigntx(AlgTask):
     def __init__(self, nodeid, multiseq_file, seqtype, conf):
+        GLOBALS["citator"].add("Subramanian AR, Kaufmann M, Morgenstern B.",
+                               "DIALIGN-TX: greedy and progressive approaches for segment-based multiple sequence alignment.",
+                               "Algorithms Mol Biol. 2008 May 27;3:6. PubMed PMID: 18505568.")
+        
         # fixed options for running this task
         base_args = OrderedDict({
                 '': None,

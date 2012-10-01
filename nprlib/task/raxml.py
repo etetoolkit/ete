@@ -15,9 +15,10 @@ __all__ = ["Raxml"]
 
 class Raxml(TreeTask):
     def __init__(self, nodeid, alg_file, constrain_tree,  model, seqtype, conf):
-        # PTHREADS version needs at least -T2, which is actually
-        # similar to the normal version
-       
+        GLOBALS["citator"].add("Stamatakis A.",
+                               "RAxML-VI-HPC: maximum likelihood-based phylogenetic analyses with thousands of taxa and mixed models.",
+                               "Bioinformatics. 2006 Nov 1;22(21):2688-90.")
+               
         base_args = OrderedDict()
         TreeTask.__init__(self, nodeid, "tree", "RaxML", 
                           base_args, conf["raxml"])

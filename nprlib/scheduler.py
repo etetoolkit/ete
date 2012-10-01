@@ -81,6 +81,7 @@ def schedule(workflow_task_processor, schedule_time, execution, retry, debug):
         
         # Process waiting tasks
         launched_tasks = 0
+        
         for task in sorted(pending_tasks, sort_tasks):
 
             log.log(28, "Cores in use: %s/%s", cores_used, cores_total)
@@ -163,13 +164,15 @@ def schedule(workflow_task_processor, schedule_time, execution, retry, debug):
 
     final_tree_file = os.path.join(GLOBALS["basedir"],
                                    "final_tree.nw")
+    if main_tree: 
+        for n in main_tree.iter_leaves():
+            n.name = n.realname
+        log.log(28, "Writing final tree: %s", final_tree_file)
+        main_tree.write(outfile=final_tree_file)
 
-    for n in main_tree.iter_leaves():
-        n.name = n.realname
-    log.log(28, "writing final_tree")
-    main_tree.write(outfile=final_tree_file)
-   
     log.log(28, "Done")
+    GLOBALS["citator"].show()
+   
       
 def show_task_info(task):
     log.log(26, "")
