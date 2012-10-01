@@ -1517,9 +1517,13 @@ class TreeNode(object):
         """
         .. versionadded: 2.x
         
-        Returns the Robinson-Foulds topological distance between this and another node.
-
-        :returns: (RF distance, Max.RF distance)
+        Returns the Robinson-Foulds symmetric distance between this and the target tree.
+     
+        :params t2: target tree
+        :params name attr_t1: Compare trees using the provided attribute from nodes in this tree.
+        :params name attr_t2: Compare trees using the provided attribute from nodes in target tree.
+        
+        :returns: (symmetric_distance, total_partitions, common_nodes, partitions in reference tree, partitions in target tree)
         """
         
         t1 = self
@@ -1533,18 +1537,18 @@ class TreeNode(object):
 
         r1 = set([",".join(sorted([getattr(_c, attr_t1) for _c in cont
                                    if getattr(_c, attr_t1) in common_names]))
-                  for cont in t1content.values()])
+                  for cont in t1content.values() if len(cont)>1])
         r2 = set([",".join(sorted([getattr(_c, attr_t2) for _c in cont
                                    if getattr(_c, attr_t2) in common_names]))
-                  for cont in t2content.values()])
+                  for cont in t2content.values() if len(cont)>1])
                       
         inters = r1.intersection(r2)
         if len(r1) == len(r2):
                 rf = (len(r1) - len(inters)) * 2
         else :
                 rf = (len(r1) - len(inters)) + (len(r2) - len(inters))
-        rf_max = len(r1) + len(r2)
-        return rf, rf_max, ref_names, target_names, r1, r2
+        max_parts = len(r1) + len(r2)
+        return rf, max_parts, common_names, r1, r2
 
     def get_partitions(self):
         """ 
