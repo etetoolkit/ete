@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import sys
 import os
 import shutil
@@ -42,9 +43,9 @@ except:
 
 __DESCRIPTION__ = (
 """--------------------------------------------------------------------------------
-                 Nested Phylogenetic Reconstruction program.
+            Nested Phylogenetic Reconstruction (NPR) program.
                           NPR-0.1%s(beta), %s.
-
+    
       NPR allows to reconstruct large phylogenies by means of an
       iterative strategy that provides scalable resolution along the
       different levels of a tree. At each iteration, internal nodes
@@ -54,9 +55,9 @@ __DESCRIPTION__ = (
       If you use this program in a published work, please cite:
 
         Jaime Huerta-Cepas and Toni Gabaldon. Nested Phylogenetic
-        Reconstruction. XXX-XX. 2012.
+        Reconstruction. XXX-XX. 
 
-      (Note that a list of external programs used to complete the
+      (Note that a list of the external programs used to complete the
       necessary computations will be shown shown together with your
       results.)
 
@@ -134,14 +135,14 @@ def main(args):
     log = logging.getLogger("main")
     print __DESCRIPTION__
 
-    local_conf_file = os.path.join(base_dir, "pipeline.cfg")
+    local_conf_file = os.path.join(base_dir, "workflow.cfg")
     if os.path.exists(base_dir):
         if os.path.exists(local_conf_file):
             if not args.override and \
                not filecmp.cmp(args.configfile, local_conf_file):
                 raise ConfigError("Output directory seem to contain"
                                   " a NPR execution using a different"
-                                  " config file [pipeline.cfg]. Use"
+                                  " config file [workflow.cfg]. Use"
                                   " --override option or change the"
                                   " output path.")
 
@@ -227,7 +228,7 @@ def main(args):
             log.warning("Using existing dir: %s", dirname)
 
     # Copy config file
-    shutil.copy(args.configfile, os.path.join(base_dir, "pipeline.cfg"))
+    shutil.copy(args.configfile, os.path.join(base_dir, "workflow.cfg"))
 
     if npr_template == "sptree" and not args.ortho_pairs:
         raise ConfigError("Species tree workflow requires a list"
@@ -698,6 +699,9 @@ if __name__ == "__main__":
     GLOBALS["color_shell"] = True
     GLOBALS["citator"] = Citator()
     
+    GLOBALS["citator"].add(u"Huerta-Cepas J, Dopazo J, Gabaldón T.",
+                           "ETE: a python Environment for Tree Exploration.",
+                           "BMC Bioinformatics. 2010 Jan 13;11:24. PubMed PMID: 20070885; PubMed Central PMCID: PMC2820433.")
     if not os.path.exists(GLOBALS["basedir"]):
         os.makedirs(GLOBALS["basedir"])
 
