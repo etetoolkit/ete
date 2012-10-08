@@ -23,8 +23,9 @@ except ImportError:
     from nprlib.ordereddict import OrderedDict
 
 # ete_dev should be added to the python path by the npr script
-from ete_dev import PhyloTree, Tree, SeqGroup, TreeStyle, NodeStyle, faces
-from ete_dev.treeview import random_color
+from ete_dev.phylo import PhyloTree
+from ete_dev.coretype.tree import Tree
+from ete_dev.coretype.seqgroup import SeqGroup
 from ete_dev.parser.fasta import read_fasta
 #from ete_dev.treeview import drawer
 #drawer.GUI_TIMEOUT = 1
@@ -323,10 +324,18 @@ def npr_layout(node):
              
         support_face = faces.CircleFace(200, color)        
         faces.add_face_to_node(support_face, node, 0, position="float-behind")
-        
-NPR_TREE_STYLE = TreeStyle()
-NPR_TREE_STYLE.layout_fn = npr_layout
-NPR_TREE_STYLE.show_leaf_name = False
+
+try:        
+    from ete_dev import TreeStyle, NodeStyle, faces
+    from ete_dev.treeview import random_color
+    NPR_TREE_STYLE = TreeStyle()
+    NPR_TREE_STYLE.layout_fn = npr_layout
+    NPR_TREE_STYLE.show_leaf_name = False
+except ImportError:
+    TreeStyle, NodeStyle, faces, random_color = [None]*4
+    NPR_TREE_STYLE = None
+
+    
 
 
     
