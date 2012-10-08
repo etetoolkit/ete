@@ -626,7 +626,7 @@ if __name__ == "__main__":
                         " as in the program is called.")
 
     exec_type_group.add_argument("--sge", dest="sge_execute",
-                        action="store_true", help="Jobs will be"
+                        action="store_true", help="EXPERIMENTAL!: Jobs will be"
                         " launched using the Sun Grid Engine"
                         " queue system.")
 
