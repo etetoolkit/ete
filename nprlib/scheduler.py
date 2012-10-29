@@ -45,7 +45,7 @@ def schedule(workflow_task_processor, schedule_time, execution, retry, debug):
     pending_tasks = workflow_task_processor(None)
     main_thread_id = pending_tasks[0].threadid
     # Clear info from previous runs
-    open(os.path.join(GLOBALS["basedir"], "runid"), "w").write(main_thread_id)
+    open(os.path.join(GLOBALS["basedir"], "runid"), "a").write('\t'.join([main_thread_id, ctime()+"\n"]))
     
     # Enters into task scheduling
     while pending_tasks:
