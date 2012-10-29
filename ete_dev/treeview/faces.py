@@ -10,7 +10,7 @@ from PyQt4.QtGui import (QGraphicsRectItem, QGraphicsLineItem,
 from PyQt4.QtCore import Qt,  QPointF, QRect, QRectF
 
 from numpy import isfinite as _isfinite, ceil
-
+import math
 from main import add_face_to_node, _Background, _Border, COLOR_SCHEMES
 
 isfinite = lambda n: n and _isfinite(n)
@@ -1306,6 +1306,8 @@ class SequenceItem(QGraphicsRectItem):
         self.seqtype = seqtype
         self.poswidth = poswidth
         self.posheight = posheight
+        if draw_text:
+            self.poswidth = self.posheight = max(poswidth, posheight)
         self.draw_text = draw_text
         if seqtype == "aa":
             self.fg = _aafgcolors
@@ -1317,16 +1319,20 @@ class SequenceItem(QGraphicsRectItem):
 
     def paint(self, p, option, widget):
         x, y = 0, 0
-        fsize = (min(self.poswidth, self.posheight) - 2)
-        p.setFont(QFont("Courier", fsize))
-        p.setPen(QColor("black"))
+        qfont = QFont("Courier")
         for letter in self.seq:
             br = QBrush(QColor(self.bg.get(letter, "white")))
-            p.fillRect(x, 0, self.poswidth, self.posheight, br)
+            p.fillRect(x, 0, self.poswidth-1, self.posheight, br)
             if letter == "-" or letter == ".":
                 p.drawLine(x, self.posheight/2, x+self.poswidth, self.posheight/2)
-            elif self.draw_text and self.poswidth > 8:
-                p.drawText(x + 2, self.posheight - 2, letter)
+            elif self.draw_text and self.poswidth >= 8:
+                qfont.setPixelSize(self.poswidth)
+                p.setFont(qfont)
+                p.setBrush(QBrush(QColor("black")))
+                p.drawText(x + self.poswidth * 0.1, self.posheight *0.9, letter)
+               
+            else:
+                p.fillRect(x, 0, self.poswidth, self.posheight, br)
             x += self.poswidth
             
 class SeqMotifFace(StaticItemFace):
@@ -1345,8 +1351,8 @@ class SeqMotifFace(StaticItemFace):
 
         ::
     
-          motifs = [[seq.start, seq.end, shape, width, height, fgcolor, bgcolor],
-                   [seq.start, seq.end, shape, width, height, fgcolor, bgcolor],
+          motifs = [[seq.start, seq.end, shape, width, height, fgcolor, bgcolor, name],
+                   [seq.start, seq.end, shape, width, height, fgcolor, bgcolor, name],
                    ...
                   ]
     
@@ -1411,82 +1417,117 @@ class SeqMotifFace(StaticItemFace):
         current_pos = 0
         end = 0
         for mf in motifs:
-            start, end, typ, w, h, fg, bg = mf
+            start, end, typ, w, h, fg, bg, name = mf
             start -= 1
             if start < current_pos:
                 print current_pos, start, mf
                 raise ValueError("Overlaping motifs are not supported")
             if start > current_pos:
                 if intermotif == "blank": 
-                    self.regions.append([current_pos, start, " ", 1, 1, None, None])
+                    self.regions.append([current_pos, start, " ", 1, 1, None, None, None])
                 elif intermotif == "line":
-                    self.regions.append([current_pos, start, "-", 1, 1, "black", None])
+                    self.regions.append([current_pos, start, "-", 1, 1, "black", None, None])
                 elif intermotif == "seq":
                     # Colors are read from built-in dictionary
-                    self.regions.append([current_pos, start, "seq", 10, 10, None, None])
+                    self.regions.append([current_pos, start, "seq", 10, 10, None, None, None])
                 elif intermotif == "compactseq":
                     # Colors are read from built-in dictionary
-                    self.regions.append([current_pos, start, "compactseq", 1, 10, None, None])
+                    self.regions.append([current_pos, start, "compactseq", 1, 10, None, None, None])
                 elif intermotif == "none":
-                    self.regions.append([current_pos, start, " ", 0, 0, None, None]) 
+                    self.regions.append([current_pos, start, " ", 0, 0, None, None, None]) 
             self.regions.append(mf)
             current_pos = end
 
         if len(seq) > end:
             if self.seqtail_format == "line":
-                self.regions.append([end, len(seq), "-", 1, 1, "black", None])
+                self.regions.append([end, len(seq), "-", 1, 1, "black", None, None])
             elif self.seqtail_format == "seq":
-                self.regions.append([end, len(seq), "seq", 10, 10, None, None])
+                self.regions.append([end, len(seq), "seq", 10, 10, None, None, None])
             elif self.seqtail_format == "compactseq":
-                self.regions.append([end, len(seq), "compactseq", 1, 10, None, None])
+                self.regions.append([end, len(seq), "compactseq", 1, 10, None, None, None])
                 
     def update_items(self):
         self.item = QGraphicsRectItem()
-        max_h = max([r[4] for r in self.regions])
+        name_items = []
+        # Computes dimension of text labels
+        for index, (start, end, typ, w, h, fg, bg, name) in enumerate(self.regions):
+            if name and  typ != "seq":
+                family, fsize, fcolor, text = name.split("|")
+                qfont = QFont()
+                qfont.setFamily(family)
+                qfont.setPointSize(int(fsize))
+                qfmetrics = QFontMetrics(qfont)
+                txth = qfmetrics.height()
+                txtw = qfmetrics.width(text)
+                txt_item = QGraphicsSimpleTextItem(text, self.item)
+                txt_item.setFont(qfont)
+                txt_item.setBrush(QBrush(QColor(fcolor)))
+                txt_item.setZValue(2)
+                name_items.append([txt_item, txtw, txth])
+                # enlarges circle domains to fit text
+                if typ == "o":
+                    min_r = math.hypot(txtw/2.0, txth/2.0)
+                    txtw = max(txtw, min_r*2)
+                    
+                # Corrects domain figure dimensions to fit text
+                self.regions[index][3] = max(self.regions[index][3], txtw)
+                self.regions[index][4] = max(self.regions[index][4], txth)
+                    
+                
+            else:
+                name_items.append([None, 0, 0])
+                    
+        max_h = max([max(reg[4],name_items[index][2]) for index, reg
+                     in enumerate(self.regions)])
         y_center = max_h / 2
-        width = 0
-        for start, end, typ, w, h, fg, bg in self.regions:
+        xstart = 0
+        for index, (start, end, typ, w, h, fg, bg, name) in enumerate(self.regions):
+            txt_item = name_items[index][0]
+            if txt_item:
+                align_center = (w - name_items[index][1]) / 2.0
+                txt_item.setPos(xstart + align_center, y_center - name_items[index][2]/2.0)
+                
             y_start = y_center - (h/2)
             if typ == "-":
                 w = w * (end - start)
-                x_end = width + w
-                i = QGraphicsLineItem(width, y_center, x_end, y_center)
+                x_end = xstart + w
+                i = QGraphicsLineItem(xstart, y_center, x_end, y_center)
             elif typ == " ":
                 w = w * (end - start)
                 i = None
             elif typ == "o":
-                i = QGraphicsEllipseItem(width, y_start, w, h)
+                i = QGraphicsEllipseItem(xstart, y_start, w, h)
             elif typ == ">":
                 i = QGraphicsTriangleItem(w, h, orientation=1)
-                i.setPos(width, y_start)
+                i.setPos(xstart, y_start)
             elif typ == "v":
                 i = QGraphicsTriangleItem(w, h, orientation=2)
-                i.setPos(width, y_start)
+                i.setPos(xstart, y_start)
             elif typ == "<":
                 i = QGraphicsTriangleItem(w, h, orientation=3)
-                i.setPos(width, y_start)
+                i.setPos(xstart, y_start)
             elif typ == "^":
                 i = QGraphicsTriangleItem(w, h, orientation=4)
-                i.setPos(width, y_start)
+                i.setPos(xstart, y_start)
             elif typ == "<>":
                 i = QGraphicsDiamondItem(w, h)
-                i.setPos(width, y_start)
+                i.setPos(xstart, y_start)
             elif typ == "[]":
-                i = QGraphicsRectItem(width, y_start, w, h)
+                i = QGraphicsRectItem(xstart, y_start, w, h)
             elif typ == "()":
-                i = QGraphicsRoundRectItem(width, y_start, w, h)
+                i = QGraphicsRoundRectItem(xstart, y_start, w, h)
             elif typ == "seq" and self.seq:
                 i = SequenceItem(self.seq[start:end], poswidth=w,
                                  posheight=h, draw_text=True)
                 w = i.rect().width()
                 h = i.rect().height()
-                i.setPos(width, y_center - (h/2.0))
+                i.setPos(xstart, y_center - (h/2.0))
             elif typ == "compactseq" and self.seq:
                 i = SequenceItem(self.seq[start:end], poswidth=w,
                                  posheight=h, draw_text=False)
                 w = i.rect().width()
                 h = i.rect().height()
-                i.setPos(width, y_center - (h/2.0))
+                i.setPos(xstart, y_center - (h/2.0))
             else:
                 i = QGraphicsSimpleTextItem("?")
                 
@@ -1504,9 +1545,9 @@ class SeqMotifFace(StaticItemFace):
                     i.setBrush(QColor(bg))
             if fg:
                 i.setPen(QColor(fg))
-            width += w
+            xstart += w
             
-        self.item.setRect(0, 0, width, max_h)
+        self.item.setRect(0, 0, xstart, max_h)
         self.item.setPen(QPen(Qt.NoPen))
 
 
