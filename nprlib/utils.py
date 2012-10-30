@@ -5,6 +5,7 @@ from os.path import split as psplit
 import socket
 import string
 from string import strip
+from getch import Getch
 import random
 import hashlib
 import logging
@@ -279,8 +280,32 @@ def get_node2content(node, store=None):
     else:
         store[node] = [node.name]
     return store
-   
 
+def iter_prepostorder(tree, is_leaf_fn=None):
+        """
+        EXPERIMENTAL
+        """
+        to_visit = [tree]
+        if is_leaf_fn is not None:
+            _leaf = is_leaf_fn
+        else:
+            _leaf = tree.__class__.is_leaf
+        
+        while to_visit:
+            node = to_visit.pop(-1)
+            try:
+                node = node[1]
+            except TypeError:
+                # PREORDER ACTIONS
+                yield (False, node)
+                if not _leaf(node):
+                    # ADD CHILDREN
+                    to_visit.extend(reversed(node.children + [[1, node]]))
+            else:
+                #POSTORDER ACTIONS
+                yield (True, node)
+
+    
 def npr_layout(node):
     if node.is_leaf():
         name = faces.AttrFace("name", fsize=12)

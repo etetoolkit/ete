@@ -210,30 +210,24 @@ def get_runid_nodes(runid):
            ' WHERE runid="%s" ORDER BY target_size DESC' %(runid))
     execute(cmd)
     return cursor.fetchall()
+
     
-    
-def report(runid, start=-40, max_records=40, filter_status=None):
+def report(runid, filter_rules=None):
     filters = "WHERE runid='%s' " %runid
-    if filter_status:
-        st = ','.join(map(lambda x: "'%s'"%x, list(filter_status)))
-        if st:
-            filters +=  "AND status NOT IN (%s)" %st
-    
+
+    if filter_rules: 
+        custom_filter = ' AND '.join(filter_rules)
+        filters += " AND " + custom_filter
+    print "Query filters:", filters
     cmd = ('SELECT task.taskid, task.nodeid, task.parentid, node.cladeid, task.status, type, subtype, name,'
            ' target_size, out_size, tm_end-tm_start, tm_start, tm_end FROM task '
            ' LEFT OUTER JOIN node ON task.nodeid = node.nodeid %s ORDER BY task.status ASC,target_size ASC;' %filters)
 
     execute(cmd)
     report = cursor.fetchall()
-    end = start + max_records
-    print start, end
-    if end == 0:
-        report = report[start:]
-    else:
-        report = report[start:end]
-
+    #report = report[start:end]
     return report
-
+    
 def add_seq_name(seqid, name):
     cmd = ('INSERT OR REPLACE INTO seqid2name (seqid, name)'
            ' VALUES ("%s", "%s");' %(seqid, name))
