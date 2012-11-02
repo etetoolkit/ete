@@ -43,7 +43,7 @@ DEFAULT_COMPACT = False
 DEFAULT_SHOWINTERNAL = False
 DEFAULT_DIST = 0.0
 DEFAULT_SUPPORT = 0.0
-DEFAULT_NAME = None
+DEFAULT_NAME = "NoName"
 
 class TreeError(Exception):
     """
@@ -158,19 +158,22 @@ class TreeNode(object):
     faces = property(fget=lambda self: self._faces, \
                          fset=_set_face_areas)
 
-    def __init__(self, newick=None, format=0, dist=DEFAULT_DIST,
-                 support=DEFAULT_SUPPORT, name=DEFAULT_NAME):
+    def __init__(self, newick=None, format=0, dist=None, support=None,
+                 name=None):
         self._children = []
         self._up = None
-        self._dist = 0.0
-        self._support = 0.0 
+        self._dist = DEFAULT_DIST
+        self._support = DEFAULT_SUPPORT
         self._img_style = None
         self.features = set([])
         # Add basic features
         self.features.update(["dist", "support", "name"])
-        self.dist = dist
-        self.support = support
-        self.name = name if name is not None else "edge"
+        if dist is not None:
+            self.dist = dist
+        if support is not None:
+            self.support = support
+
+        self.name = name if name is not None else DEFAULT_NAME
         
         # Initialize tree
         if newick is not None:
