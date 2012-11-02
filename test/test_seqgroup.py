@@ -64,6 +64,13 @@ class Test_Coretype_SeqGroup(unittest.TestCase):
         self.assertEqual("CYS1" in SEQS, False)
         self.assertEqual(SEQS.get_entries(), [e for e in SEQS])
 
+        # test write speed
+        #SEQS = SeqGroup()
+        #for i in xrange(25):
+        #    SEQS.set_seq("seq%s" %i, "A"*500000)
+        #SEQS.write(outfile="/tmp/iphylip_write_test.phy", format="iphylip")
+        #SEQS.write(outfile="/tmp/iphylip_write_test.phy", format="phylip")
+        
     def test_alg_from_scratch(self):
 
         alg = SeqGroup(phylip_sequencial, format="phylip")
@@ -79,3 +86,6 @@ class Test_Coretype_SeqGroup(unittest.TestCase):
         alg.write(format ="fasta")
         alg.write(format ="iphylip")
         alg.write(format ="phylip")
+
+if __name__ == '__main__':
+    unittest.main()

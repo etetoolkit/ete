@@ -22,6 +22,7 @@
 # #END_LICENSE#############################################################
 import os
 import string
+import textwrap
 from sys import stderr as STDERR
 
 def read_fasta(source, obj=None, header_delimiter="\t", fix_duplicates=True):
@@ -92,7 +93,13 @@ def read_fasta(source, obj=None, header_delimiter="\t", fix_duplicates=True):
 def write_fasta(sequences, outfile = None, seqwidth = 80):
     """ Writes a SeqGroup python object using FASTA format. """
 
-    text =  '\n'.join([">%s\n%s" %( "\t".join([name]+comment), _seq2str(seq)) for
+    wrapper = textwrap.TextWrapper()
+    wrapper.break_on_hyphens = False
+    wrapper.replace_whitespace = False
+    wrapper.expand_tabs = False
+    wrapper.break_long_words = True
+    wrapper.width = 80
+    text =  '\n'.join([">%s\n%s\n" %( "\t".join([name]+comment), wrapper.fill(seq)) for
                        name, seq, comment in sequences])
 
     if outfile is not None:
@@ -101,9 +108,3 @@ def write_fasta(sequences, outfile = None, seqwidth = 80):
         OUT.close()
     else:
         return text
-
-def _seq2str(seq, seqwidth = 80):
-    sequence = ""
-    for i in xrange(0,len(seq),seqwidth):
-        sequence+= seq[i:i+seqwidth] + "\n"
-    return sequence

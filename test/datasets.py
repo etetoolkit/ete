@@ -206,7 +206,6 @@ CATH_HUMAN   ------MWAT LPLLCAGAWL LGV------- -PVCGAAELS VNSLEK---- --------FH
              YIYLRRGKNT CGVSNFVSTS II--
              YFKMEMGKNM CAIATCASYP VVAA
              YFLIERGKNM CGLAACASYP IPLV
-
 """
 
 phylip_sequencial = """ 3 384
