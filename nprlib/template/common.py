@@ -327,6 +327,7 @@ def select_outgroups(target, n2content, options):
         score_y = set(score(y))
         while score_x:
             min_score_x = min(score_x)
+
             v = cmp(min_score_x, min(score_y))
             if v == 0:
                 score_x.discard(min_score_x)
@@ -340,7 +341,6 @@ def select_outgroups(target, n2content, options):
         
     #del n2targetdist[target.get_tree_root()]
     max_dist = max(n2targetdist.values())
-
     valid_nodes = [n for n in n2targetdist if not n2content[n] & n2content[target]]
     valid_nodes.sort(sort_outgroups, reverse=True)
     best_outgroup = valid_nodes[0]

@@ -71,10 +71,12 @@ class ConcatAlg(ConcatAlgTask):
         alg_data = [(self.job2alg[nid], self.job2model.get(nid, self.default_model)) for nid in self.job2alg]
         filenames, models = zip(*alg_data)
 
-        mainalg, partitions, sp2alg, species = get_concatanted_alg(filenames,
+        mainalg, partitions, sp2alg, species = get_concatenated_alg(filenames,
                                     models, sp_field=0,
                                     sp_delimiter=GLOBALS["spname_delimiter"])
+        log.log(20, "Done concat alg, now writting fasta")
         mainalg.write(outfile=self.alg_fasta_file, format="fasta")
+        log.log(20, "Done concat alg, now writting phylip")
         mainalg.write(outfile=self.alg_phylip_file, format="iphylip_relaxed")
         open(self.partitions_file, "w").write('\n'.join(partitions))
         log.log(20, "Done concat alg")
@@ -85,7 +87,7 @@ def get_species_code(name, splitter, field):
     # underscore
     return map(strip, name.split(splitter))[field]
 
-def get_concatanted_alg(alg_filenames, models=None, 
+def get_concatenated_alg(alg_filenames, models=None, 
                         sp_field=0, sp_delimiter="_", 
                         kill_thr=0.0, 
                         keep_species=set()):

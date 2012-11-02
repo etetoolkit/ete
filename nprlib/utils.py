@@ -28,6 +28,11 @@ from ete_dev.phylo import PhyloTree
 from ete_dev.coretype.tree import Tree
 from ete_dev.coretype.seqgroup import SeqGroup
 from ete_dev.parser.fasta import read_fasta
+from ete_dev.coretype import tree
+# This default values in trees are Very important for outgroup
+# selection algorithm to work: 
+tree.DEFAULT_SUPPORT = 1.0
+tree.DEFAULT_DIST = 1.0
 #from ete_dev.treeview import drawer
 #drawer.GUI_TIMEOUT = 1
 

@@ -53,8 +53,10 @@ class Prottest(ModelTesterTask):
         # instances.
         for job in self.jobs:
             fake_alg_file = os.path.join(job.jobdir, self.alg_basename)
-            if os.path.exists(fake_alg_file):
+            try:
                 os.remove(fake_alg_file)
+            except OSError:
+                pass
             os.symlink(self.alg_phylip_file, fake_alg_file)
 
     def load_jobs(self):

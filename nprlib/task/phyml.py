@@ -47,8 +47,10 @@ class Phyml(TreeTask):
         # instances.
         j = self.jobs[0]
         fake_alg_file = os.path.join(j.jobdir, self.alg_basename)
-        if os.path.exists(fake_alg_file):
+        try:
             os.remove(fake_alg_file)
+        except OSError:
+            pass
         os.symlink(self.alg_phylip_file, fake_alg_file)
 
     def load_jobs(self):
