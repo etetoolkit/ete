@@ -1,7 +1,8 @@
 import numpy
 from StringIO import StringIO
-
+import cPickle
 import logging
+import os
 log = logging.getLogger("main")
 
 from nprlib.master_task import CogSelectorTask
@@ -35,26 +36,34 @@ class BrhCogSelector(CogSelectorTask):
         self.seqtype = seqtype
         self.targets = target_sp
         self.outgroups = out_sp
-        self.taskid = node_id
         self.init()
-
         self.size = len(target_sp | out_sp)
         self.cog_analysis = None
         self.cogs = None
+        self.cog_analysis_file = os.path.join(self.taskdir, "cog_analysis.pkl")
+        self.cogs_file = os.path.join(self.taskdir, "all_cogs.pkl")
         
     def finish(self):
-        all_species = self.targets | self.outgroups
-        
-        cogs, cog_analysis = brh_cogs(db, all_species,
-                                      missing_factor=self.missing_factor,
-                                      min_score=self.min_orthology_score,
-                                      seed_sp=self.seed)
-        self.cog_analysis = cog_analysis
-        self.cogs = []
-        for co in cogs:
-            self.cogs.append(map(encode_seqname, co))
-        self.cogs.sort()
-        
+        if os.path.exists(self.cog_analysis_file) and \
+           os.path.exists(self.cogs_file):
+            log.log(22, "Loading COGs from cache files")
+            self.cog_analysis = cPickle.load(open(self.cog_analysis_file))
+            self.cogs = cPickle.load(open(self.cogs_file))
+        else: 
+            all_species = self.targets | self.outgroups
+            cogs, cog_analysis = brh_cogs(db, all_species,
+                                          missing_factor=self.missing_factor,
+                                          min_score=self.min_orthology_score,
+                                          seed_sp=self.seed)
+            self.cog_analysis = cog_analysis
+            self.cogs = []
+            for co in cogs:
+                self.cogs.append(map(encode_seqname, co))
+            self.cogs.sort()
+            log.log(22, "Dumping COGs into file")
+            cPickle.dump(self.cog_analysis, open(self.cog_analysis_file, "w"))
+            cPickle.dump(self.cogs, open(self.cogs_file, "w"))
+       
         
 def brh_cogs(DB, species, min_score=0.3, missing_factor=0.0, \
              seed_sp=None):

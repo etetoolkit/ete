@@ -158,7 +158,6 @@ class Task(object):
         
         # Set task information, such as task working dir and taskid
         self.load_task_info()
-
         # Set the working dir for all jobs
         # self.set_jobs_wd(self.taskdir)
         self.set_jobs_wd()
@@ -232,10 +231,13 @@ class Task(object):
         # already done in the working path. Note that this prevents
         # using.taskdir before calling task.init()
         if not self.taskid:
-            unique_id = md5(','.join([self.nodeid]+sorted(
+            args_id = md5(','.join(sorted(["%s %s" %(str(pair[0]),str(pair[1])) for pair in
+                       self.args.iteritems()])))
+
+            unique_id = md5(','.join([self.nodeid, args_id]+sorted(
                         [getattr(j, "jobid", "taskid") for j in self.jobs])))
             self.taskid = unique_id
-
+            
         self.taskdir = os.path.join(GLOBALS["basedir"], "tasks",
                                     self.taskid)
             

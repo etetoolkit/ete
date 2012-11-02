@@ -29,7 +29,6 @@ class ConcatAlg(ConcatAlgTask):
             self.default_model = conf["alg_concat"]["_default_aa_model"]
         elif seqtype == "nt":
             self.default_model = conf["alg_concat"]["_default_nt_model"]
-        
         self.init()
         
         self.alg_fasta_file = pjoin(self.taskdir, "final_alg.fasta")
@@ -78,6 +77,7 @@ class ConcatAlg(ConcatAlgTask):
         mainalg.write(outfile=self.alg_fasta_file, format="fasta")
         mainalg.write(outfile=self.alg_phylip_file, format="iphylip_relaxed")
         open(self.partitions_file, "w").write('\n'.join(partitions))
+        log.log(20, "Done concat alg")
         log.log(26, "Modeled regions: \n"+'\n'.join(partitions))
                         
 def get_species_code(name, splitter, field):

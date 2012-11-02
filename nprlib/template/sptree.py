@@ -127,6 +127,7 @@ def pipeline(task):
                               source_seqtype)
         initial_task = npr_conf.cog_selector(GLOBALS["target_species"],
                                              set(), source_seqtype, GLOBALS["config"])
+
         initial_task.main_tree = main_tree = None
         initial_task.threadid = generate_runid()
         # Register node 
