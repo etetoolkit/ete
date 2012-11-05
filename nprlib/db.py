@@ -221,7 +221,7 @@ def report(runid, filter_rules=None):
     #print "Query filters:", filters
     cmd = ('SELECT task.taskid, task.nodeid, task.parentid, node.cladeid, task.status, type, subtype, name,'
            ' target_size, out_size, tm_end-tm_start, tm_start, tm_end FROM task '
-           ' LEFT OUTER JOIN node ON task.nodeid = node.nodeid %s ORDER BY task.status ASC,target_size ASC;' %filters)
+           ' LEFT OUTER JOIN node ON task.nodeid = node.nodeid %s ORDER BY task.status ASC,target_size DESC;' %filters)
 
     execute(cmd)
     report = cursor.fetchall()
