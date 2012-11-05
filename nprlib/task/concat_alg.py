@@ -74,6 +74,7 @@ class ConcatAlg(ConcatAlgTask):
         mainalg, partitions, sp2alg, species = get_concatenated_alg(filenames,
                                     models, sp_field=0,
                                     sp_delimiter=GLOBALS["spname_delimiter"])
+        
         log.log(20, "Done concat alg, now writting fasta")
         mainalg.write(outfile=self.alg_fasta_file, format="fasta")
         log.log(20, "Done concat alg, now writting phylip")

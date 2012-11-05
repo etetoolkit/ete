@@ -236,10 +236,10 @@ class Task(object):
 
             unique_id = md5(','.join([self.nodeid, args_id]+sorted(
                         [getattr(j, "jobid", "taskid") for j in self.jobs])))
+            
             self.taskid = unique_id
             
-        self.taskdir = os.path.join(GLOBALS["basedir"], "tasks",
-                                    self.taskid)
+        self.taskdir = os.path.join(GLOBALS["taskdir"], self.taskid)
             
 
         if not os.path.exists(self.taskdir):
@@ -257,8 +257,7 @@ class Task(object):
         for j in self.jobs:
             # Only if job is not another Task instance
             if isjob(j):
-                path = os.path.join(GLOBALS["basedir"], "tasks",
-                                    j.jobid)
+                path = os.path.join(GLOBALS["taskdir"], j.jobid)
                 j.set_jobdir(path)
 
     def retry(self):

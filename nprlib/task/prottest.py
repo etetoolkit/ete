@@ -75,7 +75,7 @@ class Prottest(ModelTesterTask):
                     "-s": self.alg_basename,
                     "-m": "PROTGAMMA%s" % m,
                     "-n": self.alg_basename+"."+m,
-                    "-t": os.path.join(GLOBALS["basedir"], "tasks", job.jobid,
+                    "-t": os.path.join(GLOBALS["taskdir"], job.jobid,
                                        self.alg_basename+"_phyml_tree.txt")
                     }
                 raxml_job = Job(self.conf["app"]["raxml"], raxml_args,
