@@ -627,10 +627,10 @@ if __name__ == "__main__":
 
     exec_group.add_argument("-t", "--schedule_time", dest="schedule_time",
                         type=float, default=30.0,
-                        help="""Time between task checks.""")
+                        help="""How often tasks should be checked""")
 
     exec_type_group = exec_group.add_mutually_exclusive_group()
-    exec_type_group.add_argument("-x", "--execute_insitu", dest="execute",
+    exec_type_group.add_argument("-x", "--insitu_ex", dest="execute",
                         action="store_true",
                         help="Jobs are launched in the same machine"
                         " as in the program is called.")
