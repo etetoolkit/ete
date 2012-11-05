@@ -65,10 +65,10 @@ def create_db():
     tm_end FLOAT
     );
 
-    CREATE TABLE IF NOT EXISTS task2child(
+    CREATE TABLE IF NOT EXISTS runid2task(
+    runid CHAR(32),
     taskid CHAR(32),
-    child CHAR(32),
-    PRIMARY KEY(taskid, child)
+    PRIMARY KEY(runid, taskid)
     );
     
     CREATE TABLE IF NOT EXISTS seqid2name(
@@ -120,20 +120,19 @@ def add_task(tid, nid, parent=None, status=None, type=None, subtype=None,
 
     autocommit()
     
-def add_task2child(tid, child):
-    cmd = ('INSERT OR REPLACE INTO task2child (taskid, child)'
-           ' VALUES ("%s", "%s");' %(tid, child))
+def add_runid2task(runid, tid):
+    cmd = ('INSERT OR REPLACE INTO runid2task (runid, taskid)'
+           ' VALUES ("%s", "%s");' %(runid, tid))
     execute(cmd)
     autocommit()
 
-def get_task2child_tree():
-    cmd = """SELECT tree.taskid, child, task.type, task.subtype,
-    task.name, task.status, node.cladeid FROM task2child AS tree
-    LEFT OUTER JOIN task, node ON task.taskid = tree.child AND node.nodeid = task.nodeid
-    """
-    execute(cmd)
-    return cursor.fetchall()
+def get_runid_tasks(runid):
 
+    cmd = ('SELECT taskid FROM runid2task'
+           ' WHERE runid = "%s";' %(runid))
+    execute(cmd)
+    return [e[0] for e in cursor.fetchall()]
+    
 def get_species_name(spcode):
     return spcode
     
@@ -213,12 +212,13 @@ def get_runid_nodes(runid):
 
     
 def report(runid, filter_rules=None):
-    filters = "WHERE runid='%s' " %runid
-
+    task_ids = get_runid_tasks(runid)
+    filters = 'WHERE runid ="%s" AND taskid IN (%s) ' %(runid,
+                            ','.join(map(lambda x: '"%s"' %x, task_ids)))
     if filter_rules: 
         custom_filter = ' AND '.join(filter_rules)
         filters += " AND " + custom_filter
-    print "Query filters:", filters
+    #print "Query filters:", filters
     cmd = ('SELECT task.taskid, task.nodeid, task.parentid, node.cladeid, task.status, type, subtype, name,'
            ' target_size, out_size, tm_end-tm_start, tm_start, tm_end FROM task '
            ' LEFT OUTER JOIN node ON task.nodeid = node.nodeid %s ORDER BY task.status ASC,target_size ASC;' %filters)

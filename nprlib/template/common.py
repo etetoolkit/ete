@@ -120,7 +120,6 @@ def process_new_tasks(task, new_tasks):
     for ts in new_tasks:
         log.log(24, "Registering new task: %s", ts)
         register_task_recursively(ts, parentid=parent_taskid)
-        db.add_task2child(parent_taskid, ts.taskid)
         # sort task by nodeid
         GLOBALS["nodeinfo"][ts.nodeid].setdefault("tasks", []).append(ts)
         if task:
@@ -128,7 +127,8 @@ def process_new_tasks(task, new_tasks):
             ts.task_processor = task.task_processor
             ts.threadid = task.threadid
             ts.main_tree = task.main_tree
-    
+        db.add_runid2task(ts.threadid, ts.taskid)
+            
 def inc_iternumber(threadid):
     current_iter = get_iternumber(threadid)
     GLOBALS["threadinfo"][threadid]["last_iter"] = current_iter + 1
