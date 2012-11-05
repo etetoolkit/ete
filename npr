@@ -72,6 +72,12 @@ def existing_file(value):
     else:
         raise ConfigError("Not valid file")
 
+def existing_dir(value):
+    if os.path.isdir(value):
+        return value
+    else:
+        raise ConfigError("Not valid file")
+        
 def check_number(value, cast, minv=0, maxv=None):
     try:
         typed_value = cast(value)
@@ -593,6 +599,10 @@ if __name__ == "__main__":
                         type=str, required=True,
                         help="""Output directory for results.""")
 
+    output_group.add_argument("--taskdir", dest="taskdir",
+                        type=existing_dir,
+                        help="""Output directory for task information and output.""")
+    
     output_group.add_argument("--compress", action="store_true",
                         help="Compress intermediate files when"
                               " tasks are finished.")
@@ -689,6 +699,10 @@ if __name__ == "__main__":
         parser.error('At least one input file argument (-a, -n) is required')
 
     GLOBALS["basedir"] = os.path.abspath(args.outdir)
+    if args.taskdir:
+        GLOBALS["taskdir"] = os.path.realpath(args.taskdir)
+    else:
+        GLOBALS["taskdir"] = os.path.join(GLOBALS["basedir"], "tasks")
     GLOBALS["runid"] = generate_runid()
     GLOBALS["nodeinfo"] = defaultdict(dict)
     GLOBALS["threadinfo"] = defaultdict(dict)
