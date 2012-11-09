@@ -209,7 +209,6 @@ def get_runid_nodes(runid):
            ' WHERE runid="%s" ORDER BY target_size DESC' %(runid))
     execute(cmd)
     return cursor.fetchall()
-
     
 def report(runid, filter_rules=None):
     task_ids = get_runid_tasks(runid)
@@ -218,14 +217,12 @@ def report(runid, filter_rules=None):
     if filter_rules: 
         custom_filter = ' AND '.join(filter_rules)
         filters += " AND " + custom_filter
-    #print "Query filters:", filters
     cmd = ('SELECT task.taskid, task.nodeid, task.parentid, node.cladeid, task.status, type, subtype, name,'
            ' target_size, out_size, tm_end-tm_start, tm_start, tm_end FROM task '
-           ' LEFT OUTER JOIN node ON task.nodeid = node.nodeid %s ORDER BY task.status ASC,target_size DESC;' %filters)
-
+           ' LEFT OUTER JOIN node ON task.nodeid = node.nodeid %s ' %filters)
+    #ORDER BY task.status ASC,target_size DESC;
     execute(cmd)
     report = cursor.fetchall()
-    #report = report[start:end]
     return report
     
 def add_seq_name(seqid, name):
