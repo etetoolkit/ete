@@ -340,7 +340,7 @@ def _read_node_data(subnw, current_node, node_type, format):
         raise NewickError, "Unexpected leaf node format:\n\t"+ subnw[0:50] + "[%s]" %format
     return
 
-def write_newick(node, features=None, format=1, _is_root=True):
+def write_newick_recursive(node, features=None, format=1, _is_root=True):
     """ Recursively reads a tree structure and returns its NHX
     representation. """
     newick = ""
@@ -371,6 +371,30 @@ def write_newick(node, features=None, format=1, _is_root=True):
         newick += ";"
     return newick
 
+def write_newick(node, features=None, format=1, _is_root=True):
+    """ Iteratively export a tree structure and returns its NHX
+    representation. """
+    newick = []
+    for postorder, node in node._iter_prepostorder():
+        if postorder:
+            newick.append(")")
+            if node.up is not None:
+                newick.append(format_node(node, "internal", format))
+                newick.append(_get_features_string(node, features))
+        else:
+            if node.up and node != node.up.children[0]:
+                newick.append(",")
+            if not node.children:
+                safe_name = re.sub("["+_ILEGAL_NEWICK_CHARS+"]", "_", \
+                               str(getattr(node, "name")))
+                newick.append(format_node(node, "leaf", format))
+                newick.append(_get_features_string(node, features))
+            else:
+                newick.append("(")
+
+    newick.append(";")
+    return ''.join(newick)
+    
 def _get_features_string(self, features=None):
     """ Generates the extended newick string NHX with extra data about
     a node. """
