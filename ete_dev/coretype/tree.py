@@ -1,4 +1,4 @@
- #START_LICENSE###########################################################
+#START_LICENSE###########################################################
 #
 # Copyright (C) 2009 by Jaime Huerta Cepas. All rights reserved.
 # email: jhcepas@gmail.com
@@ -1615,6 +1615,30 @@ class TreeNode(object):
                 node2dist[node] = node2dist[node.up] + 1
             node.dist = node.dist
 
+    def resolve_polytomy(self, default_dist=1.0, default_support=1.0,
+                         recursive=True):
+        def _resolve(node):
+            if len(node.children) > 2:
+                children = list(node.children)
+                node.children = []
+                next_node = root = node
+                for i in xrange(len(children)-2):
+                    next_node = next_node.add_child()
+                    next_node.dist = default_dist
+                    next_node.support = default_support
+
+                next_node = root
+                for ch in children:
+                    next_node.add_child(ch)
+                    if ch != children[-2]:
+                        next_node = next_node.children[0]
+        target = [self]
+        if recursive: 
+            target.extend([n for n in self.get_descendants()])
+        for n in target:
+            _resolve(n)
+
+            
     def add_face(self, face, column, position="branch-right"):
         """
         .. versionadded: 2.1 
