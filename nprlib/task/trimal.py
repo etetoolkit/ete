@@ -12,12 +12,12 @@ from nprlib.errors import RetryException
 __all__ = ["Trimal"]
 
 class Trimal(AlgCleanerTask):
-    def __init__(self, nodeid, seqtype, alg_fasta_file, alg_phylip_file, conf):
+    def __init__(self, nodeid, seqtype, alg_fasta_file, alg_phylip_file, confname):
         GLOBALS["citator"].add(u"Capella-Gutiérrez S, Silla-Martínez JM, Gabaldón T.",
                                "trimAl: a tool for automated alignment trimming in large-scale phylogenetic analyses.",
                                "Bioinformatics. 2009 Aug 1;25(15):1972-3. Epub 2009 Jun 8. PubMed PMID: 19505945;")
                                
-        self.conf = conf
+        self.confname = confname
         self.seqtype = seqtype
         self.alg_fasta_file = alg_fasta_file
         self.alg_phylip_file = alg_phylip_file
@@ -29,8 +29,9 @@ class Trimal(AlgCleanerTask):
             '-colnumbering': "", 
             }
         # Initialize task
-        AlgCleanerTask.__init__(self, nodeid, "acleaner", "Trimal", 
-                      base_args, conf["trimal"])
+        AlgCleanerTask.__init__(self, nodeid, "acleaner", "Trimal",
+                                base_args,
+                                GLOBALS["config"][confname])
 
         self.init()
         
@@ -40,10 +41,12 @@ class Trimal(AlgCleanerTask):
         self.clean_alg_phylip_file = os.path.join(main_job.jobdir, "clean.alg.iphylip")
 
     def load_jobs(self):
+        conf = GLOBALS["config"]
+        appname = conf[self.confname]["_app"]
         args = self.args.copy()
         args["-in"] = self.alg_fasta_file
         args["-out"] = "clean.alg.fasta"
-        job = Job(self.conf["app"]["trimal"], args, parent_ids=[self.nodeid])
+        job = Job(conf["app"][appname], args, parent_ids=[self.nodeid])
         self.jobs.append(job)
 
     def finish(self):

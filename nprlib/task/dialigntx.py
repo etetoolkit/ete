@@ -9,7 +9,7 @@ from nprlib.utils import SeqGroup, OrderedDict, GLOBALS
 __all__ = ["Dialigntx"]
 
 class Dialigntx(AlgTask):
-    def __init__(self, nodeid, multiseq_file, seqtype, conf):
+    def __init__(self, nodeid, multiseq_file, seqtype, confname):
         GLOBALS["citator"].add("Subramanian AR, Kaufmann M, Morgenstern B.",
                                "DIALIGN-TX: greedy and progressive approaches for segment-based multiple sequence alignment.",
                                "Algorithms Mol Biol. 2008 May 27;3:6. PubMed PMID: 18505568.")
@@ -19,10 +19,11 @@ class Dialigntx(AlgTask):
                 '': None,
                 })
         # Initialize task
+        self.confname = confname
         AlgTask.__init__(self, nodeid, "alg", "DialignTX", 
-                      base_args, conf["dialigntx"])
+                      base_args, GLOBALS["config"][self.confname])
         
-        self.conf = conf
+
         self.seqtype = seqtype
         self.multiseq_file = multiseq_file
 
@@ -32,9 +33,11 @@ class Dialigntx(AlgTask):
 
     def load_jobs(self):
         # Only one Muscle job is necessary to run this task
+        conf = GLOBALS["config"]
+        appname = conf[self.confname]["_app"]
         args = self.args.copy()
         args[''] = "%s %s" %(self.multiseq_file, "alg.fasta")
-        job = Job(self.conf["app"]["dialigntx"], args, parent_ids=[self.nodeid])
+        job = Job(conf["app"][appname], args, parent_ids=[self.nodeid])
         self.jobs.append(job)
 
     def finish(self):

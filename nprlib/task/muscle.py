@@ -9,7 +9,7 @@ from nprlib.utils import SeqGroup, OrderedDict, GLOBALS
 __all__ = ["Muscle"]
 
 class Muscle(AlgTask):
-    def __init__(self, nodeid, multiseq_file, seqtype, conf):
+    def __init__(self, nodeid, multiseq_file, seqtype, confname):
         GLOBALS["citator"].add("Edgar RC.",
                                "MUSCLE: multiple sequence alignment with high accuracy and high throughput.",
                                "Nucleic Acids Res. 2004 Mar 19;32(5):1792-7.")
@@ -19,11 +19,11 @@ class Muscle(AlgTask):
                 '-in': None,
                 '-out': None,
                 })
+        self.confname = confname
         # Initialize task
         AlgTask.__init__(self, nodeid, "alg", "Muscle", 
-                      base_args, conf["muscle"])
+                      base_args,  GLOBALS["config"][confname])
 
-        self.conf = conf
         self.seqtype = seqtype
         self.multiseq_file = multiseq_file
 
@@ -33,10 +33,12 @@ class Muscle(AlgTask):
 
     def load_jobs(self):
         # Only one Muscle job is necessary to run this task
+        conf = GLOBALS["config"]
+        appname = conf[self.confname]["_app"]
         args = self.args.copy()
         args["-in"] = self.multiseq_file
         args["-out"] = "alg.fasta"
-        job = Job(self.conf["app"]["muscle"], args, parent_ids=[self.nodeid])
+        job = Job(conf["app"][appname], args, parent_ids=[self.nodeid])
         self.jobs.append(job)
 
     def finish(self):

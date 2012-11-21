@@ -180,6 +180,12 @@ def switch_to_codon(alg_fasta_file, alg_phylip_file, nt_seed_file,
     return alg_fasta_filename, alg_phylip_filename
 
 def process_task(task, npr_conf, nodeid2info):
+    alignerconf, alignerclass = npr_conf.aligner
+    cleanerconf, cleanerclass = npr_conf.alg_cleaner
+    mtesterconf, mtesterclass = npr_conf.model_tester
+    treebuilderconf, treebuilderclass = npr_conf.tree_builder
+    splitterconf, splitterclass = npr_conf.tree_splitter
+    
     conf = GLOBALS["config"]
     seqtype = task.seqtype
     nodeid = task.nodeid
@@ -191,6 +197,7 @@ def process_task(task, npr_conf, nodeid2info):
     out_seqs = node_info.get("out_seqs", [])
     constrain_tree = None
     constrain_tree_path = None
+    
     if out_seqs and len(out_seqs) > 1:
         #constrain_tree = "((%s), (%s));" %(','.join(out_seqs), 
         #                                   ','.join(target_seqs))
@@ -210,8 +217,8 @@ def process_task(task, npr_conf, nodeid2info):
         nodeid2info[nodeid]["size"] = task.size
         nodeid2info[nodeid]["target_seqs"] = task.target_seqs
         nodeid2info[nodeid]["out_seqs"] = task.out_seqs
-        alg_task = npr_conf.aligner(nodeid, task.multiseq_file,
-                                    seqtype, conf)
+        alg_task = alignerclass(nodeid, task.multiseq_file,
+                                seqtype, alignerconf)
         alg_task.size = task.size
         new_tasks.append(alg_task)
 
@@ -254,10 +261,11 @@ def process_task(task, npr_conf, nodeid2info):
         task.mean_ident = mean
         task.std_ident = std
         next_task = None
-        if ttype == "alg" and npr_conf.alg_cleaner:
-            next_task = npr_conf.alg_cleaner(nodeid, seqtype,
-                                             alg_fasta_file,
-                                             alg_phylip_file, conf)
+        
+        if ttype == "alg" and cleanerclass:
+            next_task = cleanerclass(nodeid, seqtype, alg_fasta_file,
+                                     alg_phylip_file,
+                                     cleanerconf)
         else:
             # Converts aa alignment into nt if necessary
             if seqtype == "aa" and "nt" in GLOBALS["seqtypes"] and \
@@ -273,36 +281,38 @@ def process_task(task, npr_conf, nodeid2info):
             if constrain_tree:
                 open(constrain_tree_path, "w").write(constrain_tree)
                                            
-            if npr_conf.model_tester:
-                next_task = npr_conf.model_tester(nodeid,
-                                                  alg_fasta_file,
-                                                  alg_phylip_file,
-                                                  constrain_tree_path, conf)
-            elif npr_conf.tree_builder:
-                next_task = npr_conf.tree_builder(nodeid,
-                                                  alg_phylip_file,
-                                                  constrain_tree_path, None,
-                                                  seqtype, conf)
+            if mtesterclass:
+                next_task = mtesterclass(nodeid, alg_fasta_file,
+                                         alg_phylip_file,
+                                         constrain_tree_path,
+                                         mtesterconf)
+            elif treebuilderclass:
+                next_task = treebuilderclass(nodeid, alg_phylip_file,
+                                             constrain_tree_path,
+                                             None, seqtype,
+                                             trerbuilderconf)
         if next_task:
             next_task.size = task.size
             new_tasks.append(next_task)
 
     elif ttype == "mchooser":
-        if npr_conf.tree_builder:
+        if treebuilderclass:
             alg_fasta_file = task.alg_fasta_file
             alg_phylip_file = task.alg_phylip_file
             model = task.get_best_model()
             if constrain_tree:
                 open(constrain_tree_path, "w").write(constrain_tree)
 
-            tree_task = npr_conf.tree_builder(nodeid, alg_phylip_file,
-                                              constrain_tree_path, model, seqtype,
-                                              conf)
+            tree_task = treebuilderclass(nodeid, alg_phylip_file,
+                                         constrain_tree_path,
+                                         model, seqtype,
+                                         treebuilderconf)
             tree_task.size = task.size
             new_tasks.append(tree_task)
 
     elif ttype == "tree":
-        treemerge_task = TreeMerger(nodeid, seqtype, task.tree_file, conf)
+        treemerge_task = splitterclass(nodeid, seqtype,
+                                       task.tree_file, splitterconf)
         #if conf["tree_splitter"]["_outgroup_size"]:
         #    treemerge_task = TreeSplitterWithOutgroups(nodeid, seqtype, task.tree_file, main_tree, conf)
         #else:

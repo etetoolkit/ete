@@ -11,12 +11,14 @@ __all__ = ["Prottest"]
 
 class Prottest(ModelTesterTask):
     def __init__(self, nodeid, alg_fasta_file, alg_phylip_file,
-                 constrain_tree, conf):
+                 constrain_tree, confname):
+        
         self.alg_phylip_file = alg_phylip_file
         self.alg_fasta_file = alg_fasta_file
         self.alg_basename = basename(self.alg_phylip_file)
-        self.conf = conf
-        self.lk_mode = self.conf["prottest"]["_lk_mode"]
+        self.confname = confname
+        conf = GLOBALS["config"]
+        self.lk_mode = conf[confname]["_lk_mode"]
         if self.lk_mode == "raxml":
             phyml_optimization = "n"
         elif self.lk_mode == "phyml":
@@ -33,10 +35,10 @@ class Prottest(ModelTesterTask):
                              # creating jobs
             "--quiet": ""
             }
-        self.models = self.conf["prottest"]["_models"]
+        self.models = conf[confname]["_models"]
         task_name = "Prottest-[%s]" %','.join(self.models)
         ModelTesterTask.__init__(self, nodeid, "mchooser", task_name, 
-                      base_args, conf["prottest"])
+                      base_args, conf[confname])
         
         self.best_model = None
         self.seqtype = "aa"
@@ -60,10 +62,11 @@ class Prottest(ModelTesterTask):
             os.symlink(self.alg_phylip_file, fake_alg_file)
 
     def load_jobs(self):
+        conf = GLOBALS["config"]
         for m in self.models:
             args = self.args.copy()
             args["--model"] = m
-            job = Job(self.conf["app"]["phyml"], args,
+            job = Job(conf["app"]["phyml"], args,
                       parent_ids=[self.nodeid])
             job.jobname += "-bionj-" + m
             job.flag = "phyml"
@@ -78,7 +81,7 @@ class Prottest(ModelTesterTask):
                     "-t": os.path.join(GLOBALS["taskdir"], job.jobid,
                                        self.alg_basename+"_phyml_tree.txt")
                     }
-                raxml_job = Job(self.conf["app"]["raxml"], raxml_args,
+                raxml_job = Job(conf["app"]["raxml"], raxml_args,
                                 parent_ids=[job.jobid])
                 raxml_job.jobname += "-lk-optimize"
                 raxml_job.dependencies.add(job)

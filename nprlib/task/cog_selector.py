@@ -15,11 +15,12 @@ __all__ = ["BrhCogSelector"]
 quote = lambda _x: '"%s"' %_x
 
 class BrhCogSelector(CogSelectorTask):
-    def __init__(self, target_sp, out_sp, seqtype, conf):
+    def __init__(self, target_sp, out_sp, seqtype, confname):
 
-        self.seed = conf["brh_cog"]["_seed"]
-        self.missing_factor = float(conf["brh_cog"]["_species_missing_factor"])
-        self.min_orthology_score = float(conf["brh_cog"]["_min_orthology_score"])
+        conf = GLOBALS["config"]
+        self.seed = conf[confname]["_seed"]
+        self.missing_factor = float(conf[confname]["_species_missing_factor"])
+        self.min_orthology_score = float(conf[confname]["_min_orthology_score"])
         base_args = {
             "_seed": self.seed,
             "_missing_factor": self.missing_factor,

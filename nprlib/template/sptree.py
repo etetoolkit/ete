@@ -50,6 +50,11 @@ def annotate_node(t, final_task):
 
 def process_task(task, npr_conf, nodeid2info):
     conf = GLOBALS["config"]
+    cogconf, cogclass = npr_conf.cog_selector
+    concatconf, concatclass = npr_conf.alg_concatenator
+    treebuilderconf, treebuilderclass = npr_conf.tree_builder
+    splitterconf, splitterclass = npr_conf.tree_splitter
+    
     threadid, nodeid, seqtype, ttype = (task.threadid, task.nodeid,
                                         task.seqtype, task.ttype)
     cladeid, targets, outgroups = db.get_node_info(threadid, nodeid)
@@ -58,8 +63,8 @@ def process_task(task, npr_conf, nodeid2info):
     new_tasks = []    
     if ttype == "cog_selector":
         # register concat alignment task
-        concat_job = npr_conf.alg_concatenator(nodeid, task.cogs,
-                                               seqtype, conf)
+        concat_job = concatclass(nodeid, task.cogs,
+                                 seqtype, concatconf)
         concat_job.size = task.size
         new_tasks.append(concat_job)
        
@@ -73,15 +78,14 @@ def process_task(task, npr_conf, nodeid2info):
             newick = "(%s, (%s));" %(','.join(outgroups), ','.join(targets))
             open(constrain_tree_path, "w").write(newick)
            
-        tree_task = npr_conf.tree_builder(nodeid,
-                                          task.alg_phylip_file,
-                                          constrain_tree_path, "JTT",
-                                          seqtype, conf)
+        tree_task = treebuilderclass(nodeid, task.alg_phylip_file,
+                                     constrain_tree_path, "JTT",
+                                     seqtype, treebuilderconf)
         tree_task.size = task.size
         new_tasks.append(tree_task)
         
     elif ttype == "tree":
-        merger_task = TreeMerger(nodeid, seqtype, task.tree_file, conf)
+        merger_task = splitterclass(nodeid, seqtype, task.tree_file, splitterconf)
         merger_task.size = task.size
         new_tasks.append(merger_task)
 
@@ -105,8 +109,8 @@ def process_task(task, npr_conf, nodeid2info):
                                                   mtree, None, npr_conf):
             log.log(28, "Adding new node: %s seqs, %s outgroups",
                     len(seqs), len(outs))
-            new_task_node = npr_conf.cog_selector(seqs, outs,
-                                                  source_seqtype, conf)
+            new_task_node = cogclass(seqs, outs,
+                                     source_seqtype, cogconf)
             new_tasks.append(new_task_node)
             db.add_node(threadid,
                         new_task_node.nodeid, new_task_node.cladeid,
@@ -121,12 +125,14 @@ def pipeline(task):
     # Points to npr parameters according to task properties
     nodeid2info = GLOBALS["nodeinfo"]
     if not task:
+
         source_seqtype = "aa" if "aa" in GLOBALS["seqtypes"] else "nt"
         npr_conf = IterConfig("sptree",
                               len(GLOBALS["target_species"]),
                               source_seqtype)
-        initial_task = npr_conf.cog_selector(GLOBALS["target_species"],
-                                             set(), source_seqtype, GLOBALS["config"])
+        cogconf, cogclass = npr_conf.cog_selector
+        initial_task = cogclass(GLOBALS["target_species"], set(),
+                                source_seqtype, cogconf)
 
         initial_task.main_tree = main_tree = None
         initial_task.threadid = generate_runid()

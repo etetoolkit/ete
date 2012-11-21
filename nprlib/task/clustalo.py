@@ -6,12 +6,12 @@ log = logging.getLogger("main")
 from nprlib.master_task import AlgTask
 from nprlib.master_job import Job
 
-from nprlib.utils import read_fasta, OrderedDict
+from nprlib.utils import read_fasta, OrderedDict, GLOBALS
 
 __all__ = ["Clustalo"]
 
 class Clustalo(AlgTask):
-    def __init__(self, nodeid, multiseq_file, seqtype, conf):
+    def __init__(self, nodeid, multiseq_file, seqtype, confname):
         if seqtype != "aa":
             raise ValueError("Clustal Omega does only support nt seqtype")
         
@@ -20,11 +20,12 @@ class Clustalo(AlgTask):
                 '-o': None,
                 '--outfmt': "fa",
                 })
+        self.confname = confname
         # Initialize task
         AlgTask.__init__(self, nodeid, "alg", "Clustal-Omega", 
-                      base_args, conf["clustalo"])
+                      base_args, GLOBALS["config"][self.confname])
 
-        self.conf = conf
+
         self.seqtype = "aa" # only aa supported
         self.multiseq_file = multiseq_file
 
@@ -33,11 +34,13 @@ class Clustalo(AlgTask):
         self.alg_phylip_file = os.path.join(self.taskdir, "final_alg.iphylip")
 
     def load_jobs(self):
+        conf = GLOBALS["config"]
+        appname = conf[self.confname]["_app"]
         # Only one Muscle job is necessary to run this task
         args = self.args.copy()
         args["-i"] = self.multiseq_file
         args["-o"] = "alg.fasta"
-        job = Job(self.conf["app"]["clustalo"], args, parent_ids=[self.nodeid])
+        job = Job(conf["app"][appname], args, parent_ids=[self.nodeid])
         self.jobs.append(job)
 
     def finish(self):

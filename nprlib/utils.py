@@ -18,6 +18,38 @@ GLOBALS = {
     "running_jobs": []
 }
 
+APP2CLASS = {
+    "muscle"         : "Muscle",
+    "mafft"          : "Mafft",
+    "clustalo"       : "Clustalo",
+    "metaligner"     : "MetaAligner",
+    "phyml"          : "Phyml",
+    "raxml-pthreads" : "Raxml",
+    "raxml"          : "Raxml",
+    "jmodeltest"     : "JModeltest",
+    "dialigntx"      : "Dialigntx",
+    "fasttree"       : "FastTree",
+    "trimal"         : "Trimal",
+    "prottest"       : "Prottest",
+    "jmodeltest"     : "JModeltest",
+    "treesplitter"   : "TreeMerger",
+    "concatalg"      : "ConcatAlg",
+    "cogselector"    : "BrhCogSelector",
+    }
+
+CLASS2MODULE = {
+    "Muscle": "muscle",
+    "Trimal": "trimal",
+    "Mafft": "mafft",
+    "Clustalo": "clustalo",
+    "MetaAligner": "meta_aligner",
+    "Phyml": "phyml",
+    "JModeltest": "jmodeltest",
+    "Dialigntx": "dialigntx",
+    "FastTree": "fasttree",
+    }
+
+
 try: 
     from collections import OrderedDict
 except ImportError: 

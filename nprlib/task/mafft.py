@@ -9,16 +9,15 @@ from nprlib.utils import SeqGroup, OrderedDict, GLOBALS
 __all__ = ["Mafft"]
 
 class Mafft(AlgTask):
-    def __init__(self, nodeid, multiseq_file, seqtype, conf):
+    def __init__(self, nodeid, multiseq_file, seqtype, confname):
         GLOBALS["citator"].add("Katoh K, Kuma K, Toh H, Miyata T.",
                                "MAFFT version 5: improvement in accuracy of multiple sequence alignment.",
                                "Nucleic Acids Res. 2005 Jan 20;33(2):511-8.")
-        
+        self.confname = confname
         # Initialize task
         AlgTask.__init__(self, nodeid, "alg", "Mafft", 
-                      OrderedDict(), conf["mafft"])
+                      OrderedDict(), GLOBALS["config"][confname])
 
-        self.conf = conf
         self.seqtype = seqtype
         self.multiseq_file = multiseq_file     
         self.init()
@@ -27,13 +26,15 @@ class Mafft(AlgTask):
         self.alg_phylip_file = os.path.join(self.taskdir, "final_alg.iphylip")
  
     def load_jobs(self):
+        conf = GLOBALS["config"]
+        appname = conf[self.confname]["_app"]
         args = self.args.copy()
         # Mafft redirects resulting alg to std.output. The order of
         # arguments is important, input file must be the last
         # one.
         args[""] = self.multiseq_file
-        job = Job(self.conf["app"]["mafft"], args, parent_ids=[self.nodeid])
-        job.cores = self.conf["threading"]["mafft"]
+        job = Job(conf["app"][appname], args, parent_ids=[self.nodeid])
+        job.cores = conf["threading"][appname]
         self.jobs.append(job)
 
     def finish(self):

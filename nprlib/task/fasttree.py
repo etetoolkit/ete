@@ -8,13 +8,13 @@ log = logging.getLogger("main")
 
 from nprlib.master_task import TreeTask
 from nprlib.master_job import Job
-from nprlib.utils import basename, PhyloTree, OrderedDict
+from nprlib.utils import basename, PhyloTree, OrderedDict, GLOBALS
 
 __all__ = ["FastTree"]
 
 class FastTree(TreeTask):
-    def __init__(self, nodeid, alg_file, constrain_tree, model, seqtype, conf):
-        self.conf = conf
+    def __init__(self, nodeid, alg_file, constrain_tree, model, seqtype, confname):
+        self.confname = confname
         self.alg_phylip_file = alg_file
         self.constrain_tree = constrain_tree
         self.alg_basename = basename(self.alg_phylip_file)
@@ -37,8 +37,8 @@ class FastTree(TreeTask):
         else:
             raise ValueError("Unknown seqtype %s" %self.seqtype)
 
-        TreeTask.__init__(self, nodeid, "tree", "FastTree", 
-                      base_args, conf["fasttree"])
+        TreeTask.__init__(self, nodeid, "tree", "FastTree", base_args,
+                          GLOBALS["config"][confname])
 
         self.init()
 
@@ -74,8 +74,11 @@ class FastTree(TreeTask):
         if self.constrain_tree:
             args["-constraints"] = "constraint_alg.fasta"
         args[self.alg_phylip_file] = ""
-        job = Job(self.conf["app"]["fasttree"], args, parent_ids=[self.nodeid])
-        job.cores = self.conf["threading"]["fasttree"]
+        conf = GLOBALS["config"]
+        appname = conf[self.confname]["_app"]
+        
+        job = Job(conf["app"][appname], args, parent_ids=[self.nodeid])
+        job.cores = conf["threading"][appname]
         self.jobs.append(job)
 
     def finish(self):

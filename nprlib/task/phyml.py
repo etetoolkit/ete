@@ -13,7 +13,9 @@ from nprlib.utils import basename, PhyloTree, OrderedDict, GLOBALS
 __all__ = ["Phyml"]
 
 class Phyml(TreeTask):
-    def __init__(self, nodeid, alg_file, constrain_tree, model, seqtype, conf):
+    def __init__(self, nodeid, alg_file, constrain_tree, model,
+                 seqtype, confname):
+
         GLOBALS["citator"].add("Guindon S, Dufayard JF, Lefort V, Anisimova M, Hordijk W, Gascuel O.",
                                "New algorithms and methods to estimate maximum-likelihood phylogenies: assessing the performance of PhyML 3.0.",
                                "Syst Biol. 2010 May;59(3):307-21. Epub 2010 Mar 29. PubMed PMID: 20525638.")
@@ -23,18 +25,19 @@ class Phyml(TreeTask):
                 "--no_memory_check": "", 
                 "--quiet": "",
                 "--constraint_tree": ""})
-
+        
+        self.confname = confname
+        conf = GLOBALS["config"]
         TreeTask.__init__(self, nodeid, "tree", "Phyml", 
-                      base_args, conf["phyml"])
+                          base_args, conf[confname])
 
-        self.conf = conf
         self.constrain_tree = constrain_tree
         self.alg_phylip_file = alg_file
         self.alg_basename = basename(self.alg_phylip_file)
         if seqtype == "aa":
-            self.model = model or conf["phyml"]["_aa_model"]
+            self.model = model or conf[confname]["_aa_model"]
         elif seqtype == "nt":
-            self.model = model or conf["phyml"]["_nt_model"]
+            self.model = model or conf[confname]["_nt_model"]
         self.seqtype = seqtype
         self.lk = None
 
@@ -54,6 +57,8 @@ class Phyml(TreeTask):
         os.symlink(self.alg_phylip_file, fake_alg_file)
 
     def load_jobs(self):
+        conf = GLOBALS["config"]
+        appname = conf[self.confname]["_app"]
         args = self.args.copy()
         args["--model"] = self.model
         args["--datatype"] = self.seqtype
@@ -63,7 +68,7 @@ class Phyml(TreeTask):
             args["-u"] = self.constrain_tree
         else:
             del args["--constraint_tree"]
-        job = Job(self.conf["app"]["phyml"], args, parent_ids=[self.nodeid])
+        job = Job(conf["app"][appname], args, parent_ids=[self.nodeid])
         job.jobname += "-"+self.model
         self.jobs.append(job)
 

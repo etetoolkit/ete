@@ -5,7 +5,9 @@ log = logging.getLogger("main")
 
 from nprlib.master_task import AlgTask
 from nprlib.master_job import Job
-from nprlib.utils import SeqGroup, OrderedDict, checksum, GLOBALS
+from nprlib.utils import (SeqGroup, OrderedDict, checksum, GLOBALS,
+                          APP2CLASS, CLASS2MODULE)
+
 import __init__ as task
 
 __all__ = ["MetaAligner"]
@@ -22,7 +24,7 @@ def seq_reverser_job(multiseq_file, outfile, trimal_bin, parent_ids):
     return job
 
 class MCoffee(AlgTask):
-    def __init__(self, nodeid, seqtype, all_alg_files, conf, parent_ids):
+    def __init__(self, nodeid, seqtype, all_alg_files, confname, parent_ids):
         GLOBALS["citator"].add("Wallace IM, O'Sullivan O, Higgins DG, Notredame C.",
                                "M-Coffee: combining multiple sequence alignment methods with T-Coffee.",
                                "Nucleic Acids Res. 2006 Mar 23;34(6):1692-9.")
@@ -33,9 +35,8 @@ class MCoffee(AlgTask):
                 })
         # Initialize task
         AlgTask.__init__(self, nodeid, "alg", "Mcoffee", 
-                      base_args, conf["meta_aligner"])
+                         base_args, GLOBALS["config"][confname])
         self.all_alg_files = all_alg_files
-        self.conf = conf
         self.parent_ids = parent_ids
         self.seqtype = seqtype
 
@@ -44,9 +45,10 @@ class MCoffee(AlgTask):
         self.alg_phylip_file = os.path.join(self.taskdir, "final_alg.iphylip")
 
     def load_jobs(self):
+        conf = GLOBALS["config"]
         args = self.args.copy()
         args["-outfile"] = "alg.fasta"
-        job = Job(self.conf["app"]["tcoffee"], args, parent_ids=self.parent_ids)
+        job = Job(conf["app"]["tcoffee"], args, parent_ids=self.parent_ids)
         self.jobs.append(job)
 
     def finish(self):
@@ -59,12 +61,12 @@ class MCoffee(AlgTask):
         
 
 class MetaAligner(AlgTask):
-    def __init__(self, nodeid, multiseq_file, seqtype, conf):
+    def __init__(self, nodeid, multiseq_file, seqtype, confname):
+        self.confname = confname
         # Initialize task
         AlgTask.__init__(self, nodeid, "alg", "Meta-Alg", 
-                      OrderedDict(), conf["meta_aligner"])
+                      OrderedDict(), GLOBALS["config"][confname])
 
-        self.conf = conf
         self.seqtype = seqtype
         self.multiseq_file = multiseq_file
         self.size = GLOBALS["nodeinfo"][nodeid].get("size", 0)
@@ -75,26 +77,31 @@ class MetaAligner(AlgTask):
 
         
     def load_jobs(self):
+        conf = GLOBALS["config"]
         multiseq_file_r = self.multiseq_file+".reversed"
         first = seq_reverser_job(self.multiseq_file, multiseq_file_r, 
-                                 self.conf["app"]["readal"],
+                                 conf["app"]["readal"],
                                  parent_ids=[self.nodeid])
         self.jobs.append(first)
         all_alg_files = []
         mcoffee_parents = []
-        for alg in self.conf["meta_aligner"]["_aligners"]:
-            _aligner = getattr(task, alg)
+        
+        for aligner_name in conf[self.confname]["_aligners"]:
+            print aligner_name
+            _classname = APP2CLASS[conf[aligner_name]["_app"]]
+            _module = __import__(CLASS2MODULE[_classname], globals(), locals(), [], -1)
+            _aligner = getattr(_module, _classname)
 
             # Normal alg
             task1 = _aligner(self.nodeid, self.multiseq_file, self.seqtype,
-                             self.conf)
+                             aligner_name)
             task1.size = self.size
             self.jobs.append(task1)
             all_alg_files.append(task1.alg_fasta_file)
             
             # Alg of the reverse
             task2 = _aligner(self.nodeid, multiseq_file_r, self.seqtype,
-                             self.conf)
+                             aligner_name)
             task2.size = self.size
             task2.dependencies.add(first)
             self.jobs.append(task2)
@@ -102,7 +109,7 @@ class MetaAligner(AlgTask):
             # Restore reverse alg
             task3 = seq_reverser_job(task2.alg_fasta_file,
                                      task2.alg_fasta_file+".reverse", 
-                                     self.conf["app"]["readal"],
+                                     conf["app"]["readal"],
                                      parent_ids=[task2.taskid])
             task3.dependencies.add(task2)
             self.jobs.append(task3)
@@ -112,7 +119,7 @@ class MetaAligner(AlgTask):
             
         # Combine signal from all algs using Mcoffee
         final_task = MCoffee(self.nodeid, self.seqtype, all_alg_files,
-                             self.conf, parent_ids=mcoffee_parents)
+                             self.confname, parent_ids=mcoffee_parents)
         final_task.dependencies.update(self.jobs)
         self.jobs.append(final_task)
         

@@ -14,34 +14,37 @@ from nprlib.utils import basename, PhyloTree, OrderedDict, GLOBALS
 __all__ = ["Raxml"]
 
 class Raxml(TreeTask):
-    def __init__(self, nodeid, alg_file, constrain_tree,  model, seqtype, conf):
+    def __init__(self, nodeid, alg_file, constrain_tree, model,
+                 seqtype, confname):
         GLOBALS["citator"].add("Stamatakis A.",
                                "RAxML-VI-HPC: maximum likelihood-based phylogenetic analyses with thousands of taxa and mixed models.",
                                "Bioinformatics. 2006 Nov 1;22(21):2688-90.")
                
         base_args = OrderedDict()
+        self.confname = confname
+        conf = GLOBALS["config"]
         TreeTask.__init__(self, nodeid, "tree", "RaxML", 
-                          base_args, conf["raxml"])
+                          base_args, conf[confname])
 
         max_cores = GLOBALS["_max_cores"]
-        if conf["raxml"]["_app"] == "raxml-pthreads":
+        if conf[confname]["_app"] == "raxml-pthreads":
             threads = conf["threading"].get("raxml-pthreads")
             raxml_bin = conf["app"]["raxml-pthreads"]
-        elif conf["raxml"]["_app"] == "raxml":
+        elif conf[confname]["_app"] == "raxml":
             threads = 1
             raxml_bin = conf["app"]["raxml"]
         
         self.raxml_bin = raxml_bin
         self.threads = threads
-        self.conf = conf
+
         self.constrain_tree = constrain_tree
         self.seqtype = seqtype
         self.alg_phylip_file = alg_file
-        self.compute_alrt = conf["raxml"].get("_alrt_calculation", None)
+        self.compute_alrt = conf[confname].get("_alrt_calculation", None)
 
         # Process raxml options
-        model = model or conf["raxml"]["_aa_model"]
-        method = conf["raxml"].get("_method", "GAMMA").upper()
+        model = model or conf[confname]["_aa_model"]
+        method = conf[confname].get("_method", "GAMMA").upper()
         if seqtype.lower() == "aa":
             self.model_string =  'PROT%s%s' %(method, model.upper())
             self.model = model 
@@ -50,8 +53,8 @@ class Raxml(TreeTask):
             self.model = "GTR"
         else:
             raise ValueError("Unknown seqtype %s", seqtype)
-        #inv = conf["raxml"].get("pinv", "").upper()
-        #freq = conf["raxml"].get("ebf", "").upper()
+        #inv = conf[confname].get("pinv", "").upper()
+        #freq = conf[confname].get("ebf", "").upper()
 
         self.init()
         self.tree_file = os.path.join(self.taskdir, "final_tree.nw")
@@ -76,6 +79,7 @@ class Raxml(TreeTask):
             self.alrt_tree_file = None
 
     def load_jobs(self):
+        
         args = self.args.copy()
         args["-s"] = self.alg_phylip_file
         args["-m"] = self.model_string
@@ -115,8 +119,8 @@ class Raxml(TreeTask):
             #if self.constrain_tree:
             #    alrt_args["--constraint_tree"] = self.constrain_tree
                
-            alrt_job = Job(self.conf["app"]["phyml"], alrt_args,
-                           parent_ids=[tree_job.jobid])
+            alrt_job = Job(GLOBALS["config"]["app"]["phyml"],
+                           alrt_args, parent_ids=[tree_job.jobid])
             alrt_job.jobname += "-alrt"
             alrt_job.dependencies.add(tree_job)
             self.jobs.append(alrt_job)

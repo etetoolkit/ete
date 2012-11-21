@@ -3,7 +3,7 @@ import logging
 
 import numpy
 
-from nprlib.utils import DEBUG, GLOBALS, SeqGroup
+from nprlib.utils import DEBUG, GLOBALS, SeqGroup, APP2CLASS
 from nprlib import task as all_tasks
 from nprlib import db
 from nprlib.master_task import register_task_recursively
@@ -30,12 +30,7 @@ nt_alg_cleaner = list()
 nt_model_tester = list()
 nt_tree_builder = list()
 
-outgroup_size = integer_list(minv=0),
-outgroup_dist = list(),
-outgroup_min_support = float_list(minv=0, maxv=1),
-outgroup_topodist = bool_list(),
-outgroup_policy = list(),
-
+tree_splitter = list()
 
 [sptree]
 max_iters = integer(minv=1)
@@ -45,17 +40,11 @@ switch_aa_similarity = float_list(minv=0.0, maxv=1.0)
 max_seq_similarity = float_list(minv=0.0, maxv=1.0)
 min_branch_support = float_list(minv=0, maxv=1)
 
-aa_tree_builder = list()
-nt_tree_builder = list()
-
-outgroup_size = integer_list(minv=0)
-outgroup_dist = list()
-outgroup_min_support = float_list(minv=0, maxv=1)
-outgroup_topodist = boolean_list()
-outgroup_policy = list()
-
 cog_selector = list()
 alg_concatenator = list()
+aa_tree_builder = list()
+nt_tree_builder = list()
+tree_splitter = list()
 
 """
 
@@ -95,7 +84,7 @@ class IterConfig(dict):
         if v in set(["tree_builder", "aligner", "model_tester",
                      "alg_cleaner"]):
             v = "%s_%s" %(self.seqtype, v)
-            
+
         try:
             value = dict.__getitem__(self, v)
         except KeyError, e:
@@ -108,9 +97,10 @@ class IterConfig(dict):
             if type(value) != str:
                 return value
             elif value.lower() == "none":
-                return None
+                return None, None
             elif value.startswith("@"):
-                return getattr(all_tasks, GLOBALS["config"][value[1:]]["_class"])
+                classname = APP2CLASS[GLOBALS["config"][value[1:]]["_app"]]
+                return value[1:], getattr(all_tasks, classname) 
             else:
                 return value
 
@@ -211,7 +201,7 @@ def split_tree(task_tree, main_tree, alg_path, npr_conf):
                 # is low in children nodes, and return this node
                 # if so.
                 for _ch in _n.children:
-                    if _ch.support <= nmp_conf.min_branch_support:
+                    if _ch.support <= npr_conf.min_branch_support:
                         _isleaf = True
                         break
             elif _n.support <= npr_conf.min_branch_support:
