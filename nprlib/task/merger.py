@@ -161,40 +161,10 @@ class TreeMerger(TreeMergeTask):
                 raise TaskError("Outgroup was split")
                
         else:
-            def sort_outgroups(x,y):
-                # higher support first
-                v = -1 * cmp(x.support, y.support)
-                   
-                if not v:
-                #    # Sort by optimal size
-                #    #v = cmp(abs(optimal_out_size - len(ttree_content[x])),
-                #    #        abs(optimal_out_size - len(ttree_content[y])))
-                    v = -1 * cmp(len(ttree_content[x]), len(ttree_content[y]))
-                    
-                # If equal supports, sort by closeness to midpoint
-                if not v: 
-                    v = cmp(n2targetdist[x], n2targetdist[y])
-                   
-                    
-                return v
-                            
-            optimal_out_size = self.args["_min_size"]
-            log.log(28, "Rooting close to midpoint.")
-            outgroup = ttree.get_midpoint_outgroup()
-            # n2rootdist, n2targetdist = distance_matrix(outgroup, leaf_only=False,
-            #                                            topology_only=False)
-            n2targetdist = distance_matrix_new(outgroup, leaf_only=False,
-                                               topology_only=False)
-
+            # ROOTS FIRST ITERATION
             
-            #del n2targetdist[ttree]
-            valid_nodes = [n for n in ttree_content.keys() if n is not ttree]
-            valid_nodes.sort(sort_outgroups)
-            #for n in valid_nodes[:10]:
-            #    print n, n.support, len(ttree_content[n]), n2targetdist[n]
-            
-            best_outgroup = valid_nodes[0]
-            log.log(28, "Rooting to node of size %s", len(ttree_content[best_outgroup]))                       
+            log.log(28, "Rooting to midpoint.")
+            best_outgroup = ttree.get_midpoint_outgroup()
             ttree.set_outgroup(best_outgroup)
             self.main_tree = ttree
             orig_target = ttree

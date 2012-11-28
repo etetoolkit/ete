@@ -19,6 +19,7 @@ max_seqs = correlative_integer_list(minv=0)
 switch_aa_similarity = float_list(minv=0.0, maxv=1.0)
 max_seq_similarity = float_list(minv=0.0, maxv=1.0)
 min_branch_support = float_list(minv=0, maxv=1)
+min_npr_size = integer_list(minv=3)
 
 aa_aligner = list()
 aa_alg_cleaner = list()
@@ -39,12 +40,16 @@ max_seqs = correlative_integer_list(minv=0)
 switch_aa_similarity = float_list(minv=0.0, maxv=1.0)
 max_seq_similarity = float_list(minv=0.0, maxv=1.0)
 min_branch_support = float_list(minv=0, maxv=1)
+min_npr_size = integer_list(minv=3)
 
 cog_selector = list()
 alg_concatenator = list()
 aa_tree_builder = list()
 nt_tree_builder = list()
 tree_splitter = list()
+
+[meta_aligner]
+_alg_trimming = boolean()
 
 """
 
@@ -60,10 +65,10 @@ class IterConfig(dict):
         self.seqtype = seqtype
         self.size = size
         self.index = None
-
+       
         index_slide = 0
         while self.index is None: 
-            try: 
+            try:
                 max_seqs = wconf["max_seqs"][index_slide]
             except IndexError:
                 raise DataError("Number of seqs [%d] not considered in current config" %self.size)
@@ -176,7 +181,7 @@ def split_tree(task_tree, main_tree, alg_path, npr_conf):
 
         """
         _isleaf = False
-        if len(n2content[_n]) > 2 and _n is not master_node:
+        if len(n2content[_n]) >= npr_conf.min_npr_size and _n is not master_node:
             if ALG and npr_conf.max_seq_simiarity < 1.0: 
                 if not hasattr(_n, "seqs_mean_ident"):
                     log.log(20, "Calculating node sequence stats...")
@@ -213,7 +218,7 @@ def split_tree(task_tree, main_tree, alg_path, npr_conf):
     log.log(20, "Loading tree content...")
     n2content = main_tree.get_node2content()
     if alg_path: 
-        log.log(20, "Loading by-node sequence similarity...")
+        log.log(20, "Calculating sequence similarity for each tree node...")
         ALG = SeqGroup(alg_path)
     else:
         ALG = None
@@ -227,7 +232,7 @@ def split_tree(task_tree, main_tree, alg_path, npr_conf):
     # task_tree is actually a node in main_tree, since it has been
     # already merged
     trees_to_browse = [task_tree]
-    
+    npr_nodes = 0
     while trees_to_browse: 
         master_node = trees_to_browse.pop()
         root_content = set([leaf.name for leaf in n2content[master_node]])
@@ -243,13 +248,14 @@ def split_tree(task_tree, main_tree, alg_path, npr_conf):
                 log.log(28, "Discarding NPR node due to identity with its parent")
                 trees_to_browse.append(node)
             else:
+                npr_nodes += 1
                 yield node, seqs, outs
-            
+    log.log(28, "%s nodes will be optimized", npr_nodes)
 
 def get_next_npr_node(threadid, ttree, mtree, alg_path, npr_conf):
     current_iter = get_iternumber(threadid)
     if npr_conf.max_iters and current_iter >= npr_conf.max_iters:
-        log.log(28, "Maximum number of iterations reached!")
+        log.warning("Maximum number of iterations reached!")
         return
         
     for node, seqs, outs in split_tree(ttree, mtree, alg_path, npr_conf):
@@ -285,7 +291,7 @@ def select_outgroups(target, n2content, splitterconf):
                  "mean":numpy.mean, "median":numpy.median}
   
     
-    policy = splitterconf["_outgroup_policy"]  # node or leaves
+    #policy = splitterconf["_outgroup_policy"]  # node or leaves
     out_topodist = splitterconf["_outgroup_topology_dist"]
     optimal_out_size = int(splitterconf["_outgroup_size"])
     #out_distfn = splitterconf["_outgroup_dist"]

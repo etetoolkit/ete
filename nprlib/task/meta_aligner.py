@@ -5,8 +5,8 @@ log = logging.getLogger("main")
 
 from nprlib.master_task import AlgTask
 from nprlib.master_job import Job
-from nprlib.utils import (SeqGroup, OrderedDict, checksum, GLOBALS,
-                          APP2CLASS, CLASS2MODULE)
+from nprlib.utils import (SeqGroup, OrderedDict, checksum, pjoin,
+                          GLOBALS, APP2CLASS, CLASS2MODULE)
 
 import __init__ as task
 
@@ -63,18 +63,29 @@ class MCoffee(AlgTask):
 class MetaAligner(AlgTask):
     def __init__(self, nodeid, multiseq_file, seqtype, confname):
         self.confname = confname
+        conf = GLOBALS["config"][confname]
         # Initialize task
         AlgTask.__init__(self, nodeid, "alg", "Meta-Alg", 
-                      OrderedDict(), GLOBALS["config"][confname])
+                         OrderedDict(), conf)
 
         self.seqtype = seqtype
         self.multiseq_file = multiseq_file
         self.size = GLOBALS["nodeinfo"][nodeid].get("size", 0)
-        
+        self.all_alg_files = None
         self.init()
+
+        if conf["_alg_trimming"]:
+            self.alg_list_file = pjoin(self.taskdir, "alg_list.txt")
+            open(self.alg_list_file, "w").write("\n".join(self.all_alg_files))
+            trim_job = self.jobs[-1]
+            trim_job.args["-compareset"] = self.alg_list_file
+            trim_job.args["-out"] = pjoin(self.taskdir, "final_trimmed_alg.fasta")
+            trim_job.alg_fasta_file = trim_job.args["-out"]
+            trim_job.alg_phylip_file = None
+                        
         self.alg_fasta_file = os.path.join(self.taskdir, "final_alg.fasta")
         self.alg_phylip_file = os.path.join(self.taskdir, "final_alg.iphylip")
-
+           
         
     def load_jobs(self):
         conf = GLOBALS["config"]
@@ -117,13 +128,33 @@ class MetaAligner(AlgTask):
             mcoffee_parents.extend([task1.taskid, task2.taskid])
             
         # Combine signal from all algs using Mcoffee
-        final_task = MCoffee(self.nodeid, self.seqtype, all_alg_files,
+        mcoffee_task = MCoffee(self.nodeid, self.seqtype, all_alg_files,
                              self.confname, parent_ids=mcoffee_parents)
-        final_task.dependencies.update(self.jobs)
-        self.jobs.append(final_task)
+        mcoffee_task.dependencies.update(self.jobs)
+        self.jobs.append(mcoffee_task)
+        self.all_alg_files = all_alg_files
+        
+        if conf[self.confname]["_alg_trimming"]:
+            # Use trimal to remove columpairs that are not present in at
+            # least 1 alignments
+            trimming_cutoff = 1.0 / len(all_alg_files)
+            args = {}
+            args["-compareset"] = ""
+            args["-out"] = ""
+            args["-forceselect"] = mcoffee_task.alg_fasta_file
+            args["-fasta"] = ""
+            args["-ct"] = trimming_cutoff
+            trim_job = Job(GLOBALS["config"]["app"]["trimal"], args,
+                      parent_ids=[self.nodeid])
+            trim_job.dependencies.add(mcoffee_task)
+            self.jobs.append(trim_job)      
         
     def finish(self):
         final_task = self.jobs[-1]
         shutil.copy(final_task.alg_fasta_file, self.alg_fasta_file)
-        shutil.copy(final_task.alg_fasta_file, self.alg_phylip_file)
+        if final_task.alg_phylip_file: 
+            shutil.copy(final_task.alg_phylip_file, self.alg_phylip_file)
+        else:
+            alg = SeqGroup(final_task.alg_fasta_file, format="fasta")
+            alg.write(outfile=self.alg_phylip_file, format="iphylip_relaxed")
         AlgTask.finish(self)
