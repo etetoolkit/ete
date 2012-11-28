@@ -236,7 +236,9 @@ def split_tree(task_tree, main_tree, alg_path, npr_conf):
                 seqs = set([_i.name for _i in n2content[node]])
                 outs = set()
             else:
-                seqs, outs = select_outgroups(node, n2content, npr_conf)
+                splitterconfname, _ = npr_conf.tree_splitter
+                splitterconf = GLOBALS["config"][splitterconfname]
+                seqs, outs = select_outgroups(node, n2content, splitterconf)
             if seqs | outs == root_content:
                 log.log(28, "Discarding NPR node due to identity with its parent")
                 trees_to_browse.append(node)
@@ -273,7 +275,7 @@ def get_next_npr_node(threadid, ttree, mtree, alg_path, npr_conf):
 
         
       
-def select_outgroups(target, n2content, options):
+def select_outgroups(target, n2content, splitterconf):
     """Given a set of target sequences, find the best set of out
     sequences to use. Several ways can be selected to find out
     sequences:
@@ -281,13 +283,14 @@ def select_outgroups(target, n2content, options):
     
     name2dist = {"min": numpy.min, "max": numpy.max,
                  "mean":numpy.mean, "median":numpy.median}
-
-    policy = options.outgroup_policy  # node or leaves
-    out_topodist = options.outgroup_topodist
-    optimal_out_size = options.outgroup_size
-    out_distfn = options.outgroup_dist
-    out_min_support = options.outgroup_min_support
-
+  
+    
+    policy = splitterconf["_outgroup_policy"]  # node or leaves
+    out_topodist = splitterconf["_outgroup_topology_dist"]
+    optimal_out_size = int(splitterconf["_outgroup_size"])
+    #out_distfn = splitterconf["_outgroup_dist"]
+    out_min_support = float(splitterconf["_outgroup_min_support"])
+    
     if not target.up:
         raise ValueError("Cannot select outgroups for root node!")
     if not optimal_out_size:
