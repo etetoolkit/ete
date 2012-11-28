@@ -130,9 +130,9 @@ def is_correlative_integer_list(value, minv=1, maxv=None):
     last_value = 0
     for v in value:
         typed_value.append(check_number(v, int, minv, maxv))
-        if v <= last_value:
-            return False
-        last_value = v
+        if int(v) <= last_value:
+            raise ConfigError("Numeric values are not correlative: %s" %value)
+        last_value = int(v)
     return typed_value
 
 def main(args):
@@ -378,7 +378,8 @@ def load_sequences(target_seqs, name2seq, npr_template):
         name2hash, hash2name = {}, {}
     for seqtype in GLOBALS["seqtypes"]:
         log.log(28, "Loading %d %s sequences..." %(len(name2seq[seqtype]), seqtype))
-        db.add_seq_table([(name2hash.get(k, k), v) for k,v in
+        # Load sequences and replace U to avoid problems
+        db.add_seq_table([(name2hash.get(k, k), seq.replace("U","B")) for k,seq in
                           name2seq[seqtype].iteritems()], seqtype)
     db.commit()
 
