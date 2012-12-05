@@ -290,7 +290,7 @@ def process_task(task, npr_conf, nodeid2info):
                 next_task = treebuilderclass(nodeid, alg_phylip_file,
                                              constrain_tree_path,
                                              None, seqtype,
-                                             trerbuilderconf)
+                                             treebuilderconf)
         if next_task:
             next_task.size = task.size
             new_tasks.append(next_task)
