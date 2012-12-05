@@ -264,7 +264,7 @@ def main(args):
         check_and_load_sequences(args, npr_template)
     else:
         db.init_db(os.path.join(GLOBALS["db_file"]))
-        log.warning("Skipping check and load sequences (using existent database)")
+        log.warning("Skipping check and load sequences (reusing database)")
         if npr_template == "sptree":
             if args.spfile:
                 if GLOBALS["target_species"] - db.get_all_species():
