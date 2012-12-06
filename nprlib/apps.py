@@ -12,9 +12,9 @@ builtin_apps = {
     'trimal'         : "%BIN%/trimal",
     'readal'         : "%BIN%/readal",
     'tcoffee'        : "export DIR_4_TCOFFEE=%BASE%/t_coffee_9_01 MAFFT_BINARIES=%BIN% TMP_4_TCOFFEE=%TMP% LOCKDIR_4_TCOFFEE=%TMP%  PERL5LIB=$PERL5LIB:$DIR_4_TCOFFEE/perl  && %BIN%/t_coffee",
-    'phyml'          : "%BIN%/phyml_svn",
-    'raxml-pthreads' : "%BIN%/raxmlHPC-PTHREADS-SSE3_730 -T%CORES%",
-    'raxml'          : "%BIN%/raxmlHPC-SSE3_730",
+    'phyml'          : "%BIN%/phyml",
+    'raxml-pthreads' : "%BIN%/raxmlHPC-PTHREADS-SSE3 -T%CORES%",
+    'raxml'          : "%BIN%/raxmlHPC-SSE3",
     'jmodeltest'     : "JMODELTEST_HOME=%BASE%/jmodeltest2; cd $JMODELTEST_HOME; java -jar $JMODELTEST_HOME/jModelTest.jar",
     'dialigntx'      : "%BIN%/dialign-tx %BASE%/DIALIGN-TX_1.0.2/conf",
     'usearch'        : "%BIN%/usearch",
@@ -23,20 +23,20 @@ builtin_apps = {
     }
 
 app2check = {
-    'muscle'         : "|grep -i muscle|wc -l",
-    'mafft'          : "--help|grep -i mafft|wc -l",
-    'clustalo'       : "--help|grep -i omega|wc -l",
-    'trimal'         : "--version |grep -i trimal|wc -l",
-    'readal'         : "--version |grep -i readal|wc -l",
-    'tcoffee'        : "-version|grep -i 't-coffee'|wc -l",
-    'phyml'          : "--help|grep -i phyml|wc -l",
-    'raxml-pthreads' : "-help|grep -i raxml|wc -l",
-    'raxml'          : "-help|grep -i raxml|wc -l",
-    'jmodeltest'     : "--help|grep -i jmodeltest|wc -l",
-    'dialigntx'      : "--help|grep -i dialign|wc -l",
-    'usearch'        : "|grep -i usearch|wc -l",
-    'fasttree'       : "|grep -i fasttree|wc -l",
-    'statal'         : "--version |grep -i statal|wc -l ",
+    'muscle'         : "| grep -i Edgar|wc -l",
+    'mafft'          : "--help | grep -i bioinformatics |wc -l",
+    'clustalo'       : "--help | grep -i omega|wc -l",
+    'trimal'         : "-h | grep -i capella |wc -l",
+    'readal'         : "-h | grep -i capella |wc -l",
+    'tcoffee'        : "| grep -i notredame |wc -l",
+    'phyml'          : "--help |grep -i Guindon|wc -l",
+    'raxml-pthreads' : "-help |grep -i stamatakis|wc -l",
+    'raxml'          : "-help |grep -i stamatakis|wc -l",
+    'jmodeltest'     : "--help | grep -i posada |wc -l",
+    'dialigntx'      : "| grep alignment |wc -l",
+    'usearch'        : "| grep -i Edgar|wc -l",
+    'fasttree'       : "| grep 'FastTree ver'|wc -l",
+    'statal'         : "-h | grep -i capella |wc -l ",
     }
 
 
@@ -48,12 +48,12 @@ def get_call(appname, apps_path, exec_path, cores):
        
     bin_path = os.path.join(apps_path, "bin")
     tmp_path = os.path.join(exec_path, "tmp")
-    apps_base = apps_path.rstrip("/x86-64").rstrip("/x86-32")
+    #apps_base = apps_path.rstrip("/x86-64").rstrip("/x86-32")
     cmd = re.sub("%BIN%", bin_path, cmd)
-    cmd = re.sub("%BASE%", apps_base, cmd)
+    cmd = re.sub("%BASE%", apps_path, cmd)
     cmd = re.sub("%TMP%", tmp_path, cmd)
     cmd = re.sub("%CORES%", cores, cmd)
-    cmd = "export NPR_APP_PATH=%s; %s" %(apps_path, cmd)
+    #cmd = "export NPR_APP_PATH=%s; %s" %(apps_path, cmd)
     return cmd
   
 def test_apps(apps):
