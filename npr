@@ -197,7 +197,9 @@ def main(args):
     else:
         arch = args.arch
 
-    APPSPATH = os.path.join(NPRPATH, "apps/x86-%s" %arch)
+    #APPSPATH = os.path.join(NPRPATH, "apps/x86-%s" %arch)
+    APPSPATH =  os.path.join(NPRPATH, "ext_apps/")
+    
     # setup portable apps
     for k,v in config["app"].iteritems():
         if v == "built-in":
@@ -211,11 +213,12 @@ def main(args):
             else:
                 cmd = apps.get_call(k, APPSPATH, base_dir, str(cores))
                 config["app"][k] = cmd
+
     #log.debug('\n'.join(["%s\t%s" %(i,j) for i,j in config["app"].items()]))
     if not args.nochecks:
         print "Testing x86-%s portable applications..." % arch
         apps.test_apps(config["app"])
-
+    
     # Set number of CPUs available
     GLOBALS["_max_cores"] = args.maxcores
     log.debug("Enabling %d CPU cores" %args.maxcores)
