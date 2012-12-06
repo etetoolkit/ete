@@ -28,7 +28,7 @@ def schedule(workflow_task_processor, schedule_time, execution, retry, debug):
     # Adjust debug mode
     if debug == "all":
         log.setLevel(10)
-
+        
     ## ===================================
     ## INITIALIZE BASIC VARS AND SHORTCUTS
     config = GLOBALS["config"]
