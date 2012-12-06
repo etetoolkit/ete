@@ -185,7 +185,9 @@ def main(args):
         npr_config = [len(v) for k, v in config[flow_name].iteritems()
                       if type(v) == list]
         if len(set(npr_config)) != 1:
-            raise ConfigError("Unequal length of main NPR config table.")
+            print '\n'.join([str((len(v),v)) for k, v in config[flow_name].iteritems()
+                      if type(v) == list])
+            raise ConfigError("Unequal length of main NPR config table. Missing comma?")
 
     if args.arch == "auto":
         if sys.maxsize > 2**32:
@@ -326,10 +328,10 @@ def check_and_load_orthologs(args):
             # keep a list of target seqs and species
             all_species.update([tax1, tax2])
             target_seqs.update([name1, name2])
-    log.log(28, "Loading %d ortholog pairs." %len(ortho_pairs))
+    log.log(28, "Loading %d ortholog pairs..." %len(ortho_pairs))
     db.add_ortho_pair_table(ortho_pairs)
     db.commit()
-
+    
     if GLOBALS["target_species"]:
         if GLOBALS["target_species"] - all_species:
             log.warning("No ortholog pairs were found for the following species: %s",
