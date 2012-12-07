@@ -551,11 +551,11 @@ if __name__ == "__main__":
     input_group.add_argument("-w", dest="workflow",
                         choices=["sptree", "genetree"],
                         required=True,
-                        help="Phylogenetic workflow to follow.")
+                        help="Type of phylogenetic workflow.")
 
     input_group.add_argument("-c", "--config", dest="configfile",
                         type=existing_file, required=True,
-                        help="NPR configuration file.")
+                        help="Configuration file.")
 
     input_group.add_argument("-a", dest="aa_seed_file",
                         type=existing_file,
@@ -569,8 +569,8 @@ if __name__ == "__main__":
 
     input_group.add_argument("--dealign", dest="unalign",
                         action="store_true",
-                        help="If used, gaps in the orginal fasta file will"
-                        " be removed (allows to use alignment files as input.")
+                        help="when used, gaps in the orginal fasta file will"
+                        " be removed, thus allowing to use alignment files as input.")
 
     input_group.add_argument("--no-seq-rename", dest="seq_rename",
                         action="store_false",
