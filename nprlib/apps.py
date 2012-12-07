@@ -50,7 +50,7 @@ def get_call(appname, apps_path, exec_path, cores):
     tmp_path = os.path.join(exec_path, "tmp")
     #apps_base = apps_path.rstrip("/x86-64").rstrip("/x86-32")
     cmd = re.sub("%BIN%", bin_path, cmd)
-    cmd = re.sub("%BASE%", apps_path, cmd)
+    cmd = re.sub("%BASE%", os.path.join(apps_path, "src"), cmd)
     cmd = re.sub("%TMP%", tmp_path, cmd)
     cmd = re.sub("%CORES%", cores, cmd)
     #cmd = "export NPR_APP_PATH=%s; %s" %(apps_path, cmd)
