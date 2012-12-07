@@ -132,7 +132,8 @@ class Screen(StringIO):
 
     def write(self, text):
         if isinstance(text, unicode):
-            text = text.encode(self.stdout.encoding)
+            #text = text.encode(self.stdout.encoding)
+            text = text.encode("UTF-8")
         if NCURSES:
             self.write_curses(text)
             if self.logfile:
