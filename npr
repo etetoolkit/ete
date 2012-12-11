@@ -197,6 +197,22 @@ def main(args):
     else:
         arch = args.arch
 
+    # Create dir structure
+    gallery_dir = os.path.join(base_dir, "gallery")
+    sge_dir = os.path.join(base_dir, "sge_jobs")
+    tmp_dir = os.path.join(base_dir, "tmp")
+    tasks_dir = os.path.join(base_dir, "tasks")
+    GLOBALS["sge_dir"] = sge_dir
+    GLOBALS["tmp"] = tmp_dir
+    GLOBALS["gallery_dir"] = gallery_dir
+    GLOBALS["tasks_dir"] = tasks_dir
+    for dirname in [gallery_dir, sge_dir, tmp_dir, tasks_dir]:
+        try:
+            os.makedirs(dirname)
+        except OSError:
+            log.warning("Using existing dir: %s", dirname)
+
+
     #APPSPATH = os.path.join(NPRPATH, "apps/x86-%s" %arch)
     APPSPATH =  os.path.join(NPRPATH, "ext_apps/")
     
@@ -222,22 +238,7 @@ def main(args):
     # Set number of CPUs available
     GLOBALS["_max_cores"] = args.maxcores
     log.debug("Enabling %d CPU cores" %args.maxcores)
-
-    # Create dir structure
-    gallery_dir = os.path.join(base_dir, "gallery")
-    sge_dir = os.path.join(base_dir, "sge_jobs")
-    tmp_dir = os.path.join(base_dir, "tmp")
-    tasks_dir = os.path.join(base_dir, "tasks")
-    GLOBALS["sge_dir"] = sge_dir
-    GLOBALS["tmp"] = tmp_dir
-    GLOBALS["gallery_dir"] = gallery_dir
-    GLOBALS["tasks_dir"] = tasks_dir
-    for dirname in [gallery_dir, sge_dir, tmp_dir, tasks_dir]:
-        try:
-            os.makedirs(dirname)
-        except OSError:
-            log.warning("Using existing dir: %s", dirname)
-
+            
     # Copy config file
     shutil.copy(args.configfile, os.path.join(base_dir, "workflow.cfg"))
 
