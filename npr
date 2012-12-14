@@ -158,6 +158,11 @@ def main(args):
     except Exception, e:
         raise ConfigError(str(e))
 
+    if os.path.exists(os.path.join(base_dir,"nprdata.tar.bz2")):
+        log.log(28, "compressed data found. Extracting content to start execution...")
+        cmd = "cd %s && tar -jxf nprdata.tar.bz2 && rm nprdata.tar.bz2" % base_dir
+        os.system(cmd)
+        
     npr_template = args.workflow
     if npr_template == "sptree":
         from nprlib.template.sptree import pipeline
@@ -206,7 +211,7 @@ def main(args):
     GLOBALS["tmp"] = tmp_dir
     GLOBALS["gallery_dir"] = gallery_dir
     GLOBALS["tasks_dir"] = tasks_dir
-    for dirname in [gallery_dir, sge_dir, tmp_dir, tasks_dir]:
+    for dirname in [tmp_dir, tasks_dir]:
         try:
             os.makedirs(dirname)
         except OSError:
@@ -299,12 +304,12 @@ def main(args):
     GLOBALS["config"] = config
     schedule(pipeline, args.schedule_time,
              execution, args.retry, args.debug)
-
+    db.close()
     if args.compress:
-        log.log(20, "Compressing files from intermediate steps...")
-        cmd = "cd %s && find -t d -maxdepth 1 -exec tar -jcf {}.tar.bz2 {} \;" %\
+        log.log(20, "Compressing intermediate data...")
+        cmd = "cd %s && tar --remove-files -jcf nprdata.tar.bz2 db.sqlite3 tasks/" %\
               GLOBALS["basedir"]
-        print cmd
+        os.system(cmd)
 
 def check_and_load_orthologs(args):
     all_species = set()
