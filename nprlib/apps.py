@@ -11,7 +11,7 @@ builtin_apps = {
     'clustalo'       : "%BIN%/clustalo",
     'trimal'         : "%BIN%/trimal",
     'readal'         : "%BIN%/readal",
-    'tcoffee'        : "export HOME=%TMP% DIR_4_TCOFFEE=%BASE%/t_coffee_9_01 MAFFT_BINARIES=%BIN% TMP_4_TCOFFEE=%TMP% LOCKDIR_4_TCOFFEE=%TMP%  PERL5LIB=$PERL5LIB:$DIR_4_TCOFFEE/perl  && %BIN%/t_coffee",
+    'tcoffee'        : "export HOME=/tmp DIR_4_TCOFFEE=%BASE%/t_coffee_9_01 MAFFT_BINARIES=%BIN% TMP_4_TCOFFEE=%TMP% LOCKDIR_4_TCOFFEE=%TMP%  PERL5LIB=$PERL5LIB:$DIR_4_TCOFFEE/perl  && %BIN%/t_coffee",
     'phyml'          : "%BIN%/phyml",
     'raxml-pthreads' : "%BIN%/raxmlHPC-PTHREADS-SSE3 -T%CORES%",
     'raxml'          : "%BIN%/raxmlHPC-SSE3",
