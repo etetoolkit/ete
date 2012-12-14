@@ -29,6 +29,9 @@ def connect(dbname):
     conn = sqlite3.connect(dbname)
     cursor = conn.cursor()
 
+def close():
+    conn.close()
+    
 def parse_job_list(jobs):
     if isjob(jobs) or istask(jobs):
         jobs = [jobs]
