@@ -163,7 +163,7 @@ def schedule(workflow_task_processor, schedule_time, execution, retry, debug):
         log.log(26, "")
 
     final_tree_file = os.path.join(GLOBALS["basedir"],
-                                   "final_tree.nw")
+                                   GLOBALS["inputname"] + ".final_tree.nw")
     if main_tree: 
         for n in main_tree.iter_leaves():
             n.name = n.realname
