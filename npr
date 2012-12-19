@@ -254,11 +254,14 @@ def main(args):
                           " argument.")
 
     GLOBALS["seqtypes"] = set()
-    if args.aa_seed_file:
-        GLOBALS["seqtypes"].add("aa")
     if args.nt_seed_file:
         GLOBALS["seqtypes"].add("nt")
-
+        GLOBALS["inputname"] = os.path.split(args.nt_seed_file)[-1]
+        
+    if args.aa_seed_file:
+        GLOBALS["seqtypes"].add("aa")
+        GLOBALS["inputname"] = os.path.split(args.aa_seed_file)[-1]
+    
     if npr_template == "sptree" and args.spfile:
         GLOBALS["target_species"] = set([line.strip() for line in open(args.spfile)])
         log.log(28, "Enabling NPR for %d species", len(GLOBALS["target_species"]))
