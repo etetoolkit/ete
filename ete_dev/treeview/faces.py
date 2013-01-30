@@ -1138,7 +1138,7 @@ class _BarChartItem(QGraphicsRectItem):
         self.colors = colors
         self.width = width
         self.height = height
-        self.draw_border = False
+        self.draw_border = True
         self.draw_grid = False
         self.draw_scale = True
         self.labels = labels
@@ -1153,7 +1153,7 @@ class _BarChartItem(QGraphicsRectItem):
 
         spacer = 3
         spacing_length = (spacer*(len(values)-1))
-        height=  self.height 
+        height = self.height 
         
         if self.max_value is None:
             max_value = max([v+d for v,d in zip(values, deviations) if isfinite(v)])
@@ -1168,9 +1168,9 @@ class _BarChartItem(QGraphicsRectItem):
         scale_length = 0
         scale_margin = 2
         if self.draw_scale: 
-            p.setFont(QFont("Verdana", 8))
-            max_string = "%g" %max_value
-            min_string = "%g" %min_value
+            p.setFont(QFont("Verdana", 6))
+            max_string = "%0.2g" %max_value
+            min_string = "%0.2g" %min_value
             fm = QFontMetrics(p.font())
             max_string_metrics = fm.boundingRect(QRect(), \
                                                  Qt.AlignLeft, \
@@ -1180,13 +1180,22 @@ class _BarChartItem(QGraphicsRectItem):
                                                  min_string)
             scale_length = scale_margin + max(max_string_metrics.width(),
                               min_string_metrics.width())
-        
 
+        label_height = 0
+        if self.labels:
+            p.setFont(QFont("Verdana", 6))
+            fm = QFontMetrics(p.font())
+            longest_label = sorted(self.labels, lambda x,y: cmp(len(x), len(y)))[-1]
+            label_height = fm.boundingRect(QRect(), Qt.AlignLeft, longest_label).width()
+
+            
         real_width = self.width - scale_length
         x_alpha = float((real_width - spacing_length) / (len(values))) 
         if x_alpha < 1:
             raise ValueError("BarChartFace is too small")
         
+        full_height = height
+        height -= label_height
         y_alpha = float ( (height-1) / float(max_value - min_value) )
         x = 0 
         y  = 0
@@ -1223,6 +1232,13 @@ class _BarChartItem(QGraphicsRectItem):
 
             std =  deviations[pos]
             val = values[pos]
+            
+            if self.labels: 
+                p.save()
+                p.translate(x1, height)
+                p.rotate(90)
+                p.drawText(0, 0, str(self.labels[pos]))
+                p.restore()
 
             # If nan value, skip
             if not isfinite(val):
@@ -1235,7 +1251,7 @@ class _BarChartItem(QGraphicsRectItem):
             p.setPen(QColor("black"))
 
             # Fill bar with custom color
-            p.fillRect(x1, height-mean_y1, x_alpha, mean_y1 - 1, QBrush(color))
+            p.fillRect(x1, height - mean_y1, x_alpha, mean_y1 - 1, QBrush(color))
 
             # Draw error bars
             if std != 0:
@@ -1246,12 +1262,6 @@ class _BarChartItem(QGraphicsRectItem):
                 p.drawLine(center_x + 1, height - dev_up_y1, center_x -1, height - dev_up_y1)
                 p.drawLine(center_x + 1, height - dev_down_y1, center_x -1, height - dev_down_y1)
 
-            if self.labels: 
-                p.save()
-                p.translate(x1, -height-30)
-                p.rotate(90)
-                p.drawText(0, 0, str(self.labels[pos]))
-                p.restore()
 
 
 class QGraphicsTriangleItem(QGraphicsPolygonItem):
