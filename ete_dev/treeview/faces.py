@@ -1429,9 +1429,9 @@ class SeqMotifFace(StaticItemFace):
         for mf in motifs:
             start, end, typ, w, h, fg, bg, name = mf
             start -= 1
-            if start < current_pos:
-                print current_pos, start, mf
-                raise ValueError("Overlaping motifs are not supported")
+            #if start < current_pos:
+            #    print current_pos, start, mf
+            #    raise ValueError("Overlaping motifs are not supported")
             if start > current_pos:
                 if intermotif == "blank": 
                     self.regions.append([current_pos, start, " ", 1, 1, None, None, None])
@@ -1483,7 +1483,6 @@ class SeqMotifFace(StaticItemFace):
                 self.regions[index][3] = max(self.regions[index][3], txtw)
                 self.regions[index][4] = max(self.regions[index][4], txth)
                     
-                
             else:
                 name_items.append([None, 0, 0])
                     
@@ -1492,6 +1491,23 @@ class SeqMotifFace(StaticItemFace):
         y_center = max_h / 2
         xstart = 0
         for index, (start, end, typ, w, h, fg, bg, name) in enumerate(self.regions):
+            opacity = 1
+            print "INDEX", index
+            # if current domain start overlaps with previous domain
+            prv_start, prv_end, prv_type, prv_w =  self.regions[index-1][:4]
+            print index, (start, end, typ, w, h, fg, bg, name)
+            print prv_start, prv_end, prv_type, prv_w
+            print "XSTART", xstart
+            if index > 0 and start <= prv_end:
+                # calculates length for overlap
+                total_length = prv_end - prv_start
+                overlaping_length = float(prv_end - start)
+                overlap_factor = overlaping_length / total_length
+                print "correcting:"
+                xstart -=  (prv_w * overlap_factor)
+                print "CORRECTED xstart", xstart, overlap_factor, total_length, overlaping_length
+                opacity = 0.5
+
             txt_item = name_items[index][0]
             if txt_item:
                 align_center = (w - name_items[index][1]) / 2.0
@@ -1555,6 +1571,9 @@ class SeqMotifFace(StaticItemFace):
                     i.setBrush(QColor(bg))
             if fg:
                 i.setPen(QColor(fg))
+
+            if opacity < 1:
+                i.setOpacity(opacity)
             xstart += w
             
         self.item.setRect(0, 0, xstart, max_h)
