@@ -1169,8 +1169,8 @@ class _BarChartItem(QGraphicsRectItem):
         scale_margin = 2
         if self.draw_scale: 
             p.setFont(QFont("Verdana", 6))
-            max_string = "%0.2g" %max_value
-            min_string = "%0.2g" %min_value
+            max_string = "% 7.2f" %max_value
+            min_string = "% 7.2f" %min_value
             fm = QFontMetrics(p.font())
             max_string_metrics = fm.boundingRect(QRect(), \
                                                  Qt.AlignLeft, \
