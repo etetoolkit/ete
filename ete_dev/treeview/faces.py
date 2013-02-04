@@ -1400,6 +1400,7 @@ class SeqMotifFace(StaticItemFace):
         StaticItemFace.__init__(self, None)
         self.seq  = seq or []
         self.motifs = motifs
+        self.overlaping_motif_opacity = 0.7
         self.intermotif_format = intermotif_format
         self.seqtail_format = seqtail_format
         self.seq_format = seq_format
@@ -1506,7 +1507,7 @@ class SeqMotifFace(StaticItemFace):
                 print "correcting:"
                 xstart -=  (prv_w * overlap_factor)
                 print "CORRECTED xstart", xstart, overlap_factor, total_length, overlaping_length
-                opacity = 0.5
+                opacity = self.overlaping_motif_opacity
 
             txt_item = name_items[index][0]
             if txt_item:
