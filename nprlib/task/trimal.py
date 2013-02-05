@@ -55,17 +55,18 @@ class Trimal(AlgCleanerTask):
         # remain accessible.
         alg = SeqGroup(self.clean_alg_fasta_file)
         if len(alg) != self.size:
-            log.warning("Trimming was to aggressive and some"
-                        " sequences were removed. Params will"
-                        " be changed to keep at least 50% of the alg")
-            self.jobs[0].args["-cons"]="50"
-            self.jobs[0].status="W"
-            self.status = "W"
-            raise RetryException("")
+            log.warning("Trimming is to aggressive and it tried"
+                        " to remove one or more sequences."
+                        " Alignment trimming will be disabled for this dataset."
+                        )
+            alg = SeqGroup(self.alg_fasta_file)
+            alg.write(outfile=self.clean_alg_phylip_file, format="iphylip_relaxed")
+            alg.write(outfile=self.clean_alg_fasta_file, format="fasta")
         else:
             for line in open(self.jobs[0].stdout_file):
                 line = line.strip()
                 if line.startswith("#ColumnsMap"):
                     self.kept_columns = map(int, line.split("\t")[1].split(","))
             alg.write(outfile=self.clean_alg_phylip_file, format="iphylip_relaxed")
-            AlgCleanerTask.finish(self)
+            
+        AlgCleanerTask.finish(self)
