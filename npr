@@ -9,7 +9,7 @@ import filecmp
 import logging
 log = None
 import numpy
-import time
+from time import ctime
 # This avoids installing nprlib module. npr script will find it in the
 # same directory in which it is
 NPRPATH = os.path.split(os.path.realpath(__file__))[0]
@@ -18,7 +18,8 @@ sys.path.insert(0, NPRPATH)
 from nprlib import argparse
 from nprlib.configobj import ConfigObj, flatten_errors
 from nprlib import validate
-from nprlib.utils import strip, SeqGroup, generate_runid,  AA, NT, GLOBALS, encode_seqname
+from nprlib.utils import (strip, SeqGroup, generate_runid,  AA, NT,
+                          GLOBALS, encode_seqname, pjoin, ETE_CITE)
 from nprlib.errors import ConfigError, DataError
 from nprlib.master_task import Task
 from nprlib.interface import app_wrapper
@@ -217,7 +218,6 @@ def main(args):
         except OSError:
             log.warning("Using existing dir: %s", dirname)
 
-
     #APPSPATH = os.path.join(NPRPATH, "apps/x86-%s" %arch)
     APPSPATH =  os.path.join(NPRPATH, "ext_apps/")
     
@@ -246,7 +246,7 @@ def main(args):
             
     # Copy config file
     shutil.copy(args.configfile, os.path.join(base_dir, "workflow.cfg"))
-
+    
     if npr_template == "sptree" and not args.ortho_pairs:
         raise ConfigError("Species tree workflow requires a list"
                           " of orthologous gene/protein pairs to be"
@@ -294,15 +294,23 @@ def main(args):
 
     # how task will be executed
     if args.execute:
-        if args.nodetach:
-            execution = ("insitu", False)
+        if args.monitor:
+            execution =("insitu", True) # True is for run-detached flag
         else:
-            execution =("insitu", True)
+            execution = ("insitu", False)
+
     elif args.sge_execute:
         execution = ("sge", False)
     else:
         execution = (None, False)
 
+    shutil.copy(args.configfile, os.path.join(base_dir, "workflow.cfg"))
+    
+    # Write command line info
+    cmd_info = '\t'.join([ctime(), GLOBALS["runid"], ' '.join(sys.argv)])
+    open(pjoin(base_dir, "command_lines"), "a").write(cmd_info+"\n")
+
+        
     # Scheduling starts here
     GLOBALS["config"] = config
     schedule(pipeline, args.schedule_time,
@@ -423,7 +431,7 @@ def scan_sequences(args, target_seqs):
             # Clear symbols
             seq = seq.replace(".", "-")
             seq = seq.replace("*", "X")
-            if args.unalign:
+            if args.dealign:
                 seq = seq.replace("-", "").replace(".", "")
             seq2seq[seqtype][seqname] = seq
             seq2length[seqtype][seqname] = len(seq)
@@ -587,7 +595,7 @@ if __name__ == "__main__":
                         help="Initial multi sequence file with"
                         " nucleotide sequences")
 
-    input_group.add_argument("--dealign", dest="unalign",
+    input_group.add_argument("--dealign", dest="dealign",
                         action="store_true",
                         help="when used, gaps in the orginal fasta file will"
                         " be removed, thus allowing to use alignment files as input.")
@@ -627,11 +635,11 @@ if __name__ == "__main__":
 
     output_group.add_argument("--taskdir", dest="taskdir",
                         type=existing_dir,
-                        help="""Output directory for task information and output.""")
+                        help="""Output directory for tasks related data""")
     
     output_group.add_argument("--compress", action="store_true",
                         help="Compress intermediate files when"
-                              " tasks are finished.")
+                              " a task is finished.")
 
     output_group.add_argument("--logfile", action="store_true",
                           help="Log messages are saved into a file"
@@ -642,7 +650,7 @@ if __name__ == "__main__":
 
     exec_group.add_argument("-r", "--retry_error_jobs", dest="retry",
                         action="store_true",
-                        help="Try to relaunch, once more, jobs marked"
+                        help="Try to relaunch jobs marked"
                         " as error.")
 
     exec_group.add_argument("-m", "--maxcores", dest="maxcores", type=int,
@@ -656,26 +664,24 @@ if __name__ == "__main__":
                         help="""How often tasks should be checked""")
 
     exec_type_group = exec_group.add_mutually_exclusive_group()
-    exec_type_group.add_argument("-x", "--insitu_ex", dest="execute",
+    exec_type_group.add_argument("-x", "--insitu_execution", dest="execute",
                         action="store_true",
-                        help="Jobs are launched in the same machine"
-                        " as in the program is called.")
+                        help="Pipeline jobs are launched in the same machine as the"
+                        " as ETE-NPR is running.")
 
     exec_type_group.add_argument("--sge", dest="sge_execute",
                         action="store_true", help="EXPERIMENTAL!: Jobs will be"
                         " launched using the Sun Grid Engine"
                         " queue system.")
 
-    exec_group.add_argument("--nodetach", dest="nodetach",
-                        action="store_true", help="Jobs will NOT be"
-                        " detached from the main NPR process. This means that"
-                        " when npr execution is interrupted, all currently"
-                        " running jobs will die with it. Use this option if you"
-                        " want to execute the npr program as single shot job"
-                        " (i.e. send npr jobs to a cluster). Note that"
-                        " by default, npr is executed in monitor mode, so"
-                        " launched jobs keeps running even when npr"
-                        " process is killed." )
+    exec_group.add_argument("--monitor", dest="monitor",
+                        action="store_true", help="Pipeline jobs will be"
+                            " detached from the main NPR process. This means that"
+                            " when npr execution is interrupted, all currently"
+                            " running jobs will keep running. Use this option if you"
+                            " want to stop and recover an NPR execution thread or"
+                            " if jobs are expected to be executed remotely."
+                            )
 
     exec_group.add_argument("--override", dest="override",
                             action="store_true",
@@ -683,10 +689,10 @@ if __name__ == "__main__":
 
     exec_group.add_argument("--cleardb", dest="cleardb",
                             action="store_true",
-                            help="Overrides execution database in case it exists in"
+                            help="Overrides execution database in"
                             " the output directory. This implies reloading all"
-                            " sequence information. Files from finished tasks are"
-                            " are kept, thus allowing resume previous executions)")
+                            " sequence data. Files from finished tasks are"
+                            " are kept, thus allowing reuse results from previous executions)")
 
     exec_group.add_argument("--arch", dest="arch",
                             choices=["auto", "32", "64"],
@@ -739,9 +745,7 @@ if __name__ == "__main__":
     GLOBALS["color_shell"] = True
     GLOBALS["citator"] = Citator()
     
-    GLOBALS["citator"].add(u"Huerta-Cepas J, Dopazo J, Gabaldón T.",
-                           "ETE: a python Environment for Tree Exploration.",
-                           "BMC Bioinformatics. 2010 Jan 13;11:24. PubMed PMID: 20070885; PubMed Central PMCID: PMC2820433.")
+    GLOBALS["citator"].add(ETE_CITE)
     if not os.path.exists(GLOBALS["basedir"]):
         os.makedirs(GLOBALS["basedir"])
 
