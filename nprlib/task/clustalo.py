@@ -6,12 +6,15 @@ log = logging.getLogger("main")
 from nprlib.master_task import AlgTask
 from nprlib.master_job import Job
 
-from nprlib.utils import read_fasta, OrderedDict, GLOBALS
+from nprlib.utils import read_fasta, OrderedDict, GLOBALS, CLUSTALO_CITE
 
 __all__ = ["Clustalo"]
 
 class Clustalo(AlgTask):
     def __init__(self, nodeid, multiseq_file, seqtype, confname):
+       
+        GLOBALS["citator"].add(CLUSTALO_CITE)
+        
         if seqtype != "aa":
             raise ValueError("Clustal Omega does only support nt seqtype")
         

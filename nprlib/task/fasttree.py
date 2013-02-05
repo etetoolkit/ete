@@ -8,12 +8,14 @@ log = logging.getLogger("main")
 
 from nprlib.master_task import TreeTask
 from nprlib.master_job import Job
-from nprlib.utils import basename, PhyloTree, OrderedDict, GLOBALS
+from nprlib.utils import basename, PhyloTree, OrderedDict, GLOBALS, FASTTREE_CITE
 
 __all__ = ["FastTree"]
 
 class FastTree(TreeTask):
     def __init__(self, nodeid, alg_file, constrain_tree, model, seqtype, confname):
+        GLOBALS["citator"].add(FASTTREE_CITE)
+
         self.confname = confname
         self.alg_phylip_file = alg_file
         self.constrain_tree = constrain_tree

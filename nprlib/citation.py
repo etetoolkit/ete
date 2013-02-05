@@ -6,8 +6,8 @@ class Citator(object):
     def __init__(self):
         self.citations = set()
         
-    def add(self, authors, title, ref):
-        self.citations.add((authors, title, ref))
+    def add(self, ref):
+        self.citations.add(ref)
         
     def show(self):
         wrapper = twrap.TextWrapper(width=75, initial_indent="   ",
@@ -18,6 +18,6 @@ class Citator(object):
         print "         The following published software and/or algorithms were used.     "
         print "               *** Please, do not forget to cite them! ***                 "
         print "   ========================================================================"
-        for au, ti, ref in citations:
-            print wrapper.fill(' '.join([au, ti, ref]))
+        for ref in citations:
+            print wrapper.fill(ref.replace("\n", " ").strip())
          

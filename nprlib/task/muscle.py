@@ -4,15 +4,13 @@ log = logging.getLogger("main")
 
 from nprlib.master_task import AlgTask
 from nprlib.master_job import Job
-from nprlib.utils import SeqGroup, OrderedDict, GLOBALS
+from nprlib.utils import SeqGroup, OrderedDict, GLOBALS, MUSCLE_CITE
 
 __all__ = ["Muscle"]
 
 class Muscle(AlgTask):
     def __init__(self, nodeid, multiseq_file, seqtype, confname):
-        GLOBALS["citator"].add("Edgar RC.",
-                               "MUSCLE: multiple sequence alignment with high accuracy and high throughput.",
-                               "Nucleic Acids Res. 2004 Mar 19;32(5):1792-7.")
+        GLOBALS["citator"].add(MUSCLE_CITE)
 
         # fixed Muscle options
         base_args = OrderedDict({

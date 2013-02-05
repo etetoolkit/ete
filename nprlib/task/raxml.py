@@ -9,16 +9,14 @@ log = logging.getLogger("main")
 
 from nprlib.master_task import TreeTask
 from nprlib.master_job import Job
-from nprlib.utils import basename, PhyloTree, OrderedDict, GLOBALS
+from nprlib.utils import basename, PhyloTree, OrderedDict, GLOBALS, RAXML_CITE
 
 __all__ = ["Raxml"]
 
 class Raxml(TreeTask):
     def __init__(self, nodeid, alg_file, constrain_tree, model,
                  seqtype, confname):
-        GLOBALS["citator"].add("Stamatakis A.",
-                               "RAxML-VI-HPC: maximum likelihood-based phylogenetic analyses with thousands of taxa and mixed models.",
-                               "Bioinformatics. 2006 Nov 1;22(21):2688-90.")
+        GLOBALS["citator"].add(RAXML_CITE)
                
         base_args = OrderedDict()
         self.confname = confname

@@ -1,17 +1,19 @@
 import os
 import re
 import logging
+import shutil
 log = logging.getLogger("main")
 
 from nprlib.master_task import ModelTesterTask
 from nprlib.master_job import Job
-from nprlib.utils import basename, PhyloTree, GLOBALS
+from nprlib.utils import basename, PhyloTree, GLOBALS, PHYML_CITE
 
 __all__ = ["Prottest"]
 
 class Prottest(ModelTesterTask):
     def __init__(self, nodeid, alg_fasta_file, alg_phylip_file,
                  constrain_tree, confname):
+        GLOBALS["citator"].add(PHYML_CITE)
         
         self.alg_phylip_file = alg_phylip_file
         self.alg_fasta_file = alg_fasta_file
@@ -59,8 +61,12 @@ class Prottest(ModelTesterTask):
                 os.remove(fake_alg_file)
             except OSError:
                 pass
-            os.symlink(self.alg_phylip_file, fake_alg_file)
-
+            try: # Does not work on windows
+                os.symlink(self.alg_phylip_file, fake_alg_file)
+            except OSError:
+                log.warning("Unable to create symbolic links. Duplicating files instead")
+                shutil.copy(self.alg_phylip_file, fake_alg_file)
+                
     def load_jobs(self):
         conf = GLOBALS["config"]
         for m in self.models:

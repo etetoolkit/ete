@@ -55,8 +55,12 @@ class Prottest(ModelTesterTask):
             fake_alg_file = os.path.join(job.jobdir, self.alg_basename)
             if os.path.exists(fake_alg_file):
                 os.remove(fake_alg_file)
-            os.symlink(self.alg_phylip_file, fake_alg_file)
-
+            try: # Does not work on windows
+                os.symlink(self.alg_phylip_file, fake_alg_file)
+            except OSError:
+                log.warning("Unable to create symbolic links. Duplicating files instead")
+                shutil.copy(self.alg_phylip_file, fake_alg_file)
+                
     def load_jobs(self):
         for m in self.models:
             args = self.args.copy()

@@ -4,15 +4,14 @@ log = logging.getLogger("main")
 
 from nprlib.master_task import AlgTask
 from nprlib.master_job import Job
-from nprlib.utils import SeqGroup, OrderedDict, GLOBALS
+from nprlib.utils import SeqGroup, OrderedDict, GLOBALS, MAFFT_CITE
 
 __all__ = ["Mafft"]
 
 class Mafft(AlgTask):
     def __init__(self, nodeid, multiseq_file, seqtype, confname):
-        GLOBALS["citator"].add("Katoh K, Kuma K, Toh H, Miyata T.",
-                               "MAFFT version 5: improvement in accuracy of multiple sequence alignment.",
-                               "Nucleic Acids Res. 2005 Jan 20;33(2):511-8.")
+        GLOBALS["citator"].add(MAFFT_CITE)
+        
         self.confname = confname
         # Initialize task
         AlgTask.__init__(self, nodeid, "alg", "Mafft", 

@@ -163,12 +163,14 @@ def schedule(workflow_task_processor, schedule_time, execution, retry, debug):
         log.log(26, "")
 
     final_tree_file = os.path.join(GLOBALS["basedir"],
-                                   GLOBALS["inputname"] + ".final_tree.nw")
+                                   GLOBALS["inputname"] + ".final_tree")
     if main_tree: 
         for n in main_tree.iter_leaves():
+            n.add_features(codename=n.name)
             n.name = n.realname
         log.log(28, "Writing final tree: %s", final_tree_file)
-        main_tree.write(outfile=final_tree_file)
+        main_tree.write(outfile=final_tree_file+".nw")
+        main_tree.write(outfile=final_tree_file+".nwx", features=[])
 
     log.log(28, "Done")
     GLOBALS["citator"].show()

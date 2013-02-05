@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import sys
 from os import kill
 from os.path import join as pjoin
@@ -48,6 +50,44 @@ CLASS2MODULE = {
     "Dialigntx": "dialigntx",
     "FastTree": "fasttree",
     }
+
+ETE_CITE ="""Huerta-Cepas J, Dopazo J, Gabaldón T. ETE: a python
+Environment for Tree Exploration. BMC Bioinformatics. 2010 Jan
+13;11:24."""
+PHYML_CITE = """Guindon S, Dufayard JF, Lefort V, Anisimova M, Hordijk W, Gascuel O.
+New algorithms and methods to estimate maximum-likelihood phylogenies:
+assessing the performance of PhyML 3.0. Syst Biol. 2010
+May;59(3):307-21."""
+FASTTREE_CITE = """Price MN, Dehal PS, Arkin AP. FastTree 2 -
+approximately maximum-likelihood trees for large alignments.  PLoS
+One. 2010 Mar 10;5(3):e9490."""
+RAXML_CITE = """Stamatakis A. RAxML-VI-HPC: maximum likelihood-based
+phylogenetic analyses with thousands of taxa and mixed models.
+Bioinformatics. 2006 Nov 1;22(21):2688-90."""
+MAFFT_CITE = """Katoh K, Kuma K, Toh H, Miyata T. MAFFT version 5:
+improvement in accuracy of multiple sequence alignment.  Nucleic Acids
+Res. 2005 Jan 20;33(2):511-8."""
+TRIMAL_CITE = """Capella-Gutiérrez S, Silla-Martínez JM, Gabaldón T.
+trimAl: a tool for automated alignment trimming in large-scale
+phylogenetic analyses.  Bioinformatics. 2009 Aug 1;25(15):1972-3."""
+MUSCLE_CITE = """Edgar RC. MUSCLE: multiple sequence alignment with
+high accuracy and high throughput.", Nucleic Acids Res. 2004 Mar
+19;32(5):1792-7."""
+CLUSTALO_CITE = u""" Sievers F, Wilm A, Dineen D, Gibson TJ, Karplus
+K, Li W, Lopez R, McWilliam H, Remmert M, Söding J, Thompson JD,
+Higgins DG.  Fast, scalable generation of high-quality protein
+multiple sequence alignments using Clustal Omega.  Mol Syst Biol. 2011
+Oct 11;7:539. doi: 10.1038/msb.2011.75."""
+DIALIGN_CITE = """"Subramanian AR, Kaufmann M, Morgenstern B.
+DIALIGN-TX: greedy and progressive approaches for segment-based
+multiple sequence alignment. Algorithms Mol Biol. 2008 May 27;3:6."""
+
+MCOFFEE_CITE = """Wallace IM, O'Sullivan O, Higgins DG, Notredame C.
+M-Coffee: combining multiple sequence alignment methods with T-Coffee.
+Nucleic Acids Res. 2006 Mar 23;34(6):1692-9. """
+JMODELTEST_CITE = """Darriba D, Taboada GL, Doallo R, Posada
+D. jModelTest 2: more models, new heuristics and parallel computing.Nat
+Methods. 2012 Jul 30;9(8):772."""
 
 
 try: 

@@ -8,7 +8,7 @@ log = logging.getLogger("main")
 
 from nprlib.master_task import TreeTask
 from nprlib.master_job import Job
-from nprlib.utils import basename, PhyloTree, OrderedDict, GLOBALS
+from nprlib.utils import basename, PhyloTree, OrderedDict, GLOBALS, PHYML_CITE
 
 __all__ = ["Phyml"]
 
@@ -16,9 +16,7 @@ class Phyml(TreeTask):
     def __init__(self, nodeid, alg_file, constrain_tree, model,
                  seqtype, confname):
 
-        GLOBALS["citator"].add("Guindon S, Dufayard JF, Lefort V, Anisimova M, Hordijk W, Gascuel O.",
-                               "New algorithms and methods to estimate maximum-likelihood phylogenies: assessing the performance of PhyML 3.0.",
-                               "Syst Biol. 2010 May;59(3):307-21. Epub 2010 Mar 29. PubMed PMID: 20525638.")
+        GLOBALS["citator"].add(PHYML_CITE)
         
         base_args = OrderedDict({
                 "--model": "", 
@@ -54,8 +52,12 @@ class Phyml(TreeTask):
             os.remove(fake_alg_file)
         except OSError:
             pass
-        os.symlink(self.alg_phylip_file, fake_alg_file)
-
+        try: # symlink does not work on windows 
+            os.symlink(self.alg_phylip_file, fake_alg_file)
+        except OSError:
+            log.warning("Unable to create symbolic links. Duplicating files instead")
+            shutil.copy(self.alg_phylip_file, fake_alg_file)
+            
     def load_jobs(self):
         conf = GLOBALS["config"]
         appname = conf[self.confname]["_app"]

@@ -4,12 +4,14 @@ log = logging.getLogger("main")
 
 from nprlib.master_task import ModelTesterTask
 from nprlib.master_job import Job
-from nprlib.utils import basename, PhyloTree
+from nprlib.utils import basename, PhyloTree, JMODELTEST_CITE
 
 __all__ = ["JModeltest"]
 
 class JModeltest(ModelTesterTask):
     def __init__(self, nodeid, alg_fasta_file, alg_phylip_file, conf):
+        GLOBALS["citator"].add(JMODELTEST_CITE)
+        
         self.conf = conf
         base_args = {
             '-d': alg_fasta_file, 

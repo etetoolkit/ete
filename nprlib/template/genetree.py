@@ -62,7 +62,7 @@ def annotate_node(t, final_task):
                            tree_seqtype=task.seqtype, 
                            tree_type=task.tname, 
                            tree_cmd=params,
-                           tree_file=rpath(task.tree_file),
+                           tree_path=rpath(task.tree_file),
                            tree_constrain=task.constrain_tree,
                            npr_iter=npr_iter)
         elif task.ttype == "mchooser":

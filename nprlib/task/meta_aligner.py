@@ -6,7 +6,7 @@ log = logging.getLogger("main")
 from nprlib.master_task import AlgTask
 from nprlib.master_job import Job
 from nprlib.utils import (SeqGroup, OrderedDict, checksum, pjoin,
-                          GLOBALS, APP2CLASS, CLASS2MODULE)
+                          GLOBALS, APP2CLASS, CLASS2MODULE, MCOFFEE_CITE)
 
 import __init__ as task
 
@@ -25,10 +25,7 @@ def seq_reverser_job(multiseq_file, outfile, trimal_bin, parent_ids):
 
 class MCoffee(AlgTask):
     def __init__(self, nodeid, seqtype, all_alg_files, confname, parent_ids):
-        GLOBALS["citator"].add("Wallace IM, O'Sullivan O, Higgins DG, Notredame C.",
-                               "M-Coffee: combining multiple sequence alignment methods with T-Coffee.",
-                               "Nucleic Acids Res. 2006 Mar 23;34(6):1692-9.")
-
+        GLOBALS["citator"].add(MCOFFEE_CITE)
         base_args = OrderedDict({
                 "-output": "fasta",
                 "-aln": ' '.join(all_alg_files)
