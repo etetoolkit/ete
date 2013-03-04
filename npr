@@ -7,9 +7,10 @@ from StringIO import StringIO
 from collections import defaultdict
 import filecmp
 import logging
+from tempfile import NamedTemporaryFile        
 log = None
 import numpy
-from time import ctime
+from time import ctime, time
 # This avoids installing nprlib module. npr script will find it in the
 # same directory in which it is
 NPRPATH = os.path.split(os.path.realpath(__file__))[0]
@@ -166,8 +167,10 @@ def main(args):
         
     npr_template = args.workflow
     if npr_template == "sptree":
+        GLOBALS["template"] = "sptree"
         from nprlib.template.sptree import pipeline
     elif npr_template == "genetree":
+        GLOBALS["template"] = "genetree"
         from nprlib.template.genetree import pipeline
     else:
         raise ConfigError("Bad config file. A template name or file should be specified.")
@@ -261,37 +264,77 @@ def main(args):
     if args.aa_seed_file:
         GLOBALS["seqtypes"].add("aa")
         GLOBALS["inputname"] = os.path.split(args.aa_seed_file)[-1]
-    
-    if npr_template == "sptree" and args.spfile:
-        GLOBALS["target_species"] = set([line.strip() for line in open(args.spfile)])
-        log.log(28, "Enabling NPR for %d species", len(GLOBALS["target_species"]))
-
+   
 
     GLOBALS["db_file"]  = os.path.join(base_dir, "db.sqlite3")
-    if args.cleardb and os.path.exists(GLOBALS["db_file"]):
+    DB_EXISTS = os.path.exists(GLOBALS["db_file"])
+    if args.cleardb and DB_EXISTS:
         log.log(28, "Erasing existing database...")
         os.remove(GLOBALS["db_file"])
 
     # Initialize db if necessary, otherwise extract basic info
-    if not os.path.exists(GLOBALS["db_file"]):
-        db.init_db(os.path.join(GLOBALS["db_file"]))
-        check_and_load_sequences(args, npr_template)
-    else:
-        db.init_db(os.path.join(GLOBALS["db_file"]))
-        log.warning("Skipping check and load sequences (reusing database)")
-        if npr_template == "sptree":
-            if args.spfile:
-                if GLOBALS["target_species"] - db.get_all_species():
-                    raise DataError("Not all species are present in the database")
-            else:
-                GLOBALS["target_species"] = db.get_all_species()
-            log.log(28, "Working on %d species", len(GLOBALS["target_species"]))
-        elif npr_template == "genetree":
-            if "aa" in GLOBALS["seqtypes"]:
-                GLOBALS["target_sequences"] = db.get_all_seqids("aa")
-            else:
-                GLOBALS["target_sequences"] = db.get_all_seqids("nt")
+    db.init_db(os.path.join(GLOBALS["db_file"]))
+    
+    # Check and load data
+    ERROR = ""
+    if not DB_EXISTS or args.clearseqs:
+        target_seqs = None
+        db.override_seq_tables()
+        target_seqs, seqnames, name2len, name2unk, name2seq = scan_sequences(args, target_seqs)
+        ERROR = check_seq_integrity(target_seqs, seqnames, name2len, name2unk, name2seq)
+    else: 
+        log.warning("Skipping check and load sequences (loading from database...)")
+        target_seqs = db.get_all_seq_names()
+    log.warning("%d sequences in database" %len(target_seqs))
 
+    ortho_species = None
+    if npr_template == "sptree":
+        if not DB_EXISTS or args.clearorthology: 
+            db.override_ortho_pair_table()
+            check_and_load_orthologs(args.ortho_pairs)
+        else: 
+            log.warning("Skipping check and load ortholog pairs (loading from database...)")
+        ortho_species = db.get_species_in_ortho_pairs()
+        log.log(28, "Found %d unqiue species codes in ortholog-pairs" %(len(ortho_species)))
+        seq_species = set([name.split(GLOBALS["spname_delimiter"])[0] 
+                           for name in target_seqs])
+        log.log(28, "Found %d unqiue species codes in sequence names" %(len(seq_species)))        
+
+        # Species filter
+        if args.spfile:
+            target_species = set([line.strip() for line in open(args.spfile)])
+            GLOBALS["target_species"].discard("")
+            log.log(28, "Enabling NPR for %d species", len(target_species))
+        else: 
+            target_species = seq_species
+
+        # Check that orthologs are available for all species
+        if target_species - seq_species: 
+            ERROR += "The following species have no sequence information: %s" %(target_species - seq_species)
+        if target_species - ortho_species: 
+            ERROR += "The following species have no orthology information: %s" %(target_species - ortho_species)
+            
+        GLOBALS["target_species"] = target_species
+
+    if ERROR:
+        open("npr_error.log", "w").write(' '.join(sys.argv) + "\n\n" + ERROR)
+        raise DataError("Errors were found while loading data. Please"
+                        " check error file in the current director for details"
+                        " [npr_error.log]")
+
+    if not DB_EXISTS or args.clearseqs:
+        load_sequences(target_seqs, target_species, name2seq, npr_template)
+        seqnames, name2len, name2unk, name2seq = [None] * 4 # Release mem
+
+    target_seqs = None # release mem
+
+    if npr_template == "genetree":
+        if "aa" in GLOBALS["seqtypes"]:
+            GLOBALS["target_sequences"] = db.get_all_seqids("aa")
+        else:
+            GLOBALS["target_sequences"] = db.get_all_seqids("nt")
+        log.log(28, "Working on %d ids whose sequences are available", len(GLOBALS["target_sequences"]))
+            
     # how task will be executed
     if args.execute:
         if args.monitor:
@@ -313,6 +356,7 @@ def main(args):
         
     # Scheduling starts here
     GLOBALS["config"] = config
+    log.log(28, "NPR starts now!")
     schedule(pipeline, args.schedule_time,
              execution, args.retry, args.debug)
     db.close()
@@ -322,74 +366,42 @@ def main(args):
               GLOBALS["basedir"]
         os.system(cmd)
 
-def check_and_load_orthologs(args):
-    all_species = set()
-    target_seqs = set()
-    ortho_pairs = []
 
-    log.log(28, "Reading ortholog pairs from file...")
+def check_and_load_orthologs(fname):
+    log.log(28, "importing orthologous pairs into database (this may take a while)...")
+    template_import = NamedTemporaryFile()
+    template_import.write('''
+PRAGMA cache_size = 1000000;
+PRAGMA synchronous = OFF;
+PRAGMA journal_mode = OFF;
+PRAGMA locking_mode = EXCLUSIVE;
+PRAGMA temp_store = MEMORY;
+PRAGMA auto_vacuum = NONE;
+.separator "\\t"
+.import %s ortho_pair
+PRAGMA locking_mode = EXCLUSIVE;
 
-    for c1, line in enumerate(open(args.ortho_pairs)):
-        if c1%10000 == 0:
-            print >>sys.stderr, c1, "\r",
-        try:
-            name1, name2, pair_score = map(strip, line.split("\t"))
-        except ValueError:
-            name1, name2 = map(strip, line.split("\t"))
-            pair_score = 1.0
-        tax1, seq1 = name1.split(args.spname_delimiter)
-        tax2, seq2 = name2.split(args.spname_delimiter)
+CREATE INDEX IF NOT EXISTS i7 ON ortho_pair (taxid2, seqid2, taxid1);
+CREATE INDEX IF NOT EXISTS i10 ON ortho_pair (taxid1, taxid2);
 
-        if not GLOBALS["target_species"] or \
-           set([tax1,tax2]).issubset(GLOBALS["target_species"]):
-            # record ortho pair
-            (tax1, seq1), (tax2, seq2) = sorted([(tax1,seq1), (tax2,seq2)])
-            ortho_pairs.append([tax1, seq1, tax2, seq2, pair_score])
-            # keep a list of target seqs and species
-            all_species.update([tax1, tax2])
-            target_seqs.update([name1, name2])
-    log.log(28, "Loading %d ortholog pairs..." %len(ortho_pairs))
-    db.add_ortho_pair_table(ortho_pairs)
-    db.commit()
+PRAGMA synchronous = NORMAL;
+PRAGMA journal_mode = DELETE;
+PRAGMA locking_mode = NORMAL;
+
+''' %  fname)
+
+    template_import.flush()
+    print template_import.read()
+    os.system("sqlite3 %s < %s" %(GLOBALS["db_file"], template_import.name))
+    print "sqlite3 %s < %s" %(GLOBALS["db_file"], template_import.name)
+    template_import.close()
     
-    if GLOBALS["target_species"]:
-        if GLOBALS["target_species"] - all_species:
-            log.warning("No ortholog pairs were found for the following species: %s",
-                        GLOBALS["target_species"] - all_species)
-        elif all_species - GLOBALS["target_species"]:
-            ValueError("Inconsistency found when loading species. Please report.")
-    else:
-        log.log(28, "Enabling NPR for %d species", len(all_species))
-        GLOBALS["target_species"] = all_species
-    return target_seqs
 
-def check_and_load_sequences(args, npr_template):
-    # An example of hash name collision
-    #test= ['4558_15418', '9600_21104', '7222_13002', '3847_37647', '412133_16266']
-    #hash_names(test)
+def load_sequences(target_seqs, target_species, name2seq, npr_template):
+    if target_species: 
+        log.log(28, "Creating species table...")
+        db.add_target_species(target_species)
 
-    # Load ortho pairs
-    target_seqs = set()
-    if npr_template == "sptree":
-        target_seqs = check_and_load_orthologs(args)
-
-    seqnames, name2len, name2unk, name2seq = scan_sequences(args, target_seqs)
-    primary_seqtype = "aa" if "aa" in GLOBALS["seqtypes"] else "nt"
-    if npr_template == "genetree":
-        target_seqs = set(seqnames[primary_seqtype])
-        GLOBALS["target_sequences"] = target_seqs
-    errors = check_data_integrity(target_seqs, seqnames, name2len, name2unk, name2seq)
-
-    # Load data
-    if errors:
-        open("npr_error.log", "w").write(' '.join(sys.argv) + "\n\n" + errors)
-        raise DataError("Errors were found while loading data. Please"
-                        " check error file in the current director for details"
-                        " [npr_error.log]")
-    else:
-        load_sequences(target_seqs, name2seq, npr_template)
-
-def load_sequences(target_seqs, name2seq, npr_template):
     if args.seq_rename:
         name2hash, hash2name = hash_names(target_seqs)
         log.log(28, "Loading %d sequence name translations..." %len(hash2name))
@@ -398,6 +410,7 @@ def load_sequences(target_seqs, name2seq, npr_template):
             GLOBALS["target_sequences"] = hash2name.keys()
     else:
         name2hash, hash2name = {}, {}
+
     for seqtype in GLOBALS["seqtypes"]:
         log.log(28, "Loading %d %s sequences..." %(len(name2seq[seqtype]), seqtype))
         # Load sequences and replace U to avoid problems
@@ -446,12 +459,13 @@ def scan_sequences(args, target_seqs):
             target_seqs = set(visited_seqs["aa"])
 
     if skipped_seqs:
-        log.warning("%d sequences will not be used since they do not"
-                    " match any ortholog pair or are not present"
-                    " in the aa seed file." %skipped_seqs)
-    return visited_seqs, seq2length, seq2unknown, seq2seq
+        log.warning("%d sequences will not be used since they are"
+                    "  not present in the aa seed file." %skipped_seqs)
+                             
+    return target_seqs, visited_seqs, seq2length, seq2unknown, seq2seq
 
-def check_data_integrity(target_seqs, visited_seqs, seq2length, seq2unknown, seq2seq):
+def check_seq_integrity(target_seqs, visited_seqs, seq2length, seq2unknown, seq2seq):
+    log.log(28, "Checking data consistency ...")
     source_seqtype = "aa" if "aa" in GLOBALS["seqtypes"] else "nt"
     error = ""
 
@@ -466,11 +480,12 @@ def check_data_integrity(target_seqs, visited_seqs, seq2length, seq2unknown, seq
         error += '\n'.join(duplicates)
 
     # check that the seq of all targets is available
-    for seqtype in GLOBALS["seqtypes"]:
-        missing_seq = target_seqs - set(seq2seq[seqtype].keys())
-        if missing_seq:
-            error += "\nThe following %s sequences are missing:\n" %seqtype
-            error += '\n'.join(missing_seq)
+    if target_seqs: 
+        for seqtype in GLOBALS["seqtypes"]:
+            missing_seq = target_seqs - set(seq2seq[seqtype].keys())
+            if missing_seq:
+                error += "\nThe following %s sequences are missing:\n" %seqtype
+                error += '\n'.join(missing_seq)
 
     # check for unknown characters
     for seqtype in GLOBALS["seqtypes"]:
@@ -480,7 +495,6 @@ def check_data_integrity(target_seqs, visited_seqs, seq2length, seq2unknown, seq
 
     # check for aa/cds consistency
     if GLOBALS["seqtypes"] == set(["aa", "nt"]):
-
         inconsistent_cds = set()
         for seqname, ntlen in seq2length["nt"].iteritems():
             if seqname in seq2length["aa"]:
@@ -509,13 +523,17 @@ def check_data_integrity(target_seqs, visited_seqs, seq2length, seq2unknown, seq
     log.log(28, "Mean sequence length: %d +- %0.1f " %(mean_len, std_len))
     if outliers:
         log.warning("%d sequence lengths look like outliers" %len(outliers))
-    return error
 
+    return error
 
 def hash_names(target_names):
     """Given a set of strings of variable lengths, it returns their
     conversion to fixed and safe hash-strings.
     """
+    # An example of hash name collision
+    #test= ['4558_15418', '9600_21104', '7222_13002', '3847_37647', '412133_16266']
+    #hash_names(test)
+
     log.log(28, "Generating safe sequence names...")
     hash2name = defaultdict(list)
     for c1, name in enumerate(target_names):
@@ -524,20 +542,26 @@ def hash_names(target_names):
         hash2name[hash_name].append(name)
 
     collisions = [(k,v) for k,v in hash2name.iteritems() if len(v)>1]
+    #GLOBALS["name_collisions"] = {}
     if collisions:
+        visited = set(hash2name.keys())
         for old_hash, coliding_names in collisions:
             logindent(2)
             log.log(20, "Collision found when hash-encoding the following gene names: %s", coliding_names)
             niter = 1
-            while niter == 1 or len(new_hashes) < len(coliding_names):
+            valid = False
+            while not valid or len(new_hashes) < len(coliding_names):
                 niter += 1
                 new_hashes = defaultdict(list)
                 for name in coliding_names:
                     hash_name = encode_seqname(name*niter)
                     new_hashes[hash_name].append(name)
+                valid = set(new_hashes.keys()).isdisjoint(visited)
+                
             log.log(20, "Fixed with %d concatenations! %s", niter, ', '.join(['%s=%s' %(e[1][0], e[0]) for e in  new_hashes.iteritems()]))
             del hash2name[old_hash]
             hash2name.update(new_hashes)
+            #GLOBALS["name_collisions"].update([(_name, _code) for _code, _name in new_hashes.iteritems()])
             logindent(-2)
     #collisions = [(k,v) for k,v in hash2name.iteritems() if len(v)>1]
     #log.log(28, "Final collisions %s", collisions )
@@ -689,10 +713,15 @@ if __name__ == "__main__":
 
     exec_group.add_argument("--cleardb", dest="cleardb",
                             action="store_true",
-                            help="Overrides execution database in"
-                            " the output directory. This implies reloading all"
-                            " sequence data. Files from finished tasks are"
-                            " are kept, thus allowing reuse results from previous executions)")
+                            help="Overrides all tables in database")
+
+    exec_group.add_argument("--clearorthology", dest="clearorthology",
+                            action="store_true",
+                            help="Overrides orthology pairs table in database")
+
+    exec_group.add_argument("--clearseqs", dest="clearseqs",
+                            action="store_true",
+                            help="Overrides sequences table in database")
 
     exec_group.add_argument("--arch", dest="arch",
                             choices=["auto", "32", "64"],
