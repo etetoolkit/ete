@@ -162,10 +162,25 @@ class TreeMerger(TreeMergeTask):
                
         else:
             # ROOTS FIRST ITERATION
-            
-            log.log(28, "Rooting to midpoint.")
-            best_outgroup = ttree.get_midpoint_outgroup()
-            ttree.set_outgroup(best_outgroup)
+            self.args["_first_split"] = "midpoint"
+            if self.args["_first_split"] == "midpoint":
+                log.log(28, "Rooting to midpoint.")
+                best_outgroup = ttree.get_midpoint_outgroup()
+                ttree.set_outgroup(best_outgroup)
+            else:
+                otus = set(self.args["_first_split"].split())
+                if len(otus) > 1:
+                    anchor = list(set(target_seqs) - outs)[0]
+                    ttree.set_outgroup(anchor)
+                    common = ttree.get_common_ancestor(otus)
+                    out_seqs = common.get_leaf_names()
+                    if set(out_seqs) - otus:
+                        ValueError("First split outgroup cannot be granted")
+                    
+                    ttree.set_outgroup(common)
+                else:
+                    common = ttree.set_outgroup(otus[0])
+                
             self.main_tree = ttree
             orig_target = ttree
             if DEBUG():

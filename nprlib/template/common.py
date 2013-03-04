@@ -6,6 +6,7 @@ import numpy
 from nprlib.utils import DEBUG, GLOBALS, SeqGroup, APP2CLASS
 from nprlib import task as all_tasks
 from nprlib import db
+from nprlib.errors import ConfigError, DataError
 from nprlib.master_task import register_task_recursively
 
 log = logging.getLogger("main")
@@ -71,7 +72,7 @@ class IterConfig(dict):
             try:
                 max_seqs = wconf["max_seqs"][index_slide]
             except IndexError:
-                raise DataError("Number of seqs [%d] not considered in current config" %self.size)
+                raise DataError("Target species [%d] has size not considered in current config file" %self.size)
             else:
                 if self.size <= max_seqs:
                     self.index = index_slide

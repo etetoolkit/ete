@@ -8,6 +8,10 @@ log = logging.getLogger("main")
 
 conn = None
 cursor = None
+seqconn = None
+seqcursor = None
+orthoconn = None
+orthocursor = None
 
 AUTOCOMMIT = False
 def autocommit():
@@ -23,7 +27,16 @@ def decode(x):
 def init_db(dbname):
     connect(dbname)
     create_db()
-   
+
+def connect2(seq_dbfile, npr_dbfile, ortho_dbfile):
+    global conn, cursor
+    conn = sqlite3.connect(npr_dbfile)
+    cursor = conn.cursor()
+    seqconn = sqlite3.connect(seq_dbfile)
+    seqcursor = conn.cursor()
+    orthoconn = sqlite3.connect(ortho_dbfile)
+    orthocursor = conn.cursor()
+      
 def connect(dbname):
     global conn, cursor
     conn = sqlite3.connect(dbname)
@@ -79,12 +92,15 @@ def create_db():
     name VARCHAR(32)
     );
 
+    CREATE TABLE IF NOT EXISTS species(
+    name CHAR(32) PRIMARY KEY
+    );
+
     CREATE TABLE IF NOT EXISTS ortho_pair(
     taxid1 VARCHAR(16), 
     seqid1 VARCHAR(16),
     taxid2 VARCHAR(16),
     seqid2 VARCHAR(16),
-    score FLOAT DEFAULT(1.0),
     PRIMARY KEY(taxid1, seqid1, taxid2, seqid2)
     );
 
@@ -102,19 +118,53 @@ def create_db():
     CREATE INDEX IF NOT EXISTS i2 ON task(nodeid, status);
     CREATE INDEX IF NOT EXISTS i3 ON task(parentid, status);
     CREATE INDEX IF NOT EXISTS i4 ON task(status, host, pid);
-
     CREATE INDEX IF NOT EXISTS i5 ON node(runid, cladeid);
+    CREATE INDEX IF NOT EXISTS i6 ON seqid2name(name);
 
-    CREATE INDEX IF NOT EXISTS i6 ON ortho_pair (taxid1, seqid1, taxid2, score);
-    CREATE INDEX IF NOT EXISTS i7 ON ortho_pair (taxid2, seqid2, taxid1, score);
-    CREATE INDEX IF NOT EXISTS i8 ON ortho_pair (taxid1, seqid1, taxid2, score);
-    CREATE INDEX IF NOT EXISTS i9 ON ortho_pair (taxid2, seqid2, taxid1, score);
-
-    CREATE INDEX IF NOT EXISTS i10 ON ortho_pair (taxid1, taxid2, score);
-    CREATE INDEX IF NOT EXISTS i11 ON ortho_pair (taxid2, taxid1, score);
-    
-    '''
+'''
     cursor.executescript(job_table)
+    autocommit()
+
+def create_ortho_pair_indexes():
+    ortho_indexes = '''
+    CREATE INDEX IF NOT EXISTS i8 ON ortho_pair (taxid1, seqid1, taxid2);
+    CREATE INDEX IF NOT EXISTS i9 ON ortho_pair (taxid1, taxid2);
+    '''
+    cursor.executescript(ortho_indexes)
+
+def override_ortho_pair_table():
+    cmd = """
+    DROP TABLE IF EXISTS ortho_pair;
+
+    CREATE TABLE IF NOT EXISTS ortho_pair(
+    taxid1 VARCHAR(16), 
+    seqid1 VARCHAR(16),
+    taxid2 VARCHAR(16),
+    seqid2 VARCHAR(16),
+    PRIMARY KEY(taxid1, seqid1, taxid2, seqid2)
+    );
+    """
+    cursor.executescript(cmd)
+    autocommit()
+
+def override_seq_tables():
+    cmd = """
+    DROP TABLE IF EXISTS nt_seq;
+    DROP TABLE IF EXISTS aa_seq;
+
+    CREATE TABLE IF NOT EXISTS nt_seq(
+    seqid CHAR(10) PRIMARY KEY, 
+    seq TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS aa_seq(
+    seqid CHAR(10) PRIMARY KEY, 
+    seq TEXT
+    );
+
+    """
+    cursor.executescript(cmd)
+    autocommit()
     
 def add_task(tid, nid, parent=None, status=None, type=None, subtype=None,
              name=None):
@@ -247,6 +297,17 @@ def get_seq_name(seqid):
     execute(cmd)
     return (cursor.fetchone() or [seqid])[0]
 
+def get_all_seq_names():
+    cmd = 'SELECT name FROM seqid2name'
+    execute(cmd)
+    return [name[0] for name in cursor.fetchall()]
+
+def translate_names(names):
+    name_string = ",".join(map(lambda x: '"%s"'%x, names))
+    cmd = 'SELECT name, seqid FROM seqid2name WHERE name in (%s);' %name_string
+    execute(cmd)
+    return dict(cursor.fetchall())
+
 def get_all_seqids(seqtype):
     cmd = 'SELECT seqid FROM %s_seq;' %seqtype
     execute(cmd)
@@ -269,25 +330,42 @@ def get_seq(seqid, seqtype):
     cmd = 'SELECT seq FROM %s_seq WHERE seqid = "%s";' %(seqtype, seqid)
     execute(cmd)
     return cursor.fetchone()[0]
-    
-def add_ortho_pair(taxid1, seqid1, taxid2, seqid2, score):
-    cmd = ('INSERT OR REPLACE INTO ortho_pair (taxid1, seqid1, taxid2, seqid2, score)'
-           ' VALUES ("%s", "%s", "%s", "%s", %s);' %(taxid1, seqid1, taxid2, seqid2, score))
-    execute(cmd)
-    autocommit()
-
-def add_ortho_pair_table(entries):
-    cmd = 'INSERT OR REPLACE INTO ortho_pair (taxid1, seqid1, taxid2, seqid2, score) VALUES (?, ?, ?, ?, ?)' 
-    cursor.executemany(cmd, entries)
-    autocommit()
-    
-def get_all_species():
+   
+def get_species_in_ortho_pairs():
     cmd = 'SELECT DISTINCT taxid1, taxid2 FROM ortho_pair;'
     execute(cmd)
     species = set()
     for t1, t2 in cursor.fetchall():
         species.update([t1, t2])
     return species
+
+def get_target_species():
+    cmd = 'SELECT DISTINCT name FROM species;'
+    execute(cmd)
+    species = set([name[0] for name in cursor.fetchall()])
+    return species
+
+def add_target_species(species):
+    cmd = 'INSERT OR REPLACE INTO species (name) VALUES (?)'
+    cursor.executemany(cmd, [[sp] for sp in species])
+    autocommit()
+
+def get_all_ortho_seqs(target_species=None):
+    if target_species: 
+        sp_filter = "WHERE taxidNNN in (%s) " %(','.join(map(lambda n: '"%s"'%n )))
+    else:
+        sp_filter = ""
+    
+    cmd = 'SELECT DISTINCT seqid1,taxid1 FROM ortho_pair ' + sp_filter.replace("NNN","1")
+    print cmd
+    execute(cmd)
+    seqs = set(["_".join(q) for q in cursor.fetchall()])
+
+    cmd = 'SELECT DISTINCT seqid2,taxid2 FROM ortho_pair ' + sp_filter.replace("NNN","2")
+    execute(cmd)
+    print cmd
+    seqs.update(set(["_".join(q) for q in cursor.fetchall()]))
+    return seqs
     
 def get_all_task_states():
     cmd = 'SELECT status FROM task'
