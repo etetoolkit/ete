@@ -29,6 +29,7 @@ def init_scene(t, layout, ts):
         _QApp = QtGui.QApplication(["ETE"])
 
     scene  = _TreeScene()
+	#ts._scale = None
     return scene, ts
 
 def show_tree(t, layout=None, tree_style=None, win_name=None):
@@ -39,6 +40,7 @@ def show_tree(t, layout=None, tree_style=None, win_name=None):
 
     tree_item.setParentItem(scene.master_item)
     scene.addItem(scene.master_item)
+    
     mainapp = _GUI(scene)
     if win_name:
         mainapp.setObjectName(win_name)
