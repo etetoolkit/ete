@@ -60,8 +60,6 @@ class NexmlTree(PhyloTree):
     def __init__(self, newick=None, alignment=None, alg_format="fasta", \
                  sp_naming_function=_parse_species, format=0):
 
-        self._children = Children()
-        self._children.node = self
         self.nexml_tree = FloatTree()
         self.nexml_node = TreeNode()
         self.nexml_edge = TreeFloatEdge()
@@ -74,6 +72,8 @@ class NexmlTree(PhyloTree):
 
         # Initialize empty PhyloTree
         super(NexmlTree, self).__init__()
+        self._children = Children()
+        self._children.node = self
 
         if alignment:
             self.link_to_alignment(alignment, alg_format)
