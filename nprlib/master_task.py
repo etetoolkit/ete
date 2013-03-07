@@ -412,6 +412,8 @@ def register_task_recursively(task, parentid=None):
             register_task_recursively(j, parentid=parentid)
 
 def update_task_states_recursively(task):
+    task_start = 0
+    task_end = 0
     for j in task.jobs:
         if isjob(j):
             start = None
@@ -422,6 +424,9 @@ def update_task_states_recursively(task):
                 except Exception, e:
                     log.warning("Execution time could not be loaded into DB: %s", j.jobid[:6])
                     log.warning(e)
+                else:
+                    task_start = min(task_start, start) if task_start > 0 else start
+                    task_end = max(task_end, end)
             db.update_task(j.jobid, status=j.status, tm_start=start, tm_end=end)
         else:
             update_task_states_recursively(j)

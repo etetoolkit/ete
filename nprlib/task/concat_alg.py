@@ -21,6 +21,8 @@ class ConcatAlg(ConcatAlgTask):
         
         ConcatAlgTask.__init__(self, nodeid, "concat_alg", "ConcatAlg", 
                       base_args)
+
+              
         self.cogs = cogs
         self.seqtype = seqtype
         self.cog_ids = set()
