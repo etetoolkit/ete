@@ -294,8 +294,8 @@ def app_wrapper(func, args):
     except TaskError, e:
         print >>sys.stderr, ("\nErrors were found in the follwing task: %s"
                              "\nCheck the log files within the taskdir:"
-                             "\n%s"
-                             %(e.value, e.value.taskdir))
+                             "\n%s:\n\n%s"
+                             %(e.value, e.value.taskdir, e.msg))
         sys.exit(1)
     except KeyboardInterrupt:
         print >>sys.stderr, "\nProgram was interrupted."

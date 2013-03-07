@@ -430,6 +430,6 @@ def update_task_states_recursively(task):
             db.update_task(j.jobid, status=j.status, tm_start=start, tm_end=end)
         else:
             update_task_states_recursively(j)
-    db.update_task(task.taskid, status=task.status)
+    db.update_task(task.taskid, status=task.status, tm_start=task_start, tm_end=task_end)
 
         

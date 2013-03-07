@@ -159,7 +159,8 @@ class TreeMerger(TreeMergeTask):
         else:
             # ROOTS FIRST ITERATION
             log.log(28, "Getting outgroup for first NPR split")
-            mainout = self.args["_first_split"]
+            mainout = self.args["_first_split"].strip()
+
             if mainout == "midpoint":
                 log.log(28, "Rooting to midpoint.")
                 best_outgroup = ttree.get_midpoint_outgroup()
@@ -169,28 +170,33 @@ class TreeMerger(TreeMergeTask):
                     # Lazy defined outgroup. Will trust in the common
                     # ancestor of two or more OTUs
                     strict_common_ancestor = False
-                    otus = set(mainout[1:].split())
-                    if len(otus) < 2:
-                        TaskError("First outgroup error. Common "
-                                  "ancestor requires at least two OTU names")
+                    outs = set(mainout[1:].split())
+                    if len(outs) < 2:
+                        raise TaskError(self, "First split outgroup error: common "
+                                        "ancestor calculation requires at least two OTU names")
                 else:
                     strict_common_ancestor = True
-                    otus = set(mainout.split())
+                    outs = set(mainout.split())
+
+                if outs - target_seqs:
+                    raise TaskError(self, "Unknown seqs cannot be used to set first split rooting:%s" %(outs - target_seqs))
                     
-                if len(otus) > 1:
+                if len(outs) > 1:
                     anchor = list(set(target_seqs) - outs)[0]
-                    ttree.set_outgroup(anchor)
-                    common = ttree.get_common_ancestor(otus)
+                    ttree.set_outgroup(ttree & anchor)
+                    common = ttree.get_common_ancestor(outs)
                     out_seqs = common.get_leaf_names()
                     if common is ttree:
-                        TaskError("Provided first split outgroup could not be granted")
-                    if strict_common_ancestor and set(out_seqs) - otus:
-                        TaskError("Monophyly of first split outgroup could not be granted")
-                    log.log(28, "Rooting to %s" %common.get_leaf_names())
+                        raise TaskError("Provided first split outgroup could not be granted:%s" %out_seqs)
+                    if strict_common_ancestor and set(out_seqs) - outs:
+                        raise TaskError(self, "Monophyly of first split outgroup could not be granted:%s" %out_seqs)
+                    log.log(28, "@@4:First split rooting to %d seqs@@1:: %s" %(len(out_seqs),out_seqs))
                     ttree.set_outgroup(common)
                 else:
-                    common = ttree.set_outgroup(otus[0])
-                
+                    common = ttree.set_outgroup(outs[0])
+                    log.log(28, "@@4:First split rooting to 1 seq@@1:: %s" %(outs[0].name))
+
+                    
             self.main_tree = ttree
             orig_target = ttree
             if DEBUG():

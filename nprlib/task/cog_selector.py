@@ -11,7 +11,7 @@ log = logging.getLogger("main")
 from nprlib.master_task import CogSelectorTask
 from nprlib.errors import DataError
 from nprlib.utils import (GLOBALS, print_as_table, generate_node_ids,
-                          encode_seqname)
+                          encode_seqname, md5)
 from nprlib import db
 
 __all__ = ["BrhCogSelector"]
@@ -52,6 +52,7 @@ class BrhCogSelector(CogSelectorTask):
             log.log(22, "Loading COGs from cache files")
             self.cog_analysis = cPickle.load(open(self.cog_analysis_file))
             self.cogs = cPickle.load(open(self.cogs_file))
+            log.log(22, "\n"+self.cog_analysis)
         else: 
             all_species = self.targets | self.outgroups
             cogs, cog_analysis = brh_cogs(db, all_species,
