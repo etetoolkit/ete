@@ -159,8 +159,11 @@ class TreeMerger(TreeMergeTask):
         else:
             # ROOTS FIRST ITERATION
             log.log(28, "Getting outgroup for first NPR split")
-            mainout = self.args["_first_split"].strip()
-
+            # if early split is provided in the command line, it
+            # overrides config file
+            mainout = GLOBALS.get("first_split_outgroup",
+                                  self.args["_first_split"]).strip()
+            
             if mainout == "midpoint":
                 log.log(28, "Rooting to midpoint.")
                 best_outgroup = ttree.get_midpoint_outgroup()
