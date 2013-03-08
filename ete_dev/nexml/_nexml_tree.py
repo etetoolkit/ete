@@ -61,6 +61,7 @@ class NexmlTree(PhyloTree):
                  sp_naming_function=_parse_species, format=0):
 
         self.nexml_tree = FloatTree()
+        self.nexml_tree.set_anyAttributes_({'xsi:type': 'FloatTree'})
         self.nexml_node = TreeNode()
         self.nexml_edge = TreeFloatEdge()
         self.nexml_node.id = "node_%s" %hash(self)
