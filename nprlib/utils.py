@@ -4,6 +4,8 @@ import sys
 from os import kill
 from os.path import join as pjoin
 from os.path import split as psplit
+from os.path import exists as pexist
+import os 
 import socket
 import string
 from string import strip
@@ -16,6 +18,7 @@ import datetime
 import re
 log = logging.getLogger("main")
 DEBUG = lambda: log.level <= 10
+hascontent = lambda f: pexist(f) and os.path.getsize(f) > 0
 GLOBALS = {
     "running_jobs": []
 }

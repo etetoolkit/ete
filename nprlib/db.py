@@ -14,36 +14,38 @@ orthoconn = None
 orthocursor = None
 
 AUTOCOMMIT = False
-def autocommit():
+def autocommit(targetconn = conn):
     if AUTOCOMMIT:
-        conn.commit()
-
+        targetconn.commit()
+       
 def encode(x):
     return base64.encodestring(cPickle.dumps(x, 2))
 
 def decode(x):
     return cPickle.loads(base64.decodestring(x))
 
-def init_db(dbname):
-    connect(dbname)
+def init_nprdb(nprdb_file):
+    global conn, cursor
+    conn = sqlite3.connect(nprdb_file)
+    cursor = conn.cursor()
     create_db()
 
-def connect2(seq_dbfile, npr_dbfile, ortho_dbfile):
-    global conn, cursor
-    conn = sqlite3.connect(npr_dbfile)
-    cursor = conn.cursor()
-    seqconn = sqlite3.connect(seq_dbfile)
-    seqcursor = conn.cursor()
-    orthoconn = sqlite3.connect(ortho_dbfile)
-    orthocursor = conn.cursor()
-      
-def connect(dbname):
-    global conn, cursor
-    conn = sqlite3.connect(dbname)
-    cursor = conn.cursor()
+def init_seqdb(seqdb_file):
+    global seqconn, seqcursor
+    seqconn = sqlite3.connect(seqdb_file)
+    seqcursor = seqconn.cursor()
+    create_seq_db()
+
+def init_orthodb(orthodb_file):
+    global orthoconn, orthocursor
+    orthoconn = sqlite3.connect(orthodb_file)
+    orthocursor = orthoconn.cursor()
+    create_ortho_db()
 
 def close():
     conn.close()
+    seqconn.close()
+    orthoconn.close()
     
 def parse_job_list(jobs):
     if isjob(jobs) or istask(jobs):
@@ -51,7 +53,51 @@ def parse_job_list(jobs):
     ids = ','.join(["'%s'" %j.jobid for j in jobs if isjob(j)] +
                    ["'%s'" %j.taskid for j in jobs if istask(j)])
     return jobs, ids
+
+def create_ortho_db():
+    ortho_table = '''
+    CREATE TABLE IF NOT EXISTS ortho_pair(
+    taxid1 VARCHAR(16), 
+    seqid1 VARCHAR(16),
+    taxid2 VARCHAR(16),
+    seqid2 VARCHAR(16),
+    PRIMARY KEY(taxid1, seqid1, taxid2, seqid2)
+    );
+
+    CREATE TABLE IF NOT EXISTS species(
+      taxid VARCHAR(16) PRIMARY KEY
+    );
+    '''
+    # indexes are created while importing
+    orthocursor.executescript(ortho_table)
+    autocommit(orthoconn)
     
+def create_seq_db():
+    seq_table ='''
+    CREATE TABLE IF NOT EXISTS nt_seq(
+    seqid CHAR(10) PRIMARY KEY, 
+    seq TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS aa_seq(
+    seqid CHAR(10) PRIMARY KEY, 
+    seq TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS seqid2name(
+    seqid CHAR(32) PRIMARY KEY,
+    name VARCHAR(32)
+    );
+
+    CREATE TABLE IF NOT EXISTS species(
+      taxid VARCHAR(16) PRIMARY KEY
+    );
+
+    CREATE INDEX IF NOT EXISTS i6 ON seqid2name(name);
+    '''
+    seqcursor.executescript(seq_table)
+    autocommit(seqconn)
+
 def create_db():
     job_table = '''
     CREATE TABLE IF NOT EXISTS node(
@@ -86,40 +132,13 @@ def create_db():
     taskid CHAR(32),
     PRIMARY KEY(runid, taskid)
     );
-    
-    CREATE TABLE IF NOT EXISTS seqid2name(
-    seqid CHAR(32) PRIMARY KEY,
-    name VARCHAR(32)
-    );
-
-    CREATE TABLE IF NOT EXISTS species(
-    name CHAR(32) PRIMARY KEY
-    );
-
-    CREATE TABLE IF NOT EXISTS ortho_pair(
-    taxid1 VARCHAR(16), 
-    seqid1 VARCHAR(16),
-    taxid2 VARCHAR(16),
-    seqid2 VARCHAR(16),
-    PRIMARY KEY(taxid1, seqid1, taxid2, seqid2)
-    );
-
-    CREATE TABLE IF NOT EXISTS nt_seq(
-    seqid CHAR(10) PRIMARY KEY, 
-    seq TEXT
-    );
-
-    CREATE TABLE IF NOT EXISTS aa_seq(
-    seqid CHAR(10) PRIMARY KEY, 
-    seq TEXT
-    );
+   
     
     CREATE INDEX IF NOT EXISTS i1 ON task(host, status);
     CREATE INDEX IF NOT EXISTS i2 ON task(nodeid, status);
     CREATE INDEX IF NOT EXISTS i3 ON task(parentid, status);
     CREATE INDEX IF NOT EXISTS i4 ON task(status, host, pid);
     CREATE INDEX IF NOT EXISTS i5 ON node(runid, cladeid);
-    CREATE INDEX IF NOT EXISTS i6 ON seqid2name(name);
 
 '''
     cursor.executescript(job_table)
@@ -130,41 +149,7 @@ def create_ortho_pair_indexes():
     CREATE INDEX IF NOT EXISTS i8 ON ortho_pair (taxid1, seqid1, taxid2);
     CREATE INDEX IF NOT EXISTS i9 ON ortho_pair (taxid1, taxid2);
     '''
-    cursor.executescript(ortho_indexes)
-
-def override_ortho_pair_table():
-    cmd = """
-    DROP TABLE IF EXISTS ortho_pair;
-
-    CREATE TABLE IF NOT EXISTS ortho_pair(
-    taxid1 VARCHAR(16), 
-    seqid1 VARCHAR(16),
-    taxid2 VARCHAR(16),
-    seqid2 VARCHAR(16),
-    PRIMARY KEY(taxid1, seqid1, taxid2, seqid2)
-    );
-    """
-    cursor.executescript(cmd)
-    autocommit()
-
-def override_seq_tables():
-    cmd = """
-    DROP TABLE IF EXISTS nt_seq;
-    DROP TABLE IF EXISTS aa_seq;
-
-    CREATE TABLE IF NOT EXISTS nt_seq(
-    seqid CHAR(10) PRIMARY KEY, 
-    seq TEXT
-    );
-
-    CREATE TABLE IF NOT EXISTS aa_seq(
-    seqid CHAR(10) PRIMARY KEY, 
-    seq TEXT
-    );
-
-    """
-    cursor.executescript(cmd)
-    autocommit()
+    orthocursor.executescript(ortho_indexes)
     
 def add_task(tid, nid, parent=None, status=None, type=None, subtype=None,
              name=None):
@@ -188,9 +173,7 @@ def get_runid_tasks(runid):
            ' WHERE runid = "%s";' %(runid))
     execute(cmd)
     return [e[0] for e in cursor.fetchall()]
-    
-def get_species_name(spcode):
-    return spcode
+   
     
 def update_task(tid, **kargs):
     if kargs:
@@ -284,33 +267,33 @@ def report(runid, filter_rules=None):
 def add_seq_name(seqid, name):
     cmd = ('INSERT OR REPLACE INTO seqid2name (seqid, name)'
            ' VALUES ("%s", "%s");' %(seqid, name))
-    execute(cmd)
+    execute(cmd, seqcursor)
     autocommit()
     
 def add_seq_name_table(entries):
     cmd = 'INSERT OR REPLACE INTO seqid2name (seqid, name) VALUES (?, ?)'
-    cursor.executemany(cmd, entries)
+    seqcursor.executemany(cmd, entries)
     autocommit()
     
 def get_seq_name(seqid):
     cmd = 'SELECT name FROM seqid2name WHERE seqid="%s"' %seqid
-    execute(cmd)
-    return (cursor.fetchone() or [seqid])[0]
+    execute(cmd, seqcursor)
+    return (seqcursor.fetchone() or [seqid])[0]
 
 def get_all_seq_names():
     cmd = 'SELECT name FROM seqid2name'
-    execute(cmd)
-    return [name[0] for name in cursor.fetchall()]
+    execute(cmd, seqcursor)
+    return [name[0] for name in seqcursor.fetchall()]
 
 def translate_names(names):
     name_string = ",".join(map(lambda x: '"%s"'%x, names))
     cmd = 'SELECT name, seqid FROM seqid2name WHERE name in (%s);' %name_string
-    execute(cmd)
-    return dict(cursor.fetchall())
+    execute(cmd, seqcursor)
+    return dict(seqcursor.fetchall())
 
 def get_all_seqids(seqtype):
     cmd = 'SELECT seqid FROM %s_seq;' %seqtype
-    execute(cmd)
+    execute(cmd, seq_cursor)
     seqids = set()
     for sid in cursor.fetchall():
         seqids.add(sid[0])
@@ -318,36 +301,46 @@ def get_all_seqids(seqtype):
     
 def add_seq(seqid, seq, seqtype):
     cmd = 'INSERT OR REPLACE INTO %s_seq (seqid, seq) VALUES ("%s", "%s")' %(seqtype, seqid, seq)
-    execute(cmd)
-    autocommit()
+    execute(cmd, seqcursor)
+    autocommit(seqconn)
 
 def add_seq_table(entries, seqtype):
     cmd = 'INSERT OR REPLACE INTO %s_seq (seqid, seq) VALUES (?, ?)' %seqtype
-    cursor.executemany(cmd, entries)
-    autocommit()
+    seqcursor.executemany(cmd, entries)
+    autocommit(seqconn)
     
 def get_seq(seqid, seqtype):
     cmd = 'SELECT seq FROM %s_seq WHERE seqid = "%s";' %(seqtype, seqid)
-    execute(cmd)
-    return cursor.fetchone()[0]
+    execute(cmd, seqcursor)
+    return seqcursor.fetchone()[0]
    
-def get_species_in_ortho_pairs():
+def update_species_in_ortho_pairs():
     cmd = 'SELECT DISTINCT taxid1, taxid2 FROM ortho_pair;'
-    execute(cmd)
+    execute(cmd, orthocursor)
     species = set()
-    for t1, t2 in cursor.fetchall():
+    for t1, t2 in orthocursor.fetchall():
         species.update([t1, t2])
+        
+    cmd = 'INSERT OR REPLACE INTO species (taxid) VALUES (?)'
+    orthocursor.executemany(cmd, [[sp] for sp in species])
+    print cmd
+    autocommit()
+    
+def get_ortho_species():
+    cmd = 'SELECT DISTINCT taxid FROM species;'
+    execute(cmd, orthocursor)
+    species = set([name[0] for name in orthocursor.fetchall()])
     return species
 
-def get_target_species():
-    cmd = 'SELECT DISTINCT name FROM species;'
-    execute(cmd)
-    species = set([name[0] for name in cursor.fetchall()])
+def get_seq_species():
+    cmd = 'SELECT DISTINCT taxid FROM species;'
+    execute(cmd, seqcursor)
+    species = set([name[0] for name in seqcursor.fetchall()])
     return species
 
-def add_target_species(species):
-    cmd = 'INSERT OR REPLACE INTO species (name) VALUES (?)'
-    cursor.executemany(cmd, [[sp] for sp in species])
+def add_seq_species(species):
+    cmd = 'INSERT OR REPLACE INTO species (taxid) VALUES (?)'
+    seqcursor.executemany(cmd, [[sp] for sp in species])
     autocommit()
 
 def get_all_ortho_seqs(target_species=None):
@@ -358,13 +351,13 @@ def get_all_ortho_seqs(target_species=None):
     
     cmd = 'SELECT DISTINCT seqid1,taxid1 FROM ortho_pair ' + sp_filter.replace("NNN","1")
     print cmd
-    execute(cmd)
-    seqs = set(["_".join(q) for q in cursor.fetchall()])
+    execute(cmd, orthocursor)
+    seqs = set(["_".join(q) for q in orthocursor.fetchall()])
 
     cmd = 'SELECT DISTINCT seqid2,taxid2 FROM ortho_pair ' + sp_filter.replace("NNN","2")
-    execute(cmd)
+    execute(cmd, orthocursor)
     print cmd
-    seqs.update(set(["_".join(q) for q in cursor.fetchall()]))
+    seqs.update(set(["_".join(q) for q in orthocursor.fetchall()]))
     return seqs
     
 def get_all_task_states():
@@ -372,13 +365,12 @@ def get_all_task_states():
     execute(cmd)
     return [v[0] for v in cursor.fetchall()]
     
-def commit():
-    conn.commit()
-
-def execute(cmd):
-    for retry in xrange(3):
+def execute(cmd, dbcursor=None):
+    if not dbcursor:
+        dbcursor = cursor
+    for retry in xrange(30):
         try:
-            s = cursor.execute(cmd)
+            s = dbcursor.execute(cmd)
         except sqlite3.OperationalError, e:
             log.warning(e)
             if retry > 1:
@@ -388,3 +380,8 @@ def execute(cmd):
         else:
             return s
 
+def commit(dbconn=None):
+    if not dbconn:
+        dbconn = conn
+    conn.commit()
+    
