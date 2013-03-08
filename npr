@@ -20,7 +20,8 @@ from nprlib import argparse
 from nprlib.configobj import ConfigObj, flatten_errors
 from nprlib import validate
 from nprlib.utils import (strip, SeqGroup, generate_runid,  AA, NT,
-                          GLOBALS, encode_seqname, pjoin, ETE_CITE)
+                          GLOBALS, encode_seqname, pjoin, pexist,
+                          hascontent, ETE_CITE)
 from nprlib.errors import ConfigError, DataError
 from nprlib.master_task import Task
 from nprlib.interface import app_wrapper
@@ -144,8 +145,8 @@ def main(args):
     print __DESCRIPTION__
 
     local_conf_file = os.path.join(base_dir, "workflow.cfg")
-    if os.path.exists(base_dir):
-        if os.path.exists(local_conf_file):
+    if pexist(base_dir):
+        if hascontent(local_conf_file):
             if not args.override and \
                not filecmp.cmp(args.configfile, local_conf_file):
                 raise ConfigError("Output directory seem to contain"
@@ -160,7 +161,7 @@ def main(args):
     except Exception, e:
         raise ConfigError(str(e))
 
-    if os.path.exists(os.path.join(base_dir,"nprdata.tar.bz2")):
+    if pexist(os.path.join(base_dir,"nprdata.tar.bz2")):
         log.log(28, "compressed data found. Extracting content to start execution...")
         cmd = "cd %s && tar -jxf nprdata.tar.bz2 && rm nprdata.tar.bz2" % base_dir
         os.system(cmd)
@@ -264,42 +265,66 @@ def main(args):
     if args.aa_seed_file:
         GLOBALS["seqtypes"].add("aa")
         GLOBALS["inputname"] = os.path.split(args.aa_seed_file)[-1]
-   
 
-    GLOBALS["db_file"]  = os.path.join(base_dir, "db.sqlite3")
-    DB_EXISTS = os.path.exists(GLOBALS["db_file"])
-    if args.cleardb and DB_EXISTS:
-        log.log(28, "Erasing existing database...")
-        os.remove(GLOBALS["db_file"])
+    # Set up custom databases if necessary
+    GLOBALS["nprdb_file"]  = pjoin(base_dir, "npr.db")
+    GLOBALS["orthodb_file"]  = pjoin(base_dir, "ortho.db") \
+        if not args.orthodb else args.orthodb
+    GLOBALS["seqdb_file"]  = pjoin(base_dir, "seq.db") \
+        if not args.seqdb else args.seqdb
 
+    # Clear databases if necessary
+    if args.cleardb and pexist(GLOBALS["nprdb_file"]):
+        log.log(28, "Erasing existing npr database...")
+        os.remove(GLOBALS["nprdb_file"])
+    if args.clearseqs and pexist(GLOBALS["seqdb_file"]):
+        log.log(28, "Erasing existing seq database...")
+        os.remove(GLOBALS["seqdb_file"])
+    if args.clearorthology and pexist(GLOBALS["orthodb_file"]):
+        log.log(28, "Erasing existing ortho database...")
+        os.remove(GLOBALS["orthodb_file"])
+        
     # Initialize db if necessary, otherwise extract basic info
-    db.init_db(os.path.join(GLOBALS["db_file"]))
-    
+    db.init_nprdb(GLOBALS["nprdb_file"])
+        
     # Check and load data
     ERROR = ""
-    if not DB_EXISTS or args.clearseqs:
+    if not pexist(GLOBALS["seqdb_file"]):
+        db.init_seqdb(GLOBALS["seqdb_file"])
         target_seqs = None
-        db.override_seq_tables()
         target_seqs, seqnames, name2len, name2unk, name2seq = scan_sequences(args, target_seqs)
         ERROR = check_seq_integrity(target_seqs, seqnames, name2len, name2unk, name2seq)
-    else: 
+        if npr_template == "sptree":
+            seq_species = set([name.split(GLOBALS["spname_delimiter"])[0] 
+                               for name in target_seqs])
+            db.add_seq_species(seq_species)
+        if not ERROR: 
+            load_sequences(target_seqs, name2seq, npr_template)
+        seqnames, name2len, name2unk, name2seq = [None] * 4 # Release mem
+    else:
+        db.init_seqdb(GLOBALS["seqdb_file"])
         log.warning("Skipping check and load sequences (loading from database...)")
         target_seqs = db.get_all_seq_names()
+        
     log.warning("%d sequences in database" %len(target_seqs))
 
-    ortho_species = None
     if npr_template == "sptree":
-        if not DB_EXISTS or args.clearorthology: 
-            db.override_ortho_pair_table()
+        if not pexist(GLOBALS["orthodb_file"]):
+            db.init_orthodb(GLOBALS["orthodb_file"])            
             check_and_load_orthologs(args.ortho_pairs)
-        else: 
+            log.log(28, "Updating species info in ortholog-pairs")
+            db.update_species_in_ortho_pairs()
+            db.orthoconn.commit()
+        else:
+            db.init_orthodb(GLOBALS["orthodb_file"])
             log.warning("Skipping check and load ortholog pairs (loading from database...)")
-        ortho_species = db.get_species_in_ortho_pairs()
+        # species in ortho pairs
+        ortho_species = db.get_ortho_species()
         log.log(28, "Found %d unqiue species codes in ortholog-pairs" %(len(ortho_species)))
-        seq_species = set([name.split(GLOBALS["spname_delimiter"])[0] 
-                           for name in target_seqs])
-        log.log(28, "Found %d unqiue species codes in sequence names" %(len(seq_species)))        
-
+        # species in fasta file
+        seq_species = db.get_seq_species()
+        log.log(28, "Found %d unqiue species codes in sequence names" %(len(seq_species))) 
+        
         # Species filter
         if args.spfile:
             target_species = set([line.strip() for line in open(args.spfile)])
@@ -315,16 +340,12 @@ def main(args):
             ERROR += "The following species have no orthology information: %s" %(target_species - ortho_species)
             
         GLOBALS["target_species"] = target_species
-
+        
     if ERROR:
         open("npr_error.log", "w").write(' '.join(sys.argv) + "\n\n" + ERROR)
         raise DataError("Errors were found while loading data. Please"
                         " check error file in the current director for details"
                         " [npr_error.log]")
-
-    if not DB_EXISTS or args.clearseqs:
-        load_sequences(target_seqs, target_species, name2seq, npr_template)
-        seqnames, name2len, name2unk, name2seq = [None] * 4 # Release mem
 
     target_seqs = None # release mem
 
@@ -362,7 +383,7 @@ def main(args):
     db.close()
     if args.compress:
         log.log(20, "Compressing intermediate data...")
-        cmd = "cd %s && tar --remove-files -jcf nprdata.tar.bz2 db.sqlite3 tasks/" %\
+        cmd = "cd %s && tar --remove-files -jcf nprdata.tar.bz2 ortho.db seq.db tasks/" %\
               GLOBALS["basedir"]
         os.system(cmd)
 
@@ -391,17 +412,13 @@ PRAGMA locking_mode = NORMAL;
 ''' %  fname)
 
     template_import.flush()
-    print template_import.read()
-    os.system("sqlite3 %s < %s" %(GLOBALS["db_file"], template_import.name))
-    print "sqlite3 %s < %s" %(GLOBALS["db_file"], template_import.name)
+    cmd = "sqlite3 %s < %s" %(GLOBALS["orthodb_file"], template_import.name)
+    print cmd
+    os.system(cmd)
     template_import.close()
     
 
-def load_sequences(target_seqs, target_species, name2seq, npr_template):
-    if target_species: 
-        log.log(28, "Creating species table...")
-        db.add_target_species(target_species)
-
+def load_sequences(target_seqs, name2seq, npr_template):
     if args.seq_rename:
         name2hash, hash2name = hash_names(target_seqs)
         log.log(28, "Loading %d sequence name translations..." %len(hash2name))
@@ -416,7 +433,7 @@ def load_sequences(target_seqs, target_species, name2seq, npr_template):
         # Load sequences and replace U to avoid problems
         db.add_seq_table([(name2hash.get(k, k), seq.replace("U","B")) for k,seq in
                           name2seq[seqtype].iteritems()], seqtype)
-    db.commit()
+    db.seqconn.commit()
 
 def scan_sequences(args, target_seqs):
     visited_seqs = {"aa":[], "nt":[]}
@@ -635,6 +652,14 @@ if __name__ == "__main__":
                              help=("When used, it overrides first_split option"
                                   " in any tree merger config block in the"
                                    " config file."))
+
+    input_group.add_argument("--orthodb", dest="orthodb",
+                             type=str,
+                             help="Uses a custom orthology-pair database file")
+
+    input_group.add_argument("--seqdb", dest="seqdb",
+                             type=str,
+                             help="Uses a custom sequence database file")
     
     # Sptree workflow
 
@@ -676,7 +701,7 @@ if __name__ == "__main__":
                       )
 
     # Task execution related flags
-    exec_group = parser.add_argument_group('INPUTEXECUTION OPTIONS\n======================')
+    exec_group = parser.add_argument_group('INPUT EXECUTION OPTIONS\n======================')
 
     exec_group.add_argument("-r", "--retry_error_jobs", dest="retry",
                         action="store_true",
@@ -717,15 +742,15 @@ if __name__ == "__main__":
                             action="store_true",
                             help="Overrides output files from past program executions." )
 
-    exec_group.add_argument("--cleardb", dest="cleardb",
+    exec_group.add_argument("--clear_nprdb", dest="cleardb",
                             action="store_true",
                             help="Overrides all tables in database")
 
-    exec_group.add_argument("--clearorthology", dest="clearorthology",
+    exec_group.add_argument("--clear_orthodb", dest="clearorthology",
                             action="store_true",
                             help="Overrides orthology pairs table in database")
 
-    exec_group.add_argument("--clearseqs", dest="clearseqs",
+    exec_group.add_argument("--clear_seqdb", dest="clearseqs",
                             action="store_true",
                             help="Overrides sequences table in database")
 
@@ -784,7 +809,7 @@ if __name__ == "__main__":
     GLOBALS["citator"] = Citator()
     
     GLOBALS["citator"].add(ETE_CITE)
-    if not os.path.exists(GLOBALS["basedir"]):
+    if not pexist(GLOBALS["basedir"]):
         os.makedirs(GLOBALS["basedir"])
 
     # Start the application
