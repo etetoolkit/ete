@@ -630,6 +630,12 @@ if __name__ == "__main__":
                              " internally translated to 10-character-"
                              "identifiers.")
 
+    input_group.add_argument("--first-split-outgroup", dest="first_split",
+                             type=str,
+                             help=("When used, it overrides first_split option"
+                                  " in any tree merger config block in the"
+                                   " config file."))
+    
     # Sptree workflow
 
     input_group.add_argument("--ortho-pairs", dest="ortho_pairs",
@@ -764,6 +770,9 @@ if __name__ == "__main__":
         GLOBALS["taskdir"] = os.path.realpath(args.taskdir)
     else:
         GLOBALS["taskdir"] = os.path.join(GLOBALS["basedir"], "tasks")
+    if args.first_split:
+        GLOBALS["first_split_outgroup"] = args.first_split
+        
     GLOBALS["runid"] = generate_runid()
     GLOBALS["nodeinfo"] = defaultdict(dict)
     GLOBALS["threadinfo"] = defaultdict(dict)
