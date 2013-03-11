@@ -14,7 +14,6 @@ from time import ctime, time
 # This avoids installing nprlib module. npr script will find it in the
 # same directory in which it is
 NPRPATH = os.path.split(os.path.realpath(__file__))[0]
-
 sys.path.insert(0, NPRPATH)
 from nprlib import argparse
 from nprlib.configobj import ConfigObj, flatten_errors
@@ -31,6 +30,8 @@ from nprlib import apps
 from nprlib.template.common import CONFIG_SPECS
 from nprlib.logger import logindent
 from nprlib.citation import Citator
+
+APPSPATH =  pjoin(NPRPATH, "ext_apps/")
 
 try:
     module_path = os.path.split(__file__)[0]
@@ -143,29 +144,7 @@ def main(args):
     base_dir = GLOBALS["basedir"]
     log = logging.getLogger("main")
     print __DESCRIPTION__
-
-    local_conf_file = os.path.join(base_dir, "workflow.cfg")
-    if pexist(base_dir):
-        if hascontent(local_conf_file):
-            if not args.override and \
-               not filecmp.cmp(args.configfile, local_conf_file):
-                raise ConfigError("Output directory seem to contain"
-                                  " a NPR execution using a different"
-                                  " config file [workflow.cfg]. Use"
-                                  " --override option or change the"
-                                  " output path.")
-
-    try:
-        config = ConfigObj(args.configfile, list_values=True,
-                           configspec=StringIO(CONFIG_SPECS))
-    except Exception, e:
-        raise ConfigError(str(e))
-
-    if pexist(os.path.join(base_dir,"nprdata.tar.bz2")):
-        log.log(28, "compressed data found. Extracting content to start execution...")
-        cmd = "cd %s && tar -jxf nprdata.tar.bz2 && rm nprdata.tar.bz2" % base_dir
-        os.system(cmd)
-        
+    
     npr_template = args.workflow
     if npr_template == "sptree":
         GLOBALS["template"] = "sptree"
@@ -175,39 +154,89 @@ def main(args):
         from nprlib.template.genetree import pipeline
     else:
         raise ConfigError("Bad config file. A template name or file should be specified.")
-
-    custom_types = {"boolean_list": is_boolean_list,
-                    "integer_list": is_integer_list,
-                    "correlative_integer_list": is_correlative_integer_list,
-                    "float_list": is_float_list,
-                    "float": is_float,
-                    "integer": is_integer,
-                    "list": is_list,
-                    }
-    val = validate.Validator(custom_types)
-    check = config.validate(val)
-    if not check:
-        print flatten_errors(config, check)
-        raise ConfigError("Errors found when parsing config file")
-
-    # Check that fields are filled for all max_seq values
-    for flow_name in ["sptree", "genetree"]:
-        npr_config = [len(v) for k, v in config[flow_name].iteritems()
-                      if type(v) == list]
-        if len(set(npr_config)) != 1:
-            print '\n'.join([str((len(v),v)) for k, v in config[flow_name].iteritems()
-                      if type(v) == list])
-            raise ConfigError("Unequal length of main NPR config table. Missing comma?")
-
+    
     if args.arch == "auto":
-        if sys.maxsize > 2**32:
-            arch = "64"
-        else:
-            arch = "32"
+        arch = "64 " if sys.maxsize > 2**32 else "32"
     else:
         arch = args.arch
+        
+    # UnCompress packed execution data
+    if pexist(os.path.join(base_dir,"nprdata.tar.bz2")):
+        log.log(28, "compressed data found. Extracting content to start execution...")
+        cmd = "cd %s && tar -jxf nprdata.tar.bz2 && rm nprdata.tar.bz2" % base_dir
+        os.system(cmd)
 
-    # Create dir structure
+    # Check and load all configuration files
+    run2config = {}
+    for fname in args.configfile:
+        clearname = os.path.basename(fname)
+        local_conf_file = pjoin(base_dir, clearname, "workflow.cfg")
+        if pexist(base_dir):
+            if hascontent(local_conf_file):
+                if not args.override and \
+                   not filecmp.cmp(fname, local_conf_file):
+                    raise ConfigError("Output directory seem to contain"
+                                      " a NPR execution using a different"
+                                      " config file [workflow.cfg]. Use"
+                                      " --override option or change the"
+                                      " output path.")
+
+        try:
+            config = ConfigObj(fname, list_values=True,
+                               configspec=StringIO(CONFIG_SPECS))
+        except Exception, e:
+            raise ConfigError(str(e))
+
+        custom_types = {"boolean_list": is_boolean_list,
+                        "integer_list": is_integer_list,
+                        "correlative_integer_list": is_correlative_integer_list,
+                        "float_list": is_float_list,
+                        "float": is_float,
+                        "integer": is_integer,
+                        "list": is_list,
+                        }
+        val = validate.Validator(custom_types)
+        check = config.validate(val)
+        if not check:
+            print flatten_errors(config, check)
+            raise ConfigError("Errors found when parsing config file")
+
+        # Check that fields are filled for all max_seq values
+        for flow_name in ["sptree", "genetree"]:
+            npr_config = [len(v) for k, v in config[flow_name].iteritems()
+                          if type(v) == list]
+            if len(set(npr_config)) != 1:
+                print '\n'.join([str((len(v),v)) for k, v in config[flow_name].iteritems()
+                          if type(v) == list])
+                raise ConfigError("Unequal length of main NPR config table. Missing comma?")
+
+        # setup portable apps
+        apps_to_test = {}
+        for k,v in config["app"].iteritems():
+            if v == "built-in":
+                cores = int(config["threading"].get(k, args.maxcores))
+                cores = min(args.maxcores, cores)
+                config["threading"][k] = cores
+                if args.sge_execute:
+                    _apps_path = os.path.realpath(config["sge"]["remote_npr_path"])
+                    cmd = apps.get_call(k, _apps_path, base_dir, cores)
+                    config["app"][k] = cmd
+                    apps_to_test[k] = cmd
+                else:
+                    cmd = apps.get_call(k, APPSPATH, base_dir, str(cores))
+                    config["app"][k] = cmd
+                    apps_to_test[k] = cmd
+            
+        # Copy config file
+        config["_outpath"] = pjoin(base_dir, clearname)
+        try:
+            os.makedirs(config["_outpath"])
+        except OSError:
+            pass
+        shutil.copy(fname, local_conf_file)
+        run2config[clearname] = config
+            
+    # Create main dir structure
     gallery_dir = os.path.join(base_dir, "gallery")
     sge_dir = os.path.join(base_dir, "sge_jobs")
     tmp_dir = os.path.join(base_dir, "tmp")
@@ -222,34 +251,15 @@ def main(args):
         except OSError:
             log.warning("Using existing dir: %s", dirname)
 
-    #APPSPATH = os.path.join(NPRPATH, "apps/x86-%s" %arch)
-    APPSPATH =  os.path.join(NPRPATH, "ext_apps/")
-    
-    # setup portable apps
-    for k,v in config["app"].iteritems():
-        if v == "built-in":
-            cores = int(config["threading"].get(k, args.maxcores))
-            cores = min(args.maxcores, cores)
-            config["threading"][k] = cores
-            if args.sge_execute:
-                _apps_path = os.path.realpath(config["sge"]["remote_npr_path"])
-                cmd = apps.get_call(k, _apps_path, base_dir, cores)
-                config["app"][k] = cmd
-            else:
-                cmd = apps.get_call(k, APPSPATH, base_dir, str(cores))
-                config["app"][k] = cmd
 
-    #log.debug('\n'.join(["%s\t%s" %(i,j) for i,j in config["app"].items()]))
     if not args.nochecks:
         print "Testing x86-%s portable applications..." % arch
-        apps.test_apps(config["app"])
+        apps.test_apps(apps_to_test)
     
     # Set number of CPUs available
     GLOBALS["_max_cores"] = args.maxcores
     log.debug("Enabling %d CPU cores" %args.maxcores)
             
-    # Copy config file
-    shutil.copy(args.configfile, os.path.join(base_dir, "workflow.cfg"))
     
     if npr_template == "sptree" and not args.ortho_pairs:
         raise ConfigError("Species tree workflow requires a list"
@@ -372,18 +382,29 @@ def main(args):
         execution = ("sge", False)
     else:
         execution = (None, False)
-
-    shutil.copy(args.configfile, os.path.join(base_dir, "workflow.cfg"))
-    
-    # Write command line info
-    cmd_info = '\t'.join([ctime(), GLOBALS["runid"], ' '.join(sys.argv)])
-    open(pjoin(base_dir, "command_lines"), "a").write(cmd_info+"\n")
-
-        
+       
     # Scheduling starts here
-    GLOBALS["config"] = config
     log.log(28, "NPR starts now!")
-    schedule(pipeline, args.schedule_time,
+
+    # This initialises all pipelines
+    pending_tasks = []
+    start_time = ctime()
+    for name, config in run2config.iteritems():
+        # Feeds pending task with the first task of the workflow
+        config["_name"] = name
+        new_tasks = pipeline(None, config)
+        thread_id = new_tasks[0].threadid
+        config["_configid"] = thread_id
+        GLOBALS[thread_id] = config
+        pending_tasks.extend(new_tasks)
+
+        # Clear info from previous runs
+        open(os.path.join(config["_outpath"], "runid"), "a").write('\t'.join([thread_id, ctime()+"\n"]))
+        # Write command line info
+        cmd_info = '\t'.join([start_time, thread_id, GLOBALS["cmdline"]])
+        open(pjoin(config["_outpath"], "command_lines"), "a").write(cmd_info+"\n")
+
+    schedule(pipeline, pending_tasks, args.schedule_time,
              execution, args.retry, args.debug)
     db.close()
     if args.compress:
@@ -391,7 +412,6 @@ def main(args):
         cmd = "cd %s && tar --remove-files -jcf nprdata.tar.bz2 ortho.db seq.db tasks/" %\
               GLOBALS["basedir"]
         os.system(cmd)
-
 
 def check_and_load_orthologs(fname):
     log.log(28, "importing orthologous pairs into database (this may take a while)...")
@@ -628,7 +648,7 @@ if __name__ == "__main__":
                         help="Type of phylogenetic workflow.")
 
     input_group.add_argument("-c", "--config", dest="configfile",
-                        type=existing_file, required=True,
+                        type=str, required=True, nargs="+",
                         help="Configuration file.")
 
     input_group.add_argument("-a", dest="aa_seed_file",
@@ -803,7 +823,7 @@ if __name__ == "__main__":
     if args.first_split:
         GLOBALS["first_split_outgroup"] = args.first_split
         
-    GLOBALS["runid"] = generate_runid()
+    GLOBALS["cmdline"] = ' '.join(sys.argv)
     GLOBALS["nodeinfo"] = defaultdict(dict)
     GLOBALS["threadinfo"] = defaultdict(dict)
     GLOBALS["seqtypes"] = set()
