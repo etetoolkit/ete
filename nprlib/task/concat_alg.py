@@ -13,15 +13,16 @@ from nprlib.errors import TaskError
 __all__ = ["ConcatAlg"]
 
 class ConcatAlg(ConcatAlgTask):
-    def __init__(self, nodeid, cogs, seqtype, confname):
-        conf = GLOBALS["config"]
+    def __init__(self, nodeid, cogs, seqtype, conf, confname):
+        self.confname = confname
+        self.conf = conf
+       
         self.cogs_hard_limit = int(conf[confname]["_max_cogs"])
         base_args = {}
         base_args["_max_cogs"] = self.cogs_hard_limit
         
         ConcatAlgTask.__init__(self, nodeid, "concat_alg", "ConcatAlg", 
                       base_args)
-
               
         self.cogs = cogs
         self.seqtype = seqtype
@@ -49,7 +50,7 @@ class ConcatAlg(ConcatAlgTask):
                       seqtype = self.seqtype)
             job.main_tree = None
             job.threadid = generate_runid()
-            
+            job.configid = self.conf["_configid"]
             # This converts the job in a workflow job. As soon as a
             # task is done, it will be automatically processed and the
             # new tasks will be registered as new jobs.

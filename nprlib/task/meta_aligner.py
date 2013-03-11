@@ -24,15 +24,17 @@ def seq_reverser_job(multiseq_file, outfile, trimal_bin, parent_ids):
     return job
 
 class MCoffee(AlgTask):
-    def __init__(self, nodeid, seqtype, all_alg_files, confname, parent_ids):
+    def __init__(self, nodeid, seqtype, all_alg_files, conf, confname, parent_ids):
         GLOBALS["citator"].add(MCOFFEE_CITE)
         base_args = OrderedDict({
                 "-output": "fasta",
                 "-aln": ' '.join(all_alg_files)
                 })
         # Initialize task
+        self.confname = confname
+        self.conf = conf
         AlgTask.__init__(self, nodeid, "alg", "Mcoffee", 
-                         base_args, GLOBALS["config"][confname])
+                         base_args, self.conf[confname])
         self.all_alg_files = all_alg_files
         self.parent_ids = parent_ids
         self.seqtype = seqtype
@@ -42,10 +44,9 @@ class MCoffee(AlgTask):
         self.alg_phylip_file = os.path.join(self.taskdir, "final_alg.iphylip")
 
     def load_jobs(self):
-        conf = GLOBALS["config"]
         args = self.args.copy()
         args["-outfile"] = "alg.fasta"
-        job = Job(conf["app"]["tcoffee"], args, parent_ids=self.parent_ids)
+        job = Job(self.conf["app"]["tcoffee"], args, parent_ids=self.parent_ids)
         self.jobs.append(job)
 
     def finish(self):
@@ -58,12 +59,12 @@ class MCoffee(AlgTask):
         
 
 class MetaAligner(AlgTask):
-    def __init__(self, nodeid, multiseq_file, seqtype, confname):
+    def __init__(self, nodeid, multiseq_file, seqtype, conf, confname):
         self.confname = confname
-        conf = GLOBALS["config"][confname]
+        self.conf = conf
         # Initialize task
         AlgTask.__init__(self, nodeid, "alg", "Meta-Alg", 
-                         OrderedDict(), conf)
+                         OrderedDict(), self.conf[self.confname])
 
         self.seqtype = seqtype
         self.multiseq_file = multiseq_file
@@ -71,7 +72,7 @@ class MetaAligner(AlgTask):
         self.all_alg_files = None
         self.init()
 
-        if conf["_alg_trimming"]:
+        if self.conf["_alg_trimming"]:
             self.alg_list_file = pjoin(self.taskdir, "alg_list.txt")
             open(self.alg_list_file, "w").write("\n".join(self.all_alg_files))
             trim_job = self.jobs[-1]
@@ -85,17 +86,16 @@ class MetaAligner(AlgTask):
            
         
     def load_jobs(self):
-        conf = GLOBALS["config"]
         multiseq_file_r = self.multiseq_file+".reversed"
         first = seq_reverser_job(self.multiseq_file, multiseq_file_r, 
-                                 conf["app"]["readal"],
+                                 self.conf["app"]["readal"],
                                  parent_ids=[self.nodeid])
         self.jobs.append(first)
         all_alg_files = []
         mcoffee_parents = []
         
-        for aligner_name in conf[self.confname]["_aligners"]:
-            _classname = APP2CLASS[conf[aligner_name]["_app"]]
+        for aligner_name in self.conf[self.confname]["_aligners"]:
+            _classname = APP2CLASS[self.conf[aligner_name]["_app"]]
             _module = __import__(CLASS2MODULE[_classname], globals(), locals(), [], -1)
             _aligner = getattr(_module, _classname)
 
@@ -116,7 +116,7 @@ class MetaAligner(AlgTask):
             # Restore reverse alg
             task3 = seq_reverser_job(task2.alg_fasta_file,
                                      task2.alg_fasta_file+".reverse", 
-                                     conf["app"]["readal"],
+                                     self.conf["app"]["readal"],
                                      parent_ids=[task2.taskid])
             task3.dependencies.add(task2)
             self.jobs.append(task3)
@@ -126,12 +126,13 @@ class MetaAligner(AlgTask):
             
         # Combine signal from all algs using Mcoffee
         mcoffee_task = MCoffee(self.nodeid, self.seqtype, all_alg_files,
-                             self.confname, parent_ids=mcoffee_parents)
+                               self.conf, self.confname,
+                               parent_ids=mcoffee_parents)
         mcoffee_task.dependencies.update(self.jobs)
         self.jobs.append(mcoffee_task)
         self.all_alg_files = all_alg_files
         
-        if conf[self.confname]["_alg_trimming"]:
+        if self.conf[self.confname]["_alg_trimming"]:
             # Use trimal to remove columpairs that are not present in at
             # least 1 alignments
             trimming_cutoff = 1.0 / len(all_alg_files)
@@ -141,7 +142,7 @@ class MetaAligner(AlgTask):
             args["-forceselect"] = mcoffee_task.alg_fasta_file
             args["-fasta"] = ""
             args["-ct"] = trimming_cutoff
-            trim_job = Job(GLOBALS["config"]["app"]["trimal"], args,
+            trim_job = Job(self.conf["app"]["trimal"], args,
                       parent_ids=[self.nodeid])
             trim_job.dependencies.add(mcoffee_task)
             self.jobs.append(trim_job)      

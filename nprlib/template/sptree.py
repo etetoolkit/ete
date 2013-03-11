@@ -52,7 +52,6 @@ def annotate_node(t, final_task):
                            )                       
 
 def process_task(task, npr_conf, nodeid2info):
-    conf = GLOBALS["config"]
     cogconf, cogclass = npr_conf.cog_selector
     concatconf, concatclass = npr_conf.alg_concatenator
     treebuilderconf, treebuilderclass = npr_conf.tree_builder
@@ -62,12 +61,12 @@ def process_task(task, npr_conf, nodeid2info):
                                         task.seqtype, task.ttype)
     cladeid, targets, outgroups = db.get_node_info(threadid, nodeid)
     node_info = nodeid2info[nodeid]
-    
+    conf = GLOBALS[task.configid]
     new_tasks = []    
     if ttype == "cog_selector":
         # register concat alignment task
         concat_job = concatclass(nodeid, task.cogs,
-                                 seqtype, concatconf)
+                                 seqtype, conf, concatconf)
         concat_job.size = task.size
         new_tasks.append(concat_job)
        
@@ -83,12 +82,12 @@ def process_task(task, npr_conf, nodeid2info):
            
         tree_task = treebuilderclass(nodeid, task.alg_phylip_file,
                                      constrain_tree_path, "JTT",
-                                     seqtype, treebuilderconf)
+                                     seqtype, conf, treebuilderconf)
         tree_task.size = task.size
         new_tasks.append(tree_task)
         
     elif ttype == "tree":
-        merger_task = splitterclass(nodeid, seqtype, task.tree_file, splitterconf)
+        merger_task = splitterclass(nodeid, seqtype, task.tree_file, conf, splitterconf)
         merger_task.size = task.size
         new_tasks.append(merger_task)
 
@@ -108,12 +107,12 @@ def process_task(task, npr_conf, nodeid2info):
         ttree, mtree = task.task_tree, task.main_tree
         log.log(28, "Processing tree: %s seqs, %s outgroups",
                 len(targets), len(outgroups))
-        for node, seqs, outs in get_next_npr_node(threadid, ttree,
+        for node, seqs, outs in get_next_npr_node(task.configid, ttree,
                                                   mtree, None, npr_conf):
             log.log(28, "Adding new node: %s seqs, %s outgroups",
                     len(seqs), len(outs))
             new_task_node = cogclass(seqs, outs,
-                                     source_seqtype, cogconf)
+                                     source_seqtype, conf, cogconf)
             new_tasks.append(new_task_node)
             db.add_node(threadid,
                         new_task_node.nodeid, new_task_node.cladeid,
@@ -121,24 +120,24 @@ def process_task(task, npr_conf, nodeid2info):
                         new_task_node.outgroups)
         
     return new_tasks
-      
+     
 
-def pipeline(task):
+def pipeline(task, conf=None):
     logindent(2)
     # Points to npr parameters according to task properties
     nodeid2info = GLOBALS["nodeinfo"]
     if not task:
-
         source_seqtype = "aa" if "aa" in GLOBALS["seqtypes"] else "nt"
-        npr_conf = IterConfig("sptree",
+        npr_conf = IterConfig(conf, "sptree",
                               len(GLOBALS["target_species"]),
                               source_seqtype)
         cogconf, cogclass = npr_conf.cog_selector
         initial_task = cogclass(GLOBALS["target_species"], set(),
-                                source_seqtype, cogconf)
+                                source_seqtype, conf, cogconf)
 
         initial_task.main_tree = main_tree = None
         initial_task.threadid = generate_runid()
+        initial_task.configid = initial_task.threadid
         # Register node 
         db.add_node(initial_task.threadid, initial_task.nodeid,
                     initial_task.cladeid, initial_task.targets,
@@ -146,7 +145,8 @@ def pipeline(task):
         
         new_tasks = [initial_task]
     else:
-        npr_conf = IterConfig("sptree", task.size, task.seqtype)
+        conf = GLOBALS[task.configid]
+        npr_conf = IterConfig(conf, "sptree", task.size, task.seqtype)
         new_tasks  = process_task(task, npr_conf, nodeid2info)
 
     process_new_tasks(task, new_tasks)

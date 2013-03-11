@@ -24,29 +24,22 @@ def sort_tasks(x, y):
     else:
         return 0
         
-def schedule(workflow_task_processor, schedule_time, execution, retry, debug):
+def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, retry, debug):
     # Adjust debug mode
     if debug == "all":
         log.setLevel(10)
         
     ## ===================================
     ## INITIALIZE BASIC VARS AND SHORTCUTS
-    config = GLOBALS["config"]
+    config = {}# SGE CONFIG !!!!  antes GLOBALS["config"]
     cores_total = GLOBALS["_max_cores"]
     execution, run_detached = execution
     # keeps the count of how many times an error task has been retried
     task2retry = defaultdict(int) 
-    npr_iter = 0
     main_tree = None   
     ## END OF VARS AND SHORTCUTS
     ## ===================================
-   
-    # Feeds pending task with the first task of the workflow 
-    pending_tasks = workflow_task_processor(None)
-    main_thread_id = pending_tasks[0].threadid
-    # Clear info from previous runs
-    open(os.path.join(GLOBALS["basedir"], "runid"), "a").write('\t'.join([main_thread_id, ctime()+"\n"]))
-    
+       
     # Enters into task scheduling
     while pending_tasks:
         cores_used = 0

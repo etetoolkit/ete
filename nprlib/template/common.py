@@ -55,14 +55,13 @@ _alg_trimming = boolean()
 """
 
 class IterConfig(dict):
-    def __init__(self, workflow, size, seqtype):
+    def __init__(self, conf, workflow, size, seqtype):
         """Special dict to extract the value of each parameter given
          the properties of a task: size and seqtype. 
         """
+        dict.__init__(self, conf[workflow])
         
-        wconf = GLOBALS["config"][workflow]
-        dict.__init__(self, wconf)
-
+        self.conf = conf
         self.seqtype = seqtype
         self.size = size
         self.index = None
@@ -70,7 +69,7 @@ class IterConfig(dict):
         index_slide = 0
         while self.index is None: 
             try:
-                max_seqs = wconf["max_seqs"][index_slide]
+                max_seqs = conf[workflow]["max_seqs"][index_slide]
             except IndexError:
                 raise DataError("Target species [%d] has size not considered in current config file" %self.size)
             else:
@@ -105,7 +104,7 @@ class IterConfig(dict):
             elif value.lower() == "none":
                 return None, None
             elif value.startswith("@"):
-                classname = APP2CLASS[GLOBALS["config"][value[1:]]["_app"]]
+                classname = APP2CLASS[self.conf[value[1:]]["_app"]]
                 return value[1:], getattr(all_tasks, classname) 
             else:
                 return value
@@ -122,6 +121,7 @@ def process_new_tasks(task, new_tasks):
             # Clone processor, in case tasks belong to a side workflow
             ts.task_processor = task.task_processor
             ts.threadid = task.threadid
+            ts.configid = task.configid
             ts.main_tree = task.main_tree
         db.add_runid2task(ts.threadid, ts.taskid)
             
@@ -166,7 +166,7 @@ def get_seqs_identity(alg, seqs):
             numpy.mean(ident), numpy.std(ident))
 
     
-def split_tree(task_tree, main_tree, alg_path, npr_conf):
+def split_tree(task_tree, main_tree, alg_path, npr_conf, threadid):
     """Browses a task tree from root to leaves and yields next
     suitable nodes for NPR iterations. Each yielded node comes with
     the set of target and outgroup tips. 
@@ -243,7 +243,7 @@ def split_tree(task_tree, main_tree, alg_path, npr_conf):
                 outs = set()
             else:
                 splitterconfname, _ = npr_conf.tree_splitter
-                splitterconf = GLOBALS["config"][splitterconfname]
+                splitterconf = GLOBALS[threadid][splitterconfname]
                 seqs, outs = select_outgroups(node, n2content, splitterconf)
             if seqs | outs == root_content:
                 log.log(28, "Discarding NPR node due to identity with its parent")
@@ -259,7 +259,7 @@ def get_next_npr_node(threadid, ttree, mtree, alg_path, npr_conf):
         log.warning("Maximum number of iterations reached!")
         return
         
-    for node, seqs, outs in split_tree(ttree, mtree, alg_path, npr_conf):
+    for node, seqs, outs in split_tree(ttree, mtree, alg_path, npr_conf, threadid):
         if npr_conf.max_iters and current_iter < npr_conf.max_iters:
 
             if DEBUG():

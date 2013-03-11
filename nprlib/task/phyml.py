@@ -14,7 +14,7 @@ __all__ = ["Phyml"]
 
 class Phyml(TreeTask):
     def __init__(self, nodeid, alg_file, constrain_tree, model,
-                 seqtype, confname):
+                 seqtype, conf, confname):
 
         GLOBALS["citator"].add(PHYML_CITE)
         
@@ -25,7 +25,7 @@ class Phyml(TreeTask):
                 "--constraint_tree": ""})
         
         self.confname = confname
-        conf = GLOBALS["config"]
+        self.conf = conf
         TreeTask.__init__(self, nodeid, "tree", "Phyml", 
                           base_args, conf[confname])
 
@@ -59,8 +59,7 @@ class Phyml(TreeTask):
             shutil.copy(self.alg_phylip_file, fake_alg_file)
             
     def load_jobs(self):
-        conf = GLOBALS["config"]
-        appname = conf[self.confname]["_app"]
+        appname = self.conf[self.confname]["_app"]
         args = self.args.copy()
         args["--model"] = self.model
         args["--datatype"] = self.seqtype
@@ -70,7 +69,7 @@ class Phyml(TreeTask):
             args["-u"] = self.constrain_tree
         else:
             del args["--constraint_tree"]
-        job = Job(conf["app"][appname], args, parent_ids=[self.nodeid])
+        job = Job(self.conf["app"][appname], args, parent_ids=[self.nodeid])
         job.jobname += "-"+self.model
         self.jobs.append(job)
 

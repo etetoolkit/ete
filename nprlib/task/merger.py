@@ -14,11 +14,12 @@ from nprlib.errors import TaskError
 __all__ = ["TreeMerger"]
 
 class TreeMerger(TreeMergeTask):
-    def __init__(self, nodeid, seqtype, task_tree, confname):
+    def __init__(self, nodeid, seqtype, task_tree, conf, confname):
         # Initialize task
         TreeMergeTask.__init__(self, nodeid, "treemerger", "TreeMerger")
-
-        self.args = GLOBALS["config"][confname]
+        self.confname = confname
+        self.conf = conf
+        self.args = self.conf[self.confname]
         self.task_tree_file = task_tree
         self.main_tree = None
         self.task_tree = None

@@ -186,7 +186,7 @@ def process_task(task, npr_conf, nodeid2info):
     treebuilderconf, treebuilderclass = npr_conf.tree_builder
     splitterconf, splitterclass = npr_conf.tree_splitter
     
-    conf = GLOBALS["config"]
+    conf = GLOBALS[task.configid]
     seqtype = task.seqtype
     nodeid = task.nodeid
     ttype = task.ttype
@@ -218,7 +218,7 @@ def process_task(task, npr_conf, nodeid2info):
         nodeid2info[nodeid]["target_seqs"] = task.target_seqs
         nodeid2info[nodeid]["out_seqs"] = task.out_seqs
         alg_task = alignerclass(nodeid, task.multiseq_file,
-                                seqtype, alignerconf)
+                                seqtype, conf, alignerconf)
         alg_task.size = task.size
         new_tasks.append(alg_task)
 
@@ -265,14 +265,14 @@ def process_task(task, npr_conf, nodeid2info):
         if ttype == "alg" and cleanerclass:
             next_task = cleanerclass(nodeid, seqtype, alg_fasta_file,
                                      alg_phylip_file,
-                                     cleanerconf)
+                                     conf, cleanerconf)
         else:
             # Converts aa alignment into nt if necessary
             if seqtype == "aa" and "nt" in GLOBALS["seqtypes"] and \
                task.mean_ident > npr_conf.switch_aa_similarity:
                 log.log(26, "switching to codon alignment")
                 # Change seqtype config
-                npr_conf = IterConfig("genetree", task.size, "nt")
+                npr_conf = IterConfig(conf, "genetree", task.size, "nt")
                 seqtype = "nt"
                 alg_fasta_file, alg_phylip_file = switch_to_codon(
                     task.alg_fasta_file, task.alg_phylip_file,
@@ -285,12 +285,12 @@ def process_task(task, npr_conf, nodeid2info):
                 next_task = mtesterclass(nodeid, alg_fasta_file,
                                          alg_phylip_file,
                                          constrain_tree_path,
-                                         mtesterconf)
+                                         conf, mtesterconf)
             elif treebuilderclass:
                 next_task = treebuilderclass(nodeid, alg_phylip_file,
                                              constrain_tree_path,
                                              None, seqtype,
-                                             treebuilderconf)
+                                             conf, treebuilderconf)
         if next_task:
             next_task.size = task.size
             new_tasks.append(next_task)
@@ -306,13 +306,13 @@ def process_task(task, npr_conf, nodeid2info):
             tree_task = treebuilderclass(nodeid, alg_phylip_file,
                                          constrain_tree_path,
                                          model, seqtype,
-                                         treebuilderconf)
+                                         conf, treebuilderconf)
             tree_task.size = task.size
             new_tasks.append(tree_task)
 
     elif ttype == "tree":
         treemerge_task = splitterclass(nodeid, seqtype,
-                                       task.tree_file, splitterconf)
+                                       task.tree_file, conf, splitterconf)
         #if conf["tree_splitter"]["_outgroup_size"]:
         #    treemerge_task = TreeSplitterWithOutgroups(nodeid, seqtype, task.tree_file, main_tree, conf)
         #else:
@@ -347,7 +347,7 @@ def process_task(task, npr_conf, nodeid2info):
 
     return new_tasks
 
-def pipeline(task):
+def pipeline(task, conf=None):
     logindent(2)
     nodeid2info = GLOBALS["nodeinfo"]
     if not task:
@@ -366,7 +366,8 @@ def pipeline(task):
         
         new_tasks = [initial_task]
     else:
-        npr_conf = IterConfig("genetree", task.size, task.seqtype)
+        conf = GLOBALS[task.configid]
+        npr_conf = IterConfig(conf, "genetree", task.size, task.seqtype)
         new_tasks  = process_task(task, npr_conf, nodeid2info)
 
     process_new_tasks(task, new_tasks)

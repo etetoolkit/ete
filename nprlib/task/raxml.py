@@ -15,12 +15,12 @@ __all__ = ["Raxml"]
 
 class Raxml(TreeTask):
     def __init__(self, nodeid, alg_file, constrain_tree, model,
-                 seqtype, confname):
+                 seqtype, conf, confname):
         GLOBALS["citator"].add(RAXML_CITE)
                
         base_args = OrderedDict()
         self.confname = confname
-        conf = GLOBALS["config"]
+        self.conf = conf
         TreeTask.__init__(self, nodeid, "tree", "RaxML", 
                           base_args, conf[confname])
 
@@ -117,7 +117,7 @@ class Raxml(TreeTask):
             #if self.constrain_tree:
             #    alrt_args["--constraint_tree"] = self.constrain_tree
                
-            alrt_job = Job(GLOBALS["config"]["app"]["phyml"],
+            alrt_job = Job(self.conf["app"]["phyml"],
                            alrt_args, parent_ids=[tree_job.jobid])
             alrt_job.jobname += "-alrt"
             alrt_job.dependencies.add(tree_job)

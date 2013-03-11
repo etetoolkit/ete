@@ -19,9 +19,8 @@ __all__ = ["BrhCogSelector"]
 quote = lambda _x: '"%s"' %_x
 
 class BrhCogSelector(CogSelectorTask):
-    def __init__(self, target_sp, out_sp, seqtype, confname):
+    def __init__(self, target_sp, out_sp, seqtype, conf, confname):
 
-        conf = GLOBALS["config"]
         self.seed = conf[confname]["_seed"]
         self.missing_factor = float(conf[confname]["_species_missing_factor"])
         base_args = {

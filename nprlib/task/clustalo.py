@@ -11,7 +11,7 @@ from nprlib.utils import read_fasta, OrderedDict, GLOBALS, CLUSTALO_CITE
 __all__ = ["Clustalo"]
 
 class Clustalo(AlgTask):
-    def __init__(self, nodeid, multiseq_file, seqtype, confname):
+    def __init__(self, nodeid, multiseq_file, seqtype, conf, confname):
        
         GLOBALS["citator"].add(CLUSTALO_CITE)
         
@@ -24,9 +24,10 @@ class Clustalo(AlgTask):
                 '--outfmt': "fa",
                 })
         self.confname = confname
+        self.conf = conf
         # Initialize task
         AlgTask.__init__(self, nodeid, "alg", "Clustal-Omega", 
-                      base_args, GLOBALS["config"][self.confname])
+                      base_args, self.conf[self.confname])
 
 
         self.seqtype = "aa" # only aa supported
@@ -37,13 +38,12 @@ class Clustalo(AlgTask):
         self.alg_phylip_file = os.path.join(self.taskdir, "final_alg.iphylip")
 
     def load_jobs(self):
-        conf = GLOBALS["config"]
-        appname = conf[self.confname]["_app"]
+        appname = self.conf[self.confname]["_app"]
         # Only one Muscle job is necessary to run this task
         args = self.args.copy()
         args["-i"] = self.multiseq_file
         args["-o"] = "alg.fasta"
-        job = Job(conf["app"][appname], args, parent_ids=[self.nodeid])
+        job = Job(self.conf["app"][appname], args, parent_ids=[self.nodeid])
         self.jobs.append(job)
 
     def finish(self):

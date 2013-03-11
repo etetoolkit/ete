@@ -12,10 +12,12 @@ from nprlib.errors import RetryException
 __all__ = ["Trimal"]
 
 class Trimal(AlgCleanerTask):
-    def __init__(self, nodeid, seqtype, alg_fasta_file, alg_phylip_file, confname):
+    def __init__(self, nodeid, seqtype, alg_fasta_file, alg_phylip_file,
+                 conf, confname):
         GLOBALS["citator"].add(TRIMAL_CITE)
                                
         self.confname = confname
+        self.conf = conf
         self.seqtype = seqtype
         self.alg_fasta_file = alg_fasta_file
         self.alg_phylip_file = alg_phylip_file
@@ -29,7 +31,7 @@ class Trimal(AlgCleanerTask):
         # Initialize task
         AlgCleanerTask.__init__(self, nodeid, "acleaner", "Trimal",
                                 base_args,
-                                GLOBALS["config"][confname])
+                                self.conf[confname])
 
         self.init()
         
@@ -39,12 +41,11 @@ class Trimal(AlgCleanerTask):
         self.clean_alg_phylip_file = os.path.join(main_job.jobdir, "clean.alg.iphylip")
 
     def load_jobs(self):
-        conf = GLOBALS["config"]
-        appname = conf[self.confname]["_app"]
+        appname = self.conf[self.confname]["_app"]
         args = self.args.copy()
         args["-in"] = self.alg_fasta_file
         args["-out"] = "clean.alg.fasta"
-        job = Job(conf["app"][appname], args, parent_ids=[self.nodeid])
+        job = Job(self.conf["app"][appname], args, parent_ids=[self.nodeid])
         self.jobs.append(job)
 
     def finish(self):

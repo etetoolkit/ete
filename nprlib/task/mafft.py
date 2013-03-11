@@ -9,13 +9,14 @@ from nprlib.utils import SeqGroup, OrderedDict, GLOBALS, MAFFT_CITE
 __all__ = ["Mafft"]
 
 class Mafft(AlgTask):
-    def __init__(self, nodeid, multiseq_file, seqtype, confname):
+    def __init__(self, nodeid, multiseq_file, seqtype, conf, confname):
         GLOBALS["citator"].add(MAFFT_CITE)
         
         self.confname = confname
+        self.conf = conf
         # Initialize task
         AlgTask.__init__(self, nodeid, "alg", "Mafft", 
-                      OrderedDict(), GLOBALS["config"][confname])
+                      OrderedDict(), self.conf[confname])
 
         self.seqtype = seqtype
         self.multiseq_file = multiseq_file     
@@ -25,15 +26,14 @@ class Mafft(AlgTask):
         self.alg_phylip_file = os.path.join(self.taskdir, "final_alg.iphylip")
  
     def load_jobs(self):
-        conf = GLOBALS["config"]
-        appname = conf[self.confname]["_app"]
+        appname = self.conf[self.confname]["_app"]
         args = self.args.copy()
         # Mafft redirects resulting alg to std.output. The order of
         # arguments is important, input file must be the last
         # one.
         args[""] = self.multiseq_file
-        job = Job(conf["app"][appname], args, parent_ids=[self.nodeid])
-        job.cores = conf["threading"][appname]
+        job = Job(self.conf["app"][appname], args, parent_ids=[self.nodeid])
+        job.cores = self.conf["threading"][appname]
         self.jobs.append(job)
 
     def finish(self):

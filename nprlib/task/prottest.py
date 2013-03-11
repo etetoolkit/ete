@@ -12,14 +12,14 @@ __all__ = ["Prottest"]
 
 class Prottest(ModelTesterTask):
     def __init__(self, nodeid, alg_fasta_file, alg_phylip_file,
-                 constrain_tree, confname):
+                 constrain_tree, conf, confname):
         GLOBALS["citator"].add(PHYML_CITE)
         
         self.alg_phylip_file = alg_phylip_file
         self.alg_fasta_file = alg_fasta_file
         self.alg_basename = basename(self.alg_phylip_file)
         self.confname = confname
-        conf = GLOBALS["config"]
+
         self.lk_mode = conf[confname]["_lk_mode"]
         if self.lk_mode == "raxml":
             phyml_optimization = "n"

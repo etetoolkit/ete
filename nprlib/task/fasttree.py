@@ -13,10 +13,12 @@ from nprlib.utils import basename, PhyloTree, OrderedDict, GLOBALS, FASTTREE_CIT
 __all__ = ["FastTree"]
 
 class FastTree(TreeTask):
-    def __init__(self, nodeid, alg_file, constrain_tree, model, seqtype, confname):
+    def __init__(self, nodeid, alg_file, constrain_tree, model, seqtype,
+                 conf, confname):
         GLOBALS["citator"].add(FASTTREE_CITE)
 
         self.confname = confname
+        self.conf = conf
         self.alg_phylip_file = alg_file
         self.constrain_tree = constrain_tree
         self.alg_basename = basename(self.alg_phylip_file)
@@ -40,7 +42,7 @@ class FastTree(TreeTask):
             raise ValueError("Unknown seqtype %s" %self.seqtype)
 
         TreeTask.__init__(self, nodeid, "tree", "FastTree", base_args,
-                          GLOBALS["config"][confname])
+                          self.conf[confname])
 
         self.init()
 
@@ -76,11 +78,10 @@ class FastTree(TreeTask):
         if self.constrain_tree:
             args["-constraints"] = "constraint_alg.fasta"
         args[self.alg_phylip_file] = ""
-        conf = GLOBALS["config"]
-        appname = conf[self.confname]["_app"]
+        appname = self.conf[self.confname]["_app"]
         
-        job = Job(conf["app"][appname], args, parent_ids=[self.nodeid])
-        job.cores = conf["threading"][appname]
+        job = Job(self.conf["app"][appname], args, parent_ids=[self.nodeid])
+        job.cores = self.conf["threading"][appname]
         self.jobs.append(job)
 
     def finish(self):
