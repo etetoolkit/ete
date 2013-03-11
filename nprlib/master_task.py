@@ -236,7 +236,7 @@ class Task(object):
 
             unique_id = md5(','.join([self.nodeid, args_id]+sorted(
                         [getattr(j, "jobid", "taskid") for j in self.jobs])))
-            
+
             self.taskid = unique_id
             
         self.taskdir = os.path.join(GLOBALS["taskdir"], self.taskid)
