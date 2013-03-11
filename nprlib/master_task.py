@@ -26,7 +26,15 @@ def sptree_class_repr(cls, cls_name):
         (cls_name, getattr(cls, "size", None) or 0,
          cls.tname, 
          (getattr(cls, "taskid", None) or "?")[:6])
-    
+
+def concatalg_class_repr(cls, cls_name):
+    """ Human readable representation of NPR  concat alg tasks.""" 
+    return "%s (%s species, %s COGs, %s, %s)" %\
+        (cls_name, getattr(cls, "size", None) or 0,
+         getattr(cls, "used_cogs", None) or "?",
+         cls.tname, 
+         (getattr(cls, "taskid", None) or "?")[:6])
+
 def generic_class_repr(cls, cls_name):
     """ Human readable representation of NPR sptree tasks.""" 
     return "%s (%s tips, %s, %s)" %\
@@ -380,7 +388,7 @@ class TreeMergeTask(Task):
 
 class ConcatAlgTask(Task):
     def __repr__(self):
-        return sptree_class_repr(self, "@@5:ConcatAlgTask@@1:")
+        return concatalg_class_repr(self, "@@5:ConcatAlgTask@@1:")
 
     def check(self):
         if os.path.exists(self.alg_fasta_file) and \
