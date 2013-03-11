@@ -294,10 +294,15 @@ def main(args):
         target_seqs = None
         target_seqs, seqnames, name2len, name2unk, name2seq = scan_sequences(args, target_seqs)
         ERROR = check_seq_integrity(target_seqs, seqnames, name2len, name2unk, name2seq)
+        sp2counter = defaultdict(int)
         if npr_template == "sptree":
-            seq_species = set([name.split(GLOBALS["spname_delimiter"])[0] 
-                               for name in target_seqs])
-            db.add_seq_species(seq_species)
+            for name in target_seqs:
+                spname = name.split(GLOBALS["spname_delimiter"])[0]
+                sp2counter[spname] += 1
+                #seq_species = set([name.split(GLOBALS["spname_delimiter"])[0] 
+                #               for name in target_seqs])
+            db.add_seq_species(sp2counter)
+            seq_species = set(sp2counter.keys())
         if not ERROR: 
             load_sequences(target_seqs, name2seq, npr_template)
         seqnames, name2len, name2unk, name2seq = [None] * 4 # Release mem
