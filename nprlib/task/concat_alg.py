@@ -26,6 +26,7 @@ class ConcatAlg(ConcatAlgTask):
         self.cogs = cogs
         self.seqtype = seqtype
         self.cog_ids = set()
+        self.used_cogs = len(self.cogs[:self.cogs_hard_limit])
         self.job2alg = {}
         self.job2model = {}
         if seqtype == "aa":

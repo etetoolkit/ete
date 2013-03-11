@@ -47,6 +47,9 @@ def annotate_node(t, final_task):
                            treemerger_out_match_dist = task.outgroup_match_dist,
                            treemerger_out_match = task.outgroup_match,)
 
+        elif task.ttype == "concat_alg":
+            n.add_features(concatalg_cogs="%d"%task.used_cogs,
+                           )                       
 
 def process_task(task, npr_conf, nodeid2info):
     conf = GLOBALS["config"]

@@ -24,6 +24,11 @@ def encode(x):
 def decode(x):
     return cPickle.loads(base64.decodestring(x))
 
+def connect_nprdb(nprdb_file):
+    global conn, cursor
+    conn = sqlite3.connect(nprdb_file)
+    cursor = conn.cursor()
+
 def init_nprdb(nprdb_file):
     global conn, cursor
     conn = sqlite3.connect(nprdb_file)

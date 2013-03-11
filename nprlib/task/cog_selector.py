@@ -52,7 +52,7 @@ class BrhCogSelector(CogSelectorTask):
             log.log(22, "Loading COGs from cache files")
             self.cog_analysis = cPickle.load(open(self.cog_analysis_file))
             self.cogs = cPickle.load(open(self.cogs_file))
-            log.log(22, "\n"+self.cog_analysis)
+            log.log(28, "\n"+self.cog_analysis)
         else: 
             all_species = self.targets | self.outgroups
             cogs, cog_analysis = brh_cogs(db, all_species,
@@ -74,7 +74,7 @@ class BrhCogSelector(CogSelectorTask):
             map(lambda x: x.sort(), self.cogs)
             self.cogs.sort(lambda x,y: cmp(md5(','.join(x)), md5(','.join(y))))
                 
-            log.log(22, "Dumping COGs into file")
+            log.log(28, "Dumping COGs into file")
             cPickle.dump(self.cog_analysis, open(self.cog_analysis_file, "w"))
             cPickle.dump(self.cogs, open(self.cogs_file, "w"))
             cPickle.dump(self.raw_cogs, open(self.cogs_file+".raw", "w"))
@@ -197,8 +197,8 @@ def brh_cogs(DB, species, missing_factor=0.0, seed_sp=None, min_score=0):
         lines.append([seed, mx, mn, avg, len(all_cogs)])
     analysis_txt = StringIO()
     print_as_table(lines[:25], stdout=analysis_txt,
-                   header=["Seed","max # COGs", "min # COGs", "avg # COGs", "total # COGs"])
-    log.log(24, "Analysis details:\n"+analysis_txt.getvalue())
+                   header=["Seed","largest COG", "smallest COGs", "avg COG size", "total COGs"])
+    #log.log(28, "Analysis details:\n"+analysis_txt.getvalue())
     best_seed, best_cogs = cogs_selection[0]
     cog_sizes = [len(cog) for cog in best_cogs]
 
