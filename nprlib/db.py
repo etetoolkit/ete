@@ -95,7 +95,8 @@ def create_seq_db():
     );
 
     CREATE TABLE IF NOT EXISTS species(
-      taxid VARCHAR(16) PRIMARY KEY
+      taxid VARCHAR(16) PRIMARY KEY,
+      size INT
     );
 
     CREATE INDEX IF NOT EXISTS i6 ON seqid2name(name);
@@ -344,8 +345,9 @@ def get_seq_species():
     return species
 
 def add_seq_species(species):
-    cmd = 'INSERT OR REPLACE INTO species (taxid) VALUES (?)'
-    seqcursor.executemany(cmd, [[sp] for sp in species])
+    cmd = 'INSERT OR REPLACE INTO species (taxid, size) VALUES (?, ?)'
+    seqcursor.executemany(cmd, [[sp, counter] for sp, counter in
+                                species.iteritems()])
     autocommit()
 
 def get_all_ortho_seqs(target_species=None):

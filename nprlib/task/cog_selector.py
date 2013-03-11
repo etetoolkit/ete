@@ -99,16 +99,12 @@ def brh_cogs(DB, species, missing_factor=0.0, seed_sp=None, min_score=0):
     if seed_sp == "auto":
         sp_to_test = list(species)
     elif seed_sp == "largest":
-        cmd = """SELECT taxid1, count(*) from ortho_pair GROUP BY taxid1"""
-        cmd2 = """SELECT taxid2, count(*) from ortho_pair GROUP BY taxid2"""
-        db.orthocursor.execute(cmd)
+        cmd = """SELECT taxid, size FROM species ORDER BY size"""
+        db.seqcursor.execute(cmd)
         sp2size = {}
-        for tax, counter in db.orthocursor.fetchall():
+        for tax, counter in db.seqcursor.fetchall():
             sp2size[tax] = counter
-        db.orthocursor.execute(cmd2)            
-        for tax, counter in db.orthocursor.fetchall():
-            sp2size[tax] = sp2size.get(tax, 0) + counter
-        
+            
         sorted_sp = sorted(sp2size.items(), lambda x,y: cmp(x[1],y[1]))
         log.log(24, sorted_sp[:6])
         largest_sp = sorted_sp[-1][0]
