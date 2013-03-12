@@ -71,6 +71,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
         # Check task status, update new states and compute total cores
         # being used
         check_tasks = set()
+        GLOBALS["cached_job_states"] = {}
         for task in pending_tasks:
             #show_task_info(task)
             if debug and log.level > 10 and task.taskid.startswith(debug):

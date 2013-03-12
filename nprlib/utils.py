@@ -21,6 +21,7 @@ DEBUG = lambda: log.level <= 10
 hascontent = lambda f: pexist(f) and os.path.getsize(f) > 0
 GLOBALS = {
     "running_jobs": set(),
+    "cached_job_states": {}
 }
 
 APP2CLASS = {
