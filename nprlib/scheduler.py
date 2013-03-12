@@ -72,16 +72,20 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
         # being used
         check_tasks = set()
         for task in pending_tasks:
-            show_task_info(task)
+            #show_task_info(task)
             if debug and log.level > 10 and task.taskid.startswith(debug):
                 log.setLevel(10) #start debugging
                 log.debug("ENTERING IN DEBUGGING MODE")
             #cores_used += task.cores_used
             thread2tasks[task.configid].append(task)
             if task.taskid not in check_tasks:
+                show_task_info(task)
                 task.status = task.get_status(qstat_jobs)
                 update_task_states_recursively(task)
                 check_tasks.add(task.taskid)
+            elif log.level < 26:
+                show_task_info(task)
+                
         db.commit()
         ## END CHECK AND UPDATE CURRENT TASKS
         ## ================================
