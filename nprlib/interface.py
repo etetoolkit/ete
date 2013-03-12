@@ -25,7 +25,11 @@ SHELL_COLORS = {
     "10": '\033[1;37;41m', # white on red
     "11": '\033[1;37;43m', # white on orange
     "12": '\033[1;37;45m', # white on magenta
+    "16": '\033[1;30;46m', # white on blue
     "13": '\033[1;37;40m', # black on white
+    "06": '\033[1;34m', # light blue
+    "05": '\033[1;31m', # light red
+    "03": '\033[1;32m', # light green
     "8": '\033[1;33m', # yellow
     "7": '\033[36m', # cyan
     "6": '\033[34m', # blue
@@ -306,7 +310,7 @@ def app_wrapper(func, args):
             print >>sys.stderr, ("VERY IMPORTANT !!!: Note that launched"
                                  " jobs will keep running as you provided the --monitor flag")
         else:
-            print >>sys.stderr, "Kill signal is being sent to all running jobs"
+            print >>sys.stderr, "Kill signal is being sent to %d running jobs" %len(GLOBALS["running_jobs"])
             for job in GLOBALS["running_jobs"]:
                 status_file = job.status_file
                 try:

@@ -14,13 +14,17 @@ from nprlib import db
 isjob = lambda j: isinstance(j, Job)
 istask = lambda j: isinstance(j, Task)
 
+def thread_name(task):
+    tid = getattr(task, "threadid", None)
+    return "@@13:%s@@1:" %GLOBALS.get(tid, {}).get("_name", "?")
+
 def genetree_class_repr(cls, cls_name):
     """ Human readable representation of NPR genetree tasks.""" 
     return "%s (%s seqs, %s, %s/%s)" %\
         (cls_name, getattr(cls, "size", None) or 0,
          cls.tname, 
          (getattr(cls, "taskid", None) or "?")[:6],
-         (getattr(cls, "threadid", None) or "?")[:6])
+         thread_name(cls))
 
 def sptree_class_repr(cls, cls_name):
     """ Human readable representation of NPR sptree tasks.""" 
@@ -29,7 +33,7 @@ def sptree_class_repr(cls, cls_name):
          getattr(cls, "size", None) or 0,
          cls.tname, 
          (getattr(cls, "taskid", None) or "?")[:6],
-         (getattr(cls, "threadid", None) or "?")[:6])
+         thread_name(cls))
 
 def concatalg_class_repr(cls, cls_name):
     """ Human readable representation of NPR  concat alg tasks.""" 
@@ -38,7 +42,7 @@ def concatalg_class_repr(cls, cls_name):
          getattr(cls, "used_cogs", None) or "?",
          cls.tname, 
          (getattr(cls, "taskid", None) or "?")[:6],
-         (getattr(cls, "threadid", None) or "?")[:6])
+         thread_name(cls))
 
 def generic_class_repr(cls, cls_name):
     """ Human readable representation of NPR sptree tasks.""" 
@@ -46,7 +50,7 @@ def generic_class_repr(cls, cls_name):
         (cls_name, getattr(cls, "size", None) or 0,
          cls.tname, 
          (getattr(cls, "taskid", None) or "?")[:6],
-         (getattr(cls, "threadid", None) or "?")[:6])
+         thread_name(cls))
 
     
 class Task(object):

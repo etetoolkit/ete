@@ -58,7 +58,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
         launched_tasks = 0
         for tid, tlist in thread2tasks.iteritems():
             threadname = GLOBALS[tid]["_name"]
-            log.log(28, "  Thread @@13:%s@@1:: pending tasks=@@13:%s@@1:" %(threadname, len(tlist)))
+            log.log(28, "  Thread @@13:%s@@1:: pending tasks: @@8:%s@@1:" %(threadname, len(tlist)))
         thread2tasks = defaultdict(list)
         
         # ask SGE for running jobs
@@ -153,7 +153,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
             elif task.status == "E":
                 log.error("Task contains errors")
                 if retry and task not in task2retry:
-                    log.log(28, "Remarking task as undone to retry")
+                    log.log(28, "@@8:Remarking task as undone to retry@@1:")
                     task2retry[task] += 1
                     task.retry()
                     task.init()
@@ -208,7 +208,15 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
 def show_task_info(task):
     log.log(26, "")
     set_logindent(1)
-    log.log(28, "(%s) %s" % (task.status, task))
+    if task.status == "D":
+        stcolor = "@@06:"
+    elif task.status == "E":
+        stcolor = "@@03:"
+    elif task.status == "R":
+        stcolor = "@@05:"
+    else:
+        stcolor = ""
+    log.log(28, "(%s%s@@1:) %s" % (stcolor, task.status, task))
     logindent(2)
     st_info = ', '.join(["%d(%s)" % (v, k) for k, v in
                          task.job_status.iteritems()])
