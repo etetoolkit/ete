@@ -100,13 +100,15 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
             else:
                 cores_used += job.cores
                 
-        # Process waiting tasks            
+        # Process waiting tasks
+        launched_jobs = set()
         for task in sorted(pending_tasks, sort_tasks):
             if task.status in set("WQRL"):
                 exec_type = getattr(task, "exec_type", execution)
                 # Tries to send new jobs from this task
                 for j, cmd in task.iter_waiting_jobs():
-                    if not check_cores(j, cores_used, cores_total, execution):
+                    if not check_cores(j, cores_used, cores_total, execution) or \
+                            j.jobid in launched_jobs:
                         continue
                     
                     if exec_type == "insitu":
@@ -118,6 +120,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                             else:
                                 running_proc = Popen(cmd, shell=True)
                             GLOBALS["running_jobs"].add(j)
+                            launched_jobs.add(j.jobid)
                             log.debug("Command: %s", j.cmd_file)
                         except Exception:
                             task.save_status("E")
