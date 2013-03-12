@@ -20,7 +20,7 @@ log = logging.getLogger("main")
 DEBUG = lambda: log.level <= 10
 hascontent = lambda f: pexist(f) and os.path.getsize(f) > 0
 GLOBALS = {
-    "running_jobs": []
+    "running_jobs": set(),
 }
 
 APP2CLASS = {

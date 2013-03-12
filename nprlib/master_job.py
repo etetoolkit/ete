@@ -159,9 +159,8 @@ class Job(object):
                         pass
                 elif self.host == HOSTNAME and not pid_up(self.pid):
                     st = "L"
-        
-            #if st != saved_status:
-            #    db.update_task(self.jobid, status=st)
+
+                    
             self.status = st
 
         return self.status

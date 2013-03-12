@@ -303,19 +303,19 @@ def app_wrapper(func, args):
     except KeyboardInterrupt:
         print >>sys.stderr, "\nProgram was interrupted."
         if not args.monitor:
-            print >>sys.stderr, "Kill signal is being sent to all running jobs"
-        else:
             print >>sys.stderr, ("VERY IMPORTANT !!!: Note that launched"
                                  " jobs will keep running as you provided the --monitor flag")
-                                                                  
-        for status_file in GLOBALS["running_jobs"]:
-            try:
-                if open(status_file).readline().strip() == "R":
-                    open(status_file, "w").write("E")
-            except Exception, e:
-                print e
-            else:
-                print >>sys.stderr, status_file, "has been marked as error"
+        else:
+            print >>sys.stderr, "Kill signal is being sent to all running jobs"
+            for job in GLOBALS["running_jobs"]:
+                status_file = job.status_file
+                try:
+                    if open(status_file).readline().strip() == "R":
+                        open(status_file, "w").write("E")
+                except Exception, e:
+                    print e
+                else:
+                    print >>sys.stderr, status_file, "has been marked as error"
         sys.exit(1)
     except:
         raise

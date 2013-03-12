@@ -47,7 +47,6 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
        
     # Enters into task scheduling
     while pending_tasks:
-        cores_used = 0
         sge_jobs = []
         wait_time = 0.01
             
@@ -78,13 +77,23 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                 log.setLevel(10) #start debugging
                 log.debug("ENTERING IN DEBUGGING MODE")
             task.status = task.get_status(qstat_jobs)
-            cores_used += task.cores_used
+            #cores_used += task.cores_used
             thread2tasks[task.configid].append(task)
             update_task_states_recursively(task)
         db.commit()
         ## END CHECK AND UPDATE CURRENT TASKS
         ## ================================
-       
+
+        # if the job has just ended, remove it from the list of
+        # running jobs and decrease cores used
+        cores_used = 0
+        for job in list(GLOBALS["running_jobs"]):
+            if job.status in set("DE"):
+                log.log(22, "@@8: Releasing %s cores" %job.cores)
+                GLOBALS["running_jobs"].discard(job)
+            else:
+                cores_used += job.cores
+                
         # Process waiting tasks            
         for task in sorted(pending_tasks, sort_tasks):
             if task.status in set("WQRL"):
@@ -102,7 +111,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                                 launch_detached(j, cmd)
                             else:
                                 running_proc = Popen(cmd, shell=True)
-                                GLOBALS["running_jobs"].append(j.status_file)
+                            GLOBALS["running_jobs"].add(j)
                             log.debug("Command: %s", j.cmd_file)
                         except Exception:
                             task.save_status("E")
