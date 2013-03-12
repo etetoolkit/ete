@@ -18,6 +18,7 @@ class Dialigntx(AlgTask):
                 })
         # Initialize task
         self.confname = confname
+        self.conf = conf
         AlgTask.__init__(self, nodeid, "alg", "DialignTX", 
                       base_args, self.conf[self.confname])
         
@@ -32,7 +33,7 @@ class Dialigntx(AlgTask):
     def load_jobs(self):
         # Only one Muscle job is necessary to run this task
         appname = self.conf[self.confname]["_app"]
-        args = self.args.copy()
+        args = OrderedDict(self.args)
         args[''] = "%s %s" %(self.multiseq_file, "alg.fasta")
         job = Job(self.conf["app"][appname], args, parent_ids=[self.nodeid])
         self.jobs.append(job)

@@ -358,7 +358,7 @@ def pipeline(task, conf=None):
         
         initial_task.main_tree = None
         initial_task.threadid = generate_runid()
-
+        initial_task.configid = initial_task.threadid
         # Register node 
         db.add_node(initial_task.threadid, initial_task.nodeid,
                     initial_task.cladeid, initial_task.target_seqs,
@@ -372,5 +372,6 @@ def pipeline(task, conf=None):
 
     process_new_tasks(task, new_tasks)
     logindent(-2)
+   
     return new_tasks
 

@@ -16,11 +16,13 @@ __all__ = ["TreeMerger"]
 class TreeMerger(TreeMergeTask):
     def __init__(self, nodeid, seqtype, task_tree, conf, confname):
         # Initialize task
-        TreeMergeTask.__init__(self, nodeid, "treemerger", "TreeMerger")
+
         self.confname = confname
         self.conf = conf
-        self.args = self.conf[self.confname]
         self.task_tree_file = task_tree
+        TreeMergeTask.__init__(self, nodeid, "treemerger", "TreeMerger",
+                               None, self.conf[self.confname])
+        
         self.main_tree = None
         self.task_tree = None
         self.seqtype = seqtype
@@ -38,7 +40,6 @@ class TreeMerger(TreeMergeTask):
         ttree = PhyloTree(self.task_tree_file)
         mtree = self.main_tree
         ttree.dist = 0
-
         cladeid, target_seqs, out_seqs = db.get_node_info(self.threadid, self.nodeid)
         self.out_seqs = out_seqs
         self.target_seqs = target_seqs
@@ -160,10 +161,11 @@ class TreeMerger(TreeMergeTask):
         else:
             # ROOTS FIRST ITERATION
             log.log(28, "Getting outgroup for first NPR split")
+            
             # if early split is provided in the command line, it
             # overrides config file
             mainout = GLOBALS.get("first_split_outgroup",
-                                  self.args["_first_split"]).strip()
+                                  self.conf[self.confname]["_first_split"]).strip()
             
             if mainout == "midpoint":
                 log.log(28, "Rooting to midpoint.")
@@ -194,12 +196,12 @@ class TreeMerger(TreeMergeTask):
                         raise TaskError("Provided first split outgroup could not be granted:%s" %out_seqs)
                     if strict_common_ancestor and set(out_seqs) - outs:
                         raise TaskError(self, "Monophyly of first split outgroup could not be granted:%s" %out_seqs)
-                    log.log(28, "@@4:First split rooting to %d seqs@@1:: %s" %(len(out_seqs),out_seqs))
+                    log.log(28, "@@8:First split rooting to %d seqs@@1:: %s" %(len(out_seqs),out_seqs))
                     ttree.set_outgroup(common)
                 else:
                     single_out = outs.pop()
                     common = ttree.set_outgroup(single_out)
-                    log.log(28, "@@4:First split rooting to 1 seq@@1:: %s" %(single_out))
+                    log.log(28, "@@8:First split rooting to 1 seq@@1:: %s" %(single_out))
 
                     
             self.main_tree = ttree

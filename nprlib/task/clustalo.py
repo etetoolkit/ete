@@ -40,7 +40,7 @@ class Clustalo(AlgTask):
     def load_jobs(self):
         appname = self.conf[self.confname]["_app"]
         # Only one Muscle job is necessary to run this task
-        args = self.args.copy()
+        args = OrderedDict(self.args)
         args["-i"] = self.multiseq_file
         args["-o"] = "alg.fasta"
         job = Job(self.conf["app"][appname], args, parent_ids=[self.nodeid])

@@ -21,6 +21,8 @@ class Raxml(TreeTask):
         base_args = OrderedDict()
         self.confname = confname
         self.conf = conf
+        self.alg_phylip_file = alg_file
+        self.constrain_tree = constrain_tree
         TreeTask.__init__(self, nodeid, "tree", "RaxML", 
                           base_args, conf[confname])
 
@@ -34,10 +36,7 @@ class Raxml(TreeTask):
         
         self.raxml_bin = raxml_bin
         self.threads = threads
-
-        self.constrain_tree = constrain_tree
         self.seqtype = seqtype
-        self.alg_phylip_file = alg_file
         self.compute_alrt = conf[confname].get("_alrt_calculation", None)
 
         # Process raxml options
@@ -78,7 +77,7 @@ class Raxml(TreeTask):
 
     def load_jobs(self):
         
-        args = self.args.copy()
+        args = OrderedDict(self.args)
         args["-s"] = self.alg_phylip_file
         args["-m"] = self.model_string
         args["-n"] = self.nodeid

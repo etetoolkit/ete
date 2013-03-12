@@ -27,7 +27,7 @@ class Mafft(AlgTask):
  
     def load_jobs(self):
         appname = self.conf[self.confname]["_app"]
-        args = self.args.copy()
+        args = OrderedDict(self.args)
         # Mafft redirects resulting alg to std.output. The order of
         # arguments is important, input file must be the last
         # one.

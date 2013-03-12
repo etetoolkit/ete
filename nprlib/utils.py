@@ -81,7 +81,7 @@ K, Li W, Lopez R, McWilliam H, Remmert M, Söding J, Thompson JD,
 Higgins DG.  Fast, scalable generation of high-quality protein
 multiple sequence alignments using Clustal Omega.  Mol Syst Biol. 2011
 Oct 11;7:539. doi: 10.1038/msb.2011.75."""
-DIALIGN_CITE = u""""Subramanian AR, Kaufmann M, Morgenstern B.
+DIALIGN_CITE = u"""Subramanian AR, Kaufmann M, Morgenstern B.
 DIALIGN-TX: greedy and progressive approaches for segment-based
 multiple sequence alignment. Algorithms Mol Biol. 2008 May 27;3:6."""
 

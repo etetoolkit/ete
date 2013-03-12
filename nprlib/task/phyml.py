@@ -26,11 +26,10 @@ class Phyml(TreeTask):
         
         self.confname = confname
         self.conf = conf
-        TreeTask.__init__(self, nodeid, "tree", "Phyml", 
-                          base_args, conf[confname])
-
         self.constrain_tree = constrain_tree
         self.alg_phylip_file = alg_file
+        TreeTask.__init__(self, nodeid, "tree", "Phyml", 
+                          base_args, conf[confname])
         self.alg_basename = basename(self.alg_phylip_file)
         if seqtype == "aa":
             self.model = model or conf[confname]["_aa_model"]
@@ -60,7 +59,7 @@ class Phyml(TreeTask):
             
     def load_jobs(self):
         appname = self.conf[self.confname]["_app"]
-        args = self.args.copy()
+        args = OrderedDict(self.args)
         args["--model"] = self.model
         args["--datatype"] = self.seqtype
         args["--input"] = self.alg_basename

@@ -50,7 +50,7 @@ def init_orthodb(orthodb_file):
 def close():
     conn.close()
     seqconn.close()
-    orthoconn.close()
+    if orthoconn: orthoconn.close()
     
 def parse_job_list(jobs):
     if isjob(jobs) or istask(jobs):
@@ -201,7 +201,7 @@ def update_node(nid, runid, **kargs):
 def get_task_status(tid):
     cmd = 'SELECT status FROM task WHERE taskid="%s"' %(tid)
     execute(cmd)
-    return cursor.fetchone()
+    return cursor.fetchone()[0]
 
 def get_task_info(tid):
     cmd = 'SELECT status, host, pid  FROM task WHERE taskid="%s"' %(tid)
@@ -299,9 +299,9 @@ def translate_names(names):
 
 def get_all_seqids(seqtype):
     cmd = 'SELECT seqid FROM %s_seq;' %seqtype
-    execute(cmd, seq_cursor)
+    execute(cmd, seqcursor)
     seqids = set()
-    for sid in cursor.fetchall():
+    for sid in seqcursor.fetchall():
         seqids.add(sid[0])
     return seqids
     

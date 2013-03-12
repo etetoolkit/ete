@@ -22,7 +22,7 @@ class ConcatAlg(ConcatAlgTask):
         base_args["_max_cogs"] = self.cogs_hard_limit
         
         ConcatAlgTask.__init__(self, nodeid, "concat_alg", "ConcatAlg", 
-                      base_args)
+                               base_args, conf[confname])
               
         self.cogs = cogs
         self.seqtype = seqtype
@@ -63,7 +63,7 @@ class ConcatAlg(ConcatAlgTask):
         # only Alg and Acleaner tasks could contain the results
         if pexist(self.alg_fasta_file) and pexist(self.alg_phylip_file) \
                 and pexist(self.partitions_file):
-            log.log(28, "@@5:Concatenated alignment is already present. Skipping...@@1:")
+            log.log(28, "@@8:Concatenated alignment is already present. Skipping...@@1:")
         else: 
             for job in self.jobs: 
                 if job.ttype == "alg" and job.nodeid not in self.job2alg:

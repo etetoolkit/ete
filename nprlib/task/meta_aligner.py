@@ -72,7 +72,7 @@ class MetaAligner(AlgTask):
         self.all_alg_files = None
         self.init()
 
-        if self.conf["_alg_trimming"]:
+        if self.conf[confname]["_alg_trimming"]:
             self.alg_list_file = pjoin(self.taskdir, "alg_list.txt")
             open(self.alg_list_file, "w").write("\n".join(self.all_alg_files))
             trim_job = self.jobs[-1]
@@ -96,19 +96,20 @@ class MetaAligner(AlgTask):
         
         for aligner_name in self.conf[self.confname]["_aligners"]:
             _classname = APP2CLASS[self.conf[aligner_name]["_app"]]
+
             _module = __import__(CLASS2MODULE[_classname], globals(), locals(), [], -1)
             _aligner = getattr(_module, _classname)
 
             # Normal alg
             task1 = _aligner(self.nodeid, self.multiseq_file, self.seqtype,
-                             aligner_name)
+                             self.conf, aligner_name)
             task1.size = self.size
             self.jobs.append(task1)
             all_alg_files.append(task1.alg_fasta_file)
             
             # Alg of the reverse
             task2 = _aligner(self.nodeid, multiseq_file_r, self.seqtype,
-                             aligner_name)
+                             self.conf, aligner_name)
             task2.size = self.size
             task2.dependencies.add(first)
             self.jobs.append(task2)

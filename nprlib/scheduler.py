@@ -9,10 +9,11 @@ log = logging.getLogger("main")
 from nprlib.logger import set_logindent, logindent
 from nprlib.utils import (generate_id, PhyloTree, NodeStyle, Tree,
                           DEBUG, NPR_TREE_STYLE, faces, GLOBALS,
-                          basename)
+                          basename, pjoin)
 from nprlib.errors import ConfigError, TaskError
 from nprlib import db, sge
 from nprlib.master_task import isjob, update_task_states_recursively
+from nprlib.template.common import assembly_tree
 
 def sort_tasks(x, y):
     _x = getattr(x, "size", 0)
@@ -35,8 +36,12 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
     cores_total = GLOBALS["_max_cores"]
     execution, run_detached = execution
     # keeps the count of how many times an error task has been retried
-    task2retry = defaultdict(int) 
-    main_tree = None   
+    task2retry = defaultdict(int)
+    thread2tasks = defaultdict(list)
+    for task in pending_tasks:
+        thread2tasks[task.configid].append(task)
+    expected_threads = set(thread2tasks.keys())
+    past_threads = {}
     ## END OF VARS AND SHORTCUTS
     ## ===================================
        
@@ -45,12 +50,18 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
         cores_used = 0
         sge_jobs = []
         wait_time = 0.01
-
+            
         ## ================================
         ## CHECK AND UPDATE CURRENT TASKS
         set_logindent(0)
-        log.log(28, "CHECKING: (%s) %d tasks" % (ctime(), len(pending_tasks)))
-
+        log.log(28, "")
+        log.log(28, "@@13: NEW SCHEDULING CYCLE:@@1: (%s):" % (ctime()))
+        launched_tasks = 0
+        for tid, tlist in thread2tasks.iteritems():
+            threadname = GLOBALS[tid]["_name"]
+            log.log(28, "  Thread @@13:%s@@1:: pending tasks=@@13:%s@@1:" %(threadname, len(tlist)))
+        thread2tasks = defaultdict(list)
+        
         # ask SGE for running jobs
         if execution == "sge":
             sgeid2jobs = db.get_sge_tasks()
@@ -60,6 +71,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
 
         # Check task status, update new states and compute total cores
         # being used
+
         for task in pending_tasks:
             show_task_info(task)
             if debug and log.level > 10 and task.taskid.startswith(debug):
@@ -67,18 +79,14 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                 log.debug("ENTERING IN DEBUGGING MODE")
             task.status = task.get_status(qstat_jobs)
             cores_used += task.cores_used
+            thread2tasks[task.configid].append(task)
             update_task_states_recursively(task)
         db.commit()
         ## END CHECK AND UPDATE CURRENT TASKS
         ## ================================
-        
-        # Process waiting tasks
-        launched_tasks = 0
-        
+       
+        # Process waiting tasks            
         for task in sorted(pending_tasks, sort_tasks):
-
-            log.log(28, "Cores in use: %s/%s", cores_used, cores_total)
-            
             if task.status in set("WQRL"):
                 exec_type = getattr(task, "exec_type", execution)
                 # Tries to send new jobs from this task
@@ -121,8 +129,6 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                 logindent(3)
                 new_tasks = workflow_task_processor(task)
                 logindent(-3)
-                
-                main_tree = task.main_tree
                 # Update list of tasks
                 pending_tasks.remove(task)
                 pending_tasks.extend(new_tasks)
@@ -150,21 +156,36 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
             logindent(-2)
 
         sge.launch_jobs(sge_jobs, config)
+        log.log(28, "Cores in use: %s/%s", cores_used, cores_total)
         if wait_time:
             log.log(28, "Wating %s seconds" %wait_time)
             sleep(wait_time)
+
+        # Dump / show ended threads
+        pending_threads = set([ts.configid for ts in pending_tasks])
+        finished_threads = expected_threads - pending_threads
+        for configid in finished_threads:
+            # configid is the the same as threadid in master tasks
+            final_tree_file = pjoin(GLOBALS[configid]["_outpath"],
+                                    GLOBALS["inputname"] + ".final_tree")
+            threadname = GLOBALS[tid]["_name"]
+            if configid in past_threads:
+                log.log(28, "Done thread @@12:%s@@1: in %d iterations",
+                        threadname, past_threads[configid])
+            else:
+                log.log(28, "Assembling final tree...")
+                main_tree, treeiters =  assembly_tree(configid)
+                past_threads[configid] = treeiters
+                log.log(28, "Writing final tree for @@13:%s@@1: %s",
+                        threadname, final_tree_file+".nwx")
+                main_tree.write(outfile=final_tree_file+".nw")
+                main_tree.write(outfile=final_tree_file+".nwx", features=[])
+                log.log(28, "Done thread @@12:%s@@1: in %d iterations",
+                        threadname, past_threads[configid])
+
+                
         log.log(26, "")
-
-    final_tree_file = os.path.join(GLOBALS["basedir"],
-                                   GLOBALS["inputname"] + ".final_tree")
-    if main_tree: 
-        for n in main_tree.iter_leaves():
-            n.add_features(codename=n.name)
-            n.name = n.realname
-        log.log(28, "Writing final tree: %s", final_tree_file)
-        main_tree.write(outfile=final_tree_file+".nw")
-        main_tree.write(outfile=final_tree_file+".nwx", features=[])
-
+        
     log.log(28, "Done")
     GLOBALS["citator"].show()
    

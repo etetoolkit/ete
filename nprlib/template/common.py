@@ -113,7 +113,7 @@ def process_new_tasks(task, new_tasks):
     # Basic registration and processing of newly generated tasks
     parent_taskid = task.taskid if task else None
     for ts in new_tasks:
-        log.log(24, "Registering new task: %s", ts)
+        log.log(22, "Registering new task: %s", ts)
         register_task_recursively(ts, parentid=parent_taskid)
         # sort task by nodeid
         GLOBALS["nodeinfo"][ts.nodeid].setdefault("tasks", []).append(ts)
@@ -400,3 +400,37 @@ def distance_matrix_new(target, leaf_only=False, topology_only=False):
     #         print target.get_distance(n), n2dist[n]
     #         raw_input("ERROR")
     return n2dist
+
+
+def assembly_tree(runid):
+    log.info("Reading nodes from database...")
+    task_nodes = db.get_runid_nodes(runid)
+    task_nodes.reverse()
+    
+    main_tree = None
+    iternumber = 1
+    log.info("Assembling tree...")
+    while task_nodes:
+        cladeid, packtree, size = task_nodes.pop(-1)
+        tree = db.decode(packtree)
+
+        # print tree.dist
+        # Restore original gene names
+        for leaf in tree.iter_leaves():
+            leaf.add_features(safename=leaf.name)
+            leaf.name = leaf.realname
+            
+        if main_tree:
+            # substitute node in main tree by the optimized one
+            target_node = main_tree.search_nodes(cladeid=cladeid)[0]
+            target_node.up.add_child(tree)
+            target_node.detach()
+        else:
+            main_tree = tree
+
+        iter_name = "Iter_%04d_%dseqs" %(iternumber, size)
+        tree.add_features(iternumber=iternumber)
+        iternumber += 1
+    return main_tree, iternumber 
+          
+

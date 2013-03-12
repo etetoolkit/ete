@@ -5,7 +5,8 @@ from collections import defaultdict
 
 from nprlib.logger import logindent
 from nprlib.utils import (md5, merge_arg_dicts, PhyloTree, SeqGroup,
-                          checksum, read_time_file, GLOBALS)
+                          checksum, read_time_file, generate_runid,
+                          GLOBALS)
 from nprlib.master_job import Job
 from nprlib.errors import RetryException
 from nprlib import db
@@ -15,32 +16,37 @@ istask = lambda j: isinstance(j, Task)
 
 def genetree_class_repr(cls, cls_name):
     """ Human readable representation of NPR genetree tasks.""" 
-    return "%s (%s seqs, %s, %s)" %\
+    return "%s (%s seqs, %s, %s/%s)" %\
         (cls_name, getattr(cls, "size", None) or 0,
          cls.tname, 
-         (getattr(cls, "taskid", None) or "?")[:6])
+         (getattr(cls, "taskid", None) or "?")[:6],
+         (getattr(cls, "threadid", None) or "?")[:6])
 
 def sptree_class_repr(cls, cls_name):
     """ Human readable representation of NPR sptree tasks.""" 
-    return "%s (%s species, %s, %s)" %\
-        (cls_name, getattr(cls, "size", None) or 0,
+    return "%s (%s species, %s, %s/%s)" %\
+        (cls_name,
+         getattr(cls, "size", None) or 0,
          cls.tname, 
-         (getattr(cls, "taskid", None) or "?")[:6])
+         (getattr(cls, "taskid", None) or "?")[:6],
+         (getattr(cls, "threadid", None) or "?")[:6])
 
 def concatalg_class_repr(cls, cls_name):
     """ Human readable representation of NPR  concat alg tasks.""" 
-    return "%s (%s species, %s COGs, %s, %s)" %\
+    return "%s (%s species, %s COGs, %s, %s/%s)" %\
         (cls_name, getattr(cls, "size", None) or 0,
          getattr(cls, "used_cogs", None) or "?",
          cls.tname, 
-         (getattr(cls, "taskid", None) or "?")[:6])
+         (getattr(cls, "taskid", None) or "?")[:6],
+         (getattr(cls, "threadid", None) or "?")[:6])
 
 def generic_class_repr(cls, cls_name):
     """ Human readable representation of NPR sptree tasks.""" 
-    return "%s (%s tips, %s, %s)" %\
+    return "%s (%s tips, %s, %s/%s)" %\
         (cls_name, getattr(cls, "size", None) or 0,
          cls.tname, 
-         (getattr(cls, "taskid", None) or "?")[:6])
+         (getattr(cls, "taskid", None) or "?")[:6],
+         (getattr(cls, "threadid", None) or "?")[:6])
 
     
 class Task(object):
@@ -62,8 +68,11 @@ class Task(object):
         for tag, value in self.args.iteritems():
             print tag,":", value
 
-    def __init__(self, nodeid, task_type, task_name, base_args={}, 
-                 extra_args={}):
+    def __init__(self, nodeid, task_type, task_name, base_args=None, 
+                 extra_args=None):
+
+        if not base_args: base_args = {}
+        if not extra_args: extra_args = {}
         
         # This define which task-processor should be used
         # (i.e. genetree, sptree).
@@ -100,9 +109,13 @@ class Task(object):
         
         self.job_status = {}
         
-        # Initialize job arguments 
+        # Set arguments that could be sent to jobs
         self.args = merge_arg_dicts(extra_args, base_args, parent=self)
-
+        # extract all internal config values associated to this task
+        # and generate its unique id (later used to generate taskid)
+        self._config_id = md5(','.join(sorted(["%s %s" %(str(pair[0]),str(pair[1])) for pair in
+                                       extra_args.iteritems() if pair[0].startswith("_")])))
+        
     def get_status(self, sge_jobs=None):
         logindent(2)
         saved_status = db.get_task_status(self.taskid)
@@ -110,7 +123,7 @@ class Task(object):
         job_status = set(self.job_status.keys())
         if job_status == set("D") and saved_status != "D":
             logindent(-2)
-            log.log(20, "Processing done task: %s", self)
+            log.log(22, "Processing done task: %s", self)
             logindent(2)
             try:
                 self.finish()
@@ -120,7 +133,17 @@ class Task(object):
             else:
                 st = "D"
         elif job_status == set("D") and saved_status == "D":
-            st = "D"
+            if self.status != "D":
+                log.log(22, "@@8:reusing previous data@@1:")
+                try:
+                    self.finish()
+                except RetryException:
+                    logindent(-2)
+                    st = "W"
+                else:
+                    st = "D"
+            else: 
+                st = "D"
         else:
             # Order matters
             if "E" in job_status:
@@ -241,8 +264,8 @@ class Task(object):
         if not self.taskid:
             args_id = md5(','.join(sorted(["%s %s" %(str(pair[0]),str(pair[1])) for pair in
                        self.args.iteritems()])))
-
-            unique_id = md5(','.join([self.nodeid, args_id]+sorted(
+             
+            unique_id = md5(','.join([self.nodeid, self._config_id, args_id]+sorted(
                         [getattr(j, "jobid", "taskid") for j in self.jobs])))
 
             self.taskid = unique_id
@@ -369,6 +392,17 @@ class ModelTesterTask(Task):
                              self.alg_phylip_file)
 
 class TreeTask(Task):
+    def __init__(self, nodeid, task_type, task_name, base_args=None, 
+                 extra_args=None):
+        if not base_args: base_args = {}
+        extra_args =  {} if not extra_args else dict(extra_args)
+        extra_args["_algchecksum"] = checksum(self.alg_phylip_file)
+        if self.constrain_tree:
+            extra_args["_constrainchecksum"] = checksum(self.constrain_tree)
+
+        Task.__init__(self, nodeid, task_type, task_name, base_args, 
+                      extra_args)
+        
     def __repr__(self):
         return generic_class_repr(self, "@@3:TreeTask@@1:")
 
@@ -382,6 +416,15 @@ class TreeTask(Task):
         self.dump_inkey_file(self.alg_phylip_file)
 
 class TreeMergeTask(Task):
+    def __init__(self, nodeid, task_type, task_name, base_args=None, 
+                 extra_args=None):
+        # I want every tree merge instance to be unique (avoids
+        # recycling and undesired collisions between trees from
+        # different threads containing the same topology
+        extra_args["_treechecksum"] = generate_runid()
+        Task.__init__(self, nodeid, task_type, task_name, base_args, 
+                      extra_args)
+
     def __repr__(self):
         return generic_class_repr(self, "@@3:TreeMergeTask@@1:")
        
@@ -403,7 +446,7 @@ class CogSelectorTask(Task):
         return sptree_class_repr(self, "@@6:CogSelectorTask@@1:")
 
     def check(self):
-        if len(self.cogs) > 1:
+        if self.cogs:
             return True
         return False
         

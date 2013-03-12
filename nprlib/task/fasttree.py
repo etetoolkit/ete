@@ -24,7 +24,6 @@ class FastTree(TreeTask):
         self.alg_basename = basename(self.alg_phylip_file)
         self.seqtype = seqtype
         self.tree_file = ""
-
         if model:
             log.warning("FastTree does not support model selection. However, "
                         "you could switch from JTT (default) to WAG by adding a "

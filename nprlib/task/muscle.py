@@ -33,7 +33,7 @@ class Muscle(AlgTask):
     def load_jobs(self):
         # Only one Muscle job is necessary to run this task
         appname = self.conf[self.confname]["_app"]
-        args = self.args.copy()
+        args = OrderedDict(self.args)
         args["-in"] = self.multiseq_file
         args["-out"] = "alg.fasta"
         job = Job(self.conf["app"][appname], args, parent_ids=[self.nodeid])

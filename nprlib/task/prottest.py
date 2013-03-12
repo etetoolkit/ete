@@ -19,7 +19,7 @@ class Prottest(ModelTesterTask):
         self.alg_fasta_file = alg_fasta_file
         self.alg_basename = basename(self.alg_phylip_file)
         self.confname = confname
-
+        self.conf = conf
         self.lk_mode = conf[confname]["_lk_mode"]
         if self.lk_mode == "raxml":
             phyml_optimization = "n"
@@ -68,7 +68,7 @@ class Prottest(ModelTesterTask):
                 shutil.copy(self.alg_phylip_file, fake_alg_file)
                 
     def load_jobs(self):
-        conf = GLOBALS["config"]
+        conf = self.conf
         for m in self.models:
             args = self.args.copy()
             args["--model"] = m

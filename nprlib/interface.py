@@ -25,6 +25,9 @@ SHELL_COLORS = {
     "10": '\033[1;37;41m', # white on red
     "11": '\033[1;37;43m', # white on orange
     "12": '\033[1;37;45m', # white on magenta
+    "13": '\033[1;37;40m', # black on white
+    "8": '\033[1;33m', # yellow
+    "7": '\033[36m', # cyan
     "6": '\033[34m', # blue
     "3": '\033[32m', # green
     "4": '\033[33m', # orange
@@ -41,7 +44,7 @@ def safe_int(x):
         return x
 
 def shell_colorify_match(match):
-    return SHELL_COLORS[match.groups()[1]]
+    return SHELL_COLORS[match.groups()[2]]
         
 class ExcThread(threading.Thread):
     def __init__(self, bucket, *args, **kargs):
@@ -57,7 +60,7 @@ class ExcThread(threading.Thread):
             
 class Screen(StringIO):
     # tags used to control color of strings and select buffer
-    TAG = re.compile("@@(\d+)?,?(\d+):", re.MULTILINE)
+    TAG = re.compile("@@((\d+),)?(\d+):", re.MULTILINE)
     def __init__(self, windows):
         StringIO.__init__(self)
         self.windows = windows
@@ -162,8 +165,8 @@ class Screen(StringIO):
         formatstr = deque()
         for m in re.finditer(self.TAG, text):
             x1, x2  = m.span()
-            cindex = safe_int(m.groups()[1])
-            windex = safe_int(m.groups()[0])
+            cindex = safe_int(m.groups()[2])
+            windex = safe_int(m.groups()[1])
             formatstr.append([x1, x2, cindex, windex])
         if not formatstr:
             formatstr.append([None, 0, 1, 1])

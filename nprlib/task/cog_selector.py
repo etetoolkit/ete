@@ -23,15 +23,10 @@ class BrhCogSelector(CogSelectorTask):
 
         self.seed = conf[confname]["_seed"]
         self.missing_factor = float(conf[confname]["_species_missing_factor"])
-        base_args = {
-            "_seed": self.seed,
-            "_missing_factor": self.missing_factor,
-        }
-        
         node_id, clade_id = generate_node_ids(target_sp, out_sp)
         # Initialize task
         CogSelectorTask.__init__(self, node_id, "cog_selector",
-                                 "Cog-Selector", base_args)
+                                 "Cog-Selector", None, conf[confname])
 
         # taskid does not depend on jobs, so I set it manually
         self.cladeid = clade_id
@@ -48,7 +43,7 @@ class BrhCogSelector(CogSelectorTask):
     def finish(self):
         if os.path.exists(self.cog_analysis_file) and \
            os.path.exists(self.cogs_file):
-            log.log(22, "Loading COGs from cache files")
+            log.log(28, "@@8:Loading COGs from cache files@@1:")
             self.cog_analysis = cPickle.load(open(self.cog_analysis_file))
             self.cogs = cPickle.load(open(self.cogs_file))
             log.log(28, "\n"+self.cog_analysis)

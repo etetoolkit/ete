@@ -22,7 +22,8 @@ class JModeltest(ModelTesterTask):
         else:
             task_type = "mchooser"
             
-        ModelTesterTask.__init__(self, nodeid, task_type, "Jmodeltest", base_args, args)
+        ModelTesterTask.__init__(self, nodeid, task_type, "Jmodeltest",
+                                 base_args, self.conf[confname])
 
         # set app arguments and options
         self.alg_fasta_file = alg_fasta_file
