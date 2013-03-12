@@ -302,7 +302,7 @@ def app_wrapper(func, args):
         sys.exit(1)
     except KeyboardInterrupt:
         print >>sys.stderr, "\nProgram was interrupted."
-        if not args.monitor:
+        if args.monitor:
             print >>sys.stderr, ("VERY IMPORTANT !!!: Note that launched"
                                  " jobs will keep running as you provided the --monitor flag")
         else:
