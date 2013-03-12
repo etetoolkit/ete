@@ -4,7 +4,7 @@ log = logging.getLogger("main")
 
 from nprlib.master_task import AlgTask
 from nprlib.master_job import Job
-from nprlib.utils import SeqGroup, OrderedDict, GLOBALS, MUSCLE_CITE
+from nprlib.utils import SeqGroup, OrderedDict, GLOBALS, MUSCLE_CITE, hascontent
 
 __all__ = ["Muscle"]
 
@@ -42,8 +42,11 @@ class Muscle(AlgTask):
     def finish(self):
         # Once executed, alignment is converted into relaxed
         # interleaved phylip format.
-        alg = SeqGroup(os.path.join(self.jobs[0].jobdir, "alg.fasta"))
-        alg.write(outfile=self.alg_fasta_file, format="fasta")
-        alg.write(outfile=self.alg_phylip_file, format="iphylip_relaxed")
+        if hascontent(self.alg_fasta_file) and hascontent(self.alg_phylip_file):
+            log.log(24, "@@8:Reusing alg file@@1:")
+        else:
+            alg = SeqGroup(os.path.join(self.jobs[0].jobdir, "alg.fasta"))
+            alg.write(outfile=self.alg_fasta_file, format="fasta")
+            alg.write(outfile=self.alg_phylip_file, format="iphylip_relaxed")
         AlgTask.finish(self)
 

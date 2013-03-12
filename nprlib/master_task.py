@@ -52,7 +52,6 @@ def generic_class_repr(cls, cls_name):
          (getattr(cls, "taskid", None) or "?")[:6],
          thread_name(cls))
 
-    
 class Task(object):
     def _get_max_cores(self):
         return max([j.cores for j in self.jobs]) or 1
@@ -138,7 +137,7 @@ class Task(object):
                 st = "D"
         elif job_status == set("D") and saved_status == "D":
             if self.status != "D":
-                log.log(22, "@@8:reusing previous data@@1:")
+                #log.log(22, "@@8:reusing previous data@@1:")
                 try:
                     self.finish()
                 except RetryException:
@@ -217,13 +216,16 @@ class Task(object):
         try:
             return open(self.status_file, "ru").read(1)
         except IOError: 
-            return "?" 
+            return "?"
+        
 
     def get_jobs_status(self, sge_jobs=None):
         ''' Check the status of all children jobs. '''
         self.cores_used = 0
         all_states = defaultdict(int)
-        jobs_to_check = list(reversed(self.jobs))
+        jobs_to_check = set(reversed(self.jobs))
+        import gc
+        gc.disable()
         while jobs_to_check:
             j = jobs_to_check.pop()
             logindent(1)
@@ -236,7 +238,7 @@ class Task(object):
                     # launch it and populate with new jobs
                     if istask(j) and j.task_processor:
                         for new_job in j.task_processor(j):
-                            jobs_to_check.append(new_job)
+                            jobs_to_check.add(new_job)
                             self.jobs.append(new_job)
                 elif st in set("QRL"):
                     if isjob(j) and not j.host.startswith("@sge"):
@@ -250,10 +252,9 @@ class Task(object):
             else:
                 all_states["D"] += 1
             logindent(-1)              
-
-                
         if not all_states:
             all_states["D"] +=1
+
         return all_states
 
     def load_task_info(self):
@@ -454,7 +455,6 @@ class CogSelectorTask(Task):
             return True
         return False
         
-    
 def register_task_recursively(task, parentid=None):
     db.add_task(tid=task.taskid, nid=task.nodeid, parent=parentid,
                 status=task.status, type="task", subtype=task.ttype, name=task.tname)
@@ -465,7 +465,7 @@ def register_task_recursively(task, parentid=None):
             
         else:
             register_task_recursively(j, parentid=parentid)
-
+    
 def update_task_states_recursively(task):
     task_start = 0
     task_end = 0

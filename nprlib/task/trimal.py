@@ -6,7 +6,7 @@ log = logging.getLogger("main")
 
 from nprlib.master_task import AlgCleanerTask
 from nprlib.master_job import Job
-from nprlib.utils import SeqGroup, GLOBALS, TRIMAL_CITE
+from nprlib.utils import SeqGroup, GLOBALS, TRIMAL_CITE, hascontent
 from nprlib.errors import RetryException
 
 __all__ = ["Trimal"]
@@ -52,20 +52,24 @@ class Trimal(AlgCleanerTask):
         # Once executed, alignment is converted into relaxed
         # interleaved phylip format. Both files, fasta and phylip,
         # remain accessible.
-        alg = SeqGroup(self.clean_alg_fasta_file)
-        if len(alg) != self.size:
-            log.warning("Trimming is to aggressive and it tried"
-                        " to remove one or more sequences."
-                        " Alignment trimming will be disabled for this dataset."
-                        )
-            alg = SeqGroup(self.alg_fasta_file)
-            alg.write(outfile=self.clean_alg_phylip_file, format="iphylip_relaxed")
-            alg.write(outfile=self.clean_alg_fasta_file, format="fasta")
+        if hascontent(self.clean_alg_fasta_file) and \
+                hascontent(self.clean_alg_phylip_file):
+            log.log(24, "@@8:Reusing Clean alg file@@1:")
         else:
-            for line in open(self.jobs[0].stdout_file):
-                line = line.strip()
-                if line.startswith("#ColumnsMap"):
-                    self.kept_columns = map(int, line.split("\t")[1].split(","))
-            alg.write(outfile=self.clean_alg_phylip_file, format="iphylip_relaxed")
+            alg = SeqGroup(self.clean_alg_fasta_file)
+            if len(alg) != self.size:
+                log.warning("Trimming was to aggressive and it tried"
+                            " to remove one or more sequences."
+                            " Alignment trimming will be disabled for this dataset."
+                            )
+                alg = SeqGroup(self.alg_fasta_file)
+                alg.write(outfile=self.clean_alg_phylip_file, format="iphylip_relaxed")
+                alg.write(outfile=self.clean_alg_fasta_file, format="fasta")
+            else:
+                for line in open(self.jobs[0].stdout_file):
+                    line = line.strip()
+                    if line.startswith("#ColumnsMap"):
+                        self.kept_columns = map(int, line.split("\t")[1].split(","))
+                alg.write(outfile=self.clean_alg_phylip_file, format="iphylip_relaxed")
             
         AlgCleanerTask.finish(self)

@@ -72,6 +72,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
         # being used
         check_tasks = set()
         GLOBALS["cached_job_states"] = {}
+
         for task in pending_tasks:
             #show_task_info(task)
             if debug and log.level > 10 and task.taskid.startswith(debug):
@@ -94,15 +95,16 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
         # if the job has just ended, remove it from the list of
         # running jobs and decrease cores used
         cores_used = 0
+        launched_jobs = set()
         for job in list(GLOBALS["running_jobs"]):
             if job.status in set("DE"):
                 log.log(22, "@@8: Releasing %s cores" %job.cores)
                 GLOBALS["running_jobs"].discard(job)
             else:
                 cores_used += job.cores
-                
+            launched_jobs.add(job.jobid)
+            
         # Process waiting tasks
-        launched_jobs = set()
         for task in sorted(pending_tasks, sort_tasks):
             if task.status in set("WQRL"):
                 exec_type = getattr(task, "exec_type", execution)
@@ -187,14 +189,14 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
             # configid is the the same as threadid in master tasks
             final_tree_file = pjoin(GLOBALS[configid]["_outpath"],
                                     GLOBALS["inputname"] + ".final_tree")
-            threadname = GLOBALS[tid]["_name"]
+            threadname = GLOBALS[configid]["_name"]
             if configid in past_threads:
                 log.log(28, "Done thread @@12:%s@@1: in %d iterations",
                         threadname, past_threads[configid])
             else:
                 log.log(28, "Assembling final tree...")
                 main_tree, treeiters =  assembly_tree(configid)
-                past_threads[configid] = treeiters
+                past_threads[configid] = treeiters - 1
                 log.log(28, "Writing final tree for @@13:%s@@1: %s",
                         threadname, final_tree_file+".nwx")
                 main_tree.write(outfile=final_tree_file+".nw")
