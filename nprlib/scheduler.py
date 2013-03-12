@@ -70,7 +70,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
 
         # Check task status, update new states and compute total cores
         # being used
-
+        check_tasks = set()
         for task in pending_tasks:
             show_task_info(task)
             if debug and log.level > 10 and task.taskid.startswith(debug):
@@ -79,7 +79,9 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
             task.status = task.get_status(qstat_jobs)
             #cores_used += task.cores_used
             thread2tasks[task.configid].append(task)
-            update_task_states_recursively(task)
+            if task not in check_tasks: 
+                update_task_states_recursively(task)
+                check_tasks.add(task)
         db.commit()
         ## END CHECK AND UPDATE CURRENT TASKS
         ## ================================
@@ -132,7 +134,6 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                         print cmd
                 if task.status in set("QRL"):
                     wait_time = schedule_time 
-                log.log(28, "Launched %s tasks. Busy cores %s", launched_tasks, cores_used)
                 
             elif task.status == "D":
                 logindent(3)
@@ -165,6 +166,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
             logindent(-2)
 
         sge.launch_jobs(sge_jobs, config)
+        log.log(28, "Launched %s tasks. Busy cores %s", launched_tasks, cores_used)
         log.log(28, "Cores in use: %s/%s", cores_used, cores_total)
         if wait_time:
             log.log(28, "Wating %s seconds" %wait_time)
