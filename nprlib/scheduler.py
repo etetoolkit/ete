@@ -16,15 +16,27 @@ from nprlib.master_task import isjob, update_task_states_recursively
 from nprlib.template.common import assembly_tree
 
 def sort_tasks(x, y):
-    _x = getattr(x, "size", 0)
-    _y = getattr(y, "size", 0)
-    if _x > _y:
-        return -1
-    elif _x < _y:
-        return 1
-    else:
-        return 0
+    priority = {
+        "treemerger": 1,
+        "tree": 2,
+        "mchooser": 3, 
+        "alg": 4,
+        "concat_alg": 5,
+        "acleaner": 6,
+        "msf":7,
+        "cog_selector":8}
+
+    x_type_prio = priority.get(x.ttype, 100)
+    y_type_prio = priority.get(y.ttype, 100)
         
+    prio_cmp = cmp(x_type_prio, y_type_prio)
+    if prio_cmp == 0: 
+        x_size = getattr(x, "size", 0)
+        y_size = getattr(y, "size", 0)
+        return cmp(x_size, y_size) * -1
+    else:
+        return prio_cmp
+    
 def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, retry, debug):
     # Adjust debug mode
     if debug == "all":
