@@ -1,6 +1,6 @@
 import os
 from subprocess import Popen
-from time import sleep, ctime
+from time import sleep, ctime, time
 from collections import defaultdict
 import re
 import logging
@@ -56,7 +56,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
     past_threads = {}
     ## END OF VARS AND SHORTCUTS
     ## ===================================
-       
+
     # Enters into task scheduling
     while pending_tasks:
         sge_jobs = []
@@ -84,7 +84,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
         # being used
         check_tasks = set()
         GLOBALS["cached_job_states"] = {}
-
+        check_start_time = time()
         for task in pending_tasks:
             #show_task_info(task)
             if debug and log.level > 10 and task.taskid.startswith(debug):
@@ -100,6 +100,12 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
             elif log.level < 26:
                 show_task_info(task)
                 
+            # Avoids endless periods without new job submissions
+            elapsed_time = time() - check_start_time
+            if pending_tasks and elapsed_time > schedule_time * 3:
+                log.log(26, "@@8:Interrupting task checks to schedule new jobs@@1:")
+                break
+                            
         db.commit()
         ## END CHECK AND UPDATE CURRENT TASKS
         ## ================================
