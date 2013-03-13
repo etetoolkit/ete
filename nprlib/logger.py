@@ -19,6 +19,9 @@ def logindent(x):
     global __LOGINDENT__
     __LOGINDENT__ += x
 
+def get_logindent():
+    return __LOGINDENT__
+    
 def get_main_log(handler, level=20):
     # Prepares main log
     log = logging.getLogger("main")
