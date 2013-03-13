@@ -63,9 +63,16 @@ def process_task(task, npr_conf, nodeid2info):
     conf = GLOBALS[task.configid]
     new_tasks = []    
     if ttype == "cog_selector":
-        # register concat alignment task
+        # register concat alignment task. NodeId associated to
+        # concat_alg tasks and all its sibling jobs should take into
+        # account cog information and not only species and outgroups
+        # included.
         concat_job = concatclass(nodeid, task.cogs,
                                  seqtype, conf, concatconf)
+        db.add_node(threadid,
+                    concat_job.nodeid, cladeid,
+                    targets, outgroups)
+                                      
         concat_job.size = task.size
         new_tasks.append(concat_job)
        

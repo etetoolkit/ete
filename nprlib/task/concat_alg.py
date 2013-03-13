@@ -6,7 +6,7 @@ log = logging.getLogger("main")
 from nprlib.task import Msf
 from nprlib.master_task import ConcatAlgTask
 from nprlib.master_job import Job
-from nprlib.utils import SeqGroup, GLOBALS, generate_runid, strip, pexist
+from nprlib.utils import SeqGroup, GLOBALS, generate_runid, strip, pexist, md5
 from nprlib import db
 from nprlib.errors import TaskError
 
@@ -14,20 +14,24 @@ __all__ = ["ConcatAlg"]
 
 class ConcatAlg(ConcatAlgTask):
     def __init__(self, nodeid, cogs, seqtype, conf, confname):
+
         self.confname = confname
         self.conf = conf
-       
         self.cogs_hard_limit = int(conf[confname]["_max_cogs"])
+        used_cogs = cogs[:self.cogs_hard_limit]
+        cog_string = '#'.join([','.join(sorted(c)) for c in used_cogs])
+        cog_keyid = md5(cog_string)
+       
         base_args = {}
-        base_args["_max_cogs"] = self.cogs_hard_limit
-        
-        ConcatAlgTask.__init__(self, nodeid, "concat_alg", "ConcatAlg", 
+      
+        ConcatAlgTask.__init__(self, cog_keyid, "concat_alg", "ConcatAlg", 
                                base_args, conf[confname])
-              
-        self.cogs = cogs
+        self.avail_cogs = len(cogs)
+        self.used_cogs = len(used_cogs)
+        self.cogs = used_cogs
         self.seqtype = seqtype
         self.cog_ids = set()
-        self.used_cogs = len(self.cogs[:self.cogs_hard_limit])
+
         self.job2alg = {}
         self.job2model = {}
         if seqtype == "aa":
@@ -44,8 +48,10 @@ class ConcatAlg(ConcatAlgTask):
         # I want a single phylognetic tree for each cog
         from nprlib.template.genetree import pipeline
         
-        for co in self.cogs[:self.cogs_hard_limit]:
-            # Register a new msf task for each COG
+        for co in self.cogs:
+            # Register a new msf task for each COG, using the same
+            # config file but opening an new tree reconstruction
+            # thread.
             job = Msf(set(co), set(),
                       seqtype = self.seqtype)
             job.main_tree = None

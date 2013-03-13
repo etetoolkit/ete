@@ -412,6 +412,8 @@ def assembly_tree(runid):
     log.info("Assembling tree...")
     while task_nodes:
         cladeid, packtree, size = task_nodes.pop(-1)
+        if not packtree:
+            continue
         tree = db.decode(packtree)
 
         # print tree.dist
