@@ -153,24 +153,6 @@ generate_runid = lambda: md5(str(time.time()*random.random()))
 
 HOSTNAME = socket.gethostname()
 
-import errno
-def wrap(method, retries):
-    def fn(*args, **kwargs):
-        for i in xrange(retries):
-            try:
-                return method(*args, **kwargs)
-            except IOError, e:            
-                if e.errno == errno.EINTR:
-                    print >>sys.stderr, "A system call interruption was captured"
-                    print >>sys.stderr, "Retrying", i, "of", retries, "before exception rise"
-                    continue
-                else:
-                    raise
-    fn.retries = retries
-    return fn
-open = wrap(open, 2)
-raw_input = wrap(raw_input, 100)
-
 def rpath(fullpath):
     'Returns relative path of a task file (if possible)'
     m = re.search("/(tasks/.+)", fullpath)
