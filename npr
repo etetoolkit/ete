@@ -15,6 +15,28 @@ from time import ctime, time
 # same directory in which it is
 NPRPATH = os.path.split(os.path.realpath(__file__))[0]
 sys.path.insert(0, NPRPATH)
+
+import errno
+import __builtin__
+def wrap(method, retries):
+    def fn(*args, **kwargs):
+        for i in xrange(retries):
+            try:
+                return method(*args, **kwargs)
+            except IOError, e:            
+                if e.errno == errno.EINTR:
+                    print >>sys.stderr, "A system call interruption was captured"
+                    print >>sys.stderr, "Retrying", i, "of", retries, "until exception is raised"
+                    continue
+                else:
+                    raise
+    fn.retries = retries
+    return fn
+__builtin__.open = wrap(open, 2)
+os.popen = wrap(os.popen, 2)
+__builtin__.raw_input = wrap(raw_input, 100)
+
+
 from nprlib import argparse
 from nprlib.configobj import ConfigObj, flatten_errors
 from nprlib import validate
