@@ -32,10 +32,34 @@ def wrap(method, retries):
                     raise
     fn.retries = retries
     return fn
-__builtin__.open = wrap(open, 2)
-os.popen = wrap(os.popen, 2)
-__builtin__.raw_input = wrap(raw_input, 100)
 
+class safefile(file):
+    __retries = 2
+    def read(self, *args, **kargs):
+        for i in xrange(self.__retries):
+            try:
+                return file.read(self, *args, **kargs)
+            except IOError, e:            
+                if e.errno == errno.EINTR:
+                    print >>sys.stderr, "A system call interruption was captured"
+                    print >>sys.stderr, "Retrying", i, "of", self.__retries, "until exception is raised"
+                    continue
+                else:
+                    raise
+    def write(self, *args, **kargs):
+        for i in xrange(self.__retries):
+            try:
+                return file.read(self, *args, **kargs)
+            except IOError, e:            
+                if e.errno == errno.EINTR:
+                    print >>sys.stderr, "A system call interruption was captured"
+                    print >>sys.stderr, "Retrying", i, "of", self.__retries, "until exception is raised"
+                    continue
+                else:
+                    raise
+                
+__builtin__.file = safefile
+__builtin__.raw_input = wrap(raw_input, 100)
 
 from nprlib import argparse
 from nprlib.configobj import ConfigObj, flatten_errors
