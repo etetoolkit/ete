@@ -1,20 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import sys
-import os
-import shutil
-from StringIO import StringIO
-from collections import defaultdict
-import filecmp
-import logging
-from tempfile import NamedTemporaryFile        
-log = None
-import numpy
-from time import ctime, time
-# This avoids installing nprlib module. npr script will find it in the
-# same directory in which it is
-NPRPATH = os.path.split(os.path.realpath(__file__))[0]
-sys.path.insert(0, NPRPATH)
 
 import errno
 import __builtin__
@@ -60,6 +45,22 @@ class safefile(file):
                 
 __builtin__.file = safefile
 __builtin__.raw_input = wrap(raw_input, 100)
+ 
+import sys
+import os
+import shutil
+from StringIO import StringIO
+from collections import defaultdict
+import filecmp
+import logging
+from tempfile import NamedTemporaryFile        
+log = None
+import numpy
+from time import ctime, time
+# This avoids installing nprlib module. npr script will find it in the
+# same directory in which it is
+NPRPATH = os.path.split(os.path.realpath(__file__))[0]
+sys.path.insert(0, NPRPATH)
 
 from nprlib import argparse
 from nprlib.configobj import ConfigObj, flatten_errors
