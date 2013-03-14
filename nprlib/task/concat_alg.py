@@ -95,7 +95,7 @@ class ConcatAlg(ConcatAlgTask):
             log.log(20, "Done concat alg, now writting phylip")
             mainalg.write(outfile=self.alg_phylip_file, format="iphylip_relaxed")
             open(self.partitions_file, "w").write('\n'.join(partitions))
-            log.log(20, "Done concat alg")
+            log.log(28, "Done concat alg")
             log.log(26, "Modeled regions: \n"+'\n'.join(partitions))
                         
 def get_species_code(name, splitter, field):

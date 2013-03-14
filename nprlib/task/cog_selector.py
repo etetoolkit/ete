@@ -43,10 +43,10 @@ class BrhCogSelector(CogSelectorTask):
     def finish(self):
         if os.path.exists(self.cog_analysis_file) and \
            os.path.exists(self.cogs_file):
-            log.log(28, "@@8:Loading COGs from cache files@@1:")
             self.cog_analysis = cPickle.load(open(self.cog_analysis_file))
             self.cogs = cPickle.load(open(self.cogs_file))
-            log.log(28, "\n"+self.cog_analysis)
+            log.log(28, "%s COGs @@8:read from cached file@@1:" %len(self.cogs))
+            log.log(26, "\n"+self.cog_analysis)
         else: 
             all_species = self.targets | self.outgroups
             cogs, cog_analysis = brh_cogs(db, all_species,
@@ -67,8 +67,8 @@ class BrhCogSelector(CogSelectorTask):
             # sorting but kept among runs
             map(lambda x: x.sort(), self.cogs)
             self.cogs.sort(lambda x,y: cmp(md5(','.join(x)), md5(','.join(y))))
-                
-            log.log(28, "Dumping COGs into file")
+            log.log(28, "%s COGs detected" %len(self.cogs))                
+            log.log(26, "Dumping COGs into file")
             cPickle.dump(self.cog_analysis, open(self.cog_analysis_file, "w"))
             cPickle.dump(self.cogs, open(self.cogs_file, "w"))
             cPickle.dump(self.raw_cogs, open(self.cogs_file+".raw", "w"))
@@ -179,7 +179,7 @@ def brh_cogs(DB, species, missing_factor=0.0, seed_sp=None, min_score=0):
                 break
         return v
     
-    log.log(28, "Finding best COG selection...")
+    log.log(26, "Finding best COG selection...")
     cogs_selection.sort(_sort_cogs)
     lines = []
     for seed, all_cogs in cogs_selection:

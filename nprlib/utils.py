@@ -20,8 +20,9 @@ log = logging.getLogger("main")
 DEBUG = lambda: log.level <= 10
 hascontent = lambda f: pexist(f) and os.path.getsize(f) > 0
 GLOBALS = {
-    "running_jobs": set(),
-    "cached_job_states": {}
+    "running_jobs": set(), # Keeps a list of jobs consuming cpu
+    "cached_status": {}, # Saves job and task statuses by id to be
+                         # used them within the same get_status cycle
 }
 
 APP2CLASS = {
@@ -166,7 +167,10 @@ def ask(string, valid_values, default=-1, case_sensitive=False):
     if not case_sensitive:
         valid_values = [value.lower() for value in valid_values]
     while v not in valid_values:
-        v = raw_input("%s [%s]" % (string,','.join(valid_values) ))
+        try:
+            v = raw_input("%s [%s]" % (string,','.join(valid_values) ))
+        except IOError:
+            continue
         if v == '' and default>=0:
             v = valid_values[default]
         if not case_sensitive:

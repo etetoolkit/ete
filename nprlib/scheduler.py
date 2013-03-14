@@ -1,4 +1,5 @@
 import os
+import signal
 from subprocess import Popen
 from time import sleep, ctime, time
 from collections import defaultdict
@@ -9,12 +10,38 @@ log = logging.getLogger("main")
 from nprlib.logger import set_logindent, logindent, get_logindent
 from nprlib.utils import (generate_id, PhyloTree, NodeStyle, Tree,
                           DEBUG, NPR_TREE_STYLE, faces, GLOBALS,
-                          basename, pjoin)
+                          basename, pjoin, ask)
 from nprlib.errors import ConfigError, TaskError
 from nprlib import db, sge
-from nprlib.master_task import isjob, update_task_states_recursively
+from nprlib.master_task import (isjob, update_task_states_recursively,
+                                update_job_status)
 from nprlib.template.common import assembly_tree
 
+def signal_handler(_signal, _frame):
+    signal.signal(signal.SIGINT, lambda s,f: None)
+    db.commit()
+    ver = {28: "0", 26: "1", 24: "2", 22: "3", 20: "4", 10: "5"}
+    ver_level = log.level
+    print '\n\nYou pressed Ctrl+C!'
+    print 'q) quit'
+    print 'v) change verbosity level:', ver.get(ver_level, ver_level)
+    print 'd) enter debug mode'
+    print 'c) continue execution'
+    key = ask("   Choose:", ["q", "v", "d", "c"])
+    if key == "q":
+        raise KeyboardInterrupt
+    elif key == "d":
+        import pdb
+        pdb.set_trace()
+    elif key == "v":
+        vl = ask("new level", sorted(ver.values()))
+        new_level = sorted(ver.keys(), reverse=True)[int(vl)]
+        log.setLevel(new_level)
+    elif key == "d":
+        import pdb
+        pdb.set_trace()
+    signal.signal(signal.SIGINT, signal_handler)
+    
 def sort_tasks(x, y):
     priority = {
         "treemerger": 1,
@@ -25,7 +52,7 @@ def sort_tasks(x, y):
         "acleaner": 6,
         "msf":7,
         "cog_selector":8}
-
+    
     x_type_prio = priority.get(x.ttype, 100)
     y_type_prio = priority.get(y.ttype, 100)
         
@@ -38,14 +65,16 @@ def sort_tasks(x, y):
         return prio_cmp
     
 def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, retry, debug):
+    # Captures Ctrl-C
+    signal.signal(signal.SIGINT, signal_handler)
+    
     # Adjust debug mode
     if debug == "all":
         log.setLevel(10)
     pending_tasks = set(pending_tasks)
+    
     ## ===================================
-    ## INITIALIZE BASIC VARS AND SHORTCUTS
-
-    cores_total = GLOBALS["_max_cores"]
+    ## INITIALISE BASIC VARS 
     execution, run_detached = execution
     # keeps the count of how many times an error task has been retried
     task2retry = defaultdict(int)
@@ -61,7 +90,6 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
     while pending_tasks:
         wtime = 0.01
 
-        
         # ask SGE for running jobs
         if execution == "sge":
             sgeid2jobs = db.get_sge_tasks()
@@ -81,36 +109,48 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
             
         ## ================================
         ## CHECK AND UPDATE CURRENT TASKS
-        check_tasks = set()
-        GLOBALS["cached_job_states"] = {}
+        checked_tasks = set()
         check_start_time = time()
         to_add_tasks = set()
+        
+        GLOBALS["cached_status"] = {}
         for task in sorted(pending_tasks, sort_tasks):
-            #show_task_info(task)
+            # Avoids endless periods without new job submissions
+            elapsed_time = time() - check_start_time
+            if pending_tasks and elapsed_time > schedule_time * 2:
+                log.log(26, "@@8:Interrupting task checks to schedule new jobs@@1:")
+                db.commit()
+                wtime = launch_jobs(sorted(pending_tasks, sort_tasks),
+                                    execution, run_detached)
+                check_start_time = time()
+            
+            # Enter debuging mode if necessary
             if debug and log.level > 10 and task.taskid.startswith(debug):
-                log.setLevel(10) #start debugging
+                log.setLevel(10) 
                 log.debug("ENTERING IN DEBUGGING MODE")
-            #cores_used += task.cores_used
             thread2tasks[task.configid].append(task)
-            if task.taskid not in check_tasks:
+
+            # Update tasks and job statuses
+            if task.taskid not in checked_tasks:
                 show_task_info(task)
                 task.status = task.get_status(qstat_jobs)
                 update_task_states_recursively(task)
-                check_tasks.add(task.taskid)
+                checked_tasks.add(task.taskid)
             else:
-                task.status = "B"
-                if log.level < 26:
+                # Set temporary (B)locked state to avoids launching
+                # jobs from clones
+                task.status = "B" 
+                if log.level < 24:
                     show_task_info(task)
 
             if task.status == "D":
                 db.commit()                
                 show_task_info(task)
                 logindent(3)
-
-                to_add_tasks.update(workflow_task_processor(task))
+                create_tasks = workflow_task_processor(task)
                 logindent(-3)
+                to_add_tasks.update(create_tasks)
                 pending_tasks.discard(task)
-               
             elif task.status == "E":
                 db.commit()
                 log.error("Task contains errors")
@@ -124,21 +164,10 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                     db.commit()
                 else:
                     raise TaskError(task)
-                               
-            # Avoids endless periods without new job submissions
-            elapsed_time = time() - check_start_time
-            if pending_tasks and elapsed_time > schedule_time * 3:
-                log.log(26, "@@8:Interrupting task checks to schedule new jobs@@1:")
-                db.commit()
-                wtime = launch_jobs(sorted(pending_tasks, sort_tasks),
-                                    execution, run_detached,
-                                    cores_total)
-                check_start_time = time()
             
         db.commit()
         wtime = launch_jobs(sorted(pending_tasks, sort_tasks),
-                            execution, run_detached,
-                            cores_total)
+                            execution, run_detached)
 
         # Update global task list with recently added jobs to be check
         # during next cycle
@@ -181,10 +210,10 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
     log.log(28, "Done")
     GLOBALS["citator"].show()
 
-def launch_jobs(pending_tasks, execution, run_detached, cores_total):
+def launch_jobs(pending_tasks, execution, run_detached):
     if not execution:
         return None
-    
+    cores_total = GLOBALS["_max_cores"]
     prev_logindent = get_logindent()
     set_logindent(0)
     log.log(28, "==========================================================")
@@ -197,17 +226,20 @@ def launch_jobs(pending_tasks, execution, run_detached, cores_total):
     cores_used = 0
     launched_jobs = set()
     for job in list(GLOBALS["running_jobs"]):
+        job.get_status() # Quick update for fast jobs that may have ended  
         if job.status in set("DE"):
             log.log(22, "@@8: Releasing %s cores" %job.cores)
             GLOBALS["running_jobs"].discard(job)
         else:
             cores_used += job.cores
         launched_jobs.add(job.jobid)
-
+    db.commit()
+    
     del_tasks = set()
     add_tasks = set()
     sge_jobs = []
     launched_tasks = 0
+    waiting_jobs = 0
     wait_time = 0.01
     # Process waiting tasks
     for task in pending_tasks:
@@ -215,26 +247,27 @@ def launch_jobs(pending_tasks, execution, run_detached, cores_total):
             exec_type = getattr(task, "exec_type", execution)
             # Tries to send new jobs from this task
             for j, cmd in task.iter_waiting_jobs():
+                waiting_jobs += 1
                 if not check_cores(j, cores_used, cores_total, execution) or \
                         j.jobid in launched_jobs:
                     continue
 
                 if exec_type == "insitu":
-                    log.log(24, "Launching %s" %j)
+                    log.log(26, "  @@8:Launching@@1: %s from %s" %(j, task))
+                    log.debug("Command: %s", j.cmd_file)
                     launched_tasks += 1
                     try:
                         if run_detached:
                             launch_detached(j, cmd)
                         else:
                             running_proc = Popen(cmd, shell=True)
-                        GLOBALS["running_jobs"].add(j)
-                        launched_jobs.add(j.jobid)
-                        log.debug("Command: %s", j.cmd_file)
                     except Exception:
                         task.save_status("E")
                         task.status = "E"
                         raise
                     else:
+                        GLOBALS["running_jobs"].add(j)
+                        launched_jobs.add(j.jobid)
                         j.status = "R"
                         task.status = "R"
                         cores_used += j.cores
@@ -259,25 +292,28 @@ def launch_jobs(pending_tasks, execution, run_detached, cores_total):
         logindent(-2)
 
     sge.launch_jobs(sge_jobs, sge_config)
-    log.log(28, "Launched %s tasks. Busy cores %s", launched_tasks, cores_used)
+    log.log(28, "Launched %s of %s waiting jobs", launched_tasks, waiting_jobs)
     log.log(28, "Cores in use: %s/%s", cores_used, cores_total)
     log.log(28, "=======================================================")
     set_logindent(prev_logindent)
     return wait_time 
    
-      
-def show_task_info(task):
-    log.log(26, "")
-    set_logindent(1)
-    if task.status == "D":
+
+def color_status(status):
+    if status == "D":
         stcolor = "@@06:"
-    elif task.status == "E":
+    elif status == "E":
         stcolor = "@@03:"
-    elif task.status == "R":
+    elif status == "R":
         stcolor = "@@05:"
     else:
         stcolor = ""
-    log.log(28, "(%s%s@@1:) %s" % (stcolor, task.status, task))
+    return "%s%s@@1:" %(stcolor, status)
+
+def show_task_info(task):
+    log.log(26, "")
+    set_logindent(1)
+    log.log(28, "(%s) %s" % (color_status(task.status), task))
     logindent(2)
     st_info = ', '.join(["%d(%s)" % (v, k) for k, v in
                          task.job_status.iteritems()])

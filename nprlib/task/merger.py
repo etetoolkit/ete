@@ -202,7 +202,6 @@ class TreeMerger(TreeMergeTask):
                     single_out = outs.pop()
                     common = ttree.set_outgroup(single_out)
                     log.log(28, "@@8:First split rooting to 1 seq@@1:: %s" %(single_out))
-
                     
             self.main_tree = ttree
             orig_target = ttree

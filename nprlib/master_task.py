@@ -120,6 +120,11 @@ class Task(object):
                                        extra_args.iteritems() if pair[0].startswith("_")])))
         
     def get_status(self, sge_jobs=None):
+        # If another tasks with the same id (same work to be done) has
+        # been checked in the same cycle, reuse its information
+        if self.taskid in GLOBALS["cached_status"]:
+            return GLOBALS["cached_status"][self.taskid]
+        
         logindent(2)
         saved_status = db.get_task_status(self.taskid)
         self.job_status = self.get_jobs_status(sge_jobs)
@@ -137,7 +142,7 @@ class Task(object):
                 st = "D"
         elif job_status == set("D") and saved_status == "D":
             if self.status != "D":
-                #log.log(22, "@@8:reusing previous data@@1:")
+                #log.log(28, "@@8:reusing previous data@@1:")
                 try:
                     self.finish()
                 except RetryException:
@@ -171,6 +176,7 @@ class Task(object):
         #db.update_task(self.taskid, status=st)
         self.status = st
         logindent(-2)
+        GLOBALS["cached_status"][self.taskid] = st
         return st
 
     def dump_inkey_file(self, *files):
@@ -224,13 +230,17 @@ class Task(object):
         self.cores_used = 0
         all_states = defaultdict(int)
         jobs_to_check = set(reversed(self.jobs))
-        import gc
-        gc.disable()
         while jobs_to_check:
             j = jobs_to_check.pop()
             logindent(1)
-            if j not in self._donejobs:
+            jobid = j.taskid if istask(j) else j.jobid
+            if jobid in GLOBALS["cached_status"]:
+                log.log(28, "@@REcycling status %s" %j)
+                st = GLOBALS["cached_status"][jobid] # Cached value
+                all_states[st] += 1
+            elif j not in self._donejobs:
                 st = j.get_status(sge_jobs)
+                GLOBALS["cached_status"][jobid] = st # Cache job state 
                 all_states[st] += 1
                 if st == "D":
                     self._donejobs.add(j)
@@ -471,20 +481,23 @@ def update_task_states_recursively(task):
     task_end = 0
     for j in task.jobs:
         if isjob(j):
-            start = None
-            end = None
-            if j.status == "D":
-                try:
-                    start, end = read_time_file(j.time_file)
-                except Exception, e:
-                    log.warning("Execution time could not be loaded into DB: %s", j.jobid[:6])
-                    log.warning(e)
-                else:
-                    task_start = min(task_start, start) if task_start > 0 else start
-                    task_end = max(task_end, end)
-            db.update_task(j.jobid, status=j.status, tm_start=start, tm_end=end)
+            start, end = update_job_status(j)
         else:
-            update_task_states_recursively(j)
-    db.update_task(task.taskid, status=task.status, tm_start=task_start, tm_end=task_end)
-
+            start, end = update_task_states_recursively(j)
+        task_start = min(task_start, start) if task_start > 0 else start
+        task_end = max(task_end, end)
         
+    db.update_task(task.taskid, status=task.status, tm_start=task_start, tm_end=task_end)
+    return task_start, task_end
+
+def update_job_status(j):
+    start = None
+    end = None
+    if j.status == "D":
+        try:
+            start, end = read_time_file(j.time_file)
+        except Exception, e:
+            log.warning("Execution time could not be loaded into DB: %s", j.jobid[:6])
+            log.warning(e)
+    db.update_task(j.jobid, status=j.status, tm_start=start, tm_end=end)
+    return start, end

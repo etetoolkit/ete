@@ -133,9 +133,6 @@ class Job(object):
         #  Q.ueued
         #  R.unning
         #  L.ost
-        if self.jobid in GLOBALS["cached_job_states"]:
-            return GLOBALS["cached_job_states"][self.jobid]
-        
         if self.status not in set("DE"):
             jinfo = db.get_task_info(self.jobid)
             self.host = jinfo.get("host", None) or ""
@@ -162,8 +159,6 @@ class Job(object):
                         pass
                 elif self.host == HOSTNAME and not pid_up(self.pid):
                     st = "L"
-
-            GLOBALS["cached_job_states"][self.jobid] = st
             self.status = st
 
         return self.status
