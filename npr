@@ -385,7 +385,7 @@ def main(args):
        
     # Scheduling starts here
     log.log(28, "NPR starts now!")
-
+    
     # This initialises all pipelines
     pending_tasks = []
     start_time = ctime()
