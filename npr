@@ -21,6 +21,7 @@ def wrap(method, retries):
 class safefile(file):
     __retries = 2
     def read(self, *args, **kargs):
+        print "CAPTURADO"
         for i in xrange(self.__retries):
             try:
                 return file.read(self, *args, **kargs)
