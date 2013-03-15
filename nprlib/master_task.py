@@ -235,12 +235,13 @@ class Task(object):
             logindent(1)
             jobid = j.taskid if istask(j) else j.jobid
             if jobid in GLOBALS["cached_status"]:
-                log.log(28, "@@REcycling status %s" %j)
-                st = GLOBALS["cached_status"][jobid] # Cached value
+                log.log(22, "@@8:Recycling status@@1: %s" %j)
+                st = GLOBALS["cached_status"][jobid]
                 all_states[st] += 1
+                
             elif j not in self._donejobs:
                 st = j.get_status(sge_jobs)
-                GLOBALS["cached_status"][jobid] = st # Cache job state 
+                GLOBALS["cached_status"][jobid] = st
                 all_states[st] += 1
                 if st == "D":
                     self._donejobs.add(j)
@@ -261,6 +262,7 @@ class Task(object):
                     log.log(20, "  %s", errorpath)
             else:
                 all_states["D"] += 1
+                
             logindent(-1)              
         if not all_states:
             all_states["D"] +=1
@@ -319,7 +321,10 @@ class Task(object):
     def iter_waiting_jobs(self):
         for j in self.jobs:
             # Process only  jobs whose dependencies are satisfied
-            if j.status == "W" and not (j.dependencies - self._donejobs): 
+            st = j.status
+            #if isjob(j):
+            #    print "jobid", j.jobid, st
+            if st == "W" and not (j.dependencies - self._donejobs): 
                 if isjob(j):
                     j.dump_script()
                     cmd = "sh %s >%s 2>%s" %\

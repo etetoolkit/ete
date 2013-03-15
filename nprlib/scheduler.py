@@ -1,6 +1,6 @@
 import os
 import signal
-from subprocess import Popen
+import subprocess
 from multiprocessing import Process, Queue
 from Queue import Empty as QueueEmpty
 from time import sleep, ctime, time
@@ -32,6 +32,8 @@ def signal_handler(_signal, _frame):
     print 'c) continue execution'
     key = ask("   Choose:", ["q", "v", "d", "c"])
     if key == "q":
+        if GLOBALS["_background_scheduler"]:
+            GLOBALS["_background_scheduler"].terminate()
         raise KeyboardInterrupt
     elif key == "d":
         import pdb
@@ -63,7 +65,11 @@ def sort_tasks(x, y):
     if prio_cmp == 0: 
         x_size = getattr(x, "size", 0)
         y_size = getattr(y, "size", 0)
-        return cmp(x_size, y_size) * -1
+        size_cmp = cmp(x_size, y_size) * -1
+        if size_cmp == 0:
+            return cmp(x.threadid, y.threadid)
+        else:
+            return size_cmp
     else:
         return prio_cmp
     
@@ -95,10 +101,12 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
         back_launcher = Process(target=background_job_launcher,
                                 args=(job_queue, run_detached,
                                       schedule_time, cores_total-2))
+        GLOBALS["_background_scheduler"] = back_launcher
         back_launcher.start()
     else:
+        GLOBALS["_background_scheduler"] = None
         back_launcher = None
-    
+    BUG = set()
     # Enters into task scheduling
     while pending_tasks:
         wtime = schedule_time/2.0
@@ -127,7 +135,6 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
         to_add_tasks = set()
         
         GLOBALS["cached_status"] = {}
-       
         for task in sorted(pending_tasks, sort_tasks):
             # Avoids endless periods without new job submissions
             elapsed_time = time() - check_start_time
@@ -149,10 +156,19 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
             if task.taskid not in checked_tasks:
                 show_task_info(task)
                 task.status = task.get_status(qstat_jobs)
-                for j, cmd in task.iter_waiting_jobs():
-                    j.status = "Q"
-                    log.log(24, "  @@8:Queueing @@1: %s from %s" %(j, task))
-                    job_queue.put([j.jobid, j.cores, cmd, j.status_file])
+                if back_launcher:
+                    for j, cmd in task.iter_waiting_jobs():
+                        j.status = "Q"
+                        GLOBALS["cached_status"][j.jobid] = "Q"
+                        if j.jobid not in BUG:
+                            log.log(24, "  @@8:Queueing @@1: %s from %s" %(j, task))
+                            job_queue.put([j.jobid, j.cores, cmd, j.status_file])
+                        # if j.jobid in BUG:
+                        #     import sys
+                        #     back_launcher.terminate()
+                        #     print  '\n'.join(map(str,  GLOBALS["cached_status"].items()))
+                        #     sys.exit(-1)
+                        BUG.add(j.jobid)
                 update_task_states_recursively(task)
                 db.commit()
                 checked_tasks.add(task.taskid)
@@ -198,7 +214,8 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
         ## ================================
         
         if wtime:
-            log.log(28, "Waiting %s seconds" %wtime)
+            print
+            log.log(28, "@@13:Waiting %s seconds@@1:" %wtime)
             sleep(wtime)
         else:
             sleep(schedule_time)
@@ -277,9 +294,13 @@ def background_job_launcher(job_queue, run_detached, schedule_time, max_cores):
             open(st_file, "w").write("R")
             try:
                 if run_detached:
-                    launch_detached(cmd)
+                    subjob = Process(target=launch_detached_process, args=[cmd])
+                    subjob.daemon = True
+                    subjob.start()
+                    subjob.join()
+                   #launch_detached(cmd)
                 else:
-                    running_proc = Popen(cmd, shell=True)
+                    running_proc = subprocess.Popen(cmd, shell=True)
             except Exception:
                 open(st_file, "w").write("E")
             else:
@@ -293,10 +314,14 @@ def background_job_launcher(job_queue, run_detached, schedule_time, max_cores):
         log.log(28, "@@8:Launched@@1: %s jobs. Waiting %s jobs. Cores usage: %s/%s",
                 launched, waiting_jobs, cores_used, max_cores)
         for _d in dups:
-            print "duplicate bug", d
+            print "duplicate bug", _d
         
         sleep(schedule_time)
 
+def launch_detached_process(cmd):
+    os.system(cmd)
+
+        
     
 def launch_jobs(pending_tasks, execution, run_detached):
     if not execution:
@@ -347,9 +372,13 @@ def launch_jobs(pending_tasks, execution, run_detached):
                     try:
                         if run_detached:
                             j.status = "R"
-                            launch_detached(cmd)
+                            subjob = Process(target=launch_detached_process, args=[cmd])
+                            subjob.daemon = True
+                            subjob.start()
+                            subjob.join()
+                            #launch_detached(cmd)
                         else:
-                            running_proc = Popen(cmd, shell=True)
+                            running_proc = subprocess.Popen(cmd, shell=True)
                     except Exception:
                         task.save_status("E")
                         task.status = "E"
@@ -453,7 +482,7 @@ def launch_detached(cmd):
             if pid3 == 0:
                 os.chdir("/")
                 os.umask(0)
-                P = Popen(cmd, shell=True)
+                P = subprocess.Popen(cmd, shell=True)
                 P.wait()
                 os._exit(0)
             else:
