@@ -1,8 +1,10 @@
 import os
 import signal
 from subprocess import Popen
+from multiprocessing import Process, Queue
+from Queue import Empty as QueueEmpty
 from time import sleep, ctime, time
-from collections import defaultdict
+from collections import defaultdict, deque
 import re
 import logging
 log = logging.getLogger("main")
@@ -16,6 +18,7 @@ from nprlib import db, sge
 from nprlib.master_task import (isjob, update_task_states_recursively,
                                 update_job_status)
 from nprlib.template.common import assembly_tree
+
 
 def signal_handler(_signal, _frame):
     signal.signal(signal.SIGINT, lambda s,f: None)
@@ -86,9 +89,19 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
     ## END OF VARS AND SHORTCUTS
     ## ===================================
 
+    cores_total = GLOBALS["_max_cores"]
+    if cores_total > 2:
+        job_queue = Queue()
+        back_launcher = Process(target=background_job_launcher,
+                                args=(job_queue, run_detached,
+                                      schedule_time, cores_total-2))
+        back_launcher.start()
+    else:
+        back_launcher = None
+    
     # Enters into task scheduling
     while pending_tasks:
-        wtime = 0.01
+        wtime = schedule_time
 
         # ask SGE for running jobs
         if execution == "sge":
@@ -114,10 +127,12 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
         to_add_tasks = set()
         
         GLOBALS["cached_status"] = {}
+       
         for task in sorted(pending_tasks, sort_tasks):
             # Avoids endless periods without new job submissions
             elapsed_time = time() - check_start_time
-            if pending_tasks and elapsed_time > schedule_time * 2:
+            if not back_launcher and pending_tasks and \
+                    elapsed_time > schedule_time * 2:
                 log.log(26, "@@8:Interrupting task checks to schedule new jobs@@1:")
                 db.commit()
                 wtime = launch_jobs(sorted(pending_tasks, sort_tasks),
@@ -134,17 +149,22 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
             if task.taskid not in checked_tasks:
                 show_task_info(task)
                 task.status = task.get_status(qstat_jobs)
+                for j, cmd in task.iter_waiting_jobs():
+                    j.status = "Q"
+                    log.log(24, "  @@8:Queueing @@1: %s from %s" %(j, task))
+                    job_queue.put([j.jobid, j.cores, cmd, j.status_file])
                 update_task_states_recursively(task)
+                db.commit()
                 checked_tasks.add(task.taskid)
             else:
                 # Set temporary (B)locked state to avoids launching
                 # jobs from clones
-                task.status = "B" 
+                task.status = "Q" 
                 if log.level < 24:
                     show_task_info(task)
 
             if task.status == "D":
-                db.commit()                
+                #db.commit()                
                 show_task_info(task)
                 logindent(3)
                 create_tasks = workflow_task_processor(task)
@@ -152,7 +172,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                 to_add_tasks.update(create_tasks)
                 pending_tasks.discard(task)
             elif task.status == "E":
-                db.commit()
+                #db.commit()
                 log.error("Task contains errors")
                 if retry and task not in task2retry:
                     log.log(28, "@@8:Remarking task as undone to retry@@1:")
@@ -165,8 +185,9 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                 else:
                     raise TaskError(task)
             
-        db.commit()
-        wtime = launch_jobs(sorted(pending_tasks, sort_tasks),
+        #db.commit()
+        if not back_launcher: 
+            wtime = launch_jobs(sorted(pending_tasks, sort_tasks),
                             execution, run_detached)
 
         # Update global task list with recently added jobs to be check
@@ -177,7 +198,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
         ## ================================
         
         if wtime:
-            log.log(28, "Wating %s seconds" %wtime)
+            log.log(28, "Waiting %s seconds" %wtime)
             sleep(wtime)
         else:
             sleep(schedule_time)
@@ -206,10 +227,71 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
 
                 
         log.log(26, "")
+    if back_launcher:
+        back_launcher.terminate()
         
     log.log(28, "Done")
     GLOBALS["citator"].show()
 
+def background_job_launcher(job_queue, run_detached, schedule_time, max_cores):
+    running_jobs = {}
+    visited_ids = set()
+    # job_queue = [jid, cores, cmd, status_file]
+    
+    finished_states = set("ED")
+    cores_used = 0
+    pending_jobs = deque()
+    while True:
+        launched = 0
+        done_jobs = set()
+        for jid, (cores, cmd, st_file) in running_jobs.iteritems():
+            try:
+                st = open(st_file).read(1)
+            except IOError:
+                st = "?"
+            if st in finished_states:
+                cores_used -= cores
+                done_jobs.add(jid)
+        for d in done_jobs:
+            del running_jobs[d]
+            
+        cores_avail = max_cores - cores_used       
+        for i in xrange(cores_avail):
+            try:
+                jid, cores, cmd, st_file = job_queue.get(False)
+            except QueueEmpty:
+                pass
+            else:
+                pending_jobs.append([jid, cores, cmd, st_file])
+                
+            if pending_jobs and pending_jobs[0][1] <= cores_avail:
+                jid, cores, cmd, st_file = pending_jobs.popleft()
+                if jid in visited_ids:
+                    raise ValueError("DUPLICATED EXECUTION!")
+            else:
+                break
+            
+            open(st_file, "w").write("R")
+            try:
+                if run_detached:
+                    launch_detached(cmd)
+                else:
+                    running_proc = Popen(cmd, shell=True)
+            except Exception:
+                open(st_file, "w").write("E")
+            else:
+                launched += 1
+                running_jobs[jid] = [cores, cmd, st_file]
+                cores_used += cores
+                visited_ids.add(jid)
+
+                
+        waiting_jobs = job_queue.qsize() + len(pending_jobs)
+        log.log(28, "@@8:Launched@@1: %s jobs. Waiting %s jobs. Cores usage: %s/%s",
+                launched, waiting_jobs, cores_used, max_cores)
+        sleep(schedule_time)
+
+    
 def launch_jobs(pending_tasks, execution, run_detached):
     if not execution:
         return None
@@ -258,7 +340,8 @@ def launch_jobs(pending_tasks, execution, run_detached):
                     launched_tasks += 1
                     try:
                         if run_detached:
-                            launch_detached(j, cmd)
+                            j.status = "R"
+                            launch_detached(cmd)
                         else:
                             running_proc = Popen(cmd, shell=True)
                     except Exception:
@@ -283,7 +366,7 @@ def launch_jobs(pending_tasks, execution, run_detached):
             if task.status in set("QRL"):
                 wait_time = None
 
-        elif task.status == "B":
+        elif task.status == "Q":
             pass # task execution is temporarily blocked
         else:
             wait_time = None
@@ -353,9 +436,8 @@ def check_cores(j, cores_used, cores_total, execution):
         return True
     
 
-def launch_detached(j, cmd):
+def launch_detached(cmd):
     pid1 = os.fork()
-    j.status = "R"
     if pid1 == 0:
         pid2 = os.fork()
    
