@@ -101,7 +101,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
     
     # Enters into task scheduling
     while pending_tasks:
-        wtime = schedule_time
+        wtime = schedule_time/2.0
 
         # ask SGE for running jobs
         if execution == "sge":
@@ -157,7 +157,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                 db.commit()
                 checked_tasks.add(task.taskid)
             else:
-                # Set temporary (B)locked state to avoids launching
+                # Set temporary Queued state to avoids launching
                 # jobs from clones
                 task.status = "Q" 
                 if log.level < 24:
@@ -240,6 +240,7 @@ def background_job_launcher(job_queue, run_detached, schedule_time, max_cores):
     
     finished_states = set("ED")
     cores_used = 0
+    dups = set()
     pending_jobs = deque()
     while True:
         launched = 0
@@ -267,7 +268,9 @@ def background_job_launcher(job_queue, run_detached, schedule_time, max_cores):
             if pending_jobs and pending_jobs[0][1] <= cores_avail:
                 jid, cores, cmd, st_file = pending_jobs.popleft()
                 if jid in visited_ids:
-                    raise ValueError("DUPLICATED EXECUTION!")
+                    dups.add(jid)
+                    print "DUPLICATED execution!!!!!!!!!!!!", jid
+                    continue
             else:
                 break
             
@@ -289,6 +292,9 @@ def background_job_launcher(job_queue, run_detached, schedule_time, max_cores):
         waiting_jobs = job_queue.qsize() + len(pending_jobs)
         log.log(28, "@@8:Launched@@1: %s jobs. Waiting %s jobs. Cores usage: %s/%s",
                 launched, waiting_jobs, cores_used, max_cores)
+        for _d in dups:
+            print "duplicate bug", d
+        
         sleep(schedule_time)
 
     
