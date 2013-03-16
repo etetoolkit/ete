@@ -19,8 +19,6 @@ from nprlib import db, sge
 from nprlib.master_task import (isjob, update_task_states_recursively,
                                 update_job_status)
 from nprlib.template.common import assembly_tree
-import daemon
-
 
 def signal_handler(_signal, _frame):
     signal.signal(signal.SIGINT, lambda s,f: None)
@@ -103,7 +101,6 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
         back_launcher = Process(target=background_job_launcher,
                                 args=(job_queue, run_detached,
                                       schedule_time, cores_total-2))
-        back_launcher.daemon = True
         GLOBALS["_background_scheduler"] = back_launcher
         back_launcher.start()
     else:
