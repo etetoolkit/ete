@@ -250,8 +250,11 @@ def process_task(task, npr_conf, nodeid2info):
         #log.log(26, "Identity: max=%0.2f min=%0.2f mean=%0.2f +- %0.2f",
         #        mx, mn, mean, std)
         #t1 = time.time()
-        mx, mn, mean, std = get_statal_identity(task.alg_phylip_file,
+        if npr_conf.switch_aa_similarity < 1:
+            mx, mn, mean, std = get_statal_identity(task.alg_phylip_file,
                                                 conf["app"]["statal"])
+        else:
+            mx, mn, mean, std = 1, 1, 1, 0
         
         #print time.time()-t1
         #log.log(24, "Identity: max=%0.2f min=%0.2f mean=%0.2f +- %0.2f",

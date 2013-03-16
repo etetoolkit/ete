@@ -1,5 +1,6 @@
 import os
 import signal
+
 import subprocess
 from multiprocessing import Process, Queue
 from Queue import Empty as QueueEmpty
@@ -18,6 +19,7 @@ from nprlib import db, sge
 from nprlib.master_task import (isjob, update_task_states_recursively,
                                 update_job_status)
 from nprlib.template.common import assembly_tree
+import daemon
 
 
 def signal_handler(_signal, _frame):
@@ -101,6 +103,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
         back_launcher = Process(target=background_job_launcher,
                                 args=(job_queue, run_detached,
                                       schedule_time, cores_total-2))
+        back_launcher.daemon = True
         GLOBALS["_background_scheduler"] = back_launcher
         back_launcher.start()
     else:
@@ -163,12 +166,9 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                         if j.jobid not in BUG:
                             log.log(24, "  @@8:Queueing @@1: %s from %s" %(j, task))
                             job_queue.put([j.jobid, j.cores, cmd, j.status_file])
-                        # if j.jobid in BUG:
-                        #     import sys
-                        #     back_launcher.terminate()
-                        #     print  '\n'.join(map(str,  GLOBALS["cached_status"].items()))
-                        #     sys.exit(-1)
+
                         BUG.add(j.jobid)
+                        
                 update_task_states_recursively(task)
                 db.commit()
                 checked_tasks.add(task.taskid)
@@ -214,7 +214,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
         ## ================================
         
         if wtime:
-            print
+            set_logindent(0)
             log.log(28, "@@13:Waiting %s seconds@@1:" %wtime)
             sleep(wtime)
         else:
@@ -294,14 +294,21 @@ def background_job_launcher(job_queue, run_detached, schedule_time, max_cores):
             open(st_file, "w").write("R")
             try:
                 if run_detached:
-                    subjob = Process(target=launch_detached_process, args=[cmd])
-                    subjob.daemon = True
-                    subjob.start()
-                    subjob.join()
-                   #launch_detached(cmd)
+                    cmd += " &"
+                    subprocess.call(cmd, shell=True)
+                    #subjob = Process(target=launch_detached_process, args=[cmd])
+                    #subjob.daemon = True
+                    #subjob.start()
+                    #subjob.join()
+                    #print cmd
+                    #with context:
+                    #    launch_detached_process(cmd)
+                    #launch_detached(cmd)
+                    #os.system(cmd + " &")
                 else:
                     running_proc = subprocess.Popen(cmd, shell=True)
-            except Exception:
+            except Exception, e:
+                print e
                 open(st_file, "w").write("E")
             else:
                 launched += 1
