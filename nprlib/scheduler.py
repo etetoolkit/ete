@@ -186,7 +186,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                 pending_tasks.discard(task)
             elif task.status == "E":
                 #db.commit()
-                log.error("task contains errors: ")
+                log.error("task contains errors: %s " %task)
                 if retry and task not in task2retry:
                     log.log(28, "@@8:Remarking task as undone to retry@@1:")
                     task2retry[task] += 1
