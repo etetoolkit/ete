@@ -25,9 +25,8 @@ class FastTree(TreeTask):
         self.seqtype = seqtype
         self.tree_file = ""
         if model:
-            log.warning("FastTree does not support model selection. However, "
-                        "you could switch from JTT (default) to WAG by adding a "
-                        "-wag flag in the fastTree section of the config file.")
+            log.warning("FastTree does not support model selection")
+
         self.model = None
         self.lk = None
 

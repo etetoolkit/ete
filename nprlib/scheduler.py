@@ -186,7 +186,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                 pending_tasks.discard(task)
             elif task.status == "E":
                 #db.commit()
-                log.error("Task contains errors")
+                log.error("task contains errors: ")
                 if retry and task not in task2retry:
                     log.log(28, "@@8:Remarking task as undone to retry@@1:")
                     task2retry[task] += 1
@@ -293,15 +293,6 @@ def background_job_launcher(job_queue, run_detached, schedule_time, max_cores):
                 if run_detached:
                     cmd += " &"
                     subprocess.call(cmd, shell=True)
-                    #subjob = Process(target=launch_detached_process, args=[cmd])
-                    #subjob.daemon = True
-                    #subjob.start()
-                    #subjob.join()
-                    #print cmd
-                    #with context:
-                    #    launch_detached_process(cmd)
-                    #launch_detached(cmd)
-                    #os.system(cmd + " &")
                 else:
                     running_proc = subprocess.Popen(cmd, shell=True)
             except Exception, e:

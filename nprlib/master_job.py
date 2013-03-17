@@ -159,6 +159,8 @@ class Job(object):
                         pass
                 elif self.host == HOSTNAME and not pid_up(self.pid):
                     st = "L"
+            elif st == "E":
+                log.log(28, "@@10:Job error reported@@1: %s" %self)
             self.status = st
 
         return self.status
