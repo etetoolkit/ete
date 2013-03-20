@@ -304,7 +304,7 @@ def background_job_launcher(job_queue, run_detached, schedule_time, max_cores):
             else:
                 launched += 1
                 running_jobs[jid] = [cores, cmd, st_file]
-                cores_used += cores
+                cores_avail -= cores
                 visited_ids.add(jid)
 
                 
