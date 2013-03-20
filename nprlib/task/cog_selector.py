@@ -50,7 +50,7 @@ class BrhCogSelector(CogSelectorTask):
         else:
             tm_start = time.ctime()
             all_species = self.targets | self.outgroups
-            cogs, cog_analysis = brh_cogs(db, all_species,
+            cogs, cog_analysis = brh_cogs2(db, all_species,
                                           missing_factor=self.missing_factor,
                                           seed_sp=self.seed)
             self.raw_cogs = cogs
@@ -316,7 +316,10 @@ def brh_cogs2(DB, species, missing_factor=0.0, seed_sp=None, min_score=0):
     for cand in all_cogs:
         seqs.update([b for a,b  in cand if a == seed])
     pre_selected_seqs = set([v[0] for v in seed2size[seed]])
-    print "old method seqs", len(seqs), "new seqs", len(set(seed2size[seed])), "Common", len(seqs & pre_selected_seqs)
+    if len(seqs & pre_selected_seqs) != len(set(seed2size[seed])) or\
+            len(seqs & pre_selected_seqs) != len(seqs): 
+        print "old method seqs", len(seqs), "new seqs", len(set(seed2size[seed])), "Common", len(seqs & pre_selected_seqs)
+        raise ValueError("ooops")
         
     cog_sizes = [len(cog) for cog in all_cogs]
     cog_spsizes = [len(set([e[0] for e in cog])) for cog in all_cogs]
