@@ -4,6 +4,7 @@ import sqlite3
 import cPickle
 import base64
 import logging
+
 log = logging.getLogger("main")
 
 conn = None
@@ -264,7 +265,7 @@ def report(runid, filter_rules=None):
         filters += " AND " + custom_filter
     cmd = ('SELECT task.taskid, task.nodeid, task.parentid, node.cladeid, task.status, type, subtype, name,'
            ' target_size, out_size, tm_end-tm_start, tm_start, tm_end FROM task '
-           ' LEFT OUTER JOIN node ON task.nodeid = node.nodeid %s ' %filters)
+           ' LEFT JOIN node ON task.nodeid = node.nodeid %s ' %filters)
     #ORDER BY task.status ASC,target_size DESC;
     execute(cmd)
     report = cursor.fetchall()

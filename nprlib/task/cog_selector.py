@@ -91,6 +91,9 @@ def brh_cogs(DB, species, missing_factor=0.0, seed_sp=None, min_score=0):
     min_species = len(species) - round(missing_factor * len(species))
     
     if seed_sp == "auto":
+        # seed2size = get_sorted_seeds(seed_sp, species, species, min_species, DB)
+        # sort_seeds =  sorted([(len(size), sp) for sp, size in seed2size.iteritems()])
+        # sp_to_test = [sort_seeds[-1][1]]
         sp_to_test = list(species)
     elif seed_sp == "largest":
         cmd = """SELECT taxid, size FROM species"""
@@ -189,7 +192,7 @@ def brh_cogs(DB, species, missing_factor=0.0, seed_sp=None, min_score=0):
     analysis_txt = StringIO()
     print_as_table(lines[:25], stdout=analysis_txt,
                    header=["Seed","largest COG", "smallest COGs", "avg COG size", "total COGs"])
-    #log.log(28, "Analysis details:\n"+analysis_txt.getvalue())
+    log.log(28, "Analysis details:\n"+analysis_txt.getvalue())
     best_seed, best_cogs = cogs_selection[0]
     cog_sizes = [len(cog) for cog in best_cogs]
 
@@ -206,7 +209,161 @@ def brh_cogs(DB, species, missing_factor=0.0, seed_sp=None, min_score=0):
 
     return recoded_cogs, analysis_txt.getvalue()
  
+def brh_cogs2(DB, species, missing_factor=0.0, seed_sp=None, min_score=0):
+    """It scans all precalculate BRH relationships among the species
+       passed as an argument, and detects Clusters of Orthologs
+       according to several criteria:
 
+       min_score: the min coverage/overalp value required for a
+       blast to be a reliable hit.
+
+       missing_factor: the min percentage of species in which a
+       given seq must have  orthologs.
+
+    """
+    def _sort_cogs(cogs1, cogs2):
+        seed1, mx1, avg1, ncogs1 = cogs1
+        seed2, mx2, avg2, ncogs2 = cogs2
+        for i, j in ((mx1, mx2), (avg1, avg2), (ncogs1, ncogs2)):
+            v = -1 * cmp(i, j)
+            if v != 0:
+                break
+        return v
+    
+    log.log(26, "Searching BRH orthologs")
+    species = set(map(str, species))
+    
+    min_species = len(species) - round(missing_factor * len(species))
+    
+    if seed_sp == "auto":
+        sp_to_test = list(species)
+    elif seed_sp == "largest":
+        cmd = """SELECT taxid, size FROM species"""
+        db.seqcursor.execute(cmd)
+        sp2size = {}
+        for tax, counter in db.seqcursor.fetchall():
+            if tax in species: 
+                sp2size[tax] = counter
+            
+        sorted_sp = sorted(sp2size.items(), lambda x,y: cmp(x[1],y[1]))
+        log.log(24, sorted_sp[:6])
+        largest_sp = sorted_sp[-1][0]
+        sp_to_test = [largest_sp]
+        log.log(28, "Using %s as search seed. Proteome size=%s genes" %\
+            (largest_sp, sp2size[largest_sp]))
+    else:
+        sp_to_test = [str(seed_sp)]
+
+    analysis_txt = StringIO()
+    if sp_to_test:
+        log.log(26, "Finding best COG selection...")
+        seed2size = get_sorted_seeds(seed_sp, species, sp_to_test, min_species, DB)
+        size_analysis = []
+        for seedname, content in seed2size.iteritems():
+            cog_sizes = [size for seq, size in content]
+            mx, avg = numpy.max(cog_sizes), round(numpy.mean(cog_sizes))
+            size_analysis.append([seedname, mx, avg, len(content)])
+        size_analysis.sort(_sort_cogs)                
+        #print '\n'.join(map(str, size_analysis))
+        seed = size_analysis[0][0]
+        print_as_table(size_analysis[:25], stdout=analysis_txt,
+                   header=["Seed","largest COG", "avg COG size", "total COGs"])
+        if size_analysis[0][1] < len(species)-1:
+            print size_analysis[0][1]
+            raise ValueError("Current COG selection parameters do not permit to cover all species")
+       
+    log.log(28, analysis_txt.getvalue())
+    # The following loop tests each possible seed if none is
+    # specified.
+    log.log(28, "Computing Clusters of Orthologs groups (COGs)")
+    log.log(28, "Min number of species per COG: %d" %min_species)
+    cogs_selection = []
+    log.log(26,"Using seed species:%s", seed)
+    species_side1 = ','.join(map(quote, [s for s in species if str(s)>str(seed)]))
+    species_side2 = ','.join(map(quote, [s for s in species if str(s)<str(seed)]))
+    pairs1 = []
+    pairs2 = []
+    # Select all ids with matches in the target species, and
+    # return the total number of species covered by each of
+    # such ids.
+    if species_side1 != "":
+        cmd = """SELECT seqid1, taxid1, seqid2, taxid2 from ortho_pair WHERE
+            taxid1="%s" AND taxid2 IN (%s) """ % (seed, species_side1)
+        DB.orthocursor.execute(cmd)
+        pairs1 = DB.orthocursor.fetchall()
+
+    if species_side2 != "":
+        cmd = """SELECT seqid2, taxid2, seqid1, taxid1 from ortho_pair WHERE
+            taxid1 IN (%s) AND taxid2 = "%s" """ % (species_side2, seed)
+        DB.orthocursor.execute(cmd)
+        pairs2 = DB.orthocursor.fetchall()
+        
+    cog_candidates = defaultdict(set)
+    for seq1, sp1, seq2, sp2 in pairs1 + pairs2:
+        s1 = (sp1, seq1)
+        s2 = (sp2, seq2)
+        cog_candidates[(sp1, seq1)].update([s1, s2])
+
+    all_cogs = [cand for cand in cog_candidates.values() if
+                len(cand) >= min_species]
+
+    # CHECK CONSISTENCY
+    seqs = set()
+    for cand in all_cogs:
+        seqs.update([b for a,b  in cand if a == seed])
+    pre_selected_seqs = set([v[0] for v in seed2size[seed]])
+    print "old method seqs", len(seqs), "new seqs", len(set(seed2size[seed])), "Common", len(seqs & pre_selected_seqs)
+        
+    cog_sizes = [len(cog) for cog in all_cogs]
+    cog_spsizes = [len(set([e[0] for e in cog])) for cog in all_cogs]
+
+    if [1 for i in xrange(len(cog_sizes)) if cog_sizes[i] != cog_spsizes[i]]:
+        raise ValueError("Inconsistent COG found")
+            
+    if cog_sizes: 
+        cogs_selection.append([seed, all_cogs])
+    log.log(26, "Found %d COGs" % len(all_cogs))
+    
+    recoded_cogs = []
+    for cog in all_cogs:
+        named_cog = map(lambda x: "%s%s%s" %(x[0], GLOBALS["spname_delimiter"],x[1]), cog)
+        recoded_cogs.append(named_cog)
+
+    return recoded_cogs, analysis_txt.getvalue()
+
+
+def get_sorted_seeds(seed, species, sp_to_test, min_species, DB):
+    seed2count = {}
+    species = set(species)
+    for j, seed in enumerate(sp_to_test):
+        log.log(26,"Testing SIZE of new seed species:%s (%d/%d)", seed, j+1, len(sp_to_test))
+        pairs1 = []
+        pairs2 = []
+        cmd = """SELECT seqid1, GROUP_CONCAT(taxid2) FROM ortho_pair WHERE
+            taxid1="%s" GROUP BY (seqid1)""" % (seed)
+        DB.orthocursor.execute(cmd)
+        pairs1= DB.orthocursor.fetchall()
+
+        cmd = """SELECT seqid2, GROUP_CONCAT(taxid1) FROM ortho_pair WHERE
+            taxid2 = "%s" GROUP BY seqid2""" % (seed)
+        DB.orthocursor.execute(cmd)
+        pairs2 = DB.orthocursor.fetchall()
+
+
+        # Compute number of species for each seqid representing a cog
+        counter = defaultdict(set)
+        all_pairs = pairs1 + pairs2
+        for seqid, targets in all_pairs:
+            counter[seqid].update(set(targets.split(",")) & species)
+            
+        # Filter out too small COGs
+        valid_seqs = [(k, len(v)) for k, v in counter.iteritems() if
+                      len(v)>= min_species-1]
+        
+        seed2count[seed] = valid_seqs
+        log.log(28, "Seed species:%s COGs:%s" %(seed, len(seed2count[seed])))
+    return seed2count
+            
 def get_best_selection(cogs_selections, species):
     ALL_SPECIES = set(species)
     

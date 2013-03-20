@@ -285,10 +285,13 @@ def background_job_launcher(job_queue, run_detached, schedule_time, max_cores):
                     dups.add(jid)
                     print "DUPLICATED execution!!!!!!!!!!!!", jid
                     continue
+            elif pending_jobs:
+                log.log(28, "@@8:waiting for %s cores" %pending_jobs[0][1])
+                break
             else:
                 break
             
-            open(st_file, "w").write("R")
+            ST=open(st_file, "w"); ST.write("R"); ST.flush(); ST.close()
             try:
                 if run_detached:
                     cmd += " &"
@@ -297,7 +300,7 @@ def background_job_launcher(job_queue, run_detached, schedule_time, max_cores):
                     running_proc = subprocess.Popen(cmd, shell=True)
             except Exception, e:
                 print e
-                open(st_file, "w").write("E")
+                ST=open(st_file, "w"); ST.write("E"); ST.flush(); ST.close()
             else:
                 launched += 1
                 running_jobs[jid] = [cores, cmd, st_file]
