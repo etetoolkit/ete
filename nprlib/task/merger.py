@@ -127,36 +127,36 @@ class TreeMerger(TreeMergeTask):
             else:
                 outgroup = ttree & list(out_seqs)[0]
 
-            if outgroup is not ttree:
-                ttree.set_outgroup(outgroup)
-                
-                orig_target = self.main_tree.get_common_ancestor(target_seqs)
-                found_target = outgroup.get_sisters()[0]
+            if set(outgroup.get_leaf_names()) ^ out_seqs:
+                raise TaskError(self, "Monophyly of the selected outgroup could not be granted! Probably constrain tree failed.")
 
-                if DEBUG():
-                    for _seq in out_seqs:
-                        tar =  ttree & _seq
-                        tar.img_style["fgcolor"]="green"
-                        tar.img_style["size"] = 12
-                        tar.img_style["shape"] = "circle"
-                    outgroup.img_style["fgcolor"]="lightgreen"
-                    outgroup.img_style["size"]= 12
-                    found_target.img_style["bgcolor"] = "lightblue"
-                    NPR_TREE_STYLE.title.clear()
-                    NPR_TREE_STYLE.title.add_face(faces.TextFace("Optimized node. Outgroup is in green and distance to original partition is shown", fgcolor="blue"), 0)
-                    ttree.show(tree_style=NPR_TREE_STYLE)
-                    
-                ttree = ttree.get_common_ancestor(target_seqs)
-                outgroup.detach()
-                self.pre_iter_support = orig_target.support
-                # Use previous dist and support
-                ttree.dist = orig_target.dist
-                ttree.support = orig_target.support
-                parent = orig_target.up
-                orig_target.detach()
-                parent.add_child(ttree)
-            else:
-                raise TaskError("Outgroup was split")
+            ttree.set_outgroup(outgroup)
+
+            orig_target = self.main_tree.get_common_ancestor(target_seqs)
+            found_target = outgroup.get_sisters()[0]
+
+            if DEBUG():
+                for _seq in out_seqs:
+                    tar =  ttree & _seq
+                    tar.img_style["fgcolor"]="green"
+                    tar.img_style["size"] = 12
+                    tar.img_style["shape"] = "circle"
+                outgroup.img_style["fgcolor"]="lightgreen"
+                outgroup.img_style["size"]= 12
+                found_target.img_style["bgcolor"] = "lightblue"
+                NPR_TREE_STYLE.title.clear()
+                NPR_TREE_STYLE.title.add_face(faces.TextFace("Optimized node. Outgroup is in green and distance to original partition is shown", fgcolor="blue"), 0)
+                ttree.show(tree_style=NPR_TREE_STYLE)
+
+            ttree = ttree.get_common_ancestor(target_seqs)
+            outgroup.detach()
+            self.pre_iter_support = orig_target.support
+            # Use previous dist and support
+            ttree.dist = orig_target.dist
+            ttree.support = orig_target.support
+            parent = orig_target.up
+            orig_target.detach()
+            parent.add_child(ttree)
                
         else:
             # ROOTS FIRST ITERATION
@@ -193,8 +193,8 @@ class TreeMerger(TreeMergeTask):
                     common = ttree.get_common_ancestor(outs)
                     out_seqs = common.get_leaf_names()
                     if common is ttree:
-                        raise TaskError("Provided first split outgroup could not be granted:%s" %out_seqs)
-                    if strict_common_ancestor and set(out_seqs) - outs:
+                        raise TaskError("First split outgroup could not be granted:%s" %out_seqs)
+                    if strict_common_ancestor and set(out_seqs) ^ outs:
                         raise TaskError(self, "Monophyly of first split outgroup could not be granted:%s" %out_seqs)
                     log.log(28, "@@8:First split rooting to %d seqs@@1:: %s" %(len(out_seqs),out_seqs))
                     ttree.set_outgroup(common)

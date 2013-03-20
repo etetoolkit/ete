@@ -250,6 +250,22 @@ def get_node_info(threadid, nodeid):
     outgroups = decode(outgroups)
     return cladeid, targets, outgroups
 
+def print_node_by_clade(threadid, cladeid):
+    cmd = ('SELECT nodeid, target_seqs, out_seqs, newick FROM'
+           ' node WHERE runid="%s" AND cladeid="%s"' %(threadid,
+           cladeid))
+
+    execute(cmd)
+    newicks = []
+    for nodeid, targets, outgroups, newick in cursor.fetchall():
+        targets = decode(targets)
+        outgroups = decode(outgroups)
+        if newick:
+            print threadid, nodeid, len(targets), len(outgroups),len(decode(newick))
+            return targets, outgroups
+        else:
+            print 
+
 def get_runid_nodes(runid):
     cmd = ('SELECT cladeid, newick, target_size FROM node'
            ' WHERE runid="%s" ORDER BY target_size DESC' %(runid))

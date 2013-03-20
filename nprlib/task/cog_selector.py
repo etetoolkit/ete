@@ -11,7 +11,7 @@ log = logging.getLogger("main")
 from nprlib.master_task import CogSelectorTask
 from nprlib.errors import DataError
 from nprlib.utils import (GLOBALS, print_as_table, generate_node_ids,
-                          encode_seqname, md5)
+                          encode_seqname, md5, pjoin)
 from nprlib import db
 
 __all__ = ["BrhCogSelector"]
@@ -47,7 +47,8 @@ class BrhCogSelector(CogSelectorTask):
             self.cogs = cPickle.load(open(self.cogs_file))
             log.log(28, "%s COGs @@8:read from cached file@@1:" %len(self.cogs))
             log.log(26, "\n"+self.cog_analysis)
-        else: 
+        else:
+            tm_start = time.ctime()
             all_species = self.targets | self.outgroups
             cogs, cog_analysis = brh_cogs(db, all_species,
                                           missing_factor=self.missing_factor,
@@ -72,7 +73,10 @@ class BrhCogSelector(CogSelectorTask):
             cPickle.dump(self.cog_analysis, open(self.cog_analysis_file, "w"))
             cPickle.dump(self.cogs, open(self.cogs_file, "w"))
             cPickle.dump(self.raw_cogs, open(self.cogs_file+".raw", "w"))
-
+            tm_end = time.ctime()
+            open(pjoin(self.taskdir, "__time__"), "w").write(
+                '\n'.join([tm_start, tm_end]))
+            
 def brh_cogs(DB, species, missing_factor=0.0, seed_sp=None, min_score=0):
     """It scans all precalculate BRH relationships among the species
        passed as an argument, and detects Clusters of Orthologs
