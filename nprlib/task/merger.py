@@ -120,7 +120,7 @@ class TreeMerger(TreeMergeTask):
                 #first root to a single seqs outside the outgroup
                 #(should never fail and avoids random outgroup split
                 #problems in unrooted trees)
-                ttree.set_outgroup(t & list(target_seqs)[0])
+                ttree.set_outgroup(ttree & list(target_seqs)[0])
                 # Now tries to get the outgroup node as a monophyletic clade
                 outgroup = ttree.get_common_ancestor(out_seqs)
                 if set(outgroup.get_leaf_names()) ^ out_seqs:
