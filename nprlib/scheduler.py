@@ -194,10 +194,17 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                 #db.commit()                
                 show_task_info(task)
                 logindent(3)
-                create_tasks = workflow_task_processor(task)
-                logindent(-3)
-                to_add_tasks.update(create_tasks)
-                pending_tasks.discard(task)
+                try:
+                    create_tasks = workflow_task_processor(task)
+                except TaskError, e:
+                    log.error("Errors found in %s" %task)
+                    pending_tasks.discard(task)
+                    thread_errors[task.configid].append([task, e.value, e.msg])
+                    continue
+                else: 
+                    logindent(-3)
+                    to_add_tasks.update(create_tasks)
+                    pending_tasks.discard(task)
             elif task.status == "E":
                 #db.commit()
                 log.error("task contains errors: %s " %task)

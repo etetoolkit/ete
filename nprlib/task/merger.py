@@ -301,14 +301,12 @@ def dump_tree_debug(msg, taskdir, mtree, ttree, target_seqs, out_seqs):
             for n in ttree.get_leaves():
                 if n.name in out_seqs:
                     n.name = n.name + " *__OUTGROUP__*"
-                if n.name in target_seqs:
-                    n.name = n.name + " *__TARGET__*"
         if mtree: 
             for n in mtree.get_leaves():
                 if n.name in out_seqs:
                     n.name = n.name + " *__OUTGROUP__*"
                 if n.name in target_seqs:
-                    n.name = n.name + " *__TARGET__*"
+                    n.name = n.name + " [ TARGET ]"
 
         OUT = open(pjoin(taskdir, "__debug__"), "w")
         print >>OUT, msg

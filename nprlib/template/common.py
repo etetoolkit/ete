@@ -6,7 +6,7 @@ import numpy
 from nprlib.utils import DEBUG, GLOBALS, SeqGroup, APP2CLASS
 from nprlib import task as all_tasks
 from nprlib import db
-from nprlib.errors import ConfigError, DataError
+from nprlib.errors import ConfigError, DataError, TaskError
 from nprlib.master_task import register_task_recursively
 
 log = logging.getLogger("main")
@@ -246,7 +246,7 @@ def split_tree(task_tree, main_tree, alg_path, npr_conf, threadid):
                 splitterconf = GLOBALS[threadid][splitterconfname]
                 seqs, outs = select_outgroups(node, n2content, splitterconf)
             if seqs | outs == root_content:
-                log.log(28, "Discarding NPR node due to identity with its parent")
+                log.log(28, "Discarding NPR node due to perfect identity with its parent")
                 trees_to_browse.append(node)
             else:
                 npr_nodes += 1
@@ -270,7 +270,7 @@ def get_next_npr_node(threadid, ttree, mtree, alg_path, npr_conf):
                 node.img_style["fgcolor"] = "Gold"
                 node.img_style["size"] = 30
 
-            log.log(28, "Selected node = targets:%s outgroups: %s ", len(seqs), len(outs))
+            log.log(28, "Selected node: %s targets, %s outgroups", len(seqs), len(outs))
             # Yield new iteration
             inc_iternumber(threadid)
             yield node, seqs, outs
@@ -299,9 +299,9 @@ def select_outgroups(target, n2content, splitterconf):
     out_min_support = float(splitterconf["_outgroup_min_support"])
     
     if not target.up:
-        raise ValueError("Cannot select outgroups for root node!")
+        raise TaskError(None, "Cannot select outgroups for the root node!")
     if not optimal_out_size:
-        raise ValueError("You are trying to set 0 outgroups!")
+        raise TaskError(None, "You are trying to set 0 outgroups!")
     
     n2targetdist = distance_matrix_new(target, leaf_only=False,
                                                topology_only=out_topodist)
@@ -341,7 +341,12 @@ def select_outgroups(target, n2content, splitterconf):
         
     #del n2targetdist[target.get_tree_root()]
     max_dist = max(n2targetdist.values())
-    valid_nodes = [n for n in n2targetdist if not n2content[n] & n2content[target]]
+    valid_nodes = [n for n in n2targetdist if \
+                       not n2content[n] & n2content[target] and
+                       n.support >= out_min_support]
+    if not valid_nodes:
+        raise TaskError(None, "Could not find a suitable outgroup (min_support=%s)"\
+                      %out_min_support)
     valid_nodes.sort(sort_outgroups, reverse=True)
     best_outgroup = valid_nodes[0]
 
@@ -353,7 +358,6 @@ def select_outgroups(target, n2content, splitterconf):
     log.log(20, "Supports: %0.2f (children=%s)", best_outgroup.support,
             ','.join(["%0.2f" % ch.support for ch in
                       best_outgroup.children]))
-
     
     #for x in valid_nodes[:10]:
     #    print score(x), min(score(x))
