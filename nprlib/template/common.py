@@ -403,13 +403,11 @@ def distance_matrix_new(target, leaf_only=False, topology_only=False):
 
 
 def assembly_tree(runid):
-    log.info("Reading nodes from database...")
     task_nodes = db.get_runid_nodes(runid)
     task_nodes.reverse()
     
     main_tree = None
     iternumber = 1
-    log.info("Assembling tree...")
     while task_nodes:
         cladeid, packtree, size = task_nodes.pop(-1)
         if not packtree:

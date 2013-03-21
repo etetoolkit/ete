@@ -20,6 +20,10 @@ from nprlib.master_task import (isjob, update_task_states_recursively,
                                 update_job_status)
 from nprlib.template.common import assembly_tree
 
+def debug(_signal, _frame):
+    import pdb
+    pdb.set_trace()
+    
 def signal_handler(_signal, _frame):
     if "_background_scheduler" in GLOBALS:
         GLOBALS["_background_scheduler"].terminate()
@@ -37,8 +41,9 @@ def signal_handler(_signal, _frame):
     if key == "q":
         raise KeyboardInterrupt
     elif key == "d":
-        import pdb
-        pdb.set_trace()
+        signal.signal(signal.SIGALRM, debug)
+        signal.alarm(1)
+        return
     elif key == "v":
         vl = ask("new level", sorted(ver.values()))
         new_level = sorted(ver.keys(), reverse=True)[int(vl)]
@@ -174,7 +179,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                     db.commit()
                     checked_tasks.add(task.taskid)
                 except TaskError, e:
-                    log.error("Errors found in %s")
+                    log.error("Errors found in %s" %task)
                     pending_tasks.discard(task)
                     thread_errors[task.configid].append([task, e.value, e.msg])
                     continue
@@ -234,7 +239,12 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                         (GLOBALS[configid]["_name"]))
             for error in etasks:
                 log.error(" ** %s" %error[0])
-                log.error("      -> %s" %error[1])
+               
+                e_obj = error[1] if error[1] else error[0]
+                error_path = e_obj.jobdir if isjob(e_obj) else e_obj.taskdir
+                if e_obj is not error[0]: 
+                    log.error("      -> %s" %e_obj)
+                log.error("      -> %s" %error_path)
                 log.error("        -> %s" %error[2])
             
         pending_threads = set([ts.configid for ts in pending_tasks])

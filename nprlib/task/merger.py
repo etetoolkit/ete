@@ -7,7 +7,7 @@ from nprlib.master_task import TreeMergeTask
 from nprlib.master_job import Job
 from nprlib.utils import (load_node_size, PhyloTree, SeqGroup, generate_id,
                           get_node2content, NPR_TREE_STYLE, NodeStyle, DEBUG,
-                          faces, GLOBALS)
+                          faces, pjoin, GLOBALS)
 from nprlib import db
 from nprlib.errors import TaskError
 
@@ -124,7 +124,9 @@ class TreeMerger(TreeMergeTask):
                 # Now tries to get the outgroup node as a monophyletic clade
                 outgroup = ttree.get_common_ancestor(out_seqs)
                 if set(outgroup.get_leaf_names()) ^ out_seqs:
-                    raise TaskError(self, "Monophyly of the selected outgroup could not be granted! Probably constrain tree failed.")
+                    msg = "Monophyly of the selected outgroup could not be granted! Probably constrain tree failed."
+                    dump_tree_debug(msg, self.taskdir, mtree, ttree, out_seqs)
+                    raise TaskError(self, msg)
             else:
                 outgroup = ttree & list(out_seqs)[0]
 
@@ -174,7 +176,7 @@ class TreeMerger(TreeMergeTask):
                     # ancestor of two or more OTUs
                     strict_common_ancestor = False
                     outs = set(mainout[1:].split())
-                    if len(outs) < 2:
+                    if len(outs) < 2:          
                         raise TaskError(self, "First split outgroup error: common "
                                         "ancestor calculation requires at least two OTU names")
                 else:
@@ -190,9 +192,14 @@ class TreeMerger(TreeMergeTask):
                     common = ttree.get_common_ancestor(outs)
                     out_seqs = common.get_leaf_names()
                     if common is ttree:
-                        raise TaskError("First split outgroup could not be granted:%s" %out_seqs)
+                        msg = "First split outgroup could not be granted:%s" %out_seqs
+                        dump_tree_debug(msg, self.taskdir, mtree, ttree, outs)
+                        raise TaskError(self, msg)
                     if strict_common_ancestor and set(out_seqs) ^ outs:
-                        raise TaskError(self, "Monophyly of first split outgroup could not be granted:%s" %out_seqs)
+                        msg = "Monophyly of first split outgroup could not be granted:%s" %out_seqs
+                        dump_tree_debug(msg, self.taskdir, mtree, ttree, outs)
+                        raise TaskError(self, msg)
+                    
                     log.log(28, "@@8:First split rooting to %d seqs@@1:: %s" %(len(out_seqs),out_seqs))
                     ttree.set_outgroup(common)
                 else:
@@ -286,5 +293,23 @@ def distance_matrix_new(target, leaf_only=False, topology_only=False):
     #         raw_input("ERROR")
     return n2dist
     
-        
+def dump_tree_debug(msg, taskdir, mtree, ttree, out_seqs):
+    try:
+        if ttree and out_seqs: 
+            for n in ttree.get_leaves():
+                if n.name in out_seqs:
+                    n.name = n.name + " *__OUTGROUP__*"
+        if mtree and out_seqs: 
+            for n in mtree.get_leaves():
+                if n.name in out_seqs:
+                    n.name = n.name + " *__OUTGROUP__*"
+        OUT = open(pjoin(taskdir, "__debug__"), "w")
+        print >>OUT, msg
+        print >>OUT, "MainTree:", mtree
+        print >>OUT, "TaskTree:", ttree
+        print >>OUT, "Expected outgroups:", out_seqs
+        OUT.close()
+    except Exception, e:
+        print e
+
       
