@@ -125,7 +125,7 @@ class TreeMerger(TreeMergeTask):
                 outgroup = ttree.get_common_ancestor(out_seqs)
                 if set(outgroup.get_leaf_names()) ^ out_seqs:
                     msg = "Monophyly of the selected outgroup could not be granted! Probably constrain tree failed."
-                    dump_tree_debug(msg, self.taskdir, mtree, ttree, out_seqs)
+                    dump_tree_debug(msg, self.taskdir, mtree, ttree, target_seqs, out_seqs)
                     raise TaskError(self, msg)
             else:
                 outgroup = ttree & list(out_seqs)[0]
@@ -193,11 +193,11 @@ class TreeMerger(TreeMergeTask):
                     out_seqs = common.get_leaf_names()
                     if common is ttree:
                         msg = "First split outgroup could not be granted:%s" %out_seqs
-                        dump_tree_debug(msg, self.taskdir, mtree, ttree, outs)
+                        dump_tree_debug(msg, self.taskdir, mtree, ttree, target_seqs, outs)
                         raise TaskError(self, msg)
                     if strict_common_ancestor and set(out_seqs) ^ outs:
                         msg = "Monophyly of first split outgroup could not be granted:%s" %out_seqs
-                        dump_tree_debug(msg, self.taskdir, mtree, ttree, outs)
+                        dump_tree_debug(msg, self.taskdir, mtree, ttree, target_seqs, outs)
                         raise TaskError(self, msg)
                     
                     log.log(28, "@@8:First split rooting to %d seqs@@1:: %s" %(len(out_seqs),out_seqs))
@@ -293,16 +293,23 @@ def distance_matrix_new(target, leaf_only=False, topology_only=False):
     #         raw_input("ERROR")
     return n2dist
     
-def dump_tree_debug(msg, taskdir, mtree, ttree, out_seqs):
+def dump_tree_debug(msg, taskdir, mtree, ttree, target_seqs, out_seqs):
     try:
-        if ttree and out_seqs: 
+        if out_seqs is None: out_seqs = set()
+        if target_seqs is None: target_seqs = set()            
+        if ttree: 
             for n in ttree.get_leaves():
                 if n.name in out_seqs:
                     n.name = n.name + " *__OUTGROUP__*"
-        if mtree and out_seqs: 
+                if n.name in target_seqs:
+                    n.name = n.name + " *__TARGET__*"
+        if mtrees: 
             for n in mtree.get_leaves():
                 if n.name in out_seqs:
                     n.name = n.name + " *__OUTGROUP__*"
+                if n.name in target_seqs:
+                    n.name = n.name + " *__TARGET__*"
+
         OUT = open(pjoin(taskdir, "__debug__"), "w")
         print >>OUT, msg
         print >>OUT, "MainTree:", mtree
