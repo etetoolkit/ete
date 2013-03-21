@@ -117,21 +117,18 @@ class TreeMerger(TreeMergeTask):
             #log.log(22, "Out seqs:    %s", len(out_seqs))
             #log.log(22, "Target seqs: %s", target_seqs)
             if len(out_seqs) > 1:
+                #first root to a single seqs outside the outgroup
+                #(should never fail and avoids random outgroup split
+                #problems in unrooted trees)
+                ttree.set_outgroup(t & list(target_seqs)[0])
+                # Now tries to get the outgroup node as a monophyletic clade
                 outgroup = ttree.get_common_ancestor(out_seqs)
-                # if out_seqs are not grouped in a single node
-                if outgroup is ttree:
-                    # root to target seqs and retry out_seqs
-                    target = ttree.get_common_ancestor(target_seqs)
-                    ttree.set_outgroup(target)
-                    outgroup = ttree.get_common_ancestor(out_seqs)
+                if set(outgroup.get_leaf_names()) ^ out_seqs:
+                    raise TaskError(self, "Monophyly of the selected outgroup could not be granted! Probably constrain tree failed.")
             else:
                 outgroup = ttree & list(out_seqs)[0]
 
-            if set(outgroup.get_leaf_names()) ^ out_seqs:
-                raise TaskError(self, "Monophyly of the selected outgroup could not be granted! Probably constrain tree failed.")
-
             ttree.set_outgroup(outgroup)
-
             orig_target = self.main_tree.get_common_ancestor(target_seqs)
             found_target = outgroup.get_sisters()[0]
 

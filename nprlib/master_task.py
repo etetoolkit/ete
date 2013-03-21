@@ -8,7 +8,7 @@ from nprlib.utils import (md5, merge_arg_dicts, PhyloTree, SeqGroup,
                           checksum, read_time_file, generate_runid,
                           GLOBALS)
 from nprlib.master_job import Job
-from nprlib.errors import RetryException
+from nprlib.errors import RetryException, TaskError
 from nprlib import db
 
 isjob = lambda j: isinstance(j, Job)
@@ -169,8 +169,7 @@ class Task(object):
 
         if st == "D":
             if not self.check():
-                log.error("Task check not passed")
-                st = "E"
+                raise TaskError(self, "Task check not passed")
                 
         #self.save_status(st)
         #db.update_task(self.taskid, status=st)
@@ -257,9 +256,8 @@ class Task(object):
                     elif istask(j):
                         self.cores_used += j.cores_used
                 elif st == "E":
-                    log.log(20, "Error found in: %s", j)
                     errorpath = j.jobdir if isjob(j) else j.taskdir
-                    log.log(20, "  %s", errorpath)
+                    raise TaskError(j, "Job execution error %s" %errorpath)
             else:
                 all_states["D"] += 1
                 

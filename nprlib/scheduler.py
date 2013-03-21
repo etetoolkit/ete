@@ -21,6 +21,9 @@ from nprlib.master_task import (isjob, update_task_states_recursively,
 from nprlib.template.common import assembly_tree
 
 def signal_handler(_signal, _frame):
+    if "_background_scheduler" in GLOBALS:
+        GLOBALS["_background_scheduler"].terminate()
+
     signal.signal(signal.SIGINT, lambda s,f: None)
     db.commit()
     ver = {28: "0", 26: "1", 24: "2", 22: "3", 20: "4", 10: "5"}
@@ -32,8 +35,6 @@ def signal_handler(_signal, _frame):
     print 'c) continue execution'
     key = ask("   Choose:", ["q", "v", "d", "c"])
     if key == "q":
-        if GLOBALS["_background_scheduler"]:
-            GLOBALS["_background_scheduler"].terminate()
         raise KeyboardInterrupt
     elif key == "d":
         import pdb
@@ -74,9 +75,7 @@ def sort_tasks(x, y):
         return prio_cmp
     
 def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, retry, debug):
-    # Captures Ctrl-C
-    signal.signal(signal.SIGINT, signal_handler)
-    
+
     # Adjust debug mode
     if debug == "all":
         log.setLevel(10)
@@ -92,6 +91,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
         thread2tasks[task.configid].append(task)
     expected_threads = set(thread2tasks.keys())
     past_threads = {}
+    thread_errors = defaultdict(list)
     ## END OF VARS AND SHORTCUTS
     ## ===================================
 
@@ -104,8 +104,11 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
         GLOBALS["_background_scheduler"] = back_launcher
         back_launcher.start()
     else:
-        GLOBALS["_background_scheduler"] = None
         back_launcher = None
+
+    # Captures Ctrl-C
+    signal.signal(signal.SIGINT, signal_handler)
+
     BUG = set()
     # Enters into task scheduling
     while pending_tasks:
@@ -153,22 +156,28 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
             thread2tasks[task.configid].append(task)
 
             # Update tasks and job statuses
-            if task.taskid not in checked_tasks:
-                show_task_info(task)
-                task.status = task.get_status(qstat_jobs)
-                if back_launcher:
-                    for j, cmd in task.iter_waiting_jobs():
-                        j.status = "Q"
-                        GLOBALS["cached_status"][j.jobid] = "Q"
-                        if j.jobid not in BUG:
-                            log.log(24, "  @@8:Queueing @@1: %s from %s" %(j, task))
-                            job_queue.put([j.jobid, j.cores, cmd, j.status_file])
 
-                        BUG.add(j.jobid)
-                        
-                update_task_states_recursively(task)
-                db.commit()
-                checked_tasks.add(task.taskid)
+            if task.taskid not in checked_tasks:
+                try:
+                    show_task_info(task)
+                    task.status = task.get_status(qstat_jobs)
+                    if back_launcher:
+                        for j, cmd in task.iter_waiting_jobs():
+                            j.status = "Q"
+                            GLOBALS["cached_status"][j.jobid] = "Q"
+                            if j.jobid not in BUG:
+                                log.log(24, "  @@8:Queueing @@1: %s from %s" %(j, task))
+                                job_queue.put([j.jobid, j.cores, cmd, j.status_file])
+                            BUG.add(j.jobid)
+
+                    update_task_states_recursively(task)
+                    db.commit()
+                    checked_tasks.add(task.taskid)
+                except TaskError, e:
+                    log.error("Errors found in %s")
+                    pending_tasks.discard(task)
+                    thread_errors[task.configid].append([task, e.value, e.msg])
+                    continue
             else:
                 # Set temporary Queued state to avoids launching
                 # jobs from clones
@@ -196,7 +205,9 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                     update_task_states_recursively(task)
                     db.commit()
                 else:
-                    raise TaskError(task)
+                    log.error("Errors found in %s")
+                    pending_tasks.discard(task)
+                    thread_errors[task.configid].append([task, None, "Found (E) task status"])
             
         #db.commit()
         if not back_launcher: 
@@ -218,8 +229,16 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
             sleep(schedule_time)
 
         # Dump / show ended threads
+        for configid, etasks in thread_errors.iteritems(): 
+            log.log(28, "Thread @@10:%s@@1: contains errors:" %\
+                        (GLOBALS[configid]["_name"]))
+            for error in etasks:
+                log.error(" ** %s" %error[0])
+                log.error("      -> %s" %error[1])
+                log.error("        -> %s" %error[2])
+            
         pending_threads = set([ts.configid for ts in pending_tasks])
-        finished_threads = expected_threads - pending_threads
+        finished_threads = expected_threads - (pending_threads | set(thread_errors.keys()))
         for configid in finished_threads:
             # configid is the the same as threadid in master tasks
             final_tree_file = pjoin(GLOBALS[configid]["_outpath"],

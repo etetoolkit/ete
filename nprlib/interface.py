@@ -298,14 +298,6 @@ def app_wrapper(func, args):
         print >>sys.stderr, "\nConfiguration Error:", e
     except DataError, e: 
         print >>sys.stderr, "\nData Error:", e
-    except TaskError, e:
-        print >>sys.stderr, ("\nErrors were found in the follwing task: %s"
-                             "\nCheck the log files within the taskdir:"
-                             "\n%s:\n\n%s"
-                             %(e.value, e.value.taskdir, e.msg))
-        if GLOBALS["_background_scheduler"]:
-            GLOBALS["_background_scheduler"].terminate()
-        sys.exit(1)
     except KeyboardInterrupt:
         print >>sys.stderr, "\nProgram was interrupted."
         if args.monitor:
@@ -322,12 +314,8 @@ def app_wrapper(func, args):
                     print e
                 else:
                     print >>sys.stderr, status_file, "has been marked as error"
-        if GLOBALS["_background_scheduler"]:
-            GLOBALS["_background_scheduler"].terminate()
         sys.exit(1)
     except:
-        if GLOBALS["_background_scheduler"]:
-            GLOBALS["_background_scheduler"].terminate()
         raise
 
 def main(main_screen, func, args):
