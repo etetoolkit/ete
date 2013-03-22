@@ -7,8 +7,8 @@ from ete_dev.parser.newick import read_newick
 class Children(list):
     def append(self, item):
         list.append(self, item)
-        item.nexml_edge.target = self.node.nexml_node.id
-        item.nexml_edge.source = item.nexml_node.id
+        item.nexml_edge.source = self.node.nexml_node.id
+        item.nexml_edge.target = item.nexml_node.id
 
 class NexmlTree(PhyloTree):
     """ 
@@ -61,6 +61,7 @@ class NexmlTree(PhyloTree):
                  sp_naming_function=_parse_species, format=0):
 
         self.nexml_tree = FloatTree()
+        self.nexml_tree.set_anyAttributes_({'xsi:type': 'FloatTree'})
         self.nexml_node = TreeNode()
         self.nexml_edge = TreeFloatEdge()
         self.nexml_node.id = "node_%s" %hash(self)
@@ -98,7 +99,9 @@ class NexmlTree(PhyloTree):
             child = nodeid2node.setdefault(xmledge.target, self.__class__() )
             parent = nodeid2node.setdefault(xmledge.source, self.__class__() )
             child.name = xmledge.target
+            child.nexml_node.id = xmledge.target
             parent.name = xmledge.source
+            parent.nexml_node.id = xmledge.source
             child.nexml_edge = xmledge
 
             if xmledge.length is not None:
@@ -108,15 +111,18 @@ class NexmlTree(PhyloTree):
         for xmlnode in tree.node:
             # just a warning. I don't know if this can occur
             if xmlnode.id not in nodeid2node: 
-                print >>sys.stderr, "unused node", xmlnode.id
+                print >>sys.stderr, "Unused node", xmlnode.id
                 continue
 
             ete_node = nodeid2node[xmlnode.id]
             ete_node.nexml_node = xmlnode
-            
-            if xmlnode.id is not None:
+
+            if xmlnode.label:
+                ete_node.name = xmlnode.label
+            elif xmlnode.id is not None:
                 ete_node.name = xmlnode.id
 
+                
     def export(self, outfile=sys.stdout, level=0, namespace_='', name_='FloatTree', namespacedef_=''):
         if self.nexml_tree:
             info = [(n.nexml_edge, n.nexml_node) for n in self.traverse()]
