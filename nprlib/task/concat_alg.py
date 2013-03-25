@@ -92,7 +92,7 @@ class ConcatAlg(ConcatAlgTask):
                 log.error("Missing %s algs", len(self.cog_ids -
                                                  set(self.job2alg)))
                 missing = self.cog_ids - set(self.job2alg)
-                raise TaskError(self, "Missing algs: %s" %missing)
+                raise TaskError(self, "Missing algs (%d): i.e. %s" %(len(missing),missing[:10]))
 
             alg_data = [(self.job2alg[nid], self.job2model.get(nid, self.default_model)) for nid in self.job2alg]
             filenames, models = zip(*alg_data)

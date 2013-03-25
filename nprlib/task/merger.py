@@ -222,7 +222,6 @@ class TreeMerger(TreeMergeTask):
         self.pre_iter_task_tree = tn
         self.rf = orig_target.robinson_foulds(ttree)
         self.pre_iter_support = orig_target.support
-
                 
         # Reloads node2content of the rooted tree and generate cladeids
         ttree_content = self.main_tree.get_node2content()

@@ -274,7 +274,6 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                 main_tree.write(outfile=final_tree_file+".nwx", features=[])
                 log.log(28, "Done thread @@12:%s@@1: in %d iterations",
                         threadname, past_threads[configid])
-
                 
         log.log(26, "")
     if back_launcher:
@@ -302,8 +301,7 @@ def background_job_launcher(job_queue, run_detached, schedule_time, max_cores):
             except IOError:
                 st = "?"
             if st in finished_states:
-                #cores_used -= cores
-                done_jobs.add(jid)
+                 done_jobs.add(jid)
             else:
                 cores_used += cores
         for d in done_jobs:
