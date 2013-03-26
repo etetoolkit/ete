@@ -792,8 +792,12 @@ if __name__ == "__main__":
                         " capabilities will be set appropriately.")
 
     exec_group.add_argument("-t", "--schedule_time", dest="schedule_time",
-                        type=float, default=30.0,
+                        type=float, default=2,
                         help="""How often tasks should be checked""")
+    
+    exec_group.add_argument("--launch_time", dest="launch_time",
+                        type=float, default=5,
+                        help="""How often queued jobs should be launched""")
 
     exec_type_group = exec_group.add_mutually_exclusive_group()
     exec_type_group.add_argument("-x", "--insitu_execution", dest="execute",
@@ -874,7 +878,8 @@ if __name__ == "__main__":
         GLOBALS["taskdir"] = os.path.join(GLOBALS["basedir"], "tasks")
     if args.first_split:
         GLOBALS["first_split_outgroup"] = args.first_split
-        
+
+    GLOBALS["launch_time"] = args.launch_time
     GLOBALS["cmdline"] = ' '.join(sys.argv)
     GLOBALS["nodeinfo"] = defaultdict(dict)
     GLOBALS["threadinfo"] = defaultdict(dict)
