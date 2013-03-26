@@ -289,11 +289,13 @@ def main(args):
     sge_dir = os.path.join(base_dir, "sge_jobs")
     tmp_dir = os.path.join(base_dir, "tmp")
     tasks_dir = os.path.join(base_dir, "tasks")
+    input_dir = os.path.join(base_dir, "input")
     GLOBALS["sge_dir"] = sge_dir
     GLOBALS["tmp"] = tmp_dir
     GLOBALS["gallery_dir"] = gallery_dir
     GLOBALS["tasks_dir"] = tasks_dir
-    for dirname in [tmp_dir, tasks_dir]:
+    GLOBALS["input_dir"] = input_dir
+    for dirname in [tmp_dir, tasks_dir, input_dir]:
         try:
             os.makedirs(dirname)
         except OSError:
@@ -326,6 +328,7 @@ def main(args):
 
     # Set up custom databases if necessary
     GLOBALS["nprdb_file"]  = pjoin(base_dir, "npr.db")
+    GLOBALS["datadb_file"]  = pjoin(base_dir, "data.db")
     GLOBALS["orthodb_file"]  = pjoin(base_dir, "ortho.db") \
         if not args.orthodb else args.orthodb
     GLOBALS["seqdb_file"]  = pjoin(base_dir, "seq.db") \
@@ -344,7 +347,8 @@ def main(args):
         
     # Initialize db if necessary, otherwise extract basic info
     db.init_nprdb(GLOBALS["nprdb_file"])
-        
+    db.init_datadb(GLOBALS["datadb_file"])
+    
     # Check and load data
     ERROR = ""
     if not pexist(GLOBALS["seqdb_file"]):
