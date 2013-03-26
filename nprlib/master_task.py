@@ -132,12 +132,12 @@ class Task(object):
 
         # If task is processed and saved, just return its state
         # without checking children
-        if task_saved and last_status == "D":
+        if task_saved and last_status == "D" and self.status == "D":
             print "DATA SAVED AND PROCESSED"
             self.status = "D"
         # If I have just noticed the task is done and saved, load its
         # stored data.
-        elif task_saved and last_status != "D":
+        elif task_saved and (last_status != "D" or self.status != "D"):
             print "DATA SAVED. LOADING......"
             self.status = "D"
             self.load_stored_data()

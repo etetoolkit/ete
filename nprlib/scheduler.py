@@ -107,7 +107,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
         job_queue = Queue()
         back_launcher = Process(target=background_job_launcher,
                                 args=(job_queue, run_detached,
-                                      schedule_time, cores_total-2))
+                                      GLOBALS["launch_time"], cores_total-2))
         GLOBALS["_background_scheduler"] = back_launcher
         back_launcher.start()
     else:
@@ -169,7 +169,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                     show_task_info(task)
                     task.status = task.get_status(qstat_jobs)
                     db.dataconn.commit()
-                    if back_launcher:
+                    if back_launcher and task.status not in set("DE"):
                         for j, cmd in task.iter_waiting_jobs():
                             j.status = "Q"
                             GLOBALS["cached_status"][j.jobid] = "Q"
