@@ -9,7 +9,7 @@ from nprlib.utils import (del_gaps, GENCODE, PhyloTree, SeqGroup,
 from nprlib.task import TreeMerger, Msf
 
 from nprlib.errors import DataError
-from nprlib.utils import GLOBALS, rpath, pjoin, generate_runid
+from nprlib.utils import GLOBALS, rpath, pjoin, generate_runid, DATATYPES
 from nprlib import db
 from nprlib.master_task import register_task_recursively
 from nprlib.template.common import (IterConfig, get_next_npr_node,
@@ -195,20 +195,25 @@ def process_task(task, npr_conf, nodeid2info):
     size = task.size#node_info.get("size", 0)
     target_seqs = node_info.get("target_seqs", [])
     out_seqs = node_info.get("out_seqs", [])
-    constrain_tree = None
-    constrain_tree_path = None
-    
+
+    # If more than one outgroup are used, enable the use of constrain
     if out_seqs and len(out_seqs) > 1:
-        #constrain_tree = "((%s), (%s));" %(','.join(out_seqs), 
-        #                                   ','.join(target_seqs))
-        constrain_tree = "(%s, (%s));" %(','.join(out_seqs), 
-                                           ','.join(target_seqs))
-        
-        constrain_tree_path = pjoin(task.taskdir, "constrain.nw")
-                                           
+        constrain_id = nodeid
+    else:
+        constrain_id = None
     
     new_tasks = []
     if ttype == "msf":
+        # Register Tree constrains
+        constrain_tree = "(%s, (%s));" %(','.join(sorted(task.out_seqs)), 
+                                         ','.join(sorted(task.target_seqs)))
+        _outs = "\n".join(map(lambda name: ">%s\n0" %name, sorted(task.out_seqs)))
+        _tars = "\n".join(map(lambda name: ">%s\n1" %name, sorted(task.target_seqs)))
+        constrain_alg = '\n'.join([_outs, _tars])
+        db.add_task_data(nodeid, DATATYPES.constrain_tree, constrain_tree)
+        db.add_task_data(nodeid, DATATYPES.constrain_alg, constrain_alg)
+
+        # Register node
         db.add_node(task.threadid,
                     task.nodeid, task.cladeid,
                     task.target_seqs,
@@ -221,8 +226,7 @@ def process_task(task, npr_conf, nodeid2info):
                                 seqtype, conf, alignerconf)
         alg_task.size = task.size
         new_tasks.append(alg_task)
-
-        
+       
 
     elif ttype == "alg" or ttype == "acleaner":
         if ttype == "alg":
@@ -280,18 +284,15 @@ def process_task(task, npr_conf, nodeid2info):
                 alg_fasta_file, alg_phylip_file = switch_to_codon(
                     task.alg_fasta_file, task.alg_phylip_file,
                     nt_seed_file)
-                
-            if constrain_tree:
-                open(constrain_tree_path, "w").write(constrain_tree)
                                            
             if mtesterclass:
                 next_task = mtesterclass(nodeid, alg_fasta_file,
                                          alg_phylip_file,
-                                         constrain_tree_path,
+                                         constrain_id,
                                          conf, mtesterconf)
             elif treebuilderclass:
                 next_task = treebuilderclass(nodeid, alg_phylip_file,
-                                             constrain_tree_path,
+                                             constrain_id,
                                              None, seqtype,
                                              conf, treebuilderconf)
         if next_task:
@@ -303,11 +304,9 @@ def process_task(task, npr_conf, nodeid2info):
             alg_fasta_file = task.alg_fasta_file
             alg_phylip_file = task.alg_phylip_file
             model = task.get_best_model()
-            if constrain_tree:
-                open(constrain_tree_path, "w").write(constrain_tree)
 
             tree_task = treebuilderclass(nodeid, alg_phylip_file,
-                                         constrain_tree_path,
+                                         constrain_id,
                                          model, seqtype,
                                          conf, treebuilderconf)
             tree_task.size = task.size

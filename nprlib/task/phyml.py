@@ -39,8 +39,7 @@ class Phyml(TreeTask):
         self.lk = None
 
         self.init()
-        self.tree_file = os.path.join(self.taskdir, "final_tree.nw")
-      
+     
         # Phyml cannot write the output in a different directory that
         # the original alg file. So I use relative path to alg file
         # for processes and I create a symlink for each of the
@@ -85,7 +84,7 @@ class Phyml(TreeTask):
         lk = float(m.groups()[0])
         self.lk =  lk
         tree = PhyloTree(tree_file)        
-        tree.write(outfile=self.tree_file)
+        tree.write(outfile=tree_file)
         TreeTask.finish(self)
  
     

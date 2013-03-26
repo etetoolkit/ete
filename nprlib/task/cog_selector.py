@@ -37,46 +37,35 @@ class BrhCogSelector(CogSelectorTask):
         self.size = len(target_sp | out_sp)
         self.cog_analysis = None
         self.cogs = None
-        self.cog_analysis_file = os.path.join(self.taskdir, "cog_analysis.pkl")
-        self.cogs_file = os.path.join(self.taskdir, "all_cogs.pkl")
         
     def finish(self):
-        if os.path.exists(self.cog_analysis_file) and \
-           os.path.exists(self.cogs_file):
-            self.cog_analysis = cPickle.load(open(self.cog_analysis_file))
-            self.cogs = cPickle.load(open(self.cogs_file))
-            log.log(28, "%s COGs @@8:read from cached file@@1:" %len(self.cogs))
-            log.log(26, "\n"+self.cog_analysis)
-        else:
-            tm_start = time.ctime()
-            all_species = self.targets | self.outgroups
-            cogs, cog_analysis = brh_cogs2(db, all_species,
-                                          missing_factor=self.missing_factor,
-                                          seed_sp=self.seed)
-            self.raw_cogs = cogs
-            self.cog_analysis = cog_analysis
-            self.cogs = []
-            for co in cogs:
-                # self.cogs.append(map(encode_seqname, co))
-                encoded_names = db.translate_names(co)
-                if len(encoded_names) != len(co):
-                    print set(co) - set(encoded_names.keys())
-                    raise DataError("Some sequence ids could not be translated")
-                self.cogs.append(encoded_names.values())
+        tm_start = time.ctime()
+        all_species = self.targets | self.outgroups
+        cogs, cog_analysis = brh_cogs2(db, all_species,
+                                      missing_factor=self.missing_factor,
+                                      seed_sp=self.seed)
+        self.raw_cogs = cogs
+        self.cog_analysis = cog_analysis
+        self.cogs = []
+        for co in cogs:
+            # self.cogs.append(map(encode_seqname, co))
+            encoded_names = db.translate_names(co)
+            if len(encoded_names) != len(co):
+                print set(co) - set(encoded_names.keys())
+                raise DataError("Some sequence ids could not be translated")
+            self.cogs.append(encoded_names.values())
 
-            # Sort Cogs according to the md5 hash of its content. Random
-            # sorting but kept among runs
-            map(lambda x: x.sort(), self.cogs)
-            self.cogs.sort(lambda x,y: cmp(md5(','.join(x)), md5(','.join(y))))
-            log.log(28, "%s COGs detected" %len(self.cogs))                
-            log.log(26, "Dumping COGs into file")
-            cPickle.dump(self.cog_analysis, open(self.cog_analysis_file, "w"))
-            cPickle.dump(self.cogs, open(self.cogs_file, "w"))
-            cPickle.dump(self.raw_cogs, open(self.cogs_file+".raw", "w"))
-            tm_end = time.ctime()
-            open(pjoin(self.taskdir, "__time__"), "w").write(
-                '\n'.join([tm_start, tm_end]))
-            
+        # Sort Cogs according to the md5 hash of its content. Random
+        # sorting but kept among runs
+        map(lambda x: x.sort(), self.cogs)
+        self.cogs.sort(lambda x,y: cmp(md5(','.join(x)), md5(','.join(y))))
+        log.log(28, "%s COGs detected" %len(self.cogs))                
+        tm_end = time.ctime()
+        #open(pjoin(self.taskdir, "__time__"), "w").write(
+        #    '\n'.join([tm_start, tm_end]))
+        CogSelectorTask.store_data(self, self.cogs, self.cog_analysis)
+
+        
 def brh_cogs(DB, species, missing_factor=0.0, seed_sp=None, min_score=0):
     """It scans all precalculate BRH relationships among the species
        passed as an argument, and detects Clusters of Orthologs

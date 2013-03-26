@@ -31,13 +31,14 @@ class TreeMerger(TreeMergeTask):
         self.outgroup_match = ""
         self.pre_iter_support = None # support of the node pre-iteration
         self.init()
-        self.pruned_tree = os.path.join(self.taskdir, "pruned_tree.nw")
+        #self.pruned_tree = os.path.join(self.taskdir, "pruned_tree.nw")
         
     def finish(self):
         def euc_dist(x, y):
             return len(x.symmetric_difference(y)) / float((len(x) + len(y)))
+
         
-        ttree = PhyloTree(self.task_tree_file)
+        ttree = PhyloTree(db.get_data(self.task_tree_file))
         mtree = self.main_tree
         ttree.dist = 0
         cladeid, target_seqs, out_seqs = db.get_node_info(self.threadid, self.nodeid)
@@ -125,7 +126,7 @@ class TreeMerger(TreeMergeTask):
                 outgroup = ttree.get_common_ancestor(out_seqs)
                 if set(outgroup.get_leaf_names()) ^ out_seqs:
                     msg = "Monophyly of the selected outgroup could not be granted! Probably constrain tree failed."
-                    dump_tree_debug(msg, self.taskdir, mtree, ttree, target_seqs, out_seqs)
+                    #dump_tree_debug(msg, self.taskdir, mtree, ttree, target_seqs, out_seqs)
                     raise TaskError(self, msg)
             else:
                 outgroup = ttree & list(out_seqs)[0]
@@ -193,11 +194,11 @@ class TreeMerger(TreeMergeTask):
                     out_seqs = common.get_leaf_names()
                     if common is ttree:
                         msg = "First split outgroup could not be granted:%s" %out_seqs
-                        dump_tree_debug(msg, self.taskdir, mtree, ttree, target_seqs, outs)
+                        #dump_tree_debug(msg, self.taskdir, mtree, ttree, target_seqs, outs)
                         raise TaskError(self, msg)
                     if strict_common_ancestor and set(out_seqs) ^ outs:
                         msg = "Monophyly of first split outgroup could not be granted:%s" %out_seqs
-                        dump_tree_debug(msg, self.taskdir, mtree, ttree, target_seqs, outs)
+                        #dump_tree_debug(msg, self.taskdir, mtree, ttree, target_seqs, outs)
                         raise TaskError(self, msg)
                     
                     log.log(28, "@@8:First split rooting to %d seqs@@1:: %s" %(len(out_seqs),out_seqs))
@@ -229,16 +230,12 @@ class TreeMerger(TreeMergeTask):
             cid = generate_id([_n.name for _n in content])
             n.add_feature("cladeid", cid)
 
-        ttree.write(outfile=self.pruned_tree)
+        #ttree.write(outfile=self.pruned_tree)
         self.task_tree = ttree
         if DEBUG():
             for _n in self.main_tree.traverse():
                 _n.img_style = None
         
-    def check(self):
-        if os.path.exists(self.pruned_tree):
-            return True
-        return False
 
 def root_distance_matrix(root):
     n2rdist = {root:0.0}

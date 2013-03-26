@@ -2,7 +2,7 @@ import logging
 from collections import defaultdict
 
 from nprlib.task import TreeMerger
-from nprlib.utils import GLOBALS, generate_runid, pjoin, rpath
+from nprlib.utils import GLOBALS, generate_runid, pjoin, rpath, DATATYPES
 
 from nprlib.errors import DataError
 from nprlib import db
@@ -59,6 +59,11 @@ def process_task(task, npr_conf, nodeid2info):
     threadid, nodeid, seqtype, ttype = (task.threadid, task.nodeid,
                                         task.seqtype, task.ttype)
     cladeid, targets, outgroups = db.get_node_info(threadid, nodeid)
+    if outgroups and len(outgroups) > 1:
+        constrain_id = nodeid
+    else:
+        constrain_id = None
+        
     node_info = nodeid2info[nodeid]
     conf = GLOBALS[task.configid]
     new_tasks = []    
@@ -72,22 +77,24 @@ def process_task(task, npr_conf, nodeid2info):
         db.add_node(threadid,
                     concat_job.nodeid, cladeid,
                     targets, outgroups)
-                                      
+
+        # Register Tree constrains
+        constrain_tree = "(%s, (%s));" %(','.join(sorted(outgroups)), 
+                                         ','.join(sorted(targets)))
+        _outs = "\n".join(map(lambda name: ">%s\n0" %name, sorted(outgroups)))
+        _tars = "\n".join(map(lambda name: ">%s\n1" %name, sorted(targets)))
+        constrain_alg = '\n'.join([_outs, _tars])
+        db.add_task_data(nodeid, DATATYPES.constrain_tree, constrain_tree)
+        db.add_task_data(nodeid, DATATYPES.constrain_alg, constrain_alg)
+        
         concat_job.size = task.size
         new_tasks.append(concat_job)
        
     elif ttype == "concat_alg":
         # register tree for concat alignment, using constraint tree if
         # necessary
-        constrain_tree_path = None 
-        if outgroups and len(outgroups) > 1 and len(targets) > 1:
-            constrain_tree_path = pjoin(task.taskdir,
-                                        "constrain_tree.nw")
-            newick = "(%s, (%s));" %(','.join(outgroups), ','.join(targets))
-            open(constrain_tree_path, "w").write(newick)
-           
         tree_task = treebuilderclass(nodeid, task.alg_phylip_file,
-                                     constrain_tree_path, "JTT",
+                                     constrain_id, "JTT",
                                      seqtype, conf, treebuilderconf)
         tree_task.size = task.size
         new_tasks.append(tree_task)

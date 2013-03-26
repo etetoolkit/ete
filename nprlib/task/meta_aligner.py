@@ -55,8 +55,6 @@ class MCoffee(AlgTask):
         alg = SeqGroup(os.path.join(self.jobs[0].jobdir, "alg.fasta"))
         alg.write(outfile=self.alg_fasta_file, format="fasta")
         alg.write(outfile=self.alg_phylip_file, format="iphylip_relaxed")
-        self.dump_inkey_file(*self.all_alg_files)
-        
 
 class MetaAligner(AlgTask):
     def __init__(self, nodeid, multiseq_file, seqtype, conf, confname):

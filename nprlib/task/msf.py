@@ -4,7 +4,8 @@ log = logging.getLogger("main")
 
 from nprlib.master_task import MsfTask
 from nprlib.master_job import Job
-from nprlib.utils import PhyloTree, SeqGroup, md5, generate_node_ids, hascontent, pjoin
+from nprlib.utils import (PhyloTree, SeqGroup, md5, generate_node_ids,
+                          hascontent, pjoin, DATATYPES)
 from nprlib.errors import DataError
 
 from nprlib import db
@@ -24,9 +25,7 @@ class Msf(MsfTask):
         # taskid does not depend on jobs, so I set it manually
         self.taskid = node_id
         self.init()
-
-        # Set basic information
-        self.multiseq_file = os.path.join(self.taskdir, "msf.fasta")
+        
         self.nodeid = node_id
         self.cladeid = clade_id
         self.seqtype = seqtype
@@ -39,18 +38,15 @@ class Msf(MsfTask):
         all_seqs = self.target_seqs | self.out_seqs
         self.size = len(all_seqs)
 
-
+        # Expected result
+        self.multiseq_file = None
+        
     def finish(self):
-        if hascontent(self.multiseq_file):
-            log.log(24, "@@8:Reusing MSF file@@1:")
-        else:
-            # Dump sequences into MSF
-            all_seqs = self.target_seqs | self.out_seqs
-            fasta = '\n'.join([">%s\n%s" % (n, db.get_seq(n, self.seqtype))
+        # Dump sequences into MSF
+        all_seqs = self.target_seqs | self.out_seqs
+        fasta = '\n'.join([">%s\n%s" % (n, db.get_seq(n, self.seqtype))
                                for n in all_seqs])
-            open(self.multiseq_file, "w").write(fasta)           
             
-    def check(self):
-        if os.path.exists(self.multiseq_file):
-            return True
-        return False
+        MsfTask.store_data(self, fasta)
+        
+        

@@ -17,6 +17,8 @@ from nprlib.utils import (generate_id, PhyloTree, NodeStyle, Tree,
 from nprlib.errors import ConfigError, TaskError
 from nprlib import db, sge
 from nprlib.master_task import (isjob, update_task_states_recursively,
+                                store_task_data_recursively,
+                                remove_task_dir_recursively,
                                 update_job_status)
 from nprlib.template.common import assembly_tree
 
@@ -166,11 +168,16 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                 try:
                     show_task_info(task)
                     task.status = task.get_status(qstat_jobs)
+                    db.dataconn.commit()
                     if back_launcher:
                         for j, cmd in task.iter_waiting_jobs():
                             j.status = "Q"
                             GLOBALS["cached_status"][j.jobid] = "Q"
                             if j.jobid not in BUG:
+                                if not os.path.exists(j.jobdir):
+                                    os.makedirs(j.jobdir)
+                                for ifile in j.input_files:
+                                    open(pjoin(GLOBALS["input_dir"], ifile), "w").write(db.get_data(ifile))
                                 log.log(24, "  @@8:Queueing @@1: %s from %s" %(j, task))
                                 job_queue.put([j.jobid, j.cores, cmd, j.status_file])
                             BUG.add(j.jobid)
@@ -191,7 +198,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                     show_task_info(task)
 
             if task.status == "D":
-                #db.commit()                
+                #db.commit()
                 show_task_info(task)
                 logindent(3)
                 try:
@@ -203,8 +210,10 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                     continue
                 else: 
                     logindent(-3)
+                    
                     to_add_tasks.update(create_tasks)
                     pending_tasks.discard(task)
+                    
             elif task.status == "E":
                 #db.commit()
                 log.error("task contains errors: %s " %task)
@@ -248,7 +257,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                 log.error(" ** %s" %error[0])
                
                 e_obj = error[1] if error[1] else error[0]
-                error_path = e_obj.jobdir if isjob(e_obj) else e_obj.taskdir
+                error_path = e_obj.jobdir if isjob(e_obj) else e_obj.taskid
                 if e_obj is not error[0]: 
                     log.error("      -> %s" %e_obj)
                 log.error("      -> %s" %error_path)
@@ -415,7 +424,6 @@ def launch_jobs(pending_tasks, execution, run_detached):
                         else:
                             running_proc = subprocess.Popen(cmd, shell=True)
                     except Exception:
-                        task.save_status("E")
                         task.status = "E"
                         raise
                     else:
@@ -471,7 +479,7 @@ def show_task_info(task):
     st_info = ', '.join(["%d(%s)" % (v, k) for k, v in
                          task.job_status.iteritems()])
     log.log(26, "%d jobs: %s" %(len(task.jobs), st_info))
-    tdir = task.taskdir.replace(GLOBALS["basedir"], "")
+    tdir = task.taskid
     tdir = tdir.lstrip("/")
     log.log(20, "TaskDir: %s" %tdir)
     if task.status == "L":

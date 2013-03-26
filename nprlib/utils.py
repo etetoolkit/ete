@@ -25,6 +25,30 @@ GLOBALS = {
                          # used them within the same get_status cycle
 }
 
+class _DataTypes(object):
+    def __init__(self):
+        self.msf = 100
+        self.alg_fasta = 200
+        self.alg_phylip = 201
+        self.clean_alg_fasta = 225
+        self.clean_alg_phylip = 226
+        self.kept_alg_columns = 230
+        self.concat_alg_fasta = 250
+        self.concat_alg_phylip = 251
+        self.best_model = 300
+        self.model_partitions = 325
+        self.tree = 400
+        self.constrain_tree = 425
+        self.constrain_alg = 426
+        self.cogs = 500
+        self.cog_analysis = 550
+
+        
+        self.job = 1
+        self.task = 2
+        
+DATATYPES = _DataTypes()
+
 APP2CLASS = {
     "muscle"         : "Muscle",
     "mafft"          : "Mafft",

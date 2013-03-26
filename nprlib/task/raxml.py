@@ -9,12 +9,14 @@ log = logging.getLogger("main")
 
 from nprlib.master_task import TreeTask
 from nprlib.master_job import Job
-from nprlib.utils import basename, PhyloTree, OrderedDict, GLOBALS, RAXML_CITE
+from nprlib.utils import (basename, PhyloTree, OrderedDict,
+                          GLOBALS, RAXML_CITE, pjoin, DATATYPES)
+from nprlib import db
 
 __all__ = ["Raxml"]
 
 class Raxml(TreeTask):
-    def __init__(self, nodeid, alg_file, constrain_tree, model,
+    def __init__(self, nodeid, alg_file, constrain_id, model,
                  seqtype, conf, confname):
         GLOBALS["citator"].add(RAXML_CITE)
                
@@ -22,7 +24,8 @@ class Raxml(TreeTask):
         self.confname = confname
         self.conf = conf
         self.alg_phylip_file = alg_file
-        self.constrain_tree = constrain_tree
+        if constrain_id:
+            self.constrain_tree = db.get_dataid(constrain_id, DATATYPES.constrain_tree)
         TreeTask.__init__(self, nodeid, "tree", "RaxML", 
                           base_args, conf[confname])
 
@@ -78,14 +81,18 @@ class Raxml(TreeTask):
     def load_jobs(self):
         
         args = OrderedDict(self.args)
-        args["-s"] = self.alg_phylip_file
+        args["-s"] = pjoin(GLOBALS["input_dir"], self.alg_phylip_file)
         args["-m"] = self.model_string
         args["-n"] = self.nodeid
         if self.constrain_tree:
-            args["-g"] = self.constrain_tree
+            args["-g"] = pjoin(GLOBALS["input_dir"], self.constrain_tree)
         tree_job = Job(self.raxml_bin, args, parent_ids=[self.nodeid])
         tree_job.jobname += "-"+self.model_string
         tree_job.cores = self.threads
+        # Register input files for running the job
+        tree_job.input_file.add(self.alg_phylip_file)
+        if self.constrain_tree:
+            tree_job.input_file.add(self.constrain_tree)
         self.jobs.append(tree_job)
 
         if self.compute_alrt == "raxml":
@@ -104,7 +111,7 @@ class Raxml(TreeTask):
         elif self.compute_alrt == "phyml":
             alrt_args = {
                 "-o": "n",
-                "-i": self.alg_phylip_file,
+                "-i": pjoin(GLOBALS["input_dir"], self.alg_phylip_file),
                 "--bootstrap": "-2",
                 "-d": self.seqtype,
                 "-u": None,
@@ -118,6 +125,7 @@ class Raxml(TreeTask):
                
             alrt_job = Job(self.conf["app"]["phyml"],
                            alrt_args, parent_ids=[tree_job.jobid])
+            alrt_job.input_file.add(self.alg_phylip_file)
             alrt_job.jobname += "-alrt"
             alrt_job.dependencies.add(tree_job)
             self.jobs.append(alrt_job)
@@ -133,13 +141,14 @@ class Raxml(TreeTask):
             if self.compute_alrt == "phyml":
                 for fname in glob(self.alg_phylip_file+"_phyml*"):
                     shutil.move(fname, self.jobs[1].jobdir)
-                shutil.copy(self.alrt_tree_file, self.tree_file)
+                nw = Tree(self.alrt_tree_file)
             else:
                 tree = open(self.alrt_tree_file).read().replace("\n", "")
                 nw = re.subn(":(\d+\.\d+)\[(\d+)\]", parse_alrt, tree, re.MULTILINE)
-                open(self.tree_file, "w").write(nw[0])
         else:
-            shutil.copy(self.ml_tree_file, self.tree_file)
+            nw = Tree(self.ml_tree_file)
+        TreeTask.store_data(self, nw)
+        
 
-        TreeTask.finish(self)
+        
         

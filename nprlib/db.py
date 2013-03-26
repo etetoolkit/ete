@@ -4,6 +4,7 @@ import sqlite3
 import cPickle
 import base64
 import logging
+from nprlib.utils import md5
 
 log = logging.getLogger("main")
 
@@ -13,6 +14,8 @@ seqconn = None
 seqcursor = None
 orthoconn = None
 orthocursor = None
+dataconn = None
+datacursor = None
 
 AUTOCOMMIT = False
 def autocommit(targetconn = conn):
@@ -30,6 +33,12 @@ def connect_nprdb(nprdb_file):
     conn = sqlite3.connect(nprdb_file)
     cursor = conn.cursor()
 
+def init_datadb(datadb_file):
+    global dataconn, datacursor
+    dataconn = sqlite3.connect(datadb_file)
+    datacursor = dataconn.cursor()
+    create_data_db()
+    
 def init_nprdb(nprdb_file):
     global conn, cursor
     conn = sqlite3.connect(nprdb_file)
@@ -51,6 +60,7 @@ def init_orthodb(orthodb_file):
 def close():
     conn.close()
     seqconn.close()
+    dataconn.close()
     if orthoconn: orthoconn.close()
     
 def parse_job_list(jobs):
@@ -77,6 +87,87 @@ def create_ortho_db():
     # indexes are created while importing
     orthocursor.executescript(ortho_table)
     autocommit(orthoconn)
+
+def create_data_db():
+    data_table = '''
+    CREATE TABLE IF NOT EXISTS task(
+    taskid CHAR(32) PRIMARY KEY, 
+    type INTEGER,
+    tasktype INTEGER,
+    cmd BLOB,
+    stdout BLOB,
+    stderr BLOB, 
+    time BLOB,
+    status CHAR(1)
+    );
+
+    CREATE TABLE IF NOT EXISTS task2data(
+      taskid CHAR(32),
+      datatype INTEGER,
+      md5 CHAR(32),
+      PRIMARY KEY(taskid, datatype)
+    );
+
+    CREATE TABLE IF NOT EXISTS data(
+      md5 CHAR(32) PRIMARY KEY,
+      data BLOB
+    );
+
+    '''
+    # indexes are created while importing
+    datacursor.executescript(data_table)
+    autocommit(dataconn)
+
+def get_dataid(taskid, datatype):
+    cmd = """ SELECT md5 FROM task2data WHERE taskid="%s" AND datatype = "%s"
+        """ %(taskid, datatype)
+    datacursor.execute(cmd)
+    return datacursor.fetchone()[0]
+
+def get_data(dataid):
+    cmd = """ SELECT data.data FROM data WHERE md5="%s" """ %(dataid)
+    datacursor.execute(cmd)
+    return decode(datacursor.fetchone()[0])
+
+def get_task_data(taskid, datatype):
+    cmd = """ SELECT data FROM task2data as t LEFT JOIN data AS d ON(d.md5 = t.md5) WHERE taskid="%s" AND t.datatype = "%s"
+        """ %(taskid, datatype)
+    datacursor.execute(cmd)
+    return decode(datacursor.fetchone()[0])
+
+def task_is_saved(taskid):
+    cmd = """ SELECT status FROM task WHERE taskid="%s" """ %taskid
+    datacursor.execute(cmd)
+    try:
+        st = datacursor.fetchone()[0]
+    except TypeError:
+        return False
+    else:
+        return True if st =="D" else False
+
+def add_task_data(taskid, datatype, data, duplicates="OR IGNORE"):
+    print "SAVING DATA", taskid, datatype
+    data_id = md5(str(data))
+    cmd = """ INSERT %s INTO task (taskid, status) VALUES
+    ("%s", "D") """ %(duplicates, taskid)
+    datacursor.execute(cmd)
+    
+    cmd = """ INSERT %s INTO task2data (taskid, datatype, md5) VALUES
+    ("%s", "%s", "%s") """ %(duplicates, taskid, datatype, data_id)
+    datacursor.execute(cmd)
+    cmd = """ INSERT %s INTO data (md5, data) VALUES
+    ("%s", "%s") """ %(duplicates, data_id, encode(data))
+    datacursor.execute(cmd)
+    autocommit()
+    return data_id
+
+def register_task_data(taskid, datatype, data_id, duplicates="OR IGNORE"):
+    cmd = """ INSERT %s INTO task2data (taskid, datatype, md5) VALUES
+    ("%s", "%s", "%s") """ %(duplicates, taskid, datatype, data_id)
+    datacursor.execute(cmd)
+    autocommit()
+    
+
     
 def create_seq_db():
     seq_table ='''
@@ -199,7 +290,7 @@ def update_node(nid, runid, **kargs):
         execute(cmd)
         autocommit()
         
-def get_task_status(tid):
+def get_last_task_status(tid):
     cmd = 'SELECT status FROM task WHERE taskid="%s"' %(tid)
     execute(cmd)
     return cursor.fetchone()[0]
