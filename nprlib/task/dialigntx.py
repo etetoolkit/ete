@@ -4,7 +4,7 @@ log = logging.getLogger("main")
 
 from nprlib.master_task import AlgTask
 from nprlib.master_job import Job
-from nprlib.utils import SeqGroup, OrderedDict, GLOBALS, DIALIGN_CITE
+from nprlib.utils import SeqGroup, OrderedDict, GLOBALS, DIALIGN_CITE, pjoin
 
 __all__ = ["Dialigntx"]
 
@@ -25,23 +25,22 @@ class Dialigntx(AlgTask):
 
         self.seqtype = seqtype
         self.multiseq_file = multiseq_file
-
         self.init()
-        self.alg_fasta_file = os.path.join(self.taskdir, "final_alg.fasta")
-        self.alg_phylip_file = os.path.join(self.taskdir, "final_alg.iphylip")
 
     def load_jobs(self):
         # Only one Muscle job is necessary to run this task
         appname = self.conf[self.confname]["_app"]
         args = OrderedDict(self.args)
-        args[''] = "%s %s" %(self.multiseq_file, "alg.fasta")
+        args[''] = "%s %s" %(pjoin(GLOBALS["input_dir"], self.multiseq_file),
+                             "alg.fasta")
         job = Job(self.conf["app"][appname], args, parent_ids=[self.nodeid])
+        job.add_input_file(self.multiseq_file)
         self.jobs.append(job)
 
     def finish(self):
         # Once executed, alignment is converted into relaxed
         # interleaved phylip format.
         alg = SeqGroup(os.path.join(self.jobs[0].jobdir, "alg.fasta"))
-        alg.write(outfile=self.alg_fasta_file, format="fasta")
-        alg.write(outfile=self.alg_phylip_file, format="iphylip_relaxed")
-        AlgTask.finish(self)
+        fasta = alg.write(format="fasta")
+        phylip = alg.write(format="iphylip_relaxed")
+        AlgTask.store_data(self, fasta, phylip)

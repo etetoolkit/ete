@@ -127,18 +127,18 @@ class Task(object):
         # tasks
         logindent(2)
 
-        last_status = db.get_last_task_status(self.taskid)
+        #last_status = db.get_last_task_status(self.taskid)
         task_saved = db.task_is_saved(self.taskid)
 
         # If task is processed and saved, just return its state
         # without checking children
-        if task_saved and last_status == "D" and self.status == "D":
-            print "DATA SAVED AND PROCESSED"
+        if task_saved and self.status == "D":
+            log.log(24, "@@8:Task is done and processed@@1:")
             self.status = "D"
         # If I have just noticed the task is done and saved, load its
         # stored data.
-        elif task_saved and (last_status != "D" or self.status != "D"):
-            print "DATA SAVED. LOADING......"
+        elif task_saved and self.status != "D":
+            log.log(26, "@@8:Loading pre-computed data@@1:")
             self.status = "D"
             self.load_stored_data()
         else:
@@ -159,7 +159,14 @@ class Task(object):
                     #store in database .......
                     if self.check():
                         self.status = "D"
+                    elif self.status == "!":
+                        #this means the finish procedure has generate
+                        #new jobs associated to the task, so it
+                        #requires relaunching
+                        self.status = "W"
                     else:
+                        # Otherwise, everything point to errors when
+                        # processing
                         raise TaskError(self, "Task check not passed")
             # Otherwise, update the ongoing task status, but do not
             # store result yet.
@@ -181,7 +188,6 @@ class Task(object):
         logindent(-2)
         
         GLOBALS["cached_status"][self.taskid] = self.status
-        print "REPORTED", self.taskid, self.status, task_saved, last_status
         return self.status
 
     def init(self):
@@ -415,9 +421,11 @@ class TreeTask(Task):
 
     def load_stored_data(self):
         self.tree_file = db.get_dataid(self.taskid, DATATYPES.tree)
-
-    def store_data(self, newick):
+        self.stats = db.get_task_data(self.taskid, DATATYPES.tree_stats)
+        
+    def store_data(self, newick, stats):
         self.tree_file = db.add_task_data(self.taskid, DATATYPES.tree, newick)
+        self.stats = db.add_task_data(self.taskid, DATATYPES.tree_stats, stats)
     
 class TreeMergeTask(Task):
     def __init__(self, nodeid, task_type, task_name, base_args=None, 

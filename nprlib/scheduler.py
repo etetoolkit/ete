@@ -13,7 +13,7 @@ log = logging.getLogger("main")
 from nprlib.logger import set_logindent, logindent, get_logindent
 from nprlib.utils import (generate_id, PhyloTree, NodeStyle, Tree,
                           DEBUG, NPR_TREE_STYLE, faces, GLOBALS,
-                          basename, pjoin, ask)
+                          basename, pjoin, ask, send_mail)
 from nprlib.errors import ConfigError, TaskError
 from nprlib import db, sge
 from nprlib.master_task import (isjob, update_task_states_recursively,
@@ -176,8 +176,13 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                             if j.jobid not in BUG:
                                 if not os.path.exists(j.jobdir):
                                     os.makedirs(j.jobdir)
-                                for ifile in j.input_files:
-                                    open(pjoin(GLOBALS["input_dir"], ifile), "w").write(db.get_data(ifile))
+                                for ifile, outpath in j.input_files.iteritems():
+                                    if not outpath:
+                                        outfile = pjoin(GLOBALS["input_dir"], ifile)
+                                    else:
+                                        outfile = pjoin(outpath, ifile)
+                                    if not os.path.exists(outfile): 
+                                        open(outfile, "w").write(db.get_data(ifile))
                                 log.log(24, "  @@8:Queueing @@1: %s from %s" %(j, task))
                                 job_queue.put([j.jobid, j.cores, cmd, j.status_file])
                             BUG.add(j.jobid)
@@ -283,6 +288,12 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                 main_tree.write(outfile=final_tree_file+".nwx", features=[])
                 log.log(28, "Done thread @@12:%s@@1: in %d iterations",
                         threadname, past_threads[configid])
+        if finished_threads and GLOBALS["email"]:
+            try:
+                send_mail(GLOBALS["email"], "finished threads", "blabla bl2")
+            except Exception, e:
+                print e
+                pass
                 
         log.log(26, "")
     if back_launcher:

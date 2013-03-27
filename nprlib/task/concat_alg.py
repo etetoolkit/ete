@@ -13,14 +13,14 @@ from nprlib.errors import TaskError
 __all__ = ["ConcatAlg"]
 
 class ConcatAlg(ConcatAlgTask):
-    def __init__(self, nodeid, cogs, seqtype, conf, confname):
+    def __init__(self, cogs, seqtype, conf, confname):
 
         self.confname = confname
         self.conf = conf
         self.cogs_hard_limit = int(conf[confname]["_max_cogs"])
         used_cogs = cogs[:self.cogs_hard_limit]
         cog_string = '#'.join([','.join(sorted(c)) for c in used_cogs])
-        cog_keyid = md5(cog_string)
+        cog_keyid = md5(cog_string) # This will be nodeid
        
         base_args = {}
       

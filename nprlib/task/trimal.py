@@ -42,7 +42,7 @@ class Trimal(AlgCleanerTask):
         args["-in"] = pjoin(GLOBALS["input_dir"], self.alg_fasta_file)
         args["-out"] = "clean.alg.fasta"
         job = Job(self.conf["app"][appname], args, parent_ids=[self.nodeid])
-        job.input_files.add(self.alg_fasta_file)
+        job.add_input_file(self.alg_fasta_file)
         self.jobs.append(job)
 
     def finish(self):

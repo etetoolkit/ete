@@ -36,7 +36,7 @@ class Muscle(AlgTask):
         args["-in"] = pjoin(GLOBALS["input_dir"], self.multiseq_file)
         args["-out"] = "alg.fasta"
         job = Job(self.conf["app"][appname], args, parent_ids=[self.nodeid])
-        job.input_files.add(self.multiseq_file)
+        job.add_input_file(self.multiseq_file)
         self.jobs.append(job)
 
     def finish(self):

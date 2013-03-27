@@ -63,12 +63,12 @@ class FastTree(TreeTask):
         job = Job(self.conf["app"][appname], args, parent_ids=[self.nodeid])
         job.cores = self.conf["threading"][appname]
         if self.constrain_tree:
-            job.input_files.add(self.constrain_tree)
-        job.input_files.add(self.alg_phylip_file)
+            job.add_input_file(self.constrain_tree)
+        job.add_input_file(self.alg_phylip_file)
         self.jobs.append(job)
 
     def finish(self):
         job = self.jobs[-1]
         t = Tree(job.stdout_file)
-        TreeTask.store_data(self, t.write())
+        TreeTask.store_data(self, t.write(), {})
 

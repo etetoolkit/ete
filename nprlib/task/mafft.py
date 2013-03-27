@@ -4,7 +4,7 @@ log = logging.getLogger("main")
 
 from nprlib.master_task import AlgTask
 from nprlib.master_job import Job
-from nprlib.utils import SeqGroup, OrderedDict, GLOBALS, MAFFT_CITE
+from nprlib.utils import SeqGroup, OrderedDict, GLOBALS, MAFFT_CITE, pjoin
 from nprlib import db
 
 __all__ = ["Mafft"]
@@ -35,7 +35,7 @@ class Mafft(AlgTask):
         # one.
         args[""] = pjoin(GLOBALS["input_dir"], self.multiseq_file)
         job = Job(self.conf["app"][appname], args, parent_ids=[self.nodeid])
-        job.input_files.add(self.multiseq_file)
+        job.add_input_file(self.multiseq_file)
         job.cores = self.conf["threading"][appname]
         self.jobs.append(job)
 
@@ -45,5 +45,4 @@ class Mafft(AlgTask):
         alg = SeqGroup(self.jobs[0].stdout_file)
         fasta = alg.write(format="fasta")
         phylip = alg.write(format="iphylip_relaxed")
-       
         AlgTask.store_data(self, fasta, phylip)

@@ -72,7 +72,7 @@ def process_task(task, npr_conf, nodeid2info):
         # concat_alg tasks and all its sibling jobs should take into
         # account cog information and not only species and outgroups
         # included.
-        concat_job = concatclass(nodeid, task.cogs,
+        concat_job = concatclass(task.cogs,
                                  seqtype, conf, concatconf)
         db.add_node(threadid,
                     concat_job.nodeid, cladeid,

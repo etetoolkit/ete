@@ -3,6 +3,7 @@ from collections import defaultdict
 import sqlite3
 import cPickle
 import base64
+import zlib
 import logging
 from nprlib.utils import md5
 
@@ -27,6 +28,12 @@ def encode(x):
 
 def decode(x):
     return cPickle.loads(base64.decodestring(x))
+
+def zencode(x):
+    return base64.encodestring(zlib.compress(cPickle.dumps(x)))
+
+def zdecode(x):
+    return cPickle.loads(zlib.decompress(base64.decodestring(x)))
 
 def connect_nprdb(nprdb_file):
     global conn, cursor
@@ -127,13 +134,13 @@ def get_dataid(taskid, datatype):
 def get_data(dataid):
     cmd = """ SELECT data.data FROM data WHERE md5="%s" """ %(dataid)
     datacursor.execute(cmd)
-    return decode(datacursor.fetchone()[0])
+    return zdecode(datacursor.fetchone()[0])
 
 def get_task_data(taskid, datatype):
     cmd = """ SELECT data FROM task2data as t LEFT JOIN data AS d ON(d.md5 = t.md5) WHERE taskid="%s" AND t.datatype = "%s"
         """ %(taskid, datatype)
     datacursor.execute(cmd)
-    return decode(datacursor.fetchone()[0])
+    return zdecode(datacursor.fetchone()[0])
 
 def task_is_saved(taskid):
     cmd = """ SELECT status FROM task WHERE taskid="%s" """ %taskid
@@ -156,7 +163,7 @@ def add_task_data(taskid, datatype, data, duplicates="OR IGNORE"):
     ("%s", "%s", "%s") """ %(duplicates, taskid, datatype, data_id)
     datacursor.execute(cmd)
     cmd = """ INSERT %s INTO data (md5, data) VALUES
-    ("%s", "%s") """ %(duplicates, data_id, encode(data))
+    ("%s", "%s") """ %(duplicates, data_id, zencode(data))
     datacursor.execute(cmd)
     autocommit()
     return data_id

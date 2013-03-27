@@ -47,7 +47,7 @@ class Job(object):
         self.jobname = jobname
         # This should contain the md5 of all input files used to run
         # the process
-        self.input_files = set() 
+        self.input_files = {}
         
         # generates the unique job identifier based on the params of
         # the app. Some params include path names that can prevent
@@ -71,6 +71,9 @@ class Job(object):
         self.iffail_cmd = ""
         self.dependencies = set()
         self.set_jobdir(pjoin(GLOBALS["tasks_dir"], self.jobid))
+
+    def add_input_file(self, ifile, outpath = None):
+        self.input_files[ifile] = outpath
         
     def set_jobdir(self, basepath):
         ''' Initialize the base path for all info files associated to

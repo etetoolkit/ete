@@ -6,7 +6,7 @@ log = logging.getLogger("main")
 from nprlib.master_task import AlgTask
 from nprlib.master_job import Job
 
-from nprlib.utils import read_fasta, OrderedDict, GLOBALS, CLUSTALO_CITE
+from nprlib.utils import (read_fasta, OrderedDict, GLOBALS, CLUSTALO_CITE, pjoin)
 
 __all__ = ["Clustalo"]
 
@@ -32,18 +32,16 @@ class Clustalo(AlgTask):
 
         self.seqtype = "aa" # only aa supported
         self.multiseq_file = multiseq_file
-
         self.init()
-        self.alg_fasta_file = os.path.join(self.taskdir, "final_alg.fasta")
-        self.alg_phylip_file = os.path.join(self.taskdir, "final_alg.iphylip")
 
     def load_jobs(self):
         appname = self.conf[self.confname]["_app"]
         # Only one Muscle job is necessary to run this task
         args = OrderedDict(self.args)
-        args["-i"] = self.multiseq_file
+        args["-i"] = pjoin(GLOBALS["input_dir"], self.multiseq_file)
         args["-o"] = "alg.fasta"
         job = Job(self.conf["app"][appname], args, parent_ids=[self.nodeid])
+        job.add_input_file(self.multiseq_file)
         self.jobs.append(job)
 
     def finish(self):
@@ -52,6 +50,7 @@ class Clustalo(AlgTask):
         alg_file = os.path.join(self.jobs[0].jobdir, "alg.fasta")
         # ClustalO returns a tricky fasta file
         alg = read_fasta(alg_file, header_delimiter=" ")
-        alg.write(outfile=self.alg_fasta_file, format="fasta")
-        alg.write(outfile=self.alg_phylip_file, format="iphylip_relaxed")
-        AlgTask.finish(self)
+        fasta = alg.write(format="fasta")
+        phylip = alg.write(format="iphylip_relaxed")
+        AlgTask.store_data(self, fasta, phylip)
+

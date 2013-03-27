@@ -38,6 +38,7 @@ class _DataTypes(object):
         self.best_model = 300
         self.model_partitions = 325
         self.tree = 400
+        self.tree_stats = 410
         self.constrain_tree = 425
         self.constrain_alg = 426
         self.cogs = 500
@@ -411,6 +412,16 @@ def iter_prepostorder(tree, is_leaf_fn=None):
                 #POSTORDER ACTIONS
                 yield (True, node)
 
+def send_mail(toaddrs, subject, msg): 
+    import smtplib
+  
+    fromaddr = "no-reply@yournprprocess.local" 
+    # The actual mail send
+    client = smtplib.SMTP('localhost', 1025)
+    client.sendmail(fromaddr, toaddrs, msg)
+    client.quit()
+    print "Mail sent to", toaddrs
+               
     
 def npr_layout(node):
     if node.is_leaf():
