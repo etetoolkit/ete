@@ -119,7 +119,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
     BUG = set()
     # Enters into task scheduling
     while pending_tasks:
-        wtime = schedule_time/2.0
+        wtime = schedule_time
 
         # ask SGE for running jobs
         if execution == "sge":
