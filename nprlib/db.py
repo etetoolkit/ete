@@ -153,7 +153,6 @@ def task_is_saved(taskid):
         return True if st =="D" else False
 
 def add_task_data(taskid, datatype, data, duplicates="OR IGNORE"):
-    print "SAVING DATA", taskid, datatype
     data_id = md5(str(data))
     cmd = """ INSERT %s INTO task (taskid, status) VALUES
     ("%s", "D") """ %(duplicates, taskid)
