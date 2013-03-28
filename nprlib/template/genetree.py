@@ -212,6 +212,9 @@ def process_task(task, npr_conf, nodeid2info):
         constrain_alg = '\n'.join([_outs, _tars])
         db.add_task_data(nodeid, DATATYPES.constrain_tree, constrain_tree)
         db.add_task_data(nodeid, DATATYPES.constrain_alg, constrain_alg)
+        db.datacursor.commit() # since the creation of some Task
+                               # objects may require this info, I need
+                               # to commit right now.
 
         # Register node
         db.add_node(task.threadid,
