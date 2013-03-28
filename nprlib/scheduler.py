@@ -148,7 +148,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
 
         if GLOBALS["email"]  and last_report_time is None:
             last_report_time = time()
-            send_mail(GLOBALS["email"], "Your NPR report", '\n'.join(info_lines))
+            send_mail(GLOBALS["email"], "Your NPR process has started", '\n'.join(info_lines))
             
         ## ================================
         ## CHECK AND UPDATE CURRENT TASKS
