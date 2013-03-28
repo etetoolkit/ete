@@ -115,7 +115,8 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
 
     # Captures Ctrl-C
     signal.signal(signal.SIGINT, signal_handler)
-
+    last_report_time = None
+    
     BUG = set()
     # Enters into task scheduling
     while pending_tasks:
@@ -134,9 +135,20 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
             thread2tasks[task.configid].append(task)
         set_logindent(0)
         log.log(28, "@@13: Updating tasks status:@@1: (%s)" % (ctime()))
+        info_lines = []
         for tid, tlist in thread2tasks.iteritems():
             threadname = GLOBALS[tid]["_name"]
-            log.log(28, "  Thread @@13:%s@@1:: pending tasks: @@8:%s@@1:" %(threadname, len(tlist)))
+            sizelist = ["%s" %getattr(_ts, "size", "?") for _ts in tlist]
+            info = "  Thread @@13:%s@@1:: pending tasks: @@8:%s@@1: of sizes: %s" %(
+                threadname, len(tlist), ', '.join(sizelist))
+            info_lines.append(info)
+            
+        for line in info_lines:
+            log.log(28, line)
+
+        if GLOBALS["email"]  and last_report_time is None:
+            last_report_time = time()
+            send_mail(GLOBALS["email"], "Your NPR report", '\n'.join(info_lines))
             
         ## ================================
         ## CHECK AND UPDATE CURRENT TASKS
@@ -192,6 +204,10 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                     checked_tasks.add(task.taskid)
                 except TaskError, e:
                     log.error("Errors found in %s" %task)
+                    if GLOBALS["email"]:
+                        threadname = GLOBALS[task.configid]["_name"]
+                        send_mail(GLOBALS["email"], "Errors found in %s!" %threadname,
+                                  '\n'.join(map(str, [task, e.value, e.msg])))
                     pending_tasks.discard(task)
                     thread_errors[task.configid].append([task, e.value, e.msg])
                     continue
@@ -255,29 +271,36 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
             sleep(schedule_time)
 
         # Dump / show ended threads
+        error_lines = []
         for configid, etasks in thread_errors.iteritems(): 
-            log.log(28, "Thread @@10:%s@@1: contains errors:" %\
+            error_lines.append("Thread @@10:%s@@1: contains errors:" %\
                         (GLOBALS[configid]["_name"]))
             for error in etasks:
-                log.error(" ** %s" %error[0])
-               
+                error_lines.append(" ** %s" %error[0])
                 e_obj = error[1] if error[1] else error[0]
                 error_path = e_obj.jobdir if isjob(e_obj) else e_obj.taskid
                 if e_obj is not error[0]: 
-                    log.error("      -> %s" %e_obj)
-                log.error("      -> %s" %error_path)
-                log.error("        -> %s" %error[2])
-            
+                    error_lines.append("      -> %s" %e_obj)
+                error_lines.append("      -> %s" %error_path)
+                error_lines.append("        -> %s" %error[2])
+        for eline in error_lines:
+            log.error(eline)
+        
         pending_threads = set([ts.configid for ts in pending_tasks])
         finished_threads = expected_threads - (pending_threads | set(thread_errors.keys()))
+        just_finished_lines = []
+        finished_lines = []
         for configid in finished_threads:
             # configid is the the same as threadid in master tasks
             final_tree_file = pjoin(GLOBALS[configid]["_outpath"],
                                     GLOBALS["inputname"] + ".final_tree")
             threadname = GLOBALS[configid]["_name"]
+
             if configid in past_threads:
                 log.log(28, "Done thread @@12:%s@@1: in %d iterations",
                         threadname, past_threads[configid])
+                finished_lines.append("Finished %s in %d iterations" %(
+                        threadname, past_threads[configid]))
             else:
                 log.log(28, "Assembling final tree...")
                 main_tree, treeiters =  assembly_tree(configid)
@@ -288,13 +311,25 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                 main_tree.write(outfile=final_tree_file+".nwx", features=[])
                 log.log(28, "Done thread @@12:%s@@1: in %d iterations",
                         threadname, past_threads[configid])
-        if finished_threads and GLOBALS["email"]:
-            try:
-                send_mail(GLOBALS["email"], "finished threads", "blabla bl2")
-            except Exception, e:
-                print e
-                pass
+                just_finished_lines.append("Finished %s in %d iterations" %(
+                        threadname, past_threads[configid]))
+        if GLOBALS["email"]:
+            if not pending_tasks:
+                all_lines = finished_lines + just_finished_lines + error_lines
+                send_mail(GLOBALS["email"], "Your NPR process has ended", '\n'.join(all_lines))
+            
+            elif GLOBALS["email_report_time"] and time() - last_report_time >= \
+                    GLOBALS["email_report_time"]:
+                all_lines = info_lines + error_lines + just_finished_lines
+                send_mail(GLOBALS["email"], "Your NPR report", '\n'.join(all_lines))
+                last_report_time = time()
+
+            elif just_finished_lines:
+                send_mail(GLOBALS["email"], "Finished threads!",
+                          '\n'.join(just_finished_lines))
+
                 
+            
         log.log(26, "")
     if back_launcher:
         back_launcher.terminate()

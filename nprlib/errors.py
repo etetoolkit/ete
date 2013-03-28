@@ -27,8 +27,7 @@ class TaskError(ValueError):
         self.value = value
         self.msg = msg
     def __str__(self):
-        # return repr(self.value)
-        return self.value
+        return str(self.msg)
     
 class SgeError(ValueError):
     def __init__(self, value):

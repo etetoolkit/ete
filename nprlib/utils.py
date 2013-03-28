@@ -412,7 +412,7 @@ def iter_prepostorder(tree, is_leaf_fn=None):
                 #POSTORDER ACTIONS
                 yield (True, node)
 
-def send_mail(toaddrs, subject, msg): 
+def send_mail_smtp(toaddrs, subject, msg): 
     import smtplib
   
     fromaddr = "no-reply@yournprprocess.local" 
@@ -421,7 +421,20 @@ def send_mail(toaddrs, subject, msg):
     client.sendmail(fromaddr, toaddrs, msg)
     client.quit()
     print "Mail sent to", toaddrs
-               
+
+def send_mail(toaddrs, subject, text):
+    try:
+        from email.mime.text import MIMEText
+        from subprocess import Popen, PIPE
+
+        msg = MIMEText(text)
+        msg["From"] = 'YourNPRprocess@hostname'
+        msg["To"] = toaddrs
+        msg["Subject"] = subject
+        p = Popen(["/usr/sbin/sendmail", "-t"], stdin=PIPE)
+        p.communicate(msg.as_string())
+    except Exception, e:
+        print e
     
 def npr_layout(node):
     if node.is_leaf():
