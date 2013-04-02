@@ -172,7 +172,7 @@ def register_task_data(taskid, datatype, data_id, duplicates="OR IGNORE"):
     ("%s", "%s", "%s") """ %(duplicates, taskid, datatype, data_id)
     datacursor.execute(cmd)
     autocommit()
-    
+    return data_id
 
     
 def create_seq_db():

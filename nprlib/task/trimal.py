@@ -8,6 +8,7 @@ from nprlib.master_task import AlgCleanerTask
 from nprlib.master_job import Job
 from nprlib.utils import SeqGroup, GLOBALS, TRIMAL_CITE, hascontent, DATATYPES, pjoin
 from nprlib.errors import RetryException
+from nprlib import db
 
 __all__ = ["Trimal"]
 
@@ -59,8 +60,8 @@ class Trimal(AlgCleanerTask):
                         " to remove one or more sequences."
                         " Alignment trimming will be disabled for this dataset."
                         )
-            db.register_task_data(self.taskid, DATATYPES.clean_alg_fasta, self.alg_fasta_file)
-            db.register_task_data(self.taskid, DATATYPES.clean_alg_phylip, self.alg_phylip_file)
+            self.clean_alg_fasta_file = db.register_task_data(self.taskid, DATATYPES.clean_alg_fasta, self.alg_fasta_file)
+            self.clean_alg_phylip_file = db.register_task_data(self.taskid, DATATYPES.clean_alg_phylip, self.alg_phylip_file)
         else:
             for line in open(self.jobs[0].stdout_file):
                 line = line.strip()
