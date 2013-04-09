@@ -661,7 +661,7 @@ def save(scene, imgName, w=None, h=None, dpi=300,\
         printer = QPrinter(QPrinter.HighResolution)
         printer.setResolution(dpi)
         printer.setOutputFormat(format)
-        #printer.setPageSize(QPrinter.A4)
+        printer.setPageSize(QPrinter.A4)
         printer.setPaperSize(QtCore.QSizeF(w, h), QPrinter.DevicePixel)
         printer.setPageMargins(0, 0, 0, 0, QPrinter.DevicePixel) 
 

@@ -29,9 +29,15 @@ def user_species_naming_function(name):
         return "Unknown"
 
 def master_layout(node):
-
     node.img_style["shape"] = "square"
     node.img_style["fgcolor"] = "steelblue"
+    if hasattr(node, "bgcolor"):
+        node.img_style["bgcolor"] = node.bgcolor
+        N = faces.AttrFace("name", fsize=NAME_FONT_SIZE)
+        N.margin_left = 1
+        faces.add_face_to_node(N, node, 0, position="branch-top")
+
+        
     if node.is_leaf():
         node.img_style["size"] = 0
         for aname, pos in LEAF_ATTRIBUTES.iteritems():
@@ -150,6 +156,10 @@ if __name__ == "__main__":
                         action="store_true",
                         help="""Sort branches by partition size.""")
     
+    edit_gr.add_argument("--color_by_rank", dest="color_by_rank", 
+                         type=str, nargs="+",
+                         help="""If the attribute rank is present in nodes """)
+    
     phylo_gr = parser.add_argument_group("PHYLOGENETIC OPTIONS\n=================")
     
     phylo_gr.add_argument("--alg", dest="alg", 
@@ -180,6 +190,7 @@ if __name__ == "__main__":
 
     tfile = args.tree[0]
 
+
     if args.ladderize and args.sort:
         raise ValueError("--sort-branches and --ladderize options are mutually exclusive")
     
@@ -190,8 +201,8 @@ if __name__ == "__main__":
             #n.support = getattr(n, "bootstrap", -1)
             #
     else:
-        t = PhyloTree(tfile)        
-
+        t = PhyloTree(tfile)
+        
     if args.alg:
         t.link_to_alignment(args.alg, alg_format=args.alg_format)
         LEAF_ATTRIBUTES["sequence"] = 1
@@ -249,7 +260,7 @@ if __name__ == "__main__":
 
     ts.layout_fn = master_layout
     if args.image:
-        t.render(args.image, tree_style=ts, w=args.width, h=args.height)
+        t.render(args.image, tree_style=ts, w=args.width, h=args.height, units=args.size_units)
     else:
         t.show(None, tree_style=ts)
 

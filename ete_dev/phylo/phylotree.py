@@ -362,13 +362,46 @@ class PhyloNode(TreeNode):
                 spcs.add(l.species)
                 yield l.species
 
-    def is_monophyletic(self, species):
+    def is_monophyletic(self, values, target_attr="species", ignore_missing=False):
         """ Returns True id species names under this node are all
         included in a given list or set of species names."""
-        if type(species) != set:
-            species = set(species)
-        return self.get_species().issubset(species)
-
+        if type(values) != set:
+            values = set(values)
+        seen_values = set([getattr(n, target_attr) for n in self.iter_leaves()])
+        if not ignore_missing and values - seen_values:
+            raise ValueError("Expected '%s' value(s) not found: %s" %(
+                    target_attr, ','.join(values-seen_values)))
+        
+        if ignore_missing: 
+            return not (seen_values - values)
+        else:
+            return not (values ^ seen_values)
+    
+    def get_monophyletic(self, values, target_attr="species", ignore_missing=False):
+        if type(values) != set:
+            values = set(values)
+        leaves = [e for e in self.iter_leaves() if
+                  getattr(e, target_attr) in values]
+        
+        seen_values = set([getattr(n, target_attr) for n in self.iter_leaves()])
+        if not ignore_missing and values - seen_values:
+            raise ValueError("Expected '%s' value(s) not found: %s" %(
+                    target_attr, ','.join(values-seen_values)))
+        
+        if leaves:
+            common = self.get_common_ancestor(leaves)
+        else:
+            common = self
+            
+        seen_values = set([getattr(n, target_attr) for n in common.iter_leaves()])
+        
+        if not ignore_missing and not (values ^ seen_values):
+            return common
+        elif ignore_missing and not (seen_values - values):
+            return common
+        else: 
+            return None
+    
     def get_age(self, species2age):
         return max([species2age[sp] for sp in self.get_species()])
 

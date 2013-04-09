@@ -7,6 +7,7 @@ BUGFIXES
 
 * NeXML parser and exporting functions
 * Fixed 'paste newick' functionality on the GUI
+* is_monophyletic
 
 SCRIPTS
 ^^^^^^^^^^^
@@ -84,6 +85,9 @@ NEW FEATURES
   * get_speciation_trees_recursive?, split_by_dups
 
   * get_node2species
+
+  * is_monophyletic
+  * get_monophyletic (target_attr)
 
   * Added :func:`PhyloNode.get_age_balanced_outgroup`, a better way to
     root gene trees based on species content and size of duplications.
