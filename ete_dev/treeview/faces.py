@@ -790,7 +790,7 @@ class ProfileFace(Face):
             return float(v)
 
 
-class SequenceFace(Face):
+class OLD_SequenceFace(Face):
     """ Creates a new molecular sequence face object.
 
 
@@ -1180,6 +1180,7 @@ class _BarChartItem(QGraphicsRectItem):
                                                  min_string)
             scale_length = scale_margin + max(max_string_metrics.width(),
                               min_string_metrics.width())
+        
 
         label_height = 0
         if self.labels:
@@ -1361,8 +1362,8 @@ class SeqMotifFace(StaticItemFace):
 
         ::
     
-          motifs = [[seq.start, seq.end, shape, width, height, fgcolor, bgcolor, name],
-                   [seq.start, seq.end, shape, width, height, fgcolor, bgcolor, name],
+          motifs = [[seq.start, seq.end, shape, width, height, fgcolor, bgcolor],
+                   [seq.start, seq.end, shape, width, height, fgcolor, bgcolor],
                    ...
                   ]
     
@@ -1582,3 +1583,372 @@ class SeqMotifFace(StaticItemFace):
 
 
         
+
+class SequencePlotFace(StaticItemFace):
+    """
+    To draw plots, usually correlated to columns in alignment
+    
+    :argument values : a list of values
+    :argument None errors : a list of errors associated to each value. elements of the list can contain a list with lower and upper error, if they are different.
+    :argument None colors : a list of colors associated to each value
+    :argument None header : a title for the plot
+    :argument bar kind : kind of plot, one of bar, curve or sticks.
+    :argument None fsize : font size for header and labels
+    :argument 100 height : height of the plot (excluding labels)
+    :argument None hlines : list of y values of horizontal dashed lines to be drawn across plot
+    :argument None hlines_col: list of colors associated to each horizontal line
+    :argument None col_width : width of a column in the alignment
+    :argument red error_col : color of error bars
+    """
+    def __init__(self, values, errors=None, colors=None, header='',
+                 fsize=9, height = 100, hlines=None, kind='bar',
+                 hlines_col = None, extras=None, col_width=11,
+                 ylim=None, xlabel='', ylabel=''):
+        
+        self.col_w = float(col_width)
+        self.height = height
+        self.values = [float(v) for v in values]
+        self.width = self.col_w * len (self.values)
+        self.errors = errors if errors else []
+        self.colors = colors if colors else ['gray'] * len(self.values)
+        self.header = header
+        self.fsize = fsize
+        if ylim:
+            self.ylim = tuple((float(y) for y in ylim))
+        else:
+            dif = (max(self.values) - min(self.values))/20
+            if dif >= 1:
+                self.ylim = (int(min(self.values)-0.5), int(max(self.values)+0.5))
+            else:
+                from math import log10
+                exp = str(-int(log10(min(self.values))-0.5))
+                self.ylim = (float(int(min(self.values)*float('1e'+exp)-0.5))/float('1e'+exp),
+                             float(int(max(self.values)/float('1e'+exp)+0.5))/float('1e'+exp))
+        self.xlabel = xlabel
+        self.ylabel = ylabel
+
+        if self.errors:
+            if type(self.errors[0]) is list or type(self.errors[0]) is tuple:
+                self._up_err = [float(e[1]) for e in self.errors]
+                self._dw_err = [float(-e[0]) for e in self.errors]
+            else:
+                self._up_err = [float(e) for e in self.errors]
+                self._dw_err = [float(-e) for e in self.errors]
+        if kind == 'bar':
+            self.draw_fun = self.draw_bar
+        elif kind == 'stick':
+            self.draw_fun = self.draw_stick
+        elif kind == 'curve':
+            self.draw_fun = self.draw_curve
+        else:
+            raise('kind %s not yet implemented... ;)'%kind)
+        
+        self.hlines = [float(h) for h in hlines] if hlines else [1.0]
+        self.hlines_col = hlines_col if hlines_col else ['black']*len(self.hlines)
+
+        self.extras = extras if extras else ['']
+        if len (self.extras) != len (self.values):
+            self.extras = ['']
+        
+        super(SequencePlotFace,
+              self).__init__(QGraphicsRectItem(-40, 0, self.width+40,
+                                                     self.height+50))
+        self.item.setPen(QPen(QColor('white')))
+
+    def update_items(self):
+        # draw lines
+        for line, col in zip(self.hlines, self.hlines_col):
+            self.draw_hlines(line, col)
+        # draw plot
+        width = self.col_w
+        for i, val in enumerate(self.values):
+            self.draw_fun(width * i + self.col_w / 2 , val, i)
+        # draw error bars
+        if self.errors:
+            for i in range(len(self.errors)):
+                self.draw_errors(width * i + self.col_w / 2 , i)
+        # draw x axis
+        self.draw_x_axis()
+        # draw y axis
+        self.draw_y_axis()
+        # put header
+        self.write_header()
+
+    def write_header(self):
+        text = QGraphicsSimpleTextItem(self.header)
+        text.setFont(QFont("Arial", self.fsize))
+        text.setParentItem(self.item)
+        text.setPos(0, 5)
+        
+    def draw_y_axis(self):
+        lineItem = QGraphicsLineItem(0, self.coordY(self.ylim[0]),
+                                     0, self.coordY(self.ylim[1]),
+                                     parent=self.item)
+        lineItem.setPen(QPen(QColor('black')))
+        lineItem.setZValue(10)
+        max_w = 0
+        for y in set(self.hlines + list(self.ylim)):
+            lineItem = QGraphicsLineItem(0, self.coordY(y),
+                                               -5, self.coordY(y),
+                                               parent=self.item)
+            lineItem.setPen(QPen(QColor('black')))
+            lineItem.setZValue(10)
+            text = QGraphicsSimpleTextItem(str(y))
+            text.setFont(QFont("Arial", self.fsize-2))
+            text.setParentItem(self.item)
+            tw = text.boundingRect().width()
+            max_w = tw if tw > max_w else max_w
+            th = text.boundingRect().height()
+            # Center text according to masterItem size
+            text.setPos(-tw - 5, self.coordY(y)-th/2)
+        if self.ylabel:
+            text = QGraphicsSimpleTextItem(self.ylabel)
+            text.setFont(QFont("Arial", self.fsize-1))
+            text.setParentItem(self.item)
+            text.rotate(-90)
+            tw = text.boundingRect().width()
+            th = text.boundingRect().height()
+            # Center text according to masterItem size
+            text.setPos(-th -5-max_w, tw/2+self.coordY(sum(self.ylim)/2))
+      
+    def draw_x_axis(self):
+        lineItem = QGraphicsLineItem(self.col_w/2,
+                                           self.coordY(self.ylim[0])+2,
+                                           self.width-self.col_w/2,
+                                           self.coordY(self.ylim[0])+2,
+                                           parent=self.item)
+        lineItem.setPen(QPen(QColor('black')))
+        lineItem.setZValue(10)
+        all_vals = range(0, len(self.values), 5)
+        if (len(self.values)-1)%5:
+            all_vals += [len(self.values)-1]
+        for x in all_vals:
+            lineItem = QGraphicsLineItem(0, self.coordY(self.ylim[0])+2,
+                                               0, self.coordY(self.ylim[0])+6,
+                                               parent=self.item)
+            lineItem.setX(x*self.col_w + self.col_w/2)
+            lineItem.setPen(QPen(QColor('black')))
+            lineItem.setZValue(10)
+            text = QGraphicsSimpleTextItem(str(x))
+            text.setFont(QFont("Arial", self.fsize-2))
+            text.setParentItem(self.item)
+            tw = text.boundingRect().width()
+            # Center text according to masterItem size
+            text.setPos(x*self.col_w-tw/2 + self.col_w/2,
+                        self.coordY(self.ylim[0])+6)
+        
+    def coordY(self, y):
+        """
+return the transformation of Y according to mean value
+(that is last element of lines)
+"""
+        y_offset = 30
+        if self.ylim[1] <= y: return y_offset
+        if self.ylim[1] == 0: return self.height + y_offset
+        if self.ylim[0] >= y: return self.height + y_offset
+        #return self.height - y * self.height / self.ylim[1]
+        return self.height + y_offset - (y-self.ylim[0]) / (self.ylim[1]-self.ylim[0]) * self.height
+            
+    def draw_hlines (self, line, col):
+        lineItem = QGraphicsLineItem(0, self.coordY(line),
+                                           self.width, self.coordY(line),
+                                           parent=self.item)
+        lineItem.setPen(QPen(QColor(col), 1, Qt.DashLine))
+        lineItem.setZValue(10)
+
+    def draw_bar(self, x, y, i):
+        h = self.coordY(self.ylim[0])#self.height
+        coordY = self.coordY
+        item = self.item
+        # if value stands out of bound
+        if y < self.ylim[0]: return
+        if y < self.ylim[1]:
+            # left line
+            lineItem = QGraphicsLineItem(0, h, 0, coordY(y), parent=item)
+            lineItem.setX(x-3)
+            lineItem.setPen(QPen(QColor(self.colors[i]),2))
+            # right line
+            lineItem = QGraphicsLineItem(0, h, 0, coordY(y), parent=item)
+            lineItem.setX(x+3)
+            lineItem.setPen(QPen(QColor(self.colors[i]),2))
+            # top line
+            lineItem = QGraphicsLineItem(0, coordY(y), 6, coordY(y), parent=item)
+            lineItem.setX(x-3)
+            lineItem.setPen(QPen(QColor(self.colors[i]),2))
+        else:
+            # lower left line
+            lineItem = QGraphicsLineItem(0, h, 0, coordY(y), parent=item)
+            lineItem.setX(x-3)
+            lineItem.setPen(QPen(QColor(self.colors[i]),2))
+            # lower right line
+            lineItem = QGraphicsLineItem(0, h, 0, coordY(y), parent=item)
+            lineItem.setX(x+3)
+            lineItem.setPen(QPen(QColor(self.colors[i]),2))
+            # upper left line
+            lineItem = QGraphicsLineItem(0, coordY(y)-4, 0, coordY(y)-7, parent=item)
+            lineItem.setX(x-3)
+            lineItem.setPen(QPen(QColor(self.colors[i]),2))
+            # upper right line
+            lineItem = QGraphicsLineItem(0, coordY(y)-4, 0, coordY(y)-7, parent=item)
+            lineItem.setX(x+3)
+            lineItem.setPen(QPen(QColor(self.colors[i]),2))
+            # top line
+            lineItem = QGraphicsLineItem(0, coordY(y)-7, 6, coordY(y)-7, parent=item)
+            lineItem.setX(x-3)
+            lineItem.setPen(QPen(QColor(self.colors[i]),2))
+        
+    def draw_stick(self, x, y, i):
+        lineItem = QGraphicsLineItem(0, self.coordY(self.ylim[0]),
+                                           0, self.coordY(y),
+                                           parent=self.item)
+        lineItem.setX(x)
+        lineItem.setPen(QPen(QColor(self.colors[i]),2))
+
+    def draw_errors(self, x, i):
+        lower = self.values[i]+self._dw_err[i]
+        upper = self.values[i]+self._up_err[i]
+        lineItem = QGraphicsLineItem(0, self.coordY(lower), 0,
+                                           self.coordY(upper), parent=self.item)
+        lineItem.setX(x)
+        lineItem.setPen(QPen(QColor('black'),1))
+        
+    def draw_curve(self, x, y, i):
+        # top line
+        lineItem = QGraphicsLineItem(0, self.coordY(y), 4,
+                                           self.coordY(y), parent=self.item)
+        lineItem.setX(x-2)
+        lineItem.setPen(QPen(QColor(self.colors[i]),2))
+        if i > 0:
+            prev = self.values[i-1] if i>0 else self.values[i]
+            lineItem = QGraphicsLineItem(0, self.coordY(prev), self.col_w-4,
+                                               self.coordY(y), parent=self.item)
+            lineItem.setX(x - self.col_w+2)
+            lineItem.setPen(QPen(QColor(self.colors[i]),2))
+
+
+                
+class SequenceFace(StaticItemFace, Face):
+    """ Creates a new molecular sequence face object.
+
+
+:argument seq: Sequence string to be drawn
+:argument seqtype: Type of sequence: "nt" or "aa"
+:argument fsize: Font size, (default=10)
+
+You can set custom colors for amino-acids or nucleotides:
+
+:argument None codon : a string that corresponds to the reverse translation of the amino-acid sequence
+:argument None col_w : width of the column (if col_w is lower than font size, letter wont be displayed)
+:argument None fg_colors : dictionary of colors for foreground, with as keys each possible character in sequences, and as value the colors
+:argument None bg_colors : dictionary of colors for background, with as keys each possible character in sequences, and as value the colors
+:argument 3 alt_col_w : works together with special_col option, defines the width of given columns
+:argument None special_col : list of lists containing the bounds of columns to be displayed with alt_col_w as width
+:argument False interactive : more info can be displayed when mouse over sequence
+
+"""
+    def __init__(self, seq, seqtype="aa", fsize=10,
+                 fg_colors=None, bg_colors=None,
+                 codon=None, col_w=None, alt_col_w=3,
+                 special_col=None, interactive=False):
+        self.seq = seq
+        self.codon = codon
+        self.fsize = fsize
+        self.style = seqtype
+        self.col_w = float(self.fsize + 1) if col_w is None else float(col_w)
+        self.alt_col_w = float(alt_col_w)
+        self.special_col = special_col if special_col else []
+        self.width = 0 # will store the width of the whole sequence
+        self.interact = interactive
+
+        if self.style == "aa":
+            if not fg_colors:
+                fg_colors = _aafgcolors
+            if not bg_colors:
+                bg_colors = _aabgcolors
+        else:
+            if not fg_colors:
+                fg_colors = _ntfgcolors
+            if not bg_colors:
+                bg_colors = _ntbgcolors
+
+        def __init_col(color_dic):
+            """to speed up the drawing of colored rectangles and characters"""
+            new_color_dic = {}
+            for car in color_dic:
+                new_color_dic[car] = QBrush(QColor(color_dic[car]))
+            return new_color_dic
+            
+        self.fg_col = __init_col(fg_colors)
+        self.bg_col = __init_col(bg_colors)
+            
+        # for future?
+        self.row_h = 13.0
+
+        super(SequenceFace,
+              self).__init__(QGraphicsRectItem(0, 0, self.width,
+                                               self.row_h))
+
+       
+    def update_items(self):
+        #self.item = QGraphicsRectItem(0,0,self._total_w, self.row_h)
+        seq_width = 0
+        nopen = QPen(Qt.NoPen)
+        font = QFont("Courier", self.fsize)
+        rect_cls = self.InteractiveLetterItem if self.interact \
+                   else QGraphicsRectItem
+        for i, letter in enumerate(self.seq):
+            width = self.col_w
+            for reg in self.special_col:
+                if reg[0] < i <= reg[1]:
+                    width = self.alt_col_w
+                    break
+            #load interactive item if called correspondingly
+            rectitem = rect_cls(0, 0, width, self.row_h, parent=self.item)
+            rectitem.setX(seq_width) # to give correct X to children item
+            rectitem.setBrush(self.bg_col[letter])
+            rectitem.setPen(nopen)
+            if self.interact:
+                if self.codon:
+                    rectitem.codon = '%s, %d: %s' % (self.seq[i], i,
+                                                     self.codon[i*3:i*3+3])
+                else:
+                    rectitem.codon = '%s, %d' % (self.seq[i], i)
+            # write letter if enough space
+            if width >= self.fsize:
+                text = QGraphicsSimpleTextItem(letter, parent=rectitem)
+                text.setFont(font)
+                text.setBrush(self.fg_col[letter])
+                # Center text according to rectitem size
+                txtw = text.boundingRect().width()
+                txth = text.boundingRect().height()
+                text.setPos((width - txtw)/2, (self.row_h - txth)/2)
+            seq_width += width
+        self.width = seq_width
+    class InteractiveLetterItem(QGraphicsRectItem):
+        """This is a class"""
+        def __init__(self, *arg, **karg):
+            QGraphicsRectItem.__init__(self, *arg, **karg)
+            self.codon = None
+            self.label = None
+            self.setAcceptsHoverEvents(True)
+    
+        def hoverEnterEvent (self, e):
+            """ when mouse is over"""
+            if not self.label:
+                self.label = QGraphicsRectItem(parent=self)
+                #self.label.setY(-18)
+                self.label.setX(11)
+                self.label.setBrush(QBrush(QColor("white")))
+                self.label.text = QGraphicsSimpleTextItem(parent=self.label)
+    
+            self.setZValue(1)
+            self.label.text.setText(self.codon)
+            self.label.setRect(self.label.text.boundingRect())
+            self.label.setVisible(True)
+    
+        def hoverLeaveEvent(self, e):
+            """when mouse leaves area"""
+            if self.label:
+                self.label.setVisible(False)
+                self.setZValue(0)
+                

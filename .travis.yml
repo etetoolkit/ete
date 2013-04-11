@@ -1,0 +1,24 @@
+language: python
+python:
+  - 2.6
+  - 2.7
+  - 3.0
+
+# command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
+install: 
+  - sudo apt-get install python-qt4 python-numpy python-scipy python-mysqldb python-lxml 2>&1 | tail
+  - /usr/bin/yes | sudo python setup.py install 2>&1 | tail
+
+before_script:
+  - python --version
+
+# command to run tests, e.g. python setup.py test
+script:  python test/test_all.py
+
+branches:
+  only:
+    - master
+
+#The email defaults are too talkative while we're getting Travis working nicely.
+notifications:
+  email: false

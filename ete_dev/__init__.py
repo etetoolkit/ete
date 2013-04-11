@@ -11,6 +11,7 @@ from sys import stderr
 from coretype.tree import *
 from coretype.seqgroup import *
 from phylo.phylotree import *
+from evol.evoltree import *
 from webplugin.webapp import *
 from phyloxml import Phyloxml, PhyloxmlTree
 from nexml import Nexml, NexmlTree
@@ -42,4 +43,4 @@ except ImportError, e:
 
 # Do not modify the following line. It will be checked during
 # installation
-__ETEID__="643cc3270c842b3cf4990861a1126060"
+__ETEID__="569ecd83bc025e367361756d351910d5"
