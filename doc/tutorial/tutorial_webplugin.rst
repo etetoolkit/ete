@@ -6,7 +6,7 @@
 
 .. versionadded:: 2.1
 
-Overview
+Interactive web tree visualization
 ************************************
 
 Starting at version 2.1, ETE provides a module to interactively

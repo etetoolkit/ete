@@ -394,6 +394,12 @@ class Test_Coretype_Tree(unittest.TestCase):
         dist = set([round(l.get_distance(t), 6) for l in t.iter_leaves()])
         self.assertEqual(dist, set([200.0]))
 
+    def test_22_features(self):
+        a = Tree("(((a, b), c), (d,e), f);")
+        b = Tree("(((a, c), b), (d,e), f);")
+        rf, rf_max, names, r1, r2 = a.robinson_foulds(b)
+       
+        
     # def test_traversing_speed(self):
     #     return
     #     for x in xrange(10):

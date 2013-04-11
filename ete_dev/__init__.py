@@ -14,6 +14,7 @@ from phylo.phylotree import *
 from webplugin.webapp import *
 from phyloxml import Phyloxml, PhyloxmlTree
 from nexml import Nexml, NexmlTree
+from evol import EvolTree
 
 try:
     from coretype.arraytable import *
