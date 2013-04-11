@@ -99,11 +99,11 @@ def iter_sptrees(sptrees, nid2node, features=None, full_map=True):
                 leaf.add_feature(f, getattr(nid2node[_nid], f))
         yield t
         
-def get_subtrees_recursive(node, full_copy=True):
+def _get_subtrees_recursive(node, full_copy=True):
     if is_dup(node):
         sp_trees = []
         for ch in node.children:
-            sp_trees.extend(get_subtrees_recursive(ch, full_copy=full_copy))
+            sp_trees.extend(_get_subtrees_recursive(ch, full_copy=full_copy))
         return sp_trees
 
     # saves a list of duplication nodes under current node
@@ -124,7 +124,7 @@ def get_subtrees_recursive(node, full_copy=True):
             #get all sibling sptrees in each side of the
             #duplication. Each subtree is pointed to its anchor
             for ch in dp.children:
-                for subt in get_subtrees_recursive(ch, full_copy=full_copy):
+                for subt in _get_subtrees_recursive(ch, full_copy=full_copy):
                     if not full_copy:
                         subt = node.__class__(subt)
                     subt.up = anchor
@@ -363,8 +363,22 @@ class PhyloNode(TreeNode):
                 yield l.species
 
     def is_monophyletic(self, values, target_attr="species", ignore_missing=False):
-        """ Returns True id species names under this node are all
-        included in a given list or set of species names."""
+        """
+        Returns True id species names under this node are all
+        included in a given list or set of species names.
+
+        If not all attributes are represented in the current tree
+        structure, a ValueError exception will be raised to warn that
+        strict monophyly could never be reached (this behaviour can be
+        avoided by enabling the `ignore_missing` flag.
+              
+        :param species target_attr: node attribute being used to check
+            monophyly (i.e. species for species trees, names for gene
+            family trees).
+
+        :param False ignore_missing: Avoid raising an Exception when
+            missing attributes are found. 
+        """
         if type(values) != set:
             values = set(values)
         seen_values = set([getattr(n, target_attr) for n in self.iter_leaves()])
@@ -378,6 +392,28 @@ class PhyloNode(TreeNode):
             return not (values ^ seen_values)
     
     def get_monophyletic(self, values, target_attr="species", ignore_missing=False):
+        """
+        .. versionadded:: 2.2
+
+        Returns a list of nodes matching the provided monophyly
+        condition. For a node to be considered a match, all
+        `target_attr` attributes, and exclusively them, should be
+        represented under it.
+
+        If not all attributes are represented in the current tree
+        structure, a ValueError exception will be raised to warn that
+        strict monophyly could never be reached (this behaviour can be
+        avoided by enabling the `ignore_missing` flag.
+              
+        :param species target_attr: node attribute being used to check
+            monophyly (i.e. species for species trees, names for gene
+            family trees).
+
+        :param False ignore_missing: Avoid raising an Exception when
+            missing attributes are found. 
+           
+        """
+        
         if type(values) != set:
             values = set(values)
         leaves = [e for e in self.iter_leaves() if
@@ -485,13 +521,17 @@ class PhyloNode(TreeNode):
 
     def get_age_balanced_outgroup(self, species2age):
         """ 
-        .. versionadded:: 2.x
+        .. versionadded:: 2.2
         
-        Returns the best outgroup according to topological ages and
-        node sizes.
-        
-        Currently Experimental !!
+        Returns the node better balance current tree structure
+        according to the topological age of the different leaves and
+        internal node sizes.
 
+        :param species2age: A dictionary translating from leaf names
+          into a topological age. 
+                
+        .. warning: This is currently an experimental method!!
+        
         """
         root = self
         all_seqs = set(self.get_leaf_names())
@@ -539,20 +579,25 @@ class PhyloNode(TreeNode):
         return outgroup_node
 
     def get_speciation_trees(self, map_features=None, autodetect_duplications=True):
-        """Calculates all possible species trees contained within a
-        duplicated gene family tree.
+        """
+        .. versionadded: 2.2
+        
+        Calculates all possible species trees contained within a
+        duplicated gene family tree as described in
+        `Treeko<http://treeko.cgenomics.org>`_ `(Marcet and Gabaldon,
+        2011) <http://www.ncbi.nlm.nih.gov/pubmed/21335609>`_.
 
         :argument True autodetect_duplications: If True, duplication
         nodes will be automatically detected using the Species Overlap
-        algorithm. If False, duplication nodes within the original
-        tree are expected to contain the feature "evoltype=D".
+        algorithm (:func:`PhyloNode.get_descendants_evol_events`. If
+        False, duplication nodes within the original tree are expected
+        to contain the feature "evoltype=D".
 
         :argument None features: A list of features that should be
-        mapped from the original gene tree to each species trees copy.
+        mapped from the original gene family tree to each species
+        tree subtree.
 
         :returns: (number_of_sptrees, number_of_dups, species_tree_iterator)
-
-        .. versionadded: 2.x
 
         """
         t = self
@@ -584,22 +629,23 @@ class PhyloNode(TreeNode):
         else:
             for node in t.iter_leaves():
                 node._leaf = True
-        subtrees = get_subtrees_recursive(t)
+        subtrees = _get_subtrees_recursive(t)
         return len(subtrees), 0, subtrees
 
     def split_by_dups(self, autodetect_duplications=True):
-        """Returns the list of all subtrees resulting from splitting
+        """
+        .. versionadded: 2.2
+        
+        Returns the list of all subtrees resulting from splitting
         current tree by its duplication nodes.
 
         :argument True autodetect_duplications: If True, duplication
         nodes will be automatically detected using the Species Overlap
-        algorithm. If False, duplication nodes are expected to contain
-        the attribute "evoltype=D".
+        algorithm (:func:`PhyloNode.get_descendants_evol_events`. If
+        False, duplication nodes within the original tree are expected
+        to contain the feature "evoltype=D".
 
         :returns: species_trees
-
-        .. versionadded: 2.x
-
         """
         t = self.copy()
         if autodetect_duplications:
@@ -619,25 +665,8 @@ class PhyloNode(TreeNode):
                 node._leaf = True
         sp_trees = get_subparts(t)
         return sp_trees
+       
         
-    def get_node2species(self):
-        """
-        Returns two dictionaries of node instances in which values
-        are the leaf content and the species content of each
-        instance.
-
-        :returns: node2content, node2species
-        
-        .. versionadded: 2.x
-        """
-      
-        n2content = self.get_node2content()
-        n2species = {}
-        for n, content in n2content.iteritems():
-            n2species[n] = set([_n.species for _n in content])
-        return n2content, n2species
-        
-
 #: .. currentmodule:: ete_dev
 #
 PhyloTree = PhyloNode

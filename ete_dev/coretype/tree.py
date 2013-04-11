@@ -324,11 +324,19 @@ class TreeNode(object):
 
     def delete(self, prevent_nondicotomic=True, preserve_branch_length=False):
         """
-        Deletes node from the tree structure. Notice that this
-        method makes 'disapear' the node from the tree structure. This
-        means that children from the deleted node are transferred to the
+        Deletes node from the tree structure. Notice that this method
+        makes 'disappear' the node from the tree structure. This means
+        that children from the deleted node are transferred to the
         next available parent.
 
+        :param True prevent_nondicotomic: When True (default), delete
+        function will be execute recursively to prevent single-child
+        nodes.
+
+        :param False preserve_branch_length: If True, branch lengths
+        of the deleted nodes are transferred (summed up) to its
+        parent's branch, thus keeping original distances among nodes.
+                
         **Example:**
 
         ::
@@ -388,9 +396,9 @@ class TreeNode(object):
 
         :var nodes: a list of node names or node objects that must be kept
         
-        :var False preserve_branch_length: If True, branch lengths of
-        the deleted nodes are added to remaining children nodes, thus
-        keeping original node distances.
+        :param False preserve_branch_length: If True, branch lengths
+        of the deleted nodes are transferred (summed up) to its
+        parent's branch, thus keeping original distances among nodes.
         
         **Examples:**
 
@@ -604,8 +612,9 @@ class TreeNode(object):
            function will be used to interrogate nodes about if they
            are terminal or internal. ``is_leaf_fn`` function should
            receive a node instance as first argument and return True
-           or False. Use this argument to traverse a tree dynamically
-           collapsing internal nodes.
+           or False. Use this argument to traverse a tree by
+           dynamically collapsing internal nodes matching
+           ``is_leaf_fn``.
         """
         if strategy=="preorder":
             return self._iter_descendants_preorder(is_leaf_fn=is_leaf_fn)
@@ -701,7 +710,7 @@ class TreeNode(object):
         '''versionadded: 2.2
         
         Iterates over the list of all ancestor nodes from current node
-        to the tree root.
+        to the current tree root.
 
         '''
         node = self
@@ -713,7 +722,7 @@ class TreeNode(object):
         '''versionadded: 2.2
 
         Returns the list of all ancestor nodes from current node to
-        the tree root.
+        the current tree root.
 
         '''
         return [n for n in self.iter_ancestors()]
@@ -1070,7 +1079,8 @@ class TreeNode(object):
     def populate(self, size, names_library=None, reuse_names=False,
                  random_branches=False, branch_range=(0,1),
                  support_range=(0,1)): 
-        """Generates a random topology by populating current node.
+        """
+        Generates a random topology by populating current node.
 
         :argument None names_library: If provided, names library
           (list, set, dict, etc.) will be used to name nodes.
@@ -1295,25 +1305,26 @@ class TreeNode(object):
         Returns a copy of the current node.
 
         :var cpickle method: Protocol used to copy the node
-        structure:
+        structure. The following values are accepted:
 
            - "newick": Tree topology, node names, branch lengths and
-             branch support values will be copied based on the newick
-             format representation.
+             branch support values will be copied by as represented in
+             the newick string (copy by newick string serialisation).
         
            - "newick-extended": Tree topology and all node features
              will be copied based on the extended newick format
-             representation. Only registered node features will be
-             copied. Note also that features will be converted to text
-             strings.
+             representation. Only node features will be copied, thus
+             excluding other node attributes. As this method is also
+             based on newick serialisation, features will be converted
+             into text strings when making the copy. 
 
            - "cpickle": The whole node structure and its content is
-             copied based on cPickle object serialization (recommended
-             for full tree copies)
+             cloned based on cPickle object serialisation (slower, but
+             recommended for full tree copying)
         
            - "deepcopy": The whole node structure and its content is
-             copied based on the "copy" Python functionality (this is
-             the slowest method)
+             copied based on the standard "copy" Python functionality
+             (this is the slowest method)
 
         """
         if method=="newick":
@@ -1384,6 +1395,10 @@ class TreeNode(object):
 
         :argument show_internal: includes internal edge names.
         :argument compact: use exactly one line per tip.
+
+        :param attributes: A list of node attributes to shown in the
+            ASCII representation.
+        
         """
         (lines, mid) = self._asciiArt(show_internal=show_internal,
                                       compact=compact, attributes=attributes)
@@ -1454,14 +1469,16 @@ class TreeNode(object):
 
         This function sort the branches of a given tree by
         considerening node names. After the tree is sorted, nodes are
-        labeled using ascendent numbers.  This can be used to ensure that
-        nodes in a tree with the same node names are always labeled in
-        the same way.  Note that if duplicated names are present, extra
-        criteria should be added to sort nodes.
-        unique id is stored in _nid
+        labeled using ascendent numbers.  This can be used to ensure
+        that nodes in a tree with the same node names are always
+        labeled in the same way. Note that if duplicated names are
+        present, extra criteria should be added to sort nodes.
+
+        Unique id is stored as a node._nid attribute
+       
         """
 
-        node2content = self.get_node2content()
+        node2content = self.get_cached_content()
         def sort_by_content(x, y):
             return cmp(str(sorted([i.name for i in node2content[x]])),
                        str(sorted([i.name for i in node2content[y]])))
@@ -1471,33 +1488,47 @@ class TreeNode(object):
                 n.children.sort(sort_by_content)
         return node2content
 
-    def get_node2content(self, store=None):
+    def get_cached_content(self, store_attr=None,  _store=None):
         """ 
-        .. versionadded: 2.1
-        EXPERIMENTAL METHOD!
-        Returns a dictionary with the preloaded content of each descendant.
+        .. versionadded: 2.2
+       
+        Returns a dictionary pointing to the preloaded content of each
+        internal node under this tree. Such a dictionary is intended
+        to work as a cache for operations that require many traversal
+        operations.
+
+        :param None store_attr: Specifies the node attribute that
+        should be cached (i.e. name, distance, etc.). When none, the
+        whole node instance is cached.
+
+        :param _store: (internal use)
+
         """
-        if store is None:
-            store = {}
+        if _store is None:
+            _store = {}
             
         for ch in self.children:
-            ch.get_node2content(store=store)
+            ch.get_cached_content(store_attr=store_attr, _store=_store)
 
         if self.children:
             val = set()
             for ch in self.children:
-                val.update(store[ch])
-            store[self] = val
+                val.update(_store[ch])
+            _store[self] = val
         else:
-            store[self] = set([self])
-        return store
+            if store_attr is None:
+                val = self
+            else:
+                val = getattr(self, store_attr)
+            _store[self] = set([val])
+        return _store
 
     def hmg(self, t2, attr_t1="name", attr_t2="name"):
         """
         """
         t1 = self
-        t1content = t1.get_node2content()
-        t2content = t2.get_node2content()
+        t1content = t1.get_cached_content()
+        t2content = t2.get_cached_content()
         target_names = set([getattr(_n, attr_t1) for _n in t1content[t1]])
         ref_names = set([getattr(_n, attr_t2) for _n in t2content[t2]])
         common_names = target_names & ref_names
@@ -1565,20 +1596,27 @@ class TreeNode(object):
        
     def robinson_foulds(self, t2, attr_t1="name", attr_t2="name"):
         """
-        .. versionadded: 2.x
+        .. versionadded: 2.2
         
-        Returns the Robinson-Foulds symmetric distance between this and the target tree.
+        Returns the Robinson-Foulds symmetric distance between current
+        tree and a different tree instance.
      
-        :params t2: target tree
-        :params name attr_t1: Compare trees using the provided attribute from nodes in this tree.
-        :params name attr_t2: Compare trees using the provided attribute from nodes in target tree.
+        :param t2: target tree
         
-        :returns: (symmetric_distance, total_partitions, common_nodes, partitions in reference tree, partitions in target tree)
+        :param name attr_t1: Compare trees using a custom node
+                              attribute as a node name.
+        
+        :param name attr_t2: Compare trees using a custom node
+                              attribute as a node name in target tree.
+
+        :returns: (symmetric distance, total partitions, common node
+         names, partitions in current tree, partitions in target tree)
+           
         """
         
         t1 = self
-        t1content = t1.get_node2content()
-        t2content = t2.get_node2content()
+        t1content = t1.get_cached_content()
+        t2content = t2.get_cached_content()
         target_names = set([getattr(_n, attr_t1) for _n in t1content[t1]])
         ref_names = set([getattr(_n, attr_t2) for _n in t2content[t2]])
         common_names = target_names & ref_names
@@ -1662,8 +1700,26 @@ class TreeNode(object):
                 node2dist[node] = node2dist[node.up] + 1
             node.dist = node.dist
 
-    def resolve_polytomy(self, default_dist=1.0, default_support=1.0,
+    def resolve_polytomy(self, default_dist=0.0, default_support=0.0,
                          recursive=True):
+        """
+        Resolve all polytomies under current node by creating an
+        arbitrary dicotomic structure among the affected nodes. This
+        function randomly modifies current tree topology and should
+        only be used for compatibility reasons (i.e. programs
+        rejecting multifurcated node in the newick representation).
+
+        :param 0.0 default_dist: artificial branch distance of new
+            nodes.
+                                  
+        :param 0.0 default_support: artificial branch support of new
+            nodes.
+                                   
+        :param True recursive: Resolve any polytomy under this
+             node. When False, only current node will be checked and fixed.
+        """
+        
+        
         def _resolve(node):
             if len(node.children) > 2:
                 children = list(node.children)
