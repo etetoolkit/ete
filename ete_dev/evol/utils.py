@@ -104,7 +104,7 @@ def translate(sequence):
     'TTC':'F', 'TTT':'F', 'TTA':'L', 'TTG':'L',
     'TAC':'Y', 'TAT':'Y', 'TAA':'.', 'TAG':'.',
     'TGC':'C', 'TGT':'C', 'TGA':'.', 'TGG':'W',
-    '---':'-'
+    '---':'-', 'nnn':'x', 'NNN':'X'
     }
     ambig = {'Y':['A', 'G'], 'R':['C', 'T'], 'M':['G', 'T'], 'K':['A', 'C'], \
              'S':['G', 'C'],'W':['A', 'T'], 'V':['C', 'G', 'T'], \

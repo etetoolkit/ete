@@ -70,14 +70,14 @@ class SeqGroup(object):
     def __iter__(self):
         return self.iter_entries()
 
-    def __init__(self, sequences=None , format="fasta", fix_duplicates=True):
+    def __init__(self, sequences=None , format="fasta", fix_duplicates=True, **kwargs):
         self.parsers = {
             "fasta": [read_fasta, write_fasta, {}],
             "phylip": [read_phylip, write_phylip, {"interleaved":False, "relaxed":False}],
             "iphylip": [read_phylip, write_phylip, {"interleaved":True, "relaxed":False}],
             "phylip_relaxed": [read_phylip, write_phylip, {"interleaved":False, "relaxed":True}],
             "iphylip_relaxed": [read_phylip, write_phylip, {"interleaved":True, "relaxed":True}],
-            "paml"   : [read_paml  , write_paml  , {}                   ]
+            "paml"   : [read_paml  , write_paml  , kwargs                   ]
             }
 
         self.id2name = {}

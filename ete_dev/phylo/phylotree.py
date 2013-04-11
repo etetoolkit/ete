@@ -324,13 +324,13 @@ class PhyloNode(TreeNode):
                 if n.is_leaf():
                     n.features.add("species")
 
-    def link_to_alignment(self, alignment, alg_format="fasta"):
+    def link_to_alignment(self, alignment, alg_format="fasta", **kwargs):
         missing_leaves = []
         missing_internal = []
         if type(alignment) == SeqGroup:
             alg = alignment
         else:
-            alg = SeqGroup(alignment, format=alg_format)
+            alg = SeqGroup(alignment, format=alg_format, **kwargs)
         # sets the seq of
         for n in self.traverse():
             try:

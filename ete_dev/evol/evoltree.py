@@ -188,11 +188,15 @@ class EvolNode (PhyloNode):
         hlddir = os.getcwd()
         os.chdir(fullpath)
         bin = os.path.join(self.execpath, model_obj.properties['exec'])
-        proc = Popen([bin, 'tmp.ctl'], stdout=PIPE)
+        try:
+            proc = Popen([bin, 'tmp.ctl'], stdout=PIPE)
+        except OSError:
+            raise Exception('ERROR: {} not installed, ' +
+                            'or wrong path to binary\n'.format(bin))
         run, err = proc.communicate()
         if err is not None:
-            warn ("ERROR: codeml not found!!!\n" + \
-                  "       define your variable EvolTree.execpath")
+            warn("ERROR: codeml not found!!!\n" + 
+                 "       define your variable EvolTree.execpath")
             return 1
         if 'error' in run or 'Error' in run:
             warn ("ERROR: inside codeml!!\n" + run)
@@ -224,7 +228,7 @@ class EvolNode (PhyloNode):
     #    self.get_most_likely('M0.model_test-3', 'M0.model_test-2')
 
     def link_to_alignment (self, alignment, alg_format="paml",
-                           nucleotides=True):
+                           nucleotides=True, **kwargs):
         '''
         same function as for phyloTree, but translate sequences if nucleotides
         nucleotidic sequence is kept under node.nt_sequence
@@ -235,7 +239,7 @@ class EvolNode (PhyloNode):
         
         '''
         super(EvolTree, self).link_to_alignment(alignment,
-                                                alg_format=alg_format)
+                                                alg_format=alg_format, **kwargs)
         check_len = 0
         for leaf in self.iter_leaves():
             seq_len = len(str(leaf.sequence))

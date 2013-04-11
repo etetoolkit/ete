@@ -1,6 +1,17 @@
 ETE's Reference Guide
 =======================
 
+.. inheritance-diagram::
+   ete_dev.phylomedb
+   ete_dev.coretype.tree
+   ete_dev.phylo.phylotree
+   ete_dev.evol.evoltree
+   ete_dev.evol.model
+   ete_dev.clustering.clustertree
+   :parts: 1
+
+
+
 Current modules:
 
 .. toctree::
