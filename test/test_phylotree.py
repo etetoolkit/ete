@@ -302,9 +302,9 @@ class Test_phylo_module(unittest.TestCase):
         self.assertEqual(dup4.get_age(sp2age), 1)
 
         # Check is_monophyletic tests
-        self.assert_(dup1.is_monophyletic(["Hsa", "Ptr", "Mmu"]))
+        self.assertRaises(Exception, dup1.is_monophyletic(["Hsa", "Ptr", "Mmu"]))
         self.assert_(not dup1.is_monophyletic(["Hsa", "Ptr"]))
-        self.assert_(not dup1.is_monophyletic(["Hsa", "Ptr", "Mms"]))
+        self.assert_(not dup1.is_monophyletic(["Hsa", "Ptr", "Mms"], ignore_missing=True))
 
         # Check rooting options
         expected_root = t.search_nodes(name="Dme_002")[0]

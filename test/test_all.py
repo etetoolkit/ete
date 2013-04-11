@@ -5,7 +5,8 @@
 
 import unittest
 import sys
-sys.path.insert(0, '../.')
+sys.path.insert(0, './')
+sys.path.insert(0, '../')
 
 from datasets import *
 from test_tree import *
