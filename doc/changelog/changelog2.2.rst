@@ -3,7 +3,7 @@ What's new in ETE 2.2
 .. currentmodule:: ete_dev
 
 BUGFIXES
-^^^^^^^^^^
+==========
 
 * NeXML parser and exporting functions
 * Fixed 'paste newick' functionality on the GUI
@@ -13,22 +13,32 @@ BUGFIXES
 * Fixed consistency issued in :func:`TreeNode.sort_nodes` function. 
 
 SCRIPTS
-^^^^^^^^^^^
+==========
 * Improvements in the standalone visualization script (a.k.a. ete2) 
 
 ??
 * Added ete2dist script to calculate robinson foulds distances among trees
 
-
-MINOR UNCONSISTENCIES WITH ETE 2.1
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+MINOR UNCONSISTENCIES WITH ETE 2.1           ????? PERHAPS BETTER TO REMOVE THIS
+==================================================
 * Default values for :attr:`TreeNode.dist` and
   :attr:`TreeNode.support` are now set to 0.0. This fixes the problem
   of long branches leading to the root node in trees loaded from
   newick and provides. 
 
+
+NEW MODULES
+====================
+* New :class:`EvolNode` tree object type is available as a part of
+  adaptation-test extension recently developed by François Serra (see
+  :doc:`../tutorial/tutorial_adaptation` in the tutorial).
+
+  .. figure:: ../ex_figures/M2_super_profesional.png
+            :scale: 100 %
+
+
 NEW FEATURES
-^^^^^^^^^^^^^^
+====================
 
 * News in core Tree instances: 
 
@@ -55,7 +65,7 @@ NEW FEATURES
   
   * Improved :func:`TreeNode.get_ascii` function for text-based
     visualization of trees. A new `attributes` argument can be passed
-    to display its value in the ASCII tree representation.
+    to display node attributes within the ASCII tree representation.
 
   * Random branch support and lengths generation can be switched off
     and on when :func:`TreeNode.populate` is used. 
@@ -145,8 +155,3 @@ NEW FEATURES
       from a terminal.
     * Added keyboard-based node navigation. 
 
-NEW MODULES
-
-* New EvolTree module
-    * Added new Tree class method :class:`EvolTree`, implementing a number of
-      options for selection tests.

@@ -2,32 +2,45 @@
 
 .. currentmodule:: ete_dev
 
+
 Testing Evolutionary Hypothesis
 *******************************
 
 .. contents::
 
-
-BEFORE ALL:
-=============
+Extension Requirements:
+==========================
 
 You should have codeml and slr in your path:
 
- * CodeML, you can download it from http://abacus.gene.ucl.ac.uk/software/paml.html
+ * CodeML, you can download it from
+   http://abacus.gene.ucl.ac.uk/software/paml.html
+
  * SLR, from here: http://www.ebi.ac.uk/goldman-srv/SLR/
 
-Download, compile and install both of the programs, in order to be able to run the examples.
+Download, compile and install both of the programs, in order to be
+able to run the examples.
 
-**This class is essentialy to interact with external programs, it is strongly recommended to read their corresponding documentations.**
+**This ETE extension is written on top of these two external programs,
+  so it is strongly recommended to read their corresponding
+  documentation.**
 
 Overview
 ================
 
-An other aspect in the study of evolutionary history, is the analysis of selective pressures accounting for the conservation or degeneration of **protein coding genes**.
+An other aspect in the study of evolutionary history, is the analysis
+of selective pressures accounting for the conservation or degeneration
+of **protein coding genes**.
 
-The :class:`EvolTree` class is an extension of the class :class:`PhyloTree` that implements mainly bindings to the PAML package [yang2007]_ but also to the SLR program [massingham2005]_.
+The :class:`EvolTree` class is an extension of the class
+:class:`PhyloTree` that implements mainly bindings to the PAML package
+[yang2007]_ but also to the SLR program [massingham2005]_.
 
-Evolutionary variables that are used to summary selective pressures are, of course the branch-length (*bL*) already available in :class:`PhyloTree`, but also the rate of non-synonymous mutations (*dN*), the rate of synonymous mutations (*dS*) and finally the :math:`\omega` ratio: 
+Evolutionary variables that are used to summary selective pressures
+are, of course the branch-length (*bL*) already available in
+:class:`PhyloTree`, but also the rate of non-synonymous mutations
+(*dN*), the rate of synonymous mutations (*dS*) and finally the
+:math:`\omega` ratio:
 
 .. math::
   :nowrap:
@@ -40,16 +53,25 @@ Evolutionary variables that are used to summary selective pressures are, of cour
 The working directory
 ---------------------
 
-EvolTree works mainly as PhyloTree, thus it needs a tree and an alignment. However as you are going to run external programs over it, **a working directory needs to be defined**. By default tree.workdir is "/tmp/ete2-codeml/", but it is recommended to change it to a more useful path. 
+EvolTree works mainly as PhyloTree, thus it needs a tree and an
+alignment. However as you are going to run external programs over it,
+**a working directory needs to be defined**. By default tree.workdir
+is "/tmp/ete2-codeml/", but it is recommended to change it to a more
+useful path.
 
-Jobs will be stored in the workdir, and you will be able to load pre-computed evolutionary models from there.
+Jobs will be stored in the workdir, and you will be able to load
+pre-computed evolutionary models from there.
 
 
 Descriptive analysis
 ====================
 
-In order to identify the evolutionary trends in a phylogenetic tree, one can either:
-  * conduct an analysis over branches and compute the value of :math:`\omega` in each of them.
+In order to identify the evolutionary trends in a phylogenetic tree,
+one can either:
+
+  * conduct an analysis over branches and compute the value of
+    :math:`\omega` in each of them.
+
   * look at the selective pressures along the alignment.
 
 
@@ -80,9 +102,11 @@ Once loaded we are able to compute selective pressure among the tree according t
   
   tree.run_model ('fb.example')
   
-:func:`ete_dev.EvolNode.run_model` allows to run different evolutionary models (follow this link :func:`ete_dev.EvolNode.run_model` to see the full list of models available). By convention, the name of the model called is the first word, the rest of the string, after the dot, corresponds to its identifier in order to differentiate different runs of one model. We can thus either run "fb" model and "fb.something" with the same result, but they will be stored under different names instead of being overwritten.
+:func:`EvolNode.run_model` allows to run different evolutionary models (follow this link :func:`EvolNode.run_model` to see the full list of models available). By convention, the name of the model called is the first word, the rest of the string, after the dot, corresponds to its identifier in order to differentiate different runs of one model. We can thus either run "fb" model and "fb.something" with the same result, but they will be stored under different names instead of being overwritten.
 
-Once computation is done, we can retrieve the :class:`ete_dev.evol.Model` object from the tree, with the :func:`ete_dev.EvolNode.get_evol_model` function.
+Once computation is done, we can retrieve the
+:class:`evol.Model` object from the tree, with the
+:func:`EvolNode.get_evol_model` function.
 
 ::
   
@@ -251,7 +275,7 @@ In order to know if the parameters estimated under a given model a reliable, we 
 
 Usually, the alternative model is a model that estimates the proportion of sites with :math:`\omega > 1` and we compare its likelihood with a null model, usually a model that do not (letting :math:`\omega <= 1`). This comparison is done through a likelihood ratio test. If the alternative model has the best fit than we are able to accept the possibility of :math:`\omega > 1`.
 
-To see a non-exhaustive list of famous comparison see the documentation of the function: :func:`ete_dev.EvolNode.get_most_likely`
+To see a non-exhaustive list of famous comparison see the documentation of the function: :func:`EvolNode.get_most_likely`
 
 
 Test on sites
@@ -433,7 +457,7 @@ When an evolutionary model is computed, the output is stored in *tree.workdir* a
   ATGGCCAGGTACAGATGCTGTCGCAGCCAGAGCCGGAGCAGATGTTACCGGCAGAGACGGAGCAGGTGTTACCGGCAAAGGCAAAGCCAAAGTCGGAGCAGATGTTACCGGCAGAGCCAGAGACGGAGCAGGTGTTACCGGCAAAGACAAAGAAGTCGCAGACGAAGGCGACGGAGCTGCCAGACACGGAGGAGAGCCATGAGGTGCTGCCGCCGCAGGTACAGACTGAGACGTAAAAGATGTTACCATATTGTATCT''')  
   tree.link_to_evol_model('/path_to/my_working_directory/fb.best/out')
 
-*Note:* :func:`ete_dev.EvolNode.link_to_evol_model` is also able to load directly :class:`ete_dev.evol.Model` objects.
+*Note:* :func:`EvolNode.link_to_evol_model` is also able to load directly :class:`evol.Model` objects.
 
 Indeed all output files generated do not need to be kept, only a `pickle or cPickle <http://docs.python.org/library/pickle.html>`_ of the model for example.
 
