@@ -1828,24 +1828,32 @@ return the transformation of Y according to mean value
 
                 
 class SequenceFace(StaticItemFace, Face):
-    """ Creates a new molecular sequence face object.
+    """
+    Creates a new molecular sequence face object.
+    :param seq: Sequence string to be drawn
+    :param seqtype: Type of sequence: "nt" or "aa"
+    :param fsize: Font size, (default=10)
 
+    You can set custom colors for amino-acids or nucleotides:
 
-:argument seq: Sequence string to be drawn
-:argument seqtype: Type of sequence: "nt" or "aa"
-:argument fsize: Font size, (default=10)
+    :param None codon: a string that corresponds to the reverse
+      translation of the amino-acid sequence
+    :param None col_w: width of the column (if col_w is lower than
+      font size, letter wont be displayed)
+    :param None fg_colors: dictionary of colors for foreground, with
+      as keys each possible character in sequences, and as value the
+      colors
+    :param None bg_colors: dictionary of colors for background, with
+      as keys each possible character in sequences, and as value the
+      colors
+    :param 3 alt_col_w: works together with special_col option,
+      defines the width of given columns
+    :param None special_col: list of lists containing the bounds
+      of columns to be displayed with alt_col_w as width
+    :param False interactive: more info can be displayed when
+      mouse over sequence
 
-You can set custom colors for amino-acids or nucleotides:
-
-:argument None codon : a string that corresponds to the reverse translation of the amino-acid sequence
-:argument None col_w : width of the column (if col_w is lower than font size, letter wont be displayed)
-:argument None fg_colors : dictionary of colors for foreground, with as keys each possible character in sequences, and as value the colors
-:argument None bg_colors : dictionary of colors for background, with as keys each possible character in sequences, and as value the colors
-:argument 3 alt_col_w : works together with special_col option, defines the width of given columns
-:argument None special_col : list of lists containing the bounds of columns to be displayed with alt_col_w as width
-:argument False interactive : more info can be displayed when mouse over sequence
-
-"""
+        """
     def __init__(self, seq, seqtype="aa", fsize=10,
                  fg_colors=None, bg_colors=None,
                  codon=None, col_w=None, alt_col_w=3,
@@ -1924,7 +1932,8 @@ You can set custom colors for amino-acids or nucleotides:
                 text.setPos((width - txtw)/2, (self.row_h - txth)/2)
             seq_width += width
         self.width = seq_width
-    class InteractiveLetterItem(QGraphicsRectItem):
+        
+class InteractiveLetterItem(QGraphicsRectItem):
         """This is a class"""
         def __init__(self, *arg, **karg):
             QGraphicsRectItem.__init__(self, *arg, **karg)

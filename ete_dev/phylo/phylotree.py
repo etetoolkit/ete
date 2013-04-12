@@ -583,9 +583,10 @@ class PhyloNode(TreeNode):
         .. versionadded: 2.2
         
         Calculates all possible species trees contained within a
-        duplicated gene family tree as described in
-        `Treeko<http://treeko.cgenomics.org>`_ `(Marcet and Gabaldon,
-        2011) <http://www.ncbi.nlm.nih.gov/pubmed/21335609>`_.
+        duplicated gene family tree as described in `Treeko
+        <http://treeko.cgenomics.org>`_ (see `Marcet and Gabaldon,
+        2011 <http://www.ncbi.nlm.nih.gov/pubmed/21335609>`_ ).
+
 
         :argument True autodetect_duplications: If True, duplication
         nodes will be automatically detected using the Species Overlap

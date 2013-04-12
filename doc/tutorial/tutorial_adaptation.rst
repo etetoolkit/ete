@@ -21,9 +21,9 @@ You should have codeml and slr in your path:
 Download, compile and install both of the programs, in order to be
 able to run the examples.
 
-**This ETE extension is written on top of these two external programs,
-  so it is strongly recommended to read their corresponding
-  documentation.**
+This ETE extension is written on top of these two external programs,
+so it is strongly recommended to read their corresponding
+documentation.
 
 Overview
 ================

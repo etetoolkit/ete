@@ -5,7 +5,7 @@ What's new in ETE 2.2
 BUGFIXES
 ==========
 
-* NeXML parser and exporting functions
+* Fixes in NeXML parser and exporting functions
 * Fixed 'paste newick' functionality on the GUI
 * Fixed :func:`PhyloNode.is_monophyletic` behaviour (returns True if a
   provided species matched node content and no other species are
@@ -40,7 +40,7 @@ NEW MODULES
 NEW FEATURES
 ====================
 
-* News in core Tree instances: 
+* **News in core Tree instances:**
 
   * Added :func:`TreeNode.robinson_foulds` distance to compare the
     topology of two trees (i.e. tree.robinson_foulds(tree2)). It
@@ -81,19 +81,21 @@ NEW FEATURES
     :func:`TreeNode.get_ancestors` functions.
 
   * Newick parser accepts now the creation of single node trees. For
-    example, a text string such as `"node1;"` will be parsed as a
-    single tree node with names `node1`. By contrast, `(node1);` will
-    be interpreted as a root node with a single child named `name1`.
+    example, a text string such as :attr:`"node1;"` will be parsed as
+    a single tree node whose name is :attr:`node1`. By contrast, the
+    newick string :attr:`(node1);` will be interpreted as an unnamed
+    root node plus a single child named :attr:`name1`.
 
 
-* News PhyloTree instances: 
+* **News PhyloTree instances:**
+
 
   * Added :func:`PhyloNode.get_speciation_trees` method, which returns
     all possible species topologies present in a gene family tree as
-    described in `Treeko<http://treeko.cgenomics.org>`_ `(Marcet and
-    Gabaldon, 2011) <http://www.ncbi.nlm.nih.gov/pubmed/21335609>`_.
+    described in `Treeko <http://treeko.cgenomics.org>`_  (see `Marcet and
+    Gabaldon, 2011 <http://www.ncbi.nlm.nih.gov/pubmed/21335609>`_ ).
 
-  * Added :func:`PhyloNode.split_by_dup` method, which returns a list
+  * Added :func:`PhyloNode.split_by_dups` method, which returns a list
     of partial subtrees resulting from splitting a tree at duplication
     nodes.
 
@@ -111,33 +113,38 @@ NEW FEATURES
   * Added :func:`PhyloNode.get_age_balanced_outgroup`, a better way to
     root gene trees based on species content and size of duplications.
 
-* News on sequence and multiple sequence alignment parsing 
+* **News on sequence and multiple sequence alignment parsing:** 
 
-  * added the option to switch off the correction of duplicated names
-    when loading :class:`SeqGroup` data from phylip and fasta files.
+  * added the option to disable the automatic correction of duplicated
+    names when loading :class:`SeqGroup` data from phylip and fasta
+    files.
 
-* News on tree visualization and image rendering
+* **News on tree visualization and image rendering:**
 
   * node style attributes can now be modified without the need of
-      initialisation by directly accessing the
-      :attr:`TreeNode.img_style` attribute.
+    initialisation by directly accessing the
+    :attr:`TreeNode.img_style` attribute.
 
   * Multiple layout functions can now be provided to combine their
     functionality.
 
   * Several predefined :attr:`COLOR_SCHEMES` are provided for help
-      creating better chart face representations convenience.
+    creating better chart face representations convenience.
 
-* News on node faces
+* **News on node faces:**
 
-  * Added new :class:`SeqMotifFace` class, which extends and improves
-    older :class:`SequenceFace` (now deprecated and not
-    maintained). The new face type allows to represent sequences as a
-    succession of domain/motif elements, as a condensed color based
-    sequence representation or as a combination of all. Gaps in
-    sequences are also taken into account and shown as black space or
-    a flat line. 
-    You can check some examples at the tutorial?????
+  * Improved :class:`SequenceFace`: Sequence sites are now rendered
+    one by one, allowing interaction with each of them and getting rid
+    of the previous pixmap size limitation. Site image dimensions and
+    colours are now configurable.
+
+  * Added new :class:`SeqMotifFace` class, which extends
+    :class:`SequenceFace`. This new face type allows to represent
+    sequences as a succession of domain/motif elements, as a condensed
+    color based sequence representation or as a combination of
+    all. Gaps in sequences are also taken into account and shown as
+    black space or a flat line.  You can check some examples at the
+    tutorial?????
 
   * Added :class:`PieChartFace` and :class:`BarChartFace` face types
     for built-in representation of statistics attached to nodes.
@@ -147,11 +154,11 @@ NEW FEATURES
 
   * Shape Faces, RoundRect, Triangle, Diamond, RectFace
 
-* News on the GUI
+* **News on the GUI**
 
-    * Allows image region selection.
-    * Allows zooming on selected regions or specific nodes.
-    * :kbd:`C-c` will now interrupt the GUI application when started
-      from a terminal.
-    * Added keyboard-based node navigation. 
+  * Allows image region selection.
+  * Allows zooming on selected regions or specific nodes.
+  * :kbd:`C-c` will now interrupt the GUI application when started
+    from a terminal.
+  * Added keyboard-based node navigation. 
 
