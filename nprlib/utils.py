@@ -66,7 +66,7 @@ APP2CLASS = {
     "jmodeltest"     : "JModeltest",
     "treesplitter"   : "TreeMerger",
     "concatalg"      : "ConcatAlg",
-    "cogselector"    : "BrhCogSelector",
+    "cogselector"    : "MCLCogSelector",
     }
 
 CLASS2MODULE = {
