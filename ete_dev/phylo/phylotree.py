@@ -362,7 +362,7 @@ class PhyloNode(TreeNode):
                 spcs.add(l.species)
                 yield l.species
 
-    def is_monophyletic(self, values, target_attr="species", ignore_missing=False):
+    def check_monophyly(self, values, target_attr="species", ignore_missing=False):
         """
         Returns True id species names under this node are all
         included in a given list or set of species names.
@@ -381,15 +381,46 @@ class PhyloNode(TreeNode):
         """
         if type(values) != set:
             values = set(values)
-        seen_values = set([getattr(n, target_attr) for n in self.iter_leaves()])
-        if not ignore_missing and values - seen_values:
-            raise ValueError("Expected '%s' value(s) not found: %s" %(
-                    target_attr, ','.join(values-seen_values)))
-        
-        if ignore_missing: 
-            return not (seen_values - values)
+
+        # This is the only time I traverse the tree, then I use cached
+        # leaf content
+        n2leaves = self.get_cached_content()
+        # Locate leaves matching requested attribute values
+        targets = [leaf for leaf in n2leaves[self]
+                   if getattr(leaf, target_attr) in values]
+       
+        # Raise an error if requested attribute values are not even present
+        if not ignore_missing:
+            missing_values = values - set([getattr(n, target_attr) for n
+                                           in targets])
+            if missing_values: 
+                raise ValueError("Expected '%s' value(s) not found: %s" %(
+                    target_attr, ','.join(missing_values)))
+                
+        # Check monophyly with get_common_ancestor. Note that this
+        # step does not require traversing the tree again because
+        # targets are node instances instead of node names, and
+        # get_common_ancestor function is smart enough to detect it
+        # and avoid unnecessary traversing.
+        common = self.get_common_ancestor(targets)
+        observed = n2leaves[common]
+        foreign_leaves = [leaf for leaf in observed
+                          if getattr(leaf, target_attr) not in values]
+        if not foreign_leaves:
+            return True, "monophyletic"
         else:
-            return not (values ^ seen_values)
+            # if the requested attribute is not monophyletic in this
+            # node, let's differentiate between poly and paraphyly. 
+            poly_common = self.get_common_ancestor(foreign_leaves)
+            # if the common ancestor of all foreign leaves is self
+            # contained, we have a paraphyly. Otherwise, polyphyly. 
+            polyphyletic = [leaf for leaf in poly_common if
+                            getattr(leaf, target_attr) in values]
+            if polyphyletic:
+                return False, "polyphyletic"
+            else:
+                return False, "paraphyletic"
+        
     
     def get_monophyletic(self, values, target_attr="species", ignore_missing=False):
         """
