@@ -745,6 +745,10 @@ if __name__ == "__main__":
                         help="File containing all one2one orthologous"
                              " relationships among the species of interest.")
 
+    input_group.add_argument("--cogs", dest="cogs_file",
+                        type=existing_file,
+                        help="")
+    
     input_group.add_argument("--spname-delimiter", dest="spname_delimiter",
                         type=str, default="_",
                         help="In sptree mode, spname_delimiter is used to split"
@@ -901,6 +905,8 @@ if __name__ == "__main__":
     GLOBALS["spname_delimiter"] = args.spname_delimiter
     GLOBALS["color_shell"] = True
     GLOBALS["citator"] = Citator()
+    
+    GLOBALS["cogs_file"] = args.cogs_file
     
     GLOBALS["citator"].add(ETE_CITE)
     if not pexist(GLOBALS["basedir"]):
