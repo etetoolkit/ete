@@ -198,7 +198,9 @@ class Task(object):
        
         self._donejobs = set()
         self._running_jobs = set()
-        self.dependencies = set()
+        
+        if not hasattr(self, "dependencies"):
+            self.dependencies = set()
        
         # Prepare required jobs
         self.load_jobs()

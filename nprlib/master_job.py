@@ -69,7 +69,8 @@ class Job(object):
 
         self.ifdone_cmd = ""
         self.iffail_cmd = ""
-        self.dependencies = set()
+        if hasattr(self, "dependencies"):
+            self.dependencies = set()
         self.set_jobdir(pjoin(GLOBALS["tasks_dir"], self.jobid))
 
     def add_input_file(self, ifile, outpath = None):

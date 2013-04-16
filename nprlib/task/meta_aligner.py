@@ -92,7 +92,7 @@ class MetaAligner(AlgTask):
         first.add_input_file(self.multiseq_file)
         self.jobs.append(first)
         
-        all_alg_files = []
+        all_alg_jobs = []
         mcoffee_parents = []
         for aligner_name in self.conf[self.confname]["_aligners"]:
             _classname = APP2CLASS[self.conf[aligner_name]["_app"]]
@@ -105,25 +105,29 @@ class MetaAligner(AlgTask):
                              self.conf, aligner_name)
             task1.size = self.size
             self.jobs.append(task1)
-            all_alg_files.append(task1.alg_fasta_file)
+            all_alg_files.append(task1)
             
             # Alg of the reverse
-            task2 = _aligner(self.nodeid, self.multiseq_file+".reversed", self.seqtype,
-                             self.conf, aligner_name)
+            task2 = _aligner(self.nodeid, self.multiseq_file_r,
+                             self.seqtype, self.conf, aligner_name)
             task2.size = self.size
             task2.dependencies.add(first)
             self.jobs.append(task2)
             
             # Restore reverse alg
+            lambda: pjoin(GLOBALS["input_dir"], task2.alg_fasta_file)
+            lambda: pjoin(GLOBALS["input_dir"],
+                          task2.alg_fasta_file+".restore")
+                        
             task3 = seq_reverser_job(task2.alg_fasta_file,
                                      task2.alg_fasta_file+".reversed", 
                                      self.conf["app"]["readal"],
                                      parent_ids=[task2.taskid])
             task3.dependencies.add(task2)
-            task.add_input_file(task2.alg_fasta_file)
+            #task.add_input_file(task2.alg_fasta_file)
             self.jobs.append(task3)
             
-            all_alg_files.append(task2.alg_fasta_file+".reversed")
+            all_alg_files.append(task2)
             mcoffee_parents.extend([task1.taskid, task2.taskid])
             
         # Combine signal from all algs using Mcoffee

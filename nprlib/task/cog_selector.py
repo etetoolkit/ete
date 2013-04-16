@@ -15,11 +15,11 @@ from nprlib.utils import (GLOBALS, print_as_table, generate_node_ids,
                           encode_seqname, md5, pjoin)
 from nprlib import db
 
-__all__ = ["MCLCogSelector"]
+__all__ = ["CogSelector"]
 
 quote = lambda _x: '"%s"' %_x
 
-class MCLCogSelector(CogSelectorTask):
+class CogSelector(CogSelectorTask):
     def __init__(self, target_sp, out_sp, seqtype, conf, confname):
 
         self.seed = conf[confname]["_seed"]
