@@ -103,11 +103,11 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
     ## ===================================
 
     cores_total = GLOBALS["_max_cores"]
-    if cores_total > 1:
+    if cores_total > 0:
         job_queue = Queue()
         back_launcher = Process(target=background_job_launcher,
                                 args=(job_queue, run_detached,
-                                      GLOBALS["launch_time"], cores_total-1))
+                                      GLOBALS["launch_time"], cores_total))
         GLOBALS["_background_scheduler"] = back_launcher
         back_launcher.start()
     else:

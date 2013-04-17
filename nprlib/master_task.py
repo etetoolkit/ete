@@ -397,29 +397,33 @@ class AlgCleanerTask(Task):
         db.add_task_data(self.taskid, DATATYPES.clean_alg_fasta, fasta)
         db.add_task_data(self.taskid, DATATYPES.clean_alg_phylip, phylip)
         db.add_task_data(self.taskid, DATATYPES.kept_alg_columns, kept_columns)
+        self.kept_columns[:] = [] # security clear
+        self.kept_columns.extend(kept_columns)
         
 class ModelTesterTask(Task):
     def __repr__(self):
         return genetree_class_repr(self, "@@2:ModelTesterTask@@1:")
 
-    def get_best_model(self):
-        return open(self.best_model_file, "ru").read()
-
     def check(self):
-        if not os.path.exists(self.best_model_file) or\
-                not os.path.getsize(self.best_model_file):
-            return False
-        elif self.tree_file:
-            if not os.path.exists(self.tree_file) or\
-                    not os.path.getsize(self.tree_file):
-                return False
-        return True
+        if self.best_model and self.model_ranking:
+            return True
+        return False
 
-    #def store_data(self, DB):
-    #    DB.add_task_data(self.taskid, DATATYPES.best_model, open(self.best_model_file))
-
+    def init_output_info(self):
+        self.best_model = ""
+        self.model_ranking = []
+        
+    
+    def store_data(self, best_model, ranking):
+        db.add_task_data(self.taskid, DATATYPES.best_model, best_model)
+        db.add_task_data(self.taskid, DATATYPES.model_ranking, ranking)
+        self.best_model = best_model
+        self.model_ranking[:] = []
+        self.model_ranking.extend(ranking)
+        
     def load_stored_data(self):
-        self.best_model = db.get_dataid(self.taskid, DATATYPES.best_model)
+        self.best_model = db.get_task_data(self.taskid, DATATYPES.best_model)
+        self.model_ranking = db.get_task_data(self.taskid, DATATYPES.model_ranking)
         
 class TreeTask(Task):
     def __init__(self, nodeid, task_type, task_name, base_args=None, 
@@ -449,7 +453,8 @@ class TreeTask(Task):
         
     def store_data(self, newick, stats):
         db.add_task_data(self.taskid, DATATYPES.tree, newick)
-        self.stats = db.add_task_data(self.taskid, DATATYPES.tree_stats, stats)
+        db.add_task_data(self.taskid, DATATYPES.tree_stats, stats)
+        self.stats = stats
     
 class TreeMergeTask(Task):
     def __init__(self, nodeid, task_type, task_name, base_args=None, 
@@ -483,7 +488,7 @@ class ConcatAlgTask(Task):
         db.add_task_data(self.taskid, DATATYPES.model_partitions, partitions)
         db.add_task_data(self.taskid, DATATYPES.concat_alg_fasta, fasta)
         db.add_task_data(self.taskid, DATATYPES.concat_alg_phylip, phylip)
-
+        
         
 class CogSelectorTask(Task):
     def __repr__(self):
@@ -502,6 +507,8 @@ class CogSelectorTask(Task):
     def store_data(self, cogs, cog_analysis):
         db.add_task_data(self.taskid, DATATYPES.cogs, cogs)
         db.add_task_data(self.taskid, DATATYPES.cog_analysis, cog_analysis)
+        self.cogs = cogs
+        self.cog_analysis = cog_analysis
         
 def register_task_recursively(task, parentid=None):
     db.add_task(tid=task.taskid, nid=task.nodeid, parent=parentid,

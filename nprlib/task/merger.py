@@ -31,7 +31,6 @@ class TreeMerger(TreeMergeTask):
         self.outgroup_match = ""
         self.pre_iter_support = None # support of the node pre-iteration
         self.init()
-        #self.pruned_tree = os.path.join(self.taskdir, "pruned_tree.nw")
         
     def finish(self):
         def euc_dist(x, y):

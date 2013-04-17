@@ -89,6 +89,7 @@ class MetaAligner(AlgTask):
         
         first = seq_reverser_job(multiseq_file, multiseq_file_r, 
                                  [self.nodeid], readal_bin)
+        #print self.multiseq_file
         first.add_input_file(self.multiseq_file)
         self.jobs.append(first)
         
@@ -105,7 +106,6 @@ class MetaAligner(AlgTask):
                              self.conf, aligner_name)
             task1.size = self.size
             self.jobs.append(task1)
-            print task1.alg_fasta_file
             all_alg_names.append(task1.alg_fasta_file)
            
             
@@ -122,7 +122,6 @@ class MetaAligner(AlgTask):
                                      reverse_out+"_restored",
                                      [task2.taskid], readal_bin)
             task3.dependencies.add(task2)
-            print task2.alg_fasta_file
             task3.add_input_file(task2.alg_fasta_file)
             all_alg_names.append(reverse_out+"_restored")
             self.jobs.append(task3)

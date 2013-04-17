@@ -22,7 +22,6 @@ class Trimal(AlgCleanerTask):
         self.seqtype = seqtype
         self.alg_fasta_file = alg_fasta_file
         self.alg_phylip_file = alg_phylip_file
-        self.kept_columns = []
         base_args = {
             '-in': None,
             '-out': None,

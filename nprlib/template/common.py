@@ -186,11 +186,11 @@ def split_tree(task_tree, main_tree, alg_path, npr_conf, threadid):
             if ALG and npr_conf.max_seq_simiarity < 1.0: 
                 if not hasattr(_n, "seqs_mean_ident"):
                     log.log(20, "Calculating node sequence stats...")
-
                     mx, mn, avg, std = get_seqs_identity(ALG,
                                                          [__n.name for __n in n2content[_n]])
                     _n.add_features(seqs_max_ident=mx, seqs_min_ident=mn,
                                    seqs_mean_ident=avg, seqs_std_ident=std)
+                    log.log(20, "mx=%s, mn=%s, avg=%s, std=%s" %(mx, mn, avg, std))
             else:
                 _n.add_features(seqs_max_ident=None, seqs_min_ident=None,
                                 seqs_mean_ident=None, seqs_std_ident=None)
@@ -218,9 +218,10 @@ def split_tree(task_tree, main_tree, alg_path, npr_conf, threadid):
         
     log.log(20, "Loading tree content...")
     n2content = main_tree.get_node2content()
-    if alg_path: 
-        log.log(20, "Calculating sequence similarity for each tree node...")
-        ALG = SeqGroup(alg_path)
+    if alg_path:
+        log.log(20, "Loading associated alignment to check seq. similarity")
+        raw_alg = db.get_task_data(*alg_path.split("."))
+        ALG = SeqGroup(raw_alg)
     else:
         ALG = None
     #for n in task.task_tree.traverse(): 

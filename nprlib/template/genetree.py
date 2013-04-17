@@ -69,7 +69,7 @@ def annotate_node(t, final_task):
             n.add_features(modeltester_models=task.models, 
                            modeltester_type=task.tname, 
                            modeltester_params=params, 
-                           modeltester_bestmodel=task.get_best_model(), 
+                           modeltester_bestmodel=task.best_model, 
                            )
         elif task.ttype == "treemerger":
             n.add_features(treemerger_type=task.tname, 
@@ -306,8 +306,7 @@ def process_task(task, npr_conf, nodeid2info):
         if treebuilderclass:
             alg_fasta_file = task.alg_fasta_file
             alg_phylip_file = task.alg_phylip_file
-            model = task.get_best_model()
-
+            model = task.best_model
             tree_task = treebuilderclass(nodeid, alg_phylip_file,
                                          constrain_id,
                                          model, seqtype,

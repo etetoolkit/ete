@@ -26,7 +26,6 @@ class Raxml(TreeTask):
         self.alg_phylip_file = alg_file
         self.constrain_tree = None
         if constrain_id:
-            print contrain_id, "!!!!"
             self.constrain_tree = db.get_dataid(constrain_id, DATATYPES.constrain_tree)
         TreeTask.__init__(self, nodeid, "tree", "RaxML", 
                           base_args, conf[confname])

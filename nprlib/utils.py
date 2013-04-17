@@ -36,6 +36,7 @@ class _DataTypes(object):
         self.concat_alg_fasta = 250
         self.concat_alg_phylip = 251
         self.best_model = 300
+        self.model_ranking = 305
         self.model_partitions = 325
         self.tree = 400
         self.tree_stats = 410
@@ -43,7 +44,6 @@ class _DataTypes(object):
         self.constrain_alg = 426
         self.cogs = 500
         self.cog_analysis = 550
-
         
         self.job = 1
         self.task = 2
