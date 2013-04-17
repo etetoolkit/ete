@@ -261,9 +261,13 @@ def main(args):
         # setup portable apps
         apps_to_test = {}
         for k,v in config["app"].iteritems():
+            if k in config["threading"]:
+                core_limit = int(config["threading"][k])
+                config["threading"][k] = min(core_limit, args.maxcores)
+               
             if v == "built-in":
                 cores = int(config["threading"].get(k, args.maxcores))
-                cores = min(args.maxcores, cores)
+                #cores = min(args.maxcores, cores)
                 config["threading"][k] = cores
                 if args.sge_execute:
                     _apps_path = os.path.realpath(config["sge"]["remote_npr_path"])
