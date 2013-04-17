@@ -50,6 +50,7 @@ class ConcatAlg(ConcatAlgTask):
             # thread.
             job = Msf(set(co), set(),
                       seqtype = self.seqtype)
+            print job.multiseq_file
             job.main_tree = None
             job.threadid = generate_runid()
             job.configid = self.conf["_configid"]
@@ -69,9 +70,12 @@ class ConcatAlg(ConcatAlgTask):
         for job in self.jobs:
             jobtypes.add(job.ttype)
             if job.ttype == "alg" and job.nodeid not in self.job2alg:
-                job2alg[job.nodeid] = db.get_data(job.alg_fasta_file)
+                dataid = db.get_dataid(*job.alg_fasta_file.split("."))
+                job2alg[job.nodeid] = db.get_data(dataid)
             elif job.ttype == "acleaner":
-                job2acleaner[job.nodeid] = db.get_data(job.clean_alg_fasta_file)
+                a, b =  job.clean_alg_fasta_file.split(".")
+                dataid = db.get_dataid(*job.clean_alg_fasta_file.split("."))
+                job2acleaner[job.nodeid] = db.get_data(dataid)
             elif job.ttype == "mchooser":
                 self.job2model[job.nodeid] = db.get_data(job.best_model)
                 

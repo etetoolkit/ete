@@ -189,12 +189,21 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                                 if not os.path.exists(j.jobdir):
                                     os.makedirs(j.jobdir)
                                 for ifile, outpath in j.input_files.iteritems():
+                                    try:
+                                        _tid, _did = ifile.split(".")
+                                        _did = int(_did)
+                                    except (IndexError, ValueError): 
+                                        dataid = ifile
+                                    else:
+                                        dataid = db.get_dataid(_tid, _did)
                                     if not outpath:
                                         outfile = pjoin(GLOBALS["input_dir"], ifile)
                                     else:
                                         outfile = pjoin(outpath, ifile)
+                                           
                                     if not os.path.exists(outfile): 
-                                        open(outfile, "w").write(db.get_data(ifile))
+                                        open(outfile, "w").write(db.get_data(dataid))
+                                        
                                 log.log(24, "  @@8:Queueing @@1: %s from %s" %(j, task))
                                 job_queue.put([j.jobid, j.cores, cmd, j.status_file])
                             BUG.add(j.jobid)
@@ -204,6 +213,8 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                     checked_tasks.add(task.taskid)
                 except TaskError, e:
                     log.error("Errors found in %s" %task)
+                    import traceback
+                    traceback.print_exc()
                     if GLOBALS["email"]:
                         threadname = GLOBALS[task.configid]["_name"]
                         send_mail(GLOBALS["email"], "Errors found in %s!" %threadname,

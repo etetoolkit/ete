@@ -32,7 +32,7 @@ class Job(object):
     '''
     def __repr__(self):
         return "Job (%s, %s)" %(self.jobname, self.jobid[:6])
-
+   
     def __init__(self, bin, args, jobname=None, parent_ids=None):
         # Used at execution time
         self.status = "W"
@@ -45,9 +45,6 @@ class Job(object):
         self.cores = 1
         self.exec_type = "insitu"
         self.jobname = jobname
-        # This should contain the md5 of all input files used to run
-        # the process
-        self.input_files = {}
         
         # generates the unique job identifier based on the params of
         # the app. Some params include path names that can prevent
@@ -56,10 +53,10 @@ class Job(object):
         parsed_id_string = ["%s %s" %(clean(str(pair[0])), clean(str(pair[1])))
                             for pair in self.args.iteritems()]
         #print '\n'.join(map(str, self.args.items()))
+
         self.jobid = md5(','.join(sorted([md5(e) for e in
                                           parsed_id_string])))
-
-        #self.jobid = md5(','.join(sorted([md5(str(pair)) for pair in 
+        # self.jobid = md5(','.join(sorted([md5(str(pair)) for pair in 
         #                                  self.args.iteritems()])))
         if parent_ids:
             self.jobid = md5(','.join(sorted(parent_ids+[self.jobid])))
@@ -69,10 +66,10 @@ class Job(object):
 
         self.ifdone_cmd = ""
         self.iffail_cmd = ""
-        if hasattr(self, "dependencies"):
-            self.dependencies = set()
         self.set_jobdir(pjoin(GLOBALS["tasks_dir"], self.jobid))
-
+        self.input_files = {}
+        self.dependencies = set()
+        
     def add_input_file(self, ifile, outpath = None):
         self.input_files[ifile] = outpath
         

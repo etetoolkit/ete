@@ -22,10 +22,6 @@ class Mafft(AlgTask):
         self.seqtype = seqtype
         self.multiseq_file = multiseq_file     
         self.init()
-
-        # Expected outputs
-        self.alg_fasta_file = None
-        self.alg_phylip_file = None
  
     def load_jobs(self):
         appname = self.conf[self.confname]["_app"]

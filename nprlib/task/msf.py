@@ -37,16 +37,12 @@ class Msf(MsfTask):
             raise DataError("Outgroup seqs included in target seqs.")
         all_seqs = self.target_seqs | self.out_seqs
         self.size = len(all_seqs)
-
-        # Expected result
-        self.multiseq_file = None
         
     def finish(self):
         # Dump sequences into MSF
         all_seqs = self.target_seqs | self.out_seqs
         fasta = '\n'.join([">%s\n%s" % (n, db.get_seq(n, self.seqtype))
                                for n in all_seqs])
-            
         MsfTask.store_data(self, fasta)
-        
+  
         

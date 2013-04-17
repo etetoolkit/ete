@@ -1,5 +1,6 @@
 import os
 import logging
+import traceback
 log = logging.getLogger("main")
 from collections import defaultdict
 
@@ -71,12 +72,14 @@ class Task(object):
         print "Status", self.status
         for tag, value in self.args.iteritems():
             print tag,":", value
-
-    def __init__(self, nodeid, task_type, task_name, base_args=None, 
+        
+    def __init__(self, nodeid, task_type, task_name, base_args=None,
                  extra_args=None):
 
         if not base_args: base_args = {}
         if not extra_args: extra_args = {}
+
+        self.taskid = None
         
         # This define which task-processor should be used
         # (i.e. genetree, sptree).
@@ -94,9 +97,6 @@ class Task(object):
         # messages
         self.tname = task_name
 
-        # Unique id based on the parameters set for each task
-        self.taskid = None
-
         # Path to the file containing task status: (D)one, (R)unning
         # or (W)aiting or (Un)Finished
         #self.status_file = None
@@ -112,10 +112,12 @@ class Task(object):
         
         # Set arguments that could be sent to jobs
         self.args = merge_arg_dicts(extra_args, base_args, parent=self)
+        
         # extract all internal config values associated to this task
         # and generate its unique id (later used to generate taskid)
         self._config_id = md5(','.join(sorted(["%s %s" %(str(pair[0]),str(pair[1])) for pair in
                                        extra_args.iteritems() if pair[0].startswith("_")])))
+        self.dependencies = set()
         
     def get_status(self, sge_jobs=None):
         # If another tasks with the same id (same work to be done) has
@@ -154,6 +156,7 @@ class Task(object):
                 try:
                     self.finish()
                 except Exception, e:
+                    print traceback.print_exc()
                     raise TaskError(self, e)
                 else:
                     #store in database .......
@@ -191,30 +194,28 @@ class Task(object):
         return self.status
 
     def init(self):
-
         # List of associated jobs necessary to complete the task. Job
         # and Task classes are accepted as elements in the list.
         self.jobs = []
        
         self._donejobs = set()
         self._running_jobs = set()
-        
-        if not hasattr(self, "dependencies"):
-            self.dependencies = set()
        
         # Prepare required jobs
         self.load_jobs()
         
-        # Set task information, such as task working dir and taskid
+        # Set task information, such as taskid
         self.load_task_info()
+
+        # Now taskid is set, so we can save output file ids
+        self.init_output_info()
         
     def get_saved_status(self):
         try:
             return open(self.status_file, "ru").read(1)
         except IOError: 
             return "?"
-        
-
+       
     def get_jobs_status(self, sge_jobs=None):
         ''' Check the status of all children jobs. '''
         self.cores_used = 0
@@ -260,21 +261,19 @@ class Task(object):
         return all_states
 
     def load_task_info(self):
-        ''' Initialize task information. It generates a unique taskID
-        based on the sibling jobs and sets task working directory. ''' 
+        ''' Initialize task information. It generates a unique taskID based on
+        the sibling jobs and sets task working directory.''' 
 
-        # Creates a task id based on its target node and job
-        # arguments. The same tasks, including the same parameters
-        # would raise the same id, so it is easy to check if a task is
-        # already done in the working path. Note that this prevents
-        # using.taskdir before calling task.init()
+        # Creates a task id based on its target node and job arguments. The same
+        # tasks, including the same parameters would raise the same id, so it is
+        # easy to check if a task is already done in the working path.
         if not self.taskid:
-            args_id = md5(','.join(sorted(["%s %s" %(str(pair[0]),str(pair[1])) for pair in
-                       self.args.iteritems()])))
+            args_id = md5(','.join(sorted(["%s %s" %(str(pair[0]), str(pair[1]))
+                                           for pair in self.args.iteritems()])))
              
-            unique_id = md5(','.join([self.nodeid, self._config_id, args_id]+sorted(
-                        [getattr(j, "jobid", "taskid") for j in self.jobs])))
-
+            unique_id = md5(','.join([self.nodeid, self._config_id, args_id] +\
+                                         sorted([getattr(j, "jobid", "taskid")
+                                                 for j in self.jobs])))
             self.taskid = unique_id
 
     def retry(self):
@@ -291,9 +290,10 @@ class Task(object):
         for j in self.jobs:
             # Process only  jobs whose dependencies are satisfied
             st = j.status
-            #if isjob(j):
-            #    print "jobid", j.jobid, st
-            if st == "W" and not (j.dependencies - self._donejobs): 
+            if st == "W" and not (j.dependencies - self._donejobs):
+                if hasattr(j, "_post_dependencies_hook"):
+                    j._post_dependencies_hook()
+                    
                 if isjob(j):
                     j.dump_script()
                     cmd = "sh %s >%s 2>%s" %\
@@ -310,7 +310,7 @@ class Task(object):
     def finish(self):
         ''' Customizable function. It must process all jobs and set
         the resulting values of the task. For instance, set variables
-        pointing to the resulting file '''
+        pointing to the resulting file'''
 
     def check(self):
         ''' Customizable function. Return true if task is done and
@@ -325,17 +325,25 @@ class Task(object):
         ''' This should store in the database all relevant data
         associated to the task '''
         pass
-            
+    def init_output_info(self):
+        ''' This should set the expected file ids of task output '''
+        pass
+    def load_stored_data(self):
+        ''' Restore data from DB if available '''
+        pass
 
 class MsfTask(Task):
     def __repr__(self):
         return genetree_class_repr(self, "@@6:MultiSeqTask@@1:")
 
+    def init_output_info(self):
+        self.multiseq_file = "%s.%s" %(self.taskid, DATATYPES.msf)
+    
     def load_stored_data(self):
-        self.multiseq_file = db.get_dataid(self.taskid, DATATYPES.msf)
-        
+        pass
+            
     def store_data(self, msf):
-        self.multiseq_file = db.add_task_data(self.taskid, DATATYPES.msf, msf)
+        db.add_task_data(self.taskid, DATATYPES.msf, msf)
         
     def check(self):
         if self.multiseq_file:
@@ -345,39 +353,50 @@ class MsfTask(Task):
 class AlgTask(Task):
     def __repr__(self):
         return genetree_class_repr(self, "@@5:AlgTask@@1:")
-
+   
     def check(self):
         if self.alg_fasta_file and self.alg_phylip_file:
             return True
         return False
     
-    def load_stored_data(self):
-        self.alg_fasta_file = db.get_dataid(self.taskid, DATATYPES.alg_fasta)
-        self.alg_phylip_file = db.get_dataid(self.taskid, DATATYPES.alg_phylip)
+    def init_output_info(self):
+        self.alg_fasta_file = "%s.%s" %(self.taskid, DATATYPES.alg_fasta)
+        self.alg_phylip_file = "%s.%s" %(self.taskid, DATATYPES.alg_phylip)
         
     def store_data(self, fasta, phylip):
-        self.alg_fasta_file = db.add_task_data(self.taskid, DATATYPES.alg_fasta, fasta)
-        self.alg_phylip_file = db.add_task_data(self.taskid, DATATYPES.alg_phylip, phylip)
-        
+        # self.alg_fasta_file = db.add_task_data(self.taskid, DATATYPES.alg_fasta,
+        #                                        fasta)
+        # self.alg_phylip_file = db.add_task_data(self.taskid,
+        #                                         DATATYPES.alg_phylip, phylip)
+        db.add_task_data(self.taskid, DATATYPES.alg_fasta, fasta)
+        db.add_task_data(self.taskid, DATATYPES.alg_phylip, phylip)
+                
 class AlgCleanerTask(Task):
     def __repr__(self):
         return genetree_class_repr(self, "@@4:AlgCleanerTask@@1:")
-
+   
     def check(self):
         if self.clean_alg_fasta_file and \
                 self.clean_alg_phylip_file: 
             return True
         return False
-           
+
+    def init_output_info(self):
+        self.clean_alg_fasta_file = "%s.%s" %(self.taskid,
+                                                  DATATYPES.clean_alg_fasta)
+        self.clean_alg_phylip_file = "%s.%s" %(self.taskid,
+                                               DATATYPES.clean_alg_phylip)
+        self.kept_columns = []
+       
     def load_stored_data(self):
-        self.clean_alg_fasta_file = db.get_dataid(self.taskid, DATATYPES.clean_alg_fasta)
-        self.clean_alg_phylip_file = db.get_dataid(self.taskid, DATATYPES.clean_alg_phylip)
-        self.kept_columns = db.get_task_data(self.taskid, DATATYPES.kept_alg_columns)
+        self.kept_columns[:] = [] # clear list
+        self.kept_columns.append(
+            db.get_task_data(self.taskid, DATATYPES.kept_alg_columns))
 
     def store_data(self, fasta, phylip, kept_columns):
-        self.clean_alg_fasta_file = db.add_task_data(self.taskid, DATATYPES.clean_alg_fasta, fasta)
-        self.clean_alg_phylip_file = db.add_task_data(self.taskid, DATATYPES.clean_alg_phylip, phylip)
-        self.kept_columns = db.add_task_data(self.taskid, DATATYPES.kept_alg_columns, kept_columns)
+        db.add_task_data(self.taskid, DATATYPES.clean_alg_fasta, fasta)
+        db.add_task_data(self.taskid, DATATYPES.clean_alg_phylip, phylip)
+        db.add_task_data(self.taskid, DATATYPES.kept_alg_columns, kept_columns)
         
 class ModelTesterTask(Task):
     def __repr__(self):
@@ -421,12 +440,15 @@ class TreeTask(Task):
             return True
         return False
 
+    def init_output_info(self):
+        self.tree_file = "%s.%s" %(self.taskid, DATATYPES.tree)
+    
     def load_stored_data(self):
-        self.tree_file = db.get_dataid(self.taskid, DATATYPES.tree)
+        # self.tree_file = db.get_dataid(self.taskid, DATATYPES.tree)
         self.stats = db.get_task_data(self.taskid, DATATYPES.tree_stats)
         
     def store_data(self, newick, stats):
-        self.tree_file = db.add_task_data(self.taskid, DATATYPES.tree, newick)
+        db.add_task_data(self.taskid, DATATYPES.tree, newick)
         self.stats = db.add_task_data(self.taskid, DATATYPES.tree_stats, stats)
     
 class TreeMergeTask(Task):
@@ -452,16 +474,17 @@ class ConcatAlgTask(Task):
             return True
         return False
 
-    def load_stored_data(self):
-        self.partitions_file = db.get_dataid(self.taskid, DATATYPES.model_partitions)
-        self.alg_fasta_file = db.get_dataid(self.taskid, DATATYPES.concat_alg_fasta)
-        self.alg_phylip_file = db.get_dataid(self.taskid, DATATYPES.concat_alg_phylip)
-    
+    def init_output_info(self):
+        self.partitions_file = "%s.%s" %(self.taskid, DATATYPES.model_partitions)
+        self.alg_fasta_file = "%s.%s"  %(self.taskid, DATATYPES.concat_alg_fasta)
+        self.alg_phylip_file = "%s.%s" %(self.taskid, DATATYPES.concat_alg_phylip)
+        
     def store_data(self, fasta, phylip, partitions):
-        self.partitions_file = db.add_task_data(self.taskid, DATATYPES.model_partitions, partitions)
-        self.alg_fasta_file = db.add_task_data(self.taskid, DATATYPES.concat_alg_fasta, fasta)
-        self.alg_phylip_file = db.add_task_data(self.taskid, DATATYPES.concat_alg_phylip, phylip)
-    
+        db.add_task_data(self.taskid, DATATYPES.model_partitions, partitions)
+        db.add_task_data(self.taskid, DATATYPES.concat_alg_fasta, fasta)
+        db.add_task_data(self.taskid, DATATYPES.concat_alg_phylip, phylip)
+
+        
 class CogSelectorTask(Task):
     def __repr__(self):
         return sptree_class_repr(self, "@@6:CogSelectorTask@@1:")
@@ -473,7 +496,8 @@ class CogSelectorTask(Task):
 
     def load_stored_data(self):
         self.cogs = db.get_task_data(self.taskid, DATATYPES.cogs)
-        self.cog_analysis = db.get_task_data(self.taskid, DATATYPES.cog_analysis)
+        self.cog_analysis = db.get_task_data(self.taskid,
+                                             DATATYPES.cog_analysis)
     
     def store_data(self, cogs, cog_analysis):
         db.add_task_data(self.taskid, DATATYPES.cogs, cogs)
@@ -481,12 +505,13 @@ class CogSelectorTask(Task):
         
 def register_task_recursively(task, parentid=None):
     db.add_task(tid=task.taskid, nid=task.nodeid, parent=parentid,
-                status=task.status, type="task", subtype=task.ttype, name=task.tname)
+                status=task.status, type="task", subtype=task.ttype,
+                name=task.tname)
     for j in task.jobs:
         if isjob(j):
-            db.add_task(tid=j.jobid, nid=task.nodeid, parent=task.taskid,
-                        status="W", type="job", name=j.jobname)
-            
+            db.add_task(tid=j.jobid, nid=task.nodeid,
+                        parent=task.taskid, status="W", type="job",
+                        name=j.jobname)
         else:
             register_task_recursively(j, parentid=parentid)
     

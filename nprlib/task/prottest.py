@@ -40,7 +40,7 @@ class Prottest(ModelTesterTask):
         self.models = conf[confname]["_models"]
         task_name = "Prottest-[%s]" %','.join(self.models)
         ModelTesterTask.__init__(self, nodeid, "mchooser", task_name, 
-                      base_args, conf[confname])
+                                 base_args, conf[confname])
         
         self.best_model = None
         self.seqtype = "aa"

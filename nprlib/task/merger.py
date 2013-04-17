@@ -36,9 +36,8 @@ class TreeMerger(TreeMergeTask):
     def finish(self):
         def euc_dist(x, y):
             return len(x.symmetric_difference(y)) / float((len(x) + len(y)))
-
-        
-        ttree = PhyloTree(db.get_data(self.task_tree_file))
+        dataid = db.get_dataid(*self.task_tree_file.split("."))
+        ttree = PhyloTree(db.get_data(dataid))
         mtree = self.main_tree
         ttree.dist = 0
         cladeid, target_seqs, out_seqs = db.get_node_info(self.threadid, self.nodeid)

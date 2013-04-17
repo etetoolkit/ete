@@ -26,7 +26,6 @@ class Muscle(AlgTask):
 
         self.seqtype = seqtype
         self.multiseq_file = multiseq_file
-
         self.init()
 
     def load_jobs(self):

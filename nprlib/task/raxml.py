@@ -71,7 +71,7 @@ class Raxml(TreeTask):
         tree_job = Job(self.raxml_bin, args, parent_ids=[self.nodeid])
         tree_job.jobname += "-"+self.model_string
         tree_job.cores = self.threads
-        # Register input files for running the job
+        # Register input files necessary to run the job
         tree_job.add_input_file(self.alg_phylip_file)
         if self.constrain_tree:
             tree_job.add_input_file(self.constrain_tree)
