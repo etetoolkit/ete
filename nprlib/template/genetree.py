@@ -376,6 +376,6 @@ def pipeline(task, conf=None):
 
     process_new_tasks(task, new_tasks)
     logindent(-2)
-   
+  
     return new_tasks
 
