@@ -35,6 +35,7 @@ class _DataTypes(object):
         self.kept_alg_columns = 230
         self.concat_alg_fasta = 250
         self.concat_alg_phylip = 251
+        self.alg_list = 290
         self.best_model = 300
         self.model_ranking = 305
         self.model_partitions = 325

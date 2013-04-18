@@ -7,6 +7,7 @@ from nprlib.master_task import AlgTask, Task
 from nprlib.master_job import Job
 from nprlib.utils import (SeqGroup, OrderedDict, checksum, pjoin,
                           GLOBALS, APP2CLASS, CLASS2MODULE, MCOFFEE_CITE, DATATYPES)
+from nprlib import db
 
 import __init__ as task
 
@@ -54,7 +55,17 @@ class MCoffee(AlgTask):
         alg = SeqGroup(os.path.join(self.jobs[0].jobdir, "mcoffee.fasta"))
         fasta = alg.write(format="fasta")
         phylip = alg.write(format="iphylip_relaxed")
+
+        alg_list_string = '\n'.join([pjoin(GLOBALS["input_dir"],
+                                           aname) for aname in self.all_alg_files])
+        db.add_task_data(self.taskid, DATATYPES.alg_list, alg_list_string)
+        
         AlgTask.store_data(self, fasta, phylip)
+        
+    def init_output_info(self):
+        self.alg_list_file = "%s.%s" %(self.taskid, DATATYPES.alg_list)
+        AlgTask.init_output_info(self)
+        
         
 class MetaAligner(AlgTask):
     def __init__(self, nodeid, multiseq_file, seqtype, conf, confname):
@@ -136,15 +147,10 @@ class MetaAligner(AlgTask):
         self.jobs.append(mcoffee_task)
 
         if self.conf[self.confname]["_alg_trimming"]:
-            #writes a file with the expected list of alg files
-            alg_list_file = pjoin(GLOBALS["input_dir"], mcoffee_task.taskid+"_alg_list")
-            open(alg_list_file, "w").write(
-                '\n'.join([pjoin(input_dir, aname) for aname in  all_alg_names]))
-
             trimming_cutoff = 1.0 / len(all_alg_names)
             targs = {}
             targs["-forceselect"] = pjoin(input_dir, mcoffee_task.alg_fasta_file)
-            targs["-compareset"] = alg_list_file
+            targs["-compareset"] = pjoin(input_dir, mcoffee_task.alg_list_file)
             targs["-out"] = "mcoffee.trimmed.fasta"
             targs["-fasta"] = ""
             targs["-ct"] = trimming_cutoff
@@ -155,6 +161,7 @@ class MetaAligner(AlgTask):
             for key in all_alg_names:
                 trim_job.add_input_file(key)
             trim_job.add_input_file(mcoffee_task.alg_fasta_file)
+            trim_job.add_input_file(mcoffee_task.alg_list_file)
             self.jobs.append(trim_job)      
 
     def finish(self):
@@ -170,7 +177,7 @@ class MetaAligner(AlgTask):
             # If no post trimming, output is just what Mcoffee
             # produced, so we can recycle its data ids.
             mc_task = self.jobs[-1]
-            fasta_id = db.get_dataid(mc_task, DATATYPES.alg_fasta)
-            phylip_id = db.get_dataid(mc_task, DATATYPES.alg_phylip)
+            fasta_id = db.get_dataid(mc_task.taskid, DATATYPES.alg_fasta)
+            phylip_id = db.get_dataid(mc_task.taskid, DATATYPES.alg_phylip)
             db.register_task_data(self.taskid, DATATYPES.alg_fasta, fasta_id)
             db.register_task_data(self.taskid, DATATYPES.alg_phylip, phylip_id)
