@@ -102,6 +102,10 @@ NEW FEATURES
   * !!! Return the distance between a species tree and a gene tree
     with multiple duplications using Treeko distance.
 
+  * Added :func:`PhyloNode.collapse_lineage_specific_expansions` method,
+    which returns a pruned version of a tree, where nodes representing
+    lineage specific expansions are converted into a single tip node. 
+
   * :func:`PhyloNode.is_monophyletic` method accepts now `target_attr`
     and the `ignore_missing` flag. This allows to check monophyly of
     nodes according to different criteria (i.e. species concent, node names,

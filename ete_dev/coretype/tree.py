@@ -1324,7 +1324,9 @@ class TreeNode(object):
         
            - "deepcopy": The whole node structure and its content is
              copied based on the standard "copy" Python functionality
-             (this is the slowest method)
+             (this is the slowest method but it allows to copy complex
+             objects even if attributes point to lambda functions,
+             etc.)
 
         """
         if method=="newick":
