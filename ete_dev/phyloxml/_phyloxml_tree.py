@@ -18,21 +18,29 @@ class PhyloxmlTree(PhyloTree):
         return "PhyloXML ETE tree <%s>" %hex(hash(self))
 
     def _get_dist(self):
-        return self.phyloxml_clade.get_branch_length()
+        v = float(self.phyloxml_clade.get_branch_length_attr())
+        if v is None:
+            v = self.phyloxml_clade.get_branch_length()
+        return v
+        
     def _set_dist(self, value):
         try:
             self.phyloxml_clade.set_branch_length(float(value))
+            self.phyloxml_clade.set_branch_length_attr(float(value))
         except ValueError:
             raise
 
     def _get_support(self):
-        return self.__support.get_valueOf_()
-    def _set_support(self, value):
-        try:
-            self.__support.set_valueOf_(float(value))
-        except ValueError:
-            raise
+        if (self.phyloxml_clade.confidence) == 0:
+            if len(self.phyloxml_clade.confidence) > 0:
+                _c = Confidence(valueOf_=1.0, type_="branch_support")
+                self.phyloxml_clade.add_confidence(_c)
+        return float(self.phyloxml_clade.confidence[0].valueOf_)
 
+    def _set_support(self, value):
+        self._get_support()
+        self.phyloxml_clade.confidence[0].valueOf_ = float(value)
+        
     def _get_name(self):
         return self.phyloxml_clade.get_name()
     def _set_name(self, value):
@@ -58,8 +66,8 @@ class PhyloxmlTree(PhyloTree):
             self.phyloxml_clade = Clade()
             self.phyloxml_clade.set_branch_length(0.0)
             self.phyloxml_clade.set_name("NoName")
-            self.__support = Confidence(valueOf_=1.0, type_="branch_support")
-            self.phyloxml_clade.add_confidence(self.__support)
+            #self.__support = Confidence(valueOf_=1.0, type_="branch_support")
+            #self.phyloxml_clade.add_confidence(self.__support)
         else:
             self.phyloxml_clade = phyloxml_clade
         super(PhyloxmlTree, self).__init__(**kargs)
@@ -69,6 +77,8 @@ class PhyloxmlTree(PhyloTree):
         if nodetype == 'phylogeny':
             self.phyloxml_phylogeny.buildAttributes(node, node.attrib, [])
         elif nodetype == 'clade':
+            if "branch_length" in node.attrib:
+                node.attrib["branch_length_attr"] = node.attrib["branch_length"]
             self.phyloxml_clade.buildAttributes(node, node.attrib, [])
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
