@@ -331,7 +331,8 @@ def main(args):
         GLOBALS["inputname"] = os.path.split(args.aa_seed_file)[-1]
 
     # Set up custom databases if necessary
-    GLOBALS["nprdb_file"]  = pjoin(base_dir, "npr.db")
+    GLOBALS["nprdb_file"]  = pjoin(base_dir, "npr.db."+ctime().replace(" ","_").replace(":",""))
+    
     GLOBALS["datadb_file"]  = pjoin(base_dir, "data.db")
     GLOBALS["orthodb_file"]  = pjoin(base_dir, "ortho.db") \
         if not args.orthodb else args.orthodb
@@ -455,7 +456,7 @@ def main(args):
         pending_tasks.extend(new_tasks)
 
         # Clear info from previous runs
-        open(os.path.join(config["_outpath"], "runid"), "a").write('\t'.join([thread_id, ctime()+"\n"]))
+        open(os.path.join(config["_outpath"], "runid"), "a").write('\t'.join([thread_id, GLOBALS["nprdb_file"]+"\n"]))
         # Write command line info
         cmd_info = '\t'.join([start_time, thread_id, GLOBALS["cmdline"]])
         open(pjoin(config["_outpath"], "command_lines"), "a").write(cmd_info+"\n")
