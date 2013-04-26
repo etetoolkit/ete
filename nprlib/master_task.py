@@ -460,9 +460,9 @@ class TreeTask(Task):
 class TreeMergeTask(Task):
     def __init__(self, nodeid, task_type, task_name, base_args=None, 
                  extra_args=None):
-        # I want every tree merge instance to be unique (avoids
-        # recycling and undesired collisions between trees from
-        # different threads containing the same topology
+        # I want every tree merge instance to be unique (avoids recycling and
+        # undesired collisions between trees from different threads containing
+        # the same topology, so I create a random checksum to compute taskid
         extra_args["_treechecksum"] = generate_runid()
         Task.__init__(self, nodeid, task_type, task_name, base_args, 
                       extra_args)
@@ -511,17 +511,17 @@ class CogSelectorTask(Task):
         self.cogs = cogs
         self.cog_analysis = cog_analysis
         
-def register_task_recursively(task, runid, parentid=None):
-    db.add_task(tid=task.taskid, rid=runid, nid=task.nodeid,
+def register_task_recursively(task, parentid=None):
+    db.add_task(tid=task.taskid, nid=task.nodeid,
                 parent=parentid, status=task.status, type="task",
                 subtype=task.ttype, name=task.tname)
     for j in task.jobs:
         if isjob(j):
-            db.add_task(tid=j.jobid, rid=runid, nid=task.nodeid,
+            db.add_task(tid=j.jobid, nid=task.nodeid,
                         parent=task.taskid, status="W", type="job",
                         name=j.jobname)
         else:
-            register_task_recursively(j, runid, parentid=task.taskid)
+            register_task_recursively(j, parentid=task.taskid)
     
 def update_task_states_recursively(task):
     task_start = 0

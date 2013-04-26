@@ -112,17 +112,16 @@ class IterConfig(dict):
 def process_new_tasks(task, new_tasks):
     # Basic registration and processing of newly generated tasks
     parent_taskid = task.taskid if task else None
-    runid = task.threadid if task else new_tasks[0].threadid
     for ts in new_tasks:
         log.log(22, "Registering new task: %s", ts)
-        register_task_recursively(ts, runid, parentid=parent_taskid)
+        register_task_recursively(ts, parentid=parent_taskid)
         # sort task by nodeid
         GLOBALS["nodeinfo"][ts.nodeid].setdefault("tasks", []).append(ts)
-        ts.threadid = runid
         if task:
             # Clone processor, in case tasks belong to a side workflow
             ts.task_processor = task.task_processor
             ts.configid = task.configid
+            ts.threadid = task.threadid
             ts.main_tree = task.main_tree
         #db.add_runid2task(ts.threadid, ts.taskid)
             

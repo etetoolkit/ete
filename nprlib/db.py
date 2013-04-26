@@ -217,8 +217,7 @@ def create_db():
     );
          
     CREATE TABLE IF NOT EXISTS task(
-    taskid CHAR(32),
-    runid CHAR(32), 
+    taskid CHAR(32) PRIMARY KEY,
     nodeid CHAR(32),
     parentid CHAR(32),
     status CHAR(1),
@@ -229,8 +228,7 @@ def create_db():
     pid VARCHAR,
     cores INTEGER,
     tm_start FLOAT,
-    tm_end FLOAT,
-    PRIMARY KEY (taskid, runid)
+    tm_end FLOAT
     );
 
     CREATE TABLE IF NOT EXISTS runid2task(
@@ -257,14 +255,13 @@ def create_ortho_pair_indexes():
     '''
     orthocursor.executescript(ortho_indexes)
     
-def add_task(tid, rid, nid, parent=None, status=None, type=None, subtype=None,
+def add_task(tid, nid, parent=None, status=None, type=None, subtype=None,
              name=None):
     values = ','.join(['"%s"' % (v or "") for v in
-              [tid, rid, nid, parent, status, type, subtype, name]])
-    cmd = ('INSERT OR REPLACE INTO task (taskid, runid, nodeid, parentid, status,'
+              [tid, nid, parent, status, type, subtype, name]])
+    cmd = ('INSERT OR REPLACE INTO task (taskid, nodeid, parentid, status,'
            ' type, subtype, name) VALUES (%s);' %(values))
     execute(cmd)
-
     autocommit()
     
 def add_runid2task(runid, tid):
