@@ -44,7 +44,7 @@ def _parse_species(name):
 def is_dup(n):
     return getattr(n, "evoltype", None) == "D"
 
-def get_subtrees(tree, full_copy=False, features=None):
+def get_subtrees(tree, full_copy=False, features=None, newick_only=False):
     """Calculate all possible species trees within a gene tree. I
     tested several recursive and iterative approaches to do it and
     this is the most efficient way I found. The method is now fast and
@@ -81,23 +81,41 @@ def get_subtrees(tree, full_copy=False, features=None):
         for ch in n.children:
             del n2subtrees[n2nid[ch]]
     sp_trees = n2subtrees[n2nid[tree]]
-    return len(sp_trees), len(dups), iter_sptrees(sp_trees, nid2node, features)
+    return len(sp_trees), len(dups), iter_sptrees(sp_trees, nid2node, features, newick_only=newick_only)
 
-def iter_sptrees(sptrees, nid2node, features=None, full_map=True):
+def iter_sptrees(sptrees, nid2node, features=None, newick_only=False):
     """ Loads and map the species trees returned by get_subtrees"""
     
     features = set(features) if features else set()
     features.update(["name"])
-    for nw in sptrees:
-        # I take advantage from the fact that I generated the subtrees
-        # using tuples, so str representation is actually a newick :)
-        t = PhyloTree(str(nw)+";")
-        # Map features from original tree
-        for leaf in t.iter_leaves():
-            _nid = int(leaf.name)
-            for f in features:
-                leaf.add_feature(f, getattr(nid2node[_nid], f))
-        yield t
+
+    def _nodereplacer(match):
+        pre, b, post =  match.groups()
+        node = nid2node[int(b)]
+        fstring = ""
+        if features: 
+            fstring = "".join(["[&&NHX:",
+                               ','.join(["%s=%s" %(f, getattr(node, f))
+                                         for f in features if hasattr(node, f)])
+                               , "]"])
+
+        return ''.join([pre, node.name, fstring, post])
+    
+    if newick_only:
+        id_match = re.compile("([^0-9])(\d+)([^0-9])")
+        for nw in sptrees:
+            yield re.sub(id_match, _nodereplacer, str(nw)+";")
+    else:
+        for nw in sptrees:
+            # I take advantage from the fact that I generated the subtrees
+            # using tuples, so str representation is actually a newick :)
+            t = PhyloTree(str(nw)+";")
+            # Map features from original tree
+            for leaf in t.iter_leaves():
+                _nid = int(leaf.name)
+                for f in features:
+                    leaf.add_feature(f, getattr(nid2node[_nid], f))
+            yield t
         
 def _get_subtrees_recursive(node, full_copy=True):
     if is_dup(node):
@@ -609,14 +627,16 @@ class PhyloNode(TreeNode):
 
         return outgroup_node
 
-    def get_speciation_trees(self, map_features=None, autodetect_duplications=True):
+    def get_speciation_trees(self, map_features=None, autodetect_duplications=True,
+                             newick_only=False):
         """
         .. versionadded: 2.2
         
         Calculates all possible species trees contained within a
-        duplicated gene family tree as described in
-        `Treeko<http://treeko.cgenomics.org>`_ `(Marcet and Gabaldon,
-        2011) <http://www.ncbi.nlm.nih.gov/pubmed/21335609>`_.
+        duplicated gene family tree as described in `Treeko
+        <http://treeko.cgenomics.org>`_ (see `Marcet and Gabaldon,
+        2011 <http://www.ncbi.nlm.nih.gov/pubmed/21335609>`_ ).
+
 
         :argument True autodetect_duplications: If True, duplication
         nodes will be automatically detected using the Species Overlap
@@ -633,21 +653,27 @@ class PhyloNode(TreeNode):
         """
         t = self
         if autodetect_duplications:
-            n2content, n2species = t.get_node2species()
+            #n2content, n2species = t.get_node2species()
+            n2content = t.get_cached_content()
+            n2species = t.get_cached_content(store_attr="species")
             for node in n2content:
                 sp_subtotal = sum([len(n2species[_ch]) for _ch in node.children])
                 if  len(n2species[node]) > 1 and len(n2species[node]) != sp_subtotal:
                     node.add_features(evoltype="D")
                
-        sp_trees = get_subtrees(t, features=map_features)
+        sp_trees = get_subtrees(t, features=map_features, newick_only=newick_only)
         
         return sp_trees
 
-    def get_speciation_trees_recursive(self):
+    def __get_speciation_trees_recursive(self):
+        """ experimental and testing """
         t = self.copy()
         if autodetect_duplications:
             dups = 0
-            n2content, n2species = t.get_node2species()
+            #n2content, n2species = t.get_node2species()
+            n2content = t.get_cached_content()
+            n2species = t.get_cached_content(store_attr="species")
+
             #print "Detecting dups"
             for node in n2content:
                 sp_subtotal = sum([len(n2species[_ch]) for _ch in node.children])
@@ -681,7 +707,10 @@ class PhyloNode(TreeNode):
         t = self.copy()
         if autodetect_duplications:
             dups = 0
-            n2content, n2species = t.get_node2species()
+            #n2content, n2species = t.get_node2species()
+            n2content = t.get_cached_content()
+            n2species = t.get_cached_content(store_attr="species")
+
             #print "Detecting dups"
             for node in n2content:
                 sp_subtotal = sum([len(n2species[_ch]) for _ch in node.children])
@@ -696,7 +725,35 @@ class PhyloNode(TreeNode):
                 node._leaf = True
         sp_trees = get_subparts(t)
         return sp_trees
-       
+    
+    def collapse_lineage_specific_expansions(self, species=None, return_copy=True):
+        """ Converts lineage specific expansion nodes into a single
+        tip node (randomly chosen from tips within the expansion).
+
+        :param None species: If supplied, only expansions matching the
+           species criteria will be pruned. When None, all expansions
+           within the tree will be processed.
+
+        """
+        if species and type(species) not in set(["set", "frozenset"]):
+            raise ValueError("species argument should be a set, frozenset")
+
+        prunned = self.copy("deepcopy") if return_copy else self
+        n2sp = prunned.get_cached_content(store_attr="species")
+        n2leaves = prunned.get_cached_content()
+        is_expansion = lambda n: (len(n2sp[n])==1 and len(n2leaves[n])>1
+                                  and (species is None or species & n2sp[n]))
+        for n in prunned.get_leaves(is_leaf_fn=is_expansion):
+            repre = list(n2leaves[n])[0]
+            repre.detach()
+            if n is not prunned:
+                n.up.add_child(repre)
+                n.detach()
+            else:
+                return repre
+            
+        return prunned
+   
         
 #: .. currentmodule:: ete_dev
 #
