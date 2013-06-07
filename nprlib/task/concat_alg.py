@@ -77,7 +77,7 @@ class ConcatAlg(ConcatAlgTask):
                 dataid = db.get_dataid(*job.clean_alg_fasta_file.split("."))
                 job2acleaner[job.nodeid] = db.get_data(dataid)
             elif job.ttype == "mchooser":
-                self.job2model[job.nodeid] = db.get_data(job.best_model)
+                self.job2model[job.nodeid] = job.best_model
                 
         if "acleaner" in jobtypes:
             self.job2alg = job2acleaner

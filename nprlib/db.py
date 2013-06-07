@@ -444,6 +444,11 @@ def update_species_in_ortho_pairs():
     orthocursor.executemany(cmd, [[sp] for sp in species])
     print cmd
     autocommit()
+
+def update_cog_species(species):
+    cmd = 'INSERT OR REPLACE INTO species (taxid) VALUES (?)'
+    orthocursor.executemany(cmd, [[sp] for sp in species])
+    autocommit()
     
 def get_ortho_species():
     cmd = 'SELECT DISTINCT taxid FROM species;'

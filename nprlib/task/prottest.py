@@ -53,6 +53,7 @@ class Prottest(ModelTesterTask):
             bionj_job = Job(conf["app"]["phyml"], args,
                       parent_ids=[self.nodeid])
             bionj_job.jobname += "-bionj-" + m
+            bionj_job.jobcat = "bionj"
             bionj_job.add_input_file(self.alg_phylip_file, bionj_job.jobdir)
             self.jobs.append(bionj_job)
 
@@ -70,30 +71,35 @@ class Prottest(ModelTesterTask):
                 raxml_job.jobname += "-lk-optimize"
                 raxml_job.dependencies.add(bionj_job)
                 raxml_job.model = m
+                raxml_job.jobcat = "raxml"
                 self.jobs.append(raxml_job)
 
     def finish(self):
         lks = []
         if self.lk_mode == "phyml":
-            phyml_job = self.jobs[-1]
-            tree_file = pjoin(phyml_job.jobdir,
-                              self.alg_phylip_file+"_phyml_tree.txt")
-            stats_file = pjoin(phyml_job.jobdir,
-                               self.alg_phylip_file+"_phyml_stats.txt")
-            tree = PhyloTree(tree_file)
-            m = re.search('Log-likelihood:\s+(-?\d+\.\d+)',
-                          open(stats_file).read())
-            lk = float(m.groups()[0])
-            tree.add_feature("lk", lk)
-            tree.add_feature("model", phyml_job.args["--model"])
-            lks.append([float(tree.lk), tree.model, tree])
+            for job in self.jobs:
+                if job.jobcat != "bionj": continue
+                phyml_job = job
+                tree_file = pjoin(phyml_job.jobdir,
+                                  self.alg_phylip_file+"_phyml_tree.txt")
+                stats_file = pjoin(phyml_job.jobdir,
+                                   self.alg_phylip_file+"_phyml_stats.txt")
+                tree = PhyloTree(tree_file)
+                m = re.search('Log-likelihood:\s+(-?\d+\.\d+)',
+                              open(stats_file).read())
+                lk = float(m.groups()[0])
+                tree.add_feature("lk", lk)
+                tree.add_feature("model", phyml_job.args["--model"])
+                lks.append([float(tree.lk), tree.model, tree])
         elif self.lk_mode == "raxml":
-            raxml_job = self.jobs[-1]
-            lk = open(pjoin(raxml_job.jobdir, "RAxML_log.%s"
-                            %raxml_job.args["-n"])).readline().split()[1]
-            tree = PhyloTree(raxml_job.args["-t"])
-            tree.add_feature("lk", lk)
-            tree.add_feature("model", raxml_job.model)
+            for job in self.jobs:
+                if job.jobcat != "raxml": continue
+                raxml_job = job
+                lk = open(pjoin(raxml_job.jobdir, "RAxML_log.%s"
+                                %raxml_job.args["-n"])).readline().split()[1]
+                tree = PhyloTree(raxml_job.args["-t"])
+                tree.add_feature("lk", lk)
+                tree.add_feature("model", raxml_job.model)
             lks.append([lk, tree.model, tree])
         lks.sort()
         lks.reverse()

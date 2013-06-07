@@ -413,8 +413,7 @@ class ModelTesterTask(Task):
     def init_output_info(self):
         self.best_model = ""
         self.model_ranking = []
-        
-    
+            
     def store_data(self, best_model, ranking):
         db.add_task_data(self.taskid, DATATYPES.best_model, best_model)
         db.add_task_data(self.taskid, DATATYPES.model_ranking, ranking)
@@ -425,6 +424,7 @@ class ModelTesterTask(Task):
     def load_stored_data(self):
         self.best_model = db.get_task_data(self.taskid, DATATYPES.best_model)
         self.model_ranking = db.get_task_data(self.taskid, DATATYPES.model_ranking)
+        print self.best_model, self.model_ranking
         
 class TreeTask(Task):
     def __init__(self, nodeid, task_type, task_name, base_args=None, 
