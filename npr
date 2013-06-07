@@ -315,10 +315,15 @@ def main(args):
     log.debug("Enabling %d CPU cores" %args.maxcores)
             
     
-    if npr_template == "sptree" and not args.ortho_pairs:
-        raise ConfigError("Species tree workflow requires a list"
-                          " of orthologous gene/protein pairs to be"
-                          " supplied through the --ortho-pair"
+    # if npr_template == "sptree" and not args.ortho_pairs:
+    #     raise ConfigError("Species tree workflow requires a list"
+    #                       " of orthologous gene/protein pairs to be"
+    #                       " supplied through the --ortho-pair"
+    #                       " argument.")
+    
+    if npr_template == "sptree" and not args.cogs_file:
+        raise ConfigError("Species tree workflow requires a list of COGS"
+                          " to be supplied through the --cogs"
                           " argument.")
 
     GLOBALS["seqtypes"] = set()
@@ -382,14 +387,21 @@ def main(args):
 
     if npr_template == "sptree":
         if not pexist(GLOBALS["orthodb_file"]):
-            db.init_orthodb(GLOBALS["orthodb_file"])            
-            check_and_load_orthologs(args.ortho_pairs)
-            log.log(28, "Updating species info in ortholog-pairs")
-            db.update_species_in_ortho_pairs()
-            db.orthoconn.commit()
+             db.init_orthodb(GLOBALS["orthodb_file"])            
+        #     check_and_load_orthologs(args.ortho_pairs)
+        #     log.log(28, "Updating species info in ortholog-pairs")
+        #     db.update_species_in_ortho_pairs()
+        #     db.orthoconn.commit()
+             all_species = set()
+             for line in open(args.cogs_file):
+                 all_species.update(map(lambda n: n.split("_")[0].strip(), line.split("\t")))
+             db.update_cog_species(all_species)
+             print len(all_species)
+             db.orthoconn.commit()
         else:
             db.init_orthodb(GLOBALS["orthodb_file"])
             log.warning("Skipping check and load ortholog pairs (loading from database...)")
+        
         # species in ortho pairs
         ortho_species = db.get_ortho_species()
         log.log(28, "Found %d unqiue species codes in ortholog-pairs" %(len(ortho_species)))
@@ -400,7 +412,7 @@ def main(args):
         # Species filter
         if args.spfile:
             target_species = set([line.strip() for line in open(args.spfile)])
-            GLOBALS["target_species"].discard("")
+            target_species.discard("")
             log.log(28, "Enabling NPR for %d species", len(target_species))
         else: 
             target_species = seq_species
