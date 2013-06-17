@@ -44,7 +44,8 @@ NEW FEATURES
 
   * Added :func:`TreeNode.robinson_foulds` distance to compare the
     topology of two trees (i.e. tree.robinson_foulds(tree2)). It
-    includes automatic pruning to compare trees of different sizes.
+    includes automatic pruning to compare trees of different
+    sizes. :ref:`See tutorial and examples <robinson_foulds>`
 
   * Added new options to :func:`TreeNode.copy` function, allowing
     faster methods to duplicate tree node instances.
@@ -58,21 +59,39 @@ NEW FEATURES
     multifurcated nodes into an arbitrary structure of binary split
     nodes with distance. 
 
-  * Added :func:`TreeNode.get_cached_content` function, which
-    returns a dictionary linking each node instance with its leaf
+  * Added :func:`TreeNode.get_cached_content` function, which returns
+    a dictionary linking each node instance with its leaf
     content. Such a dictionary might be used as a cache to speed up
-    functions that require intensive use of node traversing. 
+    functions that require intensive use of node
+    traversing. :ref:`See tutorial and examples <cache_node_content>`
   
   * Improved :func:`TreeNode.get_ascii` function for text-based
     visualization of trees. A new `attributes` argument can be passed
     to display node attributes within the ASCII tree representation.
 
-  * Random branch support and lengths generation can be switched off
-    and on when :func:`TreeNode.populate` is used. 
+    :: 
+
+        from ete2 import Tree
+        t = Tree("((A, B)Internal_1:0.7, (C, D)Internal_2:0.5)root:1.3;", format=1)
+        t.add_features(size=4)
+        print t.get_ascii(attributes=["name", "dist", "size"])
+        #
+        #                            /-A, 0.0
+        #             /Internal_1, 0.7
+        #            |               \-B, 0.0
+        # -root, 1.3, 4
+        #            |               /-C, 0.0
+        #             \Internal_2, 0.5
+        #                            \-D, 0.0
+        #
+
+
+  * Random branch support and lengths generation flag is now available
+    for the :func:`TreeNode.populate` function.
 
   * a new argument `is_leaf_fn` is available if several traversing
     functions allowing to provide custom stopping criteria when
-    browsing a tree. This is: any node matching the function provided
+    browsing a tree. This is, any node matching the function provided
     as `is_leaf_fn` will be temporarily considered as a terminal/leaf
     node by the traversing function (tree will look will behave as
     a pruned version of itself).

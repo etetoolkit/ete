@@ -37,8 +37,8 @@ its root path).
   nodes. Since they are at the bottommost level, they do not have any
   children.
 
-* An internal node or inner node is any node of a tree that has child nodes and
-  is thus not a leaf node.
+* An internal node or inner node is any node of a tree that has child
+  nodes and is thus not a leaf node.
 
 * A subtree is a portion of a tree data structure that can be viewed
   as a complete tree in itself. Any node in a tree T, together with
@@ -558,6 +558,37 @@ confusing, but it can be very useful in some situations.
   print "It is", Dsparent in Bsparent, "that C's parent is under B's ancestor"
   print "It is", Dsparent in Jsparent, "that C's parent is under J's ancestor"
 
+.. _cache_node_content:
+
+Caching tree content for faster lookup operations 
+======================================================
+
+If your program needs to access to the content of different nodes very
+frequently, traversing the tree to get the leaves of each node over
+and over will produce significant slowdowns in your algorithm.  From
+version 2.2 ETE provides a convenient methods to cache frequent data. 
+
+The method :func:`TreeNode.get_cached_content` returns a dictionary in
+which keys are node instances and values represent the content of such
+nodes. By default, content is understood as a list of leave nodes, so
+looking up size or tip names under a given node will be
+instant. However, specific attributes can be cached by setting a
+custom :attr:`store_attr` value. 
+
+::
+
+   from ete2 import Tree
+   t = Tree()
+   t.populate(50)
+
+   node2leaves = t.get_cached_content()
+
+   # lets now print the size of each node without the need of
+   # recursively traverse 
+   for n in t.traverse():
+       print "node %s contains %s tips" %(n.name, len(node2leaves[n]))
+
+  
 
 Node annotation
 =========================
@@ -734,8 +765,55 @@ string.
          print n.name, n.S
 
 
-
 .. _sec:modifying-tree-topology:
+
+
+.. _robinson_foulds:
+
+Comparing Trees
+=====================
+.. versionadded 2.2
+
+Two tree topologies can be compared using ETE and the Robinson-Foulds
+(RF) metric. The method :func:`TreeNode.robinson_foulds` available for
+any ETE tree node allows to:
+
+ - compare two tree topologies by their name labels (default) or any
+   other annotated feature in the tree. 
+
+ - compare topologies of different size and content. When two trees
+   contain a different set of labels, only shared leaves will be used.
+
+ - examine size and content of matching and missing partitions. Since
+   the method return the list of partitions found in both trees,
+   details about matching partitions can be obtained easily. 
+
+In the following example, several of above mentioned features are
+shown:
+
+::
+ 
+  from ete2 import Tree
+  t1 = Tree('(((a,b),c), ((e, f), g));')
+  t2 = Tree('(((a,c),b), ((e, f), g));')
+  rf, max_rf, common_leaves, parts_t1, parts_t2 = t1.robinson_foulds(t2)
+  print t1, t2
+  print "RF distance is %s over a total of %s" %(rf, max_rf)
+  print "Partitions in tree2 that were not found in tree1:", parts_t1 - parts_t2
+  print "Partitions in tree1 that were not found in tree2:", parts_t2 - parts_t1
+
+  # We can also compare trees sharing only part of their labels
+
+  t1 = Tree('(((a,b),c), ((e, f), g));')
+  t2 = Tree('(((a,c),b), (g, H));')
+  rf, max_rf, common_leaves, parts_t1, parts_t2 = t1.robinson_foulds(t2)
+
+  print t1, t2
+  print "Same distance holds even for partially overlapping trees"
+  print "RF distance is %s over a total of %s" %(rf, max_rf)
+  print "Partitions in tree2 that were not found in tree1:", parts_t1 - parts_t2
+  print "Partitions in tree1 that were not found in tree2:", parts_t2 - parts_t1
+
 
 Modifying Tree Topology
 =======================
@@ -907,6 +985,10 @@ group of items by removing the unnecessary edges. To facilitate this
 task, ETE implements the :func:`TreeNode.prune` method, which can be
 used by providing the list of terminal and/or internal nodes that must
 be kept in the tree. 
+
+From version 2.2, this function includes also the
+`preserve_branch_length` flag, which allows to remove nodes from a
+tree while keeping original distances among remaining nodes.
 
 ::
 

@@ -1350,14 +1350,15 @@ class TreeNode(object):
         
     def _asciiArt(self, char1='-', show_internal=True, compact=False, attributes=None):
         """
-        Returns the ASCII representation of the tree. Code taken from the
-        PyCogent GPL project.
+        Returns the ASCII representation of the tree.
+
+        Code based on the PyCogent GPL project.
         """
         if not attributes:
             attributes = ["name"]
-        node_name = ', '.join(map(str, [getattr(self, v, "") for v in attributes]))
-       
-        LEN = 5
+        node_name = ', '.join(map(str, [getattr(self, v) for v in attributes if hasattr(self, v)]))
+        
+        LEN = len(node_name)
         PAD = ' ' * LEN
         PA = ' ' * (LEN-1)
         if not self.is_leaf():
@@ -1631,7 +1632,8 @@ class TreeNode(object):
         r2 = set([",".join(sorted([getattr(_c, attr_t2) for _c in cont
                                    if getattr(_c, attr_t2) in common_names]))
                   for cont in t2content.values() if len(cont)>1])
-                      
+        r1.discard("")
+        r2.discard("")              
         inters = r1.intersection(r2)
         if len(r1) == len(r2):
                 rf = (len(r1) - len(inters)) * 2
@@ -1705,6 +1707,8 @@ class TreeNode(object):
     def resolve_polytomy(self, default_dist=0.0, default_support=0.0,
                          recursive=True):
         """
+        .. versionadded: 2.2
+        
         Resolve all polytomies under current node by creating an
         arbitrary dicotomic structure among the affected nodes. This
         function randomly modifies current tree topology and should
