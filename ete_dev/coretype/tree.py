@@ -1725,7 +1725,10 @@ class TreeNode(object):
         structure, a ValueError exception will be raised to warn that
         strict monophyly could never be reached (this behaviour can be
         avoided by enabling the `ignore_missing` flag.
-              
+
+        :param values: a set of values for which monophyly is
+            expected.
+            
         :param target_attr: node attribute being used to check
             monophyly (i.e. species for species trees, names for gene
             family trees, or any custom feature present in the tree).
@@ -1774,55 +1777,35 @@ class TreeNode(object):
                 return False, "polyphyletic"
             else:
                 return False, "paraphyletic"
-        
-    
-    def get_monophyletic(self, values, target_attr="species", ignore_missing=False):
+
+            
+    def get_monophyletic(self, values, target_attr):
         """
         .. versionadded:: 2.2
 
         Returns a list of nodes matching the provided monophyly
-        condition. For a node to be considered a match, all
-        `target_attr` attributes, and exclusively them, should be
-        represented under it.
-
-        If not all attributes are represented in the current tree
-        structure, a ValueError exception will be raised to warn that
-        strict monophyly could never be reached (this behaviour can be
-        avoided by enabling the `ignore_missing` flag.
-              
-        :param species target_attr: node attribute being used to check
+        criteria. For a node to be considered a match, all
+        `target_attr` values within and node, and exclusively them,
+        should be grouped.
+        
+        :param values: a set of values for which monophyly is
+            expected.
+            
+        :param target_attr: node attribute being used to check
             monophyly (i.e. species for species trees, names for gene
             family trees).
-
-        :param False ignore_missing: Avoid raising an Exception when
-            missing attributes are found. 
            
         """
-        
+
         if type(values) != set:
             values = set(values)
-        leaves = [e for e in self.iter_leaves() if
-                  getattr(e, target_attr) in values]
-        
-        seen_values = set([getattr(n, target_attr) for n in self.iter_leaves()])
-        if not ignore_missing and values - seen_values:
-            raise ValueError("Expected '%s' value(s) not found: %s" %(
-                    target_attr, ','.join(values-seen_values)))
-        
-        if leaves:
-            common = self.get_common_ancestor(leaves)
-        else:
-            common = self
-            
-        seen_values = set([getattr(n, target_attr) for n in common.iter_leaves()])
-        
-        if not ignore_missing and not (values ^ seen_values):
-            return common
-        elif ignore_missing and not (seen_values - values):
-            return common
-        else: 
-            return None
 
+        n2values = self.get_cached_content(store_attr=target_attr)
+      
+        is_monophyletic = lambda node: n2values[node] == values
+        for match in self.iter_leaves(is_leaf_fn=is_monophyletic):
+            if is_monophyletic(match):
+                yield match
 
             
     def resolve_polytomy(self, default_dist=0.0, default_support=0.0,

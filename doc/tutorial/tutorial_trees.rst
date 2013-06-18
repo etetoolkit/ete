@@ -214,7 +214,6 @@ on tree node instances:
     :func:`TreeNode.show`              Explore node graphically using a GUI.
   =================================  =============================================================================================
 
-
 This is an example on how to access such attributes:
 
 :: 
@@ -400,7 +399,7 @@ grouping the same tip labels are collapsed.
 
 :: 
 
-  from ete2 import Tree
+  from ete_dev import Tree
   def collapsed_leaf(node):
       if len(node2labels[node]) == 1:
          return True
@@ -450,7 +449,7 @@ Let's say we want get all deepest nodes in a tree whose branch length
 is larger than one:
 :: 
 
-  from ete2 import Tree
+  from ete_dev import Tree
   t = Tree("(((a,b)ab:2, (c, d)cd:2)abcd:2, ((e, f):2, g)efg:2);", format=1)
   def processable_node(node):
       if node.dist > 1: 
@@ -603,7 +602,7 @@ strategy would look like this:
 
 ::
 
-  from ete2 import Tree
+  from ete_dev import Tree
   t = Tree("((H:0.3,I:0.1):0.5, A:1, (B:0.4,(C:1,D:1):0.5):0.5);")
   # Create a small function to filter your nodes
   def conditional_function(node):
@@ -637,7 +636,7 @@ confusing, but it can be very useful in some situations.
 
 ::
 
-  from ete2 import Tree
+  from ete_dev import Tree
   t = Tree("((H:0.3,I:0.1):0.5, A:1, (B:0.4,(C:1,(J:1, (F:1, D:1):0.5):0.5):0.5):0.5);")
   # Get the node D in a very simple way
   D = t&"D"
@@ -659,6 +658,133 @@ confusing, but it can be very useful in some situations.
   print "It is", Dsparent in Bsparent, "that C's parent is under B's ancestor"
   print "It is", Dsparent in Jsparent, "that C's parent is under J's ancestor"
 
+.. _check_monophyly:
+
+Checking the monophyly of attributes within a tree
+========================================================
+
+Although monophyly is actually a phylogenetic concept used to refer to
+a set of species that group exclusively together within a tree
+partition, the idea can be easily exported to any type of trees. 
+
+Therefore, we could consider that a set of values for a given node
+attribute present in our tree is monophyletic, if such values group
+exclusively together as a single tree partition. If not, the
+corresponding relationship connecting such values (para or
+poly-phyletic) could be also be inferred.
+
+
+The :func:`TreeNode.check_monophyly` method will do so when a given
+tree is queried for any custom attribute. 
+
+:: 
+
+  from ete_dev import Tree
+  t =  Tree("((((((a, e), i), o),h), u), ((f, g), j));")
+  print t
+
+  #                   /-a
+  #                /-|
+  #             /-|   \-e
+  #            |  |
+  #          /-|   \-i
+  #         |  |
+  #       /-|   \-o
+  #      |  |
+  #    /-|   \-h
+  #   |  |
+  #   |   \-u
+  # --|
+  #   |      /-f
+  #   |   /-|
+  #    \-|   \-g
+  #      |
+  #       \-j
+
+
+  # We can check how, indeed, all vowels are not monophyletic in the
+  # previous tree, but polyphyletic (a foreign label breaks its monophyly)
+  print t.check_monophyly(values=["a", "e", "i", "o", "u"], target_attr="name")
+
+  # however, the following set of vowels are monophyletic
+  print t.check_monophyly(values=["a", "e", "i", "o"], target_attr="name")  
+
+  # A special case of polyphyly, called paraphyly, is also used to
+  # define certain type of grouping. See this wikipedia article for
+  # disambiguation: http://en.wikipedia.org/wiki/Paraphyly
+  print t.check_monophyly(values=["i", "o"], target_attr="name")    
+
+Finally, the :func:`TreeNode.get_monophyletic` method is also
+provided, which allows to return a list of nodes within a tree where a
+given set of attribute values are monophyletic. Note that, although a
+set of values are not monophyletic regarding the whole tree, several
+independent monophyletic partitions could be found within the same
+topology.
+
+For instance, in the following example, all clusters within the same
+tree exclusively grouping a custom set of annotations are obtained. 
+
+:: 
+
+   from ete_dev import Tree
+   t =  Tree("((((((4, e), i), o),h), u), ((3, 4), (i, june)));")
+   # we annotate the tree using external data
+   colors = {"a":"red", "e":"green", "i":"yellow", 
+             "o":"black", "u":"purple", "4":"green",
+             "3":"yellow", "1":"white", "5":"red", 
+             "june":"yellow"}
+   for leaf in t:
+       leaf.add_features(color=colors.get(leaf.name, "none"))
+   print t.get_ascii(attributes=["name", "color"], show_internal=False)
+
+   #                   /-4, green
+   #                /-|
+   #             /-|   \-e, green
+   #            |  |
+   #          /-|   \-i, yellow
+   #         |  |
+   #       /-|   \-o, black
+   #      |  |
+   #    /-|   \-h, none
+   #   |  |
+   #   |   \-u, purple
+   # --|
+   #   |      /-3, yellow
+   #   |   /-|
+   #   |  |   \-4, green
+   #    \-|
+   #      |   /-i, yellow
+   #       \-|
+   #          \-june, yellow
+
+   print "Green-yellow clusters:" 
+   # And obtain clusters exclusively green and yellow
+   for node in t.get_monophyletic(values=["green", "yellow"], target_attr="color"):
+      print node.get_ascii(attributes=["color", "name"], show_internal=False)
+
+   # Green-yellow clusters:
+   #  
+   #       /-green, 4
+   #    /-|
+   # --|   \-green, e
+   #   |
+   #    \-yellow, i
+   #  
+   #       /-yellow, 3
+   #    /-|
+   #   |   \-green, 4
+   # --|
+   #   |   /-yellow, i
+   #    \-|
+   #       \-yellow, june
+
+
+When the target attribute is set to the "species" feature name,
+associated to any :class:`PhyloTree` node, this method will accomplish
+with the standard phylogenetic definition of monophyly, polyphyly and
+paraphyly.
+
+
 .. _cache_node_content:
 
 Caching tree content for faster lookup operations 
@@ -678,7 +804,7 @@ custom :attr:`store_attr` value.
 
 ::
 
-   from ete2 import Tree
+   from ete_dev import Tree
    t = Tree()
    t.populate(50)
 
@@ -812,7 +938,7 @@ string.
 ::
    
   import random
-  from ete2 import Tree
+  from ete_dev import Tree
   # Creates a normal tree
   t = Tree('((H:0.3,I:0.1):0.5, A:1,(B:0.4,(C:0.5,(J:1.3,(F:1.2, D:0.1):0.5):0.5):0.5):0.5);')
   print t
@@ -894,7 +1020,7 @@ shown:
 
 ::
  
-  from ete2 import Tree
+  from ete_dev import Tree
   t1 = Tree('(((a,b),c), ((e, f), g));')
   t2 = Tree('(((a,c),b), ((e, f), g));')
   rf, max_rf, common_leaves, parts_t1, parts_t2 = t1.robinson_foulds(t2)
@@ -1247,7 +1373,7 @@ features, 4 different methods are available to create a tree copy:
 ::
 
 
-   from ete2 import Tree
+   from ete_dev import Tree
    t = Tree("((A, B)Internal_1:0.7, (C, D)Internal_2:0.5)root:1.3;", format=1)
    # we add a custom annotation to the node named A
    (t & "A").add_features(label="custom Value")
@@ -1324,7 +1450,7 @@ of the tree intact by disabling the :attr:`recursive` flag.
 
 :: 
 
-  from ete2 import Tree
+  from ete_dev import Tree
   t = Tree("(( (a, b, c), (d, e, f, g)), (f, i, h));")
   print t
 
