@@ -127,10 +127,11 @@ NEW FEATURES
     all possible species topologies present in a gene family tree as
     described in `Treeko <http://treeko.cgenomics.org>`_  (see `Marcet and
     Gabaldon, 2011 <http://www.ncbi.nlm.nih.gov/pubmed/21335609>`_ ).
+    :ref:`See tutorial and examples <treeko>`
 
   * Added :func:`PhyloNode.split_by_dups` method, which returns a list
     of partial subtrees resulting from splitting a tree at duplication
-    nodes.
+    nodes. :ref:`See tutorial and examples <split_by_dup>`
 
   * !!! Return the distance between a species tree and a gene tree
     with multiple duplications using Treeko distance.
@@ -138,7 +139,7 @@ NEW FEATURES
   * Added :func:`PhyloNode.collapse_lineage_specific_expansions` method,
     which returns a pruned version of a tree, where nodes representing
     lineage specific expansions are converted into a single leaf node. 
-
+    :ref:`See tutorial and examples <collapse_expansions>`
 
 * **News on sequence and multiple sequence alignment parsing:** 
 

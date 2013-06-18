@@ -597,7 +597,11 @@ class PhyloNode(TreeNode):
 
         :returns: species_trees
         """
-        t = self.copy()
+        try:
+            t = self.copy()
+        except Exception:
+            t = self.copy("deepcopy")
+            
         if autodetect_duplications:
             dups = 0
             #n2content, n2species = t.get_node2species()

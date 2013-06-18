@@ -778,11 +778,12 @@ tree exclusively grouping a custom set of annotations are obtained.
    #    \-|
    #       \-yellow, june
 
+.. note::
 
-When the target attribute is set to the "species" feature name,
-associated to any :class:`PhyloTree` node, this method will accomplish
-with the standard phylogenetic definition of monophyly, polyphyly and
-paraphyly.
+   When the target attribute is set to the "species" feature name,
+   associated to any :class:`PhyloTree` node, this method will
+   accomplish with the standard phylogenetic definition of monophyly,
+   polyphyly and paraphyly.
 
 
 .. _cache_node_content:
@@ -814,7 +815,6 @@ custom :attr:`store_attr` value.
    # recursively traverse 
    for n in t.traverse():
        print "node %s contains %s tips" %(n.name, len(node2leaves[n]))
-
   
 
 Node annotation

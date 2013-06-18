@@ -4,7 +4,7 @@ The ETE tutorial
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    tutorial_trees
    tutorial_drawing
