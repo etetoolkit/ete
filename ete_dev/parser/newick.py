@@ -340,51 +340,54 @@ def _read_node_data(subnw, current_node, node_type, format):
         raise NewickError, "Unexpected leaf node format:\n\t"+ subnw[0:50] + "[%s]" %format
     return
 
-def write_newick_recursive(node, features=None, format=1, _is_root=True):
-    """ Recursively reads a tree structure and returns its NHX
-    representation. """
-    newick = ""
-    if not node.children:
-        safe_name = re.sub("["+_ILEGAL_NEWICK_CHARS+"]", "_", \
-                               str(getattr(node, "name")))
+# def write_newick_recursive(node, features=None, format=1, _is_root=True):
+#     """ Recursively reads a tree structure and returns its NHX
+#     representation. """
+#     newick = ""
+#     if not node.children:
+#         safe_name = re.sub("["+_ILEGAL_NEWICK_CHARS+"]", "_", \
+#                                str(getattr(node, "name")))
 
-        newick += format_node(node, "leaf", format)
-        newick += _get_features_string(node, features)
-        #return newick
+#         newick += format_node(node, "leaf", format)
+#         newick += _get_features_string(node, features)
+#         #return newick
         
-    else:
-        if node.children:
-            newick+= "("
-        for cnode in node.children:
-            newick += write_newick(cnode, features, format=format,\
-                                     _is_root = False)
-            # After last child is processed, add closing string
-            if cnode == node.children[-1]:
-                newick += ")"
-                if node.up is not None:
-                    newick += format_node(node, "internal", format)
-                newick += _get_features_string(node, features)
-            else:
-                newick += ','
+#     else:
+#         if node.children:
+#             newick+= "("
+#         for cnode in node.children:
+#             newick += write_newick(cnode, features, format=format,\
+#                                      _is_root = False)
+#             # After last child is processed, add closing string
+#             if cnode == node.children[-1]:
+#                 newick += ")"
+#                 if node.up is not None:
+#                     newick += format_node(node, "internal", format)
+#                 newick += _get_features_string(node, features)
+#             else:
+#                 newick += ','
                 
-    if _is_root:
-        newick += ";"
-    return newick
+#     if _is_root:
+#         newick += ";"
+#     return newick
 
-def write_newick(node, features=None, format=1, _is_root=True):
+def write_newick(node, features=None, format=1, format_root_node=True,
+                 is_leaf_fn=None):
     """ Iteratively export a tree structure and returns its NHX
     representation. """
     newick = []
-    for postorder, node in node._iter_prepostorder():
+    leaf = is_leaf_fn if is_leaf_fn else lambda n: not bool(n.children)
+    for postorder, node in node._iter_prepostorder(is_leaf_fn=is_leaf_fn):
         if postorder:
             newick.append(")")
-            if node.up is not None:
+            if node.up is not None or format_root_node:
                 newick.append(format_node(node, "internal", format))
                 newick.append(_get_features_string(node, features))
         else:
-            if node.up and node != node.up.children[0]:
+            if node.up and leaf(node) and node != node.up.children[0]:
                 newick.append(",")
-            if not node.children:
+                
+            if leaf(node):
                 safe_name = re.sub("["+_ILEGAL_NEWICK_CHARS+"]", "_", \
                                str(getattr(node, "name")))
                 newick.append(format_node(node, "leaf", format))

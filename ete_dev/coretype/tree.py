@@ -746,7 +746,8 @@ class TreeNode(object):
         print "The Farthest descendant node is", max_node.name,\
             "with a branch distance of", max_dist
 
-    def write(self, features=None, outfile=None, format=0):
+    def write(self, features=None, outfile=None, format=0, is_leaf_fn=None,
+              format_root_node=False):
         """ 
         Returns the newick representation of current node. Several
         arguments control the way in which extra data is shown for
@@ -762,6 +763,14 @@ class TreeNode(object):
         :argument format: defines the newick standard used to encode the
           tree. See tutorial for details.
 
+        :argument False format_root_node: If True, it allows features
+          and branch information from root node to be exported as a
+          part of the newick text string. For newick compatibility
+          reasons, this is False by default.
+
+        :argument is_leaf_fn: See :func:`TreeNode.traverse` for
+          documentation.
+          
         **Example:**
 
         ::
@@ -770,7 +779,9 @@ class TreeNode(object):
 
         """
 
-        nw = write_newick(self, features = features, format=format)
+        nw = write_newick(self, features = features, format=format,
+                          is_leaf_fn=is_leaf_fn,
+                          format_root_node=format_root_node)
         if outfile is not None:
             open(outfile, "w").write(nw)
         else:
@@ -1332,6 +1343,7 @@ class TreeNode(object):
         if method=="newick":
             new_node = self.__class__(self.write(features=["name"]))
         elif method=="newick-extended":
+            self.write(features=[])
             new_node = self.__class__(self.write(features=[]))
         elif method == "deepcopy":
             parent = self.up
@@ -1358,7 +1370,7 @@ class TreeNode(object):
             attributes = ["name"]
         node_name = ', '.join(map(str, [getattr(self, v) for v in attributes if hasattr(self, v)]))
         
-        LEN = len(node_name)
+        LEN = max(3, len(node_name) if not self.children or show_internal else 3)
         PAD = ' ' * LEN
         PA = ' ' * (LEN-1)
         if not self.is_leaf():
@@ -1704,6 +1716,115 @@ class TreeNode(object):
                 node2dist[node] = node2dist[node.up] + 1
             node.dist = node.dist
 
+    def check_monophyly(self, values, target_attr, ignore_missing=False):
+        """
+        Returns True if a given target attribute is monophyletic under
+        this node for the provided set of values. 
+
+        If not all values are represented in the current tree
+        structure, a ValueError exception will be raised to warn that
+        strict monophyly could never be reached (this behaviour can be
+        avoided by enabling the `ignore_missing` flag.
+              
+        :param target_attr: node attribute being used to check
+            monophyly (i.e. species for species trees, names for gene
+            family trees, or any custom feature present in the tree).
+
+        :param False ignore_missing: Avoid raising an Exception when
+            missing attributes are found. 
+        """
+        if type(values) != set:
+            values = set(values)
+
+        # This is the only time I traverse the tree, then I use cached
+        # leaf content
+        n2leaves = self.get_cached_content()
+        # Locate leaves matching requested attribute values
+        targets = [leaf for leaf in n2leaves[self]
+                   if getattr(leaf, target_attr) in values]
+       
+        # Raise an error if requested attribute values are not even present
+        if not ignore_missing:
+            missing_values = values - set([getattr(n, target_attr) for n
+                                           in targets])
+            if missing_values: 
+                raise ValueError("Expected '%s' value(s) not found: %s" %(
+                    target_attr, ','.join(missing_values)))
+                
+        # Check monophyly with get_common_ancestor. Note that this
+        # step does not require traversing the tree again because
+        # targets are node instances instead of node names, and
+        # get_common_ancestor function is smart enough to detect it
+        # and avoid unnecessary traversing.
+        common = self.get_common_ancestor(targets)
+        observed = n2leaves[common]
+        foreign_leaves = [leaf for leaf in observed
+                          if getattr(leaf, target_attr) not in values]
+        if not foreign_leaves:
+            return True, "monophyletic"
+        else:
+            # if the requested attribute is not monophyletic in this
+            # node, let's differentiate between poly and paraphyly. 
+            poly_common = self.get_common_ancestor(foreign_leaves)
+            # if the common ancestor of all foreign leaves is self
+            # contained, we have a paraphyly. Otherwise, polyphyly. 
+            polyphyletic = [leaf for leaf in poly_common if
+                            getattr(leaf, target_attr) in values]
+            if polyphyletic:
+                return False, "polyphyletic"
+            else:
+                return False, "paraphyletic"
+        
+    
+    def get_monophyletic(self, values, target_attr="species", ignore_missing=False):
+        """
+        .. versionadded:: 2.2
+
+        Returns a list of nodes matching the provided monophyly
+        condition. For a node to be considered a match, all
+        `target_attr` attributes, and exclusively them, should be
+        represented under it.
+
+        If not all attributes are represented in the current tree
+        structure, a ValueError exception will be raised to warn that
+        strict monophyly could never be reached (this behaviour can be
+        avoided by enabling the `ignore_missing` flag.
+              
+        :param species target_attr: node attribute being used to check
+            monophyly (i.e. species for species trees, names for gene
+            family trees).
+
+        :param False ignore_missing: Avoid raising an Exception when
+            missing attributes are found. 
+           
+        """
+        
+        if type(values) != set:
+            values = set(values)
+        leaves = [e for e in self.iter_leaves() if
+                  getattr(e, target_attr) in values]
+        
+        seen_values = set([getattr(n, target_attr) for n in self.iter_leaves()])
+        if not ignore_missing and values - seen_values:
+            raise ValueError("Expected '%s' value(s) not found: %s" %(
+                    target_attr, ','.join(values-seen_values)))
+        
+        if leaves:
+            common = self.get_common_ancestor(leaves)
+        else:
+            common = self
+            
+        seen_values = set([getattr(n, target_attr) for n in common.iter_leaves()])
+        
+        if not ignore_missing and not (values ^ seen_values):
+            return common
+        elif ignore_missing and not (seen_values - values):
+            return common
+        else: 
+            return None
+
+
+            
     def resolve_polytomy(self, default_dist=0.0, default_support=0.0,
                          recursive=True):
         """

@@ -19,8 +19,8 @@ SCRIPTS
 ??
 * Added ete2dist script to calculate robinson foulds distances among trees
 
-MINOR UNCONSISTENCIES WITH ETE 2.1           ????? PERHAPS BETTER TO REMOVE THIS
-==================================================
+MINOR UNCONSISTENCIES WITH ETE 2.1           ????? PERHAPS BETTER TO move THIS TO 3.0
+=============================================================================================
 * Default values for :attr:`TreeNode.dist` and
   :attr:`TreeNode.support` are now set to 0.0. This fixes the problem
   of long branches leading to the root node in trees loaded from
@@ -49,6 +49,7 @@ NEW FEATURES
 
   * Added new options to :func:`TreeNode.copy` function, allowing
     faster methods to duplicate tree node instances.
+    :ref:`See tutorial and examples <copying_trees>`
 
   * Added :attr:`preserve_branch_length` argument to
     :func:`TreeNode.prune` and :func:`TreeNode.delete`, which allows
@@ -57,7 +58,8 @@ NEW FEATURES
 
   * Added :func:`TreeNode.resolve_polytomy` function to convert
     multifurcated nodes into an arbitrary structure of binary split
-    nodes with distance. 
+    nodes with distance. :ref:`See tutorial and examples
+    <resolve_polytomy>`
 
   * Added :func:`TreeNode.get_cached_content` function, which returns
     a dictionary linking each node instance with its leaf
@@ -86,15 +88,16 @@ NEW FEATURES
         #
 
 
-  * Random branch support and lengths generation flag is now available
+  * Random branch length and support values generation is now available
     for the :func:`TreeNode.populate` function.
 
-  * a new argument `is_leaf_fn` is available if several traversing
-    functions allowing to provide custom stopping criteria when
-    browsing a tree. This is, any node matching the function provided
-    as `is_leaf_fn` will be temporarily considered as a terminal/leaf
-    node by the traversing function (tree will look will behave as
-    a pruned version of itself).
+  * a new argument :attr:`is_leaf_fn` is available for a number of
+    traversing functions, thus allowing to provide custom stopping
+    criteria when browsing a tree. This is, any node matching the
+    function provided through the :attr:`is_leaf_fn` argument will be
+    temporarily considered as a terminal/leaf node by the traversing
+    function (tree will look as a pruned version of itself).
+    :ref:`See tutorial and examples <is_leaf_fn>`
 
   * Added :func:`TreeNode.iter_ancestors` and
     :func:`TreeNode.get_ancestors` functions.
@@ -105,9 +108,20 @@ NEW FEATURES
     newick string :attr:`(node1);` will be interpreted as an unnamed
     root node plus a single child named :attr:`name1`.
 
+  * The new :func:`TreeNode.check_monophyly` method allows to check
+    if a node is mono, poly or paraphyletic for a given attribute and
+    values (i.e. grouped species). Although monophyly is actually a
+    phylogenetic concept, the idea can be applied to any tree, so any
+    topology could be queried for the monophyly of certain attribute
+    values. If not monophyletic, the method will return also the type
+    of relationship connecting the provided values (para- or
+    poly-phyletic). :ref:`See tutorial and examples <check_monophyly>`
+
+  * New :func:`TreeNode.get_monophyletic` method that returns a list
+    of nodes in a tree matching a custom monophyly criteria.
+
 
 * **News PhyloTree instances:**
-
 
   * Added :func:`PhyloNode.get_speciation_trees` method, which returns
     all possible species topologies present in a gene family tree as
@@ -123,18 +137,8 @@ NEW FEATURES
 
   * Added :func:`PhyloNode.collapse_lineage_specific_expansions` method,
     which returns a pruned version of a tree, where nodes representing
-    lineage specific expansions are converted into a single tip node. 
+    lineage specific expansions are converted into a single leaf node. 
 
-  * :func:`PhyloNode.is_monophyletic` method accepts now `target_attr`
-    and the `ignore_missing` flag. This allows to check monophyly of
-    nodes according to different criteria (i.e. species concent, node names,
-    node annotations, etc.)
-
-  * New :func:`PhyloNode.get_monophyletic` method that returns a list
-    of nodes under current tree matching a custom monophyly criteria.
-
-  * Added :func:`PhyloNode.get_age_balanced_outgroup`, a better way to
-    root gene trees based on species content and size of duplications.
 
 * **News on sequence and multiple sequence alignment parsing:** 
 
@@ -180,8 +184,9 @@ NEW FEATURES
 * **News on the GUI**
 
   * Allows image region selection.
-  * Allows zooming on selected regions or specific nodes.
+  * Allows zooming on selected regions or specific nodes (Z - zoomIn, X - zoomOut, R - focus region).
   * :kbd:`C-c` will now interrupt the GUI application when started
     from a terminal.
-  * Added keyboard-based node navigation. 
+  * Added keyboard-based node navigation (click on a node and play the
+    arrow keys).
 
