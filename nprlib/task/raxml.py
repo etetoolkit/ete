@@ -25,6 +25,7 @@ class Raxml(TreeTask):
         self.conf = conf
         self.alg_phylip_file = alg_file
         self.constrain_tree = None
+        self.partitions_file = None
         if constrain_id:
             self.constrain_tree = db.get_dataid(constrain_id, DATATYPES.constrain_tree)
         TreeTask.__init__(self, nodeid, "tree", "RaxML", 
@@ -45,7 +46,13 @@ class Raxml(TreeTask):
 
         # Process raxml options
         model = model or conf[confname]["_aa_model"]
-
+        if model.startswith("parts:"):
+            self.partitions_file = model.lstrip("parts:")
+            model = "JTT"
+            if self.compute_alrt == "phyml":
+                log.warning('phyml alrt calculation does not support partitioned alignments. Switching to raxml mode...')
+                self.compute_alrt = 'raxml'
+            
         method = conf[confname].get("_method", "GAMMA").upper()
         if seqtype.lower() == "aa":
             self.model_string =  'PROT%s%s' %(method, model.upper())
@@ -61,13 +68,15 @@ class Raxml(TreeTask):
         self.init()
         
     def load_jobs(self):
-        
         args = OrderedDict(self.args)
         args["-s"] = pjoin(GLOBALS["input_dir"], self.alg_phylip_file)
         args["-m"] = self.model_string
         args["-n"] = self.alg_phylip_file
         if self.constrain_tree:
             args["-g"] = pjoin(GLOBALS["input_dir"], self.constrain_tree)
+        if self.partitions_file:
+            args['-q'] = pjoin(GLOBALS["input_dir"], self.partitions_file)
+            
         tree_job = Job(self.raxml_bin, args, parent_ids=[self.nodeid])
         tree_job.jobname += "-"+self.model_string
         tree_job.cores = self.threads
@@ -75,6 +84,8 @@ class Raxml(TreeTask):
         tree_job.add_input_file(self.alg_phylip_file)
         if self.constrain_tree:
             tree_job.add_input_file(self.constrain_tree)
+        if self.partitions_file:
+            tree_job.add_input_file(self.partitions_file)
         self.jobs.append(tree_job)
 
         self.out_tree_file = os.path.join(tree_job.jobdir,
@@ -84,6 +95,9 @@ class Raxml(TreeTask):
             alrt_args = tree_job.args.copy()
             if self.constrain_tree:
                 del alrt_args["-g"]
+            if self.partitions_file:
+                alrt_args["-q"] = args['-q']
+                
             alrt_args["-f"] =  "J"
             alrt_args["-t"] = self.out_tree_file
             alrt_job = Job(self.raxml_bin, alrt_args,
@@ -126,7 +140,13 @@ class Raxml(TreeTask):
             alrt_tree_file = os.path.join(self.jobs[1].jobdir,
                                                "RAxML_fastTreeSH_Support." + self.alg_phylip_file)
             raw_nw = open(alrt_tree_file).read()
-            nw, nsubs = re.subn(":(\d+\.\d+)\[(\d+)\]", parse_alrt, raw_nw, re.MULTILINE)
+            try:
+                nw, nsubs = re.subn(":(\d+\.\d+)\[(\d+)\]", parse_alrt, raw_nw, flags=re.MULTILINE)
+            except TypeError:
+                raw_nw = raw_nw.replace("\n","")
+                nw, nsubs = re.subn(":(\d+\.\d+)\[(\d+)\]", parse_alrt, raw_nw)
+            if nsubs == 0:
+                log.warning("alrt values were not detected in raxml tree!")
             tree = Tree(nw)                                   
         elif self.compute_alrt == "phyml":
             alrt_tree_file = os.path.join(self.jobs[1].jobdir,

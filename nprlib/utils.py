@@ -16,6 +16,7 @@ import logging
 import time
 import datetime
 import re
+from glob import glob
 log = logging.getLogger("main")
 DEBUG = lambda: log.level <= 10
 hascontent = lambda f: pexist(f) and os.path.getsize(f) > 0
@@ -436,7 +437,16 @@ def send_mail(toaddrs, subject, text):
         p.communicate(msg.as_string())
     except Exception, e:
         print e
-    
+
+def get_latest_nprdp(basedir):
+    avail_dbs = sorted([(float(fname.split(".")[1]), fname) for fname in glob(os.path.join(basedir, "npr.*.db"))])
+    if avail_dbs:
+        last_db = avail_dbs[-1][1]
+        print "Using latest db file available:", os.path.basename(last_db)
+        print
+        return last_db
+    return None
+
 def npr_layout(node):
     if node.is_leaf():
         name = faces.AttrFace("name", fsize=12)

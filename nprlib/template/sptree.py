@@ -96,7 +96,7 @@ def process_task(task, npr_conf, nodeid2info):
         # register tree for concat alignment, using constraint tree if
         # necessary
         tree_task = treebuilderclass(nodeid, task.alg_phylip_file,
-                                     constrain_id, "JTT",
+                                     constrain_id, "parts:"+task.partitions_file,
                                      seqtype, conf, treebuilderconf)
         tree_task.size = task.size
         new_tasks.append(tree_task)

@@ -370,8 +370,11 @@ def get_runid_nodes(runid):
     
 def report(runid, filter_rules=None):
     task_ids = get_runid_tasks(runid)
-    filters = 'WHERE runid ="%s" AND taskid IN (%s) ' %(runid,
-                            ','.join(map(lambda x: '"%s"' %x, task_ids)))
+    #filters = 'WHERE runid ="%s" AND taskid IN (%s) ' %(runid,
+    #                        ','.join(map(lambda x: '"%s"' %x, task_ids)))
+    # There is a single npr.db file per runid
+    filters = 'WHERE runid ="%s" ' %(runid)
+    
     if filter_rules: 
         custom_filter = ' AND '.join(filter_rules)
         filters += " AND " + custom_filter
