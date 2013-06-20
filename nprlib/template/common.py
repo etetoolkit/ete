@@ -217,7 +217,7 @@ def split_tree(task_tree, main_tree, alg_path, npr_conf, threadid):
         return _isleaf
         
     log.log(20, "Loading tree content...")
-    n2content = main_tree.get_node2content()
+    n2content = main_tree.get_cached_content()
     if alg_path:
         log.log(20, "Loading associated alignment to check seq. similarity")
         raw_alg = db.get_task_data(*alg_path.split("."))

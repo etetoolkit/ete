@@ -374,8 +374,7 @@ def print_as_table(rows, header=None, fields=None, print_header=True, stdout=sys
                 print >>stdout, _safe_rjust(_str(p.get(ppt,""), lengths[ppt]))+" | ",
             print >>stdout, ""
             page_counter +=1
-        
-            
+                    
 def get_node2content(node, store=None):
     if not store: store = {}
     for ch in node.children:

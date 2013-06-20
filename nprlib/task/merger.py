@@ -6,7 +6,7 @@ log = logging.getLogger("main")
 from nprlib.master_task import TreeMergeTask
 from nprlib.master_job import Job
 from nprlib.utils import (load_node_size, PhyloTree, SeqGroup, generate_id,
-                          get_node2content, NPR_TREE_STYLE, NodeStyle, DEBUG,
+                          NPR_TREE_STYLE, NodeStyle, DEBUG,
                           faces, pjoin, GLOBALS)
 from nprlib import db
 from nprlib.errors import TaskError
@@ -43,9 +43,9 @@ class TreeMerger(TreeMergeTask):
         self.out_seqs = out_seqs
         self.target_seqs = target_seqs
 
-        ttree_content = ttree.get_node2content()
+        ttree_content = ttree.get_cached_content()
         if mtree and not out_seqs:
-            mtree_content = mtree.get_node2content()
+            mtree_content = mtree.get_cached_content()
             log.log(28, "Finding best scoring outgroup from previous iteration.")
             for _n in mtree_content:
                 if _n.cladeid == cladeid:
@@ -223,7 +223,7 @@ class TreeMerger(TreeMergeTask):
         self.pre_iter_support = orig_target.support
                 
         # Reloads node2content of the rooted tree and generate cladeids
-        ttree_content = self.main_tree.get_node2content()
+        ttree_content = self.main_tree.get_cached_content()
         for n, content in ttree_content.iteritems():
             cid = generate_id([_n.name for _n in content])
             n.add_feature("cladeid", cid)
