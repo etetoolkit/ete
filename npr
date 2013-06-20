@@ -336,8 +336,8 @@ def main(args):
         GLOBALS["inputname"] = os.path.split(args.aa_seed_file)[-1]
 
     # Set up custom databases if necessary
-    GLOBALS["nprdb_file"]  = pjoin(base_dir, "npr.db."+ctime().replace(" ","_").replace(":",""))
-    
+    GLOBALS["nprdb_file"]  = pjoin(base_dir, "npr.%s.db" %time())
+   
     GLOBALS["datadb_file"]  = pjoin(base_dir, "data.db")
     GLOBALS["orthodb_file"]  = pjoin(base_dir, "ortho.db") \
         if not args.orthodb else args.orthodb
