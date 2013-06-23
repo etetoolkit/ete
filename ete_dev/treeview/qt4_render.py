@@ -58,7 +58,7 @@ class _SphereItem(QtGui.QGraphicsEllipseItem, _ActionDelegator):
     def __init__(self, node):
         self.node = node
         d = node.img_style["size"]
-        r = d/2
+        r = d/2.0
         QtGui.QGraphicsEllipseItem.__init__(self, 0, 0, d, d)
         _ActionDelegator.__init__(self)
         #self.setBrush(QtGui.QBrush(QtGui.QColor(self.node.img_style["fgcolor"])))
@@ -130,7 +130,7 @@ class _PointerItem(QtGui.QGraphicsRectItem):
         text = "%d selected."  % len(self.get_selected_nodes())
         textR = QtGui.QFontMetrics(font).boundingRect(text)
         if  self.rect().width() > textR.width() and \
-                self.rect().height() > textR.height()/2 and 0: # OJO !!!!
+                self.rect().height() > textR.height()/2.0 and 0: # OJO !!!!
             p.setPen(QtGui.QPen(self.color))
             p.setFont(QtGui.QFont("Arial",13))
             p.drawText(self.rect().bottomLeft().x(),self.rect().bottomLeft().y(),text)
@@ -292,8 +292,8 @@ def render(root_node, img, hide_root=False):
 
     if img.rotation:
         rect = parent.boundingRect()
-        x =  rect.x() + rect.width()/2
-        y =  rect.y() +  rect.height()/2
+        x =  rect.x() + (rect.width()/2.0)
+        y =  rect.y() +  (rect.height()/2.0)
         parent.setTransform(QtGui.QTransform().translate(x, y).rotate(img.rotation).translate(-x, -y))
 
     # Creates the main tree item that will act as frame for the whole image
@@ -455,7 +455,7 @@ def rotate_inverted_faces(n2i, n2f, img):
 def render_backgrounds(img, mainRect, bg_layer, n2i, n2f):
 
     if img.mode == "c":
-        max_r = mainRect.width()/2
+        max_r = mainRect.width()/2.0
     else:
         max_r = mainRect.width()
 
@@ -537,12 +537,12 @@ def set_node_size(node, n2i, n2f, img):
     # and unbalanced nodeRegion center. Here, I only need to know
     # about the imbalance size to correct node height. The center will
     # be calculated later according to the parent position.
-    top_half_h = ( (node.img_style["size"]/2) +
-                       node.img_style["hz_line_width"]/2 +
+    top_half_h = ( (node.img_style["size"]/2.0) +
+                       node.img_style["hz_line_width"]/2.0 +
                        faceblock["branch-top"].h )
 
-    bottom_half_h =( (node.img_style["size"]/2) +
-                       node.img_style["hz_line_width"]/2 +
+    bottom_half_h =( (node.img_style["size"]/2.0) +
+                       node.img_style["hz_line_width"]/2.0 +
                        faceblock["branch-bottom"].h )
 
     h1 = top_half_h + bottom_half_h
@@ -551,8 +551,8 @@ def set_node_size(node, n2i, n2f, img):
                 min_separation )
     h = max(h1, h2)
     imbalance = abs(top_half_h - bottom_half_h)
-    if imbalance > h2/2:
-        h += imbalance - (h2/2)
+    if imbalance > h2/2.0:
+        h += imbalance - (h2/2.0)
 
     # This adds a vertical margin around the node elements
     h += img.branch_vertical_margin
@@ -616,7 +616,7 @@ def render_node_content(node, n2i, n2f, img):
     set_pen_style(pen, style["hz_line_type"])
     pen.setColor(QtGui.QColor(style["hz_line_color"]))
     pen.setWidth(style["hz_line_width"])
-    #pen.setCapStyle(QtCore.Qt.FlatCap)
+    pen.setCapStyle(QtCore.Qt.FlatCap)
     #pen.setCapStyle(QtCore.Qt.RoundCap)
     #pen.setCapStyle(QtCore.Qt.SquareCap)
     #pen.setJoinStyle(QtCore.Qt.RoundJoin)
@@ -626,11 +626,10 @@ def render_node_content(node, n2i, n2f, img):
 
     # the -vt_line_width is to solve small imperfections in line
     # crosses.
-    hz_line.setLine(0, center,
+    hz_line.setLine(-0.1, center,
                     branch_length, center)
 
     if img.complete_branch_lines_when_necessary:
-
         extra_line = _LineItem(branch_length, center, ball_start_x, center)
         pen = QtGui.QPen()
         item.extra_branch_line = extra_line
@@ -645,17 +644,17 @@ def render_node_content(node, n2i, n2f, img):
     # Attach branch-right faces to child
     fblock_r = n2f[node]["branch-right"]
     fblock_r.render()
-    fblock_r.setPos(face_start_x, center-fblock_r.h/2)
+    fblock_r.setPos(face_start_x, center-fblock_r.h/2.0)
 
     # Attach branch-bottom faces to child
     fblock_b = n2f[node]["branch-bottom"]
     fblock_b.render()
-    fblock_b.setPos(item.widths[0], center + style["hz_line_width"]/2)
+    fblock_b.setPos(item.widths[0], center + style["hz_line_width"]/2.0)
 
     # Attach branch-top faces to child
     fblock_t = n2f[node]["branch-top"]
     fblock_t.render()
-    fblock_t.setPos(item.widths[0], center - fblock_t.h - style["hz_line_width"]/2)
+    fblock_t.setPos(item.widths[0], center - fblock_t.h - style["hz_line_width"]/2.0)
 
     # Vertical line
     if not _leaf(node):
@@ -664,20 +663,26 @@ def render_node_content(node, n2i, n2f, img):
 
         elif img.mode == "r":
             vt_line = _LineItem(item)
+            first_child = node.children[0]
+            last_child = node.children[-1]
             first_child_part = n2i[node.children[0]]
             last_child_part = n2i[node.children[-1]]
             c1 = first_child_part.start_y + first_child_part.center
             c2 = last_child_part.start_y + last_child_part.center
-            fx = nodeR.width() - vlw /2
+            fx = nodeR.width() - (vlw/2.0) + 0.1
+            if first_child.img_style["hz_line_width"] > 1:
+                c1 -= (first_child.img_style["hz_line_width"] / 2.0)
+            if last_child.img_style["hz_line_width"] > 1:
+                c2 += (last_child.img_style["hz_line_width"] / 2.0)
             vt_line.setLine(fx, c1, fx, c2)
 
         pen = QtGui.QPen()
         set_pen_style(pen, style["vt_line_type"])
         pen.setColor(QtGui.QColor(style["vt_line_color"]))
         pen.setWidth(style["vt_line_width"])
-        #pen.setCapStyle(QtCore.Qt.FlatCap)
-        pen.setCapStyle(QtCore.Qt.RoundCap)
-        pen.setCapStyle(QtCore.Qt.SquareCap)
+        pen.setCapStyle(QtCore.Qt.FlatCap)
+        #pen.setCapStyle(QtCore.Qt.RoundCap)
+        #pen.setCapStyle(QtCore.Qt.SquareCap)
         vt_line.setPen(pen)
         item.vt_line = vt_line
     else:
@@ -751,7 +756,7 @@ def render_floatings(n2i, n2f, img, float_layer, float_behind_layer):
 
             elif img.mode == "r":
                 start = item.branch_length + xtra - fb.w #if fb.w < item.branch_length else 0.0
-                fb.setPos(item.content.mapToScene(start, item.center - (fb.h/2)))
+                fb.setPos(item.content.mapToScene(start, item.center - (fb.h/2.0)))
 
             z = item.zValue()
             if not img.children_faces_on_top:
@@ -782,7 +787,7 @@ def render_aligned_faces(img, mainRect, parent, n2i, n2f):
         surroundings = [[None,fb_foot], [None, fb_head]]
         mainRect.adjust(0, -fb_head.h, 0, fb_foot.h)
     else:
-        tree_end_x = mainRect.width()/2
+        tree_end_x = mainRect.width()/2.0
         surroundings = []
 
     # Place aligned faces and calculates the max size of each
@@ -842,7 +847,7 @@ def render_aligned_faces(img, mainRect, parent, n2i, n2f):
         elif img.mode == "r":
             x = item.mapFromScene(tree_end_x, 0).x()
 
-        fb.setPos(x, item.center-(fb.h/2))
+        fb.setPos(x, item.center-(fb.h/2.0))
 
         if img.draw_guiding_lines and _leaf(node):
             # -1 is to connect the two lines, otherwise there is a pixel in between
