@@ -669,7 +669,7 @@ def render_node_content(node, n2i, n2f, img):
             last_child_part = n2i[node.children[-1]]
             c1 = first_child_part.start_y + first_child_part.center
             c2 = last_child_part.start_y + last_child_part.center
-            fx = nodeR.width() - (vlw/2.0) + 0.1
+            fx = nodeR.width() - (vlw/2.0) 
             if first_child.img_style["hz_line_width"] > 1:
                 c1 -= (first_child.img_style["hz_line_width"] / 2.0)
             if last_child.img_style["hz_line_width"] > 1:
