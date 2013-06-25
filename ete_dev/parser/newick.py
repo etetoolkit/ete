@@ -213,12 +213,9 @@ def _read_newick_from_string(nw, root_node, format):
         raise NewickError, 'Parentheses do not match. Broken tree structure'
 
     # white spaces and separators are removed
-    nw = re.sub("\n", "", nw)
-    nw = re.sub("\r", "", nw)
-    nw = re.sub("\t", "", nw)
+    nw = re.sub("[\n\r\t]+", "", nw)
 
     current_parent = None
-
 
     # Ok, this is my own way of reading newick structures. I find it
     # more flexible and elegant than other docummented methods. Don't

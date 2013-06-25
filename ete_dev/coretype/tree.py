@@ -154,8 +154,12 @@ class TreeNode(object):
             self._faces = value
         else:
             raise ValueError("[%s] is not a valid FaceAreas instance" %type(value))
+    def _get_face_areas(self, value):
+        if not getattr(self, "_faces"):
+            self._faces = _FaceAreas()
+        return self._faces
 
-    faces = property(fget=lambda self: self._faces, \
+    faces = property(fget=_get_face_areas, \
                          fset=_set_face_areas)
 
     def __init__(self, newick=None, format=0, dist=None, support=None,
@@ -178,9 +182,7 @@ class TreeNode(object):
         # Initialize tree
         if newick is not None:
             read_newick(newick, root_node = self, format=format)
-            
-        if TREEVIEW:
-            self._faces = _FaceAreas()
+           
 
     def __nonzero__(self):
         return True
@@ -1867,6 +1869,9 @@ class TreeNode(object):
           "aligned"
         """ 
 
+        if getattr(self, "_faces"):
+            self._faces = _FaceAreas()
+        
         if position not in FACE_POSITIONS:
             raise ValueError("face position not in %s" %FACE_POSITIONS)
         
