@@ -25,7 +25,7 @@ import cPickle
 import random
 import copy
 from collections import deque 
-
+import itertools
 from ete_dev.parser.newick import read_newick, write_newick
 
 # the following imports are necessary to set fixed styles and faces
@@ -1151,6 +1151,8 @@ class TreeNode(object):
         charset =  "abcdefghijklmnopqrstuvwxyz"
         if names_library:
             names_library = deque(names_library)
+        else:
+            avail_names = itertools.combinations_with_replacement(charset, 10)
         for n in next:
             if names_library:
                 if reuse_names: 
@@ -1158,7 +1160,7 @@ class TreeNode(object):
                 else:
                     tname = names_library.pop()
             else:
-                tname = ''.join(random.sample(charset,5))
+                tname = ''.join(avail_names.next())
             n.name = tname
             
 

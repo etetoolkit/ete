@@ -381,7 +381,7 @@ def write_newick(rootnode, features=None, format=1, format_root_node=True,
                 newick.append(format_node(node, "internal", format))
                 newick.append(_get_features_string(node, features))
         else:
-            if node is not rootnode and leaf(node) and node != node.up.children[0]:
+            if node is not rootnode and node != node.up.children[0]:
                 newick.append(",")
                 
             if leaf(node):
