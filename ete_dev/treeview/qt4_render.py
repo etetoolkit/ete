@@ -624,10 +624,11 @@ def render_node_content(node, n2i, n2f, img):
     hz_line = _NodeLineItem(node)
     hz_line.setPen(pen)
 
-    # the -vt_line_width is to solve small imperfections in line
-    # crosses.
-    hz_line.setLine(0, center,
-                    branch_length, center)
+    join_fix = 0
+    if node.up and node.up.img_style["vt_line_width"]:
+        join_fix = node.up.img_style["vt_line_width"] 
+
+    hz_line.setLine(-join_fix, center, branch_length, center)
 
     if img.complete_branch_lines_when_necessary:
         extra_line = _LineItem(branch_length, center, ball_start_x, center)
@@ -669,7 +670,7 @@ def render_node_content(node, n2i, n2f, img):
             last_child_part = n2i[node.children[-1]]
             c1 = first_child_part.start_y + first_child_part.center
             c2 = last_child_part.start_y + last_child_part.center
-            fx = nodeR.width() - ((vlw/2.0) - 0.1)
+            fx = nodeR.width() - (vlw/2.0)
             if first_child.img_style["hz_line_width"] > 0:
                 c1 -= (first_child.img_style["hz_line_width"] / 2.0)
             if last_child.img_style["hz_line_width"] > 0:

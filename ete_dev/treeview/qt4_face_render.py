@@ -31,12 +31,17 @@ class _BackgroundFaceItem(QGraphicsRectItem):
     def paint(self, painter, option, index):
         return
         
-class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem :) 
+class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem :)
+    def paint(self, painter, option, index):
+        "Avoid little dots in acrobat reader"
+        return
+    
     def __init__(self, faces, node, as_grid=False):
 
         # This caused seg. faults. in some computers. No idea why.
         # QtGui.QGraphicsItem.__init__(self, *args, **kargs) 
-        QGraphicsRectItem.__init__(self)  
+        QGraphicsRectItem.__init__(self, 0, 0, 0, 0)
+        
         self.as_grid = as_grid
         self.c2max_w = {}
         self.r2max_h = {}
