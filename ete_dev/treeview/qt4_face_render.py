@@ -229,8 +229,8 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
                     #print "Correctopm", fake_w/2.0 - w/2.0, fake_h/2.0 - h/2
                     #obj.moveBy(-wcorr, -ycorr)
                     obj.moveBy(((w/2) - fake_w/2.0), (h/2) - (fake_h/2.0))
-                    r = QGraphicsRectItem(0, 0, w, h)
-                    r.setParentItem(self)
+                    #r = QGraphicsRectItem(0, 0, w, h)
+                    #r.setParentItem(self)
 
                 obj.rotable = f.rotable
                 f.inner_background.apply(obj)
