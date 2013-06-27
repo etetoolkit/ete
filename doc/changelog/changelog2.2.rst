@@ -161,6 +161,10 @@ NEW FEATURES
 
 * **News on node faces:**
 
+  * New :attr:`face.rotation` attribute, that allows to rotate
+    individual faces even when a global :attr:`treestyle.rotation` is
+    used.
+
   * Improved :class:`SequenceFace`: Sequence sites are now rendered
     one by one, allowing interaction with each of them and getting rid
     of the previous pixmap size limitation. Site image dimensions and
