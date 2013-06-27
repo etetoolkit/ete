@@ -154,7 +154,7 @@ class TreeNode(object):
             self._faces = value
         else:
             raise ValueError("[%s] is not a valid FaceAreas instance" %type(value))
-    def _get_face_areas(self, value):
+    def _get_face_areas(self):
         if not getattr(self, "_faces"):
             self._faces = _FaceAreas()
         return self._faces

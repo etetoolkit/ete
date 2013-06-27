@@ -5,6 +5,7 @@ from PyQt4.QtGui import QGraphicsSimpleTextItem, QGraphicsPixmapItem, \
 
 from main import FACE_POSITIONS, _leaf
 from node_gui_actions import _NodeActions as _ActionDelegator
+from math import pi, cos, sin
 
 class _TextFaceItem(QGraphicsSimpleTextItem, _ActionDelegator):
     def __init__(self, face, node, text):
@@ -97,9 +98,28 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
                     f.update_pixmap()
                 elif f.type == "item":
                     f.update_items()
+                elif f.type == "text" and f.rotation:
+                    f.tight_text = False
 
                 width = f._width() + f.margin_right + f.margin_left
                 height = f._height() + f.margin_top + f.margin_bottom
+                   
+                if f.rotation:
+                    if f.rotation == 90 or f.rotation == 270:
+                        width, height = height, width
+                    elif f.rotation == 180:
+                        pass
+                    else:
+                        x0 =  width/2.0
+                        y0 =  height/2.0
+                        theta = (f.rotation * pi)/180
+                        trans = lambda x, y: (x0+(x-x0)*cos(theta) + (y-y0)*sin(theta), y0-(x-x0)*sin(theta)+(y-y0)*cos(theta))
+                        coords = (trans(0,0), trans(0,height), trans(width,0), trans(width,height))
+                        x_coords = [e[0] for e in coords]
+                        y_coords = [e[1] for e in coords]
+                        width = max(x_coords) - min(x_coords)
+                        height = max(y_coords) - min(y_coords)
+
                 self.sizes[c][r] = [width, height]
                 self.c2max_w[c] = max(self.c2max_w.get(c, 0), width)
                 self.r2max_h[r] = max(self.r2max_h.get(r, 0), height)
@@ -194,12 +214,24 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
                 #_pos = obj_rect.topLeft()
                 #_x = abs(_pos.x()) if _pos.x() < 0 else 0
                 #_y = abs(_pos.y()) if _pos.y() < 0 else 0
-                          
+
                 text_y_offset = -obj.boundingRect().y() if f.type == "text" else 0 
-                    
+
                 obj.setPos(x + f.margin_left + x_offset,
                            y + y_offset + f.margin_top + text_y_offset)
                 
+                if f.rotation and f.rotation != 180:
+                    fake_rect = obj.boundingRect()
+                    fake_w, fake_h = fake_rect.width(), fake_rect.height()
+                    self._rotate_item(obj, f.rotation)
+                    #wcorr = fake_w/2.0 - w/2.0
+                    #ycorr = fake_h/2.0 - h/2.0 
+                    #print "Correctopm", fake_w/2.0 - w/2.0, fake_h/2.0 - h/2
+                    #obj.moveBy(-wcorr, -ycorr)
+                    obj.moveBy(((w/2) - fake_w/2.0), (h/2) - (fake_h/2.0))
+                    r = QGraphicsRectItem(0, 0, w, h)
+                    r.setParentItem(self)
+
                 obj.rotable = f.rotable
                 f.inner_background.apply(obj)
                 f.inner_border.apply(obj)
@@ -222,6 +254,15 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
                     y += h
 
             x += max_w
+
+    def _rotate_item(self, item, rotation):
+        if hasattr(item, "_real_rect"):
+            rect = item._real_rect
+        else:
+            rect = item.boundingRect()
+        x = rect.width()/2
+        y = rect.height()/2
+        item.setTransform(QTransform().translate(x, y).rotate(rotation).translate(-x, -y))
 
     def rotate(self, rotation):
         "rotates item over its own center"
