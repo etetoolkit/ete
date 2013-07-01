@@ -262,7 +262,9 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
             rect = item.boundingRect()
         x = rect.width()/2
         y = rect.height()/2
-        item.setTransform(QTransform().translate(x, y).rotate(rotation).translate(-x, -y))
+        matrix = item.transform()
+        #item.setTransform(QTransform().translate(x, y).rotate(rotation).translate(-x, -y))
+        item.setTransform(matrix.translate(x, y).rotate(rotation).translate(-x, -y))
 
     def rotate(self, rotation):
         "rotates item over its own center"
@@ -283,22 +285,30 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
                     rect = obj.boundingRect()
                 x = rect.width() / 2 
                 y = rect.height() / 2
-                obj.setTransform(QTransform().translate(x, y).rotate(rotation).translate(-x, -y))
+                matrix = obj.transform()
+                #obj.setTransform(QTransform().translate(x, y).rotate(rotation).translate(-x, -y))
+                obj.setTransform(matrix.translate(x, y).rotate(rotation).translate(-x, -y))
                 
     def flip_hz(self):
         for obj in self.childItems():
             rect = obj.boundingRect()
             x =  rect.width() / 2
             y =  rect.height() / 2
-            obj.setTransform(QTransform().translate(x, y).scale(-1,1).translate(-x, -y))
-
+            matrix = obj.transform()
+            #obj.setTransform(QTransform().translate(x, y).scale(-1,1).translate(-x, -y))
+            obj.setTransform(matrix.translate(x, y).scale(-1,1).translate(-x, -y))
+            
     def flip_vt(self):
         for obj in self.childItems():
             rect = obj.boundingRect()
             x =  rect.width() / 2
             y =  rect.height() / 2
-            obj.setTransform(QTransform().translate(x, y).scale(1,-1).translate(-x, -y))
+            matrix = obj.transform()
+            #obj.setTransform(QTransform().translate(x, y).scale(1,-1).translate(-x, -y))
+            obj.setTransform(matrix.translate(x, y).scale(1,-1).translate(-x, -y))
 
+
+            
 def update_node_faces(node, n2f, img):
 
     # Organize all faces of this node in FaceGroups objects
