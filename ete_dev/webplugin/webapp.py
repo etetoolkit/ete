@@ -86,7 +86,6 @@ class WebTreeApplication(object):
         html_map = '<MAP NAME="%s"  class="ete_tree_img">' %(mapid)
         if img_map["nodes"]:
             for x1, y1, x2, y2, nodeid, text in img_map["nodes"]:
-                print x1, y1, x2, y2
                 html_map += """ <AREA SHAPE="rect" COORDS="%s,%s,%s,%s" onClick='show_context_menu("%s", "%s", "%s");' href="javascript:void('%s');">""" %\
                     (int(x1), int(y1), int(x2), int(y2), treeid, nodeid, ','.join(map(str, nid2actions.get(nodeid,[]))), str(nodeid) )
         if img_map["faces"]:
