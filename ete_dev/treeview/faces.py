@@ -1401,11 +1401,12 @@ class SeqMotifFace(StaticItemFace):
 
     def __init__(self, seq=None, motifs=None, seqtype="aa",
                  intermotif_format="line", seqtail_format="none",
-                 seq_format="compactseq"):
+                 seq_format="compactseq", prevent_overlaps=True):
         
         StaticItemFace.__init__(self, None)
         self.seq  = seq or []
         self.overlap = set()
+        self.prevent_overlaps = prevent_overlaps
         self.motifs = motifs
         self.overlaping_motif_opacity = 0.7
         self.adjust_to_text = False
@@ -1440,7 +1441,8 @@ class SeqMotifFace(StaticItemFace):
         for index, mf in enumerate(motifs):
             start, end, typ, w, h, fg, bg, name = mf
             start -= 1
-            if start > 0 and start+1 < current_pos and end > current_pos:
+            if self.prevent_overlaps and start > 0 and start+1 < current_pos and end > current_pos:
+                print "SI"
                 mf[0] = current_pos + 1
                 mf[3] = end - current_pos
                 self.overlap.add(len(self.regions))
@@ -1516,10 +1518,9 @@ class SeqMotifFace(StaticItemFace):
                 # calculates length for overlap
                 total_length = prv_end - prv_start
                 overlaping_length = float(prv_end - start)
-                overlap_factor = overlaping_length / total_length
-
-                xstart -=  (prv_w * overlap_factor)
-
+                if total_length:
+                    overlap_factor = overlaping_length / total_length
+                    xstart -=  (prv_w * overlap_factor)
                 opacity = self.overlaping_motif_opacity
 
             txt_item = name_items[index][0]
