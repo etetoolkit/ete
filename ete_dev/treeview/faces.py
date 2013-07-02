@@ -1405,8 +1405,10 @@ class SeqMotifFace(StaticItemFace):
         
         StaticItemFace.__init__(self, None)
         self.seq  = seq or []
+        self.overlap = set()
         self.motifs = motifs
         self.overlaping_motif_opacity = 0.7
+        self.adjust_to_text = False
         self.intermotif_format = intermotif_format
         self.seqtail_format = seqtail_format
         self.seq_format = seq_format
@@ -1419,6 +1421,7 @@ class SeqMotifFace(StaticItemFace):
 
         self.build_regions()
 
+        
     def build_regions(self): 
         # Sort regions
         seq = self.seq or []
@@ -1433,13 +1436,15 @@ class SeqMotifFace(StaticItemFace):
         self.regions = []
         current_pos = 0
         end = 0
-        for mf in motifs:
+        
+        for index, mf in enumerate(motifs):
             start, end, typ, w, h, fg, bg, name = mf
             start -= 1
-            #if start < current_pos:
-            #    print current_pos, start, mf
-            #    raise ValueError("Overlaping motifs are not supported")
-            if start > current_pos:
+            if start > 0 and start+1 < current_pos and end > current_pos:
+                mf[0] = current_pos + 1
+                mf[3] = end - current_pos
+                self.overlap.add(len(self.regions))
+            elif start > current_pos:
                 if intermotif == "blank": 
                     self.regions.append([current_pos, start, " ", 1, 1, None, None, None])
                 elif intermotif == "line":
@@ -1451,7 +1456,7 @@ class SeqMotifFace(StaticItemFace):
                     # Colors are read from built-in dictionary
                     self.regions.append([current_pos, start, "compactseq", 1, 10, None, None, None])
                 elif intermotif == "none":
-                    self.regions.append([current_pos, start, " ", 0, 0, None, None, None]) 
+                    self.regions.append([current_pos, start, " ", 0, 0, None, None, None])
             self.regions.append(mf)
             current_pos = end
 
@@ -1480,15 +1485,19 @@ class SeqMotifFace(StaticItemFace):
                 txt_item.setFont(qfont)
                 txt_item.setBrush(QBrush(QColor(fcolor)))
                 txt_item.setZValue(2)
-                name_items.append([txt_item, txtw, txth])
                 # enlarges circle domains to fit text
                 if typ == "o":
                     min_r = math.hypot(txtw/2.0, txth/2.0)
                     txtw = max(txtw, min_r*2)
-                    
-                # Corrects domain figure dimensions to fit text
-                self.regions[index][3] = max(self.regions[index][3], txtw)
-                self.regions[index][4] = max(self.regions[index][4], txth)
+
+                if self.adjust_to_text:
+                    # Corrects domain figure dimensions to fit text
+                    self.regions[index][3] = max(self.regions[index][3], txtw)
+                    self.regions[index][4] = max(self.regions[index][4], txth)
+                elif self.regions[index][3] >= txtw:
+                    name_items.append([txt_item, txtw, txth])
+                else:
+                    pass
                     
             else:
                 name_items.append([None, 0, 0])
@@ -1499,7 +1508,7 @@ class SeqMotifFace(StaticItemFace):
         xstart = 0
         for index, (start, end, typ, w, h, fg, bg, name) in enumerate(self.regions):
             opacity = 1
-
+            
             # if current domain start overlaps with previous domain
             prv_start, prv_end, prv_type, prv_w =  self.regions[index-1][:4]
 
@@ -1564,6 +1573,10 @@ class SeqMotifFace(StaticItemFace):
                 
             if i: 
                 i.setParentItem(self.item)
+                if index in self.overlap and 0:
+                    ov = QGraphicsRectItem(xstart, y_start, 4, h)
+                    ov.setParentItem(self.item)
+                
             if bg:
                 if bg.startswith("rgradient:"):
                     rect = i.boundingRect()
