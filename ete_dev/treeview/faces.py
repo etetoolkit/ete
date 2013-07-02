@@ -1401,11 +1401,13 @@ class SeqMotifFace(StaticItemFace):
 
     def __init__(self, seq=None, motifs=None, seqtype="aa",
                  intermotif_format="line", seqtail_format="none",
-                 seq_format="compactseq", prevent_overlaps=True):
+                 seq_format="compactseq", prevent_overlaps=True, adjust_to_text=False,
+                 scale_factor=2):
         
         StaticItemFace.__init__(self, None)
         self.seq  = seq or []
         self.overlap = set()
+        self.scale_factor = scale_factor
         self.prevent_overlaps = prevent_overlaps
         self.motifs = motifs
         self.overlaping_motif_opacity = 0.7
@@ -1436,31 +1438,38 @@ class SeqMotifFace(StaticItemFace):
         intermotif = self.intermotif_format
         self.regions = []
         current_pos = 0
-        end = 0
-        
+        print "----------"
         for index, mf in enumerate(motifs):
+            print mf
             start, end, typ, w, h, fg, bg, name = mf
             start -= 1
+            mf[3] = w = (end-start) * self.scale_factor
             if self.prevent_overlaps and start > 0 and start+1 < current_pos and end > current_pos:
-                print "SI"
-                mf[0] = current_pos + 1
+                mf[0] = current_pos 
                 mf[3] = end - current_pos
-                self.overlap.add(len(self.regions))
+                print "corrected", mf
+            elif self.prevent_overlaps and start > 0 and start+1 < current_pos and end < current_pos:
+                continue
             elif start > current_pos:
                 if intermotif == "blank": 
                     self.regions.append([current_pos, start, " ", 1, 1, None, None, None])
+                    w = end-start 
                 elif intermotif == "line":
                     self.regions.append([current_pos, start, "-", 1, 1, "black", None, None])
+                    w = end-start
                 elif intermotif == "seq":
                     # Colors are read from built-in dictionary
                     self.regions.append([current_pos, start, "seq", 10, 10, None, None, None])
+                    w = (end-start)*10
                 elif intermotif == "compactseq":
                     # Colors are read from built-in dictionary
                     self.regions.append([current_pos, start, "compactseq", 1, 10, None, None, None])
+                    w = (end-start)
                 elif intermotif == "none":
                     self.regions.append([current_pos, start, " ", 0, 0, None, None, None])
+                    w = 0
             self.regions.append(mf)
-            current_pos = end
+            current_pos = start + w
 
         if len(seq) > end:
             if self.seqtail_format == "line":
@@ -1510,19 +1519,19 @@ class SeqMotifFace(StaticItemFace):
         xstart = 0
         for index, (start, end, typ, w, h, fg, bg, name) in enumerate(self.regions):
             opacity = 1
+            xstart = start
             
             # if current domain start overlaps with previous domain
-            prv_start, prv_end, prv_type, prv_w =  self.regions[index-1][:4]
-
-            if index > 0 and start < prv_end:
-                # calculates length for overlap
-                total_length = prv_end - prv_start
-                overlaping_length = float(prv_end - start)
-                if total_length:
-                    overlap_factor = overlaping_length / total_length
-                    xstart -=  (prv_w * overlap_factor)
-                opacity = self.overlaping_motif_opacity
-
+            #prv_start, prv_end, prv_type, prv_w =  self.regions[index-1][:4]
+            #if index > 0 and start < prv_end:
+            #    # calculates length for overlap
+            #    total_length = prv_end - prv_start
+            #    overlaping_length = float(prv_end - start)
+            #    if total_length:
+            #        overlap_factor = overlaping_length / total_length
+            #        xstart -=  (prv_w * overlap_factor)
+            #    opacity = self.overlaping_motif_opacity
+            
             txt_item = name_items[index][0]
             if txt_item:
                 align_center = (w - name_items[index][1]) / 2.0
@@ -1593,7 +1602,7 @@ class SeqMotifFace(StaticItemFace):
 
             if opacity < 1:
                 i.setOpacity(opacity)
-            xstart += w
+            #xstart = max((xstart+w), orig_xstart)
             
         self.item.setRect(0, 0, xstart, max_h)
         self.item.setPen(QPen(Qt.NoPen))
