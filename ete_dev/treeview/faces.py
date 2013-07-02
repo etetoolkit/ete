@@ -1419,9 +1419,9 @@ class SeqMotifFace(StaticItemFace):
         motifs = self.motifs
         if not motifs:
             if self.seq_format == "seq":
-                motifs = [[1, len(seq), "seq", 10, 10, None, None]]
+                motifs = [[1, len(seq), "seq", 10, 10, None, None, None]]
             elif self.seq_format == "compactseq":
-                motifs = [[1, len(seq), "compactseq", 1, 10, None, None]]
+                motifs = [[1, len(seq), "compactseq", 1, 10, None, None, None]]
         motifs.sort()
         intermotif = self.intermotif_format
         self.regions = []
