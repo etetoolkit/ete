@@ -203,7 +203,7 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
                         y_offset = 0
                     elif f.vt_align == 1:
                         # Vertically centered
-                        y_offset = (max_h - h) / 2  
+                        y_offset = (max_h - h) / 2
                     elif f.hz_align == 2:
                         # Vertically at bottom
                         y_offset = (max_h - h) 

@@ -867,7 +867,7 @@ def render_aligned_faces(img, mainRect, parent, n2i, n2f):
         mainRect.adjust(0, 0, extra_width, 0)
     return extra_width
 
-def get_tree_img_map(n2i):
+def get_tree_img_map(n2i, x_scale=1, y_scale=1):
     node_list = []
     face_list = []
     nid = 0
@@ -880,26 +880,27 @@ def get_tree_img_map(n2i):
 
                 r = item.boundingRect()
                 rect = item.mapToScene(r).boundingRect()
-                x1 = rect.x()
-                y1 = rect.y()
-                x2 = rect.x() + rect.width()
-                y2 = rect.y() + rect.height()
+                x1 = x_scale * rect.x()  
+                y1 = y_scale * rect.y()
+                x2 = x_scale * (rect.x() + rect.width())
+                y2 = y_scale * (rect.y() + rect.height())
                 node_list.append([x1, y1, x2, y2, nid, None])
             elif isinstance(item, _FaceGroupItem):
                 if item.column2faces:
                     for f in item.childItems():
                         r = f.boundingRect()
                         rect = f.mapToScene(r).boundingRect()
-                        x1 = rect.x()
-                        y1 = rect.y()
-                        x2 = rect.x() + rect.width()
-                        y2 = rect.y() + rect.height()
+                        x1 = x_scale * rect.x()
+                        y1 = y_scale * rect.y()
+                        x2 = x_scale * (rect.x() + rect.width())
+                        y2 = y_scale * (rect.y() + rect.height())
                         if isinstance(f, _TextFaceItem):
                             face_list.append([x1, y1, x2, y2, nid, str(f.text())])
                         else:
                             face_list.append([x1, y1, x2, y2, nid, None])
 
         nid += 1
+        
     return {"nodes": node_list, "faces": face_list}
 
 #@tracktime
