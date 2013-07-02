@@ -194,7 +194,10 @@ class TextFace(Face):
     worse aligned text faces but improving the performance of tree
     visualization in scenes with a lot of text faces.
     """
-        
+
+    def __repr__(self):
+        return "Text Face [%s] (%s)" %(self._text, hex(self.__hash__()))      
+
     def _load_bounding_rect(self, txt=None):
         if txt is None:
             txt= self.get_text()
@@ -283,7 +286,10 @@ class AttrFace(TextFace):
       process the attribute value before renderer. e.g. "%0.2f"
     :param fstyle: "normal" or "italic" 
     """
-   
+
+    def __repr__(self):
+        return "Attribute Face [%s] (%s)" %(self.attr, hex(self.__hash__()))        
+    
     def get_text(self):
         if self.attr_formatter:
             text = self.attr_formatter % getattr(self.node, self.attr)
