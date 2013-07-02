@@ -1058,7 +1058,7 @@ class PieChartFace(StaticItemFace):
     """
     def __init__(self, percents, width, height, colors=None, line_color=None):
         Face.__init__(self)
-        print round(sum(percents))
+
         if round(sum(percents)) > 100:
             raise ValueError("PieChartItem: percentage values > 100")
 
@@ -1493,20 +1493,18 @@ class SeqMotifFace(StaticItemFace):
         xstart = 0
         for index, (start, end, typ, w, h, fg, bg, name) in enumerate(self.regions):
             opacity = 1
-            print "INDEX", index
+
             # if current domain start overlaps with previous domain
             prv_start, prv_end, prv_type, prv_w =  self.regions[index-1][:4]
-            print index, (start, end, typ, w, h, fg, bg, name)
-            print prv_start, prv_end, prv_type, prv_w
-            print "XSTART", xstart
+
             if index > 0 and start <= prv_end:
                 # calculates length for overlap
                 total_length = prv_end - prv_start
                 overlaping_length = float(prv_end - start)
                 overlap_factor = overlaping_length / total_length
-                print "correcting:"
+
                 xstart -=  (prv_w * overlap_factor)
-                print "CORRECTED xstart", xstart, overlap_factor, total_length, overlaping_length
+
                 opacity = self.overlaping_motif_opacity
 
             txt_item = name_items[index][0]
