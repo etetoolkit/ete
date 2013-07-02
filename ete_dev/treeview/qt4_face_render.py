@@ -154,7 +154,8 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
 
     def render(self):
         x = 0
-        for c, max_w in self.c2max_w.iteritems(): 
+        for c in self.columns:
+            max_w = self.c2max_w[c]
             faces = self.column2faces.get(c, [])
 
             if self.as_grid:
