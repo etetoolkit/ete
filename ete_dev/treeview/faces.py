@@ -150,7 +150,8 @@ class Face(object):
         self.border = _Border()
         self.inner_border = _Border()
         self.inner_background = _Background()
-
+        self.rotation = 0
+        
     def _size(self):
         if self.pixmap:
             return self._width(),self._height()
@@ -218,7 +219,7 @@ class TextFace(Face):
         return self._text
         
     def _set_text(self, txt):
-        self._text = txt
+        self._text = str(txt)
         
     def get_bounding_rect(self):
         if not self._bounding_rect:
@@ -234,7 +235,7 @@ class TextFace(Face):
     def __init__(self, text, ftype="Verdana", fsize=10,
                  fgcolor="black", penwidth=0, fstyle="normal",
                  tight_text=True):
-        self._text = ""
+        self._text = str(text)
         self._bounding_rect = None
         self._real_rect = None
         
@@ -247,8 +248,6 @@ class TextFace(Face):
         self.fstyle = fstyle
         self.penwidth = penwidth
         self.tight_text = tight_text
-        if text: 
-            self.text = text
 
     def _get_font(self):
         font = QFont(self.ftype, self.fsize)

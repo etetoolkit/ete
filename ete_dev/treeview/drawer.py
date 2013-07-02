@@ -67,7 +67,6 @@ def render_tree(t, imgName, w=None, h=None, layout=None, \
     scene.master_item.setPos(0,0)
     scene.addItem(scene.master_item)
     x_scale, y_scale = save(scene, imgName, w=w, h=h, units=units)
-    print "Map Scale correction  ", x_scale, y_scale
     imgmap = get_tree_img_map(n2i, x_scale, y_scale)
 
     return imgmap
