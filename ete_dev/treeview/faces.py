@@ -1512,7 +1512,7 @@ class SeqMotifFace(StaticItemFace):
             # if current domain start overlaps with previous domain
             prv_start, prv_end, prv_type, prv_w =  self.regions[index-1][:4]
 
-            if index > 0 and start <= prv_end:
+            if index > 0 and start < prv_end:
                 # calculates length for overlap
                 total_length = prv_end - prv_start
                 overlaping_length = float(prv_end - start)
