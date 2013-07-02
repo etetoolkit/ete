@@ -41,8 +41,8 @@ __all__ = ["Tree", "TreeNode"]
 
 DEFAULT_COMPACT = False
 DEFAULT_SHOWINTERNAL = False
-DEFAULT_DIST = 0.0
-DEFAULT_SUPPORT = 0.0
+DEFAULT_DIST = 1.0
+DEFAULT_SUPPORT = 1.0
 DEFAULT_NAME = "NoName"
 
 class TreeError(Exception):
