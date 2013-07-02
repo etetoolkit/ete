@@ -1497,7 +1497,7 @@ class SeqMotifFace(StaticItemFace):
                 elif self.regions[index][3] >= txtw:
                     name_items.append([txt_item, txtw, txth])
                 else:
-                    pass
+                    name_items.append([None, 0, 0])
                     
             else:
                 name_items.append([None, 0, 0])
