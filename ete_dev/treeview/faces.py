@@ -1353,14 +1353,20 @@ class SequenceItem(QGraphicsRectItem):
 
 
 class TextLabelItem(QGraphicsRectItem):
-    def __init__(self, text, rect, *args, **kargs):
-        QGraphicsRectItem.__init__(self, rect, *args, **kargs)
+    def __init__(self, text, rect, fcolor="black", ffam="Arial", fsize=10):
+        QGraphicsRectItem.__init__(self, rect)
         self.text = text
-        self.font = None
+        self.fsize = int(fsize)
+        self.ffam = ffam
+        self.fcolor = fcolor
     def paint(self, p, option, widget):
-        p.setPen(self.pen())
-        p.setBrush(self.brush())
-        p.setFont(self.font)
+        color = QColor(self.fcolor)
+        p.setPen(color)
+        p.setBrush(QBrush(color))
+        qfont = QFont()
+        qfont.setFamily(self.ffam)
+        qfont.setPointSize(self.fsize)
+        p.setFont(qfont)
         p.drawText(self.rect(), Qt.AlignCenter |  Qt.AlignVCenter, self.text)
         #p.setBrush(Qt.NoBrush)
         #p.drawRect(self.rect())
@@ -1567,20 +1573,15 @@ class SeqMotifFace(StaticItemFace):
             if name:
                 valid_h = max_h
                 family, fsize, fcolor, text = name.split("|")
-                qfont = QFont()
-                qfont.setFamily(family)
-                qfont.setPointSize(int(fsize))
-                qfmetrics = QFontMetrics(qfont)
-                txth = qfmetrics.height()
-                txtw = qfmetrics.width(text)
-                txt_item = TextLabelItem(text, QRectF(0, 0, w, valid_h))
-                txt_item.font = qfont
-                txt_item.setBrush(QBrush(QColor(fcolor)))
-                txt_item.setZValue(2)
+                #qfmetrics = QFontMetrics(qfont)
+                #txth = qfmetrics.height()
+                #txtw = qfmetrics.width(text)
+                txt_item = TextLabelItem(text, QRectF(0, 0, w, valid_h),
+                                         fsize=fsize, ffam=family, fcolor=fcolor)
                 # enlarges circle domains to fit text
-                if typ == "o":
-                    min_r = math.hypot(txtw/2.0, txth/2.0)
-                    txtw = max(txtw, min_r*2)
+                #if typ == "o":
+                #    min_r = math.hypot(txtw/2.0, txth/2.0)
+                #    txtw = max(txtw, min_r*2)
                 
                 y_txt_start = (max_h/2.0) - (valid_h/2.0)
                 txt_item.setParentItem(self.item)
