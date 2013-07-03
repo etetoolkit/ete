@@ -1348,7 +1348,7 @@ class SequenceItem(QGraphicsRectItem):
                 p.drawText(x + self.poswidth * 0.1, self.posheight *0.9, letter)
                
             else:
-                p.fillRect(x, 0, self.poswidth, self.posheight, br)
+                p.fillRect(x, 0, max(1, self.poswidth), self.posheight, br)
             x += self.poswidth
 
 
@@ -1421,10 +1421,11 @@ class SeqMotifFace(StaticItemFace):
 
     def __init__(self, seq=None, motifs=None, seqtype="aa",
                  intermotif_format="line", seqtail_format="compactseq",
-                 seq_format="compactseq"):
+                 seq_format="compactseq", scale_factor=1):
         
         StaticItemFace.__init__(self, None)
         self.seq  = seq or []
+        self.scale_factor = scale_factor
         self.motifs = motifs
         self.overlaping_motif_opacity = 0.7
         self.adjust_to_text = False
@@ -1491,6 +1492,12 @@ class SeqMotifFace(StaticItemFace):
         max_x_pos = 0
         current_seq_end = 0
         for index, (start, end, typ, wf, h, fg, bg, name) in enumerate(self.regions):
+            real_start, real_end = start, end
+            if self.scale_factor != 1:
+                start *= self.scale_factor
+                end *= self.scale_factor
+                wf *= self.scale_factor
+                
             opacity = 1
             w = end-start    
             xstart = max_x_pos
@@ -1537,13 +1544,13 @@ class SeqMotifFace(StaticItemFace):
             elif typ == "()":
                 i = QGraphicsRoundRectItem(xstart, y_start, w, h)
             elif typ == "seq" and self.seq:
-                i = SequenceItem(self.seq[start:end], poswidth=wf,
+                i = SequenceItem(self.seq[real_start:real_end], poswidth=wf,
                                  posheight=h, draw_text=True)
                 w = i.rect().width()
                 h = i.rect().height()
                 i.setPos(xstart, y_center - (h/2.0))
             elif typ == "compactseq" and self.seq:
-                i = SequenceItem(self.seq[start:end], poswidth=wf,
+                i = SequenceItem(self.seq[real_start:real_end], poswidth=wf,
                                  posheight=h, draw_text=False)
                 w = i.rect().width()
                 h = i.rect().height()

@@ -35,7 +35,7 @@ for l in t.iter_leaves():
     seq_motifs = [list(m) for m in motifs] #sample(motifs, randint(2, len(motifs))) 
    
     seqFace = SeqMotifFace(seq, seq_motifs, intermotif_format="line",
-                           seqtail_format="compactseq")
+                           seqtail_format="compactseq", scale_factor=0.5)
     seqFace.margin_bottom = 4
     f = l.add_face(seqFace, 0, "aligned")
     
