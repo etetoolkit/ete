@@ -244,7 +244,7 @@ def render(root_node, img, hide_root=False):
                 img._scale = max(scales) if scales else 0.0
             else:
                 farthest, dist = root_node.get_farthest_leaf(topology_only=img.force_topology)
-                img._scale =  400.0 / dist if dist else 0.0
+                img._scale = img.tree_width / dist if dist else 0.0
             update_branch_lengths(root_node, n2i, n2f, img)
         else:
             img._scale = crender.calculate_optimal_scale(root_node, n2i, rot_step, img)

@@ -496,7 +496,7 @@ class TreeStyle(object):
 
 
         self.title = FaceContainer()
-
+        self.tree_width = 180
         # PRIVATE values
         self._scale = None
         
