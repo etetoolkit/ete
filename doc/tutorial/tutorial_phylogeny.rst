@@ -441,7 +441,7 @@ purpose.
 Working with duplicated gene families 
 =============================================
 
-.. _treeko: 
+.. _treeko_trees: 
 
 Treeko (splitting gene trees into species trees)
 -------------------------------------------------------
@@ -461,7 +461,7 @@ Although Treeko is available as a standalone package, it uses ETE to
 generate all possible species tree topologies within a duplicated gene
 family tree.
 
-Thus, the ETE method :func:`PhyloTree.get_speciation_trees` is
+Thus, the ETE method :func:`PhyloNode.get_speciation_trees` is
 expected to provide the core functionality required to perform a
 Treeko analysis. When used, the method will return a list of all
 possible species trees observed after combining the different
@@ -683,3 +683,5 @@ Chimp_1 and Chimp_2 could be easily collapsed into a single node.
    #   |      \-Yeast_2, Yeast
    #   |
    #    \-Yeast_1, Yeast
+
+

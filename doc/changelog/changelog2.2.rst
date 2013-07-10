@@ -16,17 +16,6 @@ SCRIPTS
 ==========
 * Improvements in the standalone visualization script (a.k.a. ete2) 
 
-??
-* Added ete2dist script to calculate robinson foulds distances among trees
-
-MINOR UNCONSISTENCIES WITH ETE 2.1           ????? PERHAPS BETTER TO move THIS TO 3.0
-=============================================================================================
-* Default values for :attr:`TreeNode.dist` and
-  :attr:`TreeNode.support` are now set to 0.0. This fixes the problem
-  of long branches leading to the root node in trees loaded from
-  newick and provides. 
-
-
 NEW MODULES
 ====================
 * New :class:`EvolNode` tree object type is available as a part of
@@ -129,16 +118,13 @@ NEW FEATURES
 
   * Added :func:`PhyloNode.get_speciation_trees` method, which returns
     all possible species topologies present in a gene family tree as
-    described in `Treeko <http://treeko.cgenomics.org>`_  (see `Marcet and
-    Gabaldon, 2011 <http://www.ncbi.nlm.nih.gov/pubmed/21335609>`_ ).
-    :ref:`See tutorial and examples <treeko>`
+    described in `Treeko <http://treeko.cgenomics.org>`_ (see `Marcet
+    and Gabaldon, 2011 <http://www.ncbi.nlm.nih.gov/pubmed/21335609>`_
+    ). :ref:`See tutorial and examples <treeko_trees>`
 
   * Added :func:`PhyloNode.split_by_dups` method, which returns a list
     of partial subtrees resulting from splitting a tree at duplication
     nodes. :ref:`See tutorial and examples <split_by_dup>`
-
-  * !!! Return the distance between a species tree and a gene tree
-    with multiple duplications using Treeko distance.
 
   * Added :func:`PhyloNode.collapse_lineage_specific_expansions` method,
     which returns a pruned version of a tree, where nodes representing
@@ -154,7 +140,7 @@ NEW FEATURES
 * **News on tree visualization and image rendering:**
 
   * node style attributes can now be modified without the need of
-    initialisation by directly accessing the
+    initialization by directly accessing the
     :attr:`TreeNode.img_style` attribute.
 
   * Multiple layout functions can now be provided to combine their
@@ -163,19 +149,19 @@ NEW FEATURES
 
      :: 
      
-     from ete_dev import TreeStyle
-
-     def color_leaves(node):
-         if node.is_leaf():
-            node.img_style["fgcolor"] = "red"
-
-     def size_internal(node):
-         if not node.is_leaf():
-            node.img_style["size"] = 15
-
-     ts = TreeStyle()
-     # provide a list of layout functions, instead of a single one
-     ts.layout_fn = [color_leaves, size_internal]
+       from ete_dev import TreeStyle
+        
+       def color_leaves(node):
+           if node.is_leaf():
+              node.img_style["fgcolor"] = "red"
+        
+       def size_internal(node):
+           if not node.is_leaf():
+              node.img_style["size"] = 15
+        
+       ts = TreeStyle()
+       # provide a list of layout functions, instead of a single one
+       ts.layout_fn = [color_leaves, size_internal]
      
 
   * :attr:`COLOR_SCHEMES` and :attr:`SVG_COLORS` dictionaries are
@@ -186,7 +172,7 @@ NEW FEATURES
 
     :: 
 
-        for ete_dev import random_color, COLOR_SCHEMES, SVG_COLORS
+        from ete_dev import random_color, COLOR_SCHEMES, SVG_COLORS
 
         # generate 20 random colors
         node_colors = [random_color(s=0.4, l=4) for i in xrange(20)]
@@ -198,6 +184,9 @@ NEW FEATURES
     individual faces even when a global :attr:`treestyle.rotation` is
     used.
 
+      .. figure:: ../../examples/treeview/rotated_faces.png
+              :scale: 75 %
+      
   * Improved :class:`SequenceFace`: Sequence sites are now rendered
     one by one, allowing interaction with each of them and getting rid
     of the previous pixmap size limitation. Site image dimensions and
@@ -210,15 +199,19 @@ NEW FEATURES
     points. Gaps can also be taken into account and therefore shown as
     as a black space or a flat line.  
 
+      .. figure:: ../../examples/treeview/seqmotif.png
+              :scale: 75 %
+
 
   * Added :class:`PieChartFace` and :class:`BarChartFace` face types
     for built-in representation of statistics attached to nodes.
 
+      .. figure:: ../../examples/treeview/barcharts.png
+              :scale: 75 %
+
 
   * Improved :class:`ImgFace` class, now accepting on the fly image
     scaling.
-
-  * Shape Faces, RoundRect, Triangle, Diamond, RectFace
 
 * **News on the GUI**
 

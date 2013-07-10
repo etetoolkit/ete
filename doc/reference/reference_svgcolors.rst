@@ -8,3 +8,8 @@ Supported Color Names
    Apart from RGB color codes, the following SVG color names are supported:
 
  .. image:: ../svg_colors.png
+
+.. py:data:: COLOR_SCHEMES
+
+.. autofunc:: ete_dev.random_color
+

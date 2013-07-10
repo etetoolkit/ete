@@ -18,9 +18,11 @@ class PhyloxmlTree(PhyloTree):
         return "PhyloXML ETE tree <%s>" %hex(hash(self))
 
     def _get_dist(self):
-        v = float(self.phyloxml_clade.get_branch_length_attr())
+        v = self.phyloxml_clade.get_branch_length_attr()
         if v is None:
             v = self.phyloxml_clade.get_branch_length()
+        else:
+            v = float(v)
         return v
         
     def _set_dist(self, value):
@@ -31,11 +33,13 @@ class PhyloxmlTree(PhyloTree):
             raise
 
     def _get_support(self):
-        if (self.phyloxml_clade.confidence) == 0:
-            if len(self.phyloxml_clade.confidence) > 0:
-                _c = Confidence(valueOf_=1.0, type_="branch_support")
-                self.phyloxml_clade.add_confidence(_c)
-        return float(self.phyloxml_clade.confidence[0].valueOf_)
+        if len(self.phyloxml_clade.confidence) == 0:
+            _c = Confidence(valueOf_=1.0, type_="branch_support")
+            self.phyloxml_clade.add_confidence(_c)
+        try:
+            return float(self.phyloxml_clade.confidence[0].valueOf_)
+        except AttributeError:
+            return self._support
 
     def _set_support(self, value):
         self._get_support()
