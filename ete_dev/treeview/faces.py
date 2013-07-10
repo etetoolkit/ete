@@ -1496,7 +1496,8 @@ class SeqMotifFace(StaticItemFace):
             if self.scale_factor != 1:
                 start *= self.scale_factor
                 end *= self.scale_factor
-                wf *= self.scale_factor
+                if wf: 
+                    wf *= self.scale_factor
                 
             opacity = 1
             w = end-start    
@@ -1508,11 +1509,10 @@ class SeqMotifFace(StaticItemFace):
                 overlap_factor = float(current_seq_end - start) / (end-start)
                 if overlap_factor > 1:
                     continue
-                    xstart -= w * overlap_factor
-                    
+                    #xstart -= w * overlap_factor
                 else:
                     w = end - current_seq_end
-                    
+
                 opacity = self.overlaping_motif_opacity
 
             y_start = y_center - (h/2)

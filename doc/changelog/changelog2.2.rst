@@ -154,10 +154,39 @@ NEW FEATURES
     :attr:`TreeNode.img_style` attribute.
 
   * Multiple layout functions can now be provided to combine their
-    functionality.
+    functionality. This way, you can keep separate styling templates
+    and combine them as necessary.
 
-  * Several predefined :attr:`COLOR_SCHEMES` are provided for help
-    creating better chart face representations convenience.
+     :: 
+     
+     from ete_dev import TreeStyle
+
+     def color_leaves(node):
+         if node.is_leaf():
+            node.img_style["fgcolor"] = "red"
+
+     def size_internal(node):
+         if not node.is_leaf():
+            node.img_style["size"] = 15
+
+     ts = TreeStyle()
+     # provide a list of layout functions, instead of a single one
+     ts.layout_fn = [color_leaves, size_internal]
+     
+
+  * :attr:`COLOR_SCHEMES` and :attr:`SVG_COLORS` dictionaries are
+    provided for easy access to color codes and several predefined
+    color schemes. In addition, a :func:`random_color` function is
+    also available as a generator of RGB colors (where saturation and
+    lightness can be fixed).
+
+    :: 
+
+        for ete_dev import random_color, COLOR_SCHEMES, SVG_COLORS
+
+        # generate 20 random colors
+        node_colors = [random_color(s=0.4, l=4) for i in xrange(20)]
+
 
 * **News on node faces:**
 
@@ -170,16 +199,17 @@ NEW FEATURES
     of the previous pixmap size limitation. Site image dimensions and
     colours are now configurable.
 
-  * Added new :class:`SeqMotifFace` class, which extends
-    :class:`SequenceFace`. This new face type allows to represent
-    sequences as a succession of domain/motif elements, as a condensed
-    color based sequence representation or as a combination of
-    all. Gaps in sequences are also taken into account and shown as
-    black space or a flat line.  You can check some examples at the
-    tutorial?????
+  * Added new :class:`SeqMotifFace` class, which represent an enriched
+    version of the former :class:`SequenceFace` instance. This new
+    face type allows to represent sequences as a succession of
+    domain/motif elements or to represent sequence positions as color
+    points. Gaps can also be taken into account and therefore shown as
+    as a black space or a flat line.  
+
 
   * Added :class:`PieChartFace` and :class:`BarChartFace` face types
     for built-in representation of statistics attached to nodes.
+
 
   * Improved :class:`ImgFace` class, now accepting on the fly image
     scaling.
