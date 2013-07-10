@@ -102,7 +102,6 @@ class Prottest(ModelTesterTask):
                 tree.add_feature("model", raxml_job.model)
                 lks.append([lk, tree.model, tree])
         lks.sort()
-        #lks.reverse()
         # choose the model with higher likelihood
         best_model = lks[-1][1]
         best_tree = lks[-1][2]
