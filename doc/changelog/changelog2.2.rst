@@ -108,6 +108,10 @@ NEW FEATURES
     newick string :attr:`(node1);` will be interpreted as an unnamed
     root node plus a single child named :attr:`name1`.
 
+  * :func:`TreeNode.write` accepts now a :attr:`format_root_node`
+    argument to export root node features as a part of the newick
+    string.
+
   * The new :func:`TreeNode.check_monophyly` method allows to check
     if a node is mono, poly or paraphyletic for a given attribute and
     values (i.e. grouped species). Although monophyly is actually a

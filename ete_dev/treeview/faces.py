@@ -1039,6 +1039,7 @@ class _PieChartItem(QGraphicsRectItem):
     def paint(self, painter, option, widget):
         a = 5760
         angle_start = 0
+        
         if not self.line_color:
             painter.setPen(Qt.NoPen)
         else:
@@ -1155,7 +1156,8 @@ class _BarChartItem(QGraphicsRectItem):
         colors = self.colors
         values = self.values
         deviations = self.deviations
-
+        p.setBrush(Qt.NoBrush)
+        
         spacer = 3
         spacing_length = (spacer*(len(values)-1))
         height = self.height 

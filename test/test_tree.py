@@ -2,6 +2,7 @@ import unittest
 import random
 import sys
 import time
+import itertools
 
 from ete_dev import *
 from datasets import *
@@ -35,7 +36,15 @@ class Test_Coretype_Tree(unittest.TestCase):
         t = Tree(nw_simple6)
         self.assertEqual(nw_simple6,  t.write(format=9))
 
+        #Read single node trees:
+        self.assertEqual(Tree("hola;").write(format=9),  "hola;")
+        self.assertEqual(Tree("(hola);").write(format=9),  "(hola);")
 
+        #TEst export root features
+        t = Tree("(((A[&&NHX:name=A],B[&&NHX:name=B])[&&NHX:name=NoName],C[&&NHX:name=C])[&&NHX:name=I],(D[&&NHX:name=D],F[&&NHX:name=F])[&&NHX:name=J])[&&NHX:name=root];")
+        self.assertEqual(t.write(format=9, features=["name"], format_root_node=True),
+                         "(((A[&&NHX:name=A],B[&&NHX:name=B])[&&NHX:name=NoName],C[&&NHX:name=C])[&&NHX:name=I],(D[&&NHX:name=D],F[&&NHX:name=F])[&&NHX:name=J])[&&NHX:name=root];")
+        
     def test_newick_formats(self):
         """ tests different newick subformats """
         from ete_dev.parser.newick import print_supported_formats, NW_FORMAT
@@ -128,7 +137,7 @@ class Test_Coretype_Tree(unittest.TestCase):
         t1 = Tree("(((A, B), C)[&&NHX:name=I], (D, F)[&&NHX:name=J])[&&NHX:name=root];")
         D1 = t1.search_nodes(name="D")[0]
         t1.prune(["A","B"])
-        self.assertEqual( t1.write(), "(A:0,B:0);")
+        self.assertEqual( t1.write(), "(A:1,B:1);")
 
         # test prune preserving distances
         for i in xrange(3):
@@ -144,24 +153,45 @@ class Test_Coretype_Tree(unittest.TestCase):
             for a,b in distances:
                 if a in to_keep and b in to_keep:
                     self.assertEqual(distances[(a,b)], round(a.get_distance(b), 10))
-        
+
+        # Total number of nodes is correct (no single child nodes)                    
         t_fuzzy = Tree("(((A,B), C),(D,E));")
         orig_nw = t_fuzzy.write()
         ref_nodes = t_fuzzy.get_leaves()
         t_fuzzy.populate(100)
         t_fuzzy.prune(ref_nodes)
         self.assertEqual(t_fuzzy.write(),orig_nw)
-        # Total number of nodes is correct (no single child nodes)
         self.assertEqual(len(t_fuzzy.get_descendants()), (len(ref_nodes)*2)-2 )
 
+        # Total number of nodes is correct (no single child nodes)
         t = Tree()
         sample_size = 5
-        t.populate(10000)
+        t.populate(1000)
         sample = random.sample(t.get_leaves(), sample_size)
         t.prune(sample)
         self.assertEqual(len(t), sample_size)
         self.assertEqual(len(t.get_descendants()), (sample_size*2)-2 )
+
+        # TEst preserve branch dist when pruning
+        t = Tree()
+        t.populate(100, random_branches=True)
+        orig_leaves = t.get_leaves()
+        sample_size = 50
+        sample= random.sample(t.get_leaves(), sample_size)
+        matrix1 = ["%f" %t.get_distance(a, b) for (a,b) in itertools.product(sample, sample)]
+        t.prune(sample, preserve_branch_length=True)
+        matrix2 = ["%f" %t.get_distance(a, b) for (a,b)in itertools.product(sample, sample)]
        
+        self.assertListEqual(matrix1, matrix2)
+        self.assertEqual(len(t.get_descendants()), (sample_size*2)-2 )
+
+        # resolve polytomy
+        t = Tree("((a,a,a,a), (b,b,b,(c,c,c)));")
+        t.resolve_polytomy()
+        t.ladderize()
+        self.assertEqual(t.write(format=9), "((a,(a,(a,a))),(b,(b,(b,(c,(c,c))))));")
+              
+        
         # getting nodes, get_childs, get_sisters, get_tree_root,
         # get_common_ancestor, get_nodes_by_name
         # get_descendants_by_name, is_leaf, is_root
@@ -190,6 +220,15 @@ class Test_Coretype_Tree(unittest.TestCase):
         self.assert_(A.is_leaf())
         self.assert_(not A.get_tree_root().is_leaf())
 
+
+        # Iter ancestors
+        t = Tree("(((((a,b)A,c)B,d)C,e)D,f)root;", format=1)
+        ancestor_names = [n.name for n in (t&"a").get_ancestors()]
+        self.assertListEqual(ancestor_names, ["A", "B", "C", "D", "root"])
+        ancestor_names = [n.name for n in (t&"B").get_ancestors()]
+        self.assertListEqual(ancestor_names, ["C", "D", "root"])
+
+        
         # Tree magic python features
         t = Tree(nw_dflt)
         self.assertEqual(len(t), 20)
@@ -316,8 +355,17 @@ class Test_Coretype_Tree(unittest.TestCase):
         self.assertEqual(t.get_ancestors(), [])
 
         # add something of is_leaf_fn etc...
+        custom_test = lambda x: x.name in set("JCH")
+        custom_leaves = t.get_leaves(is_leaf_fn=custom_test)
+        self.assertEqual(set([n.name for n in custom_leaves]), set("JHC"))
         
-
+        # Test cached content
+        t = Tree()
+        t.populate(20)
+        cache_name = t.get_cached_content(store_attr="name")
+        cache_node = t.get_cached_content()
+        self.assertSetEqual(cache_name[t], set(t.get_leaf_names()))
+        self.assertSetEqual(cache_node[t], set(t.get_leaves()))
         
     def test_rooting(self):
         """ Check branch support and distances after rooting """
@@ -374,8 +422,11 @@ class Test_Coretype_Tree(unittest.TestCase):
         t = Tree()
         t.populate(20)
         t.unroot()
-        # Ascii
+        
+        # Printing and info 
         t.get_ascii()
+
+        t.describe()
 
     def test_ultrametric(self):
         t =  Tree()
@@ -394,11 +445,63 @@ class Test_Coretype_Tree(unittest.TestCase):
         dist = set([round(l.get_distance(t), 6) for l in t.iter_leaves()])
         self.assertEqual(dist, set([200.0]))
 
-    def test_22_features(self):
+    def test_tree_diff(self):
         a = Tree("(((a, b), c), (d,e), f);")
         b = Tree("(((a, c), b), (d,e), f);")
         rf, rf_max, names, r1, r2 = a.robinson_foulds(b)
+        self.assertEqual(rf, 2)
+        self.assertEqual(rf_max, 8)
+        self.assertSetEqual(names, set("abcdef"))
+        self.assertSetEqual(r1, set(['a,b,c,d,e,f', 'a,b', 'a,b,c', 'd,e']))
+        self.assertSetEqual(r2, set(['a,b,c,d,e,f', 'a,b,c', 'd,e', 'a,c']))
+        
+    def test_monophyly(self):
+        t =  Tree("((((((a, e), i), o),h), u), ((f, g), j));")
+        is_mono, monotype = t.check_monophyly(values=["a", "e", "i", "o", "u"], target_attr="name")
+        self.assertEqual(is_mono, False)
+        self.assertEqual(monotype, "polyphyletic")
+        is_mono, monotype = t.check_monophyly(values=["a", "e", "i", "o"], target_attr="name")
+        self.assertEqual(is_mono, True)
+        self.assertEqual(monotype, "monophyletic")
+        is_mono, monotype =  t.check_monophyly(values=["i", "o"], target_attr="name")
+        self.assertEqual(is_mono, False)
+        self.assertEqual(monotype, "paraphyletic")
+                   
+        
+        t =  Tree("((((((4, e), i)M1, o),h), u), ((3, 4), (i, june))M2);", format=1)
+        # we annotate the tree using external data
+        colors = {"a":"red", "e":"green", "i":"yellow", 
+                  "o":"black", "u":"purple", "4":"green",
+                  "3":"yellow", "1":"white", "5":"red", 
+                  "june":"yellow"}
+        for leaf in t:
+            leaf.add_features(color=colors.get(leaf.name, "none"))
+        green_yellow_nodes = set([t&"M1", t&"M2"])
+        mono_nodes = t.get_monophyletic(values=["green", "yellow"], target_attr="color")
+        self.assertSetEqual(set(mono_nodes), green_yellow_nodes)
+
+        
+    def test_copy(self):
+        t = Tree("((A, B)Internal_1:0.7, (C, D)Internal_2:0.5)root:1.3;", format=1)
+        # we add a custom annotation to the node named A
+        (t & "A").add_features(label="custom Value")
+        # we add a complex feature to the A node, consisting of a list of lists
+        (t & "A").add_features(complex=[[0,1], [2,3], [1,11], [1,0]])
+
        
+        t_nw  = t.copy("newick")
+        t_nwx = t.copy("newick-extended")
+        t_pkl = t.copy("cpickle")
+        (t & "A").testfn = lambda: "YES"
+        t_deep = t.copy("deepcopy")
+        
+        self.assertEqual((t_nw & "root").name, "root")
+        self.assertEqual((t_nwx & "A").label, "custom Value")
+        self.assertListEqual((t_pkl & "A").complex[0], [0,1])
+        self.assertEqual((t_deep & "A").testfn(), "YES")
+        
+
+        
         
     # def test_traversing_speed(self):
     #     return

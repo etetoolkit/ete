@@ -741,14 +741,14 @@ class TreeNode(object):
             rooting = "No"
         else:
             rooting = "Unknown"
-        max_node, max_dis = self.get_farthest_leaf()
-        print "Number of nodes:\t %d" % len(self.get_descendants())
-        print "Number of leaves:\t %d" % len(self.get_leaves())
-        print "Rooted:", rooting
-        print "Max. lenght to root:"
-        print "The Farthest descendant node is", max_node.name,\
-            "with a branch distance of", max_dist
-
+        max_node, max_dist = self.get_farthest_leaf()
+        cached_content = self.get_cached_content()
+        print "Number of leaf nodes:\t%d" % len(cached_content[self])
+        print "Number of internal nodes:\t%d" % len(cached_content)
+        print "Rooted:\t%s" %rooting
+        print "Most distant node:\t%s" %max_node.name
+        print "Max. distance:\t%f" %max_dist
+        
     def write(self, features=None, outfile=None, format=0, is_leaf_fn=None,
               format_root_node=False):
         """ 
@@ -1346,9 +1346,9 @@ class TreeNode(object):
 
         """
         if method=="newick":
-            new_node = self.__class__(self.write(features=["name"]))
+            new_node = self.__class__(self.write(features=["name"], format_root_node=True))
         elif method=="newick-extended":
-            self.write(features=[])
+            self.write(features=[], format_root_node=True)
             new_node = self.__class__(self.write(features=[]))
         elif method == "deepcopy":
             parent = self.up
