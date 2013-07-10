@@ -3,7 +3,7 @@
 # Creation Date: 2010/04/22 16:05:46
 
 
-from __future__ import division
+# from __future__ import division # unnecessary? 
 from ete_dev import Tree
 from math import log, exp
 
