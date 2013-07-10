@@ -124,7 +124,7 @@ METAPKG_JAIL_PATH = "/home/jhuerta/_Devel/ete_metapackage/etepkg_CheckBeforeRm"
 METAPKG_PATH = "/home/jhuerta/_Devel/ete_metapackage"
 RELEASES_BASE_PATH = "/tmp"
 MODULE_NAME = "ete2"
-MODULE_RELEASE = "2.1"
+MODULE_RELEASE = "2.2"
 REVISION = commands.getoutput("git log --pretty=format:'' | wc -l").strip()
 VERSION = MODULE_RELEASE+ "rev" + REVISION
 VERSION_LOG = commands.getoutput("git log --pretty=format:'%s' | head -n1").strip()
@@ -258,7 +258,7 @@ if options.doc:
     _ex('find %s/doc | xargs perl -e "s/ete_dev/%s/g" -p -i' %\
             (RELEASE_PATH, MODULE_NAME) )
 
-    copydoc= ask("Update ONLINE documentation?", ["y","n"])
+    copydoc= ask("Update ONLINE PYPI documentation?", ["y","n"])
     if copydoc=="y":
         # INSTALL THIS http://pypi.python.org/pypi/Sphinx-PyPI-upload/0.2.1
         print "Uploading"
@@ -269,15 +269,14 @@ if options.doc:
         
         _ex("cd %s; python setup.py upload_sphinx --upload-dir %s/doc/html/ --show-response" %\
                 (RELEASE_PATH, RELEASE_PATH))
-
+        
         # Restore real VERSION 
         _ex(' cd %s; mv _VERSION VERSION;' % (RELEASE_PATH) )
 
-        _ex("cd %s; rsync -arv doc/html/ jhuerta@cgenomics:/data/services/web/ete.cgenomics.org/doc/2.1/" %\
-                (RELEASE_PATH))
-
-        #_ex("rsync -r %s/doc/ete_guide_html/ %s/html/" %\
-        #        (RELEASE_PATH, SERVER+":"+SERVER_DOC_PATH))
+    copydoc= ask("Update CGENOMICS documentation?", ["y","n"])
+    if copydoc=="y":
+        _ex("cd %s; rsync -arv doc/html/ jhuerta@cgenomics:/data/services/web/ete.cgenomics.org/doc/%s/" %\
+                (RELEASE_PATH, MODULE_RELEASE))
 
 if process_package:
     # Clean from internal files
