@@ -44,6 +44,7 @@ class PhyloxmlTree(PhyloTree):
         
     def _get_name(self):
         return self.phyloxml_clade.get_name()
+    
     def _set_name(self, value):
         try:
             self.phyloxml_clade.set_name(value)
