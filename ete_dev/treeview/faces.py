@@ -1762,9 +1762,9 @@ class SequencePlotFace(StaticItemFace):
         
     def coordY(self, y):
         """
-return the transformation of Y according to mean value
-(that is last element of lines)
-"""
+        return the transformation of Y according to mean value
+        (that is last element of lines)
+        """
         y_offset = 30
         if self.ylim[1] <= y: return y_offset
         if self.ylim[1] == 0: return self.height + y_offset
