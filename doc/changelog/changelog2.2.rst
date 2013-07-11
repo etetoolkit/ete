@@ -8,7 +8,7 @@ BUGFIXES
 * Fixes in NeXML parser and exporting functions
 * Fixed 'paste newick' functionality on the GUI
 * Fixed :func:`PhyloNode.is_monophyletic` and moved to
-  :func:`Treenode.is_monophyletic`.
+  :func:`TreeNode.check_monophyly`.
 * Fixed consistency issued in :func:`TreeNode.sort_descendants` function. 
 
 SCRIPTS
@@ -23,7 +23,6 @@ NEW MODULES
 
   .. figure:: ../ex_figures/M2_super_profesional.png
             :scale: 100 %
-
 
 NEW FEATURES
 ====================
@@ -117,9 +116,18 @@ NEW FEATURES
 
   * Added :func:`PhyloNode.get_speciation_trees` method, which returns
     all possible species topologies present in a gene family tree as
-    described in `Treeko <http://treeko.cgenomics.org>`_ (see `Marcet
-    and Gabaldon, 2011 <http://www.ncbi.nlm.nih.gov/pubmed/21335609>`_
-    ). :ref:`See tutorial and examples <treeko_trees>`
+    described in `Treeko <http://treeko.cgenomics.org>`_. :ref:`See tutorial and examples <treeko_trees>`
+
+
+    .. seealso:: .. figure:: ../treeko_logo.png 
+                    :scale: 70% 
+
+      `TreeKO: a duplication-aware algorithm for the comparison of phylogenetic trees. <http://www.ncbi.nlm.nih.gov/pubmed/21335609>`_
+
+      Marcet-Houben M, Gabaldón T.
+
+      Nucleic Acids Res. 2011 May;39(10):e66. doi: 10.1093/nar/gkr087. 
+
 
   * Added :func:`PhyloNode.split_by_dups` method, which returns a list
     of partial subtrees resulting from splitting a tree at duplication
@@ -205,8 +213,12 @@ NEW FEATURES
   * Added :class:`PieChartFace` and :class:`BarChartFace` face types
     for built-in representation of statistics attached to nodes.
 
-      .. figure:: ../../examples/treeview/barcharts.png
-              :scale: 75 %
+
+      .. figure:: ../../examples/treeview/float_piechart.png
+              :scale: 65 %
+
+      .. figure:: ../../examples/treeview/barcharts.png 
+              :scale: 55 %
 
 
   * Improved :class:`ImgFace` class, now accepting on the fly image
