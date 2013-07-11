@@ -7,10 +7,9 @@ BUGFIXES
 
 * Fixes in NeXML parser and exporting functions
 * Fixed 'paste newick' functionality on the GUI
-* Fixed :func:`PhyloNode.is_monophyletic` behaviour (returns True if a
-  provided species matched node content and no other species are
-  present).
-* Fixed consistency issued in :func:`TreeNode.sort_nodes` function. 
+* Fixed :func:`PhyloNode.is_monophyletic` and moved to
+  :func:`Treenode.is_monophyletic`.
+* Fixed consistency issued in :func:`TreeNode.sort_descendants` function. 
 
 SCRIPTS
 ==========
