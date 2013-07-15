@@ -18,7 +18,9 @@ from copy                     import deepcopy
 from cPickle                  import load, dump
 import os
 
-WRKDIR = 'examples/evol/data/protamine/PRM1/'
+ETEPATH = os.path.abspath(os.path.split(os.path.realpath(__file__))[0]+'/../')
+
+WRKDIR = ETEPATH + '/examples/evol/data/protamine/PRM1/'
 BINDIR = os.getcwd() + '/bin/'
 print BINDIR
 
@@ -160,7 +162,7 @@ class TestEvolEvolTree(unittest.TestCase):
             self.assert_('lnL' in tree.get_evol_model('SLR').run)
 
     def test_marking_trees(self):
-        TREE_PATH = 'examples/evol/data/S_example/'
+        TREE_PATH = ETEPATH + '/examples/evol/data/S_example/'
         tree = EvolTree (TREE_PATH + 'measuring_S_tree.nw')
         self.assertEqual(tree.write(),
                          '((Hylobates_lar,(Gorilla_gorilla,Pan_troglodytes)),Papio_cynocephalus);')
@@ -174,7 +176,7 @@ class TestEvolEvolTree(unittest.TestCase):
 
     def test_pickling(self):
         tree = EvolTree (WRKDIR + 'tree.nw')
-        tree.workdir = 'examples/data/protamine/PRM1/paml/'
+        tree.workdir = ETEPATH + '/examples/data/protamine/PRM1/paml/'
         tree.link_to_alignment  (WRKDIR + 'alignments.fasta_ali')
         tree.link_to_evol_model (WRKDIR + 'paml/M2/M2.out', 'M2.a')
         out = open('blip.pik', 'w')

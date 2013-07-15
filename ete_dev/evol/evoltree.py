@@ -38,7 +38,6 @@ from warnings import warn
 
 from ete_dev                  import PhyloNode
 from ete_dev                  import SeqGroup
-from ete_dev.evol             import __path__ as ete_path
 from ete_dev.evol.model       import Model, PARAMS, AVAIL
 from ete_dev.evol.utils       import translate
 from ete_dev.parser.newick    import write_newick
@@ -81,7 +80,8 @@ class EvolNode (PhyloNode):
         self.execpath = binpath
         self._models = {}
 
-        PhyloNode.__init__(self, newick=newick, format=format)
+        PhyloNode.__init__(self, newick=newick, format=format,
+                           sp_naming_function=sp_naming_function)
 
         if newick:
             self._label_as_paml()
@@ -191,8 +191,8 @@ class EvolNode (PhyloNode):
         try:
             proc = Popen([bin, 'tmp.ctl'], stdout=PIPE)
         except OSError:
-            raise Exception('ERROR: {} not installed, ' +
-                            'or wrong path to binary\n'.format(bin))
+            raise Exception(('ERROR: {} not installed, ' +
+                             'or wrong path to binary\n').format(bin))
         run, err = proc.communicate()
         if err is not None:
             warn("ERROR: codeml not found!!!\n" + 
