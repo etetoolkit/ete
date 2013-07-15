@@ -191,8 +191,8 @@ class EvolNode (PhyloNode):
         try:
             proc = Popen([bin, 'tmp.ctl'], stdout=PIPE)
         except OSError:
-            raise Exception('ERROR: {} not installed, ' +
-                            'or wrong path to binary\n'.format(bin))
+            raise Exception(('ERROR: {} not installed, ' +
+                             'or wrong path to binary\n').format(bin))
         run, err = proc.communicate()
         if err is not None:
             warn("ERROR: codeml not found!!!\n" + 

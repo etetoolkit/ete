@@ -1956,7 +1956,7 @@ class SequenceFace(StaticItemFace, Face):
             seq_width += width
         self.width = seq_width
         
-class InteractiveLetterItem(QGraphicsRectItem):
+    class InteractiveLetterItem(QGraphicsRectItem):
         """This is a class"""
         def __init__(self, *arg, **karg):
             QGraphicsRectItem.__init__(self, *arg, **karg)
