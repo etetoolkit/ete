@@ -6,7 +6,7 @@ from string import strip
 sys.path.insert(0, "/home/jhuerta/_Devel/ete/ete21-beta/")
 from ete_dev import WebTreeApplication # Required to use the webplugin
 
-from ete_dev import PhyloTree, faces # Required by my custom
+from ete_dev import PhyloTree, TreeStyle, faces # Required by my custom
                                      # application
 
 # In order to extend the default WebTreeApplication, we define our own
@@ -105,7 +105,6 @@ def main_layout(node):
         node.img_style["fgcolor"] = "#000000"
         node.img_style["vt_line_color"] = "#000000"
         node.img_style["hz_line_color"] = "#000000"
-        node.img_style["line_type"] = 0
 
     # Parse node features features and conver them into styles. This
     # must be done like this, since current ete version does not allow
@@ -459,7 +458,7 @@ application = WebTreeApplication()
 # directory. Note that the referred directory must be writable by the
 # webserver.
 #application.CONFIG["temp_dir"] = "/home/services/web/ete.cgenomics.org/webplugin/tmp/"
-application.CONFIG["temp_dir"] = "/var/www/webplugin/tmp/"
+application.CONFIG["temp_dir"] = "/var/www/etetoolkit.org/webplugin/tmp/"
 application.CONFIG["temp_url"] = "/webplugin/tmp/" # Relative to web site Document Root
 
 # Set the DISPLAY port that ETE should use to draw pictures. You will
@@ -475,12 +474,19 @@ application.CONFIG["DISPLAY"] = ":0" # This is the most common
 application.set_external_app_handler(example_app)
 
 # Lets now apply our custom tree loader function to the main
-# application
+# application 
 application.set_tree_loader(my_tree_loader)
 
 # And our layout as the default one to render trees
-application.set_default_layout_fn(main_layout)
-
+ts = TreeStyle()
+ts.show_leaf_name = False
+ts.layout_fn.append(main_layout)
+ts.mode = "r"
+ts.branch_vertical_margin = 5
+#ts.scale = 20
+application.set_tree_style(ts)
+#application.set_default_layout_fn(main_layout)
+application.set_tree_size(None, None)
 # I want to make up how tree image in shown using a custrom tree
 # renderer that adds much more HTML code
 application.set_external_tree_renderer(tree_renderer)

@@ -84,3 +84,9 @@ Color names
    Apart from RGB color codes, the following SVG color names are supported:
 
  .. image:: ../svg_colors.png
+
+.. py:data:: COLOR_SCHEMES
+
+.. autofunction:: random_color
+
+

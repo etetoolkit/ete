@@ -37,8 +37,8 @@ its root path).
   nodes. Since they are at the bottommost level, they do not have any
   children.
 
-* An internal node or inner node is any node of a tree that has child nodes and
-  is thus not a leaf node.
+* An internal node or inner node is any node of a tree that has child
+  nodes and is thus not a leaf node.
 
 * A subtree is a portion of a tree data structure that can be viewed
   as a complete tree in itself. Any node in a tree T, together with
@@ -214,7 +214,6 @@ on tree node instances:
     :func:`TreeNode.show`              Explore node graphically using a GUI.
   =================================  =============================================================================================
 
-
 This is an example on how to access such attributes:
 
 :: 
@@ -276,8 +275,8 @@ as trees in which master root node has more than two children.
 
 
 
-Browsing trees
-=================
+Browsing trees (traversing)
+=================================
 
 One of the most basic operations for tree analysis is *tree
 browsing*. This is, essentially, visiting nodes within a tree. ETE
@@ -375,8 +374,109 @@ between a given leaf and the tree root are visited.
       node = node.up   
 
 
+Advanced traversing (stopping criteria)
+-----------------------------------------
+
+.. _is_leaf_fn:
+
+Collapsing nodes while traversing (custom is_leaf definition)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+From version 2.2, ETE supports the use of the :attr:`is_leaf_fn`
+argument in most of its traversing functions. The value of
+:attr:`is_leaf_fn` is expected to be a pointer to any python function
+that accepts a node instance as its first argument and returns a
+boolean value (True if node should be considered a leaf node).
+
+By doing so, all traversing methods will use such a custom function to
+decide if a node is a leaf. This becomes specially useful when dynamic
+collapsing of nodes is needed, thus avoiding to prune the same tree in
+many different ways.
+
+For instance, given a large tree structure, the following code will
+export the newick of the pruned version of the topology, where nodes
+grouping the same tip labels are collapsed.
+
+:: 
+
+  from ete_dev import Tree
+  def collapsed_leaf(node):
+      if len(node2labels[node]) == 1:
+         return True
+      else:
+         return False
+
+  t = Tree("((((a,a,a)a,a)aa, (b,b)b)ab, (c, (d,d)d)cd);", format=1)
+  print t
+  # We create a cache with every node content 
+  node2labels = t.get_cached_content(store_attr="name")
+  print t.write(is_leaf_fn=collapsed_leaf)
+  #             /-a
+  #            |
+  #          /-|--a
+  #         |  |
+  #       /-|   \-a
+  #      |  |
+  #    /-|   \-a
+  #   |  |
+  #   |  |   /-b
+  # --|   \-|
+  #   |      \-b
+  #   |
+  #   |   /-c
+  #    \-|
+  #      |   /-d
+  #       \-|
+  #          \-d
+
+  # We can even load the collapsed version as a new tree
+  t2 = Tree( t.write(is_leaf_fn=collapsed_leaf) )
+  print t2
+  #       /-aa
+  #    /-|
+  #   |   \-b
+  # --|
+  #   |   /-c
+  #    \-|
+  #       \-d
+
+
+Another interesting use of this approach is to find the first matching
+nodes in a given tree that match a custom set of criteria, without
+browsing the whole tree structure.
+
+Let's say we want get all deepest nodes in a tree whose branch length
+is larger than one:
+:: 
+
+  from ete_dev import Tree
+  t = Tree("(((a,b)ab:2, (c, d)cd:2)abcd:2, ((e, f):2, g)efg:2);", format=1)
+  def processable_node(node):
+      if node.dist > 1: 
+         return True
+      else:
+         return False
+
+  for leaf in t.iter_leaves(is_leaf_fn=processable_node):
+      print leaf
+
+  #       /-a
+  #    /-|
+  #   |   \-b
+  # --|
+  #   |   /-c
+  #    \-|
+  #       \-d
+  #  
+  #       /-e
+  #    /-|
+  # --|   \-f
+  #   |
+  #    \-g
+
+
 Iterating instead of Getting
-----------------------------
+------------------------------
 
 As commented previously, methods starting with **get_** are all
 prepared to return results as a closed list of items. This means, for
@@ -392,10 +492,10 @@ occurs with :func:`TreeNode.iter_descendants` and :func:`TreeNode.iter_search_no
 
 When iterators are used (note that is only applicable for looping),
 only one step is processed at a time. For instance,
-:func:`TreeNode.iter_search_nodes` will return one match in each iteration. In
-practice, this makes no differences in the final result, but it may
-increase the performance of loop functions (i.e. in case of finding a
-match which interrupts the loop).
+:func:`TreeNode.iter_search_nodes` will return one match in each
+iteration. In practice, this makes no differences in the final result,
+but it may increase the performance of loop functions (i.e. in case of
+finding a match which interrupts the loop).
 
 
 Finding nodes by their attributes
@@ -502,7 +602,7 @@ strategy would look like this:
 
 ::
 
-  from ete2 import Tree
+  from ete_dev import Tree
   t = Tree("((H:0.3,I:0.1):0.5, A:1, (B:0.4,(C:1,D:1):0.5):0.5);")
   # Create a small function to filter your nodes
   def conditional_function(node):
@@ -536,7 +636,7 @@ confusing, but it can be very useful in some situations.
 
 ::
 
-  from ete2 import Tree
+  from ete_dev import Tree
   t = Tree("((H:0.3,I:0.1):0.5, A:1, (B:0.4,(C:1,(J:1, (F:1, D:1):0.5):0.5):0.5):0.5);")
   # Get the node D in a very simple way
   D = t&"D"
@@ -558,6 +658,164 @@ confusing, but it can be very useful in some situations.
   print "It is", Dsparent in Bsparent, "that C's parent is under B's ancestor"
   print "It is", Dsparent in Jsparent, "that C's parent is under J's ancestor"
 
+.. _check_monophyly:
+
+Checking the monophyly of attributes within a tree
+========================================================
+
+Although monophyly is actually a phylogenetic concept used to refer to
+a set of species that group exclusively together within a tree
+partition, the idea can be easily exported to any type of trees. 
+
+Therefore, we could consider that a set of values for a given node
+attribute present in our tree is monophyletic, if such values group
+exclusively together as a single tree partition. If not, the
+corresponding relationship connecting such values (para or
+poly-phyletic) could be also be inferred.
+
+
+The :func:`TreeNode.check_monophyly` method will do so when a given
+tree is queried for any custom attribute. 
+
+:: 
+
+  from ete_dev import Tree
+  t =  Tree("((((((a, e), i), o),h), u), ((f, g), j));")
+  print t
+
+  #                   /-a
+  #                /-|
+  #             /-|   \-e
+  #            |  |
+  #          /-|   \-i
+  #         |  |
+  #       /-|   \-o
+  #      |  |
+  #    /-|   \-h
+  #   |  |
+  #   |   \-u
+  # --|
+  #   |      /-f
+  #   |   /-|
+  #    \-|   \-g
+  #      |
+  #       \-j
+
+
+  # We can check how, indeed, all vowels are not monophyletic in the
+  # previous tree, but polyphyletic (a foreign label breaks its monophyly)
+  print t.check_monophyly(values=["a", "e", "i", "o", "u"], target_attr="name")
+
+  # however, the following set of vowels are monophyletic
+  print t.check_monophyly(values=["a", "e", "i", "o"], target_attr="name")  
+
+  # A special case of polyphyly, called paraphyly, is also used to
+  # define certain type of grouping. See this wikipedia article for
+  # disambiguation: http://en.wikipedia.org/wiki/Paraphyly
+  print t.check_monophyly(values=["i", "o"], target_attr="name")    
+
+Finally, the :func:`TreeNode.get_monophyletic` method is also
+provided, which allows to return a list of nodes within a tree where a
+given set of attribute values are monophyletic. Note that, although a
+set of values are not monophyletic regarding the whole tree, several
+independent monophyletic partitions could be found within the same
+topology.
+
+For instance, in the following example, all clusters within the same
+tree exclusively grouping a custom set of annotations are obtained. 
+
+:: 
+
+   from ete_dev import Tree
+   t =  Tree("((((((4, e), i), o),h), u), ((3, 4), (i, june)));")
+   # we annotate the tree using external data
+   colors = {"a":"red", "e":"green", "i":"yellow", 
+             "o":"black", "u":"purple", "4":"green",
+             "3":"yellow", "1":"white", "5":"red", 
+             "june":"yellow"}
+   for leaf in t:
+       leaf.add_features(color=colors.get(leaf.name, "none"))
+   print t.get_ascii(attributes=["name", "color"], show_internal=False)
+
+   #                   /-4, green
+   #                /-|
+   #             /-|   \-e, green
+   #            |  |
+   #          /-|   \-i, yellow
+   #         |  |
+   #       /-|   \-o, black
+   #      |  |
+   #    /-|   \-h, none
+   #   |  |
+   #   |   \-u, purple
+   # --|
+   #   |      /-3, yellow
+   #   |   /-|
+   #   |  |   \-4, green
+   #    \-|
+   #      |   /-i, yellow
+   #       \-|
+   #          \-june, yellow
+
+   print "Green-yellow clusters:" 
+   # And obtain clusters exclusively green and yellow
+   for node in t.get_monophyletic(values=["green", "yellow"], target_attr="color"):
+      print node.get_ascii(attributes=["color", "name"], show_internal=False)
+
+   # Green-yellow clusters:
+   #  
+   #       /-green, 4
+   #    /-|
+   # --|   \-green, e
+   #   |
+   #    \-yellow, i
+   #  
+   #       /-yellow, 3
+   #    /-|
+   #   |   \-green, 4
+   # --|
+   #   |   /-yellow, i
+   #    \-|
+   #       \-yellow, june
+
+.. note::
+
+   When the target attribute is set to the "species" feature name,
+   associated to any :class:`PhyloTree` node, this method will
+   accomplish with the standard phylogenetic definition of monophyly,
+   polyphyly and paraphyly.
+
+
+.. _cache_node_content:
+
+Caching tree content for faster lookup operations 
+======================================================
+
+If your program needs to access to the content of different nodes very
+frequently, traversing the tree to get the leaves of each node over
+and over will produce significant slowdowns in your algorithm.  From
+version 2.2 ETE provides a convenient methods to cache frequent data. 
+
+The method :func:`TreeNode.get_cached_content` returns a dictionary in
+which keys are node instances and values represent the content of such
+nodes. By default, content is understood as a list of leave nodes, so
+looking up size or tip names under a given node will be
+instant. However, specific attributes can be cached by setting a
+custom :attr:`store_attr` value. 
+
+::
+
+   from ete_dev import Tree
+   t = Tree()
+   t.populate(50)
+
+   node2leaves = t.get_cached_content()
+
+   # lets now print the size of each node without the need of
+   # recursively traverse 
+   for n in t.traverse():
+       print "node %s contains %s tips" %(n.name, len(node2leaves[n]))
+  
 
 Node annotation
 =========================
@@ -680,7 +938,7 @@ string.
 ::
    
   import random
-  from ete2 import Tree
+  from ete_dev import Tree
   # Creates a normal tree
   t = Tree('((H:0.3,I:0.1):0.5, A:1,(B:0.4,(C:0.5,(J:1.3,(F:1.2, D:0.1):0.5):0.5):0.5):0.5);')
   print t
@@ -734,8 +992,55 @@ string.
          print n.name, n.S
 
 
-
 .. _sec:modifying-tree-topology:
+
+
+.. _robinson_foulds:
+
+Comparing Trees
+=====================
+.. versionadded 2.2
+
+Two tree topologies can be compared using ETE and the Robinson-Foulds
+(RF) metric. The method :func:`TreeNode.robinson_foulds` available for
+any ETE tree node allows to:
+
+ - compare two tree topologies by their name labels (default) or any
+   other annotated feature in the tree. 
+
+ - compare topologies of different size and content. When two trees
+   contain a different set of labels, only shared leaves will be used.
+
+ - examine size and content of matching and missing partitions. Since
+   the method return the list of partitions found in both trees,
+   details about matching partitions can be obtained easily. 
+
+In the following example, several of above mentioned features are
+shown:
+
+::
+ 
+  from ete_dev import Tree
+  t1 = Tree('(((a,b),c), ((e, f), g));')
+  t2 = Tree('(((a,c),b), ((e, f), g));')
+  rf, max_rf, common_leaves, parts_t1, parts_t2 = t1.robinson_foulds(t2)
+  print t1, t2
+  print "RF distance is %s over a total of %s" %(rf, max_rf)
+  print "Partitions in tree2 that were not found in tree1:", parts_t1 - parts_t2
+  print "Partitions in tree1 that were not found in tree2:", parts_t2 - parts_t1
+
+  # We can also compare trees sharing only part of their labels
+
+  t1 = Tree('(((a,b),c), ((e, f), g));')
+  t2 = Tree('(((a,c),b), (g, H));')
+  rf, max_rf, common_leaves, parts_t1, parts_t2 = t1.robinson_foulds(t2)
+
+  print t1, t2
+  print "Same distance holds even for partially overlapping trees"
+  print "RF distance is %s over a total of %s" %(rf, max_rf)
+  print "Partitions in tree2 that were not found in tree1:", parts_t1 - parts_t2
+  print "Partitions in tree1 that were not found in tree2:", parts_t2 - parts_t1
+
 
 Modifying Tree Topology
 =======================
@@ -802,8 +1107,6 @@ manipulate the topology of a tree:
   # trees from scratch. Here we create a random tree with 100 leaves.
   t = Tree()
   t.populate(100)
-
-
 
 
 
@@ -898,7 +1201,6 @@ understood with the following example:
 
 
 
-
 Pruning trees
 =============
 
@@ -907,6 +1209,10 @@ group of items by removing the unnecessary edges. To facilitate this
 task, ETE implements the :func:`TreeNode.prune` method, which can be
 used by providing the list of terminal and/or internal nodes that must
 be kept in the tree. 
+
+From version 2.2, this function includes also the
+`preserve_branch_length` flag, which allows to remove nodes from a
+tree while keeping original distances among remaining nodes.
 
 ::
 
@@ -1029,6 +1335,197 @@ take care about not creating circular structures by mistake.
 
 
 .. _sec:tree-rooting:
+
+.. _copying_trees:
+
+Copying (duplicating) trees
+=============================
+
+ETE provides several strategies to clone tree structures. The method
+:func:`TreeNode.copy()` can be used to produce a new independent tree
+object with the exact topology and features as the original. However,
+as trees may involve many intricate levels of branches and nested
+features, 4 different methods are available to create a tree copy:
+
+ - "newick": Tree topology, node names, branch lengths and branch
+   support values will be copied as represented in the newick string
+   This method is based on newick format serialization works very fast
+   even for large trees.
+
+ - "newick-extended": Tree topology and all node features will be
+   copied based on the extended newick format representation. Only
+   node features will be copied, thus excluding other node
+   attributes. As this method is also based on newick serialisation,
+   features will be converted into text strings when making the
+   copy. Performance will depend on the tree size and the number and
+   type of features being copied.
+
+ - "cpickle": This is the default method. The whole node structure and
+   its content will be cloned based on the cPickle object
+   serialization python approach.  This method is slower, but
+   recommended for full tree copying.
+
+ - "deepcopy": The whole node structure and its content is copied
+   based on the standard "copy" Python functionality. This is the
+   slowest method, but it allows to copy very complex objects even
+   when attributes point to lambda functions.
+
+::
+
+
+   from ete_dev import Tree
+   t = Tree("((A, B)Internal_1:0.7, (C, D)Internal_2:0.5)root:1.3;", format=1)
+   # we add a custom annotation to the node named A
+   (t & "A").add_features(label="custom Value")
+   # we add a complex feature to the A node, consisting of a list of lists
+   (t & "A").add_features(complex=[[0,1], [2,3], [1,11], [1,0]])
+   print t.get_ascii(attributes=["name", "dist", "label", "complex"])
+
+   #                         /-A, 0.0, custom Value, [[0, 1], [2, 3], [1, 11], [1, 0]]
+   #          /Internal_1, 0.7
+   #         |               \-B, 0.0
+   # -root, 1.3
+   #         |               /-C, 0.0
+   #          \Internal_2, 0.5
+   #                         \-D, 0.0
+
+   # Newick copy will loose custom node annotations, complex features,
+   # but not names and branch values
+
+   print t.copy("newick").get_ascii(attributes=["name", "dist", "label", "complex"])
+
+   #                           /-A, 0.0
+   #            /Internal_1, 0.7
+   #           |               \-B, 0.0
+   # -NoName, 0.0
+   #           |               /-C, 0.0
+   #            \Internal_2, 0.5
+   #                           \-D, 0.0
+   
+   # Extended newick copy will transfer custom annotations as text
+   # strings, so complex features are lost.
+
+   print t.copy("newick-extended").get_ascii(attributes=["name", "dist", "label", "complex"])
+
+   #                              /-A, 0.0, custom Value, __0_ 1__ _2_ 3__ _1_ 11__ _1_ 0__
+   #            /Internal_1, 0.7
+   #           |               \-B, 0.0
+   # -NoName, 0.0
+   #           |               /-C, 0.0
+   #            \Internal_2, 0.5
+   #                           \-D, 0.0
+
+   # The default pickle method will produce a exact clone of the
+   # original tree, where features are duplicated keeping their
+   # python data type.
+
+   print t.copy().get_ascii(attributes=["name", "dist", "label", "complex"])
+   print "first element in complex feature:", (t & "A").complex[0]
+
+   #                         /-A, 0.0, custom Value, [[0, 1], [2, 3], [1, 11], [1, 0]]
+   #          /Internal_1, 0.7
+   #         |               \-B, 0.0
+   # -root, 1.3
+   #         |               /-C, 0.0
+   #          \Internal_2, 0.5
+   #                         \-D, 0.0
+   # first element in complex feature: [0, 1]
+
+
+
+.. _resolve_polytomy:
+
+Solving multifurcations
+=============================
+
+When a tree contains a polytomy (a node with more than 2 children),
+the method :func:`resolve_polytomy` can be used to convert the node
+into a randomly bifurcated structure in which branch lengths are set
+to 0. This is really not a solution for the polytomy but it allows to
+export the tree as a strictly bifurcated newick structure, which is a
+requirement for some external software.
+
+The method can be used on a very specific node while keeping the rest
+of the tree intact by disabling the :attr:`recursive` flag.
+
+:: 
+
+  from ete_dev import Tree
+  t = Tree("(( (a, b, c), (d, e, f, g)), (f, i, h));")
+  print t
+
+  #             /-a
+  #            |
+  #         /--|--b
+  #        |   |
+  #        |    \-c
+  #     /--|
+  #    |   |    /-d
+  #    |   |   | y
+  #    |   |   |--e
+  #    |    \--|
+  # ---|       |--f
+  #    |       |
+  #    |        \-g
+  #    |
+  #    |    /-f
+  #    |   |
+  #     \--|--i
+  #        |
+  #         \-h
+
+
+  polynode = t.get_common_ancestor("a", "b")
+  polynode.resolve_polytomy(recursive=False)
+  print t
+
+  #                 /-b
+  #             /--|
+  #         /--|    \-c
+  #        |   |
+  #        |    \-a
+  #     /--|
+  #    |   |    /-d
+  #    |   |   |
+  #    |   |   |--e
+  #    |    \--|
+  # ---|       |--f
+  #    |       |
+  #    |        \-g
+  #    |
+  #    |    /-f
+  #    |   |
+  #     \--|--i
+  #        |
+  #         \-h
+
+
+  t.resolve_polytomy(recursive=True)
+  print t
+
+  #  
+  #                 /-b
+  #             /--|
+  #         /--|    \-c
+  #        |   |
+  #        |    \-a
+  #        |
+  #     /--|            /-f
+  #    |   |        /--|
+  #    |   |    /--|    \-g
+  #    |   |   |   |
+  #    |    \--|    \-e
+  # ---|       |
+  #    |        \-d
+  #    |
+  #    |        /-i
+  #    |    /--|
+  #     \--|    \-h
+  #        |
+  #         \-f
+
+
+
 
 Tree Rooting
 ============

@@ -379,82 +379,6 @@ class PhyloNode(TreeNode):
             if l.species not in spcs:
                 spcs.add(l.species)
                 yield l.species
-
-    def is_monophyletic(self, values, target_attr="species", ignore_missing=False):
-        """
-        Returns True id species names under this node are all
-        included in a given list or set of species names.
-
-        If not all attributes are represented in the current tree
-        structure, a ValueError exception will be raised to warn that
-        strict monophyly could never be reached (this behaviour can be
-        avoided by enabling the `ignore_missing` flag.
-              
-        :param species target_attr: node attribute being used to check
-            monophyly (i.e. species for species trees, names for gene
-            family trees).
-
-        :param False ignore_missing: Avoid raising an Exception when
-            missing attributes are found. 
-        """
-        if type(values) != set:
-            values = set(values)
-        seen_values = set([getattr(n, target_attr) for n in self.iter_leaves()])
-        if not ignore_missing and values - seen_values:
-            raise ValueError("Expected '%s' value(s) not found: %s" %(
-                    target_attr, ','.join(values-seen_values)))
-        
-        if ignore_missing: 
-            return not (seen_values - values)
-        else:
-            return not (values ^ seen_values)
-    
-    def get_monophyletic(self, values, target_attr="species", ignore_missing=False):
-        """
-        .. versionadded:: 2.2
-
-        Returns a list of nodes matching the provided monophyly
-        condition. For a node to be considered a match, all
-        `target_attr` attributes, and exclusively them, should be
-        represented under it.
-
-        If not all attributes are represented in the current tree
-        structure, a ValueError exception will be raised to warn that
-        strict monophyly could never be reached (this behaviour can be
-        avoided by enabling the `ignore_missing` flag.
-              
-        :param species target_attr: node attribute being used to check
-            monophyly (i.e. species for species trees, names for gene
-            family trees).
-
-        :param False ignore_missing: Avoid raising an Exception when
-            missing attributes are found. 
-           
-        """
-        
-        if type(values) != set:
-            values = set(values)
-        leaves = [e for e in self.iter_leaves() if
-                  getattr(e, target_attr) in values]
-        
-        seen_values = set([getattr(n, target_attr) for n in self.iter_leaves()])
-        if not ignore_missing and values - seen_values:
-            raise ValueError("Expected '%s' value(s) not found: %s" %(
-                    target_attr, ','.join(values-seen_values)))
-        
-        if leaves:
-            common = self.get_common_ancestor(leaves)
-        else:
-            common = self
-            
-        seen_values = set([getattr(n, target_attr) for n in common.iter_leaves()])
-        
-        if not ignore_missing and not (values ^ seen_values):
-            return common
-        elif ignore_missing and not (seen_values - values):
-            return common
-        else: 
-            return None
     
     def get_age(self, species2age):
         return max([species2age[sp] for sp in self.get_species()])
@@ -673,7 +597,11 @@ class PhyloNode(TreeNode):
 
         :returns: species_trees
         """
-        t = self.copy()
+        try:
+            t = self.copy()
+        except Exception:
+            t = self.copy("deepcopy")
+            
         if autodetect_duplications:
             dups = 0
             #n2content, n2species = t.get_node2species()

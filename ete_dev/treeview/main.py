@@ -496,7 +496,7 @@ class TreeStyle(object):
 
 
         self.title = FaceContainer()
-
+        self.tree_width = 180
         # PRIVATE values
         self._scale = None
         
@@ -602,9 +602,9 @@ def save(scene, imgName, w=None, h=None, dpi=300,\
 
     # auto adjust size    
     if not w and not h:
-        units = "mm"
-        w = 205 
-        h = 292
+        units = "px"
+        w = main_rect.width()
+        h = main_rect.height()
         ratio_mode = QtCore.Qt.KeepAspectRatio
     elif w and h: 
         ratio_mode = QtCore.Qt.IgnoreAspectRatio
@@ -667,7 +667,7 @@ def save(scene, imgName, w=None, h=None, dpi=300,\
 
         #pageTopLeft = printer.pageRect().topLeft()
         #paperTopLeft = printer.paperRect().topLeft()
-        # For PS -> problems with margins
+        # For PS -> problems with margins 
         #print paperTopLeft.x(), paperTopLeft.y()
         #print pageTopLeft.x(), pageTopLeft.y()
         # print  printer.paperRect().height(),  printer.pageRect().height()
@@ -692,3 +692,5 @@ def save(scene, imgName, w=None, h=None, dpi=300,\
         scene.render(pp, targetRect, scene.sceneRect(), ratio_mode)
         pp.end()
         ii.save(imgName)
+
+    return w/main_rect.width(), h/main_rect.height()

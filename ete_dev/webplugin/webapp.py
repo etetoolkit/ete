@@ -82,8 +82,8 @@ class WebTreeApplication(object):
                     nid2actions.setdefault(int(n._nid), []).append(aindex)
                 elif target == "face" and (not checker or checker(n)):
                     nid2face_actions.setdefault(int(n._nid), []).append(aindex)
-
-        html_map = '<MAP NAME="%s" class="ete_tree_img">' %(mapid)
+                    
+        html_map = '<MAP NAME="%s"  class="ete_tree_img">' %(mapid)
         if img_map["nodes"]:
             for x1, y1, x2, y2, nodeid, text in img_map["nodes"]:
                 html_map += """ <AREA SHAPE="rect" COORDS="%s,%s,%s,%s" onClick='show_context_menu("%s", "%s", "%s");' href="javascript:void('%s');">""" %\

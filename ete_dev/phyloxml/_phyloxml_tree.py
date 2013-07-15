@@ -35,10 +35,7 @@ class PhyloxmlTree(PhyloTree):
             if len(self.phyloxml_clade.confidence) > 0:
                 _c = Confidence(valueOf_=1.0, type_="branch_support")
                 self.phyloxml_clade.add_confidence(_c)
-        try:
-            return float(self.phyloxml_clade.confidence[0].valueOf_)
-        except AttributeError:
-            return self._support
+        return float(self.phyloxml_clade.confidence[0].valueOf_)
 
     def _set_support(self, value):
         self._get_support()
@@ -46,6 +43,7 @@ class PhyloxmlTree(PhyloTree):
         
     def _get_name(self):
         return self.phyloxml_clade.get_name()
+    
     def _set_name(self, value):
         try:
             self.phyloxml_clade.set_name(value)

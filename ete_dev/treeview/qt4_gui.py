@@ -769,12 +769,18 @@ class _TreeView(QtGui.QGraphicsView):
                     if i>0:
                         new_focus_node = self.focus_node.up.children[i-1]
                         self.set_focus(new_focus_node)
+                    elif self.focus_node.up:
+                        self.set_focus(self.focus_node.up)
+                        
             elif key == QtCore.Qt.Key_Down:
                 if self.focus_node.up:
                     i = self.focus_node.up.children.index(self.focus_node)
                     if i < len(self.focus_node.up.children)-1:
                         new_focus_node = self.focus_node.up.children[i+1]
                         self.set_focus(new_focus_node)
+                    elif self.focus_node.up:
+                        self.set_focus(self.focus_node.up)
+                    
             elif key == QtCore.Qt.Key_Escape:
                 self.hide_focus()
             elif key == QtCore.Qt.Key_Enter or\

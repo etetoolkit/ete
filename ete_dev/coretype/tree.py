@@ -25,7 +25,7 @@ import cPickle
 import random
 import copy
 from collections import deque 
-
+import itertools
 from ete_dev.parser.newick import read_newick, write_newick
 
 # the following imports are necessary to set fixed styles and faces
@@ -41,8 +41,8 @@ __all__ = ["Tree", "TreeNode"]
 
 DEFAULT_COMPACT = False
 DEFAULT_SHOWINTERNAL = False
-DEFAULT_DIST = 0.0
-DEFAULT_SUPPORT = 0.0
+DEFAULT_DIST = 1.0
+DEFAULT_SUPPORT = 1.0
 DEFAULT_NAME = "NoName"
 
 class TreeError(Exception):
@@ -154,8 +154,13 @@ class TreeNode(object):
             self._faces = value
         else:
             raise ValueError("[%s] is not a valid FaceAreas instance" %type(value))
+        
+    def _get_face_areas(self):
+        if not hasattr(self, "_faces"):
+            self._faces = _FaceAreas()
+        return self._faces
 
-    faces = property(fget=lambda self: self._faces, \
+    faces = property(fget=_get_face_areas, \
                          fset=_set_face_areas)
 
     def __init__(self, newick=None, format=0, dist=None, support=None,
@@ -178,9 +183,7 @@ class TreeNode(object):
         # Initialize tree
         if newick is not None:
             read_newick(newick, root_node = self, format=format)
-            
-        if TREEVIEW:
-            self._faces = _FaceAreas()
+           
 
     def __nonzero__(self):
         return True
@@ -738,15 +741,16 @@ class TreeNode(object):
             rooting = "No"
         else:
             rooting = "Unknown"
-        max_node, max_dis = self.get_farthest_leaf()
-        print "Number of nodes:\t %d" % len(self.get_descendants())
-        print "Number of leaves:\t %d" % len(self.get_leaves())
-        print "Rooted:", rooting
-        print "Max. lenght to root:"
-        print "The Farthest descendant node is", max_node.name,\
-            "with a branch distance of", max_dist
-
-    def write(self, features=None, outfile=None, format=0):
+        max_node, max_dist = self.get_farthest_leaf()
+        cached_content = self.get_cached_content()
+        print "Number of leaf nodes:\t%d" % len(cached_content[self])
+        print "Number of internal nodes:\t%d" % len(cached_content)
+        print "Rooted:\t%s" %rooting
+        print "Most distant node:\t%s" %max_node.name
+        print "Max. distance:\t%f" %max_dist
+        
+    def write(self, features=None, outfile=None, format=0, is_leaf_fn=None,
+              format_root_node=False):
         """ 
         Returns the newick representation of current node. Several
         arguments control the way in which extra data is shown for
@@ -762,6 +766,14 @@ class TreeNode(object):
         :argument format: defines the newick standard used to encode the
           tree. See tutorial for details.
 
+        :argument False format_root_node: If True, it allows features
+          and branch information from root node to be exported as a
+          part of the newick text string. For newick compatibility
+          reasons, this is False by default.
+
+        :argument is_leaf_fn: See :func:`TreeNode.traverse` for
+          documentation.
+          
         **Example:**
 
         ::
@@ -770,7 +782,9 @@ class TreeNode(object):
 
         """
 
-        nw = write_newick(self, features = features, format=format)
+        nw = write_newick(self, features = features, format=format,
+                          is_leaf_fn=is_leaf_fn,
+                          format_root_node=format_root_node)
         if outfile is not None:
             open(outfile, "w").write(nw)
         else:
@@ -1138,6 +1152,8 @@ class TreeNode(object):
         charset =  "abcdefghijklmnopqrstuvwxyz"
         if names_library:
             names_library = deque(names_library)
+        else:
+            avail_names = itertools.combinations_with_replacement(charset, 10)
         for n in next:
             if names_library:
                 if reuse_names: 
@@ -1145,7 +1161,7 @@ class TreeNode(object):
                 else:
                     tname = names_library.pop()
             else:
-                tname = ''.join(random.sample(charset,5))
+                tname = ''.join(avail_names.next())
             n.name = tname
             
 
@@ -1330,8 +1346,9 @@ class TreeNode(object):
 
         """
         if method=="newick":
-            new_node = self.__class__(self.write(features=["name"]))
+            new_node = self.__class__(self.write(features=["name"], format_root_node=True))
         elif method=="newick-extended":
+            self.write(features=[], format_root_node=True)
             new_node = self.__class__(self.write(features=[]))
         elif method == "deepcopy":
             parent = self.up
@@ -1350,14 +1367,15 @@ class TreeNode(object):
         
     def _asciiArt(self, char1='-', show_internal=True, compact=False, attributes=None):
         """
-        Returns the ASCII representation of the tree. Code taken from the
-        PyCogent GPL project.
+        Returns the ASCII representation of the tree.
+
+        Code based on the PyCogent GPL project.
         """
         if not attributes:
             attributes = ["name"]
-        node_name = ', '.join(map(str, [getattr(self, v, "") for v in attributes]))
-       
-        LEN = 5
+        node_name = ', '.join(map(str, [getattr(self, v) for v in attributes if hasattr(self, v)]))
+        
+        LEN = max(3, len(node_name) if not self.children or show_internal else 3)
         PAD = ' ' * LEN
         PA = ' ' * (LEN-1)
         if not self.is_leaf():
@@ -1524,77 +1542,6 @@ class TreeNode(object):
                 val = getattr(self, store_attr)
             _store[self] = set([val])
         return _store
-
-    def hmg(self, t2, attr_t1="name", attr_t2="name"):
-        """
-        """
-        t1 = self
-        t1content = t1.get_cached_content()
-        t2content = t2.get_cached_content()
-        target_names = set([getattr(_n, attr_t1) for _n in t1content[t1]])
-        ref_names = set([getattr(_n, attr_t2) for _n in t2content[t2]])
-        common_names = target_names & ref_names
-        if len(common_names) < 2:
-            raise ValueError("Trees share less than 2 nodes")
-
-        t1_attr_content = dict([(n, set([getattr(leaf, attr_t1) for leaf
-                                     in cont if getattr(leaf, attr_t1) in
-                                     common_names])) for n, cont in
-                                t1content.iteritems() ])
-        t2_attr_content = dict([(n, set([getattr(leaf, attr_t2) for leaf
-                                     in cont if getattr(leaf, attr_t2) in
-                                     common_names])) for n, cont in
-                                t2content.iteritems() ])
-
-        n2track = {}
-        for n in t1.iter_leaves():
-            n2track[n.name] = set()
-            _n = n
-            while _n:
-                n2track[n.name].add(_n)
-                _n = _n.up
-            
-        def common_ancestor(node_names, n2content):
-            bysize = lambda x, y: cmp(len(n2content[x]), len(n2content[y]))
-            common = None
-            for node in node_names:
-                if common is None: 
-                    common = set(n2track[node])
-                else:
-                    common &= n2track[node]
-            common = list(common)
-            common.sort(bysize)
-            return common[0]
-        
-        refnode2target = {}
-        for node, ref_content in t2_attr_content.iteritems():
-            if not ref_content:
-                continue
-            #candidates = [(len(target_content), target_content) for
-            #              target_content in t1_attr_content.itervalues() if
-            #              not (ref_content - target_content)]
-            #candidates.sort()
-            #match = candidates[0][1]
-
-            #match = t1content[t1.get_common_ancestor(ref_content)]
-            match = t1_attr_content[common_ancestor(ref_content, t1content)]
-            #if match == match2:
-            #    print ref_content
-            #    print t1
-            #    print "REAL", match
-            #    print "NEW", match2
-            #    raw_input("NOP")
-                
-            #print ref_content, node
-            #print candidates
-            #dist = len(match) - float(len(ref_content))
-            #dist = (len(candidates[0][1]) / float(len(ref_content))) - 1
-            dist = (len(match) - len(ref_content)) / float(len(match))
-            
-            #print candidates[0][1],  ref_content
-            refnode2target[node] = dist
-
-        return refnode2target
        
     def robinson_foulds(self, t2, attr_t1="name", attr_t2="name"):
         """
@@ -1631,7 +1578,8 @@ class TreeNode(object):
         r2 = set([",".join(sorted([getattr(_c, attr_t2) for _c in cont
                                    if getattr(_c, attr_t2) in common_names]))
                   for cont in t2content.values() if len(cont)>1])
-                      
+        r1.discard("")
+        r2.discard("")              
         inters = r1.intersection(r2)
         if len(r1) == len(r2):
                 rf = (len(r1) - len(inters)) * 2
@@ -1702,9 +1650,103 @@ class TreeNode(object):
                 node2dist[node] = node2dist[node.up] + 1
             node.dist = node.dist
 
+    def check_monophyly(self, values, target_attr, ignore_missing=False):
+        """
+        Returns True if a given target attribute is monophyletic under
+        this node for the provided set of values. 
+
+        If not all values are represented in the current tree
+        structure, a ValueError exception will be raised to warn that
+        strict monophyly could never be reached (this behaviour can be
+        avoided by enabling the `ignore_missing` flag.
+
+        :param values: a set of values for which monophyly is
+            expected.
+            
+        :param target_attr: node attribute being used to check
+            monophyly (i.e. species for species trees, names for gene
+            family trees, or any custom feature present in the tree).
+
+        :param False ignore_missing: Avoid raising an Exception when
+            missing attributes are found. 
+        """
+        if type(values) != set:
+            values = set(values)
+
+        # This is the only time I traverse the tree, then I use cached
+        # leaf content
+        n2leaves = self.get_cached_content()
+        # Locate leaves matching requested attribute values
+        targets = [leaf for leaf in n2leaves[self]
+                   if getattr(leaf, target_attr) in values]
+       
+        # Raise an error if requested attribute values are not even present
+        if not ignore_missing:
+            missing_values = values - set([getattr(n, target_attr) for n
+                                           in targets])
+            if missing_values: 
+                raise ValueError("Expected '%s' value(s) not found: %s" %(
+                    target_attr, ','.join(missing_values)))
+                
+        # Check monophyly with get_common_ancestor. Note that this
+        # step does not require traversing the tree again because
+        # targets are node instances instead of node names, and
+        # get_common_ancestor function is smart enough to detect it
+        # and avoid unnecessary traversing.
+        common = self.get_common_ancestor(targets)
+        observed = n2leaves[common]
+        foreign_leaves = [leaf for leaf in observed
+                          if getattr(leaf, target_attr) not in values]
+        if not foreign_leaves:
+            return True, "monophyletic"
+        else:
+            # if the requested attribute is not monophyletic in this
+            # node, let's differentiate between poly and paraphyly. 
+            poly_common = self.get_common_ancestor(foreign_leaves)
+            # if the common ancestor of all foreign leaves is self
+            # contained, we have a paraphyly. Otherwise, polyphyly. 
+            polyphyletic = [leaf for leaf in poly_common if
+                            getattr(leaf, target_attr) in values]
+            if polyphyletic:
+                return False, "polyphyletic"
+            else:
+                return False, "paraphyletic"
+
+            
+    def get_monophyletic(self, values, target_attr):
+        """
+        .. versionadded:: 2.2
+
+        Returns a list of nodes matching the provided monophyly
+        criteria. For a node to be considered a match, all
+        `target_attr` values within and node, and exclusively them,
+        should be grouped.
+        
+        :param values: a set of values for which monophyly is
+            expected.
+            
+        :param target_attr: node attribute being used to check
+            monophyly (i.e. species for species trees, names for gene
+            family trees).
+           
+        """
+
+        if type(values) != set:
+            values = set(values)
+
+        n2values = self.get_cached_content(store_attr=target_attr)
+      
+        is_monophyletic = lambda node: n2values[node] == values
+        for match in self.iter_leaves(is_leaf_fn=is_monophyletic):
+            if is_monophyletic(match):
+                yield match
+
+            
     def resolve_polytomy(self, default_dist=0.0, default_support=0.0,
                          recursive=True):
         """
+        .. versionadded: 2.2
+        
         Resolve all polytomies under current node by creating an
         arbitrary dicotomic structure among the affected nodes. This
         function randomly modifies current tree topology and should
@@ -1759,6 +1801,9 @@ class TreeNode(object):
           "aligned"
         """ 
 
+        if not hasattr(self, "_faces"):
+            self._faces = _FaceAreas()
+        
         if position not in FACE_POSITIONS:
             raise ValueError("face position not in %s" %FACE_POSITIONS)
         

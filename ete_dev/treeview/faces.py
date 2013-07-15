@@ -150,7 +150,8 @@ class Face(object):
         self.border = _Border()
         self.inner_border = _Border()
         self.inner_background = _Background()
-
+        self.rotation = 0
+        
     def _size(self):
         if self.pixmap:
             return self._width(),self._height()
@@ -193,7 +194,10 @@ class TextFace(Face):
     worse aligned text faces but improving the performance of tree
     visualization in scenes with a lot of text faces.
     """
-        
+
+    def __repr__(self):
+        return "Text Face [%s] (%s)" %(self._text, hex(self.__hash__()))      
+
     def _load_bounding_rect(self, txt=None):
         if txt is None:
             txt= self.get_text()
@@ -218,7 +222,7 @@ class TextFace(Face):
         return self._text
         
     def _set_text(self, txt):
-        self._text = txt
+        self._text = str(txt)
         
     def get_bounding_rect(self):
         if not self._bounding_rect:
@@ -234,7 +238,7 @@ class TextFace(Face):
     def __init__(self, text, ftype="Verdana", fsize=10,
                  fgcolor="black", penwidth=0, fstyle="normal",
                  tight_text=True):
-        self._text = ""
+        self._text = str(text)
         self._bounding_rect = None
         self._real_rect = None
         
@@ -247,8 +251,6 @@ class TextFace(Face):
         self.fstyle = fstyle
         self.penwidth = penwidth
         self.tight_text = tight_text
-        if text:
-            self.text = text
 
     def _get_font(self):
         font = QFont(self.ftype, self.fsize)
@@ -284,7 +286,10 @@ class AttrFace(TextFace):
       process the attribute value before renderer. e.g. "%0.2f"
     :param fstyle: "normal" or "italic" 
     """
-   
+
+    def __repr__(self):
+        return "Attribute Face [%s] (%s)" %(self.attr, hex(self.__hash__()))        
+    
     def get_text(self):
         if self.attr_formatter:
             text = self.attr_formatter % getattr(self.node, self.attr)
@@ -1034,6 +1039,7 @@ class _PieChartItem(QGraphicsRectItem):
     def paint(self, painter, option, widget):
         a = 5760
         angle_start = 0
+        
         if not self.line_color:
             painter.setPen(Qt.NoPen)
         else:
@@ -1059,7 +1065,7 @@ class PieChartFace(StaticItemFace):
     """
     def __init__(self, percents, width, height, colors=None, line_color=None):
         Face.__init__(self)
-        print round(sum(percents))
+
         if round(sum(percents)) > 100:
             raise ValueError("PieChartItem: percentage values > 100")
 
@@ -1150,7 +1156,8 @@ class _BarChartItem(QGraphicsRectItem):
         colors = self.colors
         values = self.values
         deviations = self.deviations
-
+        p.setBrush(Qt.NoBrush)
+        
         spacer = 3
         spacing_length = (spacer*(len(values)-1))
         height = self.height 
@@ -1343,8 +1350,28 @@ class SequenceItem(QGraphicsRectItem):
                 p.drawText(x + self.poswidth * 0.1, self.posheight *0.9, letter)
                
             else:
-                p.fillRect(x, 0, self.poswidth, self.posheight, br)
+                p.fillRect(x, 0, max(1, self.poswidth), self.posheight, br)
             x += self.poswidth
+
+
+class TextLabelItem(QGraphicsRectItem):
+    def __init__(self, text, rect, fcolor="black", ffam="Arial", fsize=10):
+        QGraphicsRectItem.__init__(self, rect)
+        self.text = text
+        self.fsize = int(fsize)
+        self.ffam = ffam
+        self.fcolor = fcolor
+    def paint(self, p, option, widget):
+        color = QColor(self.fcolor)
+        p.setPen(color)
+        p.setBrush(QBrush(color))
+        qfont = QFont()
+        qfont.setFamily(self.ffam)
+        qfont.setPointSize(self.fsize)
+        p.setFont(qfont)
+        p.drawText(self.rect(), Qt.AlignCenter |  Qt.AlignVCenter, self.text)
+        #p.setBrush(Qt.NoBrush)
+        #p.drawRect(self.rect())
             
 class SeqMotifFace(StaticItemFace):
     """.. versionadded:: 2.2
@@ -1395,13 +1422,15 @@ class SeqMotifFace(StaticItemFace):
     """
 
     def __init__(self, seq=None, motifs=None, seqtype="aa",
-                 intermotif_format="line", seqtail_format="none",
-                 seq_format="compactseq"):
+                 intermotif_format="line", seqtail_format="compactseq",
+                 seq_format="compactseq", scale_factor=1):
         
         StaticItemFace.__init__(self, None)
         self.seq  = seq or []
+        self.scale_factor = scale_factor
         self.motifs = motifs
         self.overlaping_motif_opacity = 0.7
+        self.adjust_to_text = False
         self.intermotif_format = intermotif_format
         self.seqtail_format = seqtail_format
         self.seq_format = seq_format
@@ -1414,41 +1443,38 @@ class SeqMotifFace(StaticItemFace):
 
         self.build_regions()
 
+        
     def build_regions(self): 
         # Sort regions
         seq = self.seq or []
         motifs = self.motifs
         if not motifs:
             if self.seq_format == "seq":
-                motifs = [[1, len(seq), "seq", 10, 10, None, None]]
+                motifs = [[1, len(seq), "seq", 10, 10, None, None, None]]
             elif self.seq_format == "compactseq":
-                motifs = [[1, len(seq), "compactseq", 1, 10, None, None]]
+                motifs = [[1, len(seq), "compactseq", 1, 10, None, None, None]]
         motifs.sort()
         intermotif = self.intermotif_format
         self.regions = []
-        current_pos = 0
-        end = 0
-        for mf in motifs:
+        current_seq_pos = 0
+        for index, mf in enumerate(motifs):
             start, end, typ, w, h, fg, bg, name = mf
             start -= 1
-            #if start < current_pos:
-            #    print current_pos, start, mf
-            #    raise ValueError("Overlaping motifs are not supported")
-            if start > current_pos:
+            if start > current_seq_pos:
                 if intermotif == "blank": 
-                    self.regions.append([current_pos, start, " ", 1, 1, None, None, None])
+                    self.regions.append([current_seq_pos, start, " ", 1, 1, None, None, None])
                 elif intermotif == "line":
-                    self.regions.append([current_pos, start, "-", 1, 1, "black", None, None])
+                    self.regions.append([current_seq_pos, start, "-", 1, 1, "black", None, None])
                 elif intermotif == "seq":
                     # Colors are read from built-in dictionary
-                    self.regions.append([current_pos, start, "seq", 10, 10, None, None, None])
+                    self.regions.append([current_seq_pos, start, "seq", 10, 10, None, None, None])
                 elif intermotif == "compactseq":
                     # Colors are read from built-in dictionary
-                    self.regions.append([current_pos, start, "compactseq", 1, 10, None, None, None])
+                    self.regions.append([current_seq_pos, start, "compactseq", 1, 10, None, None, None])
                 elif intermotif == "none":
-                    self.regions.append([current_pos, start, " ", 0, 0, None, None, None]) 
+                    self.regions.append([current_seq_pos, start, " ", 0, 0, None, None, None])
             self.regions.append(mf)
-            current_pos = end
+            current_seq_pos = max(current_seq_pos, end)
 
         if len(seq) > end:
             if self.seqtail_format == "line":
@@ -1460,64 +1486,39 @@ class SeqMotifFace(StaticItemFace):
                 
     def update_items(self):
         self.item = QGraphicsRectItem()
-        name_items = []
-        # Computes dimension of text labels
-        for index, (start, end, typ, w, h, fg, bg, name) in enumerate(self.regions):
-            if name and  typ != "seq":
-                family, fsize, fcolor, text = name.split("|")
-                qfont = QFont()
-                qfont.setFamily(family)
-                qfont.setPointSize(int(fsize))
-                qfmetrics = QFontMetrics(qfont)
-                txth = qfmetrics.height()
-                txtw = qfmetrics.width(text)
-                txt_item = QGraphicsSimpleTextItem(text, self.item)
-                txt_item.setFont(qfont)
-                txt_item.setBrush(QBrush(QColor(fcolor)))
-                txt_item.setZValue(2)
-                name_items.append([txt_item, txtw, txth])
-                # enlarges circle domains to fit text
-                if typ == "o":
-                    min_r = math.hypot(txtw/2.0, txth/2.0)
-                    txtw = max(txtw, min_r*2)
                     
-                # Corrects domain figure dimensions to fit text
-                self.regions[index][3] = max(self.regions[index][3], txtw)
-                self.regions[index][4] = max(self.regions[index][4], txth)
-                    
-            else:
-                name_items.append([None, 0, 0])
-                    
-        max_h = max([max(reg[4],name_items[index][2]) for index, reg
+        max_h = max([reg[4] for index, reg
                      in enumerate(self.regions)])
         y_center = max_h / 2
-        xstart = 0
-        for index, (start, end, typ, w, h, fg, bg, name) in enumerate(self.regions):
+        
+        max_x_pos = 0
+        current_seq_end = 0
+        for index, (start, end, typ, wf, h, fg, bg, name) in enumerate(self.regions):
+            real_start, real_end = start, end
+            if self.scale_factor != 1:
+                start *= self.scale_factor
+                end *= self.scale_factor
+                if wf: 
+                    wf *= self.scale_factor
+                
             opacity = 1
-            print "INDEX", index
-            # if current domain start overlaps with previous domain
-            prv_start, prv_end, prv_type, prv_w =  self.regions[index-1][:4]
-            print index, (start, end, typ, w, h, fg, bg, name)
-            print prv_start, prv_end, prv_type, prv_w
-            print "XSTART", xstart
-            if index > 0 and start <= prv_end:
+            w = end-start    
+            xstart = max_x_pos
+            
+            overlap_factor = 0
+            if current_seq_end > start:
                 # calculates length for overlap
-                total_length = prv_end - prv_start
-                overlaping_length = float(prv_end - start)
-                overlap_factor = overlaping_length / total_length
-                print "correcting:"
-                xstart -=  (prv_w * overlap_factor)
-                print "CORRECTED xstart", xstart, overlap_factor, total_length, overlaping_length
+                overlap_factor = float(current_seq_end - start) / (end-start)
+                if overlap_factor > 1:
+                    continue
+                    #xstart -= w * overlap_factor
+                else:
+                    w = end - current_seq_end
+
                 opacity = self.overlaping_motif_opacity
 
-            txt_item = name_items[index][0]
-            if txt_item:
-                align_center = (w - name_items[index][1]) / 2.0
-                txt_item.setPos(xstart + align_center, y_center - name_items[index][2]/2.0)
-                
             y_start = y_center - (h/2)
             if typ == "-":
-                w = w * (end - start)
                 x_end = xstart + w
                 i = QGraphicsLineItem(xstart, y_center, x_end, y_center)
             elif typ == " ":
@@ -1545,13 +1546,13 @@ class SeqMotifFace(StaticItemFace):
             elif typ == "()":
                 i = QGraphicsRoundRectItem(xstart, y_start, w, h)
             elif typ == "seq" and self.seq:
-                i = SequenceItem(self.seq[start:end], poswidth=w,
+                i = SequenceItem(self.seq[real_start:real_end], poswidth=wf,
                                  posheight=h, draw_text=True)
                 w = i.rect().width()
                 h = i.rect().height()
                 i.setPos(xstart, y_center - (h/2.0))
             elif typ == "compactseq" and self.seq:
-                i = SequenceItem(self.seq[start:end], poswidth=w,
+                i = SequenceItem(self.seq[real_start:real_end], poswidth=wf,
                                  posheight=h, draw_text=False)
                 w = i.rect().width()
                 h = i.rect().height()
@@ -1561,6 +1562,7 @@ class SeqMotifFace(StaticItemFace):
                 
             if i: 
                 i.setParentItem(self.item)
+               
             if bg:
                 if bg.startswith("rgradient:"):
                     rect = i.boundingRect()
@@ -1576,7 +1578,28 @@ class SeqMotifFace(StaticItemFace):
 
             if opacity < 1:
                 i.setOpacity(opacity)
-            xstart += w
+
+            if name:
+                valid_h = max_h
+                family, fsize, fcolor, text = name.split("|")
+                #qfmetrics = QFontMetrics(qfont)
+                #txth = qfmetrics.height()
+                #txtw = qfmetrics.width(text)
+                txt_item = TextLabelItem(text, QRectF(0, 0, w, valid_h),
+                                         fsize=fsize, ffam=family, fcolor=fcolor)
+                # enlarges circle domains to fit text
+                #if typ == "o":
+                #    min_r = math.hypot(txtw/2.0, txth/2.0)
+                #    txtw = max(txtw, min_r*2)
+                
+                y_txt_start = (max_h/2.0) - (valid_h/2.0)
+                txt_item.setParentItem(self.item)
+                txt_item.setPos(xstart, y_txt_start)
+                                
+                
+            if overlap_factor < 1:
+                max_x_pos = max(max_x_pos, max_x_pos + w)
+                current_seq_end = max(end, current_seq_end)
             
         self.item.setRect(0, 0, xstart, max_h)
         self.item.setPen(QPen(Qt.NoPen))
@@ -1739,9 +1762,9 @@ class SequencePlotFace(StaticItemFace):
         
     def coordY(self, y):
         """
-return the transformation of Y according to mean value
-(that is last element of lines)
-"""
+        return the transformation of Y according to mean value
+        (that is last element of lines)
+        """
         y_offset = 30
         if self.ylim[1] <= y: return y_offset
         if self.ylim[1] == 0: return self.height + y_offset
