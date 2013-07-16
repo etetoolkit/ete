@@ -18,29 +18,18 @@ You should have codeml and slr in your path:
 
  * SLR, from here: http://www.ebi.ac.uk/goldman-srv/SLR/
 
-Download, compile and install both of the programs, in order to be
-able to run the examples.
+Download, compile and install both of the programs, in order to be able to run the examples.
 
-This ETE extension is written on top of these two external programs,
-so it is strongly recommended to read their corresponding
-documentation.
+This ETE extension is written on top of these two external programs, so it is strongly recommended to read their corresponding documentation.
 
 Overview
 ================
 
-An other aspect in the study of evolutionary history, is the analysis
-of selective pressures accounting for the conservation or degeneration
-of **protein coding genes**.
+An other aspect in the study of evolutionary history, is the analysis of selective pressures accounting for the conservation or degeneration of **protein coding genes**.
 
-The :class:`EvolTree` class is an extension of the class
-:class:`PhyloTree` that implements mainly bindings to the PAML package
-[yang2007]_ but also to the SLR program [massingham2005]_.
+The :class:`EvolTree` class is an extension of the class :class:`PhyloTree` that implements mainly bindings to the PAML package [yang2007]_ but also to the SLR program [massingham2005]_.
 
-Evolutionary variables that are used to summary selective pressures
-are, of course the branch-length (*bL*) already available in
-:class:`PhyloTree`, but also the rate of non-synonymous mutations
-(*dN*), the rate of synonymous mutations (*dS*) and finally the
-:math:`\omega` ratio:
+Evolutionary variables that are used to summary selective pressures are, of course the branch-length (*bL*) already available in :class:`PhyloTree`, but also the rate of non-synonymous mutations (*dN*), the rate of synonymous mutations (*dS*) and finally the :math:`\omega` ratio:
 
 .. math::
   :nowrap:
@@ -53,21 +42,15 @@ are, of course the branch-length (*bL*) already available in
 The working directory
 ---------------------
 
-EvolTree works mainly as PhyloTree, thus it needs a tree and an
-alignment. However as you are going to run external programs over it,
-**a working directory needs to be defined**. By default tree.workdir
-is "/tmp/ete2-codeml/", but it is recommended to change it to a more
-useful path.
+EvolTree works mainly as PhyloTree, thus it needs a tree and an alignment. However as you are going to run external programs over it, **a working directory needs to be defined**. By default tree.workdiris "/tmp/ete2-codeml/", but it is recommended to change it to a more useful path.
 
-Jobs will be stored in the workdir, and you will be able to load
-pre-computed evolutionary models from there.
+Jobs will be stored in the workdir, and you will be able to load precomputed evolutionary models from there.
 
 
 Descriptive analysis
 ====================
 
-In order to identify the evolutionary trends in a phylogenetic tree,
-one can either:
+In order to identify the evolutionary trends in a phylogenetic tree, one can either:
 
   * conduct an analysis over branches and compute the value of
     :math:`\omega` in each of them.
@@ -88,11 +71,11 @@ As for :class:`PhyloTree`, we first load the tree and alignment (and you working
   
   tree.link_to_alignment ('''>Hylobates_lar
   ATGGCCAGGTACAGATGCTGCCGCAGCCAGAGCCGGAGCAGATGTTACCGCCAGAGCCGGAGCAGATGTTACCGCCAGAGGCAAAGCCAGAGTCGGAGCAGATGTTACCGCCAGAGCCAGAGCCGGAGCAGATGTTACCGCCAGAGACAAAGAAGTCGGAGACGAAGGAGGCGGAGCTGCCAGACACGGAGGAGAGCCATGAGGTGT---CGCCGCAGGTACAGGCTGAGACGTAGAAGCTGTTACCACATTGTATCT
-  >Papio_cynocephalus
+  >Papio_cynocephalus	                                                                                          
   ATGGCCAGGTACAGATGCTGCCGCAGCCAGAGCCGAAGCAGATGCTATCGCCAGAGCCGGAGCAGATGTAACCGCCAGAGACAGAGCCAAAGCCGGAGAAGCTGCTATCGCCAGAGCCAAAGCCGGAGCAGATGTTACCGCCAGAGACAGAGAAGTCGTAGACGAAGGAGGCGACGCTGCCAGACACGGAGGAGAGCCATGAGGTGCTTCCGCCGCAGGTACAGGCTGAGGCGTAGGAGGCCCTATCACATCGTGTCT
-  >Gorilla_gorilla
+  >Gorilla_gorilla	                                                                                          
   ATGGCCAGGTACAGATGCTGTCGCAGCCAGAGCCGCAGCAGATGTTACCGGCAGAGCCGGAGCAGGTGTTACCGGCAGAGACAAAGCCAGAGCCGGAGCAGATGCTACCGGCAGAGCCAAAGCCGGAGCAGGTGTTACCGGCAGAGACAAAGAAGTCGCAGACGTAGGCGGAGGAGCTGCCAGACACGGAGGAGAGCCATGAGGTGCTGCCGCCGCAGGTACAGACTGAGACGTAGAAGACCCTATCATATTGTATCT
-  >Pan_troglodytes
+  >Pan_troglodytes	                                                                                          
   ATGGCCAGGTACAGATGCTGTCGCAGCCAGAGCCGGAGCAGATGTTACCGGCAGAGACGGAGCAGGTGTTACCGGCAAAGGCAAAGCCAAAGTCGGAGCAGATGTTACCGGCAGAGCCAGAGACGGAGCAGGTGTTACCGGCAAAGACAAAGAAGTCGCAGACGAAGGCGACGGAGCTGCCAGACACGGAGGAGAGCCATGAGGTGCTGCCGCCGCAGGTACAGACTGAGACGTAAAAGATGTTACCATATTGTATCT''')  
 
   tree.workdir = '/path_to/my_working_directory/'
@@ -104,18 +87,31 @@ Once loaded we are able to compute selective pressure among the tree according t
   
 :func:`EvolNode.run_model` allows to run different evolutionary models (follow this link :func:`EvolNode.run_model` to see the full list of models available). By convention, the name of the model called is the first word, the rest of the string, after the dot, corresponds to its identifier in order to differentiate different runs of one model. We can thus either run "fb" model and "fb.something" with the same result, but they will be stored under different names instead of being overwritten.
 
-Once computation is done, we can retrieve the
-:class:`evol.Model` object from the tree, with the
-:func:`EvolNode.get_evol_model` function.
+Once computation is done, we can retrieve the :class:`evol.Model` object from the tree, with the :func:`EvolNode.get_evol_model` function.
 
 ::
   
   my_first_fb_model = tree.get_evol_model('fb.example')
 
   print my_first_fb_model
-  #  Evolutionary Model fb.example:
-  #      log likelihood      : -525.772495
-  #      number of parameters: 8
+
+This last print statement would ouptut:
+
+::
+
+   Evolutionary Model fb.example:
+          log likelihood       : -521.421323
+          number of parameters : 13
+          sites inference      : None
+          sites classes        : None
+          branches             : 
+          mark: #0  , omega: None      , node_ids: 5   , name: NoName
+          mark: #1  , omega: 0.0001    , node_ids: 6   , name: NoName
+          mark: #2  , omega: 999.0     , node_ids: 4   , name: Papio_cynocephalus
+          mark: #3  , omega: 999.0     , node_ids: 2   , name: Hylobates_lar
+          mark: #4  , omega: 0.0001    , node_ids: 7   , name: NoName
+          mark: #5  , omega: 0.1049    , node_ids: 1   , name: Gorilla_gorilla
+          mark: #6  , omega: 0.5334    , node_ids: 3   , name: Pan_troglodytes
 
 
 By default, the free-branch model is run with this parameters:
@@ -172,7 +168,7 @@ Finally in order to have a quick look of the selctive pressures over our phyloge
 
 ::
 
-  t.show()
+  tree.show()
 
 by default this will the picture obtained:
 
@@ -206,7 +202,7 @@ Another way to look at selective pressures, is to compute directly along the ali
 
 ::
 
-  tree.run_model('M2.lala')
+  tree.run_model('M2')
   tree.run_model('SLR.lele')
 
 and to display the results:
@@ -227,43 +223,42 @@ However customizing this face is feasible:
 
 ::
 
-  col2 = {'NS' : 'white', 'RX' : 'white',
-        'RX+': 'white', 'CN' : 'white',
-        'CN+': 'white', 'PS' : 'white', 'PS+': 'white'}
+  model2 = tree.get_evol_model ('M2')
+
+  col2 = {'NS' : 'black', 'RX' : 'black',
+          'RX+': 'black', 'CN' : 'black',
+          'CN+': 'black', 'PS' : 'black', 'PS+': 'black'}
 
 
-  model2.set_histface (up=False, typ='error', col=col2, lines = [2.5, 1.0, 4.0, 0.5], header = 'Many lines, error boxes, background black', col_lines=['orange', 'yellow', 'red', 'cyan'])
+  model2.set_histface (up=False, kind='curve', colors=col2, ylim=[0,4], hlines = [2.5, 1.0, 4.0, 0.5], header = 'Many lines, error boxes, background black', hlines_col=['orange', 'yellow', 'red', 'cyan'], errors=True)
 
-  tree.show(histfaces=['M2.lala'])
+  tree.show(histfaces=['M2'])
 
 
 .. _M2_error-fig:
 
-.. figure:: ../ex_figures/M2_error-box.png
+.. figure:: ../ex_figures/M2_curve.png
   :scale: 100 %
 
 or:
 
 ::
 
-  model2 = tree.get_evol_model ('M2.lala')
+  col = {'NS' : 'grey', 'RX' : 'black',
+         'RX+': 'grey', 'CN' : 'black',
+         'CN+': 'grey', 'PS' : 'black', 'PS+': 'black'}
+  model2.set_histface (up=False, kind='stick', hlines = [1.0,0.3], hlines_col=['black','grey'])
 
-  col2 = {'NS' : 'white', 'RX' : 'white',
-          'RX+': 'white', 'CN' : 'white',
-          'CN+': 'white', 'PS' : 'white', 'PS+': 'white'}
 
-  model2.set_histface (up=False, typ='protamine', lines = [1.0,0.3], col_lines=['black','grey'], extras=['+','-',' ',' ',' ',':P', ' ',' ']*2+[' ']*(len(tree.get_leaves()[0].sequence)-16))
-
-  tree.show(histfaces=['M2.lala'])
-
+  tree.show(histfaces=['M2'])
 
 .. _M2_super_profesional-fig:
 
-.. figure:: ../ex_figures/M2_super_profesional.png
+.. figure:: ../ex_figures/M2_sticks.png
   :scale: 100 %
 
 
-The col dictionary contains the colours for sites detected to be under positive selection (PS), relaxation (RX), or conserved (CN). However, it is not a good idea to use them now as we do not know if there is indeed positive selection.
+The col dictionary contains the colors for sites detected to be under positive selection (PS), relaxation (RX), or conserved (CN). However, it is not a good idea to use them now as we do not know if there is indeed positive selection.
 
 To be able to accept M2 results we will have to test this model against a null model.
 
@@ -352,7 +347,7 @@ And the comparison between free-branch and neutral-branch models will tell us if
   tree.run_model ('b_neut')
   tree.run_model ('M0')
 
-  bfree = tree.get_evol_model('b_free')
+  b_free = tree.get_evol_model('b_free')
 
   print b_free
 
@@ -392,10 +387,13 @@ this example shows how to run it over all branches in the tree:
 
 ::
 
+  # also needs the M0 model as null model
+  tree.run_model ('M0')
+
   for leaf in tree:
-      leaf._nid
+      leaf.node_id
       print '\n---------\nNow working with leaf ' + leaf.name
-      tree.mark_tree ([leaf._nid], marks=['#1'])
+      tree.mark_tree ([leaf.node_id], marks=['#1'])
       print tree.write()
       # to organize a bit, we name model with the name of the marked node
       # any character after the dot, in model name, is not taken into account
@@ -405,7 +403,7 @@ this example shows how to run it over all branches in the tree:
       tree.run_model ('bsA1.' + leaf.name)
       print 'p-value of positive selection for sites on this branch is: '
       ps = tree.get_most_likely ('bsA.' + leaf.name, 'bsA1.'+ leaf.name)
-      rx = tree.get_most_likely ('bsA1.'+ leaf.name, 'M1')
+      rx = tree.get_most_likely ('bsA1.'+ leaf.name, 'M0')
       print str (ps)
       print 'p-value of relaxation for sites on this branch is: '
       print str (rx)
@@ -414,23 +412,29 @@ this example shows how to run it over all branches in the tree:
       elif rx<0.05 and ps>=0.05:
           print 'we have relaxation on sites on this branch'
       else:
-          print 'no signal detected on this branch, best fit for M1'
+          print 'no signal detected on this branch, best fit for M0'
       print '\nclean tree, remove marks'
-      tree.mark_tree (map (lambda x: x._nid, tree.get_descendants()),
+      tree.mark_tree (map (lambda x: x.node_id, tree.get_descendants()),
                       marks=[''] * len (tree.get_descendants()), verbose=True)
 
-  print tree.get_evol_model('bsA')
+  print tree.get_evol_model('bsA.Hylobates_lar')
 
-  # Evolutionary Model bsA.Hylobates_lar:
-  #        log likelihood       : -521.20329
-  #        number of parameters : 11
-  #        sites inference      : BEB, NEB
-  #        sites classes        : 
-  #           foreground w: f0=0.06451   f1=1.00000   f2=3.16215   f3=3.16215   
-  #           proportions : p0=0.00000   p1=0.00000   p2=0.94827   p3=0.05172   
-  #           background w: b0=0.06451   b1=1.00000   b2=0.06451   b3=1.00000   
-  #        branches             : 
-  #           None
+  #  Evolutionary Model bsA.Hylobates_lar:
+  #         log likelihood       : -521.203318
+  #         number of parameters : 11
+  #         sites inference      : BEB, NEB
+  #         sites classes        : 
+  #         foreground w: f0=0.06452   f1=1.00000   f2=3.15727   f3=3.15727   
+  #         proportions : p0=0.00415   p1=0.00023   p2=0.94413   p3=0.05150   
+  #         background w: b0=0.06452   b1=1.00000   b2=0.06452   b3=1.00000   
+  #         branches             : 
+  #         mark: #0  , omega: None      , node_ids: 5   , name: NoName
+  #         mark: #0  , omega: None      , node_ids: 6   , name: NoName
+  #         mark: #0  , omega: None      , node_ids: 4   , name: Papio_cynocephalus
+  #         mark: #1  , omega: None      , node_ids: 2   , name: Hylobates_lar
+  #         mark: #0  , omega: None      , node_ids: 7   , name: NoName
+  #         mark: #0  , omega: None      , node_ids: 1   , name: Gorilla_gorilla
+  #         mark: #0  , omega: None      , node_ids: 3   , name: Pan_troglodytes
 
 
 Utilities
@@ -455,7 +459,7 @@ When an evolutionary model is computed, the output is stored in *tree.workdir* a
   ATGGCCAGGTACAGATGCTGTCGCAGCCAGAGCCGCAGCAGATGTTACCGGCAGAGCCGGAGCAGGTGTTACCGGCAGAGACAAAGCCAGAGCCGGAGCAGATGCTACCGGCAGAGCCAAAGCCGGAGCAGGTGTTACCGGCAGAGACAAAGAAGTCGCAGACGTAGGCGGAGGAGCTGCCAGACACGGAGGAGAGCCATGAGGTGCTGCCGCCGCAGGTACAGACTGAGACGTAGAAGACCCTATCATATTGTATCT
   >Pan_troglodytes
   ATGGCCAGGTACAGATGCTGTCGCAGCCAGAGCCGGAGCAGATGTTACCGGCAGAGACGGAGCAGGTGTTACCGGCAAAGGCAAAGCCAAAGTCGGAGCAGATGTTACCGGCAGAGCCAGAGACGGAGCAGGTGTTACCGGCAAAGACAAAGAAGTCGCAGACGAAGGCGACGGAGCTGCCAGACACGGAGGAGAGCCATGAGGTGCTGCCGCCGCAGGTACAGACTGAGACGTAAAAGATGTTACCATATTGTATCT''')  
-  tree.link_to_evol_model('/path_to/my_working_directory/fb.best/out')
+  tree.link_to_evol_model('/path_to/my_working_directory/fb.example/out', 'fb')
 
 *Note:* :func:`EvolNode.link_to_evol_model` is also able to load directly :class:`evol.Model` objects.
 

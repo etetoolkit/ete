@@ -11,13 +11,6 @@ __licence__ = "GPLv3"
 __version__ = "0.0"
 
 from ete_dev import EvolTree
-import os
-
-#os.chdir ('examples')
-
-#tree = EvolTree ("data/bglobin/bglobin.trees")
-#tree.link_to_alignment ("data/bglobin/bglobin.paml")
-
 
 
 tree = EvolTree ("data/S_example/measuring_S_tree.nw")
