@@ -68,7 +68,7 @@ from nprlib.configobj import ConfigObj, flatten_errors
 from nprlib import validate
 from nprlib.utils import (strip, SeqGroup, generate_runid,  AA, NT,
                           GLOBALS, encode_seqname, pjoin, pexist,
-                          hascontent, ETE_CITE)
+                          hascontent, checksum, ETE_CITE)
 from nprlib.errors import ConfigError, DataError
 from nprlib.master_task import Task
 from nprlib.interface import app_wrapper
@@ -221,9 +221,9 @@ def main(args):
         local_conf_file = pjoin(base_dir, clearname, "workflow.cfg")
         if pexist(base_dir):
             if hascontent(local_conf_file):
-                if not args.override and \
-                   not filecmp.cmp(fname, local_conf_file):
-                    raise ConfigError("Output directory seem to contain"
+                if not filecmp.cmp(fname, local_conf_file):
+                    if not args.override:
+                        raise ConfigError("Output directory seem to contain"
                                       " a NPR execution using a different"
                                       " config file [workflow.cfg]. Use"
                                       " --override option or change the"
@@ -278,7 +278,7 @@ def main(args):
                     cmd = apps.get_call(k, APPSPATH, base_dir, str(cores))
                     config["app"][k] = cmd
                     apps_to_test[k] = cmd
-            
+
         # Copy config file
         config["_outpath"] = pjoin(base_dir, clearname)
         try:
@@ -286,6 +286,9 @@ def main(args):
         except OSError:
             pass
         shutil.copy(fname, local_conf_file)
+
+        # save checksum of current workflow
+        config["_config_checksum"] = checksum(local_conf_file)
         run2config[clearname] = config
             
     # Create main dir structure
@@ -924,7 +927,6 @@ if __name__ == "__main__":
     GLOBALS["citator"] = Citator()
     
     GLOBALS["cogs_file"] = args.cogs_file
-    
     GLOBALS["citator"].add(ETE_CITE)
     if not pexist(GLOBALS["basedir"]):
         os.makedirs(GLOBALS["basedir"])
