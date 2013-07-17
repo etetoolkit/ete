@@ -431,9 +431,10 @@ class TreeTask(Task):
                  extra_args=None):
         if not base_args: base_args = {}
         extra_args = {} if not extra_args else dict(extra_args)
-        extra_args["_algchecksum"] = self.alg_phylip_file
-        extra_args["_constrainchecksum"] = self.constrain_tree
-        
+        extra_args["_alg_checksum"] = self.alg_phylip_file
+        extra_args["_constrain_checksum"] = getattr(self, "constrain_tree", None)
+        extra_args["_partitions_checksum"] = getattr(self, "partitions_file", None)
+
         Task.__init__(self, nodeid, task_type, task_name, base_args, 
                       extra_args)
         
@@ -472,6 +473,14 @@ class TreeMergeTask(Task):
        
 
 class ConcatAlgTask(Task):
+    def __init__(self, nodeid, task_type, task_name, workflow_checksum,
+                 base_args=None, extra_args=None,):
+        if not base_args: base_args = {}
+        extra_args = {} if not extra_args else dict(extra_args)
+        extra_args["_workflow_checksum"] = workflow_checksum
+        Task.__init__(self, nodeid, task_type, task_name, base_args, 
+                      extra_args)
+           
     def __repr__(self):
         return concatalg_class_repr(self, "@@5:ConcatAlgTask@@1:")
 

@@ -13,8 +13,7 @@ from nprlib.errors import TaskError
 __all__ = ["ConcatAlg"]
 
 class ConcatAlg(ConcatAlgTask):
-    def __init__(self, cogs, seqtype, conf, confname):
-
+    def __init__(self, cogs, seqtype, conf, confname, workflow_checksum):
         self.confname = confname
         self.conf = conf
         self.cogs_hard_limit = int(conf[confname]["_max_cogs"])
@@ -23,9 +22,9 @@ class ConcatAlg(ConcatAlgTask):
         cog_keyid = md5(cog_string) # This will be nodeid
        
         base_args = {}
-      
         ConcatAlgTask.__init__(self, cog_keyid, "concat_alg", "ConcatAlg", 
-                               base_args, conf[confname])
+                               workflow_checksum=workflow_checksum,
+                               base_args=base_args, extra_args=conf[confname])
         self.avail_cogs = len(cogs)
         self.used_cogs = len(used_cogs)
         self.cogs = used_cogs
@@ -50,7 +49,7 @@ class ConcatAlg(ConcatAlgTask):
             # thread.
             job = Msf(set(co), set(),
                       seqtype = self.seqtype)
-            print job.multiseq_file
+            
             job.main_tree = None
             job.threadid = generate_runid()
             job.configid = self.conf["_configid"]

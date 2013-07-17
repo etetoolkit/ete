@@ -72,8 +72,8 @@ def process_task(task, npr_conf, nodeid2info):
         # concat_alg tasks and all its sibling jobs should take into
         # account cog information and not only species and outgroups
         # included.
-        concat_job = concatclass(task.cogs,
-                                 seqtype, conf, concatconf)
+        concat_job = concatclass(task.cogs, seqtype, conf, concatconf,
+                                 conf["_config_checksum"])
         db.add_node(threadid,
                     concat_job.nodeid, cladeid,
                     targets, outgroups)
@@ -95,9 +95,16 @@ def process_task(task, npr_conf, nodeid2info):
     elif ttype == "concat_alg":
         # register tree for concat alignment, using constraint tree if
         # necessary
-        tree_task = treebuilderclass(nodeid, task.alg_phylip_file,
-                                     constrain_id, "parts:"+task.partitions_file,
-                                     seqtype, conf, treebuilderconf)
+        alg_id = db.get_dataid(task.taskid, DATATYPES.concat_alg_phylip)
+        try:
+            parts_id = db.get_dataid(task.taskid, DATATYPES.model_partitions)
+        except ValueError:
+            parts_id = None
+       
+        tree_task = treebuilderclass(nodeid, alg_id,
+                                     constrain_id, None,
+                                     seqtype, conf, treebuilderconf,
+                                     parts_id=parts_id)
         tree_task.size = task.size
         new_tasks.append(tree_task)
         

@@ -129,7 +129,10 @@ def get_dataid(taskid, datatype):
     cmd = """ SELECT md5 FROM task2data WHERE taskid="%s" AND datatype = "%s"
         """ %(taskid, datatype)
     datacursor.execute(cmd)
-    return datacursor.fetchone()[0]
+    try:
+        return datacursor.fetchone()[0]
+    except TypeError:
+        raise ValueError("data not found")
 
 def get_data(dataid):
     cmd = """ SELECT data.data FROM data WHERE md5="%s" """ %(dataid)

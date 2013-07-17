@@ -10,24 +10,31 @@ log = logging.getLogger("main")
 from nprlib.master_task import TreeTask
 from nprlib.master_job import Job
 from nprlib.utils import (basename, Tree, OrderedDict,
-                          GLOBALS, RAXML_CITE, pjoin, DATATYPES)
+                          GLOBALS, RAXML_CITE, pjoin, DATATYPES, md5)
 from nprlib import db
 
 __all__ = ["Raxml"]
 
 class Raxml(TreeTask):
     def __init__(self, nodeid, alg_file, constrain_id, model,
-                 seqtype, conf, confname):
+                 seqtype, conf, confname, parts_id=None):
         GLOBALS["citator"].add(RAXML_CITE)
-               
+
         base_args = OrderedDict()
+        self.compute_alrt = conf[confname].get("_alrt_calculation", None)
+        model = model or conf[confname]["_aa_model"]
+        
         self.confname = confname
         self.conf = conf
         self.alg_phylip_file = alg_file
-        self.constrain_tree = None
-        self.partitions_file = None
-        if constrain_id:
+        
+        try:
             self.constrain_tree = db.get_dataid(constrain_id, DATATYPES.constrain_tree)
+        except ValueError:
+            self.constrain_tree = None
+
+        self.partitions_file = parts_id
+            
         TreeTask.__init__(self, nodeid, "tree", "RaxML", 
                           base_args, conf[confname])
 
@@ -42,17 +49,8 @@ class Raxml(TreeTask):
         self.raxml_bin = raxml_bin
         self.threads = threads
         self.seqtype = seqtype
-        self.compute_alrt = conf[confname].get("_alrt_calculation", None)
 
         # Process raxml options
-        model = model or conf[confname]["_aa_model"]
-        if model.startswith("parts:"):
-            self.partitions_file = model.lstrip("parts:")
-            model = "JTT"
-            if self.compute_alrt == "phyml":
-                log.warning('phyml alrt calculation does not support partitioned alignments. Switching to raxml mode...')
-                self.compute_alrt = 'raxml'
-            
         method = conf[confname].get("_method", "GAMMA").upper()
         if seqtype.lower() == "aa":
             self.model_string =  'PROT%s%s' %(method, model.upper())
@@ -73,8 +71,10 @@ class Raxml(TreeTask):
         args["-m"] = self.model_string
         args["-n"] = self.alg_phylip_file
         if self.constrain_tree:
+            log.log(24, "Using constrain tree %s" %self.constrain_tree)
             args["-g"] = pjoin(GLOBALS["input_dir"], self.constrain_tree)
         if self.partitions_file:
+            log.log(24, "Using alg partitions %s" %self.partitions_file)
             args['-q'] = pjoin(GLOBALS["input_dir"], self.partitions_file)
             
         tree_job = Job(self.raxml_bin, args, parent_ids=[self.nodeid])
