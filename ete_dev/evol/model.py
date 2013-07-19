@@ -53,17 +53,17 @@ class Model:
         self.properties = {}
         for a, b in args.items():
             self.properties [a] = b
-        params = dict (PARAMS.items ())
+        params = dict(PARAMS.items())
         for key, arg in kwargs.items():
-            if not params.has_key (key):
-                warn ('WARNING: unknown param %s, can cause problems...'% (key))
+            if not params.has_key(key):
+                warn('WARNING: unknown param %s, can cause problems...'% (key))
             if key == 'gappy':
                 arg = not arg
             params[key] = arg
-        self._change_params (params)
+        self._change_params(params)
         self.__check_marks()
         if path:
-            self._load (path)
+            self._load(path)
 
     def __str__(self):
         '''
@@ -119,26 +119,26 @@ class Model:
             else:
                 self.branches[node.node_id] = {'mark': ''}
         
-    def _load (self, path):
+    def _load(self, path):
         '''
         parse outfiles and load in model object
         '''
         if self.properties['exec'] == 'codeml':
-            parse_paml (path, self)
+            parse_paml(path, self)
             # parse rst file if site or branch-site model
             if 'site' in self.properties['typ']:
                 # sites and classes attr
-                for key, val in parse_rst (path).iteritems():
-                    setattr (self, key, val)
+                for key, val in parse_rst(path).iteritems():
+                    setattr(self, key, val)
             if 'ancestor' in self.properties['typ']:
-                get_ancestor (path, self)
-            vars (self) ['lnL'] = self.stats ['lnL']
-            vars (self) ['np']  = self.stats ['np']
+                get_ancestor(path, self)
+            vars(self) ['lnL'] = self.stats ['lnL']
+            vars(self) ['np']  = self.stats ['np']
         elif self.properties['exec'] == 'Slr':
             for key, val in parse_slr (path).iteritems():
                 setattr (self, key, val)
-            vars (self) ['lnL'] = 0
-            vars (self) ['np']  = 0
+            vars(self) ['lnL'] = 0
+            vars(self) ['np']  = 0
             
     def _change_params(self, params):
         '''
@@ -148,7 +148,7 @@ class Model:
             params[key] = change
         self.properties ['params'] = params
         
-    def set_histface (self, up=True, hlines=(1.0, 0.3), kind='bar',
+    def set_histface(self, up=True, hlines=(1.0, 0.3), kind='bar',
                       errors=False, colors=None, **kwargs):
         '''
         To add histogram face for a given site mdl (M1, M2, M7, M8)
@@ -166,14 +166,14 @@ class Model:
                    'PS+': 'red'    }
         '''
         if self.sites == None:
-            warn ("WARNING: model %s not computed." % (self.name))
+            warn("WARNING: model %s not computed." % (self.name))
             return None
         if not 'header' in kwargs:
             kwargs['header'] = 'Omega value for sites under %s model' % \
                                (self.name)
-        if self.sites.has_key ('BEB'):
+        if self.sites.has_key('BEB'):
             val = 'BEB'
-        elif self.sites.has_key ('NEB'):
+        elif self.sites.has_key('NEB'):
             val = 'NEB'
         else:
             val = 'SLR'
@@ -190,9 +190,9 @@ class Model:
                                     ylabel=u'Omega (\u03c9)', kind=kind,
                                     **kwargs)
             if up:
-                setattr (hist, 'up', True)
+                setattr(hist, 'up', True)
             else:
-                setattr (hist, 'up', False)
+                setattr(hist, 'up', False)
         else:
             hist = None
         self.properties['histface'] = hist
@@ -209,7 +209,7 @@ class Model:
         
         '''
         string = ''
-        if self.properties.has_key ('sep'):
+        if self.properties.has_key('sep'):
             sep = self.properties ['sep']
         else:
             sep = ' = '
@@ -217,9 +217,9 @@ class Model:
             string += '%15s%s%s\n' % (prm, sep,
                                       str(self.properties['params'][prm]))
         string += '\n'
-        for prm in sorted (self.properties ['params'].keys(), cmp=lambda x, y: \
-                        cmp(sub('fix_', '', x.lower()),
-                            sub ('fix_', '', y.lower()))):
+        for prm in sorted(self.properties ['params'].keys(), cmp=lambda x, y: \
+                          cmp(sub('fix_', '', x.lower()),
+                              sub('fix_', '', y.lower()))):
             if prm in ['seqfile', 'treefile', 'outfile']:
                 continue
             if str(self.properties ['params'][prm]).startswith('*'):
@@ -228,18 +228,18 @@ class Model:
                 #          % (p, str(self.properties ['params'][p])[1:])
             else:
                 string += '%15s%s%s\n' % (prm, sep,
-                                          str (self.properties ['params'][prm]))
+                                          str(self.properties ['params'][prm]))
         if outfile == None:
             return string
         else:
-            open (outfile, 'w').write (string)
+            open(outfile, 'w').write(string)
 
 def check_name(model):
     '''
     check that model name corresponds to one of the available
     '''
-    if AVAIL.has_key (sub ('\..*', '', model)):
-        return model, AVAIL [sub ('\..*', '', model)]
+    if AVAIL.has_key(sub('\..*', '', model)):
+        return model, AVAIL [sub('\..*', '', model)]
 
 
 
@@ -257,10 +257,10 @@ def colorize_rst(vals, winner, classes, col=None):
                   'PS' : 'orange',
                   'PS+': 'red'}
     colors = []
-    for i in xrange (0, len (vals)):
+    for i in xrange(0, len(vals)):
         class1 = classes[i] #int(sub('\/.*', '', sub('\(', '', classes[i])))
-        class2 = max (classes)# int(sub('.*\/', '', sub('\)', '', classes[i])))
-        pval = float (vals[i])
+        class2 = max(classes)# int(sub('.*\/', '', sub('\)', '', classes[i])))
+        pval = float(vals[i])
         if pval < 0.95:
             colors.append(col['NS'])
         elif (class1 not in [class2, 1]) and (winner in ['M2', 'M8', 'SLR']):
@@ -292,7 +292,7 @@ def colorize_rst(vals, winner, classes, col=None):
 Model.__doc__ = Model.__doc__ % \
                 ('\n'.join([ '          %-8s   %-27s   %-15s  ' % \
                              ('%s' % (x), AVAIL[x]['evol'], AVAIL[x]['typ']) \
-                             for x in sorted (sorted (AVAIL.keys()),
+                             for x in sorted(sorted(AVAIL.keys()),
                                               cmp=lambda x, y: \
                                               cmp(AVAIL[x]['typ'],
                                                   AVAIL[y]['typ']),
