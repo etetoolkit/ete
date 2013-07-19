@@ -7,8 +7,8 @@ import sys, re
 
 typ = None
 while typ != 'L' and typ != 'S':
-    typ = raw_input (\
-        "choose kind of example [L]ong or [S]hort, hit [L] or [S]:\n")
+    typ = raw_input(\
+        "choose kind of example [L]ong or [S]hort, hit [L] or [S]:\n").upper()
 TREE_PATH    = "data/%s_example/measuring_%s_tree.nw" % (typ, typ)
 
 ALG_PATH     = "data/%s_example/alignment_%s_measuring_evol.fasta" % (typ, typ)
@@ -24,16 +24,15 @@ ALG_PATH  = MY_PATH + re.sub('\./', '', ALG_PATH )
 # load tree
 
 
-print '\n         ----> we create a EvolTree object, and give to him a topology, from'
+print '\n         ----> we create a EvolTree object, and give to him a topology, from',
 print TREE_PATH
 out = True
 while out == True:
     try:
         T = EvolTree(TREE_PATH)
-        print TREE_PATH
         out = False
     except:
-        sys.stderr.write('Bad path for working directory. Enter new path or quit ("Q"):\n')
+        sys.stderr.write('Bad path for working directory. Enter new path or quit("Q"):\n')
         PATH = raw_input('')
         if PATH.startswith('q') or PATH.startswith('Q'):
             sys.exit()
@@ -41,7 +40,6 @@ while out == True:
         ALG_PATH     = "./alignment_%s_measuring_evol.fasta" % (typ)
         TREE_PATH = PATH + re.sub('\./', '', TREE_PATH)
         ALG_PATH  = PATH + re.sub('\./', '', ALG_PATH )
-        print TREE_PATH
 
 
 print T
@@ -89,33 +87,33 @@ raw_input("         ====> Hit some key...")
 # tengo que encontrar un ejemplo mas bonito pero bueno.... :P
 
 print '\n\n\n         ----> We now add histograms to our tree to repesent site models with add_histface function: \n\n%s\n%s\n%s\n'\
-      % ('*'*10 + ' doc ' + '*'*10, T.get_evol_model ('M2').set_histface.func_doc,'*'*30)
+      % ('*'*10 + ' doc ' + '*'*10, T.get_evol_model('M2').set_histface.func_doc,'*'*30)
 print 'Upper face is an histogram representing values of omega for each column in the alignment,'
 print '\
-Colors represent significantly conserved sites (cyan to blue), neutral sites (greens), or under \n\
-positive selection (orange to red). \n\
-Lower face also represents values of omega (red line) and bars represent the error of the estimation.\n\
-Also significance of belonging to one class of site can be painted in background (here lightgrey for\n\
+Colors represent significantly conserved sites(cyan to blue), neutral sites(greens), or under \n\
+positive selection(orange to red). \n\
+Lower face also represents values of omega(red line) and bars represent the error of the estimation.\n\
+Also significance of belonging to one class of site can be painted in background(here lightgrey for\n\
 evrething significant)\n\
 Both representation are done according to BEB estimation of M2, M1 or M7 estimation can also be \n\
 drawn but should not be used.\n'
 raw_input("         ====> Hit some key to display, histograms of omegas BEB from M2 model...")
 
-col = {'NS' : 'white',
-       'RX' : 'lightgrey',
-       'RX+': 'lightgrey',
-       'CN' : 'lightgrey',
-       'CN+': 'lightgrey',
-       'PS' : 'lightgrey',
-       'PS+': 'lightgrey'}
+col = {'NS' : 'grey',
+       'RX' : 'grey',
+       'RX+': 'grey',
+       'CN' : 'grey',
+       'CN+': 'grey',
+       'PS' : 'grey',
+       'PS+': 'grey'}
 
 
 
-T.get_evol_model ('M2').set_histface (typ='protamine',
-                                      col=col, up = False,
-                                      lines=[1.0,0.3],
-                                      col_lines=['black','grey'])
-T.show (histfaces = ['M1', 'M2'])
+T.get_evol_model('M2').set_histface(kind='curve',
+                                      colors=col, up = False,
+                                      hlines=[1.0,0.3],
+                                      hlines_col=['black','grey'])
+T.show(histfaces = ['M1', 'M2'])
 
 
 ###
@@ -126,19 +124,19 @@ print '               with the function link_to_evol_model \n\n%s\n%s\n%s\n' % (
                                                                       T.link_to_evol_model.func_doc, \
                                                                       '*'*30)
 raw_input('runs\n         ====> hit some key to see...')
-T = EvolTree (TREE_PATH)
-T.link_to_alignment (ALG_PATH)
+T = EvolTree(TREE_PATH)
+T.link_to_alignment(ALG_PATH)
 T.workdir = (WORKING_PATH)
 
 T.link_to_evol_model(T.workdir + '/fb/out','fb')
 T.link_to_evol_model(T.workdir + '/M1/out','M1')
 T.link_to_evol_model(T.workdir + '/M2/out','M2')
 
-T.get_evol_model ('M2').set_histface (typ='protamine',
-                                      col=col, up = False,
-                                      lines=[1.0,0.3],
-                                      col_lines=['black','grey'])
-T.show (histfaces = ['M1', 'M2'])
+T.get_evol_model('M2').set_histface(kind='curve',
+                                      colors=col, up = False,
+                                      hlines=[1.0,0.3],
+                                      hlines_col=['black','grey'])
+T.show(histfaces = ['M1', 'M2'])
 
 
 ###
@@ -149,7 +147,7 @@ while name not in T.get_leaf_names():
     name = raw_input('         ====> As you need to mark some branches to run branch\n\
     models, type the name of one leaf: ')
 
-idname = T.get_leaves_by_name(name)[0]._nid
+idname = T.get_leaves_by_name(name)[0].node_id
 
 print '         ----> you want to mark:',name,'that has this idname: ', idname
 T.mark_tree([idname]) # by default will mark with '#1'
@@ -180,20 +178,6 @@ else:
     print '                         ' + name + ' is not under positive selection.'
 
 
-
-
-
-
-
-
-print '\n\n         ---->  more or less, all we have done here is feasable from the GUI,'
-print '                 try to reload our runs through it....'
-raw_input('hit something to start')
-
-T = EvolTree(TREE_PATH)
-T.link_to_alignment(ALG_PATH)
-T.workdir = (WORKING_PATH)
-T.show()
 sys.stderr.write('\n\nThe End.\n\n')
 
 

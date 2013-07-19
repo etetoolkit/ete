@@ -50,13 +50,13 @@ else:
 
 __all__ = ["EvolNode", "EvolTree"]
 
-def _parse_species (name):
+def _parse_species(name):
     '''
     just to return specie name from fasta description
     '''
     return name[:3]
 
-class EvolNode (PhyloNode):
+class EvolNode(PhyloNode):
     """ Re-implementation of the standart TreeNode instance. It adds
     attributes and methods to work with phylogentic trees.
 
@@ -69,7 +69,7 @@ class EvolNode (PhyloNode):
     
     """
 
-    def __init__ (self, newick=None, alignment=None, alg_format="fasta",
+    def __init__(self, newick=None, alignment=None, alg_format="fasta",
                  sp_naming_function=_parse_species, format=0, 
                   binpath=''):
         '''
@@ -97,10 +97,10 @@ class EvolNode (PhyloNode):
             if node.is_leaf():
                 continue
             nid[0] += 1
-            node.add_feature ('node_id', nid[0])
+            node.add_feature('node_id', nid[0])
             node._label_internal_nodes(nid)
 
-    def _label_as_paml (self):
+    def _label_as_paml(self):
         '''
         to label tree as paml, nearly walking man over the tree algorithm
         WARNING: sorted names in same order that sequence
@@ -113,13 +113,13 @@ class EvolNode (PhyloNode):
             duplis = [n for n in self.get_leaf_names() if self.get_leaf_names().count(n)>1]
             raise Exception('EvolTree require unique names for leaves', duplis)
         # put ids
-        for leaf in sorted (self, key=lambda x: x.name):
+        for leaf in sorted(self, key=lambda x: x.name):
             leaf.add_feature ('node_id', nid)
             nid += 1
-        self.add_feature ('node_id', nid)
+        self.add_feature('node_id', nid)
         self._label_internal_nodes([nid])
         
-    def get_descendant_by_node_id (self, idname):
+    def get_descendant_by_node_id(self, idname):
         '''
         returns node list corresponding to a given idname
         '''
@@ -137,15 +137,15 @@ class EvolNode (PhyloNode):
         """
         to write algn in paml format
         """
-        seq_group = SeqGroup ()
+        seq_group = SeqGroup()
         for n in self:
             seq_group.id2seq  [n.node_id] = n.nt_sequence
             seq_group.id2name [n.node_id] = n.name
             seq_group.name2id [n.name   ] = n.node_id
-        seq_group.write (outfile=fullpath, format='paml')
+        seq_group.write(outfile=fullpath, format='paml')
 
         
-    def run_model (self, model_name, ctrl_string='', keep=True, **kwargs):
+    def run_model(self, model_name, ctrl_string='', keep=True, **kwargs):
         '''
         To compute evolutionnary models.     e.g.: b_free_lala.vs.lele, will launch one free branch model, and store 
         it in "WORK_DIR/b_free_lala.vs.lele" directory
@@ -172,19 +172,19 @@ class EvolNode (PhyloNode):
         fullpath = os.path.join (self.workdir, model_obj.name)
         os.system("mkdir -p %s" %fullpath)
         # write tree file
-        self.__write_algn (fullpath + '/algn')
+        self.__write_algn(fullpath + '/algn')
         if model_obj.properties['exec'] == 'Slr':
-            self.write (outfile=fullpath+'/tree',
-                        format = (11))
+            self.write(outfile=fullpath+'/tree',
+                       format = (11))
         else:
-            self.write (outfile=fullpath+'/tree',
-                        format = (10 if model_obj.properties['allow_mark'] else 9))
+            self.write(outfile=fullpath+'/tree',
+                       format = (10 if model_obj.properties['allow_mark'] else 9))
         # write algn file
         ## MODEL MODEL MDE
         if ctrl_string == '':
             ctrl_string = model_obj.get_ctrl_string(fullpath+'/tmp.ctl')
         else:
-            open (fullpath+'/tmp.ctl', 'w').write (ctrl_string)
+            open(fullpath+'/tmp.ctl', 'w').write(ctrl_string)
         hlddir = os.getcwd()
         os.chdir(fullpath)
         bin = os.path.join(self.execpath, model_obj.properties['exec'])
@@ -199,21 +199,21 @@ class EvolNode (PhyloNode):
                  "       define your variable EvolTree.execpath")
             return 1
         if 'error' in run or 'Error' in run:
-            warn ("ERROR: inside codeml!!\n" + run)
+            warn("ERROR: inside codeml!!\n" + run)
             return 1
         os.chdir(hlddir)
         if keep:
-            setattr (model_obj, 'run', run)
-            self.link_to_evol_model (os.path.join(fullpath,'out'), model_obj)
+            setattr(model_obj, 'run', run)
+            self.link_to_evol_model(os.path.join(fullpath,'out'), model_obj)
     sep = '\n'
     run_model.__doc__ = run_model.__doc__ % \
-                        (sep.join(map (lambda x: \
-                                       '          %-8s   %-27s   %-15s  ' % \
-                                       ('%s' % (x), AVAIL[x]['evol'], AVAIL[x]['typ']),
-                                       sorted (sorted (AVAIL.keys()), cmp=lambda x, y : \
-                                               cmp(AVAIL[x]['typ'], AVAIL[y]['typ']),
-                                               reverse=True))),
-                         ', '.join (PARAMS.keys()))
+                        (sep.join(map(lambda x: \
+                                      '          %-8s   %-27s   %-15s  ' % \
+                                      ('%s' % (x), AVAIL[x]['evol'], AVAIL[x]['typ']),
+                                      sorted (sorted (AVAIL.keys()), cmp=lambda x, y : \
+                                              cmp(AVAIL[x]['typ'], AVAIL[y]['typ']),
+                                              reverse=True))),
+                         ', '.join(PARAMS.keys()))
 
 
     #def test_codon_model(self):
@@ -227,7 +227,7 @@ class EvolNode (PhyloNode):
     #    self.get_most_likely('M0.model_test-3', 'M0.model_test-1')
     #    self.get_most_likely('M0.model_test-3', 'M0.model_test-2')
 
-    def link_to_alignment (self, alignment, alg_format="paml",
+    def link_to_alignment(self, alignment, alg_format="paml",
                            nucleotides=True, **kwargs):
         '''
         same function as for phyloTree, but translate sequences if nucleotides
@@ -268,27 +268,27 @@ class EvolNode (PhyloNode):
             if histfaces:
                 for hist in histfaces:
                     try:
-                        mdl = self.get_evol_model (hist)
+                        mdl = self.get_evol_model(hist)
                     except AttributeError:
-                        warn ('model %s not computed' % (hist))
+                        warn('model %s not computed' % (hist))
                     if not 'histface' in mdl.properties:
                         if len(histfaces)>1 and histfaces.index(hist)!=0:
-                            mdl.set_histface (up=False)
+                            mdl.set_histface(up=False)
                         else:
-                            mdl.set_histface ()
+                            mdl.set_histface()
                     if mdl.properties ['histface'].up:
-                        ts.aligned_header.add_face (\
+                        ts.aligned_header.add_face(
                             mdl.properties['histface'], 1)
                     else:
-                        ts.aligned_foot.add_face (\
+                        ts.aligned_foot.add_face(
                             mdl.properties['histface'], 1)
             super(EvolTree, self).show(layout=layout, tree_style=ts)
         else:
             raise ValueError("Treeview module is disabled")
     
 
-    def render (self, file_name, layout=None, w=None, h=None,
-                tree_style=None, header=None, histfaces=None):
+    def render(self, file_name, layout=None, w=None, h=None,
+               tree_style=None, header=None, histfaces=None):
         '''
         call super show adding up and down faces
 
@@ -305,19 +305,19 @@ class EvolNode (PhyloNode):
             if histfaces:
                 for hist in histfaces:
                     try:
-                        mdl = self.get_evol_model (hist)
+                        mdl = self.get_evol_model(hist)
                     except AttributeError:
-                        warn ('model %s not computed' % (hist))
+                        warn('model %s not computed' % (hist))
                     if not 'histface' in mdl.properties:
                         if len(histfaces)>1 and histfaces.index(hist)!=0:
-                            mdl.set_histface (up=False)
+                            mdl.set_histface(up=False)
                         else:
-                            mdl.set_histface ()
+                            mdl.set_histface()
                     if mdl.properties ['histface'].up:
-                        ts.aligned_header.add_face (\
+                        ts.aligned_header.add_face(
                             mdl.properties['histface'], 1)
                     else:
-                        ts.aligned_foot.add_face (\
+                        ts.aligned_foot.add_face(
                             mdl.properties['histface'], 1)
             return super(EvolTree, self).render(file_name, layout=layout,
                                                 tree_style=ts,
@@ -325,7 +325,7 @@ class EvolNode (PhyloNode):
         else:
             raise ValueError("Treeview module is disabled")
 
-    def mark_tree (self, node_ids, verbose=False, **kargs):
+    def mark_tree(self, node_ids, verbose=False, **kargs):
         '''
         function to mark branches on tree in order that paml could interpret it.
         takes a "marks" argument that should be a list of #1,#1,#2
@@ -346,20 +346,20 @@ class EvolNode (PhyloNode):
         else:
             marks = ['#1']*len (node_ids)
         for node in self.traverse():
-            if not hasattr (node, 'node_id'):
+            if not hasattr(node, 'node_id'):
                 continue
             if node.node_id in node_ids:
                 if ('.' in marks[node_ids.index(node.node_id)] or \
-                       match ('#[0-9]+', \
-                              marks[node_ids.index(node.node_id)])==None)\
-                              and verbose:
-                    warn ('WARNING: marks should be "#" sign directly '+\
-                          'followed by integer\n' + self.mark_tree.func_doc)
+                       match('#[0-9]+', \
+                             marks[node_ids.index(node.node_id)])==None)\
+                             and verbose:
+                    warn('WARNING: marks should be "#" sign directly '+\
+                         'followed by integer\n' + self.mark_tree.func_doc)
                 node.add_feature('mark', ' '+marks[node_ids.index(node.node_id)])
             elif not 'mark' in node.features:
                 node.add_feature('mark', '')
 
-    def link_to_evol_model (self, path, model):
+    def link_to_evol_model(self, path, model):
         '''
         link EvolTree to evolutionary model
           * free-branch model ('fb') will append evol values to tree
@@ -370,23 +370,23 @@ class EvolNode (PhyloNode):
         :argument model: either the name of a model, or a Model object (usually empty)
         
         '''
-        if type (model) == str :
-            model = Model (model, self, path)
+        if type(model) == str :
+            model = Model(model, self, path)
         else:
-            model._load (path)
+            model._load(path)
         # new entry in _models dict
-        while self._models.has_key (model.name):
-            model.name = model.name.split('__')[0] + str (
-                (int (model.name.split('__')[1])
+        while self._models.has_key(model.name):
+            model.name = model.name.split('__')[0] + str(
+                (int(model.name.split('__')[1])
                  +1)  if '__' in model.name else 0)
         self._models[model.name] = model
         if not os.path.isfile(path):
-            warn ("ERROR: not a file: " + path)
+            warn("ERROR: not a file: " + path)
             return 1
-        if len (self._models) == 1 and model.properties['exec']=='codeml':
-            self.change_dist_to_evol ('bL', model, fill=True)
+        if len(self._models) == 1 and model.properties['exec']=='codeml':
+            self.change_dist_to_evol('bL', model, fill=True)
 
-    def get_evol_model (self, modelname):
+    def get_evol_model(self, modelname):
         '''
         returns one precomputed model
         
@@ -396,20 +396,20 @@ class EvolNode (PhyloNode):
         try:
             return self._models [modelname]
         except KeyError:
-            warn ("Model %s not found." % (modelname))
+            warn("Model %s not found." % (modelname))
             
 
-    def write (self, features=None, outfile=None, format=10):
+    def write(self, features=None, outfile=None, format=10):
         """
         Inherits from Tree but adds the tenth format, that allows to display marks for CodeML.
         TODO: internal writting format need to be something like 0
         """
         from re import sub
-        if int (format)==11:
-            nwk = ' %s 1\n' % (len (self))
+        if int(format)==11:
+            nwk = ' %s 1\n' % (len(self))
             nwk += sub('\[&&NHX:mark=([ #0-9.]*)\]', r'\1', \
                        write_newick(self, features=['mark'],format=9))
-        elif int (format)==10:
+        elif int(format)==10:
             nwk = sub('\[&&NHX:mark=([ #0-9.]*)\]', r'\1', \
                       write_newick(self, features=['mark'],format=9))
         else:
@@ -423,7 +423,7 @@ class EvolNode (PhyloNode):
                                                                          'argument 10 format')
 
     
-    def get_most_likely (self, altn, null):
+    def get_most_likely(self, altn, null):
         '''
         Returns pvalue of LRT between alternative model and null model.
         
@@ -459,24 +459,24 @@ class EvolNode (PhyloNode):
         :argument null: model with lower number of parameters (np)
         
         '''
-        altn = self.get_evol_model (altn)
-        null = self.get_evol_model (null)
+        altn = self.get_evol_model(altn)
+        null = self.get_evol_model(null)
         if null.np > altn.np:
-            warn ("first model should be the alternative, change the order")
+            warn("first model should be the alternative, change the order")
             return 1.0
         try:
-            if hasattr (altn, 'lnL') and hasattr (null, 'lnL'):
+            if hasattr(altn, 'lnL') and hasattr(null, 'lnL'):
                 from ete_dev.evol.utils import chi_high
                 return chi_high(2*(altn.lnL - null.lnL),
                                 df=(altn.np - null.np))
             else:
                 return 1
         except KeyError:
-            warn ("at least one of %s or %s, was not calculated" % (altn.name,
-                                                                    null.name))
-            exit (self.get_most_likely.func_doc)
+            warn("at least one of %s or %s, was not calculated" % (altn.name,
+                                                                   null.name))
+            exit(self.get_most_likely.func_doc)
 
-    def change_dist_to_evol (self, evol, model, fill=False):
+    def change_dist_to_evol(self, evol, model, fill=False):
         '''
         change dist/branch length of the tree to a given evolutionary
         variable (dN, dS, w or bL), default is bL.
@@ -494,7 +494,7 @@ class EvolNode (PhyloNode):
             node.dist = model.branches[node.node_id][evol]
             if fill:
                 for e in ['dN', 'dS', 'w', 'bL']:
-                    node.add_feature (e, model.branches [node.node_id][e])
+                    node.add_feature(e, model.branches [node.node_id][e])
 
 
 # cosmetic alias
