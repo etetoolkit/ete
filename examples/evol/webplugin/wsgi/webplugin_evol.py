@@ -2,12 +2,11 @@ import sys
 import re
 import os
 
-#sys.path.insert(0, "/home/services/software/ete2-webplugin/")
 sys.path.insert(0, "/var/www/webplugin/wsgi")
 
 from ete_dev import WebTreeApplication # Required to use the webplugin
 
-from ete_dev.evol import evol_clean_layout, evol_layout
+from ete_dev.evol import evol_layout
 from ete_dev.evol import EvolTree
 #from ete_dev import PhyloTree as EvolTree
 from ete_dev.evol.model import Model

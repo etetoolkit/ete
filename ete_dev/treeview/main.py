@@ -359,19 +359,19 @@ class TreeStyle(object):
     def set_layout_fn(self, layout):
         self._layout_handler = []
         if type(layout) not in set([list, set, tuple, frozenset]):
-            self._layout_handler.append(layout)
-        else:
-            for ly in layout:
-                # Validates layout function
-                if (type(ly) == types.FunctionType or type(ly) == types.MethodType or ly is None):
-                    self._layout_handler.append(layout)
-                else:
-                    import layouts 
-                    try:
-                        self._layout_handler.append(getattr(layouts, ly))
-                    except Exception, e:
-                        print e
-                        raise ValueError ("Required layout is not a function pointer nor a valid layout name.")
+            layout = [layout]
+
+        for ly in layout:
+            # Validates layout function
+            if (type(ly) == types.FunctionType or type(ly) == types.MethodType or ly is None):
+                self._layout_handler.append(ly)
+            else:
+                import layouts 
+                try:
+                    self._layout_handler.append(getattr(layouts, ly))
+                except Exception, e:
+                    print e
+                    raise ValueError ("Required layout is not a function pointer nor a valid layout name.")
  
     def get_layout_fn(self):
         return self._layout_handler

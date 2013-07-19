@@ -10,7 +10,7 @@ __email__   = "francois@barrabin.org"
 __licence__ = "GPLv3"
 __version__ = "0.0"
 
-from ete_dev.evol import EvolTree, faces
+from ete_dev import EvolTree, faces
 from random import random as rnd
 
 WRKDIR = 'data/protamine/PRM1/'
