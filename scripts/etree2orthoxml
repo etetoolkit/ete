@@ -14,7 +14,7 @@ SPECIES_NAME_POS = 0
 def extract_spname(node_name):
     return node_name.split(SPECIES_NAME_DELIMITER)[SPECIES_NAME_POS]
 
-def export_as_orthoXML(t, database):
+def export_as_orthoXML(t, database, evoltype_attr="evoltype"):
     """ This function takes a ETE PhyloTree instance and export all
     its speciation and duplication events as OrthoXML format.
 
@@ -53,7 +53,8 @@ def export_as_orthoXML(t, database):
     # OrthoXML does not support duplication events to be at the root
     # of the tree, so we search for the top most speciation events in
     # the tree and export them as separate ortholog groups
-    for speciation_root in t.iter_leaves(is_leaf_fn=lambda n: getattr(n, "evoltype", "") == "S" or not n.children):
+    is_speciation = lambda n: getattr(n, evoltype_attr, "") == "S" or not n.children
+    for speciation_root in t.iter_leaves(is_leaf_fn=is_speciation):
         # Creates an orthogroup in which all events will be added
         node2event = {}
         node2event[speciation_root] = orthoxml.group()
@@ -74,14 +75,15 @@ def export_as_orthoXML(t, database):
                 else:
                     node2event[ch] = orthoxml.group()
                     try:
-                        evoltype = ch.evoltype
+                        evoltype = getattr(ch, evoltype_attr)
                     except AttributeError:
                         if not ch.is_leaf():
-                            raise TreeError("\n\nUnknown evolutionary event. Please use [S] for speciation and [D] for duplication: %s" %ch.get_ascii())
+                            print ch.features
+                            raise AttributeError("\n\nUnknown evolutionary event. Please use [S] for speciation and [D] for duplication: %s" %ch.get_ascii())
                     
-                    if ch.evoltype == "D":
+                    if evoltype == "D":
                         parent_event.add_paralogGroup(node2event[ch])
-                    elif ch.evoltype == "S":
+                    elif evoltype == "S":
                         parent_event.add_orthologGroup(node2event[ch])
     O.export(sys.stdout, 0, namespace_="")
 
@@ -112,12 +114,20 @@ if __name__ == "__main__":
                         " of node names provided (space separated). In example:"
                         "'--root human rat mouse'")
 
+    
     parser.add_argument("--skip_ortholog_detection", dest="skip_ortholog_detection", 
                         action="store_true",
                         help=("Skip automatic detection of"
                               " speciation and duplication events, thus relying in the"
-                              " correct annotation of the provided tree (i.e. '((A, A)[D], B)[S];' )"))
-
+                              " correct annotation of the provided tree using"
+                              " the extended newick format (i.e. '((A, A)[&&NHX:evoltype=D], B)[&&NHX:evoltype=S];')"))
+    
+    parser.add_argument("--evoltype_attr", dest="evoltype_attr", 
+                          type=str, default="evoltype",
+                          help=("When orthology detection is disabled,"
+                                " the attribute name provided here will be expected to exist"
+                                " in all internal nodes and read from the extended newick format"))
+    
     parser.add_argument("--database", dest="database", 
                         type=str, default="",
                         help=("Database name"))
@@ -160,15 +170,14 @@ if __name__ == "__main__":
         # detect speciation and duplication events using the species overlap
         # algorithm used in phylomeDB
         t.get_descendant_evol_events()
-
-
+        
     if args.ascii:
-        print t.get_ascii(attributes=["evoltype", "name"], show_internal=True)
+        print t.get_ascii(attributes=[args.evoltype_attr, "name"], show_internal=True)
         
     if args.newick:
-        print t.write(features=["evoltype"])
+        print t.write(features=[args.evoltype_attr], format_root_node=True)
         
     if args.show:
         t.show()
     
-    export_as_orthoXML(t, args.database)
+    export_as_orthoXML(t, args.database, args.evoltype_attr)
