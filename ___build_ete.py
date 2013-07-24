@@ -280,26 +280,26 @@ if options.doc:
 
 if process_package:
     # Clean from internal files
-    _ex("rm %s/.git -r" %\
+    _ex("rm %s/.git -rf" %\
             (RELEASE_PATH))
-    _ex('rm %s/build/ -r' %(RELEASE_PATH))
-    _ex('rm %s/sdoc/ -r' %(RELEASE_PATH))
-    _ex('rm %s/___* -r' %(RELEASE_PATH))
+    _ex('rm %s/build/ -rf' %(RELEASE_PATH))
+    _ex('rm %s/sdoc/ -rf' %(RELEASE_PATH))
+    _ex('rm %s/___* -rf' %(RELEASE_PATH))
      
     print "Creating tar.gz"
     _ex("cd %s; python ./setup.py sdist " %RELEASE_PATH) 
 
     release= ask("Copy release to main server?", ["y","n"])
     if release=="y":
+        print "Creating and submitting distribution to PyPI"
+        _ex("cd %s; python ./setup.py sdist upload --show-response " %RELEASE_PATH) 
+
         print "Copying release to ete server..."
         _ex("scp %s/dist/%s.tar.gz %s" %\
                 (RELEASE_PATH, RELEASE_NAME, SERVER+":"+SERVER_RELEASES_PATH))
 
         print "Updating releases table..."
         _ex("ssh %s 'cd %s; echo %s > %s.latest; sh update_downloads.sh;'" %(SERVER, SERVER_RELEASES_PATH, REVISION, MODULE_NAME))
-
-        print "Creating and submitting distribution to PyPI"
-        _ex("cd %s; python ./setup.py sdist upload --show-response " %RELEASE_PATH) 
 
 
     if ask("Update examples package in server?", ["y","n"]) == "y":
