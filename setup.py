@@ -148,7 +148,7 @@ try:
         name = "ete_dev",
         version = ete_version,
         packages = find_packages(),
-        scripts = ['scripts/ete_dev'],
+        scripts = ['scripts/ete_dev', 'scripts/etree2orthoxml'],
         requires = [],
         
         # Project uses reStructuredText, so ensure that the docutils get
