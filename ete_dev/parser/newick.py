@@ -374,7 +374,7 @@ def write_newick(rootnode, features=None, format=1, format_root_node=True,
     representation. """
     newick = []
     leaf = is_leaf_fn if is_leaf_fn else lambda n: not bool(n.children)
-    for postorder, node in rootnode._iter_prepostorder(is_leaf_fn=is_leaf_fn):
+    for postorder, node in rootnode.iter_prepostorder(is_leaf_fn=is_leaf_fn):
         if postorder:
             newick.append(")")
             if node.up is not None or format_root_node:

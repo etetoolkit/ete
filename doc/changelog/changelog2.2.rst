@@ -91,6 +91,8 @@ NEW FEATURES
   * Added :func:`TreeNode.iter_ancestors` and
     :func:`TreeNode.get_ancestors` functions.
 
+  * Added :func:`TreeNode.iter_prepostorder` tree node iterator.
+
   * Newick parser accepts now the creation of single node trees. For
     example, a text string such as :attr:`"node1;"` will be parsed as
     a single tree node whose name is :attr:`node1`. By contrast, the

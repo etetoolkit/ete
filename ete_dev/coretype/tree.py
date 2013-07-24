@@ -635,11 +635,13 @@ class TreeNode(object):
                 for node in ch._iter_descendants_postorder(is_leaf_fn=is_leaf_fn):
                     yield node
         yield self
-
-
-    def _iter_prepostorder(self, is_leaf_fn=None):
+    
+    def iter_prepostorder(self, is_leaf_fn=None):
         """
-        EXPERIMENTAL
+        Iterate over all nodes in a tree yielding every node in both
+        pre and post order. Each iteration returns a postorder flag
+        (True if node is being visited in postorder) and a node
+        instance.
         """
         to_visit = [self]
         if is_leaf_fn is not None:
@@ -1285,7 +1287,7 @@ class TreeNode(object):
                              tree_style=tree_style, win_name=name)
 
     def render(self, file_name, layout=None, w=None, h=None, \
-                       tree_style=None, units="px", dpi=300):
+                       tree_style=None, units="px", dpi=90):
         """ 
         Renders the node structure as an image. 
 
@@ -1313,7 +1315,7 @@ class TreeNode(object):
         else:
             return drawer.render_tree(self, file_name, w=w, h=h, 
                                       layout=layout, tree_style=tree_style, 
-                                      units=units)
+                                      units=units, dpi=dpi)
 
     def copy(self, method="cpickle"):
         """.. versionadded: 2.1

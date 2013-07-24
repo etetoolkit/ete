@@ -348,7 +348,7 @@ class ImgFace(Face):
         self.height = height
         
     def update_pixmap(self):
-        self.pixmap = QPixmap(self.img_file)
+        self.pixmap = QPixmap(self.img_file)# flags=Qt.DiffuseAlphaDither)
         
         if self.width or self.height:
             w, h = self.width, self.height

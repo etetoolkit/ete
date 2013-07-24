@@ -593,7 +593,7 @@ def set_pen_style(pen, line_style):
         pen.setStyle(QtCore.Qt.DotLine)
      
 
-def save(scene, imgName, w=None, h=None, dpi=300,\
+def save(scene, imgName, w=None, h=None, dpi=90,\
              take_region=False, units="px"):
 
     ext = imgName.split(".")[-1].upper()
