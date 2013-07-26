@@ -258,7 +258,7 @@ be used. Note how species are correctly detected in the following example:
 
 
 Example: Tree rooting
-========================
+---------------------------
 
 When evolutionary events are expected to be automatically inferred
 from tree topology, outgroup information can be passed to the program to
