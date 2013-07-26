@@ -74,9 +74,11 @@ folder of the latest ETE package release
 To work, :attr:`etree2orthoxml` requires only one argument containing
 the newick representation of a tree or the name of the file that
 contains it. By default, automatic detection of speciation and
-duplication events will be carried out, although this can be easily
-disabled when event information is provided along with the newick
-tree. In the following sections you will find some use case examples.
+duplication events will be carried out using the built-in
+:ref:`species overlap algorithm <spoverlap>`, although this behavior
+can be easily disabled when event information is provided along with
+the newick tree. In the following sections you will find some use case
+examples.
 
 Also, consider reading the source code of the script. It is documented
 and it can be used as a template for more specific applications. Note
@@ -139,7 +141,7 @@ Usage
 
 
 
-example: Using custom evolutionary annotation 
+Example: Using custom evolutionary annotation 
 ------------------------------------------------------
 
 If all internal nodes in the provided tree are correctly label as
@@ -195,25 +197,31 @@ different by using the :attr:`evoltype_attr`:
 
    # etree2orthoxml --evoltype_attr E --skip_ortholog_detection '((HUMAN_A, HUMAN_B)[&&NHX:E=S], MOUSE_B)[&&NHX:E=S];'
 
-However, more complex modifications can be easily performed using the
-core methods of the ETE library.
+However, more complex modifications on raw trees can be easily
+performed using the core methods of the ETE library, so they match the
+requirements of the :attr:`etree2orthoxml` script.
 
 :: 
 
    from ete_dev import Tree
+   # Having the followin tree
    t = Tree('((HUMAN_A, HUMAN_B)[&&NHX:speciation=N], MOUSE_B)[&&NHX:speciation=Y];')
+
+   # We read the speciation tag from nodes and convert it into a vaild evoltree label
    for node in t.traverse():
       if not node.is_leaf():
          etype = "D" if node.speciation == "N" else "S"
          node.add_features(evoltype=etype)
+ 
+   # We the export a newick string that is compatible with etree2orthoxml script
    t.write(features=["evoltype"], format_root_node=True)
 
    # converted newick:
    # '((HUMAN_A:1,HUMAN_B:1)1:1[&&NHX:evoltype=D],MOUSE_B:1)1:1[&&NHX:evoltype=S];'
 
 
-Example: Automatic species code detection
-------------------------------------
+Example: Automatic detection of species names 
+--------------------------------------------------
 As different databases and software may produce slightly different
 newick tree formats, the script provides several customization
 options.
