@@ -14,8 +14,9 @@ BUGFIXES
 SCRIPTS
 ==========
 * Improvements in the standalone visualization script (a.k.a. ete2) 
-* Added the :attr:`etree2orthoxml` script, which provides conversion
-  between phylogenetic tree and the orthoXML format
+* Added the :ref:`etree2orthoxml script <etree2orthoxml>`, which
+  provides conversion between phylogenetic tree and the orthoXML
+  format
 
 NEW MODULES
 ====================

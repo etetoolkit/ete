@@ -1,4 +1,5 @@
 #!/usr/bin/python
+
 import sys
 from ete_dev import PhyloTree, orthoxml
 import argparse
@@ -7,6 +8,15 @@ __DESCRIPTION__ = """
 etree2orthoxml is a python script that extracts evolutionary events
 (speciation and duplication) from a newick tree and export them as a
 OrthoXML file.
+
+## ########################################################################
+##
+##           YOU CAN FIND EXAMPLES AND DOCUMENTATION AT:
+##
+##   http://pythonhosted.org/ete2/tutorial/tutorial_etree2orthoxml.html
+## 
+## ########################################################################
+
 """
 SPECIES_NAME_DELIMITER = ""
 SPECIES_NAME_POS = 0
