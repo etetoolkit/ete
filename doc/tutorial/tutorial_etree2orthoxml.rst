@@ -98,7 +98,7 @@ Usage
                          tree_file
     
    etree2orthoxml is a python script that extracts evolutionary events
-   (speciation and duplication) from a newick tree and export them as a
+   (speciation and duplication) from a newick tree and exports them as a
    OrthoXML file.
     
    positional arguments:
