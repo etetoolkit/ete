@@ -9,6 +9,8 @@
 SCRIPTS: orthoXML
 ************************************
 
+.. contents::
+
 OrthoXML parser
 ============================
 
