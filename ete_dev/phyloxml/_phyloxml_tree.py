@@ -20,6 +20,8 @@ class PhyloxmlTree(PhyloTree):
     def _get_dist(self):
         v = self.phyloxml_clade.get_branch_length_attr()
         if v is None:
+            v = self.phyloxml_clade.get_branch_length()
+        if v is None:
             self._set_dist(self._dist)
             v = self.phyloxml_clade.get_branch_length_attr()
         return float(v)
