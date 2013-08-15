@@ -595,8 +595,13 @@ def set_pen_style(pen, line_style):
 
 def save(scene, imgName, w=None, h=None, dpi=90,\
              take_region=False, units="px"):
-
-    ext = imgName.split(".")[-1].upper()
+    if imgName == "%%inline":
+        ipython_inline = True
+        ext = "SVG"
+    else:
+        ipython_inline = False
+        ext = imgName.split(".")[-1].upper()
+        
     main_rect = scene.sceneRect()
     aspect_ratio = main_rect.height() / main_rect.width()
 
@@ -649,7 +654,11 @@ def save(scene, imgName, w=None, h=None, dpi=90,\
         # inkscape and browsers...
         temp_compatible_code = open(imgName).read().replace("xml:id=", "id=")
         compatible_code = re.sub('font-size="(\d+)"', 'font-size="\\1pt"', temp_compatible_code)
-        open(imgName, "w").write(compatible_code)
+        if ipython_inline:
+            from IPython.core.display import SVG
+            return SVG(compatible_code)
+        else:
+            open(imgName, "w").write(compatible_code)
         # End of fix
 
     elif ext == "PDF" or ext == "PS":
