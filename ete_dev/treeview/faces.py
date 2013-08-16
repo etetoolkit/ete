@@ -1565,11 +1565,15 @@ class SeqMotifFace(StaticItemFace):
                
             if bg:
                 if bg.startswith("rgradient:"):
+                    bg = bg.replace("rgradient:", "")
+                    try:
+                        c1, c2 = bg.split("|")
+                    except ValueError:
+                        c1, c2 = bg, "white"
                     rect = i.boundingRect()
                     gr = QRadialGradient(rect.center(), rect.width()/2)
-                    gr.setColorAt(0, QColor("white"))
-                    bg = bg.replace("rgradient:", "")
-                    gr.setColorAt(1, QColor(bg))
+                    gr.setColorAt(0, QColor(c2))
+                    gr.setColorAt(1, QColor(c1))
                     i.setBrush(gr)
                 else:
                     i.setBrush(QColor(bg))
