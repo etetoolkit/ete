@@ -86,7 +86,7 @@ def heatmap(node):
     ProfileFace.ymargin=0
     if node.is_leaf():
         # Set colors
-        faces.add_face_to_node(ProfileFace, node, 0, aligned=True )
+        faces.add_face_to_node(ProfileFace, node, 0, aligned=True)        
 
 def cluster_cbars(node):
     # Extras node info

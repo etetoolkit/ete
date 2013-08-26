@@ -1476,13 +1476,13 @@ class SeqMotifFace(StaticItemFace):
             self.regions.append(mf)
             current_seq_pos = max(current_seq_pos, end)
 
-        if len(seq) > end:
+        if len(seq) > current_seq_pos:
             if self.seqtail_format == "line":
-                self.regions.append([end, len(seq), "-", 1, 1, "black", None, None])
+                self.regions.append([current_seq_pos, len(seq), "-", 1, 1, "black", None, None])
             elif self.seqtail_format == "seq":
-                self.regions.append([end, len(seq), "seq", 10, 10, None, None, None])
+                self.regions.append([current_seq_pos, len(seq), "seq", 10, 10, None, None, None])
             elif self.seqtail_format == "compactseq":
-                self.regions.append([end, len(seq), "compactseq", 1, 10, None, None, None])
+                self.regions.append([current_seq_pos, len(seq), "compactseq", 1, 10, None, None, None])
                 
     def update_items(self):
         self.item = QGraphicsRectItem()

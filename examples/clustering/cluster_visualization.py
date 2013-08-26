@@ -1,6 +1,5 @@
 # Import Tree instance and faces module
-from ete_dev import ClusterTree, TreeStyle
-
+from ete_dev import ClusterTree
 # Example of a minimalistic numerical matrix. It is encoded as a text
 # string for convenience, but it usally be loaded from a text file.
 matrix = """
@@ -31,7 +30,6 @@ print matrix
 # numerical matrix. We use the text_array argument to link the tree
 # with numerical matrix.
 t = ClusterTree("(((A,B),(C,(D,E))),(F,(G,H)));", text_array=matrix)
-# Try the default layout using ProfileFaces
 t.show("heatmap")
 t.show("cluster_cbars")
 t.show("cluster_bars")
