@@ -38,4 +38,3 @@ if __name__ == '__main__':
 
     #t.render("bubble_map.png", w=600, dpi=300, tree_style=ts)
     t.show(tree_style=ts)
-

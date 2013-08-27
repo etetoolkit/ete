@@ -1378,6 +1378,9 @@ class TextLabelItem(QGraphicsRectItem):
         #p.setBrush(Qt.NoBrush)
         #p.drawRect(self.rect())
 
+class SeqMotifRectItem(QGraphicsRectItem):
+    pass
+    
 class SeqMotifFace(StaticItemFace):
     """.. versionadded:: 2.2
 
@@ -1490,7 +1493,7 @@ class SeqMotifFace(StaticItemFace):
                 self.regions.append([current_seq_pos, len(seq), "compactseq", 1, 10, None, None, None])
 
     def update_items(self):
-        self.item = QGraphicsRectItem()
+        self.item = SeqMotifRectItem() #QGraphicsRectItem()
 
         max_h = max([reg[4] for index, reg
                      in enumerate(self.regions)])

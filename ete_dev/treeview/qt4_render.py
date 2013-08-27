@@ -868,6 +868,11 @@ def render_aligned_faces(img, mainRect, parent, n2i, n2f):
     return extra_width
 
 def get_tree_img_map(n2i, x_scale=1, y_scale=1):
+    MOTIF_ITEMS = set([faces.QGraphicsTriangleItem,
+                       faces.QGraphicsEllipseItem,
+                       faces.QGraphicsDiamondItem,
+                       faces.QGraphicsRectItem,
+                       faces.QGraphicsRoundRectItem])
     node_list = []
     face_list = []
     nid = 0
@@ -877,7 +882,6 @@ def get_tree_img_map(n2i, x_scale=1, y_scale=1):
             if isinstance(item, _CircleItem) \
                     or isinstance(item, _SphereItem) \
                     or isinstance(item, _RectItem):
-
                 r = item.boundingRect()
                 rect = item.mapToScene(r).boundingRect()
                 x1 = x_scale * rect.x()  
@@ -896,6 +900,16 @@ def get_tree_img_map(n2i, x_scale=1, y_scale=1):
                         y2 = y_scale * (rect.y() + rect.height())
                         if isinstance(f, _TextFaceItem):
                             face_list.append([x1, y1, x2, y2, nid, str(f.text())])
+                        elif isinstance(f, faces.SeqMotifRectItem):
+                            for mf in f.childItems():
+                                if type(mf) in MOTIF_ITEMS:
+                                    r = mf.boundingRect()
+                                    rect = mf.mapToScene(r).boundingRect()
+                                    x1 = x_scale * rect.x()
+                                    y1 = y_scale * rect.y()
+                                    x2 = x_scale * (rect.x() + rect.width())
+                                    y2 = y_scale * (rect.y() + rect.height())
+                                    face_list.append([x1, y1, x2, y2, nid, "Motif"])
                         else:
                             face_list.append([x1, y1, x2, y2, nid, None])
 
