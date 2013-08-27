@@ -1533,7 +1533,8 @@ class SeqMotifFace(StaticItemFace):
                 w = w * (end - start)
                 i = None
             elif typ == "o":
-                i = QGraphicsEllipseItem(xstart, y_start, w, h)
+                i = QGraphicsEllipseItem(0, 0, w, h)
+                i.setPos(xstart, y_start)
             elif typ == ">":
                 i = QGraphicsTriangleItem(w, h, orientation=1)
                 i.setPos(xstart, y_start)
@@ -1550,9 +1551,11 @@ class SeqMotifFace(StaticItemFace):
                 i = QGraphicsDiamondItem(w, h)
                 i.setPos(xstart, y_start)
             elif typ == "[]":
-                i = QGraphicsRectItem(xstart, y_start, w, h)
+                i = QGraphicsRectItem(0, 0, w, h)
+                i.setPos(xstart, y_start)
             elif typ == "()":
-                i = QGraphicsRoundRectItem(xstart, y_start, w, h)
+                i = QGraphicsRoundRectItem(0, 0, w, h)
+                i.setPos(xstart, y_start)
             elif typ == "seq" and self.seq:
                 i = SequenceItem(self.seq[real_start:real_end], poswidth=wf,
                                  posheight=h, draw_text=True)
