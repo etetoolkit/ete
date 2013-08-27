@@ -909,10 +909,13 @@ def get_tree_img_map(n2i, x_scale=1, y_scale=1):
                                     y1 = y_scale * rect.y()
                                     x2 = x_scale * (rect.x() + rect.width())
                                     y2 = y_scale * (rect.y() + rect.height())
-                                    face_list.append([x1, y1, x2, y2, nid, "Motif"])
+                                    try:
+                                        label = "Motif:%s" %mf.childItems()[0].text
+                                    except Exception:
+                                        label = "Motif"
+                                    face_list.append([x1, y1, x2, y2, nid, label])
                         else:
                             face_list.append([x1, y1, x2, y2, nid, None])
-
         nid += 1
         
     return {"nodes": node_list, "faces": face_list}

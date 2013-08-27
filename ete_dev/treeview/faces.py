@@ -1591,7 +1591,7 @@ class SeqMotifFace(StaticItemFace):
             if opacity < 1:
                 i.setOpacity(opacity)
 
-            if name:
+            if name and i:
                 valid_h = max_h
                 family, fsize, fcolor, text = name.split("|")
                 #qfmetrics = QFontMetrics(qfont)
@@ -1605,8 +1605,8 @@ class SeqMotifFace(StaticItemFace):
                 #    txtw = max(txtw, min_r*2)
 
                 y_txt_start = (max_h/2.0) - (valid_h/2.0)
-                txt_item.setParentItem(self.item)
-                txt_item.setPos(xstart, y_txt_start)
+                txt_item.setParentItem(i)
+                txt_item.setPos(0, y_txt_start)
 
 
             if overlap_factor < 1:
