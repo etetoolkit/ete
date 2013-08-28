@@ -259,7 +259,8 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
                     obj.face_label = f.label
                 except AttributeError:
                     pass
-                    
+                obj.face_type = str(type(f)).split(".")[-1]
+                                
             x += max_w
 
     def _rotate_item(self, item, rotation):
