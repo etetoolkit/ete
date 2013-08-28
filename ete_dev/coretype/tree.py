@@ -1485,7 +1485,7 @@ class TreeNode(object):
 
         return size
 
-    def sort_descendants(self):
+    def sort_descendants(self, attr="name"):
         """ 
         .. versionadded: 2.1 
 
@@ -1500,15 +1500,14 @@ class TreeNode(object):
        
         """
 
-        node2content = self.get_cached_content()
+        node2content = self.get_cached_content(store_attr=attr)
         def sort_by_content(x, y):
-            return cmp(str(sorted([i.name for i in node2content[x]])),
-                       str(sorted([i.name for i in node2content[y]])))
+            return cmp(str(sorted(node2content[x]]),
+                       str(sorted(node2content[y]]))
 
         for n in self.traverse():
             if not n.is_leaf():
                 n.children.sort(sort_by_content)
-        return node2content
 
     def get_cached_content(self, store_attr=None,  _store=None):
         """ 
