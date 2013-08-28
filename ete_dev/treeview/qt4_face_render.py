@@ -243,8 +243,8 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
                 #    border.setRect(x, y, max_w, max_h)
                 #    border.setParentItem(self)
                 if bg:
-                    bg.setRect(x, y, max_w, max_h)
-                    bg.setParentItem(self)
+                    bg.setRect(0, 0, max_w, max_h)
+                    bg.setParentItem(obj)
 
                 if f.opacity < 1:
                     obj.setOpacity(f.opacity)
@@ -254,6 +254,12 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
                 else:
                     y += h
 
+                # set label of the face if possible
+                try:
+                    obj.face_label = f.label
+                except AttributeError:
+                    pass
+                    
             x += max_w
 
     def _rotate_item(self, item, rotation):

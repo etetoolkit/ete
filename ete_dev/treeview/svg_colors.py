@@ -496,7 +496,7 @@ def random_color(h=None, l=None, s=None):
         return rgb2hex( tuple(map(lambda x: int(x*255), colorsys.hls_to_rgb(h, l, s))))
 
     if not h:
-        h = random.random()
+        h = 1.0 / random.randint(0, 360)
     if not s: 
         s = 0.5
     if not l:
