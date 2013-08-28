@@ -1502,8 +1502,8 @@ class TreeNode(object):
 
         node2content = self.get_cached_content(store_attr=attr)
         def sort_by_content(x, y):
-            return cmp(str(sorted(node2content[x]]),
-                       str(sorted(node2content[y]]))
+            return cmp(str(sorted(node2content[x])),
+                       str(sorted(node2content[y])))
 
         for n in self.traverse():
             if not n.is_leaf():
