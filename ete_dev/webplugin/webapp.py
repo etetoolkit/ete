@@ -92,9 +92,10 @@ class WebTreeApplication(object):
             for x1, y1, x2, y2, nodeid, text in img_map["faces"]:
                 html_map += """ <AREA SHAPE="rect" COORDS="%s,%s,%s,%s" onMouseOver='show_face_popup("%s", "%s", "%s", "%s"); onMouseOver='hide_face_popup("%s", "%s", "%s", "%s"); onClick='show_context_menu("%s", "%s", "%s", "%s");' href="javascript:void('%s');">""" %\
                     (int(x1),int(y1),int(x2),int(y2),
-                     treeid, nodeid, ','.join(map(str, nid2actions.get(nodeid,[])+nid2face_actions.get(nodeid,[])  )), text, text,
-                     treeid, nodeid, ','.join(map(str, nid2actions.get(nodeid,[])+nid2face_actions.get(nodeid,[])  )), text, text,
-                     treeid, nodeid, ','.join(map(str, nid2actions.get(nodeid,[])+nid2face_actions.get(nodeid,[])  )), text, text,
+                     treeid, nodeid, ','.join(map(str, nid2actions.get(nodeid,[])+nid2face_actions.get(nodeid,[])  )), text, 
+                     treeid, nodeid, ','.join(map(str, nid2actions.get(nodeid,[])+nid2face_actions.get(nodeid,[])  )), text, 
+                     treeid, nodeid, ','.join(map(str, nid2actions.get(nodeid,[])+nid2face_actions.get(nodeid,[])  )), text,
+                     text,
                      )
         html_map += '</MAP>'
         return html_map
