@@ -210,7 +210,7 @@ def main(args):
         
     # UnCompress packed execution data
     if pexist(os.path.join(base_dir,"nprdata.tar.bz2")):
-        log.log(28, "compressed data found. Extracting content to start execution...")
+        log.warning("Compressed data found. Extracting content to start execution...")
         cmd = "cd %s && tar -jxf nprdata.tar.bz2 && rm nprdata.tar.bz2" % base_dir
         os.system(cmd)
 
@@ -481,10 +481,15 @@ def main(args):
     db.close()
     if args.compress:
         log.log(20, "Compressing intermediate data...")
-        cmd = "cd %s && tar --remove-files -jcf nprdata.tar.bz2 ortho.db seq.db tasks/" %\
+        cmd = "cd %s && tar --remove-files -jcf nprdata.tar.bz2 data.db input/ tasks/ npr.log seq.db" %\
               GLOBALS["basedir"]
         os.system(cmd)
 
+    log.log(20, "Deleting temporal data...")
+    cmd = "cd %s && rm tmp/ -rf" %GLOBALS["basedir"]
+    os.system(cmd)
+       
+        
 def check_and_load_orthologs(fname):
     log.log(28, "importing orthologous pairs into database (this may take a while)...")
     template_import = NamedTemporaryFile()
