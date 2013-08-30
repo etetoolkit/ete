@@ -296,8 +296,10 @@ def app_wrapper(func, args):
             main(None, func, args)
     except ConfigError, e: 
         print >>sys.stderr, "\nConfiguration Error:", e
+        sys.exit(1)
     except DataError, e: 
         print >>sys.stderr, "\nData Error:", e
+        sys.exit(1)
     except KeyboardInterrupt:
         print >>sys.stderr, "\nProgram was interrupted."
         if args.monitor:

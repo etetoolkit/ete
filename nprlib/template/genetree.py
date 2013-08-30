@@ -317,10 +317,10 @@ def process_task(task, npr_conf, nodeid2info):
     elif ttype == "tree":
         treemerge_task = splitterclass(nodeid, seqtype,
                                        task.tree_file, conf, splitterconf)
-        #if conf["tree_splitter"]["_outgroup_size"]:
-        #    treemerge_task = TreeSplitterWithOutgroups(nodeid, seqtype, task.tree_file, main_tree, conf)
-        #else:
-        #    treemerge_task = TreeSplitter(nodeid, seqtype, task.tree_file, main_tree, conf)
+            #if conf["tree_splitter"]["_outgroup_size"]:
+            #    treemerge_task = TreeSplitterWithOutgroups(nodeid, seqtype, task.tree_file, main_tree, conf)
+            #else:
+            #    treemerge_task = TreeSplitter(nodeid, seqtype, task.tree_file, main_tree, conf)
 
         treemerge_task.size = task.size
         new_tasks.append(treemerge_task)
