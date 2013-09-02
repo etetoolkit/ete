@@ -911,18 +911,17 @@ def get_tree_img_map(n2i, x_scale=1, y_scale=1):
                         elif isinstance(f, faces.SeqMotifRectItem):
                             face_list.append([x1, y1, x2, y2, nid, str(getattr(f, "face_label", None))])
                             for mf in f.childItems():
-                                if type(mf) in MOTIF_ITEMS:
-                                    r = mf.boundingRect()
-                                    rect = mf.mapToScene(r).boundingRect()
-                                    x1 = x_scale * rect.x()
-                                    y1 = y_scale * rect.y()
-                                    x2 = x_scale * (rect.x() + rect.width())
-                                    y2 = y_scale * (rect.y() + rect.height())
-                                    try:
-                                        label = "Motif:%s" %mf.childItems()[0].text
-                                    except Exception:
-                                        label = "Motif"
-                                    face_list.append([x1, y1, x2, y2, nid, label])
+                                r = mf.boundingRect()
+                                rect = mf.mapToScene(r).boundingRect()
+                                x1 = x_scale * rect.x()
+                                y1 = y_scale * rect.y()
+                                x2 = x_scale * (rect.x() + rect.width())
+                                y2 = y_scale * (rect.y() + rect.height())
+                                try:
+                                    label = "Motif:%s" %mf.childItems()[0].text
+                                except Exception:
+                                    label = ""
+                                face_list.append([x1, y1, x2, y2, nid, label])
                         else:
                             face_list.append([x1, y1, x2, y2, nid, getattr(f, "face_label", None)])
         nid += 1
