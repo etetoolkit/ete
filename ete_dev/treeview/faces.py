@@ -1616,7 +1616,7 @@ class SeqMotifFace(StaticItemFace):
                 max_x_pos = max(max_x_pos, max_x_pos + w)
                 current_seq_end = max(end, current_seq_end)
 
-        self.item.setRect(0, 0, xstart, max_h)
+        self.item.setRect(0, 0, current_seq_end, max_h)
         self.item.setPen(QPen(Qt.NoPen))
 
 
