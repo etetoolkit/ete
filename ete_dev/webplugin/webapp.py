@@ -86,16 +86,23 @@ class WebTreeApplication(object):
         html_map = '<MAP NAME="%s"  class="ete_tree_img">' %(mapid)
         if img_map["nodes"]:
             for x1, y1, x2, y2, nodeid, text in img_map["nodes"]:
-                html_map += """ <AREA SHAPE="rect" COORDS="%s,%s,%s,%s" onClick='show_context_menu("%s", "%s", "%s");' href="javascript:void('%s');">""" %\
-                    (int(x1), int(y1), int(x2), int(y2), treeid, nodeid, ','.join(map(str, nid2actions.get(nodeid,[]))), str(nodeid) )
+                area = img_map.get(nodeid, [0,0,0,0])
+                html_map += """ <AREA SHAPE="rect" COORDS="%s,%s,%s,%s" onMouseOut='unhighlight_node();' onMouseOver='highlight_node("%s", "%s", "%s", "%s");' onClick='show_context_menu("%s", "%s", "%s");' href="javascript:void('%s');">""" %\
+                    (int(x1), int(y1), int(x2), int(y2),
+                     area[0], area[1], area[2], area[3],
+                     treeid, nodeid, ','.join(map(str, nid2actions.get(nodeid,[]))), str(nodeid) )
+                    
         if img_map["faces"]:
             for x1, y1, x2, y2, nodeid, text in img_map["faces"]:
-                html_map += """ <AREA SHAPE="rect" COORDS="%s,%s,%s,%s" onMouseOut='hide_face_popup();' onMouseOver='show_face_popup("%s", "%s", "%s", "%s");' onClick='show_context_menu("%s", "%s", "%s", "%s");' href="javascript:void('%s');">""" %\
+                area = img_map.get(nodeid, [0,0,0,0])
+                html_map += """ <AREA SHAPE="rect" COORDS="%s,%s,%s,%s" onMouseOut='unhighlight_node(); hide_face_popup();' onMouseOver='highlight_node("%s", "%s", "%s", "%s"); show_face_popup("%s", "%s", "%s", "%s");' onClick='show_context_menu("%s", "%s", "%s", "%s");' href="javascript:void('%s');">""" %\
                     (int(x1),int(y1),int(x2),int(y2),
+                     area[0], area[1], area[2], area[3],
                      treeid, nodeid, ','.join(map(str, nid2actions.get(nodeid,[])+nid2face_actions.get(nodeid,[])  )), text, 
                      treeid, nodeid, ','.join(map(str, nid2actions.get(nodeid,[])+nid2face_actions.get(nodeid,[])  )), text,
                      text,
                      )
+                    
         html_map += '</MAP>'
         return html_map
 

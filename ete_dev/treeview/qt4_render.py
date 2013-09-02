@@ -875,9 +875,17 @@ def get_tree_img_map(n2i, x_scale=1, y_scale=1):
                        faces.QGraphicsRoundRectItem])
     node_list = []
     face_list = []
+    node_areas = {}
     nid = 0
     for n, main_item in n2i.iteritems():
         n.add_feature("_nid", str(nid))
+        rect = main_item.mapToScene(main_item.fullRegion).boundingRect()
+        x1 = x_scale * rect.x()  
+        y1 = y_scale * rect.y()
+        x2 = x_scale * (rect.x() + rect.width())
+        y2 = y_scale * (rect.y() + rect.height())
+        node_areas[nid] = [x1, y1, x2, y2]
+       
         for item in main_item.mapped_items:
             if isinstance(item, _CircleItem) \
                     or isinstance(item, _SphereItem) \
@@ -918,7 +926,7 @@ def get_tree_img_map(n2i, x_scale=1, y_scale=1):
                             face_list.append([x1, y1, x2, y2, nid, getattr(f, "face_label", None)])
         nid += 1
         
-    return {"nodes": node_list, "faces": face_list}
+    return {"nodes": node_list, "faces": face_list, "node_areas": node_areas}
 
 #@tracktime
 def init_items(root_node, parent, n2i, n2f, img, rot_step, hide_root):
