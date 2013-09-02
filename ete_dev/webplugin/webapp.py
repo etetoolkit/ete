@@ -3,6 +3,7 @@ import os
 import time
 import cgi
 from hashlib import md5
+import cPickle
 
 ALL = ["WebTreeApplication"]
 
@@ -110,10 +111,11 @@ class WebTreeApplication(object):
 
     def _load_tree(self, treeid, tree=None):
         # if a tree is given, it overwrites previous versions
-        if tree:
-            t = self._tree(tree)
-            self._treeid2tree[treeid] = t
-            self._load_tree_index(treeid)
+        if not isintance(tree, Tree):
+            tree = self._tree(tree)
+        
+        self._treeid2tree[treeid] = tree
+        self._load_tree_index(treeid)
 
         # if no tree is given, and not in memmory, it tries to loaded
         # from previous sessions
@@ -124,9 +126,9 @@ class WebTreeApplication(object):
         return (treeid in self._treeid2tree) and (treeid in self._treeid2index)
 
     def _load_tree_from_path(self, treeid):
-        tree_path = os.path.join(self.CONFIG["temp_dir"], treeid+".nw")
+        tree_path = os.path.join(self.CONFIG["temp_dir"], treeid+".pkl")
         if os.path.exists(tree_path):
-            t = self._treeid2tree[treeid] = self._tree(tree_path)
+            t = self._treeid2tree[treeid] = cPickle.load(open(tree_path))
             self._load_tree_index(treeid)
             return True
         else:
@@ -144,8 +146,9 @@ class WebTreeApplication(object):
             return False
 
     def _dump_tree_to_file(self, t, treeid):
-        tree_path = os.path.join(self.CONFIG["temp_dir"], treeid+".nw")
-        open(tree_path, "w").write(t.write(features=[]))
+        tree_path = os.path.join(self.CONFIG["temp_dir"], treeid+".pkl")
+        cPickle.dump(t, open(treepath, "w"))
+        #open(tree_path, "w").write(t.write(features=[]))
 
     def _get_tree_img(self, treeid, pre_drawing_action=None):
         img_url = os.path.join(self.CONFIG["temp_url"], treeid+".png?"+str(time.time()))
