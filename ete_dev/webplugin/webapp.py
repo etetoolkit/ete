@@ -111,12 +111,14 @@ class WebTreeApplication(object):
 
     def _load_tree(self, treeid, tree=None):
         # if a tree is given, it overwrites previous versions
-        if not isintance(tree, Tree):
+        if tree and isinstance(tree, str):
             tree = self._tree(tree)
-        
-        self._treeid2tree[treeid] = tree
-        self._load_tree_index(treeid)
-
+            self._treeid2tree[treeid] = tree
+            self._load_tree_index(treeid)
+        elif tree:
+            self._treeid2tree[treeid] = tree
+            self._load_tree_index(treeid)
+            
         # if no tree is given, and not in memmory, it tries to loaded
         # from previous sessions
         if treeid not in self._treeid2tree:
@@ -128,6 +130,7 @@ class WebTreeApplication(object):
     def _load_tree_from_path(self, treeid):
         tree_path = os.path.join(self.CONFIG["temp_dir"], treeid+".pkl")
         if os.path.exists(tree_path):
+            print cPickle.load(open(tree_path))
             t = self._treeid2tree[treeid] = cPickle.load(open(tree_path))
             self._load_tree_index(treeid)
             return True
@@ -147,7 +150,7 @@ class WebTreeApplication(object):
 
     def _dump_tree_to_file(self, t, treeid):
         tree_path = os.path.join(self.CONFIG["temp_dir"], treeid+".pkl")
-        cPickle.dump(t, open(treepath, "w"))
+        cPickle.dump(t, open(tree_path, "w"))
         #open(tree_path, "w").write(t.write(features=[]))
 
     def _get_tree_img(self, treeid, pre_drawing_action=None):

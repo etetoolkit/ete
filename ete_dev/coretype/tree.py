@@ -1500,7 +1500,7 @@ class TreeNode(object):
        
         """
 
-        node2content = self.get_cached_content(store_attr=attr)
+        node2content = self.get_cached_content(store_attr=attr, container_type=list)
         def sort_by_content(x, y):
             return cmp(str(sorted(node2content[x])),
                        str(sorted(node2content[y])))
@@ -1509,7 +1509,7 @@ class TreeNode(object):
             if not n.is_leaf():
                 n.children.sort(sort_by_content)
 
-    def get_cached_content(self, store_attr=None,  _store=None):
+    def get_cached_content(self, store_attr=None, container_type=set, _store=None):
         """ 
         .. versionadded: 2.2
        
@@ -1529,19 +1529,23 @@ class TreeNode(object):
             _store = {}
             
         for ch in self.children:
-            ch.get_cached_content(store_attr=store_attr, _store=_store)
-
+            ch.get_cached_content(store_attr=store_attr, 
+                                  container_type=container_type, 
+                                  _store=_store)
         if self.children:
-            val = set()
+            val = container_type()
             for ch in self.children:
-                val.update(_store[ch])
+                if type(val) == list:
+                    val.extend(_store[ch])
+                if type(val) == set:
+                    val.update(_store[ch])
             _store[self] = val
         else:
             if store_attr is None:
                 val = self
             else:
                 val = getattr(self, store_attr)
-            _store[self] = set([val])
+            _store[self] = container_type([val])
         return _store
        
     def robinson_foulds(self, t2, attr_t1="name", attr_t2="name"):

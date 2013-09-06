@@ -98,7 +98,7 @@ _ntbgcolors = {
 __all__ = ["Face", "TextFace", "AttrFace", "ImgFace",
            "ProfileFace", "SequenceFace", "TreeFace",
            "RandomFace", "DynamicItemFace", "StaticItemFace",
-           "CircleFace", "PieChartFace", "BarChartFace", "SeqMotifFace"]
+           "CircleFace", "PieChartFace", "BarChartFace", "SeqMotifFace", "RectFace"]
 
 class Face(object):
     """Base Face object. All Face types (i.e. TextFace, SeqMotifFace,
@@ -919,6 +919,46 @@ class _SphereItem(QGraphicsEllipseItem):
             self.setBrush(QBrush(self.gradient))
         self.setPen(QPen(QColor(color)))
         #self.setPen(Qt.NoPen)
+
+class _RectItem(QGraphicsRectItem):
+    def __init__(self, w, h, bgcolor, fgcolor):
+        QGraphicsRectItem.__init__(self)
+        self.setRect(0, 0, w, h)
+        if bgcolor:
+            self.setBrush(QBrush(QColor(bgcolor)))
+        else:
+            self.setBrush(QBrush(Qt.NoBrush))
+        if fgcolor:
+            self.setPen(QPen(QColor(fgcolor)))
+        else:
+            self.setPen(QPen(Qt.NoPen))
+
+
+class RectFace(Face):
+    """
+    .. versionadded:: 2.1
+
+    Creates a Rect Face.
+
+    """
+    def __init__(self, width, height, fgcolor, bgcolor):
+        Face.__init__(self)
+        self.width = width
+        self.height = height
+        self.fgcolor = fgcolor
+        self.bgcolor = bgcolor
+        self.type = "item"
+        self.rotable = True
+
+    def update_items(self):
+        self.item = _RectItem(self.width, self.height, self.bgcolor, self.fgcolor)
+
+    def _width(self):
+        return self.width
+
+    def _height(self):
+        return self.height
+
 
 class CircleFace(Face):
     """

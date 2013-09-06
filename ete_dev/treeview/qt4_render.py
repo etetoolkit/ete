@@ -909,7 +909,7 @@ def get_tree_img_map(n2i, x_scale=1, y_scale=1):
                         if isinstance(f, _TextFaceItem):
                             face_list.append([x1, y1, x2, y2, nid, str(getattr(f, "face_label", f.text()))])
                         elif isinstance(f, faces.SeqMotifRectItem):
-                            face_list.append([x1, y1, x2, y2, nid, str(getattr(f, "face_label", None))])
+                            #face_list.append([x1, y1, x2, y2, nid, str(getattr(f, "face_label", None))])
                             for mf in f.childItems():
                                 r = mf.boundingRect()
                                 rect = mf.mapToScene(r).boundingRect()
