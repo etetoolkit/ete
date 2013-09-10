@@ -331,7 +331,8 @@ def main(main_screen, func, args):
     if args.logfile: 
         screen.logfile = open(os.path.join(GLOBALS["basedir"], "npr.log"), "w")
     sys.stdout = screen
-
+    sys.stderr = screen
+    
     # Start logger, pointing to the selected screen
     log = get_main_log(screen, [28,26,24,22,20,10][args.verbosity])
 

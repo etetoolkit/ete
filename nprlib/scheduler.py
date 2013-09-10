@@ -29,7 +29,7 @@ def debug(_signal, _frame):
 def signal_handler(_signal, _frame):
     if "_background_scheduler" in GLOBALS:
         GLOBALS["_background_scheduler"].terminate()
-
+        
     signal.signal(signal.SIGINT, lambda s,f: None)
     db.commit()
     ver = {28: "0", 26: "1", 24: "2", 22: "3", 20: "4", 10: "5"}
@@ -114,7 +114,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
         back_launcher = None
 
     # Captures Ctrl-C
-    signal.signal(signal.SIGINT, signal_handler)
+    #signal.signal(signal.SIGINT, signal_handler)
     last_report_time = None
     
     BUG = set()
@@ -338,16 +338,19 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
             elif just_finished_lines:
                 send_mail(GLOBALS["email"], "Finished threads!",
                           '\n'.join(just_finished_lines))
-
-                
+               
             
         log.log(26, "")
     if back_launcher:
         back_launcher.terminate()
-        
-    log.log(28, "Done")
-    GLOBALS["citator"].show()
+    if thread_errors:
+        log.error("Done with ERRORS")
+    else:
+        log.log(28, "Done")
 
+    return thread_errors
+
+    
 def background_job_launcher(job_queue, run_detached, schedule_time, max_cores):
     running_jobs = {}
     visited_ids = set()
