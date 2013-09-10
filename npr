@@ -291,17 +291,46 @@ def main(args):
         config["_config_checksum"] = checksum(local_conf_file)
         run2config[clearname] = config
             
-    # Create main dir structure
+    # Set up paths    
     gallery_dir = os.path.join(base_dir, "gallery")
-    sge_dir = os.path.join(base_dir, "sge_jobs")
-    tmp_dir = os.path.join(base_dir, "tmp")
-    tasks_dir = os.path.join(base_dir, "tasks")
-    input_dir = os.path.join(base_dir, "input")
+    sge_dir = pjoin(base_dir, "sge_jobs")
+    tmp_dir = pjoin(base_dir, "tmp")
+    tasks_dir = pjoin(base_dir, "tasks")
+    input_dir = pjoin(base_dir, "input")
     GLOBALS["sge_dir"] = sge_dir
     GLOBALS["tmp"] = tmp_dir
     GLOBALS["gallery_dir"] = gallery_dir
     GLOBALS["tasks_dir"] = tasks_dir
     GLOBALS["input_dir"] = input_dir
+    GLOBALS["nprdb_file"]  = pjoin(base_dir, "npr.%s.db" %time())
+    GLOBALS["datadb_file"]  = pjoin(base_dir, "data.db")
+    GLOBALS["orthodb_file"]  = pjoin(base_dir, "ortho.db") if not args.orthodb else args.orthodb
+    GLOBALS["seqdb_file"]  = pjoin(base_dir, "seq.db") if not args.seqdb else args.seqdb
+    
+    # Clear databases if necessary
+    if args.clearall:
+        log.log(28, "Erasing all existing npr data...")
+        shutil.rmtree(GLOBALS["tasks_dir"]) if pexist(GLOBALS["tasks_dir"]) else None
+        shutil.rmtree(GLOBALS["tmp"]) if pexist(GLOBALS["tmp"]) else None
+        shutil.rmtree(GLOBALS["input_dir"]) if pexist(GLOBALS["input_dir"]) else None
+        os.remove(GLOBALS["seqdb_file"]) if pexist(GLOBALS["seqdb_file"]) else None
+        os.remove(GLOBALS["orthodb_file"]) if pexist(GLOBALS["orthodb_file"]) else None
+        os.remove(GLOBALS["datadb_file"]) if pexist(GLOBALS["datadb_file"]) else None
+    else:
+        print GLOBALS["input_dir"], pexist(GLOBALS["input_dir"])
+        if args.softclear:
+            log.log(28, "Erasing precomputed data (reusing task directory)")
+            shutil.rmtree(GLOBALS["tmp"]) if pexist(GLOBALS["tmp"]) else None
+            shutil.rmtree(GLOBALS["input_dir"]) if pexist(GLOBALS["input_dir"]) else None
+            os.remove(GLOBALS["datadb_file"]) if pexist(GLOBALS["datadb_file"]) else None
+        if args.clearseqs and pexist(GLOBALS["seqdb_file"]):
+            log.log(28, "Erasing existing sequence database...")
+            os.remove(GLOBALS["seqdb_file"])
+        if args.clearorthology and pexist(GLOBALS["orthodb_file"]):
+            log.log(28, "Erasing existing orthologs database...")
+            os.remove(GLOBALS["orthodb_file"])
+
+    # Create dir structure
     for dirname in [tmp_dir, tasks_dir, input_dir]:
         try:
             os.makedirs(dirname)
@@ -338,25 +367,6 @@ def main(args):
         GLOBALS["seqtypes"].add("aa")
         GLOBALS["inputname"] = os.path.split(args.aa_seed_file)[-1]
 
-    # Set up custom databases if necessary
-    GLOBALS["nprdb_file"]  = pjoin(base_dir, "npr.%s.db" %time())
-   
-    GLOBALS["datadb_file"]  = pjoin(base_dir, "data.db")
-    GLOBALS["orthodb_file"]  = pjoin(base_dir, "ortho.db") \
-        if not args.orthodb else args.orthodb
-    GLOBALS["seqdb_file"]  = pjoin(base_dir, "seq.db") \
-        if not args.seqdb else args.seqdb
-
-    # Clear databases if necessary
-    if args.cleardb and pexist(GLOBALS["nprdb_file"]):
-        log.log(28, "Erasing existing npr database...")
-        os.remove(GLOBALS["nprdb_file"])
-    if args.clearseqs and pexist(GLOBALS["seqdb_file"]):
-        log.log(28, "Erasing existing seq database...")
-        os.remove(GLOBALS["seqdb_file"])
-    if args.clearorthology and pexist(GLOBALS["orthodb_file"]):
-        log.log(28, "Erasing existing ortho database...")
-        os.remove(GLOBALS["orthodb_file"])
         
     # Initialize db if necessary, otherwise extract basic info
     db.init_nprdb(GLOBALS["nprdb_file"])
@@ -476,19 +486,20 @@ def main(args):
         cmd_info = '\t'.join([start_time, thread_id, GLOBALS["cmdline"]])
         open(pjoin(config["_outpath"], "command_lines"), "a").write(cmd_info+"\n")
 
-    schedule(pipeline, pending_tasks, args.schedule_time,
-             execution, args.retry, args.debug)
+    thread_errors = schedule(pipeline, pending_tasks, args.schedule_time,
+                             execution, args.retry, args.debug)
     db.close()
-    if args.compress:
-        log.log(20, "Compressing intermediate data...")
-        cmd = "cd %s && tar --remove-files -jcf nprdata.tar.bz2 data.db input/ tasks/ npr.log seq.db" %\
+    
+    if not thread_errors:
+        if args.compress:
+            log.log(20, "Compressing intermediate data...")
+            cmd = "cd %s && tar --remove-files -jcf nprdata.tar.bz2 data.db input/ tasks/ seq.db; gzip npr.log" %\
               GLOBALS["basedir"]
+            os.system(cmd)
+        log.log(20, "Deleting temporal data...")
+        cmd = "cd %s && rm tmp/ -rf" %GLOBALS["basedir"]
         os.system(cmd)
-
-    log.log(20, "Deleting temporal data...")
-    cmd = "cd %s && rm tmp/ -rf" %GLOBALS["basedir"]
-    os.system(cmd)
-       
+    GLOBALS["citator"].show()       
         
 def check_and_load_orthologs(fname):
     log.log(28, "importing orthologous pairs into database (this may take a while)...")
@@ -861,10 +872,14 @@ if __name__ == "__main__":
                             action="store_true",
                             help="Overrides output files from past program executions." )
 
-    exec_group.add_argument("--clear_nprdb", dest="cleardb",
+    exec_group.add_argument("--clearall", dest="clearall",
                             action="store_true",
-                            help="Overrides all tables in database")
-
+                            help="Erase all previous data if necessary")
+    
+    exec_group.add_argument("--softclear", dest="softclear",
+                            action="store_true",
+                            help="Clears precomputed data, but keeps task raw data")
+    
     exec_group.add_argument("--clear_orthodb", dest="clearorthology",
                             action="store_true",
                             help="Overrides orthology pairs table in database")
