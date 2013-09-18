@@ -31,6 +31,7 @@ class WebTreeApplication(object):
         self._treeid2layout = {}
         self._external_app_handler = None
         self._treeid2tree = {}
+        self._treeid2cache = {}
         self._treeid2index = {}
         self.queries = {}
         self.CONFIG = {
@@ -109,7 +110,7 @@ class WebTreeApplication(object):
         html_map += '</MAP>'
         return html_map
 
-    def _load_tree(self, treeid, tree=None):
+    def _load_tree(self, treeid, tree=None, cache_file=None):
         # if a tree is given, it overwrites previous versions
         if tree and isinstance(tree, str):
             tree = self._tree(tree)
@@ -119,16 +120,18 @@ class WebTreeApplication(object):
             self._treeid2tree[treeid] = tree
             self._load_tree_index(treeid)
             
+        self._treeid2cache[treeid] = cache_file if cache_file else "%s.pkl" %treeid
+            
         # if no tree is given, and not in memmory, it tries to loaded
         # from previous sessions
         if treeid not in self._treeid2tree:
-            self._load_tree_from_path(treeid)
+            self._load_tree_from_path(self._treeid2cache[treeid])
 
         # Returns True if tree and indexes are loaded
         return (treeid in self._treeid2tree) and (treeid in self._treeid2index)
 
-    def _load_tree_from_path(self, treeid):
-        tree_path = os.path.join(self.CONFIG["temp_dir"], treeid+".pkl")
+    def _load_tree_from_path(self, pkl_path):
+        tree_path = os.path.join(self.CONFIG["temp_dir"], pkl_path)
         if os.path.exists(tree_path):
             print cPickle.load(open(tree_path))
             t = self._treeid2tree[treeid] = cPickle.load(open(tree_path))
@@ -267,7 +270,7 @@ class WebTreeApplication(object):
                 if html_generator: 
                     html += html_generator(i, treeid, nodeid, textface, node)
                 else:
-                    html += """<li><a  href='javascript:void(0)' onClick='run_action("%s", "%s", "%s");'> %s </a></li> """ %\
+                    html += """<li><a  href='javascript:void(0);' onClick='hide_popup(); run_action("%s", "%s", "%s");'> %s </a></li> """ %\
                         (treeid, nodeid, i, aname)
             html += '</ul>'
             return html

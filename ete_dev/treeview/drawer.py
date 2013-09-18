@@ -60,6 +60,9 @@ def render_tree(t, imgName, w=None, h=None, layout=None,
                 tree_style = None, header=None, units="px",
                 dpi=90):
     """ Render tree image into a file."""
+    
+    for nid, n in enumerate(t.traverse("preorder")):
+        n.add_feature("_nid", nid)
     scene, img = init_scene(t, layout, tree_style)
     tree_item, n2i, n2f = render(t, img)
 
