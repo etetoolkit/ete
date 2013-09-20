@@ -1548,7 +1548,9 @@ class TreeNode(object):
             _store[self] = container_type([val])
         return _store
        
-    def robinson_foulds(self, t2, attr_t1="name", attr_t2="name"):
+    def robinson_foulds(self, t2, attr_t1="name", attr_t2="name",
+                        expand_polytomies=False, polytomy_size_limit=5,
+                        skip_large_polytomies=False):
         """
         .. versionadded: 2.2
         
@@ -1563,35 +1565,61 @@ class TreeNode(object):
         :param name attr_t2: Compare trees using a custom node
                               attribute as a node name in target tree.
 
+
+        :param False expand_polytomies: If True, all polytomies in the reference
+           and target tree will be expanded into all possible binary
+           trees. Robinson-foulds distance will be calculated between all
+           tree combinations and the minimum value will be returned.
+           See also, :func:`NodeTree.expand_polytomy`.
+                              
         :returns: (symmetric distance, total partitions, common node
          names, partitions in current tree, partitions in target tree)
            
         """
-        
-        t1 = self
-        t1content = t1.get_cached_content()
-        t2content = t2.get_cached_content()
-        target_names = set([getattr(_n, attr_t1) for _n in t1content[t1]])
-        ref_names = set([getattr(_n, attr_t2) for _n in t2content[t2]])
-        common_names = target_names & ref_names
-        if len(common_names) < 2:
-            raise ValueError("Trees share less than 2 nodes")
+        ref_t = self
+        target_t = t2
+        if expand_polytomies:
+            ref_trees = [Tree(nw) for nw in
+                         ref_t.expand_polytomies(map_attr=attr_t1,
+                                                 polytomy_size_limit=polytomy_size_limit,
+                                                 skip_large_polytomies=skip_large_polytomies)]
+            target_trees = [Tree(nw) for nw in
+                            target_t.expand_polytomies(map_attr=attr_t2,
+                                                       polytomy_size_limit=polytomy_size_limit,
+                                                       skip_large_polytomies=skip_large_polytomies)]
+            attr_t1, attr_t2 = "name", "name"
+        else:
+            ref_trees = [ref_t]
+            target_trees = [target_t]
 
-        r1 = set([",".join(sorted([getattr(_c, attr_t1) for _c in cont
-                                   if getattr(_c, attr_t1) in common_names]))
-                  for cont in t1content.values() if len(cont)>1])
-        r2 = set([",".join(sorted([getattr(_c, attr_t2) for _c in cont
-                                   if getattr(_c, attr_t2) in common_names]))
-                  for cont in t2content.values() if len(cont)>1])
-        r1.discard("")
-        r2.discard("")              
-        inters = r1.intersection(r2)
-        if len(r1) == len(r2):
-                rf = (len(r1) - len(inters)) * 2
-        else :
-                rf = (len(r1) - len(inters)) + (len(r2) - len(inters))
-        max_parts = len(r1) + len(r2)
-        return rf, max_parts, common_names, r1, r2
+        min_comparison = None
+        for t1 in ref_trees:
+            for t2 in target_trees:
+                t1content = t1.get_cached_content()
+                t2content = t2.get_cached_content()
+                target_names = set([getattr(_n, attr_t1) for _n in t1content[t1]])
+                ref_names = set([getattr(_n, attr_t2) for _n in t2content[t2]])
+                common_names = target_names & ref_names
+                if len(common_names) < 2:
+                    raise ValueError("Trees share less than 2 nodes")
+
+                r1 = set([",".join(sorted([getattr(_c, attr_t1) for _c in cont
+                                           if getattr(_c, attr_t1) in common_names]))
+                          for cont in t1content.values() if len(cont)>1])
+                r2 = set([",".join(sorted([getattr(_c, attr_t2) for _c in cont
+                                           if getattr(_c, attr_t2) in common_names]))
+                          for cont in t2content.values() if len(cont)>1])
+                r1.discard("")
+                r2.discard("")              
+                inters = r1.intersection(r2)
+                if len(r1) == len(r2):
+                        rf = (len(r1) - len(inters)) * 2
+                else :
+                        rf = (len(r1) - len(inters)) + (len(r2) - len(inters))
+                max_parts = len(r1) + len(r2)
+                if not min_comparison or min_comparison[0] > rf:
+                    min_comparison = [rf, max_parts, common_names, r1, r2]
+        return min_comparison
 
     def get_partitions(self):
         """ 
@@ -1746,7 +1774,67 @@ class TreeNode(object):
             if is_monophyletic(match):
                 yield match
 
-            
+    def expand_polytomies(self, map_attr="name", polytomy_size_limit=5,
+                          skip_large_polytomies=False):
+        '''
+        Given a tree with one or more polytomies, this functions returns the
+        list of all trees (in newick format) resulting from the combination of
+        all possible solutions of the multifurcated nodes.
+
+        .. warning:
+        
+           Please note that the number of of possible binary trees grows
+           exponentially with the number and size of polytomies. Using this
+           function with large multifurcations is not feasible:
+
+           polytomy size: 3 number of binary trees: 3
+           polytomy size: 4 number of binary trees: 15
+           polytomy size: 5 number of binary trees: 105
+           polytomy size: 6 number of binary trees: 945
+           polytomy size: 7 number of binary trees: 10395
+           polytomy size: 8 number of binary trees: 135135
+           polytomy size: 9 number of binary trees: 2027025
+           
+        http://ajmonline.org/2010/darwin.php
+        '''
+
+        class TipTuple(tuple):
+            pass
+
+        def add_leaf(tree, label):
+          yield (label, tree)
+          if not isinstance(tree, TipTuple) and isinstance(tree, tuple):
+            for left in add_leaf(tree[0], label):
+              yield (left, tree[1])
+            for right in add_leaf(tree[1], label):
+              yield (tree[0], right)
+
+        def enum_unordered(labels):
+          if len(labels) == 1:
+            yield labels[0]
+          else:
+            for tree in enum_unordered(labels[1:]):
+              for new_tree in add_leaf(tree, labels[0]):
+                yield new_tree
+
+        n2subtrees = {}
+        for n in self.traverse("postorder"):
+            if n.is_leaf():
+                subtrees = [getattr(n, map_attr)]
+            else:
+                subtrees = []
+                if len(n.children) > polytomy_size_limit:
+                    if skip_large_polytomies:
+                        for childtrees in itertools.product(*[n2subtrees[ch] for ch in n.children]):
+                            subtrees.append(TipTuple(childtrees))
+                    else:
+                        raise ValueError("Found polytomy larger than current limit: %s" %n)
+                else:
+                    for childtrees in itertools.product(*[n2subtrees[ch] for ch in n.children]):
+                        subtrees.extend([TipTuple(subtree) for subtree in enum_unordered(childtrees)])
+            n2subtrees[n] = subtrees
+        return ["%s;"%str(nw) for nw in n2subtrees[self]] # tuples are in newick format ^_^ 
+                
     def resolve_polytomy(self, default_dist=0.0, default_support=0.0,
                          recursive=True):
         """
