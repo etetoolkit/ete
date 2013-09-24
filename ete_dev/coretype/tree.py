@@ -1549,8 +1549,8 @@ class TreeNode(object):
         return _store
        
     def robinson_foulds(self, t2, attr_t1="name", attr_t2="name",
-                        expand_polytomies=False, polytomy_size_limit=5,
-                        skip_large_polytomies=False):
+                        unrooted_trees=False, expand_polytomies=False,
+                        polytomy_size_limit=5, skip_large_polytomies=False):
         """
         .. versionadded: 2.2
         
@@ -1565,7 +1565,8 @@ class TreeNode(object):
         :param name attr_t2: Compare trees using a custom node
                               attribute as a node name in target tree.
 
-
+        :param False attr_t2: If True, consider trees as unrooted.
+                              
         :param False expand_polytomies: If True, all polytomies in the reference
            and target tree will be expanded into all possible binary
            trees. Robinson-foulds distance will be calculated between all
@@ -1578,6 +1579,13 @@ class TreeNode(object):
         """
         ref_t = self
         target_t = t2
+        if not unrooted_trees and (len(ref_t.children) !=
+                                   2 or len(target_t.children) != 2):
+            raise ValueError("Unrooted tree found! You may want to activate the unrooted_trees flag.")
+
+        if expand_polytomies and unrooted_trees:
+            raise ValueError("expand_polytomies and unrooted_trees arguments cannot be enabled at the same time")
+        
         if expand_polytomies:
             ref_trees = [Tree(nw) for nw in
                          ref_t.expand_polytomies(map_attr=attr_t1,
@@ -1591,34 +1599,42 @@ class TreeNode(object):
         else:
             ref_trees = [ref_t]
             target_trees = [target_t]
-
+        
         min_comparison = None
         for t1 in ref_trees:
+            t1_content = t1.get_cached_content()
+            t1_leaves = t1_content[t1]
+            if unrooted_trees:
+                edges1 = set([
+                        tuple(sorted([tuple(sorted([getattr(n, attr_t1) for n in content if hasattr(n, attr_t1)])),
+                                      tuple(sorted([getattr(n, attr_t1) for n in t1_leaves-content if hasattr(n, attr_t1)]))]))
+                        for content in t1_content.itervalues()])
+            else:
+                edges1 = set([
+                        tuple(sorted([getattr(n, attr_t1) for n in content if hasattr(n, attr_t1)]))
+                        for content in t1_content.itervalues()])
+            
             for t2 in target_trees:
-                t1content = t1.get_cached_content()
-                t2content = t2.get_cached_content()
-                target_names = set([getattr(_n, attr_t1) for _n in t1content[t1]])
-                ref_names = set([getattr(_n, attr_t2) for _n in t2content[t2]])
+                t2_content = t2.get_cached_content()
+                t2_leaves = t2_content[t2]
+                if unrooted_trees:
+                    edges2 = set([
+                            tuple(sorted([
+                                        tuple(sorted([getattr(n, attr_t2) for n in content if hasattr(n, attr_t2)])),
+                                        tuple(sorted([getattr(n, attr_t2) for n in t2_leaves-content if hasattr(n, attr_t2)]))]))
+                            for content in t2_content.itervalues()])
+                else:
+                    edges2 = set([
+                            tuple(sorted([getattr(n, attr_t2) for n in content if hasattr(n, attr_t2)]))
+                            for content in t2_content.itervalues()])
+                
+                rf = len(edges1 ^ edges2)
+                max_parts = len(edges1 | edges2)
+                target_names = set([getattr(_n, attr_t1) for _n in t1_leaves])
+                ref_names = set([getattr(_n, attr_t2) for _n in t2_leaves])
                 common_names = target_names & ref_names
-                if len(common_names) < 2:
-                    raise ValueError("Trees share less than 2 nodes")
-
-                r1 = set([",".join(sorted([getattr(_c, attr_t1) for _c in cont
-                                           if getattr(_c, attr_t1) in common_names]))
-                          for cont in t1content.values() if len(cont)>1])
-                r2 = set([",".join(sorted([getattr(_c, attr_t2) for _c in cont
-                                           if getattr(_c, attr_t2) in common_names]))
-                          for cont in t2content.values() if len(cont)>1])
-                r1.discard("")
-                r2.discard("")              
-                inters = r1.intersection(r2)
-                if len(r1) == len(r2):
-                        rf = (len(r1) - len(inters)) * 2
-                else :
-                        rf = (len(r1) - len(inters)) + (len(r2) - len(inters))
-                max_parts = len(r1) + len(r2)
                 if not min_comparison or min_comparison[0] > rf:
-                    min_comparison = [rf, max_parts, common_names, r1, r2]
+                    min_comparison = [rf, max_parts, common_names, edges1, edges2]
         return min_comparison
 
     def get_partitions(self):
@@ -1832,6 +1848,7 @@ class TreeNode(object):
                 else:
                     for childtrees in itertools.product(*[n2subtrees[ch] for ch in n.children]):
                         subtrees.extend([TipTuple(subtree) for subtree in enum_unordered(childtrees)])
+                
             n2subtrees[n] = subtrees
         return ["%s;"%str(nw) for nw in n2subtrees[self]] # tuples are in newick format ^_^ 
                 
