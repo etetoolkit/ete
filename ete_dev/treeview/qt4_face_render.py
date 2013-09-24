@@ -243,8 +243,8 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
                 #    border.setRect(x, y, max_w, max_h)
                 #    border.setParentItem(self)
                 if bg:
-                    bg.setRect(0, 0, max_w, max_h)
-                    bg.setParentItem(obj)
+                    bg.setRect(x, y, max_w, max_h)
+                    bg.setParentItem(self)
 
                 if f.opacity < 1:
                     obj.setOpacity(f.opacity)
