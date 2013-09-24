@@ -189,7 +189,7 @@ class TextFace(Face):
     :param penwidth: Penwdith used to draw the text.
     :param fstyle: "normal" or "italic"
 
-    :param True tight_text: When False, boundaries of the text are
+    :param False tight_text: When False, boundaries of the text are
     approximated according to general font metrics, producing slightly
     worse aligned text faces but improving the performance of tree
     visualization in scenes with a lot of text faces.
@@ -237,7 +237,7 @@ class TextFace(Face):
     text = property(_get_text, _set_text)
     def __init__(self, text, ftype="Verdana", fsize=10,
                  fgcolor="black", penwidth=0, fstyle="normal",
-                 tight_text=True):
+                 tight_text=False):
         self._text = str(text)
         self._bounding_rect = None
         self._real_rect = None
@@ -317,7 +317,7 @@ class AttrFace(TextFace):
     def __init__(self, attr, ftype="Verdana", fsize=10,
                  fgcolor="black", penwidth=0, text_prefix="",
                  text_suffix="", formatter=None, fstyle="normal",
-                 tight_text=True):
+                 tight_text=False):
 
         Face.__init__(self)
         TextFace.__init__(self, None, ftype, fsize, fgcolor, penwidth,
