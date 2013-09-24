@@ -1609,11 +1609,12 @@ class TreeNode(object):
                         tuple(sorted([tuple(sorted([getattr(n, attr_t1) for n in content if hasattr(n, attr_t1)])),
                                       tuple(sorted([getattr(n, attr_t1) for n in t1_leaves-content if hasattr(n, attr_t1)]))]))
                         for content in t1_content.itervalues()])
+                edges1.discard(((),()))
             else:
                 edges1 = set([
                         tuple(sorted([getattr(n, attr_t1) for n in content if hasattr(n, attr_t1)]))
                         for content in t1_content.itervalues()])
-            
+                edges1.discard(())
             for t2 in target_trees:
                 t2_content = t2.get_cached_content()
                 t2_leaves = t2_content[t2]
@@ -1623,17 +1624,31 @@ class TreeNode(object):
                                         tuple(sorted([getattr(n, attr_t2) for n in content if hasattr(n, attr_t2)])),
                                         tuple(sorted([getattr(n, attr_t2) for n in t2_leaves-content if hasattr(n, attr_t2)]))]))
                             for content in t2_content.itervalues()])
+                    edges2.discard(((),()))
                 else:
                     edges2 = set([
                             tuple(sorted([getattr(n, attr_t2) for n in content if hasattr(n, attr_t2)]))
                             for content in t2_content.itervalues()])
-                
+                    edges2.discard(())
+
+                    
                 rf = len(edges1 ^ edges2)
-                max_parts = len(edges1 | edges2)
+                if unrooted_trees:
+                    max_parts = len([p for p in edges1 if len(p[0])>1 and len(p[1])>1]) +\
+                        len([p for p in edges2 if len(p[0])>1 and len(p[1])>1])
+                else:
+                    max_parts = (len([p for p in edges1 if len(p)>1]) +\
+                        len([p for p in edges2 if len(p)>1])) -2 # -2 is to
+                                                                 # avoid
+                                                                 # counting the
+                                                                 # root
+                                                                 # partition of
+                                                                 # the two trees
                 target_names = set([getattr(_n, attr_t1) for _n in t1_leaves])
                 ref_names = set([getattr(_n, attr_t2) for _n in t2_leaves])
                 common_names = target_names & ref_names
                 if not min_comparison or min_comparison[0] > rf:
+                    
                     min_comparison = [rf, max_parts, common_names, edges1, edges2]
         return min_comparison
 
