@@ -239,9 +239,9 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
 
                 bg = f.background.apply(obj)
                 border = f.border.apply(obj)
-                #if border:
-                #    border.setRect(x, y, max_w, max_h)
-                #    border.setParentItem(self)
+                if border:
+                    border.setRect(x, y, max_w, max_h)
+                    border.setParentItem(self)
                 if bg:
                     bg.setRect(x, y, max_w, max_h)
                     bg.setParentItem(self)
