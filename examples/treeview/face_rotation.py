@@ -11,6 +11,7 @@ def rotation_layout(node):
         add_face_to_node(F, node, column=0, position="branch-right")
 
         F.border.width = 1
+        F.inner_border.width = 1
 
 def get_example_tree():
     t = Tree()
