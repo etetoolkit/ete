@@ -54,7 +54,7 @@ from StringIO import StringIO
 from collections import defaultdict
 import filecmp
 import logging
-from tempfile import NamedTemporaryFile        
+import tempfile
 log = None
 import numpy
 from time import ctime, time
@@ -68,7 +68,7 @@ from nprlib.configobj import ConfigObj, flatten_errors
 from nprlib import validate
 from nprlib.utils import (strip, SeqGroup, generate_runid,  AA, NT,
                           GLOBALS, encode_seqname, pjoin, pexist,
-                          hascontent, checksum, ETE_CITE)
+                          hascontent, checksum, clear_tempdir, ETE_CITE)
 from nprlib.errors import ConfigError, DataError
 from nprlib.master_task import Task
 from nprlib.interface import app_wrapper
@@ -190,6 +190,7 @@ def is_correlative_integer_list(value, minv=1, maxv=None):
 def main(args):
     global log
     base_dir = GLOBALS["basedir"]
+    db_dir = GLOBALS.get("dbdir", GLOBALS["basedir"])
     log = logging.getLogger("main")
     print __DESCRIPTION__
     
@@ -302,10 +303,10 @@ def main(args):
     GLOBALS["gallery_dir"] = gallery_dir
     GLOBALS["tasks_dir"] = tasks_dir
     GLOBALS["input_dir"] = input_dir
-    GLOBALS["nprdb_file"]  = pjoin(base_dir, "npr.%s.db" %time())
-    GLOBALS["datadb_file"]  = pjoin(base_dir, "data.db")
-    GLOBALS["orthodb_file"]  = pjoin(base_dir, "ortho.db") if not args.orthodb else args.orthodb
-    GLOBALS["seqdb_file"]  = pjoin(base_dir, "seq.db") if not args.seqdb else args.seqdb
+    GLOBALS["nprdb_file"]  = pjoin(db_dir, "npr.%s.db" %time())
+    GLOBALS["datadb_file"]  = pjoin(db_dir, "data.db")
+    GLOBALS["orthodb_file"]  = pjoin(db_dir, "ortho.db") if not args.orthodb else args.orthodb
+    GLOBALS["seqdb_file"]  = pjoin(db_dir, "seq.db") if not args.seqdb else args.seqdb
     
     # Clear databases if necessary
     if args.clearall:
@@ -337,6 +338,14 @@ def main(args):
         except OSError:
             log.warning("Using existing dir: %s", dirname)
 
+    if db_dir != base_dir:
+        log.log(20, "Copying previous db files to temp folder %s..." %db_dir)
+        try: shutil.copy(pjoin(base_dir, "data.db"), db_dir)
+        except IOError: pass
+        try: shutil.copy(pjoin(base_dir, "seq.db"), db_dir)
+        except IOError: pass
+        try: shutil.copy(pjoin(base_dir, "ortho.db"), db_dir)
+        except IOError: pass
 
     if not args.nochecks:
         print "Testing x86-%s portable applications..." % arch
@@ -483,12 +492,15 @@ def main(args):
         # Clear info from previous runs
         open(os.path.join(config["_outpath"], "runid"), "a").write('\t'.join([thread_id, GLOBALS["nprdb_file"]+"\n"]))
         # Write command line info
-        cmd_info = '\t'.join([start_time, thread_id, GLOBALS["cmdline"]])
+        cmd_info = '\t'.join([start_time, thread_id, str(args.monitor), GLOBALS["cmdline"]])
         open(pjoin(config["_outpath"], "command_lines"), "a").write(cmd_info+"\n")
 
     thread_errors = schedule(pipeline, pending_tasks, args.schedule_time,
                              execution, args.retry, args.debug)
     db.close()
+
+
+    clear_tempdir()
     
     if not thread_errors:
         if args.compress:
@@ -499,11 +511,12 @@ def main(args):
         log.log(20, "Deleting temporal data...")
         cmd = "cd %s && rm tmp/ -rf" %GLOBALS["basedir"]
         os.system(cmd)
+
     GLOBALS["citator"].show()       
         
 def check_and_load_orthologs(fname):
     log.log(28, "importing orthologous pairs into database (this may take a while)...")
-    template_import = NamedTemporaryFile()
+    template_import = tempfile.NamedTemporaryFile()
     template_import.write('''
 PRAGMA cache_size = 1000000;
 PRAGMA synchronous = OFF;
@@ -805,6 +818,10 @@ if __name__ == "__main__":
                         type=str, required=True,
                         help="""Output directory for results.""")
 
+    output_group.add_argument("--scratch_dbdir", dest="scratch_dbdir",
+                        type=existing_dir, 
+                        help="""If provided, sqlite files will be created in the provided scratch path. Files will be moved to outpath when finished.""")
+    
     output_group.add_argument("--taskdir", dest="taskdir",
                         type=existing_dir,
                         help="""Output directory for tasks related data""")
@@ -924,6 +941,19 @@ if __name__ == "__main__":
     if not args.aa_seed_file and not args.nt_seed_file:
         parser.error('At least one input file argument (-a, -n) is required')
 
+
+    outdir = os.path.abspath(args.outdir)
+    final_dir, runpath = os.path.split(outdir)
+    if not runpath:
+        raise ValueError("Invalid outdir")
+    
+    if args.scratch_dbdir:
+        # set paths for scratch folder for sqlite files 
+        print >>sys.stderr, "Creating temporary scratch dir for sqlite files..."
+        base_dbdir = os.path.abspath(args.scratch_dbdir)        
+        dbdir = tempfile.mkdtemp(prefix='npr_tmp', dir=base_dbdir)
+        GLOBALS["dbdir"] = dbdir
+        
     GLOBALS["basedir"] = os.path.abspath(args.outdir)
     if args.taskdir:
         GLOBALS["taskdir"] = os.path.realpath(args.taskdir)
