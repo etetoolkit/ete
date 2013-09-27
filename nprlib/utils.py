@@ -16,6 +16,7 @@ import logging
 import time
 import datetime
 import re
+import shutil
 from glob import glob
 log = logging.getLogger("main")
 DEBUG = lambda: log.level <= 10
@@ -295,7 +296,25 @@ def pid_up(pid):
     else:
         return True
 
+def clear_tempdir():
+    base_dir = GLOBALS.get("basedir", None)
+    db_dir = GLOBALS.get("dbdir", base_dir)
+    if base_dir and db_dir != base_dir:
+        log.log(20, "Copying new db files to output directory %s..." %base_dir)
+        try: shutil.copy(pjoin(db_dir, "data.db"), base_dir)
+        except IOError: log.warning("data.db could not be transferred from temp dir to output dir!")
+        try: shutil.copy(pjoin(db_dir, "seq.db"), base_dir)
+        except IOError: log.warning("seq.db could not be transferred from temp dir to output dir!")
+        try: shutil.copy(pjoin(db_dir, "ortho.db"), base_dir)
+        except IOError: pass
+        log.log(20, "Deleting temp directory %s..." %db_dir)
+        shutil.rmtree(db_dir)
 
+def terminate_job_launcher():
+    back_launcher = GLOBALS.get("_background_scheduler", None)
+    if back_launcher:
+        back_launcher.terminate()
+        
 def print_as_table(rows, header=None, fields=None, print_header=True, stdout=sys.stdout):
     """ Print >>Stdout, a list matrix as a formated table. row must be a list of
     dicts or lists."""

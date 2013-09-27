@@ -10,7 +10,7 @@ import Queue
 import threading
 
 from nprlib.logger import get_main_log
-from nprlib.utils import GLOBALS
+from nprlib.utils import GLOBALS, clear_tempdir, terminate_job_launcher
 from nprlib.errors import *
 
 try:
@@ -294,13 +294,19 @@ def app_wrapper(func, args):
             curses.wrapper(main, func, args)
         else:
             main(None, func, args)
-    except ConfigError, e: 
+    except ConfigError, e:
+        clear_tempdir()
+        terminate_job_launcher()
         print >>sys.stderr, "\nConfiguration Error:", e
         sys.exit(1)
-    except DataError, e: 
+    except DataError, e:
+        clear_tempdir()
+        terminate_job_launcher()
         print >>sys.stderr, "\nData Error:", e
         sys.exit(1)
     except KeyboardInterrupt:
+        clear_tempdir()
+        terminate_job_launcher()
         print >>sys.stderr, "\nProgram was interrupted."
         if args.monitor:
             print >>sys.stderr, ("VERY IMPORTANT !!!: Note that launched"
@@ -318,6 +324,8 @@ def app_wrapper(func, args):
                     print >>sys.stderr, status_file, "has been marked as error"
         sys.exit(1)
     except:
+        terminate_job_launcher()
+        clear_tempdir()
         raise
 
 def main(main_screen, func, args):
