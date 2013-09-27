@@ -5,7 +5,7 @@ import cPickle
 import base64
 import zlib
 import logging
-from nprlib.utils import md5
+from nprlib.utils import md5, pexist
 
 log = logging.getLogger("main")
 
@@ -35,6 +35,13 @@ def zencode(x):
 def zdecode(x):
     return cPickle.loads(zlib.decompress(base64.decodestring(x)))
 
+def prevent_sqlite_umask_bug(fname):
+    # avoids using sqlite module to create the file with deafult 644 umask
+    # permissions. Bug
+    # http://www.mail-archive.com/sqlite-users@sqlite.org/msg59080.html
+    if not pexist(fname):
+        open(fname, "w").close() 
+    
 def connect_nprdb(nprdb_file):
     global conn, cursor
     conn = sqlite3.connect(nprdb_file)
@@ -42,24 +49,28 @@ def connect_nprdb(nprdb_file):
 
 def init_datadb(datadb_file):
     global dataconn, datacursor
+    prevent_sqlite_umask_bug(datadb_file)    
     dataconn = sqlite3.connect(datadb_file)
     datacursor = dataconn.cursor()
     create_data_db()
     
 def init_nprdb(nprdb_file):
     global conn, cursor
+    prevent_sqlite_umask_bug(nprdb_file)
     conn = sqlite3.connect(nprdb_file)
     cursor = conn.cursor()
     create_db()
 
 def init_seqdb(seqdb_file):
     global seqconn, seqcursor
+    prevent_sqlite_umask_bug(seqdb_file)
     seqconn = sqlite3.connect(seqdb_file)
     seqcursor = seqconn.cursor()
     create_seq_db()
 
 def init_orthodb(orthodb_file):
     global orthoconn, orthocursor
+    prevent_sqlite_umask_bug(orthodb_file)
     orthoconn = sqlite3.connect(orthodb_file)
     orthocursor = orthoconn.cursor()
     create_ortho_db()
