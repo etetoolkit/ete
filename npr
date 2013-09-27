@@ -286,7 +286,7 @@ def main(args):
             os.makedirs(config["_outpath"])
         except OSError:
             pass
-        shutil.copy(fname, local_conf_file)
+        open(local_conf_file, "w").write(open(fname).read())
 
         # save checksum of current workflow
         config["_config_checksum"] = checksum(local_conf_file)
