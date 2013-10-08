@@ -1550,7 +1550,8 @@ class TreeNode(object):
        
     def robinson_foulds(self, t2, attr_t1="name", attr_t2="name",
                         unrooted_trees=False, expand_polytomies=False,
-                        polytomy_size_limit=5, skip_large_polytomies=False):
+                        polytomy_size_limit=5, skip_large_polytomies=False,
+                        correct_by_polytomy_size=False):
         """
         .. versionadded: 2.2
         
@@ -1583,6 +1584,9 @@ class TreeNode(object):
                                    2 or len(target_t.children) != 2):
             raise ValueError("Unrooted tree found! You may want to activate the unrooted_trees flag.")
 
+        if expand_polytomies and correct_by_polytomy_size:
+            raise ValueError("expand_polytomies and correct_by_polytomy_size are mutually exclusive.")
+        
         if expand_polytomies and unrooted_trees:
             raise ValueError("expand_polytomies and unrooted_trees arguments cannot be enabled at the same time")
         
@@ -1599,7 +1603,16 @@ class TreeNode(object):
         else:
             ref_trees = [ref_t]
             target_trees = [target_t]
-        
+            
+        polytomy_correction = 0
+        if correct_by_polytomy_size:
+            corr1 = sum([0]+[len(n.children) - 2 for n in ref_t.traverse() if len(n.children) > 2])
+            corr2 = sum([0]+[len(n.children) - 2 for n in target_t.traverse() if len(n.children) > 2])
+            if corr1 and corr2:
+                raise ValueError("Both trees contain polytomies! Try expand_polytomies=True instead")
+            else:
+                polytomy_correction = max([corr1, corr2])
+            
         min_comparison = None
         for t1 in ref_trees:
             t1_content = t1.get_cached_content()
@@ -1632,7 +1645,7 @@ class TreeNode(object):
                     edges2.discard(())
 
                     
-                rf = len(edges1 ^ edges2)
+                rf = len(edges1 ^ edges2) - polytomy_correction # poly_corr is 0 if the flag is not enabled
                 if unrooted_trees:
                     max_parts = len([p for p in edges1 if len(p[0])>1 and len(p[1])>1]) +\
                         len([p for p in edges2 if len(p[0])>1 and len(p[1])>1])
@@ -1648,7 +1661,6 @@ class TreeNode(object):
                 ref_names = set([getattr(_n, attr_t2) for _n in t2_leaves])
                 common_names = target_names & ref_names
                 if not min_comparison or min_comparison[0] > rf:
-                    
                     min_comparison = [rf, max_parts, common_names, edges1, edges2]
         return min_comparison
 
