@@ -284,24 +284,25 @@ def init_curses(main_scr):
         w.scrollok(True)
     return WIN
 
-def clean_exit(sig):
-    lock_file = pjoin(GLOBALS["basedir"], "alive")
-    clear_tempdir()
-       
-    terminate_job_launcher()
+def clean_exit():
+    base_dir = GLOBALS["basedir"]
+    lock_file = pjoin(base_dir, "alive")
     try:
         os.remove(lock_file)
     except Exception:
-        pass
+        print >>sys.stderr, "could not remove lock file %s" %lock_file
+    clear_tempdir()
+    terminate_job_launcher()
 
 def app_wrapper(func, args):
     global NCURSES
-    lock_file = pjoin(GLOBALS["basedir"], "alive")
+    base_dir = GLOBALS.get("scratch_dir", GLOBALS["basedir"])
+    lock_file = pjoin(base_dir, "alive")
+    
     if not pexist(lock_file) or args.clearall:
         open(lock_file, "w").write(time.ctime())
     else:
-        clear_tempdir()
-        terminate_job_launcher()
+        clean_exit()
         print >>sys.stderr, '\nThe same process seems to be running. Use --clearall or remove the lock file "alive" within the output dir'
         sys.exit(1)
 
@@ -315,10 +316,10 @@ def app_wrapper(func, args):
             main(None, func, args)
     except ConfigError, e:
         print >>sys.stderr, "\nConfiguration Error:", e
-        clean_exit(1)
+        clean_exit()
     except DataError, e:
         print >>sys.stderr, "\nData Error:", e
-        clean_exit(1)
+        clean_exit()
         sys.exit(1)
     except KeyboardInterrupt:
         print >>sys.stderr, "\nProgram was interrupted."
@@ -336,14 +337,12 @@ def app_wrapper(func, args):
                     print e
                 else:
                     print >>sys.stderr, status_file, "has been marked as error"
-        clean_exit(1)
+        clean_exit()
     except:
-        terminate_job_launcher()
-        clear_tempdir()
-        os.remove(lock_file)
+        clean_exit()
         raise
     else:
-        clean_exit(0)
+        clean_exit()
     
 def main(main_screen, func, args):
     """ Init logging and Screen. Then call main function """

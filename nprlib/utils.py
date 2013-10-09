@@ -298,22 +298,24 @@ def pid_up(pid):
 
 def clear_tempdir():
     base_dir = GLOBALS.get("basedir", None)
-    db_dir = GLOBALS.get("dbdir", base_dir)
-    if base_dir and db_dir != base_dir:
-        log.log(20, "Copying new db files to output directory %s..." %base_dir)
-        try: shutil.copy(pjoin(db_dir, "data.db"), base_dir)
-        except IOError: log.warning("data.db could not be transferred from temp dir to output dir!")
-        try: shutil.copy(pjoin(db_dir, "seq.db"), base_dir)
-        except IOError: log.warning("seq.db could not be transferred from temp dir to output dir!")
-        try: shutil.copy(GLOBALS["nprdb_file"], base_dir)
-        except IOError: pass
-        try: shutil.copy(pjoin(db_dir, "npr.db"), base_dir)
-        except IOError: pass
-
-        
-        log.log(20, "Deleting temp directory %s..." %db_dir)
-        try: shutil.rmtree(db_dir)
+    out_dir = GLOBALS["output_dir"]
+    scratch_dir = GLOBALS.get("scratch_dir", GLOBALS.get("dbdir", base_dir))
+    if base_dir and base_dir != out_dir:
+        try:
+            log.log(20, "Copying new db files to output directory %s..." %out_dir)
+            if not pexist(out_dir):
+                os.makedirs(out_dir)
+            if os.system("cp -a %s/* %s/" %(scratch_dir, out_dir)):
+                log.error("Could not copy data from scratch directory!")
+            log.log(20, "Deleting temp directory %s..." %scratch_dir)
+        except Exception, e:
+            print e
+            log.error("Could not copy data from scratch directory!")
+            pass
+        # By all means, try to remove temp data
+        try: shutil.rmtree(scratch_dir)
         except OSError: pass
+          
 
 def terminate_job_launcher():
     back_launcher = GLOBALS.get("_background_scheduler", None)
