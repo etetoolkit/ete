@@ -303,6 +303,7 @@ def main(args):
     GLOBALS["gallery_dir"] = gallery_dir
     GLOBALS["tasks_dir"] = tasks_dir
     GLOBALS["input_dir"] = input_dir
+    
     GLOBALS["nprdb_file"]  = pjoin(db_dir, "npr.%s.db" %time())
     GLOBALS["datadb_file"]  = pjoin(db_dir, "data.db")
     GLOBALS["orthodb_file"]  = pjoin(db_dir, "ortho.db") if not args.orthodb else args.orthodb
@@ -978,6 +979,7 @@ if __name__ == "__main__":
     
     GLOBALS["cogs_file"] = args.cogs_file
     GLOBALS["citator"].add(ETE_CITE)
+    
     if not pexist(GLOBALS["basedir"]):
         os.makedirs(GLOBALS["basedir"])
 
