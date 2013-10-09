@@ -974,6 +974,8 @@ if __name__ == "__main__":
         dbdir = tempfile.mkdtemp(prefix='npr_tmp', dir=base_dbdir)
         GLOBALS["dbdir"] = dbdir
         GLOBALS["basedir"] = GLOBALS["output_dir"]
+    else:
+        GLOBALS["basedir"] = GLOBALS["output_dir"]
         
     if args.taskdir:
         GLOBALS["taskdir"] = os.path.realpath(args.taskdir)
