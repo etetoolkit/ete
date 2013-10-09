@@ -190,7 +190,7 @@ def is_correlative_integer_list(value, minv=1, maxv=None):
 def main(args):
     global log
     base_dir = GLOBALS["basedir"]
-    db_dir = GLOBALS.get("dbdir", GLOBALS["basedir"])
+    db_dir = GLOBALS.get("dbdir", base_dir)
     log = logging.getLogger("main")
     print __DESCRIPTION__
     
@@ -208,12 +208,7 @@ def main(args):
         arch = "64 " if sys.maxsize > 2**32 else "32"
     else:
         arch = args.arch
-        
-    # UnCompress packed execution data
-    if pexist(os.path.join(base_dir,"nprdata.tar.gz")):
-        log.warning("Compressed data found. Extracting content to start execution...")
-        cmd = "cd %s && tar -zxf nprdata.tar.gz && rm nprdata.tar.gz" % base_dir
-        os.system(cmd)
+       
 
     # Check and load all configuration files
     run2config = {}
@@ -304,7 +299,7 @@ def main(args):
     GLOBALS["tasks_dir"] = tasks_dir
     GLOBALS["input_dir"] = input_dir
     
-    GLOBALS["nprdb_file"]  = pjoin(db_dir, "npr.%s.db" %time())
+    GLOBALS["nprdb_file"]  = pjoin(db_dir, "npr.db")
     GLOBALS["datadb_file"]  = pjoin(db_dir, "data.db")
     GLOBALS["orthodb_file"]  = pjoin(db_dir, "ortho.db") if not args.orthodb else args.orthodb
     GLOBALS["seqdb_file"]  = pjoin(db_dir, "seq.db") if not args.seqdb else args.seqdb
@@ -331,7 +326,28 @@ def main(args):
         if args.clearorthology and pexist(GLOBALS["orthodb_file"]):
             log.log(28, "Erasing existing orthologs database...")
             os.remove(GLOBALS["orthodb_file"])
+    
+    if not args.clearall:
+        if base_dir != GLOBALS["output_dir"] or db_dir != GLOBALS["output_dir"]:
+            log.log(20, "Copying previous npr files to temp folder %s..." %db_dir)
+            try: shutil.copy(pjoin(GLOBALS["output_dir"], "data.db"), base_dir)
+            except IOError: pass
+            try: shutil.copy(pjoin(GLOBALS["output_dir"], "seq.db"), base_dir)
+            except IOError: pass
+            try: shutil.copy(pjoin(GLOBALS["output_dir"], "ortho.db"), base_dir)
+            except IOError: pass
+            try: shutil.copy(pjoin(GLOBALS["output_dir"], "nprdata.tar.gz"), base_dir)
+            except IOError: pass
+            
+            # try: os.system("cp -a %s/* %s/" %(GLOBALS["output_dir"],  base_dir))
+            # except Exception: pass
 
+    # UnCompress packed execution data
+    if pexist(os.path.join(base_dir,"nprdata.tar.gz")):
+        log.warning("Compressed data found. Extracting content to start execution...")
+        cmd = "cd %s && tar -zxf nprdata.tar.gz && rm nprdata.tar.gz" % base_dir
+        os.system(cmd)
+            
     # Create dir structure
     for dirname in [tmp_dir, tasks_dir, input_dir]:
         try:
@@ -339,15 +355,8 @@ def main(args):
         except OSError:
             log.warning("Using existing dir: %s", dirname)
 
-    if db_dir != base_dir:
-        log.log(20, "Copying previous db files to temp folder %s..." %db_dir)
-        try: shutil.copy(pjoin(base_dir, "data.db"), db_dir)
-        except IOError: pass
-        try: shutil.copy(pjoin(base_dir, "seq.db"), db_dir)
-        except IOError: pass
-        try: shutil.copy(pjoin(base_dir, "ortho.db"), db_dir)
-        except IOError: pass
 
+            
     if not args.nochecks:
         print "Testing x86-%s portable applications..." % arch
         apps.test_apps(apps_to_test)
@@ -499,14 +508,11 @@ def main(args):
     thread_errors = schedule(pipeline, pending_tasks, args.schedule_time,
                              execution, args.retry, args.debug)
     db.close()
-
-
-    clear_tempdir()
     
     if not thread_errors:
         if args.compress:
             log.log(20, "Compressing intermediate data...")
-            cmd = "cd %s && tar --remove-files -zcf nprdata.tar.gz data.db input/ tasks/ seq.db; gzip -f npr.log" %\
+            cmd = "cd %s && tar --remove-files -zcf nprdata.tar.gz data.db input/ tmp/ tasks/ seq.db; gzip -f npr.log" %\
               GLOBALS["basedir"]
             os.system(cmd)
         log.log(20, "Deleting temporal data...")
@@ -822,6 +828,10 @@ if __name__ == "__main__":
     output_group.add_argument("--scratch_dbdir", dest="scratch_dbdir",
                         type=existing_dir, 
                         help="""If provided, sqlite files will be created in the provided scratch path. Files will be moved to outpath when finished.""")
+
+    output_group.add_argument("--scratch_dir", dest="scratch_dir",
+                              type=existing_dir, 
+                              help="""If provided, npr will run on the scratch folder and all files will be transferred to the output dir when finished. """)
     
     output_group.add_argument("--taskdir", dest="taskdir",
                         type=existing_dir,
@@ -947,15 +957,24 @@ if __name__ == "__main__":
     final_dir, runpath = os.path.split(outdir)
     if not runpath:
         raise ValueError("Invalid outdir")
+
+    GLOBALS["output_dir"] = os.path.abspath(args.outdir)
     
-    if args.scratch_dbdir:
+    if args.scratch_dir:
+        # set paths for scratch folder for sqlite files 
+        print >>sys.stderr, "Creating temporary scratch dir..."
+        base_scratch_dir = os.path.abspath(args.scratch_dir)        
+        scratch_dir = tempfile.mkdtemp(prefix='npr_tmp', dir=base_scratch_dir)
+        GLOBALS["scratch_dir"] = scratch_dir
+        GLOBALS["basedir"] = scratch_dir
+    elif args.scratch_dbdir:
         # set paths for scratch folder for sqlite files 
         print >>sys.stderr, "Creating temporary scratch dir for sqlite files..."
         base_dbdir = os.path.abspath(args.scratch_dbdir)        
         dbdir = tempfile.mkdtemp(prefix='npr_tmp', dir=base_dbdir)
         GLOBALS["dbdir"] = dbdir
+        GLOBALS["basedir"] = GLOBALS["output_dir"]
         
-    GLOBALS["basedir"] = os.path.abspath(args.outdir)
     if args.taskdir:
         GLOBALS["taskdir"] = os.path.realpath(args.taskdir)
     else:
