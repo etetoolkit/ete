@@ -1,6 +1,7 @@
 import sys
 import os
 import re
+import time
 from StringIO import StringIO
 from signal import signal, SIGWINCH, SIGKILL, SIGTERM
 from collections import deque
@@ -10,7 +11,7 @@ import Queue
 import threading
 
 from nprlib.logger import get_main_log
-from nprlib.utils import GLOBALS, clear_tempdir, terminate_job_launcher
+from nprlib.utils import GLOBALS, clear_tempdir, terminate_job_launcher, pjoin, pexist
 from nprlib.errors import *
 
 try:
@@ -282,9 +283,27 @@ def init_curses(main_scr):
         w.idlok(True)
         w.scrollok(True)
     return WIN
-            
+
+def clean_exit(sig):
+    lock_file = pjoin(GLOBALS["basedir"], "alive")
+    clear_tempdir()
+       
+    terminate_job_launcher()
+    try:
+        os.remove(lock_file)
+    except Exception:
+        pass
+
 def app_wrapper(func, args):
     global NCURSES
+    lock_file = pjoin(GLOBALS["basedir"], "alive")
+    if not pexist(lock_file) or args.clearall:
+        open(lock_file, "w").write(time.ctime())
+    else:
+        clear_tempdir()
+        terminate_job_launcher()
+        print >>sys.stderr, '\nThe same process seems to be running. Use --clearall or remove the lock file "alive" within the output dir'
+        sys.exit(1)
 
     if not args.enable_ui:
         NCURSES = False
@@ -295,18 +314,13 @@ def app_wrapper(func, args):
         else:
             main(None, func, args)
     except ConfigError, e:
-        clear_tempdir()
-        terminate_job_launcher()
         print >>sys.stderr, "\nConfiguration Error:", e
-        sys.exit(1)
+        clean_exit(1)
     except DataError, e:
-        clear_tempdir()
-        terminate_job_launcher()
         print >>sys.stderr, "\nData Error:", e
+        clean_exit(1)
         sys.exit(1)
     except KeyboardInterrupt:
-        clear_tempdir()
-        terminate_job_launcher()
         print >>sys.stderr, "\nProgram was interrupted."
         if args.monitor:
             print >>sys.stderr, ("VERY IMPORTANT !!!: Note that launched"
@@ -322,12 +336,15 @@ def app_wrapper(func, args):
                     print e
                 else:
                     print >>sys.stderr, status_file, "has been marked as error"
-        sys.exit(1)
+        clean_exit(1)
     except:
         terminate_job_launcher()
         clear_tempdir()
+        os.remove(lock_file)
         raise
-
+    else:
+        clean_exit(0)
+    
 def main(main_screen, func, args):
     """ Init logging and Screen. Then call main function """
 

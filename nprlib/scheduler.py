@@ -13,7 +13,7 @@ log = logging.getLogger("main")
 from nprlib.logger import set_logindent, logindent, get_logindent
 from nprlib.utils import (generate_id, PhyloTree, NodeStyle, Tree,
                           DEBUG, NPR_TREE_STYLE, faces, GLOBALS,
-                          basename, pjoin, ask, send_mail)
+                          basename, pjoin, ask, send_mail, pid_up)
 from nprlib.errors import ConfigError, TaskError
 from nprlib import db, sge
 from nprlib.master_task import (isjob, update_task_states_recursively,
@@ -364,15 +364,23 @@ def background_job_launcher(job_queue, run_detached, schedule_time, max_cores):
         launched = 0
         done_jobs = set()
         cores_used = 0
-        for jid, (cores, cmd, st_file) in running_jobs.iteritems():
+        for jid, (cores, cmd, st_file, pid) in running_jobs.iteritems():
+            process_done = pid.poll() if pid else None
             try:
                 st = open(st_file).read(1)
             except IOError:
                 st = "?"
+            #print pid.poll(), pid.pid, st
             if st in finished_states:
                  done_jobs.add(jid)
+            elif process_done is not None and st == "R":
+                # check if a running job is actually running
+                print "LOST PROCESS", pid, jid
+                ST=open(st_file, "w"); ST.write("E"); ST.flush(); ST.close()
+                done_jobs.add(jid)
             else:
                 cores_used += cores
+                    
         for d in done_jobs:
             del running_jobs[d]
             
@@ -401,6 +409,7 @@ def background_job_launcher(job_queue, run_detached, schedule_time, max_cores):
             try:
                 if run_detached:
                     cmd += " &"
+                    running_proc = None
                     subprocess.call(cmd, shell=True)
                 else:
                     running_proc = subprocess.Popen(cmd, shell=True)
@@ -409,14 +418,14 @@ def background_job_launcher(job_queue, run_detached, schedule_time, max_cores):
                 ST=open(st_file, "w"); ST.write("E"); ST.flush(); ST.close()
             else:
                 launched += 1
-                running_jobs[jid] = [cores, cmd, st_file]
+                running_jobs[jid] = [cores, cmd, st_file, running_proc]
                 cores_avail -= cores
                 cores_used += cores
                 visited_ids.add(jid)
                 
         waiting_jobs = job_queue.qsize() + len(pending_jobs)
-        log.log(28, "@@8:Launched@@1: %s jobs. Waiting %s jobs. Cores usage: %s/%s",
-                launched, waiting_jobs, cores_used, max_cores)
+        log.log(28, "@@8:Launched@@1: %s jobs. R jobs: %d, W jobs: %s. Cores usage: %s/%s",
+                launched, len(running_jobs), waiting_jobs, cores_used, max_cores)
         for _d in dups:
             print "duplicate bug", _d
         

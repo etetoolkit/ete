@@ -305,10 +305,15 @@ def clear_tempdir():
         except IOError: log.warning("data.db could not be transferred from temp dir to output dir!")
         try: shutil.copy(pjoin(db_dir, "seq.db"), base_dir)
         except IOError: log.warning("seq.db could not be transferred from temp dir to output dir!")
-        try: shutil.copy(pjoin(db_dir, "ortho.db"), base_dir)
+        try: shutil.copy(GLOBALS["nprdb_file"], base_dir)
         except IOError: pass
+        try: shutil.copy(pjoin(db_dir, "npr.db"), base_dir)
+        except IOError: pass
+
+        
         log.log(20, "Deleting temp directory %s..." %db_dir)
-        shutil.rmtree(db_dir)
+        try: shutil.rmtree(db_dir)
+        except OSError: pass
 
 def terminate_job_launcher():
     back_launcher = GLOBALS.get("_background_scheduler", None)
@@ -456,13 +461,40 @@ def send_mail(toaddrs, subject, text):
     except Exception, e:
         print e
 
+def symlink(target, link_name):
+    try:
+        os.remove(link_name)
+    except OSError:
+        pass
+    os.symlink(target, link_name)
+        
 def get_latest_nprdp(basedir):
-    avail_dbs = sorted([(float(fname.split(".")[1]), fname) for fname in glob(os.path.join(basedir, "npr.*.db"))])
+    avail_dbs = []
+    for fname in glob(os.path.join(basedir, "*.db")):
+        m = re.search("npr\.([\d\.]+)\.db", fname)
+        if m:
+            avail_dbs.append([float(m.groups()[0]), fname])
+
     if avail_dbs:
-        last_db = avail_dbs[-1][1]
-        print "Using latest db file available:", os.path.basename(last_db)
-        print
-        return last_db
+        avail_dbs.sort()
+        print avail_dbs
+        if avail_dbs:
+            last_db = avail_dbs[-1][1]
+            print "Using latest db file available:", os.path.basename(last_db)
+            return last_db
+    else:
+        #tries compressed data
+        compressed_path = pjoin(basedir, "nprdata.tar.gz")
+        if pexist(compressed_path):
+            import tarfile
+            tar = tarfile.open(compressed_path)
+            for member in tar:
+                print member.name
+                m = re.search("npr\.([\d\.]+)\.db", member.name)
+                if m:
+                    print member
+                    avail_dbs.append([float(m.groups()[0]), member])
+        
     return None
 
 def npr_layout(node):
