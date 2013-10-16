@@ -21,7 +21,6 @@ def wrap(method, retries):
 class safefile(file):
     __retries = 2
     def read(self, *args, **kargs):
-        print "CAPTURADO"
         for i in xrange(self.__retries):
             try:
                 return file.read(self, *args, **kargs)
@@ -96,7 +95,7 @@ except:
 __DESCRIPTION__ = (
 """--------------------------------------------------------------------------------
             Nested Phylogenetic Reconstruction (NPR) program.
-                          NPR-0.1%s(beta), %s.
+                          %s (beta), %s.
     
       NPR allows to reconstruct large phylogenies by means of an
       iterative strategy that provides scalable resolution along the
@@ -113,7 +112,7 @@ __DESCRIPTION__ = (
       necessary computations will be shown shown together with your
       results.)
 
-      Contact: jhuerta [at] crg.es & tgabaldon [at] crg.es
+           Contact: jhuerta [at] crg.es & tgabaldon [at] crg.es
 --------------------------------------------------------------------------------
 
     """ %(__VERSION__, __DATE__))
@@ -189,11 +188,12 @@ def is_correlative_integer_list(value, minv=1, maxv=None):
 
 def main(args):
     global log
+    log = logging.getLogger("main")
     base_dir = GLOBALS["basedir"]
     db_dir = GLOBALS.get("dbdir", base_dir)
-    log = logging.getLogger("main")
     print __DESCRIPTION__
-    
+    log.log(28, "Starting NPR execution at %s" %(ctime()))
+    log.log(28, "Output directory %s" %(GLOBALS["output_dir"]))
     npr_template = args.workflow
     if npr_template == "sptree":
         GLOBALS["template"] = "sptree"
@@ -314,7 +314,6 @@ def main(args):
         os.remove(GLOBALS["orthodb_file"]) if pexist(GLOBALS["orthodb_file"]) else None
         os.remove(GLOBALS["datadb_file"]) if pexist(GLOBALS["datadb_file"]) else None
     else:
-        print GLOBALS["input_dir"], pexist(GLOBALS["input_dir"])
         if args.softclear:
             log.log(28, "Erasing precomputed data (reusing task directory)")
             shutil.rmtree(GLOBALS["tmp"]) if pexist(GLOBALS["tmp"]) else None
@@ -354,11 +353,9 @@ def main(args):
             os.makedirs(dirname)
         except OSError:
             log.warning("Using existing dir: %s", dirname)
-
-
             
     if not args.nochecks:
-        print "Testing x86-%s portable applications..." % arch
+        log.log(28, "Testing x86-%s portable applications..." % arch)
         apps.test_apps(apps_to_test)
     
     # Set number of CPUs available
@@ -394,7 +391,6 @@ def main(args):
     # Check and load data
     ERROR = ""
     if not pexist(GLOBALS["seqdb_file"]):
-        db.init_seqdb(GLOBALS["seqdb_file"])
         target_seqs = None
         target_seqs, seqnames, name2len, name2unk, name2seq = scan_sequences(args, target_seqs)
         ERROR = check_seq_integrity(args, target_seqs, seqnames, name2len, name2unk, name2seq)
@@ -407,7 +403,8 @@ def main(args):
                 #               for name in target_seqs])
             db.add_seq_species(sp2counter)
             seq_species = set(sp2counter.keys())
-        if not ERROR: 
+        if not ERROR:
+            db.init_seqdb(GLOBALS["seqdb_file"])
             load_sequences(target_seqs, name2seq, npr_template)
         seqnames, name2len, name2unk, name2seq = [None] * 4 # Release mem
     else:
@@ -428,7 +425,6 @@ def main(args):
              for line in open(args.cogs_file):
                  all_species.update(map(lambda n: n.split("_")[0].strip(), line.split("\t")))
              db.update_cog_species(all_species)
-             print len(all_species)
              db.orthoconn.commit()
         else:
             db.init_orthodb(GLOBALS["orthodb_file"])
@@ -608,7 +604,6 @@ def scan_sequences(args, target_seqs):
         # Initialize target sets using aa as source
         if not target_seqs and seqtype == "aa":
             target_seqs = set(visited_seqs["aa"])
-            print target_seqs
 
     if skipped_seqs:
         log.warning("%d sequences will not be used since they are"
