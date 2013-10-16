@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+ 
 import errno
 import __builtin__
 def wrap(method, retries):
@@ -751,114 +751,113 @@ if __name__ == "__main__":
 
 
     # Input data related flags
-    input_group = parser.add_argument_group('INPUT OPTIONS\n==============')
+    input_group = parser.add_argument_group('==== Input Options ====')
 
     input_group.add_argument("-w", dest="workflow",
-                        choices=["sptree", "genetree"],
-                        required=True,
-                        help="Type of phylogenetic workflow.")
+                             required=True,
+                             choices=["sptree", "genetree"],
+                             help="Type of phylogenetic workflow.")
 
     input_group.add_argument("-c", "--config", dest="configfile",
-                        type=str, required=True, nargs="+",
-                        help="Configuration file.")
+                             type=str, required=True, nargs="+",
+                             help="Configuration file.")
 
     input_group.add_argument("-a", dest="aa_seed_file",
-                        type=existing_file,
-                        help="Initial multi sequence file with"
-                        " protein sequences.")
+                             type=existing_file,
+                             help="Initial multi sequence file with"
+                             " protein sequences.")
 
     input_group.add_argument("-n", dest="nt_seed_file",
-                        type=existing_file,
-                        help="Initial multi sequence file with"
-                        " nucleotide sequences")
+                             type=existing_file,
+                             help="Initial multi sequence file with"
+                             " nucleotide sequences")
 
     input_group.add_argument("--dealign", dest="dealign",
-                        action="store_true",
-                        help="when used, gaps in the orginal fasta file will"
-                        " be removed, thus allowing to use alignment files as input.")
-
+                             action="store_true",
+                             help="when used, gaps in the orginal fasta file will"
+                             " be removed, thus allowing to use alignment files as input.")
+    
     input_group.add_argument("--no-seq-rename", dest="seq_rename",
-                        action="store_false",
-                        help="If used, sequence names will NOT be"
+                             action="store_false",
+                             help="If used, sequence names will NOT be"
                              " internally translated to 10-character-"
                              "identifiers.")
     
     dup_names_group = input_group.add_mutually_exclusive_group()
     
     dup_names_group.add_argument("--ignore-dup-seqnames", dest="ignore_dup_seqnames",
-                             action = "store_true",
-                             help=("If duplicated sequence names exist in the input"
-                                   " fasta file, a single random instance will be used."))
-
+                                 action = "store_true",
+                                 help=("If duplicated sequence names exist in the input"
+                                       " fasta file, a single random instance will be used."))
+    
     dup_names_group.add_argument("--rename-dup-seqnames", dest="rename_dup_seqnames",
-                             action = "store_true",
-                             help=("If duplicated sequence names exist in the input"
-                                   " fasta file, duplicates will be renamed."))
+                                 action = "store_true",
+                                 help=("If duplicated sequence names exist in the input"
+                                       " fasta file, duplicates will be renamed."))
     
     input_group.add_argument("--first-split-outgroup", dest="first_split",
                              type=str,
                              help=("When used, it overrides first_split option"
-                                  " in any tree merger config block in the"
+                                   " in any tree merger config block in the"
                                    " config file."))
-
+    
     input_group.add_argument("--orthodb", dest="orthodb",
                              type=str,
                              help="Uses a custom orthology-pair database file")
-
+    
     input_group.add_argument("--seqdb", dest="seqdb",
                              type=str,
                              help="Uses a custom sequence database file")
-
+    
     # Sptree workflow
-
+    
     input_group.add_argument("--ortho-pairs", dest="ortho_pairs",
-                        type=existing_file,
-                        help="File containing all one2one orthologous"
+                             type=existing_file,
+                             help="File containing all one2one orthologous"
                              " relationships among the species of interest.")
-
+    
     input_group.add_argument("--cogs", dest="cogs_file",
-                        type=existing_file,
-                        help="")
+                             type=existing_file,
+                             help="")
     
     input_group.add_argument("--spname-delimiter", dest="spname_delimiter",
-                        type=str, default="_",
-                        help="In sptree mode, spname_delimiter is used to split"
+                             type=str, default="_",
+                             help="In sptree mode, spname_delimiter is used to split"
                              " the name of sequences into species code and"
                              " sequence identifier (i.e. HUMAN_p53 = HUMAN, p53)."
                              " Note that species name must always precede seq.identifier.")
 
     input_group.add_argument("--spfile", dest="spfile",
-                        type=existing_file,
-                        help="If specified, only the sequences and ortholog"
+                             type=existing_file,
+                             help="If specified, only the sequences and ortholog"
                              " pairs matching the group of species in this file"
                              " (one species code per line) will be used. ")
-
-
+    
+    
     # Output data related flags
-    output_group = parser.add_argument_group('OUTPUT OPTIONS\n==============')
+    output_group = parser.add_argument_group('==== Output Options ====')
     output_group.add_argument("-o", "--outdir", dest="outdir",
-                        type=str, required=True,
-                        help="""Output directory for results.""")
-
+                              type=str, required=True,
+                              help="""Output directory for results.""")
+    
     output_group.add_argument("--scratch_dbdir", dest="scratch_dbdir",
-                        type=existing_dir, 
-                        help="""If provided, sqlite files will be created in the provided scratch path. Files will be moved to outpath when finished.""")
+                              type=existing_dir, 
+                              help="""If provided, sqlite files will be created in the provided scratch path. Files will be moved to outpath when finished.""")
 
     output_group.add_argument("--scratch_dir", dest="scratch_dir",
                               type=existing_dir, 
                               help="""If provided, npr will run on the scratch folder and all files will be transferred to the output dir when finished. """)
     
     output_group.add_argument("--taskdir", dest="taskdir",
-                        type=existing_dir,
-                        help="""Output directory for tasks related data""")
+                              type=existing_dir,
+                              help="""Output directory for tasks related data""")
     
     output_group.add_argument("--compress", action="store_true",
-                        help="Compress intermediate files when"
+                              help="Compress intermediate files when"
                               " a task is finished.")
-
+    
     output_group.add_argument("--logfile", action="store_true",
-                          help="Log messages are saved into a file"
-                      )
+                              help="Log messages are saved into a file")
     
     output_group.add_argument("--email", dest="email",
                               type=str, 
@@ -867,43 +866,43 @@ if __name__ == "__main__":
     output_group.add_argument("--email_report_time", dest="email_report_time",
                               type=int, default = 0, 
                               help="Send email reports while execution")
-
-
+    
+    
     # Task execution related flags
-    exec_group = parser.add_argument_group('INPUT EXECUTION OPTIONS\n======================')
+    exec_group = parser.add_argument_group('==== Execution Mode Options ====')
 
     exec_group.add_argument("-r", "--retry_error_jobs", dest="retry",
-                        action="store_true",
-                        help="Try to relaunch jobs marked"
-                        " as error.")
-
+                            action="store_true",
+                            help="Try to relaunch jobs marked as error.")
+    
     exec_group.add_argument("-m", "--maxcores", dest="maxcores", type=int,
-                        default=1, help="Maximum number of CPU cores"
-                        " available in the execution hosts. If higher"
-                        " than 1, tasks with multi-threading"
-                        " capabilities will be set appropriately.")
+                            default=1, help="Maximum number of CPU cores"
+                            " available in the execution host. If higher"
+                            " than 1, tasks with multi-threading"
+                            " capabilities will enabled.")
 
     exec_group.add_argument("-t", "--schedule_time", dest="schedule_time",
-                        type=float, default=2,
-                        help="""How often tasks should be checked""")
+                            type=float, default=2,
+                            help="""How often tasks should be checked""")
     
     exec_group.add_argument("--launch_time", dest="launch_time",
-                        type=float, default=5,
-                        help="""How often queued jobs should be launched""")
-
+                            type=float, default=5,
+                            help="""How often queued jobs should be launched""")
+    
     exec_type_group = exec_group.add_mutually_exclusive_group()
     exec_type_group.add_argument("-x", "--insitu_execution", dest="execute",
-                        action="store_true",
-                        help="Pipeline jobs are launched in the same machine as the"
-                        " as ETE-NPR is running.")
-
+                                 action="store_true",
+                                 help="Pipeline jobs are launched in the same machine as the"
+                                 " as ETE-NPR is running.")
+    
     exec_type_group.add_argument("--sge", dest="sge_execute",
-                        action="store_true", help="EXPERIMENTAL!: Jobs will be"
-                        " launched using the Sun Grid Engine"
-                        " queue system.")
+                                 action="store_true", help="EXPERIMENTAL!: Jobs will be"
+                                 " launched using the Sun Grid Engine"
+                                 " queue system.")
 
     exec_group.add_argument("--monitor", dest="monitor",
-                        action="store_true", help="Pipeline jobs will be"
+                            action="store_true",
+                            help="Pipeline jobs will be"
                             " detached from the main NPR process. This means that"
                             " when npr execution is interrupted, all currently"
                             " running jobs will keep running. Use this option if you"
@@ -913,32 +912,36 @@ if __name__ == "__main__":
 
     exec_group.add_argument("--override", dest="override",
                             action="store_true",
-                            help="Overrides output files from past program executions." )
+                            help="Override workflow configuration if necessary." )
 
     exec_group.add_argument("--clearall", dest="clearall",
                             action="store_true",
-                            help="Erase all previous data if necessary")
+                            help="Erase all previous data if necessary.")
     
     exec_group.add_argument("--softclear", dest="softclear",
                             action="store_true",
-                            help="Clears precomputed data, but keeps task raw data")
+                            help="Clear precomputed data (data.db), but keeps task raw data (tasks/).")
     
     exec_group.add_argument("--clear_orthodb", dest="clearorthology",
                             action="store_true",
-                            help="Overrides orthology pairs table in database")
+                            help="DEPRECATED: Override orthology pairs table in database.")
 
     exec_group.add_argument("--clear_seqdb", dest="clearseqs",
                             action="store_true",
-                            help="Overrides sequences table in database")
+                            help="Reload sequences deleting previous database if necessary.")
 
     exec_group.add_argument("--arch", dest="arch",
                             choices=["auto", "32", "64"],
                             default="auto", help="Set the architecture of"
                             " execution hosts (needed only when using"
                             " built-in applications.)")
-
+    
+    exec_group.add_argument("--nochecks", dest="nochecks",
+                            action="store_true",
+                            help="Skip application checks.")
+    
     # Interface related flags
-    ui_group = parser.add_argument_group("INTERFACE OPTIONS\n=================")
+    ui_group = parser.add_argument_group("==== Program Interface Options ====")
     ui_group.add_argument("-u", dest="enable_ui",
                         action="store_true", help="When used, a color"
                         " based interface is launched to monitor NPR"
@@ -951,22 +954,16 @@ if __name__ == "__main__":
                         help="Verbosity level: 0=very quiet, 4=very "
                           " verbose.")
 
-    ui_group.add_argument("--nochecks", dest="nochecks",
-                          action="store_true",
-                          help="Skip application checks during the start-up")
-
     ui_group.add_argument("--debug", nargs="?",
                           const="all",
-                          help="Starts a debugging"
-                          " session. A taskid can be provided, so"
-                          " debugging will start from such task on."
-                          )
+                          help="Start debugging"
+                          " A taskid can be provided, so"
+                          " debugging will start from such task on.")
 
     args = parser.parse_args()
 
     if not args.aa_seed_file and not args.nt_seed_file:
         parser.error('At least one input file argument (-a, -n) is required')
-
 
     outdir = os.path.abspath(args.outdir)
     final_dir, runpath = os.path.split(outdir)
