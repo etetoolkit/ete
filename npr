@@ -397,7 +397,7 @@ def main(args):
         db.init_seqdb(GLOBALS["seqdb_file"])
         target_seqs = None
         target_seqs, seqnames, name2len, name2unk, name2seq = scan_sequences(args, target_seqs)
-        ERROR = check_seq_integrity(target_seqs, seqnames, name2len, name2unk, name2seq)
+        ERROR = check_seq_integrity(args, target_seqs, seqnames, name2len, name2unk, name2seq)
         sp2counter = defaultdict(int)
         if npr_template == "sptree":
             for name in target_seqs:
@@ -580,7 +580,8 @@ def scan_sequences(args, target_seqs):
             continue
         GLOBALS["seqtypes"].add(seqtype)
         log.log(28, "Scanning %s sequence file...", seqtype)
-        SEQS = SeqGroup(seqfile, fix_duplicates=False)
+        fix_dups = True if args.rename_dup_seqnames else False
+        SEQS = SeqGroup(seqfile, fix_duplicates=fix_dups)
         for c1, (seqid, seq) in enumerate(SEQS.id2seq.iteritems()):
             if c1%10000 == 0:
                 print >>sys.stderr, c1, "\r",
@@ -607,6 +608,7 @@ def scan_sequences(args, target_seqs):
         # Initialize target sets using aa as source
         if not target_seqs and seqtype == "aa":
             target_seqs = set(visited_seqs["aa"])
+            print target_seqs
 
     if skipped_seqs:
         log.warning("%d sequences will not be used since they are"
@@ -614,20 +616,21 @@ def scan_sequences(args, target_seqs):
                              
     return target_seqs, visited_seqs, seq2length, seq2unknown, seq2seq
 
-def check_seq_integrity(target_seqs, visited_seqs, seq2length, seq2unknown, seq2seq):
+def check_seq_integrity(args, target_seqs, visited_seqs, seq2length, seq2unknown, seq2seq):
     log.log(28, "Checking data consistency ...")
     source_seqtype = "aa" if "aa" in GLOBALS["seqtypes"] else "nt"
     error = ""
 
     # Check for duplicate ids
-    seq_number = len(set(visited_seqs[source_seqtype]))
-    if len(visited_seqs[source_seqtype]) != seq_number:
-        counter = defaultdict(int)
-        for seqname in visited_seqs[source_seqtype]:
-            counter[seqname] += 1
-        duplicates = ["%s\thas %d copies" %(key, value) for key, value in counter.iteritems() if value > 1]
-        error += "\nDuplicate sequence names.\n"
-        error += '\n'.join(duplicates)
+    if not args.ignore_dup_seqnames:
+        seq_number = len(set(visited_seqs[source_seqtype]))
+        if len(visited_seqs[source_seqtype]) != seq_number:
+            counter = defaultdict(int)
+            for seqname in visited_seqs[source_seqtype]:
+                counter[seqname] += 1
+            duplicates = ["%s\thas %d copies" %(key, value) for key, value in counter.iteritems() if value > 1]
+            error += "\nDuplicate sequence names.\n"
+            error += '\n'.join(duplicates)
 
     # check that the seq of all targets is available
     if target_seqs: 
@@ -779,7 +782,19 @@ if __name__ == "__main__":
                         help="If used, sequence names will NOT be"
                              " internally translated to 10-character-"
                              "identifiers.")
+    
+    dup_names_group = input_group.add_mutually_exclusive_group()
+    
+    dup_names_group.add_argument("--ignore-dup-seqnames", dest="ignore_dup_seqnames",
+                             action = "store_true",
+                             help=("If duplicated sequence names exist in the input"
+                                   " fasta file, a single random instance will be used."))
 
+    dup_names_group.add_argument("--rename-dup-seqnames", dest="rename_dup_seqnames",
+                             action = "store_true",
+                             help=("If duplicated sequence names exist in the input"
+                                   " fasta file, duplicates will be renamed."))
+    
     input_group.add_argument("--first-split-outgroup", dest="first_split",
                              type=str,
                              help=("When used, it overrides first_split option"
@@ -793,7 +808,7 @@ if __name__ == "__main__":
     input_group.add_argument("--seqdb", dest="seqdb",
                              type=str,
                              help="Uses a custom sequence database file")
-    
+
     # Sptree workflow
 
     input_group.add_argument("--ortho-pairs", dest="ortho_pairs",
