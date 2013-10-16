@@ -97,20 +97,18 @@ __DESCRIPTION__ = (
             Nested Phylogenetic Reconstruction (NPR) program.
                      ETE-NPR %s (beta), %s.
     
-      NPR allows to reconstruct large phylogenies by means of an
-      iterative strategy that provides scalable resolution along the
-      different levels of a tree. At each iteration, internal nodes
-      are re-evaluated to optimize and fine tune the parameters of the
-      phylogenetic inference.
+      NPR allows to reconstruct large phylogenies by means of an iterative
+      strategy that provides scalable resolution along the different levels of a
+      tree. At each iteration, internal nodes are re-evaluated to optimize and
+      fine tune the parameters of the phylogenetic inference.
 
       If you use this program in a published work, please cite:
 
-        Jaime Huerta-Cepas and Toni Gabaldon. Nested Phylogenetic
-        Reconstruction. XXX-XX. 
+        - Jaime Huerta-Cepas and Toni Gabaldon. ETE-NPR: a python application for
+          nested phylogenetic reconstruction and workflow design. XXX-XX.
 
-      (Note that a list of the external programs used to complete the
-      necessary computations will be shown shown together with your
-      results.)
+      (Note that a list of the external programs used to complete the necessary
+      computations will be shown shown together with your results.)
 
            Contact: jhuerta [at] crg.es & tgabaldon [at] crg.es
 --------------------------------------------------------------------------------
