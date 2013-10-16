@@ -95,7 +95,7 @@ except:
 __DESCRIPTION__ = (
 """--------------------------------------------------------------------------------
             Nested Phylogenetic Reconstruction (NPR) program.
-                          %s (beta), %s.
+                     ETE-NPR %s (beta), %s.
     
       NPR allows to reconstruct large phylogenies by means of an
       iterative strategy that provides scalable resolution along the
