@@ -319,7 +319,7 @@ def main(args):
             shutil.rmtree(GLOBALS["tmp"]) if pexist(GLOBALS["tmp"]) else None
             shutil.rmtree(GLOBALS["input_dir"]) if pexist(GLOBALS["input_dir"]) else None
             os.remove(GLOBALS["datadb_file"]) if pexist(GLOBALS["datadb_file"]) else None
-        if args.clearseqs and pexist(GLOBALS["seqdb_file"]) and not args.seqdb::
+        if args.clearseqs and pexist(GLOBALS["seqdb_file"]) and not args.seqdb:
             log.log(28, "Erasing existing sequence database...")
             os.remove(GLOBALS["seqdb_file"])
         if args.clearorthology and pexist(GLOBALS["orthodb_file"]) and not args.orthodb:
