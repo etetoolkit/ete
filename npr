@@ -399,9 +399,10 @@ def main(args):
                 sp2counter[spname] += 1
                 #seq_species = set([name.split(GLOBALS["spname_delimiter"])[0] 
                 #               for name in target_seqs])
-            db.add_seq_species(sp2counter)
             seq_species = set(sp2counter.keys())
         if not ERROR:
+            if npr_template == "sptree":
+                db.add_seq_species(sp2counter)
             db.init_seqdb(GLOBALS["seqdb_file"])
             load_sequences(target_seqs, name2seq, npr_template)
         seqnames, name2len, name2unk, name2seq = [None] * 4 # Release mem
