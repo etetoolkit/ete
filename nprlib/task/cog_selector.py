@@ -21,8 +21,7 @@ quote = lambda _x: '"%s"' %_x
 
 class CogSelector(CogSelectorTask):
     def __init__(self, target_sp, out_sp, seqtype, conf, confname):
-
-        self.seed = conf[confname]["_seed"]
+        #self.seed = conf[confname]["_seed"]
         self.missing_factor = float(conf[confname]["_species_missing_factor"])
         node_id, clade_id = generate_node_ids(target_sp, out_sp)
         # Initialize task
