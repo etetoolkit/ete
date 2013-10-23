@@ -141,11 +141,10 @@ tree.DEFAULT_DIST = 1.0
 #from ete_dev.treeview import drawer
 #drawer.GUI_TIMEOUT = 1
 
-
 TIME_FORMAT = '%a %b %d %H:%M:%S %Y'
 
-AA = set("ABCDEFGHIJKLMNPOQRSUTVWXYZ*") | set("abcdefghijklmnpoqrsutvwxyz") 
-NT = set("ACGTURYKMSWBDHVN") | set("acgturykmswbdhvn")
+AA = set('ACEDGFIHKMLNQPSRTWVY*-.UOBZJX') | set('acedgfihkmlnqpsrtwvyuobzjx') 
+NT = set("ACGT*-.URYKMSWBDHVN") | set("acgturykmswbdhvn")
 
 GENCODE = {
     'ATA':'I', 'ATC':'I', 'ATT':'I', 'ATG':'M',
