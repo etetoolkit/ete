@@ -455,10 +455,9 @@ def main(args):
         GLOBALS["target_species"] = target_species
         
     if ERROR:
-        open("npr_error.log", "w").write(' '.join(sys.argv) + "\n\n" + ERROR)
+        open(pjoin(base_dir, "error.log"), "w").write(' '.join(sys.argv) + "\n\n" + ERROR)
         raise DataError("Errors were found while loading data. Please"
-                        " check error file in the current director for details"
-                        " [npr_error.log]")
+                        " check error file for details")
 
     target_seqs = None # release mem
 
@@ -589,18 +588,24 @@ def scan_sequences(args, target_seqs):
                 continue
             visited_seqs[seqtype].append(seqname)
 
-            # Clear symbols
-            seq = seq.replace(".", "-")
-            seq = seq.replace("*", "X")
+            # Clear problematic symbols
+            if not args.no_seq_checks:
+                seq = seq.replace(".", "-")
+                seq = seq.replace("*", "X")
+                if seqtype == "aa":
+                    seq = seq.upper()
+                    seq = seq.replace("J", "X") # phyml fails with J
+                    seq = seq.replace("U", "X") # selenocysteines
             if args.dealign:
                 seq = seq.replace("-", "").replace(".", "")
             seq2seq[seqtype][seqname] = seq
             seq2length[seqtype][seqname] = len(seq)
-            # Load unknown symbol inconsistencies
-            if seqtype == "nt" and set(seq) - NT:
-                seq2unknown[seqtype][seqname] = set(seq) - NT
-            elif seqtype == "aa" and set(seq) - AA:
-                seq2unknown[seqtype][seqname] = set(seq) - AA
+            if not args.no_seq_checks:
+                # Load unknown symbol inconsistencies
+                if seqtype == "nt" and set(seq) - NT:
+                    seq2unknown[seqtype][seqname] = set(seq) - NT
+                elif seqtype == "aa" and set(seq) - AA:
+                    seq2unknown[seqtype][seqname] = set(seq) - AA
 
         # Initialize target sets using aa as source
         if not target_seqs and seqtype == "aa":
@@ -778,6 +783,10 @@ if __name__ == "__main__":
                              help="If used, sequence names will NOT be"
                              " internally translated to 10-character-"
                              "identifiers.")
+
+    input_group.add_argument("--no-seq-checks", dest="no_seq_checks",
+                            action="store_true",
+                            help="Skip consistency sequence checks for not allowed symbols, etc.")
     
     dup_names_group = input_group.add_mutually_exclusive_group()
     
