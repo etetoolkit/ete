@@ -397,7 +397,7 @@ def main(args):
         sp2counter = defaultdict(int)
         if npr_template == "sptree":
             for name in target_seqs:
-                spname = name.split(GLOBALS["spname_delimiter"])[0]
+                spname = name.split(GLOBALS["spname_delimiter"], 1)[0]
                 sp2counter[spname] += 1
                 #seq_species = set([name.split(GLOBALS["spname_delimiter"])[0] 
                 #               for name in target_seqs])
@@ -424,7 +424,7 @@ def main(args):
         #     db.orthoconn.commit()
              all_species = set()
              for line in open(args.cogs_file):
-                 all_species.update(map(lambda n: n.split("_")[0].strip(), line.split("\t")))
+                 all_species.update(map(lambda n: n.split(args.spname_delimiter, 1)[0].strip(), line.split("\t")))
              db.update_cog_species(all_species)
              db.orthoconn.commit()
         else:
@@ -581,6 +581,7 @@ def scan_sequences(args, target_seqs):
         for c1, (seqid, seq) in enumerate(SEQS.id2seq.iteritems()):
             if c1%10000 == 0:
                 print >>sys.stderr, c1, "\r",
+                sys.stderr.flush()
 
             seqname = SEQS.id2name[seqid]
             if target_seqs and seqname not in target_seqs:
@@ -672,9 +673,11 @@ def check_seq_integrity(args, target_seqs, visited_seqs, seq2length, seq2unknown
     for v in all_len:
         if abs(mean_len - v) >  (3 * std_len):
             outliers.append(v)
+    log.log(28, "Total sequences:  %d" %len(seq2length))
+    log.log(28, "Average sequence length: %d +- %0.1f " %(mean_len, std_len))
     log.log(28, "Max sequence length:  %d" %max_len)
     log.log(28, "Min sequence length:  %d" %min_len)
-    log.log(28, "Mean sequence length: %d +- %0.1f " %(mean_len, std_len))
+
     if outliers:
         log.warning("%d sequence lengths look like outliers" %len(outliers))
 
@@ -692,6 +695,7 @@ def hash_names(target_names):
     hash2name = defaultdict(list)
     for c1, name in enumerate(target_names):
         print >>sys.stderr, c1, "\r",
+        sys.stderr.flush()
         hash_name = encode_seqname(name)
         hash2name[hash_name].append(name)
 
