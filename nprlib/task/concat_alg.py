@@ -111,7 +111,7 @@ class ConcatAlg(ConcatAlgTask):
 def get_species_code(name, splitter, field):
     # By default, taxid is the first par of the seqid, separated by
     # underscore
-    return map(strip, name.split(splitter))[field]
+    return map(strip, name.split(splitter, 1))[field]
 
 def get_concatenated_alg(alg_filenames, models=None, 
                         sp_field=0, sp_delimiter="_", 

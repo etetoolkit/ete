@@ -21,7 +21,6 @@ quote = lambda _x: '"%s"' %_x
 
 class CogSelector(CogSelectorTask):
     def __init__(self, target_sp, out_sp, seqtype, conf, confname):
-        #self.seed = conf[confname]["_seed"]
         self.missing_factor = float(conf[confname]["_species_missing_factor"])
         node_id, clade_id = generate_node_ids(target_sp, out_sp)
         # Initialize task
@@ -45,7 +44,7 @@ class CogSelector(CogSelectorTask):
         smallest_cog, largest_cog = len(all_species), 0 
         for cog in open(GLOBALS["cogs_file"]):
             sp2seqs = defaultdict(list)
-            for sp, seqid in [map(strip, seq.split("_")) for seq in cog.split("\t")]:
+            for sp, seqid in [map(strip, seq.split(GLOBALS["spname_delimiter"], 1)) for seq in cog.split("\t")]:
                 sp2seqs[sp].append(seqid)
             one2one_cog = set()
             for sp, seqs in sp2seqs.iteritems():
