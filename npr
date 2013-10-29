@@ -246,7 +246,7 @@ def main(args):
         # Check that fields are filled for all max_seq values
         for flow_name in ["sptree", "genetree"]:
             npr_config = [len(v) for k, v in config[flow_name].iteritems()
-                          if type(v) == list]
+                          if type(v) == list and k != "target_levels"]
             if len(set(npr_config)) != 1:
                 print '\n'.join([str((len(v),v)) for k, v in config[flow_name].iteritems()
                           if type(v) == list])
@@ -373,7 +373,9 @@ def main(args):
         raise ConfigError("Species tree workflow requires a list of COGS"
                           " to be supplied through the --cogs"
                           " argument.")
-
+    else:
+        GLOBALS["cogs_file"] = os.path.abspath(args.cogs_file)
+        
     GLOBALS["seqtypes"] = set()
     if args.nt_seed_file:
         GLOBALS["seqtypes"].add("nt")
@@ -459,6 +461,46 @@ def main(args):
         raise DataError("Errors were found while loading data. Please"
                         " check error file for details")
 
+    # Prepare target taxa levels, if any
+    if npr_template == "sptree" and args.lineages_file and config["sptree"].get("target_levels", None):
+        sp2lin = {}
+        lin2sp = defaultdict(set)
+        all_sorted_levels = []
+        for line in open(args.lineages_file):
+            sp, lineage = line.split("\t")
+            sp = sp.strip()
+            if sp in target_species:
+                sp2lin[sp] = map(lambda x: x.strip().lower(), lineage.split(","))
+                for lin in sp2lin[sp]:
+                    if lin not in lin2sp:
+                        all_sorted_levels.append(lin)
+                    lin2sp[lin].add(sp)
+        # any target species without lineage information?
+        if target_species - set(sp2lin):
+            missing = target_species - set(sp2lin)
+            log.warning("%d species not found in lineages file" %len(missing))
+            
+        # So, the following levels (with at least 2 species) could be optimized     
+        avail_levels = [(lin, len(lin2sp[lin])) for lin in all_sorted_levels if len(lin2sp[lin])>=2]
+        log.log(26, "Available levels for NPR optimization:\n%s", '\n'.join(map(lambda x: "% 30s (%d spcs)"%x, avail_levels)))
+        avail_levels = set([lv[0] for lv in avail_levels])
+        
+        GLOBALS["optimized_levels"] = {}
+        for target_level in config["sptree"]["target_levels"]:
+            target_level = target_level.lower()
+            if target_level in avail_levels:
+                GLOBALS["optimized_levels"][target_level] = False
+            else:
+                raise ConfigError("Target level not found in the species lineage file: %s" %target_level)
+            
+        log.log(26, "Target levels:\n%s" %
+                '\n'.join(map(lambda x: "% 30s (%s spcs)**" %(x, len(lin2sp[x])),
+                              GLOBALS["optimized_levels"].keys())))
+        GLOBALS["lineages"] = (sp2lin, lin2sp)
+    # if we miss lineages file, raise an error
+    elif npr_template == "sptree" and config["sptree"].get("target_levels", None):
+        raise ConfigError("The use of target_levels requires a species lineage file provided through the --lineages option")
+        
     target_seqs = None # release mem
 
     if npr_template == "genetree":
@@ -467,7 +509,7 @@ def main(args):
         else:
             GLOBALS["target_sequences"] = db.get_all_seqids("nt")
         log.log(28, "Working on %d ids whose sequences are available", len(GLOBALS["target_sequences"]))
-            
+        
     # how task will be executed
     if args.execute:
         if args.monitor:
@@ -827,7 +869,19 @@ if __name__ == "__main__":
     
     input_group.add_argument("--cogs", dest="cogs_file",
                              type=existing_file,
-                             help="")
+                             help="A file defining clusters of orthologous groups. One per line. Tab delimited sequence ids. ")
+
+    input_group.add_argument("--lineages", dest="lineages_file",
+                             type=existing_file,
+                             help="A file containing the (sorted) lineage "
+                                  "track of each species. It enables "
+                                  "NPR algorithm to fix what taxonomic "
+                                  "levels should be optimized."
+                                  "Note that linage tracks must consist in "
+                                  "a comma separated list of taxonomic levels "
+                                  "sorted from deeper to swallower clades "
+                                  "(i.e. 9606 [TAB] Eukaryotes,Mammals,Primates)"
+                             )
     
     input_group.add_argument("--spname-delimiter", dest="spname_delimiter",
                              type=str, default="_",
@@ -1019,7 +1073,10 @@ if __name__ == "__main__":
     GLOBALS["color_shell"] = True
     GLOBALS["citator"] = Citator()
     
-    GLOBALS["cogs_file"] = args.cogs_file
+    GLOBALS["lineages"] = None
+    GLOBALS["optimized_levels"] = None
+    GLOBALS["cogs_file"] = None 
+    
     GLOBALS["citator"].add(ETE_CITE)
     
     if not pexist(GLOBALS["basedir"]):
