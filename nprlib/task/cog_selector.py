@@ -56,8 +56,11 @@ class CogSelector(CogSelectorTask):
             all_singletons.append(one2one_cog)
             #if len(one2one_cog) >= min_species:
             #    valid_cogs.append(one2one_cog)
-        valid_cogs = [sing for sing in all_singletons if len(sing) >= min_species ]
-       
+        valid_cogs = sorted([sing for sing in all_singletons if len(sing) >= min_species],
+                            lambda x,y: cmp(len(x), len(y)), 
+                            reverse=True)
+        
+        print len(valid_cogs), len(valid_cogs[0])
         log.log(26, "Min size: %s. Largest cog size: %s. Smallest cog size: %s" %(
                 min_species, largest_cog, smallest_cog))
         self.raw_cogs = valid_cogs

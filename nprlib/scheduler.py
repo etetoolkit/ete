@@ -316,8 +316,9 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                 log.log(28, "Assembling final tree...")
                 main_tree, treeiters =  assembly_tree(configid)
                 past_threads[configid] = treeiters - 1
-                log.log(28, "Writing final tree for @@13:%s@@1: %s",
-                        threadname, final_tree_file+".nwx")
+                log.log(28, "Writing final tree for @@13:%s@@1:\n   %s\n   %s",
+                        threadname, final_tree_file+".nw",
+                        final_tree_file+".nwx (newick extended)")
                 main_tree.write(outfile=final_tree_file+".nw")
                 main_tree.write(outfile=final_tree_file+".nwx", features=[])
                 log.log(28, "Done thread @@12:%s@@1: in %d iterations",

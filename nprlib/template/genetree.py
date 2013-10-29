@@ -343,7 +343,8 @@ def process_task(task, npr_conf, nodeid2info):
                 len(target_seqs), len(out_seqs))
         alg_path = node_info.get("clean_alg_path", node_info["alg_path"])
         for node, seqs, outs in get_next_npr_node(threadid, ttree,
-                                                  mtree, alg_path, npr_conf):
+                                                  task.out_seqs, mtree,
+                                                  alg_path, npr_conf):
             log.log(28, "Registering new node: %s seqs, %s outgroups",
                     len(seqs), len(outs))
             new_task_node = Msf(seqs, outs, seqtype=source_seqtype)

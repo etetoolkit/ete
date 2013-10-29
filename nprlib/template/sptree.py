@@ -127,10 +127,13 @@ def process_task(task, npr_conf, nodeid2info):
         # Add new nodes
         source_seqtype = "aa" if "aa" in GLOBALS["seqtypes"] else "nt"
         ttree, mtree = task.task_tree, task.main_tree
+
         log.log(28, "Processing tree: %s seqs, %s outgroups",
                 len(targets), len(outgroups))
+        
         for node, seqs, outs in get_next_npr_node(task.configid, ttree,
-                                                  mtree, None, npr_conf):
+                                                  task.out_seqs, mtree, None,
+                                                  npr_conf): # None is to avoid alg checks
             log.log(28, "Adding new node: %s seqs, %s outgroups",
                     len(seqs), len(outs))
             new_task_node = cogclass(seqs, outs,

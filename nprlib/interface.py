@@ -26,7 +26,7 @@ SHELL_COLORS = {
     "10": '\033[1;37;41m', # white on red
     "11": '\033[1;37;43m', # white on orange
     "12": '\033[1;37;45m', # white on magenta
-    "16": '\033[1;30;46m', # white on blue
+    "16": '\033[1;37;46m', # white on blue
     "13": '\033[1;37;40m', # black on white
     "06": '\033[1;34m', # light blue
     "05": '\033[1;31m', # light red

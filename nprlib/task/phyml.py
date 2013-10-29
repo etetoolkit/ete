@@ -14,7 +14,7 @@ __all__ = ["Phyml"]
 
 class Phyml(TreeTask):
     def __init__(self, nodeid, alg_phylip_file, constrain_id, model,
-                 seqtype, conf, confname):
+                 seqtype, conf, confname, parts_id=None):
 
         GLOBALS["citator"].add(PHYML_CITE)
         
