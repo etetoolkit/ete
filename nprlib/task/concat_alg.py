@@ -18,6 +18,7 @@ class ConcatAlg(ConcatAlgTask):
         self.conf = conf
         self.cogs_hard_limit = int(conf[confname]["_max_cogs"])
         used_cogs = cogs[:self.cogs_hard_limit]
+        
         cog_string = '#'.join([','.join(sorted(c)) for c in used_cogs])
         cog_keyid = md5(cog_string) # This will be nodeid
         base_args = {}
@@ -170,7 +171,7 @@ def get_concatenated_alg(alg_filenames, models=None,
                        sorted(alg2.id2name.values()))
         else:
             return r
-            
+           
     sorted_algs = sorted(alg_objects, sort_single_algs)
     model2win = {}
     model2size = {}

@@ -38,7 +38,7 @@ class CogSelector(CogSelectorTask):
         self.cogs = None
         
     def finish(self):
-        def sort_cogs(c1, c2):
+        def sort_cogs_by_size(c1, c2):
             '''
             sort cogs by descending size. If two cogs are the same size, sort
             them keeping first the one with the less represented
@@ -47,8 +47,8 @@ class CogSelector(CogSelectorTask):
             r = -1 * cmp(len(c1), len(c2))
             if r == 0:
                 # finds the cog including the less represented species
-                c1_repr = numpy.median([sp2cogs[_seq.split(GLOBALS["spname_delimiter"], 1)[0]] for _seq in c1])
-                c2_repr = numpy.median([sp2cogs[_seq.split(GLOBALS["spname_delimiter"], 1)[0]] for _seq in c2])
+                c1_repr = numpy.min([sp2cogs[_seq.split(GLOBALS["spname_delimiter"], 1)[0]] for _seq in c1])
+                c2_repr = numpy.min([sp2cogs[_seq.split(GLOBALS["spname_delimiter"], 1)[0]] for _seq in c2])
                 r = cmp(c1_repr, c2_repr)
                 if r == 0:
                     return cmp(sorted(c1), sorted(c2))
@@ -56,7 +56,20 @@ class CogSelector(CogSelectorTask):
                     return r
             else:
                 return r
-        
+
+        def sort_cogs_by_sp_repr(c1, c2):
+            c1_repr = numpy.min([sp2cogs[_seq.split(GLOBALS["spname_delimiter"], 1)[0]] for _seq in c1])
+            c2_repr = numpy.min([sp2cogs[_seq.split(GLOBALS["spname_delimiter"], 1)[0]] for _seq in c2])
+            r = cmp(c1_repr, c2_repr)
+            if r == 0:
+                r = -1 * cmp(len(c1), len(c2))
+                if r == 0:
+                    return cmp(sorted(c1), sorted(c2))
+                else:
+                    return r
+            else:
+                return r
+            
         all_species = self.targets | self.outgroups
         min_species = len(all_species) - int(round(self.missing_factor * len(all_species)))
         smallest_cog, largest_cog = len(all_species), 0
@@ -81,13 +94,13 @@ class CogSelector(CogSelectorTask):
             log.log(28, "% 20s  found in single copy in  % 6d (%0.2f%%) COGs " %(sp, ncogs, ncogs/float(cognumber)))
 
         valid_cogs = sorted([sing for sing in all_singletons if len(sing) >= min_species],
-                            sort_cogs)
+                            sort_cogs_by_size)
        
         log.log(28, "Largest cog size: %s. Smallest cog size: %s" %(
                 largest_cog, smallest_cog))
         self.cog_analysis = ""
-        self.cogs = []
 
+        self.cogs = []
         # Translate sequence names into the internal DB names
         for co in valid_cogs:
             #print len(co), numpy.median([sp2cogs[_seq.split(GLOBALS["spname_delimiter"], 1)[0]] for _seq in co])
@@ -97,7 +110,10 @@ class CogSelector(CogSelectorTask):
                 print set(co) - set(encoded_names.keys())
                 raise DataError("Some sequence ids could not be translated")
             self.cogs.append(encoded_names.values())
-
+            
+        # save original cog names
+        self.raw_cogs = valid_cogs
+                
         # Sort Cogs according to the md5 hash of its content. Random
         # sorting but kept among runs
         map(lambda x: x.sort(), self.cogs)

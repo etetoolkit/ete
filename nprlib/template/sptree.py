@@ -5,7 +5,7 @@ from nprlib.task import TreeMerger
 from nprlib.utils import (GLOBALS, generate_runid, pjoin, rpath, DATATYPES, md5,
                           dict_string)
 
-from nprlib.errors import DataError
+from nprlib.errors import DataError, TaskError
 from nprlib import db
 from nprlib.template.common import (process_new_tasks, IterConfig,
                                     get_next_npr_node, get_iternumber)
@@ -69,10 +69,7 @@ def process_task(task, npr_conf, nodeid2info):
     conf = GLOBALS[task.configid]
     new_tasks = []    
     if ttype == "cog_selector":
-        # register concat alignment task. NodeId associated to concat_alg tasks
-        # and all its children jobs should take into account cog information and
-        # not only species and outgroups included.
-
+       
         # Generates a md5 id based on the genetree configuration workflow used
         # for the concat alg task. If something changes, concat alg will change
         # and the associated tree will be rebuilt
@@ -86,8 +83,29 @@ def process_task(task, npr_conf, nodeid2info):
                 config_blocks.add(value[1:]) if value.startswith("@") else None
         config_checksum =  md5(''.join(["[%s]\n%s" %(x, dict_string(conf[x]))
                                         for x in sorted(config_blocks)]))
+        
+        # Check that current selection of cogs will cover all target and
+        # outgroup species
+        cog_hard_limit = int(conf[concatconf]["_max_cogs"])
+        sp_repr = defaultdict(int)
+        for co in task.raw_cogs[:cog_hard_limit]:
+            for seq in co:
+                sp = seq.split(GLOBALS["spname_delimiter"], 1)[0]
+                sp_repr[sp] += 1
+        missing_sp = (targets | outgroups) - set(sp_repr.keys())
+        if missing_sp:
+            raise TaskError("missing species under current cog selection:" %missing_sp)
+        else:
+            log.log(28, "Analysis of current COG selection:")
+            for sp, ncogs in sorted(sp_repr.items(), key=lambda x:x[1]):
+                log.log(28, "   % 30s species present in % 6d COGs" %(sp, ncogs))
+                
+        # register concat alignment task. NodeId associated to concat_alg tasks
+        # and all its children jobs should take into account cog information and
+        # not only species and outgroups included.
         concat_job = concatclass(task.cogs, seqtype, conf, concatconf,
                                  config_checksum)
+
         db.add_node(threadid,
                     concat_job.nodeid, cladeid,
                     targets, outgroups)
