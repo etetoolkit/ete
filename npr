@@ -379,7 +379,7 @@ def main(args):
         raise ConfigError("Species tree workflow requires a list of COGS"
                           " to be supplied through the --cogs"
                           " argument.")
-    else:
+    elif npr_template == "sptree":
         GLOBALS["cogs_file"] = os.path.abspath(args.cogs_file)
         
     GLOBALS["seqtypes"] = set()
