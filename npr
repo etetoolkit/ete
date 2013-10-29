@@ -67,7 +67,7 @@ from nprlib.configobj import ConfigObj, flatten_errors
 from nprlib import validate
 from nprlib.utils import (strip, SeqGroup, generate_runid,  AA, NT,
                           GLOBALS, encode_seqname, pjoin, pexist,
-                          hascontent, checksum, clear_tempdir, ETE_CITE)
+                          hascontent, clear_tempdir, ETE_CITE)
 from nprlib.errors import ConfigError, DataError
 from nprlib.master_task import Task
 from nprlib.interface import app_wrapper
@@ -151,6 +151,11 @@ def is_list(value):
     if not isinstance(value, list):
         raise ConfigError("Expected a list of values. Found [%s]" %value)
     return value
+
+def is_set(value):
+    if not isinstance(value, list):
+        raise ConfigError("Expected a list of values. Found [%s]" %value)
+    return set(value)
 
 def is_boolean_list(value):
     is_list(value)
@@ -236,6 +241,7 @@ def main(args):
                         "float": is_float,
                         "integer": is_integer,
                         "list": is_list,
+                        "set": is_set,
                         }
         val = validate.Validator(custom_types)
         check = config.validate(val)
@@ -281,8 +287,8 @@ def main(args):
             pass
         open(local_conf_file, "w").write(open(fname).read())
 
-        # save checksum of current workflow
-        config["_config_checksum"] = checksum(local_conf_file)
+        # save checksum of current workflow (traking checksum of config file. deprecated)
+        #config["_config_checksum"] = checksum(local_conf_file)
         run2config[clearname] = config
             
     # Set up paths    
@@ -485,11 +491,20 @@ def main(args):
         log.log(26, "Available levels for NPR optimization:\n%s", '\n'.join(map(lambda x: "% 30s (%d spcs)"%x, avail_levels)))
         avail_levels = set([lv[0] for lv in avail_levels])
         
+        # Let's prepare the dictionary with the target levels
         GLOBALS["optimized_levels"] = {}
         for target_level in config["sptree"]["target_levels"]:
+
+            # If target level name starts with ~, we allow para and
+            # poly-phyletic grouping of the species in such level
+            strict_monophyly = True
+            if target_level.startswith("~"):
+                target_level = target_level.lstrip("~")
+                strict_monophyly = False
+            
             target_level = target_level.lower()
             if target_level in avail_levels:
-                GLOBALS["optimized_levels"][target_level] = False
+                GLOBALS["optimized_levels"][target_level] = [False, strict_monophyly]
             else:
                 raise ConfigError("Target level not found in the species lineage file: %s" %target_level)
             
