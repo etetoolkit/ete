@@ -49,7 +49,7 @@ aa_tree_builder = list()
 nt_tree_builder = list()
 tree_splitter = list()
 
-target_levels = list()
+target_levels = set()
 
 [meta_aligner]
 _alg_trimming = boolean()
@@ -168,7 +168,7 @@ def get_seqs_identity(alg, seqs):
             numpy.mean(ident), numpy.std(ident))
 
     
-def split_tree(task_tree, task_outgroups, main_tree, alg_path, npr_conf, threadid):
+def split_tree(task_tree_node, task_outgroups, main_tree, alg_path, npr_conf, threadid):
     """Browses a task tree from root to leaves and yields next
     suitable nodes for NPR iterations. Each yielded node comes with
     the set of target and outgroup tips. 
@@ -230,20 +230,20 @@ def split_tree(task_tree, task_outgroups, main_tree, alg_path, npr_conf, threadi
         ALG = SeqGroup(raw_alg)
     else:
         ALG = None
-    #for n in task.task_tree.traverse(): 
+    #for n in task.task_tree_node.traverse(): 
     #    content = n2content[n]
     #    mx, mn, avg, std = get_seqs_identity(ALG, [node.name for node in content])
     #    n.add_features(seqs_max_ident=mx, seqs_min_ident=mn,
     #                   seqs_mean_ident=avg, seqs_std_ident=std)
 
     log.log(20, "Finding next NPR nodes...")
-    # task_tree is actually a node in main_tree, since it has been
+    # task_tree_node is actually a node in main_tree, since it has been
     # already merged
-    trees_to_browse = [task_tree]
+    trees_to_browse = [task_tree_node]
     npr_nodes = 0
     # loads current tree content, so we can check not reconstructing exactly the
     # same tree
-    tasktree_content = set([leaf.name for leaf in n2content[task_tree]]) | set(task_outgroups)
+    tasktree_content = set([leaf.name for leaf in n2content[task_tree_node]]) | set(task_outgroups)
     while trees_to_browse: 
         master_node = trees_to_browse.pop()
 
@@ -252,21 +252,31 @@ def split_tree(task_tree, task_outgroups, main_tree, alg_path, npr_conf, threadi
         _TARGET_NODES = defaultdict(list) # this container is used by
                                           # processable_node function
         if GLOBALS["optimized_levels"]:
-            # any descendant of the already processed tree is suitable for
-            # selection
+            # any descendant of the already processed node is suitable for
+            # selection. If the ancestor of level-species is on top of the
+            # task_tree_node, it will be discarded
             avail_nodes = set(master_node.get_descendants())
             for lin in GLOBALS["optimized_levels"]:
                 sp2lin, lin2sp = GLOBALS["lineages"]
-                if GLOBALS["optimized_levels"][lin] == False:
-                    ancestor = master_node.get_common_ancestor(*lin2sp[lin])
+                optimized, strict_monophyly = GLOBALS["optimized_levels"][lin]
+                if not optimized:
+                    ancestor = main_tree.get_common_ancestor(*lin2sp[lin])
                     if ancestor in avail_nodes:
-                        _TARGET_NODES[ancestor].append(lin)
-        
+                        # check that the node satisfies level monophyly config
+                        ancestor_content = set([x.name for x in n2content[ancestor]])
+                        if not strict_monophyly or lin2sp[lin] == ancestor_content:
+                            _TARGET_NODES[ancestor].append(lin)
+                        elif strict_monophyly:
+                            log.log(28, "Discarding not monophyletic level @@11:%s@@1:" %lin)
+                    else:
+                        log.log(28, "Discarding upper clade @@11:%s@@1:" %lin)
+                        
         for node in master_node.iter_leaves(is_leaf_fn=processable_node):
             if GLOBALS["optimized_levels"]:
                 log.log(28, "Trying to optimizing custom tree level: @@11:%s@@1:" %_TARGET_NODES[node])
                 for lin in _TARGET_NODES[node]:
-                    GLOBALS["optimized_levels"][lin] = True
+                    # Marks the level as optimized, so is not computed again
+                    GLOBALS["optimized_levels"][lin][0] = True
            
             log.log(28, "Found possible target node of size %s" %len(n2content[node]))
 

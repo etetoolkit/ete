@@ -272,7 +272,25 @@ def read_time_file(fname):
         
     INFO_TIME.close()
     return start, end
-    
+
+
+def dict_string(dictionary, ident = '', braces=1):
+    """ Recursively prints nested dictionaries."""
+    text = []
+    for key in sorted(dictionary.keys()):
+        value = dictionary[key]
+        if isinstance(value, dict):
+            text.append('%s%s%s%s' %(ident,braces*'[',key,braces*']'))
+            text.append('\n')
+            text.append(dict_string(value, ident+'  ', braces+1))
+        else:
+            if isinstance(value, set) or isinstance(value, frozenset):
+                value = sorted(value)
+            text.append(ident+'%s = %s' %(key, value))
+            text.append('\n')
+    return ''.join(text)
+
+
 def checksum(*fnames):
     block_size=2**20
     hash = hashlib.md5()

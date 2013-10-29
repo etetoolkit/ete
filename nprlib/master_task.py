@@ -464,12 +464,13 @@ class TreeMergeTask(Task):
         # I want every tree merge instance to be unique (avoids recycling and
         # undesired collisions between trees from different threads containing
         # the same topology, so I create a random checksum to compute taskid
+        extra_args = {} if not extra_args else dict(extra_args)
         extra_args["_treechecksum"] = generate_runid()
         Task.__init__(self, nodeid, task_type, task_name, base_args, 
                       extra_args)
 
     def __repr__(self):
-        return generic_class_repr(self, "@@3:TreeMergeTask@@1:")
+        return generic_class_repr(self, "@@7:TreeMergeTask@@1:")
        
 
 class ConcatAlgTask(Task):

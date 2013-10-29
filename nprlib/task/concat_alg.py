@@ -20,7 +20,6 @@ class ConcatAlg(ConcatAlgTask):
         used_cogs = cogs[:self.cogs_hard_limit]
         cog_string = '#'.join([','.join(sorted(c)) for c in used_cogs])
         cog_keyid = md5(cog_string) # This will be nodeid
-       
         base_args = {}
         ConcatAlgTask.__init__(self, cog_keyid, "concat_alg", "ConcatAlg", 
                                workflow_checksum=workflow_checksum,
@@ -163,8 +162,16 @@ def get_concatenated_alg(alg_filenames, models=None,
 
     log.info("%d out of %d will be kept (missing factor threshold=%g, %d species forced to kept)" %\
                  (len(valid_species), len(sp2alg), kill_thr, len(keep_species)))
-          
-    sorted_algs = sorted(alg_objects, lambda x,y: cmp(x.matrix, y.matrix))
+
+    def sort_single_algs(alg1, alg2):
+        r = cmp(alg1.matrix, alg2.matrix)
+        if r == 0:
+            return cmp(sorted(alg1.id2name.values()),
+                       sorted(alg2.id2name.values()))
+        else:
+            return r
+            
+    sorted_algs = sorted(alg_objects, sort_single_algs)
     model2win = {}
     model2size = {}
     for alg in sorted_algs:

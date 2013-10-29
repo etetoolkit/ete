@@ -2,7 +2,8 @@ import logging
 from collections import defaultdict
 
 from nprlib.task import TreeMerger
-from nprlib.utils import GLOBALS, generate_runid, pjoin, rpath, DATATYPES
+from nprlib.utils import (GLOBALS, generate_runid, pjoin, rpath, DATATYPES, md5,
+                          dict_string)
 
 from nprlib.errors import DataError
 from nprlib import db
@@ -68,12 +69,25 @@ def process_task(task, npr_conf, nodeid2info):
     conf = GLOBALS[task.configid]
     new_tasks = []    
     if ttype == "cog_selector":
-        # register concat alignment task. NodeId associated to
-        # concat_alg tasks and all its sibling jobs should take into
-        # account cog information and not only species and outgroups
-        # included.
+        # register concat alignment task. NodeId associated to concat_alg tasks
+        # and all its children jobs should take into account cog information and
+        # not only species and outgroups included.
+
+        # Generates a md5 id based on the genetree configuration workflow used
+        # for the concat alg task. If something changes, concat alg will change
+        # and the associated tree will be rebuilt
+        config_blocks = set(["genetree"])
+        for key, value in conf["genetree"].iteritems():
+            if isinstance(value, list) or  isinstance(value, tuple) \
+                    or isinstance(value, set):
+                for elem in value:
+                    config_blocks.add(elem[1:]) if isinstance(elem, str) and elem.startswith("@") else None
+            elif isinstance(value, str):
+                config_blocks.add(value[1:]) if value.startswith("@") else None
+        config_checksum =  md5(''.join(["[%s]\n%s" %(x, dict_string(conf[x]))
+                                        for x in sorted(config_blocks)]))
         concat_job = concatclass(task.cogs, seqtype, conf, concatconf,
-                                 conf["_config_checksum"])
+                                 config_checksum)
         db.add_node(threadid,
                     concat_job.nodeid, cladeid,
                     targets, outgroups)
