@@ -13,20 +13,8 @@ import argparse
 import logging
 log = logging.Logger("main")
 
-#log.setFormat(format='%(message)s')
-#EUCL_DIST = lambda a,b: len(a[1].symmetric_difference(b[1])) # 29
-#EUCL_DIST = lambda a,b: len(a[1] - b[1]) # 20 ERRORS when no fullsearch
 EUCL_DIST = lambda a,b: 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) # 24
-#def EUCL_DIST(a,b):
-#    sim_cont = float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))
-#    size_ratio = float(min(len(a[1]), len(b[1]))) / max(len(a[1]), len(b[1]))
-#    d = (1 - sim_cont)#*size_ratio) 
-##* max(len(a[1]), len(b[1]))
-#    if d == 1: d = 1000000
-#    return d
-#EUCL_DIST = lambda a,b: (float(len(a[1] - b[1])) / len(a[1])) + (float(len(b[1] - a[1])) / len(b[1])) # 38
-#EUCL_DIST = lambda a,b: float(len(a[1] - b[1])) / len(a[1]) # 17
-#EUCL_DIST = lambda a,b: 1 if a[1].symmetric_difference(b[1]) else 0
+
 def RF_DIST(a, b):
     if len(a[1] & b[1]) < 2:
         return 1
