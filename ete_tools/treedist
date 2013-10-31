@@ -1,0 +1,124 @@
+#!/usr/bin/env python
+import os
+import sys
+from common import argparse, Tree
+
+__DESCRIPTION__ = "Calculate distance between trees "
+        
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__DESCRIPTION__, 
+                            formatter_class=argparse.RawDescriptionHelpFormatter)
+    # name or flags - Either a name or a list of option strings, e.g. foo or -f, --foo.
+    # action - The basic type of action to be taken when this argument is encountered at the command line. (store, store_const, store_true, store_false, append, append_const, version)
+    # nargs - The number of command-line arguments that should be consumed. (N, ? (one or default), * (all 1 or more), + (more than 1) )
+    # const - A constant value required by some action and nargs selections. 
+    # default - The value produced if the argument is absent from the command line.
+    # type - The type to which the command-line argument should be converted.
+    # choices - A container of the allowable values for the argument.
+    # required - Whether or not the command-line option may be omitted (optionals only).
+    # help - A brief description of what the argument does.
+    # metavar - A name for the argument in usage messages.
+    # dest - The name of the attribute to be added to the object returned by parse_args().
+   
+ 
+    parser.add_argument("target_trees", metavar='target_trees', type=str, nargs="+",
+                   help='target_trees')
+
+    parser.add_argument("-o", dest="output", 
+                        type=str,
+                        help="""Outfile""")
+
+    parser.add_argument("-r", dest="reftree", 
+                        type=str, required=True,
+                        help="""Reference tree""")
+
+    parser.add_argument("--outgroup", dest="outgroup", 
+                        nargs = "+",
+                        help="""outgroup""")
+  
+    parser.add_argument("--expand_polytomies", dest="polytomies", 
+                        action = "store_true",
+                        help="""expand politomies if necessary""")
+  
+    parser.add_argument("--unrooted", dest="unrooted", 
+                        action = "store_true",
+                        help="""compare trees as unrooted""")
+
+
+    
+    
+    args = parser.parse_args()
+
+    reftree = args.reftree
+    target_trees = args.target_trees
+    t = Tree(reftree)
+    if args.outgroup:
+        if len(args.outgroup) > 1:
+            out = t.get_common_ancestor(args.outgroup)
+        else:
+            out = t.search_nodes(name=args.outgroup[0])[0]
+        t.set_outgroup(out)
+    
+    fcol = min(max([len(os.path.basename(name)) for name in target_trees]), 34)
+    ref_names = set(t.get_leaf_names())
+    print >>sys.stderr, "% 30s\t% 3s\t% 5s\t% 7s\t% 7s\t% 12s\t% 7s\t% 10s" %("target", "RF", "maxRF", "avgSize", "minSize", "commonLeaves", "refSize", "targetSize")
+    if args.output:
+        OUT = open(args.output, "w")
+    else:
+        OUT = sys.stdout
+        
+    prev_tree = None
+    import numpy
+    for tfile in target_trees:
+        tt = Tree(tfile)
+        tt_names = set(tt.get_leaf_names())
+        if args.outgroup: 
+            out = t.search_nodes(name=args.outgroup[0])[0]
+            t.set_outgroup(out)
+        tt.prune(sorted(tt_names & ref_names))
+            
+        rf, max_rf, common_names, p1, p2 = tt.robinson_foulds(t, expand_polytomies=args.polytomies, unrooted_trees=args.unrooted)
+            
+        fname = os.path.basename(tfile)
+        if p1 and p2: 
+            sizes = [len(p) for p in p2 ^ p1]
+            avg_size = sum(sizes) / float(len(sizes))
+            max_size, min_size = max(sizes), min(sizes)
+        else:
+            max_size, min_size, avg_size = 0, 0, 0
+
+        print >>OUT, "% 30s\t% 3d\t% 5d\t% 7d\t% 7d\t% 12s\t% 7s\t% 10s" %(fname[-30:], rf, max_rf, avg_size, min_size, len(common_names), len(t), len(tt))
+        
+
+        OUT.flush()
+        if 0 and prev_tree:
+            #common = ref_names & target_names
+            #t2 = prev_tree.copy()
+            all_diffs = (p1-p2).symmetric_difference(prev_tree[1])
+            tax2name = ncbi.get_taxid_translator([n.split("_")[1] for n in common_names])
+            for diff in all_diffs:
+
+                diff = diff.split(",")
+                t1 = tt.copy()
+                t1.prune(diff)
+                t2 = prev_tree[0].copy()
+                t2.prune(diff)
+                expected = t.copy()
+                expected.prune(diff)
+
+                print "New diff"
+                for n in t1.get_leaves() + t2.get_leaves() + expected.get_leaves():
+                    n.realname = tax2name.get(int(n.name.split("_")[1]), n.name)
+                print "EXPECTED"
+                print expected.get_ascii(attributes=["realname"], show_internal=False)
+                print "ITER -1"
+                print t2.get_ascii(attributes=["realname"], show_internal=False)
+                print "CURRENT ITER"
+                print t1.get_ascii(attributes=["realname"], show_internal=False)
+
+        prev_tree = tt, p1-p2
+
+    if args.output:
+        OUT.close()
+
+
