@@ -1,3 +1,10 @@
 #! /bin/sh
 SCRIPT_DIR="$(dirname "$(readlink -f "${0}")")"
-$SCRIPT_DIR/$@
+if [ $1 ] && [ -e $SCRIPT_DIR/$1 ] 
+then
+    $SCRIPT_DIR/$@
+else
+    echo
+    echo "Usage:"
+    echo "  ete TOOL_NAME [tool_arguments]"
+fi 
