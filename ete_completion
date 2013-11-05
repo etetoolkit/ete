@@ -1,6 +1,6 @@
 _ete()
 {
   cur=${COMP_WORDS[COMP_CWORD]}
-  COMPREPLY=( $( compgen -W "treeview treedist treediff to_orthoxml ncbi_compare" -- $cur ) )
+  COMPREPLY=( $( compgen -W "treeview treedist treediff ncbicomp to_orthoxml" -- $cur ) )
 }
 complete -o default -o nospace -F _ete ete
