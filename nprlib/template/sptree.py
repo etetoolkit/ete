@@ -94,7 +94,7 @@ def process_task(task, npr_conf, nodeid2info):
                 sp_repr[sp] += 1
         missing_sp = (targets | outgroups) - set(sp_repr.keys())
         if missing_sp:
-            raise TaskError("missing species under current cog selection:" %missing_sp)
+            raise TaskError("missing species under current cog selection: %s" %missing_sp)
         else:
             log.log(28, "Analysis of current COG selection:")
             for sp, ncogs in sorted(sp_repr.items(), key=lambda x:x[1]):
