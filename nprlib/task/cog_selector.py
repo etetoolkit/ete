@@ -91,11 +91,13 @@ class CogSelector(CogSelectorTask):
             #    valid_cogs.append(one2one_cog)
             
         for sp, ncogs in sp2cogs.iteritems():
-            log.log(28, "% 20s  found in single copy in  % 6d (%0.2f%%) COGs " %(sp, ncogs, ncogs/float(cognumber)))
+            log.log(28, "% 20s  found in single copy in  % 6d (%0.1f%%) COGs " %(sp, ncogs, ncogs/float(cognumber)*100))
+
+        valid_cogs = [sing for sing in all_singletons if len(sing) >= min_species]
 
         valid_cogs = sorted([sing for sing in all_singletons if len(sing) >= min_species],
                             sort_cogs_by_size)
-       
+
         log.log(28, "Largest cog size: %s. Smallest cog size: %s" %(
                 largest_cog, smallest_cog))
         self.cog_analysis = ""
@@ -118,8 +120,52 @@ class CogSelector(CogSelectorTask):
         # sorting but kept among runs
         map(lambda x: x.sort(), self.cogs)
         self.cogs.sort(lambda x,y: cmp(md5(','.join(x)), md5(','.join(y))))
-        log.log(28, "%s COGs detected with at least %s species" %(len(self.cogs), min_species))                
+        log.log(28, "%d COGs detected with at least %d species out of %d" %(len(self.cogs), min_species, len(all_species)))
+        sizes = [len(cog) for cog in valid_cogs]
+        log.log(28, "average COG size %0.1f/%0.1f +- %0.1f" %(numpy.mean(sizes), numpy.median(sizes), numpy.std(sizes)))
         tm_end = time.ctime()
         #open(pjoin(self.taskdir, "__time__"), "w").write(
         #    '\n'.join([tm_start, tm_end]))
         CogSelectorTask.store_data(self, self.cogs, self.cog_analysis)
+
+if __name__ == "__main__":
+    ## TEST CODE
+    import argparse
+    parser = argparse.ArgumentParser()
+
+    # Input data related flags
+    
+    parser.add_argument("--cogs_file", dest="cogs_file",
+                        required=True,
+                        help="Cogs file")
+
+    parser.add_argument("--spname_delimiter", dest="spname_delimiter",
+                             type=str, default = "_",
+                             help="species name delimiter character")
+
+    parser.add_argument("--target_sp", dest="target_sp",
+                             type=str, nargs="+",
+                             help="target species sperated by")
+
+    parser.add_argument("-m", dest="missing_factor",
+                             type=float, required=True,
+                             help="missing factor for cog selection")
+
+    
+    args = parser.parse_args()
+    
+    GLOBALS["cogs_file"] = args.cogs_file
+    GLOBALS["spname_delimiter"] = args.spname_delimiter
+    target_sp = args.target_sp
+    logging.basicConfig(level=logging.DEBUG)
+    log = logging
+    base = 238 * args.missing_factor
+    args.missing_factor = base / len(target_sp) if len(target_sp)/2.0 > base else 0.75
+
+    conf = { "user": {"_species_missing_factor": args.missing_factor}}
+    CogSelectorTask.store_data=lambda a,b,c: True
+    C =  CogSelector(set(target_sp), set(), "aa", conf, "user")
+
+    db.translate_names = lambda x:  dict([(n,n) for n in x])
+    
+    C.finish()
