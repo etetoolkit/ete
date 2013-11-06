@@ -71,7 +71,12 @@ class CogSelector(CogSelectorTask):
                 return r
             
         all_species = self.targets | self.outgroups
-        min_species = len(all_species) - int(round(self.missing_factor * len(all_species)))
+        #min_species = len(all_species) - int(round(self.missing_factor * len(all_species)))
+
+        # Relax theshold for cog selection to ensure sames genes are always included
+        min_species = len(all_species) - int(round(self.missing_factor * len(GLOBALS["target_species"])))
+        min_species = max(min_species, 0.7 * len(all_species))
+        
         smallest_cog, largest_cog = len(all_species), 0
         all_singletons = []
         sp2cogs = defaultdict(int)
@@ -90,8 +95,8 @@ class CogSelector(CogSelectorTask):
             #if len(one2one_cog) >= min_species:
             #    valid_cogs.append(one2one_cog)
             
-        for sp, ncogs in sp2cogs.iteritems():
-            log.log(28, "% 20s  found in single copy in  % 6d (%0.1f%%) COGs " %(sp, ncogs, ncogs/float(cognumber)*100))
+        #for sp, ncogs in sp2cogs.iteritems():
+        #    log.log(28, "% 20s  found in single copy in  % 6d (%0.1f%%) COGs " %(sp, ncogs, ncogs/float(cognumber)*100))
 
         valid_cogs = [sing for sing in all_singletons if len(sing) >= min_species]
 
@@ -151,6 +156,11 @@ if __name__ == "__main__":
                              type=float, required=True,
                              help="missing factor for cog selection")
 
+    parser.add_argument("--total_species", dest="total_species",
+                             type=int, required=True,
+                             help="total number of species in the analysis")
+
+
     
     args = parser.parse_args()
     
@@ -159,8 +169,7 @@ if __name__ == "__main__":
     target_sp = args.target_sp
     logging.basicConfig(level=logging.DEBUG)
     log = logging
-    base = 238 * args.missing_factor
-    args.missing_factor = base / len(target_sp) if len(target_sp)/2.0 > base else 0.75
+    GLOBALS["target_species"] = [1] * args.total_species
 
     conf = { "user": {"_species_missing_factor": args.missing_factor}}
     CogSelectorTask.store_data=lambda a,b,c: True
