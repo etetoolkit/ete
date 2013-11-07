@@ -95,8 +95,8 @@ class CogSelector(CogSelectorTask):
             #if len(one2one_cog) >= min_species:
             #    valid_cogs.append(one2one_cog)
             
-        #for sp, ncogs in sp2cogs.iteritems():
-        #    log.log(28, "% 20s  found in single copy in  % 6d (%0.1f%%) COGs " %(sp, ncogs, ncogs/float(cognumber)*100))
+        for sp, ncogs in sp2cogs.iteritems():
+            log.log(28, "% 20s  found in single copy in  % 6d (%0.1f%%) COGs " %(sp, ncogs, ncogs/float(cognumber)*100))
 
         valid_cogs = [sing for sing in all_singletons if len(sing) >= min_species]
 
