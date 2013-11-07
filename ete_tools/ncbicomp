@@ -446,10 +446,10 @@ if __name__ == "__main__":
         print >>OUT, '|'.join(map(lambda x: str(x).strip().ljust(15), iter_values)) 
         fixed = sorted([n for n in prev_broken if n not in broken_clades])
         new_problems =  sorted(broken_clades - prev_broken)
-        fixed_string = "Fixed groups: %s\n" %color(', '.join(fixed), "green") if fixed else ""
-        problems_string = "New broken groups: %s\n" %color(', '.join(new_problems), "red") if new_problems else ""
-        OUT.write(fixed_string) if fixed else None
-        OUT.write(problems_string) if new_problems else None
+        fixed_string = color(', '.join(fixed), "green") if fixed else ""
+        problems_string = color(', '.join(new_problems), "red") if new_problems else ""
+        OUT.write("    Fixed clades: %s\n" %fixed_string) if fixed else None
+        OUT.write("    New broken:   %s\n" %problems_string) if new_problems else None
         prev_broken = broken_clades
         ENTRIES.append([os.path.basename(tfile), nsubtrees, ndups,
                         broken_subtrees, ncbi_mistakes, sizes_info, fixed_string, problems_string])
@@ -489,7 +489,7 @@ if __name__ == "__main__":
     print
     print
     HEADER = ("TargetTree", "Subtrees", "Ndups", "Broken subtrees", "Broken clades", "Clade sizes", "Fixed Groups", "New Broken Clades")
-    print_table(ENTRIES, max_col_width = 30, row_line=True, header=HEADER)
+    print_table(ENTRIES, max_col_width = 50, row_line=True, header=HEADER)
             
     if args.output:
         OUT.close()
