@@ -235,57 +235,6 @@ class TreeMerger(TreeMergeTask):
                 _n.img_style = None
         
 
-def root_distance_matrix(root):
-    n2rdist = {root:0.0}
-    for n in root.iter_descendants("preorder"):
-        n2rdist[n] = n2rdist[n.up] + n.dist
-    return n2rdist
-
-def distance_matrix(target, leaf_only=False, topology_only=False):
-    # Detect the root and the target branch
-    root = target
-    while root.up:
-        target_branch = root
-        root = root.up
-    # Calculate distances to the root
-    n2rdist = {root:0.0}        
-    for n in root.get_descendants("preorder"):
-        dist = 1.0 if topology_only else n.dist
-        n2rdist[n] = n2rdist[n.up] + dist
-
-    # Calculate distances to the target node
-    n2tdist = {}        
-    for n in root.traverse():
-        ancestor = root.get_common_ancestor(n, target)
-        if not leaf_only or n.is_leaf():
-            #if ancestor != target:
-            n2tdist[n] = n2rdist[target] + n2rdist[n] - n2rdist[ancestor]
-    return n2rdist, n2tdist
-
-
-def distance_matrix_new(target, leaf_only=False, topology_only=False):
-    t = target.get_tree_root()
-    real_outgroup = t.children[0]
-    t.set_outgroup(target)
-        
-    n2dist = {target:0}
-    for n in target.get_descendants("preorder"):
-        n2dist[n] = n2dist[n.up] + n.dist
-
-    sister = target.get_sisters()[0]
-    n2dist[sister] = sister.dist + target.dist
-    for n in sister.get_descendants("preorder"):
-        n2dist[n] = n2dist[n.up] + n.dist
-
-    t.set_outgroup(real_outgroup)
-
-    ## Slow Test. 
-    # for n in t.get_descendants():
-    #     if float(str(target.get_distance(n))) != float(str(n2dist[n])):
-    #         print n
-    #         print target.get_distance(n), n2dist[n]
-    #         raw_input("ERROR")
-    return n2dist
     
 def dump_tree_debug(msg, taskdir, mtree, ttree, target_seqs, out_seqs):
     try:

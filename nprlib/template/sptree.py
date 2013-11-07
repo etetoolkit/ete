@@ -83,22 +83,22 @@ def process_task(task, npr_conf, nodeid2info):
                 config_blocks.add(value[1:]) if value.startswith("@") else None
         config_checksum =  md5(''.join(["[%s]\n%s" %(x, dict_string(conf[x]))
                                         for x in sorted(config_blocks)]))
-        
+
+        # THIS PART HAS BEEN MOVED TO COG_SELECTOR TASK
         # Check that current selection of cogs will cover all target and
         # outgroup species
-        cog_hard_limit = int(conf[concatconf]["_max_cogs"])
-        sp_repr = defaultdict(int)
-        for co in task.raw_cogs[:cog_hard_limit]:
-            for seq in co:
-                sp = seq.split(GLOBALS["spname_delimiter"], 1)[0]
-                sp_repr[sp] += 1
-        missing_sp = (targets | outgroups) - set(sp_repr.keys())
-        if missing_sp:
-            raise TaskError("missing species under current cog selection: %s" %missing_sp)
-        else:
-            log.log(28, "Analysis of current COG selection:")
-            for sp, ncogs in sorted(sp_repr.items(), key=lambda x:x[1]):
-                log.log(28, "   % 30s species present in % 6d COGs" %(sp, ncogs))
+        #cog_hard_limit = int(conf[concatconf]["_max_cogs"])
+        #sp_repr = defaultdict(int)
+        #for co in task.raw_cogs[:cog_hard_limit]:
+        #    for sp, seq in co:
+        #        sp_repr[sp] += 1
+        #missing_sp = (targets | outgroups) - set(sp_repr.keys())
+        #if missing_sp:
+        #    raise TaskError("missing species under current cog selection: %s" %missing_sp)
+        #else:
+        #    log.log(28, "Analysis of current COG selection:")
+        #    for sp, ncogs in sorted(sp_repr.items(), key=lambda x:x[1]):
+        #        log.log(28, "   % 30s species present in % 6d COGs" %(sp, ncogs))
                 
         # register concat alignment task. NodeId associated to concat_alg tasks
         # and all its children jobs should take into account cog information and
