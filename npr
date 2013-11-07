@@ -425,7 +425,7 @@ def main(args):
             if npr_template == "sptree":
                 db.add_seq_species(sp2counter)
             load_sequences(target_seqs, name2seq, npr_template)
-        seqnames, name2len, name2unk, name2seq = [None] * 4 # Release mem
+        seqnames, name2len, name2unk, name2seq = [None] * 4 # Release mem?
     else:
         db.init_seqdb(GLOBALS["seqdb_file"])
         log.warning("Skipping check and load sequences (loading from database...)")
@@ -433,6 +433,11 @@ def main(args):
         
     log.warning("%d sequences in database" %len(target_seqs))
 
+    if ERROR:
+        open(pjoin(base_dir, "error.log"), "w").write(' '.join(sys.argv) + "\n\n" + ERROR)
+        raise DataError("Errors were found while loading data. Please"
+                        " check error file for details")
+    
     if npr_template == "sptree":
         if not pexist(GLOBALS["orthodb_file"]):
              db.init_orthodb(GLOBALS["orthodb_file"])            
