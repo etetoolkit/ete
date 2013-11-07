@@ -745,7 +745,7 @@ def check_seq_integrity(args, target_seqs, visited_seqs, seq2length, seq2unknown
     for v in all_len:
         if abs(mean_len - v) >  (3 * std_len):
             outliers.append(v)
-    log.log(28, "Total sequences:  %d" %len(seq2length))
+    log.log(28, "Total sequences:  %d" %len(all_len))
     log.log(28, "Average sequence length: %d +- %0.1f " %(mean_len, std_len))
     log.log(28, "Max sequence length:  %d" %max_len)
     log.log(28, "Min sequence length:  %d" %min_len)
