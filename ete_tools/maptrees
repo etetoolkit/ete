@@ -7,6 +7,7 @@ from common import Tree, PhyloTree, argparse, add_face_to_node, TreeStyle, faces
 import numpy
 import hashlib
 import gc
+import cPickle
 md5 = lambda x: hashlib.md5(x).hexdigest()
 
 __DESCRIPTION__ = ''
@@ -52,22 +53,37 @@ def process_trees(iter_data, reftree, monitor=False):
     sorted_ref_branches = [(n, reftree_content[n]) for n in reftree.traverse("preorder")]
     refclades = [(n, reftree_content[n.children[0]], reftree_content[n.children[1]])
                  for n in reftree.traverse("preorder") if not n.is_leaf()]
-    
-    losses_per_branch = defaultdict(int)      # Number of losses in each refTree branch
+
     informed_branches = defaultdict(int)      # How many trees were used to
                                               # inform about each refTree branch
-                                              
+    
+    losses_per_branch = defaultdict(int)      # Number of losses in each refTree branch
+    coll_losses_per_branch = defaultdict(int) 
+    
     losses_per_dup_branch = defaultdict(list) # Number of losses for duplication
                                               # in each refTreeBranch
-                                              
+    coll_losses_per_dup_branch = defaultdict(list) 
+    
     dup_per_branch = defaultdict(list)        # dUplication events sorted by
                                               # refTree branch
+    coll_dup_per_branch = defaultdict(list)   
                                               
     refbranch_supports = defaultdict(list)    # gene tree support values for
                                               # each refTree branch
+    coll_refbranch_supports = defaultdict(list)    
 
-    visited_dup = set()
+
     skipped_trees = 0
+    def take_snapshot():
+        print "\nTaking a tree snapshot"
+        annotate_tree(reftree, informed_branches, dup_per_branch, losses_per_branch,
+                      losses_per_dup_branch, refbranch_supports,
+                      coll_dup_per_branch, coll_losses_per_branch,
+                      coll_losses_per_dup_branch, coll_refbranch_supports)
+        ts = TreeStyle()
+        ts.layout_fn = info_layout
+        reftree.render("tree_analysis.png", tree_style=ts)
+    
     for tree_counter, (treeid, t, tree_content) in enumerate(iter_data):
         if DEBUG:
             print treeid, t
@@ -81,27 +97,23 @@ def process_trees(iter_data, reftree, monitor=False):
             gc.collect()
             
         if tree_counter and tree_counter % MONITOR_STEP == 0:
-            #print_monitor(reftree, dup_per_branch, informed_branches, losses_per_branch,
-            #              losses_per_dup_branch, refbranch_supports)
-            print "\nTaking a tree snapshot"
-            annotate_tree(reftree, dup_per_branch, informed_branches, losses_per_branch,
-                          losses_per_dup_branch, refbranch_supports)
-            ts = TreeStyle()
-            ts.layout_fn = info_layout
+            take_snapshot()
             
-            reftree.render("tree_analysis.png", tree_style=ts)
-
         # Compute support of this tree over the whole refTree
         seedid = None if USE_COLLATERAL else treeid
-        branch2supports = get_supported_branches(t, tree_content,
-                                                 refclades=refclades, seedid=seedid)
-        if branch2supports == {}:
+        seedsp = None if USE_COLLATERAL else extract_species(treeid)
+        branch2supports, branch2coll_supports = get_supported_branches(t, tree_content,
+                                                                     refclades=refclades, seedid=seedid)
+        if branch2supports == {} and branch2coll_supports == {}:
             skipped_trees +=1
         # We combine the information of all treeko trees, by averaging the
         # number of subtrees that supported or not a given refTree branch.
         for refbranch, supports in branch2supports.iteritems():
             refbranch_supports[refbranch].append(numpy.mean(supports))
+        for refbranch, coll_supports in branch2coll_supports.iteritems():
+            coll_refbranch_supports[refbranch].append(numpy.mean(coll_supports))
 
+            
         # Here I keep a counter on how many trees were potentially able to
         # inform about specific reftree branches. For instance, if outgroup
         # species X does not appear in a genetree, I dont want to count this
@@ -149,64 +161,78 @@ def process_trees(iter_data, reftree, monitor=False):
                 expected_sp = reftree_content[ref_branch]
 
             if isdup:
-                # Avoid processing the same dup several times
-                #if not KEEP_REDUNDANCY:
-                #    dup_key = md5('|'.join(sorted([md5(','.join(sorted(seqs_left))), md5(','.join(sorted(seqs_right)))])))
-                #    if dup_key in visited_dup:
-                #        continue
-                #    visited_dup.add(dup_key)
-
                 # updates duplications per branch in ref tree (dup rate analysis)
-                dup_per_branch[ref_branch].append([seqs_left, seqs_right])
+                if USE_COLLATERAL or seedsp in observed_sp:
+                    dup_per_branch[ref_branch].append([seqs_left, seqs_right])
+                elif not USE_COLLATERAL:
+                    coll_dup_per_branch[ref_branch].append([seqs_left, seqs_right])
 
             # Count losses observed after a duplication or at the root of the tree.
             if isdup or node is t:
-                if USE_COLLATERAL or treeid in seqs_left | seqs_right:
-                    # get a list of losses at both sides of the dupli
-                    if node is t:
-                        losses_left = get_lost_branches(observed_sp, expected_sp,
-                                                        ref_branch, sorted_ref_branches)
-                        losses_right = []
+                # get a list of losses at both sides of the dupli
+                if not isdup and node is t:
+                    losses_left = get_lost_branches(observed_sp, expected_sp,
+                                                    ref_branch, sorted_ref_branches)
+                    losses_right = []
+                else:
+                    losses_left = get_lost_branches(species_left, expected_sp,
+                                                    ref_branch, sorted_ref_branches)
+                    losses_right = get_lost_branches(species_right, expected_sp,
+                                                     ref_branch, sorted_ref_branches)
+
+                if USE_COLLATERAL:
+                    losses = losses_left + losses_right
+                    coll_losses = []
+                else:
+                    if treeid in seqs_left:
+                        # if the seed species is not found at the other side of
+                        # the dup, we can assume that its losses will never be
+                        # counted, so we combine data from both sides.
+                        if seedsp not in species_right: 
+                            losses = losses_left + losses_right
+                        # otherwise, we wait for info for a different seed tree
+                        else: 
+                            losses = losses_left
+                        # No collateral information as data come from a duplication including the seed
+                        coll_losses = [] 
+                    elif treeid in seqs_right:
+                        # if the seed species is not found at the other side of
+                        # the dup, we can assume that its losses will never be
+                        # counted, so we combine data from both sides.
+                        if seedsp not in species_left: 
+                            losses = losses_left + losses_right
+                        # otherwise, we wait for info for a different seed tree
+                        else:
+                            losses = losses_right
+                        # No collateral information as data come from a duplication including the seed
+                        coll_losses = [] 
                     else:
-                        losses_left = get_lost_branches(species_left, expected_sp,
-                                                        ref_branch, sorted_ref_branches)
-                        losses_right = get_lost_branches(species_right, expected_sp,
-                                                         ref_branch, sorted_ref_branches)
+                        # If this is a collateral duplication, process losses as such
+                        losses = []
+                        coll_losses = losses_left + losses_right
+
+                if len(reftree_content[ref_branch]) == 1 and losses + coll_losses:
+                    raw_input("This should never happen")
                     
-                    if USE_COLLATERAL:
-                        losses = losses_left + losses_right
-                    else:
-                        losses = losses_left if treeid in seqs_left else losses_right
-
-                    # update gene loss counters
-                    #print "LOSSES"
-                    #print node
-                    #print expected_sp, observed_sp
-                    #print losses
-                    for lost_branch in losses:
-                        #print lost_branch, losses
-                        losses_per_branch[lost_branch] += 1
-                        if isdup:
-                            losses_per_dup_branch[ref_branch].append(lost_branch)
-                        if len(reftree_content[ref_branch]) == 1:
-                            raw_input("This should never happen")
-                            
-    print "\nTaking FINAL tree snapshot"
-    annotate_tree(reftree, dup_per_branch, informed_branches, losses_per_branch,
-                  losses_per_dup_branch, refbranch_supports)
-    ts = TreeStyle()
-    ts.layout_fn = info_layout
-    reftree.render("tree_analysis.png", tree_style=ts)
-
+                # update gene loss counters
+                for lost_branch in losses:
+                    losses_per_branch[lost_branch] += 1
+                    if isdup: # if losses come from a dup event
+                        losses_per_dup_branch[ref_branch].append(lost_branch)
+                for lost_branch in coll_losses:
+                    coll_losses_per_branch[lost_branch] += 1
+                    if isdup: # if losses come from a dup event
+                        coll_losses_per_dup_branch[ref_branch].append(lost_branch)
+                        
+    take_snapshot()
     return dup_per_branch, informed_branches, losses_per_branch, losses_per_dup_branch, refbranch_supports
-
         
 def get_supported_branches(source_tree, reftree, refclades, seedid=None):
     """
-        Given a reference species tree and a list of rooted gene trees in which
+        Given a reference species tree and a rooted gene tree in which
         duplication events are already mapped, this function does the following:
         
-          - Split gene trees into all possible species tree (Treeko method)
+          - Split gene tree into all possible species tree (Treeko method)
           
           - Find matches between each subtree branch and all branches in the
             reference tree. 
@@ -237,10 +263,14 @@ def get_supported_branches(source_tree, reftree, refclades, seedid=None):
         return {}
     branches_found = []
     branch2supports = defaultdict(list)
+    branch2coll_supports = defaultdict(list)
     for nw in sp_trees:
         # Use all treeko trees or only those subtrees containing the seed?
         if seedid and seedid not in nw:
-            continue
+            container = branch2coll_supports
+        else:
+            container = branch2supports
+            
         subtree = PhyloTree(nw, sp_naming_function = extract_species)
         subtreenode2content = subtree.get_cached_content(store_attr="species")
         #set([phy3(_c.name) for _c in subtreenode2content[subtree]])
@@ -296,14 +326,14 @@ def get_supported_branches(source_tree, reftree, refclades, seedid=None):
                             notfound += 1
 
                     if notfound > 0:
-                        branch2supports[refnode].append(0)
+                        container[refnode].append(0)
                     elif found > 0:
-                        branch2supports[refnode].append(1)                    
+                        container[refnode].append(1)                    
 
                     if found == 2:
                         raw_input("Two possible matches? This should never occur!!")
                 
-    return branch2supports
+    return branch2supports, branch2coll_supports
 
 def dup_iterator(fname):
     for line in open(fname):
@@ -317,7 +347,7 @@ def extract_species(seq_names):
     if isinstance(seq_names, Tree):
         return seq_names.name.split(SPNAME_DELIMITER)[SPNAME_FIELD]
     elif isinstance(seq_names, str):
-        return name.split(SPNAME_DELIMITER)[SPNAME_FIELD]
+        return seq_names.split(SPNAME_DELIMITER)[SPNAME_FIELD]
     else:
         return set(map(lambda name: name.split(SPNAME_DELIMITER)[SPNAME_FIELD], seq_names))
         
@@ -332,25 +362,7 @@ def tree_iterator(fname, restrict_species=None):
         n2content = t.get_cached_content()
         if len(n2content[t]) < 2:
             continue
-            
         yield treeid, t, n2content
-        # for node in t.traverse("preorder"):
-        #     if not node.is_leaf():
-        #         if len(node.children) != 2:
-        #             print node
-        #             raise ValueError("Binary trees are required")
-        #         ch_left = node.children[0]
-        #         ch_right = node.children[1]
-        #         seqs_left = set([n.name for n in n2content[ch_left]])
-        #         seqs_right = set([n.name for n in n2content[ch_right]])
-        #         species_left = extract_species(seqs_left)
-        #         species_right = extract_species(seqs_right)
-                   
-        #         if DETECT_DUPLICATIONS:
-        #             if species_left & species_right:
-        #                 yield "dup", seqs_left, seqs_right, treeid
-        #         elif n.evol_type == "D":
-        #             yield "dup", seqs_left, seqs_right, treeid
 
 def info_layout(node):
     if node.ndups is not None:
@@ -374,58 +386,76 @@ def info_layout(node):
         add_face_to_node(faces.TextFace("nTrees=%d" %(node.ntrees),
                                         fsize=8, fgcolor="green"), node, 1, position="branch-top")
 
-def annotate_tree(reftree, dup_per_branch, informed_branches, losses_per_branch,
-                  losses_per_dup_branch, refbranch_supports):
+
+    # Collateral info
+    if node.coll_ndups is not None:
+        add_face_to_node(faces.TextFace("Coll_Dups=%d(%0.2g dup/tree)" %(node.coll_ndups, node.coll_dup_rate),
+                                        fsize=8, fgcolor="orange"), node, 2, position="branch-bottom")
+    if node.coll_losses is not None:
+        add_face_to_node(faces.TextFace("Coll_Losses=%d(%0.2g losses/tree)" %(node.coll_losses, node.coll_losses_rate),
+                                   fsize=8, fgcolor="green"), node, 2, position="branch-bottom")
+
+    if node.coll_nduplosses is not None:
+        add_face_to_node(faces.TextFace("Coll_dupLosses=%d(%0.2g losses/tree)" %(node.coll_nduplosses, node.coll_duplosses_rate),
+                                        fsize=8, fgcolor="blue"), node, 2, position="branch-bottom")
+    if node.coll_gt_support is not None:
+        add_face_to_node(faces.TextFace("Coll_GTsupport=%g" %(node.coll_gt_support),
+                                        fsize=8, fgcolor="black"), node, 1, position="branch-top")
+    if node.coll_nsupport_trees is not None:
+        add_face_to_node(faces.TextFace("Coll_GTtrees=%d" %(node.coll_nsupport_trees),
+                                        fsize=8, fgcolor="grey"), node, 1, position="branch-top")
+    
+
+
+
+        
+def annotate_tree(reftree, informed_branches, dup_per_branch, losses_per_branch,
+                  losses_per_dup_branch, refbranch_supports,
+                  coll_dup_per_branch, coll_losses_per_branch,
+                  coll_losses_per_dup_branch, coll_refbranch_supports):
+
     for refbranch in reftree.traverse():
         ntrees = informed_branches.get(refbranch, 0)
         dups = dup_per_branch.get(refbranch, [])
-        ndups = len(dups) if dups else None
-        dup_rate = ndups / float(ntrees) if ndups is not None else None
-        losses = losses_per_branch.get(refbranch, None)
-        losses_rate = losses / float(ntrees) if losses is not None else None
-        duplosses = losses_per_dup_branch.get(refbranch, None)
-        nduplosses = len(duplosses) if duplosses else None
-        duplosses_rate = nduplosses / float(ntrees) if nduplosses is not None else None
+        ndups = len(dups) if ntrees else None
+        dup_rate = ndups / float(ntrees) if ntrees else None
+        losses = losses_per_branch.get(refbranch, 0) if ntrees else None
+        losses_rate = losses / float(ntrees) if ntrees else None
+        duplosses = losses_per_dup_branch.get(refbranch, [])
+        nduplosses = len(duplosses) if ntrees else None
+        duplosses_rate = nduplosses / float(ntrees) if ntrees else None
         all_supports = refbranch_supports.get(refbranch, None)
         gt_support = numpy.mean(all_supports) if all_supports else None
         nsupport_trees = len(all_supports) if all_supports else None
+        
         refbranch.add_features(ntrees=ntrees, dups=dups, ndups=ndups, dup_rate=dup_rate,
-                               losses=losses, losses_rate=losses_rate, duplosses=duplosses,
-                               nduplosses = nduplosses, duplosses_rate=duplosses_rate,
-                               gt_support=gt_support, nsupport_trees=nsupport_trees)
-        
-        
-def print_monitor(reftree, dup_per_branch, informed_branches, losses_per_branch,
-                  losses_per_dup_branch, refbranch_supports):
-    os.system("clear")
-    for refbranch in reftree.traverse():
-        if not refbranch.is_leaf():
-            refbranch.name = ""
-        info = ""
-        informing_trees = informed_branches.get(refbranch, None)
-        if informing_trees is not None:
-            info += "T=%d" %informing_trees
-        dups = dup_per_branch.get(refbranch, None)
-        if dups is not None:
-            info += ",D=%d(%g)" %(len(dups), (len(dups) / float(informing_trees)))
-        losses_here = losses_per_branch.get(refbranch, None)
-        if losses_here is not None:
-            info += ",L=%d(%g)" %(losses_here, (losses_here / float(informing_trees)))
-        losses_from_dups_here = losses_per_dup_branch.get(refbranch, None)
-        if losses_from_dups_here is not None:
-            info += ",DL=%d(%g)" %(len(losses_from_dups_here), (len(losses_from_dups_here) / float(informing_trees)))
-        gt_support = refbranch_supports.get(refbranch, None)
-        if gt_support is not None:
-            info += ",GTs=%d(%g)" %(len(gt_support), numpy.mean(gt_support))
-            
-        if refbranch.is_leaf():
-            refbranch.infoname = ' '.join((info, refbranch.name))
-        else:
-            refbranch.infoname = info
-    print reftree.get_ascii(attributes=["infoname"], show_internal=True)
-    print reftree.render
+                               losses=losses, losses_rate=losses_rate,
+                               duplosses=duplosses,
+                               nduplosses=nduplosses,
+                               duplosses_rate=duplosses_rate,
+                               gt_support=gt_support,
+                               nsupport_trees=nsupport_trees)
 
-                    
+        coll_dups = coll_dup_per_branch.get(refbranch, [])
+        coll_ndups = len(coll_dups) if ntrees else None
+        coll_dup_rate = coll_ndups / float(ntrees) if ntrees else None
+        coll_losses = coll_losses_per_branch.get(refbranch, 0) if ntrees else None
+        coll_losses_rate = coll_losses / float(ntrees) if ntrees else None
+        coll_duplosses = coll_losses_per_dup_branch.get(refbranch, [])
+        coll_nduplosses = len(coll_duplosses) if ntrees else None
+        coll_duplosses_rate = coll_nduplosses / float(ntrees) if ntrees else None
+        coll_all_supports = coll_refbranch_supports.get(refbranch, None)
+        coll_gt_support = numpy.mean(coll_all_supports) if coll_all_supports else None
+        coll_nsupport_trees = len(coll_all_supports) if coll_all_supports else None
+       
+        refbranch.add_features(coll_dups=coll_dups, coll_ndups=coll_ndups, coll_dup_rate=coll_dup_rate,
+                               coll_losses=coll_losses, coll_losses_rate=coll_losses_rate, coll_duplosses=coll_duplosses,
+                               coll_nduplosses=coll_nduplosses,
+                               coll_duplosses_rate=coll_duplosses_rate,
+                               coll_gt_support=coll_gt_support,
+                               coll_nsupport_trees=coll_nsupport_trees)
+
+        
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__DESCRIPTION__, 
                             formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -460,10 +490,6 @@ if __name__ == "__main__":
                         action="store_true",
                         help=(""))
 
-    parser.add_argument("--keep_redundancy", dest="keep_redundancy", 
-                        action="store_true",
-                        help=(""))
-
     parser.add_argument("--debug", dest="debug", 
                         action="store_true",
                         help=("generates images of input trees, so the result can be inspected"))
@@ -472,16 +498,14 @@ if __name__ == "__main__":
     SPNAME_FIELD, SPNAME_DELIMITER = args.spname_field, args.spname_delimiter
     USE_COLLATERAL = args.use_collateral
     DETECT_DUPLICATIONS = args.detect_duplications
-    KEEP_REDUNDANCY = args.keep_redundancy
     MONITOR_STEP = 1000
     DEBUG = args.debug
-    reftree = PhyloTree(args.reftree, sp_naming_function=lambda n: n)
+    reftree = PhyloTree(args.reftree, sp_naming_function=None)
     
     data_iter = tree_iterator(args.source_trees, restrict_species=set(reftree.get_leaf_names()))
         
     (dup_per_branch, informed_branches, losses_per_branch,
      losses_per_dup_branch, refbranch_supports) = process_trees(data_iter, reftree)
+    cPickle.dump(reftree, open("annotated_refTree.maptrees.pkl", "w"))
     
-    print_monitor(reftree, dup_per_branch, informed_branches, losses_per_branch,
-                  losses_per_dup_branch, refbranch_supports)
-
+    
