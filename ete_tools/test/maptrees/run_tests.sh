@@ -1,5 +1,5 @@
 for x in test*
 do
- (cd $x && rm *.png; ete maptrees -r reftree --source_trees genetrees --detect_duplication --debug)
+ (cd $x && rm *.png; ete maptrees -r reftree --source_trees genetrees --output annotated_reftree.pkl --debug)
 done
 

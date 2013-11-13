@@ -109,10 +109,11 @@ def process_trees(iter_data, reftree, monitor=False):
         # We combine the information of all treeko trees, by averaging the
         # number of subtrees that supported or not a given refTree branch.
         for refbranch, supports in branch2supports.iteritems():
-            refbranch_supports[refbranch].append(numpy.mean(supports))
+            if IS_VALID_TREEID is None or IS_VALID_TREEID(treeid, extract_species(reftree_content[refbranch])):
+                refbranch_supports[refbranch].append(numpy.mean(supports))
         for refbranch, coll_supports in branch2coll_supports.iteritems():
-            coll_refbranch_supports[refbranch].append(numpy.mean(coll_supports))
-
+            if IS_VALID_TREEID is None or IS_VALID_TREEID(treeid, extract_species(reftree_content[refbranch])):
+                coll_refbranch_supports[refbranch].append(numpy.mean(coll_supports))
             
         # Here I keep a counter on how many trees were potentially able to
         # inform about specific reftree branches. For instance, if outgroup
@@ -123,8 +124,10 @@ def process_trees(iter_data, reftree, monitor=False):
             max_ref_branch = reftree.search_nodes(name=list(all_observed_sp)[0])[0]
         else:
             max_ref_branch = reftree.get_common_ancestor(all_observed_sp)
+            
         for refbranch in max_ref_branch.traverse():
-            informed_branches[refbranch] += 1
+            if IS_VALID_TREEID is None or IS_VALID_TREEID(treeid, extract_species(reftree_content[refbranch])):
+                informed_branches[refbranch] += 1
 
         # Start analyzing internal nodes
         for node in t.traverse("preorder"):
@@ -161,11 +164,12 @@ def process_trees(iter_data, reftree, monitor=False):
                 expected_sp = reftree_content[ref_branch]
 
             if isdup:
-                # updates duplications per branch in ref tree (dup rate analysis)
-                if USE_COLLATERAL or seedsp in observed_sp:
-                    dup_per_branch[ref_branch].append([seqs_left, seqs_right])
-                elif not USE_COLLATERAL:
-                    coll_dup_per_branch[ref_branch].append([seqs_left, seqs_right])
+                if IS_VALID_TREEID is None or IS_VALID_TREEID(treeid, extract_species(reftree_content[ref_branch])):
+                    # updates duplications per branch in ref tree (dup rate analysis)
+                    if USE_COLLATERAL or seedsp in observed_sp:
+                        dup_per_branch[ref_branch].append([seqs_left, seqs_right])
+                    elif not USE_COLLATERAL:
+                        coll_dup_per_branch[ref_branch].append([seqs_left, seqs_right])
 
             # Count losses observed after a duplication or at the root of the tree.
             if isdup or node is t:
@@ -180,6 +184,10 @@ def process_trees(iter_data, reftree, monitor=False):
                     losses_right = get_lost_branches(species_right, expected_sp,
                                                      ref_branch, sorted_ref_branches)
 
+                if IS_VALID_TREEID is not None:
+                    losses_left = [branch for branch in losses_left if IS_VALID_TREEID(treeid, extract_species(reftree_content[branch]))]
+                    losses_right = [branch for branch in losses_right if IS_VALID_TREEID(treeid, extract_species(reftree_content[branch]))]
+                    
                 if USE_COLLATERAL:
                     losses = losses_left + losses_right
                     coll_losses = []
@@ -225,7 +233,8 @@ def process_trees(iter_data, reftree, monitor=False):
                         coll_losses_per_dup_branch[ref_branch].append(lost_branch)
                         
     take_snapshot()
-    return dup_per_branch, informed_branches, losses_per_branch, losses_per_dup_branch, refbranch_supports
+    return (informed_branches, dup_per_branch, losses_per_branch, losses_per_dup_branch, refbranch_supports,
+            coll_dup_per_branch, coll_losses_per_branch, coll_losses_per_dup_branch, coll_refbranch_supports)
         
 def get_supported_branches(source_tree, reftree, refclades, seedid=None):
     """
@@ -464,48 +473,66 @@ if __name__ == "__main__":
                         type=str, required=True,
                         help="""Reference tree""")
 
-    parser.add_argument("--dups_file", dest="dups_file", 
-                        type=str, 
-                        help=("A file containing a list of precomputed duplication"
-                              " events in the format:"
-                              " TreeId [TAB] comma delimited left_content [TAB] comma delimited right content"))
-
+    parser.add_argument("--source_trees", dest="source_trees", 
+                        type=str, required = True,
+                        help=("A list of *rooted* genetrees, one per line, in the format: TreeID/SeedID [TAB] newick "))
+    
     parser.add_argument("--spname_delimiter", dest="spname_delimiter", 
                         type=str, default="_",
-                        help=(""))
+                        help=("species code delimiter in node names"))
     
     parser.add_argument("--spname_field", dest="spname_field", 
                         type=int, default=-1,
-                        help=(""))
-
-    parser.add_argument("--source_trees", dest="source_trees", 
-                        type=str, 
-                        help=(""))
+                        help=("position of the species code extracted from node names"))
 
     parser.add_argument("--collateral", dest="use_collateral", 
                         action="store_true",
-                        help=("If enabled, collateral information will be used. Otherwise, only seed related information "))
+                        help=("If enabled, collateral information will be used as"
+                              " equally qualified data. Otherwise, such data will"
+                              " be reported separatedly. Use this if your set of"
+                              " trees are not overlaping. "))
 
-    parser.add_argument("--detect_duplications", dest="detect_duplications", 
+    parser.add_argument("--skip_dup_detection", dest="skip_dup_detection", 
                         action="store_true",
-                        help=(""))
+                        help=('If used, duplications will be expected to be annotated'
+                              ' in the source trees with the evoltype="D" tag.'
+                              ' Otherwise they will be inferred on the fly using'
+                              ' the species overlap algorithm.'))
 
     parser.add_argument("--debug", dest="debug", 
                         action="store_true",
                         help=("generates images of input trees, so the result can be inspected"))
+
+    parser.add_argument("--snapshot_step", dest="snapshot_step", 
+                        type=int, default=1000,
+                        help=("How many trees should be processed between result snapshots"))
+
+    parser.add_argument("--reftree_constraint", dest="reftree_constraint", 
+                        type=str, 
+                        help=("A python module from from which a function called *is_valid_treeid(treeid, refbranch)* should be importable. The function will be used to decide if the info of a given source tree is informative or not for each reftree branch. "))
+    
+    parser.add_argument("--output", dest="output", 
+                        type=str, required=True, 
+                        help=("output file name"))
         
     args = parser.parse_args()
     SPNAME_FIELD, SPNAME_DELIMITER = args.spname_field, args.spname_delimiter
     USE_COLLATERAL = args.use_collateral
-    DETECT_DUPLICATIONS = args.detect_duplications
+    DETECT_DUPLICATIONS = True if not args.skip_dup_detection else False
     MONITOR_STEP = 1000
     DEBUG = args.debug
     reftree = PhyloTree(args.reftree, sp_naming_function=None)
-    
     data_iter = tree_iterator(args.source_trees, restrict_species=set(reftree.get_leaf_names()))
-        
-    (dup_per_branch, informed_branches, losses_per_branch,
-     losses_per_dup_branch, refbranch_supports) = process_trees(data_iter, reftree)
-    cPickle.dump(reftree, open("annotated_refTree.maptrees.pkl", "w"))
+
+    if args.reftree_constraint:
+        import imp
+        constraint = imp.load_source('constraint', args.reftree_constraint)
+        IS_VALID_TREEID = constraint.is_valid_treeid
+    else:
+        IS_VALID_TREEID = None
+    
+    process_trees(data_iter, reftree)
+    
+    cPickle.dump(reftree, open("%s.pkl"%args.output, "w"))
     
     
