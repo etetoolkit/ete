@@ -507,14 +507,11 @@ def dump_results(reftree, informed_branches, dup_per_branch, losses_per_branch, 
     annotate_tree(reftree, informed_branches, dup_per_branch, losses_per_branch, losses_per_dup_branch, refbranch_supports,
                    coll_dup_per_branch, coll_losses_per_branch, coll_losses_per_dup_branch, coll_refbranch_supports)
     # Summary newick tree with all features
-    try:
+    if IMG_REPORT:
         print >>sys.stderr, "Generating tree analysis image"
         ts = TreeStyle()
         ts.layout_fn = info_layout
         reftree.render("tree_analysis.png", tree_style=ts)
-    except Exception, e:
-        print >>sys.stderr, "Error generating image", e
-        pass
     
     summary_fetaures = [
         "ntrees",
@@ -592,12 +589,18 @@ if __name__ == "__main__":
     parser.add_argument("--cpu", dest="cpu", 
                         type=int, default=1, 
                         help=("enable parallel computation"))
+
+    parser.add_argument("--img_report", dest="img_report", 
+                        action="store_true", 
+                        help=(""))
+
     
     args = parser.parse_args()
     SPNAME_FIELD, SPNAME_DELIMITER = args.spname_field, args.spname_delimiter
     USE_COLLATERAL = args.use_collateral
     DETECT_DUPLICATIONS = True if not args.skip_dup_detection else False
     DEBUG = args.debug
+    IMG_REPORT = args.img_report
     reftree = PhyloTree(args.reftree, sp_naming_function=None)
     for nid, n in enumerate(reftree.traverse()):
         n.add_features(nid = nid)

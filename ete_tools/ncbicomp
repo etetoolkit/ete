@@ -250,7 +250,7 @@ if __name__ == "__main__":
     
     parser.add_argument("--render", dest="render",
                         action="store_true", 
-                        help="""Display tree after the analysis.""")
+                        help="""Render tree.""")
 
     parser.add_argument("--dump", dest="dump",
                         action="store_true", 
@@ -465,7 +465,7 @@ if __name__ == "__main__":
             #ts.tree_width = 500
             ts.show_leaf_name = False
             ts.layout_fn = ncbi_layout 
-            ts.mode = "r"
+            ts.mode = "c"
             t.dist = 0
             if args.show_tree:
                 #if args.hide_monophyletic:
