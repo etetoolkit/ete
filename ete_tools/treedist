@@ -1,9 +1,20 @@
 #!/usr/bin/env python
 import os
 import sys
-from common import argparse, Tree
+from common import __CITATION__, argparse, Tree
 
-__DESCRIPTION__ = "Calculate distance between trees "
+__DESCRIPTION__ = '''
+#  - treedist -
+# ===================================================================================
+#  
+# treedist calculates robinson foulds distances between a reference tree and a
+# one or more target trees.
+#  
+# %s
+#  
+# ===================================================================================
+'''% __CITATION__
+
         
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__DESCRIPTION__, 
@@ -32,7 +43,7 @@ if __name__ == "__main__":
                         help="""compare trees as unrooted""")
     
     args = parser.parse_args()
-
+    print __DESCRIPTION__
     reftree = args.reftree
     target_trees = args.target_trees
     t = Tree(reftree)

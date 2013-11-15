@@ -3,7 +3,7 @@
 import sys
 import os
 from collections import defaultdict
-from common import Tree, PhyloTree, argparse, add_face_to_node, TreeStyle, faces
+from common import __CITATION__,  Tree, PhyloTree, argparse, add_face_to_node, TreeStyle, faces
 import numpy
 import hashlib
 import gc
@@ -12,7 +12,19 @@ import time
 import commands
 md5 = lambda x: hashlib.md5(x).hexdigest()
 
-__DESCRIPTION__ = ''
+__DESCRIPTION__ = '''
+#  - maptrees -
+# ===================================================================================
+#  
+# maptrees allows to calculate gene duplication and loss rates in a reference tree
+# by summarizing the information contained in multiple genetrees. It also provides
+# a GeneTree Support value for every branch, indicating the proportion of gene
+# trees that support each branch in the reference tree.
+#  
+%s
+#  
+# ===================================================================================
+'''% __CITATION__
 
 def get_first_common_branch(observed_items, reftree_content):
     #first common ancestor of the observed_items in the reftree
@@ -49,7 +61,7 @@ def get_lost_branches(obs_items, expected_items, ref_branch,
     # Group lost branches
     return lost_branches
    
-def process_trees(iter_data, reftree, total_trees):
+def process_trees(iter_data, reftree, total_trees, thread_name=""):
     # cache some common data
     reftree_content = reftree.get_cached_content(store_attr="name")
     sorted_ref_branches = [(n, reftree_content[n]) for n in reftree.traverse("preorder")]
@@ -74,7 +86,6 @@ def process_trees(iter_data, reftree, total_trees):
                                               # each refTree branch
     coll_refbranch_supports = defaultdict(list)    
 
-
     skipped_trees = 0
         
     time0 = time.time()
@@ -89,9 +100,9 @@ def process_trees(iter_data, reftree, total_trees):
         if tree_counter % 100 == 0:
             etime = time.time() - time0
             tracked_times.append(etime)
-            total_etime = ((total_trees - tree_counter) / 100.0) * numpy.mean(tracked_times)
+            total_etime = ((total_trees - tree_counter) / 100.0) * numpy.median(tracked_times)
             percent = (tree_counter / float(total_trees)) * 100
-            print >>sys.stderr, "\r% 10d (%0.1f%%) skipped trees:% 5d. Remaining time ~= %d min" %(tree_counter, percent, skipped_trees, total_etime/60.),
+            print >>sys.stderr, "\r%s% 10d (%0.1f%%) skipped trees:% 5d. Remaining time ~= %d min" %(thread_name, tree_counter, percent, skipped_trees, total_etime/60.)
             time0 = time.time()
             sys.stderr.flush()
             gc.collect()
@@ -481,9 +492,10 @@ def annotate_tree(reftree, informed_branches, dup_per_branch, losses_per_branch,
 
     
 def run_parallel(workernum, queue, f, *args, **kargs):
+    kargs["thread_name"] = "Worker%02d" % workernum
     r = f(*args, **kargs)
     #print "Worker done:", workernum, r
-    print
+    #print
     
     queue.put(r)
 
@@ -543,7 +555,7 @@ if __name__ == "__main__":
                         type=str, 
                         help=("A python module from from which a function called *is_valid_treeid(treeid, refbranch)* should be importable. The function will be used to decide if the info of a given source tree is informative or not for each reftree branch. "))
     
-    parser.add_argument("--output", dest="output", 
+    parser.add_argument("-o", dest="output", 
                         type=str, required=True, 
                         help=("output file name"))
 
@@ -560,6 +572,8 @@ if __name__ == "__main__":
     for nid, n in enumerate(reftree.traverse()):
         n.add_features(nid = nid)
     reftree_species = set(reftree.get_leaf_names())
+
+    print __DESCRIPTION__
     
     TOTAL_TREES = int(commands.getoutput("wc -l %s" %args.source_trees).split()[0]) + 1
     print >>sys.stderr, "Processing %d source trees" %TOTAL_TREES
@@ -651,11 +665,16 @@ if __name__ == "__main__":
     # FInal annotation of the refTree
     annotate_tree(reftree, informed_branches, dup_per_branch, losses_per_branch, losses_per_dup_branch, refbranch_supports,
                    coll_dup_per_branch, coll_losses_per_branch, coll_losses_per_dup_branch, coll_refbranch_supports)
-    # Final img report
-    ts = TreeStyle()
-    ts.layout_fn = info_layout
-    reftree.render("tree_analysis.png", tree_style=ts)
     # Summary newick tree with all features
+    try:
+        print >>sys.stderr, "Generating tree analysis image"
+        ts = TreeStyle()
+        ts.layout_fn = info_layout
+        reftree.render("tree_analysis.png", tree_style=ts)
+    except Exception, e:
+        print >>sys.stderr, "Error generating image", e
+        pass
+    
     summary_fetaures = [
         "ntrees",
         "nid",
@@ -675,8 +694,10 @@ if __name__ == "__main__":
         "coll_duplosses_rate",
         "coll_gt_support",
         "coll_nsupport_trees"]
+    print >>sys.stderr, "Dumping annotated newick..."
     reftree.write(outfile="%s.nwx"%args.output, features=summary_fetaures)
     
+    print >>sys.stderr, "Dumping full analysis..."
     # Full dump, including duplication details
     cPickle.dump(reftree, open("%s.pkl"%args.output, "w"))
     

@@ -130,6 +130,7 @@ def analyze_tracks(t, n2content):
     mono = set(taxcounter.keys())
     non_mono = set()
     non_mono_sizes = []
+    broken_branches = 0
     for node, taxa in node2track.iteritems():
         for tax, num in taxa.iteritems():
             if taxcounter[tax] != num and len(n2content[node]) != num:
@@ -142,11 +143,12 @@ def analyze_tracks(t, n2content):
                     raw_input()
                 mono.discard(tax)
                 node.broken_levels.append(tax2name[tax])
+                non_mono_sizes.append(taxcounter[tax])
+                broken_branches += 1 
                 if tax not in non_mono:
-                    non_mono_sizes.append(taxcounter[tax])
                     non_mono.add(tax)
                     
-    return mono, non_mono, non_mono_sizes, tax2name
+    return mono, non_mono, broken_branches, non_mono_sizes, tax2name
     
 
 def analyze_subtrees(t, subtrees, reft=None, show_progress=False):
@@ -157,6 +159,7 @@ def analyze_subtrees(t, subtrees, reft=None, show_progress=False):
     broken_subtrees = 0
     total_rf = 0
     broken_group_sizes = []
+    all_broken_branches = 0
     for count, subt in enumerate(subtrees):
         if show_progress:
             print >>sys.stderr, "\r", count, "   ",
@@ -172,8 +175,10 @@ def analyze_subtrees(t, subtrees, reft=None, show_progress=False):
                 rf, rf_max = subt.robinson_foulds(reft, attr_t1="spcode")
                 total_rf += float(rf)/rf_max
             
-            si, no, non_mono_sizes, tax2name  = analyze_tracks(subt, n2content)
+            si, no, broken_branches, non_mono_sizes, tax2name  = analyze_tracks(subt, n2content)
             ncbi_mistakes += len(no)
+            all_broken_branches += broken_branches
+            print color(len(no) == len(non_mono_sizes), "blue")
             broken_group_sizes.extend(non_mono_sizes)
             if no:
                 broken_subtrees += 1
@@ -190,7 +195,7 @@ def analyze_subtrees(t, subtrees, reft=None, show_progress=False):
                 source_node.broken_groups = set([tax2name[e] for e in no])
     if show_progress: 
         print >>sys.stderr, "\nDone"
-    return valid_subtrees, broken_subtrees, ncbi_mistakes, total_rf, set([tax2name[b] for b in broken_groups]),  broken_group_sizes
+    return valid_subtrees, broken_subtrees, ncbi_mistakes, all_broken_branches, total_rf, set([tax2name[b] for b in broken_groups]),  broken_group_sizes
 
 def annotate_tree_with_taxa(t, name2taxa_file, tax2name=None, tax2track=None):
     if name2taxa_file: 
@@ -389,12 +394,12 @@ if __name__ == "__main__":
                 #print "Subparts:", len(subtrees), time.time()-t1
             else:
                 subtrees = [t]
-            valid_subtrees, broken_subtrees, ncbi_mistakes, total_rf, broken_clades, broken_sizes = analyze_subtrees(t, subtrees)
+            valid_subtrees, broken_subtrees, ncbi_mistakes, broken_branches, total_rf, broken_clades, broken_sizes = analyze_subtrees(t, subtrees)
 
             #print valid_subtrees, broken_subtrees, ncbi_mistakes, total_rf
         else:
             subtrees = []
-            valid_subtrees, broken_subtrees, ncbi_mistakes, total_rf, broken_clades, broken_sizes = 0, 0, 0, 0, 0
+            valid_subtrees, broken_subtrees, ncbi_mistakes, broken_branches, total_rf, broken_clades, broken_sizes = 0, 0, 0, 0, 0, 0
             
         ndups = 0
         nsubtrees = len(subtrees)
@@ -441,8 +446,8 @@ if __name__ == "__main__":
 
         sizes_info = "%0.1f/%0.1f +- %0.1f" %( numpy.mean(broken_sizes), numpy.median(broken_sizes), numpy.std(broken_sizes))
         iter_values = [os.path.basename(tfile), nsubtrees, ndups,
-                        broken_subtrees, ncbi_mistakes, sizes_info, rf, rf_med,
-                        rf_std, rf_max, common_names] 
+                        broken_subtrees, ncbi_mistakes, broken_branches, sizes_info, rf, rf_med,
+                       rf_std, rf_max, common_names] 
         print >>OUT, '|'.join(map(lambda x: str(x).strip().ljust(15), iter_values)) 
         fixed = sorted([n for n in prev_broken if n not in broken_clades])
         new_problems =  sorted(broken_clades - prev_broken)
@@ -452,7 +457,7 @@ if __name__ == "__main__":
         OUT.write("    New broken:   %s\n" %problems_string) if new_problems else None
         prev_broken = broken_clades
         ENTRIES.append([os.path.basename(tfile), nsubtrees, ndups,
-                        broken_subtrees, ncbi_mistakes, sizes_info, fixed_string, problems_string])
+                        broken_subtrees, ncbi_mistakes, broken_branches, sizes_info, fixed_string, problems_string])
         OUT.flush()
         if args.show_tree or args.render:
             ts = TreeStyle()
@@ -488,7 +493,7 @@ if __name__ == "__main__":
             
     print
     print
-    HEADER = ("TargetTree", "Subtrees", "Ndups", "Broken subtrees", "Broken clades", "Clade sizes", "Fixed Groups", "New Broken Clades")
+    HEADER = ("TargetTree", "Subtrees", "Ndups", "Broken subtrees", "Broken clades", "Broken branches", "Clade sizes", "Fixed Groups", "New Broken Clades")
     print_table(ENTRIES, max_col_width = 50, row_line=True, header=HEADER)
             
     if args.output:
