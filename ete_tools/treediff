@@ -6,7 +6,7 @@ import time
 import sys
 import itertools
 
-from common import Tree, print_table
+from common import Tree, print_table, color
 
 import textwrap
 import argparse
@@ -135,7 +135,7 @@ def show_difftable_tab(difftable):
     print '#' + '\t'.join(["distance", "size1", "size2", "ndiffs", "diff", "refTree", "targetTree"])
     print '\n'.join(['\t'.join(map(str, items)) for items in showtable])
     
-def show_difftable_topo(difftable, attr1, attr2):
+def show_difftable_topo(difftable, attr1, attr2, usecolor=False):
     if not difftable:
         return
     showtable = []
@@ -149,12 +149,17 @@ def show_difftable_topo(difftable, attr1, attr2):
         n2.ladderize()
         for leaf in n1.iter_leaves():
             leaf.name = getattr(leaf, attr1)
-            if leaf.name not in diff:
+            if leaf.name in diff:
                 leaf.name += " ***"
+                if usecolor:
+                    leaf.name = color(leaf.name, "red")
         for leaf in n2.iter_leaves():
             leaf.name = getattr(leaf, attr2)
-            if leaf.name not in diff:
+            if leaf.name in diff:
                 leaf.name += " ***"
+                if usecolor:
+                    leaf.name = color(leaf.name, "red")
+
         topo1 = n1.get_ascii(show_internal=False, compact=False)
         topo2 = n2.get_ascii(show_internal=False, compact=False)
 
@@ -173,7 +178,7 @@ def show_difftable_topo(difftable, attr1, attr2):
             topo2 = '\n'.join([line[start+1:] for line in topo2_lines])
                 
         showtable.append([dist, "%d/%d (%d)" %(len(side1), len(side2),len(diff)), topo1, topo2])
-    print_table(showtable, header=["Dist", "#diffs", "Ref Tree", "Target Tree"],
+    print_table(showtable, header=["Dist", "#diffs", "Tree1", "Tree2"],
                 max_col_width=maxcolwidth, wrap_style="wrap", row_line=True)
     log.info("Total distance:\t%0.4f\tMismatching nodes:\t%d" %(total_dist, len(difftable)))
 __DESCRIPTION__ = ""
@@ -204,6 +209,14 @@ if __name__ == '__main__':
                         choices=["topology", "diffs", "diffs_tab", "summary"],
                         default = "table",
                         help="How to show results")
+
+    parser.add_argument("--taxid", dest="taxid",
+                        action="store_true",
+                        help="If enabled, it will try ncbi taxid translation")
+
+    parser.add_argument("--color", dest="color",
+                        action="store_true",
+                        help="If enabled, it will use colors in some of the report")
     
     parser.add_argument(dest="trees", nargs="+")
     args = parser.parse_args()
@@ -215,12 +228,24 @@ if __name__ == '__main__':
     log = logging
     
     t1 = Tree(args.trees[0])
-
     for ttree in args.trees[1:]:
         t2 = Tree(ttree)
+
+        if args.taxid:
+            from common import ncbi_query
+            taxids = set([getattr(leaf, args.ref_attr) for leaf in t1.iter_leaves()])
+            taxids.update([getattr(leaf, args.target_attr) for leaf in t2.iter_leaves()])
+            taxid2name = ncbi_query.get_taxid_translator(taxids)
+            print taxid2name
+            for leaf in  t1.get_leaves()+t2.get_leaves():
+                try:
+                    leaf.name=taxid2name.get(int(leaf.name), leaf.name)
+                except ValueError:
+                    pass
+            
         difftable = treediff(t1, t2, args.ref_attr, args.target_attr, reduce_matrix=args.fullsearch)
         if args.report == "topology":
-            show_difftable_topo(difftable, args.ref_attr, args.target_attr)
+            show_difftable_topo(difftable, args.ref_attr, args.target_attr, usecolor=args.color)
         elif args.report == "diffs":
             show_difftable(difftable)
         elif args.report == "diffs_tab":
