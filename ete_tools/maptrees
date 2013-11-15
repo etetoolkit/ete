@@ -499,16 +499,46 @@ def run_parallel(workernum, queue, f, *args, **kargs):
     
     queue.put(r)
 
-def take_snapshot():
-    print "\nTaking a tree snapshot"
-    annotate_tree(reftree, informed_branches, dup_per_branch, losses_per_branch,
-                  losses_per_dup_branch, refbranch_supports,
-                  coll_dup_per_branch, coll_losses_per_branch,
-                  coll_losses_per_dup_branch, coll_refbranch_supports)
-    ts = TreeStyle()
-    ts.layout_fn = info_layout
-    reftree.render("tree_analysis.png", tree_style=ts)
+    
+def dump_results(reftree, informed_branches, dup_per_branch, losses_per_branch, losses_per_dup_branch, refbranch_supports,
+                 coll_dup_per_branch, coll_losses_per_branch, coll_losses_per_dup_branch, coll_refbranch_supports):
         
+    # FInal annotation of the refTree
+    annotate_tree(reftree, informed_branches, dup_per_branch, losses_per_branch, losses_per_dup_branch, refbranch_supports,
+                   coll_dup_per_branch, coll_losses_per_branch, coll_losses_per_dup_branch, coll_refbranch_supports)
+    # Summary newick tree with all features
+    try:
+        print >>sys.stderr, "Generating tree analysis image"
+        ts = TreeStyle()
+        ts.layout_fn = info_layout
+        reftree.render("tree_analysis.png", tree_style=ts)
+    except Exception, e:
+        print >>sys.stderr, "Error generating image", e
+        pass
+    
+    summary_fetaures = [
+        "ntrees",
+        "nid",
+        "ndups",
+        "dup_rate",
+        "losses",
+        "losses_rate",
+        "nduplosses",
+        "duplosses_rate",
+        "gt_support",
+        "nsupport_trees",
+        "coll_ndups",
+        "coll_dup_rate",
+        "coll_losses",
+        "coll_losses_rate",
+        "coll_nduplosses",
+        "coll_duplosses_rate",
+        "coll_gt_support",
+        "coll_nsupport_trees"]
+    print >>sys.stderr, "Dumping annotated newick..."
+    reftree.write(outfile="%s.nwx"%args.output, features=summary_fetaures)
+
+    
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__DESCRIPTION__, 
                             formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -645,8 +675,9 @@ if __name__ == "__main__":
                     break
                 else:
                     # This merge depends on process_trees return output!!!!!
-                    
                     merge_dict_results(target_dicts, out)
+                    # Dump a snapshot
+                    dump_results(reftree, *target_dicts)
                 time.sleep(0.1)
             if all_workers:
                 time.sleep(1)
@@ -662,42 +693,12 @@ if __name__ == "__main__":
          coll_dup_per_branch, coll_losses_per_branch, coll_losses_per_dup_branch,
          coll_refbranch_supports) = process_trees(data_iter, reftree, TOTAL_TREES)
 
-    # FInal annotation of the refTree
-    annotate_tree(reftree, informed_branches, dup_per_branch, losses_per_branch, losses_per_dup_branch, refbranch_supports,
-                   coll_dup_per_branch, coll_losses_per_branch, coll_losses_per_dup_branch, coll_refbranch_supports)
-    # Summary newick tree with all features
-    try:
-        print >>sys.stderr, "Generating tree analysis image"
-        ts = TreeStyle()
-        ts.layout_fn = info_layout
-        reftree.render("tree_analysis.png", tree_style=ts)
-    except Exception, e:
-        print >>sys.stderr, "Error generating image", e
-        pass
-    
-    summary_fetaures = [
-        "ntrees",
-        "nid",
-        "ndups",
-        "dup_rate",
-        "losses",
-        "losses_rate",
-        "nduplosses",
-        "duplosses_rate",
-        "gt_support",
-        "nsupport_trees",
-        "coll_ndups",
-        "coll_dup_rate",
-        "coll_losses",
-        "coll_losses_rate",
-        "coll_nduplosses",
-        "coll_duplosses_rate",
-        "coll_gt_support",
-        "coll_nsupport_trees"]
-    print >>sys.stderr, "Dumping annotated newick..."
-    reftree.write(outfile="%s.nwx"%args.output, features=summary_fetaures)
-    
+    dump_results(reftree, informed_branches, dup_per_branch, losses_per_branch, losses_per_dup_branch, refbranch_supports,
+                 coll_dup_per_branch, coll_losses_per_branch, coll_losses_per_dup_branch, coll_refbranch_supports)
+
     print >>sys.stderr, "Dumping full analysis..."
     # Full dump, including duplication details
     cPickle.dump(reftree, open("%s.pkl"%args.output, "w"))
+
+    
     
