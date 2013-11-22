@@ -65,7 +65,7 @@ sys.path.insert(0, NPRPATH)
 from nprlib import argparse
 from nprlib.configobj import ConfigObj, flatten_errors
 from nprlib import validate
-from nprlib.utils import (strip, SeqGroup, generate_runid,  AA, NT,
+from nprlib.utils import (strip, tobool, SeqGroup, generate_runid,  AA, NT,
                           GLOBALS, encode_seqname, pjoin, pexist,
                           hascontent, clear_tempdir, ETE_CITE)
 from nprlib.errors import ConfigError, DataError
@@ -136,7 +136,7 @@ def existing_dir(value):
         return value
     else:
         raise ConfigError("Not valid file")
-        
+
 def check_number(value, cast, minv=0, maxv=None):
     try:
         typed_value = cast(value)
@@ -171,7 +171,7 @@ def is_boolean_list(value):
     is_list(value)
     typed_value = []
     for v in value:
-        typed_value.append(check_number(v, bool, 0, 1))
+        typed_value.append(check_number(v, tobool, 0, 1))
     return typed_value
 
 def is_float_list(value, minv=0, maxv=None):
