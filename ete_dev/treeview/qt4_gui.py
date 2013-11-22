@@ -22,7 +22,9 @@ class _SelectorItem(QtGui.QGraphicsRectItem):
     def __init__(self, parent=None):
         self.Color = QtGui.QColor("blue")
         self._active = False
-        QtGui.QGraphicsRectItem.__init__(self, 0, 0, 0, 0, parent=parent)
+        QtGui.QGraphicsRectItem.__init__(self, 0, 0, 0, 0)
+        if parent:
+            self.setParentItem(parent)
 
     def paint(self, p, option, widget):
         p.setPen(self.Color)
