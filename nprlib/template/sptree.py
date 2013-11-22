@@ -2,8 +2,8 @@ import logging
 from collections import defaultdict
 
 from nprlib.task import TreeMerger
-from nprlib.utils import (GLOBALS, generate_runid, pjoin, rpath, DATATYPES, md5,
-                          dict_string)
+from nprlib.utils import (GLOBALS, tobool, generate_runid, pjoin, rpath, DATATYPES, md5,
+                          dict_string, ncbi, colorify)
 
 from nprlib.errors import DataError, TaskError
 from nprlib import db
@@ -162,10 +162,26 @@ def process_task(task, npr_conf, nodeid2info):
 
         log.log(28, "Processing tree: %s seqs, %s outgroups",
                 len(targets), len(outgroups))
-        
+
+        target_cladeids = None
+        if tobool(conf[splitterconf].get("_find_ncbi_targets", False)):
+            tcopy = mtree.copy()
+            ncbi.connect_database()
+            tax2name, tax2track = ncbi.annotate_tree_with_taxa(tcopy, None)
+            #tax2name, tax2track = ncbi.annotate_tree_with_taxa(tcopy, "fake") # for testing sptree example
+            n2content = tcopy.get_cached_content()
+            broken_branches, broken_clades, broken_clade_sizes, tax2name = ncbi.get_broken_branches(tcopy, n2content)
+            log.log(28, 'restricting NPR to broken clades: '+
+                    colorify(', '.join(map(lambda x: "%s"%tax2name[x], broken_clades)), "wr"))
+            target_cladeids = set()
+            for branch in broken_branches:
+                print branch.get_ascii(attributes=['spname', 'taxid'], compact=True)
+                print map(lambda x: "%s"%tax2name[x], broken_branches[branch])
+                target_cladeids.add(branch.cladeid)
+                
         for node, seqs, outs in get_next_npr_node(task.configid, ttree,
                                                   task.out_seqs, mtree, None,
-                                                  npr_conf): # None is to avoid alg checks
+                                                  npr_conf, target_cladeids): # None is to avoid alg checks
             log.log(28, "Adding new node: %s seqs, %s outgroups",
                     len(seqs), len(outs))
             new_task_node = cogclass(seqs, outs,

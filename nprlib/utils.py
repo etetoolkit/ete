@@ -128,6 +128,8 @@ try:
 except ImportError: 
     from nprlib.ordereddict import OrderedDict
 
+from ete_tools.ncbi_taxonomy import ncbi_common as ncbi
+    
 # ete_dev should be added to the python path by the npr script
 from ete_dev.phylo import PhyloTree
 from ete_dev.coretype.tree import Tree
@@ -179,6 +181,9 @@ generate_id = lambda items: md5(','.join(sorted(items)))
 generate_runid = lambda: md5(str(time.time()*random.random()))
 
 HOSTNAME = socket.gethostname()
+
+def tobool(value):
+    return str(value).lower() in set(["1", "true", "yes"])
 
 def rpath(fullpath):
     'Returns relative path of a task file (if possible)'
@@ -574,5 +579,31 @@ except ImportError:
 
     
 
+# CONVERT shell colors to the same curses palette
+COLORS = {
+    "wr": '\033[1;37;41m', # white on red
+    "wo": '\033[1;37;43m', # white on orange
+    "wm": '\033[1;37;45m', # white on magenta
+    "wb": '\033[1;37;46m', # white on blue
+    "bw": '\033[1;37;40m', # black on white
+    "lblue": '\033[1;34m', # light blue
+    "lred": '\033[1;31m', # light red
+    "lgreen": '\033[1;32m', # light green
+    "yellow": '\033[1;33m', # yellow
+    "cyan": '\033[36m', # cyan
+    "blue": '\033[34m', # blue
+    "green": '\033[32m', # green
+    "orange": '\033[33m', # orange
+    "red": '\033[31m', # red
+    "magenta": "\033[35m", # magenta
+    "white": "\033[0m", # white
+    None: "\033[0m", # end
+}
+
+def colorify(string, color):
+    return "%s%s%s" %(COLORS[color], string, COLORS[None])
+
+def clear_color(string):
+    return re.sub("\\033\[[^m]+m", "", string)
 
     

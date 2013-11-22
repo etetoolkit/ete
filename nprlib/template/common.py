@@ -3,7 +3,7 @@ import logging
 
 import numpy
 
-from nprlib.utils import DEBUG, GLOBALS, SeqGroup, APP2CLASS
+from nprlib.utils import DEBUG, GLOBALS, SeqGroup, APP2CLASS, tobool
 from nprlib import task as all_tasks
 from nprlib import db
 from nprlib.errors import ConfigError, DataError, TaskError
@@ -165,7 +165,7 @@ def get_seqs_identity(alg, seqs):
             numpy.mean(ident), numpy.std(ident))
 
     
-def split_tree(task_tree_node, task_outgroups, main_tree, alg_path, npr_conf, threadid):
+def split_tree(task_tree_node, task_outgroups, main_tree, alg_path, npr_conf, threadid, target_cladeids):
     """Browses a task tree from root to leaves and yields next
     suitable nodes for NPR iterations. Each yielded node comes with
     the set of target and outgroup tips. 
@@ -182,8 +182,9 @@ def split_tree(task_tree_node, task_outgroups, main_tree, alg_path, npr_conf, th
         """
         _isleaf = False
         if len(n2content[_n]) >= npr_conf.min_npr_size \
-                and _n is not master_node \
-                and (not _TARGET_NODES or _n in _TARGET_NODES):
+           and _n is not master_node \
+           and (not _TARGET_NODES or _n in _TARGET_NODES) \
+           and (target_cladeids is None or _n.cladeid in target_cladeids):
                         
             if ALG and npr_conf.max_seq_simiarity < 1.0: 
                 if not hasattr(_n, "seqs_mean_ident"):
@@ -302,14 +303,14 @@ def split_tree(task_tree_node, task_outgroups, main_tree, alg_path, npr_conf, th
                 yield node, seqs, outs
     log.log(28, "%s nodes will be optimized", npr_nodes)
 
-def get_next_npr_node(threadid, ttree, task_outgroups, mtree, alg_path, npr_conf):
+def get_next_npr_node(threadid, ttree, task_outgroups, mtree, alg_path, npr_conf, target_cladeids=None):
     current_iter = get_iternumber(threadid)
     if npr_conf.max_iters and current_iter >= npr_conf.max_iters:
         log.warning("Maximum number of iterations reached!")
         return
         
     for node, seqs, outs in split_tree(ttree, task_outgroups, mtree, alg_path,
-                                       npr_conf, threadid):
+                                       npr_conf, threadid, target_cladeids):
         if npr_conf.max_iters and current_iter < npr_conf.max_iters:
 
             if DEBUG():
@@ -351,7 +352,7 @@ def select_closest_outgroup(target, n2content, splitterconf):
         raise TaskError(None, "Cannot select outgroups for the root node!")
         
     # Prepare cutoffs
-    out_topodist = bool(splitterconf["_outgroup_topology_dist"])
+    out_topodist = tobool(splitterconf["_outgroup_topology_dist"])
     max_outgroup_size = max(int(float(splitterconf["_outgroup_size"]) * len(n2content[target])), 1)
     out_min_support = float(splitterconf["_outgroup_min_support"])
 
@@ -404,7 +405,7 @@ def select_outgroups(target, n2content, splitterconf):
   
     
     #policy = splitterconf["_outgroup_policy"]  # node or leaves
-    out_topodist = bool(splitterconf["_outgroup_topology_dist"])
+    out_topodist = tobool(splitterconf["_outgroup_topology_dist"])
     optimal_out_size = int(splitterconf["_outgroup_size"])
     #out_distfn = splitterconf["_outgroup_dist"]
     out_min_support = float(splitterconf["_outgroup_min_support"])
