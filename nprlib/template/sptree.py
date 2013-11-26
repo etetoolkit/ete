@@ -39,6 +39,7 @@ def annotate_node(t, final_task):
                            tree_cmd=params,
                            tree_file=rpath(task.tree_file),
                            tree_constrain=task.constrain_tree,
+                           alg_path=task.alg_phylip_file,
                            npr_iter=npr_iter)
             
         elif task.ttype == "treemerger":
@@ -151,7 +152,7 @@ def process_task(task, npr_conf, nodeid2info):
             task.finish()
 
         log.log(28, "Saving task tree...")
-        annotate_node(task.task_tree, task) 
+        annotate_node(task.task_tree, task)
         db.update_node(nid=task.nodeid, runid=task.threadid,
                        newick=db.encode(task.task_tree))
         db.commit()

@@ -8,7 +8,8 @@ log = logging.getLogger("main")
 
 from nprlib.master_task import TreeTask
 from nprlib.master_job import Job
-from nprlib.utils import basename, PhyloTree, OrderedDict, GLOBALS, PHYML_CITE
+from nprlib.utils import basename, PhyloTree, OrderedDict, GLOBALS, PHYML_CITE, DATATYPES
+from nprlib import db
 
 __all__ = ["Phyml"]
 

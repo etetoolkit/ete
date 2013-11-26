@@ -47,7 +47,7 @@ def annotate_node(t, final_task):
                            clean_alg_min_ident=task.min_ident, 
                            clean_alg_type=task.tname, 
                            clean_alg_cmd=params,
-                           clean_alg_path=rpath(task.clean_alg_fasta_file))
+                           clean_alg_path=task.clean_alg_fasta_file)
         elif task.ttype == "alg":
             n.add_features(alg_mean_ident=task.mean_ident, 
                            alg_std_ident=task.std_ident, 
@@ -55,14 +55,14 @@ def annotate_node(t, final_task):
                            alg_min_ident=task.min_ident, 
                            alg_type=task.tname, 
                            alg_cmd=params,
-                           alg_path=rpath(task.alg_fasta_file))
+                           alg_path=task.alg_fasta_file)
 
         elif task.ttype == "tree":
             n.add_features(tree_model=task.model, 
                            tree_seqtype=task.seqtype, 
                            tree_type=task.tname, 
                            tree_cmd=params,
-                           tree_path=rpath(task.tree_file),
+                           tree_path=task.tree_file,
                            tree_constrain=task.constrain_tree,
                            npr_iter=npr_iter)
         elif task.ttype == "mchooser":

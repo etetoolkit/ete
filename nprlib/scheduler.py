@@ -80,6 +80,16 @@ def sort_tasks(x, y):
             return size_cmp
     else:
         return prio_cmp
+
+def dump_stored_data(fileid, outfile):
+    try:
+        _tid, _did = fileid.split(".")
+        _did = int(_did)
+    except (IndexError, ValueError): 
+        dataid = fileid
+    else:
+        dataid = db.get_dataid(_tid, _did)
+    open(outfile, "w").write(db.get_data(dataid))
     
 def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, retry, debug):
 
@@ -320,7 +330,12 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                         threadname, final_tree_file+".nw",
                         final_tree_file+".nwx (newick extended)")
                 main_tree.write(outfile=final_tree_file+".nw")
-                main_tree.write(outfile=final_tree_file+".nwx", features=[])
+                main_tree.write(outfile=final_tree_file+ ".nwx", features=[],
+                                format_root_node=True)
+                log.log(28, "Writing root node alignment @@13:%s@@1:\n   %s",
+                        threadname, final_tree_file+".phy")
+                dump_stored_data(main_tree.alg_path, final_tree_file+".phy")
+                
                 log.log(28, "Done thread @@12:%s@@1: in %d iterations",
                         threadname, past_threads[configid])
                 just_finished_lines.append("Finished %s in %d iterations" %(
