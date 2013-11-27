@@ -13,7 +13,7 @@ log = logging.getLogger("main")
 from nprlib.logger import set_logindent, logindent, get_logindent
 from nprlib.utils import (generate_id, PhyloTree, NodeStyle, Tree,
                           DEBUG, NPR_TREE_STYLE, faces, GLOBALS,
-                          basename, pjoin, ask, send_mail, pid_up)
+                          basename, pjoin, ask, send_mail, pid_up, SeqGroup)
 from nprlib.errors import ConfigError, TaskError
 from nprlib import db, sge
 from nprlib.master_task import (isjob, update_task_states_recursively,
@@ -81,7 +81,7 @@ def sort_tasks(x, y):
     else:
         return prio_cmp
 
-def dump_stored_data(fileid, outfile):
+def get_stored_data(fileid):
     try:
         _tid, _did = fileid.split(".")
         _did = int(_did)
@@ -89,7 +89,8 @@ def dump_stored_data(fileid, outfile):
         dataid = fileid
     else:
         dataid = db.get_dataid(_tid, _did)
-    open(outfile, "w").write(db.get_data(dataid))
+    return db.get_data(dataid)
+
     
 def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, retry, debug):
 
@@ -333,9 +334,15 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                 main_tree.write(outfile=final_tree_file+ ".nwx", features=[],
                                 format_root_node=True)
                 log.log(28, "Writing root node alignment @@13:%s@@1:\n   %s",
-                        threadname, final_tree_file+".phy")
-                dump_stored_data(main_tree.alg_path, final_tree_file+".phy")
+                        threadname, final_tree_file+".fa")
                 
+                alg = SeqGroup(get_stored_data(main_tree.alg_path))
+                OUT = open(final_tree_file+".fa", "w")
+                for name, seq, comments in alg:
+                    realname = db.get_seq_name(name)
+                    print >>OUT, ">%s\n%s" %(realname, seq)
+                OUT.close()
+              
                 log.log(28, "Done thread @@12:%s@@1: in %d iterations",
                         threadname, past_threads[configid])
                 just_finished_lines.append("Finished %s in %d iterations" %(
