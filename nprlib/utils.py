@@ -127,8 +127,10 @@ try:
     from collections import OrderedDict
 except ImportError: 
     from nprlib.ordereddict import OrderedDict
-
-from ete_tools.ncbi_taxonomy import ncbi_common as ncbi
+try:
+    from ete_tools.ncbi_taxonomy import ncbi_common as ncbi
+except ImportError:
+    pass
     
 # ete_dev should be added to the python path by the npr script
 from ete_dev.phylo import PhyloTree
