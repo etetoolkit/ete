@@ -6,7 +6,7 @@ import logging
 from nprlib.utils import (del_gaps, GENCODE, PhyloTree, SeqGroup,
                           TreeStyle, generate_node_ids, DEBUG,
                           NPR_TREE_STYLE, faces)
-from nprlib.task import TreeMerger, Msf
+from nprlib.task import TreeMerger, Msf, DummyTree
 
 from nprlib.errors import DataError
 from nprlib.utils import GLOBALS, rpath, pjoin, generate_runid, DATATYPES
@@ -184,6 +184,10 @@ def process_task(task, npr_conf, nodeid2info):
     cleanerconf, cleanerclass = npr_conf.alg_cleaner
     mtesterconf, mtesterclass = npr_conf.model_tester
     treebuilderconf, treebuilderclass = npr_conf.tree_builder
+    if not treebuilderclass:
+        # Allows to dump algs in workflows with no tree tasks
+        treebuilderclass = DummyTree
+   
     splitterconf, splitterclass = npr_conf.tree_splitter
     
     conf = GLOBALS[task.configid]
@@ -335,20 +339,21 @@ def process_task(task, npr_conf, nodeid2info):
                        runid=task.threadid,
                        newick=db.encode(task.task_tree))
         db.commit()
-
-        # Add new nodes
-        source_seqtype = "aa" if "aa" in GLOBALS["seqtypes"] else "nt"
-        ttree, mtree = task.task_tree, task.main_tree
-        log.log(28, "Processing tree: %s seqs, %s outgroups",
-                len(target_seqs), len(out_seqs))
-        alg_path = node_info.get("clean_alg_path", node_info["alg_path"])
-        for node, seqs, outs in get_next_npr_node(threadid, ttree,
-                                                  task.out_seqs, mtree,
-                                                  alg_path, npr_conf):
-            log.log(28, "Registering new node: %s seqs, %s outgroups",
-                    len(seqs), len(outs))
-            new_task_node = Msf(seqs, outs, seqtype=source_seqtype)
-            new_tasks.append(new_task_node)
+        
+        if not isinstance(treebuilderclass, DummyTree):
+            # Add new nodes
+            source_seqtype = "aa" if "aa" in GLOBALS["seqtypes"] else "nt"
+            ttree, mtree = task.task_tree, task.main_tree
+            log.log(28, "Processing tree: %s seqs, %s outgroups",
+                    len(target_seqs), len(out_seqs))
+            alg_path = node_info.get("clean_alg_path", node_info["alg_path"])
+            for node, seqs, outs in get_next_npr_node(threadid, ttree,
+                                                      task.out_seqs, mtree,
+                                                      alg_path, npr_conf):
+                log.log(28, "Registering new node: %s seqs, %s outgroups",
+                        len(seqs), len(outs))
+                new_task_node = Msf(seqs, outs, seqtype=source_seqtype)
+                new_tasks.append(new_task_node)
 
     return new_tasks
 

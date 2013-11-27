@@ -16,3 +16,4 @@ from concat_alg import *
 from cog_selector import *
 from cog_creator import *
 
+from dummytree import *

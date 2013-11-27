@@ -165,7 +165,7 @@ class TreeMerger(TreeMergeTask):
             mainout = GLOBALS.get("first_split_outgroup",
                                   self.conf[self.confname]["_first_split"]).strip()
             
-            if mainout == "midpoint":
+            if mainout.lower() == "midpoint":
                 log.log(28, "Rooting to midpoint.")
                 best_outgroup = ttree.get_midpoint_outgroup()
                 ttree.set_outgroup(best_outgroup)
