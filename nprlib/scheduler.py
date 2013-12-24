@@ -327,22 +327,36 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                 log.log(28, "Assembling final tree...")
                 main_tree, treeiters =  assembly_tree(configid)
                 past_threads[configid] = treeiters - 1
+                
                 log.log(28, "Writing final tree for @@13:%s@@1:\n   %s\n   %s",
                         threadname, final_tree_file+".nw",
                         final_tree_file+".nwx (newick extended)")
                 main_tree.write(outfile=final_tree_file+".nw")
                 main_tree.write(outfile=final_tree_file+ ".nwx", features=[],
                                 format_root_node=True)
-                log.log(28, "Writing root node alignment @@13:%s@@1:\n   %s",
-                        threadname, final_tree_file+".fa")
+
+                if hasattr(main_tree, "alg_path"):
+                    log.log(28, "Writing root node alignment @@13:%s@@1:\n   %s",
+                            threadname, final_tree_file+".fa")
                 
-                alg = SeqGroup(get_stored_data(main_tree.alg_path))
-                OUT = open(final_tree_file+".fa", "w")
-                for name, seq, comments in alg:
-                    realname = db.get_seq_name(name)
-                    print >>OUT, ">%s\n%s" %(realname, seq)
-                OUT.close()
-              
+                    alg = SeqGroup(get_stored_data(main_tree.alg_path))
+                    OUT = open(final_tree_file+".fa", "w")
+                    for name, seq, comments in alg:
+                        realname = db.get_seq_name(name)
+                        print >>OUT, ">%s\n%s" %(realname, seq)
+                    OUT.close()
+
+                if hasattr(main_tree, "clean_alg_path"):
+                    log.log(28, "Writing root node trimmed alignment @@13:%s@@1:\n   %s",
+                            threadname, final_tree_file+".trimmed.fa")
+                
+                    alg = SeqGroup(get_stored_data(main_tree.clean_alg_path))
+                    OUT = open(final_tree_file+".trimmed.fa", "w")
+                    for name, seq, comments in alg:
+                        realname = db.get_seq_name(name)
+                        print >>OUT, ">%s\n%s" %(realname, seq)
+                    OUT.close()
+                
                 log.log(28, "Done thread @@12:%s@@1: in %d iterations",
                         threadname, past_threads[configid])
                 just_finished_lines.append("Finished %s in %d iterations" %(

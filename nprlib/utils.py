@@ -130,6 +130,7 @@ except ImportError:
 try:
     from ete_tools.ncbi_taxonomy import ncbi_common as ncbi
 except ImportError:
+    ncbi = None
     pass
     
 # ete_dev should be added to the python path by the npr script
