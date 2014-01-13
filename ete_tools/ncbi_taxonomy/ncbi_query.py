@@ -12,6 +12,8 @@ import sqlite3
 import math
 from ete2 import PhyloTree
 
+import ncbi_common as ncbi
+
 paired_colors = ['#a6cee3',
                  '#1f78b4',
                  '#b2df8a',
@@ -78,216 +80,17 @@ log.basicConfig(level=log.INFO, \
                     format="%(levelname)s - %(message)s" )
 
 
-
-
-def get_fuzzy_name_translation(name, sim=0.9):
-    log.info("Trying fuzzy search for %s", name)
-    maxdiffs = math.ceil(len(name) * (1-sim))
-    cmd = 'SELECT taxid, spname, LEVENSHTEIN(spname, "%s") AS sim  FROM species WHERE sim<=%s ORDER BY sim LIMIT 1;' % (name, maxdiffs)
-    taxid, spname, score = None, None, len(name)
-    result = c.execute(cmd)
-    try:
-        taxid, spname, score = result.fetchone()
-    except TypeError:
-        cmd = 'SELECT taxid, spname, LEVENSHTEIN(spname, "%s") AS sim  FROM synonym WHERE sim<=%s ORDER BY sim LIMIT 1;' % (name, maxdiffs)
-        result = c.execute(cmd)
-        try:
-            taxid, spname, score = result.fetchone()
-        except:
-            pass
-        else:
-            taxid = int(taxid)
-    else:
-        taxid = int(taxid)
-
-    norm_score = 1-(float(score)/len(name))
-    if taxid: 
-        log.info("FOUND!                  %s taxid:%s score:%s (%s)", spname, taxid, score, norm_score)
-
-    return taxid, spname, norm_score
-    
-def get_sp_lineage(taxid):
-    if not taxid:
-        return None
-    result = c.execute('SELECT track FROM species WHERE taxid=%s' %taxid)
-    raw_track = result.fetchone()
-    if not raw_track:
-        raw_track = ["1"]
-        #raise ValueError("%s taxid not found" %taxid)
-    track = map(int, raw_track[0].split(","))
-    return list(reversed(track))
-
-def get_taxid_translator(taxids):
-    all_ids = set(taxids)
-    all_ids.discard(None)
-    all_ids.discard("")
-    query = ','.join(['"%s"' %v for v in all_ids])
-    cmd = "select taxid, spname FROM species WHERE taxid IN (%s);" %query
-    result = c.execute(cmd)
-    id2name = {}
-    for tax, spname in result.fetchall():
-        id2name[tax] = spname
-    return id2name
-
-def get_ranks(taxids):
-    all_ids = set(taxids)
-    all_ids.discard(None)
-    all_ids.discard("")
-    query = ','.join(['"%s"' %v for v in all_ids])
-    cmd = "select taxid, rank FROM species WHERE taxid IN (%s);" %query
-    result = c.execute(cmd)
-    id2rank = {}
-    for tax, spname in result.fetchall():
-        id2rank[tax] = spname
-    return id2rank
-
-def get_name_translator(names):
-    name2id = {}
-    name2realname = {}
-    name2origname = {}
-    for n in names:
-        name2origname[n.lower()] = n
-    query = ','.join(['"%s"' %n for n in name2origname.iterkeys()])
-    cmd = 'select spname, taxid from species where spname IN (%s)' %query
-    result = c.execute('select spname, taxid from species where spname IN (%s)' %query)
-    for sp, taxid in result.fetchall():
-        oname = name2origname[sp.lower()]
-        name2id[oname] = taxid
-        name2realname[oname] = sp
-    missing =  names - set(name2id.keys())
-    if missing:
-        query = ','.join(['"%s"' %n for n in missing])
-        result = c.execute('select spname, taxid from synonym where spname IN (%s)' %query)
-        for sp, taxid in result.fetchall():
-            oname = name2origname[sp.lower()]
-            name2id[oname] = taxid
-            name2realname[oname] = sp
-    return name2id
-    
-  
-def translate_to_names(taxids):
-    def get_name(taxid):
-        result = c.execute('select spname from species where taxid=%s' %taxid)
-        try:
-            return result.fetchone()[0]
-        except TypeError:
-            raise ValueError("%s taxid not found" %taxid)
-    id2name = {}
-    names = []
-    for sp in taxids: 
-        names.append(id2name.setdefault(sp, get_name(sp)))
-    return names
-
-    
-def get_topology(taxids, intermediate_nodes=False, rank_limit=None):
-    sp2track = {}
-    elem2node = {}
-    for sp in taxids:
-        track = deque()
-        lineage = get_sp_lineage(sp)
-        id2rank = get_ranks(lineage)
-
-        for elem in lineage:
-            node = elem2node.setdefault(elem, PhyloTree())
-            node.name = str(elem)
-            node.add_feature("rank", str(id2rank.get(int(elem), "?")))
-            track.append(node)
-        sp2track[sp] = track
-    
-    # generate parent child relationships
-    for sp, track in sp2track.iteritems():
-        parent = None
-        for elem in track:
-            if parent and elem not in parent.children:
-                parent.add_child(elem)
-            if rank_limit and elem.rank == rank_limit:
-                break
-            parent = elem
-    root = elem2node[1]
-
-    # This fixes cases in which requested taxids are internal nodes
-    #for x in set(sp2track) - set([n.name for n in root.iter_leaves()]):
-    #    new_leaf = sp2track[x][-1].copy()
-    #    for ch in new_leaf.get_children():
-    #        ch.detach()
-    #    sp2track[x][-1].add_child(new_leaf)
-
-    #remove onechild-nodes
-    if not intermediate_nodes:
-        for n in root.get_descendants():
-            if len(n.children) == 1 and int(n.name) not in taxids: 
-                n.delete(prevent_nondicotomic=False)
-       
-    if len(root.children) == 1:
-        return root.children[0].detach()
-    else:
-        return root
-
-def translate_merged(all_taxids):
-    conv_all_taxids = set((map(int, all_taxids)))
-    cmd = 'select taxid_old, taxid_new FROM merged WHERE taxid_old IN (%s)' %','.join(map(str, all_taxids))
-    result = c.execute(cmd)
-    conversion = {}
-    for old, new in result.fetchall():
-        conv_all_taxids.discard(int(old))
-        conv_all_taxids.add(int(new))
-        conversion[int(old)] = int(new)
-    print "merged", len(all_taxids), conversion
-    print len(conv_all_taxids)
-    return conv_all_taxids, conversion
-    
-def annotate_tree(t, tax2name=None, tax2track=None):
-    leaves = t.get_leaves()
-    taxids = set(map(int, [n.taxid for n in leaves]))
-    merged_conversion = {}
-    
-    taxids, merged_conversion = translate_merged(taxids)
-       
-    if not tax2name or taxids - set(map(int, tax2name.keys())):
-        #print "Querying for tax names"
-        tax2name = get_taxid_translator([tid for tid in taxids])
-    if not tax2track or taxids - set(map(int, tax2track.keys())):
-        #print "Querying for tax lineages"
-        tax2track = dict([(tid, get_sp_lineage(tid)) for tid in taxids])
-
-    for n in leaves:
-        node_taxid = int(n.taxid)
-        if node_taxid:
-            if node_taxid in merged_conversion:
-                node_taxid = merged_conversion[node_taxid]
-            
-            n.spname = tax2name.get(node_taxid, "Unknown")
-            n.lineage = tax2track[node_taxid]
-            n.named_lineage = translate_to_names(n.lineage)
-        else:
-            n.spname = "Unknown"
-            n.named_lineage = []
-            n.lineage = []
-        
-    return tax2name, tax2track
-
 def test():
     # TESTS
-    get_sp_lineage("9606")
-    t = get_topology([9913,31033,7955,9606,7719,9615,44689,10116,7227,9031,13616,7165,8364,99883,10090,9598])
-    annotate_tree(t)
+    ncbi.get_sp_lineage("9606")
+    t = ncbi.get_topology([9913,31033,7955,9606,7719,9615,44689,10116,7227,9031,13616,7165,8364,99883,10090,9598])
+    ncbi.annotate_tree(t)
     print t.get_ascii(show_internal=True, compact=False)
     t.show()
 
 
 if __name__ == "__main__":
     parser = ArgumentParser(description=__DESCRIPTION__)
-    # name or flags - Either a name or a list of option strings, e.g. foo or -f, --foo.
-    # action - The basic type of action to be taken when this argument is encountered at the command line. (store, store_const, store_true, store_false, append, append_const, version)
-    # nargs - The number of command-line arguments that should be consumed. (N, ? (one or default), * (all 1 or more), + (more than 1) )
-    # const - A constant value required by some action and nargs selections. 
-    # default - The value produced if the argument is absent from the command line.
-    # type - The type to which the command-line argument should be converted.
-    # choices - A container of the allowable values for the argument.
-    # required - Whether or not the command-line option may be omitted (optionals only).
-    # help - A brief description of what the argument does.
-    # metavar - A name for the argument in usage messages.
-    # dest - The name of the attribute to be added to the object returned by parse_args().
 
     parser.add_argument("-t", "--taxid", dest="taxid", nargs="+",  
                         type=int, 
@@ -300,6 +103,11 @@ if __name__ == "__main__":
     parser.add_argument("-r", "--reftree", dest="reftree",   
                         type=str, 
                         help="""tree file containing taxids as node names.""")
+    
+    parser.add_argument("--reftree_attr", dest="reftree_attr",   
+                        type=str, default="name",
+                        help="""Where taxid should be read from""")
+    
     
     parser.add_argument("-n", "--name", dest="names", nargs="+",  
                         type=str, 
@@ -347,7 +155,7 @@ if __name__ == "__main__":
    
     
     args = parser.parse_args()
-    
+    ncbi.connect_database()
     if args.fuzzy:
         import pysqlite2.dbapi2 as sqlite3
         c = sqlite3.connect(os.path.join(module_path, 'taxa.sqlite'))
@@ -366,7 +174,7 @@ if __name__ == "__main__":
     name2score = {}
     if all_names:
         log.info("Dumping name translations:")
-        name2id = get_name_translator(all_names)
+        name2id = ncbi.get_name_translator(all_names)
         not_found = all_names - set(name2id.keys())
 
         if args.fuzzy and not_found:
@@ -376,7 +184,7 @@ if __name__ == "__main__":
                 c.enable_load_extension(True)
                 c.execute("select load_extension('%s')" % os.path.join(module_path,
                                             "SQLite-Levenshtein/levenshtein.sqlext"))
-                tax, realname, sim = get_fuzzy_name_translation(name, args.fuzzy)
+                tax, realname, sim = ncbi.get_fuzzy_name_translation(name, args.fuzzy)
                 if tax:
                     name2id[name] = tax
                     name2realname[name] = realname
@@ -396,25 +204,23 @@ if __name__ == "__main__":
     reftree = None
     if args.reftree:
         reftree = PhyloTree(args.reftree)
-        all_taxids.extend(list(set([n.name for n in reftree.iter_leaves()])))
+        all_taxids.extend(list(set([getattr(n, args.reftree_attr) for n in reftree.iter_leaves()])))
 
-    if all_taxids:
-        all_taxids, merge_conversion = translate_merged(all_taxids)
-        print merge_conversion
-        
+       
     if all_taxids and args.info:
         all_taxids = set(all_taxids)
         all_taxids.discard("")
+        all_taxids, merge_conversion = ncbi.translate_merged(all_taxids)
         log.info("Dumping %d taxid translations:" %len(all_taxids))
-       
         all_taxids.discard("")
-        translator = get_taxid_translator(all_taxids)
+        translator = ncbi.get_taxid_translator(all_taxids)
         for taxid, name in translator.iteritems():
-            lineage = get_sp_lineage(taxid)
-            named_lineage = ','.join(translate_to_names(lineage))
+            lineage = ncbi.get_sp_lineage(taxid)
+            named_lineage = ','.join(ncbi.translate_to_names(lineage))
             lineage = ','.join(map(str, lineage))
-            print "\t".join(map(str, [taxid, name, named_lineage, lineage ]))
-        for notfound in all_taxids - set(str(k) for k in translator.iterkeys()):
+            print "\t".join(map(str, [merge_conversion.get(int(taxid), taxid), name, named_lineage, lineage ]))
+            
+        for notfound in set(map(str, all_taxids)) - set(str(k) for k in translator.iterkeys()):
             print >>sys.stderr, notfound, "NOT FOUND"
             
     if all_taxids and args.taxonomy:
@@ -422,8 +228,8 @@ if __name__ == "__main__":
         all_taxids.discard("")
         log.info("Dumping NCBI taxonomy of %d taxa:" %len(all_taxids))
 
-        t = get_topology(all_taxids, args.full_lineage, args.rank_limit)
-        id2name = get_taxid_translator([n.name for n in t.traverse()])
+        t = ncbi.get_topology(all_taxids, args.full_lineage, args.rank_limit)
+        id2name = ncbi.get_taxid_translator([n.name for n in t.traverse()])
         for n in t.traverse():
             n.add_features(taxid=n.name)
             n.add_features(sci_name=str(id2name.get(int(n.name), "?")))
@@ -462,12 +268,13 @@ if __name__ == "__main__":
         t.write(format=9, outfile="your_ncbi_query.taxids.nw")
 
     if all_taxids and reftree:
-        translator = get_taxid_translator(all_taxids)
+        translator = ncbi.get_taxid_translator(all_taxids)
         for n in reftree.iter_leaves():
-            n.add_features(taxid=n.name)
-            n.add_features(sci_name = translator.get(int(n.name), n.name))
-            lineage = get_sp_lineage(n.taxid)
-            named_lineage = '|'.join(translate_to_names(lineage))
+            if not hasattr(n, "taxid"):
+                n.add_features(taxid=int(getattr(n, args.reftree_attr)))
+            n.add_features(sci_name = translator.get(int(n.taxid), n.name))
+            lineage = ncbi.get_sp_lineage(n.taxid)
+            named_lineage = '|'.join(ncbi.translate_to_names(lineage))
             n.add_features(ncbi_track=named_lineage)
             
         print reftree.write(features=["taxid", "sci_name", "ncbi_track"])

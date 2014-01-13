@@ -3,7 +3,7 @@
 import sys
 import os
 from collections import defaultdict
-from common import __CITATION__,  Tree, PhyloTree, argparse, add_face_to_node, TreeStyle, faces
+from common import __CITATION__,  Tree, PhyloTree, argparse, add_face_to_node, TreeStyle, faces, NodeStyle
 import numpy
 import hashlib
 import gc
@@ -106,6 +106,7 @@ def process_trees(iter_data, reftree, total_trees, thread_name=""):
             time0 = time.time()
             sys.stderr.flush()
             gc.collect()
+
             
         if tree_counter and MONITOR_STEP and tree_counter % MONITOR_STEP == 0:
             annotate_tree(reftree, informed_branches, dup_per_branch, losses_per_branch,
@@ -166,7 +167,18 @@ def process_trees(iter_data, reftree, total_trees, thread_name=""):
 
             # Decide whether this node is a duplication or not
             if DETECT_DUPLICATIONS:
-                isdup = True if species_left & species_right else False
+                if SP_OVERLAP == 0:
+                    isdup = True if species_left & species_right else False
+                else:
+                    #overlap = len(species_left & species_right) / float(max(len(species_left), len(species_right)))
+                    overlap = len(species_left & species_right) / float(len(species_left | species_right))
+
+                    isdup = True if overlap >= SP_OVERLAP else False
+                    if DEBUG and overlap:
+                        print species_left, species_right
+                        print len(species_left & species_right),  float(len(species_left | species_right))
+                        print overlap, isdup
+                
             else:
                 isdup = True if n.evoltype == "D" else False
 
@@ -186,9 +198,24 @@ def process_trees(iter_data, reftree, total_trees, thread_name=""):
                     # updates duplications per branch in ref tree (dup rate analysis)
                     if USE_COLLATERAL or seedsp in observed_sp:
                         dup_per_branch[ref_branch.nid].append([seqs_left, seqs_right])
+                        __seed = True
                     elif not USE_COLLATERAL:
                         coll_dup_per_branch[ref_branch.nid].append([seqs_left, seqs_right])
+                        __seed = False
+                    # if ref_branch.nid == 5 and __seed:
+                    #     #for _lf in node.iter_leaves():
+                    #     #    if _lf.species in set(reftree_content[ref_branch.children[1]]):
+                    #     #        _lf.img_style["bgcolor"] = "cyan"
+                    #     #    else:
+                    #     #        _lf.img_style["bgcolor"] = "#FFFFFF"
+                    #     #print seqs_left, seqs_right
+                    #     # node.show()
+                    #     if t.search_nodes(species="CHICK"):
+                    #         CHICK += 1
+                    #         print t.search_nodes(species="CHICK")
+                    
 
+                        
             # Count losses observed after a duplication or at the root of the tree.
             if isdup or node is t:
                 # get a list of losses at both sides of the dupli
@@ -397,6 +424,35 @@ def tree_iterator(fname, restrict_species=None, start_line=None, end_line=None):
         yield treeid, t, n2content
 
 def info_layout(node):
+    summary_features = [
+        "ntrees",
+        "nid",
+        "ndups",
+        "dup_rate",
+        "losses",
+        "losses_rate",
+        "nduplosses",
+        "duplosses_rate",
+        "gt_support",
+        "nsupport_trees",
+        "coll_ndups",
+        "coll_dup_rate",
+        "coll_losses",
+        "coll_losses_rate",
+        "coll_nduplosses",
+        "coll_duplosses_rate",
+        "coll_gt_support",
+        "coll_nsupport_trees"]
+
+    for f in summary_features:
+        if hasattr(node, f):
+            try:
+                setattr(node, f, float(getattr(node, f)))
+            except:
+                setattr(node, f, None)
+        else:
+            setattr(node, f, None)
+            
     if node.ndups is not None:
         add_face_to_node(faces.TextFace("Dups=%d(%0.2g dup/tree)" %(node.ndups, node.dup_rate),
                                         fsize=8, fgcolor="orange"), node, 2, position="branch-bottom")
@@ -448,7 +504,7 @@ def annotate_tree(reftree, informed_branches, dup_per_branch, losses_per_branch,
         
     for refbranch_node in reftree.traverse():
         refbranch = refbranch_node.nid
-        
+            
         ntrees = informed_branches.get(refbranch, 0)
         dups = dup_per_branch.get(refbranch, [])
         ndups = len(dups) if ntrees else None
@@ -489,6 +545,10 @@ def annotate_tree(reftree, informed_branches, dup_per_branch, losses_per_branch,
                                coll_gt_support=coll_gt_support,
                                coll_nsupport_trees=coll_nsupport_trees)
 
+        # if refbranch == 5:
+        #     print refbranch_node.ndups
+        #     print refbranch_node.coll_ndups
+        #     print CHICK
 
     
 def run_parallel(workernum, queue, f, *args, **kargs):
@@ -535,10 +595,12 @@ def dump_results(reftree, informed_branches, dup_per_branch, losses_per_branch, 
     print >>sys.stderr, "Dumping annotated newick..."
     reftree.write(outfile="%s.nwx"%args.output, features=summary_fetaures)
 
-    
+
 if __name__ == "__main__":
+    # CHICK = 0    
     parser = argparse.ArgumentParser(description=__DESCRIPTION__, 
                             formatter_class=argparse.RawDescriptionHelpFormatter)
+
     
     parser.add_argument("-r", dest="reftree", 
                         type=str, required=True,
@@ -547,6 +609,10 @@ if __name__ == "__main__":
     parser.add_argument("--source_trees", dest="source_trees", 
                         type=str, required = True,
                         help=("A list of *rooted* genetrees, one per line, in the format: TreeID/SeedID [TAB] newick "))
+   
+    parser.add_argument("--plot_newick", dest="plot_newick", 
+                        type=str,
+                        help=(""))
     
     parser.add_argument("--spname_delimiter", dest="spname_delimiter", 
                         type=str, default="_",
@@ -570,6 +636,10 @@ if __name__ == "__main__":
                               ' Otherwise they will be inferred on the fly using'
                               ' the species overlap algorithm.'))
 
+    parser.add_argument("--spoverlap", dest="species_overlap", 
+                        type=float, default=0.0,
+                        help=('Species overlap cutoff'))
+    
     parser.add_argument("--debug", dest="debug", 
                         action="store_true",
                         help=("generates images of input trees, so the result can be inspected"))
@@ -596,9 +666,17 @@ if __name__ == "__main__":
 
     
     args = parser.parse_args()
+    if args.plot_newick:
+        t = Tree(args.plot_newick)
+        ts = TreeStyle()
+        ts.layout_fn = info_layout
+        t.render("tree_analysis.png", tree_style=ts)
+        sys.exit(0)
+    
     SPNAME_FIELD, SPNAME_DELIMITER = args.spname_field, args.spname_delimiter
     USE_COLLATERAL = args.use_collateral
     DETECT_DUPLICATIONS = True if not args.skip_dup_detection else False
+    SP_OVERLAP = args.species_overlap
     DEBUG = args.debug
     IMG_REPORT = args.img_report
     reftree = PhyloTree(args.reftree, sp_naming_function=None)
@@ -689,7 +767,7 @@ if __name__ == "__main__":
          coll_dup_per_branch, coll_losses_per_branch, coll_losses_per_dup_branch,
          coll_refbranch_supports) = target_dicts
     else:
-        MONITOR_STEP = 1000
+        MONITOR_STEP = args.snapshot_step
         data_iter = tree_iterator(args.source_trees, restrict_species=set(reftree.get_leaf_names()))
         
         (informed_branches, dup_per_branch, losses_per_branch, losses_per_dup_branch, refbranch_supports,
