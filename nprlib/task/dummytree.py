@@ -36,9 +36,11 @@ class DummyTree(TreeTask):
     
     def finish(self):
         node_info = GLOBALS["nodeinfo"][self.nodeid]
+        print node_info
         target_seqs = node_info.get("target_seqs", set())
         out_seqs = node_info.get("out_seqs", set())
         all_seqs = list(target_seqs | out_seqs)
+        print target_seqs, out_seqs
         newick = "(%s, (%s));" %(all_seqs[0], ','.join(all_seqs[1:]))
         print newick
         TreeTask.store_data(self, newick, {})

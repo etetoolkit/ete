@@ -338,7 +338,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                 if hasattr(main_tree, "alg_path"):
                     log.log(28, "Writing root node alignment @@13:%s@@1:\n   %s",
                             threadname, final_tree_file+".fa")
-                
+                    
                     alg = SeqGroup(get_stored_data(main_tree.alg_path))
                     OUT = open(final_tree_file+".fa", "w")
                     for name, seq, comments in alg:

@@ -200,6 +200,12 @@ def process_task(task, npr_conf, nodeid2info):
     target_seqs = node_info.get("target_seqs", [])
     out_seqs = node_info.get("out_seqs", [])
 
+    if not treebuilderclass or size < 4:
+        # Allows to dump algs in workflows with no tree tasks or if tree
+        # inference does not make sense given the number of sequences. DummyTree
+        # will produce a fake fully collapsed newick tree.
+        treebuilderclass = DummyTree
+    
     # If more than one outgroup are used, enable the use of constrain
     if out_seqs and len(out_seqs) > 1:
         constrain_id = nodeid
