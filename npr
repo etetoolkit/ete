@@ -586,8 +586,9 @@ def main(args):
         log.log(20, "Deleting temporal data...")
         cmd = "cd %s && rm tmp/ -rf" %GLOBALS["basedir"]
         os.system(cmd)
-
-    GLOBALS["citator"].show()       
+        GLOBALS["citator"].show()
+    else:
+        raise DataError("Errors found in some tasks")
         
 def check_and_load_orthologs(fname):
     log.log(28, "importing orthologous pairs into database (this may take a while)...")
@@ -631,8 +632,7 @@ def load_sequences(target_seqs, name2seq, npr_template):
 
     for seqtype in GLOBALS["seqtypes"]:
         log.log(28, "Loading %d %s sequences..." %(len(name2seq[seqtype]), seqtype))
-        # Load sequences and replace U to avoid problems
-        db.add_seq_table([(name2hash.get(k, k), seq.replace("U","B")) for k,seq in
+        db.add_seq_table([(name2hash.get(k, k), seq) for k,seq in
                           name2seq[seqtype].iteritems()], seqtype)
     db.seqconn.commit()
 
@@ -668,6 +668,7 @@ def scan_sequences(args, target_seqs):
                 if seqtype == "aa":
                     seq = seq.upper()
                     seq = seq.replace("J", "X") # phyml fails with J
+                    seq = seq.replace("O", "X") # mafft fails with O
                     seq = seq.replace("U", "X") # selenocysteines
             if args.dealign:
                 seq = seq.replace("-", "").replace(".", "")
