@@ -168,7 +168,11 @@ class TreeMerger(TreeMergeTask):
             if mainout.lower() == "midpoint":
                 log.log(28, "Rooting to midpoint.")
                 best_outgroup = ttree.get_midpoint_outgroup()
-                ttree.set_outgroup(best_outgroup)
+                if best_outgroup:
+                    ttree.set_outgroup(best_outgroup)
+                else:
+                    log.warning("Midpoint outgroup could not be set!")
+                    ttree.set_outgroup(ttree.iter_leaves().next())
             else:
                 if mainout.startswith("~"):
                     # Lazy defined outgroup. Will trust in the common
