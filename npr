@@ -574,7 +574,7 @@ def main(args):
         open(pjoin(config["_outpath"], "command_lines"), "a").write(cmd_info+"\n")
 
     thread_errors = schedule(pipeline, pending_tasks, args.schedule_time,
-                             execution, args.retry, args.debug)
+                             execution, args.retry_error_jobs, args.debug)
     db.close()
     
     if not thread_errors:
@@ -965,7 +965,7 @@ if __name__ == "__main__":
     # Task execution related flags
     exec_group = parser.add_argument_group('==== Execution Mode Options ====')
 
-    exec_group.add_argument("-r", "--retry_error_jobs", dest="retry",
+    exec_group.add_argument("-r", "--retry_error_jobs", dest="retry_error_jobs",
                             action="store_true",
                             help="Try to relaunch jobs marked as error.")
     
@@ -1103,6 +1103,9 @@ if __name__ == "__main__":
     GLOBALS["spname_delimiter"] = args.spname_delimiter
     GLOBALS["color_shell"] = True
     GLOBALS["citator"] = Citator()
+
+    GLOBALS["retry_error_jobs"] = args.retry_error_jobs
+    GLOBALS["retried_jobs"] = set()
     
     GLOBALS["lineages"] = None
     GLOBALS["optimized_levels"] = None
