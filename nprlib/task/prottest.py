@@ -107,6 +107,6 @@ class Prottest(ModelTesterTask):
         # choose the model with higher likelihood, the lastone in the list
         best_model = lks[-1][1]
         best_tree = lks[-1][2]
-        print lks
+        log.log(22, "%s model selected from the following lk values:\n%s" %(best_model, '\n'.join(map(str, lks))))
         ModelTesterTask.store_data(self, best_model, lks)
         
