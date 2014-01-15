@@ -3,7 +3,8 @@ import logging
 
 import numpy
 
-from nprlib.utils import DEBUG, GLOBALS, SeqGroup, APP2CLASS, tobool
+from nprlib.utils import DEBUG, GLOBALS, SeqGroup, tobool
+from nprlib.apps import APP2CLASS
 from nprlib import task as all_tasks
 from nprlib import db
 from nprlib.errors import ConfigError, DataError, TaskError
@@ -382,7 +383,8 @@ def select_closest_outgroup(target, n2content, splitterconf):
     log.log(20, "Supports: %0.2f (children=%s)", best_outgroup.support,
             ','.join(["%0.2f" % ch.support for ch in
                       best_outgroup.children]))
-    print best_outgroup
+    
+    log.log(24, "best outgroup topology:\n%s", best_outgroup)
     #print target
     #print target.get_tree_root()
    

@@ -39,12 +39,16 @@ class Raxml(TreeTask):
                           base_args, conf[confname])
 
         max_cores = GLOBALS["_max_cores"]
-        if conf[confname]["_app"] == "raxml" or max_cores == 1:
+        appname = conf[confname]["_app"]
+        threads = conf["threading"].get("raxml")
+        print threads, appname
+        if max_cores > 1:
+            appname = appname.replace("raxml", "raxml-pthreads")
+            raxml_bin = conf["app"][appname]
+        else:
+            appname = appname.replace("raxml-pthreads", "raxml")
             threads = 1
-            raxml_bin = conf["app"]["raxml"]
-        elif conf[confname]["_app"] == "raxml-pthreads":
-            threads = conf["threading"].get("raxml-pthreads")
-            raxml_bin = conf["app"]["raxml-pthreads"]
+            raxml_bin = conf["app"][appname]
         
         self.raxml_bin = raxml_bin
         self.threads = threads

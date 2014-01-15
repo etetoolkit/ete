@@ -100,10 +100,13 @@ class Prottest(ModelTesterTask):
                 tree = PhyloTree(raxml_job.args["-t"])
                 tree.add_feature("lk", lk)
                 tree.add_feature("model", raxml_job.model)
-                lks.append([lk, tree.model, tree])
+                lks.append([float(tree.lk), tree.model, tree])
+
+        # sort lks in ASC order
         lks.sort()
-        # choose the model with higher likelihood
+        # choose the model with higher likelihood, the lastone in the list
         best_model = lks[-1][1]
         best_tree = lks[-1][2]
+        print lks
         ModelTesterTask.store_data(self, best_model, lks)
         

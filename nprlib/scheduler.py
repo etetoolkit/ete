@@ -375,7 +375,6 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
             elif just_finished_lines:
                 send_mail(GLOBALS["email"], "Finished threads!",
                           '\n'.join(just_finished_lines))
-               
             
         log.log(26, "")
     if back_launcher:

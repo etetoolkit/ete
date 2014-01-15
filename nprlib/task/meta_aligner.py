@@ -6,7 +6,8 @@ log = logging.getLogger("main")
 from nprlib.master_task import AlgTask, Task
 from nprlib.master_job import Job
 from nprlib.utils import (SeqGroup, OrderedDict, checksum, pjoin,
-                          GLOBALS, APP2CLASS, CLASS2MODULE, MCOFFEE_CITE, DATATYPES)
+                          GLOBALS, MCOFFEE_CITE, DATATYPES)
+from nprlib.apps import APP2CLASS, CLASS2MODULE
 from nprlib import db
 
 import __init__ as task

@@ -144,9 +144,13 @@ class Job(object):
                 st = open(self.status_file).read(1)
             except IOError:
                 st = saved_status
-            #if st is None:
-            #    db.add_task(self.jobid, status="W")
-            #    st = saved_status = "W"
+
+            #print st, GLOBALS["retry_error_jobs"], GLOBALS["retried_jobs"]
+            #if st == "E" and GLOBALS["retry_error_jobs"] and \
+            #        self.jobid not in GLOBALS["retried_jobs"]:
+            #    GLOBALS["retried_jobs"].add(self.jobid)
+            #    log.warning("Retrying previously error job %s" %self)
+            #    st = "W"
 
             # If this is in execution, tries to track the job
             if st in set("QRL"):
