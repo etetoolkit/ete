@@ -214,7 +214,7 @@ def pipeline(task, conf=None):
     nodeid2info = GLOBALS["nodeinfo"]
     if not task:
         source_seqtype = "aa" if "aa" in GLOBALS["seqtypes"] else "nt"
-        npr_conf = IterConfig(conf, "sptree",
+        npr_conf = IterConfig(conf, "supermatrix",
                               len(GLOBALS["target_species"]),
                               source_seqtype)
         cogconf, cogclass = npr_conf.cog_selector
@@ -232,7 +232,7 @@ def pipeline(task, conf=None):
         new_tasks = [initial_task]
     else:
         conf = GLOBALS[task.configid]
-        npr_conf = IterConfig(conf, "sptree", task.size, task.seqtype)
+        npr_conf = IterConfig(conf, "supermatrix", task.size, task.seqtype)
         new_tasks  = process_task(task, npr_conf, nodeid2info)
 
     process_new_tasks(task, new_tasks)

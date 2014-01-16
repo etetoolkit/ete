@@ -35,7 +35,7 @@ nt_tree_builder = list()
 
 tree_splitter = list()
 
-[sptree]
+[supermatrix]
 max_iters = integer(minv=1)
 
 max_seqs = correlative_integer_list(minv=0)
