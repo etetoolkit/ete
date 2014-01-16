@@ -208,9 +208,9 @@ def main(args):
     log.log(28, "Starting NPR execution at %s" %(ctime()))
     log.log(28, "Output directory %s" %(GLOBALS["output_dir"]))
     npr_template = args.workflow
-    if npr_template == "sptree":
-        GLOBALS["template"] = "sptree"
-        from nprlib.template.sptree import pipeline
+    if npr_template == "supermatrix":
+        GLOBALS["template"] = "supermatrix"
+        from nprlib.template.supermatrix import pipeline
     elif npr_template == "genetree":
         GLOBALS["template"] = "genetree"
         from nprlib.template.genetree import pipeline
@@ -260,7 +260,7 @@ def main(args):
             raise ConfigError("Errors found when parsing config file")
 
         # Check that fields are filled for all max_seq values
-        for flow_name in ["sptree", "genetree"]:
+        for flow_name in ["supematrix", "genetree"]:
             npr_config = [len(v) for k, v in config[flow_name].iteritems()
                           if type(v) == list and k != "target_levels"]
             if len(set(npr_config)) != 1:
@@ -379,17 +379,17 @@ def main(args):
     log.debug("Enabling %d CPU cores" %args.maxcores)
             
     
-    # if npr_template == "sptree" and not args.ortho_pairs:
+    # if npr_template == "supematrix" and not args.ortho_pairs:
     #     raise ConfigError("Species tree workflow requires a list"
     #                       " of orthologous gene/protein pairs to be"
     #                       " supplied through the --ortho-pair"
     #                       " argument.")
     
-    if npr_template == "sptree" and not args.cogs_file:
+    if npr_template == "supermatrix" and not args.cogs_file:
         raise ConfigError("Species tree workflow requires a list of COGS"
                           " to be supplied through the --cogs"
                           " argument.")
-    elif npr_template == "sptree":
+    elif npr_template == "supermatrix":
         GLOBALS["cogs_file"] = os.path.abspath(args.cogs_file)
         
     GLOBALS["seqtypes"] = set()
@@ -413,7 +413,7 @@ def main(args):
         target_seqs, seqnames, name2len, name2unk, name2seq = scan_sequences(args, target_seqs)
         ERROR = check_seq_integrity(args, target_seqs, seqnames, name2len, name2unk, name2seq)
         sp2counter = defaultdict(int)
-        if npr_template == "sptree":
+        if npr_template == "supermatrix":
             for name in target_seqs:
                 spname = name.split(GLOBALS["spname_delimiter"], 1)[0]
                 sp2counter[spname] += 1
@@ -422,7 +422,7 @@ def main(args):
             seq_species = set(sp2counter.keys())
         if not ERROR:
             db.init_seqdb(GLOBALS["seqdb_file"])
-            if npr_template == "sptree":
+            if npr_template == "supermatrix":
                 db.add_seq_species(sp2counter)
             load_sequences(target_seqs, name2seq, npr_template)
         seqnames, name2len, name2unk, name2seq = [None] * 4 # Release mem?
@@ -438,7 +438,7 @@ def main(args):
         raise DataError("Errors were found while loading data. Please"
                         " check error file for details")
     
-    if npr_template == "sptree":
+    if npr_template == "supermatrix":
         if not pexist(GLOBALS["orthodb_file"]):
              db.init_orthodb(GLOBALS["orthodb_file"])            
         #     check_and_load_orthologs(args.ortho_pairs)
@@ -483,7 +483,7 @@ def main(args):
                         " check error file for details")
 
     # Prepare target taxa levels, if any
-    if npr_template == "sptree" and args.lineages_file and config["sptree"].get("target_levels", None):
+    if npr_template == "supermatrix" and args.lineages_file and config["supermatrix"].get("target_levels", None):
         sp2lin = {}
         lin2sp = defaultdict(set)
         all_sorted_levels = []
@@ -508,7 +508,7 @@ def main(args):
         
         # Let's prepare the dictionary with the target levels
         GLOBALS["optimized_levels"] = {}
-        for target_level in config["sptree"]["target_levels"]:
+        for target_level in config["supermatrix"]["target_levels"]:
 
             # If target level name starts with ~, we allow para and
             # poly-phyletic grouping of the species in such level
@@ -528,7 +528,7 @@ def main(args):
                               GLOBALS["optimized_levels"].keys())))
         GLOBALS["lineages"] = (sp2lin, lin2sp)
     # if we miss lineages file, raise an error
-    elif npr_template == "sptree" and config["sptree"].get("target_levels", None):
+    elif npr_template == "supermatrix" and config["supermatrix"].get("target_levels", None):
         raise ConfigError("The use of target_levels requires a species lineage file provided through the --lineages option")
         
     target_seqs = None # release mem
@@ -833,7 +833,7 @@ if __name__ == "__main__":
 
     input_group.add_argument("-w", dest="workflow",
                              required=True,
-                             choices=["sptree", "genetree"],
+                             choices=["supermatrix", "genetree"],
                              help="Type of phylogenetic workflow.")
 
     input_group.add_argument("-c", "--config", dest="configfile",
@@ -891,7 +891,7 @@ if __name__ == "__main__":
                              type=str,
                              help="Uses a custom sequence database file")
     
-    # Sptree workflow
+    # supermatrix workflow
     
     input_group.add_argument("--ortho-pairs", dest="ortho_pairs",
                              type=existing_file,
@@ -916,7 +916,7 @@ if __name__ == "__main__":
     
     input_group.add_argument("--spname-delimiter", dest="spname_delimiter",
                              type=str, default="_",
-                             help="In sptree mode, spname_delimiter is used to split"
+                             help="In supermatrix mode, spname_delimiter is used to split"
                              " the name of sequences into species code and"
                              " sequence identifier (i.e. HUMAN_p53 = HUMAN, p53)."
                              " Note that species name must always precede seq.identifier.")
