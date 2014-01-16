@@ -260,7 +260,7 @@ def main(args):
             raise ConfigError("Errors found when parsing config file")
 
         # Check that fields are filled for all max_seq values
-        for flow_name in ["supematrix", "genetree"]:
+        for flow_name in ["supermatrix", "genetree"]:
             npr_config = [len(v) for k, v in config[flow_name].iteritems()
                           if type(v) == list and k != "target_levels"]
             if len(set(npr_config)) != 1:
@@ -379,7 +379,7 @@ def main(args):
     log.debug("Enabling %d CPU cores" %args.maxcores)
             
     
-    # if npr_template == "supematrix" and not args.ortho_pairs:
+    # if npr_template == "supermatrix" and not args.ortho_pairs:
     #     raise ConfigError("Species tree workflow requires a list"
     #                       " of orthologous gene/protein pairs to be"
     #                       " supplied through the --ortho-pair"
