@@ -97,7 +97,7 @@ try:
 except ImportError: 
     from nprlib.ordereddict import OrderedDict
 try:
-    from ete_tools.ncbi_taxonomy import ncbi_common as ncbi
+    from ncbi_taxonomy import ncbi_common as ncbi
 except ImportError:
     ncbi = None
     pass
