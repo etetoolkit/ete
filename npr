@@ -812,25 +812,16 @@ if __name__ == "__main__":
             config[k] = cmd
         apps.test_apps(config)
         sys.exit(0)
+    elif len(sys.argv) > 1 and sys.argv[1] == "version":
+        print __DESCRIPTION__
+        sys.exit(0)
     
     parser = argparse.ArgumentParser(description=__DESCRIPTION__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
-    # name or flags - Either a name or a list of option strings, e.g. foo or -f, --foo.
-    # action - The basic type of action to be taken when this argument is encountered at the command line. (store, store_const, store_true, store_false, append, append_const, version)
-    # nargs - The number of command-line arguments that should be consumed. (N, ? (one or default), * (all 1 or more), + (more than 1) )
-    # const - A constant value required by some action and nargs selections.
-    # default - The value produced if the argument is absent from the command line.
-    # type - The type to which the command-line argument should be converted.
-    # choices - A container of the allowable values for the argument.
-    # required - Whether or not the command-line option may be omitted (optionals only).
-    # help - A brief description of what the argument does.
-    # metavar - A name for the argument in usage messages.
-    # dest - The name of the attribute to be added to the object returned by parse_args().
-
 
     # Input data related flags
     input_group = parser.add_argument_group('==== Input Options ====')
-
+    
     input_group.add_argument("-w", dest="workflow",
                              required=True,
                              choices=["supermatrix", "genetree"],
@@ -1053,9 +1044,11 @@ if __name__ == "__main__":
                           help="Start debugging"
                           " A taskid can be provided, so"
                           " debugging will start from such task on.")
-
+    
     args = parser.parse_args()
 
+
+    
     if not args.aa_seed_file and not args.nt_seed_file:
         parser.error('At least one input file argument (-a, -n) is required')
 
