@@ -14,9 +14,7 @@ class Clustalo(AlgTask):
     def __init__(self, nodeid, multiseq_file, seqtype, conf, confname):
        
         GLOBALS["citator"].add(CLUSTALO_CITE)
-        
-        if seqtype != "aa":
-            raise ValueError("Clustal Omega does only support nt seqtype")
+       
         
         base_args = OrderedDict({
                 '-i': None,
@@ -30,7 +28,7 @@ class Clustalo(AlgTask):
                       base_args, self.conf[self.confname])
 
 
-        self.seqtype = "aa" # only aa supported
+        self.seqtype = seqtype
         self.multiseq_file = multiseq_file
         self.init()
 
@@ -41,6 +39,7 @@ class Clustalo(AlgTask):
         args["-i"] = pjoin(GLOBALS["input_dir"], self.multiseq_file)
         args["-o"] = "alg.fasta"
         job = Job(self.conf["app"][appname], args, parent_ids=[self.nodeid])
+        job.cores = self.conf["threading"].get(appname, 1)
         job.add_input_file(self.multiseq_file)
         self.jobs.append(job)
 

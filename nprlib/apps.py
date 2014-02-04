@@ -44,7 +44,7 @@ CLASS2MODULE = {
 builtin_apps = {
     'muscle'             : "%BIN%/muscle",
     'mafft'              : "MAFFT_BINARIES=%BIN%  %BIN%/mafft --thread %CORES%",
-    'clustalo'           : "%BIN%/clustalo",
+    'clustalo'           : "%BIN%/clustalo --threads %CORES%",
     'trimal'             : "%BIN%/trimal",
     'readal'             : "%BIN%/readal",
     'tcoffee'            : "export HOME=/tmp DIR_4_TCOFFEE=%BASE%/t_coffee_9_01 MAFFT_BINARIES=%BIN% TMP_4_TCOFFEE=%TMP% LOCKDIR_4_TCOFFEE=%TMP%  PERL5LIB=$PERL5LIB:$DIR_4_TCOFFEE/perl  && %BIN%/t_coffee",
