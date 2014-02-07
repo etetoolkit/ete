@@ -682,7 +682,7 @@ def scan_sequences(args, target_seqs):
                     seq2unknown[seqtype][seqname] = set(seq) - AA
 
         # Initialize target sets using aa as source
-        if not target_seqs and seqtype == "aa":
+        if not target_seqs: # and seqtype == "aa":
             target_seqs = set(visited_seqs["aa"])
 
     if skipped_seqs:
