@@ -2,7 +2,7 @@
 import os
 import sys
 from common import __CITATION__, argparse, Tree
-
+    
 __DESCRIPTION__ = '''
 #  - treedist -
 # ===================================================================================
@@ -41,6 +41,11 @@ if __name__ == "__main__":
     parser.add_argument("--unrooted", dest="unrooted", 
                         action = "store_true",
                         help="""compare trees as unrooted""")
+
+    parser.add_argument("--prune", dest="prune", 
+                        action = "store_true",
+                        help="""Compare trees even if they have different number of tips""")
+
     
     args = parser.parse_args()
     print __DESCRIPTION__
@@ -63,17 +68,22 @@ if __name__ == "__main__":
         OUT = sys.stdout
         
     prev_tree = None
-    import numpy
+
     for tfile in target_trees:
         tt = Tree(tfile)
-        tt_names = set(tt.get_leaf_names())
-        if args.outgroup: 
-            out = t.search_nodes(name=args.outgroup[0])[0]
-            t.set_outgroup(out)
-        tt.prune(sorted(tt_names & ref_names))
-            
+        if args.outgroup:
+            if len(args.outgroup) > 1:
+                out = tt.get_common_ancestor(args.outgroup)
+            else:
+                out = tt.search_nodes(name=args.outgroup[0])[0]
+            tt.set_outgroup(out)
+        
+        if args.prune:
+            tt_names = set(tt.get_leaf_names())        
+            tt.prune(sorted(tt_names & ref_names))
+
         rf, max_rf, common_names, p1, p2 = tt.robinson_foulds(t, expand_polytomies=args.polytomies, unrooted_trees=args.unrooted)
-            
+
         fname = os.path.basename(tfile)
         if p1 and p2: 
             sizes = [len(p) for p in p2 ^ p1]

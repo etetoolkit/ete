@@ -16,10 +16,14 @@ __DESCRIPTION__ = '''
 #  - maptrees -
 # ===================================================================================
 #  
-# maptrees allows to calculate gene duplication and loss rates in a reference tree
-# by summarizing the information contained in multiple genetrees. It also provides
-# a GeneTree Support value for every branch, indicating the proportion of gene
-# trees that support each branch in the reference tree.
+# 'maptrees' allows to calculate the rate of gene duplication and gene loss for
+# the different branches of a reference species tree. For this, this script
+# summarizes the information contained in multiple genetrees provided as input
+# data.
+#
+# In addition, it also provides a GeneTree Support value for every branch,
+# indicating the proportion of genetrees that support each branch in the
+# reference tree.
 #  
 %s
 #  
@@ -116,7 +120,7 @@ def process_trees(iter_data, reftree, total_trees, thread_name=""):
             
             ts = TreeStyle()
             ts.layout_fn = info_layout
-            reftree.render("tree_analysis.png", tree_style=ts)
+            reftree.render("temp_tree_analysis.png", tree_style=ts)
             
         # Compute support of this tree over the whole refTree
         seedid = None if USE_COLLATERAL else treeid
@@ -571,7 +575,7 @@ def dump_results(reftree, informed_branches, dup_per_branch, losses_per_branch, 
         print >>sys.stderr, "Generating tree analysis image"
         ts = TreeStyle()
         ts.layout_fn = info_layout
-        reftree.render("tree_analysis.png", tree_style=ts)
+        reftree.render("%s.tree_analysis.png"%args.output, tree_style=ts)
     
     summary_fetaures = [
         "ntrees",
@@ -592,9 +596,10 @@ def dump_results(reftree, informed_branches, dup_per_branch, losses_per_branch, 
         "coll_duplosses_rate",
         "coll_gt_support",
         "coll_nsupport_trees"]
+    
     print >>sys.stderr, "Dumping annotated newick..."
     reftree.write(outfile="%s.nwx"%args.output, features=summary_fetaures)
-
+    open("%s.log"%args.output, "w").write(' '.join(sys.argv))
 
 if __name__ == "__main__":
     # CHICK = 0    

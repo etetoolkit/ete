@@ -286,6 +286,12 @@ if __name__ == "__main__":
                         " with the translation of name and taxid can be"
                         " provided with this option.")
 
+    parser.add_argument("--sp_delimiter", dest="sp_delimiter", type=str,
+                        help="If taxid is part of the leaf name, delimiter used to split the string")
+
+    parser.add_argument("--sp_field", dest="sp_field", type=int, default=0,
+                        help="field position for taxid after splitting leaf names")
+    
     parser.add_argument("--ref", dest="ref_tree", type=str,
                         help="Uses ref tree to compute robinson foulds"
                         " distances of the different subtrees")
@@ -316,6 +322,11 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
 
+    if args.sp_delimiter:
+        GET_TAXID = lambda x: x.split(args.sp_delimiter)[args.sp_field]
+    else:
+        GET_TAXID = None
+    
     reftree_name = os.path.basename(args.ref_tree) if args.ref_tree else ""
     if args.explore:
         print >>sys.stderr, "Reading tree from file:", args.explore
@@ -366,6 +377,10 @@ if __name__ == "__main__":
     for tfile in target_trees:
         #print tfile
         t = PhyloTree(tfile, sp_naming_function=None)
+        if GET_TAXID:
+            for n in t.iter_leaves():
+                n.name = GET_TAXID(n.name)
+        
         if args.outgroup:
             if len(args.outgroup) == 1:
                 out = t & args.outgroup[0]
