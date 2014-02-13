@@ -50,9 +50,10 @@ class FastTree(TreeTask):
     def load_jobs(self):
         args = self.args.copy()
 
-        #temp fix p2x
-        if self.seqtype == "nt":
+        try:
             del args["-wag"]
+        except KeyError:
+            pass
         
         if self.constrain_tree:
             args["-constraints"] = pjoin(GLOBALS["input_dir"], self.constrain_tree)
