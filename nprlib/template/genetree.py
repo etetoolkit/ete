@@ -347,20 +347,23 @@ def process_task(task, npr_conf, nodeid2info):
         db.commit()
         
         if not isinstance(treebuilderclass, DummyTree):
-            # Add new nodes
-            source_seqtype = "aa" if "aa" in GLOBALS["seqtypes"] else "nt"
-            ttree, mtree = task.task_tree, task.main_tree
-            log.log(28, "Processing tree: %s seqs, %s outgroups",
-                    len(target_seqs), len(out_seqs))
-            alg_path = node_info.get("clean_alg_path", node_info["alg_path"])
-            for node, seqs, outs in get_next_npr_node(threadid, ttree,
-                                                      task.out_seqs, mtree,
-                                                      alg_path, npr_conf):
-                log.log(28, "Registering new node: %s seqs, %s outgroups",
-                        len(seqs), len(outs))
-                new_task_node = Msf(seqs, outs, seqtype=source_seqtype)
-                new_tasks.append(new_task_node)
-
+            current_iter = get_iternumber(threadid)
+            if npr_conf.max_iters and current_iter >= npr_conf.max_iters:
+                log.warning("Maximum number of iterations reached!")
+            else:
+                # Add new nodes
+                source_seqtype = "aa" if "aa" in GLOBALS["seqtypes"] else "nt"
+                ttree, mtree = task.task_tree, task.main_tree
+                log.log(28, "Processing tree: %s seqs, %s outgroups",
+                        len(target_seqs), len(out_seqs))
+                alg_path = node_info.get("clean_alg_path", node_info["alg_path"])
+                for node, seqs, outs in get_next_npr_node(threadid, ttree,
+                                                          task.out_seqs, mtree,
+                                                          alg_path, npr_conf):
+                    log.log(28, "Registering new node: %s seqs, %s outgroups",
+                            len(seqs), len(outs))
+                    new_task_node = Msf(seqs, outs, seqtype=source_seqtype)
+                    new_tasks.append(new_task_node)
     return new_tasks
 
 def pipeline(task, conf=None):
