@@ -15,20 +15,18 @@ md5 = lambda x: hashlib.md5(x).hexdigest()
 __DESCRIPTION__ = '''
 #  - maptrees -
 # ===================================================================================
-#  
-# 'maptrees' allows to calculate the rate of gene duplication and gene loss for
-# the different branches of a reference species tree. For this, this script
-# summarizes the information contained in multiple genetrees provided as input
-# data.
 #
-# In addition, it also provides a GeneTree Support value for every branch,
-# indicating the proportion of genetrees that support each branch in the
+# 'maptrees' scans a list of gene trees and allows to calculate gene duplication
+# rate, gene loss rate and gene tree support for every branch in a given
 # reference tree.
-#  
+#
+# Gene Tree support represents the proportion of gene trees that support each
+# branch in the reference tree.
+#
 %s
-#  
+#
 # ===================================================================================
-'''% __CITATION__
+# '''% __CITATION__
 
 def get_first_common_branch(observed_items, reftree_content):
     #first common ancestor of the observed_items in the reftree
@@ -104,7 +102,7 @@ def process_trees(iter_data, reftree, total_trees, thread_name=""):
         if tree_counter % 100 == 0:
             etime = time.time() - time0
             tracked_times.append(etime)
-            total_etime = ((total_trees - tree_counter) / 100.0) * numpy.median(tracked_times)
+            total_etime = ((total_trees - tree_counter) / 100.0) * numpy.mean(tracked_times)
             percent = (tree_counter / float(total_trees)) * 100
             print >>sys.stderr, "\r%s% 10d (%0.1f%%) skipped trees:% 5d. Remaining time ~= %d min" %(thread_name, tree_counter, percent, skipped_trees, total_etime/60.)
             time0 = time.time()
@@ -129,6 +127,7 @@ def process_trees(iter_data, reftree, total_trees, thread_name=""):
                                                                        refclades=refclades, seedid=seedid)
         if branch2supports == {} and branch2coll_supports == {}:
             skipped_trees +=1
+            
         # We combine the information of all treeko trees, by averaging the
         # number of subtrees that supported or not a given refTree branch.
         for refbranch, supports in branch2supports.iteritems():
@@ -137,12 +136,25 @@ def process_trees(iter_data, reftree, total_trees, thread_name=""):
         for refbranch, coll_supports in branch2coll_supports.iteritems():
             if IS_VALID_TREEID is None or IS_VALID_TREEID(treeid, extract_species(reftree_content[refbranch])):
                 coll_refbranch_supports[refbranch.nid].append(numpy.mean(coll_supports))
-            
+
+        all_observed_sp = extract_species([n.name for n in tree_content[t]])
+                
+        if REPORT_PER_TREE_SUPPORTS:
+            if branch2supports:
+                mean_seed_support = numpy.mean([numpy.mean(branch2supports[_b]) for _b in branch2supports])
+            else:
+                mean_seed_support = 0.0
+            if branch2coll_supports:
+                mean_coll_support = numpy.mean([numpy.mean(branch2coll_supports[_b]) for _b in branch2coll_supports])
+            else:
+                mean_coll_support = 0.0
+            species_coverage = float(len(all_observed_sp))/len(REFTREE_SPECIES)
+            print >>REPORT_SUPPORT_FILE, '\t'.join(map(str, [treeid, species_coverage, mean_seed_support,  mean_coll_support, len(branch2supports), len(branch2coll_supports)]))
+                            
         # Here I keep a counter on how many trees were potentially able to
         # inform about specific reftree branches. For instance, if outgroup
         # species X does not appear in a genetree, I dont want to count this
         # tree as a source for duplication in the X branch.
-        all_observed_sp = extract_species([n.name for n in tree_content[t]])
         if len(all_observed_sp) == 1: 
             max_ref_branch = reftree.search_nodes(name=list(all_observed_sp)[0])[0]
         else:
@@ -669,6 +681,10 @@ if __name__ == "__main__":
                         action="store_true", 
                         help=(""))
 
+    parser.add_argument("--report_supports", dest="report_supports", 
+                        action="store_true", 
+                        help=("If used, supported ref tree branches are individually reported for each gene tree "))
+
     
     args = parser.parse_args()
     if args.plot_newick:
@@ -681,15 +697,19 @@ if __name__ == "__main__":
     SPNAME_FIELD, SPNAME_DELIMITER = args.spname_field, args.spname_delimiter
     USE_COLLATERAL = args.use_collateral
     DETECT_DUPLICATIONS = True if not args.skip_dup_detection else False
+    REPORT_PER_TREE_SUPPORTS = True if args.report_supports  else False
     SP_OVERLAP = args.species_overlap
     DEBUG = args.debug
     IMG_REPORT = args.img_report
     reftree = PhyloTree(args.reftree, sp_naming_function=None)
     for nid, n in enumerate(reftree.traverse()):
         n.add_features(nid = nid)
-    reftree_species = set(reftree.get_leaf_names())
-
+    REFTREE_SPECIES = set(reftree.get_leaf_names())
     print __DESCRIPTION__
+
+    if REPORT_PER_TREE_SUPPORTS:
+        REPORT_SUPPORT_FILE = open("%s.gentree_supports" %args.output, "w")
+        print >>REPORT_SUPPORT_FILE, '#'+'\t'.join(map(str, ["treeId", "spCoverage", "mean_support",  "mean_coll_support", "tested_branches", 'tested_coll_branches']))
     
     TOTAL_TREES = int(commands.getoutput("wc -l %s" %args.source_trees).split()[0]) + 1
     print >>sys.stderr, "Processing %d source trees" %TOTAL_TREES
@@ -737,7 +757,7 @@ if __name__ == "__main__":
             sline = (cpu_num*trees_per_cpu)
             eline = (cpu_num*trees_per_cpu) + trees_per_cpu
             data_iter = tree_iterator(args.source_trees,
-                                      restrict_species=reftree_species,
+                                      restrict_species=REFTREE_SPECIES,
                                       start_line=sline,
                                       end_line=eline)
             print >>sys.stderr, "Launching worker %d from %d to %d" %(cpu_num, sline, eline)
@@ -773,11 +793,14 @@ if __name__ == "__main__":
          coll_refbranch_supports) = target_dicts
     else:
         MONITOR_STEP = args.snapshot_step
-        data_iter = tree_iterator(args.source_trees, restrict_species=set(reftree.get_leaf_names()))
+        data_iter = tree_iterator(args.source_trees, restrict_species=REFTREE_SPECIES)
         
         (informed_branches, dup_per_branch, losses_per_branch, losses_per_dup_branch, refbranch_supports,
          coll_dup_per_branch, coll_losses_per_branch, coll_losses_per_dup_branch,
          coll_refbranch_supports) = process_trees(data_iter, reftree, TOTAL_TREES)
+
+    if REPORT_PER_TREE_SUPPORTS:
+        REPORT_SUPPORT_FILE.close()
 
     dump_results(reftree, informed_branches, dup_per_branch, losses_per_branch, losses_per_dup_branch, refbranch_supports,
                  coll_dup_per_branch, coll_losses_per_branch, coll_losses_per_dup_branch, coll_refbranch_supports)
