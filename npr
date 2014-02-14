@@ -580,12 +580,15 @@ def main(args):
     if not thread_errors:
         if args.compress:
             log.log(20, "Compressing intermediate data...")
-            cmd = "cd %s && tar --remove-files -zcf nprdata.tar.gz data.db input/ tmp/ tasks/ seq.db; gzip -f npr.log" %\
+            cmd = "cd %s && tar --remove-files -zcf nprdata.tar.gz data.db tasks/ seq.db; gzip -f npr.log" %\
               GLOBALS["basedir"]
             os.system(cmd)
         log.log(20, "Deleting temporal data...")
         cmd = "cd %s && rm tmp/ -rf" %GLOBALS["basedir"]
         os.system(cmd)
+        cmd = "cd %s && rm input/ -rf" %GLOBALS["basedir"]
+        os.system(cmd)
+        
         GLOBALS["citator"].show()
     else:
         raise DataError("Errors found in some tasks")
