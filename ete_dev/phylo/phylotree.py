@@ -53,10 +53,19 @@ def get_subtrees(tree, full_copy=False, features=None, newick_only=False):
     nodes, ~100 species and ~400 duplications returns ~10,000 sptrees
     that could be loaded in few minutes.
 
-    """
+    To avoid memory overloads, this function returns a tuple containing the
+    total number of trees, number of duplication events, and an iterator for the
+    species trees. Real trees are not actually computed until the iterator is
+    first accessed. This allows to filter out cases producing astronomic numbers
+    of sptrees.
 
+    """
+    ntrees, ndups = calc_subtrees(tree)
+    return ntrees, ndups, _get_subtrees(tree, full_copy, features, newick_only)
+    
+def _get_subtrees(tree, full_copy=False, features=None, newick_only=False):
+    # First I need to precalculate all the species trees in tuple (newick) format
     nid = 0
-    dups = set()
     n2nid = {}
     nid2node = {}
     n2subtrees = defaultdict(list)
@@ -66,7 +75,6 @@ def get_subtrees(tree, full_copy=False, features=None, newick_only=False):
         nid += 1
         if n.children: 
             if is_dup(n):
-                dups.add(n2nid[n])
                 subtrees = []
                 for ch in n.children: 
                     subtrees.extend(n2subtrees[n2nid[ch]])
@@ -80,9 +88,65 @@ def get_subtrees(tree, full_copy=False, features=None, newick_only=False):
         n2subtrees[n2nid[n]] = subtrees
         for ch in n.children:
             del n2subtrees[n2nid[ch]]
+            
     sp_trees = n2subtrees[n2nid[tree]]
-    return len(sp_trees), len(dups), iter_sptrees(sp_trees, nid2node, features, newick_only=newick_only)
+    
+    # Second, I yield a tree per iteration in newick or ETE format
+    features = set(features) if features else set()
+    features.update(["name"])
 
+    def _nodereplacer(match):
+        pre, b, post =  match.groups()
+        pre = '' if not pre else pre
+        post = '' if not post else post
+        node = nid2node[int(b)]
+        fstring = ""
+        if features: 
+            fstring = "".join(["[&&NHX:",
+                               ','.join(["%s=%s" %(f, getattr(node, f))
+                                         for f in features if hasattr(node, f)])
+                               , "]"])
+
+        return ''.join([pre, node.name, fstring, post])
+    
+    if newick_only:
+        id_match = re.compile("([^0-9])?(\d+)([^0-9])?")
+        for nw in sp_trees:
+            yield re.sub(id_match, _nodereplacer, str(nw)+";")
+    else:
+        for nw in sp_trees:
+            # I take advantage from the fact that I generated the subtrees
+            # using tuples, so str representation is actually a newick :)
+            t = PhyloTree(str(nw)+";")
+            # Map features from original tree
+            for leaf in t.iter_leaves():
+                _nid = int(leaf.name)
+                for f in features:
+                    leaf.add_feature(f, getattr(nid2node[_nid], f))
+            yield t
+
+def calc_subtrees(tree):
+    '''
+    Computes the total number of species trees that TreeKO algorithm would produce for a given gene tree
+
+    returns: ntrees, ndups
+    ''' 
+    n2subtrees = {}
+    dups = 0
+    for n in tree.traverse("postorder"):
+        if n.children: 
+            if is_dup(n):
+                dups += 1
+                subtrees = 0
+                for ch in n.children: 
+                    subtrees += n2subtrees[ch]
+            else:
+                subtrees = n2subtrees[n.children[0]] * n2subtrees[n.children[1]]
+        else:
+            subtrees = 1
+        n2subtrees[n] = subtrees
+    return n2subtrees[tree], dups
+    
 def iter_sptrees(sptrees, nid2node, features=None, newick_only=False):
     """ Loads and map the species trees returned by get_subtrees"""
     
@@ -551,7 +615,7 @@ class PhyloNode(TreeNode):
             n2species = t.get_cached_content(store_attr="species")
             for node in n2content:
                 sp_subtotal = sum([len(n2species[_ch]) for _ch in node.children])
-                if  len(n2species[node]) > 1 and len(n2species[node]) != sp_subtotal:
+                if len(n2species[node]) > 1 and len(n2species[node]) != sp_subtotal:
                     node.add_features(evoltype="D")
                
         sp_trees = get_subtrees(t, features=map_features, newick_only=newick_only)

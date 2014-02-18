@@ -1347,6 +1347,7 @@ class TreeNode(object):
              etc.)
 
         """
+        method = method.lower()
         if method=="newick":
             new_node = self.__class__(self.write(features=["name"], format_root_node=True))
         elif method=="newick-extended":
@@ -1363,7 +1364,7 @@ class TreeNode(object):
             new_node = cPickle.loads(cPickle.dumps(self, 2))
             self.up = parent
         else:
-            raise ValuerError("Invalid copy method")
+            raise ValueError("Invalid copy method")
             
         return new_node
         
@@ -1411,6 +1412,58 @@ class TreeNode(object):
         else:
             return ([char1 + '-' + node_name], 0)
 
+    def _asciiArt2(self, char1='-', show_internal=True, compact=False, attributes=None):
+        """
+        Returns the ASCII representation of the tree.
+
+        Code based on the PyCogent GPL project.
+        """
+        if not attributes:
+            attributes = ["name"]
+        node_name = ','.join(map(str, [getattr(self, v) for v in attributes if hasattr(self, v)]))
+        from textwrap import wrap
+        node_name = wrap(node_name, 20) or [""]
+        LEN = max(3, len(node_name[0]) if not self.children or show_internal else 3)
+        PAD = ' ' * LEN
+        PA = ' ' * (LEN-1)
+        if not self.is_leaf():
+            mids = []
+            result = []
+            for c in self.children:
+                if len(self.children) == 1:
+                    char2 = '/'
+                elif c is self.children[0]:
+                    char2 = '/'
+                elif c is self.children[-1]:
+                    char2 = '\\'
+                else:
+                    char2 = '-'
+                (clines, mid) = c._asciiArt(char2, show_internal, compact, attributes)
+                mids.append(mid+len(result))
+                result.extend(clines)
+                if not compact:
+                    result.append('')
+            if not compact:
+                result.pop()
+            (lo, hi, end) = (mids[0], mids[-1], len(result))
+            prefixes = [PAD] * (lo+1) + [PA+'|'] * (hi-lo-1) + [PAD] * (end-hi)
+            mid = (lo + hi) / 2
+            prefixes[mid] = char1 + '-'*(LEN-2) + prefixes[mid][-1]
+            result = [p+l for (p,l) in zip(prefixes, result)]
+            if show_internal:
+                stem = result[mid]
+                result[mid] = stem[0] + node_name[0] + stem[len(node_name[0])+1:]
+                for line in node_name[1:]:
+                    result.append(line)
+            return (result, mid)
+        else:
+            r = []
+            for line in node_name:
+                r.append(char1 + '-' + line)
+            return (r, 0)
+            #return ([char1 + '-' + node_name], 0)
+
+            
     def get_ascii(self, show_internal=True, compact=False, attributes=None):
         """
         Returns a string containing an ascii drawing of the tree.
@@ -1551,7 +1604,8 @@ class TreeNode(object):
     def robinson_foulds(self, t2, attr_t1="name", attr_t2="name",
                         unrooted_trees=False, expand_polytomies=False,
                         polytomy_size_limit=5, skip_large_polytomies=False,
-                        correct_by_polytomy_size=False):
+                        correct_by_polytomy_size=False, min_support_t1=0.0,
+                        min_support_t2=0.0):
         """
         .. versionadded: 2.2
         
@@ -1580,8 +1634,7 @@ class TreeNode(object):
         """
         ref_t = self
         target_t = t2
-        if not unrooted_trees and (len(ref_t.children) !=
-                                   2 or len(target_t.children) != 2):
+        if not unrooted_trees and (len(ref_t.children) != 2 or len(target_t.children) != 2):
             raise ValueError("Unrooted tree found! You may want to activate the unrooted_trees flag.")
 
         if expand_polytomies and correct_by_polytomy_size:
@@ -1589,6 +1642,12 @@ class TreeNode(object):
         
         if expand_polytomies and unrooted_trees:
             raise ValueError("expand_polytomies and unrooted_trees arguments cannot be enabled at the same time")
+
+
+        attrs_t1 = set([getattr(n, attr_t1, None) for n in ref_t.iter_leaves()])
+        attrs_t2 = set([getattr(n, attr_t2, None) for n in target_t.iter_leaves()])
+        common_attrs = attrs_t1 & attrs_t2
+        common_attrs.discard(None)
         
         if expand_polytomies:
             ref_trees = [Tree(nw) for nw in
@@ -1612,40 +1671,63 @@ class TreeNode(object):
                 raise ValueError("Both trees contain polytomies! Try expand_polytomies=True instead")
             else:
                 polytomy_correction = max([corr1, corr2])
-            
+        
         min_comparison = None
         for t1 in ref_trees:
             t1_content = t1.get_cached_content()
             t1_leaves = t1_content[t1]
             if unrooted_trees:
                 edges1 = set([
-                        tuple(sorted([tuple(sorted([getattr(n, attr_t1) for n in content if hasattr(n, attr_t1)])),
-                                      tuple(sorted([getattr(n, attr_t1) for n in t1_leaves-content if hasattr(n, attr_t1)]))]))
+                        tuple(sorted([tuple(sorted([getattr(n, attr_t1) for n in content if hasattr(n, attr_t1) and getattr(n, attr_t1) in common_attrs])),
+                                      tuple(sorted([getattr(n, attr_t1) for n in t1_leaves-content if hasattr(n, attr_t1) and getattr(n, attr_t1) in common_attrs]))]))
                         for content in t1_content.itervalues()])
                 edges1.discard(((),()))
             else:
                 edges1 = set([
-                        tuple(sorted([getattr(n, attr_t1) for n in content if hasattr(n, attr_t1)]))
+                        tuple(sorted([getattr(n, attr_t1) for n in content if hasattr(n, attr_t1) and getattr(n, attr_t1) in common_attrs]))
                         for content in t1_content.itervalues()])
                 edges1.discard(())
+                
+            if min_support_t1:
+                support_t1 = dict([
+                        (tuple(sorted([getattr(n, attr_t1) for n in content if hasattr(n, attr_t1) and getattr(n, attr_t1) in common_attrs])), branch.support)
+                        for branch, content in t1_content.iteritems()])
+                
             for t2 in target_trees:
                 t2_content = t2.get_cached_content()
                 t2_leaves = t2_content[t2]
                 if unrooted_trees:
                     edges2 = set([
                             tuple(sorted([
-                                        tuple(sorted([getattr(n, attr_t2) for n in content if hasattr(n, attr_t2)])),
-                                        tuple(sorted([getattr(n, attr_t2) for n in t2_leaves-content if hasattr(n, attr_t2)]))]))
+                                        tuple(sorted([getattr(n, attr_t2) for n in content if hasattr(n, attr_t2) and getattr(n, attr_t2) in common_attrs])),
+                                        tuple(sorted([getattr(n, attr_t2) for n in t2_leaves-content if hasattr(n, attr_t2) and getattr(n, attr_t2) in common_attrs]))]))
                             for content in t2_content.itervalues()])
                     edges2.discard(((),()))
                 else:
                     edges2 = set([
-                            tuple(sorted([getattr(n, attr_t2) for n in content if hasattr(n, attr_t2)]))
+                            tuple(sorted([getattr(n, attr_t2) for n in content if hasattr(n, attr_t2) and getattr(n, attr_t2) in common_attrs]))
                             for content in t2_content.itervalues()])
                     edges2.discard(())
 
+
+                if min_support_t2:
+                    support_t2 = dict([
+                        (tuple(sorted(([getattr(n, attr_t2) for n in content if hasattr(n, attr_t2) and getattr(n, attr_t2) in common_attrs]))), branch.support)
+                        for branch, content in t2_content.iteritems()])
+
+                discard_branches = 0
+                if min_support_t1 and unrooted_trees:
+                    discard_branches += len([p for p in edges1-edges2 if support_t1.get(p[0], support_t1.get(p[1], None)) < min_support_t1])
+                elif min_support_t1:
+                    discard_branches += len([p for p in edges1-edges2 if support_t1[frozenset(p)] < min_support_t1])
                     
-                rf = len(edges1 ^ edges2) - polytomy_correction # poly_corr is 0 if the flag is not enabled
+                if min_support_t2 and unrooted_trees:
+                    discard_branches += len([p for p in edges2-edges1 if support_t2.get(p[0], support_t2.get(p[1], None)) < min_support_t2])
+                elif min_support_t2:
+                    discard_branches += len([p for p in edges2-edges1 if support_t2[frozenset(p)] < min_support_t2])
+
+                rf = (len(edges1 ^ edges2) - discard_branches) - polytomy_correction # poly_corr is 0 if the flag is not enabled
+                
                 if unrooted_trees:
                     max_parts = len([p for p in edges1 if len(p[0])>1 and len(p[1])>1]) +\
                         len([p for p in edges2 if len(p[0])>1 and len(p[1])>1])
