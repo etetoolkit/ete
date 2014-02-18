@@ -622,7 +622,7 @@ if __name__ == "__main__":
     parser.add_argument("-r", dest="reftree", 
                         type=str, required=True,
                         help="""Reference tree""")
-
+    
     parser.add_argument("--source_trees", dest="source_trees", 
                         type=str, required = True,
                         help=("A list of *rooted* genetrees, one per line, in the format: TreeID/SeedID [TAB] newick "))
@@ -637,7 +637,7 @@ if __name__ == "__main__":
     
     parser.add_argument("--spname_field", dest="spname_field", 
                         type=int, default=-1,
-                        help=("position of the species code extracted from node names"))
+                        help=("position of the species code extracted from node names. -1 = last field"))
 
     parser.add_argument("--collateral", dest="use_collateral", 
                         action="store_true",
@@ -649,29 +649,35 @@ if __name__ == "__main__":
     parser.add_argument("--skip_dup_detection", dest="skip_dup_detection", 
                         action="store_true",
                         help=('If used, duplications will be expected to be annotated'
-                              ' in the source trees with the evoltype="D" tag.'
+                              ' in the source gene trees with the evoltype="D" tag.'
                               ' Otherwise they will be inferred on the fly using'
                               ' the species overlap algorithm.'))
 
     parser.add_argument("--spoverlap", dest="species_overlap", 
                         type=float, default=0.0,
-                        help=('Species overlap cutoff'))
+                        help=("Species overlap cutoff. A number between 0 and 1 "
+                        "representing the percentage of species that should be "
+                        "shared between two sister partitions to be considered a"
+                        " duplication. 0 = any overlap represents a duplication. "))
     
     parser.add_argument("--debug", dest="debug", 
                         action="store_true",
-                        help=("generates images of input trees, so the result can be inspected"))
+                        help=("generate an image of every input gene tree tree, so the result can be inspected"))
 
     parser.add_argument("--snapshot_step", dest="snapshot_step", 
                         type=int, default=1000,
-                        help=("How many trees should be processed between result snapshots"))
+                        help=("How many trees should be processed between snapshots dumps?"))
 
     parser.add_argument("--reftree_constraint", dest="reftree_constraint", 
                         type=str, 
-                        help=("A python module from from which a function called *is_valid_treeid(treeid, refbranch)* should be importable. The function will be used to decide if the info of a given source tree is informative or not for each reftree branch. "))
+                        help=("A python module from from which a function called "
+                              "*is_valid_treeid(treeid, refbranch)* should be importable. "
+                              "The function will be used to decide if the info of a given "
+                              "source tree is informative or not for each reftree branch. "))
     
     parser.add_argument("-o", dest="output", 
                         type=str, required=True, 
-                        help=("output file name"))
+                        help=("output tag name (extensions will be added)"))
 
     parser.add_argument("--cpu", dest="cpu", 
                         type=int, default=1, 
@@ -679,7 +685,7 @@ if __name__ == "__main__":
 
     parser.add_argument("--img_report", dest="img_report", 
                         action="store_true", 
-                        help=(""))
+                        help=("If true, it generates a summary image results with all the computed data"))
 
     parser.add_argument("--report_supports", dest="report_supports", 
                         action="store_true", 
