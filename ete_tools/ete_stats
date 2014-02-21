@@ -1,0 +1,77 @@
+#!/usr/bin/env python
+import os
+import sys
+from math import sqrt
+from common import __CITATION__, argparse, Tree, print_table
+    
+__DESCRIPTION__ = '''
+#  - treedist -
+# ===================================================================================
+#  
+# treestats provides basic information about one or more trees
+#  
+# %s
+#  
+# ===================================================================================
+'''% __CITATION__
+
+def mean_std_dev(durations):
+    """ Calculate mean and standard deviation of data durations[]: """
+    length, mean, std = len(durations), 0, 0
+    for duration in durations:
+        mean = mean + duration
+    mean = mean / float(length)
+    for duration in durations:
+        std = std + (duration - mean) ** 2
+    std = sqrt(std / float(length))
+    mean = int(round(mean))
+    std = int(round(std))
+    return mean, std
+        
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__DESCRIPTION__, 
+                            formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("target_trees", metavar='target_trees', type=str, nargs="+",
+                   help='target_trees')
+    
+    parser.add_argument("--outgroup", dest="outgroup", 
+                        nargs = "+",
+                        help="""outgroup""")
+
+    args = parser.parse_args()
+    print __DESCRIPTION__
+    target_trees = args.target_trees
+
+    for tfile in target_trees:
+        t = Tree(tfile)
+        if args.outgroup:
+            if len(args.outgroup) > 1:
+                out = t.get_common_ancestor(args.outgroup)
+            else:
+                out = t.search_nodes(name=args.outgroup[0])[0]
+            t.set_outgroup(out)
+
+        most_distance_node, tree_length = t.get_farthest_leaf()
+        supports = []
+        names = []
+        distances = []
+        leaves = 0
+        for n in t.traverse():
+            names.append(n.name)
+            if n.up:
+                supports.append(n.support)
+                distances.append(n.dist)
+                if n.is_leaf():
+                    leaves += 1 
+        min_support, max_support = min(supports), max(supports)
+        mean_support, std_support =  mean_std_dev(supports)
+        min_dist, max_dist = min(distances), max(distances)
+        mean_dist, std_dist =  mean_std_dev(distances)
+
+        header = ['rooted', '#tips', 'tree length', 'most distant tip', 'min support', 'max support', 'min support' , 'std support', 'max dist', 'min dist' , 'mean dist', 'std dist']
+        print_table([[str(t.children<=2),
+                              leaves,
+                              tree_length,
+                              most_distance_node.name,
+                              min_support, max_support, mean_support, std_support,
+                              min_dist, max_dist, mean_dist, std_dist, ]], header=header, max_col_width=10)
