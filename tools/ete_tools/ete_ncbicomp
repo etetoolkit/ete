@@ -7,7 +7,7 @@ import time
 from string import strip
 from collections import defaultdict
 
-from common import (ncbi_common, argparse, PhyloTree, Tree, SVG_COLORS, faces,
+from common import (ncbi, argparse, PhyloTree, Tree, SVG_COLORS, faces,
                     treeview, NodeStyle, TreeStyle, color, print_table) 
 
 
@@ -173,7 +173,7 @@ def analyze_subtrees(t, subtrees, reft=None, show_progress=False):
                         _n.spcode = _n.realname
                 rf, rf_max, _, _, _, _, _ = subt.robinson_foulds(reft, attr_t1="spcode")
                 total_rf += float(rf)/rf_max
-            broken_branches, broken_clades, broken_clade_sizes, tax2name  = ncbi_common.get_broken_branches(subt, n2content)
+            broken_branches, broken_clades, broken_clade_sizes, tax2name  = ncbi.get_broken_branches(subt, n2content)
             ncbi_mistakes += len(broken_clades)
             all_broken_branches += len(broken_branches)
             broken_group_sizes.extend(broken_clade_sizes)
@@ -224,7 +224,7 @@ def annotate_tree_with_taxa(t, name2taxa_file, tax2name=None, tax2track=None):
     if not_found:
         print >>sys.stderr, "WARNING: %s nodes where not found within NCBI taxonomy!!" %not_found
       
-    return ncbi_common.annotate_tree(t, tax2name, tax2track)
+    return ncbi.annotate_tree(t, tax2name, tax2track)
     
 def tree_compare(t1, t2):
     t2_c2node = {}
@@ -373,7 +373,7 @@ if __name__ == "__main__":
 
     prev_broken = set()
     ENTRIES = []
-    ncbi_common.connect_database()
+    ncbi.connect_database()
     for tfile in target_trees:
         #print tfile
         t = PhyloTree(tfile, sp_naming_function=None)

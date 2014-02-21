@@ -239,7 +239,7 @@ if __name__ == '__main__':
     
     t1 = Tree(args.reftree)
     if args.ncbi:
-        from common import ncbi_common as ncbi
+        from common import ncbi
         ncbi.connect_database()
     
     for ttree in args.target_trees:
