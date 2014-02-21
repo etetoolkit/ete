@@ -1,0 +1,10 @@
+$ sqlite3 
+SQLite version 3.6.22
+Enter ".help" for instructions
+Enter SQL statements terminated with a ";"
+sqlite> .load ./levenshtein.sqlext 
+sqlite> SELECT LEVENSHTEIN( 'This is not correct', 'This is correct' );
+4
+sqlite> SELECT LEVENSHTEIN( NULL, 'aaa' ) IS NULL;
+1
+
