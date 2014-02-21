@@ -446,7 +446,7 @@ class Test_Coretype_Tree(unittest.TestCase):
         self.assertEqual(dist, set([200.0]))
 
     def test_tree_diff(self):
-        # this is a result of 100 Ktreedist runs. ETE should provide the same RF result
+        # this is a result of 100 Ktreedist runs on random trees, using rooted and unrooted topologies. ETE should provide the same RF result
         samples = [
         [28, True, '(((z,y),(x,(w,v))),(u,t),((s,r),((q,(p,o)),((n,(m,(l,(k,j)))),(i,(h,g))))));', '(((k,(j,(i,(h,g)))),z),(y,x),((w,v),((u,(t,(s,(r,q)))),(p,(o,(n,(m,l)))))));'],
         [28, False, '(((t,s),((r,(q,p)),(o,n))),(((m,(l,(k,j))),(i,(h,g))),(z,(y,(x,(w,(v,u)))))));', '((((k,(j,i)),((h,g),z)),((y,(x,w)),((v,(u,t)),(s,(r,(q,p)))))),((o,n),(m,l)));'],
@@ -549,25 +549,140 @@ class Test_Coretype_Tree(unittest.TestCase):
         [24, False, '((((k,(j,(i,(h,g)))),(z,y)),(x,(w,v))),(((u,t),(s,(r,q))),((p,o),(n,(m,l)))));', '(((w,v),(u,(t,s))),(((r,(q,(p,o))),((n,m),(l,(k,(j,(i,(h,g))))))),(z,(y,x))));'],
         [24, True, '((((n,m),((l,(k,j)),(i,(h,g)))),(z,y)),(x,(w,v)),((u,(t,(s,(r,q)))),(p,o)));', '(((r,q),(p,o)),((n,(m,l)),((k,j),((i,(h,g)),z))),((y,x),(w,(v,(u,(t,s))))));']]
 
+        print 'Testing RF...'
         for RF, unrooted, nw1, nw2 in samples:
             t1 = Tree(nw1)
             t2 = Tree(nw2)
-            rf, rf_max, names, r1, r2 = t1.robinson_foulds(t2, unrooted_trees=unrooted)
+            rf, rf_max, names, r1, r2, d1, d2 = t1.robinson_foulds(t2, unrooted_trees=unrooted)
+            self.assertEqual(len(names), 20)
+            real_max = (20*2) - 4 if not unrooted else (20*2) - 6
+            self.assertEqual(rf_max, real_max)
             self.assertEqual(rf, RF)
+
+        print 'Testing RF with auto pruning...'
+        # test auto pruned tree topology
+        for RF, unrooted, nw1, nw2 in samples:
+            # Add fake tips in the newick
+            for x in "clanger":
+                nw1 = nw1.replace(x, "(%s,%s1)" %(x, x) )
+                nw2 = nw2.replace(x, "(%s,%s2)" %(x, x) )
+            t1 = Tree(nw1)
+            t2 = Tree(nw2)
+            rf, rf_max, names, r1, r2, d1, d2 = t1.robinson_foulds(t2, unrooted_trees=unrooted)
+            self.assertEqual(len(names), 20)
+            real_max = (20*2) - 4 if not unrooted else (20*2) - 6
+            self.assertEqual(rf_max, real_max)
+            self.assertEqual(rf, RF)
+
+        print 'Testing RF with branch support thresholds...'
+        # test discarding lowly supported branches
+        for RF, unrooted, nw1, nw2 in samples:
+            # Add fake internal nodes with low support
+            for x in "jlnqr":
+                nw1 = nw1.replace(x, "(%s,(%s1, %s11)0.6)" %(x, x, x) )
+                nw2 = nw2.replace(x, "(%s,(%s1, %s11)0.5)" %(x, x, x) )
+            t1 = Tree(nw1)
+            t2 = Tree(nw2)
+            rf, rf_max, names, r1, r2, d1, d2 = t1.robinson_foulds(t2, unrooted_trees=unrooted,
+                                                                   min_support_t1 = 0.1, min_support_t2 = 0.1)
+            self.assertEqual(len(names), 30)
+            real_max = (30*2) - 4 if not unrooted else (30*2) - 6
+            self.assertEqual(rf_max, real_max)
+            self.assertEqual(rf, RF)
+
+            rf, rf_max, names, r1, r2, d1, d2 = t1.robinson_foulds(t2, unrooted_trees=unrooted,
+                                                                   min_support_t1 = 0.0, min_support_t2 = 0.51)
+            self.assertEqual(len(names), 30)
+            real_max = (30*2) - 4 - 5 if not unrooted else (30*2) - 6 -5 # -5 to discount low support branches
+            self.assertEqual(rf_max, real_max)
+            self.assertEqual(rf, RF)
+
+            rf, rf_max, names, r1, r2, d1, d2 = t1.robinson_foulds(t2, unrooted_trees=unrooted,
+                                                                   min_support_t1 = 0.61, min_support_t2 = 0.0)
+            self.assertEqual(len(names), 30)
+            real_max = (30*2) - 4 - 5 if not unrooted else (30*2) - 6 -5 # -5 to discount low support branches
+            self.assertEqual(rf_max, real_max)
+            self.assertEqual(rf, RF)
+
+
+            rf, rf_max, names, r1, r2, d1, d2 = t1.robinson_foulds(t2, unrooted_trees=unrooted,
+                                                                   min_support_t1 = 0.61, min_support_t2 = 0.51)
+            self.assertEqual(len(names), 30)
+            real_max = (30*2) - 4 - 10 if not unrooted else (30*2) - 6 -10 # -10 to discount low support branches
+            self.assertEqual(rf_max, real_max)
+            self.assertEqual(rf, RF)
+            
         
     def test_monophyly(self):
+        print 'Testing monophyly checks...'
         t =  Tree("((((((a, e), i), o),h), u), ((f, g), j));")
-        is_mono, monotype = t.check_monophyly(values=["a", "e", "i", "o", "u"], target_attr="name")
+        is_mono, monotype, extra  = t.check_monophyly(values=["a", "e", "i", "o", "u"], target_attr="name")
         self.assertEqual(is_mono, False)
         self.assertEqual(monotype, "polyphyletic")
-        is_mono, monotype = t.check_monophyly(values=["a", "e", "i", "o"], target_attr="name")
+        is_mono, monotype, extra= t.check_monophyly(values=["a", "e", "i", "o"], target_attr="name")
         self.assertEqual(is_mono, True)
         self.assertEqual(monotype, "monophyletic")
-        is_mono, monotype =  t.check_monophyly(values=["i", "o"], target_attr="name")
+        is_mono, monotype, extra =  t.check_monophyly(values=["i", "o"], target_attr="name")
         self.assertEqual(is_mono, False)
         self.assertEqual(monotype, "paraphyletic")
-                   
+
+        # Test examples
+        print 'Testing monophyly check with unrooted trees'
+        t = PhyloTree('(aaa1, (aaa3, (aaa4, (bbb1, bbb2))));')
+        is_mono, montype, extra = t.check_monophyly(values=set(['aaa']), target_attr='species', unrooted=True)
+        self.assertEqual(is_mono, True)
+        self.assertEqual(extra, set())
         
+        t = PhyloTree('(aaa1, (bbb3, (aaa4, (bbb1, bbb2))));')
+        is_mono, montype, extra = t.check_monophyly(values=set(['aaa']), target_attr='species', unrooted=True)
+        self.assertEqual(is_mono, False)
+        self.assertEqual(extra, set([t&'bbb3']))
+        
+        t = PhyloTree('(aaa1, (aaa3, (aaa4, (bbb1, bbb2))));')
+        is_mono, montype, extra = t.check_monophyly(values=set(['bbb']), target_attr='species', unrooted=True)
+        self.assertEqual(is_mono, True)
+        self.assertEqual(extra, set())
+        
+        t = PhyloTree('(aaa1, (aaa3, (aaa4, (bbb1, ccc2))));')
+        is_mono, montype, extra = t.check_monophyly(values=set(['bbb', 'ccc']), target_attr='species', unrooted=True)
+        self.assertEqual(is_mono, True)
+        self.assertEqual(extra, set())
+       
+        t = PhyloTree('(aaa1, (aaa3, (bbb4, (bbb1, bbb2))));')
+        is_mono, montype, extra = t.check_monophyly(values=set(['bbb4', 'bbb2']), target_attr='name', unrooted=True)
+        self.assertEqual(is_mono, False)
+        self.assertEqual(extra, set([t&'bbb1']))
+
+        t = PhyloTree('(aaa1, (aaa3, (bbb4, (bbb1, bbb2))));')
+        is_mono, montype, extra = t.check_monophyly(values=set(['bbb1', 'bbb2']), target_attr='name', unrooted=True)
+        self.assertEqual(is_mono, True)
+        self.assertEqual(extra, set())
+
+        t = PhyloTree('(aaa1, aaa3, (aaa4, (bbb1, bbb2)));')
+        is_mono, montype, extra = t.check_monophyly(values=set(['aaa']), target_attr='species', unrooted=True)
+        self.assertEqual(is_mono, True)
+        self.assertEqual(extra, set())
+        
+        t = PhyloTree('(aaa1, bbb3, (aaa4, (bbb1, bbb2)));')
+        is_mono, montype, extra = t.check_monophyly(values=set(['aaa']), target_attr='species', unrooted=True)
+        self.assertEqual(is_mono, False)
+        self.assertEqual(extra, set([t&'bbb3']))
+                
+        print 'Check monophyly randomization test'
+        t = PhyloTree()
+        t.populate(100)
+        ancestor = t.get_common_ancestor(['aaaaaaaaaa', 'aaaaaaaaab', 'aaaaaaaaac'])
+        all_nodes = t.get_descendants()
+        # I test every possible node as root for the tree. The content of ancestor
+        # should allways be detected as monophyletic
+        results = set()
+        for x in all_nodes:
+            mono, part, extra = t.check_monophyly(values=set(ancestor.get_leaf_names()), target_attr='name', unrooted=True)
+            results.add(mono)
+            t.set_outgroup(x)
+        assert(results, set([True]))
+
+        print 'Testing get_monophyly'
         t =  Tree("((((((4, e), i)M1, o),h), u), ((3, 4), (i, june))M2);", format=1)
         # we annotate the tree using external data
         colors = {"a":"red", "e":"green", "i":"yellow", 

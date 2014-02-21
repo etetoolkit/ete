@@ -1709,71 +1709,96 @@ class TreeNode(object):
                             for content in t2_content.itervalues()])
                     edges2.discard(())
 
-
                 if min_support_t2:
                     support_t2 = dict([
                         (tuple(sorted(([getattr(n, attr_t2) for n in content if hasattr(n, attr_t2) and getattr(n, attr_t2) in common_attrs]))), branch.support)
                         for branch, content in t2_content.iteritems()])
 
-                discard_branches = 0
+
+                # if a support value is passed as a constraint, discard lowly supported branches from the analysis
+                discard_t1, discard_t2 = set(), set()
                 if min_support_t1 and unrooted_trees:
-                    discard_branches += len([p for p in edges1-edges2 if support_t1.get(p[0], support_t1.get(p[1], None)) < min_support_t1])
+                    discard_t1 = set([p for p in edges1 if support_t1.get(p[0], support_t1.get(p[1], 999999999)) < min_support_t1])
                 elif min_support_t1:
-                    discard_branches += len([p for p in edges1-edges2 if support_t1[frozenset(p)] < min_support_t1])
+                    discard_t1 = set([p for p in edges1 if support_t1[p] < min_support_t1])
                     
                 if min_support_t2 and unrooted_trees:
-                    discard_branches += len([p for p in edges2-edges1 if support_t2.get(p[0], support_t2.get(p[1], None)) < min_support_t2])
+                    discard_t2 = set([p for p in edges2 if support_t2.get(p[0], support_t2.get(p[1], 999999999)) < min_support_t2])
                 elif min_support_t2:
-                    discard_branches += len([p for p in edges2-edges1 if support_t2[frozenset(p)] < min_support_t2])
+                    discard_t2 = set([p for p in edges2 if support_t2[p] < min_support_t2])
 
-                rf = (len(edges1 ^ edges2) - discard_branches) - polytomy_correction # poly_corr is 0 if the flag is not enabled
-                
+                #rf = len(edges1 ^ edges2) - (len(discard_t1) + len(discard_t2)) - polytomy_correction # poly_corr is 0 if the flag is not enabled
+                #rf = len((edges1-discard_t1) ^ (edges2-discard_t2)) - polytomy_correction
+                rf = len(((edges1 ^ edges2) - discard_t2) - discard_t1) - polytomy_correction
+
                 if unrooted_trees:
-                    max_parts = len([p for p in edges1 if len(p[0])>1 and len(p[1])>1]) +\
-                        len([p for p in edges2 if len(p[0])>1 and len(p[1])>1])
+                    max_parts = (len(common_attrs)*2) - 6 - len(discard_t1) - len(discard_t2)
+                   
+                    # max_parts = len([p for p in edges1-discard_t1 if len(p[0])>1 and len(p[1])>1]) +\
+                    #     len([p for p in edges2-discard_t2 if len(p[0])>1 and len(p[1])>1])
                 else:
-                    max_parts = (len([p for p in edges1 if len(p)>1]) +\
-                        len([p for p in edges2 if len(p)>1])) -2 # -2 is to
-                                                                 # avoid
-                                                                 # counting the
-                                                                 # root
-                                                                 # partition of
-                                                                 # the two trees
-                target_names = set([getattr(_n, attr_t1) for _n in t1_leaves])
-                ref_names = set([getattr(_n, attr_t2) for _n in t2_leaves])
-                common_names = target_names & ref_names
+                     max_parts = (len(common_attrs)*2) - 4 - len(discard_t1) - len(discard_t2)
+                   
+                    # # -2 is to # avoid counting the root partition of the two
+                    # # -trees
+                    # max_parts = (len([p for p in edges1-discard_t1 if len(p)>1]) +\
+                    #     len([p for p in edges2-discard_t2 if len(p)>1])) -2
+
                 if not min_comparison or min_comparison[0] > rf:
-                    min_comparison = [rf, max_parts, common_names, edges1, edges2]
+                    min_comparison = [rf, max_parts, common_attrs, edges1, edges2, discard_t1, discard_t2]
+                    
         return min_comparison
 
-    def get_partitions(self):
-        """ 
-        .. versionadded: 2.1
+    def iter_edges(self, cached_content = None):
+        '''
+        Iterate over the list of edges of a tree. Each egde is represented as a
+        tuple of two elements, each containing the list of nodes separated by
+        the edge.
+        '''
+
+        if not cached_content:
+            cached_content = self.get_cached_content()
+        all_leaves = cached_content[self]
+        for n, side1 in cached_content.iteritems():
+            yield (side1, all_leaves-side1)
         
-        It returns the set of all possible partitions under a
-        node. Note that current implementation is quite inefficient
-        when used in very large trees.
+    def get_edges(self, cached_content = None):
+        '''
+        Returns the list of edges of a tree. Each egde is represented as a
+        tuple of two elements, each containing the list of nodes separated by
+        the edge.
+        '''
+        
+        return [edge for edge in self.iter_edges(cached_content)]
+    
+    # def get_partitions(self):
+    #     """ 
+    #     .. versionadded: 2.1
+        
+    #     It returns the set of all possible partitions under a
+    #     node. Note that current implementation is quite inefficient
+    #     when used in very large trees.
 
-        t = Tree("((a, b), e);")
-        partitions = t.get_partitions()
+    #     t = Tree("((a, b), e);")
+    #     partitions = t.get_partitions()
 
-        # Will return: 
-        # a,b,e
-        # a,e
-        # b,e
-        # a,b
-        # e
-        # b
-        # a
-        """
-        all_leaves = frozenset(self.get_leaf_names())
-        all_partitions = set([all_leaves])
-        for n in self.iter_descendants():
-            p1 = frozenset(n.get_leaf_names())
-            p2 = frozenset(all_leaves - p1)
-            all_partitions.add(p1)
-            all_partitions.add(p2)
-        return all_partitions
+    #     # Will return: 
+    #     # a,b,e
+    #     # a,e
+    #     # b,e
+    #     # a,b
+    #     # e
+    #     # b
+    #     # a
+    #     """
+    #     all_leaves = frozenset(self.get_leaf_names())
+    #     all_partitions = set([all_leaves])
+    #     for n in self.iter_descendants():
+    #         p1 = frozenset(n.get_leaf_names())
+    #         p2 = frozenset(all_leaves - p1)
+    #         all_partitions.add(p1)
+    #         all_partitions.add(p2)
+    #     return all_partitions
 
     def convert_to_ultrametric(self, tree_length, strategy="balanced"):
         """
@@ -1808,7 +1833,8 @@ class TreeNode(object):
                 node2dist[node] = node2dist[node.up] + 1
             node.dist = node.dist
 
-    def check_monophyly(self, values, target_attr, ignore_missing=False):
+    def check_monophyly(self, values, target_attr, ignore_missing=False,
+                        unrooted=False):
         """
         Returns True if a given target attribute is monophyletic under
         this node for the provided set of values. 
@@ -1826,37 +1852,63 @@ class TreeNode(object):
             family trees, or any custom feature present in the tree).
 
         :param False ignore_missing: Avoid raising an Exception when
-            missing attributes are found. 
+            missing attributes are found.
+            
+        :param False unrooted: If True, tree will be treated as unrooted, thus
+          allowing to find monophyly even when current outgroup is spliting a
+          monophyletic group.
+
+        :returns: the following tuple 
+                  IsMonophyletic (boolean),
+                  clade type ('monophyletic', 'paraphyletic' or 'polyphyletic'),
+                  leaves breaking the monophyly (set)
+            
         """
+        
         if type(values) != set:
             values = set(values)
 
         # This is the only time I traverse the tree, then I use cached
         # leaf content
         n2leaves = self.get_cached_content()
-        # Locate leaves matching requested attribute values
-        targets = [leaf for leaf in n2leaves[self]
-                   if getattr(leaf, target_attr) in values]
-       
+
         # Raise an error if requested attribute values are not even present
+        if ignore_missing:
+            found_values = set([getattr(n, target_attr) for n in n2leaves[self]])
+            missing_values = values - found_values
+            values = values & found_values
+
+        # Locate leaves matching requested attribute values
+        targets = set([leaf for leaf in n2leaves[self]
+                   if getattr(leaf, target_attr) in values])
         if not ignore_missing:
-            missing_values = values - set([getattr(n, target_attr) for n
-                                           in targets])
-            if missing_values: 
-                raise ValueError("Expected '%s' value(s) not found: %s" %(
-                    target_attr, ','.join(missing_values)))
-                
-        # Check monophyly with get_common_ancestor. Note that this
-        # step does not require traversing the tree again because
-        # targets are node instances instead of node names, and
-        # get_common_ancestor function is smart enough to detect it
-        # and avoid unnecessary traversing.
-        common = self.get_common_ancestor(targets)
-        observed = n2leaves[common]
-        foreign_leaves = [leaf for leaf in observed
-                          if getattr(leaf, target_attr) not in values]
+            if values - set([getattr(leaf, target_attr) for leaf in targets]):
+                raise ValueError('The monophyly of the provided values could never be reached, as not all of them exist in the tree.'
+                                 ' Please check your target attribute and values, or set the ignore_missing flag to True')
+         
+        if unrooted:
+            smallest = None
+            for side1, side2 in self.iter_edges(cached_content=n2leaves):
+                if targets.issubset(side1) and (not smallest or len(side1) < len(smallest)):
+                    smallest = side1
+                elif targets.issubset(side2) and (not smallest or len(side2) < len(smallest)):
+                        smallest = side2
+                if smallest is not None and len(smallest) == len(targets):
+                    break
+            foreign_leaves = smallest - targets
+        else:
+            # Check monophyly with get_common_ancestor. Note that this
+            # step does not require traversing the tree again because
+            # targets are node instances instead of node names, and
+            # get_common_ancestor function is smart enough to detect it
+            # and avoid unnecessary traversing.
+            common = self.get_common_ancestor(targets)
+            observed = n2leaves[common]
+            foreign_leaves = set([leaf for leaf in observed
+                              if getattr(leaf, target_attr) not in values])
+            
         if not foreign_leaves:
-            return True, "monophyletic"
+            return True, "monophyletic", foreign_leaves
         else:
             # if the requested attribute is not monophyletic in this
             # node, let's differentiate between poly and paraphyly. 
@@ -1866,10 +1918,9 @@ class TreeNode(object):
             polyphyletic = [leaf for leaf in poly_common if
                             getattr(leaf, target_attr) in values]
             if polyphyletic:
-                return False, "polyphyletic"
+                return False, "polyphyletic", foreign_leaves
             else:
-                return False, "paraphyletic"
-
+                return False, "paraphyletic", foreign_leaves
             
     def get_monophyletic(self, values, target_attr):
         """
