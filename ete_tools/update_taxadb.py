@@ -1,6 +1,6 @@
 import os
 from string import strip
-from ete2 import Tree
+from ete_dev import Tree
 
 def load_ncbi_tree_from_dump():
     # Download: ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz
@@ -63,38 +63,39 @@ def generate_table(t):
             print >>OUT, '\t'.join([n.name, "", n.taxname, n.rank, ','.join(track)])
     OUT.close()
 
+def update():
+    t, synonyms = load_ncbi_tree_from_dump()
+
+    print "Updating database..."
+    generate_table(t)
     
-t, synonyms = load_ncbi_tree_from_dump()
+    open("syn.tab", "w").write('\n'.join(["%s\t%s" %(v[0],v[1]) for v in synonyms]))
+    open("merged.tab", "w").write('\n'.join(["%s\t%s" %map(strip, line.split("|")) for line in open("merged.dmp")]))
 
-print "Updating database..."
-generate_table(t)
-open("syn.tab", "w").write('\n'.join(["%s\t%s" %(v[0],v[1]) for v in synonyms]))
+    CMD = open("commands.tmp", "w")
+    cmd = """
+    DROP TABLE IF EXISTS species;
+    DROP TABLE IF EXISTS synonym;
+    DROP TABLE IF EXISTS merged;
+    CREATE TABLE species (taxid INT PRIMARY KEY, parent INT, spname VARCHAR(50) COLLATE NOCASE, rank VARCHAR(50), track TEXT);
+    CREATE TABLE synonym (taxid INT,spname VARCHAR(50) COLLATE NOCASE, PRIMARY KEY (spname, taxid));
+    CREATE TABLE merged (taxid_old INT, taxid_new INT);
+    CREATE INDEX spname1 ON species (spname COLLATE NOCASE);
+    CREATE INDEX spname2 ON synonym (spname COLLATE NOCASE);
 
-open("merged.tab", "w").write('\n'.join(["%s\t%s" %map(strip, line.split("|")) for line in open("merged.dmp")]))
-   
+    .separator "\t"
+    .import taxa.tab species
+    .import syn.tab synonym
+    .import merged.tab merged
 
+    """
+    CMD.write(cmd)
+    CMD.close()
+    os.system("sqlite3 taxa.sqlite < commands.tmp")
 
-CMD = open("commands.tmp", "w")
-cmd = """
-DROP TABLE IF EXISTS species;
-DROP TABLE IF EXISTS synonym;
-DROP TABLE IF EXISTS merged;
-CREATE TABLE species (taxid INT PRIMARY KEY, parent INT, spname VARCHAR(50) COLLATE NOCASE, rank VARCHAR(50), track TEXT);
-CREATE TABLE synonym (taxid INT,spname VARCHAR(50) COLLATE NOCASE, PRIMARY KEY (spname, taxid));
-CREATE TABLE merged (taxid_old INT, taxid_new INT);
-CREATE INDEX spname1 ON species (spname COLLATE NOCASE);
-CREATE INDEX spname2 ON synonym (spname COLLATE NOCASE);
-
-.separator "\t"
-.import taxa.tab species
-.import syn.tab synonym
-.import merged.tab merged
-
-"""
-CMD.write(cmd)
-CMD.close()
-os.system("sqlite3 taxa.sqlite < commands.tmp")
-
-print "Creating extended newick file with the whole NCBI tree [ncbi.nw]"
-t.write(outfile="ncbi.nw", features=["name", "taxname"])
-
+    print "Creating extended newick file with the whole NCBI tree [ncbi.nw]"
+    t.write(outfile="ncbi.nw", features=["name", "taxname"])
+  
+    
+if __name__ == '__main__':
+    update()

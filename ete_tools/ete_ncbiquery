@@ -11,8 +11,7 @@ import operator
 import sqlite3
 import math
 
-from common import PhyloTree
-from common import ncbi_common as ncbi
+from common import PhyloTree, ncbi
 
 paired_colors = ['#a6cee3',
                  '#1f78b4',
@@ -68,9 +67,11 @@ COLOR_RANKS = {
     }
 
 # Loads database
-module_path = os.path.join(os.path.split(os.path.realpath(__file__))[0],
-                           'ncbi_taxonomy')
-c = sqlite3.connect(os.path.join(module_path, 'taxa.sqlite'))
+if 1:
+    module_path = os.path.split(os.path.realpath(__file__))[0]
+    c = sqlite3.connect(os.path.join(module_path, 'taxa.sqlite'))
+else:
+    ncbi.connect_database()
 
 __DESCRIPTION__ = """ 
 Query ncbi taxonomy using a local DB
