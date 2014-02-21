@@ -16,12 +16,13 @@ __DESCRIPTION__ = '''
 #  - maptrees -
 # ===================================================================================
 #
-# 'maptrees' scans a list of gene trees and allows to calculate gene duplication
-# rate, gene loss rate and gene tree support for every branch in a given
-# reference tree.
+# 'maptrees' is a program that compares a list of gene-trees against a reference
+# topology and calculates the duplication and gene loss rates for every branch
+# in the reference tree. In addition, the percentage of gene-trees supporting
+# each split in the reference tree (GT support) is calculated. 
 #
-# Gene Tree support represents the proportion of gene trees that support each
-# branch in the reference tree.
+# Note that this is a duplication aware program, so gene-trees are allowed to
+# contain different number of leaves and species content.
 #
 %s
 #
@@ -52,7 +53,11 @@ def minimize_lost_branches(lost_items, reftree_branches):
 
 def get_lost_branches(obs_items, expected_items, ref_branch,
                       sorted_ref_branches):
-
+    """
+    Returns the minimum set of lost branches that explain the observed and
+    expected set of items, given a reference tree. 
+    """
+    
     # Calculate lost items in both sides of the duplication
     lost_items = expected_items - obs_items
     if lost_items:
@@ -218,19 +223,6 @@ def process_trees(iter_data, reftree, total_trees, thread_name=""):
                     elif not USE_COLLATERAL:
                         coll_dup_per_branch[ref_branch.nid].append([seqs_left, seqs_right])
                         __seed = False
-                    # if ref_branch.nid == 5 and __seed:
-                    #     #for _lf in node.iter_leaves():
-                    #     #    if _lf.species in set(reftree_content[ref_branch.children[1]]):
-                    #     #        _lf.img_style["bgcolor"] = "cyan"
-                    #     #    else:
-                    #     #        _lf.img_style["bgcolor"] = "#FFFFFF"
-                    #     #print seqs_left, seqs_right
-                    #     # node.show()
-                    #     if t.search_nodes(species="CHICK"):
-                    #         CHICK += 1
-                    #         print t.search_nodes(species="CHICK")
-                    
-
                         
             # Count losses observed after a duplication or at the root of the tree.
             if isdup or node is t:
@@ -321,9 +313,6 @@ def get_supported_branches(source_tree, reftree, refclades, seedid=None):
                    - Missing species are allowed in the subtree split, only if
                      such species are not present in any other part of the
                      original gene tree.
-
-                   - Support value of the subtree branch is higher than a given
-                     cutoff.
     """
     
     # Run Treeko to get all possible species tree combinations. We assume dups are already mapped

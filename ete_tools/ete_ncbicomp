@@ -171,7 +171,7 @@ def analyze_subtrees(t, subtrees, reft=None, show_progress=False):
                 for _n in n2content():
                     if _n.is_leaf():
                         _n.spcode = _n.realname
-                rf, rf_max = subt.robinson_foulds(reft, attr_t1="spcode")
+                rf, rf_max, _, _, _, _, _ = subt.robinson_foulds(reft, attr_t1="spcode")
                 total_rf += float(rf)/rf_max
             broken_branches, broken_clades, broken_clade_sizes, tax2name  = ncbi_common.get_broken_branches(subt, n2content)
             ncbi_mistakes += len(broken_clades)
@@ -462,7 +462,7 @@ if __name__ == "__main__":
                     sptree_size = len(set([n.taxid for n in subt.iter_leaves()]))
                     sum_size += sptree_size
                     avg_rf.append((partial_rf[0]/float(partial_rf[1])) * sptree_size)
-                    common_names = max(len(partial_rf[2] & partial_rf[3]), common_names)
+                    common_names = len(partial_rf[3])
                     max_size = max(max_size, sptree_size)
                     rf_max = max(rf_max, partial_rf[1])
                 #print  partial_rf[:2]

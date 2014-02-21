@@ -10,9 +10,9 @@ import logging as log
 import operator
 import sqlite3
 import math
-from ete2 import PhyloTree
 
-import ncbi_common as ncbi
+from common import PhyloTree
+from common import ncbi_common as ncbi
 
 paired_colors = ['#a6cee3',
                  '#1f78b4',
@@ -67,9 +67,9 @@ COLOR_RANKS = {
 #    "varietas"
     }
 
-
 # Loads database
-module_path = os.path.split(os.path.realpath(__file__))[0]
+module_path = os.path.join(os.path.split(os.path.realpath(__file__))[0],
+                           'ncbi_taxonomy')
 c = sqlite3.connect(os.path.join(module_path, 'taxa.sqlite'))
 
 __DESCRIPTION__ = """ 
@@ -107,7 +107,6 @@ if __name__ == "__main__":
     parser.add_argument("--reftree_attr", dest="reftree_attr",   
                         type=str, default="name",
                         help="""Where taxid should be read from""")
-    
     
     parser.add_argument("-n", "--name", dest="names", nargs="+",  
                         type=str, 
