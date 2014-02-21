@@ -1,5 +1,7 @@
 import re
 import time
+import readline
+import os
 
 # CONVERT shell colors to the same curses palette
 SHELL_COLORS = {
@@ -137,7 +139,25 @@ def print_table(items, header=None, wrap=True, max_col_width=20,
             else:
                 print ' | '.join(['='*c2maxw[col] for col in xrange(len(extra_line)) ])
  
+def ask_filename(text):
+    readline.set_completer(None)
+    fname = ""
+    while not os.path.exists(fname):
+	fname = raw_input(text)
+    return fname
                 
+def ask(string,valid_values,default=-1,case_sensitive=False):
+    """ Asks for a keyborad answer """
+    v = None
+    if not case_sensitive:
+        valid_values = [value.lower() for value in valid_values]
+    while v not in valid_values:
+        v = raw_input("%s [%s]" % (string,','.join(valid_values) ))
+        if v == '' and default>=0:
+            v = valid_values[default]
+        if not case_sensitive:
+            v = v.lower()
+    return v
 
 def timeit(f):
     def a_wrapper_accepting_arguments(*args, **kargs):
