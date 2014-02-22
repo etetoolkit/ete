@@ -93,6 +93,7 @@ class _GUI(QtGui.QMainWindow):
         self.setWindowTitle("ETE Tree Browser")
         
         self.scene = scene
+        self.scene.GUI = self
         self.view = _TreeView(scene)
         scene.view = self.view
         self.node_properties = _PropertiesDialog(scene)
@@ -604,6 +605,7 @@ class NewickDialog(QtGui.QDialog):
 class _TreeView(QtGui.QGraphicsView):
     def __init__(self,*args):
         QtGui.QGraphicsView.__init__(self,*args)
+        self.buffer_node = None
         self.init_values()
         
         if USE_GL:
@@ -631,7 +633,7 @@ class _TreeView(QtGui.QGraphicsView):
         master_item = self.scene().master_item
         self.n2hl = {}
         self.focus_highlight = QtGui.QGraphicsRectItem(master_item)
-        self.buffer_node = None
+        #self.buffer_node = None
         self.focus_node = None
         self.selector = _SelectorItem(master_item)
         
