@@ -448,7 +448,7 @@ class PhyloNode(TreeNode):
         """
         Implements the phylostratigrafic method described in:
         
-        Huerta-Cepas, J., & Gabaldón, T. (2011). Assigning duplication events to
+        Huerta-Cepas, J., & Gabaldon, T. (2011). Assigning duplication events to
         relative temporal scales in genome-wide studies. Bioinformatics, 27(1),
         38-45.
         """
