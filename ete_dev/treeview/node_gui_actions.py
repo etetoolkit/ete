@@ -43,28 +43,29 @@ class _NodeActions(object):
 
     def showActionPopup(self):
         contextMenu = QtGui.QMenu()
-        if self.node.img_style["draw_descendants"] == False:
-            contextMenu.addAction( "Expand"           , self.toggle_collapse)
-        else:
-            contextMenu.addAction( "Collapse"         , self.toggle_collapse)
+        contextMenu.addAction( "Set as outgroup", self.set_as_outgroup)
+        contextMenu.addAction( "Copy partition", self.copy_partition)
+        contextMenu.addAction( "Cut partition", self.cut_partition)
+        if self.scene().view.buffer_node:
+            contextMenu.addAction( "Paste partition", self.paste_partition)
 
-        contextMenu.addAction( "Set as outgroup"      , self.set_as_outgroup)
-        contextMenu.addAction( "Swap branches"        , self.swap_branches)
-        contextMenu.addAction( "Delete node"          , self.delete_node)
-        contextMenu.addAction( "Delete partition"     , self.detach_node)
-        contextMenu.addAction( "Add childs"           , self.add_children)
-        contextMenu.addAction( "Populate partition"   , self.populate_partition)
+        contextMenu.addAction( "Delete node (collapse children)", self.delete_node)
+        contextMenu.addAction( "Delete partition", self.detach_node)
+        contextMenu.addAction( "Populate subtree", self.populate_partition)
+        contextMenu.addAction( "Add children", self.add_children)
+        contextMenu.addAction( "Swap branches", self.swap_branches)
+        if self.node.img_style["draw_descendants"] == False:
+            contextMenu.addAction( "Open", self.toggle_collapse)
+        else:
+            contextMenu.addAction( "Close", self.toggle_collapse)
+        
         if self.node.up is not None and\
                 self.scene().tree == self.node:
             contextMenu.addAction( "Back to parent", self.back_to_parent_node)
         else:
-            contextMenu.addAction( "Extract"              , self.set_start_node)
+            contextMenu.addAction( "Extract", self.set_start_node)
 
-        if self.scene().view.buffer_node:
-            contextMenu.addAction( "Paste partition"  , self.paste_partition)
-
-        contextMenu.addAction( "Cut partition"        , self.cut_partition)
-        contextMenu.addAction( "Show newick"        , self.show_newick)
+        contextMenu.addAction( "Show newick", self.show_newick)
         contextMenu.exec_(QtGui.QCursor.pos())
 
     def show_newick(self):
@@ -77,56 +78,59 @@ class _NodeActions(object):
 
     def delete_node(self):
         self.node.delete()
-        self.scene().draw()
+        self.scene().GUI.redraw()
 
     def detach_node(self):
         self.node.detach()
-        self.scene().draw()
+        self.scene().GUI.redraw()
 
     def swap_branches(self):
         self.node.swap_children()
-        self.scene().draw()
+        self.scene().GUI.redraw()
 
     def add_children(self):
         n,ok = QtGui.QInputDialog.getInteger(None,"Add childs","Number of childs to add:",1,1)
         if ok:
             for i in xrange(n):
                 ch = self.node.add_child()
-        self.scene().draw()
+        self.scene().GUI.redraw()
 
     def void(self):
         return True
 
     def set_as_outgroup(self):
         self.scene().tree.set_outgroup(self.node)
-        self.scene().draw()
+        self.scene().GUI.redraw()
 
     def toggle_collapse(self):
         self.node.img_style["draw_descendants"] ^= True
-        self.scene().draw()
+        self.scene().GUI.redraw()
 
     def cut_partition(self):
         self.scene().view.buffer_node = self.node
         self.node.detach()
-        self.scene().draw()
+        self.scene().GUI.redraw()
 
+    def copy_partition(self):
+        self.scene().view.buffer_node = self.node.copy('deepcopy')
+        
     def paste_partition(self):
         if self.scene().view.buffer_node:
             self.node.add_child(self.scene().view.buffer_node)
             self.scene().view.buffer_node= None
-            self.scene().draw()
+            self.scene().GUI.redraw()
 
     def populate_partition(self):
         n, ok = QtGui.QInputDialog.getInteger(None,"Populate partition","Number of nodes to add:",2,1)
         if ok:
             self.node.populate(n)
             #self.scene().set_style_from(self.scene().tree,self.scene().layout_func)
-            self.scene().draw()
+            self.scene().GUI.redraw()
 
     def set_start_node(self):
         self.scene().start_node = self.node
-        self.scene().draw()
+        self.scene().GUI.redraw()
 
     def back_to_parent_node(self):
         self.scene().start_node = self.node.up
-        self.scene().draw()
+        self.scene().GUI.redraw()
