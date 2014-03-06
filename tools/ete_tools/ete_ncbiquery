@@ -236,7 +236,9 @@ if __name__ == "__main__":
             if n.rank in COLOR_RANKS:
                 n.add_features(bgcolor=COLOR_RANKS[n.rank])
             n.name = "%s{%s}" %(id2name.get(int(n.name), n.name), n.name)
-
+            lineage = ncbi.get_sp_lineage(n.taxid)
+            n.add_features(named_lineage = '|'.join(ncbi.translate_to_names(lineage)))
+            
         if args.collapse_subspecies:
             species_nodes = [n for n in t.traverse() if n.rank == "species"
                              if int(n.taxid) in all_taxids]
@@ -261,7 +263,7 @@ if __name__ == "__main__":
         print "\n\n  ===== Newick files saved as 'your_taxa_query.*' ===== "
         t.write(format=9, outfile="your_ncbi_query.nw")
         t.write(format=8, outfile="your_ncbi_query.named.nw")
-        t.write(format=9, features=["taxid", "name", "rank", "bgcolor", "sci_name", "collapse_subspecies"],
+        t.write(format=9, features=["taxid", "name", "rank", "bgcolor", "sci_name", "collapse_subspecies", "named_lineage"],
                 outfile="your_ncbi_query.extended.nw")
         for i in t.iter_leaves():
             i.name = i.taxid

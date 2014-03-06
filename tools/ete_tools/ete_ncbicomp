@@ -491,7 +491,7 @@ if __name__ == "__main__":
             #ts.tree_width = 500
             ts.show_leaf_name = False
             ts.layout_fn = ncbi_layout 
-            ts.mode = "c"
+            ts.mode = "r"
             t.dist = 0
             if args.show_tree:
                 #if args.hide_monophyletic:
