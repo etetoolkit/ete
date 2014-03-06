@@ -223,10 +223,10 @@ A basic example would read as follow:
     def my_layout(node):
         if node.is_leaf():
              # If terminal node, draws its name
-             name_faces = AttrFace("name")
+             name_face = AttrFace("name")
         else:                
              # If internal node, draws label with smaller font size
-             name_faces = AttrFace("name", fsize=10)
+             name_face = AttrFace("name", fsize=10)
         # Adds the name face to the image at the preferred position
         faces.add_face_to_node(name_face, node, column=0, position="branch-right")
      
