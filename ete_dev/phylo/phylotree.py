@@ -445,6 +445,13 @@ class PhyloNode(TreeNode):
                 yield l.species
     
     def get_age(self, species2age):
+        """
+        Implements the phylostratigrafic method described in:
+        
+        Huerta-Cepas, J., & Gabaldón, T. (2011). Assigning duplication events to
+        relative temporal scales in genome-wide studies. Bioinformatics, 27(1),
+        38-45.
+        """
         return max([species2age[sp] for sp in self.get_species()])
 
     def reconcile(self, species_tree):
