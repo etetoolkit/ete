@@ -28,7 +28,7 @@ def mean_std_dev(durations):
     std = int(round(std))
     return mean, std
         
-if __name__ == "__main__":
+def main(argv):
     parser = argparse.ArgumentParser(description=__DESCRIPTION__, 
                             formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("target_trees", metavar='target_trees', type=str, nargs="+",
@@ -38,7 +38,8 @@ if __name__ == "__main__":
                         nargs = "+",
                         help="""outgroup""")
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
+    
     print __DESCRIPTION__
     target_trees = args.target_trees
 
@@ -75,3 +76,7 @@ if __name__ == "__main__":
                               most_distance_node.name,
                               min_support, max_support, mean_support, std_support,
                               min_dist, max_dist, mean_dist, std_dist, ]], header=header, max_col_width=10)
+
+if __name__ == '__main__':
+    main(sys.argv[1:])
+

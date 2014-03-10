@@ -98,7 +98,7 @@ def export_as_orthoXML(t, database, evoltype_attr="evoltype"):
     O.export(sys.stdout, 0, namespace_="")
 
        
-if __name__ == "__main__":
+def main(argv):
     parser = argparse.ArgumentParser(description=__DESCRIPTION__, 
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     
@@ -191,3 +191,7 @@ if __name__ == "__main__":
         t.show()
     
     export_as_orthoXML(t, args.database, args.evoltype_attr)
+
+
+if __name__ == '__main__':
+    main(sys.argv[1:])

@@ -5,6 +5,8 @@ import sys
 
 from common import argparse, PhyloTree, TreeStyle, faces
 
+__all__ = ["main"]
+
 __DESCRIPTION__ = """
 The ETE tree viewer. 
 """
@@ -51,7 +53,7 @@ def master_layout(node):
             faces.add_face_to_node(N, node, pos, position=LEAF_NAME_POSITION)
         
         
-if __name__ == "__main__":
+def main(argv):
     parser = argparse.ArgumentParser(description=__DESCRIPTION__, 
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     # name or flags - Either a name or a list of option strings, e.g. foo or -f, --foo.
@@ -181,7 +183,7 @@ if __name__ == "__main__":
                           help="dumps newick file after applying editing options")
 
     
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     tfile = args.tree[0]
 
@@ -262,3 +264,6 @@ if __name__ == "__main__":
     if args.newick:
         t.write(features=[], outfile=args.newick)
         print "Processed Newick dumped into", args.newick
+        
+if __name__ == '__main__':
+    main(sys.argv[1:])

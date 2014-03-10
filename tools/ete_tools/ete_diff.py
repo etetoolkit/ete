@@ -12,6 +12,9 @@ import textwrap
 import argparse
 import logging
 log = logging.Logger("main")
+args = None
+
+__DESCRIPTION__ = ""
 
 EUCL_DIST = lambda a,b: 1 - (float(len(a[1] & b[1])) / max(len(a[1]), len(b[1]))) # 24
 
@@ -182,9 +185,9 @@ def show_difftable_topo(difftable, attr1, attr2, usecolor=False):
                 max_col_width=maxcolwidth, wrap_style="wrap", row_line=True)
     
     log.info("Total euclidean distance:\t%0.4f\tMismatching nodes:\t%d" %(total_dist, len(difftable)))
-__DESCRIPTION__ = ""
-    
-if __name__ == '__main__':
+       
+def main(argv):
+    global args
     #test()
     parser = argparse.ArgumentParser(description=__DESCRIPTION__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -229,7 +232,7 @@ if __name__ == '__main__':
                         action="store_true",
                         help="If enabled, it will use colors in some of the report")
     
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     
     if args.quite:
         logging.basicConfig(format='%(message)s', level=logging.WARNING)
@@ -266,3 +269,6 @@ if __name__ == '__main__':
         elif args.report == 'table':
             rf, rf_max, _, _, _, _, _ = t1.robinson_foulds(t2, attr_t1=args.ref_attr, attr_t2=args.target_attr)[:2]
             show_difftable_summary(difftable, rf, rf_max)
+
+if __name__ == '__main__':
+    main(sys.argv[1:])

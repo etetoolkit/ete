@@ -31,7 +31,8 @@ def tree_iterator(fname):
             treeid, nw = line.split('\t')
             yield treeid.strip(), nw
         
-if __name__ == "__main__":
+def main(argv):
+    
     parser = argparse.ArgumentParser(description=__DESCRIPTION__, 
                             formatter_class=argparse.RawDescriptionHelpFormatter)
 
@@ -85,7 +86,7 @@ if __name__ == "__main__":
                         help=(""))
 
     
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     print __DESCRIPTION__
     reftree = args.reftree
     if args.targets_file and args.target_trees:
@@ -239,3 +240,5 @@ if __name__ == "__main__":
         OUT.close()
 
 
+if __name__ == '__main__':
+    main(sys.argv[1:])

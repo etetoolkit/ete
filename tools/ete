@@ -1,10 +1,15 @@
-#! /bin/sh
-SCRIPT_DIR="$(dirname "$(readlink -f "${0}")")"
-if [ $1 ] && [ -e $SCRIPT_DIR/ete_tools/ete_$1 ] 
-then
-    $SCRIPT_DIR/ete_tools/ete_$@
-else
-    echo
-    echo "Usage:"
-    echo "  ete TOOL_NAME [tool_arguments]"
-fi 
+#!/usr/bin/env python
+import sys
+import ete_tools
+
+try:
+    modname = "ete_%s"%sys.argv[1]
+    main = getattr(getattr(__import__("ete_tools.%s" %modname), modname), "main")
+except (AttributeError, IndexError, ImportError):
+    print 'Tool not found!\n'
+else:
+    main(sys.argv[2:])
+
+
+
+

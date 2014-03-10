@@ -90,7 +90,8 @@ def test():
     t.show()
 
 
-if __name__ == "__main__":
+def main(argv):
+    
     parser = ArgumentParser(description=__DESCRIPTION__)
 
     parser.add_argument("-t", "--taxid", dest="taxid", nargs="+",  
@@ -154,7 +155,7 @@ if __name__ == "__main__":
                               " indicating the minimum string similarity."))
    
     
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     ncbi.connect_database()
     if args.fuzzy:
         import pysqlite2.dbapi2 as sqlite3
@@ -281,3 +282,5 @@ if __name__ == "__main__":
             
         print reftree.write(features=["taxid", "sci_name", "ncbi_track"])
   
+if __name__ == '__main__':
+    main(sys.argv[1:])

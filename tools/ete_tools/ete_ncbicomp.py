@@ -22,6 +22,7 @@ except Exception:
 else:
     print "loaded cached color information"
     
+args = None
 
 def npr_layout(node):
     if node.is_leaf():
@@ -239,7 +240,7 @@ def tree_compare(t1, t2):
             n.add_feature("changed", "no")
 
             
-if __name__ == "__main__":
+def main(argv):
     parser = argparse.ArgumentParser(description=__DESCRIPTION__, 
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     # name or flags - Either a name or a list of option strings, e.g. foo or -f, --foo.
@@ -320,7 +321,7 @@ if __name__ == "__main__":
     parser.add_argument("--dump_tax_info", dest="dump_tax_info", action="store_true",
                         help="")
     
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     if args.sp_delimiter:
         GET_TAXID = lambda x: x.split(args.sp_delimiter)[args.sp_field]
@@ -524,7 +525,6 @@ if __name__ == "__main__":
             
     if args.output:
         OUT.close()
-
-    
-
-        
+       
+if __name__ == '__main__':
+    main(sys.argv[1:])

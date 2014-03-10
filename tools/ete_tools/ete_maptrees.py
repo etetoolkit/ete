@@ -12,6 +12,8 @@ import time
 import commands
 md5 = lambda x: hashlib.md5(x).hexdigest()
 
+args = None
+
 __DESCRIPTION__ = '''
 #  - maptrees -
 # ===================================================================================
@@ -602,8 +604,9 @@ def dump_results(reftree, informed_branches, dup_per_branch, losses_per_branch, 
     reftree.write(outfile="%s.nwx"%args.output, features=summary_fetaures)
     open("%s.log"%args.output, "w").write(' '.join(sys.argv))
 
-if __name__ == "__main__":
-    # CHICK = 0    
+def main(argv):
+    global args
+
     parser = argparse.ArgumentParser(description=__DESCRIPTION__, 
                             formatter_class=argparse.RawDescriptionHelpFormatter)
 
@@ -681,7 +684,7 @@ if __name__ == "__main__":
                         help=("If used, supported ref tree branches are individually reported for each gene tree "))
 
     
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     if args.plot_newick:
         t = Tree(args.plot_newick)
         ts = TreeStyle()
@@ -803,6 +806,7 @@ if __name__ == "__main__":
     print >>sys.stderr, "Dumping full analysis..."
     # Full dump, including duplication details
     cPickle.dump(reftree, open("%s.pkl"%args.output, "w"))
-
+   
     
-    
+if __name__ == '__main__':
+    main(sys.argv[1:])
