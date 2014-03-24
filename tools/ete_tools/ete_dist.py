@@ -106,9 +106,15 @@ def main(argv):
             out = t.search_nodes(name=args.outgroup[0])[0]
         t.set_outgroup(out)
 
+               
+        
     ref_names = set(t.get_leaf_names())
     reftree_len = len(t)
     reftree_edges = (reftree_len*2)-2
+    ncollapsed_branches = len([n for n in t.traverse() if n.children and n.support < args.min_support])
+    #reftree_edges -= ncollapsed_branches
+    #if ncollapsed_branches:
+    #    print '%d branches collapsed in reference tree' %ncollapsed_branches
     
     HEADER = ("target tree", 'dups', 'subtrees', 'used trees', 'treeko', "RF", "maxRF", 'normRF', "%reftree", "%genetree", "avgSize", "minSize", "common tips", "refSize", "targetSize")
     if args.output:
@@ -170,7 +176,7 @@ def main(argv):
                         continue
                     subtree = PhyloTree(subtree_nw, sp_naming_function = lambda name: name.split(args.spname_delimiter)[args.spname_field])
 
-                    # only necessary if rf function is going to filter by support value. It slow downs the analysis, obviously
+                    # only necessary if rf function is going to filter by support value. It slows downs the analysis, obviously
                     if args.min_support:
                         subtree_content = subtree.get_cached_content(store_attr='name')
                         for n in subtree.traverse():
@@ -184,11 +190,21 @@ def main(argv):
                         tree_sizes.append(len(common))
                         all_max_rf.append(maxr)
                         common_names = max(common_names, len(common))
+                        
                         ref_found.append(float(len(p2 & p1)) / reftree_edges)
-                        p2 = set([p for p in (p2-d2) if len(p[0])>1 and len(p[1])>1])
-                        if p2-d2:
+                        p2bis = set([p for p in (p2-d2) if len(p[0])>1 and len(p[1])>1]) # valid edges in target not leaves
+                        if p2bis:
                             incompatible_target_branches = float(len((p2-d2) - p1))
                             target_found.append(1 - (incompatible_target_branches / (len(p2-d2))))
+                            
+                        # valid_target = p2-d2
+                        # valid_ref = p1-d1
+                        # ref_found.append(float(len(valid_target & valid_ref)) / reftree_edges)
+                        
+                        # p2bis = set([p for p in (p2-d2) if len(p[0])>1 and len(p[1])>1])
+                        # if p2bis-d2:
+                        #     incompatible_target_branches = float(len((p2-d2) - p1))
+                        #     target_found.append(1 - (incompatible_target_branches / (len(p2-d2))))
 
                         
                 if all_rf:
