@@ -2,11 +2,25 @@
 import sys
 import ete_tools
 
+
+
+def p_usage():
+    tools = 'view, dist, diff, merge, ncbiquery, ncbicomp, maptrees, stats, orthoxml' 
+    print >>sys.stderr, 'Usage:  ete2 [tool] [tool_arguments]'
+    print >>sys.stderr, '[tool] = '+tools
+   
+if len(sys.argv) == 1:
+    p_usage()
+    sys.exit(137)
+   
+
 try:
     modname = "ete_%s"%sys.argv[1]
     main = getattr(getattr(__import__("ete_tools.%s" %modname), modname), "main")
 except (AttributeError, IndexError, ImportError):
-    print 'Tool not found!\n'
+    print >>sys.stderr, 'Tool not found!\n'
+    p_usage()
+    print sys.exit(137)
 else:
     main(sys.argv[2:])
 

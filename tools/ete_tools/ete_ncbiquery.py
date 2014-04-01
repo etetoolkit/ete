@@ -67,11 +67,8 @@ COLOR_RANKS = {
     }
 
 # Loads database
-if 1:
-    module_path = os.path.split(os.path.realpath(__file__))[0]
-    c = sqlite3.connect(os.path.join(module_path, 'taxa.sqlite'))
-else:
-    ncbi.connect_database()
+MODULE_PATH = os.path.split(os.path.realpath(__file__))[0]
+
 
 __DESCRIPTION__ = """ 
 Query ncbi taxonomy using a local DB
@@ -94,6 +91,10 @@ def main(argv):
     
     parser = ArgumentParser(description=__DESCRIPTION__)
 
+    parser.add_argument("--db",  dest="dbfile", default=MODULE_PATH+'/taxa.sqlite',
+                        type=str,
+                        help="""NCBI sqlite3 db file.""")
+    
     parser.add_argument("-t", "--taxid", dest="taxid", nargs="+",  
                         type=int, 
                         help="""taxids (space separated)""")
@@ -156,10 +157,17 @@ def main(argv):
    
     
     args = parser.parse_args(argv)
-    ncbi.connect_database()
+    if not args.taxonomy and not args.info and not args.reftree:
+        parser.print_usage()
+        sys.exit(0)
+    
     if args.fuzzy:
         import pysqlite2.dbapi2 as sqlite3
-        c = sqlite3.connect(os.path.join(module_path, 'taxa.sqlite'))
+        c = sqlite3.connect(os.path.join(MODULE_PATH, args.dbfile))
+    else:
+        ncbi.connect_database(args.dbfile)
+    
+
         
     all_names = set([])
     all_taxids = []
