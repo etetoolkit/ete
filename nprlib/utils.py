@@ -96,11 +96,6 @@ try:
     from collections import OrderedDict
 except ImportError: 
     from nprlib.ordereddict import OrderedDict
-try:
-    from ncbi_taxonomy import ncbi_common as ncbi
-except ImportError:
-    ncbi = None
-    pass
     
 # ete_dev should be added to the python path by the npr script
 from ete_dev.phylo import PhyloTree
@@ -108,6 +103,8 @@ from ete_dev.coretype.tree import Tree
 from ete_dev.coretype.seqgroup import SeqGroup
 from ete_dev.parser.fasta import read_fasta
 from ete_dev.coretype import tree
+from ete_dev.ncbi_taxonomy import ncbiquery as ncbi
+
 # This default values in trees are Very important for outgroup
 # selection algorithm to work: 
 tree.DEFAULT_SUPPORT = 1.0
