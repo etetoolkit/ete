@@ -2,8 +2,6 @@
 import sys
 import ete_tools
 
-
-
 def p_usage():
     tools = 'view, dist, diff, merge, ncbiquery, ncbicomp, maptrees, stats, orthoxml' 
     print >>sys.stderr, 'Usage:  ete2 [tool] [tool_arguments]'
