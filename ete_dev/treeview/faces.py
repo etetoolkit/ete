@@ -1414,6 +1414,7 @@ class TextLabelItem(QGraphicsRectItem):
         qfont.setFamily(self.ffam)
         qfont.setPointSize(self.fsize)
         p.setFont(qfont)
+        p.setClipRect(self.rect())
         p.drawText(self.rect(), Qt.AlignCenter |  Qt.AlignVCenter, self.text)
         #p.setBrush(Qt.NoBrush)
         #p.drawRect(self.rect())

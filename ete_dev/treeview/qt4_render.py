@@ -443,7 +443,7 @@ def add_scale(img, mainRect, parent):
         scaleItem.setParentItem(parent)
         dw = max(0, length-mainRect.width())
         scaleItem.setPos(mainRect.bottomLeft())
-        mainRect.adjust(0,0,dw, length)
+        mainRect.adjust(0, 0, dw, length)
 
 def rotate_inverted_faces(n2i, n2f, img):
     for node, faceblock in n2f.iteritems():

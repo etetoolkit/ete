@@ -350,7 +350,7 @@ class TreeNode(object):
                 \--- H |
                         \ A
 
-          > root.delete(H) will produce this structure:
+          > H.delete() will produce this structure:
 
                 / C
                |
@@ -1313,9 +1313,14 @@ class TreeNode(object):
             print "\n\n"
             print e
         else:
-            return drawer.render_tree(self, file_name, w=w, h=h, 
+            if file_name == '%%return':
+                return drawer.get_img(self, w=w, h=h, 
                                       layout=layout, tree_style=tree_style, 
                                       units=units, dpi=dpi)
+            else:
+                return drawer.render_tree(self, file_name, w=w, h=h, 
+                                          layout=layout, tree_style=tree_style, 
+                                          units=units, dpi=dpi)
 
     def copy(self, method="cpickle"):
         """.. versionadded: 2.1

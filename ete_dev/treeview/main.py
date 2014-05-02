@@ -595,16 +595,22 @@ def set_pen_style(pen, line_style):
 
 def save(scene, imgName, w=None, h=None, dpi=90,\
              take_region=False, units="px"):
+    ipython_inline = False
     if imgName == "%%inline":
         ipython_inline = True
         ext = "SVG"
+    elif imgName.startswith("%%return"):
+        try:
+            ext = imgName.split(".")[1].upper()
+        except IndexError:
+            ext = 'SVG'
+        imgName = '%%return'
     else:
-        ipython_inline = False
         ext = imgName.split(".")[-1].upper()
-        
+    
     main_rect = scene.sceneRect()
     aspect_ratio = main_rect.height() / main_rect.width()
-
+   
     # auto adjust size    
     if not w and not h:
         units = "px"
@@ -636,30 +642,49 @@ def save(scene, imgName, w=None, h=None, dpi=90,\
     else:
         raise Exception("wrong unit format")
 
+    x_scale, y_scale = w/main_rect.width(), h/main_rect.height()
+    
     if ext == "SVG": 
         from PyQt4 import QtSvg
         svg = QtSvg.QSvgGenerator()
-        svg.setFileName(imgName)
         targetRect = QtCore.QRectF(0, 0, w, h)
         svg.setSize(QtCore.QSize(w, h))
         svg.setViewBox(targetRect)
         svg.setTitle("Generated with ETE http://ete.cgenomics.org")
         svg.setDescription("Generated with ETE http://ete.cgenomics.org")
+        
+        if imgName == '%%return':
+            ba = QtCore.QByteArray()
+            buf = QtCore.QBuffer(ba)
+            buf.open(QtCore.QIODevice.WriteOnly)
+            svg.setOutputDevice(buf)
+        else:
+            svg.setFileName(imgName)
 
         pp = QPainter()
         pp.begin(svg)
         scene.render(pp, targetRect, scene.sceneRect(), ratio_mode)
-        pp.end() 
+        pp.end()
+        if imgName == '%%return':
+            compatible_code = str(ba)
+            print 'from memory'
+        else:
+            compatible_code = open(imgName).read()
         # Fix a very annoying problem with Radial gradients in
         # inkscape and browsers...
-        temp_compatible_code = open(imgName).read().replace("xml:id=", "id=")
-        compatible_code = re.sub('font-size="(\d+)"', 'font-size="\\1pt"', temp_compatible_code)
+        compatible_code = compatible_code.replace("xml:id=", "id=")
+        compatible_code = re.sub('font-size="(\d+)"', 'font-size="\\1pt"', compatible_code)
+        compatible_code = compatible_code.replace('\n', '')
+        compatible_code = re.sub('<g [^>]+>\s*</g>', '', compatible_code)
+        # End of fix
         if ipython_inline:
             from IPython.core.display import SVG
             return SVG(compatible_code)
+        elif imgName == '%%return':
+            return x_scale, y_scale, compatible_code
         else:
             open(imgName, "w").write(compatible_code)
-        # End of fix
+
 
     elif ext == "PDF" or ext == "PS":
         if ext == "PS":
@@ -700,6 +725,13 @@ def save(scene, imgName, w=None, h=None, dpi=90,\
 
         scene.render(pp, targetRect, scene.sceneRect(), ratio_mode)
         pp.end()
-        ii.save(imgName)
-
+        if imgName == '%%return':
+            ba = QtCore.QByteArray()
+            buf = QtCore.QBuffer(ba)
+            buf.open(QtCore.QIODevice.WriteOnly)
+            ii.save(buf, "PNG")
+            return x_scale, y_scale, ba.toBase64()
+        else:
+            ii.save(imgName)
+        
     return w/main_rect.width(), h/main_rect.height()

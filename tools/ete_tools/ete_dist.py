@@ -85,6 +85,15 @@ def main(argv):
                         action='store_true', 
                         help=(""))
 
+    parser.add_argument("--ref_attr", dest="ref_attr", 
+                        type=str, 
+                        help=("attribute in ref tree used as leaf name"))
+    
+    parser.add_argument("--target_attr", dest="target_attr", 
+                        type=str, 
+                        help=("attribute in target tree used as leaf name"))
+
+
     
     args = parser.parse_args(argv)
     print __DESCRIPTION__
@@ -99,14 +108,21 @@ def main(argv):
         target_trees = args.target_trees
         
     t = Tree(reftree)
+
+    if args.ref_attr:
+        for lf in t.iter_leaves():
+            lf._origname = lf.name
+            if args.ref_attr not in lf.features:
+                print lf
+            lf.name = getattr(lf, args.ref_attr)
+    
     if args.outgroup:
         if len(args.outgroup) > 1:
             out = t.get_common_ancestor(args.outgroup)
         else:
             out = t.search_nodes(name=args.outgroup[0])[0]
         t.set_outgroup(out)
-
-               
+             
         
     ref_names = set(t.get_leaf_names())
     reftree_len = len(t)
@@ -135,12 +151,18 @@ def main(argv):
             seedid, tfile = tfile
         else:
             seedid = None
-            
+
+           
         if args.extract_species:
             tt = PhyloTree(tfile, sp_naming_function = lambda name: name.split(args.spname_delimiter)[args.spname_field])
         else:
             tt = Tree(tfile)
 
+        if args.target_attr:
+            for lf in tt.iter_leaves():
+                lf._origname = lf.name
+                lf.name = getattr(lf, args.target_attr)
+            
         if args.outgroup:
             if len(args.outgroup) > 1:
                 out = tt.get_common_ancestor(args.outgroup)
@@ -237,9 +259,9 @@ def main(argv):
                     max_size, min_size, avg_size = 0, 0, 0
                     
                 ref_branches_in_target = float(len(p2 & p1)) / reftree_edges
-                if p2-d2:
-                    incompatible_target_branches = float(len((p2-d2) - p1))
-                    target_found.append(1 - (incompatible_target_branches / (len(p2-d2))))
+                #if p2-d2:
+                #    incompatible_target_branches = float(len((p2-d2) - p1))
+                #    target_found.append(1 - (incompatible_target_branches / (len(p2-d2))))
             else:
                 ref_branches_in_target = 0.0
                 target_branches_in_ref = 0.0

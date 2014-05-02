@@ -60,7 +60,7 @@ def render_tree(t, imgName, w=None, h=None, layout=None,
                 tree_style = None, header=None, units="px",
                 dpi=90):
     """ Render tree image into a file."""
-    
+
     for nid, n in enumerate(t.traverse("preorder")):
         n.add_feature("_nid", nid)
     scene, img = init_scene(t, layout, tree_style)
@@ -78,5 +78,22 @@ def render_tree(t, imgName, w=None, h=None, layout=None,
 
     return imgmap
     
+
+def get_img(t, w=None, h=None, layout=None, tree_style = None,
+            header=None, units="px", dpi=90):
+    global _QApp
+    scene, img = init_scene(t, layout, tree_style)
+    tree_item, n2i, n2f = render(t, img)
+    scene.init_values(t, img, n2i, n2f)
+    
+    tree_item.setParentItem(scene.master_item)
+    scene.master_item.setPos(0,0)
+    scene.addItem(scene.master_item)
+    x_scale, y_scale, imgdata = save(scene, "%%return", w=w, h=h, units=units, dpi=dpi)
+    _QApp.quit()
+    return imgdata, {}
+
+ 
+
 
 
