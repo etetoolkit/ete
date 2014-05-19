@@ -38,7 +38,24 @@ _NAME_RE = "[^():,;\[\]]+"
 DEFAULT_DIST = 1.0
 DEFAULT_NAME = ''
 DEFAULT_SUPPORT = 1.0
+FLOAT_FORMATTER = "%0.6g"
+DIST_FORMATTER = ":"+FLOAT_FORMATTER
 
+def set_float_format(formatter):
+    ''' Set the conversion format used to represent float distances and support
+    values in the newick representation of trees.
+
+    For example, use set_float_format('%0.32f') to specify 32 decimal numbers
+    when exporting node distances and bootstrap values.
+
+    Scientific notation (%e) or any other custom format is allowed. The
+    formatter string should not contain any character that may break newick
+    structure (i.e.: ":;,()")
+
+    '''
+    global FLOAT_FORMATTER, DIST_FORMATTER
+    FLOAT_FORMATTER = formatter
+    DIST_FORMATTER = ":"+FLOAT_FORMATTER
 
 # Allowed formats. This table is used to read and write newick using
 # different convenctions. You can also add your own formats in an easy way.
@@ -110,7 +127,7 @@ def format_node(node, node_type, format):
     else:
         try:
             #FIRST_PART =  "%0.6f" %(converterFn2(getattr(node, container1)))
-            FIRST_PART =  "%g" %(converterFn2(getattr(node, container1)))
+            FIRST_PART =  FLOAT_FORMATTER %(converterFn2(getattr(node, container1)))
         except (ValueError, TypeError):
             FIRST_PART = "?"
 
@@ -126,7 +143,7 @@ def format_node(node, node_type, format):
     else:
         try:
             #SECOND_PART = ":%0.6f" %(converterFn2(getattr(node, container2)))
-            SECOND_PART = ":%g" %(converterFn2(getattr(node, container2)))
+            SECOND_PART = DIST_FORMATTER %(converterFn2(getattr(node, container2)))
         except (ValueError, TypeError):
             SECOND_PART = ":?"
 
