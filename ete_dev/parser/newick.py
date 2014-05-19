@@ -24,7 +24,7 @@ import re
 import os
 import base64 
 
-__all__ = ["read_newick", "write_newick", "print_supported_formats"]
+__all__ = ["read_newick", "write_newick", "print_supported_formats", "set_float_formatter"]
 
 # Regular expressions used for reading newick format
 _ILEGAL_NEWICK_CHARS = ":;(),\[\]\t\n\r="
