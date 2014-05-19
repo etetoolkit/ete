@@ -24,7 +24,7 @@ import re
 import os
 import base64 
 
-__all__ = ["read_newick", "write_newick", "print_supported_formats", "set_float_formatter"]
+__all__ = ["read_newick", "write_newick", "print_supported_formats"]
 
 # Regular expressions used for reading newick format
 _ILEGAL_NEWICK_CHARS = ":;(),\[\]\t\n\r="
@@ -42,6 +42,17 @@ FLOAT_FORMATTER = "%0.6g"
 DIST_FORMATTER = ":"+FLOAT_FORMATTER
 
 def set_float_format(formatter):
+    ''' Set the conversion format used to represent float distances and support
+    values in the newick representation of trees.
+
+    For example, use set_float_format('%0.32f') to specify 32 decimal numbers
+    when exporting node distances and bootstrap values.
+
+    Scientific notation (%e) or any other custom format is allowed. The
+    formatter string should not contain any character that may break newick
+    structure (i.e.: ":;,()")
+
+    '''
     global FLOAT_FORMATTER, DIST_FORMATTER
     FLOAT_FORMATTER = formatter
     DIST_FORMATTER = ":"+FLOAT_FORMATTER
