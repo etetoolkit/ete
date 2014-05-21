@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
- 
+
 import errno
 import __builtin__
 def wrap(method, retries):
@@ -99,28 +99,19 @@ __DESCRIPTION__ = (
     
       ETE-NPR is a Python application that encapsulates all necessary software
       and methods to reconstruct phylogenetic trees starting from a single FASTA
-      file. It provides a convenient interface, based on a single configuration
-      file, in which complex phylogenetic workflows can be defined in a few
-      lines.
+      file. It provides a convenient command line interface, based on a single
+      configuration file, in which complex phylogenetic workflows can be defined
+      in a few lines.
 
       In addition, ETE-NPR implements the Nested Phylogenetic Reconstruction
       (NPR) algorithm, by which nodes in a phylogenetic tree can be
       hierarchically revisited through several iterations in order to maximize
       their resolution.
 
-      If you use this program in a published work, please cite:
-
-        - Jaime Huerta-Cepas and Toni Gabaldon. ETE-NPR: a python application for
-          nested phylogenetic reconstruction and workflow design. XXX-XX.
-
-      If you also use the NPR methodology, please cite:
-
-        - 
-
       (Note that a list of the external programs used to complete the necessary
       computations will be shown shown together with your results.)
 
-           Contact: jhuerta [at] crg.es & tgabaldon [at] crg.es
+           Contact: huerta [at] embl.de & tgabaldon [at] crg.es
 --------------------------------------------------------------------------------
 
     """ %(__VERSION__, __DATE__))
@@ -151,17 +142,6 @@ def check_number(value, cast, minv=0, maxv=None):
                               (value, _minv, _maxv))
     return typed_value
 
-def is_float(value, minv=None, maxv=None):
-    return check_number(value, float, minv, maxv)
-
-def is_integer(value, minv=None, maxv=None):
-    return check_number(value, int, minv, maxv)
-
-def is_list(value):
-    if not isinstance(value, list):
-        raise ConfigError("Expected a list of values. Found [%s]" %value)
-    return value
-
 def is_set(value):
     if not isinstance(value, list):
         raise ConfigError("Expected a list of values. Found [%s]" %value)
@@ -188,16 +168,127 @@ def is_integer_list(value, minv=0, maxv=None):
         typed_value.append(check_number(v, int, minv, maxv))
     return typed_value
 
-def is_correlative_integer_list(value, minv=1, maxv=None):
+
+def is_float(value, minv=None, maxv=None):
+    return check_number(value, float, minv, maxv)
+
+def is_integer(value, minv=None, maxv=None):
+    return check_number(value, int, minv, maxv)
+
+
+def is_list(value):
+    if not isinstance(value, list):
+        raise ConfigError("[%s] is not a list" %value)
+    return value
+
+def is_app_link(value, allow_none=True):
+    if allow_none and value == 'none':
+        return value
+    elif value.startswith('@'):
+        return value
+    else:
+        raise ConfigError('[%s] is not a valid block link' %value)
+    
+def is_app_list(value, allow_none=True):
+    is_list(value)
+    for v in value:
+        is_app_link(v, allow_none=allow_none)
+    return value
+
+
+def is_boolean(value):
+    if str(value).lower() in set(["1", "true", "yes"]):
+        return True
+    elif str(value).lower() in set(["0", "false", "no"]):
+        return False
+    else:
+        raise ConfigError('[%s] is not a boolean value' %(value))
+        
+def is_integer_list(value, maxv=None, minv=None):
+    is_list(value)
+    return [is_integer(v, maxv=maxv, minv=minv) for v in value]
+
+def is_correlative_integer_list(value, minv=None, maxv=None):
     is_list(value)
     typed_value = []
     last_value = 0
     for v in value:
-        typed_value.append(check_number(v, int, minv, maxv))
-        if int(v) <= last_value:
-            raise ConfigError("Numeric values are not correlative: %s" %value)
-        last_value = int(v)
+        cv = is_integer(v, minv=None, maxv=None)
+        typed_value.append(cv)
+        if cv <= last_value:
+            raise ConfigError("[%s] Numeric values are not correlative" %value)
+        last_value = cv
     return typed_value
+
+def is_text(value):
+    if isinstance(value, str):
+        return value
+    else:
+        raise ConfigError("[%s] is not a valid text string" %value)
+
+CHECKERS = {
+    ("main", "npr"): (is_app_list, {}, True),
+    ("main", "max_seqs"): (is_correlative_integer_list, {"minv":1}, True),
+    ("main", "workflow"): (is_app_list, {}, True),
+
+    ("npr", "max_iters"): (is_integer, {"minv":1}, True),
+    ("npr", "switch_aa_similarity"): (is_float, {"minv":0, "maxv":1}, True),
+    ("npr", "max_seq_similarity"): (is_float, {"minv":0, "maxv":1}, True),
+    ("npr", "min_branch_support"): (is_float, {"minv":0, "maxv":1}, True),
+    ("npr", "min_npr_size"): (is_integer, {"minv":3}, True),
+    ("npr", "tree_splitter"): (is_app_link, {}, True),
+
+    
+    ("genetree", "aa_aligner"): (is_app_link, {}, True),
+    ("genetree", "nt_aligner"): (is_app_link, {}, True),
+    ("genetree", "aa_alg_cleaner"): (is_app_link, {}, True),
+    ("genetree", "nt_alg_cleaner"): (is_app_link, {}, True),
+    ("genetree", "aa_model_tester"): (is_app_link, {}, True),
+    ("genetree", "nt_model_tester"): (is_app_link, {}, True),
+    ("genetree", "aa_tree_builder"): (is_app_link, {}, True),
+    ("genetree", "nt_tree_builder"): (is_app_link, {}, True),
+
+    ("supermatrix", "cog_selector"): (is_app_link, {}, True),
+    ("supermatrix", "alg_concatenator"): (is_app_link, {}, True),
+    ("supermatrix", "aa_tree_builder"): (is_app_link, {}, True),
+    ("supermatrix", "nt_tree_builder"): (is_app_link, {}, True),
+    ("supermatrix", "target_levels"): (is_list, {}, False),
+
+
+    ("concatalg", "_default_aa_model"): (is_text, {}, True),
+    ("concatalg", "_default_nt_model"): (is_text, {}, True),
+
+    ("cogselector", "_species_missing_factor"): (is_float, {"minv":0, "maxv":1}, True),
+    ("cogselector", "_max_cogs"): (is_integer, {"minv":1}, True),
+    }
+
+def check_type(blocktype, attr, v):
+    tag = (blocktype, attr)
+    if tag in CHECKERS:
+        tester, kargs, required = CHECKERS[tag]
+        return tester(v, **kargs)
+    else:
+        return v 
+
+def check_block_link(conf, parent, v):
+    if isinstance(v, str) and v.startswith('@') and v[1:] not in conf:
+        raise ConfigError('[%s] config block referred in [%s] but not found in config' %(v, parent))
+
+def check_config(conf):
+    for k in conf.iterkeys():
+        blocktype = conf[k].get('_app', 'unknown')
+        for attr, v in conf[k].iteritems():
+            cv = check_type(blocktype, attr, v)
+            if isinstance(cv, list):
+                for i in cv:
+                    check_block_link(conf, k, i)
+            else:
+                check_block_link(conf, k, cv)
+        for tag, tester in CHECKERS.iteritems():
+            if tag[0] == blocktype and (tester[2] and tag[1] not in conf[k]):
+                raise ConfigError('[%s] attribute expected in block [%s]' %(tag[1], k))
+            
+            
 
 def main(args):
     global log
@@ -222,7 +313,6 @@ def main(args):
     else:
         arch = args.arch
        
-
     # Check and load all configuration files
     run2config = {}
     for fname in args.configfile:
@@ -238,11 +328,10 @@ def main(args):
                                       " --override option or change the"
                                       " output path.")
 
-        try:
-            config = ConfigObj(fname, list_values=True,
-                               configspec=StringIO(CONFIG_SPECS))
-        except Exception, e:
-            raise ConfigError(str(e))
+
+        config = ConfigObj(fname, list_values=True,
+                           configspec=StringIO(CONFIG_SPECS))
+        check_config(config)
 
         custom_types = {"boolean_list": is_boolean_list,
                         "integer_list": is_integer_list,
