@@ -13,54 +13,34 @@ from nprlib.master_task import register_task_recursively
 log = logging.getLogger("main")
 
 CONFIG_SPECS = """
-
-[genetree]
+[npr]
 max_iters = integer(minv=1)
-
-max_seqs = correlative_integer_list(minv=0)
 switch_aa_similarity = float_list(minv=0.0, maxv=1.0)
 max_seq_similarity = float_list(minv=0.0, maxv=1.0)
 min_branch_support = float_list(minv=0, maxv=1)
 min_npr_size = integer_list(minv=3)
+tree_splitter = list()
 
-aa_aligner = list()
-aa_alg_cleaner = list()
-aa_model_tester = list()
-aa_tree_builder = list()
-
-nt_aligner = list()
-nt_alg_cleaner = list()
-nt_model_tester = list()
-nt_tree_builder = list()
-
+[genetree]
+max_seqs = correlative_integer_list(minv=0)
+workflow = list()
+npr = list()
 tree_splitter = list()
 
 [supermatrix]
-max_iters = integer(minv=1)
-
 max_seqs = correlative_integer_list(minv=0)
-switch_aa_similarity = float_list(minv=0.0, maxv=1.0)
-max_seq_similarity = float_list(minv=0.0, maxv=1.0)
-min_branch_support = float_list(minv=0, maxv=1)
-min_npr_size = integer_list(minv=3)
-
-cog_selector = list()
-alg_concatenator = list()
-aa_tree_builder = list()
-nt_tree_builder = list()
-tree_splitter = list()
-
-target_levels = set()
-
+workflow = list()
+npr = list()
 """
 
+                
 class IterConfig(dict):
     def __init__(self, conf, workflow, size, seqtype):
         """Special dict to extract the value of each parameter given
          the properties of a task: size and seqtype. 
         """
         dict.__init__(self, conf[workflow])
-        
+       
         self.conf = conf
         self.seqtype = seqtype
         self.size = size
@@ -77,7 +57,17 @@ class IterConfig(dict):
                     self.index = index_slide
                 else:
                     index_slide += 1
-
+        # Updates the dictionary with the workflow application config
+        appcfg = conf[workflow]['workflow'][self.index]
+        if appcfg.startswith('@'):
+            self.update(conf[appcfg[1:]])
+        nprcfg = conf[workflow]['npr'][self.index]
+        if nprcfg.startswith('@'):
+            self.update(conf[nprcfg[1:]])
+        elif nprcfg == 'none':
+            self['max_iters'] = 1
+            
+        
     def __getattr__(self, v):
         try:
             return dict.__getattr__(self, v)
