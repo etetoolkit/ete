@@ -155,13 +155,13 @@ def main(args):
     TARGET_CLADES = set()
     for wkname in args.workflow:
         config = dict(base_config)
-        appset = config[config[wkname]['appset'][1:]]
+        appset = config[config[wkname]['_appset'][1:]]
         if wkname not in config:
             raise ConfigError('[%s] workflow not present in config file' %wkname)
         if config[wkname]['_app'] != 'main':
             raise ConfigError('[%s] configuration block is not a valid workflow definition (_app=main)' %wkname)
 
-        for w in config[wkname]['workflow']:
+        for w in config[wkname]['_workflow']:
             wtype = config[w[1:]].get('_app', 'unknown')
             if wtype not in set(['genetree', 'supermatrix']):
                 raise ConfigError('[%s] workflow type not supported: [%s]' %(w[1:], wtype))
@@ -170,10 +170,10 @@ def main(args):
         if len(workflow_types) > 1:
             raise ConfigError('[%s] mixing workflow types is not allowed [%s].' %(wkname, ', '.join(workflow_types)))
             
-        for w in config[wkname]['npr']:
+        for w in config[wkname]['_npr']:
             if w != 'none':
                 target_levels = config[w[1:]].get('_target_levels', [])
-                target_dict = config[w[1:]]['optimized_levels'] = {}
+                target_dict = config[w[1:]]['_optimized_levels'] = {}
                 for tg in target_levels:
                     # If target level name starts with ~, we allow para and
                     # poly-phyletic grouping of the species in such level
