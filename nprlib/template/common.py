@@ -27,7 +27,7 @@ class IterConfig(dict):
         index_slide = 0
         while self.index is None: 
             try:
-                max_seqs = conf[workflow]["max_seqs"][index_slide]
+                max_seqs = conf[workflow]["_max_seqs"][index_slide]
             except IndexError:
                 raise DataError("Target species [%d] has a size that is not covered in current config file" %self.size)
             else:
@@ -36,16 +36,15 @@ class IterConfig(dict):
                 else:
                     index_slide += 1
         # Updates the dictionary with the workflow application config
-        appcfg = conf[workflow]['workflow'][self.index]
+        appcfg = conf[workflow]['_workflow'][self.index]
         if appcfg.startswith('@'):
             self.update(conf[appcfg[1:]])
-        nprcfg = conf[workflow]['npr'][self.index]
+        nprcfg = conf[workflow]['_npr'][self.index]
         if nprcfg.startswith('@'):
             self.update(conf[nprcfg[1:]])
         elif nprcfg == 'none':
-            self['max_iters'] = 1
-            
-        
+            self['_max_iters'] = 1
+                    
     def __getattr__(self, v):
         try:
             return dict.__getattr__(self, v)
@@ -57,9 +56,9 @@ class IterConfig(dict):
         if v in set(["tree_builder", "aligner", "model_tester",
                      "alg_cleaner"]):
             v = "%s_%s" %(self.seqtype, v)
-
+        
         try:
-            value = dict.__getitem__(self, v)
+            value = dict.__getitem__(self, "_%s" %v)
         except KeyError, e:
             return None
         else:
@@ -219,14 +218,16 @@ def split_tree(task_tree_node, task_outgroups, main_tree, alg_path, npr_conf, th
         # subtree
         _TARGET_NODES = defaultdict(list) # this container is used by
                                           # processable_node function
-        if npr_conf["optimized_levels"]:
+
+        opt_levels = GLOBALS[threadid].get('_optimized_levels', None)
+        if opt_levels is not None:
             # any descendant of the already processed node is suitable for
             # selection. If the ancestor of level-species is on top of the
             # task_tree_node, it will be discarded
             avail_nodes = set(master_node.get_descendants())
-            for lin in GLOBALS["optimized_levels"]:
+            for lin in opt_levels:
                 sp2lin, lin2sp = GLOBALS["lineages"]
-                optimized, strict_monophyly = npr_conf["optimized_levels"][lin]
+                optimized, strict_monophyly = opt_levels[lin]
                 if not optimized:
                     ancestor = main_tree.get_common_ancestor(*lin2sp[lin])
                     if ancestor in avail_nodes:
@@ -240,11 +241,11 @@ def split_tree(task_tree_node, task_outgroups, main_tree, alg_path, npr_conf, th
                         log.log(28, "Discarding upper clade @@11:%s@@1:" %lin)
                         
         for node in master_node.iter_leaves(is_leaf_fn=processable_node):
-            if npr_conf["optimized_levels"]:
+            if opt_levels:
                 log.log(28, "Trying to optimizing custom tree level: @@11:%s@@1:" %_TARGET_NODES[node])
                 for lin in _TARGET_NODES[node]:
                     # Marks the level as optimized, so is not computed again
-                    npr_conf["optimized_levels"][lin][0] = True
+                    opt_levels[lin][0] = True
            
             log.log(28, "Found possible target node of size %s and branch support %f" %(len(n2content[node]), node.support))
 
@@ -323,8 +324,8 @@ def select_closest_outgroup(target, n2content, splitterconf):
         
     # Prepare cutoffs
     out_topodist = tobool(splitterconf["_outgroup_topology_dist"])
-    max_outgroup_size = max(int(float(splitterconf["_outgroup_size"]) * len(n2content[target])), 1)
-    out_min_support = float(splitterconf["_outgroup_min_support"])
+    max_outgroup_size = max(int(float(splitterconf["_max_outgroup_size"]) * len(n2content[target])), 1)
+    out_min_support = float(splitterconf["_min_outgroup_support"])
 
     log.log(28, "Max outgroup size allowed %d" %max_outgroup_size)
     
@@ -346,7 +347,7 @@ def select_closest_outgroup(target, n2content, splitterconf):
         raise TaskError(None, "Could not find a suitable outgroup!")
 
     log.log(20,
-            "Found possible outgroup Size:%d Dist:%f Supp:%f",
+            "Found possible outgroup Size:%d Distance:%f Support:%f",
             len(n2content[best_outgroup]), n2targetdist[best_outgroup], best_outgroup.support)
    
     log.log(20, "Supports: %0.2f (children=%s)", best_outgroup.support,
@@ -384,12 +385,12 @@ def select_sister_outgroup(target, n2content, splitterconf):
         
     # Prepare cutoffs
     out_topodist = tobool(splitterconf["_outgroup_topology_dist"])
-    out_min_support = float(splitterconf["_outgroup_min_support"])
-    if splitterconf["_outgroup_size"].strip().endswith("%"):
-        max_outgroup_size = max(1, round((float(splitterconf["_outgroup_size"].strip("%"))/100) * len(n2content[target])))
-        log.log(28, "Max outgroup size allowed %s = %d" %(splitterconf["_outgroup_size"], max_outgroup_size))
+    out_min_support = float(splitterconf["_min_outgroup_support"])
+    if splitterconf["_max_outgroup_size"].strip().endswith("%"):
+        max_outgroup_size = max(1, round((float(splitterconf["_max_outgroup_size"].strip("%"))/100) * len(n2content[target])))
+        log.log(28, "Max outgroup size allowed %s = %d" %(splitterconf["_max_outgroup_size"], max_outgroup_size))
     else:
-        max_outgroup_size = max(1, int(splitterconf["_outgroup_size"]))
+        max_outgroup_size = max(1, int(splitterconf["_max_outgroup_size"]))
         log.log(28, "Max outgroup size allowed %d" %max_outgroup_size)
     
     # Gets a list of outside nodes an their distance to current target node
@@ -407,7 +408,7 @@ def select_sister_outgroup(target, n2content, splitterconf):
     if valid_nodes:
         best_outgroup = valid_nodes[0][0]
     else:
-        print '\n'.join(sorted(["%s Size:%d Dist:%f Supp:%f" %(node.cladeid, len(n2content[node]), ndist, node.support)
+        print '\n'.join(sorted(["%s Size:%d Distance:%f Support:%f" %(node.cladeid, len(n2content[node]), ndist, node.support)
                                 for node, ndist in n2targetdist.iteritems()],
                                sort_outgroups))
         raise TaskError(None, "Could not find a suitable outgroup!")
@@ -446,7 +447,7 @@ def select_outgroups(target, n2content, splitterconf):
     
     #policy = splitterconf["_outgroup_policy"]  # node or leaves
     out_topodist = tobool(splitterconf["_outgroup_topology_dist"])
-    optimal_out_size = int(splitterconf["_outgroup_size"])
+    optimal_out_size = int(splitterconf["_max_outgroup_size"])
     #out_distfn = splitterconf["_outgroup_dist"]
     out_min_support = float(splitterconf["_outgroup_min_support"])
     

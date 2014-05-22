@@ -4,6 +4,16 @@ from nprlib.errors import ConfigError
 
 def check_config(fname):
     conf = ConfigObj(fname, list_values=True)
+    for k, v in conf.items():
+        if '_inherits' in v:
+            base = v['_inherits']
+            try:
+                new_dict = dict(conf[base])
+            except KeyError:
+                raise ConfigError('[%s] config block is referred in [%s] but not present in config file' %(base, k))
+            new_dict.update(v)
+            conf[k] = new_dict
+            
     for k in conf.iterkeys():
         blocktype = conf[k].get('_app', 'unknown')
         for attr, v in conf[k].items():
@@ -168,36 +178,41 @@ def is_integer_or_percent(value):
         except ConfigError:
             raise ConfigError('[%s] should be an integer or a percentage (i.e. 15 or 0.4%%)' %value)
     return value
-    
+
+def is_choice(value, choices):
+    if value in choices:
+        return value
+    else:
+        raise ConfigError('[%s] should be one of %s' %(value, choices))
 
 CHECKERS = {
     # (app_name, attr_name): (checker_fn, args, required_attr)
-    ("main", "npr"): (is_app_list, {}, True),
-    ("main", "max_seqs"): (is_correlative_integer_list, {"minv":1}, True),
-    ("main", "workflow"): (is_app_list, {"allow_none":False}, True),
-    ("main", "appset"): (is_app_link, {"allow_none":False}, True),
+    ("main", "_npr"): (is_app_list, {}, True),
+    ("main", "_max_seqs"): (is_correlative_integer_list, {"minv":1}, True),
+    ("main", "_workflow"): (is_app_list, {"allow_none":False}, True),
+    ("main", "_appset"): (is_app_link, {"allow_none":False}, True),
     
-    ("npr", "max_iters"): (is_integer, {"minv":1}, True),
-    ("npr", "switch_aa_similarity"): (is_float, {"minv":0, "maxv":1}, True),
-    ("npr", "max_seq_similarity"): (is_float, {"minv":0, "maxv":1}, True),
-    ("npr", "min_branch_support"): (is_float, {"minv":0, "maxv":1}, True),
-    ("npr", "min_npr_size"): (is_integer, {"minv":3}, True),
-    ("npr", "tree_splitter"): (is_app_link, {}, True),
-    ("npr", "target_levels"): (is_list, {}, False),
+    ("npr", "_max_iters"): (is_integer, {"minv":1}, True),
+    ("npr", "_switch_aa_similarity"): (is_float, {"minv":0, "maxv":1}, True),
+    ("npr", "_max_seq_similarity"): (is_float, {"minv":0, "maxv":1}, True),
+    ("npr", "_min_branch_support"): (is_float, {"minv":0, "maxv":1}, True),
+    ("npr", "_min_npr_size"): (is_integer, {"minv":3}, True),
+    ("npr", "_tree_splitter"): (is_app_link, {}, True),
+    ("npr", "_target_levels"): (is_list, {}, False),
     
-    ("genetree", "aa_aligner"): (is_app_link, {}, True),
-    ("genetree", "nt_aligner"): (is_app_link, {}, True),
-    ("genetree", "aa_alg_cleaner"): (is_app_link, {}, True),
-    ("genetree", "nt_alg_cleaner"): (is_app_link, {}, True),
-    ("genetree", "aa_model_tester"): (is_app_link, {}, True),
-    ("genetree", "nt_model_tester"): (is_app_link, {}, True),
-    ("genetree", "aa_tree_builder"): (is_app_link, {}, True),
-    ("genetree", "nt_tree_builder"): (is_app_link, {}, True),
+    ("genetree", "_aa_aligner"): (is_app_link, {}, True),
+    ("genetree", "_nt_aligner"): (is_app_link, {}, True),
+    ("genetree", "_aa_alg_cleaner"): (is_app_link, {}, True),
+    ("genetree", "_nt_alg_cleaner"): (is_app_link, {}, True),
+    ("genetree", "_aa_model_tester"): (is_app_link, {}, True),
+    ("genetree", "_nt_model_tester"): (is_app_link, {}, True),
+    ("genetree", "_aa_tree_builder"): (is_app_link, {}, True),
+    ("genetree", "_nt_tree_builder"): (is_app_link, {}, True),
 
-    ("supermatrix", "cog_selector"): (is_app_link, {}, True),
-    ("supermatrix", "alg_concatenator"): (is_app_link, {}, True),
-    ("supermatrix", "aa_tree_builder"): (is_app_link, {}, True),
-    ("supermatrix", "nt_tree_builder"): (is_app_link, {}, True),
+    ("supermatrix", "_cog_selector"): (is_app_link, {}, True),
+    ("supermatrix", "_alg_concatenator"): (is_app_link, {}, True),
+    ("supermatrix", "_aa_tree_builder"): (is_app_link, {}, True),
+    ("supermatrix", "_nt_tree_builder"): (is_app_link, {}, True),
 
 
     ("concatalg", "_default_aa_model"): (is_text, {}, True),
@@ -207,11 +222,29 @@ CHECKERS = {
     ("cogselector", "_species_missing_factor"): (is_float, {"minv":0, "maxv":1}, True),
     ("cogselector", "_max_cogs"): (is_integer, {"minv":1}, True),
 
-    ("treesplitter", "_outgroup_size"): (is_integer_or_percent, {}, True),
+    ("treesplitter", "_max_outgroup_size"): (is_integer_or_percent, {}, True),
+    ("treesplitter", "_min_outgroup_support"): (is_float, {"minv":0, "maxv":1}, True),
     ("treesplitter", "_outgroup_topology_dist"): (is_boolean, {}, True),
-    ("treesplitter", "_outgroup_min_support"): (is_float, {"minv":0, "maxv":1}, True),
     ("treesplitter", "_first_split"): (is_text, {}, True),
 
+    ("metaaligner", "_aligners"): (is_app_list, {}, True),
+    ("metaaligner", "_alg_trimming"): (is_boolean, {}, True),
+
+    ("prottest", "_lk_mode"): (is_choice, {"choices":set(['phyml', 'raxml'])}, True),
+    ("prottest", "_models"): (is_list, {}, True),
+   
+    ("raxml", "_aa_model"): (is_text, {}, True),
+    ("raxml", "_method"): (is_choice, {"choices":set(['GAMMA', 'CAT'])}, True),
+    ("raxml", "_alrt_calculation"): (is_choice, {"choices":set(['phyml', 'raxml'])}, True),
+
+    ("raxml-sse", "_aa_model"): (is_text, {}, True),
+    ("raxml-sse", "_method"): (is_choice, {"choices":set(['GAMMA', 'CAT'])}, True),
+    ("raxml-sse", "_alrt_calculation"): (is_choice, {"choices":set(['phyml', 'raxml'])}, True),
+    
+    ("raxml-avx", "_aa_model"): (is_text, {}, True),
+    ("raxml-avx", "_method"): (is_choice, {"choices":set(['GAMMA', 'CAT'])}, True),
+    ("raxml-avx", "_alrt_calculation"): (is_choice, {"choices":set(['phyml', 'raxml'])}, True),
+    
     ("appset", "muscle"): (is_appset_entry, {}, True),
     ("appset", "mafft"): (is_appset_entry, {}, True),
     ("appset", "clustalo"): (is_appset_entry, {}, True),
@@ -230,4 +263,7 @@ CHECKERS = {
     ("appset", "dialigntx"): (is_appset_entry, {}, True),
     ("appset", "fasttree"): (is_appset_entry, {}, True),
     ("appset", "statal"): (is_appset_entry, {}, True),
+
+
+    
     }

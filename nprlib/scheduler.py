@@ -341,6 +341,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                 finished_lines.append("Finished %s in %d iterations" %(
                         threadname, past_threads[configid]))
             else:
+               
                 log.log(28, "Assembling final tree...")
                 main_tree, treeiters =  assembly_tree(configid)
                 past_threads[configid] = treeiters - 1

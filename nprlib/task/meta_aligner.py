@@ -108,6 +108,7 @@ class MetaAligner(AlgTask):
         all_alg_names = []
         mcoffee_parents = []
         for aligner_name in self.conf[self.confname]["_aligners"]:
+            aligner_name = aligner_name[1:]
             _classname = APP2CLASS[self.conf[aligner_name]["_app"]]
 
             _module = __import__(CLASS2MODULE[_classname], globals(), locals(), [], -1)
