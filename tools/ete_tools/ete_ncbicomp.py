@@ -152,7 +152,7 @@ def ncbi_layout(node):
 #    return mono, non_mono, broken_branches, non_mono_sizes, tax2name
     
 
-def analyze_subtrees(t, subtrees, reft=None, show_progress=False):
+def analyze_subtrees(t, subtrees, reft=None, show_progress=False, show_tree=False):
     ncbi_mistakes = 0
     valid_subtrees = 0
     broken_groups = set()
@@ -182,7 +182,7 @@ def analyze_subtrees(t, subtrees, reft=None, show_progress=False):
                 broken_subtrees += 1
             broken_groups.update(broken_clades)
             children = []
-            if args.show_tree or args.render:
+            if show_tree:
                 for branch in broken_branches:
                     branch.broken_groups = set([tax2name[e] for e in broken_clades])
             
@@ -372,6 +372,11 @@ def main(argv):
     else:
         reft = None
 
+    SHOW_TREE = False
+    if args.show_tree or args.render:
+        SHOW_TREE = True
+
+        
     prev_broken = set()
     ENTRIES = []
     ncbi.connect_database()
@@ -421,8 +426,10 @@ def main(argv):
                 #print "Subparts:", len(subtrees), time.time()-t1
             else:
                 subtrees = [t]
-            valid_subtrees, broken_subtrees, ncbi_mistakes, broken_branches, total_rf, broken_clades, broken_sizes = analyze_subtrees(t, subtrees)
 
+          
+            valid_subtrees, broken_subtrees, ncbi_mistakes, broken_branches, total_rf, broken_clades, broken_sizes = analyze_subtrees(t, subtrees, show_tree=SHOW_TREE)
+            
             #print valid_subtrees, broken_subtrees, ncbi_mistakes, total_rf
         else:
             subtrees = []

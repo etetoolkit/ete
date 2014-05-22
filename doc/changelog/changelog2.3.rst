@@ -24,3 +24,4 @@ improved tree.check monophyly function: accepts unrooted trees
 added new reconciliation algorithm: Zmasek and Eddy's 2001, implemented by 
 %%return option in render
 improved random_color
+improved SVG export
