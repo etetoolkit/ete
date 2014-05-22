@@ -378,7 +378,15 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                         realname = db.get_seq_name(name)
                         print >>OUT, ">%s\n%s" %(realname, seq)
                     OUT.close()
-                
+
+                log.log(28, "Generating tree image for @@13:%s@@1:\n   %s",
+                        threadname, final_tree_file+".png")
+
+                for lf in main_tree:
+                    lf.add_feature("sequence", alg.get_seq(lf.safename))
+                from nprlib.visualize import draw_tree
+                draw_tree(main_tree, GLOBALS[configid], final_tree_file+".png")
+                    
                 just_finished_lines.append("Finished %s in %d iterations" %(
                         threadname, past_threads[configid]))
         if GLOBALS["email"]:
