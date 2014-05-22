@@ -56,7 +56,6 @@ def draw_tree(tree, conf, outfile):
                             w = end-start
                             motifs.append([start, end, "[]", w, 12, "slategrey", "slategrey", None])
                             last_lt = None
-
                     elif lt == '-':
                         if last_lt is not None:
                             start, end = last_lt, c-1
@@ -68,8 +67,7 @@ def draw_tree(tree, conf, outfile):
                                        intermotif_format="line",
                                        seqtail_format="line", scale_factor=1)
                 add_face_to_node(seqFace, node, ALG_START_COL, aligned=True)
-
-
+                
     TRACKED_CLADES = ["Eukaryota", "Viridiplantae", "Opisthokonta", "Fungi",
                       "Alveolata", "Metazoa", "Stramenopiles", "Rhodophyta",
                       "Amoebozoa", "Crypthophyta", "Bacteria",
@@ -80,15 +78,12 @@ def draw_tree(tree, conf, outfile):
     lin2color = dict([(ln, colors[i]) for i, ln in enumerate(TRACKED_CLADES)])
 
     NAME_FACE = AttrFace('name', fsize=10, fgcolor='#444444')
-    
-
         
     LABEL_START_COL = 10
     ALG_START_COL = 40
-    # t.get_descendant_evol_events()
     ts = TreeStyle()
     ts.draw_aligned_faces_as_table = True
-    ts.draw_guiding_lines = True
+    ts.draw_guiding_lines = False
     ts.show_leaf_name = False
     ts.show_branch_support = False
     ts.layout_fn = [ly_basic, ly_leaf_names, ly_supports, ly_tax_labels, ly_block_alg]
