@@ -3,36 +3,14 @@ import logging
 
 import numpy
 
-from nprlib.utils import DEBUG, GLOBALS, SeqGroup, tobool
+from nprlib.utils import DEBUG, GLOBALS, SeqGroup, tobool, sec2time, read_time_file
 from nprlib.apps import APP2CLASS
 from nprlib import task as all_tasks
 from nprlib import db
 from nprlib.errors import ConfigError, DataError, TaskError
-from nprlib.master_task import register_task_recursively
+from nprlib.master_task import register_task_recursively, isjob
 
 log = logging.getLogger("main")
-
-CONFIG_SPECS = """
-[npr]
-max_iters = integer(minv=1)
-switch_aa_similarity = float_list(minv=0.0, maxv=1.0)
-max_seq_similarity = float_list(minv=0.0, maxv=1.0)
-min_branch_support = float_list(minv=0, maxv=1)
-min_npr_size = integer_list(minv=3)
-tree_splitter = list()
-
-[genetree]
-max_seqs = correlative_integer_list(minv=0)
-workflow = list()
-npr = list()
-tree_splitter = list()
-
-[supermatrix]
-max_seqs = correlative_integer_list(minv=0)
-workflow = list()
-npr = list()
-"""
-
                 
 class IterConfig(dict):
     def __init__(self, conf, workflow, size, seqtype):
@@ -51,7 +29,7 @@ class IterConfig(dict):
             try:
                 max_seqs = conf[workflow]["max_seqs"][index_slide]
             except IndexError:
-                raise DataError("Target species [%d] has size not considered in current config file" %self.size)
+                raise DataError("Target species [%d] has a size that is not covered in current config file" %self.size)
             else:
                 if self.size <= max_seqs:
                     self.index = index_slide
@@ -99,14 +77,15 @@ class IterConfig(dict):
             else:
                 return value
 
-def process_new_tasks(task, new_tasks):
+def process_new_tasks(task, new_tasks, conf):
     # Basic registration and processing of newly generated tasks
     parent_taskid = task.taskid if task else None
     for ts in new_tasks:
         log.log(22, "Registering new task: %s", ts)
         register_task_recursively(ts, parentid=parent_taskid)
+        conf["_nodeinfo"][ts.nodeid].setdefault("tasks", []).append(ts)
         # sort task by nodeid
-        GLOBALS["nodeinfo"][ts.nodeid].setdefault("tasks", []).append(ts)
+        #GLOBALS["nodeinfo"][ts.nodeid].setdefault("tasks", []).append(ts)
         if task:
             # Clone processor, in case tasks belong to a side workflow
             ts.task_processor = task.task_processor
@@ -240,14 +219,14 @@ def split_tree(task_tree_node, task_outgroups, main_tree, alg_path, npr_conf, th
         # subtree
         _TARGET_NODES = defaultdict(list) # this container is used by
                                           # processable_node function
-        if GLOBALS["optimized_levels"]:
+        if npr_conf["optimized_levels"]:
             # any descendant of the already processed node is suitable for
             # selection. If the ancestor of level-species is on top of the
             # task_tree_node, it will be discarded
             avail_nodes = set(master_node.get_descendants())
             for lin in GLOBALS["optimized_levels"]:
                 sp2lin, lin2sp = GLOBALS["lineages"]
-                optimized, strict_monophyly = GLOBALS["optimized_levels"][lin]
+                optimized, strict_monophyly = npr_conf["optimized_levels"][lin]
                 if not optimized:
                     ancestor = main_tree.get_common_ancestor(*lin2sp[lin])
                     if ancestor in avail_nodes:
@@ -261,11 +240,11 @@ def split_tree(task_tree_node, task_outgroups, main_tree, alg_path, npr_conf, th
                         log.log(28, "Discarding upper clade @@11:%s@@1:" %lin)
                         
         for node in master_node.iter_leaves(is_leaf_fn=processable_node):
-            if GLOBALS["optimized_levels"]:
+            if npr_conf["optimized_levels"]:
                 log.log(28, "Trying to optimizing custom tree level: @@11:%s@@1:" %_TARGET_NODES[node])
                 for lin in _TARGET_NODES[node]:
                     # Marks the level as optimized, so is not computed again
-                    GLOBALS["optimized_levels"][lin][0] = True
+                    npr_conf["optimized_levels"][lin][0] = True
            
             log.log(28, "Found possible target node of size %s and branch support %f" %(len(n2content[node]), node.support))
 
@@ -305,7 +284,6 @@ def get_next_npr_node(threadid, ttree, task_outgroups, mtree, alg_path, npr_conf
     for node, seqs, outs in split_tree(ttree, task_outgroups, mtree, alg_path,
                                        npr_conf, threadid, target_cladeids):
         if npr_conf.max_iters and current_iter < npr_conf.max_iters:
-
             if DEBUG():
                 NPR_TREE_STYLE.title.clear()
                 NPR_TREE_STYLE.title.add_face(faces.TextFace("MainTree:"
@@ -608,6 +586,15 @@ def assembly_tree(runid):
         tree.add_features(iternumber=iternumber)
         iternumber += 1
     return main_tree, iternumber 
-        
-  
+       
     
+def get_cmd_log(task):
+    cmd_lines = []
+    if getattr(task, 'get_launch_cmd', None):
+        launch_cmd = task.get_launch_cmd()
+        tm_s, tm_e = read_time_file(task.time_file)
+        cmd_lines.append([task.jobid, sec2time(tm_e - tm_s), task.jobname, launch_cmd])
+    if getattr(task, 'jobs', None):
+        for subtask in task.jobs:
+            cmd_lines.extend(get_cmd_log(subtask))
+    return cmd_lines

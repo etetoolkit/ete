@@ -78,7 +78,7 @@ class MetaAligner(AlgTask):
 
         self.seqtype = seqtype
         self.multiseq_file = multiseq_file
-        self.size = GLOBALS["nodeinfo"][nodeid].get("size", 0)
+        self.size = conf["_nodeinfo"][nodeid].get("size", 0)
         self.all_alg_files = None
         self.init()
 

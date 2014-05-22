@@ -20,7 +20,7 @@ from nprlib.master_task import (isjob, update_task_states_recursively,
                                 store_task_data_recursively,
                                 remove_task_dir_recursively,
                                 update_job_status)
-from nprlib.template.common import assembly_tree
+from nprlib.template.common import assembly_tree, get_cmd_log
 
 def debug(_signal, _frame):
     import pdb
@@ -244,8 +244,25 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                 #db.commit()
                 show_task_info(task)
                 logindent(3)
+
+
+                # Log commands of every task
+                if 'cmd_log_file' not in GLOBALS[task.configid]:
+                     GLOBALS[task.configid]['cmd_log_file'] = pjoin(GLOBALS[task.configid]["_outpath"], "cmd.log")
+                     O = open(GLOBALS[task.configid]['cmd_log_file'], "w")
+                     O.close()
+                     
+                cmd_lines =  get_cmd_log(task)
+                CMD_LOG = open(GLOBALS[task.configid]['cmd_log_file'], "a")
+                print >>CMD_LOG, task
+                for c in cmd_lines:
+                    print >>CMD_LOG, '   '+'\t'.join(map(str, c))
+                CMD_LOG.close()
+                # 
+                
                 try:
-                    create_tasks = workflow_task_processor(task)
+                    wkname = GLOBALS[task.configid]['_name']
+                    create_tasks = workflow_task_processor(task, wkname)
                 except TaskError, e:
                     log.error("Errors found in %s" %task)
                     pending_tasks.discard(task)
@@ -313,7 +330,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
         just_finished_lines = []
         finished_lines = []
         for configid in finished_threads:
-            # configid is the the same as threadid in master tasks
+            # configid is the the same as threadid in master taqsks
             final_tree_file = pjoin(GLOBALS[configid]["_outpath"],
                                     GLOBALS["inputname"] + ".final_tree")
             threadname = GLOBALS[configid]["_name"]
@@ -327,6 +344,10 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                 log.log(28, "Assembling final tree...")
                 main_tree, treeiters =  assembly_tree(configid)
                 past_threads[configid] = treeiters - 1
+
+                log.log(28, "Done thread @@12:%s@@1: in %d iterations",
+                        threadname, past_threads[configid])
+
                 
                 log.log(28, "Writing final tree for @@13:%s@@1:\n   %s\n   %s",
                         threadname, final_tree_file+".nw",
@@ -357,8 +378,6 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                         print >>OUT, ">%s\n%s" %(realname, seq)
                     OUT.close()
                 
-                log.log(28, "Done thread @@12:%s@@1: in %d iterations",
-                        threadname, past_threads[configid])
                 just_finished_lines.append("Finished %s in %d iterations" %(
                         threadname, past_threads[configid]))
         if GLOBALS["email"]:

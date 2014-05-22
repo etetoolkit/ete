@@ -31,13 +31,15 @@ class ConcatAlg(ConcatAlgTask):
         self.cogs = used_cogs
         self.seqtype = seqtype
         self.cog_ids = set()
-
+        
         self.job2alg = {}
         self.job2model = {}
         if seqtype == "aa":
             self.default_model = conf[confname]["_default_aa_model"]
         elif seqtype == "nt":
             self.default_model = conf[confname]["_default_nt_model"]
+            
+        self.genetree_workflow = conf[confname]["_workflow"][1:]
         self.init()
         
     def load_jobs(self):
@@ -48,16 +50,14 @@ class ConcatAlg(ConcatAlgTask):
             # Register a new msf task for each COG, using the same
             # config file but opening an new tree reconstruction
             # thread.
-            job = Msf(set(co), set(),
-                      seqtype = self.seqtype)
-            
+            job = Msf(set(co), set(), seqtype = self.seqtype)
             job.main_tree = None
             job.threadid = generate_runid()
             job.configid = self.conf["_configid"]
             # This converts the job in a workflow job. As soon as a
             # task is done, it will be automatically processed and the
             # new tasks will be registered as new jobs.
-            job.task_processor = pipeline
+            job.task_processor = (pipeline, self.genetree_workflow)
             self.jobs.append(job)
             self.cog_ids.add(job.nodeid)
 

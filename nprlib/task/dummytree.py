@@ -35,7 +35,7 @@ class DummyTree(TreeTask):
         pass
     
     def finish(self):
-        node_info = GLOBALS["nodeinfo"][self.nodeid]
+        node_info = self.conf["_nodeinfo"][self.nodeid]
         
         target_seqs = node_info.get("target_seqs", set())
         out_seqs = node_info.get("out_seqs", set())

@@ -105,11 +105,14 @@ class Job(object):
             pid = int(pid)
             
         return host, pid
-        
+
+    def get_launch_cmd(self):
+        return ' '.join([self.bin] + ["%s %s" %(k,v) for k,v in self.args.iteritems() if v is not None])
+    
     def dump_script(self):
         ''' Generates the shell script launching the job. ''' 
        
-        launch_cmd = ' '.join([self.bin] + ["%s %s" %(k,v) for k,v in self.args.iteritems() if v is not None])
+        launch_cmd = self.get_launch_cmd()
         lines = [
             "#!/bin/sh",
             " (echo R > %s && date +'%s' > %s) &&" %(self.status_file,
@@ -124,7 +127,7 @@ class Job(object):
         if not os.path.exists(self.jobdir):
             os.makedirs(self.jobdir)
         open(self.cmd_file, "w").write(script)
- 
+        
     def get_status(self, sge_jobs=None):
         # Finished status:
         #  E.rror

@@ -23,7 +23,7 @@ def annotate_node(t, final_task):
         if hasattr(n, "cladeid"):
             cladeid2node[n.cladeid] = n
 
-    alltasks = GLOBALS["nodeinfo"][final_task.nodeid]["tasks"]
+    alltasks = GLOBALS[final_task.configid]["_nodeinfo"][final_task.nodeid]["tasks"]
     npr_iter = get_iternumber(final_task.threadid)
     n = cladeid2node[t.cladeid]
     n.add_features(size=final_task.size)
@@ -45,14 +45,13 @@ def annotate_node(t, final_task):
             n.add_features(treemerger_type=task.tname, 
                            treemerger_rf="RF=%s [%s]" %(task.rf[0], task.rf[1]),
                            treemerger_out_match_dist = task.outgroup_match_dist,
-                           treemerger_out_match = task.outgroup_match,)
+                           treemerger_out_match = task.outgroup_match)
 
         elif task.ttype == "concat_alg":
             n.add_features(concatalg_cogs="%d"%task.used_cogs,
-                           alg_path=task.alg_fasta_file,
-                           )                       
+                           alg_path=task.alg_fasta_file)                       
 
-def process_task(task, npr_conf, nodeid2info):
+def process_task(task, wkname, npr_conf, nodeid2info):
     cogconf, cogclass = npr_conf.cog_selector
     concatconf, concatclass = npr_conf.alg_concatenator
     treebuilderconf, treebuilderclass = npr_conf.tree_builder
@@ -81,8 +80,8 @@ def process_task(task, npr_conf, nodeid2info):
         # Generates a md5 id based on the genetree configuration workflow used
         # for the concat alg task. If something changes, concat alg will change
         # and the associated tree will be rebuilt
-        config_blocks = set(["genetree"])
-        for key, value in conf["genetree"].iteritems():
+        config_blocks = set([wkname])
+        for key, value in conf[wkname].iteritems():
             if isinstance(value, list) or  isinstance(value, tuple) \
                     or isinstance(value, set):
                 for elem in value:
@@ -204,17 +203,15 @@ def process_task(task, npr_conf, nodeid2info):
                             new_task_node.nodeid, new_task_node.cladeid,
                             new_task_node.targets,
                             new_task_node.outgroups)
-        
     return new_tasks
      
-
-def pipeline(task, conf=None):
+def pipeline(task, wkname, conf=None):
     logindent(2)
     # Points to npr parameters according to task properties
-    nodeid2info = GLOBALS["nodeinfo"]
+    
     if not task:
         source_seqtype = "aa" if "aa" in GLOBALS["seqtypes"] else "nt"
-        npr_conf = IterConfig(conf, "supermatrix",
+        npr_conf = IterConfig(conf, wkname,
                               len(GLOBALS["target_species"]),
                               source_seqtype)
         cogconf, cogclass = npr_conf.cog_selector
@@ -232,10 +229,10 @@ def pipeline(task, conf=None):
         new_tasks = [initial_task]
     else:
         conf = GLOBALS[task.configid]
-        npr_conf = IterConfig(conf, "supermatrix", task.size, task.seqtype)
-        new_tasks  = process_task(task, npr_conf, nodeid2info)
+        npr_conf = IterConfig(conf, wkname, task.size, task.seqtype)
+        new_tasks  = process_task(task, wkname, npr_conf, conf['_nodeinfo'])
 
-    process_new_tasks(task, new_tasks)
+    process_new_tasks(task, new_tasks, conf)
     logindent(-2)
     
     return new_tasks

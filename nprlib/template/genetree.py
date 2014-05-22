@@ -27,7 +27,7 @@ def annotate_node(t, final_task):
         if hasattr(n, "cladeid"):
             cladeid2node[n.cladeid] = n
 
-    alltasks = GLOBALS["nodeinfo"][final_task.nodeid]["tasks"]
+    alltasks = GLOBALS[final_task.configid]["_nodeinfo"][final_task.nodeid]["tasks"]
     npr_iter = get_iternumber(final_task.threadid)
     n = cladeid2node[t.cladeid]
     n.add_features(size=final_task.size)
@@ -179,7 +179,7 @@ def switch_to_codon(alg_fasta_file, alg_phylip_file, nt_seed_file,
         
     return alg_fasta_filename, alg_phylip_filename
 
-def process_task(task, npr_conf, nodeid2info):
+def process_task(task, wkname, npr_conf, nodeid2info):
     alignerconf, alignerclass = npr_conf.aligner
     cleanerconf, cleanerclass = npr_conf.alg_cleaner
     mtesterconf, mtesterclass = npr_conf.model_tester
@@ -292,7 +292,7 @@ def process_task(task, npr_conf, nodeid2info):
                task.mean_ident > npr_conf.switch_aa_similarity:
                 log.log(26, "switching to codon alignment")
                 # Change seqtype config
-                npr_conf = IterConfig(conf, "genetree", task.size, "nt")
+                npr_conf = IterConfig(conf, wkname, task.size, "nt")
                 seqtype = "nt"
                 alg_fasta_file, alg_phylip_file = switch_to_codon(
                     task.alg_fasta_file, task.alg_phylip_file,
@@ -366,10 +366,10 @@ def process_task(task, npr_conf, nodeid2info):
                     new_tasks.append(new_task_node)
     return new_tasks
 
-def pipeline(task, conf=None):
+def pipeline(task, wkname, conf=None):
     logindent(2)
-    nodeid2info = GLOBALS["nodeinfo"]
-    if not task:
+
+    if not task: # in this case, conf is expected
         source_seqtype = "aa" if "aa" in GLOBALS["seqtypes"] else "nt"
         all_seqs = GLOBALS["target_sequences"]
         initial_task = Msf(set(all_seqs), set(),
@@ -386,10 +386,10 @@ def pipeline(task, conf=None):
         new_tasks = [initial_task]
     else:
         conf = GLOBALS[task.configid]
-        npr_conf = IterConfig(conf, "genetree", task.size, task.seqtype)
-        new_tasks  = process_task(task, npr_conf, nodeid2info)
+        npr_conf = IterConfig(conf, wkname, task.size, task.seqtype)
+        new_tasks  = process_task(task, wkname, npr_conf, conf["_nodeinfo"])
 
-    process_new_tasks(task, new_tasks)
+    process_new_tasks(task, new_tasks, conf)
     logindent(-2)
   
     return new_tasks
