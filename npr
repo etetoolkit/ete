@@ -63,9 +63,7 @@ NPRPATH = os.path.split(os.path.realpath(__file__))[0]
 sys.path.insert(0, NPRPATH)
 
 from nprlib import argparse
-from nprlib.configobj import ConfigObj, flatten_errors
-from nprlib import validate
-from nprlib.utils import (strip, tobool, SeqGroup, generate_runid,  AA, NT,
+from nprlib.utils import (strip, SeqGroup, generate_runid,  AA, NT,
                           GLOBALS, encode_seqname, pjoin, pexist,
                           hascontent, clear_tempdir, ETE_CITE)
 from nprlib.errors import ConfigError, DataError
@@ -74,9 +72,9 @@ from nprlib.interface import app_wrapper
 from nprlib.scheduler import schedule
 from nprlib import db
 from nprlib import apps
-from nprlib.template.common import CONFIG_SPECS
 from nprlib.logger import logindent
 from nprlib.citation import Citator
+from nprlib.configcheck import is_file, is_dir, check_config
 
 APPSPATH =  pjoin(NPRPATH, "ext_apps/")
 
@@ -111,184 +109,10 @@ __DESCRIPTION__ = (
       (Note that a list of the external programs used to complete the necessary
       computations will be shown shown together with your results.)
 
-           Contact: huerta [at] embl.de & tgabaldon [at] crg.es
+      Contact: huerta@embl.de and tgabaldon@crg.es
 --------------------------------------------------------------------------------
 
     """ %(__VERSION__, __DATE__))
-
-def existing_file(value):
-    if os.path.isfile(value):
-        return value
-    else:
-        raise ConfigError("Not valid file")
-
-def existing_dir(value):
-    if os.path.isdir(value):
-        return value
-    else:
-        raise ConfigError("Not valid file")
-
-def check_number(value, cast, minv=0, maxv=None):
-    try:
-        typed_value = cast(value)
-    except ValueError:
-        raise ConfigError("Expected [%s] number. Found [%s]" %(cast, value))
-    else:
-        if (minv is not None and typed_value < cast(minv)) or \
-           (maxv is not None and typed_value > cast(maxv)):
-            _minv = minv if minv is not None else "any"
-            _maxv = maxv if maxv is not None else "any"
-            raise ConfigError("[%s] not in the range (%s,%s)" %
-                              (value, _minv, _maxv))
-    return typed_value
-
-def is_set(value):
-    if not isinstance(value, list):
-        raise ConfigError("Expected a list of values. Found [%s]" %value)
-    return set(value)
-
-def is_boolean_list(value):
-    is_list(value)
-    typed_value = []
-    for v in value:
-        typed_value.append(check_number(v, tobool, 0, 1))
-    return typed_value
-
-def is_float_list(value, minv=0, maxv=None):
-    is_list(value)
-    typed_value = []
-    for v in value:
-        typed_value.append(check_number(v, float, minv, maxv))
-    return typed_value
-
-def is_integer_list(value, minv=0, maxv=None):
-    is_list(value)
-    typed_value = []
-    for v in value:
-        typed_value.append(check_number(v, int, minv, maxv))
-    return typed_value
-
-
-def is_float(value, minv=None, maxv=None):
-    return check_number(value, float, minv, maxv)
-
-def is_integer(value, minv=None, maxv=None):
-    return check_number(value, int, minv, maxv)
-
-
-def is_list(value):
-    if not isinstance(value, list):
-        raise ConfigError("[%s] is not a list" %value)
-    return value
-
-def is_app_link(value, allow_none=True):
-    if allow_none and value == 'none':
-        return value
-    elif value.startswith('@'):
-        return value
-    else:
-        raise ConfigError('[%s] is not a valid block link' %value)
-    
-def is_app_list(value, allow_none=True):
-    is_list(value)
-    for v in value:
-        is_app_link(v, allow_none=allow_none)
-    return value
-
-
-def is_boolean(value):
-    if str(value).lower() in set(["1", "true", "yes"]):
-        return True
-    elif str(value).lower() in set(["0", "false", "no"]):
-        return False
-    else:
-        raise ConfigError('[%s] is not a boolean value' %(value))
-        
-def is_integer_list(value, maxv=None, minv=None):
-    is_list(value)
-    return [is_integer(v, maxv=maxv, minv=minv) for v in value]
-
-def is_correlative_integer_list(value, minv=None, maxv=None):
-    is_list(value)
-    typed_value = []
-    last_value = 0
-    for v in value:
-        cv = is_integer(v, minv=None, maxv=None)
-        typed_value.append(cv)
-        if cv <= last_value:
-            raise ConfigError("[%s] Numeric values are not correlative" %value)
-        last_value = cv
-    return typed_value
-
-def is_text(value):
-    if isinstance(value, str):
-        return value
-    else:
-        raise ConfigError("[%s] is not a valid text string" %value)
-
-CHECKERS = {
-    ("main", "npr"): (is_app_list, {}, True),
-    ("main", "max_seqs"): (is_correlative_integer_list, {"minv":1}, True),
-    ("main", "workflow"): (is_app_list, {}, True),
-
-    ("npr", "max_iters"): (is_integer, {"minv":1}, True),
-    ("npr", "switch_aa_similarity"): (is_float, {"minv":0, "maxv":1}, True),
-    ("npr", "max_seq_similarity"): (is_float, {"minv":0, "maxv":1}, True),
-    ("npr", "min_branch_support"): (is_float, {"minv":0, "maxv":1}, True),
-    ("npr", "min_npr_size"): (is_integer, {"minv":3}, True),
-    ("npr", "tree_splitter"): (is_app_link, {}, True),
-
-    
-    ("genetree", "aa_aligner"): (is_app_link, {}, True),
-    ("genetree", "nt_aligner"): (is_app_link, {}, True),
-    ("genetree", "aa_alg_cleaner"): (is_app_link, {}, True),
-    ("genetree", "nt_alg_cleaner"): (is_app_link, {}, True),
-    ("genetree", "aa_model_tester"): (is_app_link, {}, True),
-    ("genetree", "nt_model_tester"): (is_app_link, {}, True),
-    ("genetree", "aa_tree_builder"): (is_app_link, {}, True),
-    ("genetree", "nt_tree_builder"): (is_app_link, {}, True),
-
-    ("supermatrix", "cog_selector"): (is_app_link, {}, True),
-    ("supermatrix", "alg_concatenator"): (is_app_link, {}, True),
-    ("supermatrix", "aa_tree_builder"): (is_app_link, {}, True),
-    ("supermatrix", "nt_tree_builder"): (is_app_link, {}, True),
-    ("supermatrix", "target_levels"): (is_list, {}, False),
-
-
-    ("concatalg", "_default_aa_model"): (is_text, {}, True),
-    ("concatalg", "_default_nt_model"): (is_text, {}, True),
-
-    ("cogselector", "_species_missing_factor"): (is_float, {"minv":0, "maxv":1}, True),
-    ("cogselector", "_max_cogs"): (is_integer, {"minv":1}, True),
-    }
-
-def check_type(blocktype, attr, v):
-    tag = (blocktype, attr)
-    if tag in CHECKERS:
-        tester, kargs, required = CHECKERS[tag]
-        return tester(v, **kargs)
-    else:
-        return v 
-
-def check_block_link(conf, parent, v):
-    if isinstance(v, str) and v.startswith('@') and v[1:] not in conf:
-        raise ConfigError('[%s] config block referred in [%s] but not found in config' %(v, parent))
-
-def check_config(conf):
-    for k in conf.iterkeys():
-        blocktype = conf[k].get('_app', 'unknown')
-        for attr, v in conf[k].iteritems():
-            cv = check_type(blocktype, attr, v)
-            if isinstance(cv, list):
-                for i in cv:
-                    check_block_link(conf, k, i)
-            else:
-                check_block_link(conf, k, cv)
-        for tag, tester in CHECKERS.iteritems():
-            if tag[0] == blocktype and (tester[2] and tag[1] not in conf[k]):
-                raise ConfigError('[%s] attribute expected in block [%s]' %(tag[1], k))
-            
-            
 
 def main(args):
     global log
@@ -298,98 +122,110 @@ def main(args):
     print __DESCRIPTION__
     log.log(28, "Starting NPR execution at %s" %(ctime()))
     log.log(28, "Output directory %s" %(GLOBALS["output_dir"]))
-    npr_template = args.workflow
-    if npr_template == "supermatrix":
-        GLOBALS["template"] = "supermatrix"
-        from nprlib.template.supermatrix import pipeline
-    elif npr_template == "genetree":
-        GLOBALS["template"] = "genetree"
-        from nprlib.template.genetree import pipeline
-    else:
-        raise ConfigError("Bad config file. A template name or file should be specified.")
     
     if args.arch == "auto":
         arch = "64 " if sys.maxsize > 2**32 else "32"
     else:
         arch = args.arch
-       
-    # Check and load all configuration files
-    run2config = {}
-    for fname in args.configfile:
-        clearname = os.path.basename(fname)
-        local_conf_file = pjoin(base_dir, clearname, "workflow.cfg")
-        if pexist(base_dir):
-            if hascontent(local_conf_file):
-                if not filecmp.cmp(fname, local_conf_file):
-                    if not args.override:
-                        raise ConfigError("Output directory seem to contain"
+
+
+    # -------------------------------------
+    # CONFIG FILE AND WORKFLOWS
+    # -------------------------------------
+        
+    # Load and check config file
+    base_config = check_config(args.configfile)
+
+    # Check for config file overwriting
+    clearname = os.path.basename(args.configfile)        
+    local_conf_file = pjoin(base_dir, "config.cfg")
+    if pexist(base_dir):
+        if hascontent(local_conf_file):
+            if not filecmp.cmp(args.configfile, local_conf_file):
+                if not args.override:
+                    raise ConfigError("Output directory seem to contain"
                                       " a NPR execution using a different"
                                       " config file [workflow.cfg]. Use"
                                       " --override option or change the"
                                       " output path.")
+                
+    # prepare workflow config dictionaries
+    run2config = {}
+    workflow_types = set()
+    TARGET_CLADES = set()
+    for wkname in args.workflow:
+        config = dict(base_config)
+        appset = config[config[wkname]['appset'][1:]]
+        if wkname not in config:
+            raise ConfigError('[%s] workflow not present in config file' %wkname)
+        if config[wkname]['_app'] != 'main':
+            raise ConfigError('[%s] configuration block is not a valid workflow definition (_app=main)' %wkname)
 
+        for w in config[wkname]['workflow']:
+            wtype = config[w[1:]].get('_app', 'unknown')
+            if wtype not in set(['genetree', 'supermatrix']):
+                raise ConfigError('[%s] workflow type not supported: [%s]' %(w[1:], wtype))
+            workflow_types.add(wtype)
 
-        config = ConfigObj(fname, list_values=True,
-                           configspec=StringIO(CONFIG_SPECS))
-        check_config(config)
-
-        custom_types = {"boolean_list": is_boolean_list,
-                        "integer_list": is_integer_list,
-                        "correlative_integer_list": is_correlative_integer_list,
-                        "float_list": is_float_list,
-                        "float": is_float,
-                        "integer": is_integer,
-                        "list": is_list,
-                        "set": is_set,
-                        }
-        val = validate.Validator(custom_types)
-        check = config.validate(val)
-        if not check:
-            print flatten_errors(config, check)
-            raise ConfigError("Errors found when parsing config file")
-
-        # Check that fields are filled for all max_seq values
-        for flow_name in ["supermatrix", "genetree"]:
-            npr_config = [len(v) for k, v in config[flow_name].iteritems()
-                          if type(v) == list and k != "target_levels"]
-            if len(set(npr_config)) != 1:
-                print '\n'.join([str((len(v),v)) for k, v in config[flow_name].iteritems()
-                          if type(v) == list])
-                raise ConfigError("Unequal length of main NPR config table. Missing comma?")
-
-        # setup portable apps
+        if len(workflow_types) > 1:
+            raise ConfigError('[%s] mixing workflow types is not allowed [%s].' %(wkname, ', '.join(workflow_types)))
+            
+        for w in config[wkname]['npr']:
+            if w != 'none':
+                target_levels = config[w[1:]].get('_target_levels', [])
+                target_dict = config[w[1:]]['optimized_levels'] = {}
+                for tg in target_levels:
+                    # If target level name starts with ~, we allow para and
+                    # poly-phyletic grouping of the species in such level
+                    strict_monophyly = True
+                    if tg.startswith("~"):
+                        tg = target_level.lstrip("~")
+                        strict_monophyly = False
+                    tg = tg.lower()
+                    # We add the level as non-optimized
+                    target_dict[target_level] = [False, strict_monophyly]
+                TARGET_CLADES.update(target_levels)
+        
+        # Initialized application command line commands for this workflow
+        config['app'] = {}
+        config['threading'] = {}
+        
         apps_to_test = {}
-        for k,v in config["app"].iteritems():
-            if k in config["threading"]:
-                core_limit = int(config["threading"][k])
-                config["threading"][k] = min(core_limit, args.maxcores)
-               
-            if v == "built-in":
-                cores = int(config["threading"].get(k, args.maxcores))
-                #cores = min(args.maxcores, cores)
+        for k, (appsrc, cores) in appset.iteritems():
+            if appsrc == "built-in":
+                #cores = int(config["threading"].get(k, args.maxcores))
+                cores = min(args.maxcores, cores)
                 config["threading"][k] = cores
-                if args.sge_execute:
-                    _apps_path = os.path.realpath(config["sge"]["remote_npr_path"])
-                    cmd = apps.get_call(k, _apps_path, base_dir, cores)
-                    config["app"][k] = cmd
-                    apps_to_test[k] = cmd
-                else:
-                    cmd = apps.get_call(k, APPSPATH, base_dir, str(cores))
-                    config["app"][k] = cmd
-                    apps_to_test[k] = cmd
-
+                cmd = apps.get_call(k, APPSPATH, base_dir, str(cores))
+                config["app"][k] = cmd
+                apps_to_test[k] = cmd
+                
         # Copy config file
-        config["_outpath"] = pjoin(base_dir, clearname)
+                
+        config["_outpath"] = pjoin(base_dir, wkname)
+        config["_nodeinfo"] = defaultdict(dict)
         try:
             os.makedirs(config["_outpath"])
         except OSError:
             pass
-        open(local_conf_file, "w").write(open(fname).read())
-
         # save checksum of current workflow (traking checksum of config file. deprecated)
         #config["_config_checksum"] = checksum(local_conf_file)
-        run2config[clearname] = config
-            
+        run2config[wkname] = config
+
+    open(local_conf_file, "w").write(open(args.configfile).read())
+    # set global workflow execution mode (used to check on options, load data, etc.)
+    WORKFLOW_TYPE = workflow_types.pop()
+    TARGET_CLADES.discard('')
+
+    if WORKFLOW_TYPE == 'genetree':
+        from nprlib.template.genetree import pipeline
+    elif WORKFLOW_TYPE == 'supermatrix':
+        from nprlib.template.supermatrix import pipeline
+    
+    # -------------------------------------
+    # PATH CONFIGs
+    # -------------------------------------
+    
     # Set up paths    
     gallery_dir = os.path.join(base_dir, "gallery")
     sge_dir = pjoin(base_dir, "sge_jobs")
@@ -458,27 +294,19 @@ def main(args):
             os.makedirs(dirname)
         except OSError:
             log.warning("Using existing dir: %s", dirname)
-            
-    if not args.nochecks:
-        log.log(28, "Testing x86-%s portable applications..." % arch)
-        apps.test_apps(apps_to_test)
-    
+
+       
+    # -------------------------------------
+    # DATA READING AND CHECKING
+    # -------------------------------------
+        
     # Set number of CPUs available
-    GLOBALS["_max_cores"] = args.maxcores
-    log.debug("Enabling %d CPU cores" %args.maxcores)
-            
     
-    # if npr_template == "supermatrix" and not args.ortho_pairs:
-    #     raise ConfigError("Species tree workflow requires a list"
-    #                       " of orthologous gene/protein pairs to be"
-    #                       " supplied through the --ortho-pair"
-    #                       " argument.")
-    
-    if npr_template == "supermatrix" and not args.cogs_file:
+    if WORKFLOW_TYPE == "supermatrix" and not args.cogs_file:
         raise ConfigError("Species tree workflow requires a list of COGS"
                           " to be supplied through the --cogs"
                           " argument.")
-    elif npr_template == "supermatrix":
+    elif WORKFLOW_TYPE == "supermatrix":
         GLOBALS["cogs_file"] = os.path.abspath(args.cogs_file)
         
     GLOBALS["seqtypes"] = set()
@@ -502,7 +330,7 @@ def main(args):
         target_seqs, seqnames, name2len, name2unk, name2seq = scan_sequences(args, target_seqs)
         ERROR = check_seq_integrity(args, target_seqs, seqnames, name2len, name2unk, name2seq)
         sp2counter = defaultdict(int)
-        if npr_template == "supermatrix":
+        if WORKFLOW_TYPE == "supermatrix":
             for name in target_seqs:
                 spname = name.split(GLOBALS["spname_delimiter"], 1)[0]
                 sp2counter[spname] += 1
@@ -511,9 +339,9 @@ def main(args):
             seq_species = set(sp2counter.keys())
         if not ERROR:
             db.init_seqdb(GLOBALS["seqdb_file"])
-            if npr_template == "supermatrix":
+            if WORKFLOW_TYPE == "supermatrix":
                 db.add_seq_species(sp2counter)
-            load_sequences(target_seqs, name2seq, npr_template)
+            load_sequences(target_seqs, name2seq, WORKFLOW_TYPE)
         seqnames, name2len, name2unk, name2seq = [None] * 4 # Release mem?
     else:
         db.init_seqdb(GLOBALS["seqdb_file"])
@@ -527,13 +355,9 @@ def main(args):
         raise DataError("Errors were found while loading data. Please"
                         " check error file for details")
     
-    if npr_template == "supermatrix":
+    if WORKFLOW_TYPE == "supermatrix":
         if not pexist(GLOBALS["orthodb_file"]):
              db.init_orthodb(GLOBALS["orthodb_file"])            
-        #     check_and_load_orthologs(args.ortho_pairs)
-        #     log.log(28, "Updating species info in ortholog-pairs")
-        #     db.update_species_in_ortho_pairs()
-        #     db.orthoconn.commit()
              all_species = set()
              for line in open(args.cogs_file):
                  all_species.update(map(lambda n: n.split(args.spname_delimiter, 1)[0].strip(), line.split("\t")))
@@ -570,9 +394,9 @@ def main(args):
         open(pjoin(base_dir, "error.log"), "w").write(' '.join(sys.argv) + "\n\n" + ERROR)
         raise DataError("Errors were found while loading data. Please"
                         " check error file for details")
-
+    
     # Prepare target taxa levels, if any
-    if npr_template == "supermatrix" and args.lineages_file and config["supermatrix"].get("target_levels", None):
+    if WORKFLOW_TYPE == "supermatrix" and args.lineages_file and TARGET_CLADES:
         sp2lin = {}
         lin2sp = defaultdict(set)
         all_sorted_levels = []
@@ -594,40 +418,34 @@ def main(args):
         avail_levels = [(lin, len(lin2sp[lin])) for lin in all_sorted_levels if len(lin2sp[lin])>=2]
         log.log(26, "Available levels for NPR optimization:\n%s", '\n'.join(map(lambda x: "% 30s (%d spcs)"%x, avail_levels)))
         avail_levels = set([lv[0] for lv in avail_levels])
-        
-        # Let's prepare the dictionary with the target levels
-        GLOBALS["optimized_levels"] = {}
-        for target_level in config["supermatrix"]["target_levels"]:
-
-            # If target level name starts with ~, we allow para and
-            # poly-phyletic grouping of the species in such level
-            strict_monophyly = True
-            if target_level.startswith("~"):
-                target_level = target_level.lstrip("~")
-                strict_monophyly = False
-            
-            target_level = target_level.lower()
-            if target_level in avail_levels:
-                GLOBALS["optimized_levels"][target_level] = [False, strict_monophyly]
-            else:
-                raise ConfigError("Target level not found in the species lineage file: %s" %target_level)
-            
-        log.log(26, "Target levels:\n%s" %
-                '\n'.join(map(lambda x: "% 30s (%s spcs)**" %(x, len(lin2sp[x])),
-                              GLOBALS["optimized_levels"].keys())))
         GLOBALS["lineages"] = (sp2lin, lin2sp)
     # if we miss lineages file, raise an error
-    elif npr_template == "supermatrix" and config["supermatrix"].get("target_levels", None):
+    elif WORKFLOW_TYPE == "supermatrix" and TARGET_CLADES:
         raise ConfigError("The use of target_levels requires a species lineage file provided through the --lineages option")
         
     target_seqs = None # release mem
 
-    if npr_template == "genetree":
+    if WORKFLOW_TYPE == "genetree":
         if "aa" in GLOBALS["seqtypes"]:
             GLOBALS["target_sequences"] = db.get_all_seqids("aa")
         else:
             GLOBALS["target_sequences"] = db.get_all_seqids("nt")
         log.log(28, "Working on %d ids whose sequences are available", len(GLOBALS["target_sequences"]))
+
+
+    # -------------------------------------
+    # MISC 
+    # -------------------------------------
+
+    GLOBALS["_max_cores"] = args.maxcores
+    log.debug("Enabling %d CPU cores" %args.maxcores)
+
+    # check application binary files
+    if not args.nochecks:
+        log.log(28, "Testing x86-%s portable applications..." % arch)
+        apps.test_apps(apps_to_test)
+
+
         
     # how task will be executed
     if args.execute:
@@ -647,10 +465,10 @@ def main(args):
     # This initialises all pipelines
     pending_tasks = []
     start_time = ctime()
-    for name, config in run2config.iteritems():
+    for wkname, config in run2config.iteritems():
         # Feeds pending task with the first task of the workflow
-        config["_name"] = name
-        new_tasks = pipeline(None, config)
+        config["_name"] = wkname
+        new_tasks = pipeline(None, wkname, config)
         thread_id = new_tasks[0].threadid
         config["_configid"] = thread_id
         GLOBALS[thread_id] = config
@@ -661,7 +479,7 @@ def main(args):
         # Write command line info
         cmd_info = '\t'.join([start_time, thread_id, str(args.monitor), GLOBALS["cmdline"]])
         open(pjoin(config["_outpath"], "command_lines"), "a").write(cmd_info+"\n")
-
+        
     thread_errors = schedule(pipeline, pending_tasks, args.schedule_time,
                              execution, args.retry_error_jobs, args.debug)
     db.close()
@@ -712,12 +530,12 @@ PRAGMA locking_mode = NORMAL;
     template_import.close()
     
 
-def load_sequences(target_seqs, name2seq, npr_template):
+def load_sequences(target_seqs, name2seq, workflow_type):
     if args.seq_rename:
         name2hash, hash2name = hash_names(target_seqs)
         log.log(28, "Loading %d sequence name translations..." %len(hash2name))
         db.add_seq_name_table(hash2name.items())
-        if npr_template == "genetree":
+        if workflow_type == "genetree":
             GLOBALS["target_sequences"] = hash2name.keys()
     else:
         name2hash, hash2name = {}, {}
@@ -916,15 +734,15 @@ if __name__ == "__main__":
     
     input_group.add_argument("-w", dest="workflow",
                              required=True,
-                             choices=["supermatrix", "genetree"],
-                             help="Type of phylogenetic workflow.")
+                             nargs='+', 
+                             help="A name matching a main workflow definition in the config file. ")
 
     input_group.add_argument("-c", "--config", dest="configfile",
-                             type=str, required=True, nargs="+",
+                             type=is_file, required=True, 
                              help="Configuration file.")
 
     input_group.add_argument("-a", dest="aa_seed_file",
-                             type=existing_file,
+                             type=is_file,
                              help="Initial multi sequence file with"
                              " protein sequences.")
     
@@ -934,7 +752,7 @@ if __name__ == "__main__":
                              help="")
     
     input_group.add_argument("-n", dest="nt_seed_file",
-                             type=existing_file,
+                             type=is_file,
                              help="Initial multi sequence file with"
                              " nucleotide sequences")
 
@@ -982,16 +800,16 @@ if __name__ == "__main__":
     # supermatrix workflow
     
     input_group.add_argument("--ortho-pairs", dest="ortho_pairs",
-                             type=existing_file,
+                             type=is_file,
                              help="File containing all one2one orthologous"
                              " relationships among the species of interest.")
     
     input_group.add_argument("--cogs", dest="cogs_file",
-                             type=existing_file,
+                             type=is_file,
                              help="A file defining clusters of orthologous groups. One per line. Tab delimited sequence ids. ")
 
     input_group.add_argument("--lineages", dest="lineages_file",
-                             type=existing_file,
+                             type=is_file,
                              help="A file containing the (sorted) lineage "
                                   "track of each species. It enables "
                                   "NPR algorithm to fix what taxonomic "
@@ -1010,7 +828,7 @@ if __name__ == "__main__":
                              " Note that species name must always precede seq.identifier.")
 
     input_group.add_argument("--spfile", dest="spfile",
-                             type=existing_file,
+                             type=is_file,
                              help="If specified, only the sequences and ortholog"
                              " pairs matching the group of species in this file"
                              " (one species code per line) will be used. ")
@@ -1023,15 +841,15 @@ if __name__ == "__main__":
                               help="""Output directory for results.""")
     
     output_group.add_argument("--scratch_dbdir", dest="scratch_dbdir",
-                              type=existing_dir, 
+                              type=is_dir, 
                               help="""If provided, sqlite files will be created in the provided scratch path. Files will be moved to outpath when finished.""")
 
     output_group.add_argument("--scratch_dir", dest="scratch_dir",
-                              type=existing_dir, 
+                              type=is_dir, 
                               help="""If provided, npr will run on the scratch folder and all files will be transferred to the output dir when finished. """)
     
     output_group.add_argument("--taskdir", dest="taskdir",
-                              type=existing_dir,
+                              type=is_dir,
                               help="""Output directory for tasks related data""")
     
     output_group.add_argument("--compress", action="store_true",
@@ -1098,7 +916,7 @@ if __name__ == "__main__":
 
     exec_group.add_argument("--clearall", dest="clearall",
                             action="store_true",
-                            help="Erase all previous data if necessary.")
+                            help="Erase all previous data if any.")
     
     exec_group.add_argument("--softclear", dest="softclear",
                             action="store_true",
@@ -1143,8 +961,6 @@ if __name__ == "__main__":
                           " debugging will start from such task on.")
     
     args = parser.parse_args()
-
-
     
     if not args.aa_seed_file and not args.nt_seed_file:
         parser.error('At least one input file argument (-a, -n) is required')
@@ -1185,7 +1001,7 @@ if __name__ == "__main__":
     GLOBALS["email_report_time"] = args.email_report_time
     GLOBALS["launch_time"] = args.launch_time
     GLOBALS["cmdline"] = ' '.join(sys.argv)
-    GLOBALS["nodeinfo"] = defaultdict(dict)
+
     GLOBALS["threadinfo"] = defaultdict(dict)
     GLOBALS["seqtypes"] = set()
     GLOBALS["target_species"] = set()
@@ -1198,9 +1014,8 @@ if __name__ == "__main__":
     GLOBALS["retried_jobs"] = set()
     
     GLOBALS["lineages"] = None
-    GLOBALS["optimized_levels"] = None
     GLOBALS["cogs_file"] = None 
-    
+   
     GLOBALS["citator"].add(ETE_CITE)
     
     if not pexist(GLOBALS["basedir"]):
