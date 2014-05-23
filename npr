@@ -119,23 +119,13 @@ def main(args):
     log = logging.getLogger("main")
     base_dir = GLOBALS["basedir"]
     db_dir = GLOBALS.get("dbdir", base_dir)
-    print __DESCRIPTION__
-    log.log(28, "Starting NPR execution at %s" %(ctime()))
-    log.log(28, "Output directory %s" %(GLOBALS["output_dir"]))
-    
-    if args.arch == "auto":
-        arch = "64 " if sys.maxsize > 2**32 else "32"
-    else:
-        arch = args.arch
-
-
     # -------------------------------------
     # CONFIG FILE AND WORKFLOWS
     # -------------------------------------
         
     # Load and check config file
     base_config = check_config(args.configfile)
-
+        
     # Check for config file overwriting
     clearname = os.path.basename(args.configfile)        
     local_conf_file = pjoin(base_dir, "config.cfg")
@@ -153,9 +143,27 @@ def main(args):
     run2config = {}
     workflow_types = set()
     TARGET_CLADES = set()
+
+    # expand meta workflows 
+    if len(args.workflow) == 1 and args.workflow[0] not in base_config:
+        args.workflow = map(lambda x: x.lstrip('@'),
+                             base_config.get('meta_workflow', {}).get(args.workflow[0], args.workflow[0]))
+        
     for wkname in args.workflow:
+        if wkname not in base_config:
+            avail_workflows = sorted([k for k, v in base_config.iteritems() if v.get('_app', '') == 'main'])
+            avail_meta = sorted(["%s (%s threads)" %(k, len(v)) for k,v in base_config.get('meta_workflow', {}).iteritems()])
+            msg = """
+[%s] workflow or meta_workflow name is not found in the config file.
+Available workflows:
+  %s
+Available meta-workflows: 
+  %s
+""" %(wkname, '\n  '.join(avail_workflows), '\n  '.join(avail_meta))
+            raise ConfigError(msg)
+            
         config = dict(base_config)
-        appset = config[config[wkname]['_appset'][1:]]
+        appset = config[ config[wkname]['_appset'][1:] ]
         if wkname not in config:
             raise ConfigError('[%s] workflow not present in config file' %wkname)
         if config[wkname]['_app'] != 'main':
@@ -221,7 +229,23 @@ def main(args):
         from nprlib.template.genetree import pipeline
     elif WORKFLOW_TYPE == 'supermatrix':
         from nprlib.template.supermatrix import pipeline
+
+    if args.arch == "auto":
+        arch = "64 " if sys.maxsize > 2**32 else "32"
+    else:
+        arch = args.arch
+
+    print __DESCRIPTION__
     
+    # check application binary files
+    if not args.nochecks:
+        log.log(28, "Testing x86-%s portable applications..." % arch)
+        apps.test_apps(apps_to_test)
+
+    log.log(28, "Starting NPR execution at %s" %(ctime()))
+    log.log(28, "Output directory %s" %(GLOBALS["output_dir"]))
+    
+        
     # -------------------------------------
     # PATH CONFIGs
     # -------------------------------------
@@ -440,13 +464,7 @@ def main(args):
     GLOBALS["_max_cores"] = args.maxcores
     log.debug("Enabling %d CPU cores" %args.maxcores)
 
-    # check application binary files
-    if not args.nochecks:
-        log.log(28, "Testing x86-%s portable applications..." % arch)
-        apps.test_apps(apps_to_test)
-
-
-        
+       
     # how task will be executed
     if args.execute:
         if args.monitor:
