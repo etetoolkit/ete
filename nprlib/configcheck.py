@@ -2,6 +2,19 @@ import os
 from nprlib.configobj import ConfigObj
 from nprlib.errors import ConfigError
 
+def list_workflows(config):
+    avail_workflows = sorted([k for k, v in config.iteritems() if v.get('_app', '') == 'main'])
+    avail_meta = sorted(["%s (%s threads)" %(k, len(v)) for k,v in config.get('meta_workflow', {}).iteritems()])
+    msg = """
+Available workflows:
+====================
+  %s
+Available meta-workflows:
+=========================
+  %s
+""" %('\n  '.join(avail_workflows), '\n  '.join(avail_meta))
+    print msg
+
 def check_config(fname):
     conf = ConfigObj(fname, list_values=True)
     for k, v in conf.items():
