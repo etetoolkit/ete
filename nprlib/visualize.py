@@ -60,13 +60,14 @@ def draw_tree(tree, conf, outfile):
                         if last_lt is not None:
                             start, end = last_lt, c-1
                             w = end-start
-                            motifs.append([start, end, "[]", w, 12, "slategrey", "slategrey", None])
+                            motifs.append([start, end, "[]", w, 12, "grey", "slategrey", None])
                             last_lt = None
 
                 seqFace = SeqMotifFace(node.sequence, motifs,
                                        intermotif_format="line",
                                        seqtail_format="line", scale_factor=1)
                 add_face_to_node(seqFace, node, ALG_START_COL, aligned=True)
+
                 
     TRACKED_CLADES = ["Eukaryota", "Viridiplantae", "Opisthokonta", "Fungi",
                       "Alveolata", "Metazoa", "Stramenopiles", "Rhodophyta",
@@ -87,7 +88,7 @@ def draw_tree(tree, conf, outfile):
     ts.show_leaf_name = False
     ts.show_branch_support = False
     ts.layout_fn = [ly_basic, ly_leaf_names, ly_supports, ly_tax_labels, ly_block_alg]
-    tree.show(tree_style=ts)
+    #tree.show(tree_style=ts)
     tree.render(outfile, tree_style=ts)
 
         

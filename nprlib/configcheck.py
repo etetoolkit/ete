@@ -217,6 +217,7 @@ CHECKERS = {
 
     ("concatalg", "_default_aa_model"): (is_text, {}, True),
     ("concatalg", "_default_nt_model"): (is_text, {}, True),
+
     ("concatalg", "_workflow"): (is_app_link, {"allow_none":False}, True),
     
     ("cogselector", "_species_missing_factor"): (is_float, {"minv":0, "maxv":1}, True),
