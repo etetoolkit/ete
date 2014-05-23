@@ -74,7 +74,7 @@ from nprlib import db
 from nprlib import apps
 from nprlib.logger import logindent
 from nprlib.citation import Citator
-from nprlib.configcheck import is_file, is_dir, check_config
+from nprlib.configcheck import is_file, is_dir, check_config, list_workflows
 
 APPSPATH =  pjoin(NPRPATH, "ext_apps/")
 
@@ -151,16 +151,8 @@ def main(args):
         
     for wkname in args.workflow:
         if wkname not in base_config:
-            avail_workflows = sorted([k for k, v in base_config.iteritems() if v.get('_app', '') == 'main'])
-            avail_meta = sorted(["%s (%s threads)" %(k, len(v)) for k,v in base_config.get('meta_workflow', {}).iteritems()])
-            msg = """
-[%s] workflow or meta_workflow name is not found in the config file.
-Available workflows:
-  %s
-Available meta-workflows: 
-  %s
-""" %(wkname, '\n  '.join(avail_workflows), '\n  '.join(avail_meta))
-            raise ConfigError(msg)
+            list_values(base_config)
+            raise ConfigError('[%s] workflow or meta_workflow name is not found in the config file.' %wkname)
             
         config = dict(base_config)
         appset = config[ config[wkname]['_appset'][1:] ]
@@ -499,7 +491,7 @@ Available meta-workflows:
         open(pjoin(config["_outpath"], "command_lines"), "a").write(cmd_info+"\n")
         
     thread_errors = schedule(pipeline, pending_tasks, args.schedule_time,
-                             execution, args.retry_error_jobs, args.debug)
+                             execution, args.retry_error_jobs, args.debug, arg.noimg)
     db.close()
     
     if not thread_errors:
@@ -739,6 +731,8 @@ if __name__ == "__main__":
             print cmd
             config[k] = cmd
         apps.test_apps(config)
+        base_config = check_config('./config.cfg')
+        list_workflows(base_config)
         sys.exit(0)
     elif len(sys.argv) > 1 and sys.argv[1] == "version":
         print __DESCRIPTION__
@@ -876,7 +870,10 @@ if __name__ == "__main__":
     
     output_group.add_argument("--logfile", action="store_true",
                               help="Log messages are saved into a file")
-    
+
+    output_group.add_argument("--noimg", action="store_true",
+                              help="Tree images will not be generated")
+        
     output_group.add_argument("--email", dest="email",
                               type=str, 
                               help="Send email info when errors or finished threads")
