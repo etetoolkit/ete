@@ -491,7 +491,7 @@ def main(args):
         open(pjoin(config["_outpath"], "command_lines"), "a").write(cmd_info+"\n")
         
     thread_errors = schedule(pipeline, pending_tasks, args.schedule_time,
-                             execution, args.retry_error_jobs, args.debug, arg.noimg)
+                             execution, args.retry_error_jobs, args.debug, args.noimg)
     db.close()
     
     if not thread_errors:
