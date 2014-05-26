@@ -151,7 +151,7 @@ def main(args):
         
     for wkname in args.workflow:
         if wkname not in base_config:
-            list_values(base_config)
+            list_workflows(base_config)
             raise ConfigError('[%s] workflow or meta_workflow name is not found in the config file.' %wkname)
             
         config = dict(base_config)
@@ -750,7 +750,7 @@ if __name__ == "__main__":
                              help="A name matching a main workflow definition in the config file. ")
 
     input_group.add_argument("-c", "--config", dest="configfile",
-                             type=is_file, required=True, 
+                             type=is_file, default=NPRPATH+'/config.cfg',
                              help="Configuration file.")
 
     input_group.add_argument("-a", dest="aa_seed_file",
