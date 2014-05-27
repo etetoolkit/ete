@@ -1775,6 +1775,12 @@ class TreeNode(object):
         '''
         
         return [edge for edge in self.iter_edges(cached_content)]
+
+    def standardize(self, delete_orphan=True, preserve_branch_length=True):
+        for n in self.get_descendants():
+            if len(n.children) == 1:
+                n.delete(prevent_nondicotomic=True, preserve_branch_length=preserve_branch_length)
+                               
     
     # def get_partitions(self):
     #     """ 

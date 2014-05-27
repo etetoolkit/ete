@@ -674,7 +674,7 @@ def save(scene, imgName, w=None, h=None, dpi=90,\
         # inkscape and browsers...
         compatible_code = compatible_code.replace("xml:id=", "id=")
         compatible_code = re.sub('font-size="(\d+)"', 'font-size="\\1pt"', compatible_code)
-        compatible_code = compatible_code.replace('\n', '')
+        compatible_code = compatible_code.replace('\n', ' ')
         compatible_code = re.sub('<g [^>]+>\s*</g>', '', compatible_code)
         # End of fix
         if ipython_inline:
