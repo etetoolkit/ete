@@ -198,6 +198,17 @@ def is_choice(value, choices):
     else:
         raise ConfigError('[%s] should be one of %s' %(value, choices))
 
+def is_raxml_bootstrap(value):
+    try:
+        return is_integer(value)
+    except ValueError:
+        if value == 'alrt' or value == 'alrt_phyml':
+            return value
+        else:
+            raise ConfigError('[%s] bootstrap value should an integer, "alrt" or "phyml_alrt"' %(value))
+
+
+    
 CHECKERS = {
     # (app_name, attr_name): (checker_fn, args, required_attr)
     ("main", "_npr"): (is_app_list, {}, True),
@@ -249,7 +260,7 @@ CHECKERS = {
    
     ("raxml", "_aa_model"): (is_text, {}, True),
     ("raxml", "_method"): (is_choice, {"choices":set(['GAMMA', 'CAT'])}, True),
-    ("raxml", "_alrt_calculation"): (is_choice, {"choices":set(['phyml', 'raxml'])}, True),
+    ("raxml", "_bootstrap"): (is_raxml_bootstrap, {}, True),
 
     ("raxml-sse", "_aa_model"): (is_text, {}, True),
     ("raxml-sse", "_method"): (is_choice, {"choices":set(['GAMMA', 'CAT'])}, True),

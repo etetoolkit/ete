@@ -21,7 +21,8 @@ class Raxml(TreeTask):
         GLOBALS["citator"].add(RAXML_CITE)
 
         base_args = OrderedDict()
-        self.compute_alrt = conf[confname].get("_alrt_calculation", None)
+        self.bootstrap = conf[confname].get("_bootstrap", None)
+        
         model = model or conf[confname]["_aa_model"]
         
         self.confname = confname
@@ -41,7 +42,6 @@ class Raxml(TreeTask):
         max_cores = GLOBALS["_max_cores"]
         appname = conf[confname]["_app"]
         threads = conf["threading"].get("raxml")
-        print threads, appname
         if max_cores > 1:
             appname = appname.replace("raxml", "raxml-pthreads")
             raxml_bin = conf["app"][appname]
@@ -90,12 +90,12 @@ class Raxml(TreeTask):
             tree_job.add_input_file(self.constrain_tree)
         if self.partitions_file:
             tree_job.add_input_file(self.partitions_file)
+            
         self.jobs.append(tree_job)
-
         self.out_tree_file = os.path.join(tree_job.jobdir,
                                      "RAxML_bestTree." + self.alg_phylip_file)
         
-        if self.compute_alrt == "raxml":
+        if self.bootstrap == "alrt":
             alrt_args = tree_job.args.copy()
             if self.constrain_tree:
                 del alrt_args["-g"]
@@ -109,9 +109,18 @@ class Raxml(TreeTask):
             alrt_job.jobname += "-alrt"
             alrt_job.dependencies.add(tree_job)
             alrt_job.cores = self.threads
+
+            # Register necessary input files
+            alrt_job.add_input_file(self.alg_phylip_file)
+            if self.partitions_file:
+                alrt_job.add_input_file(self.partitions_file)
+            
             self.jobs.append(alrt_job)
 
-        elif self.compute_alrt == "phyml":
+            
+            self.alrt_job = alrt_job
+
+        elif self.bootstrap == "alrt_phyml":
             alrt_args = {
                 "-o": "n",
                 "-i": self.alg_phylip_file,
@@ -122,7 +131,6 @@ class Raxml(TreeTask):
                 "--quiet": "",
                 "--no_memory_check": "",
                 }
-
             #if self.constrain_tree:
             #    alrt_args["--constraint_tree"] = self.constrain_tree
                
@@ -131,8 +139,53 @@ class Raxml(TreeTask):
             alrt_job.add_input_file(self.alg_phylip_file, alrt_job.jobdir)
             alrt_job.jobname += "-alrt"
             alrt_job.dependencies.add(tree_job)
+            alrt_job.add_input_file(self.alg_phylip_file)
             self.jobs.append(alrt_job)
+            self.alrt_job = alrt_job
+           
+        else:
+            # Bootstrap calculation
+            boot_args = tree_job.args.copy()
+            boot_args["-n"] = "bootstraps."+boot_args["-n"]
+            boot_args["-N"] = int(self.bootstrap)
+            boot_args["-b"] = 31416
+            boot_job = Job(self.raxml_bin, boot_args,
+                           parent_ids=[tree_job.jobid])
+            boot_job.jobname += "-%d-bootstraps" %(boot_args['-N'])
+            boot_job.dependencies.add(tree_job)
+            boot_job.cores = self.threads
 
+            # Register necessary input files
+            boot_job.add_input_file(self.alg_phylip_file)
+            if self.constrain_tree:
+                boot_job.add_input_file(self.constrain_tree)
+            if self.partitions_file:
+                boot_job.add_input_file(self.partitions_file)
+            
+            self.jobs.append(boot_job)
+
+            # Bootstrap drawing on top of best tree
+            bootd_args = tree_job.args.copy()
+            if self.constrain_tree:
+                del bootd_args["-g"]
+            if self.partitions_file:
+                del bootd_args["-q"] 
+            
+            bootd_args["-n"] = "bootstrapped."+ tree_job.args["-n"]
+            bootd_args["-f"] = "b"
+            bootd_args["-t"] = self.out_tree_file
+            bootd_args["-z"] = pjoin(boot_job.jobdir, "RAxML_bootstrap." + boot_job.args["-n"])
+
+            bootd_job = Job(self.raxml_bin, bootd_args,
+                            parent_ids=[tree_job.jobid])
+            bootd_job.jobname += "-bootstrapped"
+            bootd_job.dependencies.add(boot_job)
+            bootd_job.cores = self.threads
+            self.jobs.append(bootd_job)
+
+            self.boot_job = boot_job
+            self.bootd_job = bootd_job
+            
     def finish(self):
         #first job is the raxml tree
         def parse_alrt(match):
@@ -140,9 +193,9 @@ class Raxml(TreeTask):
             support = float(match.groups()[1])/100.0
             return "%g:%s" %(support, dist)
         
-        if self.compute_alrt == "raxml":
-            alrt_tree_file = os.path.join(self.jobs[1].jobdir,
-                                               "RAxML_fastTreeSH_Support." + self.alg_phylip_file)
+        if self.bootstrap == "alrt":
+            alrt_tree_file = os.path.join(self.alrt_job.jobdir,
+                                               "RAxML_fastTreeSH_Support." + self.alrt_job.args["-n"])
             raw_nw = open(alrt_tree_file).read()
             try:
                 nw, nsubs = re.subn(":(\d+\.\d+)\[(\d+)\]", parse_alrt, raw_nw, flags=re.MULTILINE)
@@ -152,12 +205,23 @@ class Raxml(TreeTask):
             if nsubs == 0:
                 log.warning("alrt values were not detected in raxml tree!")
             tree = Tree(nw)                                   
-        elif self.compute_alrt == "phyml":
-            alrt_tree_file = os.path.join(self.jobs[1].jobdir,
+            
+        elif self.bootstrap == "alrt_phyml":
+            alrt_tree_file = os.path.join(self.alrt_job.jobdir,
                                           self.alg_phylip_file +"_phyml_tree.txt")
             tree = Tree(alrt_tree_file)
+
         else:
-            tree = Tree(self.out_tree_file)
+            alrt_tree_file = os.path.join(self.bootd_job.jobdir,
+                                               "RAxML_bipartitions." + self.bootd_job.args["-n"])
+            nw = open(alrt_tree_file).read()
+            tree = Tree(nw)
+            tree.support = 100
+            for n in tree.traverse():
+                if n.support >1:
+                    n.support /= 100.
+                else:
+                    n.support = 0
             
         TreeTask.store_data(self, tree.write(), {})
         

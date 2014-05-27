@@ -129,282 +129,289 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
     last_report_time = None
     
     BUG = set()
-    # Enters into task scheduling
-    while pending_tasks:
-        wtime = schedule_time
+    try:
+        # Enters into task scheduling
+        while pending_tasks:
+            wtime = schedule_time
 
-        # ask SGE for running jobs
-        if execution == "sge":
-            sgeid2jobs = db.get_sge_tasks()
-            qstat_jobs = sge.qstat()
-        else:
-            qstat_jobs = None
-
-        # Show summary of pending tasks per thread
-        thread2tasks = defaultdict(list)
-        for task in pending_tasks:
-            thread2tasks[task.configid].append(task)
-        set_logindent(0)
-        log.log(28, "@@13: Updating tasks status:@@1: (%s)" % (ctime()))
-        info_lines = []
-        for tid, tlist in thread2tasks.iteritems():
-            threadname = GLOBALS[tid]["_name"]
-            sizelist = ["%s" %getattr(_ts, "size", "?") for _ts in tlist]
-            info = "  Thread @@13:%s@@1:: pending tasks: @@8:%s@@1: of sizes: %s" %(
-                threadname, len(tlist), ', '.join(sizelist))
-            info_lines.append(info)
-            
-        for line in info_lines:
-            log.log(28, line)
-
-        if GLOBALS["email"]  and last_report_time is None:
-            last_report_time = time()
-            send_mail(GLOBALS["email"], "Your NPR process has started", '\n'.join(info_lines))
-            
-        ## ================================
-        ## CHECK AND UPDATE CURRENT TASKS
-        checked_tasks = set()
-        check_start_time = time()
-        to_add_tasks = set()
-        
-        GLOBALS["cached_status"] = {}
-        for task in sorted(pending_tasks, sort_tasks):
-            # Avoids endless periods without new job submissions
-            elapsed_time = time() - check_start_time
-            if not back_launcher and pending_tasks and \
-                    elapsed_time > schedule_time * 2:
-                log.log(26, "@@8:Interrupting task checks to schedule new jobs@@1:")
-                db.commit()
-                wtime = launch_jobs(sorted(pending_tasks, sort_tasks),
-                                    execution, run_detached)
-                check_start_time = time()
-            
-            # Enter debuging mode if necessary
-            if debug and log.level > 10 and task.taskid.startswith(debug):
-                log.setLevel(10) 
-                log.debug("ENTERING IN DEBUGGING MODE")
-            thread2tasks[task.configid].append(task)
-
-            # Update tasks and job statuses
-
-            if task.taskid not in checked_tasks:
-                try:
-                    show_task_info(task)
-                    task.status = task.get_status(qstat_jobs)
-                    db.dataconn.commit()
-                    if back_launcher and task.status not in set("DE"):
-                        for j, cmd in task.iter_waiting_jobs():
-                            j.status = "Q"
-                            GLOBALS["cached_status"][j.jobid] = "Q"
-                            if j.jobid not in BUG:
-                                if not os.path.exists(j.jobdir):
-                                    os.makedirs(j.jobdir)
-                                for ifile, outpath in j.input_files.iteritems():
-                                    try:
-                                        _tid, _did = ifile.split(".")
-                                        _did = int(_did)
-                                    except (IndexError, ValueError): 
-                                        dataid = ifile
-                                    else:
-                                        dataid = db.get_dataid(_tid, _did)
-                                    if not outpath:
-                                        outfile = pjoin(GLOBALS["input_dir"], ifile)
-                                    else:
-                                        outfile = pjoin(outpath, ifile)
-                                           
-                                    if not os.path.exists(outfile): 
-                                        open(outfile, "w").write(db.get_data(dataid))
-                                        
-                                log.log(24, "  @@8:Queueing @@1: %s from %s" %(j, task))
-                                job_queue.put([j.jobid, j.cores, cmd, j.status_file])
-                            BUG.add(j.jobid)
-
-                    update_task_states_recursively(task)
-                    db.commit()
-                    checked_tasks.add(task.taskid)
-                except TaskError, e:
-                    log.error("Errors found in %s" %task)
-                    import traceback
-                    traceback.print_exc()
-                    if GLOBALS["email"]:
-                        threadname = GLOBALS[task.configid]["_name"]
-                        send_mail(GLOBALS["email"], "Errors found in %s!" %threadname,
-                                  '\n'.join(map(str, [task, e.value, e.msg])))
-                    pending_tasks.discard(task)
-                    thread_errors[task.configid].append([task, e.value, e.msg])
-                    continue
+            # ask SGE for running jobs
+            if execution == "sge":
+                sgeid2jobs = db.get_sge_tasks()
+                qstat_jobs = sge.qstat()
             else:
-                # Set temporary Queued state to avoids launching
-                # jobs from clones
-                task.status = "Q" 
-                if log.level < 24:
-                    show_task_info(task)
+                qstat_jobs = None
 
-            if task.status == "D":
-                #db.commit()
-                show_task_info(task)
-                logindent(3)
-
-
-                # Log commands of every task
-                if 'cmd_log_file' not in GLOBALS[task.configid]:
-                     GLOBALS[task.configid]['cmd_log_file'] = pjoin(GLOBALS[task.configid]["_outpath"], "cmd.log")
-                     O = open(GLOBALS[task.configid]['cmd_log_file'], "w")
-                     O.close()
-                     
-                cmd_lines =  get_cmd_log(task)
-                CMD_LOG = open(GLOBALS[task.configid]['cmd_log_file'], "a")
-                print >>CMD_LOG, task
-                for c in cmd_lines:
-                    print >>CMD_LOG, '   '+'\t'.join(map(str, c))
-                CMD_LOG.close()
-                # 
-                
-                try:
-                    wkname = GLOBALS[task.configid]['_name']
-                    create_tasks = workflow_task_processor(task, wkname)
-                except TaskError, e:
-                    log.error("Errors found in %s" %task)
-                    pending_tasks.discard(task)
-                    thread_errors[task.configid].append([task, e.value, e.msg])
-                    continue
-                else: 
-                    logindent(-3)
-                    
-                    to_add_tasks.update(create_tasks)
-                    pending_tasks.discard(task)
-                    
-            elif task.status == "E":
-                #db.commit()
-                log.error("task contains errors: %s " %task)
-                if retry and task not in task2retry:
-                    log.log(28, "@@8:Remarking task as undone to retry@@1:")
-                    task2retry[task] += 1
-                    task.retry()
-                    task.init()
-                    task.post_init()
-                    update_task_states_recursively(task)
-                    db.commit()
-                else:
-                    log.error("Errors found in %s")
-                    pending_tasks.discard(task)
-                    thread_errors[task.configid].append([task, None, "Found (E) task status"])
-            
-        #db.commit()
-        if not back_launcher: 
-            wtime = launch_jobs(sorted(pending_tasks, sort_tasks),
-                            execution, run_detached)
-
-        # Update global task list with recently added jobs to be check
-        # during next cycle
-        pending_tasks.update(to_add_tasks)
-                
-        ## END CHECK AND UPDATE CURRENT TASKS
-        ## ================================
-        
-        if wtime:
+            # Show summary of pending tasks per thread
+            thread2tasks = defaultdict(list)
+            for task in pending_tasks:
+                thread2tasks[task.configid].append(task)
             set_logindent(0)
-            log.log(28, "@@13:Waiting %s seconds@@1:" %wtime)
-            sleep(wtime)
-        else:
-            sleep(schedule_time)
+            log.log(28, "@@13: Updating tasks status:@@1: (%s)" % (ctime()))
+            info_lines = []
+            for tid, tlist in thread2tasks.iteritems():
+                threadname = GLOBALS[tid]["_name"]
+                sizelist = ["%s" %getattr(_ts, "size", "?") for _ts in tlist]
+                info = "  Thread @@13:%s@@1:: pending tasks: @@8:%s@@1: of sizes: %s" %(
+                    threadname, len(tlist), ', '.join(sizelist))
+                info_lines.append(info)
 
-        # Dump / show ended threads
-        error_lines = []
-        for configid, etasks in thread_errors.iteritems(): 
-            error_lines.append("Thread @@10:%s@@1: contains errors:" %\
-                        (GLOBALS[configid]["_name"]))
-            for error in etasks:
-                error_lines.append(" ** %s" %error[0])
-                e_obj = error[1] if error[1] else error[0]
-                error_path = e_obj.jobdir if isjob(e_obj) else e_obj.taskid
-                if e_obj is not error[0]: 
-                    error_lines.append("      -> %s" %e_obj)
-                error_lines.append("      -> %s" %error_path)
-                error_lines.append("        -> %s" %error[2])
-        for eline in error_lines:
-            log.error(eline)
-        
-        pending_threads = set([ts.configid for ts in pending_tasks])
-        finished_threads = expected_threads - (pending_threads | set(thread_errors.keys()))
-        just_finished_lines = []
-        finished_lines = []
-        for configid in finished_threads:
-            # configid is the the same as threadid in master taqsks
-            final_tree_file = pjoin(GLOBALS[configid]["_outpath"],
-                                    GLOBALS["inputname"] + ".final_tree")
-            threadname = GLOBALS[configid]["_name"]
+            for line in info_lines:
+                log.log(28, line)
 
-            if configid in past_threads:
-                log.log(28, "Done thread @@12:%s@@1: in %d iterations",
-                        threadname, past_threads[configid])
-                finished_lines.append("Finished %s in %d iterations" %(
-                        threadname, past_threads[configid]))
-            else:
-               
-                log.log(28, "Assembling final tree...")
-                main_tree, treeiters =  assembly_tree(configid)
-                past_threads[configid] = treeiters - 1
-
-                log.log(28, "Done thread @@12:%s@@1: in %d iterations",
-                        threadname, past_threads[configid])
-
-                
-                log.log(28, "Writing final tree for @@13:%s@@1:\n   %s\n   %s",
-                        threadname, final_tree_file+".nw",
-                        final_tree_file+".nwx (newick extended)")
-                main_tree.write(outfile=final_tree_file+".nw")
-                main_tree.write(outfile=final_tree_file+ ".nwx", features=[],
-                                format_root_node=True)
-
-                if hasattr(main_tree, "alg_path"):
-                    log.log(28, "Writing root node alignment @@13:%s@@1:\n   %s",
-                            threadname, final_tree_file+".fa")
-                    
-                    alg = SeqGroup(get_stored_data(main_tree.alg_path))
-                    OUT = open(final_tree_file+".fa", "w")
-                    for name, seq, comments in alg:
-                        realname = db.get_seq_name(name)
-                        print >>OUT, ">%s\n%s" %(realname, seq)
-                    OUT.close()
-
-                if hasattr(main_tree, "clean_alg_path"):
-                    log.log(28, "Writing root node trimmed alignment @@13:%s@@1:\n   %s",
-                            threadname, final_tree_file+".trimmed.fa")
-                
-                    alg = SeqGroup(get_stored_data(main_tree.clean_alg_path))
-                    OUT = open(final_tree_file+".trimmed.fa", "w")
-                    for name, seq, comments in alg:
-                        realname = db.get_seq_name(name)
-                        print >>OUT, ">%s\n%s" %(realname, seq)
-                    OUT.close()
-
-                if norender == False:
-                    log.log(28, "Generating tree image for @@13:%s@@1:\n   %s",
-                            threadname, final_tree_file+".png")
-                    for lf in main_tree:
-                        lf.add_feature("sequence", alg.get_seq(lf.safename))
-                    from nprlib.visualize import draw_tree
-                    draw_tree(main_tree, GLOBALS[configid], final_tree_file+".png")
-                    
-                just_finished_lines.append("Finished %s in %d iterations" %(
-                        threadname, past_threads[configid]))
-        if GLOBALS["email"]:
-            if not pending_tasks:
-                all_lines = finished_lines + just_finished_lines + error_lines
-                send_mail(GLOBALS["email"], "Your NPR process has ended", '\n'.join(all_lines))
-            
-            elif GLOBALS["email_report_time"] and time() - last_report_time >= \
-                    GLOBALS["email_report_time"]:
-                all_lines = info_lines + error_lines + just_finished_lines
-                send_mail(GLOBALS["email"], "Your NPR report", '\n'.join(all_lines))
+            if GLOBALS["email"]  and last_report_time is None:
                 last_report_time = time()
+                send_mail(GLOBALS["email"], "Your NPR process has started", '\n'.join(info_lines))
 
-            elif just_finished_lines:
-                send_mail(GLOBALS["email"], "Finished threads!",
-                          '\n'.join(just_finished_lines))
-            
-        log.log(26, "")
+            ## ================================
+            ## CHECK AND UPDATE CURRENT TASKS
+            checked_tasks = set()
+            check_start_time = time()
+            to_add_tasks = set()
+
+            GLOBALS["cached_status"] = {}
+            for task in sorted(pending_tasks, sort_tasks):
+                # Avoids endless periods without new job submissions
+                elapsed_time = time() - check_start_time
+                if not back_launcher and pending_tasks and \
+                        elapsed_time > schedule_time * 2:
+                    log.log(26, "@@8:Interrupting task checks to schedule new jobs@@1:")
+                    db.commit()
+                    wtime = launch_jobs(sorted(pending_tasks, sort_tasks),
+                                        execution, run_detached)
+                    check_start_time = time()
+
+                # Enter debuging mode if necessary
+                if debug and log.level > 10 and task.taskid.startswith(debug):
+                    log.setLevel(10) 
+                    log.debug("ENTERING IN DEBUGGING MODE")
+                thread2tasks[task.configid].append(task)
+
+                # Update tasks and job statuses
+
+                if task.taskid not in checked_tasks:
+                    try:
+                        show_task_info(task)
+                        task.status = task.get_status(qstat_jobs)
+                        db.dataconn.commit()
+                        if back_launcher and task.status not in set("DE"):
+                            for j, cmd in task.iter_waiting_jobs():
+                                j.status = "Q"
+                                GLOBALS["cached_status"][j.jobid] = "Q"
+                                if j.jobid not in BUG:
+                                    if not os.path.exists(j.jobdir):
+                                        os.makedirs(j.jobdir)
+                                    for ifile, outpath in j.input_files.iteritems():
+                                        try:
+                                            _tid, _did = ifile.split(".")
+                                            _did = int(_did)
+                                        except (IndexError, ValueError): 
+                                            dataid = ifile
+                                        else:
+                                            dataid = db.get_dataid(_tid, _did)
+
+                                        if not outpath:
+                                            outfile = pjoin(GLOBALS["input_dir"], ifile)
+                                        else:
+                                            outfile = pjoin(outpath, ifile)
+
+                                        if not os.path.exists(outfile): 
+                                            open(outfile, "w").write(db.get_data(dataid))
+
+                                    log.log(24, "  @@8:Queueing @@1: %s from %s" %(j, task))
+                                    job_queue.put([j.jobid, j.cores, cmd, j.status_file])
+                                BUG.add(j.jobid)
+
+                        update_task_states_recursively(task)
+                        db.commit()
+                        checked_tasks.add(task.taskid)
+                    except TaskError, e:
+                        log.error("Errors found in %s" %task)
+                        import traceback
+                        traceback.print_exc()
+                        if GLOBALS["email"]:
+                            threadname = GLOBALS[task.configid]["_name"]
+                            send_mail(GLOBALS["email"], "Errors found in %s!" %threadname,
+                                      '\n'.join(map(str, [task, e.value, e.msg])))
+                        pending_tasks.discard(task)
+                        thread_errors[task.configid].append([task, e.value, e.msg])
+                        continue
+                else:
+                    # Set temporary Queued state to avoids launching
+                    # jobs from clones
+                    task.status = "Q" 
+                    if log.level < 24:
+                        show_task_info(task)
+
+                if task.status == "D":
+                    #db.commit()
+                    show_task_info(task)
+                    logindent(3)
+
+
+                    # Log commands of every task
+                    if 'cmd_log_file' not in GLOBALS[task.configid]:
+                         GLOBALS[task.configid]['cmd_log_file'] = pjoin(GLOBALS[task.configid]["_outpath"], "cmd.log")
+                         O = open(GLOBALS[task.configid]['cmd_log_file'], "w")
+                         O.close()
+
+                    cmd_lines =  get_cmd_log(task)
+                    CMD_LOG = open(GLOBALS[task.configid]['cmd_log_file'], "a")
+                    print >>CMD_LOG, task
+                    for c in cmd_lines:
+                        print >>CMD_LOG, '   '+'\t'.join(map(str, c))
+                    CMD_LOG.close()
+                    # 
+
+                    try:
+                        wkname = GLOBALS[task.configid]['_name']
+                        create_tasks = workflow_task_processor(task, wkname)
+                    except TaskError, e:
+                        log.error("Errors found in %s" %task)
+                        pending_tasks.discard(task)
+                        thread_errors[task.configid].append([task, e.value, e.msg])
+                        continue
+                    else: 
+                        logindent(-3)
+
+                        to_add_tasks.update(create_tasks)
+                        pending_tasks.discard(task)
+
+                elif task.status == "E":
+                    #db.commit()
+                    log.error("task contains errors: %s " %task)
+                    if retry and task not in task2retry:
+                        log.log(28, "@@8:Remarking task as undone to retry@@1:")
+                        task2retry[task] += 1
+                        task.retry()
+                        task.init()
+                        task.post_init()
+                        update_task_states_recursively(task)
+                        db.commit()
+                    else:
+                        log.error("Errors found in %s")
+                        pending_tasks.discard(task)
+                        thread_errors[task.configid].append([task, None, "Found (E) task status"])
+
+            #db.commit()
+            if not back_launcher: 
+                wtime = launch_jobs(sorted(pending_tasks, sort_tasks),
+                                execution, run_detached)
+
+            # Update global task list with recently added jobs to be check
+            # during next cycle
+            pending_tasks.update(to_add_tasks)
+
+            ## END CHECK AND UPDATE CURRENT TASKS
+            ## ================================
+
+            if wtime:
+                set_logindent(0)
+                log.log(28, "@@13:Waiting %s seconds@@1:" %wtime)
+                sleep(wtime)
+            else:
+                sleep(schedule_time)
+
+            # Dump / show ended threads
+            error_lines = []
+            for configid, etasks in thread_errors.iteritems(): 
+                error_lines.append("Thread @@10:%s@@1: contains errors:" %\
+                            (GLOBALS[configid]["_name"]))
+                for error in etasks:
+                    error_lines.append(" ** %s" %error[0])
+                    e_obj = error[1] if error[1] else error[0]
+                    error_path = e_obj.jobdir if isjob(e_obj) else e_obj.taskid
+                    if e_obj is not error[0]: 
+                        error_lines.append("      -> %s" %e_obj)
+                    error_lines.append("      -> %s" %error_path)
+                    error_lines.append("        -> %s" %error[2])
+            for eline in error_lines:
+                log.error(eline)
+
+            pending_threads = set([ts.configid for ts in pending_tasks])
+            finished_threads = expected_threads - (pending_threads | set(thread_errors.keys()))
+            just_finished_lines = []
+            finished_lines = []
+            for configid in finished_threads:
+                # configid is the the same as threadid in master taqsks
+                final_tree_file = pjoin(GLOBALS[configid]["_outpath"],
+                                        GLOBALS["inputname"] + ".final_tree")
+                threadname = GLOBALS[configid]["_name"]
+
+                if configid in past_threads:
+                    log.log(28, "Done thread @@12:%s@@1: in %d iteration(s)",
+                            threadname, past_threads[configid])
+                    finished_lines.append("Finished %s in %d iteration(s)" %(
+                            threadname, past_threads[configid]))
+                else:
+
+                    log.log(28, "Assembling final tree...")
+                    main_tree, treeiters =  assembly_tree(configid)
+                    past_threads[configid] = treeiters - 1
+
+                    log.log(28, "Done thread @@12:%s@@1: in %d iteration(s)",
+                            threadname, past_threads[configid])
+
+
+                    log.log(28, "Writing final tree for @@13:%s@@1:\n   %s\n   %s",
+                            threadname, final_tree_file+".nw",
+                            final_tree_file+".nwx (newick extended)")
+                    main_tree.write(outfile=final_tree_file+".nw")
+                    main_tree.write(outfile=final_tree_file+ ".nwx", features=[],
+                                    format_root_node=True)
+
+                    if hasattr(main_tree, "alg_path"):
+                        log.log(28, "Writing root node alignment @@13:%s@@1:\n   %s",
+                                threadname, final_tree_file+".fa")
+
+                        alg = SeqGroup(get_stored_data(main_tree.alg_path))
+                        OUT = open(final_tree_file+".fa", "w")
+                        for name, seq, comments in alg:
+                            realname = db.get_seq_name(name)
+                            print >>OUT, ">%s\n%s" %(realname, seq)
+                        OUT.close()
+
+                    if hasattr(main_tree, "clean_alg_path"):
+                        log.log(28, "Writing root node trimmed alignment @@13:%s@@1:\n   %s",
+                                threadname, final_tree_file+".trimmed.fa")
+
+                        alg = SeqGroup(get_stored_data(main_tree.clean_alg_path))
+                        OUT = open(final_tree_file+".trimmed.fa", "w")
+                        for name, seq, comments in alg:
+                            realname = db.get_seq_name(name)
+                            print >>OUT, ">%s\n%s" %(realname, seq)
+                        OUT.close()
+
+                    if norender == False:
+                        log.log(28, "Generating tree image for @@13:%s@@1:\n   %s",
+                                threadname, final_tree_file+".png")
+                        for lf in main_tree:
+                            lf.add_feature("sequence", alg.get_seq(lf.safename))
+                        from nprlib.visualize import draw_tree
+                        draw_tree(main_tree, GLOBALS[configid], final_tree_file+".png")
+
+                    just_finished_lines.append("Finished %s in %d iteration(s)" %(
+                            threadname, past_threads[configid]))
+            if GLOBALS["email"]:
+                if not pending_tasks:
+                    all_lines = finished_lines + just_finished_lines + error_lines
+                    send_mail(GLOBALS["email"], "Your NPR process has ended", '\n'.join(all_lines))
+
+                elif GLOBALS["email_report_time"] and time() - last_report_time >= \
+                        GLOBALS["email_report_time"]:
+                    all_lines = info_lines + error_lines + just_finished_lines
+                    send_mail(GLOBALS["email"], "Your NPR report", '\n'.join(all_lines))
+                    last_report_time = time()
+
+                elif just_finished_lines:
+                    send_mail(GLOBALS["email"], "Finished threads!",
+                              '\n'.join(just_finished_lines))
+
+            log.log(26, "")
+    except:
+        if back_launcher:
+            back_launcher.terminate()
+        raise 
+        
     if back_launcher:
         back_launcher.terminate()
     if thread_errors:
