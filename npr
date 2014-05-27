@@ -1038,3 +1038,54 @@ if __name__ == "__main__":
 
     # Start the application
     app_wrapper(main, args)
+
+# def onthefly_worflow(line, name):
+#     TEMPLATE = {
+#         "%s" %name: {
+#             "_app": "main",
+#             "_max_seqs": 9999999999,
+#             "_npr": None,
+#             "_workflow":None,
+#             "_appset":None}
+
+#         "w.%s" %name: {
+#             "_app = genetree":None,
+#             "_aa_aligner":None,
+#             "_aa_alg_cleaner":None, 
+#             "_aa_model_tester":None,
+#             "_aa_tree_builder":None,
+#             "_nt_aligner":None,     
+#             "_nt_alg_cleaner":None, 
+#             "_nt_model_tester":None,
+#             "_nt_tree_builder":None,
+#             }
+      
+#     for line in metaline.split(';'):
+#         line = line.strip()
+#         if line.startswith('name:'):
+#             tagname = line[5:].strip()
+#         elif line.startswith('a:'):
+#             aligners = map(strip, line[2:].split(','))
+#         elif line.startswith('a:'):
+#             aligners = map(strip, line[2:].split(','))
+#         elif line.startswith('r:'):
+#             trimmers = map(strip, line[2:].split(','))
+#         elif line.startswith('m:'):
+#             modelers = map(strip, line[2:].split(','))
+#         elif line.startswith('t:'):
+#             treebuilders = map(strip, line[2:].split(','))
+#     for al in aligners:
+#         if al != "none": al = "@%s" %al
+#         for tr in trimmers:
+#             if tr != "none": tr = "@%s" %tr
+#             for pt in modelers:
+#                 if pt != "none": pt = "@%s" %pt
+#                 for tb in treebuilders:
+#                     if tb != "none": tb = "@%s" %tb
+#                     name = '-'.join(map(lambda x: x.lstrip('@'),[al, tr, pt, tb]))
+#                     CFG = dict(TEMPLATE)
+#                     CFG = CFG["_appset"], "@"+args.appset)
+#                     names[tagname].append(name)
+#                     workflows[name] = CFG
+
+    
