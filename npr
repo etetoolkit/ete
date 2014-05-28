@@ -218,9 +218,9 @@ def main(args):
     TARGET_CLADES.discard('')
 
     if WORKFLOW_TYPE == 'genetree':
-        from nprlib.template.genetree import pipeline
+        from nprlib.workflow.genetree import pipeline
     elif WORKFLOW_TYPE == 'supermatrix':
-        from nprlib.template.supermatrix import pipeline
+        from nprlib.workflow.supermatrix import pipeline
 
     if args.arch == "auto":
         arch = "64 " if sys.maxsize > 2**32 else "32"
@@ -810,11 +810,6 @@ if __name__ == "__main__":
                              help="Uses a custom sequence database file")
     
     # supermatrix workflow
-    
-    input_group.add_argument("--ortho-pairs", dest="ortho_pairs",
-                             type=is_file,
-                             help="File containing all one2one orthologous"
-                             " relationships among the species of interest.")
     
     input_group.add_argument("--cogs", dest="cogs_file",
                              type=is_file,
