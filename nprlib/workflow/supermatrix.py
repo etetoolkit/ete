@@ -7,7 +7,7 @@ from nprlib.utils import (GLOBALS, tobool, generate_runid, pjoin, rpath, DATATYP
 
 from nprlib.errors import DataError, TaskError
 from nprlib import db
-from nprlib.template.common import (process_new_tasks, IterConfig,
+from nprlib.workflow.common import (process_new_tasks, IterConfig,
                                     get_next_npr_node, get_iternumber)
 from nprlib.logger import logindent
 

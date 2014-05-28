@@ -20,7 +20,7 @@ from nprlib.master_task import (isjob, update_task_states_recursively,
                                 store_task_data_recursively,
                                 remove_task_dir_recursively,
                                 update_job_status)
-from nprlib.template.common import assembly_tree, get_cmd_log
+from nprlib.workflow.common import assembly_tree, get_cmd_log
 
 def debug(_signal, _frame):
     import pdb

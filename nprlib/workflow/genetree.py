@@ -12,7 +12,7 @@ from nprlib.errors import DataError
 from nprlib.utils import GLOBALS, rpath, pjoin, generate_runid, DATATYPES
 from nprlib import db
 from nprlib.master_task import register_task_recursively
-from nprlib.template.common import (IterConfig, get_next_npr_node,
+from nprlib.workflow.common import (IterConfig, get_next_npr_node,
                                     process_new_tasks, get_iternumber)
 from nprlib.logger import logindent
 log = logging.getLogger("main")

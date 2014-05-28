@@ -44,7 +44,7 @@ class ConcatAlg(ConcatAlgTask):
         
     def load_jobs(self):
         # I want a single phylognetic tree for each cog
-        from nprlib.template.genetree import pipeline
+        from nprlib.workflow.genetree import pipeline
         
         for co in self.cogs:
             # Register a new msf task for each COG, using the same
