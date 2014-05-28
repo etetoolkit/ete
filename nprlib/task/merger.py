@@ -78,34 +78,10 @@ class TreeMerger(TreeMergeTask):
             ttree.dist = orig_target.dist
             ttree.support = orig_target.support
 
-            if DEBUG():
-                orig_target.children[0].img_style["fgcolor"] = "orange"
-                orig_target.children[0].img_style["size"] = 20
-                orig_target.children[1].img_style["fgcolor"] = "orange"
-                orig_target.children[1].img_style["size"] = 20
-                orig_target.img_style["bgcolor"] = "lightblue"
-                
-                NPR_TREE_STYLE.title.add_face( faces.TextFace("MainTree: Pre iteration partition", fgcolor="blue"), 0)
-                mtree.show(tree_style=NPR_TREE_STYLE)
-                NPR_TREE_STYLE.title.clear()
-
-                orig_target.children[0].set_style(None)
-                orig_target.children[1].set_style(None)
-                orig_target.set_style(None)
-
             # Merge task and main trees
             parent = orig_target.up
             orig_target.detach()
             parent.add_child(ttree)
-
-            if DEBUG():
-                outgroup.img_style["fgcolor"]="Green"
-                outgroup.img_style["size"]= 12
-                ttree.img_style["bgcolor"] = "lightblue"
-                outgroup.add_face(faces.TextFace("DIST=%s" % partition_pairs[0][0]), 0, "branch-top")
-                NPR_TREE_STYLE.title.clear()
-                NPR_TREE_STYLE.title.add_face(faces.TextFace("Optimized node. Most similar outgroup with previous iteration is shown", fgcolor="blue"), 0)
-                ttree.show(tree_style=NPR_TREE_STYLE)
 
         elif mtree and out_seqs:
             log.log(26, "Rooting tree using %d custom seqs" %
@@ -132,19 +108,6 @@ class TreeMerger(TreeMergeTask):
             ttree.set_outgroup(outgroup)
             orig_target = self.main_tree.get_common_ancestor(target_seqs)
             found_target = outgroup.get_sisters()[0]
-
-            if DEBUG():
-                for _seq in out_seqs:
-                    tar =  ttree & _seq
-                    tar.img_style["fgcolor"]="green"
-                    tar.img_style["size"] = 12
-                    tar.img_style["shape"] = "circle"
-                outgroup.img_style["fgcolor"]="lightgreen"
-                outgroup.img_style["size"]= 12
-                found_target.img_style["bgcolor"] = "lightblue"
-                NPR_TREE_STYLE.title.clear()
-                NPR_TREE_STYLE.title.add_face(faces.TextFace("Optimized node. Outgroup is in green and distance to original partition is shown", fgcolor="blue"), 0)
-                ttree.show(tree_style=NPR_TREE_STYLE)
 
             ttree = ttree.get_common_ancestor(target_seqs)
             outgroup.detach()
@@ -212,14 +175,6 @@ class TreeMerger(TreeMergeTask):
                     
             self.main_tree = ttree
             orig_target = ttree
-            if DEBUG():
-                outgroup.img_style["size"] = 20
-                outgroup.img_style["fgcolor"] = "lightgreen"
-                best_outgroup.img_style["size"] = 20
-                best_outgroup.img_style["fgcolor"] = "green"
-                NPR_TREE_STYLE.title.clear()
-                NPR_TREE_STYLE.title.add_face(faces.TextFace("First iteration split. midpoint outgroup is in lightgreen, selected in green", fgcolor="blue"), 0)
-                ttree.show(tree_style=NPR_TREE_STYLE)
 
         tn = orig_target.copy()
         self.pre_iter_task_tree = tn
@@ -234,10 +189,6 @@ class TreeMerger(TreeMergeTask):
 
         #ttree.write(outfile=self.pruned_tree)
         self.task_tree = ttree
-        if DEBUG():
-            for _n in self.main_tree.traverse():
-                _n.img_style = None
-        
 
     
 def dump_tree_debug(msg, taskdir, mtree, ttree, target_seqs, out_seqs):
