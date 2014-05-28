@@ -16,7 +16,6 @@ __all__ = ["TreeMerger"]
 class TreeMerger(TreeMergeTask):
     def __init__(self, nodeid, seqtype, task_tree, conf, confname):
         # Initialize task
-
         self.confname = confname
         self.conf = conf
         self.task_tree_file = task_tree
