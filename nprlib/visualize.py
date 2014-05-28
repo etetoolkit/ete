@@ -17,8 +17,7 @@ def draw_tree(tree, conf, outfile):
 
         node.img_style['hz_line_width'] = 1
         node.img_style['vt_line_width'] = 1
-        
-            
+                    
     def ly_leaf_names(node):
         if node.is_leaf():
             spF = TextFace(node.species, fsize=10, fgcolor='#444444', fstyle='italic', ftype='Helvetica')
@@ -28,10 +27,9 @@ def draw_tree(tree, conf, outfile):
 
     def ly_supports(node):
         if not node.is_leaf():
-            if node.support <= 0.99:
-                supFace = TextFace("%d" %(node.support*100), fsize=7, fgcolor='indianred')
-                add_face_to_node(supFace, node, column=0, position='branch-top')
-            
+            supFace = TextFace("%0.2g" %(node.support), fsize=7, fgcolor='indianred')
+            add_face_to_node(supFace, node, column=0, position='branch-top')
+                
     def ly_tax_labels(node):
         if node.is_leaf():
             c = LABEL_START_COL
@@ -102,20 +100,23 @@ def draw_tree(tree, conf, outfile):
     ts.show_leaf_name = False
     ts.show_branch_support = False
     ts.scale = 160
-    ts.layout_fn = [ly_basic, ly_leaf_names, ly_supports, ly_tax_labels]
+    ts.layout_fn = [ly_basic, ly_leaf_names, ly_supports, ly_tax_labels, ly_block_alg]
     #tree.show(tree_style=ts)
 
     tree.set_species_naming_function(spname)
     annotate_tree_with_ncbi(tree)
     a = tree.search_nodes(species='Dictyostelium discoideum')[0]
     b = tree.search_nodes(species='Chondrus crispus')[0]
-    tree.set_outgroup(tree.get_common_ancestor([a, b]))
+    out = tree.get_common_ancestor([a, b])
+
+    out = tree.search_nodes(species='Haemophilus parahaemolyticus')[0].up
+    tree.set_outgroup(out)    
+
     tree.swap_children()
     
     tree.render(outfile, tree_style=ts, w=170, units='mm', dpi=150)
     tree.render(outfile+'.svg', tree_style=ts, w=170, units='mm', dpi=150)
     tree.render(outfile+'.pdf', tree_style=ts, w=170, units='mm', dpi=150)
-
 
 def annotate_tree_with_ncbi(tree):
     from ete_dev.ncbi_taxonomy import ncbiquery as ncbi
