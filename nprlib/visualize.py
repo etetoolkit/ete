@@ -108,9 +108,9 @@ def draw_tree(tree, conf, outfile):
         annotate_tree_with_ncbi(tree)
         a = tree.search_nodes(species='Dictyostelium discoideum')[0]
         b = tree.search_nodes(species='Chondrus crispus')[0]
-        out = tree.get_common_ancestor([a, b])
+        #out = tree.get_common_ancestor([a, b])
 
-        out = tree.search_nodes(species='Haemophilus parahaemolyticus')[0].up
+        #out = tree.search_nodes(species='Haemophilus parahaemolyticus')[0].up
         tree.set_outgroup(out)    
 
         tree.swap_children()
