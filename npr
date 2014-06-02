@@ -193,6 +193,7 @@ def main(args):
         
         apps_to_test = {}
         for k, (appsrc, cores) in appset.iteritems():
+            cores = int(cores)
             if appsrc == "built-in":
                 #cores = int(config["threading"].get(k, args.maxcores))
                 cores = min(args.maxcores, cores)
@@ -736,7 +737,7 @@ if __name__ == "__main__":
             sys.exit(0)                    
 
         elif sys.argv[1] == "workflows":
-            base_config = check_config('./config.cfg')
+            base_config = check_config(os.path.join(NPRPATH, 'config.cfg'))
             list_workflows(base_config)
             sys.exit(0)
             
