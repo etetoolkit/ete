@@ -75,6 +75,9 @@ def main_layout(node):
                 " %s collapsed leaves." %len(node), \
                     fsize=10, fgcolor="#444", ftype="Arial")
             faces.add_face_to_node(collapsed_face, node, 0)
+        else:
+            node.img_style["draw_descendants"] = True
+
 
     # Set node aspect. This controls which node features are used to
     # control the style of the tree. You can add or modify this
