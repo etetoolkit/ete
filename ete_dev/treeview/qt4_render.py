@@ -877,9 +877,11 @@ def get_tree_img_map(n2i, x_scale=1, y_scale=1):
     node_list = []
     face_list = []
     node_areas = {}
-    nid = 0
+    #nid = 0
     for n, main_item in n2i.iteritems():
-        n.add_feature("_nid", str(nid))
+        #n.add_feature("_nid", str(nid))
+        nid = n._nid
+       
         rect = main_item.mapToScene(main_item.fullRegion).boundingRect()
         x1 = x_scale * rect.x()  
         y1 = y_scale * rect.y()
@@ -925,7 +927,7 @@ def get_tree_img_map(n2i, x_scale=1, y_scale=1):
                                 face_list.append([x1, y1, x2, y2, nid, label])
                         else:
                             face_list.append([x1, y1, x2, y2, nid, getattr(f, "face_label", None)])
-        nid += 1
+        #nid += 1
         
     return {"nodes": node_list, "faces": face_list, "node_areas": node_areas}
 
