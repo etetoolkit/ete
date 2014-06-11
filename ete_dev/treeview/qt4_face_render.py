@@ -89,7 +89,8 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
         self.sizes = {}
         self.c2height = {}
 
-        for c, faces in self.column2faces.iteritems():
+        for c in self.columns:
+            faces = self.column2faces.get(c, [])
             self.sizes[c] = {}
             total_height = 0
             for r, f in enumerate(faces):
@@ -146,6 +147,10 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
         
         if r2max_h: 
             self.r2max_h = r2max_h
+
+        # complete missing face columns 
+        if self.columns:
+            self.columns = range(min(self.c2max_w), max(self.c2max_w)+1)
 
         self.as_grid = as_grid
         self.update_columns_size()
@@ -338,7 +343,7 @@ def update_node_faces(node, n2f, img):
         for column, values in fixed_faces.iteritems():
             all_faces.setdefault(column, []).extend(values) 
 
-        if position == "aligned" and img.draw_aligned_faces_as_table: 
+        if position == "aligned" and img.draw_aligned_faces_as_table:
             as_grid = False
         else:
             as_grid = False
