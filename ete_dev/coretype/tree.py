@@ -24,7 +24,8 @@ import os
 import cPickle
 import random
 import copy
-from collections import deque 
+from collections import deque
+from hashlib import md5
 import itertools
 from ete_dev.parser.newick import read_newick, write_newick
 
@@ -1756,6 +1757,8 @@ class TreeNode(object):
 
     def iter_edges(self, cached_content = None):
         '''
+        .. versionadded:: 2.3
+        
         Iterate over the list of edges of a tree. Each egde is represented as a
         tuple of two elements, each containing the list of nodes separated by
         the edge.
@@ -1769,6 +1772,8 @@ class TreeNode(object):
         
     def get_edges(self, cached_content = None):
         '''
+        .. versionadded:: 2.3
+        
         Returns the list of edges of a tree. Each egde is represented as a
         tuple of two elements, each containing the list of nodes separated by
         the edge.
@@ -1777,11 +1782,45 @@ class TreeNode(object):
         return [edge for edge in self.iter_edges(cached_content)]
 
     def standardize(self, delete_orphan=True, preserve_branch_length=True):
+        """
+        .. versionadded:: 2.3
+
+        process current tree structure to produce a standardized topology: nodes
+        with only one child are removed and multifurcations are automatically resolved.
+       
+
+        """
+        self.resolve_polytomy()
+        
         for n in self.get_descendants():
             if len(n.children) == 1:
                 n.delete(prevent_nondicotomic=True, preserve_branch_length=preserve_branch_length)
-                               
-    
+
+
+    def get_topology_id(self, attr="name"):
+        '''
+        .. versionadded:: 2.3
+
+        Returns the unique ID representing the topology of the current tree. Two
+        trees with the same topology will produce the same id. If trees are
+        unrooted, make sure that the root node is not binary or use the
+        tree.unroot() function before generating the topology id.
+
+        This is useful to detect the number of unique topologies over a bunch of
+        trees, without requiring full distance methods.
+
+        The id is, by default, calculate based on the terminal node's names. Any
+        other node attribute could be used instead.
+               
+        
+        '''
+        edge_keys = []
+        for s1, s2 in self.get_edges():
+            k1 = sorted([getattr(e, attr) for e in s1])
+            k2 = sorted([getattr(e, attr) for e in s2])
+            edge_keys.append(sorted([k1, k2]))
+        return md5(str(sorted(edge_keys))).hexdigest()
+                
     # def get_partitions(self):
     #     """ 
     #     .. versionadded: 2.1
