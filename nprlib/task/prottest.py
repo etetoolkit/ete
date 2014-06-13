@@ -26,7 +26,7 @@ class Prottest(ModelTesterTask):
             phyml_optimization = "lr"
         else:
             raise ValueError("Choose a valid lk_mode value (raxml or phyml)")
-
+        
         base_args = {
             "--datatype": "aa",
             "--input": self.alg_phylip_file,
