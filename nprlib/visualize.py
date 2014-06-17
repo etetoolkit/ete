@@ -75,7 +75,7 @@ def draw_tree(tree, conf, outfile):
 
                 seqFace = SeqMotifFace(node.sequence, motifs,
                                        intermotif_format="line",
-                                       seqtail_format="line", scale_factor=1)
+                                       seqtail_format="line", scale_factor=ALG_SCALE)
                 add_face_to_node(seqFace, node, ALG_START_COL, aligned=True)
 
                 
@@ -100,7 +100,19 @@ def draw_tree(tree, conf, outfile):
     ts.show_leaf_name = False
     ts.show_branch_support = False
     ts.scale = 160
-    ts.layout_fn = [ly_basic, ly_leaf_names, ly_supports, ly_tax_labels, ly_block_alg]
+
+    ts.layout_fn = [ly_basic, ly_leaf_names, ly_supports, ly_tax_labels]
+    
+    try:
+        seq = tree.iter_leaves().next().sequence
+    except:
+        pass
+    else:
+        ALG_SCALE = min(1, 1000./len(seq))
+        ts.layout_fn.append(ly_block_alg)
+        
+    
+
     #tree.show(tree_style=ts)
 
     try:
