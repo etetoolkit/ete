@@ -74,7 +74,7 @@ from nprlib import db
 from nprlib import apps
 from nprlib.logger import logindent
 from nprlib.citation import Citator
-from nprlib.configcheck import is_file, is_dir, check_config, list_workflows
+from nprlib.configcheck import is_file, is_dir, check_config, list_workflows, block_detail
 
 APPSPATH =  pjoin(NPRPATH, "ext_apps/")
 
@@ -91,27 +91,28 @@ except:
     __DATE__ = "unknown"
 
 __DESCRIPTION__ = (
-"""--------------------------------------------------------------------------------
+"""
+      --------------------------------------------------------------------------------
                   Nested Phylogenetic Reconstruction (NPR) program.
-                  ETE-NPR %s (beta), %s.
+                         ETE-NPR %s (beta), %s.
     
-      ETE-NPR is a bioinformatics framework providing a complete environment for
-      the execution of phylogenomic workflows, including super-matrix,
-      super-tree and family-tree reconstruction approaches. ETE-fm covers all
+      ETE-NPR is a bioinformatics program providing a complete environment for
+      the execution of phylogenomic workflows, including super-matrix
+      and family-tree reconstruction approaches. ETE-NPR covers all
       necessary steps for high quality phylogenetic reconstruction, from
       alignment reconstruction and model testing to the generation of
-      publication ready images of the produced trees and alignments. ETE-fm is
-      built on top of a plethora of specialized software and comes with a number
-      of predefined workflows based on literature and up-to-date phylogenetic
-      procedures.
+      publication ready images of the produced trees and alignments. ETE-NPR is
+      built on top of a bunch of specialized software and comes with a number
+      of predefined workflows. 
 
-      If you use ETE-NPR for published work, please cite:
+      If you use ETE-NPR in a published work, please cite:
 
-       ... Jaime Huerta-Cepas, Peer Bork and Toni Gabaldon. In preparation. 
+       Jaime Huerta-Cepas, Peer Bork and Toni Gabaldon. In preparation. 
 
       (Note that a list of the external programs used to complete the necessary
-      computations will be shown shown together with your results)
---------------------------------------------------------------------------------
+      computations will be also shown together with your results. They should
+      also be cited.)
+      --------------------------------------------------------------------------------
 
     """ %(__VERSION__, __DATE__))
 
@@ -224,11 +225,13 @@ def main(args):
     elif WORKFLOW_TYPE == 'supermatrix':
         from nprlib.workflow.supermatrix import pipeline
 
-    if args.arch == "auto":
-        arch = "64 " if sys.maxsize > 2**32 else "32"
-    else:
-        arch = args.arch
+    #if args.arch == "auto":
+    #    arch = "64 " if sys.maxsize > 2**32 else "32"
+    #else:
+    #    arch = args.arch
 
+    arch = "64 " if sys.maxsize > 2**32 else "32"
+        
     print __DESCRIPTION__
     
     # check application binary files
@@ -460,16 +463,15 @@ def main(args):
 
        
     # how task will be executed
-    if args.execute:
+    if args.no_execute:
+        execution = (None, False)
+    elif args.sge_execute:
+        execution = ("sge", False)
+    else:
         if args.monitor:
             execution =("insitu", True) # True is for run-detached flag
         else:
             execution = ("insitu", False)
-
-    elif args.sge_execute:
-        execution = ("sge", False)
-    else:
-        execution = (None, False)
        
     # Scheduling starts here
     log.log(28, "NPR starts now!")
@@ -725,6 +727,8 @@ def hash_names(target_names):
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
+        _config_path = pjoin(NPRPATH, 'config.cfg')
+        
         if sys.argv[1] == "check":
             APPSPATH =  os.path.join(NPRPATH, "ext_apps/")
             # setup portable apps
@@ -736,9 +740,32 @@ if __name__ == "__main__":
             apps.test_apps(config)
             sys.exit(0)                    
 
-        elif sys.argv[1] == "workflows":
-            base_config = check_config(os.path.join(NPRPATH, 'config.cfg'))
+        elif sys.argv[1] == "wl":
+            base_config = check_config(_config_path)
             list_workflows(base_config)
+            sys.exit(0)
+            
+        elif sys.argv[1] == "show":
+            base_config = check_config(_config_path)
+            block_detail(sys.argv[2], base_config)
+            sys.exit(0)
+
+        elif sys.argv[1] == "dump":
+            if len(sys.argv) > 2:
+                base_config = check_config(_config_path)
+                block_detail(sys.argv[2], base_config, color=False)
+            else:
+                print open(_config_path).read()
+            sys.exit(0)
+            
+        elif sys.argv[1] == "validate":
+            print 'Validating configuration file ', sys.argv[2]
+            if pexist(sys.argv[2]):
+                base_config = check_config(sys.argv[2])
+                print 'Everything ok'
+            else:
+                print 'File does not exist'
+                sys.exit(-1)
             sys.exit(0)
             
         elif sys.argv[1] == "version":
@@ -750,16 +777,26 @@ if __name__ == "__main__":
 
     # Input data related flags
     input_group = parser.add_argument_group('==== Input Options ====')
+
+    input_group.add_argument('[check | wl | show | dump | validate | version]',
+                             help=("Utility commands:\n"
+                                   "check: check that external applications are executable.\n"
+                                   "wl: show a list of available workflows.\n"
+                                   "show [name]: show the configuration parameters of a given workflow or application config block.\n"
+                                   "dump [name]: dump the configuration parameters of the specified block (allows to modify predefined config).\n"
+                                   "validate [configfile]: Validate a custom configuration file.\n"
+                                   "version: Show current version.\n"
+                                   ))
     
     input_group.add_argument("-w", dest="workflow",
                              required=True,
                              nargs='+', 
-                             help="A name matching a main workflow definition in the config file. ")
-
+                             help="One or more workflow names. All the specified workflows will be executed at once using the same input data.")
+    
     input_group.add_argument("-c", "--config", dest="configfile",
                              type=is_file, default=NPRPATH+'/config.cfg',
-                             help="Configuration file.")
-
+                             help="Custom configuration file.")
+    
     input_group.add_argument("-a", dest="aa_seed_file",
                              type=is_file,
                              help="Initial multi sequence file with"
@@ -864,25 +901,25 @@ if __name__ == "__main__":
     
     output_group.add_argument("--taskdir", dest="taskdir",
                               type=is_dir,
-                              help="""Output directory for tasks related data""")
+                              help="""Output directory for the executed processes (intermediate files).""")
     
     output_group.add_argument("--compress", action="store_true",
-                              help="Compress intermediate files when"
-                              " a task is finished.")
+                              help="Compress all intermediate files when"
+                              " a workflow is finished.")
     
     output_group.add_argument("--logfile", action="store_true",
-                              help="Log messages are saved into a file")
+                              help="Log messages will be saved into a file named npr.log within the output directory.")
 
     output_group.add_argument("--noimg", action="store_true",
-                              help="Tree images will not be generated")
+                              help="Tree images will not be generated when a workflow is finished.")
         
     output_group.add_argument("--email", dest="email",
                               type=str, 
-                              help="Send email info when errors or finished threads")
+                              help="Send an email when errors occur or a workflow is done.")
     
     output_group.add_argument("--email_report_time", dest="email_report_time",
                               type=int, default = 0, 
-                              help="Send email reports while execution")
+                              help="How often (in minutes) an email reporting the status of the execution should be sent. 0=No reports")
     
     
     # Task execution related flags
@@ -896,21 +933,25 @@ if __name__ == "__main__":
                             default=1, help="Maximum number of CPU cores"
                             " available in the execution host. If higher"
                             " than 1, tasks with multi-threading"
-                            " capabilities will enabled.")
+                            " capabilities will enabled. Note that this"
+                            " number will work as a hard limit for all applications,"
+                            "regardless of their specific configuration.")
 
     exec_group.add_argument("-t", "--schedule_time", dest="schedule_time",
                             type=float, default=2,
-                            help="""How often tasks should be checked""")
+                            help="""How often (in secs) tasks should be checked for available results.""")
     
     exec_group.add_argument("--launch_time", dest="launch_time",
                             type=float, default=5,
-                            help="""How often queued jobs should be launched""")
+                            help="""How often (in secs) queued jobs should be checked for launching""")
     
     exec_type_group = exec_group.add_mutually_exclusive_group()
-    exec_type_group.add_argument("-x", "--insitu_execution", dest="execute",
+    
+    exec_type_group.add_argument("-no_exec", dest="no_execute",
                                  action="store_true",
-                                 help="Pipeline jobs are launched in the same machine as the"
-                                 " as ETE-NPR is running.")
+                                 help=("Prevents launching any external application."
+                                       " Tasks will be processed and intermediate steps will"
+                                       " run, but no real computation will be performed."))
     
     exec_type_group.add_argument("--sge", dest="sge_execute",
                                  action="store_true", help="EXPERIMENTAL!: Jobs will be"
@@ -919,7 +960,7 @@ if __name__ == "__main__":
 
     exec_group.add_argument("--monitor", dest="monitor",
                             action="store_true",
-                            help="Pipeline jobs will be"
+                            help="Monitor mode: pipeline jobs will be"
                             " detached from the main NPR process. This means that"
                             " when npr execution is interrupted, all currently"
                             " running jobs will keep running. Use this option if you"
@@ -929,33 +970,33 @@ if __name__ == "__main__":
 
     exec_group.add_argument("--override", dest="override",
                             action="store_true",
-                            help="Override workflow configuration if necessary." )
+                            help="Override workflow configuration file if a previous version exists." )
 
     exec_group.add_argument("--clearall", dest="clearall",
                             action="store_true",
-                            help="Erase all previous data if any.")
+                            help="Erase all previous data in the output directory and start a clean execution.")
     
     exec_group.add_argument("--softclear", dest="softclear",
                             action="store_true",
-                            help="Clear precomputed data (data.db), but keeps task raw data (tasks/).")
+                            help="Clear all precomputed data (data.db), but keeps task raw data in the directory, so they can be re-processed.")
     
     exec_group.add_argument("--clear_orthodb", dest="clearorthology",
                             action="store_true",
-                            help="DEPRECATED: Override orthology pairs table in database.")
+                            help="Reload orthologous group information.")
 
     exec_group.add_argument("--clear_seqdb", dest="clearseqs",
                             action="store_true",
                             help="Reload sequences deleting previous database if necessary.")
 
-    exec_group.add_argument("--arch", dest="arch",
-                            choices=["auto", "32", "64"],
-                            default="auto", help="Set the architecture of"
-                            " execution hosts (needed only when using"
-                            " built-in applications.)")
+    # exec_group.add_argument("--arch", dest="arch",
+    #                         choices=["auto", "32", "64"],
+    #                         default="auto", help="Set the architecture of"
+    #                         " execution hosts (needed only when using"
+    #                         " built-in applications.)")
     
     exec_group.add_argument("--nochecks", dest="nochecks",
                             action="store_true",
-                            help="Skip application checks.")
+                            help="Skip application check when npr starts.")
     
     # Interface related flags
     ui_group = parser.add_argument_group("==== Program Interface Options ====")
@@ -1017,7 +1058,7 @@ if __name__ == "__main__":
         GLOBALS["first_split_outgroup"] = args.first_split
 
     GLOBALS["email"] = args.email
-    GLOBALS["email_report_time"] = args.email_report_time
+    GLOBALS["email_report_time"] = args.email_report_time * 60
     GLOBALS["launch_time"] = args.launch_time
     GLOBALS["cmdline"] = ' '.join(sys.argv)
 
