@@ -1,20 +1,75 @@
 import os
 from nprlib.configobj import ConfigObj
 from nprlib.errors import ConfigError
+from nprlib.utils import colorify
 
 def list_workflows(config):
-    avail_workflows = sorted([k for k, v in config.iteritems() if v.get('_app', '') == 'main'])
-    avail_meta = sorted(["%s (%s threads)" %(k, len(v)) for k,v in config.get('meta_workflow', {}).iteritems()])
+    avail_workflows = sorted([k for k,
+                              v in config.iteritems() if v.get('_app', '') == 'main'])
+    avail_meta = sorted(["%s (%s threads)" %(k, len(v)) for k,
+                         v in config.get('meta_workflow', {}).iteritems()])
     msg = """
 Available workflows:
 ====================
   %s
 Available meta-workflows:
 =========================
-  %s
+  %s 
 """ %('\n  '.join(avail_workflows), '\n  '.join(avail_meta))
     print msg
 
+def block_detail(block_name, config, color=True):
+    blocks_to_show = {}
+    iterable_types = set([set, list, tuple, frozenset])
+    if block_name not in config:
+        try:
+            next_block = map(lambda x: x.lstrip('@'), config.get('meta_workflow', {})[block_name])
+            metaworkflow = True
+        except Exception, e:
+            print e
+            raise ValueError('block name not found [%s]' %block_name)
+    else:
+        metaworkflow = False
+        next_block = [block_name]        
+    
+    pos = 0 
+    while next_block:
+        block = next_block.pop()
+        blocks_to_show[block] = pos
+        for k1, v1 in config[block].iteritems():
+            if type(v1) in iterable_types:
+                for v2 in v1:
+                    if isinstance(v2, str) and v2.startswith('@'):
+                        next_block.append(v2[1:])
+            elif isinstance(v1, str) and v1.startswith('@'):
+                next_block.append(v1[1:])
+        pos += 1
+
+    if metaworkflow and color:
+        print colorify('[meta_workflow]', 'yellow')
+        print "%s = %s" %(block_name, ', '.join(config["meta_workflow"][block_name]))
+        print
+    elif metaworkflow:
+        print '[meta_workflow]'
+        print "%s = %s" %(block_name, ', '.join(config["meta_workflow"][block_name]))
+        print
+        
+    for b, pos in sorted(blocks_to_show.items(), key=lambda x: x[1]):
+        if color:
+            print colorify('[%s]' %b, 'yellow')
+        else:
+            print '[%s]' %b
+            
+        for k,v in config[b].iteritems():
+            if type(v) in iterable_types:
+                v = ', '.join(map(str, v))+','
+                
+            if k == '_app' and color:
+                print colorify('% 40s = %s' %(k, v), "lblue")
+            else:
+                print '% 40s = %s' %(k, v)
+        print
+    
 def check_config(fname):
     conf = ConfigObj(fname, list_values=True)
     for k, v in conf.items():

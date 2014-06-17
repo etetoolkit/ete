@@ -7,7 +7,6 @@ import logging
 import os
 log = logging.getLogger("main")
 
-
 from nprlib.master_task import CogSelectorTask
 from nprlib.errors import DataError, TaskError
 from nprlib.utils import (GLOBALS, print_as_table, generate_node_ids,
@@ -86,8 +85,8 @@ class CogSelector(CogSelectorTask):
                 sp2seqs[sp].append(seqid)
             one2one_cog = set()
             for sp, seqs in sp2seqs.iteritems():
-                if len(seqs) != 1:
-                    print sp, len(seqs)
+                #if len(seqs) != 1:
+                #    print sp, len(seqs)
                 if sp in all_species and len(seqs) == 1:
                     sp2cogs[sp] += 1
                     one2one_cog.add((sp, seqs[0]))
