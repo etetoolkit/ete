@@ -757,7 +757,7 @@ if __name__ == "__main__":
             else:
                 print open(_config_path).read()
             sys.exit(0)
-            
+
         elif sys.argv[1] == "validate":
             print 'Validating configuration file ', sys.argv[2]
             if pexist(sys.argv[2]):
