@@ -779,6 +779,7 @@ if __name__ == "__main__":
     input_group = parser.add_argument_group('==== Input Options ====')
 
     input_group.add_argument('[check | wl | show | dump | validate | version]',
+                             nargs='?',
                              help=("Utility commands:\n"
                                    "check: check that external applications are executable.\n"
                                    "wl: show a list of available workflows.\n"
