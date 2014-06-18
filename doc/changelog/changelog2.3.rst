@@ -8,7 +8,7 @@ fixed several minor bugs when retreiving extra attributes in get_speciation_tree
 
 SCRIPTS
 ==========
-ete
+ete: Tree analysis suite of programs based on the ETE toolkit.
   
 
 NEW MODULES
