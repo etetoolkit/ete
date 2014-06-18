@@ -111,9 +111,7 @@ def ask_path(string, default_path):
             v = None
     return v
 
-
-
-#Check repo is commited
+#Check repo is committed
 
 #Creates a release clone
 # SERVER="jhuerta@cgenomics"
@@ -132,7 +130,7 @@ LAST_BUILD = open('LAST_BUILD').readline()
 a, b, c = map(int, LAST_BUILD.split('.'))
 MODULE_RELEASE = "%s.%s" %(a, b)
 REVISION = commands.getoutput("git log --pretty=format:'' | wc -l").strip()
-VERSION = "%s.%s.%s" (a, b, c+1)
+VERSION = "%s.%s.%s" %(a, b, c+1)
 VERSION_LOG = commands.getoutput("git log --pretty=format:'%s' | head -n1").strip()
 RELEASE_NAME = MODULE_NAME+"-"+VERSION
 RELEASE_PATH = os.path.join(RELEASES_BASE_PATH, RELEASE_NAME)
