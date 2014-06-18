@@ -111,8 +111,6 @@ def ask_path(string, default_path):
             v = None
     return v
 
-#Check repo is committed
-
 #Creates a release clone
 # SERVER="jhuerta@cgenomics"
 # SERVER_RELEASES_PATH = "/home/services/web/ete.cgenomics.org/releases/ete2"
@@ -193,7 +191,7 @@ _ex('find %s/ete_dev/ -name \'*.py\' -exec  python ___put_disclaimer.py {} \;' %
 print "*** Fixing imports..."
 _ex('find %s -name \'*.py\' -o -name \'*.rst\'| xargs perl -e "s/ete_dev/ete2_tester/g" -p -i' %\
         (RELEASE_PATH))
-_ex('cp %s/scripts/ete_dev %s/scripts/ete2_tester' %\
+_ex('cp %s/bin/ete %s/bin/ete2_tester' %\
               (RELEASE_PATH, RELEASE_PATH))
 _ex('mv %s/ete_dev %s/ete2_tester' %(RELEASE_PATH, RELEASE_PATH))
 _ex('cd %s; python setup.py build --build-lib=build/lib' %(RELEASE_PATH))
@@ -226,13 +224,13 @@ if options.test_examples:
 
 # Re-establish module name
 _ex('mv %s/ete2_tester %s' %(RELEASE_PATH, RELEASE_MODULE_PATH))
-_ex('rm %s/scripts/ete2_tester' % (RELEASE_PATH))
+_ex('rm %s/bin/ete2_tester' % (RELEASE_PATH))
 _ex('find %s -name \'*.py\' -o -name \'*.rst\' | xargs perl -e "s/ete2_tester/%s/g" -p -i' %\
               (RELEASE_PATH, MODULE_NAME) )
-_ex('find %s/scripts/ -type f | xargs perl -e "s/ete_dev/%s/g" -p -i' %\
+_ex('find %s/bin/ -type f | xargs perl -e "s/ete_dev/%s/g" -p -i' %\
               (RELEASE_PATH, MODULE_NAME) )
 
-_ex('mv %s/scripts/ete_dev %s/scripts/%s' %\
+_ex('mv %s/bin/ete_dev %s/bin/%s' %\
               (RELEASE_PATH, RELEASE_PATH,  MODULE_NAME) )
 _ex('cd %s; python setup.py build' %(RELEASE_PATH))
 
