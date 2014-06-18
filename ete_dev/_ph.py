@@ -21,7 +21,7 @@ except ImportError:
 def call():
     print "  == Calling home...",
     try:
-        f = url.urlopen('http://ete.cgenomics.org/et_phone_home.php?VERSION=%s&ID=%s' 
+        f = url.urlopen('http://etetoolkit.org/et_phone_home.php?VERSION=%s&ID=%s' 
                 %(__VERSION__, __ETEID__))
     except:
         print "No answer :(" 
@@ -31,7 +31,7 @@ def call():
      
         module_name = __name__.split(".")[0]
         try:
-            f = url.urlopen('http://ete.cgenomics.org/releases/ete2/%s.latest' 
+            f = url.urlopen('http://etetoolkit.org/releases/ete2/%s.latest' 
                     %module_name)
         except:
             latest = None
@@ -65,7 +65,7 @@ def call():
         if msg:
             msg = url.quote(msg)
             try:
-                f = url.urlopen('http://ete.cgenomics.org/et_phone_home.php?VERSION=%s&ID=%s&MSG=%s' 
+                f = url.urlopen('http://etetoolkit.org/et_phone_home.php?VERSION=%s&ID=%s&MSG=%s' 
                                 %(__VERSION__, __ETEID__, msg))
             except:
                 print "Message could be delivered :("
@@ -76,14 +76,14 @@ def new_version(module_name=None, current=None):
     if not module_name:
         module_name = __name__.split(".")[0]
     try:
-        f = url.urlopen('http://ete.cgenomics.org/releases/ete2/%s.latest' 
+        f = url.urlopen('http://etetoolkit.org/releases/ete2/%s.latest' 
                         %module_name)
     except:
         latest = None
     else:
         latest = int(f.read())
         
-    news_url = 'http://ete.cgenomics.org/releases/ete2/%s.latest_news' %module_name
+    news_url = 'http://etetoolkit.org/releases/ete2/%s.latest_news' %module_name
     msg = read_content(news_url)
         
     if not current:

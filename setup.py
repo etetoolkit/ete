@@ -171,7 +171,7 @@ try:
         keywords = "bioinformatics phylogeny evolution phylogenomics genomics" 
         " tree clustering phylogenetics phylogenetic ete orthology" 
         " paralogy",
-        url = "http://ete.cgenomics.org",
+        url = "http://etetoolkit.org",
         download_url = "http://etetoolkit.org/releases/ete2/",
     )
 except: 
