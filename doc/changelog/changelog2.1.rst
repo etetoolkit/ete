@@ -75,4 +75,4 @@ What's new in ETE 2.1
 * Improved documentation and examples:
    * Online and PDF tutorial 
    * Better library reference 
-   * A set of examples is now provided with the installation package and `here <http://ete.cgenomics.org/releases/ete2/examples-ete2.tar.gz>`_
+   * A set of examples is now provided with the installation package and `here <http://etetoolkit.org/releases/ete2/examples-ete2.tar.gz>`_

@@ -25,7 +25,7 @@ very simple implementation and does not allow for fancy
 customization. The main goal of ETE is to provide a Python programming
 library, so you can create your own scripts to manipulate and
 visualize phylogenetic trees. Many examples are available `here
-<http:://ete.cgenomics.org/releases/ete2/examples-ete2.tar.gz>`_ and
+<http:://etetoolkit.org/releases/ete2/examples-ete2.tar.gz>`_ and
 along with the ETE tutorial.
 
 

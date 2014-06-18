@@ -23,7 +23,7 @@ Through this application, you will be able to create custom web
 implementations to visualize and manipulate trees interactively. Some
 examples can be found at the `PhylomeDB tree browser
 <http://phylomedb.org/?q=search_tree&seqid=Phy00085K5_HUMAN>`_ or in
-the `ETE's online treeviewer <http://ete.cgenomics.org/treeview>`_.
+the `ETE's online treeviewer <http://etetoolkit.org/treeview>`_.
 
 
 

@@ -17,7 +17,7 @@ a collection Python objects sorted in a hierarchical way. A specific
 Python class exists for every element encoded documented by the NeXML
 and PhyloXML formats. This is possible thanks to the the general
 purpose Python drivers available for both formats
-(http://ete.cgenomics.org/phyloxml-and-nexml-python-parsers). ETE will
+(http://etetoolkit.org/phyloxml-and-nexml-python-parsers). ETE will
 use such drivers to access XML data, and it will also convert tree
 data into PhyloTree objects. In practice, conversions will occur
 transparently.  NeXML and PhyloXML files are loaded using their

@@ -28,7 +28,7 @@ The PhylomeDBConnector constructor will return a pointer to the DB that you can
 use to perform queries. All methods starting by **get_** can be used to retrieve
 information from the database. A complete list of available methods can be found
 in the ETE's programming guide (available at
-http://ete.cgenomics.orgete.cgenomics.org) or explored by executing
+http://etetoolkit.org) or explored by executing
 **dir(PhylomeDBConnector)** in a python console.
 
 

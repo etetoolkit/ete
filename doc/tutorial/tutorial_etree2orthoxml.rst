@@ -69,7 +69,7 @@ evolutionary events (duplication and speciation events) as an orthoXML
 document. The program is installed along with ETE, so it should be
 found in your path. Alternatively you can found it in the script
 folder of the latest ETE package release
-(http://ete.cgenomics.org/releases/ete2/).
+(http://etetoolkit.org/releases/ete2/).
 
 To work, :attr:`etree2orthoxml` requires only one argument containing
 the newick representation of a tree or the name of the file that

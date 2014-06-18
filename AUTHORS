@@ -1,15 +1,14 @@
-ETE is currently maintained by the Comparative Genomics Group at the
-Center for Genomic Regulation, Barcelona (Spain).
+ETE is currently maintained by Jaime Huerta-Cepas at the Structural and Computational Biology Unit of EMBL (Heidelberg, Germany). 
 
-Original authors and citation:
+* Original authors and related citation *
 
   - Jaime Huerta-Cepas, Joaquín Dopazo and Toni Gabaldón. ETE: a python
   Environment for Tree Exploration. BMC Bioinformatics 2010, 11:2 4.
 
-Past and present contributors include:
+* Past and present contributors * 
 
-François Serra 
-Salvador Capella 
-Marina Marcet
-Ivan Denisov
-Cristina Amil
+Shankar Vembu (fast tree reconciliation method)
+François Serra (EvolTree)
+Salvador Capella (phylomedb API)
+Marina Marcet (phylomedb, treeko)
+Ivan Denisov (phylomedb webplugin)

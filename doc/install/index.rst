@@ -99,4 +99,4 @@ The following recipe has been reported to work in MacOS 10.5.8 (thanks to Marco 
 
 Older Versions
 ================
-Older ETE versions can be found at http://ete.cgenomics.org/releases/ete2/
+Older ETE versions can be found at http://etetoolkit.org/releases/ete2/

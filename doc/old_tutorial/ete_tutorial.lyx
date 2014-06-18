@@ -251,7 +251,7 @@ ETE: A python Environment for Tree Exploration
 (check 
 \begin_inset CommandInset href
 LatexCommand href
-target "http://ete.cgenomics.org"
+target "http://etetoolkit.org"
 
 \end_inset
 
@@ -279,7 +279,7 @@ s, but to illustrate most important aspects of each module.
  A comprehensive reference guide for programmers can also be found at 
 \begin_inset CommandInset href
 LatexCommand href
-target "http://ete.cgenomics.org/"
+target "http://etetoolkit.org/"
 
 \end_inset
 
@@ -5503,7 +5503,7 @@ get_
  guide (available at 
 \begin_inset CommandInset href
 LatexCommand href
-target "ete.cgenomics.org"
+target "etetoolkit.org"
 
 \end_inset
 
