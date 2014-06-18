@@ -13,9 +13,14 @@ tools = [
     ]
 
 def p_usage():
+    try:
+        from ete_dev import __VERSION__
+    except ImportError:
+        __VERSION__ = 'devel'
+    
     print >>sys.stderr, "-" *80
     print >>sys.stderr, "Tree analysis tools based on the ETE toolkit".center(80)
-    print >>sys.stderr, "Current ETE version: 2.3.0".center(80)
+    print >>sys.stderr, ("Current ETE version: %s" %__VERSION__).center(80)
     print >>sys.stderr, "http://etetoolkit.org".center(80)
     print >>sys.stderr
     print >>sys.stderr, "Huerta-Cepas J, Dopazo J, Gabaldon T.".center(80)
