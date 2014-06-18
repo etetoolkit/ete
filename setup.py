@@ -44,7 +44,7 @@ if not ETEID:
 #    ["scipy", "Scipy is only required for the clustering validation functions.", 0],
 PYTHON_DEPENDENCIES = [
     ["numpy", "Numpy is required for the ArrayTable and ClusterTree classes.", 0],
-    ["MySQLdb", "MySQLdb is required for the PhylomeDB access API.", 0],
+    ["MySQLdb", "MySQLdb only is required by the PhylomeDB access API.", 0],
     ["PyQt4", "PyQt4 is required for tree visualization and image rendering.", 0],
     ["lxml", "lxml is required from Nexml and Phyloxml support.", 0]
 ]
@@ -117,15 +117,15 @@ print "Checking dependencies..."
 missing = False
 for mname, msg, ex in PYTHON_DEPENDENCIES:
     if not can_import(mname):
-        print mname, "cannot be found in your python installation."
+        print mname, "could be found in your python installation."
         print msg
         missing=True
 
-if missing:
-    print "\nHowever, you can still install ETE without such functionality."
-    if ask( "Do you want to continue with the installation anyway?", 
-            ["y", "n"]) == "n":
-        sys.exit()
+# if missing:
+#     print "\nHowever, you can still install ETE without such functionality."
+#     if ask( "Do you want to continue with the installation anyway?", 
+#             ["y", "n"]) == "n":
+#         sys.exit()
 
 # writes installation id as a variable into the main module
 init_content = open("ete_dev/__init__.py").read()
@@ -172,7 +172,7 @@ try:
         " tree clustering phylogenetics phylogenetic ete orthology" 
         " paralogy",
         url = "http://ete.cgenomics.org",
-        download_url = "http://ete.cgenomics.org/releases/ete2/",
+        download_url = "http://etetoolkit.org/releases/ete2/",
     )
 except: 
     raise
@@ -183,7 +183,7 @@ else:
     if (wanted & seen) and not (notwanted & seen):
         try:
             welcome = urllib2.quote("New alien in earth!")
-            urllib2.urlopen("http://ete.cgenomics.org/et_phone_home?ID=%s&VERSION=%s&MSG=%s"
+            urllib2.urlopen("http://etetoolkit.org/static/et_phone_home.php?ID=%s&VERSION=%s&MSG=%s"
                             %(ETEID, ete_version, welcome))
         except urllib2.HTTPError, e: 
             pass

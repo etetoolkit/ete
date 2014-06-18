@@ -116,28 +116,36 @@ def ask_path(string, default_path):
 #Check repo is commited
 
 #Creates a release clone
-SERVER="jhuerta@cgenomics"
-SERVER_RELEASES_PATH = "/home/services/web/ete.cgenomics.org/releases/ete2"
-SERVER_DOC_PATH = "/home/services/web/ete.cgenomics.org/releases/ete2/doc"
-SERVER_METAPKG_PATH = "/home/services/web/ete.cgenomics.org/releases/ete2/metapkg"
-METAPKG_JAIL_PATH = "/home/jhuerta/_Devel/ete_metapackage/etepkg_CheckBeforeRm"
-METAPKG_PATH = "/home/jhuerta/_Devel/ete_metapackage"
+# SERVER="jhuerta@cgenomics"
+# SERVER_RELEASES_PATH = "/home/services/web/ete.cgenomics.org/releases/ete2"
+# SERVER_DOC_PATH = "/home/services/web/ete.cgenomics.org/releases/ete2/doc"
+SERVER="huerta@etetoolkit.embl.de"
+SERVER_RELEASES_PATH = "/var/www/etetoolkit/static/releases/ete2"
+SERVER_DOC_PATH = "/var/www/etetoolkit/static/releases/ete2/doc"
+
+#SERVER_METAPKG_PATH = "/home/services/web/ete.cgenomics.org/releases/ete2/metapkg"
+#METAPKG_JAIL_PATH = "/home/jhuerta/_Devel/ete_metapackage/etepkg_CheckBeforeRm"
+#METAPKG_PATH = "/home/jhuerta/_Devel/ete_metapackage"
 RELEASES_BASE_PATH = "/tmp"
 MODULE_NAME = "ete2"
-MODULE_RELEASE = "2.2"
+LAST_BUILD = open('LAST_BUILD').readline()
+a, b, c = map(int, LAST_BUILD.split('.'))
+MODULE_RELEASE = "%s.%s" %(a, b)
 REVISION = commands.getoutput("git log --pretty=format:'' | wc -l").strip()
-VERSION = MODULE_RELEASE+ "rev" + REVISION
+VERSION = "%s.%s.%s" (a, b, c+1)
 VERSION_LOG = commands.getoutput("git log --pretty=format:'%s' | head -n1").strip()
 RELEASE_NAME = MODULE_NAME+"-"+VERSION
 RELEASE_PATH = os.path.join(RELEASES_BASE_PATH, RELEASE_NAME)
 RELEASE_MODULE_PATH = os.path.join(RELEASE_PATH, MODULE_NAME)
 DOC_PATH = os.path.join(RELEASE_PATH, "doc")
 
+
 print "================================="
 print
 print "VERSION", VERSION
 print "RELEASE:", RELEASE_NAME
 print "RELEASE_PATH:", RELEASE_PATH
+print "REVISION:", REVISION
 print
 print "================================="
 
@@ -301,7 +309,9 @@ if process_package:
         print "Updating releases table..."
         _ex("ssh %s 'cd %s; echo %s > %s.latest; sh update_downloads.sh;'" %(SERVER, SERVER_RELEASES_PATH, REVISION, MODULE_NAME))
 
-
+        print "Updating LAST BUILD file information..."
+        open('LAST_BUILD', 'w').write(VERSION)
+               
     if ask("Update examples package in server?", ["y","n"]) == "y":
         print "Creating examples package" 
         _ex("cd %s; tar -zcf examples-%s.tar.gz examples/" %\
@@ -311,9 +321,4 @@ if process_package:
         _ex("scp %s/examples-%s.tar.gz %s" %\
                 (RELEASE_PATH, MODULE_NAME, SERVER+":"+SERVER_RELEASES_PATH))
 
-     
-    announce = ask("publish tweet?", ["y","n"])
-    if announce == "y":
-        msg = ask(default=VERSION_LOG)
-        if ask("publish tweet?", ["y","n"]) == "y":
-            _ex("twitter -eetetoolkit set %s" %msg) 
+ 
