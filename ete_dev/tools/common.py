@@ -1,7 +1,7 @@
 import sys
 
-from ete_dev import Tree, PhyloTree, faces, TreeStyle, add_face_to_node, orthoxml, SVG_COLORS, faces, treeview, NodeStyle
 from utils import print_table, color, timeit
+from ete_dev import Tree, PhyloTree, faces, TreeStyle, add_face_to_node, orthoxml, SVG_COLORS, faces, treeview, NodeStyle
 from ete_dev.ncbi_taxonomy import ncbiquery as ncbi
 
 try:

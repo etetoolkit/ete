@@ -1,5 +1,4 @@
 #!/usr/bin/python
-
 import munkres as mun
 import random
 import time

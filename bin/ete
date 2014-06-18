@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import sys
-import ete_tools
+from ete_dev import ete_tools
 
 def p_usage():
     tools = 'view, dist, diff, merge, ncbiquery, ncbicomp, maptrees, stats, orthoxml' 
