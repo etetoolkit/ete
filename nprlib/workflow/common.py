@@ -24,25 +24,31 @@ class IterConfig(dict):
         self.size = size
         self.index = None
        
-        index_slide = 0
-        while self.index is None: 
-            try:
-                max_seqs = conf[workflow]["_max_seqs"][index_slide]
-            except IndexError:
-                raise DataError("Target species [%d] has a size that is not covered in current config file" %self.size)
-            else:
-                if self.size <= max_seqs:
-                    self.index = index_slide
-                else:
-                    index_slide += 1
-        # Updates the dictionary with the workflow application config
-        appcfg = conf[workflow]['_workflow'][self.index]
-        if appcfg.startswith('@'):
-            self.update(conf[appcfg[1:]])
-        nprcfg = conf[workflow]['_npr'][self.index]
+        # index_slide = 0
+        # while self.index is None: 
+        #     try:
+        #         max_seqs = conf[workflow]["_max_seqs"][index_slide]
+        #     except Index Error:
+        #         raise DataError("Target species [%d] has a size that is not covered in current config file" %self.size)
+        #     else:
+        #         if self.size <= max_seqs:
+        #             self.index = index_slide
+        #         else:
+        #             index_slide += 1
+        # # Updates the dictionary with the workflow application config
+        # appcfg = conf[workflow]['_workflow'][self.index]
+        # if appcfg.startswith('@'):
+        #     self.update(conf[appcfg[1:]])
+        
+        nprcfg = conf[workflow]['_npr']
         if nprcfg.startswith('@'):
             self.update(conf[nprcfg[1:]])
         elif nprcfg == 'none':
+            self['_max_seq_similarity']   =  1.0
+            self['_switch_aa_similarity'] =  1.0
+            self['_min_branch_support']   =  1.0
+            self['_min_npr_size']         =  4
+            self['_tree_splitter']        =  '@dummy_splitter'
             self['_max_iters'] = 1
                     
     def __getattr__(self, v):
@@ -64,7 +70,8 @@ class IterConfig(dict):
         else:
             # If list, let's take the correct element
             if type(value) == list:
-                value = value[self.index]
+                raise ValueError('This should not occur. Please report the error!')
+                # value = value[self.index]
                 
             if type(value) != str:
                 return value
@@ -218,7 +225,6 @@ def split_tree(task_tree_node, task_outgroups, main_tree, alg_path, npr_conf, th
         # subtree
         _TARGET_NODES = defaultdict(list) # this container is used by
                                           # processable_node function
-
         opt_levels = GLOBALS[threadid].get('_optimized_levels', None)
         if opt_levels is not None:
             # any descendant of the already processed node is suitable for

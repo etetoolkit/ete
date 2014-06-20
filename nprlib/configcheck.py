@@ -2,22 +2,48 @@ import os
 from nprlib.configobj import ConfigObj
 from nprlib.errors import ConfigError
 from nprlib.utils import colorify
+from nprlib.apps import APP2CLASS
 
 def list_workflows(config):
-    avail_workflows = sorted([k for k,
-                              v in config.iteritems() if v.get('_app', '') == 'main'])
-    avail_meta = sorted(["%s (%s threads)" %(k, len(v)) for k,
+    wtype_legend = {
+        'genetree': '(aligner-trimmer-modeltester-treebuilder)',
+        'supermatrix': '(sptree-treebuilder-cogselector)',
+        }
+    for wtype in ['genetree', 'supermatrix']:
+        avail_workflows = sorted(['%s %s' %(k.ljust(25), config[k].get('_desc', '')) for k,
+                              v in config.iteritems() if v.get('_app', '') == wtype])
+        print '=' *80
+        print ('Available %s workflows' %wtype).center(80)
+        print ('%s' %wtype_legend[wtype]).center(80)
+        print '=' *80
+        print ('  %s' %'\n  '.join(avail_workflows))
+                
+    avail_meta = sorted(["%s (%s threads)" %(k.ljust(40), len(v)) for k,
                          v in config.get('meta_workflow', {}).iteritems()])
-    msg = """
-Available workflows:
-====================
-  %s
-Available meta-workflows:
-=========================
-  %s 
-""" %('\n  '.join(avail_workflows), '\n  '.join(avail_meta))
-    print msg
 
+    print '=' *80
+    print 'Available meta-workflows'.center(80)
+    print '=' *80
+    print ('  %s' %'\n  '.join(avail_meta))
+
+def list_apps(config, target_apps = None):
+    if not target_apps:
+        target_apps = sorted([k for k in APP2CLASS.keys() if k != 'raxml-pthreads'])
+    else:
+        valid = set([k for k in APP2CLASS.keys() if k != 'raxml-pthreads'])
+        if set(target_apps) - valid:
+            print 'ERROR: Unknown application type.'
+            print 'Use one of: [%s]' %' | '.join(valid)
+            return 
+    for atype in target_apps:
+        avail_apps = sorted(['%s %s' %(k.ljust(25), config[k].get('_desc', '')) for k,
+                              v in config.iteritems() if v.get('_app', '') == atype])
+        print '=' *40
+        print '[%s] config blocks' %atype
+        print '=' *40
+        print ('  %s' %'\n  '.join(avail_apps))
+        print
+    
 def block_detail(block_name, config, color=True):
     blocks_to_show = {}
     iterable_types = set([set, list, tuple, frozenset])
@@ -63,9 +89,12 @@ def block_detail(block_name, config, color=True):
         for k,v in config[b].iteritems():
             if type(v) in iterable_types:
                 v = ', '.join(map(str, v))+','
-                
-            if k == '_app' and color:
-                print colorify('% 40s = %s' %(k, v), "lblue")
+
+            if color:
+                if k == '_app':
+                    print colorify('% 35s = %s' %(k, v), "lblue")
+                else:
+                    print '%s = %s' %(colorify("% 35s" %k, "orange"), v)
             else:
                 print '% 40s = %s' %(k, v)
         print
@@ -287,17 +316,18 @@ CHECKERS = {
     ("genetree", "_nt_model_tester"): (is_app_link, {}, True),
     ("genetree", "_aa_tree_builder"): (is_app_link, {}, True),
     ("genetree", "_nt_tree_builder"): (is_app_link, {}, True),
-
+    ("genetree", "_appset"): (is_app_link, {"allow_none":False}, True),
+    
     ("supermatrix", "_cog_selector"): (is_app_link, {}, True),
     ("supermatrix", "_alg_concatenator"): (is_app_link, {}, True),
     ("supermatrix", "_aa_tree_builder"): (is_app_link, {}, True),
     ("supermatrix", "_nt_tree_builder"): (is_app_link, {}, True),
-
+    ("genetree", "_appset"): (is_app_link, {"allow_none":False}, True),
 
     ("concatalg", "_default_aa_model"): (is_text, {}, True),
     ("concatalg", "_default_nt_model"): (is_text, {}, True),
 
-    ("concatalg", "_workflow"): (is_app_link, {"allow_none":False}, True),
+    #("concatalg", "_workflow"): (is_app_link, {"allow_none":False}, True),
     
     ("cogselector", "_species_missing_factor"): (is_float, {"minv":0, "maxv":1}, True),
     ("cogselector", "_max_cogs"): (is_integer, {"minv":1}, True),
@@ -334,12 +364,12 @@ CHECKERS = {
     ("appset", "phyml"): (is_appset_entry, {}, True),
     ("appset", "raxml-pthreads"): (is_appset_entry, {}, True),
     ("appset", "raxml"): (is_appset_entry, {}, True),
-    ("appset", "raxml-pthreads-sse3"): (is_appset_entry, {}, True),
-    ("appset", "raxml-sse3"): (is_appset_entry, {}, True),
-    ("appset", "raxml-pthreads-avx"): (is_appset_entry, {}, True),
-    ("appset", "raxml-avx"): (is_appset_entry, {}, True),
-    ("appset", "raxml-pthreads-avx2"): (is_appset_entry, {}, True),
-    ("appset", "raxml-avx2"): (is_appset_entry, {}, True),
+    # ("appset", "raxml-pthreads-sse3"): (is_appset_entry, {}, True),
+    # ("appset", "raxml-sse3"): (is_appset_entry, {}, True),
+    # ("appset", "raxml-pthreads-avx"): (is_appset_entry, {}, True),
+    # ("appset", "raxml-avx"): (is_appset_entry, {}, True),
+    # ("appset", "raxml-pthreads-avx2"): (is_appset_entry, {}, True),
+    # ("appset", "raxml-avx2"): (is_appset_entry, {}, True),
     ("appset", "dialigntx"): (is_appset_entry, {}, True),
     ("appset", "fasttree"): (is_appset_entry, {}, True),
     ("appset", "statal"): (is_appset_entry, {}, True),

@@ -100,7 +100,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
     pending_tasks = set(pending_tasks)
     
     ## ===================================
-    ## INITIALISE BASIC VARS 
+    ## INITIALIZE BASIC VARS 
     execution, run_detached = execution
     # keeps the count of how many times an error task has been retried
     task2retry = defaultdict(int)
