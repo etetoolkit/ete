@@ -178,8 +178,9 @@ def show_difftable_topo(difftable, attr1, attr2, usecolor=False):
         if topowidth2 > maxcolwidth:
             start = topowidth2 - maxcolwidth
             topo2 = '\n'.join([line[start+1:] for line in topo2_lines])
-                
-        showtable.append([dist, "%d/%d (%d)" %(len(side1), len(side2),len(diff)), topo1, topo2])
+
+            
+        showtable.append(["%0.2g" %dist, "%d vs %d tips\n(%d diffs)" %(len(side1), len(side2),len(diff)), topo1, topo2])
     print_table(showtable, header=["Dist", "#diffs", "Tree1", "Tree2"],
                 max_col_width=maxcolwidth, wrap_style="wrap", row_line=True)
     

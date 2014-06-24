@@ -1634,8 +1634,7 @@ class TreeNode(object):
            tree combinations and the minimum value will be returned.
            See also, :func:`NodeTree.expand_polytomy`.
                               
-        :returns: (symmetric distance, total partitions, common node
-         names, partitions in current tree, partitions in target tree)
+        :returns: (rf, rf_max, common_attrs, names, edges_t1, edges_t2,  discarded_edges_t1, discarded_edges_t2)
            
         """
         ref_t = self
@@ -1755,6 +1754,31 @@ class TreeNode(object):
                     
         return min_comparison
 
+    def diff(self, t2, output='topology', attr_t1='name', attr_t2='name', color=True):
+        """
+        .. versionadded:: 2.3
+        
+        Show or return the difference between two tree topologies.
+
+        :param [raw|table|topology|diffs|diffs_tab] output: Output type
+        
+        """
+        from ete_dev.tools import ete_diff
+        difftable = ete_diff.treediff(self, t2, attr1=attr_t1, attr2=attr_t2)
+        if output == "topology":
+            ete_diff.show_difftable_topo(difftable, attr_t1, attr_t2, usecolor=color)
+        elif output == "diffs":
+            ete_diff.show_difftable(difftable)
+        elif output == "diffs_tab":
+            ete_diff.show_difftable_tab(difftable)
+        elif output == 'table':
+            rf, rf_max, _, _, _, _, _ = self.robinson_foulds(t2, attr_t1=attr_t1, attr_t2=attr_t2)[:2]
+            ete_diff.show_difftable_summary(difftable, rf, rf_max)
+        else:
+            return difftable
+       
+        
+    
     def iter_edges(self, cached_content = None):
         '''
         .. versionadded:: 2.3

@@ -15,7 +15,17 @@ __CITATION__ = '''#       ** If you use this software for a published work, plea
 # for Tree Exploration. BMC Bioinformatics 2010, 11:24. doi: 10.1186/1471-2105-11-24.'''
 
 
-
+def itertrees(trees, treefile):
+    if trees:
+        for nw in trees:
+            yield nw
+    if treefile:
+        for line in open(treefile):
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+            else:
+                yield line
 
 def add_common_arguments(parser, f):
     if f == 'target_trees':
