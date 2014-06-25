@@ -186,23 +186,53 @@ def annotate_tree(t, tax2name=None, tax2track=None, attr_name="name"):
         #print "Querying for tax lineages"
         tax2track = dict([(tid, get_sp_lineage(tid)) for tid in taxids])
 
-    for n in leaves:
-        node_taxid = int(getattr(n, attr_name))
-        n.add_features(taxid = node_taxid)
-        if node_taxid:
-            if node_taxid in merged_conversion:
-                node_taxid = merged_conversion[node_taxid]
-
-            n.add_features(spname = tax2name.get(node_taxid, "Unknown"),
-                           lineage = tax2track[node_taxid], 
-                           named_lineage = translate_to_names(tax2track[node_taxid]))
-        else:
-            n.add_features(spname = "Unknown",
-                           lineage = [], 
-                           named_lineage = [])
+    n2leaves = t.get_cached_content()
         
+    for n in t.traverse('postorder'):
+        if n.is_leaf():
+            node_taxid = int(getattr(n, attr_name))
+            n.add_features(taxid = node_taxid)
+            if node_taxid:
+                if node_taxid in merged_conversion:
+                    node_taxid = merged_conversion[node_taxid]
+
+                n.add_features(spname = tax2name.get(node_taxid, "Unknown"),
+                               lineage = tax2track[node_taxid], 
+                               named_lineage = translate_to_names(tax2track[node_taxid]))
+            else:
+                n.add_features(spname = "Unknown",
+                               lineage = [], 
+                               named_lineage = [])
+        else:
+            n.name, n.named_lineage = first_common_ocurrence([lf.named_lineage for lf in n2leaves[n]])
+            
     return tax2name, tax2track
 
+def first_common_ocurrence(vectors):
+    visited = defaultdict(int)
+    for index, name in [(ei, e) for v in vectors for ei,e in enumerate(v)]:
+        visited[(name, index)] += 1
+        
+    def _sort(a, b):
+        if a[1] > b[1]:
+            return 1
+        elif a[1] < b[1]:
+            return -1
+        else:
+            if a[0][1] > b[0][1]:
+                return 1
+            elif a[0][1] < b[0][1]:
+                return -1
+        return 0
+
+    matches = sorted(visited.items(), _sort)
+    best_match = matches[-1]
+    if best_match[1] != len(vectors):
+        return None, set()
+    else:
+        return best_match[0][0], [m[0][0] for m in matches if m[1] == len(vectors)]
+
+    
 def get_broken_branches(t, n2content):
     tax2node = defaultdict(set)
     tax2name = {}
