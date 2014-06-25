@@ -1511,28 +1511,30 @@ class SeqMotifFace(StaticItemFace):
             start -= 1
             if start > current_seq_pos:
                 if intermotif == "blank":
-                    self.regions.append([current_seq_pos, start, " ", 1, 1, None, None, None])
+                    self.regions.append([current_seq_pos+1, start, " ", 1, 1, None, None, None])
                 elif intermotif == "line":
-                    self.regions.append([current_seq_pos, start, "-", 1, 1, "black", None, None])
+                    self.regions.append([current_seq_pos+1, start, "-", 1, 1, "black", None, None])
                 elif intermotif == "seq":
                     # Colors are read from built-in dictionary
-                    self.regions.append([current_seq_pos, start, "seq", 10, 10, None, None, None])
+                    self.regions.append([current_seq_pos+1, start, "seq", 10, 10, None, None, None])
                 elif intermotif == "compactseq":
                     # Colors are read from built-in dictionary
-                    self.regions.append([current_seq_pos, start, "compactseq", 1, 10, None, None, None])
+                    self.regions.append([current_seq_pos+1, start, "compactseq", 1, 10, None, None, None])
                 elif intermotif == "none":
-                    self.regions.append([current_seq_pos, start, " ", 0, 0, None, None, None])
+                    self.regions.append([current_seq_pos+1, start, " ", 0, 0, None, None, None])
             self.regions.append(mf)
             current_seq_pos = max(current_seq_pos, end)
 
-        if len(seq) > current_seq_pos:
+        if len(seq) > current_seq_pos+1:
             if self.seqtail_format == "line":
-                self.regions.append([current_seq_pos, len(seq), "-", 1, 1, "black", None, None])
+                self.regions.append([current_seq_pos+1, len(seq)-1, "-", 1, 1, "black", None, None])
             elif self.seqtail_format == "seq":
-                self.regions.append([current_seq_pos, len(seq), "seq", 10, 10, None, None, None])
+                self.regions.append([current_seq_pos+1, len(seq)-1, "seq", 10, 10, None, None, None])
             elif self.seqtail_format == "compactseq":
-                self.regions.append([current_seq_pos, len(seq), "compactseq", 1, 10, None, None, None])
-
+                self.regions.append([current_seq_pos+1, len(seq)-1, "compactseq", 1, 10, None, None, None])
+        #print 'regions'
+        #print '\n'.join(map(str, self.regions))
+        
     def update_items(self):
         self.item = SeqMotifRectItem() #QGraphicsRectItem()
 
@@ -1551,19 +1553,20 @@ class SeqMotifFace(StaticItemFace):
                     wf *= self.scale_factor
 
             opacity = 1
-            w = end-start
+            w = (end-start)+1
             xstart = max_x_pos
 
             overlap_factor = 0
             if current_seq_end > start:
                 # calculates length for overlap
                 overlap_factor = float(current_seq_end - start) / (end-start)
+                #print current_seq_end, start,  end,start, float(current_seq_end - start) / (end-start)
                 if overlap_factor > 1:
                     continue
                     #xstart -= w * overlap_factor
                 else:
                     w = end - current_seq_end
-
+            
                 opacity = self.overlaping_motif_opacity
 
             y_start = y_center - (h/2)
@@ -1652,7 +1655,7 @@ class SeqMotifFace(StaticItemFace):
                 txt_item.setParentItem(i)
                 txt_item.setPos(0, y_txt_start)
 
-
+            #print w, typ, max_x_pos+w, current_seq_end+w, start, end
             if overlap_factor < 1:
                 max_x_pos = max(max_x_pos, max_x_pos + w)
                 current_seq_end = max(end, current_seq_end)
