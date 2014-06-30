@@ -1,6 +1,6 @@
 _ete()
 {
   cur=${COMP_WORDS[COMP_CWORD]}
-  COMPREPLY=( $( compgen -W "view dist diff ncbicomp ncbiquery orthoxml maptrees" -- $cur ) )
+  COMPREPLY=( $( compgen -W "view dist diff ncbicomp ncbiquery orthoxml maptrees ncbi_update" -- $cur ) )
 }
 complete -o default -o nospace -F _ete ete

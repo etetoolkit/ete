@@ -91,7 +91,7 @@ def main(argv):
     
     parser = ArgumentParser(description=__DESCRIPTION__)
 
-    parser.add_argument("--db",  dest="dbfile", default=MODULE_PATH+'/taxa.sqlite',
+    parser.add_argument("--db",  dest="dbfile",
                         type=str,
                         help="""NCBI sqlite3 db file.""")
     

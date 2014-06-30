@@ -10,6 +10,7 @@ tools = [
     ["ncbicomp", "Compare trees against NCBI taxonomy"],
     ["orthoxml", "Convert phylogenetic trees into the OrthoXML format"],
     ["maptrees", "calculate distances between a bunch of genetrees and a reference species tree"],
+    ["ncbi_update", "update the local NCBI taxonomy database"],
     ]
 
 def p_usage():
@@ -34,7 +35,7 @@ def p_usage():
    
     print >>sys.stderr, ' Current Tools:'
     for tname, tdesc in tools:
-        print >>sys.stderr, "  ete % 10s: %s" %(tname, tdesc)
+        print >>sys.stderr, "  ete % 14s: %s" %(tname, tdesc)
    
 if len(sys.argv) == 1:
     p_usage()

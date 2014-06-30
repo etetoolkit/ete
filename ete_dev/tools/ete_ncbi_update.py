@@ -70,7 +70,7 @@ def update(targz_file):
     tar = tarfile.open(targz_file, 'r')
     t, synonyms = load_ncbi_tree_from_dump(tar)
 
-    print "Updating database..."
+    print "Updating database [ ~/.etetoolkit/taxa.sqlite ] ..."
     generate_table(t)
    
     open("syn.tab", "w").write('\n'.join(["%s\t%s" %(v[0],v[1]) for v in synonyms]))
@@ -95,15 +95,19 @@ CREATE INDEX spname2 ON synonym (spname COLLATE NOCASE);
     """
     CMD.write(cmd)
     CMD.close()
-    os.system("sqlite3 taxa.sqlite < commands.tmp")
+    os.system("mkdir -p ~/.etetoolkit/")
+    os.system("sqlite3 ~/.etetoolkit/taxa.sqlite < commands.tmp")
     os.system("rm syn.tab merged.tab taxa.tab commands.tmp")
     
     print "Creating extended newick file with the whole NCBI tree [ncbi.nw]"
-    t.write(outfile="ncbi.nw", features=["name", "taxname"])
+    t.write(outfile="./ncbi.nw", features=["name", "taxname"])
   
+
+
+
     
-if __name__ == '__main__':
-    if len(sys.argv) == 1:
+def main(args):
+    if not args:
         if ask('Download latest ncbi taxonomy dump file?', ['y', 'n']) == 'y':
             status = os.system('wget ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz')
             if status == 0:
@@ -112,4 +116,7 @@ if __name__ == '__main__':
             fname = ask_filename('path to tar.gz file containing ncbi taxonomy dump:')
             update(fname)
     else:
-        update(sys.argv[1])
+        update(args[0])
+
+if __name__ == '__main__':
+    main(sys.argv[1:])
