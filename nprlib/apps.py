@@ -47,7 +47,7 @@ builtin_apps = {
     'clustalo'           : "%BIN%/clustalo --threads %CORES%",
     'trimal'             : "%BIN%/trimal",
     'readal'             : "%BIN%/readal",
-    'tcoffee'            : "export HOME=/tmp DIR_4_TCOFFEE=%BASE%/t_coffee_9_01 MAFFT_BINARIES=%BIN% TMP_4_TCOFFEE=%TMP% LOCKDIR_4_TCOFFEE=%TMP%  PERL5LIB=$PERL5LIB:$DIR_4_TCOFFEE/perl  && %BIN%/t_coffee",
+    'tcoffee'            : "export HOME=/tmp MAFFT_BINARIES=%BIN% TMP_4_TCOFFEE=%TMP% LOCKDIR_4_TCOFFEE=%TMP%  && %BIN%/t_coffee",
     'phyml'              : "%BIN%/phyml",
     'raxml-pthreads'     : "%BIN%/raxmlHPC-PTHREADS -T%CORES%",
     'raxml'              : "%BIN%/raxmlHPC",
