@@ -21,9 +21,10 @@ def draw_tree(tree, conf, outfile):
     def ly_leaf_names(node):
         if node.is_leaf():
             spF = TextFace(node.species, fsize=10, fgcolor='#444444', fstyle='italic', ftype='Helvetica')
-            geneF = TextFace(" (%s)" %node.genename, fsize=8, fgcolor='#777777', ftype='Helvetica')
             add_face_to_node(spF, node, column=0, position='branch-right')
-            add_face_to_node(geneF, node, column=1, position='branch-right')
+            if hasattr(node, 'genename'):
+                geneF = TextFace(" (%s)" %node.genename, fsize=8, fgcolor='#777777', ftype='Helvetica')
+                add_face_to_node(geneF, node, column=1, position='branch-right')
 
     def ly_supports(node):
         if not node.is_leaf():
@@ -63,14 +64,12 @@ def draw_tree(tree, conf, outfile):
                             last_lt = c
                         if c+1 == len(node.sequence):
                             start, end = last_lt, c
-                            w = end-start
-                            motifs.append([start, end, "[]", w, 12, "slategrey", "slategrey", None])
+                            motifs.append([start, end, "()", 0, 12, "slategrey", "slategrey", None])
                             last_lt = None
                     elif lt == '-':
                         if last_lt is not None:
                             start, end = last_lt, c-1
-                            w = end-start
-                            motifs.append([start, end, "[]", w, 12, "grey", "slategrey", None])
+                            motifs.append([start, end, "()", 0, 12, "grey", "slategrey", None])
                             last_lt = None
 
                 seqFace = SeqMotifFace(node.sequence, motifs,
