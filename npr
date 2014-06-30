@@ -65,7 +65,7 @@ sys.path.insert(0, NPRPATH)
 from nprlib import argparse
 from nprlib.utils import (strip, SeqGroup, generate_runid,  AA, NT,
                           GLOBALS, encode_seqname, pjoin, pexist,
-                          hascontent, clear_tempdir, ETE_CITE)
+                          hascontent, clear_tempdir, ETE_CITE, colorify)
 from nprlib.errors import ConfigError, DataError
 from nprlib.master_task import Task
 from nprlib.interface import app_wrapper
@@ -527,7 +527,7 @@ def main(args):
         # Write command line info
         cmd_info = '\t'.join([start_time, thread_id, str(args.monitor), GLOBALS["cmdline"]])
         open(pjoin(config["_outpath"], "command_lines"), "a").write(cmd_info+"\n")
-        
+
     thread_errors = schedule(pipeline, pending_tasks, args.schedule_time,
                              execution, args.retry_error_jobs, args.debug, args.noimg)
     db.close()
@@ -1067,10 +1067,20 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     args.enable_ui = False
+
+    if not args.noimg:
+        print 'Testing ETE-NPR graphics support...'
+        print 'X11 DISPLAY = %s' %colorify(os.environ.get('DISPLAY', 'not detected!'), 'yellow')
+        print '(You can use --noimg to disable graphical capabilities)'
+        try:
+            from ete_dev import Tree
+            Tree().render('/tmp/etenpr_img_test.png')
+        except:
+            raise ConfigError('img generation not supported')
     
     if not args.aa_seed_file and not args.nt_seed_file:
         parser.error('At least one input file argument (-a, -n) is required')
-
+        
     outdir = os.path.abspath(args.outdir)
     final_dir, runpath = os.path.split(outdir)
     if not runpath:
