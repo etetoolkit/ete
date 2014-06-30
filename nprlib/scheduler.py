@@ -391,7 +391,9 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                             draw_tree(main_tree, GLOBALS[configid], final_tree_file+".png")
                         except Exception, e:
                             log.warning('@@8:something went wrong when generating the tree image. Try manually :(@@1:')
-                            log.debug(e)
+                            if DEBUG:
+                                import traceback, sys
+                                traceback.print_exc(file=sys.stdout)
 
                     just_finished_lines.append("Finished %s in %d iteration(s)" %(
                             threadname, past_threads[configid]))

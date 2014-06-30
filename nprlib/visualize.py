@@ -94,7 +94,7 @@ def draw_tree(tree, conf, outfile):
     LABEL_START_COL = 10
     ALG_START_COL = 40
     ts = TreeStyle()
-    ts.draw_aligned_faces_as_table = True
+    ts.draw_aligned_faces_as_table = False
     ts.draw_guiding_lines = False
     ts.show_leaf_name = False
     ts.show_branch_support = False
