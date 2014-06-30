@@ -1104,6 +1104,7 @@ if __name__ == "__main__":
         GLOBALS["first_split_outgroup"] = args.first_split
 
     GLOBALS["email"] = args.email
+    GLOBALS["verbosity"] = args.verbosity
     GLOBALS["email_report_time"] = args.email_report_time * 60
     GLOBALS["launch_time"] = args.launch_time
     GLOBALS["cmdline"] = ' '.join(sys.argv)
