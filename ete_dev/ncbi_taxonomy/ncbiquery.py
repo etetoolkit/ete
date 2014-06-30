@@ -15,6 +15,9 @@ def connect_database(dbfile=None):
     if not dbfile:
         module_path = os.path.split(os.path.realpath(__file__))[0]
         dbfile = os.path.join(module_path, 'taxa.sqlite')
+        if not os.path.exists(dbfile):
+            dbfile = os.path.join(os.environ.get('HOME', '/'), '.etetoolkit', 'taxa.sqlite')
+        
     c = sqlite3.connect(dbfile)
 
 def get_fuzzy_name_translation(name, sim=0.9):
