@@ -48,6 +48,7 @@ __builtin__.raw_input = wrap(raw_input, 100)
  
 import sys
 import os
+import atexit
 import shutil
 from StringIO import StringIO
 from collections import defaultdict
@@ -68,7 +69,7 @@ from nprlib.utils import (strip, SeqGroup, generate_runid,  AA, NT,
                           hascontent, clear_tempdir, ETE_CITE, colorify)
 from nprlib.errors import ConfigError, DataError
 from nprlib.master_task import Task
-from nprlib.interface import app_wrapper
+from nprlib.interface import app_wrapper, clean_exit
 from nprlib.scheduler import schedule
 from nprlib import db
 from nprlib import apps
@@ -116,7 +117,7 @@ __DESCRIPTION__ = (
 
     """ %(__VERSION__, __DATE__))
 
-def main(args):
+def main(args):    
     global log
     log = logging.getLogger("main")
     base_dir = GLOBALS["basedir"]
@@ -1139,6 +1140,7 @@ if __name__ == "__main__":
         os.makedirs(GLOBALS["basedir"])
 
     # Start the application
+    atexit.register(clean_exit)
     app_wrapper(main, args)
 
 # def onthefly_worflow(line, name):
