@@ -79,14 +79,12 @@ from nprlib.configcheck import is_file, is_dir, check_config, list_workflows, bl
 APPSPATH =  pjoin(NPRPATH, "ext_apps/")
 
 try:
-    module_path = os.path.split(__file__)[0]
-    __VERSION__ = open(os.path.join(module_path, "VERSION")).read().strip()
+    __VERSION__ = open(os.path.join(NPRPATH, "VERSION")).read().strip()
 except:
     __VERSION__ = "unknown"
 
 try:
-    module_path = os.path.split(__file__)[0]
-    __DATE__ = open(os.path.join(module_path, "DATE")).read().strip()
+    __DATE__ = open(os.path.join(NPRPATH, "DATE")).read().strip()
 except:
     __DATE__ = "unknown"
 
