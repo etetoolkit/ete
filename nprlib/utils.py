@@ -32,11 +32,15 @@ class _DataTypes(object):
         self.msf = 100
         self.alg_fasta = 200
         self.alg_phylip = 201
+        self.alg_nt_fasta = 202
+        self.alg_nt_phylip = 203
+
         self.clean_alg_fasta = 225
         self.clean_alg_phylip = 226
         self.kept_alg_columns = 230
         self.concat_alg_fasta = 250
         self.concat_alg_phylip = 251
+        self.alg_stats = 260
         self.alg_list = 290
         self.best_model = 300
         self.model_ranking = 305
@@ -116,6 +120,7 @@ TIME_FORMAT = '%a %b %d %H:%M:%S %Y'
 
 AA = set('ACEDGFIHKMLNQPSRTWVY*-.UOBZJX') | set('acedgfihkmlnqpsrtwvyuobzjx') 
 NT = set("ACGT*-.URYKMSWBDHVN") | set("acgturykmswbdhvn")
+GAP_CHARS = set(".-")
 
 GENCODE = {
     'ATA':'I', 'ATC':'I', 'ATT':'I', 'ATG':'M',

@@ -3,13 +3,10 @@ import re
 import commands
 import logging
 
-from nprlib.utils import (del_gaps, GENCODE, PhyloTree, SeqGroup,
-                          TreeStyle, generate_node_ids, DEBUG,
-                          NPR_TREE_STYLE, faces)
 from nprlib.task import TreeMerger, Msf, DummyTree
-
 from nprlib.errors import DataError
-from nprlib.utils import GLOBALS, rpath, pjoin, generate_runid, DATATYPES
+from nprlib.utils import (GLOBALS, rpath, pjoin, pexist, generate_runid, 
+                          DATATYPES, GAP_CHARS, DEBUG, SeqGroup)
 from nprlib import db
 from nprlib.master_task import register_task_recursively
 from nprlib.workflow.common import (IterConfig, get_next_npr_node,
@@ -99,6 +96,7 @@ def get_statal_identity(alg_file, statal_bin):
     #avgColIdentity	0.781853
     #stdColIdentity	0.2229
     #print output
+    print output
     maxi, mini, avgi, stdi = [None] * 4
     for line in output.split("\n"):
         if line.startswith("#maxColIdentity"):
@@ -125,14 +123,8 @@ def get_trimal_identity(alg_file, trimal_bin):
         if m: 
             max_identity = float(m.groups()[0])
     return max_identity
-
-    
-   
          
-def switch_to_codon(alg_fasta_file, alg_phylip_file, nt_seed_file,
-                    kept_columns=None):
-    GAP_CHARS = set(".-")
-    NUCLEOTIDES = set("ATCG") 
+def switch_to_codon(alg_fasta_file,  kept_columns=None):
     # Check conservation of columns. If too many identities,
     # switch to codon alignment and make the tree with DNA. 
     # Mixed models is another possibility.
@@ -158,26 +150,14 @@ def switch_to_codon(alg_fasta_file, alg_phylip_file, nt_seed_file,
                 nt_pos += 3
 
             if not kept_columns or pos in kept_columns: 
+                # we trust the sequence in DB, consistency should have been
+                # checked during the start up
                 ntalgseq.append(codon)
-                # If codon does not contain unknown symbols, check
-                # that translation is correct
-
-                # NOT WORKING ON ALTERNATIVE TABLES
-                # if not (set(codon) - NUCLEOTIDES) and GENCODE[codon] != ch:
-                #     log.error("[%s] CDS does not match protein sequence:"
-                #               " %s = %s not %s at pos %d" %\
-                #                   (seqname, codon, GENCODE[codon], ch, nt_pos))
-                #     raise ValueError()
 
         ntalgseq = "".join(ntalgseq)
         nt_alg.set_seq(seqname, ntalgseq)
 
-    alg_fasta_filename = alg_fasta_file + ".nt"
-    alg_phylip_filename = alg_phylip_file + ".nt"
-    nt_alg.write(outfile=alg_fasta_filename, format="fasta")
-    nt_alg.write(outfile=alg_phylip_filename, format="iphylip_relaxed")
-        
-    return alg_fasta_filename, alg_phylip_filename
+    return nt_alg
 
 def process_task(task, wkname, npr_conf, nodeid2info):
     alignerconf, alignerclass = npr_conf.aligner
@@ -194,6 +174,7 @@ def process_task(task, wkname, npr_conf, nodeid2info):
     seqtype = task.seqtype
     nodeid = task.nodeid
     ttype = task.ttype
+    taskid = task.taskid
     threadid = task.threadid
     node_info = nodeid2info[nodeid]
     size = task.size#node_info.get("size", 0)
@@ -267,37 +248,85 @@ def process_task(task, wkname, npr_conf, nodeid2info):
         #log.log(26, "Identity: max=%0.2f min=%0.2f mean=%0.2f +- %0.2f",
         #        mx, mn, mean, std)
         #t1 = time.time()
-        if npr_conf.switch_aa_similarity < 1:
-            mx, mn, mean, std = get_statal_identity(task.alg_phylip_file,
-                                                conf["app"]["statal"])
+
+        if seqtype == "aa" and npr_conf.switch_aa_similarity < 1:
+            try:
+                alg_stats = db.get_task_data(taskid, DATATYPES.alg_stats) 
+            except Exception, e:
+                alg_stats = {}
+
+            if ttype == "alg":
+                algfile = pjoin(GLOBALS["input_dir"], task.alg_phylip_file)
+                dataid = DATATYPES.alg_phylip
+            elif ttype == "acleaner":
+                algfile = pjoin(GLOBALS["input_dir"], task.clean_alg_phylip_file)
+                dataid = DATATYPES.alg_clean_phylip
+
+            if "i_mean" not in alg_stats:
+                log.log(24, "Calculating alignment stats...")
+                # dump data if necesary
+                algfile = pjoin(GLOBALS["input_dir"], task.alg_phylip_file)
+                if not pexist(algfile): 
+                    # dump phylip alg
+                    open(algfile, "w").write(db.get_data(db.get_dataid(taskid, dataid))) 
+
+                mx, mn, mean, std = get_statal_identity(algfile,
+                                                        conf["app"]["statal"])
+                alg_stats = {"i_max":mx, "i_mean":mean, "i_min":mn, "i_std":std}
+                db.add_task_data(taskid, DATATYPES.alg_stats, alg_stats)
+
+            log.log(22, "Alignment stats (sequence similarity):")
+            log.log(22, "   max: %(i_max)0.2f, min:%(i_min)0.2f, avg:%(i_mean)0.2f+-%(i_std)0.2f" %
+                    (alg_stats))
+
         else:
-            mx, mn, mean, std = 1, 1, 1, 0
+            alg_stats = {"i_max":-1, "i_mean":-1, "i_min":-1, "i_std":-1}
         
         #print time.time()-t1
         #log.log(24, "Identity: max=%0.2f min=%0.2f mean=%0.2f +- %0.2f",
         #        mx, mn, mean, std)
-        task.max_ident = mx
-        task.min_ident = mn
-        task.mean_ident = mean
-        task.std_ident = std
+        task.max_ident = alg_stats["i_max"]
+        task.min_ident = alg_stats["i_min"]
+        task.mean_ident = alg_stats["i_mean"]
+        task.std_ident = alg_stats["i_std"]
         next_task = None
-        
+
         if ttype == "alg" and cleanerclass:
             next_task = cleanerclass(nodeid, seqtype, alg_fasta_file,
                                      alg_phylip_file,
                                      conf, cleanerconf)
-        else:
+        else: 
             # Converts aa alignment into nt if necessary
-            if seqtype == "aa" and "nt" in GLOBALS["seqtypes"] and \
-               task.mean_ident > npr_conf.switch_aa_similarity:
-                log.log(26, "switching to codon alignment")
-                # Change seqtype config
+            if  seqtype == "aa" and \
+                    "nt" in GLOBALS["seqtypes"] and \
+                    task.mean_ident > npr_conf.switch_aa_similarity:
+                log.log(22, "@@16:Switching to codon alignment!@@1:")
+                alg_fasta_file = "%s.%s" %(taskid, DATATYPES.alg_nt_fasta)
+                alg_phylip_file = "%s.%s" %(taskid, DATATYPES.alg_nt_phylip)
+                try:
+                    alg_fasta_file = db.get_dataid(taskid, DATATYPES.alg_nt_fasta)
+                    alg_fasta_file = db.get_dataid(taskid, DATATYPES.alg_nt_phylip)
+                except ValueError:
+                    log.log(22, "Calculating codon alignment...")
+
+                    source_alg = pjoin(GLOBALS["input_dir"], task.alg_fasta_file)
+                    if ttype == "alg":
+                        kept_columns = []
+                    elif ttype == "acleaner":
+                        # if original alignment was trimmed, use it as reference
+                        # but make the nt alignment only on the kept columns
+                        kept_columns = db.get_task_data(taskid, DATATYPES.kept_alg_columns)
+
+                    if not pexist(source_alg):
+                        open(source_alg, "w").write(db.get_task_data(taskid, DATATYPES.alg_fasta)) 
+
+                    nt_alg = switch_to_codon(source_alg, kept_columns=kept_columns)
+                    db.add_task_data(taskid, DATATYPES.alg_nt_fasta, nt_alg.write())
+                    db.add_task_data(taskid, DATATYPES.alg_nt_phylip, nt_alg.write(format='iphylip_relaxed'))
+
                 npr_conf = IterConfig(conf, wkname, task.size, "nt")
                 seqtype = "nt"
-                alg_fasta_file, alg_phylip_file = switch_to_codon(
-                    task.alg_fasta_file, task.alg_phylip_file,
-                    nt_seed_file)
-                                           
+                                          
             if mtesterclass:
                 next_task = mtesterclass(nodeid, alg_fasta_file,
                                          alg_phylip_file,

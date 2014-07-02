@@ -29,8 +29,8 @@ def thread_name(task):
 
 def genetree_class_repr(cls, cls_name):
     """ Human readable representation of NPR genetree tasks.""" 
-    return "%s (%s seqs, %s, %s/%s)" %\
-        (cls_name, getattr(cls, "size", None) or 0,
+    return "%s (%s %s seqs, %s, %s/%s)" %\
+        (cls_name, getattr(cls, "size", None) or "", getattr(cls, "seqtype", None) or 0,
          cls.tname, 
          "", #(getattr(cls, "taskid", None) or "?")[:6],
          thread_name(cls))
@@ -55,8 +55,8 @@ def concatalg_class_repr(cls, cls_name):
 
 def generic_class_repr(cls, cls_name):
     """ Human readable representation of NPR sptree tasks.""" 
-    return "%s (%s tips, %s, %s/%s)" %\
-        (cls_name, getattr(cls, "size", None) or 0,
+    return "%s (%s %s seqs, %s, %s/%s)" %\
+        (cls_name, getattr(cls, "size", None) or 0, getattr(cls, "seqtype", None) or "",
          cls.tname, 
          "", #(getattr(cls, "taskid", None) or "?")[:6],
          thread_name(cls))

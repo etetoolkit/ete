@@ -2,7 +2,7 @@ import re
 
 def draw_tree(tree, conf, outfile):
     try:
-        from ete_dev import (add_face_to_node, AttrFace, TextFace, TreeStyle,
+        from ete_dev import (add_face_to_node, AttrFace, TextFace, TreeStyle, RectFace, CircleFace,
                              SequenceFace, random_color, SeqMotifFace)
     except ImportError as e:
         print e
@@ -14,6 +14,14 @@ def draw_tree(tree, conf, outfile):
         else:
             node.img_style['size'] = 0
             node.img_style['shape'] = 'square'
+            if len(MIXED_RES) > 1 and hasattr(node, "tree_seqtype"):
+                if node.tree_seqtype == "nt":
+                    node.img_style["bgcolor"] = "#CFE6CA"
+                    ntF = TextFace("nt", fsize=6, fgcolor='#444', ftype='Helvetica')
+                    add_face_to_node(ntF, node, 10, position="branch-bottom")
+            if len(NPR_TREES) > 1 and hasattr(node, "tree_type"):
+                node.img_style['size'] = 4
+                node.img_style['fgcolor'] = "steelblue"
 
         node.img_style['hz_line_width'] = 1
         node.img_style['vt_line_width'] = 1
@@ -27,7 +35,7 @@ def draw_tree(tree, conf, outfile):
                 add_face_to_node(geneF, node, column=1, position='branch-right')
 
     def ly_supports(node):
-        if not node.is_leaf():
+        if not node.is_leaf() and node.up:
             supFace = TextFace("%0.2g" %(node.support), fsize=7, fgcolor='indianred')
             add_face_to_node(supFace, node, column=0, position='branch-top')
                 
@@ -101,18 +109,38 @@ def draw_tree(tree, conf, outfile):
     ts.scale = 160
 
     ts.layout_fn = [ly_basic, ly_leaf_names, ly_supports, ly_tax_labels]
-    
-    try:
-        seq = tree.iter_leaves().next().sequence
-    except:
-        pass
-    else:
-        ALG_SCALE = min(1, 1000./len(seq))
+
+    MIXED_RES = set()
+    MAX_SEQ_LEN = 0
+    NPR_TREES = []
+    for n in tree.traverse():
+        if hasattr(n, "tree_seqtype"):
+            MIXED_RES.add(n.tree_seqtype)
+        if hasattr(n, "tree_type"):
+            NPR_TREES.append(n.tree_type)
+        seq = getattr(n, "sequence", "")
+        MAX_SEQ_LEN = max(len(seq), MAX_SEQ_LEN) 
+
+    if MAX_SEQ_LEN:
+        ALG_SCALE = min(1, 1000./MAX_SEQ_LEN)
         ts.layout_fn.append(ly_block_alg)
         
-    
+    if len(NPR_TREES) > 1:
+        rF = RectFace(4, 4, "steelblue", "steelblue")
+        rF.margin_right = 10
+        rF.margin_left = 10
+        ts.legend.add_face(rF, 0)
+        ts.legend.add_face(TextFace(" NPR node"), 1)
+        ts.legend_position = 3
 
-    #tree.show(tree_style=ts)
+    if len(MIXED_RES) > 1:
+        rF = RectFace(20, 20, "#CFE6CA", "#CFE6CA")
+        rF.margin_right = 10
+        rF.margin_left = 10
+        ts.legend.add_face(rF, 0)
+        ts.legend.add_face(TextFace(" Nucleotide based alignment"), 1)
+        ts.legend_position = 3
+ 
 
     try:
         tree.set_species_naming_function(spname)
@@ -120,10 +148,8 @@ def draw_tree(tree, conf, outfile):
         a = tree.search_nodes(species='Dictyostelium discoideum')[0]
         b = tree.search_nodes(species='Chondrus crispus')[0]
         #out = tree.get_common_ancestor([a, b])
-
         #out = tree.search_nodes(species='Haemophilus parahaemolyticus')[0].up
         tree.set_outgroup(out)    
-
         tree.swap_children()
     except Exception:
         pass
