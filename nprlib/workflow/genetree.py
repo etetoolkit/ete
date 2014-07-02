@@ -96,7 +96,7 @@ def get_statal_identity(alg_file, statal_bin):
     #avgColIdentity	0.781853
     #stdColIdentity	0.2229
     #print output
-    print output
+
     maxi, mini, avgi, stdi = [None] * 4
     for line in output.split("\n"):
         if line.startswith("#maxColIdentity"):
@@ -300,7 +300,7 @@ def process_task(task, wkname, npr_conf, nodeid2info):
             if  seqtype == "aa" and \
                     "nt" in GLOBALS["seqtypes"] and \
                     task.mean_ident > npr_conf.switch_aa_similarity:
-                log.log(22, "@@16:Switching to codon alignment!@@1:")
+                log.log(20, "@@2:Switching to codon alignment!@@1:")
                 alg_fasta_file = "%s.%s" %(taskid, DATATYPES.alg_nt_fasta)
                 alg_phylip_file = "%s.%s" %(taskid, DATATYPES.alg_nt_phylip)
                 try:
