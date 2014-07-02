@@ -65,7 +65,7 @@ sys.path.insert(0, NPRPATH)
 from nprlib import argparse
 from nprlib.utils import (strip, SeqGroup, generate_runid,  AA, NT,
                           GLOBALS, encode_seqname, pjoin, pexist,
-                          hascontent, clear_tempdir, ETE_CITE, colorify)
+                          hascontent, clear_tempdir, ETE_CITE, colorify, GENCODE)
 from nprlib.errors import ConfigError, DataError
 from nprlib.master_task import Task
 from nprlib.interface import app_wrapper
@@ -680,6 +680,7 @@ def check_seq_integrity(args, target_seqs, visited_seqs, seq2length, seq2unknown
             error += '\n'.join(["%s\tcontains:\t%s" %(k,' '.join(v)) for k,v in seq2unknown[seqtype].iteritems()] )
 
     # check for aa/cds consistency
+    REAL_NT = set('ACTG')
     if GLOBALS["seqtypes"] == set(["aa", "nt"]):
         inconsistent_cds = set()
         for seqname, ntlen in seq2length["nt"].iteritems():
@@ -690,6 +691,16 @@ def check_seq_integrity(args, target_seqs, visited_seqs, seq2length, seq2unknown
                                          (seqname,
                                          aa_len*3,
                                          ntlen))
+                else:
+                    if not args.no_seq_checks:
+                        for i, aa in enumerate(seq2seq["aa"][seqname]):
+                            codon = seq2seq["nt"][seqname][i*3:(i*3)+3]
+                            if not (set(codon) - REAL_NT): 
+                                if GENCODE[codon] != aa:
+                                    log.warning('@@2:Unmatching codon in seq:%s, aa pos:%s (%s != %s)@@1: Use --no-seq-checks to skip' %(seqname, i, codon, aa))
+                                    inconsistent_cds.add('Unmatching codon in seq:%s, aa pos:%s (%s != %s)' %(seqname, i, codon, aa))
+
+
         if inconsistent_cds:
             error += "\nUnexpected coding sequence length for the following ids:\n"
             error += '\n'.join(inconsistent_cds)
