@@ -817,7 +817,7 @@ if __name__ == "__main__":
             sys.exit(0)
             
         elif sys.argv[1] == "version":
-            print __VERSION__
+            print __VERSION__, '(%s)' %__DATE__
             sys.exit(0)
     
     parser = argparse.ArgumentParser(description=__DESCRIPTION__,
