@@ -465,7 +465,8 @@ class TreeNode(object):
             for n in start.get_children():
                 self.add_child(child=n)
 
-        for n in [self]+self.get_descendants():
+        #for n in [self]+self.get_descendants():
+        for n in self.get_descendants():
             if n not in to_keep: 
                 n.delete(prevent_nondicotomic=False,
                          preserve_branch_length=preserve_branch_length)
