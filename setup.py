@@ -121,11 +121,11 @@ for mname, msg, ex in PYTHON_DEPENDENCIES:
         print msg
         missing=True
 
-# if missing:
-#     print "\nHowever, you can still install ETE without such functionality."
-#     if ask( "Do you want to continue with the installation anyway?", 
-#             ["y", "n"]) == "n":
-#         sys.exit()
+if missing:
+    print "\nHowever, you can still install ETE without such functionality."
+    if ask( "Do you want to continue with the installation anyway?", 
+            ["y", "n"]) == "n":
+        sys.exit()
 
 # writes installation id as a variable into the main module
 init_content = open("ete_dev/__init__.py").read()
@@ -172,7 +172,7 @@ try:
         " tree clustering phylogenetics phylogenetic ete orthology" 
         " paralogy",
         url = "http://etetoolkit.org",
-        download_url = "http://etetoolkit.org/releases/ete2/",
+        download_url = "http://etetoolkit.org/static/releases/ete2/",
     )
 except: 
     raise
