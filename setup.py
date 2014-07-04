@@ -171,8 +171,8 @@ try:
         keywords = "bioinformatics phylogeny evolution phylogenomics genomics" 
         " tree clustering phylogenetics phylogenetic ete orthology" 
         " paralogy",
-        url = "http://ete.cgenomics.org",
-        download_url = "http://ete.cgenomics.org/releases/ete2/",
+        url = "http://etetoolkit.org",
+        download_url = "http://etetoolkit.org/static/releases/ete2/",
     )
 except: 
     raise
@@ -183,7 +183,7 @@ else:
     if (wanted & seen) and not (notwanted & seen):
         try:
             welcome = urllib2.quote("New alien in earth!")
-            urllib2.urlopen("http://ete.cgenomics.org/et_phone_home?ID=%s&VERSION=%s&MSG=%s"
+            urllib2.urlopen("http://etetoolkit.org/et_phone_home?ID=%s&VERSION=%s&MSG=%s"
                             %(ETEID, ete_version, welcome))
         except urllib2.HTTPError, e: 
             pass
