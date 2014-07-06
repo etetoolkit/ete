@@ -41,15 +41,16 @@ class Raxml(TreeTask):
 
         max_cores = GLOBALS["_max_cores"]
         appname = conf[confname]["_app"]
-        threads = conf["threading"].get("raxml")
         if max_cores > 1:
-            appname = appname.replace("raxml", "raxml-pthreads")
-            raxml_bin = conf["app"][appname]
+            threads = conf["threading"].get("raxml-pthreads")
+            if threads > 1:
+                appname = appname.replace("raxml", "raxml-pthreads")
+                raxml_bin = conf["app"][appname]
         else:
             appname = appname.replace("raxml-pthreads", "raxml")
             threads = 1
             raxml_bin = conf["app"][appname]
-        
+
         self.raxml_bin = raxml_bin
         self.threads = threads
         self.seqtype = seqtype
@@ -116,8 +117,6 @@ class Raxml(TreeTask):
                 alrt_job.add_input_file(self.partitions_file)
             
             self.jobs.append(alrt_job)
-
-            
             self.alrt_job = alrt_job
 
         elif self.bootstrap == "alrt_phyml":
