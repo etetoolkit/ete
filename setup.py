@@ -117,15 +117,16 @@ print "Checking dependencies..."
 missing = False
 for mname, msg, ex in PYTHON_DEPENDENCIES:
     if not can_import(mname):
-        print mname, "could be found in your python installation."
-        print msg
+        
+        print "WARNING:\033[93m Optional library [%s] could not be found \033[0m" %mname
+        print "  ",msg
         missing=True
 
-if missing:
-    print "\nHowever, you can still install ETE without such functionality."
-    if ask( "Do you want to continue with the installation anyway?", 
-            ["y", "n"]) == "n":
-        sys.exit()
+#if missing:
+#    print "\nHowever, you can still install ETE without such functionality."
+#    if ask( "Do you want to continue with the installation anyway?", 
+#            ["y", "n"]) == "n":
+#        sys.exit()
 
 # writes installation id as a variable into the main module
 init_content = open("ete_dev/__init__.py").read()
