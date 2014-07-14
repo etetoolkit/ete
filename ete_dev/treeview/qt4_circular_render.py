@@ -159,7 +159,7 @@ def render_circular(root_node, n2i, rot_step):
         w = sum(item.widths[1:5])
         h = item.effective_height
 
-        parent_radius = n2i[node.up].radius if node.up else item.xoff
+        parent_radius = n2i[node.up].radius if node.up and node.up in n2i else item.xoff
         angle = rot_step if _leaf(node) else item.angle_span
 
         if hasattr(item, "radius"):
