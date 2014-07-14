@@ -116,8 +116,8 @@ def ask_path(string, default_path):
 #Check repo is commited
 
 #Creates a release clone
-SERVER="jhuerta@cgenomics"
-SERVER_RELEASES_PATH = "/home/services/web/ete.cgenomics.org/releases/ete2"
+SERVER="huerta@etetoolkit.embl.de"
+SERVER_RELEASES_PATH = "/var/www/etetoolkit/static/releases/ete2/"
 SERVER_DOC_PATH = "/home/services/web/ete.cgenomics.org/releases/ete2/doc"
 SERVER_METAPKG_PATH = "/home/services/web/ete.cgenomics.org/releases/ete2/metapkg"
 METAPKG_JAIL_PATH = "/home/jhuerta/_Devel/ete_metapackage/etepkg_CheckBeforeRm"
@@ -126,7 +126,7 @@ RELEASES_BASE_PATH = "/tmp"
 MODULE_NAME = "ete2"
 MODULE_RELEASE = "2.2"
 REVISION = commands.getoutput("git log --pretty=format:'' | wc -l").strip()
-VERSION = MODULE_RELEASE+ "rev" + REVISION
+VERSION = MODULE_RELEASE+ "." + REVISION
 VERSION_LOG = commands.getoutput("git log --pretty=format:'%s' | head -n1").strip()
 RELEASE_NAME = MODULE_NAME+"-"+VERSION
 RELEASE_PATH = os.path.join(RELEASES_BASE_PATH, RELEASE_NAME)
