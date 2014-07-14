@@ -184,7 +184,7 @@ else:
     if (wanted & seen) and not (notwanted & seen):
         try:
             welcome = urllib2.quote("New alien in earth!")
-            urllib2.urlopen("http://etetoolkit.org/et_phone_home?ID=%s&VERSION=%s&MSG=%s"
+            urllib2.urlopen("http://etetoolkit.org/et_phone_home.php?ID=%s&VERSION=%s&MSG=%s"
                             %(ETEID, ete_version, welcome))
         except urllib2.HTTPError, e: 
             pass
