@@ -229,9 +229,13 @@ def first_common_ocurrence(vectors):
         return 0
 
     matches = sorted(visited.items(), _sort)
-    best_match = matches[-1]
+    if matches:
+        best_match = matches[-1]
+    else:
+        return "", set()
+        
     if best_match[1] != len(vectors):
-        return None, set()
+        return "", set()
     else:
         return best_match[0][0], [m[0][0] for m in matches if m[1] == len(vectors)]
 
