@@ -101,6 +101,10 @@ def install(setup): #pylint: disable=W0621
     long_description.replace("ete_dev", mod_name)
 
     try:
+        extra = {}
+        if sys.version_info >= (3,):
+            extra['use_2to3'] = True
+
         _s = setup(
             name = "ete_dev",
             version = ete_version,
@@ -129,8 +133,8 @@ def install(setup): #pylint: disable=W0621
             " tree clustering phylogenetics phylogenetic ete orthology"
             " paralogy",
             url = "http://etetoolkit.org",
-            use_2to3=True,
             download_url = "http://etetoolkit.org/static/releases/ete2/",
+            **extra
         )
     except:
         raise
