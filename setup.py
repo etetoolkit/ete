@@ -210,8 +210,6 @@ def ask(string, valid_values, default=-1, case_sensitive=False):
     return v
 
 if __name__ == '__main__':
-    from distribute_setup import use_setuptools
-    use_setuptools()
     from setuptools import setup
     install(setup)
 
