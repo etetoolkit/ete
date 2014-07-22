@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
-# requires: 
+# requires:
 #  pdflatex tools
-# python twitter module 
+# python twitter module
 # sphinx
 
 import os
 import sys
-import commands
+import subprocess
 import readline
 from optparse import OptionParser
 
@@ -42,7 +42,7 @@ parser.add_option("-s", "--simulate", dest="simulate", \
 
 (options, args) = parser.parse_args()
 
-print options
+print(options)
 
 def print_in_columns(header, *values):
     ncols = len(values)
@@ -58,21 +58,21 @@ def print_in_columns(header, *values):
         else:
             return x[i]
 
-    for c in xrange(ncols):
-        c2longest[c] = max([len(str(get(r, list(values[c])))) for r in xrange(nrows)])
+    for c in range(ncols):
+        c2longest[c] = max([len(str(get(r, list(values[c])))) for r in range(nrows)])
         c2longest[c] = max(c2longest[c], len(str(get(c, header))))
 
     if header is not None:
-        print '\t'.join([str(get(c,header)).ljust(c2longest[c]) for c in xrange(ncols)])
-        print '\t'.join(['='*c2longest[c] for c in xrange(ncols)])
+        print('\t'.join([str(get(c,header)).ljust(c2longest[c]) for c in range(ncols)]))
+        print('\t'.join(['='*c2longest[c] for c in range(ncols)]))
 
 
-    for i in xrange(nrows):
-        print '\t'.join([str(get(i,list(l))).ljust(c2longest[c]) for c,l in enumerate(values)])
+    for i in range(nrows):
+        print('\t'.join([str(get(i,list(l))).ljust(c2longest[c]) for c,l in enumerate(values)]))
 
 def _ex(cmd, interrupt=True):
     if options.verbose or options.simulate:
-        print "***", cmd
+        print("***", cmd)
     if not options.simulate:
         s = os.system(cmd)
         if s != 0 and interrupt:
@@ -91,7 +91,7 @@ def ask(string, valid_values, default=-1, case_sensitive=False):
     while v not in valid_values:
         readline.set_startup_hook(lambda: readline.insert_text(default))
         try:
-            v = raw_input("%s [%s] " % (string, ', '.join(valid_values))).strip()
+            v = input("%s [%s] " % (string, ', '.join(valid_values))).strip()
             if v == '' and default>=0:
                 v = valid_values[default]
             if not case_sensitive:
@@ -103,11 +103,11 @@ def ask(string, valid_values, default=-1, case_sensitive=False):
 def ask_path(string, default_path):
     v = None
     while v is None:
-        v = raw_input("%s [%s] " % (string, default_path)).strip()
+        v = input("%s [%s] " % (string, default_path)).strip()
         if v == '':
             v = default_path
         if not os.path.exists(v):
-            print >>sys.stderr, v, "does not exist."
+            print(v, "does not exist.", file=sys.stderr)
             v = None
     return v
 
@@ -125,70 +125,70 @@ SERVER_DOC_PATH = "/var/www/etetoolkit/static/releases/ete2/doc"
 RELEASES_BASE_PATH = "/tmp"
 MODULE_NAME = "ete2"
 LAST_BUILD = open('LAST_BUILD').readline()
-a, b, c = map(int, LAST_BUILD.split('.'))
+a, b, c = list(map(int, LAST_BUILD.split('.')))
 MODULE_RELEASE = "%s.%s" %(a, b)
-REVISION = commands.getoutput("git log --pretty=format:'' | wc -l").strip()
+REVISION = subprocess.getoutput("git log --pretty=format:'' | wc -l").strip()
 VERSION = "%s.%s.%s" %(a, b, c+1)
-VERSION_LOG = commands.getoutput("git log --pretty=format:'%s' | head -n1").strip()
+VERSION_LOG = subprocess.getoutput("git log --pretty=format:'%s' | head -n1").strip()
 RELEASE_NAME = MODULE_NAME+"-"+VERSION
 RELEASE_PATH = os.path.join(RELEASES_BASE_PATH, RELEASE_NAME)
 RELEASE_MODULE_PATH = os.path.join(RELEASE_PATH, MODULE_NAME)
 DOC_PATH = os.path.join(RELEASE_PATH, "doc")
 
 
-print "================================="
-print
-print "VERSION", VERSION
-print "RELEASE:", RELEASE_NAME
-print "RELEASE_PATH:", RELEASE_PATH
-print "REVISION:", REVISION
-print
-print "================================="
+print("=================================")
+print()
+print("VERSION", VERSION)
+print("RELEASE:", RELEASE_NAME)
+print("RELEASE_PATH:", RELEASE_PATH)
+print("REVISION:", REVISION)
+print()
+print("=================================")
 
 if os.path.exists(RELEASE_PATH):
-    print RELEASE_PATH, "exists"
+    print(RELEASE_PATH, "exists")
     overwrite = ask("Overwrite?",["y","n"])
     if overwrite=="y":
         _ex("rm %s -rf" %RELEASE_PATH)
     else:
-        print "Aborted."
+        print("Aborted.")
         sys.exit(-1)
 
 if options.doc_only:
-    print "Creating a repository copy in ", RELEASE_PATH
+    print("Creating a repository copy in ", RELEASE_PATH)
     options.doc = True
     process_package = False
     _ex("mkdir %s; cp -a ./ %s" %(RELEASE_PATH, RELEASE_PATH))
 else:
     process_package = True
-    print "Creating a repository clone in ", RELEASE_PATH
+    print("Creating a repository clone in ", RELEASE_PATH)
     _ex("git clone . %s" %RELEASE_PATH)
 
 
 # Set VERSION in all modules
-print "*** Setting VERSION in all python files"
+print("*** Setting VERSION in all python files")
 _ex('find %s/ete_dev/ -name \'*.py\' |xargs sed \'1 i __VERSION__=\"%s\" \' -i' %\
               (RELEASE_PATH, RELEASE_NAME))
 
 # Generating VERSION file
-print "*** Generating VERSION file"
+print("*** Generating VERSION file")
 _ex('echo %s > %s/VERSION' %\
               (VERSION, RELEASE_PATH))
 
 # Generating INSTALL file
-print "*** Generating INSTALL file"
+print("*** Generating INSTALL file")
 _ex('cp %s/doc/install/index.rst %s/INSTALL' %\
               (RELEASE_PATH, RELEASE_PATH))
 
 # Check LICENSE disclaimer and add it or modify it if necessary
-print  "*** Setting LICENSE in all python files"
+print("*** Setting LICENSE in all python files")
 _ex('find %s/ete_dev/ -name \'*.py\' -exec  python ___put_disclaimer.py {} \;' %\
         (RELEASE_PATH))
 
 # Correct imports. I use ete_dev for development, but ete2 is the
 # correct name for stable releases. First I install the module using a
 # different name just to test it
-print "*** Fixing imports..."
+print("*** Fixing imports...")
 _ex('find %s -name \'*.py\' -o -name \'*.rst\'| xargs perl -e "s/ete_dev/ete2_tester/g" -p -i' %\
         (RELEASE_PATH))
 _ex('cp %s/bin/ete %s/bin/ete2_tester' %\
@@ -197,27 +197,27 @@ _ex('mv %s/ete_dev %s/ete2_tester' %(RELEASE_PATH, RELEASE_PATH))
 _ex('cd %s; python setup.py build --build-lib=build/lib' %(RELEASE_PATH))
 
 if options.unitest:
-    print 'export PYTHONPATH="%s/build/lib/"; python %s/test/test_all.py' %\
-            (RELEASE_PATH, RELEASE_PATH)
+    print('export PYTHONPATH="%s/build/lib/"; python %s/test/test_all.py' %\
+            (RELEASE_PATH, RELEASE_PATH))
     _ex('export PYTHONPATH="%s/build/lib/"; python %s/test/test_all.py' %\
             (RELEASE_PATH, RELEASE_PATH))
 
 if options.test_examples:
     # Check tutorial examples
-    exfiles = commands.getoutput('find %s/examples/ -name "*.py"' %\
+    exfiles = subprocess.getoutput('find %s/examples/ -name "*.py"' %\
             RELEASE_PATH).split("\n")
     error_examples = []
     for filename in exfiles:
-        print "Testing", filename
+        print("Testing", filename)
         path = os.path.split(filename)[0]
         cmd = 'cd %s; PYTHONPATH="%s/build/lib/" python %s' %\
             (path, RELEASE_PATH, filename)
-        print cmd
+        print(cmd)
         s = _ex(cmd, interrupt=False)
         if s != 0:
             error_examples.append(filename)
-    print len(error_examples), "examples caused problems"
-    print '\n'.join(map(str, error_examples))
+    print(len(error_examples), "examples caused problems")
+    print('\n'.join(map(str, error_examples)))
     if ask("Continue?", ["y","n"]) == "n":
         exit(-1)
 
@@ -234,12 +234,12 @@ _ex('mv %s/bin/ete_dev %s/bin/%s' %\
               (RELEASE_PATH, RELEASE_PATH,  MODULE_NAME) )
 _ex('cd %s; python setup.py build' %(RELEASE_PATH))
 
-print "Cleaning doc dir:"
+print("Cleaning doc dir:")
 _ex("mv %s/doc %s/sdoc" %(RELEASE_PATH, RELEASE_PATH))
 _ex("mkdir %s/doc" %(RELEASE_PATH))
 
 if options.doc:
-    print "*** Creating reference guide"
+    print("*** Creating reference guide")
     #_ex('export PYTHONPATH="%s/build/lib/"; epydoc %s -n %s --exclude PyQt4  --inheritance grouped --name ete2 -o %s/doc/ete_guide_html' %\
     #              (RELEASE_PATH, RELEASE_MODULE_PATH, RELEASE_NAME, RELEASE_PATH))
     #_ex('export PYTHONPATH="%s/build/lib/"; epydoc %s -n %s  --exclude PyQt4 --pdf --inheritance grouped --name ete2 -o %s/doc/latex_guide' %\
@@ -265,16 +265,16 @@ if options.doc:
     copydoc= ask("Update ONLINE PYPI documentation?", ["y","n"])
     if copydoc=="y":
         # INSTALL THIS http://pypi.python.org/pypi/Sphinx-PyPI-upload/0.2.1
-        print "Uploading"
-        
+        print("Uploading")
+
         # Always upload DOC to the main page
         _ex(' cd %s; cp VERSION _VERSION;  perl -e "s/%s/ete2/g" -p -i VERSION;' %\
                 (RELEASE_PATH, MODULE_NAME))
-        
+
         _ex("cd %s; python setup.py upload_sphinx --upload-dir %s/doc/html/ --show-response" %\
                 (RELEASE_PATH, RELEASE_PATH))
-        
-        # Restore real VERSION 
+
+        # Restore real VERSION
         _ex(' cd %s; mv _VERSION VERSION;' % (RELEASE_PATH) )
 
     copydoc= ask("Update CGENOMICS documentation?", ["y","n"])
@@ -289,32 +289,32 @@ if process_package:
     _ex('rm %s/build/ -rf' %(RELEASE_PATH))
     _ex('rm %s/sdoc/ -rf' %(RELEASE_PATH))
     _ex('rm %s/___* -rf' %(RELEASE_PATH))
-     
-    print "Creating tar.gz"
-    _ex("cd %s; python ./setup.py sdist " %RELEASE_PATH) 
+
+    print("Creating tar.gz")
+    _ex("cd %s; python ./setup.py sdist " %RELEASE_PATH)
 
     release= ask("Copy release to main server?", ["y","n"])
     if release=="y":
-        print "Creating and submitting distribution to PyPI"
-        _ex("cd %s; python ./setup.py sdist upload --show-response " %RELEASE_PATH) 
+        print("Creating and submitting distribution to PyPI")
+        _ex("cd %s; python ./setup.py sdist upload --show-response " %RELEASE_PATH)
 
-        print "Copying release to ete server..."
+        print("Copying release to ete server...")
         _ex("scp %s/dist/%s.tar.gz %s" %\
                 (RELEASE_PATH, RELEASE_NAME, SERVER+":"+SERVER_RELEASES_PATH))
 
-        print "Updating releases table..."
+        print("Updating releases table...")
         _ex("ssh %s 'cd %s; echo %s > %s.latest; sh update_downloads.sh;'" %(SERVER, SERVER_RELEASES_PATH, REVISION, MODULE_NAME))
 
-        print "Updating LAST BUILD file information..."
+        print("Updating LAST BUILD file information...")
         open('LAST_BUILD', 'w').write(VERSION)
-               
+
     if ask("Update examples package in server?", ["y","n"]) == "y":
-        print "Creating examples package" 
+        print("Creating examples package")
         _ex("cd %s; tar -zcf examples-%s.tar.gz examples/" %\
                 (RELEASE_PATH, MODULE_NAME) )
 
-        print "Copying examples to ete server..."
+        print("Copying examples to ete server...")
         _ex("scp %s/examples-%s.tar.gz %s" %\
                 (RELEASE_PATH, MODULE_NAME, SERVER+":"+SERVER_RELEASES_PATH))
 
- 
+
