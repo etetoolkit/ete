@@ -7,9 +7,9 @@ m =  re.search("# #START_LICENSE.*# #END_LICENSE[^\n]+", ALLTEXT, re.DOTALL | re
 if m:
     if m.group() != HEADER:
         NEWFILE = ALLTEXT.replace(m.group(), HEADER+"\n")
-        print sys.argv[1], "LICENSE CHANGED"
+        print(sys.argv[1], "LICENSE CHANGED")
         open(sys.argv[1], "w").write(NEWFILE)
 else:
     NEWFILE =  HEADER +"\n"+ ALLTEXT
-    print sys.argv[1], "LICENSE ADDED"
+    print(sys.argv[1], "LICENSE ADDED")
     open(sys.argv[1], "w").write(NEWFILE)
