@@ -62,7 +62,8 @@ def install(setup): #pylint: disable=W0621
     except ImportError:
         ETEID = None
     if not ETEID:
-        ETEID = hashlib.md5(str(time.time()+random.random())).hexdigest()
+        hash_str = str(time.time() + random.random()).encode('utf-8')
+        ETEID = hashlib.md5(hash_str).hexdigest()
 
     print()
     print("Installing ETE (A python Environment for Tree Exploration).")
