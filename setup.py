@@ -111,6 +111,7 @@ def install(setup): #pylint: disable=W0621
             packages = find_packages(),
             scripts = ['bin/ete'],
             requires = [],
+            test_suite = "test.test_all",
 
             # Project uses reStructuredText, so ensure that the docutils get
             # installed or upgraded on the target machine

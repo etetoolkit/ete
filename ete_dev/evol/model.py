@@ -14,6 +14,7 @@ from warnings import warn
 
 from ete_dev.evol.control import PARAMS, AVAIL
 from ete_dev.evol.parser  import parse_paml, parse_rst, get_ancestor, parse_slr
+from utils import cmp_to_key
 try:
     from ete_dev.treeview.faces import SequencePlotFace
 except ImportError:
@@ -217,9 +218,9 @@ class Model:
             string += '%15s%s%s\n' % (prm, sep,
                                       str(self.properties['params'][prm]))
         string += '\n'
-        for prm in sorted(self.properties ['params'].keys(), cmp=lambda x, y: \
-                          cmp(sub('fix_', '', x.lower()),
-                              sub('fix_', '', y.lower()))):
+        for prm in sorted(self.properties ['params'].keys(), key=cmp_to_key(
+                        lambda x, y: cmp(sub('fix_', '', x.lower()),
+                                         sub('fix_', '', y.lower())))):
             if prm in ['seqfile', 'treefile', 'outfile']:
                 continue
             if str(self.properties ['params'][prm]).startswith('*'):
@@ -289,11 +290,10 @@ def colorize_rst(vals, winner, classes, col=None):
 
 
 
-Model.__doc__ = Model.__doc__ % \
-                ('\n'.join([ '          %-8s   %-27s   %-15s  ' % \
-                             ('%s' % (x), AVAIL[x]['evol'], AVAIL[x]['typ']) \
-                             for x in sorted(sorted(AVAIL.keys()),
-                                              cmp=lambda x, y: \
-                                              cmp(AVAIL[x]['typ'],
-                                                  AVAIL[y]['typ']),
-                                              reverse=True)]))
+Model.__doc__ = Model.__doc__ % (
+    '\n'.join([ '          %-8s   %-27s   %-15s  ' % (
+    '%s' % (x), AVAIL[x]['evol'], AVAIL[x]['typ'])
+        for x in sorted(sorted(AVAIL.keys()), 
+                        key=cmp_to_key(lambda x, y:cmp(AVAIL[x]['typ'],
+                                                       AVAIL[y]['typ']),
+                        reverse=True)])))

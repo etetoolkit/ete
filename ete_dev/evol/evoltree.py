@@ -207,13 +207,13 @@ class EvolNode(PhyloNode):
             self.link_to_evol_model(os.path.join(fullpath,'out'), model_obj)
     sep = '\n'
     run_model.__doc__ = run_model.__doc__ % \
-                        (sep.join(map(lambda x: \
-                                      '          %-8s   %-27s   %-15s  ' % \
-                                      ('%s' % (x), AVAIL[x]['evol'], AVAIL[x]['typ']),
-                                      sorted (sorted (AVAIL.keys()), cmp=lambda x, y : \
-                                              cmp(AVAIL[x]['typ'], AVAIL[y]['typ']),
-                                              reverse=True))),
-                         ', '.join(PARAMS.keys()))
+        (sep.join(map(lambda x: \
+                        '          %-8s   %-27s   %-15s  ' % \
+                        ('%s' % (x), AVAIL[x]['evol'], AVAIL[x]['typ']),
+                        sorted (sorted (AVAIL.keys()), key=cmp_to_key(lambda x, y : \
+                                cmp(AVAIL[x]['typ'], AVAIL[y]['typ']),
+                                reverse=True)))),
+            ', '.join(PARAMS.keys()))
 
 
     #def test_codon_model(self):
