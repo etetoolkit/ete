@@ -228,15 +228,13 @@ class EvolNode(PhyloNode):
             self.link_to_evol_model(os.path.join(fullpath,'out'), model_obj)
     sep = '\n'
     run_model.__doc__ = run_model.__doc__ % \
-        (sep.join(map(lambda x: \
-                        '          %-8s   %-27s   %-15s  ' % \
-                        ('%s' % (x), AVAIL[x]['evol'], AVAIL[x]['typ']),
-                        sorted (sorted (AVAIL.keys()), 
+        (sep.join(['          %-8s   %-27s   %-15s  ' % \
+                        ('%s' % (x), AVAIL[x]['evol'], AVAIL[x]['typ']) for x in sorted (sorted (AVAIL.keys()), 
                                         key=_cmp_to_key(lambda x, y : (
                             (AVAIL[x]['typ'] > AVAIL[y]['typ']) - 
                             (AVAIL[x]['typ'] < AVAIL[y]['typ']))),
-                                reverse=True))),
-            ', '.join(PARAMS.keys()))
+                                reverse=True)]),
+            ', '.join(list(PARAMS.keys())))
 
 
     #def test_codon_model(self):
@@ -363,8 +361,8 @@ class EvolNode(PhyloNode):
         
         '''
         from re import match
-        node_ids = map (int , node_ids)
-        if kargs.has_key('marks'):
+        node_ids = list(map (int , node_ids))
+        if 'marks' in kargs:
             marks = list(kargs['marks'])
         else:
             marks = ['#1']*len (node_ids)
@@ -377,7 +375,7 @@ class EvolNode(PhyloNode):
                              marks[node_ids.index(node.node_id)])==None)\
                              and verbose:
                     warn('WARNING: marks should be "#" sign directly '+\
-                         'followed by integer\n' + self.mark_tree.func_doc)
+                         'followed by integer\n' + self.mark_tree.__doc__)
                 node.add_feature('mark', ' '+marks[node_ids.index(node.node_id)])
             elif not 'mark' in node.features:
                 node.add_feature('mark', '')
@@ -398,7 +396,7 @@ class EvolNode(PhyloNode):
         else:
             model._load(path)
         # new entry in _models dict
-        while self._models.has_key(model.name):
+        while model.name in self._models:
             model.name = model.name.split('__')[0] + str(
                 (int(model.name.split('__')[1])
                  +1)  if '__' in model.name else 0)
@@ -497,7 +495,7 @@ class EvolNode(PhyloNode):
         except KeyError:
             warn("at least one of %s or %s, was not calculated" % (altn.name,
                                                                    null.name))
-            exit(self.get_most_likely.func_doc)
+            exit(self.get_most_likely.__doc__)
 
     def change_dist_to_evol(self, evol, model, fill=False):
         '''

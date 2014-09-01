@@ -232,9 +232,9 @@ AVAIL = {
                 'exec': 'Slr',
                 'sep' : '= ',
                 'allow_mark': False ,
-                'changes': map (lambda x: (x[0], '*'),
-                                filter (lambda x: 'file' not in x[0],
-                                        PARAMS.items())) + \
-                [('positive_only', '0')]}
+                'changes': [(x[0], '*') for x in 
+                                [x for x in list(PARAMS.items()) 
+                                    if 'file' not in x[0]]] +
+                                [('positive_only', '0')]}
     }
 

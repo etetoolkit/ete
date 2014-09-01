@@ -19,19 +19,18 @@ else:
 from .test_r_bindings import *
 from .test_evol import *
 
-#loader.loadTestsFromTestCase(TestPhylomeDB3Connector)
 def test_all():
     loader = unittest.TestLoader()
-    #    loader.loadTestsFromTestCase(Test_Coretype_SeqGroup),
-    #    loader.loadTestsFromTestCase(Test_PhyloXML),
-    #    loader.loadTestsFromTestCase(Test_NeXML)
     suite = unittest.TestSuite([
-        #loader.loadTestsFromTestCase(Test_Coretype_ArrayTable),
-        #loader.loadTestsFromTestCase(Test_Coretype_Tree),
-        #loader.loadTestsFromTestCase(Test_ClusterTree),
-        #loader.loadTestsFromTestCase(TestEvolEvolTree),
-        #loader.loadTestsFromTestCase(Test_phylo_module),
-        #loader.loadTestsFromTestCase(Test_R_bindings),
-        loader.loadTestsFromTestCase(Test_Coretype_SeqGroup)
+        #loader.loadTestsFromTestCase(TestPhylomeDB3Connector),
+        #loader.loadTestsFromTestCase(Test_PhyloXML),
+        #loader.loadTestsFromTestCase(Test_NeXML),
+        loader.loadTestsFromTestCase(Test_Coretype_ArrayTable),
+        loader.loadTestsFromTestCase(Test_ClusterTree),
+        loader.loadTestsFromTestCase(TestEvolEvolTree),
+        loader.loadTestsFromTestCase(Test_phylo_module),
+        loader.loadTestsFromTestCase(Test_R_bindings),
+        loader.loadTestsFromTestCase(Test_Coretype_SeqGroup),
+        loader.loadTestsFromTestCase(Test_Coretype_Tree)
     ])
     return suite
