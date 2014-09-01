@@ -4,12 +4,10 @@
 # #END_LICENSE#############################################################
 import unittest
 import sys
-#sys.path.insert(0, './')
-#sys.path.insert(0, '../')
 
 from .datasets import *
 from .test_tree import *
-#from .test_seqgroup import *
+from .test_seqgroup import *
 from .test_phylotree import *
 try:
     import numpy
@@ -33,6 +31,7 @@ def test_all():
         #loader.loadTestsFromTestCase(Test_ClusterTree),
         #loader.loadTestsFromTestCase(TestEvolEvolTree),
         #loader.loadTestsFromTestCase(Test_phylo_module),
-        loader.loadTestsFromTestCase(Test_R_bindings)
+        #loader.loadTestsFromTestCase(Test_R_bindings),
+        loader.loadTestsFromTestCase(Test_Coretype_SeqGroup)
     ])
     return suite
