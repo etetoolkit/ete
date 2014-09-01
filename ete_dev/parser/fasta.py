@@ -23,7 +23,6 @@
 
 from __future__ import print_function
 import os
-import string
 import textwrap
 from sys import stderr as STDERR
 
@@ -58,7 +57,7 @@ def read_fasta(source, obj=None, header_delimiter="\t", fix_duplicates=True):
 
             seq_id += 1
             # Takes header info
-            seq_header_fields = list(map(string.strip, line[1:].split(header_delimiter)))
+            seq_header_fields = list(map(str.strip, line[1:].split(header_delimiter)))
             seq_name = seq_header_fields[0]
 
             # Checks for duplicated seq names
