@@ -22,9 +22,6 @@ from .test_evol import *
 def test_all():
     loader = unittest.TestLoader()
     suite = unittest.TestSuite([
-        #loader.loadTestsFromTestCase(TestPhylomeDB3Connector),
-        #loader.loadTestsFromTestCase(Test_PhyloXML),
-        #loader.loadTestsFromTestCase(Test_NeXML),
         loader.loadTestsFromTestCase(Test_Coretype_ArrayTable),
         loader.loadTestsFromTestCase(Test_ClusterTree),
         loader.loadTestsFromTestCase(TestEvolEvolTree),
@@ -32,5 +29,15 @@ def test_all():
         loader.loadTestsFromTestCase(Test_R_bindings),
         loader.loadTestsFromTestCase(Test_Coretype_SeqGroup),
         loader.loadTestsFromTestCase(Test_Coretype_Tree)
+    ])
+    return suite
+
+def test_optional():
+    from .test_xml_parsers import Test_PhyloXML,Test_NeXML
+    loader = unittest.TestLoader()
+    suite = unittest.TestSuite([
+        #loader.loadTestsFromTestCase(TestPhylomeDB3Connector),
+        loader.loadTestsFromTestCase(Test_PhyloXML),
+        loader.loadTestsFromTestCase(Test_NeXML)
     ])
     return suite
