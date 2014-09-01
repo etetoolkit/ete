@@ -56,6 +56,27 @@ def _parse_species(name):
     '''
     return name[:3]
 
+def _cmp_to_key(mycmp):
+    """Convert a cmp= function into a key= function
+    See: https://docs.python.org/3/howto/sorting.html
+    """
+    class K:
+        def __init__(self, obj, *args):
+            self.obj = obj
+        def __lt__(self, other):
+            return mycmp(self.obj, other.obj) < 0
+        def __gt__(self, other):
+            return mycmp(self.obj, other.obj) > 0
+        def __eq__(self, other):
+            return mycmp(self.obj, other.obj) == 0
+        def __le__(self, other):
+            return mycmp(self.obj, other.obj) <= 0
+        def __ge__(self, other):
+            return mycmp(self.obj, other.obj) >= 0
+        def __ne__(self, other):
+            return mycmp(self.obj, other.obj) != 0
+    return K
+
 class EvolNode(PhyloNode):
     """ Re-implementation of the standart TreeNode instance. It adds
     attributes and methods to work with phylogentic trees.
@@ -210,9 +231,11 @@ class EvolNode(PhyloNode):
         (sep.join(map(lambda x: \
                         '          %-8s   %-27s   %-15s  ' % \
                         ('%s' % (x), AVAIL[x]['evol'], AVAIL[x]['typ']),
-                        sorted (sorted (AVAIL.keys()), key=cmp_to_key(lambda x, y : \
-                                cmp(AVAIL[x]['typ'], AVAIL[y]['typ']),
-                                reverse=True)))),
+                        sorted (sorted (AVAIL.keys()), 
+                                        key=_cmp_to_key(lambda x, y : (
+                            (AVAIL[x]['typ'] > AVAIL[y]['typ']) - 
+                            (AVAIL[x]['typ'] < AVAIL[y]['typ']))),
+                                reverse=True))),
             ', '.join(PARAMS.keys()))
 
 
@@ -495,6 +518,7 @@ class EvolNode(PhyloNode):
             if fill:
                 for e in ['dN', 'dS', 'w', 'bL']:
                     node.add_feature(e, model.branches [node.node_id][e])
+
 
 
 # cosmetic alias

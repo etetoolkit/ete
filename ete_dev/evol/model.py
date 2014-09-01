@@ -14,7 +14,6 @@ from warnings import warn
 
 from ete_dev.evol.control import PARAMS, AVAIL
 from ete_dev.evol.parser  import parse_paml, parse_rst, get_ancestor, parse_slr
-from utils import cmp_to_key
 try:
     from ete_dev.treeview.faces import SequencePlotFace
 except ImportError:
@@ -218,7 +217,7 @@ class Model:
             string += '%15s%s%s\n' % (prm, sep,
                                       str(self.properties['params'][prm]))
         string += '\n'
-        for prm in sorted(self.properties ['params'].keys(), key=cmp_to_key(
+        for prm in sorted(self.properties ['params'].keys(), key=_cmp_to_key(
                         lambda x, y: cmp(sub('fix_', '', x.lower()),
                                          sub('fix_', '', y.lower())))):
             if prm in ['seqfile', 'treefile', 'outfile']:
@@ -288,12 +287,32 @@ def colorize_rst(vals, winner, classes, col=None):
             colors.append(col['NS'])
     return colors
 
-
+def _cmp_to_key(mycmp):
+    """Convert a cmp= function into a key= function
+    See: https://docs.python.org/3/howto/sorting.html
+    """
+    class K:
+        def __init__(self, obj, *args):
+            self.obj = obj
+        def __lt__(self, other):
+            return mycmp(self.obj, other.obj) < 0
+        def __gt__(self, other):
+            return mycmp(self.obj, other.obj) > 0
+        def __eq__(self, other):
+            return mycmp(self.obj, other.obj) == 0
+        def __le__(self, other):
+            return mycmp(self.obj, other.obj) <= 0
+        def __ge__(self, other):
+            return mycmp(self.obj, other.obj) >= 0
+        def __ne__(self, other):
+            return mycmp(self.obj, other.obj) != 0
+    return K
 
 Model.__doc__ = Model.__doc__ % (
     '\n'.join([ '          %-8s   %-27s   %-15s  ' % (
     '%s' % (x), AVAIL[x]['evol'], AVAIL[x]['typ'])
         for x in sorted(sorted(AVAIL.keys()), 
-                        key=cmp_to_key(lambda x, y:cmp(AVAIL[x]['typ'],
-                                                       AVAIL[y]['typ']),
-                        reverse=True)])))
+                        key=_cmp_to_key(lambda x, y: (
+                            (AVAIL[x]['typ'] > AVAIL[y]['typ']) - 
+                            (AVAIL[x]['typ'] < AVAIL[y]['typ']))),
+                        reverse=True)]))

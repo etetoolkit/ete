@@ -6,7 +6,7 @@
 
 # Note that the use of "from x import *" is safe here. Modules include
 # the __all__ variable.
-
+from __future__ import print_function
 from sys import stderr
 from coretype.tree import *
 from coretype.seqgroup import *
@@ -16,7 +16,6 @@ from webplugin.webapp import *
 from phyloxml import Phyloxml, PhyloxmlTree
 from nexml import Nexml, NexmlTree
 from evol import EvolTree
-from __future__ import print_function
 
 try:
     from coretype.arraytable import *
@@ -44,4 +43,4 @@ except ImportError as e:
 
 # Do not modify the following line. It will be checked during
 # installation
-__ETEID__="3cbd41824e8e7cba4b337655aa9cb1e6"
+__ETEID__="7b4b6c53b5b1ad2e8002c3a300b212c4"
