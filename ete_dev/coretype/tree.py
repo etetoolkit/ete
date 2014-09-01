@@ -266,7 +266,7 @@ class TreeNode(object):
     def add_features(self, **features):
         """ 
         Add or update several features. """
-        for fname, fvalue in features.items():
+        for fname, fvalue in list(features.items()):
             setattr(self, fname, fvalue)
             self.features.add(fname)
 
@@ -460,7 +460,7 @@ class TreeNode(object):
         # their path to the common ancestor.
         n2count = {}
         n2depth = {}
-        for seed, path in node2path.items():
+        for seed, path in list(node2path.items()):
             for visited_node in path: 
                 if visited_node not in n2depth:
                     depth = visited_node.get_distance(start, topology_only=True)
@@ -471,12 +471,12 @@ class TreeNode(object):
         # if several internal nodes are in the path of exactly the
         # same kept nodes, only one should be maintain. 
         visitors2nodes = {}
-        for node, visitors in n2count.items():
+        for node, visitors in list(n2count.items()):
             # keep nodes connection at least two other nodes
             if len(visitors) > 1: 
                 visitor_key = frozenset(visitors)
                 visitors2nodes.setdefault(visitor_key, set()).add(node)
-        for visitors, nodes in visitors2nodes.items():
+        for visitors, nodes in list(visitors2nodes.items()):
             s = sorted(nodes, key=_cmp_to_key(cmp_nodes))
             to_keep.add(s[0])
 
@@ -873,7 +873,7 @@ class TreeNode(object):
         common = None
         for n in reference:
             broken = False
-            for node, path in n2path.items():
+            for node, path in list(n2path.items()):
                 if node is not ref_node and n not in path:
                     broken = True
                     break
@@ -899,7 +899,7 @@ class TreeNode(object):
         
         for n in self.traverse():
             conditions_passed = 0
-            for key, value in conditions.items():
+            for key, value in list(conditions.items()):
                 if hasattr(n, key) and getattr(n, key) == value:
                     conditions_passed +=1
             if conditions_passed == len(conditions):
@@ -1711,18 +1711,18 @@ class TreeNode(object):
                 edges1 = set([
                         tuple(sorted([tuple(sorted([getattr(n, attr_t1) for n in content if hasattr(n, attr_t1) and getattr(n, attr_t1) in common_attrs])),
                                       tuple(sorted([getattr(n, attr_t1) for n in t1_leaves-content if hasattr(n, attr_t1) and getattr(n, attr_t1) in common_attrs]))]))
-                        for content in t1_content.values()])
+                        for content in list(t1_content.values())])
                 edges1.discard(((),()))
             else:
                 edges1 = set([
                         tuple(sorted([getattr(n, attr_t1) for n in content if hasattr(n, attr_t1) and getattr(n, attr_t1) in common_attrs]))
-                        for content in t1_content.values()])
+                        for content in list(t1_content.values())])
                 edges1.discard(())
                 
             if min_support_t1:
                 support_t1 = dict([
                         (tuple(sorted([getattr(n, attr_t1) for n in content if hasattr(n, attr_t1) and getattr(n, attr_t1) in common_attrs])), branch.support)
-                        for branch, content in t1_content.items()])
+                        for branch, content in list(t1_content.items())])
                 
             for t2 in target_trees:
                 t2_content = t2.get_cached_content()
@@ -1732,18 +1732,18 @@ class TreeNode(object):
                             tuple(sorted([
                                         tuple(sorted([getattr(n, attr_t2) for n in content if hasattr(n, attr_t2) and getattr(n, attr_t2) in common_attrs])),
                                         tuple(sorted([getattr(n, attr_t2) for n in t2_leaves-content if hasattr(n, attr_t2) and getattr(n, attr_t2) in common_attrs]))]))
-                            for content in t2_content.values()])
+                            for content in list(t2_content.values())])
                     edges2.discard(((),()))
                 else:
                     edges2 = set([
                             tuple(sorted([getattr(n, attr_t2) for n in content if hasattr(n, attr_t2) and getattr(n, attr_t2) in common_attrs]))
-                            for content in t2_content.values()])
+                            for content in list(t2_content.values())])
                     edges2.discard(())
 
                 if min_support_t2:
                     support_t2 = dict([
                         (tuple(sorted(([getattr(n, attr_t2) for n in content if hasattr(n, attr_t2) and getattr(n, attr_t2) in common_attrs]))), branch.support)
-                        for branch, content in t2_content.items()])
+                        for branch, content in list(t2_content.items())])
 
 
                 # if a support value is passed as a constraint, discard lowly supported branches from the analysis
@@ -1817,7 +1817,7 @@ class TreeNode(object):
         if not cached_content:
             cached_content = self.get_cached_content()
         all_leaves = cached_content[self]
-        for n, side1 in cached_content.items():
+        for n, side1 in list(cached_content.items()):
             yield (side1, all_leaves-side1)
         
     def get_edges(self, cached_content = None):
@@ -2210,7 +2210,7 @@ def _translate_nodes(root, *nodes):
                 name2node[n.name] = n
 
     if None in list(name2node.values()):
-        notfound = [key for key, value in name2node.items() if value is None]
+        notfound = [key for key, value in list(name2node.items()) if value is None]
         raise ValueError("Node names not found: "+str(notfound))
 
     valid_nodes = []
