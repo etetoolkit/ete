@@ -11,32 +11,31 @@ from .datasets import *
 from .test_tree import *
 #from .test_seqgroup import *
 #from .test_phylotree import *
-#try:
-#    import numpy
-#except ImportError: # case numpy is not installed
-#    pass
-#else:
-#    from .test_arraytable import *
-#    from .test_clustertree import *
+try:
+    import numpy
+except ImportError: # case numpy is not installed
+    pass
+else:
+    from .test_arraytable import *
+    from .test_clustertree import *
 #from .test_r_bindings import *
-#from .test_evol import *
+from .test_evol import *
 
 def test_all():
     loader = unittest.TestLoader()
     #suite = unittest.TestSuite([
-    #    loader.loadTestsFromTestCase(Test_Coretype_ArrayTable),
-    #    loader.loadTestsFromTestCase(Test_ClusterTree),
-    #    loader.loadTestsFromTestCase(TestEvolEvolTree),
     #    loader.loadTestsFromTestCase(TestPhylomeDB3Connector),
     #    loader.loadTestsFromTestCase(Test_phylo_module),
     #    loader.loadTestsFromTestCase(Test_R_bindings),
     #    loader.loadTestsFromTestCase(Test_Coretype_SeqGroup),
-    #    loader.loadTestsFromTestCase(Test_Coretype_Tree),
     #    loader.loadTestsFromTestCase(Test_PhyloXML),
     #    loader.loadTestsFromTestCase(Test_NeXML)
     #])
     suite = unittest.TestSuite([
-        unittest.TestLoader().loadTestsFromTestCase(Test_Coretype_Tree)
+        loader.loadTestsFromTestCase(Test_Coretype_ArrayTable),
+        loader.loadTestsFromTestCase(Test_Coretype_Tree),
+        loader.loadTestsFromTestCase(Test_ClusterTree),
+        loader.loadTestsFromTestCase(TestEvolEvolTree)
     ])
     return suite
 

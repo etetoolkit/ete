@@ -21,8 +21,8 @@
 #
 # #END_LICENSE#############################################################
 
+from __future__ import print_function
 import os
-import string
 from sys import stderr as STDERR
 from re import search
 
@@ -86,19 +86,20 @@ def read_paml (source, obj=None, header_delimiter="\t", fix_duplicates=True):
             line = line.replace('>','')
             # Checks if previous name had seq
             if seq_id>-1 and SC.id2seq[seq_id] == "":
-                raise Exception, "No sequence found for "+seq_name
+                raise Exception("No sequence found for "+seq_name)
 
             seq_id += 1
             # Takes header info
-            seq_header_fields = map(string.strip, line.split(header_delimiter))
+            seq_header_fields = list(map(str.strip,
+                                         line.split(header_delimiter)))
             seq_name = seq_header_fields[0]
 
             # Checks for duplicated seq names
             if fix_duplicates and seq_name in names:
-                tag = str(len([k for k in SC.name2id.keys() if k.endswith(seq_name)]))
+                tag = str(len([k for k in list(SC.name2id.keys()) if k.endswith(seq_name)]))
                 old_name = seq_name
                 seq_name = tag+"_"+seq_name
-                print >>STDERR, "Duplicated entry [%s] was renamed to [%s]" %(old_name, seq_name)
+                print("Duplicated entry [%s] was renamed to [%s]" %(old_name, seq_name), file=STDERR)
 
             # stores seq_name
             SC.id2seq[seq_id]     = ""
@@ -116,7 +117,7 @@ def read_paml (source, obj=None, header_delimiter="\t", fix_duplicates=True):
                     continue
                 if line.startswith('\n'):
                     continue
-                raise Exception, "Error reading sequences: Wrong format.\n"+line
+                raise Exception("Error reading sequences: Wrong format.\n"+line)
             elif in_seq:
                 # removes all white spaces in line
                 s = line.strip().replace(" ","")
@@ -127,10 +128,10 @@ def read_paml (source, obj=None, header_delimiter="\t", fix_duplicates=True):
                     if len(SC.id2seq[seq_id]) == len_seq:
                         in_seq=False
                     elif len(SC.id2seq[seq_id]) > len_seq:
-                        raise  Exception, "Error reading sequences: Wrong sequence length.\n"+line
+                        raise  Exception("Error reading sequences: Wrong sequence length.\n"+line)
 
     if seq_name and SC.id2seq[seq_id] == "":
-        print >>STDERR, seq_name,"has no sequence"
+        print(seq_name,"has no sequence", file=STDERR)
         return None
 
     # Everything ok
@@ -153,7 +154,7 @@ def write_paml(sequences, outfile = None, seqwidth = 80):
 
 def _seq2str(seq, seqwidth = 80):
     sequence = ""
-    for i in xrange(0,len(seq),seqwidth):
+    for i in range(0,len(seq),seqwidth):
         sequence+= seq[i:i+seqwidth] + "\n"
     return sequence
 
