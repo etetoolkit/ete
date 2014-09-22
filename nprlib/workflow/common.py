@@ -22,9 +22,9 @@ class IterConfig(dict):
         self.conf = conf
         self.seqtype = seqtype
         self.size = size
-        self['npr_workflows'] = conf[wkname]['_npr'].get('workflows', [])
-        self['switch_aa_similarity'] = conf[wkname]['_npr'].get('nt_switch_thr', 1.0) 
-        self['max_iters'] = conf[wkname]['_npr'].get('max_iters', 1)  # 1 = no npr by default!
+        self['npr_workflows'] = conf['_npr'].get('workflows', [])
+        self['switch_aa_similarity'] = conf['_npr'].get('nt_switch_thr', 1.0) 
+        self['max_iters'] = conf['_npr'].get('max_iters', 1)  # 1 = no npr by default!
         self['_tree_splitter'] = '@default_tree_splitter'
         self['use_outgroup'] = conf['default_tree_splitter']['_max_outgroup_size'] != 0
         
@@ -78,7 +78,7 @@ def process_new_tasks(task, new_tasks, conf):
                 ts.target_wkname = task.target_wkname
             
         #db.add_runid2task(ts.threadid, ts.taskid)
-            
+
 def inc_iternumber(threadid):
     current_iter = get_iternumber(threadid)
     GLOBALS["threadinfo"][threadid]["last_iter"] = current_iter + 1
@@ -237,7 +237,7 @@ def split_tree(task_tree_node, task_outgroups, main_tree, alg_path, npr_conf, th
                     # Marks the level as optimized, so is not computed again
                     opt_levels[lin][0] = True
            
-            log.log(28, "Found possible target node of size %s and branch support %f" %(len(n2content[node]), node.support))
+            log.log(28, "Found possible target node of size %s branch support %f" %(len(n2content[node]), node.support))
             log.log(28, "First suitable workflow: %s" %(node._target_wkname))
 
             # Finds best outgroup for the target node
@@ -274,8 +274,6 @@ def get_next_npr_node(threadid, ttree, task_outgroups, mtree, alg_path, npr_conf
         return
 
     if not npr_conf.npr_workflows:
-        print npr_conf
-        print npr_conf.npr_workflows
         log.log(26, "NPR is disabled")
         return
         

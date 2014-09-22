@@ -18,14 +18,15 @@ istask = lambda j: isinstance(j, Task)
 
 def thread_name(task):
     tid = getattr(task, "threadid", None)
-    if GLOBALS.get('verbosity', 4) >= 2:
-        return "@@13:%s@@1:" %GLOBALS.get(tid, {}).get("_name", "?")
+    if hasattr(task, 'target_wkname'):
+        name = getattr(task, 'target_wkname')
     else:
         name = GLOBALS.get(tid, {}).get("_name", "?")
+
+    if GLOBALS.get('verbosity', 4) < 2:
         if len(name)>23:
             name = "%s...%s" %(name[:10], name[-10:])
-        
-        return "@@13:%s@@1:" %name
+    return "@@13:%s@@1:" %name
 
 def genetree_class_repr(cls, cls_name):
     """ Human readable representation of NPR genetree tasks.""" 
