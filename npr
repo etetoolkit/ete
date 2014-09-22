@@ -57,6 +57,7 @@ import tempfile
 log = None
 import numpy
 from time import ctime, time
+
 # This avoids installing nprlib module. npr script will find it in the
 # same directory in which it is
 NPRPATH = os.path.split(os.path.realpath(__file__))[0]
@@ -114,18 +115,56 @@ __DESCRIPTION__ = (
 
     """ %(__VERSION__, __DATE__))
 
+__EXAMPLES__ = """
+===============================
+++++ COMMAND LINE EXAMPLES ++++
+===============================
+
+Runs a workflow
+
+  $ npr -a fasta.aa.fa  -w linsi_fasttree -o results/
+      
+Runs a workflow in NPR mode (the same workflow is applied in all iterations)
+
+  $ npr -a fasta.aa.fa  -w linsi_fasttree -o results/ -npr
+
+Runs a NPR analysis with dynamic workflow adjustment
+
+  $ npr -a fasta.aa.fa -w linsi_fasttree -o results  \\
+        -npr “size-range:500-1000, workflow:linsi_fasttree” \\
+             “size-range:0-499, workflow:linsi_phyml”
+
+Runs a NPR analysis with dynamic workflow adjustment and custom stopping criteria
+
+  $ npr -a fasta.aa.fa -w linsi_fasttree -o results/ \\
+        -npr  “size-range:500-1000, workflow:linsi_fasttree” \\
+              “size-range:0-499, workflow:linsi_phyml” \\
+        -npr_stop “size:20, seq_similarity:0.98, branch_support:0.8”
+
+Runs a NPR analysis mixing aa and nucleotide, with dynamic workflow adjustment
+and custom stopping criteria.
+
+  $ npr -a fasta.aa.fa -w linsi_fasttree -o results/ \\
+        -npr  “size-range:500-1000, workflow:linsi_fasttree” \\
+              “size-range:0-499, workflow:linsi_phyml” \\
+        -npr_stop “size:20, seq_similarity:0.98, branch_support:0.8” \\
+        -npr_ntswitch 0.95
+"""
+
 def main(args):    
-    global log
+    global log 
     log = logging.getLogger("main")
+    
     base_dir = GLOBALS["basedir"]
     db_dir = GLOBALS.get("dbdir", base_dir)
+    
     # -------------------------------------
-    # CONFIG FILE AND WORKFLOWS
+    # READ CONFIG FILE AND PARSE WORKFLOWS
     # -------------------------------------
         
     # Load and check config file
     base_config = check_config(args.configfile)
-        
+    
     # Check for config file overwriting
     clearname = os.path.basename(args.configfile)        
     local_conf_file = pjoin(base_dir, "config.cfg")
@@ -138,66 +177,102 @@ def main(args):
                                       " config file [workflow.cfg]. Use"
                                       " --override option or change the"
                                       " output path.")
-                
+
+    # Creates a dummy tree splitter used to when no npr capabilities are used
+    # (although still processing the tree produced by the first iteration)
+    base_config['default_tree_splitter'] = {
+        '_app' : 'treesplitter',
+        '_max_outgroup_size' : '10%',
+        '_min_outgroup_support' : 0.9,
+        '_outgroup_topology_dist' : False,
+        '_first_split': 'midpoint'}
+                    
     # prepare workflow config dictionaries
     run2config = {}
     workflow_types = defaultdict(list)
     TARGET_CLADES = set()
     VALID_WORKFLOW_TYPES = set(['genetree', 'supermatrix'])
-    # expand meta workflows 
-    if len(args.workflow) == 1 and args.workflow[0] not in base_config:
-        args.workflow = map(lambda x: x.lstrip('@'),
-                             base_config.get('meta_workflow', {}).get(args.workflow[0], args.workflow[0]))
+    # extract workflow filters
 
-    if args.nprconfig:
-        if args.nprconfig not in base_config:
-            ConfigError('NPR config block not found [%s]' %args.nprconfig)
-        npr_config = args.nprconfig
-    else:
-        npr_config = None
-    base_config['dummy_splitter'] = {
-        '_app' : 'treesplitter',
-        '_max_outgroup_size' : '10%',
-        '_min_outgroup_support' : 0.9,
-        '_outgroup_topology_dist' : False,
-        '_first_split': 'midpoint',
-        }
+    
+    # expand meta workflows
+    genetree_workflows = []
     for wkname in args.workflow:
+        if wkname not in base_config and wkname in base_config.get('meta_workflow', {}):
+            genetree_workflows.extend(
+                [x.lstrip('@') for x in base_config['meta_workflow'][wkname]])
+        else:
+            genetree_workflows.append(wkname)
+
+
+    # expand meta workflows
+    supermatrix_workflows = []
+    if args.supermatrix_workflow:
+        for wkname in args.supermatrix_workflow:
+            if wkname not in base_config and wkname in base_config.get('meta_workflow', {}):
+                supermatrix_workflows.extend(
+                    [x.lstrip('@') for x in base_config['meta_workflow'][wkname]])
+            else:
+                supermatrix_workflows.append(wkname)
+            
+    # Stop if mixing types of meta-workflows 
+    if supermatrix_workflows and len(genetree_workflows):
+        raise ConfigError("A single genetree workflow can be specified when used in combination with super-matrix workflows.")                    
+            
+    # Parse npr workflows and filters
+    npr_workflows = []
+    use_npr = False
+    if args.npr_workflow is not None:        
+        use_npr = True        
+        if len(args.npr_workflow):
+            for wkname in args.npr_workflow:
+                wfilters = {}    
+                fields = map(strip, wkname.split(","))
+                if len(fields) == 1:
+                    wkname = fields[0]
+                else:
+                    wkname = fields[-1]
+                    for f in fields[:-1]:
+                        if f.startswith("size_range:"): # size filter
+                            f = f.replace("size_range:",'')
+                            try:
+                                min_size, max_size = map(int, f.split('-'))
+                            except ValueError:
+                                raise ConfigError('size filter should consist of two integer numbers (i.e. 50-100). Found [%s] instead' %f)
+
+                            wfilters["max_size"] = max_size
+                            wfilters["min_size"] = max_size
+                        else:
+                            raise ConfigError('Unknown workflow filter [%s]' %f)                   
+                # Register workflow and filter
+                npr_workflows.append((wkname, wfilters))
+
+    # Check workflows integrity
+    for wkname in genetree_workflows + supermatrix_workflows + [e[0] for e in npr_workflows]:
         if wkname not in base_config:
             list_workflows(base_config)
             raise ConfigError('[%s] workflow or meta_workflow name is not found in the config file.' %wkname)
-            
-        config = dict(base_config)
-        appset = config[ config[wkname]['_appset'][1:] ]
-        if wkname not in config:
-            raise ConfigError('[%s] workflow not present in config file' %wkname)
-
-        wtype = config[wkname]['_app']
+    
+        wtype = base_config[wkname]['_app']
         if wtype not in VALID_WORKFLOW_TYPES:
             raise ConfigError('[%s] configuration block is not a valid workflow definition (_app=[%s])' %(wkname, '|'.join(VALID_WORKFLOW_TYPES)))
-        workflow_types[wtype].append(wkname)
 
-        # Let's keep the max number of sequences fixed
-        config[wkname]['_max_seqs'] = 99999999999
-                      
-        if npr_config:
-            config[wkname]['_npr'] = '@'+npr_config
-            target_levels = config[npr_config].get('_target_levels', [])
-            target_dict = config['_optimized_levels'] = {}
-            for tg in target_levels:
-                # If target level name starts with ~, we allow para and
-                # poly-phyletic grouping of the species in such level
-                strict_monophyly = True
-                if tg.startswith("~"):
-                    tg = target_level.lstrip("~")
-                    strict_monophyly = False
-                tg = tg.lower()
-                # We add the level as non-optimized
-                target_dict[target_level] = [False, strict_monophyly]
-            TARGET_CLADES.update(target_levels)
-        else:
-            config[wkname]['_npr'] = 'none'
+    if supermatrix_workflows:
+        WORKFLOW_TYPE = "supermatrix"
+        master_workflows = supermatrix_workflows
+    else:
+        WORKFLOW_TYPE = "genetree"
+        master_workflows = genetree_workflows
+            
+    # Check npr workflow type
+    if npr_workflows and list(set([base_config[wkname]['_app'] for wkname, _ in npr_workflows]))[0] != WORKFLOW_TYPE:
+        raise ConfigError('All npr workflow(s) should be of [%s] type' %WORKFLOW_TYPE)
         
+    # setup workflows and create a separate config dictionary for each of them
+    for wkname in genetree_workflows + supermatrix_workflows:
+        config = dict(base_config)
+        appset = config[ config[wkname]['_appset'][1:]]
+
         # Initialized application command line commands for this workflow
         config['app'] = {}
         config['threading'] = {}
@@ -213,8 +288,7 @@ def main(args):
                 config["app"][k] = cmd
                 apps_to_test[k] = cmd
                 
-        # Copy config file
-                
+        # Copy config file                
         config["_outpath"] = pjoin(base_dir, wkname)
         config["_nodeinfo"] = defaultdict(dict)
         try:
@@ -225,31 +299,44 @@ def main(args):
         #config["_config_checksum"] = checksum(local_conf_file)
         run2config[wkname] = config
 
-    open(local_conf_file, "w").write(open(args.configfile).read())
-    # set global workflow execution mode (used to check on options, load data, etc.)
-    if 'supermatrix' in workflow_types:
-        if 'genetree' in workflow_types:
-            if len(workflow_types['genetree'])!=1 or len(workflow_types['supermatrix'])!=1:
-                raise ConfigError('supermatrix approach requires a single supermatrix and genetree workflow name (i.e. -w sptree-fasttree-85  clustalo_default-none-none-none)')
+    # setup npr options for master workflows
+    for wkname in master_workflows:
+        config = run2config[wkname]
+        
+        if WORKFLOW_TYPE == "supermatrix":
+            concatenator = config["_alg_concatenator"][1:]
+            config[concatenator]["_workflow"] = '@%s' % genetree_workflows[0]
+            #del run2config[gtree_workflow] # delete gtree workflow from the main execution thread # WHY?
+        
+        if use_npr:
+            config[wkname]['_npr'] = {
+                # register root workflow as the main NPR workflow if the contrary not said
+                "workflows": npr_workflows if npr_workflows else [(wkname, {})],
+                'nt_switch_thr': args.npr_nt_switch,
+                'max_iters': 100,
+                }
+            print config[wkname]['_npr']
             
-            # This dynamically set the gene tree workflow to be used in the supermatrix workflow
-            WORKFLOW_TYPE = 'supermatrix'
-            gtree_workflow = workflow_types["genetree"][0]
-            sptree_workflow = workflow_types["supermatrix"][0]
-            config = run2config[sptree_workflow]
-            #Force disabling NPR in genetree worflow
-            config[gtree_workflow]["_npr"] = 'none'
-            workflow_block = config[sptree_workflow]
-            concatenator = workflow_block["_alg_concatenator"][1:]
-            config[concatenator]["_workflow"] = '@%s' % gtree_workflow
-            del run2config[gtree_workflow] # delete gtree workflow from the main execution thread
+            #config[wkname]['_npr'] = '@'+npr_config
+            #target_levels = config[npr_config].get('_target_levels', [])
+            #target_dict = config['_optimized_levels'] = {}            
+            #for tg in target_levels:
+                # If target level name starts with ~, we allow para and
+                # poly-phyletic grouping of the species in such level
+                #strict_monophyly = True
+                #if tg.startswith("~"):
+                    #tg = target_level.lstrip("~")
+                    #strict_monophyly = False
+                #tg = tg.lower()
+                # We add the level as non-optimized
+                #target_dict[target_level] = [False, strict_monophyly]
+            #TARGET_CLADES.update(target_levels)
         else:
-            raise ConfigError('supermatrix workflows require the use of a genetree workflow')
-    elif 'genetree' in workflow_types:
-        WORKFLOW_TYPE = 'genetree'
-    else:
-        raise ConfigError('Invalid workflow type')
-    
+            config[wkname]['_npr'] = {}
+        
+    # dump log config file 
+    open(local_conf_file, "w").write(open(args.configfile).read())
+
     TARGET_CLADES.discard('')
 
     if WORKFLOW_TYPE == 'genetree':
@@ -515,6 +602,8 @@ def main(args):
         # Feeds pending task with the first task of the workflow
         config["_name"] = wkname
         new_tasks = pipeline(None, wkname, config)
+        if not new_tasks:
+            continue # skips pipelines not fitting workflow filters
         thread_id = new_tasks[0].threadid
         config["_configid"] = thread_id
         GLOBALS[thread_id] = config
@@ -820,9 +909,9 @@ if __name__ == "__main__":
             print __VERSION__, '(%s)' %__DATE__
             sys.exit(0)
     
-    parser = argparse.ArgumentParser(description=__DESCRIPTION__,
+    parser = argparse.ArgumentParser(description=__DESCRIPTION__ + __EXAMPLES__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
-
+    
     # Input data related flags
     input_group = parser.add_argument_group('==== Input Options ====')
 
@@ -836,36 +925,38 @@ if __name__ == "__main__":
                                    "validate [configfile]: Validate a custom configuration file.\n"
                                    "version: Show current version.\n"
                                    ))
+
+    input_group.add_argument("-c", "--config", dest="configfile",
+                             type=is_file, default=NPRPATH+'/config.cfg',
+                             help="Custom configuration file.")
+    
     
     input_group.add_argument("-w", dest="workflow",
                              required=True,
                              nargs='+', 
-                             help="One or more workflow names. All the specified workflows will be executed at once using the same input data.")
+                             help="One or more gene-tree workflow names. All the specified workflows will be executed using the same input data.")
 
-    input_group.add_argument("--nprconfig", dest="nprconfig",
+    input_group.add_argument("-m", dest="supermatrix_workflow",
                              required=False,
-                             help="Enables NPR capabilities for the selected workflow"
-                             " and load the specified configuration for splitting and"
-                             " merging sub-trees.")
-    
-    input_group.add_argument("-c", "--config", dest="configfile",
-                             type=is_file, default=NPRPATH+'/config.cfg',
-                             help="Custom configuration file.")
+                             nargs='+', 
+                             help="One or more super-matrix workflow names. All the specified workflows will be executed using the same input data.")
     
     input_group.add_argument("-a", dest="aa_seed_file",
                              type=is_file,
                              help="Initial multi sequence file with"
                              " protein sequences.")
-    
-    input_group.add_argument("--seqformat", dest="seqformat",
-                             choices=["fasta", "phylip", "iphylip", "phylip_relaxed", "iphylip_relaxed"],
-                             default="fasta",
-                             help="")
+
     
     input_group.add_argument("-n", dest="nt_seed_file",
                              type=is_file,
                              help="Initial multi sequence file with"
                              " nucleotide sequences")
+
+    
+    input_group.add_argument("--seqformat", dest="seqformat",
+                             choices=["fasta", "phylip", "iphylip", "phylip_relaxed", "iphylip_relaxed"],
+                             default="fasta",
+                             help="")
 
     input_group.add_argument("--dealign", dest="dealign",
                              action="store_true",
@@ -894,11 +985,6 @@ if __name__ == "__main__":
                                  help=("If duplicated sequence names exist in the input"
                                        " fasta file, duplicates will be renamed."))
     
-    input_group.add_argument("--first-split-outgroup", dest="first_split",
-                             type=str,
-                             help=("When used, it overrides first_split option"
-                                   " in any tree merger config block in the"
-                                   " config file."))
     
     input_group.add_argument("--orthodb", dest="orthodb",
                              type=str,
@@ -907,6 +993,7 @@ if __name__ == "__main__":
     input_group.add_argument("--seqdb", dest="seqdb",
                              type=str,
                              help="Uses a custom sequence database file")
+
     
     # supermatrix workflow
     
@@ -939,6 +1026,28 @@ if __name__ == "__main__":
                              " pairs matching the group of species in this file"
                              " (one species code per line) will be used. ")
     
+    npr_group = parser.add_argument_group('==== NPR options ====')
+    npr_group.add_argument("--npr", dest="npr_workflow",
+                             required=False,
+                             nargs="*",
+                             help="Enables NPR capabilities. ")
+    npr_group.add_argument("--npr_stop", dest="npr_stop_criteria",
+                             required=False,
+                             default= "iters:! size:4 seq_similarity:0.98 branch_support:!",
+                             nargs="+",
+                             help="Specifies npr stopping criteria. Accepted keywords are 'size', 'seq_similarity' and 'branch_support'.  ")
+    npr_group.add_argument("--npr_nt_switch", dest="npr_nt_switch",
+                             required=False,
+                             type=float,
+                             default = 0.95,
+                             help="Sequence similarity at which nucleotide based alignments will be used (if available). ")
+
+    npr_group.add_argument("--first-split-outgroup", dest="first_split",
+                           type=str,
+                           help=("When used, it overrides first_split option"
+                                 " in any tree merger config block in the"
+                                 " config file."))
+
     
     # Output data related flags
     output_group = parser.add_argument_group('==== Output Options ====')
@@ -984,7 +1093,7 @@ if __name__ == "__main__":
                             action="store_true",
                             help="Try to relaunch jobs marked as error.")
     
-    exec_group.add_argument("-m", "--maxcores", dest="maxcores", type=int,
+    exec_group.add_argument("-C", "--cpu", dest="maxcores", type=int,
                             default=1, help="Maximum number of CPU cores"
                             " available in the execution host. If higher"
                             " than 1, tasks with multi-threading"
@@ -1149,54 +1258,3 @@ if __name__ == "__main__":
 
     # Start the application
     app_wrapper(main, args)
-
-# def onthefly_worflow(line, name):
-#     TEMPLATE = {
-#         "%s" %name: {
-#             "_app": "main",
-#             "_max_seqs": 9999999999,
-#             "_npr": None,
-#             "_workflow":None,
-#             "_appset":None}
-
-#         "w.%s" %name: {
-#             "_app = genetree":None,
-#             "_aa_aligner":None,
-#             "_aa_alg_cleaner":None, 
-#             "_aa_model_tester":None,
-#             "_aa_tree_builder":None,
-#             "_nt_aligner":None,     
-#             "_nt_alg_cleaner":None, 
-#             "_nt_model_tester":None,
-#             "_nt_tree_builder":None,
-#             }
-      
-#     for line in metaline.split(';'):
-#         line = line.strip()
-#         if line.startswith('name:'):
-#             tagname = line[5:].strip()
-#         elif line.startswith('a:'):
-#             aligners = map(strip, line[2:].split(','))
-#         elif line.startswith('a:'):
-#             aligners = map(strip, line[2:].split(','))
-#         elif line.startswith('r:'):
-#             trimmers = map(strip, line[2:].split(','))
-#         elif line.startswith('m:'):
-#             modelers = map(strip, line[2:].split(','))
-#         elif line.startswith('t:'):
-#             treebuilders = map(strip, line[2:].split(','))
-#     for al in aligners:
-#         if al != "none": al = "@%s" %al
-#         for tr in trimmers:
-#             if tr != "none": tr = "@%s" %tr
-#             for pt in modelers:
-#                 if pt != "none": pt = "@%s" %pt
-#                 for tb in treebuilders:
-#                     if tb != "none": tb = "@%s" %tb
-#                     name = '-'.join(map(lambda x: x.lstrip('@'),[al, tr, pt, tb]))
-#                     CFG = dict(TEMPLATE)
-#                     CFG = CFG["_appset"], "@"+args.appset)
-#                     names[tagname].append(name)
-#                     workflows[name] = CFG
-
-    
