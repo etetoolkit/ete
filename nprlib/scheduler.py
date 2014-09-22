@@ -263,8 +263,8 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                     # 
 
                     try:
-                        wkname = GLOBALS[task.configid]['_name']
-                        create_tasks = workflow_task_processor(task, wkname)
+                        #wkname = GLOBALS[task.configid]['_name']
+                        create_tasks = workflow_task_processor(task, task.target_wkname)
                     except TaskError, e:
                         log.error("Errors found in %s" %task)
                         pending_tasks.discard(task)
@@ -332,7 +332,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
             just_finished_lines = []
             finished_lines = []
             for configid in finished_threads:
-                # configid is the the same as threadid in master taqsks
+                # configid is the the same as threadid in master tasks
                 final_tree_file = pjoin(GLOBALS[configid]["_outpath"],
                                         GLOBALS["inputname"] + ".final_tree")
                 threadname = GLOBALS[configid]["_name"]

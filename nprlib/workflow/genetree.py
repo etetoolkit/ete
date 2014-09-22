@@ -386,12 +386,13 @@ def process_task(task, wkname, npr_conf, nodeid2info):
                 log.log(28, "Processing tree: %s seqs, %s outgroups",
                         len(target_seqs), len(out_seqs))
                 alg_path = node_info.get("clean_alg_path", node_info["alg_path"])
-                for node, seqs, outs in get_next_npr_node(threadid, ttree,
+                for node, seqs, outs, wkname in get_next_npr_node(threadid, ttree,
                                                           task.out_seqs, mtree,
                                                           alg_path, npr_conf):
                     log.log(28, "Registering new node: %s seqs, %s outgroups",
                             len(seqs), len(outs))
                     new_task_node = Msf(seqs, outs, seqtype=source_seqtype)
+                    new_task_node.target_wkname = wkname
                     new_tasks.append(new_task_node)
     return new_tasks
 
@@ -403,10 +404,11 @@ def pipeline(task, wkname, conf=None):
         all_seqs = GLOBALS["target_sequences"]
         initial_task = Msf(set(all_seqs), set(),
                            seqtype=source_seqtype)
-        
+            
         initial_task.main_tree = None
         initial_task.threadid = generate_runid()
         initial_task.configid = initial_task.threadid
+        initial_task.target_wkname = wkname
         # Register node 
         db.add_node(initial_task.threadid, initial_task.nodeid,
                     initial_task.cladeid, initial_task.target_seqs,
@@ -414,7 +416,7 @@ def pipeline(task, wkname, conf=None):
         
         new_tasks = [initial_task]
     else:
-        conf = GLOBALS[task.configid]
+        conf = GLOBALS[task.configid]                
         npr_conf = IterConfig(conf, wkname, task.size, task.seqtype)
         new_tasks  = process_task(task, wkname, npr_conf, conf["_nodeinfo"])
 

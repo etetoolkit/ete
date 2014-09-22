@@ -247,9 +247,9 @@ class Task(object):
                     # If task has an internal worflow processor,
                     # launch it and populate with new jobs
                     if istask(j) and j.task_processor:
-                        pipeliner = j.task_processor[0]
+                        pipeline = j.task_processor[0]
                         target_workflow = j.task_processor[1]
-                        for new_job in pipeliner(j, target_workflow):
+                        for new_job in pipeline(j, target_workflow):
                             jobs_to_check.add(new_job)
                             self.jobs.append(new_job)
 

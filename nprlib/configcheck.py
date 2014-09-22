@@ -297,7 +297,6 @@ def is_raxml_bootstrap(value):
 CHECKERS = {
     # (app_name, attr_name): (checker_fn, args, required_attr)
     ("main", "_npr"): (is_app_list, {}, True),
-    ("main", "_max_seqs"): (is_correlative_integer_list, {"minv":1}, True),
     ("main", "_workflow"): (is_app_list, {"allow_none":False}, True),
     ("main", "_appset"): (is_app_link, {"allow_none":False}, True),
     
