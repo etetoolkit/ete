@@ -45,7 +45,7 @@ class TreeMerger(TreeMergeTask):
         ttree_content = ttree.get_cached_content()
         if mtree and not out_seqs:
             mtree_content = mtree.get_cached_content()
-            log.log(28, "Finding best scoring outgroup from previous iteration.")
+            log.log(24, "Finding best scoring outgroup from previous iteration.")
             for _n in mtree_content:
                 if _n.cladeid == cladeid:
                     orig_target = _n 
@@ -120,15 +120,14 @@ class TreeMerger(TreeMergeTask):
                
         else:
             # ROOTS FIRST ITERATION
-            log.log(28, "Getting outgroup for first NPR split")
+            log.log(24, "Getting outgroup for first NPR split")
             
             # if early split is provided in the command line, it
             # overrides config file
-            mainout = GLOBALS.get("first_split_outgroup",
-                                  self.conf[self.confname]["_first_split"]).strip()
+            mainout = GLOBALS.get("first_split_outgroup", "midpoint")
             
             if mainout.lower() == "midpoint":
-                log.log(28, "Rooting to midpoint.")
+                log.log(26, "Rooting to midpoint.")
                 best_outgroup = ttree.get_midpoint_outgroup()
                 if best_outgroup:
                     ttree.set_outgroup(best_outgroup)
@@ -165,12 +164,12 @@ class TreeMerger(TreeMergeTask):
                         #dump_tree_debug(msg, self.taskdir, mtree, ttree, target_seqs, outs)
                         raise TaskError(self, msg)
                     
-                    log.log(28, "@@8:First split rooting to %d seqs@@1:: %s" %(len(out_seqs),out_seqs))
+                    log.log(26, "@@8:First split rooting to %d seqs@@1:: %s" %(len(out_seqs),out_seqs))
                     ttree.set_outgroup(common)
                 else:
                     single_out = outs.pop()
                     common = ttree.set_outgroup(single_out)
-                    log.log(28, "@@8:First split rooting to 1 seq@@1:: %s" %(single_out))
+                    log.log(26, "@@8:First split rooting to 1 seq@@1:: %s" %(single_out))
                     
             self.main_tree = ttree
             orig_target = ttree

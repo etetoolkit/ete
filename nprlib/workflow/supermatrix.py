@@ -161,48 +161,53 @@ def process_task(task, wkname, npr_conf, nodeid2info):
         if not task.task_tree:
             task.finish()
 
-        log.log(28, "Saving task tree...")
+        log.log(24, "Saving task tree...")
         annotate_node(task.task_tree, task)
         db.update_node(nid=task.nodeid, runid=task.threadid,
                        newick=db.encode(task.task_tree))
         db.commit()
 
-        if not isinstance(treebuilderclass, DummyTree):
-            # Add new nodes
-            source_seqtype = "aa" if "aa" in GLOBALS["seqtypes"] else "nt"
-            ttree, mtree = task.task_tree, task.main_tree
+        if not isinstance(treebuilderclass, DummyTree) and npr_conf.max_iters > 1:
+            current_iter = get_iternumber(threadid)
+            if npr_conf.max_iters and current_iter >= npr_conf.max_iters:
+                log.warning("Maximum number of iterations reached!")
+            else:
+                # Add new nodes
+                source_seqtype = "aa" if "aa" in GLOBALS["seqtypes"] else "nt"
+                ttree, mtree = task.task_tree, task.main_tree
 
-            log.log(28, "Processing tree: %s seqs, %s outgroups",
-                    len(targets), len(outgroups))
+                log.log(26, "Processing tree: %s seqs, %s outgroups",
+                        len(targets), len(outgroups))
 
-            target_cladeids = None
-            if tobool(conf[splitterconf].get("_find_ncbi_targets", False)):
-                tcopy = mtree.copy()
-                ncbi.connect_database()
-                tax2name, tax2track = ncbi.annotate_tree_with_taxa(tcopy, None)
-                #tax2name, tax2track = ncbi.annotate_tree_with_taxa(tcopy, "fake") # for testing sptree example
-                n2content = tcopy.get_cached_content()
-                broken_branches, broken_clades, broken_clade_sizes, tax2name = ncbi.get_broken_branches(tcopy, n2content)
-                log.log(28, 'restricting NPR to broken clades: '+
-                        colorify(', '.join(map(lambda x: "%s"%tax2name[x], broken_clades)), "wr"))
-                target_cladeids = set()
-                for branch in broken_branches:
-                    print branch.get_ascii(attributes=['spname', 'taxid'], compact=True)
-                    print map(lambda x: "%s"%tax2name[x], broken_branches[branch])
-                    target_cladeids.add(branch.cladeid)
+                target_cladeids = None
+                if tobool(conf[splitterconf].get("_find_ncbi_targets", False)):
+                    tcopy = mtree.copy()
+                    ncbi.connect_database()
+                    tax2name, tax2track = ncbi.annotate_tree_with_taxa(tcopy, None)
+                    #tax2name, tax2track = ncbi.annotate_tree_with_taxa(tcopy, "fake") # for testing sptree example
+                    n2content = tcopy.get_cached_content()
+                    broken_branches, broken_clades, broken_clade_sizes, tax2name = ncbi.get_broken_branches(tcopy, n2content)
+                    log.log(28, 'restricting NPR to broken clades: '+
+                            colorify(', '.join(map(lambda x: "%s"%tax2name[x], broken_clades)), "wr"))
+                    target_cladeids = set()
+                    for branch in broken_branches:
+                        print branch.get_ascii(attributes=['spname', 'taxid'], compact=True)
+                        print map(lambda x: "%s"%tax2name[x], broken_branches[branch])
+                        target_cladeids.add(branch.cladeid)
 
-            for node, seqs, outs in get_next_npr_node(task.configid, ttree,
-                                                      task.out_seqs, mtree, None,
-                                                      npr_conf, target_cladeids): # None is to avoid alg checks
-                log.log(28, "Adding new node: %s seqs, %s outgroups",
-                        len(seqs), len(outs))
-                new_task_node = cogclass(seqs, outs,
-                                         source_seqtype, conf, cogconf)
-                new_tasks.append(new_task_node)
-                db.add_node(threadid,
-                            new_task_node.nodeid, new_task_node.cladeid,
-                            new_task_node.targets,
-                            new_task_node.outgroups)
+                for node, seqs, outs, wkname in get_next_npr_node(task.configid, ttree,
+                                                          task.out_seqs, mtree, None,
+                                                          npr_conf, target_cladeids): # None is to avoid alg checks
+                    log.log(24, "Adding new node: %s seqs, %s outgroups",
+                            len(seqs), len(outs))
+                    new_task_node = cogclass(seqs, outs,
+                                             source_seqtype, conf, cogconf)
+                    new_task_node.target_wkname = wkname
+                    new_tasks.append(new_task_node)
+                    db.add_node(threadid,
+                                new_task_node.nodeid, new_task_node.cladeid,
+                                new_task_node.targets,
+                                new_task_node.outgroups)
     return new_tasks
      
 def pipeline(task, wkname, conf=None):
@@ -221,6 +226,7 @@ def pipeline(task, wkname, conf=None):
         initial_task.main_tree = main_tree = None
         initial_task.threadid = generate_runid()
         initial_task.configid = initial_task.threadid
+        initial_task.target_wkname = wkname
         # Register node 
         db.add_node(initial_task.threadid, initial_task.nodeid,
                     initial_task.cladeid, initial_task.targets,

@@ -15,7 +15,7 @@ class Citator(object):
                               replace_whitespace=False)
         citations = sorted(self.citations)
         print "   ========================================================================"
-        print "         The following published software and/or algorithms were used.     "
+        print "         The following published software and/or methods were used.        "
         print "               *** Please, do not forget to cite them! ***                 "
         print "   ========================================================================"
         for ref in citations:

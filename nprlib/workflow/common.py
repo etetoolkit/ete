@@ -22,10 +22,17 @@ class IterConfig(dict):
         self.conf = conf
         self.seqtype = seqtype
         self.size = size
+        self['npr_wf_type'] = conf['_npr'].get('wf_type', None)
         self['npr_workflows'] = conf['_npr'].get('workflows', [])
-        self['switch_aa_similarity'] = conf['_npr'].get('nt_switch_thr', 1.0) 
-        self['max_iters'] = conf['_npr'].get('max_iters', 1)  # 1 = no npr by default!
+        self['switch_aa_similarity'] = conf['_npr'].get('nt_switch_thr', 1.0)
+        if conf[wkname]["_app"] == self['npr_wf_type']:
+            self['max_iters'] = conf['_npr'].get('max_iters', 1)  # 1 = no npr by default!
+        else:
+            self['max_iters'] = 1
+            
         self['_tree_splitter'] = '@default_tree_splitter'
+        
+        # if max_outgroup size is 0, means that no rooting is done in child NPR trees
         self['use_outgroup'] = conf['default_tree_splitter']['_max_outgroup_size'] != 0
         
     def __getattr__(self, v):
@@ -74,6 +81,9 @@ def process_new_tasks(task, new_tasks, conf):
             ts.configid = task.configid
             ts.threadid = task.threadid
             ts.main_tree = task.main_tree
+            # NPR allows switching the workflow associated to new tasks, if so,
+            # child task should have a target_wkname attribute already,
+            # otherwise we assume the same parent workflow
             if not hasattr(ts, "target_wkname"):
                 ts.target_wkname = task.target_wkname
             
@@ -143,8 +153,8 @@ def split_tree(task_tree_node, task_outgroups, main_tree, alg_path, npr_conf, th
             if _n is master_node or \
                (_TARGET_NODES and _n not in _TARGET_NODES) or \
                (target_cladeids and _n.cladeid not in target_cladeids) or \
-               len(n2content[_n]) < wkfilter.get("minsize", 3) or \
-               ("maxsize" in wkfilter and len(n2content[_n]) > wkfilter["maxsize"]):
+               len(n2content[_n]) < max(wkfilter.get("min_size", 3), 3) or \
+               ("max_size" in wkfilter and len(n2content[_n]) > wkfilter["max_size"]):
                 continue
 
             # If seq_sim filter used, calculate node stats
@@ -226,9 +236,9 @@ def split_tree(task_tree_node, task_outgroups, main_tree, alg_path, npr_conf, th
                         if not strict_monophyly or lin2sp[lin] == ancestor_content:
                             _TARGET_NODES[ancestor].append(lin)
                         elif strict_monophyly:
-                            log.log(28, "Discarding not monophyletic level @@11:%s@@1:" %lin)
+                            log.log(26, "Discarding not monophyletic level @@11:%s@@1:" %lin)
                     else:
-                        log.log(28, "Discarding upper clade @@11:%s@@1:" %lin)
+                        log.log(26, "Discarding upper clade @@11:%s@@1:" %lin)
                         
         for node in master_node.iter_leaves(is_leaf_fn=processable_node):
             if opt_levels:
@@ -253,17 +263,13 @@ def split_tree(task_tree_node, task_outgroups, main_tree, alg_path, npr_conf, th
                 
                 
             if seqs | outs == tasktree_content:
-                log.log(28, "Discarding target node of size %s, due to identity with its parent node" %len(n2content[node]))
+                log.log(26, "Discarding target node of size %s, due to identity with its parent node" %len(n2content[node]))
                 #print tasktree_content
                 #print seqs
                 #print outs
                 trees_to_browse.append(node)
             else:
                 npr_nodes += 1
-                log.log(28,
-                        "@@16:Target node of size %s with %s outgroups marked for a new NPR iteration!@@1:" %(
-                        len(seqs),
-                        len(outs)))
                 yield node, seqs, outs, node._target_wkname
     log.log(28, "%s nodes will be optimized", npr_nodes)
 
@@ -280,7 +286,10 @@ def get_next_npr_node(threadid, ttree, task_outgroups, mtree, alg_path, npr_conf
     for node, seqs, outs, wkname in split_tree(ttree, task_outgroups, mtree, alg_path,
                                                npr_conf, threadid, target_cladeids):
         if npr_conf.max_iters and current_iter < npr_conf.max_iters:
-            log.log(28, "Selected node: %s targets, %s outgroups", len(seqs), len(outs))
+            log.log(28,
+                    "@@16:Target node of size %s with %s outgroups marked for a new NPR iteration!@@1:" %(
+                        len(seqs),
+                        len(outs)))
             # Yield new iteration
             inc_iternumber(threadid)
             yield node, seqs, outs, wkname
@@ -309,7 +318,7 @@ def select_closest_outgroup(target, n2content, splitterconf):
     max_outgroup_size = max(int(float(splitterconf["_max_outgroup_size"]) * len(n2content[target])), 1)
     out_min_support = float(splitterconf["_min_outgroup_support"])
 
-    log.log(28, "Max outgroup size allowed %d" %max_outgroup_size)
+    log.log(26, "Max outgroup size allowed %d" %max_outgroup_size)
     
     # Gets a list of outside nodes an their distance to current target node
     n2targetdist = distance_matrix_new(target, leaf_only=False,
@@ -370,10 +379,10 @@ def select_sister_outgroup(target, n2content, splitterconf):
     out_min_support = float(splitterconf["_min_outgroup_support"])
     if splitterconf["_max_outgroup_size"].strip().endswith("%"):
         max_outgroup_size = max(1, round((float(splitterconf["_max_outgroup_size"].strip("%"))/100) * len(n2content[target])))
-        log.log(28, "Max outgroup size allowed %s = %d" %(splitterconf["_max_outgroup_size"], max_outgroup_size))
+        log.log(26, "Max outgroup size allowed %s = %d" %(splitterconf["_max_outgroup_size"], max_outgroup_size))
     else:
         max_outgroup_size = max(1, int(splitterconf["_max_outgroup_size"]))
-        log.log(28, "Max outgroup size allowed %d" %max_outgroup_size)
+        log.log(26, "Max outgroup size allowed %d" %max_outgroup_size)
     
     # Gets a list of outside nodes an their distance to current target node
     n2targetdist = distance_matrix_new(target, leaf_only=False,

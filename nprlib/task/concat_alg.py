@@ -57,7 +57,8 @@ class ConcatAlg(ConcatAlgTask):
             # This converts the job in a workflow job. As soon as a
             # task is done, it will be automatically processed and the
             # new tasks will be registered as new jobs.
-            job.task_processor = (pipeline, self.genetree_workflow)
+            job.task_processor = pipeline
+            job.target_wkname = self.genetree_workflow
             self.jobs.append(job)
             self.cog_ids.add(job.nodeid)
 

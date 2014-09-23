@@ -300,7 +300,8 @@ def process_task(task, wkname, npr_conf, nodeid2info):
             if  seqtype == "aa" and \
                     "nt" in GLOBALS["seqtypes"] and \
                     task.mean_ident > npr_conf.switch_aa_similarity:
-                log.log(20, "@@2:Switching to codon alignment!@@1:")
+                log.log(28, "@@2:Switching to codon alignment!@@1: amino-acid sequence similarity: %0.2f > %0.2f" %\
+                        (task.mean_ident, npr_conf.switch_aa_similarity))
                 alg_fasta_file = "%s.%s" %(taskid, DATATYPES.alg_nt_fasta)
                 alg_phylip_file = "%s.%s" %(taskid, DATATYPES.alg_nt_phylip)
                 try:
@@ -368,14 +369,14 @@ def process_task(task, wkname, npr_conf, nodeid2info):
         if not task.task_tree:
             task.finish()
 
-        log.log(28, "Saving task tree...")
+        log.log(24, "Saving task tree...")
         annotate_node(task.task_tree, task) 
         db.update_node(nid=task.nodeid, 
                        runid=task.threadid,
                        newick=db.encode(task.task_tree))
         db.commit()
         
-        if not isinstance(treebuilderclass, DummyTree):
+        if not isinstance(treebuilderclass, DummyTree) and npr_conf.max_iters > 1:
             current_iter = get_iternumber(threadid)
             if npr_conf.max_iters and current_iter >= npr_conf.max_iters:
                 log.warning("Maximum number of iterations reached!")
@@ -383,13 +384,13 @@ def process_task(task, wkname, npr_conf, nodeid2info):
                 # Add new nodes
                 source_seqtype = "aa" if "aa" in GLOBALS["seqtypes"] else "nt"
                 ttree, mtree = task.task_tree, task.main_tree
-                log.log(28, "Processing tree: %s seqs, %s outgroups",
+                log.log(26, "Processing tree: %s seqs, %s outgroups",
                         len(target_seqs), len(out_seqs))
                 alg_path = node_info.get("clean_alg_path", node_info["alg_path"])
                 for node, seqs, outs, wkname in get_next_npr_node(threadid, ttree,
                                                           task.out_seqs, mtree,
                                                           alg_path, npr_conf):
-                    log.log(28, "Registering new node: %s seqs, %s outgroups",
+                    log.log(24, "Registering new node: %s seqs, %s outgroups",
                             len(seqs), len(outs))
                     new_task_node = Msf(seqs, outs, seqtype=source_seqtype)
                     new_task_node.target_wkname = wkname
