@@ -166,10 +166,14 @@ class Job(object):
                 st = "L"                
 
             # if this is the first time this job is checked and has an error
-            # stated saved from prev runs, retry if necessary
+            # state saved from prev runs, retry if necessary
             if (st == "E" and self.status is None):
                 log.warning('@@3:Retrying job marked as error from previous executions.@@1:')
                 self.status = 'W'
+                try:
+                    st = open(self.status_file, "w").write("W")
+                except IOError:
+                    pass
             else:
                 self.status = st
 

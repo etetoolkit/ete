@@ -154,7 +154,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
             for tid, tlist in thread2tasks.iteritems():
                 threadname = GLOBALS[tid]["_name"]
                 sizelist = ["%s" %getattr(_ts, "size", "?") for _ts in tlist]
-                info = "  Thread @@13:%s@@1:: pending tasks: @@8:%s@@1: of sizes: %s" %(
+                info = "Thread @@13:%s@@1:: pending tasks: @@8:%s@@1: of sizes: %s" %(
                     threadname, len(tlist), ', '.join(sizelist))
                 info_lines.append(info)
 
