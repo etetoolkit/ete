@@ -120,38 +120,36 @@ __EXAMPLES__ = """
 ++++ COMMAND LINE EXAMPLES ++++
 ===============================
 
-Runs a workflow
+Runs a genetree workflow:
 
   $ npr -a fasta.aa.fa  -w linsi_fasttree -o results/
       
-Runs a workflow in NPR mode (the same workflow is applied in all iterations)
+Runs a genetree workflow in recursive mode (the same workflow is applied for all
+iterations):
 
-  $ npr -a fasta.aa.fa  -w linsi_fasttree -o results/ -npr
+  $ npr -a fasta.aa.fa  -w linsi_fasttree -o results/ --recursive
 
-Runs a NPR analysis with dynamic workflow adjustment
+Runs a genetree workflow in recursive mode using dynamic workflow adjustment
+depending on subtree size:
 
   $ npr -a fasta.aa.fa -w linsi_fasttree -o results  \\
-        -npr “size-range:500-1000, workflow:linsi_fasttree” \\
-             “size-range:0-499, workflow:linsi_phyml”
+        --recursive  “size-range:500-1000, workflow:linsi_fasttree” \\
+                     “size-range:0-499, workflow:linsi_phyml”
 
-Runs a NPR analysis with dynamic workflow adjustment and custom stopping criteria
-
-  $ npr -a fasta.aa.fa -w linsi_fasttree -o results/ \\
-        -npr  “size-range:500-1000, workflow:linsi_fasttree” \\
-              “size-range:0-499, workflow:linsi_phyml” \\
-        -npr_stop “size:20, seq_similarity:0.98, branch_support:0.8”
-
-Runs a NPR analysis mixing aa and nucleotide, with dynamic workflow adjustment
-and custom stopping criteria.
+Runs a genetree workflow in recursive mode using dynamic workflow adjustment
+depending on subtree size and combining amino-acids and nucleotide alignments:
 
   $ npr -a fasta.aa.fa -w linsi_fasttree -o results/ \\
-        -npr  “size-range:500-1000, workflow:linsi_fasttree” \\
-              “size-range:0-499, workflow:linsi_phyml” \\
-        -npr_stop “size:20, seq_similarity:0.98, branch_support:0.8” \\
-        -npr_ntswitch 0.95
+        --recursive  “size-range:500-1000, workflow:linsi_fasttree” \\
+                     “size-range:0-499, workflow:linsi_phyml” \\
+        -nt_switch_thr 0.95
 """
 
-def main(args):    
+def main(args):
+    """ Read and parse all configuration and command line options,
+    setup global variables and data, and initialize the master task of
+    all workflows. """
+    
     global log 
     log = logging.getLogger("main")
     
@@ -178,17 +176,16 @@ def main(args):
                                       " --override option or change the"
                                       " output path.")
 
-    # Creates a dummy tree splitter used to when no npr capabilities are used
-    # (although still processing the tree produced by the first iteration)
+    # Creates a tree splitter config block on the fly. In the future this
+    # options should be more accessible by users.
     base_config['default_tree_splitter'] = {
         '_app' : 'treesplitter',
-        '_max_outgroup_size' : '10%',
-        '_min_outgroup_support' : 0.9,
-        '_outgroup_topology_dist' : False,
-        '_first_split': 'midpoint'}
+        '_max_outgroup_size' : '10%', # dynamic or fixed selection of out seqs.
+        '_min_outgroup_support' : 0.9, # avoids fixing labile nodes as monophyletic
+        '_outgroup_topology_dist' : False}
+
                     
     # prepare workflow config dictionaries
-    run2config = {}
     workflow_types = defaultdict(list)
     TARGET_CLADES = set()
     VALID_WORKFLOW_TYPES = set(['genetree', 'supermatrix'])
@@ -216,36 +213,35 @@ def main(args):
                 supermatrix_workflows.append(wkname)
             
     # Stop if mixing types of meta-workflows 
-    if supermatrix_workflows and len(genetree_workflows):
+    if supermatrix_workflows and len(genetree_workflows) > 1:
         raise ConfigError("A single genetree workflow can be specified when used in combination with super-matrix workflows.")                    
             
     # Parse npr workflows and filters
     npr_workflows = []
     use_npr = False
-    if args.npr_workflow is not None:        
+    if args.npr_workflows is not None:        
         use_npr = True        
-        if len(args.npr_workflow):
-            for wkname in args.npr_workflow:
-                wfilters = {}    
-                fields = map(strip, wkname.split(","))
-                if len(fields) == 1:
-                    wkname = fields[0]
-                else:
-                    wkname = fields[-1]
-                    for f in fields[:-1]:
-                        if f.startswith("size_range:"): # size filter
-                            f = f.replace("size_range:",'')
-                            try:
-                                min_size, max_size = map(int, f.split('-'))
-                            except ValueError:
-                                raise ConfigError('size filter should consist of two integer numbers (i.e. 50-100). Found [%s] instead' %f)
+        for wkname in args.npr_workflows:
+            wfilters = {}    
+            fields = map(strip, wkname.split(","))
+            if len(fields) == 1:
+                wkname = fields[0]
+            else:
+                wkname = fields[-1]
+                for f in fields[:-1]:
+                    if f.startswith("size-range:"): # size filter
+                        f = f.replace("size-range:",'')
+                        try:
+                            min_size, max_size = map(int, f.split('-'))
+                        except ValueError:
+                            raise ConfigError('size filter should consist of two integer numbers (i.e. 50-100). Found [%s] instead' %f)
 
-                            wfilters["max_size"] = max_size
-                            wfilters["min_size"] = max_size
-                        else:
-                            raise ConfigError('Unknown workflow filter [%s]' %f)                   
-                # Register workflow and filter
-                npr_workflows.append((wkname, wfilters))
+                        wfilters["max_size"] = max_size
+                        wfilters["min_size"] = min_size
+                    else:
+                        raise ConfigError('Unknown workflow filter [%s]' %f)                   
+            # Register workflow and filter
+            npr_workflows.append((wkname, wfilters))
 
     # Check workflows integrity
     for wkname in genetree_workflows + supermatrix_workflows + [e[0] for e in npr_workflows]:
@@ -257,6 +253,7 @@ def main(args):
         if wtype not in VALID_WORKFLOW_TYPES:
             raise ConfigError('[%s] configuration block is not a valid workflow definition (_app=[%s])' %(wkname, '|'.join(VALID_WORKFLOW_TYPES)))
 
+    # Sets master workflow type
     if supermatrix_workflows:
         WORKFLOW_TYPE = "supermatrix"
         master_workflows = supermatrix_workflows
@@ -269,10 +266,13 @@ def main(args):
         raise ConfigError('All npr workflow(s) should be of [%s] type' %WORKFLOW_TYPE)
         
     # setup workflows and create a separate config dictionary for each of them
-    for wkname in genetree_workflows + supermatrix_workflows:
+    run2config = {}
+    for wkname in supermatrix_workflows:
         config = dict(base_config)
-        appset = config[ config[wkname]['_appset'][1:]]
-
+        run2config[wkname] = config
+        
+        appset = config[config[wkname]['_appset'][1:]]
+        
         # Initialized application command line commands for this workflow
         config['app'] = {}
         config['threading'] = {}
@@ -295,25 +295,21 @@ def main(args):
             os.makedirs(config["_outpath"])
         except OSError:
             pass
-        # save checksum of current workflow (traking checksum of config file. deprecated)
-        #config["_config_checksum"] = checksum(local_conf_file)
-        run2config[wkname] = config
-
-    # setup npr options for master workflows
-    for wkname in master_workflows:
-        config = run2config[wkname]
-        
+            
+        # setup genetree workflow as the processor of concat alignment jobs
         if WORKFLOW_TYPE == "supermatrix":
-            concatenator = config["_alg_concatenator"][1:]
+            concatenator = config[wkname]["_alg_concatenator"][1:]
             config[concatenator]["_workflow"] = '@%s' % genetree_workflows[0]
-            #del run2config[gtree_workflow] # delete gtree workflow from the main execution thread # WHY?
-        
+            print config[concatenator]
+            
+        # setup npr options for master workflows        
         if use_npr:
             config['_npr'] = {
                 # register root workflow as the main NPR workflow if the contrary not said
+                "wf_type": WORKFLOW_TYPE,
                 "workflows": npr_workflows if npr_workflows else [(wkname, {})],
-                'nt_switch_thr': args.npr_nt_switch,
-                'max_iters': 100,
+                'nt_switch_thr': args.nt_switch_thr,
+                'max_iters': args.max_iters,
                 }
             print config['_npr']
             
@@ -911,7 +907,7 @@ if __name__ == "__main__":
     
     parser = argparse.ArgumentParser(description=__DESCRIPTION__ + __EXAMPLES__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
-    
+
     # Input data related flags
     input_group = parser.add_argument_group('==== Input Options ====')
 
@@ -999,7 +995,8 @@ if __name__ == "__main__":
     
     input_group.add_argument("--cogs", dest="cogs_file",
                              type=is_file,
-                             help="A file defining clusters of orthologous groups. One per line. Tab delimited sequence ids. ")
+                             help="A file defining clusters of orthologous groups."
+                             " One per line. Tab delimited sequence ids. ")
 
     input_group.add_argument("--lineages", dest="lineages_file",
                              type=is_file,
@@ -1027,27 +1024,29 @@ if __name__ == "__main__":
                              " (one species code per line) will be used. ")
     
     npr_group = parser.add_argument_group('==== NPR options ====')
-    npr_group.add_argument("--npr", dest="npr_workflow",
-                             required=False,
-                             nargs="*",
-                             help="Enables NPR capabilities. ")
-    npr_group.add_argument("--npr_stop", dest="npr_stop_criteria",
-                             required=False,
-                             default= "iters:! size:4 seq_similarity:0.98 branch_support:!",
-                             nargs="+",
-                             help="Specifies npr stopping criteria. Accepted keywords are 'size', 'seq_similarity' and 'branch_support'.  ")
-    npr_group.add_argument("--npr_nt_switch", dest="npr_nt_switch",
-                             required=False,
-                             type=float,
-                             default = 0.95,
-                             help="Sequence similarity at which nucleotide based alignments will be used (if available). ")
-
+    npr_group.add_argument("-r", "--recursive", dest="npr_workflows",
+                           required=False,
+                           nargs="*",
+                           help="Enables recursive NPR capabilities (Nested Phylogenetic Reconstruction)"
+                           " and specifies custom workflows and filters for each NPR iteration.")
+    npr_group.add_argument("--nt_switch_thr", dest="nt_switch_thr",
+                           required=False,
+                           type=float,
+                           default = 0.95,
+                           help="Sequence similarity at which nucleotide based alignments should be used"
+                           " instead of amino-acids. ")
+    npr_group.add_argument("--max_iters", dest="max_iters",
+                           required=False,
+                           type=int,
+                           default=99999999,
+                           help="Set a maximum number of NPR iterations allowed.")
     npr_group.add_argument("--first-split-outgroup", dest="first_split",
                            type=str,
+                           default='midpoint',
                            help=("When used, it overrides first_split option"
                                  " in any tree merger config block in the"
-                                 " config file."))
-
+                                 " config file. Default: 'midpoint' "))
+    
     
     # Output data related flags
     output_group = parser.add_argument_group('==== Output Options ====')
@@ -1089,7 +1088,7 @@ if __name__ == "__main__":
     # Task execution related flags
     exec_group = parser.add_argument_group('==== Execution Mode Options ====')
 
-    exec_group.add_argument("-r", "--retry_error_jobs", dest="retry_error_jobs",
+    exec_group.add_argument("-R", "--retry_error_jobs", dest="retry_error_jobs",
                             action="store_true",
                             help="Try to relaunch jobs marked as error.")
     
@@ -1172,8 +1171,9 @@ if __name__ == "__main__":
     #                     " system.")
 
     ui_group.add_argument("-v", dest="verbosity",
-                        default = 0, type=int, choices=[0,1,2,3,4],
-                        help="Verbosity level: 0=very quiet, 4=very "
+                          default=0,
+                          type=int, choices=[0,1,2,3,4],
+                          help="Verbosity level: 0=very quiet, 4=very "
                           " verbose.")
 
     ui_group.add_argument("--debug", nargs="?",
@@ -1228,8 +1228,7 @@ if __name__ == "__main__":
     else:
         GLOBALS["taskdir"] = os.path.join(GLOBALS["basedir"], "tasks")
         
-    if args.first_split:
-        GLOBALS["first_split_outgroup"] = args.first_split
+    GLOBALS["first_split_outgroup"] = args.first_split
 
     GLOBALS["email"] = args.email
     GLOBALS["verbosity"] = args.verbosity
