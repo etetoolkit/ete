@@ -49,6 +49,7 @@ __builtin__.raw_input = wrap(raw_input, 100)
 import sys
 import os
 import shutil
+import signal
 from StringIO import StringIO
 from collections import defaultdict
 import filecmp
@@ -267,7 +268,7 @@ def main(args):
         
     # setup workflows and create a separate config dictionary for each of them
     run2config = {}
-    for wkname in supermatrix_workflows:
+    for wkname in master_workflows:
         config = dict(base_config)
         run2config[wkname] = config
         
@@ -612,7 +613,7 @@ def main(args):
         open(pjoin(config["_outpath"], "command_lines"), "a").write(cmd_info+"\n")
 
     thread_errors = schedule(pipeline, pending_tasks, args.schedule_time,
-                             execution, args.retry_error_jobs, args.debug, args.noimg)
+                             execution, args.debug, args.noimg)
     db.close()
     
     if not thread_errors:
@@ -1088,10 +1089,6 @@ if __name__ == "__main__":
     # Task execution related flags
     exec_group = parser.add_argument_group('==== Execution Mode Options ====')
 
-    exec_group.add_argument("-R", "--retry_error_jobs", dest="retry_error_jobs",
-                            action="store_true",
-                            help="Try to relaunch jobs marked as error.")
-    
     exec_group.add_argument("-C", "--cpu", dest="maxcores", type=int,
                             default=1, help="Maximum number of CPU cores"
                             " available in the execution host. If higher"
@@ -1244,8 +1241,6 @@ if __name__ == "__main__":
     GLOBALS["color_shell"] = True
     GLOBALS["citator"] = Citator()
 
-    GLOBALS["retry_error_jobs"] = args.retry_error_jobs
-    GLOBALS["retried_jobs"] = set()
     
     GLOBALS["lineages"] = None
     GLOBALS["cogs_file"] = None 
@@ -1255,5 +1250,12 @@ if __name__ == "__main__":
     if not pexist(GLOBALS["basedir"]):
         os.makedirs(GLOBALS["basedir"])
 
+    # when killed, translate signal into exception so program can exit cleanly
+    def raise_control_c(_signal, _frame):
+        if GLOBALS.get('_background_scheduler', None):
+            GLOBALS['_background_scheduler'].terminate()
+        raise KeyboardInterrupt
+    signal.signal(signal.SIGTERM, raise_control_c)
+    
     # Start the application
     app_wrapper(main, args)
