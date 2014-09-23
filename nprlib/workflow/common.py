@@ -251,15 +251,15 @@ def split_tree(task_tree_node, task_outgroups, main_tree, alg_path, npr_conf, th
             log.log(28, "First suitable workflow: %s" %(node._target_wkname))
 
             # Finds best outgroup for the target node
-            if not npr_conf.use_outgroup == 0:
-                seqs = set([_i.name for _i in n2content[node]])
-                outs = set()
-            else:
+            if npr_conf.use_outgroup:
                 splitterconfname, _ = npr_conf.tree_splitter
                 splitterconf = GLOBALS[threadid][splitterconfname]
                 #seqs, outs = select_outgroups(node, n2content, splitterconf)
                 #seqs, outs = select_closest_outgroup(node, n2content, splitterconf)
                 seqs, outs = select_sister_outgroup(node, n2content, splitterconf)
+            else:
+                seqs = set([_i.name for _i in n2content[node]])
+                outs = set()
                 
                 
             if seqs | outs == tasktree_content:
