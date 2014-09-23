@@ -284,15 +284,20 @@ def init_curses(main_scr):
         w.scrollok(True)
     return WIN
 
-def clean_exit():
+def clear_env():
+    try:
+        terminate_job_launcher()
+    except:
+        pass
+        
     base_dir = GLOBALS["basedir"]
     lock_file = pjoin(base_dir, "alive")
     try:
         os.remove(lock_file)
     except Exception:
         print >>sys.stderr, "could not remove lock file %s" %lock_file
+        
     clear_tempdir()
-    terminate_job_launcher()
 
 def app_wrapper(func, args):
     global NCURSES
@@ -302,13 +307,12 @@ def app_wrapper(func, args):
     if not pexist(lock_file) or args.clearall:
         open(lock_file, "w").write(time.ctime())
     else:
-        clean_exit()
+        clear_env()
         print >>sys.stderr, '\nThe same process seems to be running. Use --clearall or remove the lock file "alive" within the output dir'
-        sys.exit(1)
+        sys.exit(-1)
 
     if not args.enable_ui:
         NCURSES = False
-
     try:
         if NCURSES:
             curses.wrapper(main, func, args)
@@ -316,33 +320,25 @@ def app_wrapper(func, args):
             main(None, func, args)
     except ConfigError, e:
         print >>sys.stderr, "\nConfiguration Error:", e
-        clean_exit()
+        clear_env()
+        sys.exit(-1)
     except DataError, e:
         print >>sys.stderr, "\nData Error:", e
-        clean_exit()
-        sys.exit(1)
+        clear_env()
+        sys.exit(-1)
     except KeyboardInterrupt:
         print >>sys.stderr, "\nProgram was interrupted."
         if args.monitor:
             print >>sys.stderr, ("VERY IMPORTANT !!!: Note that launched"
-                                 " jobs will keep running as you provided the --monitor flag")
-        else:
-            print >>sys.stderr, "Kill signal is being sent to %d running jobs" %len(GLOBALS["running_jobs"])
-            for job in GLOBALS["running_jobs"]:
-                status_file = job.status_file
-                try:
-                    if open(status_file).readline().strip() == "R":
-                        open(status_file, "w").write("E")
-                except Exception, e:
-                    print e
-                else:
-                    print >>sys.stderr, status_file, "has been marked as error"
-        clean_exit()
+                                 " jobs will keep running as you provided the --monitor flag")        
+        clear_env()
+        sys.exit(-1)
     except:
-        clean_exit()
+        clear_env()
         raise
     else:
-        clean_exit()
+        clear_env()
+
     
 def main(main_screen, func, args):
     """ Init logging and Screen. Then call main function """

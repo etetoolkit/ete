@@ -35,7 +35,7 @@ class Job(object):
    
     def __init__(self, bin, args, jobname=None, parent_ids=None):
         # Used at execution time
-        self.status = "W"
+        self.status = None
         # How to run the app
         self.bin = bin
         # command line arguments 
@@ -148,13 +148,6 @@ class Job(object):
             except IOError:
                 st = saved_status
 
-            #print st, GLOBALS["retry_error_jobs"], GLOBALS["retried_jobs"]
-            #if st == "E" and GLOBALS["retry_error_jobs"] and \
-            #        self.jobid not in GLOBALS["retried_jobs"]:
-            #    GLOBALS["retried_jobs"].add(self.jobid)
-            #    log.warning("Retrying previously error job %s" %self)
-            #    st = "W"
-
             # If this is in execution, tries to track the job
             if st in set("QRL"):
                 if self.host.startswith("@sge"):
@@ -169,7 +162,16 @@ class Job(object):
                     st = "L"
             elif st == "E":
                 log.error("Job error reported: %s" %self)
-            self.status = st
+            elif st == "":
+                st = "L"                
+
+            # if this is the first time this job is checked and has an error
+            # stated saved from prev runs, retry if necessary
+            if (st == "E" and self.status is None):
+                log.warning('@@3:Retrying job marked as error from previous executions.@@1:')
+                self.status = 'W'
+            else:
+                self.status = st
 
         return self.status
 

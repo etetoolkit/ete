@@ -7,7 +7,6 @@ log = logging.getLogger("main")
 from nprlib.master_task import AlgCleanerTask
 from nprlib.master_job import Job
 from nprlib.utils import SeqGroup, GLOBALS, TRIMAL_CITE, hascontent, DATATYPES, pjoin
-from nprlib.errors import RetryException
 from nprlib import db
 
 __all__ = ["Trimal"]

@@ -1,6 +1,6 @@
+import sys
 import os
 import signal
-
 import subprocess
 from multiprocessing import Process, Queue
 from Queue import Empty as QueueEmpty
@@ -25,15 +25,14 @@ from nprlib.workflow.common import assembly_tree, get_cmd_log
 def debug(_signal, _frame):
     import pdb
     pdb.set_trace()
-    
-def signal_handler(_signal, _frame):
-    if "_background_scheduler" in GLOBALS:
-        GLOBALS["_background_scheduler"].terminate()
-        
-    signal.signal(signal.SIGINT, lambda s,f: None)
+
+def control_c(_signal, _frame):    
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
     db.commit()
+    
     ver = {28: "0", 26: "1", 24: "2", 22: "3", 20: "4", 10: "5"}
     ver_level = log.level
+    
     print '\n\nYou pressed Ctrl+C!'
     print 'q) quit'
     print 'v) change verbosity level:', ver.get(ver_level, ver_level)
@@ -53,7 +52,7 @@ def signal_handler(_signal, _frame):
     elif key == "d":
         import pdb
         pdb.set_trace()
-    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGINT, control_c)
     
 def sort_tasks(x, y):
     priority = {
@@ -90,10 +89,8 @@ def get_stored_data(fileid):
     else:
         dataid = db.get_dataid(_tid, _did)
     return db.get_data(dataid)
-
     
-def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, retry, debug, norender):
-
+def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, debug, norender):    
     # Adjust debug mode
     if debug == "all":
         log.setLevel(10)
@@ -102,8 +99,6 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
     ## ===================================
     ## INITIALIZE BASIC VARS 
     execution, run_detached = execution
-    # keeps the count of how many times an error task has been retried
-    task2retry = defaultdict(int)
     thread2tasks = defaultdict(list)
     for task in pending_tasks:
         thread2tasks[task.configid].append(task)
@@ -116,16 +111,24 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
     cores_total = GLOBALS["_max_cores"]
     if cores_total > 0:
         job_queue = Queue()
+        
         back_launcher = Process(target=background_job_launcher,
                                 args=(job_queue, run_detached,
                                       GLOBALS["launch_time"], cores_total))
-        GLOBALS["_background_scheduler"] = back_launcher
         back_launcher.start()
     else:
+        job_queue = None
         back_launcher = None
 
-    # Captures Ctrl-C
-    #signal.signal(signal.SIGINT, signal_handler)
+    GLOBALS["_background_scheduler"] = back_launcher
+    GLOBALS["_job_queue"] = job_queue
+
+        
+    # Captures Ctrl-C for debuging DEBUG 
+    #signal.signal(signal.SIGINT, control_c)
+    
+
+    
     last_report_time = None
     
     BUG = set()
@@ -172,13 +175,13 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
             for task in sorted(pending_tasks, sort_tasks):
                 # Avoids endless periods without new job submissions
                 elapsed_time = time() - check_start_time
-                if not back_launcher and pending_tasks and \
-                        elapsed_time > schedule_time * 2:
-                    log.log(26, "@@8:Interrupting task checks to schedule new jobs@@1:")
-                    db.commit()
-                    wtime = launch_jobs(sorted(pending_tasks, sort_tasks),
-                                        execution, run_detached)
-                    check_start_time = time()
+                #if not back_launcher and pending_tasks and \
+                #        elapsed_time > schedule_time * 2:
+                #    log.log(26, "@@8:Interrupting task checks to schedule new jobs@@1:")
+                #    db.commit()
+                #    wtime = launch_jobs(sorted(pending_tasks, sort_tasks),
+                #                        execution, run_detached)
+                #    check_start_time = time()
 
                 # Enter debuging mode if necessary
                 if debug and log.level > 10 and task.taskid.startswith(debug):
@@ -277,25 +280,15 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
                         pending_tasks.discard(task)
 
                 elif task.status == "E":
-                    #db.commit()
                     log.error("task contains errors: %s " %task)
-                    if retry and task not in task2retry:
-                        log.log(28, "@@8:Remarking task as undone to retry@@1:")
-                        task2retry[task] += 1
-                        task.retry()
-                        task.init()
-                        task.post_init()
-                        update_task_states_recursively(task)
-                        db.commit()
-                    else:
-                        log.error("Errors found in %s")
-                        pending_tasks.discard(task)
-                        thread_errors[task.configid].append([task, None, "Found (E) task status"])
+                    log.error("Errors found in %s")
+                    pending_tasks.discard(task)
+                    thread_errors[task.configid].append([task, None, "Found (E) task status"])
 
             #db.commit()
-            if not back_launcher: 
-                wtime = launch_jobs(sorted(pending_tasks, sort_tasks),
-                                execution, run_detached)
+            #if not back_launcher: 
+            #    wtime = launch_jobs(sorted(pending_tasks, sort_tasks),
+            #                    execution, run_detached)
 
             # Update global task list with recently added jobs to be check
             # during next cycle
@@ -414,12 +407,8 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, r
 
             log.log(26, "")
     except:
-        if back_launcher:
-            back_launcher.terminate()
         raise 
         
-    if back_launcher:
-        back_launcher.terminate()
     if thread_errors:
         log.error("Done with ERRORS")
     else:
@@ -432,180 +421,108 @@ def background_job_launcher(job_queue, run_detached, schedule_time, max_cores):
     running_jobs = {}
     visited_ids = set()
     # job_queue = [jid, cores, cmd, status_file]
-    
+    GLOBALS["myid"] = 'back_launcher'
     finished_states = set("ED")
     cores_used = 0
     dups = set()
     pending_jobs = deque()
-    while True:
-        launched = 0
-        done_jobs = set()
-        cores_used = 0
-        for jid, (cores, cmd, st_file, pid) in running_jobs.iteritems():
-            process_done = pid.poll() if pid else None
-            try:
-                st = open(st_file).read(1)
-            except IOError:
-                st = "?"
-            #print pid.poll(), pid.pid, st
-            if st in finished_states:
-                 done_jobs.add(jid)
-            elif process_done is not None and st == "R":
-                # check if a running job is actually running
-                print "LOST PROCESS", pid, jid
-                ST=open(st_file, "w"); ST.write("E"); ST.flush(); ST.close()
-                done_jobs.add(jid)
-            else:
-                cores_used += cores
-                    
-        for d in done_jobs:
-            del running_jobs[d]
-            
-        cores_avail = max_cores - cores_used       
-        for i in xrange(cores_avail):
-            try:
-                jid, cores, cmd, st_file = job_queue.get(False)
-            except QueueEmpty:
-                pass
-            else:
-                pending_jobs.append([jid, cores, cmd, st_file])
-                
-            if pending_jobs and pending_jobs[0][1] <= cores_avail:
-                jid, cores, cmd, st_file = pending_jobs.popleft()
-                if jid in visited_ids:
-                    dups.add(jid)
-                    print "DUPLICATED execution!!!!!!!!!!!!", jid
-                    continue
-            elif pending_jobs:
-                log.log(28, "@@8:waiting for %s cores" %pending_jobs[0][1])
-                break
-            else:
-                break
-            
-            ST=open(st_file, "w"); ST.write("R"); ST.flush(); ST.close()
-            try:
-                if run_detached:
-                    cmd += " &"
-                    running_proc = None
-                    subprocess.call(cmd, shell=True)
+    try:
+        while True:
+            launched = 0
+            done_jobs = set()
+            cores_used = 0
+            for jid, (cores, cmd, st_file, pid) in running_jobs.iteritems():
+                process_done = pid.poll() if pid else None
+                try:
+                    st = open(st_file).read(1)
+                except IOError:
+                    st = "?"
+                #print pid.poll(), pid.pid, st
+                if st in finished_states:
+                     done_jobs.add(jid)
+                elif process_done is not None and st == "R":
+                    # check if a running job is actually running
+                    print "LOST PROCESS", pid, jid
+                    ST=open(st_file, "w"); ST.write("E"); ST.flush(); ST.close()
+                    done_jobs.add(jid)
                 else:
-                    running_proc = subprocess.Popen(cmd, shell=True)
-            except Exception, e:
-                print e
-                ST=open(st_file, "w"); ST.write("E"); ST.flush(); ST.close()
-            else:
-                launched += 1
-                running_jobs[jid] = [cores, cmd, st_file, running_proc]
-                cores_avail -= cores
-                cores_used += cores
-                visited_ids.add(jid)
-                
-        waiting_jobs = job_queue.qsize() + len(pending_jobs)
-        log.log(28, "@@8:Launched@@1: %s jobs. %d(R), %s(W). Cores usage: %s/%s",
-                launched, len(running_jobs), waiting_jobs, cores_used, max_cores)
-        for _d in dups:
-            print "duplicate bug", _d
-        
-        sleep(schedule_time)
+                    cores_used += cores
 
+            for d in done_jobs:
+                del running_jobs[d]
+
+            cores_avail = max_cores - cores_used       
+            for i in xrange(cores_avail):
+                try:
+                    jid, cores, cmd, st_file = job_queue.get(False)
+                except QueueEmpty:
+                    pass
+                else:
+                    pending_jobs.append([jid, cores, cmd, st_file])
+
+                if pending_jobs and pending_jobs[0][1] <= cores_avail:
+                    jid, cores, cmd, st_file = pending_jobs.popleft()
+                    if jid in visited_ids:
+                        dups.add(jid)
+                        print "DUPLICATED execution!!!!!!!!!!!! This should not occur!", jid
+                        continue
+                elif pending_jobs:
+                    log.log(28, "@@8:waiting for %s cores" %pending_jobs[0][1])
+                    break
+                else:
+                    break
+
+                ST=open(st_file, "w"); ST.write("R"); ST.flush(); ST.close()
+                try:
+                    if run_detached:
+                        cmd += " &"
+                        running_proc = None
+                        subprocess.call(cmd, shell=True)
+                    else:
+                        # create a process group, so I can kill the thread if necessary
+                        running_proc = subprocess.Popen(cmd, shell=True, preexec_fn=os.setsid)
+                        
+                except Exception, e:
+                    print e
+                    ST=open(st_file, "w"); ST.write("E"); ST.flush(); ST.close()
+                else:
+                    launched += 1
+                    running_jobs[jid] = [cores, cmd, st_file, running_proc]
+                    cores_avail -= cores
+                    cores_used += cores
+                    visited_ids.add(jid)
+
+            waiting_jobs = job_queue.qsize() + len(pending_jobs)
+            log.log(28, "@@8:Launched@@1: %s jobs. %d(R), %s(W). Cores usage: %s/%s",
+                    launched, len(running_jobs), waiting_jobs, cores_used, max_cores)
+            for _d in dups:
+                print "duplicate bug", _d
+
+            sleep(schedule_time)
+    except:
+        print >>sys.stderr, 'Killing %s running jobs...' %len(running_jobs)
+        for jid, (cores, cmd, st_file, pid) in running_jobs.iteritems():
+            if pid:
+                print >>sys.stderr, "Killing", pid.pid
+                try:
+                    os.killpg(pid.pid, signal.SIGTERM)
+                except:
+                    print 'not found, too late'
+                    pass
+
+                try:
+                    open(st_file, "w").write("E")
+                except:
+                    print "Ooops"
+                else:
+                    print >>sys.stderr, st_file, "has been marked as error"
+                    
+    sys.exit(0)
+
+        
 def launch_detached_process(cmd):
     os.system(cmd)
-
-        
     
-def launch_jobs(pending_tasks, execution, run_detached):
-    if not execution:
-        return None
-    cores_total = GLOBALS["_max_cores"]
-    prev_logindent = get_logindent()
-    set_logindent(0)
-    log.log(28, "==========================================================")
-    log.log(28, "@@13:NEW SCHEDULING CYCLE:@@1: (%s)" % (ctime()))
-   
-    sge_config = {}# UNUSED SGE CONFIG !!!!  antes GLOBALS["config"]
-    
-    # Keep number of cores used: if a job has just ended, remove it
-    # from the list of running jobs and decrease cores used
-    cores_used = 0
-    launched_jobs = set()
-    for job in list(GLOBALS["running_jobs"]):
-        job.get_status() # Quick update for fast jobs that may have ended  
-        if job.status in set("DE"):
-            log.log(22, "@@8: Releasing %s cores" %job.cores)
-            GLOBALS["running_jobs"].discard(job)
-        else:
-            cores_used += job.cores
-        launched_jobs.add(job.jobid)
-    db.commit()
-    
-    del_tasks = set()
-    add_tasks = set()
-    sge_jobs = []
-    launched_tasks = 0
-    waiting_jobs = 0
-    wait_time = 0.01
-    # Process waiting tasks
-    for task in pending_tasks:
-        if task.status in set("WQRL"):
-            exec_type = getattr(task, "exec_type", execution)
-            # Tries to send new jobs from this task
-            for j, cmd in task.iter_waiting_jobs():
-                waiting_jobs += 1
-                if not check_cores(j, cores_used, cores_total, execution) or \
-                        j.jobid in launched_jobs:
-                    continue
-
-                if exec_type == "insitu":
-                    log.log(26, "  @@8:Launching@@1: %s from %s" %(j, task))
-                    log.debug("Command: %s", j.cmd_file)
-                    launched_tasks += 1
-                    try:
-                        if run_detached:
-                            j.status = "R"
-                            subjob = Process(target=launch_detached_process, args=[cmd])
-                            subjob.daemon = True
-                            subjob.start()
-                            subjob.join()
-                            #launch_detached(cmd)
-                        else:
-                            running_proc = subprocess.Popen(cmd, shell=True)
-                    except Exception:
-                        task.status = "E"
-                        raise
-                    else:
-                        GLOBALS["running_jobs"].add(j)
-                        launched_jobs.add(j.jobid)
-                        j.status = "R"
-                        task.status = "R"
-                        cores_used += j.cores
-                elif exec_type == "sge":
-                    task.status = "R"
-                    j.status = "R"
-                    j.sge = sge_config["sge"]
-                    sge_jobs.append((j, cmd))
-                else:
-                    task.status = "R"
-                    j.status = "R"
-                    print cmd
-            if task.status in set("QRL"):
-                wait_time = None
-
-        elif task.status == "Q":
-            pass # task execution is temporarily blocked
-        else:
-            wait_time = None
-            log.error("Unknown task state [%s].", task.status)
-            continue
-        logindent(-2)
-
-    sge.launch_jobs(sge_jobs, sge_config)
-    log.log(28, "Launched %s of %s waiting jobs", launched_tasks, waiting_jobs)
-    log.log(28, "Cores in use: %s/%s", cores_used, cores_total)
-    log.log(28, "=======================================================")
-    set_logindent(prev_logindent)
-    return wait_time 
-   
-
 def color_status(status):
     if status == "D":
         stcolor = "@@06:"
@@ -659,7 +576,6 @@ def check_cores(j, cores_used, cores_total, execution):
     else:
         return True
     
-
 def launch_detached(cmd):
     pid1 = os.fork()
     if pid1 == 0:

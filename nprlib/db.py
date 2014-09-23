@@ -510,7 +510,7 @@ def get_all_task_states():
 def execute(cmd, dbcursor=None):
     if not dbcursor:
         dbcursor = cursor
-    for retry in xrange(30):
+    for retry in xrange(10):
         try:
             s = dbcursor.execute(cmd)
         except sqlite3.OperationalError, e:

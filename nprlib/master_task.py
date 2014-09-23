@@ -9,7 +9,7 @@ from nprlib.utils import (md5, merge_arg_dicts, PhyloTree, SeqGroup,
                           checksum, read_time_file, generate_runid,
                           GLOBALS, DATATYPES)
 from nprlib.master_job import Job
-from nprlib.errors import RetryException, TaskError
+from nprlib.errors import TaskError
 from nprlib import db
 import shutil
 
@@ -194,7 +194,7 @@ class Task(object):
                 elif "W" in job_statuses: 
                     self.status = "W"
                 else:
-                    log.error("unknown task state")
+                    log.error("unknown task state %s" %(job_statuses))
 
         logindent(-2)
         

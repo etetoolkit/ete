@@ -260,7 +260,7 @@ def process_task(task, wkname, npr_conf, nodeid2info):
                 dataid = DATATYPES.alg_phylip
             elif ttype == "acleaner":
                 algfile = pjoin(GLOBALS["input_dir"], task.clean_alg_phylip_file)
-                dataid = DATATYPES.alg_clean_phylip
+                dataid = DATATYPES.clean_alg_phylip
 
             if "i_mean" not in alg_stats:
                 log.log(24, "Calculating alignment stats...")

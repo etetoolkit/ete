@@ -316,6 +316,9 @@ def clear_tempdir():
 def terminate_job_launcher():
     back_launcher = GLOBALS.get("_background_scheduler", None)
     if back_launcher:
+        #GLOBALS['_job_queue'].close()
+        GLOBALS['_job_queue'].cancel_join_thread()
+        back_launcher.join(120) # gives a couple of minutes to finish
         back_launcher.terminate()
         
 def print_as_table(rows, header=None, fields=None, print_header=True, stdout=sys.stdout):
