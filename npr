@@ -192,67 +192,63 @@ def main(args):
     VALID_WORKFLOW_TYPES = set(['genetree', 'supermatrix'])
     # extract workflow filters
 
-    
-    # expand meta workflows
-    genetree_workflows = []
-    for wkname in args.workflow:
-        if wkname not in base_config and wkname in base_config.get('meta_workflow', {}):
-            genetree_workflows.extend(
-                [x.lstrip('@') for x in base_config['meta_workflow'][wkname]])
-        else:
-            genetree_workflows.append(wkname)
 
+    def parse_workflows(names, target_wtype, parse_filters=False):
+        parsed_workflows = []
+        if not names:
+            return parsed_workflows
 
-    # expand meta workflows
-    supermatrix_workflows = []
-    if args.supermatrix_workflow:
-        for wkname in args.supermatrix_workflow:
-            if wkname not in base_config and wkname in base_config.get('meta_workflow', {}):
-                supermatrix_workflows.extend(
-                    [x.lstrip('@') for x in base_config['meta_workflow'][wkname]])
-            else:
-                supermatrix_workflows.append(wkname)
+        for wkname in names:
+            if parse_filters:
+                wfilters = {}    
+                fields = map(strip, wkname.split(","))
+                if len(fields) == 1:
+                    wkname = fields[0]
+                else:
+                    wkname = fields[-1]
+                    for f in fields[:-1]:
+                        if f.startswith("size-range:"): # size filter
+                            f = f.replace("size-range:",'')
+                            try:
+                                min_size, max_size = map(int, f.split('-'))
+                            except ValueError:
+                                raise ConfigError('size filter should consist of two integer numbers (i.e. 50-100). Found [%s] instead' %f)
+
+                            wfilters["max_size"] = max_size
+                            wfilters["min_size"] = min_size
+                        else:
+                            raise ConfigError('Unknown workflow filter [%s]' %f)
             
+            if wkname not in base_config and wkname in base_config.get('meta_workflow', {}):
+                temp_workflows = [x.lstrip('@') for x in base_config['meta_workflow'][wkname]]
+            else:
+                temp_workflows = [wkname]
+                
+            for _w in temp_workflows:
+                if _w not in base_config:
+                    list_workflows(base_config)
+                    raise ConfigError('[%s] workflow or meta_workflow name is not found in the config file.' %_w)
+                wtype = base_config[_w]['_app']
+                if wtype not in VALID_WORKFLOW_TYPES:
+                    raise ConfigError('[%s] is not a valid workflow: %s?' %(_w, wtype))
+                if wtype != target_wtype:
+                    raise ConfigError('[%s] is not a valid %s workflow' %(wkname, target_wtype))
+                    
+            if parse_filters:
+                if len(temp_workflows) == 1:
+                    parsed_workflows.extend([(temp_workflows[0], wfilters)])
+                else:
+                    raise ConfigError('Meta-workflows with multiple threads are not allowed as recursive workflows [%s]' %wkname)
+            else:
+                parsed_workflows.extend(temp_workflows)
+        return parsed_workflows
+    
+    genetree_workflows = parse_workflows(args.workflow, "genetree")
+    supermatrix_workflows = parse_workflows(args.supermatrix_workflow, "supermatrix")
+                
     # Stop if mixing types of meta-workflows 
     if supermatrix_workflows and len(genetree_workflows) > 1:
-        raise ConfigError("A single genetree workflow can be specified when used in combination with super-matrix workflows.")                    
-            
-    # Parse npr workflows and filters
-    npr_workflows = []
-    use_npr = False
-    if args.npr_workflows is not None:        
-        use_npr = True        
-        for wkname in args.npr_workflows:
-            wfilters = {}    
-            fields = map(strip, wkname.split(","))
-            if len(fields) == 1:
-                wkname = fields[0]
-            else:
-                wkname = fields[-1]
-                for f in fields[:-1]:
-                    if f.startswith("size-range:"): # size filter
-                        f = f.replace("size-range:",'')
-                        try:
-                            min_size, max_size = map(int, f.split('-'))
-                        except ValueError:
-                            raise ConfigError('size filter should consist of two integer numbers (i.e. 50-100). Found [%s] instead' %f)
-
-                        wfilters["max_size"] = max_size
-                        wfilters["min_size"] = min_size
-                    else:
-                        raise ConfigError('Unknown workflow filter [%s]' %f)                   
-            # Register workflow and filter
-            npr_workflows.append((wkname, wfilters))
-
-    # Check workflows integrity
-    for wkname in genetree_workflows + supermatrix_workflows + [e[0] for e in npr_workflows]:
-        if wkname not in base_config:
-            list_workflows(base_config)
-            raise ConfigError('[%s] workflow or meta_workflow name is not found in the config file.' %wkname)
-    
-        wtype = base_config[wkname]['_app']
-        if wtype not in VALID_WORKFLOW_TYPES:
-            raise ConfigError('[%s] configuration block is not a valid workflow definition (_app=[%s])' %(wkname, '|'.join(VALID_WORKFLOW_TYPES)))
+        raise ConfigError("A single genetree workflow must be specified when used in combination with super-matrix workflows.")                    
 
     # Sets master workflow type
     if supermatrix_workflows:
@@ -261,11 +257,14 @@ def main(args):
     else:
         WORKFLOW_TYPE = "genetree"
         master_workflows = genetree_workflows
-            
-    # Check npr workflow type
-    if npr_workflows and list(set([base_config[wkname]['_app'] for wkname, _ in npr_workflows]))[0] != WORKFLOW_TYPE:
-        raise ConfigError('All npr workflow(s) should be of [%s] type' %WORKFLOW_TYPE)
         
+    # Parse npr workflows and filters
+    npr_workflows = []
+    use_npr = False
+    if args.npr_workflows is not None:        
+        use_npr = True
+        npr_workflows = parse_workflows(args.npr_workflows, WORKFLOW_TYPE, parse_filters=True)
+
     # setup workflows and create a separate config dictionary for each of them
     run2config = {}
     for wkname in master_workflows:
