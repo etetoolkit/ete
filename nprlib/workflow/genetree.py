@@ -299,8 +299,8 @@ def process_task(task, wkname, npr_conf, nodeid2info):
             # Converts aa alignment into nt if necessary
             if  seqtype == "aa" and \
                     "nt" in GLOBALS["seqtypes"] and \
-                    task.mean_ident > npr_conf.switch_aa_similarity:
-                log.log(28, "@@2:Switching to codon alignment!@@1: amino-acid sequence similarity: %0.2f > %0.2f" %\
+                    task.mean_ident >= npr_conf.switch_aa_similarity:
+                log.log(28, "@@2:Switching to codon alignment!@@1: amino-acid sequence similarity: %0.2f >= %0.2f" %\
                         (task.mean_ident, npr_conf.switch_aa_similarity))
                 alg_fasta_file = "%s.%s" %(taskid, DATATYPES.alg_nt_fasta)
                 alg_phylip_file = "%s.%s" %(taskid, DATATYPES.alg_nt_phylip)

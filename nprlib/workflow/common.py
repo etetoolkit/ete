@@ -158,7 +158,7 @@ def split_tree(task_tree_node, task_outgroups, main_tree, alg_path, npr_conf, th
                 continue
 
             # If seq_sim filter used, calculate node stats
-            if ALG and "min_seq_diff" in wkfilter: 
+            if ALG and ("min_seq_sim" in wkfilter or "max_seq_sim" in wkfilter): 
                 if not hasattr(_n, "seqs_mean_ident"):
                     log.log(20, "Calculating node sequence stats...")
                     mx, mn, avg, std = get_seqs_identity(ALG,
@@ -167,10 +167,14 @@ def split_tree(task_tree_node, task_outgroups, main_tree, alg_path, npr_conf, th
                                     seqs_mean_ident=avg, seqs_std_ident=std)
                     log.log(20, "mx=%s, mn=%s, avg=%s, std=%s" %(mx, mn, avg, std))
                     
-                # If sequences are not different enough, do not optimize this
-                # node even if it is lowly supported
-                if (1 - _n.seqs_mean_ident) < wkfilter["min_seq_diff"]:
+
+                if _n.seqs_mean_ident < wkfilter["min_seq_sim"]:
                     continue
+                    
+                if _n.seqs_mean_ident > wkfilter["max_seq_sim"]:
+                    continue
+
+                    
             else:
                 _n.add_features(seqs_max_ident=None, seqs_min_ident=None,
                                 seqs_mean_ident=None, seqs_std_ident=None)
