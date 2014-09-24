@@ -301,7 +301,6 @@ def main(args):
         if WORKFLOW_TYPE == "supermatrix":
             concatenator = config[wkname]["_alg_concatenator"][1:]
             config[concatenator]["_workflow"] = '@%s' % genetree_workflows[0]
-            print config[concatenator]
             
         # setup npr options for master workflows        
         if use_npr:
@@ -312,7 +311,6 @@ def main(args):
                 'nt_switch_thr': args.nt_switch_thr,
                 'max_iters': args.max_iters,
                 }
-            print config['_npr']
             
             #config[wkname]['_npr'] = '@'+npr_config
             #target_levels = config[npr_config].get('_target_levels', [])
