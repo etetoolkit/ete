@@ -19,11 +19,11 @@ def list_workflows(config):
         print '=' *80
         print ('  %s' %'\n  '.join(avail_workflows))
                 
-    avail_meta = sorted(["%s (%s threads)" %(k.ljust(40), len(v)) for k,
+    avail_meta = sorted(["%s (% 3s threads)" %(k.ljust(40), len(v)) for k,
                          v in config.get('meta_workflow', {}).iteritems()])
 
     print '=' *80
-    print 'Available meta-workflows'.center(80)
+    print 'Available Aliases and Meta-workflows'.center(80)
     print '=' *80
     print ('  %s' %'\n  '.join(avail_meta))
 
