@@ -10,7 +10,7 @@ def list_workflows(config):
         'supermatrix': '(sptree-treebuilder-cogselector)',
         'npr': 'Nested Phylogenetic Reconstruction options',
         }
-    for wtype in ['genetree', 'supermatrix', 'npr']:
+    for wtype in ['genetree', 'supermatrix']:
         avail_workflows = sorted(['%s %s' %(k.ljust(25), config[k].get('_desc', '')) for k,
                               v in config.iteritems() if v.get('_app', '') == wtype])
         print '=' *80
