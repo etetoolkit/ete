@@ -96,18 +96,17 @@ class ConcatAlg(ConcatAlgTask):
                     for nid in self.job2alg]
         filenames, models = zip(*alg_data)
 
-        mainalg, partitions, sp2alg, species = get_concatenated_alg(
+        mainalg, partitions, sp2alg, species, alg_lenghts = get_concatenated_alg(
             filenames,
             models, sp_field=0,
             sp_delimiter=GLOBALS["spname_delimiter"])
 
-        log.log(20, "Done concat alg, now writting fasta")
+        log.log(20, "Done concat alg, now writting fasta format")
         fasta = mainalg.write(format="fasta")
-        log.log(20, "Done concat alg, now writting phylip")
+        log.log(20, "Done concat alg, now writting phylip format")
         phylip = mainalg.write(format="iphylip_relaxed")
         txt_partitions = '\n'.join(partitions)
-        log.log(28, "Done concat alg")
-        log.log(26, "Modelled regions: \n"+'\n'.join(partitions))
+        log.log(26, "Modeled regions: \n"+'\n'.join(partitions))
         ConcatAlg.store_data(self, fasta, phylip, txt_partitions)
         
 def get_species_code(name, splitter, field):
@@ -175,6 +174,7 @@ def get_concatenated_alg(alg_filenames, models=None,
             return r
            
     sorted_algs = sorted(alg_objects, sort_single_algs)
+    concat_alg_lengths = [alg.seqlength for alg in sorted_algs]
     model2win = {}
     model2size = {}
     for alg in sorted_algs:
@@ -210,6 +210,6 @@ def get_concatenated_alg(alg_filenames, models=None,
         raise Exception("Concatenated alignment is not consistent: unequal seq length ")
     if seq_sizes[0] != expected_total_length:
         raise Exception("The size of concatenated alg is not what expected")
-    return concat, partitions, sp2alg, valid_species
+    return concat, partitions, sp2alg, valid_species, concat_alg_lengths
 
         

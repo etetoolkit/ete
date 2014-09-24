@@ -500,23 +500,22 @@ def background_job_launcher(job_queue, run_detached, schedule_time, max_cores):
 
             sleep(schedule_time)
     except:
-        print >>sys.stderr, 'Killing %s running jobs...' %len(running_jobs)
-        for jid, (cores, cmd, st_file, pid) in running_jobs.iteritems():
-            if pid:
-                print >>sys.stderr, "Killing", pid.pid
-                try:
-                    os.killpg(pid.pid, signal.SIGTERM)
-                except:
-                    print 'not found, too late'
-                    pass
-
-                try:
-                    open(st_file, "w").write("E")
-                except:
-                    print "Ooops"
-                else:
-                    print >>sys.stderr, st_file, "has been marked as error"
-                    
+        if len(running_jobs):
+            print >>sys.stderr, ' Killing %s running jobs...' %len(running_jobs)
+            for jid, (cores, cmd, st_file, pid) in running_jobs.iteritems():
+                if pid:
+                    #print >>sys.stderr, ".",
+                    #sys.stderr.flush()
+                    try:
+                        os.killpg(pid.pid, signal.SIGTERM)
+                    except:
+                        print "Ooops, the process", pid.pid, "could not be terminated!"
+                        pass
+                    try:
+                        open(st_file, "w").write("E")
+                    except:
+                        print "Ooops,", st_file, "could not be labeled as Error task. Please remove file before resuming the analysis."
+            
     sys.exit(0)
 
         

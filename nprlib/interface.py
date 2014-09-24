@@ -303,6 +303,9 @@ def app_wrapper(func, args):
     global NCURSES
     base_dir = GLOBALS.get("scratch_dir", GLOBALS["basedir"])
     lock_file = pjoin(base_dir, "alive")
+
+    if not args.enable_ui:
+        NCURSES = False
     
     if not pexist(lock_file) or args.clearall:
         open(lock_file, "w").write(time.ctime())
@@ -310,23 +313,29 @@ def app_wrapper(func, args):
         clear_env()
         print >>sys.stderr, '\nThe same process seems to be running. Use --clearall or remove the lock file "alive" within the output dir'
         sys.exit(-1)
-
-    if not args.enable_ui:
-        NCURSES = False
+        
     try:
         if NCURSES:
             curses.wrapper(main, func, args)
         else:
             main(None, func, args)
     except ConfigError, e:
+        if GLOBALS.get('_background_scheduler', None):
+            GLOBALS['_background_scheduler'].terminate()
+
         print >>sys.stderr, "\nConfiguration Error:", e
         clear_env()
         sys.exit(-1)
     except DataError, e:
+        if GLOBALS.get('_background_scheduler', None):
+            GLOBALS['_background_scheduler'].terminate()
+
         print >>sys.stderr, "\nData Error:", e
         clear_env()
         sys.exit(-1)
     except KeyboardInterrupt:
+        # Control-C is also grabbed by the back_launcher, so it is no necessary
+        # to terminate from here
         print >>sys.stderr, "\nProgram was interrupted."
         if args.monitor:
             print >>sys.stderr, ("VERY IMPORTANT !!!: Note that launched"
@@ -334,9 +343,15 @@ def app_wrapper(func, args):
         clear_env()
         sys.exit(-1)
     except:
+        if GLOBALS.get('_background_scheduler', None):
+            GLOBALS['_background_scheduler'].terminate()
+            
         clear_env()
         raise
     else:
+        if GLOBALS.get('_background_scheduler', None):
+            GLOBALS['_background_scheduler'].terminate()
+            
         clear_env()
 
     
