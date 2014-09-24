@@ -133,16 +133,16 @@ iterations):
 Runs a genetree workflow in recursive mode using dynamic workflow adjustment
 depending on subtree size:
 
-  $ npr -a fasta.aa.fa -w linsi_fasttree -o results  \\
-        --recursive  “size-range:500-1000, workflow:linsi_fasttree” \\
-                     “size-range:0-499, workflow:linsi_phyml”
+  $ npr -a fasta.aa.fa -w linsi_fasttree -o results/  \\
+        --recursive  “size-range:500-1000,linsi_fasttree” \\
+                     “size-range:0-499,linsi_phyml”
 
 Runs a genetree workflow in recursive mode using dynamic workflow adjustment
 depending on subtree size and combining amino-acids and nucleotide alignments:
 
   $ npr -a fasta.aa.fa -w linsi_fasttree -o results/ \\
-        --recursive  “size-range:500-1000, workflow:linsi_fasttree” \\
-                     “size-range:0-499, workflow:linsi_phyml” \\
+        --recursive  “size-range:500-1000,linsi_fasttree” \\
+                     “size-range:0-499,linsi_phyml” \\
         -nt_switch_thr 0.95
 """
 
@@ -218,8 +218,7 @@ def main(args):
                                 raise ConfigError('size filter should consist of two integer numbers (i.e. 50-100). Found [%s] instead' %f)
                             wfilters["max_size"] = max_size
                             wfilters["min_size"] = min_size
-                            
-                        if f.startswith("seq-sim-range:"): 
+                        elif f.startswith("seq-sim-range:"): 
                             f = f.replace("seq-sim-range:",'')
                             try:
                                 min_seq_sim, max_seq_sim  = map(float, f.split('-'))
