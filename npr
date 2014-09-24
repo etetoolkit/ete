@@ -211,11 +211,28 @@ def main(args):
                             f = f.replace("size-range:",'')
                             try:
                                 min_size, max_size = map(int, f.split('-'))
+                                if min_size < 0 or min_size > max_size:
+                                    raise ValueError
+        
                             except ValueError:
                                 raise ConfigError('size filter should consist of two integer numbers (i.e. 50-100). Found [%s] instead' %f)
-
                             wfilters["max_size"] = max_size
                             wfilters["min_size"] = min_size
+                            
+                        if f.startswith("seq-sim-range:"): 
+                            f = f.replace("seq-sim-range:",'')
+                            try:
+                                min_seq_sim, max_seq_sim  = map(float, f.split('-'))
+                                if min_seq_sim > 1 or min_seq_sim < 0:
+                                    raise ValueError
+                                if max_seq_sim > 1 or max_seq_sim < 0:
+                                    raise ValueError
+                                if min_seq_sim > max_seq_sim:
+                                    raise ValueError
+                            except ValueError:
+                                raise ConfigError('sequence similarity filter should consist of two float numbers between 0 and 1 (i.e. 0-0.95). Found [%s] instead' %f)
+                            wfilters["min_seq_sim"] = min_seq_sim
+                            wfilters["max_seq_sim"] = max_seq_sim
                         else:
                             raise ConfigError('Unknown workflow filter [%s]' %f)
             
