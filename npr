@@ -410,8 +410,7 @@ def main(args):
         silent_remove(pjoin(base_dir, "nprdata.tar"))
         silent_remove(pjoin(base_dir, "nprdata.tar.gz"))
         silent_remove(pjoin(base_dir, "npr.log"))
-        silent_remove(pjoin(base_dir, "npr.log.gz"))
-                    
+        silent_remove(pjoin(base_dir, "npr.log.gz"))                    
     else:
         if args.softclear:
             log.log(28, "Erasing precomputed data (reusing task directory)")
