@@ -435,7 +435,7 @@ def main(args):
     # UnCompress packed execution data
     if pexist(os.path.join(base_dir,"nprdata.tar.gz")):
         log.warning("Compressed data found. Extracting content to start execution...")
-        cmd = "cd %s && tar -zxf nprdata.tar.gz && rm nprdata.tar.gz" % base_dir
+        cmd = "cd %s && gunzip nprdata.tar.gz && tar -xf nprdata.tar && rm nprdata.tar" % base_dir
         os.system(cmd)
             
     # Create dir structure
@@ -632,7 +632,7 @@ def main(args):
     if not thread_errors:
         if args.compress:
             log.log(28, "Compressing intermediate data...")
-            cmd = "cd %s && tar --remove-files -zcf nprdata.tar.gz data.db tasks/ seq.db; if [ -e npr.log ]; then gzip -f npr.log; fi;" %\
+            cmd = "cd %s && tar --remove-files -cf nprdata.tar data.db tasks/ seq.db && gzip nprdata.tar; if [ -e npr.log ]; then gzip -f npr.log; fi;" %\
               GLOBALS["basedir"]
             os.system(cmd)
         log.log(28, "Deleting temporal data...")
