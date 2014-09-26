@@ -67,7 +67,8 @@ sys.path.insert(0, NPRPATH)
 from nprlib import argparse
 from nprlib.utils import (strip, SeqGroup, generate_runid,  AA, NT,
                           GLOBALS, encode_seqname, pjoin, pexist,
-                          hascontent, clear_tempdir, ETE_CITE, colorify, GENCODE)
+                          hascontent, clear_tempdir, ETE_CITE, colorify,
+                          GENCODE, silent_remove)
 from nprlib.errors import ConfigError, DataError
 from nprlib.master_task import Task
 from nprlib.interface import app_wrapper
@@ -399,19 +400,18 @@ def main(args):
         shutil.rmtree(GLOBALS["tasks_dir"]) if pexist(GLOBALS["tasks_dir"]) else None
         shutil.rmtree(GLOBALS["tmp"]) if pexist(GLOBALS["tmp"]) else None
         shutil.rmtree(GLOBALS["input_dir"]) if pexist(GLOBALS["input_dir"]) else None
-        if not args.seqdb and pexist(GLOBALS["seqdb_file"]):
-            os.remove(GLOBALS["seqdb_file"])
-        if not args.orthodb and pexist(GLOBALS["orthodb_file"]):
-            os.remove(GLOBALS["orthodb_file"])
-        os.remove(GLOBALS["datadb_file"]) if pexist(GLOBALS["datadb_file"]) else None
-        try:
-            os.remove(pjoin(base_dir, "nprdata.tar"))
-            os.remove(pjoin(base_dir, "nprdata.tar.gz"))
-            os.remove(pjoin(base_dir, "npr.log"))
-            os.remove(pjoin(base_dir, "npr.log.gz"))
-        except OSError:
-            pass
-            
+        
+        if not args.seqdb:
+            silent_remove(GLOBALS["seqdb_file"])
+        if not args.orthodb:
+            silent_remove(GLOBALS["orthodb_file"])
+
+        silent_remove(GLOBALS["datadb_file"])
+        silent_remove(pjoin(base_dir, "nprdata.tar"))
+        silent_remove(pjoin(base_dir, "nprdata.tar.gz"))
+        silent_remove(pjoin(base_dir, "npr.log"))
+        silent_remove(pjoin(base_dir, "npr.log.gz"))
+                    
     else:
         if args.softclear:
             log.log(28, "Erasing precomputed data (reusing task directory)")
