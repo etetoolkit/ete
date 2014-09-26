@@ -468,7 +468,13 @@ def symlink(target, link_name):
     except OSError:
         pass
     os.symlink(target, link_name)
-        
+
+def silent_remove(target):
+    try:
+        os.remove(target)
+    except OSError:
+        pass
+    
 def get_latest_nprdp(basedir):
     avail_dbs = []
     for fname in glob(os.path.join(basedir, "*.db")):
