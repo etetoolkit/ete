@@ -176,6 +176,10 @@ def translate_merged(all_taxids):
     return conv_all_taxids, conversion
     
 def annotate_tree(t, tax2name=None, tax2track=None, attr_name="name"):
+    """Annotate a given tree containing taxids as leaf names with the 'taxid',
+    'spname', 'lineage', 'named_lineage' extra attributes.
+    """
+    
     leaves = t.get_leaves()
     taxids = set(map(int, [getattr(n, attr_name) for n in leaves]))
     merged_conversion = {}
@@ -188,6 +192,15 @@ def annotate_tree(t, tax2name=None, tax2track=None, attr_name="name"):
     if not tax2track or taxids - set(map(int, tax2track.keys())):
         #print "Querying for tax lineages"
         tax2track = dict([(tid, get_sp_lineage(tid)) for tid in taxids])
+
+    all_taxid_codes = set([_tax for _lin in tax2track.values() for _tax in _lin])
+    extra_tax2name = get_taxid_translator(list(all_taxid_codes - set(tax2name.keys())))
+    tax2name.update(extra_tax2name)
+
+
+
+
+
 
     n2leaves = t.get_cached_content()
         
@@ -207,7 +220,15 @@ def annotate_tree(t, tax2name=None, tax2track=None, attr_name="name"):
                                lineage = [], 
                                named_lineage = [])
         else:
-            n.name, n.named_lineage = first_common_ocurrence([lf.named_lineage for lf in n2leaves[n]])
+            ancestor, lineage = first_common_ocurrence([lf.lineage for lf in n2leaves[n]])
+
+            #node_name, named_lineage = first_common_ocurrence([lf.named_lineage for lf in n2leaves[n]])
+            n.add_features(spname = tax2name.get(ancestor, str(ancestor)),
+                           taxid = ancestor,
+                           lineage = lineage, 
+                           named_lineage = [tax2name.get(tax, str(tax)) for tax in lineage])
+
+
             
     return tax2name, tax2track
 

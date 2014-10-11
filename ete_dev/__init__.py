@@ -18,6 +18,12 @@ from nexml import Nexml, NexmlTree
 from evol import EvolTree
 
 try:
+    from ncbi_taxonomy import ncbiquery
+except ImportError, e:
+    print >>stderr, "NCBI taxonomy module could not be loaded"
+    print e
+
+try:
     from coretype.arraytable import *
 except ImportError, e:
     print >>stderr, "Clustering module could not be loaded"
