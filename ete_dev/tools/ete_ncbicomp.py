@@ -24,6 +24,88 @@ else:
     
 args = None
 
+
+def ncbi_consensus(self, ):
+    nsubtrees, ndups, subtrees = self.get_speciation_trees(map_features=["taxid"])
+
+    valid_subtrees, broken_subtrees, ncbi_mistakes, broken_branches, total_rf, broken_clades, broken_sizes = analyze_subtrees(t, subtrees, show_tree=SHOW_TREE)
+
+
+    avg_rf = []
+    rf_max = 0.0 # reft.robinson_foulds(reft)[1]
+    sum_size = 0.0
+
+    reftree = 
+
+
+    for tn, subt in enumerate(subtrees):
+        partial_rf = subt.robinson_foulds(reft, attr_t1="taxid")
+
+        sptree_size = len(set([n.taxid for n in subt.iter_leaves()]))
+        sum_size += sptree_size
+        avg_rf.append((partial_rf[0]/float(partial_rf[1])) * sptree_size)
+        common_names = len(partial_rf[3])
+        max_size = max(max_size, sptree_size)
+        rf_max = max(rf_max, partial_rf[1])
+
+
+        rf = numpy.sum(avg_rf) / float(sum_size) # Treeko dist
+        rf_std = numpy.std(avg_rf)
+        rf_med = numpy.median(avg_rf)
+
+        sizes_info = "%0.1f/%0.1f +- %0.1f" %( numpy.mean(broken_sizes), numpy.median(broken_sizes), numpy.std(broken_sizes))
+        iter_values = [os.path.basename(tfile), nsubtrees, ndups,
+                        broken_subtrees, ncbi_mistakes, broken_branches, sizes_info, rf, rf_med,
+                       rf_std, rf_max, common_names] 
+        print >>OUT, '|'.join(map(lambda x: str(x).strip().ljust(15), iter_values)) 
+        fixed = sorted([n for n in prev_broken if n not in broken_clades])
+        new_problems =  sorted(broken_clades - prev_broken)
+        fixed_string = color(', '.join(fixed), "green") if fixed else ""
+        problems_string = color(', '.join(new_problems), "red") if new_problems else ""
+        OUT.write("    Fixed clades: %s\n" %fixed_string) if fixed else None
+        OUT.write("    New broken:   %s\n" %problems_string) if new_problems else None
+        prev_broken = broken_clades
+        ENTRIES.append([os.path.basename(tfile), nsubtrees, ndups,
+                        broken_subtrees, ncbi_mistakes, broken_branches, sizes_info, fixed_string, problems_string])
+        OUT.flush()
+        if args.show_tree or args.render:
+            ts = TreeStyle()
+            ts.force_topology = True
+            #ts.tree_width = 500
+            ts.show_leaf_name = False
+            ts.layout_fn = ncbi_layout 
+            ts.mode = "r"
+            t.dist = 0
+            if args.show_tree:
+                #if args.hide_monophyletic:
+                #    tax2monophyletic = {}
+                #    n2content = t.get_node2content()
+                #    for node in t.traverse():
+                #        term2count = defaultdict(int)
+                #        for leaf in n2content[node]:
+                #            if leaf.lineage:
+                #                for term in leaf.lineage:
+                #                    term2count[term] += 1
+                #        expected_size = len(n2content)
+                #        for term, count in term2count.iteritems():
+                #            if count > 1
+                    
+                print "Showing tree..."
+                t.show(tree_style=ts)
+            else:
+                t.render("img.svg", tree_style=ts, dpi=300)
+            print "dumping color config"
+            cPickle.dump(name2color, open("ncbi_colors.pkl", "w"))
+
+        if args.dump:
+            cPickle.dump(t, open("ncbi_analysis.pkl", "w"))
+
+
+
+
+
+
+
 def npr_layout(node):
     if node.is_leaf():
         name = faces.AttrFace("name", fsize=12)

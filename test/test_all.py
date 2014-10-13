@@ -12,6 +12,8 @@ from datasets import *
 from test_tree import *
 from test_seqgroup import *
 from test_phylotree import *
+from test_ncbiquery import *
+
 try:
     import numpy
 except ImportError: # case numpy is not installed

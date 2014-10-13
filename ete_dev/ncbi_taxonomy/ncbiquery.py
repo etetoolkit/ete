@@ -9,16 +9,22 @@ import math
 
 c = None
 
+__all__ = ["connect_database", 'update_database', 'annotate_tree', 'get_fuzzy_name_translation', 'get_name_translation', 'get_ranks', 'get_taxid_translation', 'get_sp_lineage', 'get_topology', 'get_broken_branches']
+
 # Loads database
 def connect_database(dbfile=None):
     global c
-    if not dbfile:
-        module_path = os.path.split(os.path.realpath(__file__))[0]
-        dbfile = os.path.join(module_path, 'taxa.sqlite')
-        if not os.path.exists(dbfile):
+    if not c or c.closed():
+        if not dbfile:
             dbfile = os.path.join(os.environ.get('HOME', '/'), '.etetoolkit', 'taxa.sqlite')
-        
-    c = sqlite3.connect(dbfile)
+            if not os.path.exists(dbfile):
+                print >>sys.stderr, "NCBI taxonomy database was not found in %s" %dbfile
+        c = sqlite3.connect(dbfile)
+
+
+def update_database():
+    pass
+
 
 def get_fuzzy_name_translation(name, sim=0.9):
     print "Trying fuzzy search for %s" % name
@@ -175,13 +181,13 @@ def translate_merged(all_taxids):
         conversion[int(old)] = int(new)
     return conv_all_taxids, conversion
     
-def annotate_tree(t, tax2name=None, tax2track=None, attr_name="name"):
-    """Annotate a given tree containing taxids as leaf names with the 'taxid',
-    'spname', 'lineage', 'named_lineage' extra attributes.
+def annotate_tree(t, taxid_attr="name", tax2name=None, tax2track=None, tax2rank=None):
+    """Annotate a tree containing taxids as leaf names with the 'taxid',
+    'spname', 'lineage', 'named_lineage' and 'rank' extra attributes.
     """
     
     leaves = t.get_leaves()
-    taxids = set(map(int, [getattr(n, attr_name) for n in leaves]))
+    taxids = set(map(int, [getattr(n, taxid_attr) for n in leaves]))
     merged_conversion = {}
     
     taxids, merged_conversion = translate_merged(taxids)
@@ -197,16 +203,14 @@ def annotate_tree(t, tax2name=None, tax2track=None, attr_name="name"):
     extra_tax2name = get_taxid_translator(list(all_taxid_codes - set(tax2name.keys())))
     tax2name.update(extra_tax2name)
 
-
-
-
-
+    if not tax2rank:
+        tax2rank = get_ranks(tax2name.keys())
 
     n2leaves = t.get_cached_content()
         
     for n in t.traverse('postorder'):
         if n.is_leaf():
-            node_taxid = int(getattr(n, attr_name))
+            node_taxid = int(getattr(n, taxid_attr))
             n.add_features(taxid = node_taxid)
             if node_taxid:
                 if node_taxid in merged_conversion:
@@ -214,10 +218,12 @@ def annotate_tree(t, tax2name=None, tax2track=None, attr_name="name"):
 
                 n.add_features(spname = tax2name.get(node_taxid, "Unknown"),
                                lineage = tax2track[node_taxid], 
+                               rank = tax2rank.get(node_taxid, 'Unknown'),
                                named_lineage = translate_to_names(tax2track[node_taxid]))
             else:
                 n.add_features(spname = "Unknown",
                                lineage = [], 
+                               rank = 'Unknown',
                                named_lineage = [])
         else:
             ancestor, lineage = first_common_ocurrence([lf.lineage for lf in n2leaves[n]])
@@ -226,11 +232,10 @@ def annotate_tree(t, tax2name=None, tax2track=None, attr_name="name"):
             n.add_features(spname = tax2name.get(ancestor, str(ancestor)),
                            taxid = ancestor,
                            lineage = lineage, 
+                           rank = tax2rank.get(ancestor, 'Unknown'),
                            named_lineage = [tax2name.get(tax, str(tax)) for tax in lineage])
 
-
-            
-    return tax2name, tax2track
+    return tax2name, tax2track, tax2rank
 
 def first_common_ocurrence(vectors):
     visited = defaultdict(int)
@@ -261,8 +266,17 @@ def first_common_ocurrence(vectors):
         return best_match[0][0], [m[0][0] for m in matches if m[1] == len(vectors)]
 
     
-def get_broken_branches(t, n2content):
+def get_broken_branches(t, n2content=None, tax2name=None):
+    """Returns a list of NCBI lineage names that are not monophyletic, the list of affected
+    branches and their size.
+
+    
+    """
+    if not n2content:
+        n2content = t.get_cached_content()
+
     tax2node = defaultdict(set)
+    
     tax2name = {}
     unknown = set()
     for leaf in t.iter_leaves():

@@ -8,6 +8,8 @@
 # the __all__ variable.
 
 from sys import stderr
+from ncbi_taxonomy import ncbiquery
+
 from coretype.tree import *
 from coretype.seqgroup import *
 from phylo.phylotree import *
@@ -17,11 +19,7 @@ from phyloxml import Phyloxml, PhyloxmlTree
 from nexml import Nexml, NexmlTree
 from evol import EvolTree
 
-try:
-    from ncbi_taxonomy import ncbiquery
-except ImportError, e:
-    print >>stderr, "NCBI taxonomy module could not be loaded"
-    print e
+
 
 try:
     from coretype.arraytable import *

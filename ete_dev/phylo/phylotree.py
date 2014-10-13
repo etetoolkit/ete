@@ -32,7 +32,7 @@ import os
 import re
 import itertools
 from collections import defaultdict
-from ete_dev import TreeNode, SeqGroup
+from ete_dev import TreeNode, SeqGroup, ncbiquery
 from reconciliation import get_reconciled_tree
 import spoverlap
 
@@ -722,7 +722,68 @@ class PhyloNode(TreeNode):
             
         return prunned
    
+
+    def annotate_ncbi_taxa(self, taxid_attr='name', tax2name=None, tax2track=None, tax2rank=None, dbfile=None):
+        """Add NCBI taxonomy annotation to all descendant nodes. Leaf nodes are
+        expected to contain a feature (name, by default) encoding a valid taxid
+        number.
+
+        All descendant nodes (including internal nodes) are annotated with the
+        following new features:
+
+        `Node.spname`: scientific spcies name as encoded in the NCBI taxonomy database
+
+        `Node.named_lineage`: the NCBI lineage track using scientific names 
+
+        `Node.taxid`: NCBI taxid number 
+
+        `Node.lineage`: same as named_lineage but using taxid codes. 
         
+
+        Note that for internal nodes, NCBI information will refer to the first
+        common lineage of the grouped species.
+
+        :param name taxid_attr: the name of the feature that should be used to access the taxid number associated to each node. 
+
+        :param None tax2name: A dictionary where keys are taxid numbers and
+        values are their translation into NCBI scientific name. Its use is
+        optional and allows to avoid database queries when annotating many trees
+        containing the same set of taxids.
+
+        :param None tax2track: A dictionary where keys are taxid numbers and
+        values are their translation into NCBI lineage tracks (taxids). Its use is
+        optional and allows to avoid database queries when annotating many trees
+        containing the same set of taxids.
+
+        :param None tax2rank: A dictionary where keys are taxid numbers and
+        values are their translation into NCBI rank name. Its use is optional
+        and allows to avoid database queries when annotating many trees
+        containing the same set of taxids.
+
+        :param None dbfile : If provided, the provided file will be used as a
+        local copy of the NCBI taxonomy database.
+
+        :returns: tax2name (a dictionary translating taxid numbers into
+        scientific name), tax2lineage (a dictionary translating taxid numbers
+        into their corresponding NCBI lineage track) and tax2rank (a dictionary translating taxid numbers into
+        rank names).
+
+        """
+        
+        if not tax2name or not tax2track:
+            ncbiquery.connect_database(dbfile)
+
+        return ncbiquery.annotate_tree(self, taxid_attr=taxid_attr, tax2name=tax2name, tax2track=tax2track, tax2rank=tax2rank)
+
+
+    def ncbi_taxonomy_dist(self, taxid_attr="name"):
+        pass
+        
+
+    def build_from_ncbi_taxonomy(self):
+        pass
+
+
 #: .. currentmodule:: ete_dev
 #
 PhyloTree = PhyloNode
