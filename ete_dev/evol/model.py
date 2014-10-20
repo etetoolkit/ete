@@ -51,11 +51,11 @@ class Model:
         self.branches   = {}
         self.stats      = {}
         self.properties = {}
-        for a, b in args.items():
+        for a, b in list(args.items()):
             self.properties [a] = b
-        params = dict(PARAMS.items())
-        for key, arg in kwargs.items():
-            if not params.has_key(key):
+        params = dict(list(PARAMS.items()))
+        for key, arg in list(kwargs.items()):
+            if key not in params:
                 warn('WARNING: unknown param %s, can cause problems...'% (key))
             if key == 'gappy':
                 arg = not arg
@@ -98,7 +98,7 @@ class Model:
         ''' % (self.name,
                self.lnL if 'lnL' in self.stats else 'None',
                self.np  if 'np'  in self.stats else 'None',
-               ', '.join(self.sites.keys())  if self.sites else 'None',
+               ', '.join(list(self.sites.keys()))  if self.sites else 'None',
                str_site if self.classes else 'None',
                str_mark if self.branches else 'None'
            )
@@ -128,14 +128,14 @@ class Model:
             # parse rst file if site or branch-site model
             if 'site' in self.properties['typ']:
                 # sites and classes attr
-                for key, val in parse_rst(path).iteritems():
+                for key, val in parse_rst(path).items():
                     setattr(self, key, val)
             if 'ancestor' in self.properties['typ']:
                 get_ancestor(path, self)
             vars(self) ['lnL'] = self.stats ['lnL']
             vars(self) ['np']  = self.stats ['np']
         elif self.properties['exec'] == 'Slr':
-            for key, val in parse_slr (path).iteritems():
+            for key, val in parse_slr (path).items():
                 setattr (self, key, val)
             vars(self) ['lnL'] = 0
             vars(self) ['np']  = 0
@@ -171,9 +171,9 @@ class Model:
         if not 'header' in kwargs:
             kwargs['header'] = 'Omega value for sites under %s model' % \
                                (self.name)
-        if self.sites.has_key('BEB'):
+        if 'BEB' in self.sites:
             val = 'BEB'
-        elif self.sites.has_key('NEB'):
+        elif 'NEB' in self.sites:
             val = 'NEB'
         else:
             val = 'SLR'
@@ -182,12 +182,12 @@ class Model:
         if not 'ylim' in kwargs:
             kwargs['ylim'] = (0, 2)
         if errors:
-            errors = self.sites[val]['se'] if self.sites[val].has_key('se')\
+            errors = self.sites[val]['se'] if 'se' in self.sites[val]\
                      else None
         if TREEVIEW:
             hist = SequencePlotFace(self.sites[val]['w'], hlines=hlines,
                                     colors=colors, errors=errors,
-                                    ylabel=u'Omega (\u03c9)', kind=kind,
+                                    ylabel='Omega (\u03c9)', kind=kind,
                                     **kwargs)
             if up:
                 setattr(hist, 'up', True)
@@ -209,7 +209,7 @@ class Model:
         
         '''
         string = ''
-        if self.properties.has_key('sep'):
+        if 'sep' in self.properties:
             sep = self.properties ['sep']
         else:
             sep = ' = '
@@ -217,9 +217,9 @@ class Model:
             string += '%15s%s%s\n' % (prm, sep,
                                       str(self.properties['params'][prm]))
         string += '\n'
-        for prm in sorted(self.properties ['params'].keys(), cmp=lambda x, y: \
-                          cmp(sub('fix_', '', x.lower()),
-                              sub('fix_', '', y.lower()))):
+        for prm in sorted(list(self.properties ['params'].keys()), key=_cmp_to_key(
+                        lambda x, y: cmp(sub('fix_', '', x.lower()),
+                                         sub('fix_', '', y.lower())))):
             if prm in ['seqfile', 'treefile', 'outfile']:
                 continue
             if str(self.properties ['params'][prm]).startswith('*'):
@@ -238,7 +238,7 @@ def check_name(model):
     '''
     check that model name corresponds to one of the available
     '''
-    if AVAIL.has_key(sub('\..*', '', model)):
+    if sub('\..*', '', model) in AVAIL:
         return model, AVAIL [sub('\..*', '', model)]
 
 
@@ -257,7 +257,7 @@ def colorize_rst(vals, winner, classes, col=None):
                   'PS' : 'orange',
                   'PS+': 'red'}
     colors = []
-    for i in xrange(0, len(vals)):
+    for i in range(0, len(vals)):
         class1 = classes[i] #int(sub('\/.*', '', sub('\(', '', classes[i])))
         class2 = max(classes)# int(sub('.*\/', '', sub('\)', '', classes[i])))
         pval = float(vals[i])
@@ -287,13 +287,32 @@ def colorize_rst(vals, winner, classes, col=None):
             colors.append(col['NS'])
     return colors
 
+def _cmp_to_key(mycmp):
+    """Convert a cmp= function into a key= function
+    See: https://docs.python.org/3/howto/sorting.html
+    """
+    class K:
+        def __init__(self, obj, *args):
+            self.obj = obj
+        def __lt__(self, other):
+            return mycmp(self.obj, other.obj) < 0
+        def __gt__(self, other):
+            return mycmp(self.obj, other.obj) > 0
+        def __eq__(self, other):
+            return mycmp(self.obj, other.obj) == 0
+        def __le__(self, other):
+            return mycmp(self.obj, other.obj) <= 0
+        def __ge__(self, other):
+            return mycmp(self.obj, other.obj) >= 0
+        def __ne__(self, other):
+            return mycmp(self.obj, other.obj) != 0
+    return K
 
-
-Model.__doc__ = Model.__doc__ % \
-                ('\n'.join([ '          %-8s   %-27s   %-15s  ' % \
-                             ('%s' % (x), AVAIL[x]['evol'], AVAIL[x]['typ']) \
-                             for x in sorted(sorted(AVAIL.keys()),
-                                              cmp=lambda x, y: \
-                                              cmp(AVAIL[x]['typ'],
-                                                  AVAIL[y]['typ']),
-                                              reverse=True)]))
+Model.__doc__ = Model.__doc__ % (
+    '\n'.join([ '          %-8s   %-27s   %-15s  ' % (
+    '%s' % (x), AVAIL[x]['evol'], AVAIL[x]['typ'])
+        for x in sorted(sorted(AVAIL.keys()), 
+                        key=_cmp_to_key(lambda x, y: (
+                            (AVAIL[x]['typ'] > AVAIL[y]['typ']) - 
+                            (AVAIL[x]['typ'] < AVAIL[y]['typ']))),
+                        reverse=True)]))

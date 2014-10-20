@@ -80,7 +80,7 @@ class ArrayTable(object):
         """Removes the given column form the current dataset """
         col_value = self.colValues.pop(colname, None)
         if col_value != None:
-            new_indexes = range(len(self.colNames))
+            new_indexes = list(range(len(self.colNames)))
             index = self.colNames.index(colname)
             self.colNames.pop(index)
             new_indexes.pop(index)
@@ -112,19 +112,19 @@ class ArrayTable(object):
         elif grouping_criterion == "mean":
             grouping_f = get_mean_vector
         else:
-            raise ValueError, "grouping_criterion not supported. Use max|min|mean "
+            raise ValueError("grouping_criterion not supported. Use max|min|mean ")
 
         grouped_array = self.__class__()
         grouped_matrix = []
         colNames = []
         alltnames = set([])
-        for gname,tnames in groups.iteritems():
+        for gname,tnames in groups.items():
             all_vectors=[]
             for tn in tnames:
                 if tn not in self.colValues:
-                    raise ValueError, str(tn)+" column not found."
+                    raise ValueError(str(tn)+" column not found.")
                 if tn in alltnames:
-                    raise ValueError, str(tn)+" duplicated column name for merging"
+                    raise ValueError(str(tn)+" duplicated column name for merging")
                 alltnames.add(tn)
                 vector = self.get_column_vector(tn).astype(float)
                 all_vectors.append(vector)
@@ -163,10 +163,10 @@ class ArrayTable(object):
     def _link_names2matrix(self, m):
         """ Synchronize curent column and row names to the given matrix"""
         if len(self.rowNames) != m.shape[0]:
-            raise ValueError , "Expecting matrix with  %d rows" % m.size[0]
+            raise ValueError("Expecting matrix with  %d rows" % m.size[0])
 
         if len(self.colNames) != m.shape[1]:
-            raise ValueError , "Expecting matrix with  %d columns" % m.size[1]
+            raise ValueError("Expecting matrix with  %d columns" % m.size[1])
 
         self.matrix = m
         self.colValues.clear()
@@ -220,7 +220,7 @@ def safe_mean_vector(vectors):
     safe_mean = []
     safe_std  = []
 
-    for pos in xrange(length):
+    for pos in range(length):
         pos_mean = []
         for v in vectors:
             if numpy.isfinite(v[pos]):

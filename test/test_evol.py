@@ -20,8 +20,13 @@ import os
 
 ETEPATH = os.path.abspath(os.path.split(os.path.realpath(__file__))[0]+'/../')
 
-WRKDIR = ETEPATH + '/examples/evol/data/protamine/PRM1/'
-BINDIR = os.getcwd() + '/bin/'
+# Fix path for 2to3 builds
+if ETEPATH.endswith('build/lib'):
+    ETEPATH = ETEPATH.replace('build/lib', '')
+
+WRKDIR = os.path.join(ETEPATH, 'examples/evol/data/protamine/PRM1/')
+
+BINDIR = os.path.join(os.getcwd(), 'bin/')
 print BINDIR
 
 def random_swap(tree):
@@ -179,12 +184,16 @@ class TestEvolEvolTree(unittest.TestCase):
         tree.workdir = ETEPATH + '/examples/data/protamine/PRM1/paml/'
         tree.link_to_alignment  (WRKDIR + 'alignments.fasta_ali')
         tree.link_to_evol_model (WRKDIR + 'paml/M2/M2.out', 'M2.a')
-        out = open('blip.pik', 'w')
+        out = open('blip.pik', 'wb')
         dump (tree, out)
         out.close()
-        out = open('blip.pik')
+        out = open('blip.pik', 'rb')
         tree2 = load (out)
         out.close()
+        #x1 = str(tree2.get_evol_model('M2.a'))
+        #x2 = str(tree.get_evol_model('M2.a'))
+        #x1 == x2
+        #import pdb; pdb.set_trace()
         os.remove('blip.pik')
         self.assertEqual(str(tree2.get_evol_model('M2.a')),
                          str(tree.get_evol_model('M2.a'))

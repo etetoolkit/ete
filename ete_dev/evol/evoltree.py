@@ -56,6 +56,27 @@ def _parse_species(name):
     '''
     return name[:3]
 
+def _cmp_to_key(mycmp):
+    """Convert a cmp= function into a key= function
+    See: https://docs.python.org/3/howto/sorting.html
+    """
+    class K:
+        def __init__(self, obj, *args):
+            self.obj = obj
+        def __lt__(self, other):
+            return mycmp(self.obj, other.obj) < 0
+        def __gt__(self, other):
+            return mycmp(self.obj, other.obj) > 0
+        def __eq__(self, other):
+            return mycmp(self.obj, other.obj) == 0
+        def __le__(self, other):
+            return mycmp(self.obj, other.obj) <= 0
+        def __ge__(self, other):
+            return mycmp(self.obj, other.obj) >= 0
+        def __ne__(self, other):
+            return mycmp(self.obj, other.obj) != 0
+    return K
+
 class EvolNode(PhyloNode):
     """ Re-implementation of the standart TreeNode instance. It adds
     attributes and methods to work with phylogentic trees.
@@ -207,13 +228,13 @@ class EvolNode(PhyloNode):
             self.link_to_evol_model(os.path.join(fullpath,'out'), model_obj)
     sep = '\n'
     run_model.__doc__ = run_model.__doc__ % \
-                        (sep.join(map(lambda x: \
-                                      '          %-8s   %-27s   %-15s  ' % \
-                                      ('%s' % (x), AVAIL[x]['evol'], AVAIL[x]['typ']),
-                                      sorted (sorted (AVAIL.keys()), cmp=lambda x, y : \
-                                              cmp(AVAIL[x]['typ'], AVAIL[y]['typ']),
-                                              reverse=True))),
-                         ', '.join(PARAMS.keys()))
+        (sep.join(['          %-8s   %-27s   %-15s  ' % \
+                        ('%s' % (x), AVAIL[x]['evol'], AVAIL[x]['typ']) for x in sorted (sorted (AVAIL.keys()), 
+                                        key=_cmp_to_key(lambda x, y : (
+                            (AVAIL[x]['typ'] > AVAIL[y]['typ']) - 
+                            (AVAIL[x]['typ'] < AVAIL[y]['typ']))),
+                                reverse=True)]),
+            ', '.join(list(PARAMS.keys())))
 
 
     #def test_codon_model(self):
@@ -340,8 +361,8 @@ class EvolNode(PhyloNode):
         
         '''
         from re import match
-        node_ids = map (int , node_ids)
-        if kargs.has_key('marks'):
+        node_ids = list(map (int , node_ids))
+        if 'marks' in kargs:
             marks = list(kargs['marks'])
         else:
             marks = ['#1']*len (node_ids)
@@ -354,7 +375,7 @@ class EvolNode(PhyloNode):
                              marks[node_ids.index(node.node_id)])==None)\
                              and verbose:
                     warn('WARNING: marks should be "#" sign directly '+\
-                         'followed by integer\n' + self.mark_tree.func_doc)
+                         'followed by integer\n' + self.mark_tree.__doc__)
                 node.add_feature('mark', ' '+marks[node_ids.index(node.node_id)])
             elif not 'mark' in node.features:
                 node.add_feature('mark', '')
@@ -375,7 +396,7 @@ class EvolNode(PhyloNode):
         else:
             model._load(path)
         # new entry in _models dict
-        while self._models.has_key(model.name):
+        while model.name in self._models:
             model.name = model.name.split('__')[0] + str(
                 (int(model.name.split('__')[1])
                  +1)  if '__' in model.name else 0)
@@ -474,7 +495,7 @@ class EvolNode(PhyloNode):
         except KeyError:
             warn("at least one of %s or %s, was not calculated" % (altn.name,
                                                                    null.name))
-            exit(self.get_most_likely.func_doc)
+            exit(self.get_most_likely.__doc__)
 
     def change_dist_to_evol(self, evol, model, fill=False):
         '''
@@ -495,6 +516,7 @@ class EvolNode(PhyloNode):
             if fill:
                 for e in ['dN', 'dS', 'w', 'bL']:
                     node.add_feature(e, model.branches [node.node_id][e])
+
 
 
 # cosmetic alias

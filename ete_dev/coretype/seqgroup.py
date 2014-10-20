@@ -92,7 +92,7 @@ class SeqGroup(object):
                 args = self.parsers[format][2]
                 read(sequences, obj=self, fix_duplicates=fix_duplicates, **args)
             else:
-                raise ValueError, "Unsupported format: [%s]" %format
+                raise ValueError("Unsupported format: [%s]" %format)
 
     def __repr__(self):
         return "SeqGroup (%s)" %hex(self.__hash__())
@@ -108,13 +108,13 @@ class SeqGroup(object):
             args = self.parsers[format][2]
             return write(self, outfile, **args)
         else:
-            raise ValueError, "Unsupported format: [%s]" %format
+            raise ValueError("Unsupported format: [%s]" %format)
 
     def iter_entries(self):
         """ Returns an iterator over all sequences in the
         collection. Each item is a tuple with the sequence name,
         sequence, and sequence comments """
-        for i, seq in self.id2seq.iteritems():
+        for i, seq in self.id2seq.items():
             yield self.id2name[i], seq,  self.id2comment.get(i, [])
 
     def get_seq(self, name):
@@ -123,11 +123,11 @@ class SeqGroup(object):
 
     def get_entries(self):
         """ Returns the list of entries currently stored."""
-        keys = self.id2seq.keys()
-        seqs = self.id2seq.values()
+        keys = list(self.id2seq.keys())
+        seqs = list(self.id2seq.values())
         comments = [self.id2comment.get(x, []) for x in  keys]
-        names = map(lambda x: self.id2name[x], keys)
-        return zip(names, seqs, comments)
+        names = [self.id2name[x] for x in keys]
+        return list(zip(names, seqs, comments))
 
     def set_seq(self, name, seq, comments = None):
         """Updates or adds a sequence """
@@ -138,7 +138,7 @@ class SeqGroup(object):
         seq = seq.replace("\t", "")
         seq = seq.replace("\n", "")
         seq = seq.replace("\r", "")
-        seqid = self.name2id.get(name, max([0]+self.name2id.values())+1)
+        seqid = self.name2id.get(name, max([0]+list(self.name2id.values()))+1)
         self.name2id[name] = seqid
         self.id2name[seqid] = name
         self.id2comment[seqid] = comments
