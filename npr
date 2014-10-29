@@ -409,7 +409,7 @@ def main(args):
         silent_remove(GLOBALS["datadb_file"])
         silent_remove(pjoin(base_dir, "nprdata.tar"))
         silent_remove(pjoin(base_dir, "nprdata.tar.gz"))
-        silent_remove(pjoin(base_dir, "npr.log"))
+        #silent_remove(pjoin(base_dir, "npr.log"))
         silent_remove(pjoin(base_dir, "npr.log.gz"))                    
     else:
         if args.softclear:
@@ -699,6 +699,7 @@ def load_sequences(target_seqs, name2seq, workflow_type):
     db.seqconn.commit()
 
 def scan_sequences(args, target_seqs):
+    source_seqtype = "aa" if "aa" in GLOBALS["seqtypes"] else "nt"
     visited_seqs = {"aa":[], "nt":[]}
     seq2length = {"aa":{}, "nt":{}}
     seq2unknown = {"aa":{}, "nt":{}}
@@ -745,7 +746,7 @@ def scan_sequences(args, target_seqs):
 
         # Initialize target sets using aa as source
         if not target_seqs: # and seqtype == "aa":
-            target_seqs = set(visited_seqs["aa"])
+            target_seqs = set(visited_seqs[source_seqtype])
 
     if skipped_seqs:
         log.warning("%d sequences will not be used since they are"
