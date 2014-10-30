@@ -776,8 +776,19 @@ class PhyloNode(TreeNode):
         return ncbiquery.annotate_tree(self, taxid_attr=taxid_attr, tax2name=tax2name, tax2track=tax2track, tax2rank=tax2rank)
 
 
-    def ncbi_taxonomy_dist(self, taxid_attr="name"):
-        pass
+    def ncbi_compare(self, autodetect_duplications=True, cached_content=None):
+        if not cached_content:
+            cached_content = self.get_cached_content()
+        cached_species = set([n.species for n in cached_content[self]])
+        
+        if len(cached_species) != len(cached_content[self]):
+            print cached_species
+            ntrees, ndups, target_trees = self.get_speciation_trees(autodetect_duplications=autodetect_duplications, map_features=["taxid"])
+        else:
+            target_trees = [self]
+
+        for t in target_trees: 
+            ncbiquery.get_broken_branches(t, cached_content)
         
 
     def build_from_ncbi_taxonomy(self):

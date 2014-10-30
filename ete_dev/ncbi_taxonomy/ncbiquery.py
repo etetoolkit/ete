@@ -14,7 +14,7 @@ __all__ = ["connect_database", 'update_database', 'annotate_tree', 'get_fuzzy_na
 # Loads database
 def connect_database(dbfile=None):
     global c
-    if not c or c.closed():
+    if not c:
         if not dbfile:
             dbfile = os.path.join(os.environ.get('HOME', '/'), '.etetoolkit', 'taxa.sqlite')
             if not os.path.exists(dbfile):
@@ -46,7 +46,7 @@ def get_fuzzy_name_translation(name, sim=0.9):
     else:
         taxid = int(taxid)
 
-    norm_score = 1-(float(score)/len(name))
+    norm_score = 1 - (float(score)/len(name))
     if taxid: 
         print "FOUND!                  %s taxid:%s score:%s (%s)" %(spname, taxid, score, norm_score)
 
@@ -266,24 +266,23 @@ def first_common_ocurrence(vectors):
         return best_match[0][0], [m[0][0] for m in matches if m[1] == len(vectors)]
 
     
-def get_broken_branches(t, n2content=None, tax2name=None):
+def get_broken_branches(t, taxa_lineages, n2content=None):
     """Returns a list of NCBI lineage names that are not monophyletic, the list of affected
     branches and their size.
 
-    
+   
     """
     if not n2content:
         n2content = t.get_cached_content()
 
     tax2node = defaultdict(set)
-    
-    tax2name = {}
+        
     unknown = set()
     for leaf in t.iter_leaves():
         if leaf.spname.lower() != "unknown":
-            for index, tax in enumerate(leaf.lineage):
+            lineage = taxa_lineages[leaf.taxid]
+            for index, tax in enumerate(lineage):
                 tax2node[tax].add(leaf)
-                tax2name[tax] = leaf.named_lineage[index]
         else:
             unknown.add(leaf)
 
@@ -299,7 +298,7 @@ def get_broken_branches(t, n2content=None, tax2name=None):
             broken_clades.add(tax)
             
     broken_clade_sizes = [len(tax2node[tax]) for tax in broken_clades]
-    return broken_branches, broken_clades, broken_clade_sizes, tax2name
+    return broken_branches, broken_clades, broken_clade_sizes
    
 
 def annotate_tree_with_taxa(t, name2taxa_file, tax2name=None, tax2track=None, attr_name="name"):
