@@ -28,6 +28,8 @@ from collections import deque
 from hashlib import md5
 import itertools
 from ete_dev.parser.newick import read_newick, write_newick
+from ete_dev import utils
+
 
 # the following imports are necessary to set fixed styles and faces
 try:
@@ -1619,7 +1621,7 @@ class TreeNode(object):
         Returns the Robinson-Foulds symmetric distance between current
         tree and a different tree instance.
      
-        :param t2: target tree
+        :param t2: target reference tree
         
         :param name attr_t1: Compare trees using a custom node
                               attribute as a node name.
@@ -1733,28 +1735,177 @@ class TreeNode(object):
                 elif min_support_t2:
                     discard_t2 = set([p for p in edges2 if support_t2[p] < min_support_t2])
 
+                    
                 #rf = len(edges1 ^ edges2) - (len(discard_t1) + len(discard_t2)) - polytomy_correction # poly_corr is 0 if the flag is not enabled
                 #rf = len((edges1-discard_t1) ^ (edges2-discard_t2)) - polytomy_correction
+                
+                # the two root edges are never counted here, as they are always
+                # present in both trees because of the common attr filters
                 rf = len(((edges1 ^ edges2) - discard_t2) - discard_t1) - polytomy_correction
-
+                
                 if unrooted_trees:
-                    max_parts = (len(common_attrs)*2) - 6 - len(discard_t1) - len(discard_t2)
-                   
-                    # max_parts = len([p for p in edges1-discard_t1 if len(p[0])>1 and len(p[1])>1]) +\
-                    #     len([p for p in edges2-discard_t2 if len(p[0])>1 and len(p[1])>1])
+                    # thought this may work, but it does not, still I don't see why
+                    #max_parts = (len(common_attrs)*2) - 6 - len(discard_t1) - len(discard_t2)
+                    max_parts = (len([p for p in edges1 - discard_t1 if len(p[0])>1 and len(p[1])>1]) +
+                                 len([p for p in edges2 - discard_t2 if len(p[0])>1 and len(p[1])>1]))
                 else:
-                     max_parts = (len(common_attrs)*2) - 4 - len(discard_t1) - len(discard_t2)
-                   
-                    # # -2 is to # avoid counting the root partition of the two
-                    # # -trees
-                    # max_parts = (len([p for p in edges1-discard_t1 if len(p)>1]) +\
-                    #     len([p for p in edges2-discard_t2 if len(p)>1])) -2
+                    # thought this may work, but it does not, still I don't see why
+                    #max_parts = (len(common_attrs)*2) - 4 - len(discard_t1) - len(discard_t2)
+
+                    # Otherwise we need to count the actual number of valid
+                    # partitions in each tree -2 is to avoid counting the root
+                    # partition of the two trees (only needed in rooted trees)
+                    max_parts = (len([p for p in edges1 - discard_t1 if len(p)>1]) + 
+                                 len([p for p in edges2 - discard_t2 if len(p)>1])) - 2
+                    
+                    # print max_parts
 
                 if not min_comparison or min_comparison[0] > rf:
                     min_comparison = [rf, max_parts, common_attrs, edges1, edges2, discard_t1, discard_t2]
                     
         return min_comparison
 
+
+    def compare(self, ref_tree, use_collateral=False, min_support_source=0.0, min_support_ref=0.0,
+                has_duplications=False, expand_polytomies=False, unrooted=False,
+                max_treeko_splits_to_be_artifact=1000, ref_tree_attr='name', source_tree_attr='name'):
+
+        """
+        compare this tree with another. 
+
+        returns: robinson foulds
+
+        """
+        source_tree = self
+        def _compare(src_tree, ref_tree):
+            # calculate partitions and rf distances
+            rf, maxrf, common, ref_p, src_p, ref_disc, src_disc  = ref_tree.robinson_foulds(src_tree,
+                                                                                            expand_polytomies=expand_polytomies,
+                                                                                            unrooted_trees=unrooted,
+                                                                                            attr_t1=ref_tree_attr,
+                                                                                            attr_t2=source_tree_attr,
+                                                                                            min_support_t2=min_support_source,
+                                                                                            min_support_t1=min_support_ref)
+            
+            # if trees share leaves, count their distances
+            if maxrf > 0 and src_p and ref_p:
+                if unrooted:
+                    valid_ref_edges = set([p for p in (ref_p - ref_disc) if len(p[0])>1 and len(p[1])>0])
+                    valid_src_edges = set([p for p in (src_p - src_disc) if len(p[0])>1 and len(p[1])>0])            
+                    common_edges = valid_ref_edges & valid_src_edges
+                else:
+                    valid_ref_edges = set([p for p in (ref_p - ref_disc) if len(p)>1])
+                    valid_src_edges = set([p for p in (src_p - src_disc) if len(p)>1])            
+                    common_edges = valid_ref_edges & valid_src_edges
+
+            else:
+                valid_ref_edges = set()
+                valid_src_edges = set()
+                common_edges = set()
+
+                # # % of ref edges found in tree
+                # ref_found.append(float(len(p2 & p1)) / reftree_edges)
+
+                # # valid edges in target, discard also leaves
+                # p2bis = set([p for p in (p2-d2) if len(p[0])>1 and len(p[1])>1]) 
+                # if p2bis:
+                #     incompatible_target_branches = float(len((p2-d2) - p1))
+                #     target_found.append(1 - (incompatible_target_branches / (len(p2-d2))))
+
+            return rf, maxrf, len(common), valid_ref_edges, valid_src_edges, common_edges
+
+
+        total_valid_ref_edges = len([n for n in ref_tree.traverse() if n.children and n.support > min_support_ref])
+        result = {}
+        if has_duplications:
+            orig_target_size = len(source_tree)
+            ntrees, ndups, sp_trees = source_tree.get_speciation_trees(autodetect_duplications=True, newick_only=True)
+
+            if ntrees < max_treeko_splits_to_be_artifact:        
+                all_rf = []
+                ref_found = []
+                src_found = []
+                tree_sizes = []
+                all_max_rf = []
+                common_names = 0
+
+                for subtree_nw in sp_trees:
+                    #if seedid and not use_collateral and (seedid not in subtree_nw):
+                    #    continue
+                    subtree = source_tree.__class__(subtree_nw, sp_naming_function = source_tree._speciesFunction)
+
+                    # only necessary if rf function is going to filter by support
+                    # value.  It slows downs the analysis, obviously, as it has to
+                    # find the support for each node in the treeko tree from the
+                    # original one.
+                    if min_support_source > 0:
+                        subtree_content = subtree.get_cached_content(store_attr='name')
+                        for n in subtree.traverse():
+                            if n.children:
+                                n.support = source_tree.get_common_ancestor(subtree_content[n]).support
+                                
+                    total_rf, max_rf, ncommon, valid_ref_edges, valid_src_edges, common_edges = _compare(subtree, ref_tree)
+
+                    all_rf.append(total_rf)
+                    all_max_rf.append(max_rf)
+                    tree_sizes.append(ncommon)
+                    
+                    if unrooted:
+                        ref_found_in_src = len(common_edges)/float(len(valid_ref_edges)) if valid_ref_edges else -1
+                        src_found_in_ref = len(common_edges)/float(len(valid_src_edges)) if valid_src_edges else -1
+                    else:
+                        # in rooted trees, we want to discount the root edge
+                        # from the percentage of congruence. Otherwise we will never see a 0%
+                        # congruence for totally different trees
+                        ref_found_in_src = (len(common_edges)-1)/float(len(valid_ref_edges)-1) if valid_ref_edges else -1
+                        src_found_in_ref = (len(common_edges)-1)/float(len(valid_src_edges)-1) if valid_src_edges else -1
+                    
+                    ref_found.append(ref_found_in_src)
+                    src_found.append(src_found_in_ref)
+
+                if all_rf:
+
+                    # Treeko speciation distance
+                    alld = [(all_rf[i]/float(all_max_rf[i])) for i in xrange(len(all_rf))]
+                    a = sum([alld[i] * tree_sizes[i] for i in xrange(len(all_rf))])
+                    b = float(sum(tree_sizes))
+                    treeko_d = a/b
+                    result["treeko_dist"] = treeko_d
+
+                    result["rf"] = utils.mean(all_rf)
+                    result["max_rf"] = max(all_max_rf)
+                    result["effective_tree_size"] = utils.mean(tree_sizes)
+                    result["norm_rf"] = utils.mean([(all_rf[i]/float(all_max_rf[i])) for i in xrange(len(all_rf))])
+                    result["ref_edges_in_source"] = utils.mean(ref_found)
+                    result["source_edges_in_ref"] = utils.mean(src_found)                
+                    result["source_subtrees"] = len(all_rf)
+                    result["common_edges"] = set()
+                    result["source_edges"] = set()
+                    result["ref_edges"] = set()
+        else:
+            total_rf, max_rf, ncommon, valid_ref_edges, valid_src_edges, common_edges = _compare(source_tree, ref_tree)
+
+            result["rf"] = total_rf
+            result["max_rf"] = max_rf
+            if unrooted:
+                result["ref_edges_in_source"] = len(common_edges)/float(len(valid_ref_edges)) if valid_ref_edges else -1
+                result["source_edges_in_ref"] = len(common_edges)/float(len(valid_src_edges)) if valid_src_edges else -1
+            else:
+                # in rooted trees, we want to discount the root edge from the
+                # percentage of congruence. Otherwise we will never see a 0%
+                # congruence for totally different trees
+                result["ref_edges_in_source"] = (len(common_edges)-1)/float(len(valid_ref_edges)-1) if valid_ref_edges else -1
+                result["source_edges_in_ref"] = (len(common_edges)-1)/float(len(valid_src_edges)-1) if valid_src_edges else -1
+                
+            result["effective_tree_size"] = ncommon
+            result["norm_rf"] = total_rf/float(max_rf) if max_rf else -1
+            result["treeko_dist"] = -1
+            result["source_subtrees"] = 0
+            result["common_edges"] = common_edges
+            result["source_edges"] = valid_src_edges
+            result["ref_edges"] = valid_ref_edges
+        return result
+    
     def diff(self, t2, output='topology', attr_t1='name', attr_t2='name', color=True):
         """
         .. versionadded:: 2.3

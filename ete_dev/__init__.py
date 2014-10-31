@@ -8,7 +8,7 @@
 # the __all__ variable.
 
 from sys import stderr
-from ncbi_taxonomy import ncbiquery
+from ncbi_taxonomy import *
 
 from coretype.tree import *
 from coretype.seqgroup import *

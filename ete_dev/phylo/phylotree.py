@@ -32,7 +32,7 @@ import os
 import re
 import itertools
 from collections import defaultdict
-from ete_dev import TreeNode, SeqGroup, ncbiquery
+from ete_dev import TreeNode, SeqGroup, NCBITaxa
 from reconciliation import get_reconciled_tree
 import spoverlap
 
@@ -770,10 +770,8 @@ class PhyloNode(TreeNode):
 
         """
         
-        if not tax2name or not tax2track:
-            ncbiquery.connect_database(dbfile)
-
-        return ncbiquery.annotate_tree(self, taxid_attr=taxid_attr, tax2name=tax2name, tax2track=tax2track, tax2rank=tax2rank)
+        ncbi = NCBITaxa()        
+        return ncbi.annotate_tree(self, taxid_attr=taxid_attr, tax2name=tax2name, tax2track=tax2track, tax2rank=tax2rank)
 
 
     def ncbi_compare(self, autodetect_duplications=True, cached_content=None):
@@ -787,12 +785,11 @@ class PhyloNode(TreeNode):
         else:
             target_trees = [self]
 
-        for t in target_trees: 
-            ncbiquery.get_broken_branches(t, cached_content)
-        
 
-    def build_from_ncbi_taxonomy(self):
-        pass
+        ncbi = NCBITaxa()        
+        for t in target_trees: 
+            ncbi.get_broken_branches(t, cached_content)
+        
 
 
 #: .. currentmodule:: ete_dev

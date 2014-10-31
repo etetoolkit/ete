@@ -45,6 +45,7 @@ try:
     modname = "ete_%s"%sys.argv[1]
     main =getattr(__import__('ete_dev.tools.%s' %modname, fromlist=['ete_view']), 'main')
 except (AttributeError, IndexError, ImportError):
+    raise
     print >>sys.stderr, 'Tool not found!\n'
     p_usage()
     sys.exit(137)

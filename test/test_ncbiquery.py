@@ -1,8 +1,9 @@
 import unittest 
 
-from ete_dev import PhyloTree
+from ete_dev import PhyloTree, NCBITaxa
 
 class Test_ncbiquery(unittest.TestCase):
+  
   def test_tree_annotation(self):
     t = PhyloTree( "((9598, 9606), 10090);" )
     t.annotate_ncbi_taxa()
@@ -24,7 +25,30 @@ class Test_ncbiquery(unittest.TestCase):
   def test_ncbi_compare(self):
     t = PhyloTree( "((9606, (9598, 9606)), 10090);", sp_naming_function=lambda x: x.name )
     t.annotate_ncbi_taxa()
-    t.ncbi_compare()
+    #t.ncbi_compare()
+
+  def test_ncbiquery(self):
+    ncbi = NCBITaxa()
+
+    id2name = ncbi.get_taxid_translator(['9606', '7507'])
+    self.assertEqual(id2name[7507], 'Mantis religiosa')
+    self.assertEqual(id2name[9606], 'Homo sapiens')
+
+    name2id = ncbi.get_name_translator(['Mantis religiosa', 'homo sapiens'])
+    self.assertEqual(name2id['Mantis religiosa'], 7507)
+    self.assertEqual(name2id['homo sapiens'], 9606)
+
+  def test_get_topology(self):
+    ncbi = NCBITaxa()
+    t1 = ncbi.get_topology([9606, 7507, 9604])
+    t2 = ncbi.get_topology([9606, 7507, 678])
+
+    self.assertEqual(sorted(t1.get_leaf_names()), ["7507", "9606"])
+    self.assertEqual(sorted(t2.get_leaf_names()), ["678", "7507", "9606"])
+
+
+    
+    
     
 
 if __name__ == '__main__':

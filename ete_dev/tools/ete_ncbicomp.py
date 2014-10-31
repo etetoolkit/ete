@@ -7,8 +7,11 @@ import time
 from string import strip
 from collections import defaultdict
 
-from common import (ncbi, argparse, PhyloTree, Tree, SVG_COLORS, faces,
-                    treeview, NodeStyle, TreeStyle, color, print_table) 
+from common import argparse, color, print_table
+from ete_dev import (PhyloTree, Tree, SVG_COLORS, faces,
+                     treeview, NodeStyle, TreeStyle)
+
+                    
 
 
 __DESCRIPTION__ = ("Calculates the consensus of a tree with the NCBI taxonomy."
@@ -35,7 +38,7 @@ def ncbi_consensus(self, ):
     rf_max = 0.0 # reft.robinson_foulds(reft)[1]
     sum_size = 0.0
 
-    reftree = 
+    #reftree = 
 
 
     for tn, subt in enumerate(subtrees):

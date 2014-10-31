@@ -1,78 +1,30 @@
 #!/usr/bin/env python 
+
 import sys
 import os
-from collections import defaultdict, deque
-from itertools import permutations
 from argparse import ArgumentParser
 from string import strip
 import logging as log
 
-import operator
-import sqlite3
-import math
-
-from common import PhyloTree, ncbi
-
-paired_colors = ['#a6cee3',
-                 '#1f78b4',
-                 '#b2df8a',
-                 '#33a02c',
-                 '#fb9a99',
-                 '#e31a1c',
-                 '#fdbf6f',
-                 '#ff7f00',
-                 '#cab2d6',
-                 '#6a3d9a',
-                 '#ffff99',
-                 '#b15928']
-
-COLOR_RANKS = {
-    "superclass": "#a6cee3",
-    "class": "#a6cee3",
-    "subclass": "#a6cee3",
-    "infraclass": "#a6cee3",
-    
-    "superfamily": "#1f78b4",
-    "family": "#1f78b4",
-    "subfamily": "#1f78b4",
-
-    "superkingdom": "#b2df8a",
-    "kingdom": "#b2df8a",
-    "subkingdom": "#b2df8a",
-    
-    "superorder": "#33a02c",
-    "order": "#33a02c",
-    "suborder": "#33a02c",
-    "infraorder": "#33a02c",
-    "parvorder": "#33a02c",
-
-    "superphylum": "#fdbf6f",
-    "phylum": "#fdbf6f",
-    "subphylum": "#fdbf6f",
-
-#    "species group": "",
-#    "species subgroup": "",
-#    "species": "",
-#    "subspecies": "",
-
-#    "genus": "",
-#    "subgenus": "",
-
-#    "no rank": "",
-#    "forma": "",
-
-#    "tribe": "",
-#    "subtribe": "",
-#    "varietas"
-    }
+from ete_dev import PhyloTree, NCBITaxa
+from common import __CITATION__
 
 # Loads database
 MODULE_PATH = os.path.split(os.path.realpath(__file__))[0]
 
 
-__DESCRIPTION__ = """ 
-Query ncbi taxonomy using a local DB
-"""
+__DESCRIPTION__ = '''
+#  - treedist -
+# ===================================================================================
+#  
+# 'ncbiquery' is a tool tor querying a local copy of the NCBI taxonomy database for 
+# taxid/name conversions, automatic tree annotation or retrieving parsed and pruned 
+# NCBI taxonomy tree topologies in newick format. 
+#
+%s
+#  
+# ===================================================================================
+'''% __CITATION__
 
 log.basicConfig(level=log.INFO, \
                     format="%(levelname)s - %(message)s" )
@@ -86,7 +38,6 @@ def test():
     print t.get_ascii(show_internal=True, compact=False)
     t.show()
 
-
 def main(argv):
     
     parser = ArgumentParser(description=__DESCRIPTION__)
@@ -94,95 +45,103 @@ def main(argv):
     parser.add_argument("--db",  dest="dbfile",
                         type=str,
                         help="""NCBI sqlite3 db file.""")
+
+    input_args = parser.add_argument_group('TAXID INPUT OPTIONS')
     
-    parser.add_argument("-t", "--taxid", dest="taxid", nargs="+",  
+    input_args.add_argument("-i", "--taxid", dest="taxid", nargs="+",  
                         type=int, 
                         help="""taxids (space separated)""")
 
-    parser.add_argument("-tf", "--taxid_file", dest="taxid_file",   
+    input_args.add_argument("-if", "--taxid_file", dest="taxid_file",   
                         type=str, 
                         help="""file containing a list of taxids (one per line)""")
 
-    parser.add_argument("-r", "--reftree", dest="reftree",   
+    input_args.add_argument("-t", "--reftree", dest="reftree",   
                         type=str, 
-                        help="""tree file containing taxids as node names.""")
+                        help="""Read taxids from the provided tree.""")
     
-    parser.add_argument("--reftree_attr", dest="reftree_attr",   
+    input_args.add_argument("--reftree_attr", dest="reftree_attr",   
                         type=str, default="name",
-                        help="""Where taxid should be read from""")
+                        help="""tree attribute encoding for taxid numbers.""")
+
+    name_input_args = parser.add_argument_group('NAME INPUT OPTIONS')
     
-    parser.add_argument("-n", "--name", dest="names", nargs="+",  
+    name_input_args.add_argument("-n", "--name", dest="names", nargs="+",  
                         type=str, 
                         help="""species or taxa names (comma separated)""")
 
-    parser.add_argument("-nf", "--names_file", dest="names_file",   
+    name_input_args.add_argument("-nf", "--names_file", dest="names_file",   
                         type=str, 
                         help="""file containing a list of taxids (one per line)""")
+    name_input_args.add_argument("--fuzzy", dest="fuzzy", type=float,
+                        help=("Tries a fuzzy (and SLOW) search for those"
+                              " species names that could not be translated"
+                              " into taxids. A float number must be provided"
+                              " indicating the minimum string similarity."))
 
-    parser.add_argument("-x", "--taxonomy", dest="taxonomy",   
-                        action="store_true",
-                        help=("returns a pruned version of the NCBI taxonomy"
-                              " tree containing target species"))
-
-    parser.add_argument("--show_tree", dest="show_tree",   
-                        action="store_true",
-                        help="""shows the NCBI taxonomy tree of the provided species""")
+    output_args = parser.add_argument_group('OUTPUT OPTIONS')
     
-    parser.add_argument("--collapse_subspecies", dest="collapse_subspecies",   
+    output_args.add_argument("-x", "--taxonomy", dest="taxonomy",   
+                        type=str, 
+                        help=("dump a pruned version of the NCBI taxonomy"
+                              " tree containing target species into the specified file"))
+
+    output_args.add_argument("-l", "--list", dest="info_list",   
+                        type=str, 
+                        help="""dump NCBI taxonmy information for each target species into the specified file. """)
+
+    output_args.add_argument("-a", "--annotated", dest="annotated_tree",   
+                        type=str, 
+                        help="dump the annotated tree of the input reftree provided with -t into the specified file.")                             
+    
+    output_args.add_argument("--collapse_subspecies", dest="collapse_subspecies",   
                         action="store_true",
                         help=("When used, all nodes under the the species rank"
                               " are collapsed, so all species and subspecies"
                               " are seen as sister nodes"))
 
-    parser.add_argument("--rank_limit", dest="rank_limit",   
+    output_args.add_argument("--rank_limit", dest="rank_limit",   
                         type=str,
                         help=("When used, all nodes under the provided rank"
                               " are discarded"))
     
-    parser.add_argument("--full_lineage", dest="full_lineage",   
+    output_args.add_argument("--full_lineage", dest="full_lineage",   
                         action="store_true",
                         help=("When used, topology is not pruned to avoid "
                               " one-child-nodes, so the complete lineage"
                               " track leading from root to tips is kept."))
         
-    parser.add_argument("-i", "--info", dest="info",   
-                        action="store_true",
-                        help="""shows NCBI information about the species""")
-
-    parser.add_argument("--fuzzy", dest="fuzzy", type=float,
-                        help=("Tries a fuzzy (and SLOW) search for those"
-                              " species names that could not be translated"
-                              " into taxids. A float number must be provided"
-                              " indicating the minimum string similarity."))
-   
-    
     args = parser.parse_args(argv)
-    if not args.taxonomy and not args.info and not args.reftree:
-        parser.print_usage()
-        sys.exit(0)
-    
-    if args.fuzzy:
-        import pysqlite2.dbapi2 as sqlite3
-        c = sqlite3.connect(os.path.join(MODULE_PATH, args.dbfile))
-    else:
-        ncbi.connect_database(args.dbfile)
-    
 
+    taxid_source = args.taxid or args.taxid_file or args.reftree
+    name_source = args.names or args.names_file
+    if not taxid_source and not name_source:
+        parser.error('At least one input source is required')
+    if taxid_source and name_source:
+        parser.error('taxid and name options are mutually exclusive')
+        
+    if not args.taxonomy and not args.info_list and not args.annotated_tree:
+        parser.error('At least one output option is required')
+        
+    
+    ncbi = NCBITaxa(args.dbfile)
         
     all_names = set([])
     all_taxids = []
 
     if args.names_file:
         all_names.update(map(strip, open(args.names_file, "rU").read().split("\n")))
+        
     if args.names:
         all_names.update(map(strip, " ".join(args.names).split(",")))
+        
     all_names.discard("")
     #all_names = set([n.lower() for n in all_names])
     not_found = set()
     name2realname = {}
     name2score = {}
     if all_names:
-        log.info("Dumping name translations:")
+        log.info("Dumping name translations in %s.name_translation.txt ... ")
         name2id = ncbi.get_name_translator(all_names)
         not_found = all_names - set(name2id.keys())
 
@@ -190,9 +149,6 @@ def main(argv):
             log.info("%s unknown names", len(not_found))
             for name in not_found:
                 # enable extension loading
-                c.enable_load_extension(True)
-                c.execute("select load_extension('%s')" % os.path.join(module_path,
-                                            "SQLite-Levenshtein/levenshtein.sqlext"))
                 tax, realname, sim = ncbi.get_fuzzy_name_translation(name, args.fuzzy)
                 if tax:
                     name2id[name] = tax
@@ -214,36 +170,37 @@ def main(argv):
     if args.reftree:
         reftree = PhyloTree(args.reftree)
         all_taxids.extend(list(set([getattr(n, args.reftree_attr) for n in reftree.iter_leaves()])))
-
        
-    if all_taxids and args.info:
+    if all_taxids and args.info_list:
         all_taxids = set(all_taxids)
         all_taxids.discard("")
-        all_taxids, merge_conversion = ncbi.translate_merged(all_taxids)
-        log.info("Dumping %d taxid translations:" %len(all_taxids))
+        all_taxids, merge_conversion = ncbi._translate_merged(all_taxids)
+        outfile = args.info_list+".info.txt"
+        log.info("Dumping %d taxid translations in %s ..." %(len(all_taxids), outfile))
         all_taxids.discard("")
         translator = ncbi.get_taxid_translator(all_taxids)
+        OUT = open(outfile, "w")
         for taxid, name in translator.iteritems():
             lineage = ncbi.get_sp_lineage(taxid)
             named_lineage = ','.join(ncbi.translate_to_names(lineage))
             lineage = ','.join(map(str, lineage))
-            print "\t".join(map(str, [merge_conversion.get(int(taxid), taxid), name, named_lineage, lineage ]))
+            print >>OUT, "\t".join(map(str, [merge_conversion.get(int(taxid), taxid), name, named_lineage, lineage ]))
             
+        OUT.close()    
         for notfound in set(map(str, all_taxids)) - set(str(k) for k in translator.iterkeys()):
             print >>sys.stderr, notfound, "NOT FOUND"
-            
+    
     if all_taxids and args.taxonomy:
         all_taxids = set(all_taxids)
         all_taxids.discard("")
-        log.info("Dumping NCBI taxonomy of %d taxa:" %len(all_taxids))
+        log.info("Dumping NCBI taxonomy of %d taxa in %s.*.nw ..." %(len(all_taxids), args.taxonomy))
 
         t = ncbi.get_topology(all_taxids, args.full_lineage, args.rank_limit)
+        
         id2name = ncbi.get_taxid_translator([n.name for n in t.traverse()])
         for n in t.traverse():
             n.add_features(taxid=n.name)
             n.add_features(sci_name=str(id2name.get(int(n.name), "?")))
-            if n.rank in COLOR_RANKS:
-                n.add_features(bgcolor=COLOR_RANKS[n.rank])
             n.name = "%s{%s}" %(id2name.get(int(n.name), n.name), n.name)
             lineage = ncbi.get_sp_lineage(n.taxid)
             n.add_features(named_lineage = '|'.join(ncbi.translate_to_names(lineage)))
@@ -266,17 +223,17 @@ def main(argv):
                     sp_node.add_child(connector)
                     sp_node.add_feature("collapse_subspecies", "1")
                 
-        if args.show_tree:
-            t.show()
             
-        print "\n\n  ===== Newick files saved as 'your_taxa_query.*' ===== "
-        t.write(format=9, outfile="your_ncbi_query.nw")
-        t.write(format=8, outfile="your_ncbi_query.named.nw")
+        t.write(format=9, outfile=args.taxonomy+".names.nw")
+        t.write(format=8, outfile=args.taxonomy+".allnames.nw")
         t.write(format=9, features=["taxid", "name", "rank", "bgcolor", "sci_name", "collapse_subspecies", "named_lineage"],
-                outfile="your_ncbi_query.extended.nw")
+                outfile=args.taxonomy+".full_annotation.nw")
+        
         for i in t.iter_leaves():
             i.name = i.taxid
-        t.write(format=9, outfile="your_ncbi_query.taxids.nw")
+        t.write(format=9, outfile=args.taxonomy+".taxids.nw")
+        t.write(format=8, outfile=args.taxonomy+".alltaxids.nw")
+
 
     if all_taxids and reftree:
         translator = ncbi.get_taxid_translator(all_taxids)
@@ -285,7 +242,7 @@ def main(argv):
                 n.add_features(taxid=int(getattr(n, args.reftree_attr)))
             n.add_features(sci_name = translator.get(int(n.taxid), n.name))
             lineage = ncbi.get_sp_lineage(n.taxid)
-            named_lineage = '|'.join(ncbi.translate_to_names(lineage))
+            named_lineage = '|'.join(ncbi._translate_to_names(lineage))
             n.add_features(ncbi_track=named_lineage)
             
         print reftree.write(features=["taxid", "sci_name", "ncbi_track"])
