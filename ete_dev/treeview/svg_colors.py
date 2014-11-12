@@ -486,7 +486,7 @@ COLOR_SCHEMES = {'accent': ['#7fc97f',
   '#bd0026',
   '#800026']}
 
-def random_color(h=None, l=None, s=None, num=None, sep=None):
+def random_color(h=None, l=None, s=None, num=None, sep=None, seed=None):
     """ returns the RGB code of a random color. Hue (h), Lightness (l)
     and Saturation (s) of the generated color could be fixed using the
     pertinent function argument.  """
@@ -496,7 +496,10 @@ def random_color(h=None, l=None, s=None, num=None, sep=None):
         return rgb2hex( tuple(map(lambda x: int(x*255), colorsys.hls_to_rgb(h, l, s))))
 
     if not h:
+        if seed:
+            random.seed(seed)
         color = 1.0 / random.randint(1, 360)
+        print color
     else:
         color = h
         

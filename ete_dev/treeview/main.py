@@ -570,19 +570,6 @@ def add_face_to_node(face, node, column, aligned=False, position="branch-right")
     else:
          raise Exception("This function can only be called within a layout function. Use node.add_face() instead")
 
-def random_color(h=None, l=None, s=None):
-    def rgb2hex(rgb):
-        return '#%02x%02x%02x' % rgb
-    def hls2hex(h, l, s):
-        return rgb2hex( tuple(map(lambda x: int(x*255), colorsys.hls_to_rgb(h, l, s))))
-
-    if not h:
-        h = random.random()
-    if not s: 
-        s = 0.5
-    if not l:
-        l = 0.5
-    return hls2hex(h, l, s)
 
 def set_pen_style(pen, line_style):
     if line_style == 0:

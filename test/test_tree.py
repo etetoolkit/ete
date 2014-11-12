@@ -445,6 +445,42 @@ class Test_Coretype_Tree(unittest.TestCase):
         dist = set([round(l.get_distance(t), 6) for l in t.iter_leaves()])
         self.assertEqual(dist, set([200.0]))
 
+    def test_expand_polytomies_rf(self):
+        gtree = Tree('((a:1, (b:1, (c:1, d:1):1):1), (e:1, (f:1, g:1):1):1);')
+        ref1 = Tree('((a:1, (b:1, c:1, d:1):1):1, (e:1, (f:1, g:1):1):1);')
+        ref2 = Tree('((a:1, (b:1, c:1, d:1):1):1, (e:1, f:1, g:1):1);')
+        for ref in [ref1, ref2]:
+            print gtree, ref
+            gtree.robinson_foulds(ref, expand_polytomies=True)[0]
+
+        
+        gtree = Tree('((g, h), (a, (b, (c, (d,( e, f))))));')
+        ref3 = Tree('((a, b, c, (d, e, f)), (g, h));')
+        ref4 = Tree('((a, b, c, d, e, f), (g, h));')
+        ref5 = Tree('((a, b (c, d (e, f))), (g, h));')
+
+        for ref in [ref3, ref4, ref5]:
+            print gtree, ref
+            gtree.robinson_foulds(ref, expand_polytomies=True)[0]
+
+
+        gtree = Tree('((g, h), (a, b, (c, d, (e, f))));')
+        ref6 = Tree('((a, b, (c, d, e, f)), (g, h));')
+        ref7 = Tree('((a, (b, (c, d, e, f))), (g, h));')
+        ref8 = Tree('((a, b, c, (d, e, f)), (g, h));')
+        ref9 = Tree('((d, b, c, (a, e, f)), (g, h));')
+        
+        for ref in [ref6, ref7, ref8, ref9]:
+            print gtree, ref
+            gtree.robinson_foulds(ref, expand_polytomies=True)[0]
+            print "REF GOOD", gtree.robinson_foulds_good(ref, expand_polytomies=True)[0]
+        
+        gtree = Tree('((g, h), ((a, b), (c, d), (e, f)));')
+        ref10 = Tree('((g, h), ((a, c), ((b, d), (e, f))));')
+        
+        for ref in [ref10]:
+            print gtree, ref
+            gtree.robinson_foulds(ref, expand_polytomies=True)[0]
 
     def test_tree_compare(self):
         def _astuple(d):
@@ -687,6 +723,9 @@ class Test_Coretype_Tree(unittest.TestCase):
             real_max = (30*2) - 4 - 10 if not unrooted else (30*2) - 6 -10 # -10 to discount low support branches
             self.assertEqual(rf_max, real_max)
             self.assertEqual(rf, RF)
+
+
+        
             
         
     def test_monophyly(self):

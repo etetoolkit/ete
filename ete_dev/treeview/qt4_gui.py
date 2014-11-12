@@ -12,7 +12,8 @@ except ImportError:
     USE_GL = False
 
 import _mainwindow, _search_dialog, _show_newick, _open_newick, _about
-from main import TreeStyle, save, random_color, _leaf
+from main import TreeStyle, save, _leaf
+from svg_colors import random_color
 from qt4_render import render
 from ete_dev._ph import new_version
 from ete_dev import Tree, TreeStyle

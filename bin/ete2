@@ -1,0 +1,353 @@
+#!/usr/bin/env python
+import argparse
+from string import strip
+import re
+import operator
+
+
+__CITATION__ = '''#       ** If you use this software for a published work, please cite: **
+#  
+# Jaime Huerta-Cepas, Joaquin Dopazo and Toni Gabaldon. ETE: a python Environment
+# for Tree Exploration. BMC Bioinformatics 2010, 11:24. doi: 10.1186/1471-2105-11-24.'''
+
+COMPARE_DESC = """
+ - ete compare -
+ 
+'compare' is a tool to calculate the distance from one or more trees to a
+reference tree. Robinson foulds and strict congruence measures are calculated,
+among other stats.
+
+Comparisons between trees with different sizes and containing duplicated
+attributes are also supported.  names.
+
+%s
+  
+"""% __CITATION__
+
+                
+if __name__=="__main__":
+    main_args_p = argparse.ArgumentParser(add_help=False)
+    source_args_p = argparse.ArgumentParser(add_help=False)
+    ref_args_p = argparse.ArgumentParser(add_help=False)
+
+    # SOURCE 
+    
+    source_args = source_args_p.add_argument_group('SOURCE TREES')
+    
+    source_args.add_argument("-t", dest='src_trees',
+                             type=str, nargs="*",
+                             help='a list of trees in newick format (filenames or quoted strings)')
+    
+    source_args.add_argument("--src_tree_list", dest="src_tree_list", 
+                             type=str, 
+                             help="""path to a file containing many source trees, one per line""")
+
+    source_args.add_argument("--src_tree_attr", dest="src_tree_attr", 
+                             type=str, default="name",
+                             help=("attribute in source tree used as leaf name"))
+    
+    source_args.add_argument("--src_attr_parser", dest="src_attr_parser", 
+                             type=str, 
+                             help=(""))
+
+    # REFS
+    
+    ref_args = ref_args_p.add_argument_group('REFERENCE TREES')
+    
+    ref_args.add_argument("-r", dest="ref_trees", 
+                           type=str, nargs="*",
+                           help="One or more reference trees in newick format (filename or quoted string")
+
+    ref_args.add_argument("--ref_tree_list", dest="ref_tree_list", 
+                             type=str, 
+                             help="path to a file containing many ref trees, one per line")
+
+    
+    ref_args.add_argument("--ref_tree_attr", dest="ref_tree_attr", 
+                           type=str, default="name",
+                           help=("attribute in ref tree used as leaf name"))
+    
+    
+    ref_args.add_argument("--ref_attr_parser", dest="ref_attr_parser", 
+                           type=str, 
+                           help=(""))
+
+    # GENERAL 
+    
+    main_args = main_args_p.add_argument_group('GENERAL OPTIONS')
+    
+    main_args.add_argument("--outgroup", dest="outgroup", 
+                           nargs = "+",
+                           help="""outgroup used to root reference and source trees before distance computation""")
+    
+    main_args.add_argument("--expand_polytomies", dest="polytomies", 
+                           action = "store_true",
+                           help="""expand politomies if necessary""")
+
+
+    main_args.add_argument("-o", dest="output", 
+                            type=str,
+                            help="""Base output file name""")
+
+    main_args.add_argument("--quite", dest="quite",
+                        action="store_true",
+                        help="Do not show process information")
+    
+    main_args.add_argument("--color", dest="color",
+                           action="store_true",
+                           help="If enabled, it will use colors in some of the report")
+
+    
+    # SUBPROGRAMS
+    parser = argparse.ArgumentParser(description="DESC", 
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
+                                     
+    subparser = parser.add_subparsers(title="AVAILABLE PROGRAMS")
+
+
+    # COMPARE    
+    compare_args_p = subparser.add_parser("compare", parents=[source_args_p, ref_args_p, main_args_p],
+                                           description=COMPARE_DESC, formatter_class=argparse.RawDescriptionHelpFormatter)
+    import ete_compare 
+    compare_args_p.set_defaults(func=ete_compare.compare)
+    
+    compare_args = compare_args_p.add_argument_group("COMPARE GENERAL OPTIONS")
+    
+    compare_args.add_argument("--min_support_ref",
+                              type=float, default=0.0,
+                              help=("min support for branches to be considered from the ref tree"))
+    compare_args.add_argument("--min_support_src",
+                              type=float, default=0.0,
+                              help=("min support for branches to be considered from the source tree"))
+      
+    compare_args.add_argument("--unrooted", dest="unrooted", 
+                              action = "store_true",
+                              help="""compare trees as unrooted""")
+
+    compare_args.add_argument("--diff", dest="differences", 
+                              action = "store_true",
+                              help="return differences between pairs of trees ")
+
+    
+    # DIFF
+    diff_args_p = subparser.add_parser("diff", parents=[source_args_p, ref_args_p, main_args_p],
+                                       description=COMPARE_DESC, formatter_class=argparse.RawDescriptionHelpFormatter)
+
+    compare_args = compare_args_p.add_argument_group("COMPARE GENERAL OPTIONS")
+    
+    parser.add_argument("--fullsearch", dest="fullsearch",
+                        action="store_false",
+                        help=("Enable this option if duplicated attributes (i.e. name)"
+                              "exist in reference or target trees."))
+    
+    parser.add_argument("--report", dest="report",
+                        choices=["topology", "diffs", "diffs_tab", "summary"],
+                        default = "topology",
+                        help="Different format for the comparison results")
+
+                        
+    
+    # VIEW    
+    view_args_p = subparser.add_parser( "view", parents=[source_args_p, main_args_p])
+    import ete_view
+    view_args_p.set_defaults(func=ete_view.main)
+
+    
+    view_args_p.add_argument("--face", action="append",
+                             help="adds a face to the selected nodes. In example --face 'value:@dist, pos:b-top, color:red, size:10, if:@dist>0.9' ")
+    
+    img_gr = view_args_p.add_argument_group("TREE IMAGE GENERAL OPTIONS")
+        
+    img_gr.add_argument("-m", "--mode", dest="mode", 
+                        choices=["c", "r"], default="r",
+                        help="""(r)ectangular or (c)ircular visualization""")
+  
+
+    img_gr.add_argument("-i", "--image", dest="image", 
+                        type=str, 
+                        help="Render tree image instead of showing it. A filename "
+                        " should be provided. PDF, SVG and PNG file extensions are"
+                        " supported (i.e. -i tree.svg)"
+                        )
+
+    img_gr.add_argument("--text", dest="text_mode", 
+                        action="store_true",
+                        help="Shows the tree using ASCII characters")
+
+    img_gr.add_argument("--attr", "--show_attributes", dest="show_attributes", 
+                        nargs="+",
+                        help="Display the value of the specified attributes, if available")    
+    
+    img_gr.add_argument("--Iw", "--width", dest="width", 
+                        type=int, default=0, 
+                        help="width of the rendered image in pixels (see --size-units)."
+                        )
+
+    img_gr.add_argument("--Ih", "--height", dest="height", 
+                        type=int, default=0,
+                        help="height of the rendered image in pixels (see --size-units)."
+                        )
+
+    img_gr.add_argument("--Ir", "--resolution", dest="resolution", 
+                        type=int, default=300,
+                        help="Resolution if the tree image (DPI)"
+                        )
+
+    img_gr.add_argument("--Iu", "--size_units", dest="size_units", 
+                        choices=["px", "mm", "in"], default="px",
+                        help="Units used to specify the size of the image."
+                        " (px:pixels, mm:millimeters, in:inches). "
+                        )
+
+    img_gr.add_argument("-mbs", "--min_branch_separation", dest="branch_separation", 
+                        type=int, default = 3, 
+                        help="Min number of pixels to separate branches vertically."
+                        )
+
+    img_gr.add_argument("--ss", "--show_support", dest="show_support", 
+                        action="store_true",
+                        help="""Shows branch bootstrap/support values""")
+
+    img_gr.add_argument("--sbl", "--show_branch_length", dest="show_branch_length", 
+                        action="store_true",
+                        help="""Show branch lengths.""")
+
+    img_gr.add_argument("--ft", "--force_topology", dest="force_topology", 
+                        action="store_true",
+                        help="""Force branch length to have a minimum length in the image""")
+
+    img_gr.add_argument("--hln", "--hide_leaf_names", dest="hide_leaf_names", 
+                        action="store_true",
+                        help="""Hide leaf names.""")
+
+    img_gr.add_argument("--sin", "--show_internal_names", dest="show_internal_names", 
+                        action="store_true",
+                        help="""Show the name attribute of all internal nodes.""")
+
+    edit_gr = view_args_p.add_argument_group("TREE EDIT OPTIONS")
+        
+    edit_gr.add_argument("-s", "--sort_branches", dest="sort", 
+                        action="store_true",
+                        help="""Sort branches according to node names.""")
+
+    edit_gr.add_argument("-l", "--ladderize", dest="ladderize", 
+                        action="store_true",
+                        help="""Sort branches by partition size.""")
+    
+    edit_gr.add_argument("--color_by_rank", dest="color_by_rank", 
+                         type=str, nargs="+",
+                         help="""If the attribute rank is present in nodes """)
+
+    edit_gr.add_argument("--ncbi", dest="ncbi", 
+                         action='store_true',
+                         help=("Annotate tree using the NCBI taxonomy database. --src_target_attr"
+                               " and --src_attr_regexp will be used to parse taxid from tree nodes."))
+
+    edit_gr.add_argument("--raxml", dest="raxml", 
+                        action="store_true",
+                         help=("Parses the newick string and extracts bootstrap values from"
+                         " a non-standard RAxML newick file (i.e '((A,B)[100]);'"))
+    
+    phylo_gr = view_args_p.add_argument_group("PHYLOGENETIC OPTIONS")
+    
+    phylo_gr.add_argument("--alg", dest="alg", 
+                        type=str, 
+                        help="""Link tree to a multiple sequence alignment.""")
+
+    phylo_gr.add_argument("--alg_format", dest="alg_format", 
+                        type=str, default="fasta",
+                        help="fasta, phylip, iphylip, relaxed_iphylip, relaxed_phylip.")
+    
+    phylo_gr.add_argument("--sp_discovery", dest="species_discovery_regexp", 
+                          type=str, default="^[^_]+_(.+)",
+                          help="Perl regular expression used to capture species"
+                          " code from node names. By default, node names"
+                          " are expected to follow the NAME_SPCODE format = '^[^_]+_(.+)' ")
+
+    features_gr = view_args_p.add_argument_group("DRAWING FEATURES")
+    
+    phylo_gr.add_argument("--heatmap", dest="alg", 
+                        type=str, 
+                          help="""attr_name \t v1, v2, v3, v4""")
+
+    phylo_gr.add_argument("--profile", dest="alg", 
+                        type=str, 
+                          help="""attr_name \t v1, v2, v3, v4""")
+    
+    phylo_gr.add_argument("--bubbles", dest="alg", 
+                        type=str, 
+                        help=""" """)
+
+    # NCBIQUERY    
+    ncbi_args_p = subparser.add_parser( "ncbi", parents=[source_args_p, main_args_p])
+
+    ncbi_args = ncbi_args_p.add_argument_group('NCBI GENERAL OPTIONS')
+    
+    ncbi_args.add_argument("--db",  dest="dbfile",
+                        type=str,
+                        help="""NCBI sqlite3 db file.""")
+
+    input_args = ncbi_args_p.add_argument_group('TAXID INPUT OPTIONS')
+    
+    input_args.add_argument("-i", "--taxid", dest="taxid", nargs="+",  
+                        type=int, 
+                        help="""taxids (space separated)""")
+
+    input_args.add_argument("-if", "--taxid_file", dest="taxid_file",   
+                        type=str, 
+                        help="""file containing a list of taxids (one per line)""")
+
+
+    name_input_args = ncbi_args_p.add_argument_group('NAME INPUT OPTIONS')
+    
+    name_input_args.add_argument("-n", "--name", dest="names", nargs="+",  
+                        type=str, 
+                        help="""species or taxa names (comma separated)""")
+
+    name_input_args.add_argument("-nf", "--names_file", dest="names_file",   
+                        type=str, 
+                        help="""file containing a list of taxids (one per line)""")
+    name_input_args.add_argument("--fuzzy", dest="fuzzy", type=float,
+                        help=("Tries a fuzzy (and SLOW) search for those"
+                              " species names that could not be translated"
+                              " into taxids. A float number must be provided"
+                              " indicating the minimum string similarity."))
+
+    output_args = ncbi_args_p.add_argument_group('NCBI OUTPUT OPTIONS')
+    
+    output_args.add_argument("--taxonomy", dest="taxonomy",   
+                        action='store_true', 
+                        help=("dump a pruned version of the NCBI taxonomy"
+                              " tree containing target species into the specified file"))
+
+    output_args.add_argument("--table", dest="info_list",   
+                        action='store_true', 
+                        help="""dump NCBI taxonmy information for each target species into the specified file. """)
+
+    output_args.add_argument("--annotate", dest="annotated_tree",   
+                        action='store_true', 
+                        help="dump the annotated tree of the input reftree provided with -t into the specified file.")                             
+    
+    output_args.add_argument("--collapse_subspecies", dest="collapse_subspecies",   
+                        action="store_true",
+                        help=("When used, all nodes under the the species rank"
+                              " are collapsed, so all species and subspecies"
+                              " are seen as sister nodes"))
+
+    output_args.add_argument("--rank_limit", dest="rank_limit",   
+                        type=str,
+                        help=("When used, all nodes under the provided rank"
+                              " are discarded"))
+    
+    output_args.add_argument("--full_lineage", dest="full_lineage",   
+                        action="store_true",
+                        help=("When used, topology is not pruned to avoid "
+                              " one-child-nodes, so the complete lineage"
+                              " track leading from root to tips is kept."))
+
+    
+    args = parser.parse_args()    
+    args.func(args)
+
+
+

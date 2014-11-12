@@ -938,7 +938,7 @@ class RectFace(Face):
     """
     .. versionadded:: 2.1
 
-    Creates a Rect Face.
+    Creates a Rectangular solid face.
 
     """
     def __init__(self, width, height, fgcolor, bgcolor):

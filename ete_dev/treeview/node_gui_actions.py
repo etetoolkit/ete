@@ -1,4 +1,4 @@
-from main import random_color
+from svg_colors import random_color
 from PyQt4  import QtCore, QtGui
 
 class _NodeActions(object):

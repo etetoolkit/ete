@@ -1766,6 +1766,166 @@ class TreeNode(object):
         return min_comparison
 
 
+    def robinson_foulds_test(self, t2, attr_t1="name", attr_t2="name",
+                        unrooted_trees=False, expand_polytomies=False,
+                        polytomy_size_limit=5, skip_large_polytomies=False,
+                        correct_by_polytomy_size=False, min_support_t1=0.0,
+                        min_support_t2=0.0):
+        """
+        .. versionadded: 2.2
+        
+        Returns the Robinson-Foulds symmetric distance between current
+        tree and a different tree instance.
+     
+        :param t2: target reference tree
+        
+        :param name attr_t1: Compare trees using a custom node
+                              attribute as a node name.
+        
+        :param name attr_t2: Compare trees using a custom node
+                              attribute as a node name in target tree.
+
+        :param False attr_t2: If True, consider trees as unrooted.
+                              
+        :param False expand_polytomies: If True, all polytomies in the reference
+           and target tree will be expanded into all possible binary
+           trees. Robinson-foulds distance will be calculated between all
+           tree combinations and the minimum value will be returned.
+           See also, :func:`NodeTree.expand_polytomy`.
+                              
+        :returns: (rf, rf_max, common_attrs, names, edges_t1, edges_t2,  discarded_edges_t1, discarded_edges_t2)
+           
+        """
+        src_t = self
+        ref_t= t2
+        if not unrooted_trees and (len(src_t.children) != 2 or len(ref_t.children) != 2):
+            raise ValueError("Unrooted tree found! You may want to activate the unrooted_trees flag.")
+
+
+        attrs_src = set([getattr(n, attr_t1, None) for n in src_t.iter_leaves()])
+        attrs_ref = set([getattr(n, attr_t2, None) for n in ref_t.iter_leaves()])
+        common_attrs = attrs_src & attrs_ref
+        common_attrs.discard(None)
+        
+        t1 = src_t
+        t2 = ref_t
+
+        data = {
+            "src":{
+                "tree":src_t,
+                "target_attr": attr_t1,
+                "min_support": min_support_t1,
+                "nodes": None,
+                "discarded":set(),
+                "tree_content": None
+            },
+            "ref":{
+                "tree":ref_t,
+                "target_attr": attr_t2,
+                "min_support": min_support_t2,
+                "nodes": None,
+                "discarded":set(),
+                "tree_content":None
+            }
+        }
+
+        def names(nodes, attr):
+            return tuple([getattr(n, attr) for n in nodes])
+
+        
+        for tdata in data.values():
+            tree = tdata["tree"]
+            tree_content = tdata["tree_content"] = tree.get_cached_content()
+            tree_leaves = tree_content[tree]
+            attr_name = tdata["target_attr"]
+            if unrooted_trees:
+                edges_info = [
+                    (tuple(sorted([tuple(sorted([getattr(n, attr_name) for n in content
+                                                 if hasattr(n, attr_name) and getattr(n, attr_name) in common_attrs])),
+                                   tuple(sorted([getattr(n, attr_name) for n in tree_leaves-content
+                                                 if hasattr(n, attr_name) and getattr(n, attr_name) in common_attrs]))])),
+                    edge)
+                        for edge, content in tree_content.iteritems()]
+                        
+                edges = tdata["edges"] = set([e[0] for e in edges_info])
+                edges.discard(())
+                edges.discard(((),()))
+            else:
+                edges_info= [
+                    (tuple(sorted([getattr(n, attr_name) for n in content if hasattr(n, attr_name) and getattr(n, attr_name) in common_attrs])),
+                     edge)
+                    for edge, content in tree_content.iteritems()]
+
+                edges = tdata["edges"] = set([e[0] for e in edges_info])
+                edges.discard(())
+
+            if tdata["min_support"] or expand_polytomies:
+                tdata["nodes"] = dict([(e[0], e[1]) for e in edges_info])
+
+            # if a support value is passed as a constraint, discard lowly supported branches from the analysis
+
+            if tdata["min_support"] and unrooted_trees:
+                tdata["discarded"] = set([p for p in edges if tdata["nodes"][p].support < tdata["min_support"]])
+            elif tdata["min_support"]:
+                tdata["discarded"] = set([p for p in edges if tdata["nodes"][p].support < tdata["min_support"]])
+
+            if expand_polytomies:
+                tdata["polytomies"] = [set(tuple([names(tdata["tree_content"][ch], tdata["target_attr"]) for ch in node.children]))
+                                       for node in tdata["nodes"].itervalues() if len(node.children) > 2]
+                
+        # the two root edges are never counted here, as they are always
+        # present in both trees because of the common attr filters
+        if expand_polytomies:
+            miss_src = ((data["src"]["edges"] - data["ref"]["edges"]) - data["ref"]["discarded"]) - data["src"]["discarded"]
+            miss_ref = ((data["ref"]["edges"] - data["src"]["edges"]) - data["ref"]["discarded"]) - data["src"]["discarded"]
+
+            miss_src_topo = [set(tuple([names(data["src"]["tree_content"][ch], data["src"]["target_attr"]) for ch in data["src"]["nodes"][m].children]))
+                             for m in miss_src]
+            miss_ref_topo = [set(tuple([names(data["ref"]["tree_content"][ch], data["ref"]["target_attr"]) for ch in data["ref"]["nodes"][m].children]))
+                             for m in miss_ref]
+
+            pol_correction = 0
+            for m in miss_src_topo:
+                for e in data["ref"]["polytomies"]:
+                    if m.issubset(e):
+                        pol_correction += 1
+                        print m, e
+                        
+            for m in miss_ref_topo:
+                for e in data["src"]["polytomies"]:
+                    if m.issubset(e):
+                        pol_correction += 1
+                        print m, e
+                
+            rf = (len(miss_src) + len(miss_ref)) - pol_correction
+            print rf, "(%s - %s)" % (rf + pol_correction, pol_correction)
+            print 
+        else:
+            rf = len(((data["src"]["edges"] ^ data["ref"]["edges"]) - data["ref"]["discarded"]) - data["src"]["discarded"])
+                    
+        
+        if unrooted_trees:
+            # thought this may work, but it does not, still I don't see why
+            #max_parts = (len(common_attrs)*2) - 6 - len(discard_t1) - len(discard_t2)
+            
+            max_parts = (len([p for p in data["src"]["edges"] - data["src"]["discarded"] if len(p[0])>1 and len(p[1])>1]) +
+                         len([p for p in data["ref"]["edges"] - data["ref"]["discarded"] if len(p[0])>1 and len(p[1])>1]))
+        else:
+            # thought this may work, but it does not, still I don't see why
+            #max_parts = (len(common_attrs)*2) - 4 - len(discard_t1) - len(discard_t2)
+
+            # Otherwise we need to count the actual number of valid
+            # partitions in each tree -2 is to avoid counting the root
+            # partition of the two trees (only needed in rooted trees)
+            max_parts = (len([p for p in data["src"]["edges"] - data["src"]["discarded"] if len(p)>1]) + 
+                         len([p for p in data["ref"]["edges"] - data["ref"]["discarded"] if len(p)>1])) - 2
+
+        return (rf, max_parts, common_attrs,
+                data["src"]["edges"], data["ref"]["edges"],
+                data["src"]["discarded"], data["ref"]["discarded"])
+
+
+    
     def compare(self, ref_tree, use_collateral=False, min_support_source=0.0, min_support_ref=0.0,
                 has_duplications=False, expand_polytomies=False, unrooted=False,
                 max_treeko_splits_to_be_artifact=1000, ref_tree_attr='name', source_tree_attr='name'):
@@ -1885,8 +2045,8 @@ class TreeNode(object):
         else:
             total_rf, max_rf, ncommon, valid_ref_edges, valid_src_edges, common_edges = _compare(source_tree, ref_tree)
 
-            result["rf"] = total_rf
-            result["max_rf"] = max_rf
+            result["rf"] = float(total_rf)
+            result["max_rf"] = float(max_rf)
             if unrooted:
                 result["ref_edges_in_source"] = len(common_edges)/float(len(valid_ref_edges)) if valid_ref_edges else -1
                 result["source_edges_in_ref"] = len(common_edges)/float(len(valid_src_edges)) if valid_src_edges else -1
@@ -1900,7 +2060,7 @@ class TreeNode(object):
             result["effective_tree_size"] = ncommon
             result["norm_rf"] = total_rf/float(max_rf) if max_rf else -1
             result["treeko_dist"] = -1
-            result["source_subtrees"] = 0
+            result["source_subtrees"] = 1
             result["common_edges"] = common_edges
             result["source_edges"] = valid_src_edges
             result["ref_edges"] = valid_ref_edges
@@ -1929,7 +2089,7 @@ class TreeNode(object):
         else:
             return difftable
        
-        
+         
     
     def iter_edges(self, cached_content = None):
         '''
