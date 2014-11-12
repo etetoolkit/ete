@@ -124,7 +124,10 @@ class _GUI(QtGui.QMainWindow):
         self.scene.setItemIndexMethod(QtGui.QGraphicsScene.NoIndex)
 
         # Shows the whole tree by default
-        self.view.fitInView(self.scene.sceneRect(), QtCore.Qt.KeepAspectRatio)
+        #self.view.fitInView(self.scene.sceneRect(), QtCore.Qt.KeepAspectRatio)
+
+        self.view.fitInView(0, 0, 100, 100,)
+        
         
         # Check for updates
         self.check = CheckUpdates()
@@ -226,13 +229,23 @@ class _GUI(QtGui.QMainWindow):
             elif mType == 7:
                 cmpFn = lambda x,y: re.search(y, x)
 
+            last_match_node = None
             for n in self.scene.tree.traverse(is_leaf_fn=_leaf):
                 if setup.leaves_only.isChecked() and not _leaf(n):
                     continue
                 if hasattr(n, aName) \
                         and cmpFn(getattr(n, aName), aValue ):
                     self.scene.view.highlight_node(n)
+                    last_match_node = n
+                    
+            if last_match_node:
+                item = self.scene.n2i[last_match_node]
+                R = item.mapToScene(item.fullRegion).boundingRect()
+                R.adjust(-20, -20, 20, 20)
+                self.view.fitInView(R.x(), R.y(), R.width(),\
+                                    R.height(), QtCore.Qt.KeepAspectRatio)
 
+                    
     @QtCore.pyqtSignature("")
     def on_actionClear_search_triggered(self):
         # This could be much more efficient

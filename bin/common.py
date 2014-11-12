@@ -123,7 +123,7 @@ def parse_faces(face_args):
                 "column":None,
                 "bgcolor":None,
                 "format":None,
-                "nodetype":"any",
+                "nodetype":"leaf",
         }
 
         for clause in map(strip,fargs.split(',')):

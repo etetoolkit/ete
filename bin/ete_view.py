@@ -60,7 +60,7 @@ def layout_faces(node):
                                      position=f["pos"])
                     
                     
-def layout_block_alg(node):
+def layout_empty(node):
     pass
                 
 def main(args):
@@ -116,6 +116,7 @@ def main(args):
     ts = TreeStyle()
     ts.mode = args.mode
     ts.show_leaf_name = False
+    
     ts.branch_vertical_margin = args.branch_separation
     if args.show_support:
         ts.show_branch_support = True
@@ -133,12 +134,13 @@ def main(args):
     if args.text_mode:
         print t.get_ascii(show_internal=args.show_internal_names, attributes = args.show_attributes)
     else:    
-        #ts.layout_fn = [layout_faces]
-        t.populate(10)
+        ts.layout_fn = layout_empty
         
         f2color = {}
         f2last_seed = {}
         for node in t.traverse():
+            node.img_style['size'] = 0
+            
             ftype_pos = defaultdict(int)
             for f in FACES:
                 last_seed = f2last_seed.setdefault(f["value"], random.random())
