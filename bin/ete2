@@ -31,11 +31,33 @@ def ete_generate(args):
 def ete_mod(args):
     for nw in args.src_tree_iterator:
         t = Tree(nw)
-        mod(t, args)
+        mod_tree(t, args)
         dump(t, args)
-      
-        
 
+def mod_tree(t, args):
+    if args.ladderize and args.sort:
+        raise ValueError("--sort-branches and --ladderize options are mutually exclusive")
+
+    if args.expand_polytomies:
+        t.expand_polytomies(polytomy_size_limit=args.expand_polytomy)
+    
+    if args.outgroup:
+        if len(args.outgroup) > 1:
+            outgroup = t.get_common_ancestor(args.outgroup)
+        else:
+            outgroup = t & args.outgroup[0]
+        t.set_outgroup(outgroup)
+
+    if args.ladderize:
+        t.ladderize()
+    if args.sort:
+        t.sort_descendants()
+
+    # ultrametric
+    # unroot
+    # remove, prune branches
+    # resolve polytomies
+        
 def ete_split(args):
     pass
 
@@ -61,11 +83,6 @@ def ete_convert(args):
 def ete_maptrees(args):
     pass
 
-def ete_compare(args):
-    pass
-def ete_view(args):
-    pass
-
 def ete_fetch(args):
     pass
 
@@ -74,31 +91,6 @@ def ete_codeml(args):
 
 def ete_reconcile(args):
     pass
-
-def mod(t, args):
-    if args.ladderize and args.sort:
-        raise ValueError("--sort-branches and --ladderize options are mutually exclusive")
-
-    if args.expand_polytomies:
-        t.expand_polytomies(polytomy_size_limit=args.expand_polytomy)
-    
-    if args.outgroup:
-        if len(args.outgroup) > 1:
-            outgroup = t.get_common_ancestor(args.outgroup)
-        else:
-            outgroup = t & args.outgroup[0]
-        t.set_outgroup(outgroup)
-
-    if args.ladderize:
-        t.ladderize()
-    if args.sort:
-        t.sort_descendants()
-
-    # ultrametric
-    # unroot
-    # remove, prune branches
-    # resolve polytomies
-    
     
 def ete_compare(args):
     def iter_differences(set1, set2, unrooted=False):
@@ -190,11 +182,7 @@ def ete_view(args):
 
         if args.alg:
             t.link_to_alignment(args.alg, alg_format=args.alg_format)
-            LEAF_ATTRIBUTES["sequence"] = 1
-
-        # if args.species_discovery_regexp:
-        #     SPCODE_REGEXP = re.compile(args.species_discovery_regexp)
-        #     t.set_species_naming_function(user_species_naming_function)
+            LEAF_ATTRIBUTES["sequence"] = 1 #################
 
         if args.outgroup:
             if len(args.outgroup) > 1:
@@ -257,8 +245,6 @@ def ete_view(args):
             else:
                 t.show(None, tree_style=ts)
 
-    
-
         
 def dump(t, args):
     if getattr(args, "output", None):
@@ -271,8 +257,18 @@ def tree_iterator(tree_source):
         args.src_trees = sys.stdin
     
     for stree in args.src_trees:
+
+        # CHECK WHAT is needed before process the main command, allows mods before analyses
+        
         yield stree
 
+
+## #################################################################################
+##
+## MAIN ARGUMENT PARSER
+##
+## #################################################################################
+       
         
 if __name__=="__main__":
     main_args_p = argparse.ArgumentParser(add_help=False)
@@ -384,7 +380,7 @@ if __name__=="__main__":
                           type = str, 
                           help=""" """) # split where attr is duplicated 
 
-    # expand ?
+    # expand 
     expand_args = _expand_args_p.add_argument_group('TREE EXPAND OPTIONS')
 
     expand_args.add_argument("--expand_polytomies", dest="polytomies", 
@@ -396,7 +392,7 @@ if __name__=="__main__":
                           type = str, 
                           help=""" """)
 
-    # extract options?
+    # extract 
     extract_args = _extract_args_p.add_argument_group('TREE EDIT OPTIONS')
 
     extract_args.add_argument("--attr", dest="split_at_attr", action='append', 
@@ -404,11 +400,7 @@ if __name__=="__main__":
                           help=""" """)
        
     
-    # consense, merge, etc.....
 
-    
-    
-    
 
     
     # SUBPROGRAMS
@@ -417,6 +409,47 @@ if __name__=="__main__":
                                      
     subparser = parser.add_subparsers(title="AVAILABLE PROGRAMS")
 
+
+    # CONVERT 
+    convert_args_p = subparser.add_parser("convert", parents=[source_args_p, main_args_p],
+                                       description="",
+                                       formatter_class=argparse.RawDescriptionHelpFormatter)
+    convert_args_p.set_defaults(func=ete_convert)
+
+    
+    # consense
+    consense_args_p = subparser.add_parser("consense", parents=[source_args_p, main_args_p],
+                                       description="",
+                                       formatter_class=argparse.RawDescriptionHelpFormatter)
+    consense_args_p.set_defaults(func=ete_consense)
+
+    
+    # merge
+
+    
+    # RECONCILE
+    
+    reconcile_args_p = subparser.add_parser("reconcile", parents=[source_args_p, main_args_p],
+                                       description="",
+                                       formatter_class=argparse.RawDescriptionHelpFormatter)
+    reconcile_args_p.set_defaults(func=ete_reconcile)
+
+    
+    # maptrees
+    maptrees_args_p = subparser.add_parser("maptrees", parents=[source_args_p, main_args_p],
+                                       description="",
+                                       formatter_class=argparse.RawDescriptionHelpFormatter)
+    maptrees_args_p.set_defaults(func=ete_maptrees)
+
+    
+    # annotate
+
+    annotate_args_p = subparser.add_parser("annotate", parents=[source_args_p, main_args_p],
+                                       description="",
+                                       formatter_class=argparse.RawDescriptionHelpFormatter)
+    annotate_args_p.set_defaults(func=ete_annotate)
+
+    
     
     # MOD
     mod_args_p = subparser.add_parser("mod", parents=[source_args_p, _mod_args_p, main_args_p],
@@ -479,7 +512,6 @@ attributes are also supported.  names.
     compare_args.add_argument("--diff", dest="differences", 
                               action = "store_true",
                               help="return differences between pairs of trees ")
-
                                 
     # VIEW
     VIEW_DESC = """
@@ -614,7 +646,7 @@ The ETE toolkit viewer
                         help=""" """)
 
     # NCBIQUERY    
-    ncbi_args_p = subparser.add_parser( "ncbi", parents=[source_args_p, main_args_p])
+    ncbi_args_p = subparser.add_parser( "ncbiquery", parents=[source_args_p, main_args_p])
 
     ncbi_args = ncbi_args_p.add_argument_group('NCBI GENERAL OPTIONS')
     
@@ -697,6 +729,9 @@ The ETE toolkit viewer
     args = parser.parse_args()
 
     args.src_tree_iterator = tree_iterator(args.src_trees)
+
+
+    # Call main program
     args.func(args)
 
 

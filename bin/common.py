@@ -162,3 +162,25 @@ def parse_faces(face_args):
         faces.append(face)
     return faces
 
+def as_str(v):
+    if isinstance(v, float):
+        return '%0.2f' %v
+    else:
+        return str(v)
+
+def shorten_str(string, l):
+    if len(string) > l:
+        return "%s(...)" % string[:l-5]
+    else:
+        return string  
+            
+def euc_dist(v1, v2):
+    if type(v1) != set: v1 = set(v1)
+    if type(v2) != set: v2 = set(v2)
+   
+    return len(v1 ^ v2) / float(len(v1 | v2))
+
+def euc_dist_unrooted(v1, v2):
+    a = (euc_dist(v1[0], v2[0]) + euc_dist(v1[1], v2[1])) / 2.0
+    b = (euc_dist(v1[1], v2[0]) + euc_dist(v1[0], v2[1])) / 2.0
+    return min(a, b)
