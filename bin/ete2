@@ -1,8 +1,18 @@
 #!/usr/bin/env python
+import sys
 import argparse
 from string import strip
 import re
 import operator
+from collections import defaultdict
+import random
+
+
+from ete_dev import Tree, PhyloTree, TextFace, faces, TreeStyle, add_face_to_node, random_color
+from ete_dev.utils import print_table
+
+from common import parse_faces, node_matcher
+
 
 
 __CITATION__ = '''#       ** If you use this software for a published work, please cite: **
@@ -10,35 +20,301 @@ __CITATION__ = '''#       ** If you use this software for a published work, plea
 # Jaime Huerta-Cepas, Joaquin Dopazo and Toni Gabaldon. ETE: a python Environment
 # for Tree Exploration. BMC Bioinformatics 2010, 11:24. doi: 10.1186/1471-2105-11-24.'''
 
-COMPARE_DESC = """
- - ete compare -
+FACES = []
+
+def ete_generate(args):
+    for n in xrange(args.number):
+        t = Tree()
+        t.populate(args.size, random_branches=args.random_branches)
+        dump(t, args)
+
+def ete_mod(args):
+    for nw in args.src_tree_iterator:
+        t = Tree(nw)
+        mod(t, args)
+        dump(t, args)
+      
+        
+
+def ete_split(args):
+    pass
+
+def ete_expand(args):
+    pass
+
+def ete_extract(args):
+    #dups, orthologs, partitions, edges, dist_matrix, ancestor, 
+    pass
+
+def ete_consense(args):
+    pass
+
+def ete_ncbiquery(args):
+    pass
+
+def ete_annotate(args):
+    pass
+
+def ete_convert(args):
+    pass
+
+def ete_maptrees(args):
+    pass
+
+def ete_compare(args):
+    pass
+def ete_view(args):
+    pass
+
+def ete_fetch(args):
+    pass
+
+def ete_codeml(args):
+    pass
+
+def ete_reconcile(args):
+    pass
+
+def mod(t, args):
+    if args.ladderize and args.sort:
+        raise ValueError("--sort-branches and --ladderize options are mutually exclusive")
+
+    if args.expand_polytomies:
+        t.expand_polytomies(polytomy_size_limit=args.expand_polytomy)
+    
+    if args.outgroup:
+        if len(args.outgroup) > 1:
+            outgroup = t.get_common_ancestor(args.outgroup)
+        else:
+            outgroup = t & args.outgroup[0]
+        t.set_outgroup(outgroup)
+
+    if args.ladderize:
+        t.ladderize()
+    if args.sort:
+        t.sort_descendants()
+
+    # ultrametric
+    # unroot
+    # remove, prune branches
+    # resolve polytomies
+    
+    
+def ete_compare(args):
+    def iter_differences(set1, set2, unrooted=False):
+        for s1 in set1:
+            pairs = []
+            for r1 in set2:
+                if unrooted:
+                    d = euc_dist_unrooted(s1, r1)
+                else:
+                    d = euc_dist(s1, r1)
+                if d < 1:
+                    pairs.append((d,r1))
+            yield s1, pairs
+    
+    for stree_name in args.src_tree_iterator:
+        stree = Tree(stree_name)
+        for rtree_name in args.ref_trees:
+            rtree = Tree(rtree_name)
+            r = stree.compare(rtree, 
+                              ref_tree_attr=args.ref_tree_attr,
+                              source_tree_attr=args.src_tree_attr,
+                              min_support_ref=args.min_support_ref,
+                              min_support_source = args.min_support_src,
+                              unrooted=args.unrooted,
+                              has_duplications=False)
+
+
+            col_sizes = [25, 25] + [8] * 8
+            print_table([map(as_str, [shorten_str(stree_name,25), shorten_str(rtree_name,25), r['effective_tree_size'], r['norm_rf'], 
+                                    r['rf'], r['max_rf'], r["source_edges_in_ref"],
+                                    r["ref_edges_in_source"], r['source_subtrees'], r['treeko_dist']])],
+                        fix_col_width = col_sizes, wrap_style='cut')
+
+            if args.differences:
+                from pprint import pprint
+                import itertools
+
+                mismatches_src = r['source_edges'] - r['ref_edges']
+                mismatches_ref = r['ref_edges'] - r['source_edges']
+                for part, pairs in iter_differences(mismatches_src, mismatches_ref, unrooted=args.unrooted):
+                    print part
+                    for d, r in sorted(pairs):
+                        print "  ", d, r
  
-'compare' is a tool to calculate the distance from one or more trees to a
-reference tree. Robinson foulds and strict congruence measures are calculated,
-among other stats.
-
-Comparisons between trees with different sizes and containing duplicated
-attributes are also supported.  names.
-
-%s
-  
-"""% __CITATION__
-
                 
+def ete_view(args):
+    global FACES
+    if args.face:
+        FACES = parse_faces(args.face)
+    else:
+        FACES = []
+
+    # VISUALIZATION
+    ts = TreeStyle()
+    ts.mode = args.mode
+    ts.show_leaf_name = True
+
+    for f in FACES:
+        if f["value"] == "@name":
+            ts.show_leaf_name = False
+            break
+    
+    ts.branch_vertical_margin = args.branch_separation
+    if args.show_support:
+        ts.show_branch_support = True
+    if args.show_branch_length:
+        ts.show_branch_length = True
+    if args.force_topology:
+        ts.force_topology = True
+    ts.layout_fn = lambda x: None
+        
+    for tfile in args.src_tree_iterator:
+        if args.raxml:
+            nw = re.sub(":(\d+\.\d+)\[(\d+)\]", ":\\1[&&NHX:support=\\2]", open(tfile).read())
+            t = PhyloTree(nw)
+        else:
+            t = PhyloTree(tfile)
+
+        if args.ncbi:
+            if args.taxid_attr_regexp:
+                TAXIDMATCHER = re.compile(args.taxid_attr_regexp)
+
+            for lf in t:
+                if args.taxid_attr_regexp:
+                    lf.taxid = re.search(TAXIDMATCHER, getattr(lf, args.taxid_attr)).groups()[0]
+                else:
+                    lf.taxid = getattr(lf, args.taxid_attr)
+            t.annotate_ncbi_taxa(taxid_attr="taxid")
+
+        if args.alg:
+            t.link_to_alignment(args.alg, alg_format=args.alg_format)
+            LEAF_ATTRIBUTES["sequence"] = 1
+
+        # if args.species_discovery_regexp:
+        #     SPCODE_REGEXP = re.compile(args.species_discovery_regexp)
+        #     t.set_species_naming_function(user_species_naming_function)
+
+        if args.outgroup:
+            if len(args.outgroup) > 1:
+                outgroup = t.get_common_ancestor(args.outgroup)
+            else:
+                outgroup = t & args.outgroup[0]
+            t.set_outgroup(outgroup)
+
+        # scale the tree
+        if not args.height: 
+            args.height = None
+        if not args.width: 
+            args.width = None
+
+        if args.text_mode:
+            print t.get_ascii(show_internal=args.show_internal_names, attributes = args.show_attributes)
+        else:    
+            f2color = {}
+            f2last_seed = {}
+            for node in t.traverse():
+                node.img_style['size'] = 0
+
+                ftype_pos = defaultdict(int)
+                for f in FACES:
+                    last_seed = f2last_seed.setdefault(f["value"], random.random())
+                    if (f['nodetype'] == 'any' or 
+                        (f['nodetype'] == 'leaf' and node.is_leaf()) or
+                        (f['nodetype'] == 'internal' and not node.is_leaf())):            
+                        if node_matcher(node, f["filters"]):
+                            if f["value"].startswith("@"):
+                                attr = getattr(node, f["value"][1:], None)
+                            else:
+                                attr = f["value"]                    
+                            if attr != None:
+                                if f['color'] == 'auto()':
+                                    seed = last_seed + 0.10 + random.uniform(0.1, 0.2)
+                                    f2last_seed[f["value"]] = seed
+                                    color = f2color.setdefault(attr, random_color(h=seed))
+
+                                else:
+                                    color = f['color']
+                                F = TextFace(attr,
+                                             fsize=f.get("size", 10),
+                                             fgcolor=color)
+
+                                if f['bgcolor']:
+                                    F.background.color = f['bgcolor']
+
+                                if not f['column']:
+                                    col = ftype_pos[f["pos"]]
+                                    ftype_pos[f["pos"]] += 1    
+                                else:
+                                    col = f["column"]
+                                # Add the Face
+                                node.add_face(F, column=col, position=f["pos"])
+
+
+            if args.image:
+                t.render(args.image, tree_style=ts, w=args.width, h=args.height, units=args.size_units)
+            else:
+                t.show(None, tree_style=ts)
+
+    
+
+        
+def dump(t, args):
+    if getattr(args, "output", None):
+        t.write(format=args.newick_format, features=args.output_features)
+    else:
+        print t.write(format=args.newick_format, features=args.output_features)
+            
+def tree_iterator(tree_source):        
+    if not tree_source:
+        args.src_trees = sys.stdin
+    
+    for stree in args.src_trees:
+        yield stree
+
+        
 if __name__=="__main__":
     main_args_p = argparse.ArgumentParser(add_help=False)
     source_args_p = argparse.ArgumentParser(add_help=False)
     ref_args_p = argparse.ArgumentParser(add_help=False)
-
-    # SOURCE 
     
+    _mod_args_p = argparse.ArgumentParser(add_help=False)
+    _expand_args_p = argparse.ArgumentParser(add_help=False)
+    _split_args_p = argparse.ArgumentParser(add_help=False)
+    _extract_args_p = argparse.ArgumentParser(add_help=False)
+    
+
+    # output
+    
+    main_args = main_args_p.add_argument_group('GENERAL OPTIONS')
+
+    main_args.add_argument("-o", dest="output", 
+                            type=str,
+                            help="""Base output file name""")
+
+    
+    main_args.add_argument('--format', dest='newick_format', type=int, default=1)
+    main_args.add_argument('--features', dest='output_features', type=str, nargs="+", default=[])
+
+    
+    main_args.add_argument("--quite", dest="quite",
+                        action="store_true",
+                        help="Do not show process information")
+    
+    main_args.add_argument("--color", dest="color",
+                           action="store_true",
+                           help="If enabled, it will use colors in some of the report")
+
+    
+    # SOURCE     
     source_args = source_args_p.add_argument_group('SOURCE TREES')
     
     source_args.add_argument("-t", dest='src_trees',
                              type=str, nargs="*",
                              help='a list of trees in newick format (filenames or quoted strings)')
     
-    source_args.add_argument("--src_tree_list", dest="src_tree_list", 
+    source_args.add_argument("--src_file", dest="src_file", 
                              type=str, 
                              help="""path to a file containing many source trees, one per line""")
 
@@ -51,7 +327,6 @@ if __name__=="__main__":
                              help=(""))
 
     # REFS
-    
     ref_args = ref_args_p.add_argument_group('REFERENCE TREES')
     
     ref_args.add_argument("-r", dest="ref_trees", 
@@ -72,44 +347,121 @@ if __name__=="__main__":
                            type=str, 
                            help=(""))
 
-    # GENERAL 
+    # MOD
+    mod_args = _mod_args_p.add_argument_group('TREE EDIT OPTIONS')
     
-    main_args = main_args_p.add_argument_group('GENERAL OPTIONS')
-    
-    main_args.add_argument("--outgroup", dest="outgroup", 
+    mod_args.add_argument("--outgroup", dest="outgroup", 
                            nargs = "+",
                            help="""outgroup used to root reference and source trees before distance computation""")
+
+        
+    mod_args.add_argument("--sort_branches", dest="sort", 
+                           action="store_true",
+                           help="""Sort branches according to node names.""")
+
+    mod_args.add_argument("--ladderize", dest="ladderize", 
+                           action="store_true",
+                           help="""Sort branches by partition size.""")
     
-    main_args.add_argument("--expand_polytomies", dest="polytomies", 
+    mod_args.add_argument("--expand_polytomies", dest="expand_polytomies", 
+                          type=int, default=6, 
+                           help="""Expand all polytomies larger than the provided size""")
+
+
+    # split options
+    split_args = _split_args_p.add_argument_group('TREE SPLIT OPTIONS')
+
+    split_args.add_argument("--size_split", dest="split_at_size", 
+                          type = int,
+                          help=""" """)
+
+    split_args.add_argument("--attr_split", dest="split_at_attr", action='append',
+                          type = str, 
+                          help=""" """) #    "@dist > 10, @support >= 0.9 "
+    
+    
+    split_args.add_argument("--dup_split", dest="split_at_duplications", 
+                          type = str, 
+                          help=""" """) # split where attr is duplicated 
+
+    # expand ?
+    expand_args = _expand_args_p.add_argument_group('TREE EXPAND OPTIONS')
+
+    expand_args.add_argument("--expand_polytomies", dest="polytomies", 
                            action = "store_true",
                            help="""expand politomies if necessary""")
 
-
-    main_args.add_argument("-o", dest="output", 
-                            type=str,
-                            help="""Base output file name""")
-
-    main_args.add_argument("--quite", dest="quite",
-                        action="store_true",
-                        help="Do not show process information")
     
-    main_args.add_argument("--color", dest="color",
-                           action="store_true",
-                           help="If enabled, it will use colors in some of the report")
+    expand_args.add_argument("--treeko_split", dest="treeko_split", 
+                          type = str, 
+                          help=""" """)
+
+    # extract options?
+    extract_args = _extract_args_p.add_argument_group('TREE EDIT OPTIONS')
+
+    extract_args.add_argument("--attr", dest="split_at_attr", action='append', 
+                          type = str, 
+                          help=""" """)
+       
+    
+    # consense, merge, etc.....
+
+    
+    
+    
 
     
     # SUBPROGRAMS
-    parser = argparse.ArgumentParser(description="DESC", 
+    parser = argparse.ArgumentParser(description="",
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
                                      
     subparser = parser.add_subparsers(title="AVAILABLE PROGRAMS")
 
+    
+    # MOD
+    mod_args_p = subparser.add_parser("mod", parents=[source_args_p, _mod_args_p, main_args_p],
+                                       description="",
+                                       formatter_class=argparse.RawDescriptionHelpFormatter)
+    mod_args_p.set_defaults(func=ete_mod)
 
-    # COMPARE    
-    compare_args_p = subparser.add_parser("compare", parents=[source_args_p, ref_args_p, main_args_p],
+    # EXPAND
+    expand_args_p = subparser.add_parser("expand", parents=[source_args_p, _expand_args_p, main_args_p],
+                                       description="",
+                                       formatter_class=argparse.RawDescriptionHelpFormatter)
+    expand_args_p.set_defaults(func=ete_expand)
+
+    # SPLIT
+    split_args_p = subparser.add_parser("split", parents=[source_args_p, _split_args_p, main_args_p],
+                                       description="",
+                                       formatter_class=argparse.RawDescriptionHelpFormatter)
+    split_args_p.set_defaults(func=ete_split)
+
+    # EXTRACT
+    extract_args_p = subparser.add_parser("extract", parents=[source_args_p, _extract_args_p, main_args_p],
+                                       description="",
+                                       formatter_class=argparse.RawDescriptionHelpFormatter)
+    extract_args_p.set_defaults(func=ete_extract)
+
+
+    
+    # COMPARE
+    COMPARE_DESC = """
+ - ete compare -
+ 
+'compare' is a tool to calculate the distance from one or more trees to a
+reference tree. Robinson foulds and strict congruence measures are calculated,
+among other stats.
+
+Comparisons between trees with different sizes and containing duplicated
+attributes are also supported.  names.
+
+%s
+  
+"""% __CITATION__
+
+    compare_args_p = subparser.add_parser("compare", parents=[source_args_p, _mod_args_p, ref_args_p, main_args_p],
                                            description=COMPARE_DESC, formatter_class=argparse.RawDescriptionHelpFormatter)
-    import ete_compare 
-    compare_args_p.set_defaults(func=ete_compare.compare)
+    compare_args_p.set_defaults(func=ete_compare)
     
     compare_args = compare_args_p.add_argument_group("COMPARE GENERAL OPTIONS")
     
@@ -128,29 +480,20 @@ if __name__=="__main__":
                               action = "store_true",
                               help="return differences between pairs of trees ")
 
-    
-    # DIFF
-    diff_args_p = subparser.add_parser("diff", parents=[source_args_p, ref_args_p, main_args_p],
-                                       description=COMPARE_DESC, formatter_class=argparse.RawDescriptionHelpFormatter)
+                                
+    # VIEW
+    VIEW_DESC = """
+ - ete view -
+ 
+The ETE toolkit viewer
+%s
+  
+"""% __CITATION__
 
-    compare_args = compare_args_p.add_argument_group("COMPARE GENERAL OPTIONS")
+    view_args_p = subparser.add_parser( "view", parents=[source_args_p, _mod_args_p, main_args_p],
+                                        description=VIEW_DESC, formatter_class=argparse.RawDescriptionHelpFormatter)
     
-    parser.add_argument("--fullsearch", dest="fullsearch",
-                        action="store_false",
-                        help=("Enable this option if duplicated attributes (i.e. name)"
-                              "exist in reference or target trees."))
-    
-    parser.add_argument("--report", dest="report",
-                        choices=["topology", "diffs", "diffs_tab", "summary"],
-                        default = "topology",
-                        help="Different format for the comparison results")
-
-                        
-    
-    # VIEW    
-    view_args_p = subparser.add_parser( "view", parents=[source_args_p, main_args_p])
-    import ete_view
-    view_args_p.set_defaults(func=ete_view.main)
+    view_args_p.set_defaults(func=ete_view)
 
     
     view_args_p.add_argument("--face", action="append",
@@ -225,14 +568,6 @@ if __name__=="__main__":
                         help="""Show the name attribute of all internal nodes.""")
 
     edit_gr = view_args_p.add_argument_group("TREE EDIT OPTIONS")
-        
-    edit_gr.add_argument("-s", "--sort_branches", dest="sort", 
-                        action="store_true",
-                        help="""Sort branches according to node names.""")
-
-    edit_gr.add_argument("-l", "--ladderize", dest="ladderize", 
-                        action="store_true",
-                        help="""Sort branches by partition size.""")
     
     edit_gr.add_argument("--color_by_rank", dest="color_by_rank", 
                          type=str, nargs="+",
@@ -345,8 +680,23 @@ if __name__=="__main__":
                               " one-child-nodes, so the complete lineage"
                               " track leading from root to tips is kept."))
 
+
+    # GENERATE  TREES
     
-    args = parser.parse_args()    
+    generate_args_p = subparser.add_parser("generate", parents=[source_args_p, main_args_p],
+                                           description="",
+                                           formatter_class=argparse.RawDescriptionHelpFormatter)
+    
+    generate_args_p.set_defaults(func=ete_generate)
+
+    generate_args_p.add_argument('--number', dest='number', type=int, default=1)
+    generate_args_p.add_argument('--size', dest='size', type=int, default=10)
+    generate_args_p.add_argument('--random_branches', dest='random_branches', action="store_true")
+
+    
+    args = parser.parse_args()
+
+    args.src_tree_iterator = tree_iterator(args.src_trees)
     args.func(args)
 
 
