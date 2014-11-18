@@ -185,6 +185,7 @@ class TreeNode(object):
         
         # Initialize tree
         if newick is not None:
+            self._dist = 0.0
             read_newick(newick, root_node = self, format=format)
            
 

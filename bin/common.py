@@ -155,6 +155,16 @@ def parse_faces(face_args):
                 if value.endswith("()"):
                     func_name = value[0:-2]
                 face[key] = value
+            elif key == "fstyle":
+                if value != 'italic' and value != 'bold':
+                    raise ValueError("valid style formats are: italic, bold [%s]" %clause)
+                face[key] = value
+                
+            elif key == "format":
+                if "%" not in value:
+                    print value
+                    raise ValueError("format attribute should contain one format char: ie. %%s [%s]" %clause)
+                face[key] = value.strip("\"")                
             elif key in face:
                 face[key] = value
             else:

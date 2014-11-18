@@ -461,7 +461,7 @@ class Test_Coretype_Tree(unittest.TestCase):
 
         for ref in [ref3, ref4, ref5]:
             print gtree, ref
-            gtree.robinson_foulds(ref, expand_polytomies=True)[0]
+            gtree.robinson_foulds(ref, expand_polytomies=True, polytomy_size_limit=8)[0]
 
 
         gtree = Tree('((g, h), (a, b, (c, d, (e, f))));')
@@ -473,14 +473,14 @@ class Test_Coretype_Tree(unittest.TestCase):
         for ref in [ref6, ref7, ref8, ref9]:
             print gtree, ref
             gtree.robinson_foulds(ref, expand_polytomies=True)[0]
-            print "REF GOOD", gtree.robinson_foulds_good(ref, expand_polytomies=True)[0]
+            print "REF GOOD", gtree.robinson_foulds(ref, expand_polytomies=True, polytomy_size_limit=8)[0]
         
         gtree = Tree('((g, h), ((a, b), (c, d), (e, f)));')
         ref10 = Tree('((g, h), ((a, c), ((b, d), (e, f))));')
         
         for ref in [ref10]:
             print gtree, ref
-            gtree.robinson_foulds(ref, expand_polytomies=True)[0]
+            gtree.robinson_foulds(ref, expand_polytomies=True, polytomy_size_limit=8)[0]
 
     def test_tree_compare(self):
         def _astuple(d):

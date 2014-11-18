@@ -87,7 +87,7 @@ class NCBITaxa(object):
 
         norm_score = 1 - (float(score)/len(name))
         if taxid: 
-            print "FOUND!                  %s taxid:%s score:%s (%s)" %(spname, taxid, score, norm_score)
+            print "FOUND!    %s taxid:%s score:%s (%s)" %(spname, taxid, score, norm_score)
 
         return taxid, spname, norm_score
 
@@ -122,7 +122,7 @@ class NCBITaxa(object):
         """
         Given a list of taxid numbers, returns a dictionary of their corresponding scientific names.
         """
-        
+       
         all_ids = set(map(int, taxids))
         all_ids.discard(None)
         all_ids.discard("")
@@ -132,6 +132,20 @@ class NCBITaxa(object):
         id2name = {}
         for tax, spname in result.fetchall():
             id2name[tax] = spname
+
+        # any taxid without translation? lets tray in the merged table
+        if len(all_ids) != len(id2name):
+            not_found_taxids = all_ids - set(id2name.keys())
+            taxids, old2new = self._translate_merged(not_found_taxids)
+            new2old = dict([(v,k) for k,v in conversion.iteritems()])
+            
+            if conversion:                
+                query = ','.join(['"%s"' %v for v in new2old])
+                cmd = "select taxid, spname FROM species WHERE taxid IN (%s);" %query
+                result = self.db.execute(cmd)
+                for tax, spname in result.fetchall():
+                    id2name[new2old[tax]] = spname
+            
         return id2name
 
 
@@ -178,7 +192,7 @@ class NCBITaxa(object):
         return names
 
 
-    def get_topology(self, taxids, intermediate_nodes=False, rank_limit=None):
+    def get_topology(self, taxids, intermediate_nodes=False, rank_limit=None, collapse_subspecies=False):
         """Given a list of taxid numbers, return the minimal pruned NCBI taxonomy tree
         containing all of them.
 
@@ -230,6 +244,24 @@ class NCBITaxa(object):
                 if len(n.children) == 1 and int(n.name) not in taxids: 
                     n.delete(prevent_nondicotomic=False)
 
+        if collapse_subspecies:
+            species_nodes = [n for n in t.traverse() if n.rank == "species"
+                             if int(n.taxid) in all_taxids]
+            for sp_node in species_nodes:
+                bellow = sp_node.get_descendants()
+                if bellow:
+                    # creates a copy of the species node
+                    connector = sp_node.__class__()
+                    for f in sp_node.features:
+                        connector.add_feature(f, getattr(sp_node, f))
+                    connector.name = connector.name + "{species}"
+                    for n in bellow:
+                        n.detach()
+                        n.name = n.name + "{%s}" %n.rank
+                        sp_node.add_child(n)
+                    sp_node.add_child(connector)
+                    sp_node.add_feature("collapse_subspecies", "1")
+                    
         if len(root.children) == 1:
             return root.children[0].detach()
         else:
@@ -238,7 +270,7 @@ class NCBITaxa(object):
 
     def annotate_tree(self, t, taxid_attr="name", tax2name=None, tax2track=None, tax2rank=None):
         """Annotate a tree containing taxids as leaf names by adding the  'taxid',
-        'spname', 'lineage', 'named_lineage' and 'rank' additional attributes.
+        'sci_name', 'lineage', 'named_lineage' and 'rank' additional attributes.
 
         :param name taxid_attr: if taxid number is encoded under a different
         attribute rather than node.name, specify which. For instance, in
@@ -280,12 +312,12 @@ class NCBITaxa(object):
                     if node_taxid in merged_conversion:
                         node_taxid = merged_conversion[node_taxid]
 
-                    n.add_features(spname = tax2name.get(node_taxid, "Unknown"),
+                    n.add_features(sci_name = tax2name.get(node_taxid, "Unknown"),
                                    lineage = tax2track[node_taxid], 
                                    rank = tax2rank.get(node_taxid, 'Unknown'),
                                    named_lineage = self.translate_to_names(tax2track[node_taxid]))
                 else:
-                    n.add_features(spname = "Unknown",
+                    n.add_features(sci_name = "Unknown",
                                    lineage = [], 
                                    rank = 'Unknown',
                                    named_lineage = [])
@@ -293,7 +325,7 @@ class NCBITaxa(object):
                 ancestor, lineage = self._first_common_ocurrence([lf.lineage for lf in n2leaves[n]])
 
                 #node_name, named_lineage = first_common_ocurrence([lf.named_lineage for lf in n2leaves[n]])
-                n.add_features(spname = tax2name.get(ancestor, str(ancestor)),
+                n.add_features(sci_name = tax2name.get(ancestor, str(ancestor)),
                                taxid = ancestor,
                                lineage = lineage, 
                                rank = tax2rank.get(ancestor, 'Unknown'),
@@ -343,7 +375,7 @@ class NCBITaxa(object):
 
         unknown = set()
         for leaf in t.iter_leaves():
-            if leaf.spname.lower() != "unknown":
+            if leaf.sci_name.lower() != "unknown":
                 lineage = taxa_lineages[leaf.taxid]
                 for index, tax in enumerate(lineage):
                     tax2node[tax].add(leaf)
@@ -365,22 +397,22 @@ class NCBITaxa(object):
         return broken_branches, broken_clades, broken_clade_sizes
 
 
-    def annotate_tree_with_taxa(self, t, name2taxa_file, tax2name=None, tax2track=None, attr_name="name"):
-        if name2taxa_file: 
-            names2taxid = dict([map(strip, line.split("\t"))
-                                for line in open(name2taxa_file)])
-        else:
-            names2taxid = dict([(n.name, getattr(n, attr_name)) for n in t.iter_leaves()])
+    # def annotate_tree_with_taxa(self, t, name2taxa_file, tax2name=None, tax2track=None, attr_name="name"):
+    #     if name2taxa_file: 
+    #         names2taxid = dict([map(strip, line.split("\t"))
+    #                             for line in open(name2taxa_file)])
+    #     else:
+    #         names2taxid = dict([(n.name, getattr(n, attr_name)) for n in t.iter_leaves()])
 
-        not_found = 0
-        for n in t.iter_leaves():
-            n.add_features(taxid=names2taxid.get(n.name, 0))
-            n.add_features(species=n.taxid)
-            if n.taxid == 0:
-                not_found += 1
-        if not_found:
-            print >>sys.stderr, "WARNING: %s nodes where not found within NCBI taxonomy!!" %not_found
+    #     not_found = 0
+    #     for n in t.iter_leaves():
+    #         n.add_features(taxid=names2taxid.get(n.name, 0))
+    #         n.add_features(species=n.taxid)
+    #         if n.taxid == 0:
+    #             not_found += 1
+    #     if not_found:
+    #         print >>sys.stderr, "WARNING: %s nodes where not found within NCBI taxonomy!!" %not_found
 
-        return self.annotate_tree(t, tax2name, tax2track, attr_name="taxid")
+    #     return self.annotate_tree(t, tax2name, tax2track, attr_name="taxid")
 
 

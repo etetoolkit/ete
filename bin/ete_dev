@@ -2,18 +2,6 @@
 import sys
 import argparse
 from string import strip
-import re
-import operator
-from collections import defaultdict
-import random
-
-
-from ete_dev import Tree, PhyloTree, TextFace, faces, TreeStyle, add_face_to_node, random_color
-from ete_dev.utils import print_table
-
-from common import parse_faces, node_matcher
-
-
 
 __CITATION__ = '''#       ** If you use this software for a published work, please cite: **
 #  
@@ -21,14 +9,45 @@ __CITATION__ = '''#       ** If you use this software for a published work, plea
 # for Tree Exploration. BMC Bioinformatics 2010, 11:24. doi: 10.1186/1471-2105-11-24.'''
 
 FACES = []
+LOG_LEVEL = 5
+
+class Logger(object):
+    def __init__(self, buff):
+        self.out = buff
+    
+    def info(self, *args):
+        print >>self.out, "INFO  - ", ' '.join(map(str, args))
+    def warn(self, *args):
+        print >>self.out, "WARN  - ", ' '.join(map(str, args))
+    
+    def error(self, *args):
+        print >>self.out, "ERROR - ", ' '.join(map(str, args))
+    
+    def debug(self, *args):
+        print >>self.out, "DEBUG - ", ' '.join(map(str, args))
+    
+log = Logger(sys.stderr)
+
+class ArgError(ValueError):
+    def __init__(self, value):
+        self.value = value
+    def __str__(self):
+        # return repr(self.value)
+        return self.value
+    pass
 
 def ete_generate(args):
+    import random
+    from ete_dev import Tree
+    
     for n in xrange(args.number):
         t = Tree()
         t.populate(args.size, random_branches=args.random_branches)
         dump(t, args)
 
 def ete_mod(args):
+    from ete_dev import Tree
+    
     for nw in args.src_tree_iterator:
         t = Tree(nw)
         mod_tree(t, args)
@@ -72,11 +91,77 @@ def ete_consense(args):
     pass
 
 def ete_ncbiquery(args):
-    pass
+    import re
+    from ete_dev import PhyloTree, NCBITaxa
 
+    if not args.taxonomy and not args.info:
+        args.taxonomy = True
+    
+    ncbi = NCBITaxa()
+
+    all_taxids = {}
+    all_names = set()
+    queries = []    
+    for n in args.search:
+        queries.append(n)
+        try:
+            all_taxids[int(n)] = None
+        except ValueError:
+            all_names.add(n.strip())
+            
+    # translate names
+    name2tax = ncbi.get_name_translator(all_names)
+    all_taxids.update([(v, None) for v in name2tax.values()])
+
+    not_found_names = all_names - set(name2tax.keys())
+    if args.fuzzy and not_found_names:
+        log.warn("%s unknown names", len(not_found_names))
+        for name in not_found_names:
+            # enable extension loading
+            tax, realname, sim = ncbi.get_fuzzy_name_translation(name, args.fuzzy)
+            if tax:
+                all_taxids[tax] = None
+                name2tax[name] = tax
+                name2realname[name] = realname
+                name2score[name] = "Fuzzy:%0.2f" %sim
+                                    
+    if args.taxonomy:
+        log.info("Dumping NCBI taxonomy of %d taxa..." %(len(all_taxids)))
+        t = ncbi.get_topology(all_taxids.keys(),
+                              intermediate_nodes=args.full_lineage,
+                              rank_limit=args.rank_limit,
+                              collapse_subspecies=args.collapse_subspecies)
+        
+        id2name = ncbi.get_taxid_translator([n.name for n in t.traverse()])
+        for n in t.traverse():
+            n.add_features(taxid=n.name)
+            n.add_features(sci_name=str(id2name.get(int(n.name), "?")))
+            n.name = "%s - %s" %(id2name.get(int(n.name), n.name), n.name)
+            lineage = ncbi.get_sp_lineage(n.taxid)
+            n.add_features(named_lineage = '|'.join(ncbi.translate_to_names(lineage)))
+        print t.write(format=9, features=["taxid", "name", "rank", "bgcolor", "sci_name", "collapse_subspecies", "named_lineage"])
+    elif args.info:
+        translator = ncbi.get_taxid_translator(all_taxids)
+        ranks = ncbi.get_ranks(all_taxids) 
+        for taxid, name in translator.iteritems():
+            lineage = ncbi.get_sp_lineage(taxid)            
+            named_lineage = ','.join(ncbi.translate_to_names(lineage))
+            lineage_string = ','.join(map(str, lineage))
+            print '\t'.join([str(taxid), name, ranks.get(taxid, ''), named_lineage, lineage_string])
+            
 def ete_annotate(args):
-    pass
-
+    from ete_dev import Tree, PhyloTree
+        
+    features = set()    
+    for nw in args.src_tree_iterator:
+        if args.ncbi:
+            tree = PhyloTree(nw)
+            features.update(["taxid", "name", "rank", "bgcolor", "sci_name", "collapse_subspecies", "named_lineage", "lineage"])            
+            tree.annotate_ncbi_taxa(args.taxid_attr)
+        else:
+            tree = Tree(nw)
+        print tree.write(features=features)
+        
 def ete_convert(args):
     pass
 
@@ -91,8 +176,11 @@ def ete_codeml(args):
 
 def ete_reconcile(args):
     pass
-    
+
 def ete_compare(args):
+    from ete_dev import Tree
+    from ete_dev.utils import print_table
+    
     def iter_differences(set1, set2, unrooted=False):
         for s1 in set1:
             pairs = []
@@ -137,7 +225,14 @@ def ete_compare(args):
  
                 
 def ete_view(args):
+    import random
+    import re
+    from collections import defaultdict
+    from ete_dev import Tree, PhyloTree, TextFace, faces, TreeStyle, add_face_to_node, random_color
+    from common import parse_faces, node_matcher
+    
     global FACES
+    
     if args.face:
         FACES = parse_faces(args.face)
     else:
@@ -152,7 +247,16 @@ def ete_view(args):
         if f["value"] == "@name":
             ts.show_leaf_name = False
             break
-    
+
+    if args.as_ncbi:
+        ts.show_leaf_name = False
+        FACES.extend(parse_faces(
+            ['value:@sci_name, size:10, fstyle:italic',
+             'value:@taxid, color:grey, size:6, format:" - %s"',
+             'value:@sci_name, color:steelblue, size:7, pos:b-top, nodetype:internal',
+             'value:@rank, color:indianred, size:6, pos:b-bottom, nodetype:internal',
+         ]))
+                        
     ts.branch_vertical_margin = args.branch_separation
     if args.show_support:
         ts.show_branch_support = True
@@ -168,17 +272,6 @@ def ete_view(args):
             t = PhyloTree(nw)
         else:
             t = PhyloTree(tfile)
-
-        if args.ncbi:
-            if args.taxid_attr_regexp:
-                TAXIDMATCHER = re.compile(args.taxid_attr_regexp)
-
-            for lf in t:
-                if args.taxid_attr_regexp:
-                    lf.taxid = re.search(TAXIDMATCHER, getattr(lf, args.taxid_attr)).groups()[0]
-                else:
-                    lf.taxid = getattr(lf, args.taxid_attr)
-            t.annotate_ncbi_taxa(taxid_attr="taxid")
 
         if args.alg:
             t.link_to_alignment(args.alg, alg_format=args.alg_format)
@@ -203,7 +296,11 @@ def ete_view(args):
             f2color = {}
             f2last_seed = {}
             for node in t.traverse():
-                node.img_style['size'] = 0
+                node.img_style['size'] = 0                
+                if len(node.children) == 1:
+                    node.img_style['size'] = 2                
+                    node.img_style['shape'] = "square"
+                    node.img_style['fgcolor'] = "steelblue"
 
                 ftype_pos = defaultdict(int)
                 for f in FACES:
@@ -224,9 +321,12 @@ def ete_view(args):
 
                                 else:
                                     color = f['color']
+                                if f.get("format", None):
+                                    attr = f["format"] % attr    
                                 F = TextFace(attr,
                                              fsize=f.get("size", 10),
-                                             fgcolor=color)
+                                             fgcolor=color,
+                                             fstyle=f.get('fstyle', None))
 
                                 if f['bgcolor']:
                                     F.background.color = f['bgcolor']
@@ -258,8 +358,7 @@ def tree_iterator(tree_source):
     
     for stree in args.src_trees:
 
-        # CHECK WHAT is needed before process the main command, allows mods before analyses
-        
+        # CHECK WHAT is needed before process the main command, allows mods before analyses        
         yield stree
 
 
@@ -288,11 +387,9 @@ if __name__=="__main__":
     main_args.add_argument("-o", dest="output", 
                             type=str,
                             help="""Base output file name""")
-
     
     main_args.add_argument('--format', dest='newick_format', type=int, default=1)
     main_args.add_argument('--features', dest='output_features', type=str, nargs="+", default=[])
-
     
     main_args.add_argument("--quite", dest="quite",
                         action="store_true",
@@ -448,7 +545,9 @@ if __name__=="__main__":
                                        description="",
                                        formatter_class=argparse.RawDescriptionHelpFormatter)
     annotate_args_p.set_defaults(func=ete_annotate)
-
+    annotate_args = annotate_args_p.add_argument_group("TREE ANNOTATE OPTIONS")
+    annotate_args.add_argument("--ncbi", dest="ncbi", action="store_true", help="annotate tree nodes using ncbi taxonomy database.")
+    annotate_args.add_argument("--taxid_attr", dest="taxid_attr", default='name', help="attribute used as NCBI taxid number")
     
     
     # MOD
@@ -605,11 +704,6 @@ The ETE toolkit viewer
                          type=str, nargs="+",
                          help="""If the attribute rank is present in nodes """)
 
-    edit_gr.add_argument("--ncbi", dest="ncbi", 
-                         action='store_true',
-                         help=("Annotate tree using the NCBI taxonomy database. --src_target_attr"
-                               " and --src_attr_regexp will be used to parse taxid from tree nodes."))
-
     edit_gr.add_argument("--raxml", dest="raxml", 
                         action="store_true",
                          help=("Parses the newick string and extracts bootstrap values from"
@@ -621,6 +715,11 @@ The ETE toolkit viewer
                         type=str, 
                         help="""Link tree to a multiple sequence alignment.""")
 
+    phylo_gr.add_argument("--ncbi", dest="as_ncbi", 
+                          action="store_true" ,
+                          help="""If enabled, default style will be applied to show ncbi taxonomy annotations""")
+
+    
     phylo_gr.add_argument("--alg_format", dest="alg_format", 
                         type=str, default="fasta",
                         help="fasta, phylip, iphylip, relaxed_iphylip, relaxed_phylip.")
@@ -646,35 +745,19 @@ The ETE toolkit viewer
                         help=""" """)
 
     # NCBIQUERY    
-    ncbi_args_p = subparser.add_parser( "ncbiquery", parents=[source_args_p, main_args_p])
+    ncbi_args_p = subparser.add_parser( "ncbiquery", parents=[main_args_p])
+
+    ncbi_args_p.set_defaults(func=ete_ncbiquery)
 
     ncbi_args = ncbi_args_p.add_argument_group('NCBI GENERAL OPTIONS')
+
+    ncbi_args.add_argument("--search", dest="search", nargs="+", help="A list of taxid or species names")
     
     ncbi_args.add_argument("--db",  dest="dbfile",
                         type=str,
                         help="""NCBI sqlite3 db file.""")
 
-    input_args = ncbi_args_p.add_argument_group('TAXID INPUT OPTIONS')
-    
-    input_args.add_argument("-i", "--taxid", dest="taxid", nargs="+",  
-                        type=int, 
-                        help="""taxids (space separated)""")
-
-    input_args.add_argument("-if", "--taxid_file", dest="taxid_file",   
-                        type=str, 
-                        help="""file containing a list of taxids (one per line)""")
-
-
-    name_input_args = ncbi_args_p.add_argument_group('NAME INPUT OPTIONS')
-    
-    name_input_args.add_argument("-n", "--name", dest="names", nargs="+",  
-                        type=str, 
-                        help="""species or taxa names (comma separated)""")
-
-    name_input_args.add_argument("-nf", "--names_file", dest="names_file",   
-                        type=str, 
-                        help="""file containing a list of taxids (one per line)""")
-    name_input_args.add_argument("--fuzzy", dest="fuzzy", type=float,
+    ncbi_args.add_argument("--fuzzy", dest="fuzzy", type=float,
                         help=("Tries a fuzzy (and SLOW) search for those"
                               " species names that could not be translated"
                               " into taxids. A float number must be provided"
@@ -687,13 +770,9 @@ The ETE toolkit viewer
                         help=("dump a pruned version of the NCBI taxonomy"
                               " tree containing target species into the specified file"))
 
-    output_args.add_argument("--table", dest="info_list",   
+    output_args.add_argument("--info", dest="info",   
                         action='store_true', 
                         help="""dump NCBI taxonmy information for each target species into the specified file. """)
-
-    output_args.add_argument("--annotate", dest="annotated_tree",   
-                        action='store_true', 
-                        help="dump the annotated tree of the input reftree provided with -t into the specified file.")                             
     
     output_args.add_argument("--collapse_subspecies", dest="collapse_subspecies",   
                         action="store_true",
@@ -728,9 +807,15 @@ The ETE toolkit viewer
     
     args = parser.parse_args()
 
-    args.src_tree_iterator = tree_iterator(args.src_trees)
+    if hasattr(args, "src_trees"):
+        args.src_tree_iterator = tree_iterator(args.src_trees)
+        
+    elif hasattr(args, "search"):
+        if not args.search:
+            args.search = sys.stdin 
 
-
+        
+        
     # Call main program
     args.func(args)
 

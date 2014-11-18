@@ -22,9 +22,11 @@
 # #END_LICENSE#############################################################
 import re
 import os
-import base64 
+
 
 __all__ = ["read_newick", "write_newick", "print_supported_formats"]
+
+ITERABLE_TYPES = set([list, set, tuple, frozenset])
 
 # Regular expressions used for reading newick format
 _ILEGAL_NEWICK_CHARS = ":;(),\[\]\t\n\r="
@@ -423,8 +425,18 @@ def _get_features_string(self, features=None):
 
     for pr in features:
         if hasattr(self, pr):
+            raw = getattr(self, pr)
+            if type(raw) in ITERABLE_TYPES:
+                raw = '|'.join(map(str, raw))
+            elif type(raw) == dict: 
+                raw = '|'.join(map(lambda x,y: "%s-%s" %(x, y), raw.iteritems()))
+            elif type(raw) == str:
+                pass
+            else:
+                raw = str(raw)
+            
             value = re.sub("["+_ILEGAL_NEWICK_CHARS+"]", "_", \
-                             str(getattr(self, pr)))
+                             raw)
             if string != "":
                 string +=":"
             string +="%s=%s"  %(pr, str(value))
@@ -432,3 +444,5 @@ def _get_features_string(self, features=None):
         string = "[&&NHX:"+string+"]"
 
     return string
+
+
