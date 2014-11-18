@@ -180,6 +180,7 @@ def ete_reconcile(args):
 def ete_compare(args):
     from ete_dev import Tree
     from ete_dev.utils import print_table
+    from common import as_str, shorten_str
     
     def iter_differences(set1, set2, unrooted=False):
         for s1 in set1:
@@ -303,8 +304,9 @@ def ete_view(args):
                     node.img_style['fgcolor'] = "steelblue"
 
                 ftype_pos = defaultdict(int)
-                for f in FACES:
-                    last_seed = f2last_seed.setdefault(f["value"], random.random())
+
+                for findex, f in enumerate(FACES):
+
                     if (f['nodetype'] == 'any' or 
                         (f['nodetype'] == 'leaf' and node.is_leaf()) or
                         (f['nodetype'] == 'internal' and not node.is_leaf())):            
@@ -314,11 +316,22 @@ def ete_view(args):
                             else:
                                 attr = f["value"]                    
                             if attr != None:
-                                if f['color'] == 'auto()':
+                                auto_m = re.search("auto\(([^)]*)\)",f['color'])
+                                if auto_m:
+                                    target_attr = auto_m.groups()[0].strip()
+                                    if not target_attr :
+                                        color_attr = f["value"]
+                                    else:
+                                        color_attr = target_attr
+                                    color_attr = color_attr.lstrip('@')
+                                    color_bin = getattr(node, color_attr, None)
+                                    
+                                    last_seed = f2last_seed.setdefault(color_attr, random.random())
+                                    
                                     seed = last_seed + 0.10 + random.uniform(0.1, 0.2)
-                                    f2last_seed[f["value"]] = seed
-                                    color = f2color.setdefault(attr, random_color(h=seed))
-
+                                    f2last_seed[color_attr] = seed
+                                    
+                                    color = f2color.setdefault(color_bin, random_color(h=seed))
                                 else:
                                     color = f['color']
                                 if f.get("format", None):
