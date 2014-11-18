@@ -267,7 +267,7 @@ def ete_view(args):
         ts.force_topology = True
     ts.layout_fn = lambda x: None
         
-    for tfile in args.src_tree_iterator:
+    for tindex, tfile in enumerate(args.src_tree_iterator):
         if args.raxml:
             nw = re.sub(":(\d+\.\d+)\[(\d+)\]", ":\\1[&&NHX:support=\\2]", open(tfile).read())
             t = PhyloTree(nw)
@@ -354,7 +354,8 @@ def ete_view(args):
 
 
             if args.image:
-                t.render(args.image, tree_style=ts, w=args.width, h=args.height, units=args.size_units)
+                t.render("t%d.%s" %(tindex, args.image),
+                         tree_style=ts, w=args.width, h=args.height, units=args.size_units)
             else:
                 t.show(None, tree_style=ts)
 
