@@ -7,7 +7,7 @@
 # Note that the use of "from x import *" is safe here. Modules include
 # the __all__ variable.
 
-from sys import stderr
+from warnings import warn
 from ncbi_taxonomy import *
 
 from coretype.tree import *
@@ -24,16 +24,16 @@ from evol import EvolTree
 try:
     from coretype.arraytable import *
 except ImportError, e:
-    print >>stderr, "Clustering module could not be loaded"
-    print e
+    warn("Clustering module could not be loaded")
+    warn(e)
 else:
     from clustering.clustertree import *
 
 try:
     from phylomedb.phylomeDB3 import *
 except ImportError, e:
-    print >>stderr, " MySQLdb module could not be loaded"
-    print e
+    warn("MySQLdb module could not be loaded")
+    warn(e)
 
 try:
     from treeview.main import *
@@ -42,8 +42,8 @@ try:
     from treeview import layouts
     from treeview.svg_colors import *
 except ImportError, e:
-    print >>stderr, "Treeview module could not be loaded"
-    print e
+    warn("Treeview module could not be loaded")
+    warn(e)
 
 # Do not modify the following line. It will be checked during
 # installation

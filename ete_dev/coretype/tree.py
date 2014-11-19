@@ -29,7 +29,7 @@ from hashlib import md5
 import itertools
 from ete_dev.parser.newick import read_newick, write_newick
 from ete_dev import utils
-
+import sys
 
 # the following imports are necessary to set fixed styles and faces
 try:
@@ -1266,14 +1266,14 @@ class TreeNode(object):
         """
         # if is rooted
         if not self.is_root():
-            print >>sys.stderr, "Warning. You are unrooting an internal node.!!"
+            print >>sys.stderr, "Warning - You are unrooting an internal node.!!"
         if len(self.children)==2:
             if not self.children[0].is_leaf():
                 self.children[0].delete()
             elif not self.children[1].is_leaf():
                 self.children[1].delete()
             else:
-                raise TreeError, "Cannot unroot a tree with only two leaves"
+                raise TreeError("Cannot unroot a tree with only two leaves")
 
     def show(self, layout=None, tree_style=None, name="ETE"):
         """ 
