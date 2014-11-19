@@ -5,8 +5,6 @@ ete_dev compare -t "(((A, B),C),(D,E));" -r "(((A, C),B),(D,E));"
  
 ete_dev generate --number 10 | ete_dev compare -r `ete_dev generate` 
 
-
-
 # quick view
 ete_dev generate | ete_dev view
 
