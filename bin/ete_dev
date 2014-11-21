@@ -10,77 +10,51 @@ __CITATION__ = '''#       ** If you use this software for a published work, plea
 # for Tree Exploration. BMC Bioinformatics 2010, 11:24. doi: 10.1186/1471-2105-11-24.'''
 
 FACES = []
-LOG_LEVEL = 5
+LOG_LEVEL = 2
 
 class Logger(object):
     def __init__(self, buff):
         self.out = buff
     
-    def info(self, *args):
-        print >>self.out, "INFO  - ", ' '.join(map(str, args))
-    def warn(self, *args):
-        print >>self.out, "WARN  - ", ' '.join(map(str, args))
-    
     def error(self, *args):
-        print >>self.out, "ERROR - ", ' '.join(map(str, args))
-    
+        if LOG_LEVEL >=1:
+            print >>self.out, "ERROR - ", ' '.join(map(str, args))
+            
+    def warn(self, *args):
+        if LOG_LEVEL >=2:
+            print >>self.out, "WARN  - ", ' '.join(map(str, args))
+            
+    def info(self, *args):
+        if LOG_LEVEL >=3:
+            print >>self.out, "INFO  - ", ' '.join(map(str, args))
+        
     def debug(self, *args):
-        print >>self.out, "DEBUG - ", ' '.join(map(str, args))
+        if LOG_LEVEL >=4:
+            print >>self.out, "DEBUG - ", ' '.join(map(str, args))
     
 log = Logger(sys.stderr)
 
-paired_colors = ['#a6cee3',
-                 '#1f78b4',
-                 '#b2df8a',
-                 '#33a02c',
-                 '#fb9a99',
-                 '#e31a1c',
-                 '#fdbf6f',
-                 '#ff7f00',
-                 '#cab2d6',
-                 '#6a3d9a',
-                 '#ffff99',
-                 '#b15928']
+paired_colors = ['#a6cee3', '#1f78b4', '#b2df8a', '#33a02c', '#fb9a99',
+                 '#e31a1c', '#fdbf6f', '#ff7f00', '#cab2d6', '#6a3d9a',
+                 '#ffff99', '#b15928']
 
-COLOR_RANKS = {
-    "superclass": "#a6cee3",
-    "class": "#a6cee3",
-    "subclass": "#a6cee3",
-    "infraclass": "#a6cee3",
-    
-    "superfamily": "#1f78b4",
-    "family": "#1f78b4",
-    "subfamily": "#1f78b4",
-
-    "superkingdom": "#b2df8a",
-    "kingdom": "#b2df8a",
-    "subkingdom": "#b2df8a",
-    
-    "superorder": "#33a02c",
-    "order": "#33a02c",
-    "suborder": "#33a02c",
-    "infraorder": "#33a02c",
-    "parvorder": "#33a02c",
-
-    "superphylum": "#fdbf6f",
-    "phylum": "#fdbf6f",
-    "subphylum": "#fdbf6f",
+COLOR_RANKS = { "superclass": "#a6cee3", "class": "#a6cee3", "subclass": "#a6cee3", "infraclass": "#a6cee3",
+                "superfamily": "#1f78b4", "family": "#1f78b4", "subfamily": "#1f78b4",
+                "superkingdom": "#b2df8a", "kingdom": "#b2df8a", "subkingdom": "#b2df8a", "superorder": "#33a02c",
+                "order": "#33a02c", "suborder": "#33a02c", "infraorder": "#33a02c", "parvorder": "#33a02c",
+                "superphylum": "#fdbf6f", "phylum": "#fdbf6f",  "subphylum": "#fdbf6f"}
 #    "species group": "",
 #    "species subgroup": "",
 #    "species": "",
 #    "subspecies": "",
-
 #    "genus": "",
 #    "subgenus": "",
-
 #    "no rank": "",
 #    "forma": "",
-
 #    "tribe": "",
 #    "subtribe": "",
 #    "varietas"
-    }
-
+           
 
 def itertrees(trees, treefile):
     if trees:
@@ -93,7 +67,6 @@ def itertrees(trees, treefile):
                 continue
             else:
                 yield line
-
 
 def node_matcher(node, filters):
     if not filters:
@@ -141,13 +114,14 @@ def parse_faces(face_args):
     faces = []
     for fargs in face_args:
         face = {"filters":[],
+                "ftype":"text",
                 "value":None,
                 "pos": "branch-right",
-                "color": "black",
+                "color": None,
+                "bgcolor": None,
                 "size": 12,
                 "fstyle":None,
                 "column":None,
-                "bgcolor":None,
                 "format":None,
                 "nodetype":"leaf",
         }
@@ -221,12 +195,6 @@ def euc_dist_unrooted(v1, v2):
     b = (euc_dist(v1[1], v2[0]) + euc_dist(v1[0], v2[1])) / 2.0
     return min(a, b)
 
-
-
-
-
-
-
 class ArgError(ValueError):
     def __init__(self, value):
         self.value = value
@@ -235,6 +203,7 @@ class ArgError(ValueError):
         return self.value
     pass
 
+# MAIN PROGRAMS
 def ete_generate(args):
     import random
     from ete_dev import Tree
@@ -277,9 +246,11 @@ def mod_tree(t, args):
     # resolve polytomies
         
 def ete_split(args):
+    # bydups, bydist, name, find clsuters
     pass
 
 def ete_expand(args):
+    # polytomies 
     pass
 
 def ete_extract(args):
@@ -289,7 +260,25 @@ def ete_extract(args):
 def ete_consense(args):
     pass
 
+
+def ete_convert(args):
+    pass
+
+def ete_maptrees(args):
+    pass
+
+def ete_fetch(args):
+    pass
+
+def ete_codeml(args):
+    pass
+
+def ete_reconcile(args):
+    pass
+
 def ete_ncbiquery(args):
+    # add lineage profiles/stats
+    
     import re
     from ete_dev import PhyloTree, NCBITaxa
 
@@ -338,8 +327,10 @@ def ete_ncbiquery(args):
             n.name = "%s - %s" %(id2name.get(int(n.name), n.name), n.name)
             lineage = ncbi.get_sp_lineage(n.taxid)
             n.add_features(named_lineage = '|'.join(ncbi.translate_to_names(lineage)))
-        print t.write(format=9, features=["taxid", "name", "rank", "bgcolor", "sci_name", "collapse_subspecies", "named_lineage"])
+        print t.write(format=9, features=["taxid", "name", "rank", "bgcolor", "sci_name",
+                                          "collapse_subspecies", "named_lineage"])
     elif args.info:
+        print '# ' + '\t'.join(["Taxid", "Sci.Name", "Rank", "Named Lineage", "Taxid Lineage"])
         translator = ncbi.get_taxid_translator(all_taxids)
         ranks = ncbi.get_ranks(all_taxids) 
         for taxid, name in translator.iteritems():
@@ -355,26 +346,12 @@ def ete_annotate(args):
     for nw in args.src_tree_iterator:
         if args.ncbi:
             tree = PhyloTree(nw)
-            features.update(["taxid", "name", "rank", "bgcolor", "sci_name", "collapse_subspecies", "named_lineage", "lineage"])            
+            features.update(["taxid", "name", "rank", "bgcolor", "sci_name",
+                             "collapse_subspecies", "named_lineage", "lineage"])            
             tree.annotate_ncbi_taxa(args.taxid_attr)
         else:
             tree = Tree(nw)
         print tree.write(features=features)
-        
-def ete_convert(args):
-    pass
-
-def ete_maptrees(args):
-    pass
-
-def ete_fetch(args):
-    pass
-
-def ete_codeml(args):
-    pass
-
-def ete_reconcile(args):
-    pass
 
 def ete_compare(args):
     from ete_dev import Tree
@@ -472,6 +449,19 @@ def ete_view(args):
              'value:@sci_name, color:steelblue, size:7, pos:b-top, nodetype:internal',
              'value:@rank, color:indianred, size:6, pos:b-bottom, nodetype:internal',
          ]))
+
+    if 0: 
+        if args.alg:
+            FACES.extend(parse_faces(
+                ['value:@sequence, size:10, pos:aligned, ftype:blockseq',
+                 'value:@sequence, size:10, pos:aligned, ftype:compactseq',
+                'value:@sequence, size:10, pos:aligned, ftype:fullseq',
+             ]))
+
+        if args.bubblemap:
+            FACES.extend(parse_faces(
+                ['value:@support, pos:aligned, ftype:bubble, opacity:0.4',
+            ]))
                         
     ts.branch_vertical_margin = args.branch_separation
     if args.show_support:
@@ -524,40 +514,91 @@ def ete_view(args):
 
                     if (f['nodetype'] == 'any' or 
                         (f['nodetype'] == 'leaf' and node.is_leaf()) or
-                        (f['nodetype'] == 'internal' and not node.is_leaf())):            
+                        (f['nodetype'] == 'internal' and not node.is_leaf())):
+
+                        # if node passes face filters
                         if node_matcher(node, f["filters"]):
                             if f["value"].startswith("@"):
-                                attr = getattr(node, f["value"][1:], None)
+                                fvalue = getattr(node, f["value"][1:], None)
                             else:
-                                attr = f["value"]                    
-                            if attr != None:
-                                auto_m = re.search("auto\(([^)]*)\)",f['color'])
-                                if auto_m:
-                                    target_attr = auto_m.groups()[0].strip()
-                                    if not target_attr :
-                                        color_attr = f["value"]
-                                    else:
-                                        color_attr = target_attr
-                                    color_attr = color_attr.lstrip('@')
-                                    color_bin = getattr(node, color_attr, None)
-                                    
-                                    last_seed = f2last_seed.setdefault(color_attr, random.random())
-                                    
-                                    seed = last_seed + 0.10 + random.uniform(0.1, 0.2)
-                                    f2last_seed[color_attr] = seed
-                                    
-                                    color = f2color.setdefault(color_bin, random_color(h=seed))
-                                else:
-                                    color = f['color']
-                                if f.get("format", None):
-                                    attr = f["format"] % attr    
-                                F = TextFace(attr,
-                                             fsize=f.get("size", 10),
-                                             fgcolor=color,
-                                             fstyle=f.get('fstyle', None))
+                                fvalue = f["value"]
 
-                                if f['bgcolor']:
-                                    F.background.color = f['bgcolor']
+                            # if node's attribute has content, generate face
+                            if fvalue is not None:
+                                fsize = f["size"]
+                                fbgcolor = f["bgcolor"]
+                                fcolor = f['color']
+                                
+                                if fcolor:
+                                    # Parse color options
+                                    auto_m = re.search("auto\(([^)]*)\)", fcolor)
+                                    if auto_m:
+                                        target_attr = auto_m.groups()[0].strip()
+                                        if not target_attr :
+                                            color_keyattr = f["value"]
+                                        else:
+                                            color_keyattr = target_attr
+
+                                        color_keyattr = color_keyattr.lstrip('@')
+                                        color_bin = getattr(node, color_keyattr, None)
+
+                                        last_seed = f2last_seed.setdefault(color_keyattr, random.random())
+
+                                        seed = last_seed + 0.10 + random.uniform(0.1, 0.2)
+                                        f2last_seed[color_keyattr] = seed
+
+                                        fcolor = f2color.setdefault(color_bin, random_color(h=seed))
+
+                                if fbgcolor:
+                                    # Parse color options
+                                    auto_m = re.search("auto\(([^)]*)\)", fbgcolor)
+                                    if auto_m:
+                                        target_attr = auto_m.groups()[0].strip()
+                                        if not target_attr :
+                                            color_keyattr = f["value"]
+                                        else:
+                                            color_keyattr = target_attr
+
+                                        color_keyattr = color_keyattr.lstrip('@')
+                                        color_bin = getattr(node, color_keyattr, None)
+
+                                        last_seed = f2last_seed.setdefault(color_keyattr, random.random())
+
+                                        seed = last_seed + 0.10 + random.uniform(0.1, 0.2)
+                                        f2last_seed[color_keyattr] = seed
+
+                                        fbgcolor = f2color.setdefault(color_bin, random_color(h=seed))
+
+                                if f["ftype"] == "text":
+                                    if f.get("format", None):
+                                        fvalue = f["format"] % fvalue
+                                    
+                                    F = TextFace(fvalue,
+                                                 fsize = fsize,
+                                                 fgcolor = fcolor or "black",
+                                                 fstyle = f.get('fstyle', None))
+
+                                elif f["ftype"] == "fullseq":
+                                    F = faces.SeqMotifFace(seq=fvalue, seq_format="seq",
+                                                           seqtail_format="seq",
+                                                           height=fsize)
+                                elif f["ftype"] == "compactseq":
+                                    F = faces.SeqMotifFace(seq=fvalue, seq_format="compactseq",
+                                                           seqtail_format="compactseq",
+                                                           height=fsize)
+                                elif f["ftype"] == "blockseq":
+                                    print fcolor
+                                    F = faces.SeqMotifFace(seq=fvalue, seq_format="blockseq",
+                                                       seqtail_format="blockseq",
+                                                           height=fsize,
+                                                           fgcolor=fcolor or "slategrey",
+                                                           bgcolor=fbgcolor or None,
+                                                           scale_factor = 1.0)
+                                    fbgcolor = None
+
+                                # Set face general attributes
+                                if fbgcolor:
+                                    F.background.color = fbgcolor
 
                                 if not f['column']:
                                     col = ftype_pos[f["pos"]]
@@ -574,6 +615,14 @@ def ete_view(args):
             else:
                 t.show(None, tree_style=ts)
 
+def parse_value(fvalue):
+    func_match = re.search("(\w+)\(([^)]*)\)", fvalue)
+    if func_match:
+        func_name = func_match.groups()[0]
+        func_arg = func_match.groups()[1]
+    #RETURN SOMETHING
+        
+                
         
 def dump(t, args):
     if getattr(args, "output", None):
@@ -583,6 +632,7 @@ def dump(t, args):
             
 def tree_iterator(tree_source):        
     if not tree_source:
+        log.debug("Reading trees from standard input...")
         args.src_trees = sys.stdin
     
     for stree in args.src_trees:
@@ -618,16 +668,20 @@ if __name__=="__main__":
                             help="""Base output file name""")
     
     main_args.add_argument('--format', dest='newick_format', type=int, default=1)
+    
     main_args.add_argument('--features', dest='output_features', type=str, nargs="+", default=[])
-    
-    main_args.add_argument("--quite", dest="quite",
-                        action="store_true",
-                        help="Do not show process information")
-    
-    main_args.add_argument("--color", dest="color",
-                           action="store_true",
-                           help="If enabled, it will use colors in some of the report")
 
+
+
+    
+    main_args.add_argument("--nocolor", dest="nocolor",
+                           action="store_true",
+                           help="If enabled, it will NOT use colors when logging")
+
+    main_args.add_argument("-v", dest="verbosity",
+                           type=int, choices= [0, 1, 2, 3, 4], default=2,
+                           help="Verbosity level: 0=totally quite, 1=errors only, 2=warning+errors, 3=info,warnings and errors 4=debug ")
+    
     
     # SOURCE     
     source_args = source_args_p.add_argument_group('SOURCE TREES')
@@ -1036,17 +1090,17 @@ The ETE toolkit viewer
     
     args = parser.parse_args()
 
+    LOG_LEVEL = args.verbosity 
+    
     if hasattr(args, "src_trees"):
         args.src_tree_iterator = tree_iterator(args.src_trees)
         
     elif hasattr(args, "search"):
         if not args.search:
+            log.debug("Reading taxa from standard input...")
             args.search = sys.stdin 
-
-        
+       
         
     # Call main program
     args.func(args)
-
-
 

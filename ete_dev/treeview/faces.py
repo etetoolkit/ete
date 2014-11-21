@@ -1379,12 +1379,14 @@ class SequenceItem(QGraphicsRectItem):
         x, y = 0, 0
         qfont = QFont("Courier")
         current_pixel = 0
+        blackPen = QPen("black")
         for letter in self.seq:
-            if x >= current_pixel+1:
+            if x >= current_pixel:
                 if letter == "-" or letter == ".":
-                    p.setPen(QPen("black"))
+                    p.setPen(blackPen)
                     p.drawLine(x, self.posheight/2, x+self.poswidth, self.posheight/2)
                 elif self.draw_text and self.poswidth >= 8:
+                    p.setPen(blackPen)
                     br = QBrush(QColor(self.bg.get(letter, "white")))
                     p.fillRect(x, 0, self.poswidth-1, self.posheight, br)
                     qfont.setPixelSize(self.poswidth)
@@ -1471,8 +1473,9 @@ class SeqMotifFace(StaticItemFace):
     """
 
     def __init__(self, seq=None, motifs=None, seqtype="aa",
-                 intermotif_format="line", seqtail_format="compactseq",
-                 seq_format="compactseq", scale_factor=1):
+                 intermotif_format="line", seqtail_format="blockseq",
+                 seq_format="blockseq", scale_factor=1, shape="()", height=10,
+                 fgcolor='slategrey', bgcolor='slategrey', gapcolor='black'):
 
         StaticItemFace.__init__(self, None)
         self.seq  = seq or []
@@ -1490,18 +1493,40 @@ class SeqMotifFace(StaticItemFace):
             self.fg = _ntfgcolors
             self.bg = _ntbgcolors
 
+        self.h = height
+        self.shape = "()"
+        self.fgcolor = fgcolor
+        self.bgcolor = bgcolor
+        self.gapcolor = gapcolor
+        self.regions = []
+        
         self.build_regions()
-
-
+        
     def build_regions(self):
-        # Sort regions
-        seq = self.seq or []
+        # Build and sort regions
         motifs = self.motifs
+        seq = self.seq
         if not motifs:
             if self.seq_format == "seq":
-                motifs = [[1, len(seq), "seq", 10, 10, None, None, None]]
+                motifs = [[0, len(seq), "seq", 10, self.h, None, None, None]]
             elif self.seq_format == "compactseq":
-                motifs = [[1, len(seq), "compactseq", 1, 10, None, None, None]]
+                motifs = [[0, len(seq), "compactseq", 1, self.h, None, None, None]]
+            elif self.seq_format == "blockseq":
+                   motifs = []
+                   last_lt = None
+                   for c, lt in enumerate(seq):
+                       if lt != '-':
+                           if last_lt is None:
+                               last_lt = c
+                           if c+1 == len(seq):
+                               start, end = last_lt, c
+                               motifs.append([start, end, self.shape, 0, self.h, self.fgcolor, self.bgcolor, None])
+                               last_lt = None
+                       elif lt == '-':
+                           if last_lt is not None:
+                               start, end = last_lt, c
+                               motifs.append([start, end, self.shape, 0, self.h, self.fgcolor, self.bgcolor, None])
+                               last_lt = None
         motifs.sort()
         intermotif = self.intermotif_format
         self.regions = []
@@ -1513,7 +1538,7 @@ class SeqMotifFace(StaticItemFace):
                 if intermotif == "blank":
                     self.regions.append([current_seq_pos+1, start, " ", 1, 1, None, None, None])
                 elif intermotif == "line":
-                    self.regions.append([current_seq_pos+1, start, "-", 1, 1, "black", None, None])
+                    self.regions.append([current_seq_pos+1, start, "-", 1, 1, self.gapcolor, None, None])
                 elif intermotif == "seq":
                     # Colors are read from built-in dictionary
                     self.regions.append([current_seq_pos+1, start, "seq", 10, 10, None, None, None])
@@ -1527,7 +1552,7 @@ class SeqMotifFace(StaticItemFace):
 
         if len(seq) > current_seq_pos+1:
             if self.seqtail_format == "line":
-                self.regions.append([current_seq_pos+1, len(seq)-1, "-", 1, 1, "black", None, None])
+                self.regions.append([current_seq_pos+1, len(seq)-1, "-", 1, 1, self.gapcolor, None, None])
             elif self.seqtail_format == "seq":
                 self.regions.append([current_seq_pos+1, len(seq)-1, "seq", 10, 10, None, None, None])
             elif self.seqtail_format == "compactseq":
@@ -1536,6 +1561,7 @@ class SeqMotifFace(StaticItemFace):
         #print '\n'.join(map(str, self.regions))
         
     def update_items(self):
+      
         self.item = SeqMotifRectItem() #QGraphicsRectItem()
 
         max_h = max([reg[4] for index, reg
@@ -1662,8 +1688,6 @@ class SeqMotifFace(StaticItemFace):
 
         self.item.setRect(0, 0, current_seq_end, max_h)
         self.item.setPen(QPen(Qt.NoPen))
-
-
 
 
 class SequencePlotFace(StaticItemFace):

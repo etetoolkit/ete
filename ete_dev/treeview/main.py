@@ -290,7 +290,7 @@ class TreeStyle(object):
     :param False force_topology: Convert tree branches to a fixed length, thus allowing to
       observe the topology of tight nodes
 
-    :param True draw_guiding_lines: Draw guidelines from leaf nodes
+    :param False draw_guiding_lines: Draw guidelines from leaf nodes
       to aligned faces
     
     :param 2 guiding_lines_type: 0=solid, 1=dashed, 2=dotted.
@@ -451,7 +451,7 @@ class TreeStyle(object):
         self.force_topology = False
 
         # Draw guidelines from leaf nodes to aligned faces
-        self.draw_guiding_lines = True
+        self.draw_guiding_lines = False
 
         # Format and color for the guiding lines
         self.guiding_lines_type = 2 # 0 solid, 1 dashed, 2 dotted

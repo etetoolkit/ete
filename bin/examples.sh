@@ -29,3 +29,7 @@ ete_dev annotate -t '((9606, 7727), 9505);' --ncbi | ete_dev view --ncbi
 # render many tree images at once
 ./ete_dev generate --number 3 | ete_dev view --image 'mytree.png'
 
+./ete_dev ncbiquery --search 9606 'Mus musculus' 'Gallus gallus' 'Afrotheria' --taxonomy | ./ete_dev view --text 
+
+# sequence based faces
+./ete_dev view -t ((A, A, A, (C, C)), B, B, B); --face 'value:ABC-----------AAAAAAAAAAAAA-------------------AA-----AA, ftype:blockseq, pos:aligned, size:30, bgcolor:auto(@name)'
