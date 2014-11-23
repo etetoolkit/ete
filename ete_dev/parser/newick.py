@@ -343,6 +343,10 @@ def _read_node_data(subnw, current_node, node_type, format):
     data = re.match(MATCH, subnw)
     if data:
         data = data.groups()
+        # This prevents ignoring errors even in flexible nodes:
+        if subnw and data[0] is None and data[1] is None and data[2] is None:
+            raise NewickError('Unexpected newick format [%s]' %subnw)
+        
         if data[0] is not None and data[0] != '':
             node.add_feature(container1, converterFn1(data[0].strip()))
 
@@ -353,7 +357,7 @@ def _read_node_data(subnw, current_node, node_type, format):
                 and data[2].startswith("[&&NHX"):
             _parse_extra_features(node, data[2])
     else:
-        raise NewickError, "Unexpected leaf node format:\n\t"+ subnw[0:50] + "[%s]" %format
+        raise NewickError, "Unexpected node format:\n\t"+ subnw[0:50] + "[%s]" %format
     return
 
 # def write_newick_recursive(node, features=None, format=1, _is_root=True):

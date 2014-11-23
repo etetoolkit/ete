@@ -211,7 +211,7 @@ def ete_generate(args):
     for n in xrange(args.number):
         t = Tree()
         t.populate(args.size, random_branches=args.random_branches)
-        dump(t, args)
+        dump(t)
 
 def ete_mod(args):
     from ete_dev import Tree
@@ -219,31 +219,42 @@ def ete_mod(args):
     for nw in args.src_tree_iterator:
         t = Tree(nw)
         mod_tree(t, args)
-        dump(t, args)
+        dump(t)
 
 def mod_tree(t, args):
     if args.ladderize and args.sort:
         raise ValueError("--sort-branches and --ladderize options are mutually exclusive")
 
     if args.expand_polytomies:
-        t.expand_polytomies(polytomy_size_limit=args.expand_polytomy)
+        t.expand_polytomies(polytomy_size_limit=args.expand_polytomies)
     
-    if args.outgroup:
+    if args.outgroup and args.unroot:
+        raise ValueError("--ourgroup and --unroot options are mutually exclusive")
+    elif args.outgroup:
         if len(args.outgroup) > 1:
             outgroup = t.get_common_ancestor(args.outgroup)
         else:
             outgroup = t & args.outgroup[0]
         t.set_outgroup(outgroup)
+    elif args.unroot:
+        t.unroot()
 
     if args.ladderize:
         t.ladderize()
     if args.sort:
         t.sort_descendants()
 
-    # ultrametric
-    # unroot
+    if args.ultrametric:
+        log.warn("ultrametric")
+        t.convert_to_ultrametric(100, "fixed")
+
+
+        
+            
+        
+
     # remove, prune branches
-    # resolve polytomies
+
         
 def ete_split(args):
     # bydups, bydist, name, find clsuters
@@ -327,8 +338,8 @@ def ete_ncbiquery(args):
             n.name = "%s - %s" %(id2name.get(int(n.name), n.name), n.name)
             lineage = ncbi.get_sp_lineage(n.taxid)
             n.add_features(named_lineage = '|'.join(ncbi.translate_to_names(lineage)))
-        print t.write(format=9, features=["taxid", "name", "rank", "bgcolor", "sci_name",
-                                          "collapse_subspecies", "named_lineage"])
+        dump(t, features=["taxid", "name", "rank", "bgcolor", "sci_name",
+                          "collapse_subspecies", "named_lineage"])
     elif args.info:
         print '# ' + '\t'.join(["Taxid", "Sci.Name", "Rank", "Named Lineage", "Taxid Lineage"])
         translator = ncbi.get_taxid_translator(all_taxids)
@@ -351,7 +362,61 @@ def ete_annotate(args):
             tree.annotate_ncbi_taxa(args.taxid_attr)
         else:
             tree = Tree(nw)
-        print tree.write(features=features)
+        
+        type2cast = {"str":str, "int":int, "float":float, "set":set, "list":list}
+
+        for annotation in args.feature:
+            aname, asource, amultiple, acast = None, None, False, str
+            for field in annotation:
+                try:
+                    key, value = map(strip, field.split(":"))
+                except Exception:
+                    raise ValueError("Invalid feature option [%s]" %field )
+                
+                if key == "name":
+                    aname = value
+                elif key == "source":
+                    asource = value
+                elif key == "multiple":
+                    #append
+                    amultiple = value
+                elif key == "type":
+                    try:
+                        acast = type2cast[value]
+                    except KeyError:
+                        raise ValueError("Invalid feature type [%s]" %field)
+                else:
+                    raise ValueError("Unknown feature option [%s]" %field)
+                
+            if not aname and not asource:
+                ValueError('name and source are required when annotating a new feature [%s]' %annotation)
+                    
+            features.add(aname)
+            for line in open(asource, 'rU'):
+                line = line.strip()
+                if not line or line.startswith('#'):
+                    continue
+                nodenames, attr_value = map(strip, line.split('\t'))
+                nodenames = map(strip, nodenames.split(','))
+                relaxed_grouping = True
+                if nodenames[0].startswith('!'):
+                    relaxed_grouping = False
+                    nodenames[0] = nodenames[0][1:]
+                    
+                if len(nodenames) > 1:
+                    target_node = tree.get_common_ancestor(nodenames)
+                    if not relaxed_grouping:
+                        pass
+                        # do something
+                else:
+                    target_node = tree & nodenames[0] 
+
+                if hasattr(target_node, aname):
+                    log.warning('Overwriting annotation for node" [%s]"' %nodenames)
+                else:
+                    target_node.add_feature(aname, acast(attr_value))
+            
+        dump(tree, features=features)
 
 def ete_compare(args):
     from ete_dev import Tree
@@ -473,6 +538,7 @@ def ete_view(args):
     ts.layout_fn = lambda x: None
         
     for tindex, tfile in enumerate(args.src_tree_iterator):
+        print tfile
         if args.raxml:
             nw = re.sub(":(\d+\.\d+)\[(\d+)\]", ":\\1[&&NHX:support=\\2]", open(tfile).read())
             t = PhyloTree(nw)
@@ -483,12 +549,6 @@ def ete_view(args):
             t.link_to_alignment(args.alg, alg_format=args.alg_format)
             LEAF_ATTRIBUTES["sequence"] = 1 #################
 
-        if args.outgroup:
-            if len(args.outgroup) > 1:
-                outgroup = t.get_common_ancestor(args.outgroup)
-            else:
-                outgroup = t & args.outgroup[0]
-            t.set_outgroup(outgroup)
 
         # scale the tree
         if not args.height: 
@@ -608,7 +668,6 @@ def ete_view(args):
                                 # Add the Face
                                 node.add_face(F, column=col, position=f["pos"])
 
-
             if args.image:
                 t.render("t%d.%s" %(tindex, args.image),
                          tree_style=ts, w=args.width, h=args.height, units=args.size_units)
@@ -624,11 +683,11 @@ def parse_value(fvalue):
         
                 
         
-def dump(t, args):
+def dump(t, features=None):
     if getattr(args, "output", None):
-        t.write(format=args.newick_format, features=args.output_features)
+        t.write(format=0, features=features)
     else:
-        print t.write(format=args.newick_format, features=args.output_features)
+        print t.write(format=0, features=features)
             
 def tree_iterator(tree_source):        
     if not tree_source:
@@ -667,7 +726,7 @@ if __name__=="__main__":
                             type=str,
                             help="""Base output file name""")
     
-    main_args.add_argument('--format', dest='newick_format', type=int, default=1)
+    main_args.add_argument('--format', dest='newick_format', type=int, default=0)
     
     main_args.add_argument('--features', dest='output_features', type=str, nargs="+", default=[])
 
@@ -728,7 +787,19 @@ if __name__=="__main__":
     
     mod_args.add_argument("--outgroup", dest="outgroup", 
                            nargs = "+",
-                           help="""outgroup used to root reference and source trees before distance computation""")
+                           help=("Root the tree using the provided outgroup."
+                                 " If several names are provided, the first common ancestor grouping"
+                                 " all of them will be selected as outgroup."))
+
+    mod_args.add_argument("--ultrametric", dest="ultrametric",
+                          type=float, nargs= "*", default="-1",
+                           help=("Convert tree into ultrametric (all leaves have the same distance"
+                                 " to root). If an argument is provided, it will be used as the"
+                                 " expected tree length."))
+    
+    mod_args.add_argument("--unroot", dest="unroot",
+                          action = "store_true",
+                           help="Unroots the tree.")
 
         
     mod_args.add_argument("--sort_branches", dest="sort", 
@@ -763,9 +834,6 @@ if __name__=="__main__":
     # expand 
     expand_args = _expand_args_p.add_argument_group('TREE EXPAND OPTIONS')
 
-    expand_args.add_argument("--expand_polytomies", dest="polytomies", 
-                           action = "store_true",
-                           help="""expand politomies if necessary""")
 
     
     expand_args.add_argument("--treeko_split", dest="treeko_split", 
@@ -831,6 +899,8 @@ if __name__=="__main__":
     annotate_args = annotate_args_p.add_argument_group("TREE ANNOTATE OPTIONS")
     annotate_args.add_argument("--ncbi", dest="ncbi", action="store_true", help="annotate tree nodes using ncbi taxonomy database.")
     annotate_args.add_argument("--taxid_attr", dest="taxid_attr", default='name', help="attribute used as NCBI taxid number")
+    annotate_args.add_argument("--feature", dest="feature", nargs="+", action='append',
+                               help="")
     
     
     # MOD

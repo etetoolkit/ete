@@ -1073,7 +1073,6 @@ class TreeNode(object):
                     min_node = node
             return min_node, min_dist
 
-
             
     def get_midpoint_outgroup(self):
         """
@@ -2187,16 +2186,30 @@ class TreeNode(object):
     #         all_partitions.add(p2)
     #     return all_partitions
 
-    def convert_to_ultrametric(self, tree_length, strategy="balanced"):
+    def convert_to_ultrametric(self, tree_length=None, strategy="balanced"):
         """
         .. versionadded: 2.1 
 
-        Converts a tree to ultrametric topology (all leaves must have
+        Converts a tree into ultrametric topology (all leaves must have
         the same distance to root). Note that, for visual inspection
         of ultrametric trees, node.img_style["size"] should be set to
         0.
         """
-
+        import sys
+        most_distant_leaf, tree_length = self.get_farthest_leaf()
+        print >>sys.stderr, most_distant_leaf, tree_length
+        print >>sys.stderr, self.get_ascii(attributes=['name', 'dist'])
+        for leaf in self:
+            d = leaf.get_distance(self)
+            print >>sys.stderr, leaf, "to root", d
+            print >>sys.stderr, leaf, "current dist", leaf.dist 
+            print >>sys.stderr, leaf, "needs", (tree_length - d)
+            leaf.dist += (tree_length - d)
+        print >>sys.stderr, self.get_ascii(attributes=['name', 'dist'])
+        return 
+        
+        
+        
         # pre-calculate how many splits remain under each node
         node2max_depth = {}
         for node in self.traverse("postorder"):
@@ -2206,7 +2219,12 @@ class TreeNode(object):
             else:
                 node2max_depth[node] = 1
         node2dist = {self: 0.0}
-        tree_length = float(tree_length)
+        if not tree_length:
+            most_distant_leaf, tree_length = self.get_farthest_leaf()
+        else:
+            tree_length = float(tree_length)
+
+        
         step = tree_length / node2max_depth[self]
         for node in self.iter_descendants("levelorder"):
             if strategy == "balanced":
