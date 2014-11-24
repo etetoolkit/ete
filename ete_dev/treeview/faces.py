@@ -1154,7 +1154,6 @@ class BarChartFace(Face):
             colors = COLOR_SCHEMES["paired"]
         self.colors =  colors
 
-
         self.width = width
         self.height = height
         self.labels = labels
@@ -1169,7 +1168,6 @@ class BarChartFace(Face):
         self.item = _BarChartItem(self.values, self.deviations, self.width,
                                   self.height, self.colors, self.labels,
                                   self.min_value, self.max_value)
-
     def _width(self):
         return self.item.rect().width()
 
@@ -1382,28 +1380,23 @@ class SequenceItem(QGraphicsRectItem):
         blackPen = QPen("black")
         for letter in self.seq:
             if x >= current_pixel:
-                if letter == "-" or letter == ".":
-                    p.setPen(blackPen)
-                    p.drawLine(x, self.posheight/2, x+self.poswidth, self.posheight/2)
-                elif self.draw_text and self.poswidth >= 8:
+                if self.draw_text and self.poswidth >= 8:
                     br = QBrush(QColor(self.bg.get(letter, "white")))                    
                     p.setPen(blackPen)
                     p.fillRect(x, 0, self.poswidth, self.posheight, br)
                     qfont.setPixelSize(min(self.posheight, self.poswidth))
                     p.setFont(qfont)
                     p.setBrush(QBrush(QColor("black")))
-
-
-                    p.drawText(x,
-                               0,
-                               self.poswidth,
-                               self.posheight,
+                    p.drawText(x, 0, self.poswidth, self.posheight,
                                Qt.AlignCenter |  Qt.AlignVCenter,
                                letter)
+                elif letter == "-" or letter == ".":
+                    p.setPen(blackPen)
+                    p.drawLine(x, self.posheight/2, x+self.poswidth, self.posheight/2)
+
                 else:
                     br = QBrush(QColor(self.bg.get(letter, "white")))                    
                     p.fillRect(x, 0, max(1, self.poswidth), self.posheight, br)
-
                     #p.setPen(QPen(QColor(self.bg.get(letter, "black"))))
                     #p.drawLine(x, 0, x, self.posheight)
                 current_pixel = int(x)
@@ -1542,7 +1535,6 @@ class SeqMotifFace(StaticItemFace):
                         pos += len(reg)
                         
         motifs.sort()
-        default_seq_format = '-'
         
         # complete missing regions
         current_seq_pos = 0
@@ -1552,10 +1544,10 @@ class SeqMotifFace(StaticItemFace):
                 pos = current_seq_pos
                 for reg in re.split('([^-]+)', seq[current_seq_pos:start]):
                     if reg:
-                        if reg.startswith("-"):
+                        if reg.startswith("-") and self.seq_format != "seq":
                             self.regions.append([pos, pos+len(reg)-1, "-", 1, 1, None, None, None])
                         else:
-                            self.regions.append([pos, pos+len(reg)-1, default_seq_format,
+                            self.regions.append([pos, pos+len(reg)-1, self.seq_format,
                                                  self.w, self.h,
                                                  self.fgcolor, self.bgcolor, None])
                     pos += len(reg)
@@ -1568,10 +1560,10 @@ class SeqMotifFace(StaticItemFace):
             pos = current_seq_pos
             for reg in re.split('([^-]+)', seq[current_seq_pos:]):
                 if reg:
-                    if reg.startswith("-"):
+                    if reg.startswith("-") and self.seq_format != "seq":
                         self.regions.append([pos, pos+len(reg)-1, "-", 1, 1, self.gapcolor, None, None])
                     else:
-                        self.regions.append([pos, pos+len(reg)-1, default_seq_format,
+                        self.regions.append([pos, pos+len(reg)-1, self.seq_format,
                                              self.w, self.h,
                                              self.fgcolor, self.bgcolor, None])
                     pos += len(reg)

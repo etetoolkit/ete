@@ -124,6 +124,7 @@ def parse_faces(face_args):
                 "column":None,
                 "format":None,
                 "nodetype":"leaf",
+                "opacity":None,
         }
 
         for clause in map(strip,fargs.split(',')):
@@ -147,8 +148,15 @@ def parse_faces(face_args):
                     face["pos"] = POSNAMES[value]
                 except KeyError:
                     raise ValueError("Invalid face position: %s" %clause)
+            elif key == "nodetype":
+                value = value.lower()
+                if value != "any" and value != "internal" and value != "leaf":
+                    raise ValueError("Invalid nodetype: %s" %clause)
+                face["nodetype"] = value
             elif key == "size":
                 face["size"] = int(value)
+            elif key == "opacity":
+                face["opacity"] = float(value)
             elif key == "column":
                 face["column"] = int(value)
             elif key == "color":
@@ -158,8 +166,7 @@ def parse_faces(face_args):
             elif key == "fstyle":
                 if value != 'italic' and value != 'bold':
                     raise ValueError("valid style formats are: italic, bold [%s]" %clause)
-                face[key] = value
-                
+                face[key] = value                
             elif key == "format":
                 if "%" not in value:
                     print value
@@ -524,14 +531,14 @@ def ete_view(args):
 
     if args.alg:
         FACES.extend(parse_faces(
-            ['value:@sequence, size:10, pos:aligned, ftype:%s' %args.algtype]
+            ['value:@sequence, size:10, pos:aligned, ftype:%s' %args.alg_type]
          ))
-        
-    if 0:
-        if args.bubblemap:
+
+    if args.bubbles:
+        for bubble in args.bubbles:
             FACES.extend(parse_faces(
-                ['value:@support, pos:aligned, ftype:bubble, opacity:0.4',
-            ]))
+                ['value:@%s, pos:float, ftype:bubble, opacity:0.4' %bubble,
+             ]))
                         
     ts.branch_vertical_margin = args.branch_separation
     if args.show_support:
@@ -658,6 +665,25 @@ def ete_view(args):
                                                            bgcolor=fbgcolor or None,
                                                            scale_factor = 1.0)
                                     fbgcolor = None
+                                elif f["ftype"] == "bubble":
+                                    try:
+                                        v = float(fvalue)
+                                    except ValueError:
+                                        rad = fsize
+                                    else:
+                                        rad = fsize * v
+                                    F = faces.CircleFace(radius=rad, style="sphere",
+                                                         color=fcolor or "steelblue")
+                                    
+                                elif f["ftype"] == "profile":
+                                    # internal profiles?
+                                    F = None
+                                elif f["ftype"] == "barchart":
+                                    F = None
+                                elif f["ftype"] == "piechart":
+                                    F = None
+                                                         
+                                F.opacity = f['opacity'] or 1.0
 
                                 # Set face general attributes
                                 if fbgcolor:
@@ -844,8 +870,6 @@ if __name__=="__main__":
 
     # expand 
     expand_args = _expand_args_p.add_argument_group('TREE EXPAND OPTIONS')
-
-
     
     expand_args.add_argument("--treeko_split", dest="treeko_split", 
                           type = str, 
@@ -854,10 +878,18 @@ if __name__=="__main__":
     # extract 
     extract_args = _extract_args_p.add_argument_group('TREE EDIT OPTIONS')
 
-    extract_args.add_argument("--attr", dest="split_at_attr", action='append', 
-                          type = str, 
-                          help=""" """)
+    extract_args.add_argument("--orthologs", dest="orthologs"
+                              action="store_true",
+                              help=""" """)
+    
+    extract_args.add_argument("--sptrees", dest="sptrees"
+                              action="store_true",
+                              help=""" """)
        
+    extract_args.add_argument("--duplications", dest="duplications"
+                              action="store_true",
+                              help=""" """)
+
     
 
 
@@ -1061,7 +1093,6 @@ The ETE toolkit viewer
                         action="store_true",
                         help="""Show the name attribute of all internal nodes.""")
 
-
     img_gr.add_argument("--tree_width", dest="tree_width", 
                         type=int, default=500,
                         help=("Adjust tree scale so the distance from root to the"
@@ -1085,37 +1116,31 @@ The ETE toolkit viewer
                         type=str, 
                         help="""Link tree to a multiple sequence alignment.""")
 
-    phylo_gr.add_argument("--algtype", dest="algtype", 
+    phylo_gr.add_argument("--alg_type", dest="alg_type", 
                           choices=['blockseq', 'compactseq', 'fullseq'], default='blockseq',
                           help="How sequence alignment should be drawn in the tree")
 
-    
-    phylo_gr.add_argument("--ncbi", dest="as_ncbi", 
-                          action="store_true" ,
-                          help="""If enabled, default style will be applied to show ncbi taxonomy annotations""")
 
-    
     phylo_gr.add_argument("--alg_format", dest="alg_format", 
                         type=str, default="fasta",
                         help="fasta, phylip, iphylip, relaxed_iphylip, relaxed_phylip.")
-    
-    phylo_gr.add_argument("--sp_discovery", dest="species_discovery_regexp", 
-                          type=str, default="^[^_]+_(.+)",
-                          help="Perl regular expression used to capture species"
-                          " code from node names. By default, node names"
-                          " are expected to follow the NAME_SPCODE format = '^[^_]+_(.+)' ")
 
+    phylo_gr.add_argument("--ncbi", dest="as_ncbi", 
+                          action="store_true" ,
+                          help="""If enabled, default style will be applied to show ncbi taxonomy annotations""")
+    
+    
     features_gr = view_args_p.add_argument_group("DRAWING FEATURES")
     
-    phylo_gr.add_argument("--heatmap", dest="alg", 
+    phylo_gr.add_argument("--heatmap", dest="heatmap", 
                         type=str, 
                           help="""attr_name \t v1, v2, v3, v4""")
 
-    phylo_gr.add_argument("--profile", dest="alg", 
+    phylo_gr.add_argument("--profile", dest="profile", 
                         type=str, 
                           help="""attr_name \t v1, v2, v3, v4""")
     
-    phylo_gr.add_argument("--bubbles", dest="alg", 
+    phylo_gr.add_argument("--bubbles", dest="bubbles", 
                         type=str, 
                         help=""" """)
 
@@ -1168,7 +1193,6 @@ The ETE toolkit viewer
 
 
     # GENERATE  TREES
-    
     generate_args_p = subparser.add_parser("generate", parents=[source_args_p, main_args_p],
                                            description="",
                                            formatter_class=argparse.RawDescriptionHelpFormatter)
