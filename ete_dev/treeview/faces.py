@@ -1365,7 +1365,7 @@ class SequenceItem(QGraphicsRectItem):
         self.poswidth = poswidth
         self.posheight = posheight
         if draw_text:
-            self.poswidth = self.posheight = max(poswidth, posheight)
+            self.poswidth = poswidth
         self.draw_text = draw_text
         if seqtype == "aa":
             self.fg = _aafgcolors
@@ -1386,17 +1386,26 @@ class SequenceItem(QGraphicsRectItem):
                     p.setPen(blackPen)
                     p.drawLine(x, self.posheight/2, x+self.poswidth, self.posheight/2)
                 elif self.draw_text and self.poswidth >= 8:
+                    br = QBrush(QColor(self.bg.get(letter, "white")))                    
                     p.setPen(blackPen)
-                    br = QBrush(QColor(self.bg.get(letter, "white")))
-                    p.fillRect(x, 0, self.poswidth-1, self.posheight, br)
-                    qfont.setPixelSize(self.poswidth)
+                    p.fillRect(x, 0, self.poswidth, self.posheight, br)
+                    qfont.setPixelSize(min(self.posheight, self.poswidth))
                     p.setFont(qfont)
                     p.setBrush(QBrush(QColor("black")))
-                    p.drawText(x + self.poswidth * 0.1, self.posheight *0.9, letter)
+
+
+                    p.drawText(x,
+                               0,
+                               self.poswidth,
+                               self.posheight,
+                               Qt.AlignCenter |  Qt.AlignVCenter,
+                               letter)
                 else:
-                    #p.fillRect(x, 0, max(1, self.poswidth), self.posheight, br)
-                    p.setPen(QPen(QColor(self.bg.get(letter, "black"))))
-                    p.drawLine(x, 0, x, self.posheight)
+                    br = QBrush(QColor(self.bg.get(letter, "white")))                    
+                    p.fillRect(x, 0, max(1, self.poswidth), self.posheight, br)
+
+                    #p.setPen(QPen(QColor(self.bg.get(letter, "black"))))
+                    #p.drawLine(x, 0, x, self.posheight)
                 current_pixel = int(x)
             x += self.poswidth
 
@@ -1546,7 +1555,8 @@ class SeqMotifFace(StaticItemFace):
                         if reg.startswith("-"):
                             self.regions.append([pos, pos+len(reg)-1, "-", 1, 1, None, None, None])
                         else:
-                            self.regions.append([pos, pos+len(reg)-1, default_seq_format, 1, self.h,
+                            self.regions.append([pos, pos+len(reg)-1, default_seq_format,
+                                                 self.w, self.h,
                                                  self.fgcolor, self.bgcolor, None])
                     pos += len(reg)
                 current_seq_pos = start
@@ -1561,7 +1571,8 @@ class SeqMotifFace(StaticItemFace):
                     if reg.startswith("-"):
                         self.regions.append([pos, pos+len(reg)-1, "-", 1, 1, self.gapcolor, None, None])
                     else:
-                        self.regions.append([pos, pos+len(reg)-1, default_seq_format, self.w, self.h,
+                        self.regions.append([pos, pos+len(reg)-1, default_seq_format,
+                                             self.w, self.h,
                                              self.fgcolor, self.bgcolor, None])
                     pos += len(reg)
 
@@ -1583,7 +1594,7 @@ class SeqMotifFace(StaticItemFace):
         seq_x_correction = {}
         for seq_start, seq_end, typ, wf, h, fg, bg, name in self.regions:
             if typ == "seq":
-                seq_x_correction[(seq_start, seq_end)] = wf 
+                seq_x_correction[(seq_start, seq_end)] = wf * self.scale_factor
         
         for index, (seq_start, seq_end, typ, wf, h, fg, bg, name) in enumerate(self.regions):
             # this are the actual coordinates mapping to the sequence 
@@ -1591,6 +1602,13 @@ class SeqMotifFace(StaticItemFace):
             w = (seq_end - seq_start) + 1
             xstart = seq_start
 
+            if self.scale_factor:
+                w *= self.scale_factor
+                if wf:
+                    wf *= self.scale_factor
+                xstart *= self.scale_factor
+
+            
             # this loop corrects x-positions for overlaping motifs and takes
             # into account the different scales used for different motif types,
             # i.e. seq
@@ -1607,13 +1625,6 @@ class SeqMotifFace(StaticItemFace):
                     if seq_start < old_end or seq_end < seq_start:
                         w -= seq_range
                         w += (seq_range * correction)
-                
-                    
-            if self.scale_factor:
-                w *= self.scale_factor
-                if wf:
-                    wf *= self.scale_factor
-                xstart *= self.scale_factor
 
             if seq_start < current_seq_end:
                 opacity = self.overlaping_motif_opacity
@@ -1643,15 +1654,15 @@ class SeqMotifFace(StaticItemFace):
                 i = QGraphicsRoundRectItem(0, 0, w, h)
                 
             elif typ == "seq" and self.seq:
-                i = SequenceItem(self.seq[seq_start:seq_end+1], poswidth=wf,
+                i = SequenceItem(self.seq[seq_start:seq_end+1],
+                                 poswidth=wf,
                                  posheight=h, draw_text=True)
                 w = i.rect().width()
                 h = i.rect().height()
-                
             elif typ == "compactseq" and self.seq:
-                i = SequenceItem(self.seq[seq_start:seq_end+1], poswidth=1,
+                i = SequenceItem(self.seq[seq_start:seq_end+1], poswidth=1*self.scale_factor,
                                  posheight=h, draw_text=False)
-                w = i.rect().width()
+                w = i.rect().width() 
                 h = i.rect().height()
             else:
                 i = QGraphicsSimpleTextItem("?")

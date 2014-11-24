@@ -22,7 +22,7 @@ motifs = [
 
 def layout(node):
     if node.is_leaf():
-        seqFace = SeqMotifFace(seq, motifs)
+        seqFace = SeqMotifFace(seq, motifs, scale_factor=1)
         add_face_to_node(seqFace, node, 0, position="aligned")
        
 
