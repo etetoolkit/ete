@@ -225,8 +225,8 @@ def mod_tree(t, args):
     if args.ladderize and args.sort:
         raise ValueError("--sort-branches and --ladderize options are mutually exclusive")
 
-    if args.expand_polytomies:
-        t.expand_polytomies(polytomy_size_limit=args.expand_polytomies)
+    if args.prune:
+        t.prune(args.prune, preserve_branch_length=args.prune_preserve_lengths)    
     
     if args.outgroup and args.unroot:
         raise ValueError("--ourgroup and --unroot options are mutually exclusive")
@@ -239,53 +239,57 @@ def mod_tree(t, args):
     elif args.unroot:
         t.unroot()
 
+    if args.expand_polytomies:
+        t.expand_polytomies(polytomy_size_limit=args.expand_polytomies)
+        
     if args.ladderize:
         t.ladderize()
     if args.sort:
         t.sort_descendants()
 
     if args.ultrametric:
-        log.warn("ultrametric")
-        t.convert_to_ultrametric(100, "fixed")
-
-
-        
-            
-        
-
+        t.convert_to_ultrametric()
+    
     # remove, prune branches
-
-        
+    # ncbi_root
+            
 def ete_split(args):
     # bydups, bydist, name, find clsuters
-    pass
+    log.error('Oops, this tool is not implemented yet')
 
 def ete_expand(args):
     # polytomies 
-    pass
+    log.error('Oops, this tool is not implemented yet')
 
 def ete_extract(args):
+    log.error('Oops, this tool is not implemented yet')
     #dups, orthologs, partitions, edges, dist_matrix, ancestor, 
-    pass
 
 def ete_consense(args):
-    pass
-
+    
+    # all observed splits    
+    for nw in args.src_tree_iterator:
+        pass
+    log.error('Oops, this tool is not implemented yet')
+    
 
 def ete_convert(args):
-    pass
+    log.error('Oops, this tool is not implemented yet')
 
 def ete_maptrees(args):
-    pass
+    log.error('Oops, this tool is not implemented yet')
+
 
 def ete_fetch(args):
-    pass
+    log.error('Oops, this tool is not implemented yet')
+
 
 def ete_codeml(args):
-    pass
+    log.error('Oops, this tool is not implemented yet')
 
 def ete_reconcile(args):
-    pass
+    log.error('Oops, this tool is not implemented yet')
+
 
 def ete_ncbiquery(args):
     # add lineage profiles/stats
@@ -500,7 +504,9 @@ def ete_view(args):
     ts = TreeStyle()
     ts.mode = args.mode
     ts.show_leaf_name = True
+    ts.tree_width = args.tree_width
 
+    
     for f in FACES:
         if f["value"] == "@name":
             ts.show_leaf_name = False
@@ -515,14 +521,13 @@ def ete_view(args):
              'value:@rank, color:indianred, size:6, pos:b-bottom, nodetype:internal',
          ]))
 
-    if 0: 
-        if args.alg:
-            FACES.extend(parse_faces(
-                ['value:@sequence, size:10, pos:aligned, ftype:blockseq',
-                 'value:@sequence, size:10, pos:aligned, ftype:compactseq',
-                'value:@sequence, size:10, pos:aligned, ftype:fullseq',
-             ]))
 
+    if args.alg:
+        FACES.extend(parse_faces(
+            ['value:@sequence, size:10, pos:aligned, ftype:%s' %args.algtype]
+         ))
+        
+    if 0:
         if args.bubblemap:
             FACES.extend(parse_faces(
                 ['value:@support, pos:aligned, ftype:bubble, opacity:0.4',
@@ -538,7 +543,7 @@ def ete_view(args):
     ts.layout_fn = lambda x: None
         
     for tindex, tfile in enumerate(args.src_tree_iterator):
-        print tfile
+        #print tfile
         if args.raxml:
             nw = re.sub(":(\d+\.\d+)\[(\d+)\]", ":\\1[&&NHX:support=\\2]", open(tfile).read())
             t = PhyloTree(nw)
@@ -547,8 +552,7 @@ def ete_view(args):
 
         if args.alg:
             t.link_to_alignment(args.alg, alg_format=args.alg_format)
-            LEAF_ATTRIBUTES["sequence"] = 1 #################
-
+            
 
         # scale the tree
         if not args.height: 
@@ -647,7 +651,6 @@ def ete_view(args):
                                                            seqtail_format="compactseq",
                                                            height=fsize)
                                 elif f["ftype"] == "blockseq":
-                                    print fcolor
                                     F = faces.SeqMotifFace(seq=fvalue, seq_format="blockseq",
                                                        seqtail_format="blockseq",
                                                            height=fsize,
@@ -771,13 +774,11 @@ if __name__=="__main__":
     ref_args.add_argument("--ref_tree_list", dest="ref_tree_list", 
                              type=str, 
                              help="path to a file containing many ref trees, one per line")
-
     
     ref_args.add_argument("--ref_tree_attr", dest="ref_tree_attr", 
                            type=str, default="name",
                            help=("attribute in ref tree used as leaf name"))
-    
-    
+        
     ref_args.add_argument("--ref_attr_parser", dest="ref_attr_parser", 
                            type=str, 
                            help=(""))
@@ -796,6 +797,16 @@ if __name__=="__main__":
                            help=("Convert tree into ultrametric (all leaves have the same distance"
                                  " to root). If an argument is provided, it will be used as the"
                                  " expected tree length."))
+
+    mod_args.add_argument("--prune", dest="prune",
+                          type=str, nargs= "+",
+                           help=("Remove all nodes in the tree except the ones provided."))
+    
+    mod_args.add_argument("--prune_preserve_lengths", dest="prune_preserve_lengths",
+                          action="store_true",
+                           help=("branch lengths of the removed nodes are added to the kept branches, "
+                                 "thus preserving original tree length."))
+
     
     mod_args.add_argument("--unroot", dest="unroot",
                           action = "store_true",
@@ -927,7 +938,6 @@ if __name__=="__main__":
                                        formatter_class=argparse.RawDescriptionHelpFormatter)
     extract_args_p.set_defaults(func=ete_extract)
 
-
     
     # COMPARE
     COMPARE_DESC = """
@@ -1051,6 +1061,13 @@ The ETE toolkit viewer
                         action="store_true",
                         help="""Show the name attribute of all internal nodes.""")
 
+
+    img_gr.add_argument("--tree_width", dest="tree_width", 
+                        type=int, default=500,
+                        help=("Adjust tree scale so the distance from root to the"
+                              " farthest leaf uses a fixed width in pixels."))
+
+    
     edit_gr = view_args_p.add_argument_group("TREE EDIT OPTIONS")
     
     edit_gr.add_argument("--color_by_rank", dest="color_by_rank", 
@@ -1068,6 +1085,11 @@ The ETE toolkit viewer
                         type=str, 
                         help="""Link tree to a multiple sequence alignment.""")
 
+    phylo_gr.add_argument("--algtype", dest="algtype", 
+                          choices=['blockseq', 'compactseq', 'fullseq'], default='blockseq',
+                          help="How sequence alignment should be drawn in the tree")
+
+    
     phylo_gr.add_argument("--ncbi", dest="as_ncbi", 
                           action="store_true" ,
                           help="""If enabled, default style will be applied to show ncbi taxonomy annotations""")

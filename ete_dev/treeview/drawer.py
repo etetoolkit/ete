@@ -46,7 +46,7 @@ def show_tree(t, layout=None, tree_style=None, win_name=None):
         mainapp.setObjectName(win_name)
         
     mainapp.show()
-    mainapp.on_actionFit2tree_triggered()
+    #mainapp.on_actionFit2tree_triggered()
     # Restore Ctrl-C behavior
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     if GUI_TIMEOUT is not None:
@@ -74,8 +74,6 @@ def render_tree(t, imgName, w=None, h=None, layout=None,
     else:
         x_scale, y_scale = save(scene, imgName, w=w, h=h, units=units, dpi=dpi)
         imgmap = get_tree_img_map(n2i, x_scale, y_scale)
-    _QApp.quit()
-    _QApp = None
     return imgmap
     
 

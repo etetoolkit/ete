@@ -100,7 +100,7 @@ class _GUI(QtGui.QMainWindow):
         self.node_properties = _PropertiesDialog(scene)
         self.view.prop_table = self.node_properties
 
-        self.view.centerOn(0,0)
+        #self.view.centerOn(0,0)
         if scene.img.show_branch_length: 
             self.main.actionBranchLength.setChecked(True)
         if scene.img.show_branch_support: 
@@ -125,9 +125,10 @@ class _GUI(QtGui.QMainWindow):
 
         # Shows the whole tree by default
         #self.view.fitInView(self.scene.sceneRect(), QtCore.Qt.KeepAspectRatio)
-
-        self.view.fitInView(0, 0, 100, 100,)
+        splitter.setCollapsible(1, True)
+        splitter.setSizes([self.scene.sceneRect().width(), 10])
         
+        self.view.fitInView(0, 0, self.scene.sceneRect().width(), 200, QtCore.Qt.KeepAspectRatio)
         
         # Check for updates
         self.check = CheckUpdates()
@@ -212,6 +213,7 @@ class _GUI(QtGui.QMainWindow):
             elif mType == 7:
                 aValue = re.compile(str(setup.attrValue.text()))
             elif mType == 0 or mType == 1:
+
                 aValue =  str(setup.attrValue.text())
 
             if mType == 1 or mType == 2: #"is or =="
@@ -241,7 +243,7 @@ class _GUI(QtGui.QMainWindow):
             if last_match_node:
                 item = self.scene.n2i[last_match_node]
                 R = item.mapToScene(item.fullRegion).boundingRect()
-                R.adjust(-20, -20, 20, 20)
+                R.adjust(-60, -60, 60, 60)
                 self.view.fitInView(R.x(), R.y(), R.width(),\
                                     R.height(), QtCore.Qt.KeepAspectRatio)
 

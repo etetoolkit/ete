@@ -2186,7 +2186,7 @@ class TreeNode(object):
     #         all_partitions.add(p2)
     #     return all_partitions
 
-    def convert_to_ultrametric(self, tree_length=None, strategy="balanced"):
+    def convert_to_ultrametric(self):
         """
         .. versionadded: 2.1 
 
@@ -2195,17 +2195,11 @@ class TreeNode(object):
         of ultrametric trees, node.img_style["size"] should be set to
         0.
         """
-        import sys
+
         most_distant_leaf, tree_length = self.get_farthest_leaf()
-        print >>sys.stderr, most_distant_leaf, tree_length
-        print >>sys.stderr, self.get_ascii(attributes=['name', 'dist'])
         for leaf in self:
             d = leaf.get_distance(self)
-            print >>sys.stderr, leaf, "to root", d
-            print >>sys.stderr, leaf, "current dist", leaf.dist 
-            print >>sys.stderr, leaf, "needs", (tree_length - d)
             leaf.dist += (tree_length - d)
-        print >>sys.stderr, self.get_ascii(attributes=['name', 'dist'])
         return 
         
         
