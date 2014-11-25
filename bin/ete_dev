@@ -120,7 +120,7 @@ def parse_faces(face_args):
                 "color": None,
                 "bgcolor": None,
                 "size": 12,
-                "fstyle":None,
+                "fstyle":None, # review this name
                 "column":None,
                 "format":None,
                 "nodetype":"leaf",
@@ -271,31 +271,33 @@ def ete_expand(args):
 def ete_extract(args):
     log.error('Oops, this tool is not implemented yet')
     #dups, orthologs, partitions, edges, dist_matrix, ancestor, 
-
-def ete_consense(args):
-    
-    # all observed splits    
-    for nw in args.src_tree_iterator:
-        pass
-    log.error('Oops, this tool is not implemented yet')
     
 
 def ete_convert(args):
+    # between newick formats, orthoxml, phyloxml
     log.error('Oops, this tool is not implemented yet')
 
 def ete_maptrees(args):
-    log.error('Oops, this tool is not implemented yet')
-
-
-def ete_fetch(args):
-    log.error('Oops, this tool is not implemented yet')
-
-
-def ete_codeml(args):
+    
     log.error('Oops, this tool is not implemented yet')
 
 def ete_reconcile(args):
     log.error('Oops, this tool is not implemented yet')
+    
+
+def ete_consense(args):
+    # all observed splits    
+    for nw in args.src_tree_iterator:
+        pass
+    log.error('Oops, this tool is not implemented yet')
+
+    
+def ete_fetch(args):
+    log.error('Oops, this tool is not implemented yet')
+
+def ete_codeml(args):
+    log.error('Oops, this tool is not implemented yet')
+
 
 
 def ete_ncbiquery(args):
@@ -400,7 +402,8 @@ def ete_annotate(args):
                     raise ValueError("Unknown feature option [%s]" %field)
                 
             if not aname and not asource:
-                ValueError('name and source are required when annotating a new feature [%s]' %annotation)
+                ValueError('name and source are required when annotating a new feature [%s]'
+                           % annotation)
                     
             features.add(aname)
             for line in open(asource, 'rU'):
@@ -498,7 +501,8 @@ def ete_view(args):
     import random
     import re
     from collections import defaultdict
-    from ete_dev import Tree, PhyloTree, TextFace, faces, TreeStyle, add_face_to_node, random_color
+    from ete_dev import (Tree, PhyloTree, TextFace, faces, TreeStyle,
+                         add_face_to_node, random_color)
     
     global FACES
     
@@ -568,7 +572,8 @@ def ete_view(args):
             args.width = None
 
         if args.text_mode:
-            print t.get_ascii(show_internal=args.show_internal_names, attributes = args.show_attributes)
+            print t.get_ascii(show_internal=args.show_internal_names,
+                              attributes=args.show_attributes)
         else:    
             f2color = {}
             f2last_seed = {}
@@ -582,7 +587,6 @@ def ete_view(args):
                 ftype_pos = defaultdict(int)
 
                 for findex, f in enumerate(FACES):
-
                     if (f['nodetype'] == 'any' or 
                         (f['nodetype'] == 'leaf' and node.is_leaf()) or
                         (f['nodetype'] == 'internal' and not node.is_leaf())):
@@ -768,7 +772,8 @@ if __name__=="__main__":
 
     main_args.add_argument("-v", dest="verbosity",
                            type=int, choices= [0, 1, 2, 3, 4], default=2,
-                           help="Verbosity level: 0=totally quite, 1=errors only, 2=warning+errors, 3=info,warnings and errors 4=debug ")
+                           help=("Verbosity level: 0=totally quite, 1=errors only,"
+                           " 2=warning+errors, 3=info,warnings and errors 4=debug "))
     
     
     # SOURCE     
@@ -776,11 +781,12 @@ if __name__=="__main__":
     
     source_args.add_argument("-t", dest='src_trees',
                              type=str, nargs="*",
-                             help='a list of trees in newick format (filenames or quoted strings)')
+                             help=("a list of trees in newick format (filenames or"
+                             " quoted strings)"))
     
     source_args.add_argument("--src_file", dest="src_file", 
                              type=str, 
-                             help="""path to a file containing many source trees, one per line""")
+                             help=("path to a file containing many source trees, one per line"))
 
     source_args.add_argument("--src_tree_attr", dest="src_tree_attr", 
                              type=str, default="name",
@@ -795,7 +801,8 @@ if __name__=="__main__":
     
     ref_args.add_argument("-r", dest="ref_trees", 
                            type=str, nargs="*",
-                           help="One or more reference trees in newick format (filename or quoted string")
+                           help=("One or more reference trees in newick format (filename"
+                                 " or quoted string"))
 
     ref_args.add_argument("--ref_tree_list", dest="ref_tree_list", 
                              type=str, 
@@ -878,20 +885,17 @@ if __name__=="__main__":
     # extract 
     extract_args = _extract_args_p.add_argument_group('TREE EDIT OPTIONS')
 
-    extract_args.add_argument("--orthologs", dest="orthologs"
+    extract_args.add_argument("--orthologs", dest="orthologs",
                               action="store_true",
                               help=""" """)
     
-    extract_args.add_argument("--sptrees", dest="sptrees"
+    extract_args.add_argument("--sptrees", dest="sptrees",
                               action="store_true",
                               help=""" """)
        
-    extract_args.add_argument("--duplications", dest="duplications"
+    extract_args.add_argument("--duplications", dest="duplications",
                               action="store_true",
                               help=""" """)
-
-    
-
 
     
     # SUBPROGRAMS
@@ -940,8 +944,10 @@ if __name__=="__main__":
                                        formatter_class=argparse.RawDescriptionHelpFormatter)
     annotate_args_p.set_defaults(func=ete_annotate)
     annotate_args = annotate_args_p.add_argument_group("TREE ANNOTATE OPTIONS")
-    annotate_args.add_argument("--ncbi", dest="ncbi", action="store_true", help="annotate tree nodes using ncbi taxonomy database.")
-    annotate_args.add_argument("--taxid_attr", dest="taxid_attr", default='name', help="attribute used as NCBI taxid number")
+    annotate_args.add_argument("--ncbi", dest="ncbi", action="store_true",
+                               help="annotate tree nodes using ncbi taxonomy database.")
+    annotate_args.add_argument("--taxid_attr", dest="taxid_attr", default='name',
+                               help="attribute used as NCBI taxid number")
     annotate_args.add_argument("--feature", dest="feature", nargs="+", action='append',
                                help="")
     
@@ -953,21 +959,24 @@ if __name__=="__main__":
     mod_args_p.set_defaults(func=ete_mod)
 
     # EXPAND
-    expand_args_p = subparser.add_parser("expand", parents=[source_args_p, _expand_args_p, main_args_p],
+    expand_args_p = subparser.add_parser("expand", parents=[source_args_p, _expand_args_p,
+                                                            main_args_p],
                                        description="",
                                        formatter_class=argparse.RawDescriptionHelpFormatter)
     expand_args_p.set_defaults(func=ete_expand)
 
     # SPLIT
-    split_args_p = subparser.add_parser("split", parents=[source_args_p, _split_args_p, main_args_p],
+    split_args_p = subparser.add_parser("split", parents=[source_args_p, _split_args_p,
+                                                          main_args_p],
                                        description="",
                                        formatter_class=argparse.RawDescriptionHelpFormatter)
     split_args_p.set_defaults(func=ete_split)
 
     # EXTRACT
-    extract_args_p = subparser.add_parser("extract", parents=[source_args_p, _extract_args_p, main_args_p],
-                                       description="",
-                                       formatter_class=argparse.RawDescriptionHelpFormatter)
+    extract_args_p = subparser.add_parser("extract", parents=[source_args_p, _extract_args_p,
+                                                              main_args_p],
+                                          description="",
+                                          formatter_class=argparse.RawDescriptionHelpFormatter)
     extract_args_p.set_defaults(func=ete_extract)
 
     
