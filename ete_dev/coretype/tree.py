@@ -46,7 +46,7 @@ DEFAULT_COMPACT = False
 DEFAULT_SHOWINTERNAL = False
 DEFAULT_DIST = 1.0
 DEFAULT_SUPPORT = 1.0
-DEFAULT_NAME = "NoName"
+DEFAULT_NAME = ""
 
 class TreeError(Exception):
     """

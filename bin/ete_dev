@@ -246,8 +246,8 @@ def mod_tree(t, args):
     elif args.unroot:
         t.unroot()
 
-    if args.expand_polytomies:
-        t.expand_polytomies(polytomy_size_limit=args.expand_polytomies)
+    if args.resolve_polytomies:
+        t.resolve_polytomy()
         
     if args.ladderize:
         t.ladderize()
@@ -666,7 +666,7 @@ def ete_view(args):
                                                        seqtail_format="blockseq",
                                                            height=fsize,
                                                            fgcolor=fcolor or "slategrey",
-                                                           bgcolor=fbgcolor or None,
+                                                           bgcolor=fbgcolor or "slategrey",
                                                            scale_factor = 1.0)
                                     fbgcolor = None
                                 elif f["ftype"] == "bubble":
@@ -854,9 +854,9 @@ if __name__=="__main__":
                            action="store_true",
                            help="""Sort branches by partition size.""")
     
-    mod_args.add_argument("--expand_polytomies", dest="expand_polytomies", 
-                          type=int, default=6, 
-                           help="""Expand all polytomies larger than the provided size""")
+    mod_args.add_argument("--resolve_polytomies", dest="resolve_polytomies", 
+                          action='store_true',
+                           help="""Converts polytomies into random bifurcations""")
 
 
     # split options
@@ -948,7 +948,7 @@ if __name__=="__main__":
                                help="annotate tree nodes using ncbi taxonomy database.")
     annotate_args.add_argument("--taxid_attr", dest="taxid_attr", default='name',
                                help="attribute used as NCBI taxid number")
-    annotate_args.add_argument("--feature", dest="feature", nargs="+", action='append',
+    annotate_args.add_argument("--feature", dest="feature", nargs="+", action='append', default=[],
                                help="")
     
     
@@ -1103,7 +1103,7 @@ The ETE toolkit viewer
                         help="""Show the name attribute of all internal nodes.""")
 
     img_gr.add_argument("--tree_width", dest="tree_width", 
-                        type=int, default=500,
+                        type=int, default=300,
                         help=("Adjust tree scale so the distance from root to the"
                               " farthest leaf uses a fixed width in pixels."))
 
