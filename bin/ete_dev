@@ -500,8 +500,9 @@ def ete_compare(args):
 def ete_view(args):
     import random
     import re
+    import colorsys
     from collections import defaultdict
-    from ete_dev import (Tree, PhyloTree, TextFace, faces, TreeStyle,
+    from ete_dev import (Tree, PhyloTree, TextFace, RectFace, faces, TreeStyle,
                          add_face_to_node, random_color)
     
     global FACES
@@ -538,6 +539,11 @@ def ete_view(args):
             ['value:@sequence, size:10, pos:aligned, ftype:%s' %args.alg_type]
          ))
 
+    if args.heatmap:
+        FACES.extend(parse_faces(
+            ['value:@name, size:10, pos:aligned, ftype:heatmap']
+         ))
+        
     if args.bubbles:
         for bubble in args.bubbles:
             FACES.extend(parse_faces(
@@ -561,10 +567,60 @@ def ete_view(args):
         else:
             t = PhyloTree(tfile)
 
+            
         if args.alg:
             t.link_to_alignment(args.alg, alg_format=args.alg_format)
-            
 
+        if args.heatmap:
+            DEFAULT_COLOR_SATURATION = 0.3
+            BASE_LIGHTNESS = 0.7
+            def gradient_color(value, max_value, saturation=0.5, hue=0.1):    
+                def rgb2hex(rgb):
+                    return '#%02x%02x%02x' % rgb
+                def hls2hex(h, l, s):
+                    return rgb2hex( tuple(map(lambda x: int(x*255), colorsys.hls_to_rgb(h, l, s))))
+
+                lightness = 1 - (value * BASE_LIGHTNESS) / max_value
+                return hls2hex(hue, lightness, DEFAULT_COLOR_SATURATION)
+
+            
+            heatmap_data = {}
+            max_value, min_value = None, None
+            for line in open(args.heatmap):
+                if line.startswith('#COLNAMES'):
+                    pass
+                elif line.startswith('#') or not line.strip():
+                    pass
+                else:
+                    fields = line.split('\t')
+                    name = fields[0].strip()
+
+                    values = map(lambda x: float(x) if x else None, fields[1:])
+
+                    maxv = max(values)
+                    minv = min(values)
+                    if max_value is None or maxv > max_value:
+                        max_value = maxv
+                    if min_value is None or minv < min_value:
+                        min_value = minv                        
+                    heatmap_data[name] = values
+
+            heatmap_center_value = 0
+            heatmap_color_center = "white"
+            heatmap_color_up = 0.3
+            heatmap_color_down = 0.7
+            heatmap_color_missing = "black"
+            
+            heatmap_max_value = abs(heatmap_center_value - max_value)
+            heatmap_min_value = abs(heatmap_center_value - min_value)
+                    
+            if heatmap_center_value <= min_value:
+                heatmap_max_value = heatmap_min_value + heatmap_max_value
+            else:
+                heatmap_max_value = max(heatmap_min_value, heatmap_max_value)
+
+                    
+                    
         # scale the tree
         if not args.height: 
             args.height = None
@@ -585,11 +641,12 @@ def ete_view(args):
                     node.img_style['fgcolor'] = "steelblue"
 
                 ftype_pos = defaultdict(int)
-
+                
                 for findex, f in enumerate(FACES):
                     if (f['nodetype'] == 'any' or 
                         (f['nodetype'] == 'leaf' and node.is_leaf()) or
                         (f['nodetype'] == 'internal' and not node.is_leaf())):
+                        
 
                         # if node passes face filters
                         if node_matcher(node, f["filters"]):
@@ -678,6 +735,31 @@ def ete_view(args):
                                         rad = fsize * v
                                     F = faces.CircleFace(radius=rad, style="sphere",
                                                          color=fcolor or "steelblue")
+
+                                elif f["ftype"] == "heatmap":
+                                    if not f['column']:
+                                        col = ftype_pos[f["pos"]]
+                                    else:
+                                        col = f["column"]
+                                    
+                                    for i, value in enumerate(heatmap_data.get(node.name, [])):
+                                        ftype_pos[f["pos"]] += 1
+                                        
+                                        if value is None:
+                                            color = heatmap_color_missing
+                                        elif value > heatmap_center_value:
+                                            color = gradient_color(abs(heatmap_center_value - value), heatmap_max_value, hue=heatmap_color_up)
+                                        elif value < heatmap_center_value:
+                                            color = gradient_color(abs(heatmap_center_value - value), heatmap_max_value, hue=heatmap_color_down)
+                                        else:
+                                            color = heatmap_color_center
+                                        node.add_face(RectFace(20, 20, color, color), position="aligned", column=col + i)
+                                        # Add header 
+                                        # for i, name in enumerate(header):
+                                        #    nameF = TextFace(name, fsize=7)
+                                        #    nameF.rotation = -90
+                                        #    tree_style.aligned_header.add_face(nameF, column=i)
+                                    F = None
                                     
                                 elif f["ftype"] == "profile":
                                     # internal profiles?
@@ -687,19 +769,22 @@ def ete_view(args):
                                 elif f["ftype"] == "piechart":
                                     F = None
                                                          
-                                F.opacity = f['opacity'] or 1.0
 
-                                # Set face general attributes
-                                if fbgcolor:
-                                    F.background.color = fbgcolor
-
-                                if not f['column']:
-                                    col = ftype_pos[f["pos"]]
-                                    ftype_pos[f["pos"]] += 1    
-                                else:
-                                    col = f["column"]
+                            
                                 # Add the Face
-                                node.add_face(F, column=col, position=f["pos"])
+                                if F:
+                                    F.opacity = f['opacity'] or 1.0
+                                    
+                                    # Set face general attributes
+                                    if fbgcolor:
+                                        F.background.color = fbgcolor
+
+                                    if not f['column']:
+                                        col = ftype_pos[f["pos"]]
+                                        ftype_pos[f["pos"]] += 1    
+                                    else:
+                                        col = f["column"]
+                                    node.add_face(F, column=col, position=f["pos"])
 
             if args.image:
                 t.render("t%d.%s" %(tindex, args.image),
