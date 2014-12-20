@@ -10,12 +10,12 @@ Contents
    tutorial/index
    reference/index
 
+   tools/index
+
    faqs/index
    support
 
-   
    about
-
 
 :genindex:
 :modindex:

@@ -12,56 +12,34 @@ ETE 2.3
   
 * fixes several minor bugs when retrieving extra attributes in
   :func:`PhyloNode.get_speciation_trees`.
-
-**Command line tools**
-
-* A number of command line tools, implementing many common operations such as
-  inline tree visualization, modification and comparison, are now available through
-  the main `ete` program.
-
-  * ete generate:
-
-  * ete mod:
-
-  * ete annotate:
-    
-  * ete view:
-    
-  * ete compare:
-
-  * ete extract:
-
-  * ete ncbiquery:
-    
   
 **New Modules**
 
-* ncbi taxonomy module
+* ncbi taxonomy module providing :class:`NCBITaxa`
 
 **New Features**
-
-
-
+* Command line tools: A number of command line tools, implementing many
+  common operations such as inline tree visualization, modification and
+  comparison, are now available through the main`ete` program.
+   
+  * ete generate:
+  * ete mod:
+  * ete annotate:
+  * ete view:
+  * ete compare:
+  * ete extract:
+  * ete ncbiquery:
 * added :func:`TreeNode.iter_edges` and :func:`TreeNode.get_edges`
-
-* added tree.compare function
-
-* improved tree.robinson foulds function: expand, polytomies, branch support filter and auto prune
-
+* added :func:`TreeNode.compare` function which allows to calculate distances among trees.
+* improved :func:`TreeNode.robinson_foulds` function: expand, polytomies, branch support
+  filter and auto prune
 * improved tree.check monophyly function: accepts unrooted trees
-
 * added new reconciliation algorithm: Zmasek and Eddy's 2001, implemented by 
-
 * %%return option in tree.render function
-
 * improved random_color 
-
 * improved SVG export
-
 * improved SeqMotifFace
-
 * improved heatmap support
-
 * Added RectFace
   
 ETE 2.2

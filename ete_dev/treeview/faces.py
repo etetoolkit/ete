@@ -933,7 +933,6 @@ class _RectItem(QGraphicsRectItem):
         else:
             self.setPen(QPen(Qt.NoPen))
 
-
 class RectFace(Face):
     """
     .. versionadded:: 2.1

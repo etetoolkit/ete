@@ -43,6 +43,7 @@ COLOR_RANKS = { "superclass": "#a6cee3", "class": "#a6cee3", "subclass": "#a6cee
                 "superkingdom": "#b2df8a", "kingdom": "#b2df8a", "subkingdom": "#b2df8a", "superorder": "#33a02c",
                 "order": "#33a02c", "suborder": "#33a02c", "infraorder": "#33a02c", "parvorder": "#33a02c",
                 "superphylum": "#fdbf6f", "phylum": "#fdbf6f",  "subphylum": "#fdbf6f"}
+
 #    "species group": "",
 #    "species subgroup": "",
 #    "species": "",
@@ -55,7 +56,6 @@ COLOR_RANKS = { "superclass": "#a6cee3", "class": "#a6cee3", "subclass": "#a6cee
 #    "subtribe": "",
 #    "varietas"
            
-
 def itertrees(trees, treefile):
     if trees:
         for nw in trees:
@@ -257,7 +257,7 @@ def mod_tree(t, args):
     if args.ultrametric:
         t.convert_to_ultrametric()
     
-    # remove, prune branches
+    # remove
     # ncbi_root
             
 def ete_split(args):
@@ -269,28 +269,45 @@ def ete_expand(args):
     log.error('Oops, this tool is not implemented yet')
 
 def ete_extract(args):
-    log.error('Oops, this tool is not implemented yet')
-    #dups, orthologs, partitions, edges, dist_matrix, ancestor, 
+    from ete_dev import PhyloTree, Tree
     
+    for nw in args.src_tree_iterator:        
+        dups = []
+        orth = []        
+        if args.orthologs or args.duplications:
+            t = PhyloTree(nw)
+            events = t.get_descendant_evol_events()
 
+            for e in events:
+                if e.etype == "D" and args.orthologs:
+                    print "paralogy", ','.join(e.in_seqs), ','.join(e.out_seqs)
+                if e.etype == "S" and args.orthologs:
+                    print "orthology", ','.join(e.in_seqs), ','.join(e.out_seqs)
+
+        if args.edges:
+            t = Tree(nw)
+            for edge in t.iter_edges():
+                print '\t'.join([','.join([node.name for node in branch]) for branch in edge])
+
+                
+    # dups, orthologs, partitions, edges, dist_matrix, ancestor, 
+    # target species/sequence
+    
 def ete_convert(args):
     # between newick formats, orthoxml, phyloxml
     log.error('Oops, this tool is not implemented yet')
 
 def ete_maptrees(args):
-    
     log.error('Oops, this tool is not implemented yet')
 
 def ete_reconcile(args):
     log.error('Oops, this tool is not implemented yet')
-    
 
 def ete_consense(args):
     # all observed splits    
     for nw in args.src_tree_iterator:
         pass
     log.error('Oops, this tool is not implemented yet')
-
     
 def ete_fetch(args):
     log.error('Oops, this tool is not implemented yet')
@@ -298,11 +315,8 @@ def ete_fetch(args):
 def ete_codeml(args):
     log.error('Oops, this tool is not implemented yet')
 
-
-
 def ete_ncbiquery(args):
-    # add lineage profiles/stats
-    
+    # add lineage profiles/stats    
     import re
     from ete_dev import PhyloTree, NCBITaxa
 
@@ -504,6 +518,19 @@ def ete_view(args):
     from collections import defaultdict
     from ete_dev import (Tree, PhyloTree, TextFace, RectFace, faces, TreeStyle,
                          add_face_to_node, random_color)
+
+    def gradient_color(value, max_value, saturation=0.5, hue=0.1):
+        DEFAULT_COLOR_SATURATION = 0.3
+        BASE_LIGHTNESS = 0.7
+
+        def rgb2hex(rgb):
+            return '#%02x%02x%02x' % rgb
+        def hls2hex(h, l, s):
+            return rgb2hex( tuple(map(lambda x: int(x*255), colorsys.hls_to_rgb(h, l, s))))
+
+        lightness = 1 - (value * BASE_LIGHTNESS) / max_value
+        return hls2hex(hue, lightness, DEFAULT_COLOR_SATURATION)
+
     
     global FACES
     
@@ -517,7 +544,7 @@ def ete_view(args):
     ts.mode = args.mode
     ts.show_leaf_name = True
     ts.tree_width = args.tree_width
-
+    ts.legend_position = 3
     
     for f in FACES:
         if f["value"] == "@name":
@@ -560,35 +587,26 @@ def ete_view(args):
     ts.layout_fn = lambda x: None
         
     for tindex, tfile in enumerate(args.src_tree_iterator):
-        #print tfile
+
+        # load Tree
         if args.raxml:
             nw = re.sub(":(\d+\.\d+)\[(\d+)\]", ":\\1[&&NHX:support=\\2]", open(tfile).read())
             t = PhyloTree(nw)
         else:
             t = PhyloTree(tfile)
 
-            
+        # load Alg
         if args.alg:
             t.link_to_alignment(args.alg, alg_format=args.alg_format)
 
-        if args.heatmap:
-            DEFAULT_COLOR_SATURATION = 0.3
-            BASE_LIGHTNESS = 0.7
-            def gradient_color(value, max_value, saturation=0.5, hue=0.1):    
-                def rgb2hex(rgb):
-                    return '#%02x%02x%02x' % rgb
-                def hls2hex(h, l, s):
-                    return rgb2hex( tuple(map(lambda x: int(x*255), colorsys.hls_to_rgb(h, l, s))))
-
-                lightness = 1 - (value * BASE_LIGHTNESS) / max_value
-                return hls2hex(hue, lightness, DEFAULT_COLOR_SATURATION)
-
-            
+        # load matrix data heatmap
+        if args.heatmap:            
             heatmap_data = {}
-            max_value, min_value = None, None
+            heatmap_header = []
+            heatmap_max_value, heatmap_min_value = None, None
             for line in open(args.heatmap):
-                if line.startswith('#COLNAMES'):
-                    pass
+                if not heatmap_header and line.startswith('#NAMES'):
+                    heatmap_header = map(strip, line.split("\t")[1:])
                 elif line.startswith('#') or not line.strip():
                     pass
                 else:
@@ -599,26 +617,27 @@ def ete_view(args):
 
                     maxv = max(values)
                     minv = min(values)
-                    if max_value is None or maxv > max_value:
-                        max_value = maxv
-                    if min_value is None or minv < min_value:
-                        min_value = minv                        
+                    if heatmap_max_value is None or maxv > heatmap_max_value:
+                        heatmap_max_value = maxv
+                    if heatmap_min_value is None or minv < heatmap_min_value:
+                        heatmap_min_value = minv                        
                     heatmap_data[name] = values
-
-            heatmap_center_value = 0
-            heatmap_color_center = "white"
-            heatmap_color_up = 0.3
-            heatmap_color_down = 0.7
-            heatmap_color_missing = "black"
-            
-            heatmap_max_value = abs(heatmap_center_value - max_value)
-            heatmap_min_value = abs(heatmap_center_value - min_value)
                     
-            if heatmap_center_value <= min_value:
-                heatmap_max_value = heatmap_min_value + heatmap_max_value
+            heatmap_header_drawn = False
+            heatmap_center_value = heatmap_min_value if args.heatmap_center_value is None else args.heatmap_center_value
+            heatmap_color_center = "white"
+            heatmap_color_up = args.heatmap_color_up
+            heatmap_color_down = args.heatmap_color_down
+            heatmap_color_missing = "black"
+            heatmap_height = args.heatmap_height
+            heatmap_width = args.heatmap_width
+            heatmap_header_size = 9
+                    
+            if heatmap_center_value <= heatmap_min_value:
+                heatmap_ref_max = abs(heatmap_center_value - heatmap_min_value) + abs(heatmap_center_value - heatmap_max_value)
             else:
-                heatmap_max_value = max(heatmap_min_value, heatmap_max_value)
-
+                heatmap_ref_max = max(abs(heatmap_center_value - heatmap_min_value),
+                                      abs(heatmap_center_value - heatmap_max_value))
                     
                     
         # scale the tree
@@ -741,24 +760,41 @@ def ete_view(args):
                                         col = ftype_pos[f["pos"]]
                                     else:
                                         col = f["column"]
-                                    
+
+                                    # Add header
+                                    if not heatmap_header_drawn:
+                                        for i, hname in enumerate(heatmap_header):
+                                            nameF = TextFace(hname, fsize=heatmap_header_size)
+                                            nameF.rotation = -90
+                                            ts.aligned_header.add_face(nameF, column=col+i)
+                                            
+                                        # add legend
+                                        color1 = gradient_color(abs(heatmap_center_value - heatmap_max_value), heatmap_ref_max, hue=heatmap_color_up)
+                                        color2= gradient_color(abs(heatmap_center_value - heatmap_min_value), heatmap_ref_max, hue=heatmap_color_down)
+
+                                        ts.legend.add_face(RectFace(heatmap_width, heatmap_height, color1, color1), 0)
+                                        ts.legend.add_face(TextFace(" %0.4f"%heatmap_max_value), 1)
+                                        if heatmap_center_value > heatmap_min_value:
+                                            ts.legend.add_face(RectFace(heatmap_width, heatmap_height, "black", heatmap_color_center), 0)
+                                            ts.legend.add_face(TextFace(" %0.4f"%heatmap_center_value), 1)
+                                        ts.legend.add_face(RectFace(heatmap_width, heatmap_height, color2, color2), 0)
+                                        ts.legend.add_face(TextFace(" %0.4f"%heatmap_min_value), 1)
+                                        ts.legend.add_face(RectFace(heatmap_width, heatmap_height, heatmap_color_missing, heatmap_color_missing), 0)
+                                        ts.legend.add_face(TextFace(" Missing data"), 1)
+                                        heatmap_header_drawn = True
+                                                           
                                     for i, value in enumerate(heatmap_data.get(node.name, [])):
                                         ftype_pos[f["pos"]] += 1
-                                        
                                         if value is None:
                                             color = heatmap_color_missing
                                         elif value > heatmap_center_value:
-                                            color = gradient_color(abs(heatmap_center_value - value), heatmap_max_value, hue=heatmap_color_up)
+                                            color = gradient_color(abs(heatmap_center_value - value), heatmap_ref_max, hue=heatmap_color_up)
                                         elif value < heatmap_center_value:
-                                            color = gradient_color(abs(heatmap_center_value - value), heatmap_max_value, hue=heatmap_color_down)
+                                            color = gradient_color(abs(heatmap_center_value - value), heatmap_ref_max, hue=heatmap_color_down)
                                         else:
                                             color = heatmap_color_center
-                                        node.add_face(RectFace(20, 20, color, color), position="aligned", column=col + i)
-                                        # Add header 
-                                        # for i, name in enumerate(header):
-                                        #    nameF = TextFace(name, fsize=7)
-                                        #    nameF.rotation = -90
-                                        #    tree_style.aligned_header.add_face(nameF, column=i)
+                                        rectF = RectFace(heatmap_width, heatmap_height, color, color)
+                                        node.add_face(rectF, position="aligned", column=col+i)
                                     F = None
                                     
                                 elif f["ftype"] == "profile":
@@ -767,9 +803,7 @@ def ete_view(args):
                                 elif f["ftype"] == "barchart":
                                     F = None
                                 elif f["ftype"] == "piechart":
-                                    F = None
-                                                         
-
+                                    F = None                                                         
                             
                                 # Add the Face
                                 if F:
@@ -799,8 +833,6 @@ def parse_value(fvalue):
         func_arg = func_match.groups()[1]
     #RETURN SOMETHING
         
-                
-        
 def dump(t, features=None):
     if getattr(args, "output", None):
         t.write(format=0, features=features)
@@ -824,8 +856,7 @@ def tree_iterator(tree_source):
 ##
 ## #################################################################################
        
-        
-if __name__=="__main__":
+def get_parser():        
     main_args_p = argparse.ArgumentParser(add_help=False)
     source_args_p = argparse.ArgumentParser(add_help=False)
     ref_args_p = argparse.ArgumentParser(add_help=False)
@@ -972,16 +1003,21 @@ if __name__=="__main__":
 
     extract_args.add_argument("--orthologs", dest="orthologs",
                               action="store_true",
-                              help=""" """)
+                              help="")
+    
+    extract_args.add_argument("--duplications", dest="duplications",
+                              action="store_true",
+                              help="a")
     
     extract_args.add_argument("--sptrees", dest="sptrees",
                               action="store_true",
-                              help=""" """)
+                              help="Extract treeko species trees")
        
-    extract_args.add_argument("--duplications", dest="duplications",
-                              action="store_true",
-                              help=""" """)
 
+    extract_args.add_argument("--edges", dest="edges",
+                              action="store_true",
+                              help="a")
+       
     
     # SUBPROGRAMS
     parser = argparse.ArgumentParser(description="",
@@ -991,17 +1027,17 @@ if __name__=="__main__":
 
 
     # CONVERT 
-    convert_args_p = subparser.add_parser("convert", parents=[source_args_p, main_args_p],
-                                       description="",
-                                       formatter_class=argparse.RawDescriptionHelpFormatter)
-    convert_args_p.set_defaults(func=ete_convert)
+    # convert_args_p = subparser.add_parser("convert", parents=[source_args_p, main_args_p],
+    #                                    description="",
+    #                                    formatter_class=argparse.RawDescriptionHelpFormatter)
+    # convert_args_p.set_defaults(func=ete_convert)
 
     
     # consense
-    consense_args_p = subparser.add_parser("consense", parents=[source_args_p, main_args_p],
-                                       description="",
-                                       formatter_class=argparse.RawDescriptionHelpFormatter)
-    consense_args_p.set_defaults(func=ete_consense)
+    # consense_args_p = subparser.add_parser("consense", parents=[source_args_p, main_args_p],
+    #                                    description="",
+    #                                    formatter_class=argparse.RawDescriptionHelpFormatter)
+    # consense_args_p.set_defaults(func=ete_consense)
 
     
     # merge
@@ -1009,21 +1045,20 @@ if __name__=="__main__":
     
     # RECONCILE
     
-    reconcile_args_p = subparser.add_parser("reconcile", parents=[source_args_p, main_args_p],
-                                       description="",
-                                       formatter_class=argparse.RawDescriptionHelpFormatter)
-    reconcile_args_p.set_defaults(func=ete_reconcile)
+    # reconcile_args_p = subparser.add_parser("reconcile", parents=[source_args_p, main_args_p],
+    #                                    description="",
+    #                                    formatter_class=argparse.RawDescriptionHelpFormatter)
+    # reconcile_args_p.set_defaults(func=ete_reconcile)
 
     
     # maptrees
-    maptrees_args_p = subparser.add_parser("maptrees", parents=[source_args_p, main_args_p],
-                                       description="",
-                                       formatter_class=argparse.RawDescriptionHelpFormatter)
-    maptrees_args_p.set_defaults(func=ete_maptrees)
+    # maptrees_args_p = subparser.add_parser("maptrees", parents=[source_args_p, main_args_p],
+    #                                    description="",
+    #                                    formatter_class=argparse.RawDescriptionHelpFormatter)
+    # maptrees_args_p.set_defaults(func=ete_maptrees)
 
     
     # annotate
-
     annotate_args_p = subparser.add_parser("annotate", parents=[source_args_p, main_args_p],
                                        description="",
                                        formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -1163,7 +1198,7 @@ The ETE toolkit viewer
                         )
 
     img_gr.add_argument("-mbs", "--min_branch_separation", dest="branch_separation", 
-                        type=int, default = 3, 
+                        type=int, default = 0, 
                         help="Min number of pixels to separate branches vertically."
                         )
 
@@ -1191,7 +1226,6 @@ The ETE toolkit viewer
                         type=int, default=300,
                         help=("Adjust tree scale so the distance from root to the"
                               " farthest leaf uses a fixed width in pixels."))
-
     
     edit_gr = view_args_p.add_argument_group("TREE EDIT OPTIONS")
     
@@ -1226,17 +1260,43 @@ The ETE toolkit viewer
     
     features_gr = view_args_p.add_argument_group("DRAWING FEATURES")
     
-    phylo_gr.add_argument("--heatmap", dest="heatmap", 
-                        type=str, 
-                          help="""attr_name \t v1, v2, v3, v4""")
-
-    phylo_gr.add_argument("--profile", dest="profile", 
-                        type=str, 
-                          help="""attr_name \t v1, v2, v3, v4""")
+    features_gr.add_argument("--heatmap", dest="heatmap", 
+                             type=str, 
+                             help=("A matrix of tab delimited numeric values where each line corresponds to a leaf node."
+                                   "Format: NodeName value1 value2 value3. A header can be also specified in the file as:"
+                                   " #NAMES col1 col2 col3"))
     
-    phylo_gr.add_argument("--bubbles", dest="bubbles", 
-                        type=str, 
-                        help=""" """)
+    features_gr.add_argument("--heatmap_center", dest="heatmap_center_value", 
+                             type=float, default=None,
+                             help=("center value used to separate values from the heatmap matrix. "
+                                   "If provided, values lower than the center will be plotted using a "
+                                   "different color scale (--heatmap_color_down))."))
+    
+    features_gr.add_argument("--heatmap_color_up", dest="heatmap_color_up", 
+                             type=float, default=0.3,
+                             help=("A HUE color value between 0 and 1 used to create the gradient applied"
+                                   " applied when plotting a heatmap matrix"))
+    
+    features_gr.add_argument("--heatmap_color_down", dest="heatmap_color_down", 
+                             type=float, default=0.05,
+                             help=("A HUE color value between 0 and 1 used to create the gradient applied"
+                                   " to values lower than heatmap_center_value when plotting a heatmap matrix"))
+
+    features_gr.add_argument("--heatmap_height", dest="heatmap_height", 
+                             type=int, default=20,
+                             help=("Height of the squares in the heatmap plot"))
+    features_gr.add_argument("--heatmap_width", dest="heatmap_width", 
+                             type=int, default=20,
+                             help=("width of the squares in the heatmap plot"))
+
+    
+    features_gr.add_argument("--profile", dest="profile", 
+                          type=str, 
+                          help="...")
+    
+    features_gr.add_argument("--bubbles", dest="bubbles", 
+                          type=str, 
+                          help="...")
 
     # NCBIQUERY    
     ncbi_args_p = subparser.add_parser( "ncbiquery", parents=[main_args_p])
@@ -1297,7 +1357,10 @@ The ETE toolkit viewer
     generate_args_p.add_argument('--size', dest='size', type=int, default=10)
     generate_args_p.add_argument('--random_branches', dest='random_branches', action="store_true")
 
+    return parser
+if __name__== "__main__":
     
+    parser = get_parser()
     args = parser.parse_args()
 
     LOG_LEVEL = args.verbosity 
@@ -1310,7 +1373,7 @@ The ETE toolkit viewer
             log.debug("Reading taxa from standard input...")
             args.search = sys.stdin 
        
-        
+
     # Call main program
     args.func(args)
 

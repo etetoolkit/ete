@@ -27,3 +27,4 @@ Current modules:
    reference_seqgroup
    reference_webplugin
    reference_evoltree
+   reference_ncbi
