@@ -137,9 +137,9 @@ class NCBITaxa(object):
         if len(all_ids) != len(id2name):
             not_found_taxids = all_ids - set(id2name.keys())
             taxids, old2new = self._translate_merged(not_found_taxids)
-            new2old = dict([(v,k) for k,v in conversion.iteritems()])
+            new2old = dict([(v,k) for k,v in old2new.iteritems()])
             
-            if conversion:                
+            if old2new:                
                 query = ','.join(['"%s"' %v for v in new2old])
                 cmd = "select taxid, spname FROM species WHERE taxid IN (%s);" %query
                 result = self.db.execute(cmd)
