@@ -1494,7 +1494,10 @@ class SeqMotifFace(StaticItemFace):
         self.motifs = motifs
         self.overlaping_motif_opacity = 0.5
         self.adjust_to_text = False
-        self.intermotif_format = intermotif_format
+        if intermotif_format == 'line':
+            self.intermotif_format = '-'
+        else:
+            self.intermotif_format = ' '
         self.seqtail_format = seqtail_format
         self.seq_format = seq_format
         if seqtype == "aa":
@@ -1506,7 +1509,7 @@ class SeqMotifFace(StaticItemFace):
 
         self.h = height
         self.w = width
-        self.shape = "()"
+        self.shape = shape
         self.fgcolor = fgcolor
         self.bgcolor = bgcolor
         self.gapcolor = gapcolor
@@ -1544,8 +1547,8 @@ class SeqMotifFace(StaticItemFace):
                 pos = current_seq_pos
                 for reg in re.split('([^-]+)', seq[current_seq_pos:start]):
                     if reg:
-                        if reg.startswith("-") and self.seq_format != "seq":
-                            self.regions.append([pos, pos+len(reg)-1, "-", 1, 1, None, None, None])
+                        if reg.startswith("-"):# and self.seq_format != "seq":
+                            self.regions.append([pos, pos+len(reg)-1, self.intermotif_format, 1, 1, None, None, None])
                         else:
                             self.regions.append([pos, pos+len(reg)-1, self.seq_format,
                                                  self.w, self.h,
@@ -1560,7 +1563,7 @@ class SeqMotifFace(StaticItemFace):
             pos = current_seq_pos
             for reg in re.split('([^-]+)', seq[current_seq_pos:]):
                 if reg:
-                    if reg.startswith("-") and self.seq_format != "seq":
+                    if reg.startswith("-"):# and self.seq_format != "seq":
                         self.regions.append([pos, pos+len(reg)-1, "-", 1, 1, self.gapcolor, None, None])
                     else:
                         self.regions.append([pos, pos+len(reg)-1, self.seq_format,
