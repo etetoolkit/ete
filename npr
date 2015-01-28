@@ -343,7 +343,10 @@ def main(args):
                 #target_dict[target_level] = [False, strict_monophyly]
             #TARGET_CLADES.update(target_levels)
         else:
-            config['_npr'] = {}
+            config['_npr'] = {
+                'nt_switch_thr': args.nt_switch_thr,
+            }
+            
         
     # dump log config file 
     open(local_conf_file, "w").write(open(args.configfile).read())
