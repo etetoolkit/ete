@@ -149,7 +149,7 @@ try:
         name = "ete_dev",
         version = ete_version,
         packages = find_packages(),
-        scripts = ['bin/ete'],
+        scripts = ['bin/ete_dev'],
         requires = [],
         
         # Project uses reStructuredText, so ensure that the docutils get
@@ -168,7 +168,7 @@ try:
         description = "A python Environment for phylogenetic Tree Exploration",
         long_description = long_description,
         classifiers = TAGS,
-        provides = ["ete_dev"],
+        provides = ["ete_tools", "ete_dev"],
         keywords = "bioinformatics phylogeny evolution phylogenomics genomics" 
         " tree clustering phylogenetics phylogenetic ete orthology" 
         " paralogy",
