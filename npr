@@ -808,7 +808,6 @@ def check_seq_integrity(args, target_seqs, visited_seqs, seq2length, seq2unknown
                                     log.warning('@@2:Unmatching codon in seq:%s, aa pos:%s (%s != %s)@@1: Use --no-seq-checks to skip' %(seqname, i, codon, aa))
                                     inconsistent_cds.add('Unmatching codon in seq:%s, aa pos:%s (%s != %s)' %(seqname, i, codon, aa))
 
-
         if inconsistent_cds:
             error += "\nUnexpected coding sequence length for the following ids:\n"
             error += '\n'.join(inconsistent_cds)
