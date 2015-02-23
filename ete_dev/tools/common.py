@@ -1,3 +1,4 @@
+import sys
 import argparse
 from string import strip
 import operator
@@ -40,7 +41,7 @@ class Logger(object):
             print >>self.out, "DEBUG - ", ' '.join(map(str, args))
     
 log = Logger(sys.stderr)
-          
+         
 
 def itertrees(trees, treefile):
     if trees:
@@ -117,11 +118,10 @@ def parse_value(fvalue):
     #RETURN SOMETHING
         
 def dump(t, features=None):
-    if getattr(args, "output", None):
-        t.write(format=0, features=features)
-    else:
-        print t.write(format=0, features=features)
-
+    #if getattr(args, "output", None):
+    #    t.write(format=0, features=features)
+    #else:
+    print t.write(format=0, features=features)
 
 def populate_main_args(main_args_p):
     main_args = main_args_p.add_argument_group('GENERAL OPTIONS')

@@ -1,4 +1,4 @@
-from ete_dev_tools.common import *
+from common import dump
 
 DESC = ""
 def populate_args(annotate_args_p):

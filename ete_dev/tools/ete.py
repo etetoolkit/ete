@@ -2,7 +2,9 @@
 import sys
 import argparse
 
-import common, ete_split, ete_expand, ete_annotate, ete_ncbiquery, ete_view, ete_generate, ete_mod
+import ete_split, ete_expand, ete_annotate, ete_ncbiquery, ete_view, ete_generate, ete_mod, ete_extract, ete_compare
+import common
+from common import log
 
 
 """
@@ -23,8 +25,8 @@ def ete_codeml(args):
 
 """            
             
-def tree_iterator(tree_source):        
-    if not tree_source:
+def tree_iterator(args):        
+    if not args.src_trees:
         log.debug("Reading trees from standard input...")
         args.src_trees = sys.stdin
     
@@ -38,25 +40,25 @@ def main():
     
     # main args
     main_args_p = argparse.ArgumentParser(add_help=False)
-    common.populate_main_args(source_main_p)
+    common.populate_main_args(main_args_p)
     # source tree args
     source_args_p = argparse.ArgumentParser(add_help=False)
-    ommon.populate_source_args(source_args_p)
+    common.populate_source_args(source_args_p)
     # ref tree args
     ref_args_p = argparse.ArgumentParser(add_help=False)
     common.populate_ref_args(ref_args_p)
     # mod
-    ete_mod.populate_arguments(mod_args_p)
     mod_args_p = argparse.ArgumentParser(add_help=False)
+    ete_mod.populate_args(mod_args_p)
     # expand
     expand_args_p = argparse.ArgumentParser(add_help=False)
-    ete_expand.populate_arguments(expand_args_p)
+    ete_expand.populate_args(expand_args_p)
     # extract
     extract_args_p = argparse.ArgumentParser(add_help=False)
-    ete_extract.populate_arguments(extract_args_p)
+    ete_extract.populate_args(extract_args_p)
     # split
     split_args_p = argparse.ArgumentParser(add_help=False)
-    ete_split.populate_arguments(split_args_p)
+    ete_split.populate_args(split_args_p)
 
 
     # ADD SUBPROGRAM TO THE MAIN PARSER
@@ -65,14 +67,14 @@ def main():
     subparser = parser.add_subparsers(title="AVAILABLE PROGRAMS")
 
     # - ANNOTATE -
-    mon_args_pp = subparser.add_parser("mod", parents=[source_args_p, main_args_p, mod_args_p],
-                                       description=toos.mod.DESC,
+    mod_args_pp = subparser.add_parser("mod", parents=[source_args_p, main_args_p, mod_args_p],
+                                       description=ete_mod.DESC,
                                        formatter_class=argparse.RawDescriptionHelpFormatter)
     mod_args_pp.set_defaults(func=ete_mod.run)
     
     # - ANNOTATE -
     annotate_args_p = subparser.add_parser("annotate", parents=[source_args_p, main_args_p],
-                                       description=toos.annotate.DESC,
+                                       description=ete_annotate.DESC,
                                        formatter_class=argparse.RawDescriptionHelpFormatter)
     annotate_args_p.set_defaults(func=ete_annotate.run)
     ete_annotate.populate_args(annotate_args_p)
@@ -117,7 +119,7 @@ def main():
     LOG_LEVEL = args.verbosity 
     
     if hasattr(args, "src_trees"):
-        args.src_tree_iterator = tree_iterator(args.src_trees)
+        args.src_tree_iterator = tree_iterator(args)
         
     elif hasattr(args, "search"):
         if not args.search:

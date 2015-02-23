@@ -1,3 +1,5 @@
+from common import dump
+
 DESC = ""
 
 def populate_args(generate_args_p):

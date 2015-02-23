@@ -1,4 +1,4 @@
-from ete_dev_tools.common import *
+from common import log
 
 DESC = ""
 FACES = []
@@ -28,8 +28,7 @@ COLOR_RANKS = { "superclass": "#a6cee3", "class": "#a6cee3", "subclass": "#a6cee
 
                 
 
-def populate_args(view_args_p)
-
+def populate_args(view_args_p):
     view_args_p.add_argument("--face", action="append",
                              help="adds a face to the selected nodes. In example --face 'value:@dist, pos:b-top, color:red, size:10, if:@dist>0.9' ")
     

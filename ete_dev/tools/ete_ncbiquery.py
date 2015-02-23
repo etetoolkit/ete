@@ -1,6 +1,6 @@
 DESC = ""
 
-def populate_arguments(ncbi_args_p):
+def populate_args(ncbi_args_p):
     ncbi_args = ncbi_args_p.add_argument_group('NCBI GENERAL OPTIONS')
 
     ncbi_args.add_argument("--search", dest="search", nargs="+", help="A list of taxid or species names")
