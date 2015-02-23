@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 import sys
-import argparse
+TOOLSPATH = os.path.split(os.path.realpath(__file__))[0]
+sys.path.insert(0, TOOLSPATH)
 
+import argparse
 import ete_split, ete_expand, ete_annotate, ete_ncbiquery, ete_view, ete_generate, ete_mod, ete_extract, ete_compare
 import common
 from common import log
