@@ -1,4 +1,5 @@
 from common import dump
+from string import strip
 
 DESC = ""
 def populate_args(annotate_args_p):

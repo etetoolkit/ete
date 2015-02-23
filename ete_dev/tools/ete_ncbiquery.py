@@ -1,3 +1,5 @@
+from common import log, dump
+
 DESC = ""
 
 def populate_args(ncbi_args_p):

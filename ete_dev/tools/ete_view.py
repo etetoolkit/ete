@@ -1,4 +1,5 @@
-from common import log
+from common import log, POSNAMES, node_matcher
+from string import strip
 
 DESC = ""
 FACES = []

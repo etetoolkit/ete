@@ -1,3 +1,5 @@
+from common import as_str, shorten_str
+
 DESC = """
  - ete compare -
  

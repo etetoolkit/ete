@@ -1,0 +1,4 @@
+A,B	suppressor
+A	suppressor A
+C	suppressor C
+A,C	Root function
