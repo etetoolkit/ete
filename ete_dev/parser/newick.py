@@ -111,16 +111,21 @@ def format_node(node, node_type, format):
         container2 = NW_FORMAT[format][1][0]
         converterFn1 = NW_FORMAT[format][0][1]
         converterFn2 = NW_FORMAT[format][1][1]
+        flexible1 = NW_FORMAT[format][0][2]
     else:
         container1 = NW_FORMAT[format][2][0]
         container2 = NW_FORMAT[format][3][0]
         converterFn1 = NW_FORMAT[format][2][1]
         converterFn2 = NW_FORMAT[format][3][1]
+        flexible1 = NW_FORMAT[format][2][2]
 
     if converterFn1 == str:
         try:
             FIRST_PART = re.sub("["+_ILEGAL_NEWICK_CHARS+"]", "_", \
                                   str(getattr(node, container1)))
+            if not FIRST_PART and container1 == 'name' and not flexible1:
+                FIRST_PART = "NoName"
+            
         except (AttributeError, TypeError):
             FIRST_PART = "?"
 
@@ -129,7 +134,7 @@ def format_node(node, node_type, format):
     else:
         try:
             #FIRST_PART =  "%0.6f" %(converterFn2(getattr(node, container1)))
-            FIRST_PART =  FLOAT_FORMATTER %(converterFn2(getattr(node, container1)))
+            FIRST_PART = FLOAT_FORMATTER %(converterFn2(getattr(node, container1)))
         except (ValueError, TypeError):
             FIRST_PART = "?"
 
@@ -187,8 +192,12 @@ def print_supported_formats():
 
 class NewickError(Exception):
     """Exception class designed for NewickIO errors."""
-    pass
-
+    def __init__(self, value):
+        self.value = value
+        import sys
+        print >>sys.stderr, 'error: ' + str(self.value)
+        sys.exit(-1)
+        
 def read_newick(newick, root_node=None, format=0):
     """ Reads a newick tree from either a string or a file, and returns
     an ETE tree structure.
@@ -216,20 +225,18 @@ def read_newick(newick, root_node=None, format=0):
             return _read_node_data(nw, root_node, "single", format)
             
         elif not nw.startswith('(') or not nw.endswith(';'):
-            raise NewickError, \
-            'Unexisting tree file or Malformed newick tree structure.'
+            raise NewickError('Unexisting tree file or Malformed newick tree structure.')
         else:
             return _read_newick_from_string(nw, root_node, format)
 
     else:
-        raise NewickError, \
-            "'newick' argument must be either a filename or a newick string."
+        raise NewickError("'newick' argument must be either a filename or a newick string.")
 
 def _read_newick_from_string(nw, root_node, format):
     """ Reads a newick string in the New Hampshire format. """
 
     if nw.count('(') != nw.count(')'):
-        raise NewickError, 'Parentheses do not match. Broken tree structure'
+        raise NewickError('Parentheses do not match. Broken tree structure')
 
     # white spaces and separators are removed
     nw = re.sub("[\n\r\t]+", "", nw)
@@ -345,7 +352,7 @@ def _read_node_data(subnw, current_node, node_type, format):
         data = data.groups()
         # This prevents ignoring errors even in flexible nodes:
         if subnw and data[0] is None and data[1] is None and data[2] is None:
-            raise NewickError('Unexpected newick format [%s]' %subnw)
+            raise NewickError("Unexpected newick format '%s'" %subnw)
         
         if data[0] is not None and data[0] != '':
             node.add_feature(container1, converterFn1(data[0].strip()))
@@ -357,7 +364,7 @@ def _read_node_data(subnw, current_node, node_type, format):
                 and data[2].startswith("[&&NHX"):
             _parse_extra_features(node, data[2])
     else:
-        raise NewickError, "Unexpected node format:\n\t"+ subnw[0:50] + "[%s]" %format
+        raise NewickError("Unexpected newick format '%s' " %subnw[0:50])
     return
 
 # def write_newick_recursive(node, features=None, format=1, _is_root=True):

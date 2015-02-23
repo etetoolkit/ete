@@ -2186,7 +2186,7 @@ class TreeNode(object):
     #         all_partitions.add(p2)
     #     return all_partitions
 
-    def convert_to_ultrametric(self):
+    def convert_to_ultrametric(self, tree_length=None, strategy='balanced'):
         """
         .. versionadded: 2.1 
 
@@ -2196,11 +2196,12 @@ class TreeNode(object):
         0.
         """
 
-        most_distant_leaf, tree_length = self.get_farthest_leaf()
-        for leaf in self:
-            d = leaf.get_distance(self)
-            leaf.dist += (tree_length - d)
-        return 
+        # Could something like this replace the old algorithm? 
+        #most_distant_leaf, tree_length = self.get_farthest_leaf()
+        #for leaf in self:
+        #    d = leaf.get_distance(self)
+        #    leaf.dist += (tree_length - d)
+        #return 
         
         
         

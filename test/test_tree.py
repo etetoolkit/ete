@@ -436,14 +436,14 @@ class Test_Coretype_Tree(unittest.TestCase):
         # Convert tree to a ultrametric topology in which distance from
         # leaf to root is always 100. Two strategies are available:
         # balanced or fixed
-        t.convert_to_ultrametric(200, "balanced")
+        t.convert_to_ultrametric(100, "balanced")
 
         # Print distances from all leaves to root. Due to precision issues
         # with the float type.  Branch lengths may show differences at
         # high precision levels, that's way I round to 6 decimal
         # positions.
         dist = set([round(l.get_distance(t), 6) for l in t.iter_leaves()])
-        self.assertEqual(dist, set([200.0]))
+        self.assertEqual(dist, set([100.0]))
 
     def test_expand_polytomies_rf(self):
         gtree = Tree('((a:1, (b:1, (c:1, d:1):1):1), (e:1, (f:1, g:1):1):1);')
