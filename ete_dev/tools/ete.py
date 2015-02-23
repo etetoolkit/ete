@@ -112,13 +112,16 @@ def main():
     generate_args_p.set_defaults(func=ete_generate.run)
     ete_generate.populate_args(generate_args_p)
 
+    # - build -
+    generate_args_p = subparser.add_parser("build")
+    
 
     # ===================
     #  EXECUTE PROGRAM
     # ===================
     
     args = parser.parse_args()
-
+    
     LOG_LEVEL = args.verbosity 
     
     if hasattr(args, "src_trees"):
@@ -133,4 +136,10 @@ def main():
     args.func(args)
 
 if __name__=="__main__":
-    main()
+    if sys.argv[1] == "build":
+        import phylobuild
+        del sys.argv[1]
+        phylobuild._main()
+        
+    else:
+        main()

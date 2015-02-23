@@ -876,8 +876,8 @@ def hash_names(target_names):
     name2hash = dict([(v, k) for  k,v in hash2name.iteritems()])
     return name2hash, hash2name
 
-
-if __name__ == "__main__":
+   
+def _main():
     if len(sys.argv) > 1:
         _config_path = pjoin(NPRPATH, 'phylobuild.cfg')
         
@@ -1282,3 +1282,6 @@ if __name__ == "__main__":
     
     # Start the application
     app_wrapper(main, args)
+
+if __name__ == "__main__":
+    _main()
