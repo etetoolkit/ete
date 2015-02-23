@@ -136,7 +136,7 @@ def main():
     args.func(args)
 
 if __name__=="__main__":
-    if sys.argv[1] == "build":
+    if len(sys.argv) > 1 and sys.argv[1] == "build":
         import phylobuild
         del sys.argv[1]
         phylobuild._main()
