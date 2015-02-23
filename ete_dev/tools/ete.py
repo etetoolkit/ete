@@ -39,6 +39,12 @@ def tree_iterator(args):
       
         
 def main():
+    if len(sys.argv) > 1 and sys.argv[1] == "build":
+        import phylobuild
+        del sys.argv[1]
+        phylobuild._main()
+        return
+        
     # CREATE REUSABLE PARSER OPTIONS
     
     # main args
@@ -136,10 +142,4 @@ def main():
     args.func(args)
 
 if __name__=="__main__":
-    if len(sys.argv) > 1 and sys.argv[1] == "build":
-        import phylobuild
-        del sys.argv[1]
-        phylobuild._main()
-        
-    else:
-        main()
+    main()

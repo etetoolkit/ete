@@ -149,7 +149,9 @@ try:
         name = "ete_dev",
         version = ete_version,
         packages = find_packages(),
-        scripts = ['bin/ete_dev'],
+
+        entry_points = {"console_scripts":
+                        ["ete_dev = ete_dev.tools.ete.py:main"]}, 
         requires = [],
         
         # Project uses reStructuredText, so ensure that the docutils get
@@ -165,13 +167,11 @@ try:
         maintainer_email = "jhcepas@gmail.com",
         platforms = "OS Independent",
         license = "GPLv3",
-        description = "A python Environment for phylogenetic Tree Exploration",
+        description = "A python Environment for (phylogenetic) Tree Exploration",
         long_description = long_description,
         classifiers = TAGS,
-        provides = ["ete_tools", "ete_dev"],
-        keywords = "bioinformatics phylogeny evolution phylogenomics genomics" 
-        " tree clustering phylogenetics phylogenetic ete orthology" 
-        " paralogy",
+        provides = ["ete_dev"],
+        keywords = "Tree handling, manipulation, analysis and visualization",
         url = "http://etetoolkit.org",
         download_url = "http://etetoolkit.org/static/releases/ete2/",
     )
