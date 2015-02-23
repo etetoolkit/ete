@@ -62,6 +62,9 @@ from time import ctime, time
 # This avoids installing phylobuild_lib module. npr script will find it in the
 # same directory in which it is
 NPRPATH = os.path.split(os.path.realpath(__file__))[0]
+APPSPATH = None
+args = None
+
 sys.path.insert(0, NPRPATH)
 
 from phylobuild_lib import argparse
@@ -878,6 +881,8 @@ def hash_names(target_names):
 
    
 def _main():
+    global NPRPATH, APPSPATH, args
+    
     if len(sys.argv) > 1:
         _config_path = pjoin(NPRPATH, 'phylobuild.cfg')
         
