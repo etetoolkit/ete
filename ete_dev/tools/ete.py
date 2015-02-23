@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import sys
+import os
 TOOLSPATH = os.path.split(os.path.realpath(__file__))[0]
 sys.path.insert(0, TOOLSPATH)
 
