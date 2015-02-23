@@ -31,9 +31,12 @@ def ete_codeml(args):
 """            
             
 def tree_iterator(args):        
-    if not args.src_trees:
+    if not args.src_trees and not sys.stdin.isatty():
         log.debug("Reading trees from standard input...")
         args.src_trees = sys.stdin
+    elif not args.src_trees:
+        log.error("At least on tree required as input (i.e --src_trees ) ")
+        sys.exit(-1)
     
     for stree in args.src_trees:
         # CHECK WHAT is needed before process the main command, allows mods before analyses        
@@ -136,7 +139,7 @@ def main():
         args.src_tree_iterator = tree_iterator(args)
         
     elif hasattr(args, "search"):
-        if not args.search:
+        if not args.search and not sys.stdin.isatty():
             log.debug("Reading taxa from standard input...")
             args.search = sys.stdin 
         

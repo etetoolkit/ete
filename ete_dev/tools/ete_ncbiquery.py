@@ -1,3 +1,4 @@
+import sys
 from common import log, dump
 
 DESC = ""
@@ -59,7 +60,11 @@ def run(args):
 
     all_taxids = {}
     all_names = set()
-    queries = []    
+    queries = []
+
+    if not args.search:
+        log.error('Search terms should be provided (i.e. --search) ')
+        sys.exit(-1)
     for n in args.search:
         queries.append(n)
         try:
