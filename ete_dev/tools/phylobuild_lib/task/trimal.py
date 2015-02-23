@@ -4,10 +4,10 @@ import sys
 import logging
 log = logging.getLogger("main")
 
-from nprlib.master_task import AlgCleanerTask
-from nprlib.master_job import Job
-from nprlib.utils import SeqGroup, GLOBALS, TRIMAL_CITE, hascontent, DATATYPES, pjoin
-from nprlib import db
+from phylobuild_lib.master_task import AlgCleanerTask
+from phylobuild_lib.master_job import Job
+from phylobuild_lib.utils import SeqGroup, GLOBALS, TRIMAL_CITE, hascontent, DATATYPES, pjoin
+from phylobuild_lib import db
 
 __all__ = ["Trimal"]
 

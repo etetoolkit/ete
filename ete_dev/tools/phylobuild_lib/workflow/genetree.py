@@ -3,15 +3,15 @@ import re
 import commands
 import logging
 
-from nprlib.task import TreeMerger, Msf, DummyTree
-from nprlib.errors import DataError
-from nprlib.utils import (GLOBALS, rpath, pjoin, pexist, generate_runid, 
+from phylobuild_lib.task import TreeMerger, Msf, DummyTree
+from phylobuild_lib.errors import DataError
+from phylobuild_lib.utils import (GLOBALS, rpath, pjoin, pexist, generate_runid, 
                           DATATYPES, GAP_CHARS, DEBUG, SeqGroup)
-from nprlib import db
-from nprlib.master_task import register_task_recursively
-from nprlib.workflow.common import (IterConfig, get_next_npr_node,
+from phylobuild_lib import db
+from phylobuild_lib.master_task import register_task_recursively
+from phylobuild_lib.workflow.common import (IterConfig, get_next_npr_node,
                                     process_new_tasks, get_iternumber)
-from nprlib.logger import logindent
+from phylobuild_lib.logger import logindent
 log = logging.getLogger("main")
 
 def annotate_node(t, final_task):

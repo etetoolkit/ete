@@ -3,13 +3,13 @@ import logging
 import os
 log = logging.getLogger("main")
 
-from nprlib.master_task import TreeMergeTask
-from nprlib.master_job import Job
-from nprlib.utils import (load_node_size, PhyloTree, SeqGroup, generate_id,
+from phylobuild_lib.master_task import TreeMergeTask
+from phylobuild_lib.master_job import Job
+from phylobuild_lib.utils import (load_node_size, PhyloTree, SeqGroup, generate_id,
                           NPR_TREE_STYLE, NodeStyle, DEBUG,
                           faces, pjoin, GLOBALS)
-from nprlib import db
-from nprlib.errors import TaskError
+from phylobuild_lib import db
+from phylobuild_lib.errors import TaskError
 
 __all__ = ["TreeMerger"]
 

@@ -3,12 +3,12 @@ import logging
 from collections import defaultdict
 log = logging.getLogger("main")
 
-from nprlib.task import Msf
-from nprlib.master_task import ConcatAlgTask
-from nprlib.master_job import Job
-from nprlib.utils import SeqGroup, GLOBALS, generate_runid, strip, pexist, md5
-from nprlib import db
-from nprlib.errors import TaskError
+from phylobuild_lib.task import Msf
+from phylobuild_lib.master_task import ConcatAlgTask
+from phylobuild_lib.master_job import Job
+from phylobuild_lib.utils import SeqGroup, GLOBALS, generate_runid, strip, pexist, md5
+from phylobuild_lib import db
+from phylobuild_lib.errors import TaskError
 
 __all__ = ["ConcatAlg"]
 
@@ -44,7 +44,7 @@ class ConcatAlg(ConcatAlgTask):
         
     def load_jobs(self):
         # I want a single phylognetic tree for each cog
-        from nprlib.workflow.genetree import pipeline
+        from phylobuild_lib.workflow.genetree import pipeline
         
         for co in self.cogs:
             # Register a new msf task for each COG, using the same

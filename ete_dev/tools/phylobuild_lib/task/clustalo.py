@@ -3,10 +3,10 @@ import sys
 import logging
 log = logging.getLogger("main")
 
-from nprlib.master_task import AlgTask
-from nprlib.master_job import Job
+from phylobuild_lib.master_task import AlgTask
+from phylobuild_lib.master_job import Job
 
-from nprlib.utils import (read_fasta, OrderedDict, GLOBALS, CLUSTALO_CITE, pjoin)
+from phylobuild_lib.utils import (read_fasta, OrderedDict, GLOBALS, CLUSTALO_CITE, pjoin)
 
 __all__ = ["Clustalo"]
 

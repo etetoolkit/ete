@@ -3,9 +3,9 @@ import re
 import logging
 log = logging.getLogger("main")
 
-from nprlib.master_task import ModelTesterTask
-from nprlib.master_job import Job
-from nprlib.utils import basename, PhyloTree, GLOBALS
+from phylobuild_lib.master_task import ModelTesterTask
+from phylobuild_lib.master_job import Job
+from phylobuild_lib.utils import basename, PhyloTree, GLOBALS
 
 __all__ = ["Prottest"]
 

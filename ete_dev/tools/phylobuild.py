@@ -59,25 +59,25 @@ log = None
 import numpy
 from time import ctime, time
 
-# This avoids installing nprlib module. npr script will find it in the
+# This avoids installing phylobuild_lib module. npr script will find it in the
 # same directory in which it is
 NPRPATH = os.path.split(os.path.realpath(__file__))[0]
 sys.path.insert(0, NPRPATH)
 
-from nprlib import argparse
-from nprlib.utils import (strip, SeqGroup, generate_runid,  AA, NT,
+from phylobuild_lib import argparse
+from phylobuild_lib.utils import (strip, SeqGroup, generate_runid,  AA, NT,
                           GLOBALS, encode_seqname, pjoin, pexist,
                           hascontent, clear_tempdir, ETE_CITE, colorify,
                           GENCODE, silent_remove)
-from nprlib.errors import ConfigError, DataError
-from nprlib.master_task import Task
-from nprlib.interface import app_wrapper
-from nprlib.scheduler import schedule
-from nprlib import db
-from nprlib import apps
-from nprlib.logger import logindent
-from nprlib.citation import Citator
-from nprlib.configcheck import is_file, is_dir, check_config, list_workflows, block_detail, list_apps
+from phylobuild_lib.errors import ConfigError, DataError
+from phylobuild_lib.master_task import Task
+from phylobuild_lib.interface import app_wrapper
+from phylobuild_lib.scheduler import schedule
+from phylobuild_lib import db
+from phylobuild_lib import apps
+from phylobuild_lib.logger import logindent
+from phylobuild_lib.citation import Citator
+from phylobuild_lib.configcheck import is_file, is_dir, check_config, list_workflows, block_detail, list_apps
 
 APPSPATH =  pjoin(NPRPATH, "ext_apps/")
 
@@ -167,7 +167,7 @@ def main(args):
     
     # Check for config file overwriting
     clearname = os.path.basename(args.configfile)        
-    local_conf_file = pjoin(base_dir, "config.cfg")
+    local_conf_file = pjoin(base_dir, "phylobuild.cfg")
     if pexist(base_dir):
         if hascontent(local_conf_file):
             if not filecmp.cmp(args.configfile, local_conf_file):
@@ -354,9 +354,9 @@ def main(args):
     TARGET_CLADES.discard('')
 
     if WORKFLOW_TYPE == 'genetree':
-        from nprlib.workflow.genetree import pipeline
+        from phylobuild_lib.workflow.genetree import pipeline
     elif WORKFLOW_TYPE == 'supermatrix':
-        from nprlib.workflow.supermatrix import pipeline
+        from phylobuild_lib.workflow.supermatrix import pipeline
 
     #if args.arch == "auto":
     #    arch = "64 " if sys.maxsize > 2**32 else "32"
@@ -879,7 +879,7 @@ def hash_names(target_names):
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
-        _config_path = pjoin(NPRPATH, 'config.cfg')
+        _config_path = pjoin(NPRPATH, 'phylobuild.cfg')
         
         if sys.argv[1] == "check":
             APPSPATH =  os.path.join(NPRPATH, "ext_apps/")
@@ -947,7 +947,7 @@ if __name__ == "__main__":
                                    ))
 
     input_group.add_argument("-c", "--config", dest="configfile",
-                             type=is_file, default=NPRPATH+'/config.cfg',
+                             type=is_file, default=NPRPATH+'/phylobuild.cfg',
                              help="Custom configuration file.")
     
     

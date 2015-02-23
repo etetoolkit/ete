@@ -6,10 +6,10 @@ import re
 import logging
 log = logging.getLogger("main")
 
-from nprlib.master_task import TreeTask
-from nprlib.master_job import Job
-from nprlib.utils import basename, PhyloTree, OrderedDict, GLOBALS, PHYML_CITE, DATATYPES
-from nprlib import db
+from phylobuild_lib.master_task import TreeTask
+from phylobuild_lib.master_job import Job
+from phylobuild_lib.utils import basename, PhyloTree, OrderedDict, GLOBALS, PHYML_CITE, DATATYPES
+from phylobuild_lib import db
 
 __all__ = ["Phyml"]
 

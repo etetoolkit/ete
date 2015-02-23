@@ -7,11 +7,11 @@ from glob import glob
 
 log = logging.getLogger("main")
 
-from nprlib.master_task import TreeTask
-from nprlib.master_job import Job
-from nprlib.utils import (basename, Tree, OrderedDict,
+from phylobuild_lib.master_task import TreeTask
+from phylobuild_lib.master_job import Job
+from phylobuild_lib.utils import (basename, Tree, OrderedDict,
                           GLOBALS, RAXML_CITE, pjoin, DATATYPES, md5)
-from nprlib import db
+from phylobuild_lib import db
 
 __all__ = ["Raxml"]
 

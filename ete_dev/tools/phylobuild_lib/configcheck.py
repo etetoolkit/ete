@@ -1,8 +1,8 @@
 import os
-from nprlib.configobj import ConfigObj
-from nprlib.errors import ConfigError
-from nprlib.utils import colorify
-from nprlib.apps import APP2CLASS
+from phylobuild_lib.configobj import ConfigObj
+from phylobuild_lib.errors import ConfigError
+from phylobuild_lib.utils import colorify
+from phylobuild_lib.apps import APP2CLASS
 
 def list_workflows(config):
     wtype_legend = {

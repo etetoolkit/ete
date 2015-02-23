@@ -1,15 +1,15 @@
 import logging
 from collections import defaultdict
 
-from nprlib.task import TreeMerger, DummyTree
-from nprlib.utils import (GLOBALS, tobool, generate_runid, pjoin, rpath, DATATYPES, md5,
+from phylobuild_lib.task import TreeMerger, DummyTree
+from phylobuild_lib.utils import (GLOBALS, tobool, generate_runid, pjoin, rpath, DATATYPES, md5,
                           dict_string, ncbi, colorify)
 
-from nprlib.errors import DataError, TaskError
-from nprlib import db
-from nprlib.workflow.common import (process_new_tasks, IterConfig,
+from phylobuild_lib.errors import DataError, TaskError
+from phylobuild_lib import db
+from phylobuild_lib.workflow.common import (process_new_tasks, IterConfig,
                                     get_next_npr_node, get_iternumber)
-from nprlib.logger import logindent
+from phylobuild_lib.logger import logindent
 
 log = logging.getLogger("main")
 

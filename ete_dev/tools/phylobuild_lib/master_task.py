@@ -4,13 +4,13 @@ import traceback
 log = logging.getLogger("main")
 from collections import defaultdict
 
-from nprlib.logger import logindent
-from nprlib.utils import (md5, merge_arg_dicts, PhyloTree, SeqGroup,
+from phylobuild_lib.logger import logindent
+from phylobuild_lib.utils import (md5, merge_arg_dicts, PhyloTree, SeqGroup,
                           checksum, read_time_file, generate_runid,
                           GLOBALS, DATATYPES)
-from nprlib.master_job import Job
-from nprlib.errors import TaskError
-from nprlib import db
+from phylobuild_lib.master_job import Job
+from phylobuild_lib.errors import TaskError
+from phylobuild_lib import db
 import shutil
 
 isjob = lambda j: isinstance(j, Job)

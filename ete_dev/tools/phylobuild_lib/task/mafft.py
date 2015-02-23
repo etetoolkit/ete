@@ -2,10 +2,10 @@ import os
 import logging
 log = logging.getLogger("main")
 
-from nprlib.master_task import AlgTask
-from nprlib.master_job import Job
-from nprlib.utils import SeqGroup, OrderedDict, GLOBALS, MAFFT_CITE, pjoin
-from nprlib import db
+from phylobuild_lib.master_task import AlgTask
+from phylobuild_lib.master_job import Job
+from phylobuild_lib.utils import SeqGroup, OrderedDict, GLOBALS, MAFFT_CITE, pjoin
+from phylobuild_lib import db
 
 __all__ = ["Mafft"]
 

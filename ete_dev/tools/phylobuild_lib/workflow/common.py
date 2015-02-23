@@ -3,12 +3,12 @@ import logging
 
 import numpy
 
-from nprlib.utils import DEBUG, GLOBALS, SeqGroup, tobool, sec2time, read_time_file
-from nprlib.apps import APP2CLASS
-from nprlib import task as all_tasks
-from nprlib import db
-from nprlib.errors import ConfigError, DataError, TaskError
-from nprlib.master_task import register_task_recursively, isjob
+from phylobuild_lib.utils import DEBUG, GLOBALS, SeqGroup, tobool, sec2time, read_time_file
+from phylobuild_lib.apps import APP2CLASS
+from phylobuild_lib import task as all_tasks
+from phylobuild_lib import db
+from phylobuild_lib.errors import ConfigError, DataError, TaskError
+from phylobuild_lib.master_task import register_task_recursively, isjob
 
 log = logging.getLogger("main")
                 

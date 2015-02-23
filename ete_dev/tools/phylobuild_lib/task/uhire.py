@@ -2,9 +2,9 @@ import os
 import logging
 log = logging.getLogger("main")
 
-from nprlib.master_task import AlgTask
-from nprlib.master_job import Job
-from nprlib.utils import SeqGroup, OrderedDict
+from phylobuild_lib.master_task import AlgTask
+from phylobuild_lib.master_job import Job
+from phylobuild_lib.utils import SeqGroup, OrderedDict
 
 __all__ = ["Uhire"]
 

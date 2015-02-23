@@ -10,9 +10,9 @@ from textwrap import TextWrapper
 import Queue
 import threading
 
-from nprlib.logger import get_main_log
-from nprlib.utils import GLOBALS, clear_tempdir, terminate_job_launcher, pjoin, pexist
-from nprlib.errors import *
+from phylobuild_lib.logger import get_main_log
+from phylobuild_lib.utils import GLOBALS, clear_tempdir, terminate_job_launcher, pjoin, pexist
+from phylobuild_lib.errors import *
 
 try:
     import curses

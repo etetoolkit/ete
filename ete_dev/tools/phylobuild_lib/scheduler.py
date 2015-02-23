@@ -10,17 +10,17 @@ import re
 import logging
 log = logging.getLogger("main")
 
-from nprlib.logger import set_logindent, logindent, get_logindent
-from nprlib.utils import (generate_id, PhyloTree, NodeStyle, Tree,
+from phylobuild_lib.logger import set_logindent, logindent, get_logindent
+from phylobuild_lib.utils import (generate_id, PhyloTree, NodeStyle, Tree,
                           DEBUG, NPR_TREE_STYLE, faces, GLOBALS,
                           basename, pjoin, ask, send_mail, pid_up, SeqGroup)
-from nprlib.errors import ConfigError, TaskError
-from nprlib import db, sge
-from nprlib.master_task import (isjob, update_task_states_recursively,
+from phylobuild_lib.errors import ConfigError, TaskError
+from phylobuild_lib import db, sge
+from phylobuild_lib.master_task import (isjob, update_task_states_recursively,
                                 store_task_data_recursively,
                                 remove_task_dir_recursively,
                                 update_job_status)
-from nprlib.workflow.common import assembly_tree, get_cmd_log
+from phylobuild_lib.workflow.common import assembly_tree, get_cmd_log
 
 def debug(_signal, _frame):
     import pdb
@@ -380,7 +380,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
                         for lf in main_tree:
                             lf.add_feature("sequence", alg.get_seq(lf.safename))
                         try:
-                            from nprlib.visualize import draw_tree
+                            from phylobuild_lib.visualize import draw_tree
                             draw_tree(main_tree, GLOBALS[configid], final_tree_file+".png")
                         except Exception, e:
                             log.warning('@@8:something went wrong when generating the tree image. Try manually :(@@1:')

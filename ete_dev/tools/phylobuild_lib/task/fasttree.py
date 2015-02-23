@@ -6,11 +6,11 @@ import shutil
 import logging
 log = logging.getLogger("main")
 
-from nprlib.master_task import TreeTask
-from nprlib.master_job import Job
-from nprlib.utils import (basename, Tree, OrderedDict, GLOBALS,
+from phylobuild_lib.master_task import TreeTask
+from phylobuild_lib.master_job import Job
+from phylobuild_lib.utils import (basename, Tree, OrderedDict, GLOBALS,
                           FASTTREE_CITE, DATATYPES, pjoin)
-from nprlib import db
+from phylobuild_lib import db
 __all__ = ["FastTree"]
 
 class FastTree(TreeTask):

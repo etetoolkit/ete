@@ -8,11 +8,11 @@ import time
 log = logging.getLogger("main")
 
 
-from nprlib.master_task import CogSelectorTask
-from nprlib.errors import DataError
-from nprlib.utils import (GLOBALS, print_as_table, generate_node_ids,
+from phylobuild_lib.master_task import CogSelectorTask
+from phylobuild_lib.errors import DataError
+from phylobuild_lib.utils import (GLOBALS, print_as_table, generate_node_ids,
                           encode_seqname, md5, pjoin)
-from nprlib import db
+from phylobuild_lib import db
 
 __all__ = ["BrhCogCreator"]
 

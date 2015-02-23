@@ -9,9 +9,9 @@ from string import strip, split
 import logging
 log = logging.getLogger("main")
 
-from nprlib import db
-from nprlib.errors import SgeError
-from nprlib.utils import GLOBALS
+from phylobuild_lib import db
+from phylobuild_lib.errors import SgeError
+from phylobuild_lib.utils import GLOBALS
 OK_PATTERN = 'Your job-array ([\d]+).\d+\-\d+:\d+ \("[^"]*"\) has been submitted'
 DEFAULT_SGE_CELL = "cgenomics"
 

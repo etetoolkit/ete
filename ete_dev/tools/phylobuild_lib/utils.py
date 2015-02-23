@@ -99,7 +99,7 @@ Methods. 2012 Jul 30;9(8):772."""
 try: 
     from collections import OrderedDict
 except ImportError: 
-    from nprlib.ordereddict import OrderedDict
+    from phylobuild_lib.ordereddict import OrderedDict
     
 # ete_dev should be added to the python path by the npr script
 from ete_dev.phylo import PhyloTree
