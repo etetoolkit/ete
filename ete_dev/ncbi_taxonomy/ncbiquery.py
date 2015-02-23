@@ -205,7 +205,7 @@ class NCBITaxa(object):
         of sub-species or strain leaf nodes.
 
         """
-        from ete2 import PhyloTree
+        from ete_dev import PhyloTree
         sp2track = {}
         elem2node = {}
         for sp in taxids:
