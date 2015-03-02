@@ -20,20 +20,21 @@ from nexml import Nexml, NexmlTree
 from evol import EvolTree
 
 
-
 try:
     from coretype.arraytable import *
 except ImportError, e:
-    warn("Clustering module could not be loaded")
-    warn(e)
+    pass
+    #warn("Clustering module could not be loaded. Is numpy installed?")
+    #warn(e)
 else:
     from clustering.clustertree import *
 
 try:
     from phylomedb.phylomeDB3 import *
 except ImportError, e:
-    warn("MySQLdb module could not be loaded")
-    warn(e)
+    pass
+    #warn("MySQLdb module could not be loaded")
+    #warn(e)
 
 try:
     from treeview.main import *
@@ -42,9 +43,12 @@ try:
     from treeview import layouts
     from treeview.svg_colors import *
 except ImportError, e:
-    warn("Treeview module could not be loaded")
-    warn(e)
+    pass
+    #warn("Treeview module could not be loaded")
+    #warn(e)
 
+__version__ = '2.3.0beta'
+    
 # Do not modify the following line. It will be checked during
 # installation
-__ETEID__="e368c84d534ec726591b35fd7cbedb5f"
+__ETEID__="d4dda7ba3ff89460c6f5d0cbe15fc3d2"

@@ -6,9 +6,9 @@ import os
 try:
     import numpy
 except ImportError:
-    mean = numpy.mean
-else:
     mean = lambda v: sum(v)/len(v)
+else:
+    mean = numpy.mean
 
 # CONVERT shell colors to the same curses palette
 SHELL_COLORS = {

@@ -18,6 +18,7 @@ except ImportError:
 # about number of users/installations. The id generated is just a
 # random unique text string. This installation script does not collect
 # any personal information about you or your system.
+ETEID = None
 try:
     # Avoids importing a previously generated id
     _wd = os.getcwd()
@@ -34,14 +35,12 @@ try:
 
     if _fix_path:
         sys.path.insert(0, _wd)
-
 except ImportError:
     ETEID = None
+    
 if not ETEID:
     ETEID = hashlib.md5(str(time.time()+random.random())).hexdigest()
 
-# Scipy is no longer necessary.
-#    ["scipy", "Scipy is only required for the clustering validation functions.", 0],
 PYTHON_DEPENDENCIES = [
     ["numpy", "Numpy is required for the ArrayTable and ClusterTree classes.", 0],
     ["MySQLdb", "MySQLdb only is required by the PhylomeDB access API.", 0],
@@ -151,7 +150,7 @@ try:
         packages = find_packages(),
 
         entry_points = {"console_scripts":
-                        ["ete2 = ete2.tools.ete.py:main"]}, 
+                        ["ete = ete2.tools.ete:main"]}, 
         requires = [],
         
         # Project uses reStructuredText, so ensure that the docutils get
