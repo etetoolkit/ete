@@ -35,7 +35,7 @@ def tree_iterator(args):
         log.debug("Reading trees from standard input...")
         args.src_trees = sys.stdin
     elif not args.src_trees:
-        log.error("At least on tree required as input (i.e --src_trees ) ")
+        log.error("At least one tree is required as input (i.e --src_trees ) ")
         sys.exit(-1)
     
     for stree in args.src_trees:
