@@ -2,7 +2,7 @@
 #
 #
 # This file is part of the Environment for Tree Exploration program
-# (ETE).  http://ete.cgenomics.org
+# (ETE).  http://etetoolkit.org
 #  
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
 # 
-# ETE is distributed under the GPL copyleft license (2008-2011).  
+# ETE is distributed under the GPL copyleft license (2008-2015).  
 #
 # If you make use of ETE in published work, please cite:
 #
@@ -30,7 +30,7 @@
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
 # Note that extra references to the specific methods implemented in 
-# the toolkit are available in the documentation. 
+# the toolkit may be available in the documentation. 
 # 
 # More info at http://etetoolkit.org. Contact: huerta@embl.de
 #
