@@ -1,4 +1,3 @@
-import numpy 
 import re
 import commands
 import logging
@@ -6,7 +5,7 @@ import logging
 from phylobuild_lib.task import TreeMerger, Msf, DummyTree
 from phylobuild_lib.errors import DataError
 from phylobuild_lib.utils import (GLOBALS, rpath, pjoin, pexist, generate_runid, 
-                          DATATYPES, GAP_CHARS, DEBUG, SeqGroup)
+                                  DATATYPES, GAP_CHARS, DEBUG, SeqGroup, _min, _max, _std, _mean, _median)
 from phylobuild_lib import db
 from phylobuild_lib.master_task import register_task_recursively
 from phylobuild_lib.workflow.common import (IterConfig, get_next_npr_node,
@@ -82,8 +81,8 @@ def get_trimal_conservation(alg_file, trimal_bin):
     for line in output.split("\n")[3:]:
         a, b = map(float, line.split())
         conservation.append(b)
-    mean = numpy.mean(conservation)
-    std = numpy.std(conservation)
+    mean = _mean(conservation)
+    std = _std(conservation)
     return mean, std
 
     

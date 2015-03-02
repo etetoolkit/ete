@@ -1,4 +1,3 @@
-import numpy
 from StringIO import StringIO
 import cPickle
 from string import strip
@@ -45,8 +44,8 @@ class CogSelector(CogSelectorTask):
             r = -1 * cmp(len(c1), len(c2))
             if r == 0:
                 # finds the cog including the less represented species
-                c1_repr = numpy.min([sp2cogs[_sp] for _sp, _seq in c1])
-                c2_repr = numpy.min([sp2cogs[_sp] for _sp, _seq in c2])
+                c1_repr = _min([sp2cogs[_sp] for _sp, _seq in c1])
+                c2_repr = _min([sp2cogs[_sp] for _sp, _seq in c2])
                 r = cmp(c1_repr, c2_repr)
                 if r == 0:
                     return cmp(sorted(c1), sorted(c2))
@@ -56,8 +55,8 @@ class CogSelector(CogSelectorTask):
                 return r
 
         def sort_cogs_by_sp_repr(c1, c2):
-            c1_repr = numpy.min([sp2cogs[_sp] for _sp, _seq in c1])
-            c2_repr = numpy.min([sp2cogs[_sp] for _sp, _seq in c2])
+            c1_repr = _min([sp2cogs[_sp] for _sp, _seq in c1])
+            c2_repr = _min([sp2cogs[_sp] for _sp, _seq in c2])
             r = cmp(c1_repr, c2_repr)
             if r == 0:
                 r = -1 * cmp(len(c1), len(c2))
@@ -136,7 +135,7 @@ class CogSelector(CogSelectorTask):
             log.log(28, " % 30s species present in % 6d COGs (%0.1f%%)" %(sp, ncogs, 100 * ncogs/float(len(self.cogs))))
                 
         log.log(28, " %d COGs selected with at least %d species out of %d" %(len(self.cogs), min_species, len(all_species)))
-        log.log(28, " Average COG size %0.1f/%0.1f +- %0.1f" %(numpy.mean(sizes), numpy.median(sizes), numpy.std(sizes)))
+        log.log(28, " Average COG size %0.1f/%0.1f +- %0.1f" %(_mean(sizes), _median(sizes), _std(sizes)))
 
         # Some consistency checks
         missing_sp = (all_species) - set(sp_repr.keys())

@@ -18,6 +18,42 @@ import datetime
 import re
 import shutil
 from glob import glob
+
+try:
+    import numpy
+except ImportError:
+    def _mean(nums):
+        sum = 0.0
+        for num in nums:
+            sum = sum + num
+        return sum / len(nums)
+
+    def _std(nums, xbar):
+        sumDevSq = 0.0
+        for num in nums:
+            dev = num - xbar
+            sumDevSq = sumDevSq + dev * dev
+        return sqrt(sumDevSq/(len(nums)-1))
+            
+    def _median(nums):
+        nums.sort()
+        size = len(nums)
+        midPos = size // 2
+        if size % 2 == 0:
+            median = (nums[midPos] + nums[midPos-1]) / 2.0
+        else:
+            median = nums[midPos]
+        return median
+    _max = max
+    _min = min
+else:
+    _std = numpy.std
+    _max = numpy.max
+    _min = numpy.min
+    _mean = numpy.mean
+    _median = numpy.median
+
+
 log = logging.getLogger("main")
 DEBUG = lambda: log.level <= 10
 hascontent = lambda f: pexist(f) and os.path.getsize(f) > 0

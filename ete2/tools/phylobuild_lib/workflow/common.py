@@ -1,9 +1,8 @@
 from collections import defaultdict
 import logging
 
-import numpy
-
-from phylobuild_lib.utils import DEBUG, GLOBALS, SeqGroup, tobool, sec2time, read_time_file
+from phylobuild_lib.utils import (DEBUG, GLOBALS, SeqGroup, tobool, sec2time, read_time_file,
+                                  _max, _min, _mean, _std, _median)
 from phylobuild_lib.apps import APP2CLASS
 from phylobuild_lib import task as all_tasks
 from phylobuild_lib import db
@@ -109,8 +108,8 @@ def get_identity(fname):
         values = states.values()
         if values:
             ident.append(float(max(values))/sum(values))
-    return (numpy.max(ident), numpy.min(ident), 
-            numpy.mean(ident), numpy.std(ident))
+    return (_max(ident), _min(ident), 
+            _mean(ident), _std(ident))
     
 
 def get_seqs_identity(alg, seqs):
@@ -126,8 +125,8 @@ def get_seqs_identity(alg, seqs):
         values = states.values()
         if values:
             ident.append(float(max(values))/sum(values))
-    return (numpy.max(ident), numpy.min(ident), 
-            numpy.mean(ident), numpy.std(ident))
+    return (_max(ident), _min(ident), 
+            _mean(ident), _std(ident))
 
     
 def split_tree(task_tree_node, task_outgroups, main_tree, alg_path, npr_conf, threadid, target_cladeids):
@@ -436,8 +435,8 @@ def select_outgroups(target, n2content, splitterconf):
     sequences:
     """
     
-    name2dist = {"min": numpy.min, "max": numpy.max,
-                 "mean":numpy.mean, "median":numpy.median}
+    name2dist = {"min": _min, "max": _max,
+                 "mean":_mean, "median":_median}
   
     
     #policy = splitterconf["_outgroup_policy"]  # node or leaves

@@ -1,4 +1,3 @@
-import numpy
 from StringIO import StringIO
 import cPickle
 from collections import defaultdict
@@ -7,11 +6,10 @@ import os
 import time
 log = logging.getLogger("main")
 
-
 from phylobuild_lib.master_task import CogSelectorTask
 from phylobuild_lib.errors import DataError
 from phylobuild_lib.utils import (GLOBALS, print_as_table, generate_node_ids,
-                          encode_seqname, md5, pjoin)
+                                  encode_seqname, md5, pjoin, _mean, _median, _max, _min, _std)
 from phylobuild_lib import db
 
 __all__ = ["BrhCogCreator"]
@@ -165,8 +163,8 @@ def brh_cogs(DB, species, missing_factor=0.0, seed_sp=None, min_score=0):
         cogs2 = cogs2[1] # discard seed info        
         cog_sizes1 = [len(cog) for cog in cogs1]
         cog_sizes2 = [len(cog) for cog in cogs2]
-        mx1, mn1, avg1 = numpy.max(cog_sizes1), numpy.min(cog_sizes1), round(numpy.mean(cog_sizes1))
-        mx2, mn2, avg2 = numpy.max(cog_sizes2), numpy.min(cog_sizes2), round(numpy.mean(cog_sizes2))
+        mx1, mn1, avg1 = _max(cog_sizes1), _min(cog_sizes1), round(_mean(cog_sizes1))
+        mx2, mn2, avg2 = _max(cog_sizes2), _min(cog_sizes2), round(_mean(cog_sizes2))
         
         # we want to maximize all these values in the following order:
         for i, j in ((mx1, mx2), (avg1, avg2), (len(cogs1), len(cogs2))):
@@ -180,7 +178,7 @@ def brh_cogs(DB, species, missing_factor=0.0, seed_sp=None, min_score=0):
     lines = []
     for seed, all_cogs in cogs_selection:
         cog_sizes = [len(cog) for cog in all_cogs]
-        mx, mn, avg = max(cog_sizes), min(cog_sizes), round(numpy.mean(cog_sizes))
+        mx, mn, avg = max(cog_sizes), min(cog_sizes), round(_mean(cog_sizes))
         lines.append([seed, mx, mn, avg, len(all_cogs)])
     analysis_txt = StringIO()
     print_as_table(lines[:25], stdout=analysis_txt,
@@ -254,7 +252,7 @@ def brh_cogs2(DB, species, missing_factor=0.0, seed_sp=None, min_score=0):
         size_analysis = []
         for seedname, content in seed2size.iteritems():
             cog_sizes = [size for seq, size in content]
-            mx, avg = numpy.max(cog_sizes), round(numpy.mean(cog_sizes))
+            mx, avg = _max(cog_sizes), round(_mean(cog_sizes))
             size_analysis.append([seedname, mx, avg, len(content)])
         size_analysis.sort(_sort_cogs)                
         #print '\n'.join(map(str, size_analysis))
@@ -405,8 +403,8 @@ def get_best_selection(cogs_selections, species):
                             return 0 
     
     min_score = 0.5
-    max_cogs = numpy.max([len(data[2]) for data in cogs_selections])
-    median_cogs = numpy.median([len(data[2]) for data in cogs_selections])
+    max_cogs = _max([len(data[2]) for data in cogs_selections])
+    median_cogs = _median([len(data[2]) for data in cogs_selections])
 
     cogs_selections.sort(_compare_cog_selection)            
     cogs_selections.reverse()
@@ -439,7 +437,7 @@ def get_best_selection(cogs_selections, species):
                     missing_sp_allowed, \
                     "%d (%0.1f%%)" %(len(set(sp2hits.keys()))+1, 100*float(len(ALL_SPECIES))/(len(sp2hits)+1)) , \
                     len(candidates), \
-                    "%0.1f%% +- %0.1f" %(numpy.mean(sp_percent_coverages), numpy.std(sp_percent_coverages)), \
+                    "%0.1f%% +- %0.1f" %(_mean(sp_percent_coverages), _std(sp_percent_coverages)), \
                     "% 3d (%0.1f%%)" %(min(sp_coverages),100*min(sp_coverages)/float(len(candidates))), \
                     "% 3d (%0.1f%%)" %(max(sp_coverages),100*max(sp_coverages)/float(len(candidates))), \
                     cog_cov,
@@ -485,27 +483,27 @@ def _analyze_cog_selection(all_cogs):
 def cog_info(candidates, sp2hits):
     sp_coverages = [hits/float(len(candidates)) for hits in sp2hits.values()]
     species_covered = len(set(sp2hits.keys()))+1
-    min_cov = numpy.min(sp_coverages)
-    max_cov = numpy.min(sp_coverages)
-    median_cov = numpy.median(sp_coverages)
+    min_cov = _min(sp_coverages)
+    max_cov = _min(sp_coverages)
+    median_cov = _median(sp_coverages)
     return min_cov, max_cov, median_cov
 
 
 def get_cog_score(candidates, sp2hits, max_cogs, all_species):
 
-    cog_cov = numpy.mean([len(cogs) for cogs in candidates])/float(len(sp2hits)+1)
-    cog_mean_cov = numpy.mean([len(cogs)/float(len(sp2hits)) for cogs in candidates]) # numero medio de especies en cada cog
-    cog_min_sp = numpy.min([len(cogs) for cogs in candidates])
+    cog_cov = _mean([len(cogs) for cogs in candidates])/float(len(sp2hits)+1)
+    cog_mean_cov = _mean([len(cogs)/float(len(sp2hits)) for cogs in candidates]) # numero medio de especies en cada cog
+    cog_min_sp = _min([len(cogs) for cogs in candidates])
 
     sp_coverages = [sp2hits.get(sp, 0)/float(len(candidates)) for sp in all_species]
     species_covered = len(set(sp2hits.keys()))+1
 
     nfactor = len(candidates)/float(max_cogs) # Numero de cogs
-    min_cov = numpy.min(sp_coverages) # el coverage de la peor especie
-    max_cov = numpy.min(sp_coverages)
-    median_cov = numpy.median(sp_coverages)
-    cov_std = numpy.std(sp_coverages)
+    min_cov = _min(sp_coverages) # el coverage de la peor especie
+    max_cov = _min(sp_coverages)
+    median_cov = _median(sp_coverages)
+    cov_std = _std(sp_coverages)
 
-    score = numpy.min([nfactor, cog_mean_cov, min_cov])
+    score = _min([nfactor, cog_mean_cov, min_cov])
     return score, min_cov, max_cov, median_cov, cov_std, cog_cov 
 

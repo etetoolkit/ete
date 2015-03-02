@@ -1,4 +1,3 @@
-import numpy
 import logging
 import os
 log = logging.getLogger("main")

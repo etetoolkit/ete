@@ -56,7 +56,6 @@ import filecmp
 import logging
 import tempfile
 log = None
-import numpy
 from time import ctime, time
 
 # This avoids installing phylobuild_lib module. npr script will find it in the
@@ -69,9 +68,9 @@ sys.path.insert(0, NPRPATH)
 
 from phylobuild_lib import argparse
 from phylobuild_lib.utils import (strip, SeqGroup, generate_runid,  AA, NT,
-                          GLOBALS, encode_seqname, pjoin, pexist,
-                          hascontent, clear_tempdir, ETE_CITE, colorify,
-                          GENCODE, silent_remove)
+                                  GLOBALS, encode_seqname, pjoin, pexist,
+                                  hascontent, clear_tempdir, ETE_CITE, colorify,
+                                  GENCODE, silent_remove, _max, _min, _std, _mean, _median)
 from phylobuild_lib.errors import ConfigError, DataError
 from phylobuild_lib.master_task import Task
 from phylobuild_lib.interface import app_wrapper
@@ -817,10 +816,10 @@ def check_seq_integrity(args, target_seqs, visited_seqs, seq2length, seq2unknown
 
     # Show some stats
     all_len = seq2length[source_seqtype].values()
-    max_len = numpy.max(all_len)
-    min_len = numpy.min(all_len)
-    mean_len = numpy.mean(all_len)
-    std_len = numpy.std(all_len)
+    max_len = _max(all_len)
+    min_len = _min(all_len)
+    mean_len = _mean(all_len)
+    std_len = _std(all_len)
     outliers = []
     for v in all_len:
         if abs(mean_len - v) >  (3 * std_len):
