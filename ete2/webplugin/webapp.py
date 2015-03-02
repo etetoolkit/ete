@@ -202,7 +202,7 @@ class WebTreeApplication(object):
 
         self._dump_tree_to_file(t, treeid)
 
-        ete_publi = '<div style="margin:0px;padding:0px;text-align:left;"><a href="http://ete.cgenomics.org" style="font-size:7pt;" target="_blank" >%s</a></div>' %\
+        ete_publi = '<div style="margin:0px;padding:0px;text-align:left;"><a href="http://etetoolkit.org" style="font-size:7pt;" target="_blank" >%s</a></div>' %\
             (version_tag)
         img_html = """<img id="%s" class="ete_tree_img" src="%s" USEMAP="#%s" onLoad='javascript:bind_popup();' onclick='javascript:show_context_menu("%s", "", "%s");' >""" %\
             (treeid, img_url, mapid, treeid, ','.join(map(str, tree_actions)))

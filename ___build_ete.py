@@ -113,13 +113,13 @@ def ask_path(string, default_path):
 
 #Creates a release clone
 # SERVER="jhuerta@cgenomics"
-# SERVER_RELEASES_PATH = "/home/services/web/ete.cgenomics.org/releases/ete2"
-# SERVER_DOC_PATH = "/home/services/web/ete.cgenomics.org/releases/ete2/doc"
+# SERVER_RELEASES_PATH = "/home/services/web/etetoolkit.org/releases/ete2"
+# SERVER_DOC_PATH = "/home/services/web/etetoolkit.org/releases/ete2/doc"
 SERVER="huerta@etetoolkit.embl.de"
 SERVER_RELEASES_PATH = "/var/www/etetoolkit/static/releases/ete2"
 SERVER_DOC_PATH = "/var/www/etetoolkit/static/releases/ete2/doc"
 
-#SERVER_METAPKG_PATH = "/home/services/web/ete.cgenomics.org/releases/ete2/metapkg"
+#SERVER_METAPKG_PATH = "/home/services/web/etetoolkit.org/releases/ete2/metapkg"
 #METAPKG_JAIL_PATH = "/home/jhuerta/_Devel/ete_metapackage/etepkg_CheckBeforeRm"
 #METAPKG_PATH = "/home/jhuerta/_Devel/ete_metapackage"
 RELEASES_BASE_PATH = "/tmp"
@@ -279,7 +279,7 @@ if options.doc:
 
     copydoc= ask("Update CGENOMICS documentation?", ["y","n"])
     if copydoc=="y":
-        _ex("cd %s; rsync -arv doc/html/ jhuerta@cgenomics:/data/services/web/ete.cgenomics.org/doc/%s/" %\
+        _ex("cd %s; rsync -arv doc/html/ jhuerta@cgenomics:/data/services/web/etetoolkit.org/doc/%s/" %\
                 (RELEASE_PATH, MODULE_RELEASE))
 
 if process_package:

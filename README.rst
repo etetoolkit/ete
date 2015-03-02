@@ -82,6 +82,6 @@ functionality with phylogenetics related methods. Most notably:
 - Combined visualization of trees and MSA.
 - Integrated with the phylomeDB database
 
-Full info and documentation can be found at: http://ete.cgenomics.org
+Full info and documentation can be found at: http://etetoolkit.org
 
 

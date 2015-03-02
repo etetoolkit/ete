@@ -71,7 +71,7 @@ class CheckUpdates(QThread):
             msg = ""
             if current and latest:
                 if current < latest:
-                    msg = "New version available (rev%s): %s More info at http://ete.cgenomics.org." %\
+                    msg = "New version available (rev%s): %s More info at http://etetoolkit.org." %\
                         (latest, tag)
                 elif current == latest:
                     msg = "Up to date"

@@ -4,7 +4,7 @@
 # All rights reserved. email: jhcepas_at-gmail.com, salcagu_at-gmail.com
 #
 # This file is part of the Environment for Tree Exploration program (ETE).
-# http://ete.cgenomics.org
+# http://etetoolkit.org
 #
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by

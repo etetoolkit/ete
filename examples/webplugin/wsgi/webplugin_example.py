@@ -460,7 +460,7 @@ application = WebTreeApplication()
 # your system, and the other the URL to access the same
 # directory. Note that the referred directory must be writable by the
 # webserver.
-#application.CONFIG["temp_dir"] = "/home/services/web/ete.cgenomics.org/webplugin/tmp/"
+#application.CONFIG["temp_dir"] = "/home/services/web/etetoolkit.org/webplugin/tmp/"
 application.CONFIG["temp_dir"] = "/var/www/etetoolkit.org/webplugin/tmp/"
 application.CONFIG["temp_url"] = "/webplugin/tmp/" # Relative to web site Document Root
 

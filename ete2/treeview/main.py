@@ -637,8 +637,8 @@ def save(scene, imgName, w=None, h=None, dpi=90,\
         targetRect = QtCore.QRectF(0, 0, w, h)
         svg.setSize(QtCore.QSize(w, h))
         svg.setViewBox(targetRect)
-        svg.setTitle("Generated with ETE http://ete.cgenomics.org")
-        svg.setDescription("Generated with ETE http://ete.cgenomics.org")
+        svg.setTitle("Generated with ETE http://etetoolkit.org")
+        svg.setDescription("Generated with ETE http://etetoolkit.org")
         
         if imgName == '%%return':
             ba = QtCore.QByteArray()
