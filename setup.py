@@ -95,19 +95,6 @@ def can_import(mname):
         else:
             return True
 
-def ask(string, valid_values, default=-1, case_sensitive=False):
-    """ Asks for a keyborad answer """
-    v = None
-    if not case_sensitive:
-        valid_values = [value.lower() for value in valid_values]
-    while v not in valid_values:
-        v = raw_input("%s [%s]" % (string,','.join(valid_values)))
-        if v == '' and default>=0:
-            v = valid_values[default]
-        if not case_sensitive:
-            v = v.lower()
-    return v
-
 print
 print "Installing ETE (A python Environment for Tree Exploration)."
 print
@@ -120,12 +107,6 @@ for mname, msg, ex in PYTHON_DEPENDENCIES:
         print "WARNING:\033[93m Optional library [%s] could not be found \033[0m" %mname
         print "  ",msg
         missing=True
-
-#if missing:
-#    print "\nHowever, you can still install ETE without such functionality."
-#    if ask( "Do you want to continue with the installation anyway?", 
-#            ["y", "n"]) == "n":
-#        sys.exit()
 
 # writes installation id as a variable into the main module
 init_content = open("ete2/__init__.py").read()
@@ -159,6 +140,9 @@ try:
             ],
         package_data = {
             },
+        data_files = [("ete2/tools/", ["ete2/tools/phylobuild.cfg"])], 
+        
+        
         # metadata for upload to PyPI
         author = "Jaime Huerta-Cepas, Joaquin Dopazo and Toni Gabaldon",
         author_email = "jhcepas@gmail.com",
