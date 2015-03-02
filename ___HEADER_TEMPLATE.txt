@@ -33,7 +33,7 @@
 # Note that extra references to the specific methods implemented in 
 # the toolkit are available in the documentation. 
 # 
-# More info at http://ete.cgenomics.org
+# More info at http://etetoolkit.org. Contact: huerta@embl.de
 #
 # 
 # #END_LICENSE#############################################################
