@@ -51,4 +51,8 @@ __version__ = '2.3.0beta'
     
 # Do not modify the following line. It will be checked during
 # installation
-__ETEID__="d4dda7ba3ff89460c6f5d0cbe15fc3d2"
+def __get_install_id():
+    try:
+        return open(os.path.split(__file__)[0]+'/install.id').readline().strip()
+    except:
+        return ''

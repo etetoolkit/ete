@@ -26,16 +26,16 @@ try:
         sys.path.remove(_wd)
     except ValueError:
         _fix_path = False
-        pass
     else:
         _fix_path = True
 
     # Is there a previous ETE installation? If so, use the same id
-    from ete2 import __ETEID__ as ETEID
-
+    import ete2
+    ETEID = ete2.__get_install_id()
+    
     if _fix_path:
         sys.path.insert(0, _wd)
-except ImportError:
+except Exception:
     ETEID = None
     
 if not ETEID:
@@ -99,22 +99,13 @@ print
 print "Installing ETE (A python Environment for Tree Exploration)."
 print
 
-print "Checking dependencies..."
-missing = False
-for mname, msg, ex in PYTHON_DEPENDENCIES:
-    if not can_import(mname):
-        print "WARNING:\033[93m Optional library [%s] could not be found \033[0m" %mname
-        print "  ",msg
-        missing=True
-
 # writes installation id as a variable into the main module. Do not track old
 # installations as new aliens
 init_content = open("ete2/__init__.py").read()
 init_content = re.sub('__ETEID__="[\w\d]*"', '__ETEID__="%s"'
                       %ETEID, init_content)
 open("ete2/__init__.py", "w").write(init_content)
-
-print "Your installation ID is:", ETEID
+open('install.id', "w").write(ETEID)
 
 ete_version = open("VERSION").readline().strip()
 revision = ete_version.split("rev")[-1]
@@ -140,7 +131,8 @@ try:
             ],
         package_data = {
             },
-        data_files = [("ete2/tools/", ["ete2/tools/phylobuild.cfg"])], 
+        data_files = [("ete2/tools/", ["ete2/tools/phylobuild.cfg"]),
+                      ("ete2/", ["install.id"])], 
         
         
         # metadata for upload to PyPI
@@ -158,9 +150,21 @@ try:
         url = "http://etetoolkit.org",
         download_url = "http://etetoolkit.org/static/releases/ete2/",
     )
-except: 
+    
+except:
+    print "\033[91m - Errors found! - \033[0m"
     raise
+    
 else:
+
+    print "\033[92m - Done! - \033[0m"
+    missing = False
+    for mname, msg, ex in PYTHON_DEPENDENCIES:
+        if not can_import(mname):
+            print " Warning:\033[93m Optional library [%s] could not be found \033[0m" %mname
+            print "  ",msg
+            missing=True
+    
     notwanted = set(["-h", "--help", "-n", "--dry-run"])
     seen = set(_s.script_args)
     wanted = set(["install", "bdist", "bdist_egg"])
