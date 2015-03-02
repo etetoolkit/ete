@@ -1,5 +1,5 @@
 import time
-from ete_dev import Tree
+from ete2 import Tree
 # Creates a random tree with 10,000 leaf nodes
 tree = Tree()
 tree.populate(10000)

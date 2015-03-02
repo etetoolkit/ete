@@ -1,4 +1,4 @@
-from ete_dev import PhylomeDBConnector
+from ete2 import PhylomeDBConnector
 # This connects to the main phylomeDB server (default parameters)
 p = PhylomeDBConnector()
 # Obtains the phylomeDB internal ID for my gene of interest

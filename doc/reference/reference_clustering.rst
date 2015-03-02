@@ -1,4 +1,4 @@
-.. module:: ete_dev.clustering
+.. module:: ete2.clustering
 
 .. contents::
 
@@ -6,11 +6,11 @@
 Clustering module
 ====================
 
-.. autoclass:: ete_dev.ClusterNode
+.. autoclass:: ete2.ClusterNode
    :members:
    :show-inheritance:
 
 
-.. autoclass:: ete_dev.ClusterTree
+.. autoclass:: ete2.ClusterTree
    :members:
    :show-inheritance:

@@ -1,5 +1,5 @@
 import random
-from ete_dev import Tree, TreeStyle, NodeStyle, faces, AttrFace, CircleFace
+from ete2 import Tree, TreeStyle, NodeStyle, faces, AttrFace, CircleFace
 
 def layout(node):
     if node.is_leaf():

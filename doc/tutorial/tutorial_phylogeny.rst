@@ -2,7 +2,7 @@
 
 .. :author:: Jaime Huerta-Cepas
 
-.. currentmodule:: ete_dev
+.. currentmodule:: ete2
 
 Phylogenetic Trees
 ********************
@@ -38,7 +38,7 @@ lengths with tree nodes.
 
 ::
   
-  from ete_dev import PhyloTree
+  from ete2 import PhyloTree
   fasta_txt = """
   >seqA
   MAEIPDETIQQFMALT---HNIAVQYLSEFGDLNEALNSYYASQTDDIKDRREEAH
@@ -120,7 +120,7 @@ Automatic control of species info
 
 ::
 
-  from ete_dev import PhyloTree
+  from ete2 import PhyloTree
   # Reads a phylogenetic tree (using default species name encoding)
   t = PhyloTree("(((Hsa_001,Ptr_001),(Cfa_001,Mms_001)),(Dme_001,Dme_002));")
   #                              /-Hsa_001
@@ -163,7 +163,7 @@ of the tree.
 
 ::
 
-  from ete_dev import PhyloTree
+  from ete2 import PhyloTree
   # Reads a phylogenetic tree
   t = PhyloTree("(((Hsa_001,Ptr_001),(Cfa_001,Mms_001)),(Dme_001,Dme_002));")
 
@@ -209,7 +209,7 @@ of nodes and it could be controlled manually.
 
 ::
 
-  from ete_dev import PhyloTree
+  from ete2 import PhyloTree
   # Reads a phylogenetic tree
   t = PhyloTree("(((Hsa_001,Ptr_001),(Cfa_001,Mms_001)),(Dme_001,Dme_002));")
 
@@ -482,7 +482,7 @@ Here is a basic example on how to use it:
 
 :: 
   
-   from ete_dev import PhyloTree
+   from ete2 import PhyloTree
    t = PhyloTree("((((Human_1, Chimp_1), (Human_2, (Chimp_2, Chimp_3))), ((Fish_1, (Human_3, Fish_3)), Yeast_2)), Yeast_1);")
    t.set_species_naming_function(lambda node: node.name.split("_")[0] )   
 
@@ -572,7 +572,7 @@ this, the method :func:`PhyloNode.split_by_dups` is provided.
 
 ::
 
-   from ete_dev import PhyloTree
+   from ete2 import PhyloTree
    t = PhyloTree("((((Human_1, Chimp_1), (Human_2, (Chimp_2, Chimp_3))), ((Fish_1, (Human_3, Fish_3)), Yeast_2)), Yeast_1);")
    t.set_species_naming_function(lambda node: node.name.split("_")[0] )   
 
@@ -639,7 +639,7 @@ Chimp_1 and Chimp_2 could be easily collapsed into a single node.
 
 :: 
 
-   from ete_dev import PhyloTree
+   from ete2 import PhyloTree
    t = PhyloTree("((((Human_1, Chimp_1), (Human_2, (Chimp_2, Chimp_3))), ((Fish_1, (Human_3, Fish_3)), Yeast_2)), Yeast_1);")
    t.set_species_naming_function(lambda node: node.name.split("_")[0] )   
 

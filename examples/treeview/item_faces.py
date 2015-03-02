@@ -3,7 +3,7 @@ from PyQt4 import QtCore
 from PyQt4.QtGui import QGraphicsRectItem, QGraphicsSimpleTextItem, \
     QGraphicsEllipseItem, QColor, QPen, QBrush
 
-from ete_dev import Tree, faces, TreeStyle, NodeStyle
+from ete2 import Tree, faces, TreeStyle, NodeStyle
 
 # To play with random colors
 import colorsys

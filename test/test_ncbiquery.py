@@ -1,6 +1,6 @@
 import unittest 
 
-from ete_dev import PhyloTree, NCBITaxa
+from ete2 import PhyloTree, NCBITaxa
 
 class Test_ncbiquery(unittest.TestCase):
   

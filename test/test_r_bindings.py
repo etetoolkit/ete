@@ -1,7 +1,7 @@
 import unittest 
 
-from ete_dev import *
-from ete_dev.coretype.tree import asRphylo, asETE
+from ete2 import *
+from ete2.coretype.tree import asRphylo, asETE
 
 class Test_R_bindings(unittest.TestCase):
     """ This is experimental """

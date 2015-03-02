@@ -1,7 +1,7 @@
 import os
 
-from ete_dev import Tree, faces
-from ete_dev.treeview.main import TreeStyle, NodeStyle, random_color
+from ete2 import Tree, faces
+from ete2.treeview.main import TreeStyle, NodeStyle, random_color
 import colorsys
 import random
 

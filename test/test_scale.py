@@ -1,8 +1,8 @@
 import random
 import sys
 sys.path.insert(0, "./")
-from ete_dev import Tree, TreeStyle, faces
-from ete_dev.treeview.main import random_color
+from ete2 import Tree, TreeStyle, faces
+from ete2.treeview.main import random_color
 
 def layout(node):
     node.img_style["size"] = 5

@@ -7,9 +7,9 @@ import os
 ETEPATH = os.path.abspath(os.path.split(os.path.realpath(__file__))[0]+'/../')
 sys.path.insert(0, ETEPATH)
 
-from ete_dev import Tree, TreeStyle, NodeStyle, PhyloTree, faces
-from ete_dev.treeview.faces import *
-from ete_dev.treeview.main import random_color, _NODE_TYPE_CHECKER, FACE_POSITIONS
+from ete2 import Tree, TreeStyle, NodeStyle, PhyloTree, faces
+from ete2.treeview.faces import *
+from ete2.treeview.main import random_color, _NODE_TYPE_CHECKER, FACE_POSITIONS
 
 sys.path.insert(0, os.path.join(ETEPATH, "examples/treeview"))
 import face_grid, bubble_map, item_faces, node_style, node_background, face_positions, face_rotation, seq_motif_faces, barchart_and_piechart_faces

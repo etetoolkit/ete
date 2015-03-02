@@ -1,6 +1,6 @@
 :Author: François Serra
 
-.. currentmodule:: ete_dev
+.. currentmodule:: ete2
 
 
 Testing Evolutionary Hypothesis
@@ -65,7 +65,7 @@ As for :class:`PhyloTree`, we first load the tree and alignment (and you working
 
 ::
   
-  from ete_dev import EvolTree
+  from ete2 import EvolTree
 
   tree = EvolTree("((Hylobates_lar,(Gorilla_gorilla,Pan_troglodytes)),Papio_cynocephalus);")
   
@@ -182,7 +182,7 @@ Node size, and color dependant of the :math:`\omega` value. But other displays a
 
 ::
 
-  from ete_dev.treeview.layouts import evol_clean_layout
+  from ete2.treeview.layouts import evol_clean_layout
 
   tree.show(layout=evol_clean_layout)
 
@@ -447,7 +447,7 @@ When an evolutionary model is computed, the output is stored in *tree.workdir* a
 
 ::
 
-  from ete_dev import EvolTree
+  from ete2 import EvolTree
 
   tree = EvolTree("((Hylobates_lar,(Gorilla_gorilla,Pan_troglodytes)),Papio_cynocephalus);")
   

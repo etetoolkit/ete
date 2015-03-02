@@ -2,7 +2,7 @@
 
 .. versionadded:: 2.3
 
-.. currentmodule:: ete_dev
+.. currentmodule:: ete2
 
 NCBI taxonomPhyloXML
 ************************************

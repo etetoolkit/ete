@@ -128,7 +128,7 @@ specify format 1:
 
 :: 
    
-   from ete_dev import Tree
+   from ete2 import Tree
    t = Tree("myTree.nw", format=1)
 
    t.write(format=1)
@@ -162,8 +162,8 @@ Can ETE draw circular trees?
 
 Yes, starting from version 2.1, ete can render trees in circular
 mode. Install the latest version from
-http://pypi.python.org/pypi/ete_dev or by executing ``easy_install -U
-ete_dev``.
+http://pypi.python.org/pypi/ete2 or by executing ``easy_install -U
+ete2``.
 
 
 What are all these dotted lines that appear in my circular trees?

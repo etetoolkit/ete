@@ -1,4 +1,4 @@
-from ete_dev import Phyloxml
+from ete2 import Phyloxml
 project = Phyloxml()
 project.build_from_file("apaf.xml")
 

@@ -1,4 +1,4 @@
-from ete_dev import Tree
+from ete2 import Tree
 # Creates an empty tree and populates it with some new
 # nodes
 t = Tree()

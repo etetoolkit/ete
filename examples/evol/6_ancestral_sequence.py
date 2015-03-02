@@ -11,9 +11,9 @@ __email__   = "francois@barrabin.org"
 __licence__ = "GPLv3"
 __version__ = "0.0"
 
-from ete_dev import TreeStyle
-from ete_dev import EvolTree
-from ete_dev import faces
+from ete2 import TreeStyle
+from ete2 import EvolTree
+from ete2 import faces
 
 
 tree = EvolTree ("data/S_example/measuring_S_tree.nw")

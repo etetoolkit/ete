@@ -1,8 +1,8 @@
-.. module:: ete_dev
+.. module:: ete2
   :synopsis: Converts evolutionary events into OrthoXML format
 
 .. moduleauthor:: Jaime Huerta-Cepas
-.. currentmodule:: ete_dev
+.. currentmodule:: ete2
 
 .. _etree2orthoxml:
 
@@ -31,7 +31,7 @@ way.
 The following example will create a basic orthoXML document
 :: 
 
-    from ete_dev import orthoxml
+    from ete2 import orthoxml
     # Creates an empty orthoXML object
     oxml = orthoxml.orthoXML()
 
@@ -203,7 +203,7 @@ requirements of the :attr:`etree2orthoxml` script.
 
 :: 
 
-   from ete_dev import Tree
+   from ete2 import Tree
    # Having the followin tree
    t = Tree('((HUMAN_A, HUMAN_B)[&&NHX:speciation=N], MOUSE_B)[&&NHX:speciation=Y];')
 

@@ -2,6 +2,7 @@
                    
 Changelog
 *********************************
+.. currentmodule:: ete2
 
 .. contents::
 

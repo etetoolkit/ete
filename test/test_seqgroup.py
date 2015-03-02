@@ -1,6 +1,6 @@
 import unittest
 from datasets import *
-from ete_dev import *
+from ete2 import *
 
 class Test_Coretype_SeqGroup(unittest.TestCase):
     """ Tests core functionality of Alignmnets objects """
