@@ -192,6 +192,20 @@ def populate_args(view_args_p):
 
 
 def run(args):
+    if args.text_mode:
+        from ete2 import Tree
+        for tindex, tfile in enumerate(args.src_tree_iterator):
+            #print tfile
+            if args.raxml:
+                nw = re.sub(":(\d+\.\d+)\[(\d+)\]", ":\\1[&&NHX:support=\\2]", open(tfile).read())
+                t = Tree(nw)
+            else:
+                t = Tree(tfile)
+            
+            print t.get_ascii(show_internal=args.show_internal_names,
+                              attributes=args.show_attributes)
+        return
+        
     import random
     import re
     import colorsys
@@ -321,170 +335,166 @@ def run(args):
         if not args.width: 
             args.width = None
 
-        if args.text_mode:
-            print t.get_ascii(show_internal=args.show_internal_names,
-                              attributes=args.show_attributes)
-        else:    
-            f2color = {}
-            f2last_seed = {}
-            for node in t.traverse():
-                node.img_style['size'] = 0                
-                if len(node.children) == 1:
-                    node.img_style['size'] = 2                
-                    node.img_style['shape'] = "square"
-                    node.img_style['fgcolor'] = "steelblue"
+        f2color = {}
+        f2last_seed = {}
+        for node in t.traverse():
+            node.img_style['size'] = 0                
+            if len(node.children) == 1:
+                node.img_style['size'] = 2                
+                node.img_style['shape'] = "square"
+                node.img_style['fgcolor'] = "steelblue"
 
-                ftype_pos = defaultdict(int)
-                
-                for findex, f in enumerate(FACES):
-                    if (f['nodetype'] == 'any' or 
-                        (f['nodetype'] == 'leaf' and node.is_leaf()) or
-                        (f['nodetype'] == 'internal' and not node.is_leaf())):
-                        
+            ftype_pos = defaultdict(int)
 
-                        # if node passes face filters
-                        if node_matcher(node, f["filters"]):
-                            if f["value"].startswith("@"):
-                                fvalue = getattr(node, f["value"][1:], None)
-                            else:
-                                fvalue = f["value"]
+            for findex, f in enumerate(FACES):
+                if (f['nodetype'] == 'any' or 
+                    (f['nodetype'] == 'leaf' and node.is_leaf()) or
+                    (f['nodetype'] == 'internal' and not node.is_leaf())):
 
-                            # if node's attribute has content, generate face
-                            if fvalue is not None:
-                                fsize = f["size"]
-                                fbgcolor = f["bgcolor"]
-                                fcolor = f['color']
-                                
-                                if fcolor:
-                                    # Parse color options
-                                    auto_m = re.search("auto\(([^)]*)\)", fcolor)
-                                    if auto_m:
-                                        target_attr = auto_m.groups()[0].strip()
-                                        if not target_attr :
-                                            color_keyattr = f["value"]
-                                        else:
-                                            color_keyattr = target_attr
 
-                                        color_keyattr = color_keyattr.lstrip('@')
-                                        color_bin = getattr(node, color_keyattr, None)
+                    # if node passes face filters
+                    if node_matcher(node, f["filters"]):
+                        if f["value"].startswith("@"):
+                            fvalue = getattr(node, f["value"][1:], None)
+                        else:
+                            fvalue = f["value"]
 
-                                        last_seed = f2last_seed.setdefault(color_keyattr, random.random())
+                        # if node's attribute has content, generate face
+                        if fvalue is not None:
+                            fsize = f["size"]
+                            fbgcolor = f["bgcolor"]
+                            fcolor = f['color']
 
-                                        seed = last_seed + 0.10 + random.uniform(0.1, 0.2)
-                                        f2last_seed[color_keyattr] = seed
+                            if fcolor:
+                                # Parse color options
+                                auto_m = re.search("auto\(([^)]*)\)", fcolor)
+                                if auto_m:
+                                    target_attr = auto_m.groups()[0].strip()
+                                    if not target_attr :
+                                        color_keyattr = f["value"]
+                                    else:
+                                        color_keyattr = target_attr
 
-                                        fcolor = f2color.setdefault(color_bin, random_color(h=seed))
+                                    color_keyattr = color_keyattr.lstrip('@')
+                                    color_bin = getattr(node, color_keyattr, None)
 
+                                    last_seed = f2last_seed.setdefault(color_keyattr, random.random())
+
+                                    seed = last_seed + 0.10 + random.uniform(0.1, 0.2)
+                                    f2last_seed[color_keyattr] = seed
+
+                                    fcolor = f2color.setdefault(color_bin, random_color(h=seed))
+
+                            if fbgcolor:
+                                # Parse color options
+                                auto_m = re.search("auto\(([^)]*)\)", fbgcolor)
+                                if auto_m:
+                                    target_attr = auto_m.groups()[0].strip()
+                                    if not target_attr :
+                                        color_keyattr = f["value"]
+                                    else:
+                                        color_keyattr = target_attr
+
+                                    color_keyattr = color_keyattr.lstrip('@')
+                                    color_bin = getattr(node, color_keyattr, None)
+
+                                    last_seed = f2last_seed.setdefault(color_keyattr, random.random())
+
+                                    seed = last_seed + 0.10 + random.uniform(0.1, 0.2)
+                                    f2last_seed[color_keyattr] = seed
+
+                                    fbgcolor = f2color.setdefault(color_bin, random_color(h=seed))
+
+                            if f["ftype"] == "text":
+                                if f.get("format", None):
+                                    fvalue = f["format"] % fvalue
+
+                                F = TextFace(fvalue,
+                                             fsize = fsize,
+                                             fgcolor = fcolor or "black",
+                                             fstyle = f.get('fstyle', None))
+
+                            elif f["ftype"] == "fullseq":
+                                F = faces.SeqMotifFace(seq=fvalue, seq_format="seq",
+                                                       seqtail_format="seq",
+                                                       height=fsize)
+                            elif f["ftype"] == "compactseq":
+                                F = faces.SeqMotifFace(seq=fvalue, seq_format="compactseq",
+                                                       seqtail_format="compactseq",
+                                                       height=fsize)
+                            elif f["ftype"] == "blockseq":
+                                F = faces.SeqMotifFace(seq=fvalue, seq_format="blockseq",
+                                                   seqtail_format="blockseq",
+                                                       height=fsize,
+                                                       fgcolor=fcolor or "slategrey",
+                                                       bgcolor=fbgcolor or "slategrey",
+                                                       scale_factor = 1.0)
+                                fbgcolor = None
+                            elif f["ftype"] == "bubble":
+                                try:
+                                    v = float(fvalue)
+                                except ValueError:
+                                    rad = fsize
+                                else:
+                                    rad = fsize * v
+                                F = faces.CircleFace(radius=rad, style="sphere",
+                                                     color=fcolor or "steelblue")
+
+                            elif f["ftype"] == "heatmap":
+                                if not f['column']:
+                                    col = ftype_pos[f["pos"]]
+                                else:
+                                    col = f["column"]
+
+                                for i, value in enumerate(heatmap_data.get(node.name, [])):
+                                    ftype_pos[f["pos"]] += 1
+
+                                    if value is None:
+                                        color = heatmap_color_missing
+                                    elif value > heatmap_center_value:
+                                        color = gradient_color(abs(heatmap_center_value - value), heatmap_max_value, hue=heatmap_color_up)
+                                    elif value < heatmap_center_value:
+                                        color = gradient_color(abs(heatmap_center_value - value), heatmap_max_value, hue=heatmap_color_down)
+                                    else:
+                                        color = heatmap_color_center
+                                    node.add_face(RectFace(20, 20, color, color), position="aligned", column=col + i)
+                                    # Add header 
+                                    # for i, name in enumerate(header):
+                                    #    nameF = TextFace(name, fsize=7)
+                                    #    nameF.rotation = -90
+                                    #    tree_style.aligned_header.add_face(nameF, column=i)
+                                F = None
+
+                            elif f["ftype"] == "profile":
+                                # internal profiles?
+                                F = None
+                            elif f["ftype"] == "barchart":
+                                F = None
+                            elif f["ftype"] == "piechart":
+                                F = None
+
+
+
+                            # Add the Face
+                            if F:
+                                F.opacity = f['opacity'] or 1.0
+
+                                # Set face general attributes
                                 if fbgcolor:
-                                    # Parse color options
-                                    auto_m = re.search("auto\(([^)]*)\)", fbgcolor)
-                                    if auto_m:
-                                        target_attr = auto_m.groups()[0].strip()
-                                        if not target_attr :
-                                            color_keyattr = f["value"]
-                                        else:
-                                            color_keyattr = target_attr
+                                    F.background.color = fbgcolor
 
-                                        color_keyattr = color_keyattr.lstrip('@')
-                                        color_bin = getattr(node, color_keyattr, None)
+                                if not f['column']:
+                                    col = ftype_pos[f["pos"]]
+                                    ftype_pos[f["pos"]] += 1    
+                                else:
+                                    col = f["column"]
+                                node.add_face(F, column=col, position=f["pos"])
 
-                                        last_seed = f2last_seed.setdefault(color_keyattr, random.random())
-
-                                        seed = last_seed + 0.10 + random.uniform(0.1, 0.2)
-                                        f2last_seed[color_keyattr] = seed
-
-                                        fbgcolor = f2color.setdefault(color_bin, random_color(h=seed))
-
-                                if f["ftype"] == "text":
-                                    if f.get("format", None):
-                                        fvalue = f["format"] % fvalue
-                                    
-                                    F = TextFace(fvalue,
-                                                 fsize = fsize,
-                                                 fgcolor = fcolor or "black",
-                                                 fstyle = f.get('fstyle', None))
-
-                                elif f["ftype"] == "fullseq":
-                                    F = faces.SeqMotifFace(seq=fvalue, seq_format="seq",
-                                                           seqtail_format="seq",
-                                                           height=fsize)
-                                elif f["ftype"] == "compactseq":
-                                    F = faces.SeqMotifFace(seq=fvalue, seq_format="compactseq",
-                                                           seqtail_format="compactseq",
-                                                           height=fsize)
-                                elif f["ftype"] == "blockseq":
-                                    F = faces.SeqMotifFace(seq=fvalue, seq_format="blockseq",
-                                                       seqtail_format="blockseq",
-                                                           height=fsize,
-                                                           fgcolor=fcolor or "slategrey",
-                                                           bgcolor=fbgcolor or "slategrey",
-                                                           scale_factor = 1.0)
-                                    fbgcolor = None
-                                elif f["ftype"] == "bubble":
-                                    try:
-                                        v = float(fvalue)
-                                    except ValueError:
-                                        rad = fsize
-                                    else:
-                                        rad = fsize * v
-                                    F = faces.CircleFace(radius=rad, style="sphere",
-                                                         color=fcolor or "steelblue")
-
-                                elif f["ftype"] == "heatmap":
-                                    if not f['column']:
-                                        col = ftype_pos[f["pos"]]
-                                    else:
-                                        col = f["column"]
-                                    
-                                    for i, value in enumerate(heatmap_data.get(node.name, [])):
-                                        ftype_pos[f["pos"]] += 1
-                                        
-                                        if value is None:
-                                            color = heatmap_color_missing
-                                        elif value > heatmap_center_value:
-                                            color = gradient_color(abs(heatmap_center_value - value), heatmap_max_value, hue=heatmap_color_up)
-                                        elif value < heatmap_center_value:
-                                            color = gradient_color(abs(heatmap_center_value - value), heatmap_max_value, hue=heatmap_color_down)
-                                        else:
-                                            color = heatmap_color_center
-                                        node.add_face(RectFace(20, 20, color, color), position="aligned", column=col + i)
-                                        # Add header 
-                                        # for i, name in enumerate(header):
-                                        #    nameF = TextFace(name, fsize=7)
-                                        #    nameF.rotation = -90
-                                        #    tree_style.aligned_header.add_face(nameF, column=i)
-                                    F = None
-                                    
-                                elif f["ftype"] == "profile":
-                                    # internal profiles?
-                                    F = None
-                                elif f["ftype"] == "barchart":
-                                    F = None
-                                elif f["ftype"] == "piechart":
-                                    F = None
-                                                         
-
-                            
-                                # Add the Face
-                                if F:
-                                    F.opacity = f['opacity'] or 1.0
-                                    
-                                    # Set face general attributes
-                                    if fbgcolor:
-                                        F.background.color = fbgcolor
-
-                                    if not f['column']:
-                                        col = ftype_pos[f["pos"]]
-                                        ftype_pos[f["pos"]] += 1    
-                                    else:
-                                        col = f["column"]
-                                    node.add_face(F, column=col, position=f["pos"])
-
-            if args.image:
-                t.render("t%d.%s" %(tindex, args.image),
-                         tree_style=ts, w=args.width, h=args.height, units=args.size_units)
-            else:
-                t.show(None, tree_style=ts)
+        if args.image:
+            t.render("t%d.%s" %(tindex, args.image),
+                     tree_style=ts, w=args.width, h=args.height, units=args.size_units)
+        else:
+            t.show(None, tree_style=ts)
 
     
 def parse_faces(face_args):    
