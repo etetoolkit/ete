@@ -2,7 +2,7 @@ import sys
 import re
 
 ALLTEXT = open(sys.argv[1]).read()
-HEADER = open("___HEADER_TEMPLATE.txt").read().strip()
+HEADER = open("FILE_HEADER.txt").read().strip()
 m =  re.search("# #START_LICENSE.*# #END_LICENSE[^\n]+", ALLTEXT, re.DOTALL | re.MULTILINE)
 if m:
     if m.group() != HEADER:
