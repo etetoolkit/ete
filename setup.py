@@ -43,7 +43,7 @@ if not ETEID:
 
 PYTHON_DEPENDENCIES = [
     ["numpy", "Numpy is required for the ArrayTable and ClusterTree classes.", 0],
-    ["MySQLdb", "MySQLdb only is required by the PhylomeDB access API.", 0],
+#    ["MySQLdb", "MySQLdb only is required by the PhylomeDB access API.", 0],        #  Only PhylomeDB requires it is now deprecated
     ["PyQt4", "PyQt4 is required for tree visualization and image rendering.", 0],
     ["lxml", "lxml is required from Nexml and Phyloxml support.", 0]
 ]
@@ -144,7 +144,7 @@ try:
         
         
         # metadata for upload to PyPI
-        author = "Jaime Huerta-Cepas, Joaquin Dopazo and Toni Gabaldon",
+        author = "Jaime Huerta-Cepas",
         author_email = "jhcepas@gmail.com",
         maintainer = "Jaime Huerta-Cepas",
         maintainer_email = "jhcepas@gmail.com",
