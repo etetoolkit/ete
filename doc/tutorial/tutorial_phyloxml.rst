@@ -2,7 +2,7 @@
 
 .. versionadded:: 2.1
 
-.. currentmodule:: ete_dev
+.. currentmodule:: ete2
 
 PhyloXML
 ************************************
@@ -20,7 +20,7 @@ Loading PhyloXML projects from files
 ETE provides full support for phyloXML projects through the
 :class:`Phyloxml` object. Phylogenies are integrated as ETE's tree
 data structures as :class:`PhyloxmlTree` instances, while the rest of
-features are represented as simple classes (:mod:`ete_dev.phyloxml`)
+features are represented as simple classes (:mod:`ete2.phyloxml`)
 providing basic reading and writing operations.
 
 
@@ -48,7 +48,7 @@ Creating PhyloXML projects from scratch
 ----------------------------------------
 
 In order to create new PhyloXML projects, a set of classes is
-available in the :mod:`ete_dev.phyloxml` module.
+available in the :mod:`ete2.phyloxml` module.
 
 .. literalinclude:: ../../examples/phyloxml/phyloxml_from_scratch.py
 

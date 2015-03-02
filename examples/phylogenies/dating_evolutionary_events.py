@@ -1,4 +1,4 @@
-from ete_dev import PhyloTree
+from ete2 import PhyloTree
 # Creates a gene phylogeny with several duplication events at
 # different levels. Note that we are using the default method for
 # detecting the species code of leaves (three first lettes in the node

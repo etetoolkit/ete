@@ -1,5 +1,5 @@
-from ete_dev import ClusterTree, TreeStyle, AttrFace, ProfileFace, TextFace
-from ete_dev.treeview.faces import add_face_to_node
+from ete2 import ClusterTree, TreeStyle, AttrFace, ProfileFace, TextFace
+from ete2.treeview.faces import add_face_to_node
 
 # To operate with numbers efficiently
 import numpy

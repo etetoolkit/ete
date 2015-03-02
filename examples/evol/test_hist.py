@@ -2,7 +2,7 @@
 #        Author: Francois-Jose Serra
 # Creation Date: 2010/04/26 17:17:06
 
-from ete_dev.evol import EvolTree
+from ete2.evol import EvolTree
 import sys, re
 
 typ = 'S'

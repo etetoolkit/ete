@@ -4,7 +4,7 @@ import sys
 import time
 import itertools
 
-from ete_dev import *
+from ete2 import *
 from datasets import *
  
 class Test_Coretype_Tree(unittest.TestCase):
@@ -47,7 +47,7 @@ class Test_Coretype_Tree(unittest.TestCase):
         
     def test_newick_formats(self):
         """ tests different newick subformats """
-        from ete_dev.parser.newick import print_supported_formats, NW_FORMAT
+        from ete2.parser.newick import print_supported_formats, NW_FORMAT
         print_supported_formats()
 
         # Let's stress a bit

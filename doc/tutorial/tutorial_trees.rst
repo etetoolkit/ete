@@ -1,8 +1,8 @@
-.. module:: ete_dev
+.. module:: ete2
   :synopsis: provides main objects and modules
 
 .. moduleauthor:: Jaime Huerta-Cepas
-.. currentmodule:: ete_dev
+.. currentmodule:: ete2
 
 Working With Tree Data Structures
 ************************************
@@ -102,14 +102,14 @@ Reading newick trees
 
 In order to load a tree from a newick text string you can use the
 constructor :class:`TreeNode` or its :class:`Tree` alias, provided by the main module
-:mod:`ete_dev`. You will only need to pass a text string containing
+:mod:`ete2`. You will only need to pass a text string containing
 the newick structure and the format that should be used to parse it (0
 by default). Alternatively, you can pass the path to a text file
 containing the newick string.
 
 ::
  
-  from ete_dev import Tree
+  from ete2 import Tree
    
   # Loads a tree structure from a newick string. The returned variable ’t’ is the root node for the tree.
   t = Tree("(A:1,(B:1,(E:1,D:1):0.5):0.5);" )
@@ -132,7 +132,7 @@ convert between newick formats.
 
 ::
    
-  from ete_dev import Tree
+  from ete2 import Tree
    
   # Loads a tree with internal node names
   t = Tree("(A:1,(B:1,(E:1,D:1)Internal_1:0.5)Internal_2:0.5)Root;", format=1)
@@ -218,7 +218,7 @@ This is an example on how to access such attributes:
 
 :: 
 
-  from ete_dev import Tree
+  from ete2 import Tree
   t = Tree()
   # We create a random tree topology
   t.populate(15) 
@@ -249,7 +249,7 @@ as trees in which master root node has more than two children.
 
 ::
 
-  from ete_dev import Tree
+  from ete2 import Tree
   unrooted_tree = Tree( "(A,B,(C,D));" )
   print unrooted_tree
   #
@@ -364,7 +364,7 @@ between a given leaf and the tree root are visited.
 
 ::
 
-   from ete_dev import Tree
+   from ete2 import Tree
    tree = Tree( "(A:1,(B:1,(C:1,D:1):0.5):0.5);" )
     
    # Browse the tree from a specific leaf to the root
@@ -399,7 +399,7 @@ grouping the same tip labels are collapsed.
 
 :: 
 
-  from ete_dev import Tree
+  from ete2 import Tree
   def collapsed_leaf(node):
       if len(node2labels[node]) == 1:
          return True
@@ -449,7 +449,7 @@ Let's say we want get all deepest nodes in a tree whose branch length
 is larger than one:
 :: 
 
-  from ete_dev import Tree
+  from ete2 import Tree
   t = Tree("(((a,b)ab:2, (c, d)cd:2)abcd:2, ((e, f):2, g)efg:2);", format=1)
   def processable_node(node):
       if node.dist > 1: 
@@ -525,7 +525,7 @@ through the :func:`TreeNode.search_node` function.
 
 ::
  
-   from ete_dev import Tree
+   from ete2 import Tree
    t = Tree( '((H:1,I:1):0.5, A:1, (B:1,(C:1,D:1):0.5):0.5);' )
    print t
    #                    /-H
@@ -563,7 +563,7 @@ function.
 
 ::
 
-  from ete_dev import Tree
+  from ete2 import Tree
 
   def search_by_size(node, size):
       "Finds nodes with a given number of leaves"
@@ -585,7 +585,7 @@ a handy way of finding internal nodes.
 
 ::
 
-  from ete_dev import Tree
+  from ete2 import Tree
   t = Tree( "((H:0.3,I:0.1):0.5, A:1, (B:0.4,(C:0.5,(J:1.3, (F:1.2, D:0.1):0.5):0.5):0.5):0.5);" )
   print t
   ancestor = t.get_common_ancestor("C", "J", "B")
@@ -602,7 +602,7 @@ strategy would look like this:
 
 ::
 
-  from ete_dev import Tree
+  from ete2 import Tree
   t = Tree("((H:0.3,I:0.1):0.5, A:1, (B:0.4,(C:1,D:1):0.5):0.5);")
   # Create a small function to filter your nodes
   def conditional_function(node):
@@ -636,7 +636,7 @@ confusing, but it can be very useful in some situations.
 
 ::
 
-  from ete_dev import Tree
+  from ete2 import Tree
   t = Tree("((H:0.3,I:0.1):0.5, A:1, (B:0.4,(C:1,(J:1, (F:1, D:1):0.5):0.5):0.5):0.5);")
   # Get the node D in a very simple way
   D = t&"D"
@@ -679,7 +679,7 @@ tree is queried for any custom attribute.
 
 :: 
 
-  from ete_dev import Tree
+  from ete2 import Tree
   t =  Tree("((((((a, e), i), o),h), u), ((f, g), j));")
   print t
 
@@ -726,7 +726,7 @@ tree exclusively grouping a custom set of annotations are obtained.
 
 :: 
 
-   from ete_dev import Tree
+   from ete2 import Tree
    t =  Tree("((((((4, e), i), o),h), u), ((3, 4), (i, june)));")
    # we annotate the tree using external data
    colors = {"a":"red", "e":"green", "i":"yellow", 
@@ -805,7 +805,7 @@ custom :attr:`store_attr` value.
 
 ::
 
-   from ete_dev import Tree
+   from ete2 import Tree
    t = Tree()
    t.populate(50)
 
@@ -841,7 +841,7 @@ attribute.
 ::
  
    import random
-   from ete_dev import Tree
+   from ete2 import Tree
    # Creates a tree
    t = Tree( '((H:0.3,I:0.1):0.5, A:1, (B:0.4,(C:0.5,(J:1.3, (F:1.2, D:0.1):0.5):0.5):0.5):0.5);' )
 
@@ -938,7 +938,7 @@ string.
 ::
    
   import random
-  from ete_dev import Tree
+  from ete2 import Tree
   # Creates a normal tree
   t = Tree('((H:0.3,I:0.1):0.5, A:1,(B:0.4,(C:0.5,(J:1.3,(F:1.2, D:0.1):0.5):0.5):0.5):0.5);')
   print t
@@ -1020,7 +1020,7 @@ shown:
 
 ::
  
-  from ete_dev import Tree
+  from ete2 import Tree
   t1 = Tree('(((a,b),c), ((e, f), g));')
   t2 = Tree('(((a,c),b), ((e, f), g));')
   rf, max_rf, common_leaves, parts_t1, parts_t2 = t1.robinson_foulds(t2)
@@ -1068,7 +1068,7 @@ manipulate the topology of a tree:
 
 ::
 
-  from ete_dev import Tree
+  from ete2 import Tree
   t = Tree() # Creates an empty tree
   A = t.add_child(name="A") # Adds a new child to the current tree root
                              # and returns it
@@ -1125,7 +1125,7 @@ understood with the following example:
 
 :: 
 
-  from ete_dev import Tree
+  from ete2 import Tree
   # Loads a tree. Note that we use format 1 to read internal node names
   t = Tree('((((H,K)D,(F,I)G)B,E)A,((L,(N,Q)O)J,(P,S)M)C);', format=1)
   print "original tree looks like this:"
@@ -1216,7 +1216,7 @@ tree while keeping original distances among remaining nodes.
 
 ::
 
-  from ete_dev import Tree
+  from ete2 import Tree
   # Let's create simple tree
   t = Tree('((((H,K),(F,I)G),E),((L,(N,Q)O),(P,S)));')
   print "Original tree looks like this:"
@@ -1276,7 +1276,7 @@ take care about not creating circular structures by mistake.
 
 ::
 
-  from ete_dev import Tree
+  from ete2 import Tree
   # Loads 3 independent trees
   t1 = Tree('(A,(B,C));')
   t2 = Tree('((D,E), (F,G));')
@@ -1373,7 +1373,7 @@ features, 4 different methods are available to create a tree copy:
 ::
 
 
-   from ete_dev import Tree
+   from ete2 import Tree
    t = Tree("((A, B)Internal_1:0.7, (C, D)Internal_2:0.5)root:1.3;", format=1)
    # we add a custom annotation to the node named A
    (t & "A").add_features(label="custom Value")
@@ -1450,7 +1450,7 @@ of the tree intact by disabling the :attr:`recursive` flag.
 
 :: 
 
-  from ete_dev import Tree
+  from ete2 import Tree
   t = Tree("(( (a, b, c), (d, e, f, g)), (f, i, h));")
   print t
 
@@ -1563,7 +1563,7 @@ method can be used to perform the opposite action.
 
 ::
 
-  from ete_dev import Tree
+  from ete2 import Tree
   # Load an unrooted tree. Note that three branches hang from the root
   # node. This usually means that no information is available about
   # which of nodes is more basal.
@@ -1625,7 +1625,7 @@ to its parent tree structure.
 
 ::
 
-  from ete_dev import Tree
+  from ete2 import Tree
   t = Tree('(((A,C),((H,F),(L,M))),((B,(J,K))(E,D)));')
   print "Original tree:"
   print t
@@ -1702,7 +1702,7 @@ current node and any other relative node (parental or descendant).
 
 ::
 
-  from ete_dev import Tree
+  from ete2 import Tree
    
   # Loads a tree with branch lenght information. Note that if no
   # distance info is provided in the newick, it will be initialized with
@@ -1797,7 +1797,7 @@ in terms of node distances.
 
 ::
 
-  from ete_dev import Tree
+  from ete2 import Tree
   # generates a random tree
   t = Tree();
   t.populate(15);

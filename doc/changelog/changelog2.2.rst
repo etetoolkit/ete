@@ -1,6 +1,6 @@
 What's new in ETE 2.2
 *********************************
-.. currentmodule:: ete_dev
+.. currentmodule:: ete2
 
 BUGFIXES
 ==========
@@ -161,7 +161,7 @@ NEW FEATURES
 
      :: 
      
-       from ete_dev import TreeStyle
+       from ete2 import TreeStyle
         
        def color_leaves(node):
            if node.is_leaf():
@@ -184,7 +184,7 @@ NEW FEATURES
 
     :: 
 
-        from ete_dev import random_color, COLOR_SCHEMES, SVG_COLORS
+        from ete2 import random_color, COLOR_SCHEMES, SVG_COLORS
 
         # generate 20 random colors
         node_colors = [random_color(s=0.4, l=4) for i in xrange(20)]

@@ -12,7 +12,7 @@ __licence__ = "GPLv3"
 __version__ = "0.0"
 
 
-from ete_dev import EvolTree
+from ete2 import EvolTree
 
 tree = EvolTree ("data/S_example/measuring_S_tree.nw")
 
@@ -58,7 +58,7 @@ raw_input ('finally have a look to two layouts available to display free-ratio:'
 tree.show()
 
 # have to import layou
-from ete_dev.treeview.layouts import evol_clean_layout
+from ete2.treeview.layouts import evol_clean_layout
 
 print '(omega in dark red, 100*(dN)/100*(dS), in grey)'
 tree.show (layout=evol_clean_layout)

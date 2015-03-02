@@ -1,4 +1,4 @@
-from ete_dev import PhyloTree
+from ete2 import PhyloTree
 # Loads an example tree
 nw = """
 ((Dme_001,Dme_002),(((Cfa_001,Mms_001),((Hsa_001,Ptr_001),Mmu_001)),

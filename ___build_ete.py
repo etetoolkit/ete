@@ -167,7 +167,7 @@ else:
 
 # Set VERSION in all modules
 print "*** Setting VERSION in all python files"
-_ex('find %s/ete_dev/ -name \'*.py\' |xargs sed \'1 i __VERSION__=\"%s\" \' -i' %\
+_ex('find %s/ete2/ -name \'*.py\' |xargs sed \'1 i __VERSION__=\"%s\" \' -i' %\
               (RELEASE_PATH, RELEASE_NAME))
 
 # Generating VERSION file
@@ -182,18 +182,18 @@ _ex('cp %s/doc/install/index.rst %s/INSTALL' %\
 
 # Check LICENSE disclaimer and add it or modify it if necessary
 print  "*** Setting LICENSE in all python files"
-_ex('find %s/ete_dev/ -name \'*.py\' -exec  python ___put_disclaimer.py {} \;' %\
+_ex('find %s/ete2/ -name \'*.py\' -exec  python ___put_disclaimer.py {} \;' %\
         (RELEASE_PATH))
 
-# Correct imports. I use ete_dev for development, but ete2 is the
+# Correct imports. I use ete2 for development, but ete2 is the
 # correct name for stable releases. First I install the module using a
 # different name just to test it
 print "*** Fixing imports..."
-_ex('find %s -name \'*.py\' -o -name \'*.rst\'| xargs perl -e "s/ete_dev/ete2_tester/g" -p -i' %\
+_ex('find %s -name \'*.py\' -o -name \'*.rst\'| xargs perl -e "s/ete2/ete2_tester/g" -p -i' %\
         (RELEASE_PATH))
 #_ex('cp %s/bin/ete %s/bin/ete2_tester' %\
 #              (RELEASE_PATH, RELEASE_PATH))
-_ex('mv %s/ete_dev %s/ete2_tester' %(RELEASE_PATH, RELEASE_PATH))
+_ex('mv %s/ete2 %s/ete2_tester' %(RELEASE_PATH, RELEASE_PATH))
 _ex('cd %s; python setup.py build --build-lib=build/lib' %(RELEASE_PATH))
 
 if options.unitest:
@@ -227,10 +227,10 @@ _ex('mv %s/ete2_tester %s' %(RELEASE_PATH, RELEASE_MODULE_PATH))
 #_ex('rm %s/bin/ete2_tester' % (RELEASE_PATH))
 _ex('find %s -name \'*.py\' -o -name \'*.rst\' | xargs perl -e "s/ete2_tester/%s/g" -p -i' %\
               (RELEASE_PATH, MODULE_NAME) )
-#_ex('find %s/bin/ -type f | xargs perl -e "s/ete_dev/%s/g" -p -i' %\
+#_ex('find %s/bin/ -type f | xargs perl -e "s/ete2/%s/g" -p -i' %\
 #              (RELEASE_PATH, MODULE_NAME) )
 
-#_ex('mv %s/bin/ete_dev %s/bin/%s' %\
+#_ex('mv %s/bin/ete2 %s/bin/%s' %\
 #              (RELEASE_PATH, RELEASE_PATH,  MODULE_NAME) )
 _ex('cd %s; python setup.py build' %(RELEASE_PATH))
 
@@ -259,8 +259,8 @@ if options.doc:
     _ex("cp -a %s/sdoc/_build/html/ %s/doc/" %(RELEASE_PATH, RELEASE_PATH))
 
     # Set the correct ete module name in all doc files
-    _ex('find %s/doc | xargs perl -e "s/ete_dev/%s/g" -p -i' %\
-            (RELEASE_PATH, MODULE_NAME) )
+    #_ex('find %s/doc | xargs perl -e "s/ete2/%s/g" -p -i' %\
+    #        (RELEASE_PATH, MODULE_NAME) )
 
     copydoc= ask("Update ONLINE PYPI documentation?", ["y","n"])
     if copydoc=="y":
@@ -268,8 +268,8 @@ if options.doc:
         print "Uploading"
         
         # Always upload DOC to the main page
-        _ex(' cd %s; cp VERSION _VERSION;  perl -e "s/%s/ete2/g" -p -i VERSION;' %\
-                (RELEASE_PATH, MODULE_NAME))
+        #_ex(' cd %s; cp VERSION _VERSION;  perl -e "s/%s/ete2/g" -p -i VERSION;' %\
+        #        (RELEASE_PATH, MODULE_NAME))
         
         _ex("cd %s; python setup.py upload_sphinx --upload-dir %s/doc/html/ --show-response" %\
                 (RELEASE_PATH, RELEASE_PATH))

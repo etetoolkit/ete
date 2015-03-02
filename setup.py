@@ -30,7 +30,7 @@ try:
         _fix_path = True
 
     # Is there a previous ETE installation? If so, use the same id
-    from ete_dev import __ETEID__ as ETEID
+    from ete2 import __ETEID__ as ETEID
 
     if _fix_path:
         sys.path.insert(0, _wd)
@@ -129,29 +129,29 @@ for mname, msg, ex in PYTHON_DEPENDENCIES:
 #        sys.exit()
 
 # writes installation id as a variable into the main module
-init_content = open("ete_dev/__init__.py").read()
+init_content = open("ete2/__init__.py").read()
 init_content = re.sub('__ETEID__="[\w\d]*"', '__ETEID__="%s"'
                       %ETEID, init_content)
-open("ete_dev/__init__.py", "w").write(init_content)
+open("ete2/__init__.py", "w").write(init_content)
 
 print "Your installation ID is:", ETEID
 
 ete_version = open("VERSION").readline().strip()
 revision = ete_version.split("rev")[-1]
-mod_name = "ete_dev"
+mod_name = "ete2"
 
 long_description = open("README").read()
 long_description += open("INSTALL").read()
-long_description.replace("ete_dev", mod_name)
+long_description.replace("ete2", mod_name)
 
 try:
     _s = setup(
-        name = "ete_dev",
+        name = "ete2",
         version = ete_version,
         packages = find_packages(),
 
         entry_points = {"console_scripts":
-                        ["ete_dev = ete_dev.tools.ete.py:main"]}, 
+                        ["ete2 = ete2.tools.ete.py:main"]}, 
         requires = [],
         
         # Project uses reStructuredText, so ensure that the docutils get
@@ -170,7 +170,7 @@ try:
         description = "A python Environment for (phylogenetic) Tree Exploration",
         long_description = long_description,
         classifiers = TAGS,
-        provides = ["ete_dev"],
+        provides = ["ete2"],
         keywords = "Tree handling, manipulation, analysis and visualization",
         url = "http://etetoolkit.org",
         download_url = "http://etetoolkit.org/static/releases/ete2/",

@@ -1,4 +1,4 @@
-from ete_dev import Tree
+from ete2 import Tree
 # Load an unrooted tree. Note that three branches hang from the root
 # node. This usually means that no information is available about
 # which of nodes is more basal.

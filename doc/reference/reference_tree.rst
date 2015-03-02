@@ -1,10 +1,10 @@
 Master Tree class
 ==================================
 
-.. currentmodule:: ete_dev
+.. currentmodule:: ete2
 
-.. autoclass:: ete_dev.TreeNode
+.. autoclass:: ete2.TreeNode
    :members:
    :no-undoc-members: 
 
-.. autoclass:: ete_dev.Tree
+.. autoclass:: ete2.Tree

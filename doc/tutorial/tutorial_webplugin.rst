@@ -1,6 +1,6 @@
-.. module:: ete_dev.webplugin
+.. module:: ete2.webplugin
 
-.. currentmodule:: ete_dev
+.. currentmodule:: ete2
 
 .. moduleauthor:: Jaime Huerta-Cepas
 
@@ -151,7 +151,7 @@ Implementation of WebTreeApplications
 ETE's :class:`WebTreeApplication` uses WSGI in the backend, and a
 several javascript files in the frontend. Basic files are included as
 an example in the `ETE installation package
-<http://pypi.python.org/pypi/ete_dev>`_ ``examples/webplugin``. The
+<http://pypi.python.org/pypi/ete2>`_ ``examples/webplugin``. The
 whole example folder is necessary, and it contains a commented copy of
 a web-tree implementation
 ``examples/webplugin/wsgi/webplugin_example.py``.

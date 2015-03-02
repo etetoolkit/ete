@@ -2,11 +2,11 @@
 
 .. versionadded:: 2.1
 
-.. module:: ete_dev.webplugin
+.. module:: ete2.webplugin
 
 WebTreeApplication object 
 ===========================
 
-.. autoclass:: ete_dev.WebTreeApplication
+.. autoclass:: ete2.WebTreeApplication
    :members:
    :no-undoc-members:

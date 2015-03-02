@@ -1,6 +1,6 @@
 import unittest
 
-from ete_dev import *
+from ete2 import *
 from datasets import *
 
 

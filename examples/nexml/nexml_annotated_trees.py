@@ -1,4 +1,4 @@
-from ete_dev import Nexml
+from ete2 import Nexml
 
 # Creates and empty NeXML project
 p = Nexml()

@@ -2,12 +2,12 @@ ETE's Reference Guide
 =======================
 
 .. inheritance-diagram::
-   ete_dev.phylomedb
-   ete_dev.coretype.tree
-   ete_dev.phylo.phylotree
-   ete_dev.evol.evoltree
-   ete_dev.evol.model
-   ete_dev.clustering.clustertree
+   ete2.phylomedb
+   ete2.coretype.tree
+   ete2.phylo.phylotree
+   ete2.evol.evoltree
+   ete2.evol.model
+   ete2.clustering.clustertree
    :parts: 1
 
 

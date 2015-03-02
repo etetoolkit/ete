@@ -1,4 +1,4 @@
-from ete_dev import Tree, faces, AttrFace, TreeStyle, NodeStyle
+from ete2 import Tree, faces, AttrFace, TreeStyle, NodeStyle
 
 def layout(node):
     if node.is_leaf():

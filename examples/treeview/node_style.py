@@ -1,4 +1,4 @@
-from ete_dev import Tree, faces, AttrFace, TreeStyle, NodeStyle
+from ete2 import Tree, faces, AttrFace, TreeStyle, NodeStyle
 
 def layout(node):
     # If node is a leaf, add the nodes name and a its scientific name

@@ -1,7 +1,7 @@
 import unittest
 import os
 import time
-from ete_dev import nexml, phyloxml
+from ete2 import nexml, phyloxml
 import sys
 
 class Test_PhyloXML(unittest.TestCase):

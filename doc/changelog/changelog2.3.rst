@@ -1,6 +1,6 @@
 What's new in ETE 2.3
 *********************************
-.. currentmodule:: ete_dev
+.. currentmodule:: ete2
 
 BUGFIXES
 ==========
