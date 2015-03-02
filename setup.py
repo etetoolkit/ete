@@ -103,12 +103,12 @@ print "Checking dependencies..."
 missing = False
 for mname, msg, ex in PYTHON_DEPENDENCIES:
     if not can_import(mname):
-        
         print "WARNING:\033[93m Optional library [%s] could not be found \033[0m" %mname
         print "  ",msg
         missing=True
 
-# writes installation id as a variable into the main module
+# writes installation id as a variable into the main module. Do not track old
+# installations as new aliens
 init_content = open("ete2/__init__.py").read()
 init_content = re.sub('__ETEID__="[\w\d]*"', '__ETEID__="%s"'
                       %ETEID, init_content)
