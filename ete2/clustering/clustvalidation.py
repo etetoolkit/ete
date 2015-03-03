@@ -37,7 +37,7 @@
 # 
 # #END_LICENSE#############################################################
 
-import numpy
+from ete2 import numpy
 from math import sqrt 
 
 def safe_mean(values):

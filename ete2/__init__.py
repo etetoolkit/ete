@@ -42,8 +42,15 @@
 # the __all__ variable.
 
 from warnings import warn
-from ncbi_taxonomy import *
 
+try:
+    import numpy
+except ImportError, e:
+    numpy = None
+    #warn("Clustering module could not be loaded. Is numpy installed?")
+    #warn(e)
+
+from ncbi_taxonomy import *
 from coretype.tree import *
 from coretype.seqgroup import *
 from phylo.phylotree import *
@@ -52,16 +59,8 @@ from webplugin.webapp import *
 from phyloxml import Phyloxml, PhyloxmlTree
 from nexml import Nexml, NexmlTree
 from evol import EvolTree
-
-
-try:
-    from coretype.arraytable import *
-except ImportError, e:
-    pass
-    #warn("Clustering module could not be loaded. Is numpy installed?")
-    #warn(e)
-else:
-    from clustering.clustertree import *
+from coretype.arraytable import *
+from clustering.clustertree import *
 
 try:
     from phylomedb.phylomeDB3 import *
@@ -71,12 +70,13 @@ except ImportError, e:
     #warn(e)
 
 try:
+    from treeview.svg_colors import *
     from treeview.main import *
     from treeview.faces import *
     from treeview import faces
     from treeview import layouts
-    from treeview.svg_colors import *
 except ImportError, e:
+    #print e
     pass
     #warn("Treeview module could not be loaded")
     #warn(e)

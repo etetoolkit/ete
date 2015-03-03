@@ -44,7 +44,7 @@ from PyQt4  import QtCore
 from qt4_gui import _GUI, _PropertiesDialog, _BasicNodeActions
 
 import layouts
-from ete2 import Tree, PhyloTree, ClusterTree
+#from ete2 import Tree, PhyloTree, ClusterTree
 from main import save
 from qt4_render import _TreeScene, render, get_tree_img_map, init_tree_style
 

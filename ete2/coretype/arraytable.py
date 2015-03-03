@@ -43,7 +43,7 @@ import re
 import math
 from os import path
 
-import numpy
+from ete2 import numpy
 from ete2.parser.text_arraytable import write_arraytable, read_arraytable
 
 __all__ = ["ArrayTable"]

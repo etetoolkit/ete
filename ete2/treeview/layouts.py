@@ -37,7 +37,8 @@
 # 
 # #END_LICENSE#############################################################
 
-import numpy
+
+from ete2 import numpy
 import faces
 
 def basic(node):

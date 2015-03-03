@@ -36,7 +36,8 @@
 #
 # 
 # #END_LICENSE#############################################################
-from ete2 import PhyloTree, PhyloNode, ClusterTree, ClusterNode, EvolTree, EvolNode
+from ete2 import (PhyloTree, PhyloNode,
+                  ClusterTree, ClusterNode, EvolTree, EvolNode)
 import layouts 
 
 def apply_template(tree_style, template):

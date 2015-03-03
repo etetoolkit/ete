@@ -38,11 +38,10 @@
 # #END_LICENSE#############################################################
 
 from sys import stderr
-import numpy
 import clustvalidation
-from numpy import nan as NaN # Missing values are saved as NaN values
 from ete2.coretype.tree import _translate_nodes
 from ete2 import TreeNode, ArrayTable
+from ete2 import numpy
 
 __all__ = ["ClusterNode", "ClusterTree"]
 
@@ -179,7 +178,7 @@ class ClusterNode(TreeNode):
             if n.is_leaf() and n.name in array.rowNames:
                 n._profile = array.get_row_vector(n.name)
             elif n.is_leaf():
-                n._profile = [NaN]*len(array.colNames)
+                n._profile = [numpy.nan]*len(array.colNames)
                 missing_leaves.append(n)
 
 

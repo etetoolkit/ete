@@ -41,8 +41,7 @@
 
 import re
 from sys import stderr
-import numpy
-
+from ete2 import numpy
 
 __all__ = ['read_arraytable', 'write_arraytable']
 

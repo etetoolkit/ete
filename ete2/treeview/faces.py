@@ -47,12 +47,17 @@ from PyQt4.QtGui import (QGraphicsRectItem, QGraphicsLineItem,
                          QGraphicsItem)
 from PyQt4.QtCore import Qt,  QPointF, QRect, QRectF
 
-from numpy import isfinite as _isfinite, ceil
+
 import math
 from main import add_face_to_node, _Background, _Border, COLOR_SCHEMES
 
-isfinite = lambda n: n and _isfinite(n)
-
+try:
+    from numpy import isfinite as _isfinite, ceil
+except ImportError:
+    pass
+else:
+    isfinite = lambda n: n and _isfinite(n)
+    
 _aafgcolors = {
     'A':"#000000" ,
     'R':"#000000" ,
