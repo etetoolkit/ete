@@ -550,9 +550,9 @@ def update_db(targz_file, dbfile):
         os.system("rm syn.tab merged.tab taxa.tab")
     
 def upload_data(dbfile):
-
-    db = sqlite3.connect(dbfile)
     print 'Uploading to', dbfile
+    db = sqlite3.connect(dbfile)
+    
     
     create_cmd = """
     DROP TABLE IF EXISTS species;
