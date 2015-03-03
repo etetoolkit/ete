@@ -1,5 +1,5 @@
-[![Build Status](https://travis-ci.org/jhcepas/ete.svg?branch=master)](https://travis-ci.org/jhcepas/ete)
-
+.. image:: https://travis-ci.org/jhcepas/ete.svg?branch=master
+    :target: https://travis-ci.org/jhcepas/ete
 
 The Environment for Tree Exploration (ETE) is a Python programming
 toolkit that assists in the automated manipulation, analysis and
