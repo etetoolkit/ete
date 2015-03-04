@@ -51,7 +51,11 @@ def read_phylip(source, interleaved=True, obj=None,
 
     # Prepares handle from which read sequences
     if os.path.isfile(source):
-        _source = open(source, "rU")
+        if source.endswith('.gz'):
+            import gzip 
+            _source = gzip.open(source, "rU")
+        else:
+            _source = open(source, "rU")
     else:
         _source = iter(source.split("\n"))
 

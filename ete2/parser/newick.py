@@ -234,7 +234,11 @@ def read_newick(newick, root_node=None, format=0):
 
     if isinstance(newick, basestring):
         if os.path.exists(newick):
-            nw = open(newick, 'rU').read()
+            if newick.endswith('.gz'):
+                import gzip 
+                nw = gzip.open(source, "rU").read()
+            else:
+                nw = open(newick, 'rU').read()
         else:
             nw = newick
         nw = nw.strip()
