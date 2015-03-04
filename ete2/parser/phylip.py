@@ -53,7 +53,7 @@ def read_phylip(source, interleaved=True, obj=None,
     if os.path.isfile(source):
         if source.endswith('.gz'):
             import gzip 
-            _source = gzip.open(source, "rU")
+            _source = gzip.open(source)
         else:
             _source = open(source, "rU")
     else:

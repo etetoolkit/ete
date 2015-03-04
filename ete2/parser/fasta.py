@@ -58,7 +58,7 @@ def read_fasta(source, obj=None, header_delimiter="\t", fix_duplicates=True):
     if os.path.isfile(source):
         if source.endswith('.gz'):
             import gzip 
-            _source = gzip.open(source, "rU")
+            _source = gzip.open(source)
         else:
             _source = open(source, "rU")
     else:
