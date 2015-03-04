@@ -44,6 +44,7 @@ from string import strip
 
 import sqlite3
 import math
+import tarfile
 
 c = None
 
@@ -58,22 +59,35 @@ class NCBITaxa(object):
     """
     
     def __init__(self, dbfile = None):
+        
         if not dbfile:
             self.dbfile = os.path.join(os.environ.get('HOME', '/'), '.etetoolkit', 'taxa.sqlite')
         else:
             self.dbfile = dbfile
-                
+
+        if dbfile is None and not os.path.exists(self.dbfile):
+            print >>sys.stderr, 'NCBI database not present yet (first time used?)'
+            self.update_taxonomy_database()
+               
         if not os.path.exists(self.dbfile):
-            raise ValueError("NCBI taxonomy database was not found in %s" %self.dbfile)
+            raise ValueError("Cannot open taxonomy database: %s" %self.dbfile)
                             
         self.db = None
         self._connect()
-            
+
+    def update_taxonomy_database(self, taxdump_file=None):
+        """Updates the ncbi taxonomy database using the latest taxdump.tar.gz file from the NCBI FTP site.  """
+        if not taxdump_file:
+            import urllib
+            print >>sys.stderr, 'Downloading taxdump.tar.gz from NCBI FTP site...'
+            urllib.urlretrieve("ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz", "taxdump.tar.gz")
+            print >>sys.stderr, 'Done. Parsing...'
+            update_db('taxdump.tar.gz', self.dbfile)
+        else:
+            update_db(taxdump_file, self.dbfile)
+       
     def _connect(self):
         self.db = sqlite3.connect(self.dbfile)
-
-    def _update_database(self):
-        pass
 
     def _translate_merged(self, all_taxids):
         conv_all_taxids = set((map(int, all_taxids)))
@@ -454,3 +468,123 @@ class NCBITaxa(object):
     #     return self.annotate_tree(t, tax2name, tax2track, attr_name="taxid")
 
 
+
+    
+
+def load_ncbi_tree_from_dump(tar):
+    from ete2 import Tree
+    # Download: ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz
+    parent2child = {}
+    name2node = {}
+    node2taxname = {}
+    synonyms = set()
+    name2rank = {}
+    print "Loading node names..."
+    for line in tar.extractfile("names.dmp"):
+        fields =  map(strip, line.split("|"))
+        nodename = fields[0]
+        name_type = fields[3].lower()
+        taxname = fields[1]
+        if name_type == "scientific name":
+            node2taxname[nodename] = taxname
+        elif name_type in set(["synonym", "equivalent name", "genbank equivalent name",
+                               "anamorph", "genbank synonym", "genbank anamorph", "teleomorph"]):
+            synonyms.add( (nodename, taxname) )
+    print len(node2taxname), "names loaded."
+    print len(synonyms), "synonyms loaded."
+
+    print "Loading nodes..."
+    for line in tar.extractfile("nodes.dmp"):
+        fields =  line.split("|")
+        nodename = fields[0].strip()
+        parentname = fields[1].strip()
+        n = Tree()
+        n.name = nodename
+        n.taxname = node2taxname[nodename]
+        n.rank = fields[2].strip()
+        parent2child[nodename] = parentname
+        name2node[nodename] = n
+    print len(name2node), "nodes loaded."
+
+    print "Linking nodes..."
+    for node in name2node:
+       if node == "1":
+           t = name2node[node]
+       else:
+           parent = parent2child[node]
+           parent_node = name2node[parent]
+           parent_node.add_child(name2node[node])
+    print "Tree is loaded."
+    return t, synonyms
+
+def generate_table(t):
+    OUT = open("taxa.tab", "w")
+    for j, n in enumerate(t.traverse()):
+        if j%1000 == 0:
+            print "\r",j,"generating entries...",
+        temp_node = n
+        track = []
+        while temp_node:
+            track.append(temp_node.name)
+            temp_node = temp_node.up
+        if n.up:
+            print >>OUT, '\t'.join([n.name, n.up.name, n.taxname, n.rank, ','.join(track)])
+        else:
+            print >>OUT, '\t'.join([n.name, "", n.taxname, n.rank, ','.join(track)])
+    OUT.close()
+
+def update_db(targz_file, dbfile):
+    tar = tarfile.open(targz_file, 'r')
+    t, synonyms = load_ncbi_tree_from_dump(tar)
+
+    print "Updating database: %s ..." %dbfile
+    generate_table(t)
+   
+    open("syn.tab", "w").write('\n'.join(["%s\t%s" %(v[0],v[1]) for v in synonyms]))
+    open("merged.tab", "w").write('\n'.join(['\t'.join(map(strip, line.split('|')[:2])) for line in tar.extractfile("merged.dmp")]))
+    try:
+        upload_data(dbfile)
+    except:
+        raise 
+    else:
+        os.system("rm syn.tab merged.tab taxa.tab")
+    
+def upload_data(dbfile):
+    print
+    print 'Uploading to', dbfile
+    db = sqlite3.connect(dbfile)
+        
+    create_cmd = """
+    DROP TABLE IF EXISTS species;
+    DROP TABLE IF EXISTS synonym;
+    DROP TABLE IF EXISTS merged;
+    CREATE TABLE species (taxid INT PRIMARY KEY, parent INT, spname VARCHAR(50) COLLATE NOCASE, rank VARCHAR(50), track TEXT);
+    CREATE TABLE synonym (taxid INT,spname VARCHAR(50) COLLATE NOCASE, PRIMARY KEY (spname, taxid));
+    CREATE TABLE merged (taxid_old INT, taxid_new INT);
+    CREATE INDEX spname1 ON species (spname COLLATE NOCASE);
+    CREATE INDEX spname2 ON synonym (spname COLLATE NOCASE);
+    """
+    for cmd in create_cmd.split(';'):
+        db.execute(cmd)
+    print
+    for i, line in enumerate(open("syn.tab")):
+        print >>sys.stderr, '\rInserting synonyms:     % 6d' %i,
+        sys.stderr.flush()
+        taxid, spname = line.strip('\n').split('\t')
+        db.execute("INSERT INTO synonym (taxid, spname) VALUES (?, ?);", (taxid, spname))
+    print
+    db.commit()
+    for i, line in enumerate(open("merged.tab")):
+        print >>sys.stderr, '\rInserting taxid merges: % 6d' %i,
+        sys.stderr.flush()
+        taxid_old, taxid_new = line.strip('\n').split('\t')
+        db.execute("INSERT INTO merged (taxid_old, taxid_new) VALUES (?, ?);", (taxid_old, taxid_new))
+    print
+    db.commit()
+    for i, line in enumerate(open("taxa.tab")):
+        print >>sys.stderr, '\rInserting taxids:      % 6d' %i,
+        sys.stderr.flush()
+        taxid, parentid, spname, rank, lineage = line.strip('\n').split('\t')
+        db.execute("INSERT INTO species (taxid, parent, spname, rank, track) VALUES (?, ?, ?, ?, ?);", (taxid, parentid, spname, rank, lineage))
+    print
+    db.commit()

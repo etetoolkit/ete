@@ -59,32 +59,32 @@ def populate_args(ncbi_args_p):
     output_args = ncbi_args_p.add_argument_group('NCBI OUTPUT OPTIONS')
     
     output_args.add_argument("--taxonomy", dest="taxonomy",   
-                        action='store_true', 
-                        help=("dump a pruned version of the NCBI taxonomy"
-                              " tree containing target species into the specified file"))
-
+                             action='store_true', 
+                             help=("dump a pruned version of the NCBI taxonomy"
+                                   " tree containing target species into the specified file"))
+    
     output_args.add_argument("--info", dest="info",   
-                        action='store_true', 
-                        help="""dump NCBI taxonmy information for each target species into the specified file. """)
+                             action='store_true', 
+                             help="""dump NCBI taxonmy information for each target species into the specified file. """)
     
     output_args.add_argument("--collapse_subspecies", dest="collapse_subspecies",   
-                        action="store_true",
-                        help=("When used, all nodes under the the species rank"
-                              " are collapsed, so all species and subspecies"
+                             action="store_true",
+                             help=("When used, all nodes under the the species rank"
+                                   " are collapsed, so all species and subspecies"
                               " are seen as sister nodes"))
-
+    
     output_args.add_argument("--rank_limit", dest="rank_limit",   
-                        type=str,
-                        help=("When used, all nodes under the provided rank"
-                              " are discarded"))
+                             type=str,
+                             help=("When used, all nodes under the provided rank"
+                                   " are discarded"))
     
     output_args.add_argument("--full_lineage", dest="full_lineage",   
-                        action="store_true",
-                        help=("When used, topology is not pruned to avoid "
-                              " one-child-nodes, so the complete lineage"
-                              " track leading from root to tips is kept."))
-
-
+                             action="store_true",
+                             help=("When used, topology is not pruned to avoid "
+                                   " one-child-nodes, so the complete lineage"
+                                   " track leading from root to tips is kept."))
+    
+    
 def run(args):
     # add lineage profiles/stats
     
