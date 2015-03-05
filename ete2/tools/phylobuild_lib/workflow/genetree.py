@@ -40,15 +40,15 @@ import re
 import commands
 import logging
 
-from phylobuild_lib.task import TreeMerger, Msf, DummyTree
-from phylobuild_lib.errors import DataError
-from phylobuild_lib.utils import (GLOBALS, rpath, pjoin, pexist, generate_runid, 
+from ete2.tools.phylobuild_lib.task import TreeMerger, Msf, DummyTree
+from ete2.tools.phylobuild_lib.errors import DataError
+from ete2.tools.phylobuild_lib.utils import (GLOBALS, rpath, pjoin, pexist, generate_runid, 
                                   DATATYPES, GAP_CHARS, DEBUG, SeqGroup, _min, _max, _std, _mean, _median)
-from phylobuild_lib import db
-from phylobuild_lib.master_task import register_task_recursively
-from phylobuild_lib.workflow.common import (IterConfig, get_next_npr_node,
+from ete2.tools.phylobuild_lib import db
+from ete2.tools.phylobuild_lib.master_task import register_task_recursively
+from ete2.tools.phylobuild_lib.workflow.common import (IterConfig, get_next_npr_node,
                                     process_new_tasks, get_iternumber)
-from phylobuild_lib.logger import logindent
+from ete2.tools.phylobuild_lib.logger import logindent
 log = logging.getLogger("main")
 
 def annotate_node(t, final_task):

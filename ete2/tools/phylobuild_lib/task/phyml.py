@@ -44,10 +44,10 @@ import re
 import logging
 log = logging.getLogger("main")
 
-from phylobuild_lib.master_task import TreeTask
-from phylobuild_lib.master_job import Job
-from phylobuild_lib.utils import basename, PhyloTree, OrderedDict, GLOBALS, PHYML_CITE, DATATYPES
-from phylobuild_lib import db
+from ete2.tools.phylobuild_lib.master_task import TreeTask
+from ete2.tools.phylobuild_lib.master_job import Job
+from ete2.tools.phylobuild_lib.utils import basename, PhyloTree, OrderedDict, GLOBALS, PHYML_CITE, DATATYPES
+from ete2.tools.phylobuild_lib import db
 
 __all__ = ["Phyml"]
 

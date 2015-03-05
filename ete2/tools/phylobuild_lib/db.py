@@ -43,7 +43,7 @@ import cPickle
 import base64
 import zlib
 import logging
-from phylobuild_lib.utils import md5, pexist
+from ete2.tools.phylobuild_lib.utils import md5, pexist
 
 log = logging.getLogger("main")
 

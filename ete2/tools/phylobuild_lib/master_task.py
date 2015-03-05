@@ -42,13 +42,13 @@ import traceback
 log = logging.getLogger("main")
 from collections import defaultdict
 
-from phylobuild_lib.logger import logindent
-from phylobuild_lib.utils import (md5, merge_arg_dicts, PhyloTree, SeqGroup,
+from ete2.tools.phylobuild_lib.logger import logindent
+from ete2.tools.phylobuild_lib.utils import (md5, merge_arg_dicts, PhyloTree, SeqGroup,
                           checksum, read_time_file, generate_runid,
                           GLOBALS, DATATYPES)
-from phylobuild_lib.master_job import Job
-from phylobuild_lib.errors import TaskError
-from phylobuild_lib import db
+from ete2.tools.phylobuild_lib.master_job import Job
+from ete2.tools.phylobuild_lib.errors import TaskError
+from ete2.tools.phylobuild_lib import db
 import shutil
 
 isjob = lambda j: isinstance(j, Job)

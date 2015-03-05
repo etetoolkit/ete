@@ -37,10 +37,10 @@
 # 
 # #END_LICENSE#############################################################
 import os
-from phylobuild_lib.configobj import ConfigObj
-from phylobuild_lib.errors import ConfigError
-from phylobuild_lib.utils import colorify
-from phylobuild_lib.apps import APP2CLASS
+from ete2.tools.phylobuild_lib.configobj import ConfigObj
+from ete2.tools.phylobuild_lib.errors import ConfigError
+from ete2.tools.phylobuild_lib.utils import colorify
+from ete2.tools.phylobuild_lib.apps import APP2CLASS
 
 def list_workflows(config):
     wtype_legend = {

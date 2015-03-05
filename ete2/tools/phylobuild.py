@@ -104,20 +104,20 @@ args = None
 
 sys.path.insert(0, NPRPATH)
 
-from phylobuild_lib import argparse
-from phylobuild_lib.utils import (strip, SeqGroup, generate_runid,  AA, NT,
+from ete2.tools.phylobuild_lib import argparse
+from ete2.tools.phylobuild_lib.utils import (strip, SeqGroup, generate_runid,  AA, NT,
                                   GLOBALS, encode_seqname, pjoin, pexist,
                                   hascontent, clear_tempdir, ETE_CITE, colorify,
                                   GENCODE, silent_remove, _max, _min, _std, _mean, _median)
-from phylobuild_lib.errors import ConfigError, DataError
-from phylobuild_lib.master_task import Task
-from phylobuild_lib.interface import app_wrapper
-from phylobuild_lib.scheduler import schedule
-from phylobuild_lib import db
-from phylobuild_lib import apps
-from phylobuild_lib.logger import logindent
-from phylobuild_lib.citation import Citator
-from phylobuild_lib.configcheck import is_file, is_dir, check_config, list_workflows, block_detail, list_apps
+from ete2.tools.phylobuild_lib.errors import ConfigError, DataError
+from ete2.tools.phylobuild_lib.master_task import Task
+from ete2.tools.phylobuild_lib.interface import app_wrapper
+from ete2.tools.phylobuild_lib.scheduler import schedule
+from ete2.tools.phylobuild_lib import db
+from ete2.tools.phylobuild_lib import apps
+from ete2.tools.phylobuild_lib.logger import logindent
+from ete2.tools.phylobuild_lib.citation import Citator
+from ete2.tools.phylobuild_lib.configcheck import is_file, is_dir, check_config, list_workflows, block_detail, list_apps
 
 APPSPATH =  pjoin(NPRPATH, "ext_apps/")
 
@@ -394,9 +394,9 @@ def main(args):
     TARGET_CLADES.discard('')
 
     if WORKFLOW_TYPE == 'genetree':
-        from phylobuild_lib.workflow.genetree import pipeline
+        from ete2.tools.phylobuild_lib.workflow.genetree import pipeline
     elif WORKFLOW_TYPE == 'supermatrix':
-        from phylobuild_lib.workflow.supermatrix import pipeline
+        from ete2.tools.phylobuild_lib.workflow.supermatrix import pipeline
 
     #if args.arch == "auto":
     #    arch = "64 " if sys.maxsize > 2**32 else "32"

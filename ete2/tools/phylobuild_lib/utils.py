@@ -60,18 +60,15 @@ from glob import glob
 try:
     import numpy
 except ImportError:
+    import math
     def _mean(nums):
-        sum = 0.0
-        for num in nums:
-            sum = sum + num
-        return sum / len(nums)
+        return float(sum(nums)) / len(nums)
 
-    def _std(nums, xbar):
-        sumDevSq = 0.0
-        for num in nums:
-            dev = num - xbar
-            sumDevSq = sumDevSq + dev * dev
-        return sqrt(sumDevSq/(len(nums)-1))
+    def _std(nums):
+        avg = _mean(nums)
+        variance = map(lambda x: (x - avg)**2, nums)
+        std = math.sqrt(_mean(variance))
+        return std
             
     def _median(nums):
         nums.sort()
@@ -173,7 +170,7 @@ Methods. 2012 Jul 30;9(8):772."""
 try: 
     from collections import OrderedDict
 except ImportError: 
-    from phylobuild_lib.ordereddict import OrderedDict
+    from ete2.tools.phylobuild_lib.ordereddict import OrderedDict
     
 # ete2 should be added to the python path by the npr script
 from ete2.phylo import PhyloTree

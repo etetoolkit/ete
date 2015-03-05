@@ -42,10 +42,10 @@ import sys
 import logging
 log = logging.getLogger("main")
 
-from phylobuild_lib.master_task import AlgCleanerTask
-from phylobuild_lib.master_job import Job
-from phylobuild_lib.utils import SeqGroup, GLOBALS, TRIMAL_CITE, hascontent, DATATYPES, pjoin
-from phylobuild_lib import db
+from ete2.tools.phylobuild_lib.master_task import AlgCleanerTask
+from ete2.tools.phylobuild_lib.master_job import Job
+from ete2.tools.phylobuild_lib.utils import SeqGroup, GLOBALS, TRIMAL_CITE, hascontent, DATATYPES, pjoin
+from ete2.tools.phylobuild_lib import db
 
 __all__ = ["Trimal"]
 

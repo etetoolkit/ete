@@ -48,9 +48,9 @@ from textwrap import TextWrapper
 import Queue
 import threading
 
-from phylobuild_lib.logger import get_main_log
-from phylobuild_lib.utils import GLOBALS, clear_tempdir, terminate_job_launcher, pjoin, pexist
-from phylobuild_lib.errors import *
+from ete2.tools.phylobuild_lib.logger import get_main_log
+from ete2.tools.phylobuild_lib.utils import GLOBALS, clear_tempdir, terminate_job_launcher, pjoin, pexist
+from ete2.tools.phylobuild_lib.errors import *
 
 try:
     import curses

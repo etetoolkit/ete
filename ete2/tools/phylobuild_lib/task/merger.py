@@ -40,13 +40,13 @@ import logging
 import os
 log = logging.getLogger("main")
 
-from phylobuild_lib.master_task import TreeMergeTask
-from phylobuild_lib.master_job import Job
-from phylobuild_lib.utils import (load_node_size, PhyloTree, SeqGroup, generate_id,
+from ete2.tools.phylobuild_lib.master_task import TreeMergeTask
+from ete2.tools.phylobuild_lib.master_job import Job
+from ete2.tools.phylobuild_lib.utils import (load_node_size, PhyloTree, SeqGroup, generate_id,
                           NPR_TREE_STYLE, NodeStyle, DEBUG,
                           faces, pjoin, GLOBALS)
-from phylobuild_lib import db
-from phylobuild_lib.errors import TaskError
+from ete2.tools.phylobuild_lib import db
+from ete2.tools.phylobuild_lib.errors import TaskError
 
 __all__ = ["TreeMerger"]
 

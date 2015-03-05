@@ -41,12 +41,12 @@ import logging
 from collections import defaultdict
 log = logging.getLogger("main")
 
-from phylobuild_lib.task import Msf
-from phylobuild_lib.master_task import ConcatAlgTask
-from phylobuild_lib.master_job import Job
-from phylobuild_lib.utils import SeqGroup, GLOBALS, generate_runid, strip, pexist, md5
-from phylobuild_lib import db
-from phylobuild_lib.errors import TaskError
+from ete2.tools.phylobuild_lib.task import Msf
+from ete2.tools.phylobuild_lib.master_task import ConcatAlgTask
+from ete2.tools.phylobuild_lib.master_job import Job
+from ete2.tools.phylobuild_lib.utils import SeqGroup, GLOBALS, generate_runid, strip, pexist, md5
+from ete2.tools.phylobuild_lib import db
+from ete2.tools.phylobuild_lib.errors import TaskError
 
 __all__ = ["ConcatAlg"]
 
@@ -82,7 +82,7 @@ class ConcatAlg(ConcatAlgTask):
         
     def load_jobs(self):
         # I want a single phylognetic tree for each cog
-        from phylobuild_lib.workflow.genetree import pipeline
+        from ete2.tools.phylobuild_lib.workflow.genetree import pipeline
         
         for co in self.cogs:
             # Register a new msf task for each COG, using the same

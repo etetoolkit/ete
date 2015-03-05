@@ -40,13 +40,13 @@ import os
 import logging
 log = logging.getLogger("main")
 
-from phylobuild_lib.master_task import MsfTask
-from phylobuild_lib.master_job import Job
-from phylobuild_lib.utils import (PhyloTree, SeqGroup, md5, generate_node_ids,
+from ete2.tools.phylobuild_lib.master_task import MsfTask
+from ete2.tools.phylobuild_lib.master_job import Job
+from ete2.tools.phylobuild_lib.utils import (PhyloTree, SeqGroup, md5, generate_node_ids,
                           hascontent, pjoin, DATATYPES)
-from phylobuild_lib.errors import DataError
+from ete2.tools.phylobuild_lib.errors import DataError
 
-from phylobuild_lib import db
+from ete2.tools.phylobuild_lib import db
 
 __all__ = ["Msf"]
 

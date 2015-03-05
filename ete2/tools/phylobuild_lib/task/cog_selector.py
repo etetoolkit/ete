@@ -44,11 +44,11 @@ import logging
 import os
 log = logging.getLogger("main")
 
-from phylobuild_lib.master_task import CogSelectorTask
-from phylobuild_lib.errors import DataError, TaskError
-from phylobuild_lib.utils import (GLOBALS, print_as_table, generate_node_ids,
+from ete2.tools.phylobuild_lib.master_task import CogSelectorTask
+from ete2.tools.phylobuild_lib.errors import DataError, TaskError
+from ete2.tools.phylobuild_lib.utils import (GLOBALS, print_as_table, generate_node_ids,
                           encode_seqname, md5, pjoin)
-from phylobuild_lib import db
+from ete2.tools.phylobuild_lib import db
 
 __all__ = ["CogSelector"]
 

@@ -44,7 +44,7 @@ import db
 import logging
 log = logging.getLogger("main")
 
-from phylobuild_lib.utils import (md5, basename, strip, pid_up, HOSTNAME,
+from ete2.tools.phylobuild_lib.utils import (md5, basename, strip, pid_up, HOSTNAME,
                           GLOBALS, TIME_FORMAT, pjoin)
 
 class Job(object):

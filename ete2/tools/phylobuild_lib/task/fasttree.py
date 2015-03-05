@@ -44,11 +44,11 @@ import shutil
 import logging
 log = logging.getLogger("main")
 
-from phylobuild_lib.master_task import TreeTask
-from phylobuild_lib.master_job import Job
-from phylobuild_lib.utils import (basename, Tree, OrderedDict, GLOBALS,
+from ete2.tools.phylobuild_lib.master_task import TreeTask
+from ete2.tools.phylobuild_lib.master_job import Job
+from ete2.tools.phylobuild_lib.utils import (basename, Tree, OrderedDict, GLOBALS,
                           FASTTREE_CITE, DATATYPES, pjoin)
-from phylobuild_lib import db
+from ete2.tools.phylobuild_lib import db
 __all__ = ["FastTree"]
 
 class FastTree(TreeTask):

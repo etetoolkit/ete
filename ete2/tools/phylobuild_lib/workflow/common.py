@@ -39,13 +39,13 @@
 from collections import defaultdict
 import logging
 
-from phylobuild_lib.utils import (DEBUG, GLOBALS, SeqGroup, tobool, sec2time, read_time_file,
+from ete2.tools.phylobuild_lib.utils import (DEBUG, GLOBALS, SeqGroup, tobool, sec2time, read_time_file,
                                   _max, _min, _mean, _std, _median)
-from phylobuild_lib.apps import APP2CLASS
-from phylobuild_lib import task as all_tasks
-from phylobuild_lib import db
-from phylobuild_lib.errors import ConfigError, DataError, TaskError
-from phylobuild_lib.master_task import register_task_recursively, isjob
+from ete2.tools.phylobuild_lib.apps import APP2CLASS
+from ete2.tools.phylobuild_lib import task as all_tasks
+from ete2.tools.phylobuild_lib import db
+from ete2.tools.phylobuild_lib.errors import ConfigError, DataError, TaskError
+from ete2.tools.phylobuild_lib.master_task import register_task_recursively, isjob
 
 log = logging.getLogger("main")
                 

@@ -39,15 +39,15 @@
 import logging
 from collections import defaultdict
 
-from phylobuild_lib.task import TreeMerger, DummyTree
-from phylobuild_lib.utils import (GLOBALS, tobool, generate_runid, pjoin, rpath, DATATYPES, md5,
+from ete2.tools.phylobuild_lib.task import TreeMerger, DummyTree
+from ete2.tools.phylobuild_lib.utils import (GLOBALS, tobool, generate_runid, pjoin, rpath, DATATYPES, md5,
                           dict_string, ncbi, colorify)
 
-from phylobuild_lib.errors import DataError, TaskError
-from phylobuild_lib import db
-from phylobuild_lib.workflow.common import (process_new_tasks, IterConfig,
+from ete2.tools.phylobuild_lib.errors import DataError, TaskError
+from ete2.tools.phylobuild_lib import db
+from ete2.tools.phylobuild_lib.workflow.common import (process_new_tasks, IterConfig,
                                     get_next_npr_node, get_iternumber)
-from phylobuild_lib.logger import logindent
+from ete2.tools.phylobuild_lib.logger import logindent
 
 log = logging.getLogger("main")
 

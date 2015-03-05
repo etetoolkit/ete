@@ -41,9 +41,9 @@ import re
 import logging
 log = logging.getLogger("main")
 
-from phylobuild_lib.master_task import ModelTesterTask
-from phylobuild_lib.master_job import Job
-from phylobuild_lib.utils import basename, PhyloTree, GLOBALS
+from ete2.tools.phylobuild_lib.master_task import ModelTesterTask
+from ete2.tools.phylobuild_lib.master_job import Job
+from ete2.tools.phylobuild_lib.utils import basename, PhyloTree, GLOBALS
 
 __all__ = ["Prottest"]
 

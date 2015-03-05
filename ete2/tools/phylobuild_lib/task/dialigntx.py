@@ -40,9 +40,9 @@ import os
 import logging
 log = logging.getLogger("main")
 
-from phylobuild_lib.master_task import AlgTask
-from phylobuild_lib.master_job import Job
-from phylobuild_lib.utils import SeqGroup, OrderedDict, GLOBALS, DIALIGN_CITE, pjoin
+from ete2.tools.phylobuild_lib.master_task import AlgTask
+from ete2.tools.phylobuild_lib.master_job import Job
+from ete2.tools.phylobuild_lib.utils import SeqGroup, OrderedDict, GLOBALS, DIALIGN_CITE, pjoin
 
 __all__ = ["Dialigntx"]
 

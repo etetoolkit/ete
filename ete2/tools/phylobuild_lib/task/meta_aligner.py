@@ -41,12 +41,12 @@ import logging
 import shutil
 log = logging.getLogger("main")
 
-from phylobuild_lib.master_task import AlgTask, Task
-from phylobuild_lib.master_job import Job
-from phylobuild_lib.utils import (SeqGroup, OrderedDict, checksum, pjoin,
+from ete2.tools.phylobuild_lib.master_task import AlgTask, Task
+from ete2.tools.phylobuild_lib.master_job import Job
+from ete2.tools.phylobuild_lib.utils import (SeqGroup, OrderedDict, checksum, pjoin,
                           GLOBALS, MCOFFEE_CITE, DATATYPES)
-from phylobuild_lib.apps import APP2CLASS, CLASS2MODULE
-from phylobuild_lib import db
+from ete2.tools.phylobuild_lib.apps import APP2CLASS, CLASS2MODULE
+from ete2.tools.phylobuild_lib import db
 
 import __init__ as task
 
