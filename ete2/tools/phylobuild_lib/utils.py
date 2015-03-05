@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # #START_LICENSE###########################################################
 #
 #
@@ -36,8 +38,7 @@
 #
 # 
 # #END_LICENSE#############################################################
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+
 import sys
 from os import kill
 from os.path import join as pjoin

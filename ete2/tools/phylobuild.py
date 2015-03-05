@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 # #START_LICENSE###########################################################
 #
 #
@@ -36,8 +39,6 @@
 #
 # 
 # #END_LICENSE#############################################################
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 import errno
 import __builtin__
@@ -119,7 +120,7 @@ from ete2.tools.phylobuild_lib.logger import logindent
 from ete2.tools.phylobuild_lib.citation import Citator
 from ete2.tools.phylobuild_lib.configcheck import is_file, is_dir, check_config, list_workflows, block_detail, list_apps
 
-APPSPATH =  pjoin(NPRPATH, "ext_apps/")
+#APPSPATH =  pjoin(NPRPATH, "ext_apps/")
 
 try:
     __VERSION__ = open(os.path.join(NPRPATH, "VERSION")).read().strip()
@@ -992,6 +993,10 @@ def _main():
                              type=is_file, default=NPRPATH+'/phylobuild.cfg',
                              help="Custom configuration file.")
     
+    input_group.add_argument("--tools-dir", dest="tools_dir",
+                             type=str,
+                             default='~/.etetoolkit/ext_apps/',
+                             help="Custom path where external software is avaiable.")
     
     input_group.add_argument("-w", dest="workflow",
                              required=True,
@@ -1245,7 +1250,8 @@ def _main():
                           " debugging will start from such task on.")
     
     args = parser.parse_args()
-
+    APPSPATH = args.tools_dir
+    
     args.enable_ui = False
 
     if not args.noimg:
