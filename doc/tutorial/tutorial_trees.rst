@@ -999,7 +999,42 @@ string.
 
 Comparing Trees
 =====================
+
+
+Calculate distances between trees
+-----------------------------------
+.. versionadded 2.3
+
+
+The :Tree:`compare` function allows to calculate distances between two trees
+based on any node feature (i.e. name, species, other tags) using robinson-foulds
+and edge compatibility distances. It automatically handles differences in tree
+sizes, shared nodes and duplicated feature names.
+
+
+- result["rf"] = robinson-foulds distance between the two trees. (average of
+  robinson-foulds distances if target tree contained duplication and was split
+  in several subtrees)
+- result["max_rf"] = Maximum robinson-foulds distance expected for this comparison
+- result["norm_rf"] = normalized robinson-foulds distance (from 0 to 1)
+- result["effective_tree_size"] = the size of the compared trees, which are pruned to the common shared nodes. 
+- result["ref_edges_in_source"] = compatibility score of the target tree with
+  respect to the source tree (how many edges in reference are found in the
+  source)
+- result["source_edges_in_ref"] = compatibility score of the source tree with
+  respect to the reference tree (how many edges in source are found in the
+  reference)
+- result["source_subtrees"] = number of subtrees in the source tree (1 if do not contain duplications)
+- result["common_edges"] = a set of common edges between source tree and reference
+- result["source_edges"] = the set of edges found in the source tree
+- result["ref_edges"] = the set of edges found in the reference tree
+- result["treeko_dist"] = TreeKO speciation distance for comparisons including duplication nodes. 
+
+
+Robinson-foulds distance 
+-------------------------------- 
 .. versionadded 2.2
+
 
 Two tree topologies can be compared using ETE and the Robinson-Foulds
 (RF) metric. The method :func:`TreeNode.robinson_foulds` available for
@@ -1014,6 +1049,15 @@ any ETE tree node allows to:
  - examine size and content of matching and missing partitions. Since
    the method return the list of partitions found in both trees,
    details about matching partitions can be obtained easily. 
+
+.. versionchanged 2.3 
+
+  - allows to discard edges from the comparison based on their support value.
+ 
+  - allows to automatically expand polytomies (multifurcations) in source and target trees.  
+
+  - a command line tool providing most used features is available: `ete compare`
+
 
 In the following example, several of above mentioned features are
 shown:
@@ -1040,6 +1084,9 @@ shown:
   print "RF distance is %s over a total of %s" %(rf, max_rf)
   print "Partitions in tree2 that were not found in tree1:", parts_t1 - parts_t2
   print "Partitions in tree1 that were not found in tree2:", parts_t2 - parts_t1
+
+
+
 
 
 Modifying Tree Topology

@@ -740,7 +740,7 @@ class PhyloNode(TreeNode):
         return prunned
    
 
-    def annotate_ncbi_taxa(self, taxid_attr='name', tax2name=None, tax2track=None, tax2rank=None, dbfile=None):
+    def annotate_ncbi_taxa(self, taxid_attr='species', tax2name=None, tax2track=None, tax2rank=None, dbfile=None):
         """Add NCBI taxonomy annotation to all descendant nodes. Leaf nodes are
         expected to contain a feature (name, by default) encoding a valid taxid
         number.
@@ -787,7 +787,7 @@ class PhyloNode(TreeNode):
 
         """
         
-        ncbi = NCBITaxa()        
+        ncbi = NCBITaxa(dbfile=dbfile)        
         return ncbi.annotate_tree(self, taxid_attr=taxid_attr, tax2name=tax2name, tax2track=tax2track, tax2rank=tax2rank)
 
 

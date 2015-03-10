@@ -55,7 +55,6 @@ class NCBITaxa(object):
     versionadded: 2.3
 
     Provides a local transparent connector to the NCBI taxonomy database.
-
     """
     
     def __init__(self, dbfile = None):
@@ -76,7 +75,11 @@ class NCBITaxa(object):
         self._connect()
 
     def update_taxonomy_database(self, taxdump_file=None):
-        """Updates the ncbi taxonomy database using the latest taxdump.tar.gz file from the NCBI FTP site.  """
+        """Updates the ncbi taxonomy database by downloading and parsing the latest
+        taxdump.tar.gz file from the NCBI FTP site.
+
+        :param None taxdump_file: an alternative location of the taxdump.tax.gz file.
+        """
         if not taxdump_file:
             import urllib
             print >>sys.stderr, 'Downloading taxdump.tar.gz from NCBI FTP site...'
@@ -144,6 +147,8 @@ class NCBITaxa(object):
         return taxid, spname, norm_score
 
     def get_ranks(self, taxids):
+        'return a dictionary converting a list of taxids into their corresponding NCBI taxonomy rank' 
+
         all_ids = set(taxids)
         all_ids.discard(None)
         all_ids.discard("")
@@ -156,9 +161,8 @@ class NCBITaxa(object):
         return id2rank
     
     def get_sp_lineage(self, taxid):
-        """
-        Given a valid taxid number, return its corresponding lineage track as a hierarchical list of parent taxids. 
- 
+        """Given a valid taxid number, return its corresponding lineage track as a
+        hierarchically sorted list of parent taxids.
         """
         if not taxid:
             return None
@@ -171,8 +175,9 @@ class NCBITaxa(object):
         return list(reversed(track))
     
     def get_taxid_translator(self, taxids):
-        """
-        Given a list of taxid numbers, returns a dictionary of their corresponding scientific names.
+        """Given a list of taxids, returns a dictionary with their corresponding
+        scientific names.
+
         """
        
         all_ids = set(map(int, taxids))
@@ -235,7 +240,7 @@ class NCBITaxa(object):
 
     def translate_to_names(self, taxids):
         """
-        given a list of taxid numbers, returns a list with their corresponding scientific names.
+        Given a list of taxid numbers, returns another list with their corresponding scientific names.
         """
         id2name = self.get_taxid_translator(taxids)
         names = []
@@ -255,6 +260,9 @@ class NCBITaxa(object):
         :param None rank_limit: If valid NCBI rank name is provided, the tree is
         pruned at that given level. For instance, use rank="species" to get rid
         of sub-species or strain leaf nodes.
+
+        :param False collapse_subspecies: If True, any item under the species
+        rank will be collapsed into the species upper node.
 
         """
         from ete2 import PhyloTree
@@ -324,9 +332,10 @@ class NCBITaxa(object):
         """Annotate a tree containing taxids as leaf names by adding the  'taxid',
         'sci_name', 'lineage', 'named_lineage' and 'rank' additional attributes.
 
-        :param name taxid_attr: if taxid number is encoded under a different
-        attribute rather than node.name, specify which. For instance, in
-        PhyloTree objectd, you may want to use taxid_attr="species"
+        :param t: a Tree (or Tree derived) instance. 
+
+        :param name taxid_attr: Allows to set a custom node attribute containing
+        the taxid number associated to each node (i.e. species in PhyloTree instances).
 
         :param tax2name,tax2track,tax2rank: Use these arguments to provide
         pre-calculated dictionaries providing translation from taxid number and
@@ -415,9 +424,10 @@ class NCBITaxa(object):
 
 
     def get_broken_branches(self, t, taxa_lineages, n2content=None):
-        """Returns a list of NCBI lineage names that are not monophyletic, the list of affected
-        branches and their size.
+        """Returns a list of NCBI lineage names that are not monophyletic in the
+        provided tree, as well as the list of affected branches and their size.
 
+        CURRENTLY EXPERIMENTAL
 
         """
         if not n2content:
@@ -468,8 +478,7 @@ class NCBITaxa(object):
     #     return self.annotate_tree(t, tax2name, tax2track, attr_name="taxid")
 
 
-
-    
+  
 
 def load_ncbi_tree_from_dump(tar):
     from ete2 import Tree
