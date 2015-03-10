@@ -920,17 +920,44 @@ def hash_names(target_names):
    
 def _main():
     global NPRPATH, APPSPATH, args
-    
-    if len(sys.argv) > 1:
+    APPSPATH = os.path.expanduser("~/.etetoolkit/ext_apps-latest/")
+    ETEHOMEDIR = os.path.expanduser("~/.etetoolkit/")
+
+    if len(sys.argv) == 1:
+        if not pexist(APPSPATH):
+            print >>sys.stderr, colorify('\nWARNING: external applications directory are not found at %s' %APPSPATH, "yellow")
+            print >>sys.stderr, colorify('Use "ete build install_tools" to install or upgrade', "orange")
+
+    elif len(sys.argv) > 1:
         _config_path = pjoin(NPRPATH, 'phylobuild.cfg')
+
+        if sys.argv[1] == "install_tools":
+            import urllib
+            import tarfile
+            print >>sys.stderr, colorify('Downloading latest version of tools...', "green")
+            try:
+                os.mkdir(ETEHOMEDIR)
+            except OSError: 
+                pass
+            version_file = "latest.tar.gz"
+            urllib.urlretrieve("https://github.com/jhcepas/ext_apps/archive/%s" %version_file, pjoin(ETEHOMEDIR, version_file))
+            print >>sys.stderr, colorify('Decompressing...', "green")
+            tfile = tarfile.open(pjoin(ETEHOMEDIR, version_file), 'r:gz')
+            tfile.extractall(ETEHOMEDIR)
+            print >>sys.stderr, colorify('Compiling tools...', "green")
+            sys.path.insert(0, APPSPATH)
+            import compile_all
+            s = compile_all.compile_all()
+            sys.exit(s)                    
         
-        if sys.argv[1] == "check":
-            APPSPATH =  os.path.join(NPRPATH, "ext_apps/")
+        elif sys.argv[1] == "check":
+            if not pexist(APPSPATH):
+                print >>sys.stderr, colorify('\nWARNING: external applications directory are not found at %s' %APPSPATH, "yellow")
+                print >>sys.stderr, colorify('Use "ete build install_tools" to install or upgrade', "orange")
             # setup portable apps
             config = {}
             for k in apps.builtin_apps:
                 cmd = apps.get_call(k, APPSPATH, "/tmp", "1")
-                #print cmd
                 config[k] = cmd
             apps.test_apps(config)
             sys.exit(0)                    
@@ -995,7 +1022,6 @@ def _main():
     
     input_group.add_argument("--tools-dir", dest="tools_dir",
                              type=str,
-                             default='~/.etetoolkit/ext_apps/',
                              help="Custom path where external software is avaiable.")
     
     input_group.add_argument("-w", dest="workflow",
@@ -1250,10 +1276,10 @@ def _main():
                           " debugging will start from such task on.")
     
     args = parser.parse_args()
-    APPSPATH = args.tools_dir
-    
-    args.enable_ui = False
+    if  args.tools_dir: 
+        APPSPATH = args.tools_dir
 
+    args.enable_ui = False
     if not args.noimg:
         print 'Testing ETE-NPR graphics support...'
         print 'X11 DISPLAY = %s' %colorify(os.environ.get('DISPLAY', 'not detected!'), 'yellow')
