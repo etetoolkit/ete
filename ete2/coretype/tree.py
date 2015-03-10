@@ -1948,7 +1948,7 @@ class TreeNode(object):
                 max_treeko_splits_to_be_artifact=1000, ref_tree_attr='name', source_tree_attr='name'):
 
         """
-        compare this tree with another. 
+        compare this tree with another using robinson foulds and. It also 
 
         returns: robinson foulds
 
@@ -2083,7 +2083,7 @@ class TreeNode(object):
             result["ref_edges"] = valid_ref_edges
         return result
     
-    def diff(self, t2, output='topology', attr_t1='name', attr_t2='name', color=True):
+    def _diff(self, t2, output='topology', attr_t1='name', attr_t2='name', color=True):
         """
         .. versionadded:: 2.3
         
@@ -2106,8 +2106,6 @@ class TreeNode(object):
         else:
             return difftable
        
-         
-    
     def iter_edges(self, cached_content = None):
         '''
         .. versionadded:: 2.3
@@ -2162,7 +2160,7 @@ class TreeNode(object):
         This is useful to detect the number of unique topologies over a bunch of
         trees, without requiring full distance methods.
 
-        The id is, by default, calculate based on the terminal node's names. Any
+        The id is, by default, calculated based on the terminal node's names. Any
         other node attribute could be used instead.
                
         
@@ -2253,6 +2251,8 @@ class TreeNode(object):
     def check_monophyly(self, values, target_attr, ignore_missing=False,
                         unrooted=False):
         """
+        .. versionadded: 2.2
+
         Returns True if a given target attribute is monophyletic under
         this node for the provided set of values. 
 
@@ -2270,10 +2270,13 @@ class TreeNode(object):
 
         :param False ignore_missing: Avoid raising an Exception when
             missing attributes are found.
-            
+           
+
+        .. versionchanged: 2.3
+
         :param False unrooted: If True, tree will be treated as unrooted, thus
           allowing to find monophyly even when current outgroup is spliting a
-          monophyletic group.
+          monophyletic group. 
 
         :returns: the following tuple 
                   IsMonophyletic (boolean),
@@ -2370,6 +2373,8 @@ class TreeNode(object):
     def expand_polytomies(self, map_attr="name", polytomy_size_limit=5,
                           skip_large_polytomies=False):
         '''
+        .. versionadded:: 2.3
+
         Given a tree with one or more polytomies, this functions returns the
         list of all trees (in newick format) resulting from the combination of
         all possible solutions of the multifurcated nodes.
