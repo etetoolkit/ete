@@ -3,25 +3,25 @@
 #
 # This file is part of the Environment for Tree Exploration program
 # (ETE).  http://etetoolkit.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 # License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 
+#
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
-# 
-# ETE is distributed under the GPL copyleft license (2008-2015).  
+#
+# ETE is distributed under the GPL copyleft license (2008-2015).
 #
 # If you make use of ETE in published work, please cite:
 #
@@ -29,12 +29,12 @@
 # ETE: a python Environment for Tree Exploration. Jaime BMC
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
-# Note that extra references to the specific methods implemented in 
-# the toolkit may be available in the documentation. 
-# 
+# Note that extra references to the specific methods implemented in
+# the toolkit may be available in the documentation.
+#
 # More info at http://etetoolkit.org. Contact: huerta@embl.de
 #
-# 
+#
 # #END_LICENSE#############################################################
 #START_LICENSE###########################################################
 #END_LICENSE#############################################################
@@ -57,7 +57,7 @@ except ImportError:
     pass
 else:
     isfinite = lambda n: n and _isfinite(n)
-    
+
 _aafgcolors = {
     'A':"#000000" ,
     'R':"#000000" ,
@@ -389,7 +389,7 @@ class ImgFace(Face):
         self.img_file = img_file
         self.width = width
         self.height = height
-        
+
     def update_pixmap(self):
         self.pixmap = QPixmap(self.img_file)# flags=Qt.DiffuseAlphaDither)
 
@@ -1176,10 +1176,13 @@ class BarChartFace(Face):
     """
     .. versionadded:: 2.2
 
-    :param percents: a list of values summing up 100.
+    :param values: a list of values
     :param width: width of the piechart
     :param height: height of the piechart
-    :param colors: a list of colors (same length as percents)
+    :param colors: a list of colors (same length as values)
+    :param labels: a list of labels (same length as values)
+    :param min_value: minimum value (default: 0)
+    :param max_value: maximum value (default: longest bar)
 
     """
     def __init__(self, values, deviations=None, width=200, height=100, colors=None, labels=None, min_value=0, max_value=None):
@@ -1423,7 +1426,7 @@ class SequenceItem(QGraphicsRectItem):
         for letter in self.seq:
             if x >= current_pixel:
                 if self.draw_text and self.poswidth >= 8:
-                    br = QBrush(QColor(self.bg.get(letter, "white")))                    
+                    br = QBrush(QColor(self.bg.get(letter, "white")))
                     p.setPen(blackPen)
                     p.fillRect(x, 0, self.poswidth, self.posheight, br)
                     qfont.setPixelSize(min(self.posheight, self.poswidth))
@@ -1437,7 +1440,7 @@ class SequenceItem(QGraphicsRectItem):
                     p.drawLine(x, self.posheight/2, x+self.poswidth, self.posheight/2)
 
                 else:
-                    br = QBrush(QColor(self.bg.get(letter, "white")))                    
+                    br = QBrush(QColor(self.bg.get(letter, "white")))
                     p.fillRect(x, 0, max(1, self.poswidth), self.posheight, br)
                     #p.setPen(QPen(QColor(self.bg.get(letter, "black"))))
                     #p.drawLine(x, 0, x, self.posheight)
@@ -1453,13 +1456,13 @@ class TextLabelItem(QGraphicsRectItem):
         self.fsize = int(fsize)
         self.ffam = ffam
         self.fcolor = fcolor
-        
-    
+
+
     def paint(self, p, option, widget):
         color = QColor(self.fcolor)
         p.setPen(color)
         p.setBrush(QBrush(color))
-        
+
         qfont = QFont()
         qfont.setFamily(self.ffam)
         qfont.setPointSize(self.fsize)
@@ -1470,13 +1473,13 @@ class TextLabelItem(QGraphicsRectItem):
         p.drawText(self.rect(), Qt.AlignCenter |  Qt.AlignVCenter, self.text)
         p.restore()
 
-        
-        
+
+
         #p.drawRect(self.rect())
 
 class SeqMotifRectItem(QGraphicsRectItem):
     pass
-    
+
 class SeqMotifFace(StaticItemFace):
     """.. versionadded:: 2.2
 
@@ -1556,9 +1559,9 @@ class SeqMotifFace(StaticItemFace):
         self.bgcolor = bgcolor
         self.gapcolor = gapcolor
         self.regions = []
-        
+
         self.build_regions()
-        
+
     def build_regions(self):
         # Build and sort regions
         motifs = self.motifs
@@ -1572,15 +1575,15 @@ class SeqMotifFace(StaticItemFace):
                 motifs = [[0, len(seq), "compactseq", 1, self.h, None, None, None]]
             elif self.seq_format == "blockseq":
                 motifs = []
-                pos = 0 
+                pos = 0
                 for reg in re.split('([^-]+)', seq):
                     if reg:
                         if not reg.startswith("-"):
                             motifs.append([pos, pos+len(reg)-1, self.shape, None, self.h, self.fgcolor, self.bgcolor, None])
                         pos += len(reg)
-                        
+
         motifs.sort()
-        
+
         # complete missing regions
         current_seq_pos = 0
         for index, mf in enumerate(motifs):
@@ -1597,7 +1600,7 @@ class SeqMotifFace(StaticItemFace):
                                                  self.fgcolor, self.bgcolor, None])
                     pos += len(reg)
                 current_seq_pos = start
-                
+
             self.regions.append(mf)
             current_seq_pos = end + 1
 
@@ -1627,14 +1630,14 @@ class SeqMotifFace(StaticItemFace):
         max_x_pos = 0
         current_seq_end = 0
 
-        
+
         seq_x_correction = {}
         for seq_start, seq_end, typ, wf, h, fg, bg, name in self.regions:
             if typ == "seq":
                 seq_x_correction[(seq_start, seq_end)] = wf * self.scale_factor
-        
+
         for index, (seq_start, seq_end, typ, wf, h, fg, bg, name) in enumerate(self.regions):
-            # this are the actual coordinates mapping to the sequence 
+            # this are the actual coordinates mapping to the sequence
             opacity = 1
             w = (seq_end - seq_start) + 1
             xstart = seq_start
@@ -1645,7 +1648,7 @@ class SeqMotifFace(StaticItemFace):
                     wf *= self.scale_factor
                 xstart *= self.scale_factor
 
-            
+
             # this loop corrects x-positions for overlaping motifs and takes
             # into account the different scales used for different motif types,
             # i.e. seq
@@ -1657,7 +1660,7 @@ class SeqMotifFace(StaticItemFace):
                     xstart += (seq_range * correction)
                 elif seq_end > old_start:
                     seq_range = min(old_end, seq_end) - old_start
-                # corrects also the width for the overlaping part 
+                # corrects also the width for the overlaping part
                 if seq_range:
                     if seq_start < old_end or seq_end < seq_start:
                         w -= seq_range
@@ -1665,14 +1668,14 @@ class SeqMotifFace(StaticItemFace):
 
             if seq_start < current_seq_end:
                 opacity = self.overlaping_motif_opacity
-           
-            # expected width of the object to be drawn 
+
+            # expected width of the object to be drawn
             ystart = y_center - (h/2)
-                                   
+
             if typ == "-":
-                i = QGraphicsLineItem(0, h/2, w, h/2)                
+                i = QGraphicsLineItem(0, h/2, w, h/2)
             elif typ == " ":
-                i = None                
+                i = None
             elif typ == "o":
                 i = QGraphicsEllipseItem(0, 0, w, h)
             elif typ == ">":
@@ -1689,7 +1692,7 @@ class SeqMotifFace(StaticItemFace):
                 i = QGraphicsRectItem(0, 0, w, h)
             elif typ == "()":
                 i = QGraphicsRoundRectItem(0, 0, w, h)
-                
+
             elif typ == "seq" and self.seq:
                 i = SequenceItem(self.seq[seq_start:seq_end+1],
                                  poswidth=wf,
@@ -1699,7 +1702,7 @@ class SeqMotifFace(StaticItemFace):
             elif typ == "compactseq" and self.seq:
                 i = SequenceItem(self.seq[seq_start:seq_end+1], poswidth=1*self.scale_factor,
                                  posheight=h, draw_text=False)
-                w = i.rect().width() 
+                w = i.rect().width()
                 h = i.rect().height()
             else:
                 i = QGraphicsSimpleTextItem("?")
@@ -1720,11 +1723,11 @@ class SeqMotifFace(StaticItemFace):
                 txt_item.setParentItem(i)
                 #txt_item.setPos(0, ystart)
 
-                
+
             if i:
                 i.setParentItem(self.item)
                 i.setPos(xstart, ystart)
-                
+
             if bg:
                 if bg.startswith("rgradient:"):
                     bg = bg.replace("rgradient:", "")
@@ -1743,21 +1746,21 @@ class SeqMotifFace(StaticItemFace):
                     i.setBrush(color)
                 except:
                     pass
-                
+
             if fg:
                 i.setPen(QColor(fg))
 
             if opacity < 1:
                 i.setOpacity(opacity)
-               
+
             max_x_pos = max(max_x_pos, xstart + w)
             current_seq_end = max(seq_end, current_seq_end)
 
         self.item.setRect(0, 0, max_x_pos, max_h)
 
         self.item.setPen(QPen(Qt.NoPen))
-        
-        
+
+
 
 class SequencePlotFace(StaticItemFace):
     """
