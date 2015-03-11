@@ -9,7 +9,7 @@ install:
 
 before_script:
   - python --version
-  - python -c 'from ete2 import NCBITaxa; NCBITaxa();'
+
 
 # command to run tests, e.g. python setup.py test
 script:  python test/test_all.py
