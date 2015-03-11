@@ -57,7 +57,7 @@ class NCBITaxa(object):
     Provides a local transparent connector to the NCBI taxonomy database.
     """
     
-    def __init__(self, dbfile = None):
+    def __init__(self, dbfile=None):
         
         if not dbfile:
             self.dbfile = os.path.join(os.environ.get('HOME', '/'), '.etetoolkit', 'taxa.sqlite')
@@ -81,13 +81,9 @@ class NCBITaxa(object):
         :param None taxdump_file: an alternative location of the taxdump.tax.gz file.
         """
         if not taxdump_file:
-            import urllib
-            print >>sys.stderr, 'Downloading taxdump.tar.gz from NCBI FTP site...'
-            urllib.urlretrieve("ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz", "taxdump.tar.gz")
-            print >>sys.stderr, 'Done. Parsing...'
-            update_db('taxdump.tar.gz', self.dbfile)
+            update_db(self.dbfile)
         else:
-            update_db(taxdump_file, self.dbfile)
+            update_db(self.dbfile, taxdump_file)
        
     def _connect(self):
         self.db = sqlite3.connect(self.dbfile)
@@ -383,9 +379,9 @@ class NCBITaxa(object):
                                    rank = 'Unknown',
                                    named_lineage = [])
             else:
-                ancestor, lineage = self._first_common_ocurrence([lf.lineage for lf in n2leaves[n]])
+                lineage = self._common_lineage([lf.lineage for lf in n2leaves[n]])
+                ancestor = lineage[-1]
 
-                #node_name, named_lineage = first_common_ocurrence([lf.named_lineage for lf in n2leaves[n]])
                 n.add_features(sci_name = tax2name.get(ancestor, str(ancestor)),
                                taxid = ancestor,
                                lineage = lineage, 
@@ -394,33 +390,50 @@ class NCBITaxa(object):
 
         return tax2name, tax2track, tax2rank
 
-    def _first_common_ocurrence(self, vectors):
-        visited = defaultdict(int)
-        for index, name in [(ei, e) for v in vectors for ei,e in enumerate(v)]:
-            visited[(name, index)] += 1
+    def _common_lineage(self, vectors):
+        occurrence = defaultdict(int)
+        pos = defaultdict(set)
+        for v in vectors: 
+            for i, taxid in enumerate(v): 
+                occurrence[taxid] += 1
+                pos[taxid].add(i)
 
-        def _sort(a, b):
-            if a[1] > b[1]:
-                return 1
-            elif a[1] < b[1]:
-                return -1
-            else:
-                if a[0][1] > b[0][1]:
-                    return 1
-                elif a[0][1] < b[0][1]:
-                    return -1
-            return 0
-
-        matches = sorted(visited.items(), _sort)
-        if matches:
-            best_match = matches[-1]
+        common = [taxid for taxid, ocu in occurrence.iteritems() if ocu == len(vectors)]
+        if not common:
+            return [""]
         else:
-            return "", set()
+            sorted_lineage = sorted(common, lambda x, y: cmp(min(pos[x]), min(pos[y])))
+            return sorted_lineage
 
-        if best_match[1] != len(vectors):
-            return "", set()
-        else:
-            return best_match[0][0], [m[0][0] for m in matches if m[1] == len(vectors)]
+        # OLD APPROACH:
+
+        # visited = defaultdict(int)
+        # for index, name in [(ei, e) for v in vectors for ei, e in enumerate(v)]:
+        #     visited[(name, index)] += 1
+
+        # def _sort(a, b):
+        #     if a[1] > b[1]:
+        #         return 1
+        #     elif a[1] < b[1]:
+        #         return -1
+        #     else:
+        #         if a[0][1] > b[0][1]:
+        #             return 1
+        #         elif a[0][1] < b[0][1]:
+        #             return -1
+        #     return 0
+
+        # matches = sorted(visited.items(), _sort)
+
+        # if matches:
+        #     best_match = matches[-1]
+        # else:
+        #     return "", set()
+
+        # if best_match[1] != len(vectors):
+        #     return "", set()
+        # else:
+        #     return best_match[0][0], [m[0][0] for m in matches if m[1] == len(vectors)]
 
 
     def get_broken_branches(self, t, taxa_lineages, n2content=None):
@@ -542,7 +555,14 @@ def generate_table(t):
             print >>OUT, '\t'.join([n.name, "", n.taxname, n.rank, ','.join(track)])
     OUT.close()
 
-def update_db(targz_file, dbfile):
+def update_db(dbfile, targz_file=None):
+    if not targz_file:
+        import urllib
+        print >>sys.stderr, 'Downloading taxdump.tar.gz from NCBI FTP site...'
+        urllib.urlretrieve("ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz", "taxdump.tar.gz")
+        print >>sys.stderr, 'Done. Parsing...'
+        targz_file = "taxdump.tar.gz"
+
     tar = tarfile.open(targz_file, 'r')
     t, synonyms = load_ncbi_tree_from_dump(tar)
 
@@ -556,7 +576,7 @@ def update_db(targz_file, dbfile):
     except:
         raise 
     else:
-        os.system("rm syn.tab merged.tab taxa.tab")
+        os.system("rm syn.tab merged.tab taxa.tab taxdump.tar.gz")
     
 def upload_data(dbfile):
     print
@@ -577,22 +597,25 @@ def upload_data(dbfile):
         db.execute(cmd)
     print
     for i, line in enumerate(open("syn.tab")):
-        print >>sys.stderr, '\rInserting synonyms:     % 6d' %i,
-        sys.stderr.flush()
+        if i%5000 == 0 :
+            print >>sys.stderr, '\rInserting synonyms:     % 6d' %i,
+            sys.stderr.flush()
         taxid, spname = line.strip('\n').split('\t')
         db.execute("INSERT INTO synonym (taxid, spname) VALUES (?, ?);", (taxid, spname))
     print
     db.commit()
     for i, line in enumerate(open("merged.tab")):
-        print >>sys.stderr, '\rInserting taxid merges: % 6d' %i,
-        sys.stderr.flush()
+        if i%5000 == 0 :
+            print >>sys.stderr, '\rInserting taxid merges: % 6d' %i,
+            sys.stderr.flush()
         taxid_old, taxid_new = line.strip('\n').split('\t')
         db.execute("INSERT INTO merged (taxid_old, taxid_new) VALUES (?, ?);", (taxid_old, taxid_new))
     print
     db.commit()
     for i, line in enumerate(open("taxa.tab")):
-        print >>sys.stderr, '\rInserting taxids:      % 6d' %i,
-        sys.stderr.flush()
+        if i%5000 == 0 :
+            print >>sys.stderr, '\rInserting taxids:      % 6d' %i,
+            sys.stderr.flush()
         taxid, parentid, spname, rank, lineage = line.strip('\n').split('\t')
         db.execute("INSERT INTO species (taxid, parent, spname, rank, track) VALUES (?, ?, ?, ?, ?);", (taxid, parentid, spname, rank, lineage))
     print

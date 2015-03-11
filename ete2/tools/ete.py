@@ -172,11 +172,10 @@ def main():
     args = parser.parse_args()
     
     LOG_LEVEL = args.verbosity 
-    
     if hasattr(args, "src_trees"):
         args.src_tree_iterator = tree_iterator(args)
         
-    elif hasattr(args, "search"):
+    elif args.func==ete_ncbiquery.run and not getattr(args, "search", None):
         if not args.search and not sys.stdin.isatty():
             log.debug("Reading taxa from standard input...")
             args.search = sys.stdin 

@@ -1,13 +1,23 @@
+import os
 import unittest 
 
 from ete2 import PhyloTree, NCBITaxa
+from ete2.ncbi_taxonomy import ncbiquery
+DATABASE_PATH = "testdb.sqlite" 
 
 class Test_ncbiquery(unittest.TestCase):
   
-  def test_tree_annotation(self):
-    t = PhyloTree( "((9598, 9606), 10090);" )
-    t.annotate_ncbi_taxa()
+  def test_00_update_database(self):
+    
+    if not os.path.exists(DATABASE_PATH):
+      ncbiquery.update_db(DATABASE_PATH)
+
+
+  def test_01tree_annotation(self):
+    t = PhyloTree( "((9598, 9606), 10090);", sp_naming_function=lambda name: name)
+    t.annotate_ncbi_taxa(dbfile=DATABASE_PATH)
     self.assertEqual(t.sci_name, 'Euarchontoglires')
+
     homi = (t&'9606').up
     self.assertEqual(homi.sci_name, 'Homininae')
     self.assertEqual(homi.taxid, 207598)
@@ -24,11 +34,11 @@ class Test_ncbiquery(unittest.TestCase):
 
   def test_ncbi_compare(self):
     t = PhyloTree( "((9606, (9598, 9606)), 10090);", sp_naming_function=lambda x: x.name )
-    t.annotate_ncbi_taxa()
+    t.annotate_ncbi_taxa(dbfile=DATABASE_PATH)
     #t.ncbi_compare()
 
   def test_ncbiquery(self):
-    ncbi = NCBITaxa()
+    ncbi = NCBITaxa(dbfile=DATABASE_PATH)
 
     id2name = ncbi.get_taxid_translator(['9606', '7507'])
     self.assertEqual(id2name[7507], 'Mantis religiosa')
@@ -39,7 +49,7 @@ class Test_ncbiquery(unittest.TestCase):
     self.assertEqual(name2id['homo sapiens'], 9606)
 
   def test_get_topology(self):
-    ncbi = NCBITaxa()
+    ncbi = NCBITaxa(dbfile=DATABASE_PATH)
     t1 = ncbi.get_topology([9606, 7507, 9604])
     t2 = ncbi.get_topology([9606, 7507, 678])
 
