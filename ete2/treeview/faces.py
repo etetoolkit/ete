@@ -231,6 +231,8 @@ class TextFace(Face):
     :param fgcolor:  Foreground font color. RGB code or color name in :data:`SVG_COLORS`
     :param penwidth: Penwdith used to draw the text.
     :param fstyle: "normal" or "italic"
+    :param width:    Width of text face, if not specified: fit to text
+    :param height:   Height of text face, if not specified: fit to text
 
     :param False tight_text: When False, boundaries of the text are
     approximated according to general font metrics, producing slightly
@@ -246,20 +248,27 @@ class TextFace(Face):
             txt= self.get_text()
         fm = QFontMetrics(self._get_font())
         tx_w = fm.width(txt)
+
         if self.tight_text:
             textr = fm.tightBoundingRect(self.get_text())
             down = textr.height() + textr.y()
             up = textr.height() - down
             asc = fm.ascent()
-            des = fm.descent()
-            center = (asc + des) / 2.0
-            xcenter = ((up+down)/2.0) + asc - up
-            self._bounding_rect = QRectF(0, asc - up, tx_w, textr.height())
-            self._real_rect = QRectF(0, 0, tx_w, textr.height())
+            y = asc - up
+            tx_h = textr.height()
         else:
             textr = fm.boundingRect(txt)
-            self._bounding_rect = QRectF(0, 0, tx_w, textr.height())
-            self._real_rect = QRectF(0, 0, tx_w, textr.height())
+            y = 0
+            tx_h = textr.height()
+
+        if self.width is not None:
+            tx_w = self.width - self.margin_left - self.margin_right
+
+        if self.height is not None:
+            tx_h = self.height - self.margin_top - self.margin_bottom
+
+        self._bounding_rect = QRectF(0, y, tx_w, tx_h)
+        self._real_rect = QRectF(0, 0, tx_w, tx_h)
 
     def _get_text(self):
         return self._text
@@ -280,7 +289,7 @@ class TextFace(Face):
     text = property(_get_text, _set_text)
     def __init__(self, text, ftype="Verdana", fsize=10,
                  fgcolor="black", penwidth=0, fstyle="normal",
-                 tight_text=False):
+                 tight_text=False, width=None, height=None):
         self._text = str(text)
         self._bounding_rect = None
         self._real_rect = None
@@ -294,6 +303,8 @@ class TextFace(Face):
         self.fstyle = fstyle
         self.penwidth = penwidth
         self.tight_text = tight_text
+        self.width = width
+        self.height = height
 
     def _get_font(self):
         font = QFont(self.ftype, self.fsize)
@@ -304,10 +315,16 @@ class TextFace(Face):
         return font
 
     def _height(self):
-        return self.get_bounding_rect().height()
+        if self.height is None:
+            return self.get_bounding_rect().height()
+        else:
+            return self.height - self.margin_top - self.margin_bottom
 
     def _width(self):
-        return self.get_bounding_rect().width()
+        if self.width is None:
+            return self.get_bounding_rect().width()
+        else:
+            return self.width - self.margin_left - self.margin_right
 
     def get_text(self):
         return self._text
