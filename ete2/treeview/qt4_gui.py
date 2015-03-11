@@ -617,7 +617,7 @@ class _PropertiesDialog(QtGui.QWidget):
                     break
         self.update_properties(self.node)
         self.scene.img._scale = None
-        self.redraw()
+        self.scene.GUI.redraw()
         return
 
 class NewickDialog(QtGui.QDialog):
