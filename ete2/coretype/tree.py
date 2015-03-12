@@ -774,7 +774,8 @@ class TreeNode(object):
         print "Max. distance:\t%f" %max_dist
         
     def write(self, features=None, outfile=None, format=0, is_leaf_fn=None,
-              format_root_node=False):
+              format_root_node=False, dist_formatter=None, support_formatter=None, 
+              name_formatter=None):
         """ 
         Returns the newick representation of current node. Several
         arguments control the way in which extra data is shown for
@@ -806,9 +807,14 @@ class TreeNode(object):
 
         """
 
-        nw = write_newick(self, features = features, format=format,
+        nw = write_newick(self, features=features, 
+                          format=format,
                           is_leaf_fn=is_leaf_fn,
-                          format_root_node=format_root_node)
+                          format_root_node=format_root_node, 
+                          dist_formatter=dist_formatter,
+                          support_formatter=support_formatter, 
+                          name_formatter=name_formatter)
+
         if outfile is not None:
             open(outfile, "w").write(nw)
         else:

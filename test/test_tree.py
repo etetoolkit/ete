@@ -69,6 +69,26 @@ class Test_Coretype_Tree(unittest.TestCase):
         nw9 = "((,(,)),);"
 
 
+    def test_custom_formatting_formats(self):
+        """ test to change dist, name and support formatters """
+        t = Tree('((A:1.111111, B:2.222222)C:3.33333, D:4.44444);', format=1)
+        t.sort_descendants()
+        
+        check = [[0, '((TEST-A:1.1,TEST-B:2.2)SUP-1.0:3.3,TEST-D:4.4);'],
+                 [1, '((TEST-A:1.1,TEST-B:2.2)TEST-C:3.3,TEST-D:4.4);'],
+                 [2, '((TEST-A:1.1,TEST-B:2.2)SUP-1.0:3.3,TEST-D:4.4);'],
+                 [3, '((TEST-A:1.1,TEST-B:2.2)TEST-C:3.3,TEST-D:4.4);'],
+                 [4, '((TEST-A:1.1,TEST-B:2.2),TEST-D:4.4);'],
+                 [5, '((TEST-A:1.1,TEST-B:2.2):3.3,TEST-D:4.4);'],
+                 [6, '((TEST-A,TEST-B):3.3,TEST-D);'],
+                 [7, '((TEST-A:1.1,TEST-B:2.2)TEST-C,TEST-D:4.4);'],
+                 [8, '((TEST-A,TEST-B)TEST-C,TEST-D);'],
+                 [9, '((TEST-A,TEST-B),TEST-D);']]
+
+        for f, result in check:
+            nw = t.write(format=f, dist_formatter="%0.1f", name_formatter="TEST-%s", support_formatter="SUP-%0.1f")
+            self.assertEqual(nw, result)
+
     def test_tree_manipulation(self):
         """ tests operations which modify tree topology """
         nw_tree = "((Hola:1,Turtle:1.3)1:1,(A:0.3,B:2.4)1:0.43);"
@@ -450,7 +470,7 @@ class Test_Coretype_Tree(unittest.TestCase):
         ref1 = Tree('((a:1, (b:1, c:1, d:1):1):1, (e:1, (f:1, g:1):1):1);')
         ref2 = Tree('((a:1, (b:1, c:1, d:1):1):1, (e:1, f:1, g:1):1);')
         for ref in [ref1, ref2]:
-            print gtree, ref
+            #print gtree, ref
             gtree.robinson_foulds(ref, expand_polytomies=True)[0]
 
         
@@ -460,7 +480,7 @@ class Test_Coretype_Tree(unittest.TestCase):
         ref5 = Tree('((a, b (c, d (e, f))), (g, h));')
 
         for ref in [ref3, ref4, ref5]:
-            print gtree, ref
+            #print gtree, ref
             gtree.robinson_foulds(ref, expand_polytomies=True, polytomy_size_limit=8)[0]
 
 
@@ -471,15 +491,15 @@ class Test_Coretype_Tree(unittest.TestCase):
         ref9 = Tree('((d, b, c, (a, e, f)), (g, h));')
         
         for ref in [ref6, ref7, ref8, ref9]:
-            print gtree, ref
+            #print gtree, ref
             gtree.robinson_foulds(ref, expand_polytomies=True)[0]
-            print "REF GOOD", gtree.robinson_foulds(ref, expand_polytomies=True, polytomy_size_limit=8)[0]
+            #print "REF GOOD", gtree.robinson_foulds(ref, expand_polytomies=True, polytomy_size_limit=8)[0]
         
         gtree = Tree('((g, h), ((a, b), (c, d), (e, f)));')
         ref10 = Tree('((g, h), ((a, c), ((b, d), (e, f))));')
         
         for ref in [ref10]:
-            print gtree, ref
+            #print gtree, ref
             gtree.robinson_foulds(ref, expand_polytomies=True, polytomy_size_limit=8)[0]
 
     def test_tree_compare(self):

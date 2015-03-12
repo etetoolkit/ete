@@ -58,7 +58,8 @@ DEFAULT_DIST = 1.0
 DEFAULT_NAME = ''
 DEFAULT_SUPPORT = 1.0
 FLOAT_FORMATTER = "%0.6g"
-DIST_FORMATTER = ":"+FLOAT_FORMATTER
+#DIST_FORMATTER = ":"+FLOAT_FORMATTER
+NAME_FORMATTER = "%s"
 
 def set_float_format(formatter):
     ''' Set the conversion format used to represent float distances and support
@@ -72,9 +73,9 @@ def set_float_format(formatter):
     structure (i.e.: ":;,()")
 
     '''
-    global FLOAT_FORMATTER, DIST_FORMATTER
+    global FLOAT_FORMATTER#, DIST_FORMATTER
     FLOAT_FORMATTER = formatter
-    DIST_FORMATTER = ":"+FLOAT_FORMATTER
+    #DIST_FORMATTER = ":"+FLOAT_FORMATTER
 
 # Allowed formats. This table is used to read and write newick using
 # different convenctions. You can also add your own formats in an easy way.
@@ -122,16 +123,23 @@ NW_FORMAT = {
 }
 
 
-def format_node(node, node_type, format):
+def format_node(node, node_type, format, 
+                dist_formatter=None, 
+                support_formatter=None, 
+                name_formatter=None):
+    if dist_formatter is None: dist_formatter = FLOAT_FORMATTER
+    if support_formatter is None: support_formatter = FLOAT_FORMATTER
+    if name_formatter is None: name_formatter = NAME_FORMATTER
+
     if node_type == "leaf":
-        container1 = NW_FORMAT[format][0][0]
-        container2 = NW_FORMAT[format][1][0]
-        converterFn1 = NW_FORMAT[format][0][1]
+        container1 = NW_FORMAT[format][0][0] # name
+        container2 = NW_FORMAT[format][1][0] # dists
+        converterFn1 = NW_FORMAT[format][0][1] 
         converterFn2 = NW_FORMAT[format][1][1]
         flexible1 = NW_FORMAT[format][0][2]
     else:
-        container1 = NW_FORMAT[format][2][0]
-        container2 = NW_FORMAT[format][3][0]
+        container1 = NW_FORMAT[format][2][0] #support/name
+        container2 = NW_FORMAT[format][3][0] #dist
         converterFn1 = NW_FORMAT[format][2][1]
         converterFn2 = NW_FORMAT[format][3][1]
         flexible1 = NW_FORMAT[format][2][2]
@@ -142,21 +150,20 @@ def format_node(node, node_type, format):
                                   str(getattr(node, container1)))
             if not FIRST_PART and container1 == 'name' and not flexible1:
                 FIRST_PART = "NoName"
-            
         except (AttributeError, TypeError):
             FIRST_PART = "?"
-
+        FIRST_PART = name_formatter %FIRST_PART
     elif converterFn1 is None:
         FIRST_PART = ""
     else:
         try:
             #FIRST_PART =  "%0.6f" %(converterFn2(getattr(node, container1)))
-            FIRST_PART = FLOAT_FORMATTER %(converterFn2(getattr(node, container1)))
+            FIRST_PART = support_formatter %(converterFn2(getattr(node, container1)))
         except (ValueError, TypeError):
             FIRST_PART = "?"
 
 
-    if converterFn2 == str:
+    if converterFn2 == str: 
         try:
             SECOND_PART = ":"+re.sub("["+_ILEGAL_NEWICK_CHARS+"]", "_", \
                                   str(getattr(node, container2)))
@@ -164,10 +171,10 @@ def format_node(node, node_type, format):
             SECOND_PART = ":?"
     elif converterFn2 is None:
         SECOND_PART = ""
-    else:
+    else: 
         try:
             #SECOND_PART = ":%0.6f" %(converterFn2(getattr(node, container2)))
-            SECOND_PART = DIST_FORMATTER %(converterFn2(getattr(node, container2)))
+            SECOND_PART = ":%s" %(dist_formatter %(converterFn2(getattr(node, container2))))
         except (ValueError, TypeError):
             SECOND_PART = ":?"
 
@@ -420,7 +427,8 @@ def _read_node_data(subnw, current_node, node_type, format):
 #     return newick
 
 def write_newick(rootnode, features=None, format=1, format_root_node=True,
-                 is_leaf_fn=None):
+                 is_leaf_fn=None, dist_formatter=None, support_formatter=None, 
+                 name_formatter=None):
     """ Iteratively export a tree structure and returns its NHX
     representation. """
     newick = []
@@ -429,7 +437,10 @@ def write_newick(rootnode, features=None, format=1, format_root_node=True,
         if postorder:
             newick.append(")")
             if node.up is not None or format_root_node:
-                newick.append(format_node(node, "internal", format))
+                newick.append(format_node(node, "internal", format, 
+                                          dist_formatter=dist_formatter,
+                                          support_formatter=support_formatter, 
+                                          name_formatter=name_formatter))
                 newick.append(_get_features_string(node, features))
         else:
             if node is not rootnode and node != node.up.children[0]:
@@ -438,7 +449,10 @@ def write_newick(rootnode, features=None, format=1, format_root_node=True,
             if leaf(node):
                 safe_name = re.sub("["+_ILEGAL_NEWICK_CHARS+"]", "_", \
                                str(getattr(node, "name")))
-                newick.append(format_node(node, "leaf", format))
+                newick.append(format_node(node, "leaf", format, 
+                              dist_formatter=dist_formatter,
+                              support_formatter=support_formatter, 
+                              name_formatter=name_formatter))
                 newick.append(_get_features_string(node, features))
             else:
                 newick.append("(")
