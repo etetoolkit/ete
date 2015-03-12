@@ -36,8 +36,7 @@
 #
 # 
 # #END_LICENSE#############################################################
-#START_LICENSE###########################################################
-#END_LICENSE#############################################################
+
 import re
 from PyQt4.QtGui import (QGraphicsRectItem, QGraphicsLineItem,
                          QGraphicsPolygonItem, QGraphicsEllipseItem,
@@ -1143,6 +1142,7 @@ class PieChartFace(StaticItemFace):
     :param width: width of the piechart
     :param height: height of the piechart
     :param colors: a list of colors (same length as percents)
+    :param line_color: color used to render the border of the piechart (None=transparent)
 
     """
     def __init__(self, percents, width, height, colors=None, line_color=None):
@@ -1172,14 +1172,80 @@ class PieChartFace(StaticItemFace):
         return self.item.rect().height()
 
 
+class _StackedBarItem(QGraphicsRectItem):
+    def __init__(self, percents, width, height, colors, line_color=None):
+        QGraphicsRectItem.__init__(self, 0, 0, width, height)
+        self.percents = percents
+        self.colors = colors
+        self.line_color = line_color
+        
+    def paint(self, painter, option, widget):
+        total_w = self.rect().width()
+        total_h = self.rect().height()
+        painter.setBrush(Qt.NoBrush)
+        
+        if not self.line_color:
+            painter.setPen(Qt.NoPen)
+        else:
+            painter.setPen(QColor(self.line_color))
+
+        x = 0
+        for i, p in enumerate(self.percents):
+            col = self.colors[i]
+            w = (p * total_w) / 100 # assuming p is between 0 and 100
+            painter.fillRect(x, 0, w, total_h, QColor(col))
+            painter.drawRect(x, 0, w, total_h)
+            x += w
+
+class StackedBarFace(StaticItemFace):
+    def __init__(self, percents, width, height, colors=None, line_color=None):
+        """
+        .. versionadded:: 2.2
+        
+        :param percents: a list of values summing up 100.
+        :param width: width of the bar
+        :param height: height of the bar
+        :param colors: a list of colors (same length as percents)
+        :param line_color: color used to render the border of the bar (None=transparent)
+        """
+        Face.__init__(self)
+
+        if round(sum(percents)) > 100:
+            raise ValueError("BarItem: percentage values > 100")
+
+        self.type = "item"
+        self.item = None
+        self.percents = percents
+        if not colors:
+            colors = COLOR_SCHEMES["paired"]
+        self.colors =  colors
+        self.width = width
+        self.height = height
+        self.line_color = line_color
+
+    def update_items(self):
+        self.item = _StackedBarItem(self.percents, self.width,
+                                 self.height, self.colors, self.line_color)
+
+    def _width(self):
+        return self.item.rect().width()
+
+    def _height(self):
+        return self.item.rect().height()
+        
+
+
 class BarChartFace(Face):
     """
     .. versionadded:: 2.2
 
-    :param percents: a list of values summing up 100.
-    :param width: width of the piechart
-    :param height: height of the piechart
-    :param colors: a list of colors (same length as percents)
+    :param values: a list of values each representing a vertical bar. 
+    :param 200 width: width of the bar chart. 
+    :param 100 height: height of the bar chart
+    :param None colors: a list of colors, one per bar value 
+    :param None label: a list of labels, one per bar
+    :param 0 min_value: min value to set the scale of the chart.
+    :param None max_value: max value to set the scale of the chart. 
 
     """
     def __init__(self, values, deviations=None, width=200, height=100, colors=None, labels=None, min_value=0, max_value=None):
