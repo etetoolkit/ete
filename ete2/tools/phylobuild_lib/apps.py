@@ -87,8 +87,8 @@ builtin_apps = {
     'readal'             : "%BIN%/readal",
     'tcoffee'            : "export HOME=/tmp MAFFT_BINARIES=%BIN% TMP_4_TCOFFEE=%TMP% LOCKDIR_4_TCOFFEE=%TMP%  && %BIN%/t_coffee",
     'phyml'              : "%BIN%/phyml",
-    'raxml-pthreads'     : "%BIN%/raxmlHPC-PTHREADS -T%CORES%",
-    'raxml'              : "%BIN%/raxmlHPC",
+    'raxml-pthreads'     : "%BIN%/raxmlHPC-PTHREADS-SSE3 -T%CORES%", # defaults to SSE3
+    'raxml'              : "%BIN%/raxmlHPC-SSE3",                    # defaults to SSE3
     'raxml-pthreads-sse3': "%BIN%/raxmlHPC-PTHREADS-SSE3 -T%CORES%",
     'raxml-sse3'         : "%BIN%/raxmlHPC-SSE3",
     'raxml-pthreads-avx' : "%BIN%/raxmlHPC-PTHREADS-AVX -T%CORES%",
