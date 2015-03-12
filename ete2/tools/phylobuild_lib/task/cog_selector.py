@@ -47,7 +47,7 @@ log = logging.getLogger("main")
 from ete2.tools.phylobuild_lib.master_task import CogSelectorTask
 from ete2.tools.phylobuild_lib.errors import DataError, TaskError
 from ete2.tools.phylobuild_lib.utils import (GLOBALS, print_as_table, generate_node_ids,
-                          encode_seqname, md5, pjoin)
+                                             encode_seqname, md5, pjoin, _min, _max, _mean, _median, _std)
 from ete2.tools.phylobuild_lib import db
 
 __all__ = ["CogSelector"]
@@ -132,8 +132,10 @@ class CogSelector(CogSelectorTask):
             all_singletons.append(one2one_cog)
             #if len(one2one_cog) >= min_species:
             #    valid_cogs.append(one2one_cog)
-            
+
+        cognumber += 1 # sets the ammount of cogs in file
         for sp, ncogs in sorted(sp2cogs.items(), key=lambda x: x[1], reverse=True):
+
             log.log(28, "% 20s  found in single copy in  % 6d (%0.1f%%) COGs " %(sp, ncogs, 100 * ncogs/float(cognumber)))
 
         valid_cogs = sorted([sing for sing in all_singletons if len(sing) >= min_species],
@@ -178,8 +180,12 @@ class CogSelector(CogSelectorTask):
         # Some consistency checks
         missing_sp = (all_species) - set(sp_repr.keys())
         if missing_sp:
-            log.error("missing or not single-copy species under current cog selection: %s" %missing_sp)
-            raise TaskError()
+            log.error("%d missing species or not present in single-copy in any cog:\n%s" %\
+                      (len(missing_sp), '\n'.join(missing_sp)))
+            open('etebuild.valid_species_names.tmp', 'w').write('\n'.join(sp_repr.keys()) +'\n')
+            log.error("All %d valid species have been dumped into etebuild.valid_species_names.tmp."
+                      " You can use --spfile to restrict the analysis to those species." %len(sp_repr))
+            raise TaskError('missing or not single-copy species under current cog selection')
 
         CogSelectorTask.store_data(self, self.cogs, self.cog_analysis)
 
