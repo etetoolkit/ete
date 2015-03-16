@@ -140,7 +140,8 @@ _ntbgcolors = {
 __all__ = ["Face", "TextFace", "AttrFace", "ImgFace",
            "ProfileFace", "SequenceFace", "TreeFace",
            "RandomFace", "DynamicItemFace", "StaticItemFace",
-           "CircleFace", "PieChartFace", "BarChartFace", "SeqMotifFace", "RectFace"]
+           "CircleFace", "PieChartFace", "BarChartFace", "SeqMotifFace",
+           "RectFace", "StackedBarFace"]
 
 class Face(object):
     """Base Face object. All Face types (i.e. TextFace, SeqMotifFace,
