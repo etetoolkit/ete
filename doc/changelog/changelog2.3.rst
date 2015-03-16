@@ -4,11 +4,6 @@ What's new in ETE 2.3 (XX March 2015)
 
 .. contents::
 
-Bug fixes 
-==============
-  
-* fixes several minor bugs when retrieving extra attributes in
-  :func:`PhyloNode.get_speciation_trees`.
 
 New Modules
 =============
@@ -79,12 +74,6 @@ and other handy tools.
   Highlights: 
   - accept pipes    
 
-Dependencies
-------------------
-
-removed numpy and scipy dependencies
-PyQt4 moved to optional
-better warnings 
 
 New features
 =================
@@ -111,21 +100,28 @@ New features
 
 * newick export allows to control the format of branch distance and support values
  
+* Tree and SeqGroup instances allow to open gziped files transparently. 
+
 **News in PhyloTree instances**
 
 * added new reconciliation algorithm: Zmasek and Eddy's 2001, implemented by  ?????
 
+* fixes several minor bugs when retrieving extra attributes in
+  :func:`PhyloNode.get_speciation_trees`.
+
 **News in the treeview module** 
 
-* improved random_color function (a color schema return as a whole) 
+* improved :func:`random_color` function (a list of colors can be fetch with a single call)
 
-* improved SVG tree image support
+* improved SVG tree rendering 
 
 * improved :class:`SeqMotifFace` 
 
-* Added RectFace
+* Added :class:`RectFace`
 
-* improved heatmap support
+* Added :class:`StackedBarFace`
+
+* Improved heatmap support???
 
 
   
