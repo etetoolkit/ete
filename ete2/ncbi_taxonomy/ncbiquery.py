@@ -340,7 +340,14 @@ class NCBITaxa(object):
         """
 
         leaves = t.get_leaves()
-        taxids = set(map(int, [getattr(n, taxid_attr) for n in leaves]))
+        taxids = set()
+        for n in leaves:
+            try:
+                tid = int(getattr(n, taxid_attr))
+            except (ValueError,AttributeError):
+                pass
+            else:
+                taxids.add(tid)
         merged_conversion = {}
 
         taxids, merged_conversion = self._translate_merged(taxids)
@@ -363,18 +370,22 @@ class NCBITaxa(object):
 
         for n in t.traverse('postorder'):
             if n.is_leaf():
-                node_taxid = int(getattr(n, taxid_attr))
+                try:
+                    node_taxid = int(getattr(n, taxid_attr))
+                except (ValueError, AttributeError):
+                    node_taxid = None
+                    
                 n.add_features(taxid = node_taxid)
                 if node_taxid:
                     if node_taxid in merged_conversion:
                         node_taxid = merged_conversion[node_taxid]
 
-                    n.add_features(sci_name = tax2name.get(node_taxid, "Unknown"),
+                    n.add_features(sci_name = tax2name.get(node_taxid, getattr(n, taxid_attr, 'NA')),
                                    lineage = tax2track[node_taxid], 
                                    rank = tax2rank.get(node_taxid, 'Unknown'),
                                    named_lineage = self.translate_to_names(tax2track[node_taxid]))
                 else:
-                    n.add_features(sci_name = "Unknown",
+                    n.add_features(sci_name = getattr(n, taxid_attr, 'NA'),
                                    lineage = [], 
                                    rank = 'Unknown',
                                    named_lineage = [])
