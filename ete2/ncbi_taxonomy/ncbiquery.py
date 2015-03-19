@@ -592,6 +592,10 @@ def update_db(dbfile, targz_file=None):
 def upload_data(dbfile):
     print
     print 'Uploading to', dbfile
+    basepath = os.path.split(dbfile)[0]
+    if basepath and not os.path.exists(basepath):
+        os.mkdir(basepath)
+        
     db = sqlite3.connect(dbfile)
         
     create_cmd = """
