@@ -78,7 +78,7 @@ def tree_iterator(args):
     
     for stree in args.src_trees:
         # CHECK WHAT is needed before process the main command, allows mods before analyses        
-        yield stree
+        yield stree.strip()
       
         
 def main():

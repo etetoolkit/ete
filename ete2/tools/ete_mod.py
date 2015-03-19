@@ -82,9 +82,9 @@ def populate_args(mod_args_p):
                           action='store_true',
                            help="""Converts polytomies into random bifurcations""")
 
-    mod_args.add_argument("--standarize", dest="standarize",
+    mod_args.add_argument("--standardize", dest="standardize",
                           action = "store_true",
-                           help="Standarize tree topology by expanding polytomies and single child nodes.")
+                           help="Standardize tree topology by expanding polytomies and single child nodes.")
 
     
 
@@ -117,7 +117,7 @@ def mod_tree(t, args):
     if args.resolve_polytomies:
         t.resolve_polytomy()
 
-    if args.standarize:
+    if args.standardize:
         t.standardize()
         
     if args.ladderize:
