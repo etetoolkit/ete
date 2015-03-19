@@ -118,11 +118,18 @@ def main():
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     subparser = parser.add_subparsers(title="AVAILABLE PROGRAMS")
 
-    # - ANNOTATE -
+    # - MOD -
     mod_args_pp = subparser.add_parser("mod", parents=[source_args_p, main_args_p, mod_args_p],
                                        description=ete_mod.DESC,
                                        formatter_class=argparse.RawDescriptionHelpFormatter)
     mod_args_pp.set_defaults(func=ete_mod.run)
+
+    # - EXTRACT -
+    extract_args_pp = subparser.add_parser("extract", parents=[source_args_p, main_args_p, extract_args_p],
+                                       description=ete_extract.DESC,
+                                       formatter_class=argparse.RawDescriptionHelpFormatter)
+    extract_args_pp.set_defaults(func=ete_extract.run)
+
     
     # - ANNOTATE -
     annotate_args_p = subparser.add_parser("annotate", parents=[source_args_p, main_args_p],
@@ -133,14 +140,14 @@ def main():
     
 
     # - COMPARE -
-    compare_args_p = subparser.add_parser("compare", parents=[source_args_p, mod_args_p, ref_args_p, main_args_p],
+    compare_args_p = subparser.add_parser("compare", parents=[source_args_p, ref_args_p, main_args_p],
                                            description=ete_compare.DESC,
                                           formatter_class=argparse.RawDescriptionHelpFormatter)
     compare_args_p.set_defaults(func=ete_compare.run)
     ete_compare.populate_args(compare_args_p)
 
     # - VIEW -
-    view_args_p = subparser.add_parser("view", parents=[source_args_p, mod_args_p, main_args_p],
+    view_args_p = subparser.add_parser("view", parents=[source_args_p, main_args_p],
                                         description=ete_view.DESC,
                                        formatter_class=argparse.RawDescriptionHelpFormatter)
     view_args_p.set_defaults(func=ete_view.run)
