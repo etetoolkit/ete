@@ -41,12 +41,12 @@ from common import as_str, shorten_str
 DESC = """
  - ete compare -
  
-'compare' is a tool to calculate the distance from one or more trees to a
-reference tree. Robinson foulds and strict congruence measures are calculated,
-among other stats.
+'compare' is a tool to calculate distances from one or more trees to a
+reference tree. 
 
-Comparisons between trees with different sizes and containing duplicated
-attributes are also supported.  names.
+It provides Robinson foulds and tree compatibility measures. Comparisons between
+trees with different sizes and containing duplicated attributes are also
+supported.
 
 %s
   
@@ -66,9 +66,13 @@ def populate_args(compare_args_p):
                               action = "store_true",
                               help="""compare trees as unrooted""")
 
-    compare_args.add_argument("--diff", dest="differences", 
+    compare_args.add_argument("--show_mismatches", dest="show_mismatches", 
                               action = "store_true",
-                              help="return differences between pairs of trees ")
+                              help="")
+
+    compare_args.add_argument("--show_matches", dest="show_matches", 
+                              action = "store_true",
+                              help="")
 
     compare_args.add_argument("--taboutput", dest="taboutput", 
                               action = "store_true",
@@ -100,7 +104,7 @@ def run(args):
 
     if args.taboutput:
         print '# ' + '\t'.join(header)
-    elif args.differences: 
+    elif args.show_mismatches or args.show_matches:
         pass
     else: 
         print_table([header,
@@ -131,13 +135,19 @@ def run(args):
                                              r["ref_edges_in_source"],
                                              r['source_subtrees'],
                                              r['treeko_dist']]))
-            elif args.differences:
+            elif args.show_mismatches:
+                mismatches_src = r['source_edges'] - r['ref_edges']
+                mismatches_ref = r['ref_edges'] - r['source_edges']
+                for tag, part in [("src:", mismatches_src), ("target:", mismatches_ref)]:
+                    print "%s\t%s" %(tag, '|'.join([','.join(p) for p in part]))
+            elif 0:
                 # EXPERIMENTAL
                 from pprint import pprint
                 import itertools
 
                 mismatches_src = r['source_edges'] - r['ref_edges']
                 mismatches_ref = r['ref_edges'] - r['source_edges']
+
                 for part, pairs in iter_differences(mismatches_src,
                                                     mismatches_ref,
                                                     unrooted=args.unrooted):
