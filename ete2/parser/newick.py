@@ -217,10 +217,9 @@ def print_supported_formats():
 class NewickError(Exception):
     """Exception class designed for NewickIO errors."""
     def __init__(self, value):
-        self.value = value
-        import sys
-        print >>sys.stderr, 'error: ' + str(self.value)
-        sys.exit(-1)
+        #import sys
+        #print >>sys.stderr, 'error: ' + str(value)
+        Exception.__init__(self, value)
         
 def read_newick(newick, root_node=None, format=0):
     """ Reads a newick tree from either a string or a file, and returns
