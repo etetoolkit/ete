@@ -188,7 +188,7 @@ def populate_args(view_args_p):
     
     phylo_gr.add_argument("--bubbles", dest="bubbles", 
                         type=str, 
-                        help=""" """)
+                          help='')
 
 
 def run(args):
