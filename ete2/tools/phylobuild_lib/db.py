@@ -43,6 +43,7 @@ import sqlite3
 import cPickle
 import base64
 import zlib
+import gzip
 import logging
 from ete2.tools.phylobuild_lib.utils import md5, pexist, pjoin, GLOBALS
 
@@ -76,20 +77,20 @@ def decode(x):
 # def zdecode(x):
 #     return cPickle.loads(zlib.decompress(base64.decodestring(x)))
 
-MAX_SQLITE_SIZE = 500000000
+MAX_SQLITE_SIZE = 5
 
 def zencode(x, data_id):
-    cdata = zlib.compress(cPickle.dumps(x))
-    if sys.getsizeof(cdata) > MAX_SQLITE_SIZE:
-        open(pjoin(GLOBALS['db_dir'], data_id), "wb").write(cdata)
+    pdata = cPickle.dumps(x)
+    if sys.getsizeof(pdata) > MAX_SQLITE_SIZE:
+        gzip.open(pjoin(GLOBALS['db_dir'], data_id), "w:gz").write(pdata)
         return "__DBDIR__:%s" %data_id
     else: 
-        return base64.encodestring(cdata)
+        return base64.encodestring(zlib.compress(pdata))
     
 def zdecode(x):
     if x.startswith("__DBDIR__:"):
         data_id = x.split(':', 1)[1]
-        data = cPickle.loads(zlib.decompress(open(pjoin(GLOBALS['db_dir'], data_id), "rb").read()))
+        data = cPickle.loads(gzip.open(pjoin(GLOBALS['db_dir'], data_id), "r:gz").read())
     else:
         data = cPickle.loads(zlib.decompress(base64.decodestring(x)))
     return data
