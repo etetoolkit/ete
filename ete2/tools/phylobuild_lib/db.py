@@ -78,11 +78,12 @@ def decode(x):
 #     return cPickle.loads(zlib.decompress(base64.decodestring(x)))
 
 MAX_SQLITE_SIZE = 500000000
+MAX_SQLITE_SIZE = 5
 
 def zencode(x, data_id):
     pdata = cPickle.dumps(x)
     if sys.getsizeof(pdata) > MAX_SQLITE_SIZE:
-        gzip.open(pjoin(GLOBALS['db_dir'], data_id), "w:gz").write(pdata)
+        cPickle.dump(x, open(pjoin(GLOBALS['db_dir'], data_id+".pkl"), "wb"), protocol=2)
         return "__DBDIR__:%s" %data_id
     else: 
         return base64.encodestring(zlib.compress(pdata))
@@ -90,7 +91,7 @@ def zencode(x, data_id):
 def zdecode(x):
     if x.startswith("__DBDIR__:"):
         data_id = x.split(':', 1)[1]
-        data = cPickle.loads(gzip.open(pjoin(GLOBALS['db_dir'], data_id), "r:gz").read())
+        data = cPickle.load(open(pjoin(GLOBALS['db_dir'], data_id+".pkl")))
     else:
         data = cPickle.loads(zlib.decompress(base64.decodestring(x)))
     return data
