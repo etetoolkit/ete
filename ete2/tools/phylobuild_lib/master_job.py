@@ -87,7 +87,7 @@ class Job(object):
         # generates the unique job identifier based on the params of
         # the app. Some params include path names that can prevent
         # recycling the job, so a clean it.
-        clean = lambda x: basename(x) if GLOBALS["basedir"] in x or GLOBALS["taskdir"] in x else x
+        clean = lambda x: basename(x) if GLOBALS["basedir"] in x or GLOBALS["tasks_dir"] in x else x
         parsed_id_string = ["%s %s" %(clean(str(pair[0])), clean(str(pair[1])))
                             for pair in self.args.iteritems()]
         #print '\n'.join(map(str, self.args.items()))

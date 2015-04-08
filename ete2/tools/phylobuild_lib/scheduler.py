@@ -257,9 +257,10 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
 
                                         if not os.path.exists(outfile): 
                                             open(outfile, "w").write(db.get_data(dataid))
-
+                                            
                                     log.log(24, "  @@8:Queueing @@1: %s from %s" %(j, task))
-                                    job_queue.put([j.jobid, j.cores, cmd, j.status_file])
+                                    if execution: 
+                                        job_queue.put([j.jobid, j.cores, cmd, j.status_file])
                                 BUG.add(j.jobid)
 
                         update_task_states_recursively(task)

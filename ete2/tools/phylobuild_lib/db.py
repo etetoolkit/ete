@@ -36,6 +36,7 @@
 #
 # 
 # #END_LICENSE#############################################################
+import sys
 import time
 from collections import defaultdict
 import sqlite3
@@ -43,7 +44,7 @@ import cPickle
 import base64
 import zlib
 import logging
-from ete2.tools.phylobuild_lib.utils import md5, pexist
+from ete2.tools.phylobuild_lib.utils import md5, pexist, pjoin, GLOBALS
 
 log = logging.getLogger("main")
 
@@ -67,11 +68,31 @@ def encode(x):
 def decode(x):
     return cPickle.loads(base64.decodestring(x))
 
-def zencode(x):
-    return base64.encodestring(zlib.compress(cPickle.dumps(x)))
+# SQLITE_MAX_LENGTH issue: files larger than ~1GB cannot be stored. limit cannot
+# be changed at runtime. Big files are then stored in disk instead
+# def zencode(x):
+#     return base64.encodestring(zlib.compress(cPickle.dumps(x)))
 
+# def zdecode(x):
+#     return cPickle.loads(zlib.decompress(base64.decodestring(x)))
+
+MAX_SQLITE_SIZE = 500000000
+
+def zencode(x, data_id):
+    cdata = zlib.compress(cPickle.dumps(x))
+    if sys.getsizeof(cdata) > MAX_SQLITE_SIZE:
+        open(pjoin(GLOBALS['db_dir'], data_id), "wb").write(cdata)
+        return "__DBDIR__:%s" %data_id
+    else: 
+        return base64.encodestring(cdata)
+    
 def zdecode(x):
-    return cPickle.loads(zlib.decompress(base64.decodestring(x)))
+    if x.startswith("__DBDIR__:"):
+        data_id = x.split(':', 1)[1]
+        data = cPickle.loads(zlib.decompress(open(pjoin(GLOBALS['db_dir'], data_id), "rb").read()))
+    else:
+        data = cPickle.loads(zlib.decompress(base64.decodestring(x)))
+    return data
 
 def prevent_sqlite_umask_bug(fname):
     # avoids using sqlite module to create the file with deafult 644 umask
@@ -214,7 +235,7 @@ def add_task_data(taskid, datatype, data, duplicates="OR IGNORE"):
     ("%s", "%s", "%s") """ %(duplicates, taskid, datatype, data_id)
     datacursor.execute(cmd)
     cmd = """ INSERT %s INTO data (md5, data) VALUES
-    ("%s", "%s") """ %(duplicates, data_id, zencode(data))
+    ("%s", "%s") """ %(duplicates, data_id, zencode(data, data_id))
     datacursor.execute(cmd)
     autocommit()
     return data_id

@@ -197,8 +197,7 @@ def main(args):
     log = logging.getLogger("main")
     
     base_dir = GLOBALS["basedir"]
-    db_dir = GLOBALS.get("dbdir", base_dir)
-    
+        
     # -------------------------------------
     # READ CONFIG FILE AND PARSE WORKFLOWS
     # -------------------------------------
@@ -425,8 +424,11 @@ def main(args):
     gallery_dir = os.path.join(base_dir, "gallery")
     sge_dir = pjoin(base_dir, "sge_jobs")
     tmp_dir = pjoin(base_dir, "tmp")
-    tasks_dir = pjoin(base_dir, "tasks")
+    tasks_dir = os.path.realpath(args.tasks_dir) if args.tasks_dir else  pjoin(base_dir, "tasks")
     input_dir = pjoin(base_dir, "input")
+    db_dir = os.path.realpath(args.db_dir) if args.db_dir else  pjoin(base_dir, "db")
+
+    GLOBALS["db_dir"] = db_dir
     GLOBALS["sge_dir"] = sge_dir
     GLOBALS["tmp"] = tmp_dir
     GLOBALS["gallery_dir"] = gallery_dir
@@ -467,22 +469,27 @@ def main(args):
         if args.clearorthology and pexist(GLOBALS["orthodb_file"]) and not args.orthodb:
             log.log(28, "Erasing existing orthologs database...")
             os.remove(GLOBALS["orthodb_file"])
-    
-    if not args.clearall:
-        if base_dir != GLOBALS["output_dir"] or db_dir != GLOBALS["output_dir"]:
-            log.log(20, "Copying previous npr files to temp folder %s..." %db_dir)
-            try: shutil.copy(pjoin(GLOBALS["output_dir"], "data.db"), base_dir)
-            except IOError: pass
-            try: shutil.copy(pjoin(GLOBALS["output_dir"], "seq.db"), base_dir)
-            except IOError: pass
-            try: shutil.copy(pjoin(GLOBALS["output_dir"], "ortho.db"), base_dir)
-            except IOError: pass
-            try: shutil.copy(pjoin(GLOBALS["output_dir"], "nprdata.tar.gz"), base_dir)
-            except IOError: pass
-            
-            # try: os.system("cp -a %s/* %s/" %(GLOBALS["output_dir"],  base_dir))
-            # except Exception: pass
 
+    if not args.clearall and base_dir != GLOBALS["output_dir"]:
+        log.log(24, "Copying previous output files to scratch directory: %s..." %base_dir)
+        try:
+            shutil.copytree(pjoin(GLOBALS["output_dir"], "db"), db_dir)
+        except IOError, e:
+            print e
+            pass
+
+        try:
+            shutil.copytree(pjoin(GLOBALS["output_dir"], "tasks/"), pjoin(base_dir, "tasks/"))
+        except IOError, e:
+            try:
+                shutil.copy(pjoin(GLOBALS["output_dir"], "nprdata.tar.gz"), base_dir)
+            except IOError, e:
+                pass
+            
+        # try: os.system("cp -a %s/* %s/" %(GLOBALS["output_dir"],  base_dir))
+        # except Exception: pass
+
+        
     # UnCompress packed execution data
     if pexist(os.path.join(base_dir,"nprdata.tar.gz")):
         log.warning("Compressed data found. Extracting content to start execution...")
@@ -490,7 +497,7 @@ def main(args):
         os.system(cmd)
             
     # Create dir structure
-    for dirname in [tmp_dir, tasks_dir, input_dir]:
+    for dirname in [tmp_dir, tasks_dir, input_dir, db_dir]:
         try:
             os.makedirs(dirname)
         except OSError:
@@ -683,7 +690,7 @@ def main(args):
     if not thread_errors:
         if args.compress:
             log.log(28, "Compressing intermediate data...")
-            cmd = "cd %s && tar --remove-files -cf nprdata.tar data.db tasks/ seq.db && gzip -f nprdata.tar; if [ -e npr.log ]; then gzip -f npr.log; fi;" %\
+            cmd = "cd %s && tar --remove-files -cf nprdata.tar tasks/ && gzip -f nprdata.tar; if [ -e npr.log ]; then gzip -f npr.log; fi;" %\
               GLOBALS["basedir"]
             os.system(cmd)
         log.log(28, "Deleting temporal data...")
@@ -1150,16 +1157,16 @@ def _main():
     output_group.add_argument("-o", "--outdir", dest="outdir",
                               type=str, required=True,
                               help="""Output directory for results.""")
-    
-    output_group.add_argument("--scratch_dbdir", dest="scratch_dbdir",
-                              type=is_dir, 
-                              help="""If provided, sqlite files will be created in the provided scratch path. Files will be moved to outpath when finished.""")
 
     output_group.add_argument("--scratch_dir", dest="scratch_dir",
                               type=is_dir, 
-                              help="""If provided, npr will run on the scratch folder and all files will be transferred to the output dir when finished. """)
+                              help="""If provided, ete-build will run on the scratch folder and all files will be transferred to the output dir when finished. """)
+
+    output_group.add_argument("--db_dir", dest="db_dir",
+                              type=is_dir, 
+                              help="""Alternative location of the database directory""")
     
-    output_group.add_argument("--taskdir", dest="taskdir",
+    output_group.add_argument("--tasks_dir", dest="tasks_dir",
                               type=is_dir,
                               help="""Output directory for the executed processes (intermediate files).""")
     
@@ -1203,7 +1210,7 @@ def _main():
     
     exec_type_group = exec_group.add_mutually_exclusive_group()
     
-    exec_type_group.add_argument("-no_exec", dest="no_execute",
+    exec_type_group.add_argument("--noexec", dest="no_execute",
                                  action="store_true",
                                  help=("Prevents launching any external application."
                                        " Tasks will be processed and intermediate steps will"
@@ -1307,20 +1314,9 @@ def _main():
         scratch_dir = tempfile.mkdtemp(prefix='npr_tmp', dir=base_scratch_dir)
         GLOBALS["scratch_dir"] = scratch_dir
         GLOBALS["basedir"] = scratch_dir
-    elif args.scratch_dbdir:
-        # set paths for scratch folder for sqlite files 
-        print >>sys.stderr, "Creating temporary scratch dir for sqlite files..."
-        base_dbdir = os.path.abspath(args.scratch_dbdir)        
-        dbdir = tempfile.mkdtemp(prefix='npr_tmp', dir=base_dbdir)
-        GLOBALS["dbdir"] = dbdir
-        GLOBALS["basedir"] = GLOBALS["output_dir"]
     else:
         GLOBALS["basedir"] = GLOBALS["output_dir"]
         
-    if args.taskdir:
-        GLOBALS["taskdir"] = os.path.realpath(args.taskdir)
-    else:
-        GLOBALS["taskdir"] = os.path.join(GLOBALS["basedir"], "tasks")
         
     GLOBALS["first_split_outgroup"] = args.first_split
 
