@@ -77,7 +77,7 @@ def decode(x):
 # def zdecode(x):
 #     return cPickle.loads(zlib.decompress(base64.decodestring(x)))
 
-MAX_SQLITE_SIZE = 5
+MAX_SQLITE_SIZE = 500000000
 
 def zencode(x, data_id):
     pdata = cPickle.dumps(x)
