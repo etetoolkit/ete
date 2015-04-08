@@ -82,7 +82,12 @@ def tree_iterator(args):
       
         
 def main():
-    if len(sys.argv) > 1 and sys.argv[1] == "build":
+    if len(sys.argv) > 1 and sys.argv[1] == "version":
+       import ete2
+       print ete2.__version__
+       return
+       
+    elif len(sys.argv) > 1 and sys.argv[1] == "build":
         import phylobuild
         del sys.argv[1]
         phylobuild._main()
@@ -171,13 +176,14 @@ def main():
     # - build -
     generate_args_p = subparser.add_parser("build")
     
+    generate_args_p = subparser.add_parser("version")
 
     # ===================
     #  EXECUTE PROGRAM
     # ===================
     
     args = parser.parse_args()
-    
+
     LOG_LEVEL = args.verbosity 
     if hasattr(args, "src_trees"):
         args.src_tree_iterator = tree_iterator(args)

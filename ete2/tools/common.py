@@ -171,9 +171,6 @@ def populate_main_args(main_args_p):
     main_args.add_argument('--format', dest='newick_format', type=int, default=0)
     
     main_args.add_argument('--features', dest='output_features', type=str, nargs="+", default=[])
-
-
-
     
     main_args.add_argument("--nocolor", dest="nocolor",
                            action="store_true",
