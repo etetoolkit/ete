@@ -83,7 +83,9 @@ MAX_SQLITE_SIZE = 5
 def zencode(x, data_id):
     pdata = cPickle.dumps(x)
     if sys.getsizeof(pdata) > MAX_SQLITE_SIZE:
-        cPickle.dump(x, open(pjoin(GLOBALS['db_dir'], data_id+".pkl"), "wb"), protocol=2)
+        # using protocol 2 fails because of the integer overflow python bug
+        # i.e. http://bugs.python.org/issue13555
+        cPickle.dump(x, open(pjoin(GLOBALS['db_dir'], data_id+".pkl"), "wb"))
         return "__DBDIR__:%s" %data_id
     else: 
         return base64.encodestring(zlib.compress(pdata))
