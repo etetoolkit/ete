@@ -39,7 +39,7 @@
 #!/usr/bin/env python 
 import sys
 import os
-from collections import defaultdict, deque
+from collections import defaultdict
 from string import strip
 
 import sqlite3
@@ -142,7 +142,7 @@ class NCBITaxa(object):
 
         return taxid, spname, norm_score
 
-    def get_ranks(self, taxids):
+    def get_rank(self, taxids):
         'return a dictionary converting a list of taxids into their corresponding NCBI taxonomy rank' 
 
         all_ids = set(taxids)
@@ -156,7 +156,7 @@ class NCBITaxa(object):
             id2rank[tax] = spname
         return id2rank
     
-    def get_sp_lineage(self, taxid):
+    def get_lineage(self, taxid):
         """Given a valid taxid number, return its corresponding lineage track as a
         hierarchically sorted list of parent taxids.
         """
@@ -201,7 +201,6 @@ class NCBITaxa(object):
             
         return id2name
 
-
     def get_name_translator(self, names):
         """
         Given a list of taxid scientific names, returns a dictionary translating them into their corresponding taxids. 
@@ -244,8 +243,8 @@ class NCBITaxa(object):
             names.append(id2name.get(sp, sp))
         return names
 
-
-    def get_topology(self, taxids, intermediate_nodes=False, rank_limit=None, collapse_subspecies=False):
+        
+    def get_topology(self, taxids, intermediate_nodes=False, rank_limit=None, collapse_subspecies=False, annotate=True):
         """Given a list of taxid numbers, return the minimal pruned NCBI taxonomy tree
         containing all of them.
 
@@ -265,14 +264,18 @@ class NCBITaxa(object):
         sp2track = {}
         elem2node = {}
         for sp in taxids:
-            track = deque()
-            lineage = self.get_sp_lineage(sp)
-            id2rank = self.get_ranks(lineage)
+            track = []
+            lineage = self.get_lineage(sp)
+            id2rank = self.get_rank(lineage)
 
             for elem in lineage:
-                node = elem2node.setdefault(elem, PhyloTree())
-                node.name = str(elem)
-                node.add_feature("rank", str(id2rank.get(int(elem), "?")))
+                if elem not in elem2node:
+                    node = elem2node.setdefault(elem, PhyloTree())
+                    node.name = str(elem)
+                    node.taxid = elem
+                    node.add_feature("rank", str(id2rank.get(int(elem), "no rank")))
+                else:
+                    node = elem2node[elem]
                 track.append(node)
             sp2track[sp] = track
 
@@ -287,13 +290,6 @@ class NCBITaxa(object):
                 parent = elem
         root = elem2node[1]
 
-        # This fixes cases in which requested taxids are internal nodes
-        #for x in set(sp2track) - set([n.name for n in root.iter_leaves()]):
-        #    new_leaf = sp2track[x][-1].copy()
-        #    for ch in new_leaf.get_children():
-        #        ch.detach()
-        #    sp2track[x][-1].add_child(new_leaf)
-
         #remove onechild-nodes
         if not intermediate_nodes:
             for n in root.get_descendants():
@@ -302,7 +298,7 @@ class NCBITaxa(object):
 
         if collapse_subspecies:
             species_nodes = [n for n in t.traverse() if n.rank == "species"
-                             if int(n.taxid) in all_taxids]
+                             if int(n.name) in all_taxids]
             for sp_node in species_nodes:
                 bellow = sp_node.get_descendants()
                 if bellow:
@@ -319,9 +315,14 @@ class NCBITaxa(object):
                     sp_node.add_feature("collapse_subspecies", "1")
                     
         if len(root.children) == 1:
-            return root.children[0].detach()
+            tree = root.children[0].detach()
         else:
-            return root
+            tree = root
+
+        if annotate:
+            self.annotate_tree(tree)
+
+        return tree
 
 
     def annotate_tree(self, t, taxid_attr="name", tax2name=None, tax2track=None, tax2rank=None):
@@ -339,9 +340,9 @@ class NCBITaxa(object):
 
         """
 
-        leaves = t.get_leaves()
+        #leaves = t.get_leaves()
         taxids = set()
-        for n in leaves:
+        for n in t.traverse():
             try:
                 tid = int(getattr(n, taxid_attr))
             except (ValueError,AttributeError):
@@ -357,42 +358,44 @@ class NCBITaxa(object):
             tax2name = self.get_taxid_translator([tid for tid in taxids])
         if not tax2track or taxids - set(map(int, tax2track.keys())):
             #print "Querying for tax lineages"
-            tax2track = dict([(tid, self.get_sp_lineage(tid)) for tid in taxids])
+            tax2track = dict([(tid, self.get_lineage(tid)) for tid in taxids])
 
         all_taxid_codes = set([_tax for _lin in tax2track.values() for _tax in _lin])
         extra_tax2name = self.get_taxid_translator(list(all_taxid_codes - set(tax2name.keys())))
         tax2name.update(extra_tax2name)
 
         if not tax2rank:
-            tax2rank = self.get_ranks(tax2name.keys())
+            tax2rank = self.get_rank(tax2name.keys())
 
         n2leaves = t.get_cached_content()
 
         for n in t.traverse('postorder'):
-            if n.is_leaf():
-                try:
-                    node_taxid = int(getattr(n, taxid_attr))
-                except (ValueError, AttributeError):
-                    node_taxid = None
-                    
-                n.add_features(taxid = node_taxid)
-                if node_taxid:
-                    if node_taxid in merged_conversion:
-                        node_taxid = merged_conversion[node_taxid]
+            try:
+                node_taxid = int(getattr(n, taxid_attr))
+            except (ValueError, AttributeError):
+                node_taxid = None
+                
+            n.add_features(taxid = node_taxid)
+            if node_taxid:
+                if node_taxid in merged_conversion:
+                    node_taxid = merged_conversion[node_taxid]
 
-                    n.add_features(sci_name = tax2name.get(node_taxid, getattr(n, taxid_attr, 'NA')),
-                                   lineage = tax2track[node_taxid], 
-                                   rank = tax2rank.get(node_taxid, 'Unknown'),
-                                   named_lineage = self.translate_to_names(tax2track[node_taxid]))
-                else:
-                    n.add_features(sci_name = getattr(n, taxid_attr, 'NA'),
-                                   lineage = [], 
-                                   rank = 'Unknown',
-                                   named_lineage = [])
-            else:
+                n.add_features(sci_name = tax2name.get(node_taxid, getattr(n, taxid_attr, 'NA')),
+                               lineage = tax2track[node_taxid], 
+                               rank = tax2rank.get(node_taxid, 'Unknown'),
+                               named_lineage = self.translate_to_names(tax2track[node_taxid]))
+            elif n.is_leaf():
+                n.add_features(sci_name = getattr(n, taxid_attr, 'NA'),
+                               lineage = [], 
+                               rank = 'Unknown',
+                               named_lineage = [])
+            else:                    
                 lineage = self._common_lineage([lf.lineage for lf in n2leaves[n]])
                 ancestor = lineage[-1]
-
+                print n
+                print [lf.taxid for lf in n2leaves[n]]
+                print ancestor
+                print 
                 n.add_features(sci_name = tax2name.get(ancestor, str(ancestor)),
                                taxid = ancestor,
                                lineage = lineage, 
@@ -415,7 +418,7 @@ class NCBITaxa(object):
         else:
             sorted_lineage = sorted(common, lambda x, y: cmp(min(pos[x]), min(pos[y])))
             return sorted_lineage
-
+            
         # OLD APPROACH:
 
         # visited = defaultdict(int)
