@@ -42,6 +42,7 @@ class Test_Coretype_Tree(unittest.TestCase):
 
         #TEst export root features
         t = Tree("(((A[&&NHX:name=A],B[&&NHX:name=B])[&&NHX:name=NoName],C[&&NHX:name=C])[&&NHX:name=I],(D[&&NHX:name=D],F[&&NHX:name=F])[&&NHX:name=J])[&&NHX:name=root];")
+        print t.get_ascii()
         self.assertEqual(t.write(format=9, features=["name"], format_root_node=True),
                          "(((A[&&NHX:name=A],B[&&NHX:name=B])[&&NHX:name=NoName],C[&&NHX:name=C])[&&NHX:name=I],(D[&&NHX:name=D],F[&&NHX:name=F])[&&NHX:name=J])[&&NHX:name=root];")
         
@@ -55,7 +56,7 @@ class Test_Coretype_Tree(unittest.TestCase):
             t = Tree()
             t.populate(50)
             for f in NW_FORMAT:
-                self.assertEqual(t.write(format=f), Tree(t.write(format=f),format=f).write(format=f))
+                 self.assertEqual(t.write(format=f), Tree(t.write(format=f),format=f).write(format=f))
 
         nw0 = "((A:0.813705,(E:0.545591,D:0.411772)1.000000:0.137245)1.000000:0.976306,C:0.074268);"
         nw1 = "((A:0.813705,(E:0.545591,D:0.411772)B:0.137245)A:0.976306,C:0.074268);"

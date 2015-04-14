@@ -50,9 +50,10 @@ _ILEGAL_NEWICK_CHARS = ":;(),\[\]\t\n\r="
 _NON_PRINTABLE_CHARS_RE = "[\x00-\x1f]+"
 
 _NHX_RE = "\[&&NHX:[^\]]*\]"
-_FLOAT_RE = "[+-]?\d+\.?\d*(?:[eE][-+]\d+)?"
+_FLOAT_RE = "\s*[+-]?\d+\.?\d*(?:[eE][-+]\d+)?\s*"
 #_FLOAT_RE = "[+-]?\d+\.?\d*"
-_NAME_RE = "[^():,;\[\]]+"
+#_NAME_RE = "[^():,;\[\]]+"
+_NAME_RE = "[^():,;]+?"
 
 DEFAULT_DIST = 1.0
 DEFAULT_NAME = ''
@@ -249,12 +250,12 @@ def read_newick(newick, root_node=None, format=0):
             nw = newick
         nw = nw.strip()
         if not nw.startswith('(') and nw.endswith(';'):
-            return _read_node_data(nw, root_node, "single", format)
+            return _read_node_data(nw[:-1], root_node, "single", format)
             
         elif not nw.startswith('(') or not nw.endswith(';'):
             raise NewickError('Unexisting tree file or Malformed newick tree structure.')
         else:
-            return _read_newick_from_string(nw, root_node, format)
+            return _read_newick_from_string(nw[:-1], root_node, format)
 
     else:
         raise NewickError("'newick' argument must be either a filename or a newick string.")
@@ -270,18 +271,12 @@ def _read_newick_from_string(nw, root_node, format):
 
     current_parent = None
 
-    # Ok, this is my own way of reading newick structures. I find it
-    # more flexible and elegant than other docummented methods. Don't
-    # know if I'm loosing much efficiency. It Starts by splitting the
-    # structure using open parentheses. Each of the resulting chunks
-    # represent an internal node. So for each chunk I create a new node
-    # that hungs from the current parent node.  Each internal node chunk
-    # may contain information about terminal nodes hanging from the
-    # internal and clossing parenthessis (closing previously opened
-    # internal nodes).
-    #
-    # Enjoy.
-    # by JHC ;)
+    # The newick parser starts by splitting the structure using open
+    # parentheses. Each of the resulting chunks represent an internal node. So
+    # for each chunk I create a new node that hungs from the current parent
+    # node.  Each internal node chunk may contain information about terminal
+    # nodes hanging from the internal and closing parenthesis (closing
+    # previously opened internal nodes).
 
     # Skip the first chunk. It is always == ''
     for internal_node in nw.split("(")[1:]:
@@ -302,17 +297,17 @@ def _read_newick_from_string(nw, root_node, format):
             # internal node (will be visited in the next newick chunk)
             if leaf.strip() == '' and i == len(possible_leaves)-1:
                 continue
-            # Leaf text strings may end with a variable number of clossing
+            # Leaf text strings may end with a variable number of closing
             # parenthesis. For each ')' we read the information of the
             # current node, close it and go up one more node.
-            clossing_nodes = leaf.split(")")
+            closing_nodes = leaf.split(")")
             # first par contain leaf info
-            _read_node_data(clossing_nodes[0], current_parent, "leaf", format)
-            # The next parts containg clossing nodes and info about the
+            _read_node_data(closing_nodes[0], current_parent, "leaf", format)
+            # The next parts containing closing nodes and info about the
             # internal nodes.
-            if len(clossing_nodes)>1:
-                for closing_internal in clossing_nodes[1:]:
-                    if closing_internal.strip() ==";": continue
+            if len(closing_nodes)>1:
+                for closing_internal in closing_nodes[1:]:
+                    if closing_internal.strip() == ";": continue
                     _read_node_data(closing_internal, current_parent, "internal", format)
                     current_parent = current_parent.up
     return root_node
@@ -333,7 +328,7 @@ def _parse_extra_features(node, NHX_string):
 def _read_node_data(subnw, current_node, node_type, format):
     """ Reads a leaf node from a subpart of the original newick
     tree """
-
+        
     if node_type == "leaf" or node_type == "single":
         if node_type == "leaf":
             node = current_node.add_child()
@@ -373,8 +368,13 @@ def _read_node_data(subnw, current_node, node_type, format):
     if flexible2:
         SECOND_MATCH += "?"
 
-    MATCH = '%s\s*%s\s*(%s)?' % (FIRST_MATCH, SECOND_MATCH, _NHX_RE)
+    if not subnw.strip():
+        return
+        
+    MATCH = '^\s*%s\s*%s\s*(%s)?\s*$' % (FIRST_MATCH, SECOND_MATCH, _NHX_RE)
     data = re.match(MATCH, subnw)
+    #print MATCH, subnw,
+    #print data.groups()
     if data:
         data = data.groups()
         # This prevents ignoring errors even in flexible nodes:
