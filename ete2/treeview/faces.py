@@ -1858,14 +1858,7 @@ class SequencePlotFace(StaticItemFace):
         if ylim:
             self.ylim = tuple((float(y) for y in ylim))
         else:
-            dif = (max(self.values) - min(self.values))/20
-            if dif >= 1:
-                self.ylim = (int(min(self.values)-0.5), int(max(self.values)+0.5))
-            else:
-                from math import log10
-                exp = str(-int(log10(min(self.values))-0.5))
-                self.ylim = (float(int(min(self.values)*float('1e'+exp)-0.5))/float('1e'+exp),
-                             float(int(max(self.values)/float('1e'+exp)+0.5))/float('1e'+exp))
+            self.ylim = (int(min(self.values)-0.5), int(max(self.values)+0.5))
         self.xlabel = xlabel
         self.ylabel = ylabel
 
