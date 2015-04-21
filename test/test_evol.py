@@ -12,10 +12,10 @@ __version__ = "0.0"
 
 
 import unittest
-from ete2.evol             import EvolTree
-from random                   import random as rnd
-from copy                     import deepcopy
-from cPickle                  import load, dump
+from ete2.evol import EvolTree
+from random import random as rnd
+from copy import deepcopy
+from cPickle import load, dump
 import os
 
 ETEPATH = os.path.abspath(os.path.split(os.path.realpath(__file__))[0]+'/../')
