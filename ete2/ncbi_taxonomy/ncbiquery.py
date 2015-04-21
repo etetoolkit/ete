@@ -392,10 +392,6 @@ class NCBITaxa(object):
             else:                    
                 lineage = self._common_lineage([lf.lineage for lf in n2leaves[n]])
                 ancestor = lineage[-1]
-                print n
-                print [lf.taxid for lf in n2leaves[n]]
-                print ancestor
-                print 
                 n.add_features(sci_name = tax2name.get(ancestor, str(ancestor)),
                                taxid = ancestor,
                                lineage = lineage, 

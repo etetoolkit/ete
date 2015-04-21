@@ -138,16 +138,16 @@ def run(args):
             n.add_features(taxid=n.name)
             n.add_features(sci_name=str(id2name.get(int(n.name), "?")))
             n.name = "%s - %s" %(id2name.get(int(n.name), n.name), n.name)
-            lineage = ncbi.get_sp_lineage(n.taxid)
+            lineage = ncbi.get_lineage(n.taxid)
             n.add_features(named_lineage = '|'.join(ncbi.translate_to_names(lineage)))
         dump(t, features=["taxid", "name", "rank", "bgcolor", "sci_name",
                           "collapse_subspecies", "named_lineage"])
     elif args.info:
         print '# ' + '\t'.join(["Taxid", "Sci.Name", "Rank", "Named Lineage", "Taxid Lineage"])
         translator = ncbi.get_taxid_translator(all_taxids)
-        ranks = ncbi.get_ranks(all_taxids) 
+        ranks = ncbi.get_rank(all_taxids) 
         for taxid, name in translator.iteritems():
-            lineage = ncbi.get_sp_lineage(taxid)            
+            lineage = ncbi.get_lineage(taxid)            
             named_lineage = ','.join(ncbi.translate_to_names(lineage))
             lineage_string = ','.join(map(str, lineage))
             print '\t'.join([str(taxid), name, ranks.get(taxid, ''), named_lineage, lineage_string])
