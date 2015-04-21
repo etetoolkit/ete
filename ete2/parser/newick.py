@@ -39,7 +39,7 @@
 
 import re
 import os
-
+from string import strip
 
 __all__ = ["read_newick", "write_newick", "print_supported_formats"]
 
@@ -255,7 +255,7 @@ def read_newick(newick, root_node=None, format=0):
         elif not nw.startswith('(') or not nw.endswith(';'):
             raise NewickError('Unexisting tree file or Malformed newick tree structure.')
         else:
-            return _read_newick_from_string(nw[:-1], root_node, format)
+            return _read_newick_from_string(nw, root_node, format)
 
     else:
         raise NewickError("'newick' argument must be either a filename or a newick string.")
@@ -269,37 +269,31 @@ def _read_newick_from_string(nw, root_node, format):
     nw = re.sub("[\n\r\t]+", "", nw)
 
     current_parent = None
-    # The newick parser starts by splitting the structure using open
-    # parentheses. Each of the resulting chunks represent an internal node. So
-    # for each chunk I create a new node that hungs from the current parent
-    # node.  Each internal node chunk may contain information about terminal
-    # nodes hanging from the internal and closing parenthesis (closing
-    # previously opened internal nodes).
+    # Each chunk represents the content of a parent node, except for the first
+    # chunk which is the root. It could contain leaves or closing parentheses
+    # We may find: 
+    # leaf, ..., leaf,
+    # leaf))), leaf))
+    # leaf, leaf)
+    # leaf))
+    # ) only if format == 100
+    for chunk in nw.split("(")[1:]:
+        # If no node has been created so far, this is the root, so use the node.
+        current_parent = root_node if current_parent is None else current_parent.add_child()
 
-    # Skip the first chunk. It is always == ''
-    for internal_node in nw.split("(")[1:]:
-        # If this is the root of tree, use the root_node instead of
-        # creating it, otherwise make a new one.
-        if current_parent is None:
-            current_parent = root_node
-        else:
-            current_parent = current_parent.add_child()
-        # We can only find leaf nodes within this chunk, since rest of
-        # internal nodes will be in the next newick chunks
-        
-        possible_leaves = internal_node.split(",")
-        for i, leaf in enumerate(possible_leaves):
-            # Any sub-chunk resulting from splitting by commas can
-            # be considered (topologically) as a child to the current parent
-            # node. We only discard chunks if they are empty and in the last
-            # position, meaning that the next brother is not terminal but and
-            # internal node (will be visited in the next newick chunk)
-            if leaf.strip() == '' and i == len(possible_leaves)-1:
+        #[leaf, leaf, '']
+        #[leaf, leaf, ')))', leaf, leaf, '']
+        #[leaf, leaf, ')))', leaf, leaf, '']
+        subchunks = map(strip, chunk.split(","))
+        if subchunks[-1] != '' and not subchunks[-1].endswith(';'):
+            raise NewickError('Broken newick structure at: %s' %chunk)
+        for i, leaf in enumerate(subchunks):
+            if leaf.strip() == '' and i == len(subchunks) - 1:
                 continue # "blah blah ,( blah blah"
-              
-            # Leaf text strings may end with a variable number of closing
-            # parenthesis. For each ')' we read the information of the
-            # current node, close it and go up one more node.
+                
+            # After each leaf, newick chunks might contain a variable number of
+            # closing parenthesis. For each ')' we need to read internal node
+            # data and move current node one level up.
             closing_nodes = leaf.split(")")
             # first par contain leaf info
             _read_node_data(closing_nodes[0], current_parent, "leaf", format)
@@ -307,7 +301,9 @@ def _read_newick_from_string(nw, root_node, format):
             # internal nodes.
             if len(closing_nodes)>1:
                 for closing_internal in closing_nodes[1:]:
-                    if closing_internal.strip() == ";": continue
+                    closing_internal =  closing_internal.rstrip(";")
+                    #if closing_internal.strip() == ";":
+                    #    continue
                     _read_node_data(closing_internal, current_parent, "internal", format)
                     current_parent = current_parent.up
     return root_node
@@ -373,8 +369,6 @@ def _read_node_data(subnw, current_node, node_type, format):
         raise NewickError('Empty leaf node found')
     elif not subnw:
         return
-
-
     
     MATCH = '^\s*%s\s*%s\s*(%s)?\s*$' % (FIRST_MATCH, SECOND_MATCH, _NHX_RE)
     data = re.match(MATCH, subnw)

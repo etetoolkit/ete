@@ -151,23 +151,22 @@ class Test_Coretype_Tree(unittest.TestCase):
         for f in [0, 1, 2]:
             self.assertRaises(NewickError, Tree, error_nw2, format=f)
 
-        # Check errors derived from reading names with weird chars
+        # Check errors derived from reading names with weird or illegal chars
         base_nw = "((NAME1:0.813705,(NAME2:0.545,NAME3:0.411772)NAME6:0.137245)NAME5:0.976306,NAME4:0.074268);"
         valid_names = ['[name]', '[name', '"name"', "'name'", "'name", 'name', '[]\'"&%$!*.']
-        error_names = ['error)', '(error', "erro()r",  ":error", "error:", "err:or", ",error", "err,or", "error,"]
+        error_names = ['error)', '(error', "erro()r",  ":error", "error:", "err:or", ",error", "error,"]
         for ename in error_names:
-            print ename, base_nw.replace('NAME2', ename)
+            #print ename, base_nw.replace('NAME2', ename)
             self.assertRaises(NewickError, Tree, base_nw.replace('NAME2', ename), format=1)
-            self.assertRaises(NewickError, Tree, base_nw.replace('NAME6', ename), format=1)
+            if not ename.startswith(','):
+                #print ename, base_nw.replace('NAME6', ename)
+                self.assertRaises(NewickError, Tree, base_nw.replace('NAME6', ename), format=1)
             
-        for vname in error_names:
-            expected_names = set(['NAME1', vname, 'NAME3'])
-            
-            self.assertEqual(set([n.name for n in Tree(base_nw.replace('NAME2', ename), format=1)]),
+        for vname in valid_names:
+            expected_names = set(['NAME1', vname, 'NAME3', 'NAME4'])
+            #print set([n.name for n in Tree(base_nw.replace('NAME2', vname), format=1)])
+            self.assertEqual(set([n.name for n in Tree(base_nw.replace('NAME2', vname), format=1)]),
                              expected_names)
-
-
-            
         
     def test_custom_formatting_formats(self):
         """ test to change dist, name and support formatters """
@@ -577,7 +576,7 @@ class Test_Coretype_Tree(unittest.TestCase):
         gtree = Tree('((g, h), (a, (b, (c, (d,( e, f))))));')
         ref3 = Tree('((a, b, c, (d, e, f)), (g, h));')
         ref4 = Tree('((a, b, c, d, e, f), (g, h));')
-        ref5 = Tree('((a, b (c, d (e, f))), (g, h));')
+        ref5 = Tree('((a, b, (c, d, (e, f))), (g, h));')
 
         for ref in [ref3, ref4, ref5]:
             #print gtree, ref
