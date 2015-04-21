@@ -259,7 +259,7 @@ def render(root_node, img, hide_root=False):
         if not _leaf(n) and img.show_branch_support:
             faces.add_face_to_node(su_face, n, 0, position="branch-bottom")
 
-        if _leaf(n) and img.show_leaf_name:
+        if _leaf(n) and n.name and img.show_leaf_name:
             faces.add_face_to_node(na_face, n, 0, position="branch-right")
 
         if _leaf(n):# or len(n.img_style["_faces"]["aligned"]):

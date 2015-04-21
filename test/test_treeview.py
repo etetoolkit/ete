@@ -2,14 +2,12 @@ import random
 import sys
 import os
 
-# This avoids installing nprlib module. npr script will find it in the
-# same directory in which it is
 ETEPATH = os.path.abspath(os.path.split(os.path.realpath(__file__))[0]+'/../')
 sys.path.insert(0, ETEPATH)
 
-from ete2 import Tree, TreeStyle, NodeStyle, PhyloTree, faces
+from ete2 import Tree, TreeStyle, NodeStyle, PhyloTree, faces, random_color
 from ete2.treeview.faces import *
-from ete2.treeview.main import random_color, _NODE_TYPE_CHECKER, FACE_POSITIONS
+from ete2.treeview.main import _NODE_TYPE_CHECKER, FACE_POSITIONS
 
 sys.path.insert(0, os.path.join(ETEPATH, "examples/treeview"))
 import face_grid, bubble_map, item_faces, node_style, node_background, face_positions, face_rotation, seq_motif_faces, barchart_and_piechart_faces
@@ -70,7 +68,7 @@ temp_facet = TreeFace(t, ts)
 n = main_tree.add_child()
 n.add_face(temp_facet, 0, "aligned")
 
-# Test orphan nodes and trees with 0 branch length
+#Test orphan nodes and trees with 0 branch length
 t, ts = Tree(), TreeStyle()
 t.populate(5)
 for n in t.traverse():
@@ -97,7 +95,13 @@ n = main_tree.add_child()
 n.add_face(temp_tface, 0, "aligned")
 
 t, ts = Tree(), TreeStyle()
-temp_tface = TreeFace(Tree(), ts)
+temp_tface = TreeFace(Tree('node;'), ts)
+n = main_tree.add_child()
+n.add_face(temp_tface, 0, "aligned")
+
+t, ts = Tree(), TreeStyle()
+ts.mode = "c"
+temp_tface = TreeFace(Tree('node;'), ts)
 n = main_tree.add_child()
 n.add_face(temp_tface, 0, "aligned")
 
@@ -106,6 +110,13 @@ ts.mode = "c"
 temp_tface = TreeFace(Tree(), ts)
 n = main_tree.add_child()
 n.add_face(temp_tface, 0, "aligned")
+
+t, ts = Tree(), TreeStyle()
+temp_tface = TreeFace(Tree(), ts)
+n = main_tree.add_child()
+n.add_face(temp_tface, 0, "aligned")
+
+
 
 
 # TEST TIGHT TEST WRAPPING
