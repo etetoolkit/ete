@@ -262,15 +262,13 @@ def read_newick(newick, root_node=None, format=0):
 
 def _read_newick_from_string(nw, root_node, format):
     """ Reads a newick string in the New Hampshire format. """
-
     if nw.count('(') != nw.count(')'):
-        raise NewickError('Parentheses do not match. Broken tree structure')
+        raise NewickError('Parentheses do not match. Broken tree structure?')
 
     # white spaces and separators are removed
     nw = re.sub("[\n\r\t]+", "", nw)
 
     current_parent = None
-
     # The newick parser starts by splitting the structure using open
     # parentheses. Each of the resulting chunks represent an internal node. So
     # for each chunk I create a new node that hungs from the current parent
@@ -288,22 +286,24 @@ def _read_newick_from_string(nw, root_node, format):
             current_parent = current_parent.add_child()
         # We can only find leaf nodes within this chunk, since rest of
         # internal nodes will be in the next newick chunks
+        
         possible_leaves = internal_node.split(",")
         for i, leaf in enumerate(possible_leaves):
-            # Any resulting sub-chunk resulting from splitting by commas can
-            # be considered (tpologically) as a child to the current parent
+            # Any sub-chunk resulting from splitting by commas can
+            # be considered (topologically) as a child to the current parent
             # node. We only discard chunks if they are empty and in the last
-            # possition, meaining that the next brother is not terminal bu
+            # position, meaning that the next brother is not terminal but and
             # internal node (will be visited in the next newick chunk)
             if leaf.strip() == '' and i == len(possible_leaves)-1:
-                continue
+                continue # "blah blah ,( blah blah"
+              
             # Leaf text strings may end with a variable number of closing
             # parenthesis. For each ')' we read the information of the
             # current node, close it and go up one more node.
             closing_nodes = leaf.split(")")
             # first par contain leaf info
             _read_node_data(closing_nodes[0], current_parent, "leaf", format)
-            # The next parts containing closing nodes and info about the
+            # The next parts contain closing nodes and info about the
             # internal nodes.
             if len(closing_nodes)>1:
                 for closing_internal in closing_nodes[1:]:
@@ -363,18 +363,25 @@ def _read_node_data(subnw, current_node, node_type, format):
     elif converterFn2 is None:
         SECOND_MATCH = '()'
 
-    if flexible1:
+    if flexible1 and node_type != 'leaf':
         FIRST_MATCH += "?"
     if flexible2:
         SECOND_MATCH += "?"
 
-    if not subnw.strip():
+    subnw = subnw.strip()
+    if not subnw and node_type == 'leaf' and format != 100:
+        raise NewickError('Empty leaf node found')
+    elif not subnw:
         return
-        
+
+
+    
     MATCH = '^\s*%s\s*%s\s*(%s)?\s*$' % (FIRST_MATCH, SECOND_MATCH, _NHX_RE)
     data = re.match(MATCH, subnw)
-    #print MATCH, subnw,
-    #print data.groups()
+    #print MATCH
+    #print subnw
+    #print data
+   
     if data:
         data = data.groups()
         # This prevents ignoring errors even in flexible nodes:

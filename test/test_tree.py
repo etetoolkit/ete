@@ -4,7 +4,11 @@ import sys
 import time
 import itertools
 
+import sys
+sys.path.insert(0, '../')
+
 from ete2 import *
+from ete2.parser.newick import NewickError
 from datasets import *
  
 class Test_Coretype_Tree(unittest.TestCase):
@@ -45,6 +49,9 @@ class Test_Coretype_Tree(unittest.TestCase):
         print t.get_ascii()
         self.assertEqual(t.write(format=9, features=["name"], format_root_node=True),
                          "(((A[&&NHX:name=A],B[&&NHX:name=B])[&&NHX:name=NoName],C[&&NHX:name=C])[&&NHX:name=I],(D[&&NHX:name=D],F[&&NHX:name=F])[&&NHX:name=J])[&&NHX:name=root];")
+
+
+
         
     def test_newick_formats(self):
         """ tests different newick subformats """
@@ -54,22 +61,114 @@ class Test_Coretype_Tree(unittest.TestCase):
         # Let's stress a bit
         for i in xrange(10):
             t = Tree()
-            t.populate(50)
+            t.populate(4, random_branches=True)
             for f in NW_FORMAT:
-                 self.assertEqual(t.write(format=f), Tree(t.write(format=f),format=f).write(format=f))
+                self.assertEqual(t.write(format=f), Tree(t.write(format=f),format=f).write(format=f))
+                
+        # Format 0 = ((H:1,(G:1,F:1)1:1)1:1,I:1)1:1;
+        # Format 1 = ((H:1,(G:1,F:1):1):1,I:1):1;
+        # Format 2 = ((H:1,(G:1,F:1)1:1)1:1,I:1)1:1;
+        # Format 3 = ((H:1,(G:1,F:1)NoName:1)NoName:1,I:1)NoName:1;
+        # Format 4 = ((H:1,(G:1,F:1)),I:1);
+        # Format 5 = ((H:1,(G:1,F:1):1):1,I:1):1;
+        # Format 6 = ((H,(G,F):1):1,I):1;
+        # Format 7 = ((H:1,(G:1,F:1)NoName)NoName,I:1)NoName;
+        # Format 8 = ((H,(G,F)NoName)NoName,I)NoName;
+        # Format 9 = ((H,(G,F)),I);
+        # Format 100 = ((,(,)),);
+        
+        t = Tree()
+        t.populate(50, random_branches=True)
+        t.sort_descendants()
+        expected_distances = map(lambda x:round(x, 6), [n.dist for n in t.traverse('postorder')])
+        expected_leaf_distances = map(lambda x:round(x, 6), [n.dist for n in t])
+        expected_internal_distances = map(lambda x:round(x, 6), [n.dist for n in t.traverse('postorder') if not n.is_leaf()])
+        expected_supports = map(lambda x:round(x, 6), [n.support for n in t.traverse('postorder') if not n.is_leaf()])
+        expected_leaf_names = [n.name for n in t]
 
-        nw0 = "((A:0.813705,(E:0.545591,D:0.411772)1.000000:0.137245)1.000000:0.976306,C:0.074268);"
-        nw1 = "((A:0.813705,(E:0.545591,D:0.411772)B:0.137245)A:0.976306,C:0.074268);"
-        nw2 = "((A:0.813705,(E:0.545591,D:0.411772)1.000000:0.137245)1.000000:0.976306,C:0.074268);"
-        nw3 = "((A:0.813705,(E:0.545591,D:0.411772)B:0.137245)A:0.976306,C:0.074268);"
-        nw4 = "((A:0.813705,(E:0.545591,D:0.411772)),C:0.074268);"
-        nw5 = "((A:0.813705,(E:0.545591,D:0.411772):0.137245):0.976306,C:0.074268);"
-        nw6 = "((A:0.813705,(E:0.545591,D:0.411772)B)A,C:0.074268);"
-        nw7 = "((A,(E,D)B)A,C);"
-        nw8 = "((A,(E,D)),C);"
-        nw9 = "((,(,)),);"
+        # Check that all formats read names correctly 
+        for f in [0,1,2,3,5,6,7,8,9]:
+            t2 = Tree(t.write(format=f, dist_formatter="%0.6f", support_formatter="%0.6f", format_root_node=True), format=f)
+            t2.sort_descendants()
+            observed_names = [n.name for n in t]
+            self.assertEqual(observed_names, expected_leaf_names)
+        
+        # Check that all formats reading distances, recover original distances
+        for f in [0,1,2,3,5]:
+            t2 = Tree(t.write(format=f, dist_formatter="%0.6f", support_formatter="%0.6f", format_root_node=True), format=f)
+            t2.sort_descendants()
+            observed_distances = map(lambda x:round(x, 6), [n.dist for n in t2.traverse('postorder')])
+            self.assertEqual(observed_distances, expected_distances)
+            
+        # formats reading only leaf distances
+        for f in [4,7]:
+            t2 = Tree(t.write(format=f, dist_formatter="%0.6f", support_formatter="%0.6f", format_root_node=True), format=f)
+            t2.sort_descendants()
+            observed_distances = map(lambda x:round(x, 6), [n.dist for n in t2])
+            self.assertEqual(observed_distances, expected_leaf_distances)
+
+        # formats reading only leaf distances
+        for f in [6]:
+            t2 = Tree(t.write(format=f, dist_formatter="%0.6f", support_formatter="%0.6f", format_root_node=True), format=f)
+            t2.sort_descendants()
+            observed_distances = map(lambda x:round(x, 6), [n.dist for n in t2.traverse('postorder') if not n.is_leaf()])
+            self.assertEqual(observed_distances, expected_internal_distances)
+
+            
+        # Check that all formats reading supports, recover original distances
+        #print t.get_ascii(attributes=["support"])
+        for f in [0,2]:
+            t2 = Tree(t.write(format=f, dist_formatter="%0.6f", support_formatter="%0.6f", format_root_node=True), format=f)
+            t2.sort_descendants()
+            observed_supports = map(lambda x:round(x, 6), [n.support for n in t2.traverse('postorder') if not n.is_leaf()])
+            self.assertEqual(observed_supports, expected_supports)
+
+            
+       # Check that formats reading supports, do not accept node names
+        for f in [0,2]:
+            # format 3 forces dumping internal node names, NoName in case is missing
+            self.assertRaises(Exception, Tree, t.write(format=3), format=f)
+
+       # Check that formats reading names, do not load supports 
+        for f in [1, 3]:
+            # format 3 forces dumping internal node names, NoName in case is missing
+            t2 = Tree(t.write(format=0), format=f)
+            default_supports = set([n.support for n in t2.traverse()])
+            self.assertEqual(set([1.0]), default_supports) 
 
 
+        # Check errors reading numbers
+        error_nw1 = "((A:0.813705,(E:0.545591,D:0.411772)error:0.137245)1.000000:0.976306,C:0.074268);"
+        for f in [0, 2]:
+            self.assertRaises(NewickError, Tree, error_nw1, format=f)
+
+        error_nw2 = "((A:0.813705,(E:0.545error,D:0.411772)1.0:0.137245)1.000000:0.976306,C:0.074268);"
+        for f in [0, 1, 2]:
+            self.assertRaises(NewickError, Tree, error_nw2, format=f)
+
+            
+        error_nw3 = "((A:0.813705,(E:0.545error,D:0.411772)1.0:0.137245)1.000000:0.976306,C:0.074268);"
+        for f in [0, 1, 2]:
+            self.assertRaises(NewickError, Tree, error_nw2, format=f)
+
+        # Check errors derived from reading names with weird chars
+        base_nw = "((NAME1:0.813705,(NAME2:0.545,NAME3:0.411772)NAME6:0.137245)NAME5:0.976306,NAME4:0.074268);"
+        valid_names = ['[name]', '[name', '"name"', "'name'", "'name", 'name', '[]\'"&%$!*.']
+        error_names = ['error)', '(error', "erro()r",  ":error", "error:", "err:or", ",error", "err,or", "error,"]
+        for ename in error_names:
+            print ename, base_nw.replace('NAME2', ename)
+            self.assertRaises(NewickError, Tree, base_nw.replace('NAME2', ename), format=1)
+            self.assertRaises(NewickError, Tree, base_nw.replace('NAME6', ename), format=1)
+            
+        for vname in error_names:
+            expected_names = set(['NAME1', vname, 'NAME3'])
+            
+            self.assertEqual(set([n.name for n in Tree(base_nw.replace('NAME2', ename), format=1)]),
+                             expected_names)
+
+
+            
+        
     def test_custom_formatting_formats(self):
         """ test to change dist, name and support formatters """
         t = Tree('((A:1.111111, B:2.222222)C:3.33333, D:4.44444);', format=1)
