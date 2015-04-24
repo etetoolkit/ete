@@ -3,25 +3,25 @@
 #
 # This file is part of the Environment for Tree Exploration program
 # (ETE).  http://etetoolkit.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 # License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 
+#
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
-# 
-# ETE is distributed under the GPL copyleft license (2008-2015).  
+#
+# ETE is distributed under the GPL copyleft license (2008-2015).
 #
 # If you make use of ETE in published work, please cite:
 #
@@ -29,12 +29,12 @@
 # ETE: a python Environment for Tree Exploration. Jaime BMC
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
-# Note that extra references to the specific methods implemented in 
-# the toolkit may be available in the documentation. 
-# 
+# Note that extra references to the specific methods implemented in
+# the toolkit may be available in the documentation.
+#
 # More info at http://etetoolkit.org. Contact: huerta@embl.de
 #
-# 
+#
 # #END_LICENSE#############################################################
 #!/usr/bin/python
 """
@@ -72,10 +72,10 @@ class Model:
      * sites   : values at each site.
      * classes : classes of sites and proportions
      * stats   : lnL number of parameters kappa value and codon frequencies stored here.
-    
+
     available models are:
         =========== ============================= ==================
-        Model name  Description                   Model kind       
+        Model name  Description                   Model kind
         =========== ============================= ==================\n%s
         =========== ============================= ==================\n
 
@@ -113,7 +113,7 @@ class Model:
         str_mark = ''
         str_line = '\n        mark:%-5s, omega: %-10s, node_ids: %-4s, name: %s'
         for i, node in enumerate(self._tree.traverse()):
-            if node.is_root(): 
+            if node.is_root():
                 str_mark += str_line % (self.branches[node.node_id]['mark'],
                                         'None',
                                         node.node_id, node.name or 'ROOT')
@@ -159,7 +159,7 @@ class Model:
                 self.branches[node.node_id] = {'mark': ' #'+str(i)}
             else:
                 self.branches[node.node_id] = {'mark': ''}
-        
+
     def _load(self, path):
         '''
         parse outfiles and load in model object
@@ -180,7 +180,7 @@ class Model:
                 setattr (self, key, val)
             vars(self) ['lnL'] = 0
             vars(self) ['np']  = 0
-            
+
     def _change_params(self, params):
         '''
         change model specific values
@@ -188,7 +188,7 @@ class Model:
         for key, change in self.properties ['changes']:
             params[key] = change
         self.properties ['params'] = params
-        
+
     def set_histface(self, up=True, hlines=(1.0, 0.3), kind='bar',
                       errors=False, colors=None, **kwargs):
         '''
@@ -238,7 +238,7 @@ class Model:
             hist = None
         self.properties['histface'] = hist
 
-            
+
     def get_ctrl_string(self, outfile=None):
         '''
         generate ctrl string to write to a file, if file is given,
@@ -247,7 +247,7 @@ class Model:
         :argument None outfile: if a path is given here, write control string into it.
 
         :returns: the control string
-        
+
         '''
         string = ''
         if 'sep' in self.properties:
@@ -333,8 +333,7 @@ def colorize_rst(vals, winner, classes, col=None):
 Model.__doc__ = Model.__doc__ % \
                 ('\n'.join([ '          %-8s   %-27s   %-15s  ' % \
                              ('%s' % (x), AVAIL[x]['evol'], AVAIL[x]['typ']) \
-                             for x in sorted(sorted(AVAIL.keys()),
-                                              cmp=lambda x, y: \
-                                              cmp(AVAIL[x]['typ'],
-                                                  AVAIL[y]['typ']),
-                                              reverse=True)]))
+                             for x in sorted(sorted(AVAIL.keys()),key=lambda x: \
+                                AVAIL[x]['typ'],
+                                reverse=True)]))
+

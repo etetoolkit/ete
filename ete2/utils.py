@@ -5,25 +5,25 @@ from __future__ import print_function
 #
 # This file is part of the Environment for Tree Exploration program
 # (ETE).  http://etetoolkit.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 # License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 
+#
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
-# 
-# ETE is distributed under the GPL copyleft license (2008-2015).  
+#
+# ETE is distributed under the GPL copyleft license (2008-2015).
 #
 # If you make use of ETE in published work, please cite:
 #
@@ -31,12 +31,12 @@ from __future__ import print_function
 # ETE: a python Environment for Tree Exploration. Jaime BMC
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
-# Note that extra references to the specific methods implemented in 
-# the toolkit may be available in the documentation. 
-# 
+# Note that extra references to the specific methods implemented in
+# the toolkit may be available in the documentation.
+#
 # More info at http://etetoolkit.org. Contact: huerta@embl.de
 #
-# 
+#
 # #END_LICENSE#############################################################
 import re
 import time
@@ -86,16 +86,16 @@ def print_table(items, header=None, wrap=True, max_col_width=20,
     ''' Prints a matrix of data as a human readable table. Matrix
     should be a list of lists containing any type of values that can
     be converted into text strings.
- 
+
     Two different column adjustment methods are supported through
     the *wrap_style* argument:
-    
+
        wrap: it will wrap values to fit max_col_width (by extending cell height)
        cut: it will strip values to max_col_width
- 
+
     If the *wrap* argument is set to False, column widths are set to fit all
     values in each column.
- 
+
     This code is free software. Updates can be found at
     https://gist.github.com/jhcepas/5884168
 
@@ -104,23 +104,23 @@ def print_table(items, header=None, wrap=True, max_col_width=20,
     #            header=[ "This is column number 1", "Column number 2", "col3"],
     #            wrap=True, max_col_width=15, wrap_style='wrap',
     #            row_line=True, fix_col_width=True)
-     
-     
-    # This is column  | Column number 2 | col3           
-    # number 1        |                 |                
+
+
+    # This is column  | Column number 2 | col3
+    # number 1        |                 |
     # =============== | =============== | ===============
     # 3               | 2               | {'bla': [1, 2],
     #                 |                 |  'whatever': 1}
     # --------------- | --------------- | ---------------
-    # 5               | this is a test  | 777            
-    #                 |              of |                
-    #                 |  wrapping text  |                
-    #                 |   with the new  |                
-    #                 | function        |                
+    # 5               | this is a test  | 777
+    #                 |              of |
+    #                 |  wrapping text  |
+    #                 |   with the new  |
+    #                 | function        |
     # --------------- | --------------- | ---------------
-    # 1               | 1               | 1              
+    # 1               | 1               | 1
     # =============== | =============== | ===============
-    
+
     '''
     def safelen(string):
         return len(clear_color(string))
@@ -182,20 +182,20 @@ def print_table(items, header=None, wrap=True, max_col_width=20,
         else:
             row = extra_line
             is_extra = True
- 
+
         if row_line and not is_extra and not (header and current_item == 0):
             if row:
                 print(' | '.join(['-'*c2maxw[col] for col in range(len(row)) ]))
             else:
                 print(' | '.join(['='*c2maxw[col] for col in range(len(extra_line)) ]))
- 
+
 def ask_filename(text):
     readline.set_completer(None)
     fname = ""
     while not os.path.exists(fname):
-	fname = input(text)
+        fname = input(text)
     return fname
-                
+
 def ask(string,valid_values,default=-1,case_sensitive=False):
     """ Asks for a keyborad answer """
     v = None
@@ -216,4 +216,4 @@ def timeit(f):
         print("    ", f.__name__, time.time() - t1, "seconds")
         return r
     return a_wrapper_accepting_arguments
-    
+

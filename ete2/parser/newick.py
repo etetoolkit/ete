@@ -5,25 +5,25 @@ from __future__ import print_function
 #
 # This file is part of the Environment for Tree Exploration program
 # (ETE).  http://etetoolkit.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 # License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 
+#
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
-# 
-# ETE is distributed under the GPL copyleft license (2008-2015).  
+#
+# ETE is distributed under the GPL copyleft license (2008-2015).
 #
 # If you make use of ETE in published work, please cite:
 #
@@ -31,17 +31,16 @@ from __future__ import print_function
 # ETE: a python Environment for Tree Exploration. Jaime BMC
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
-# Note that extra references to the specific methods implemented in 
-# the toolkit may be available in the documentation. 
-# 
+# Note that extra references to the specific methods implemented in
+# the toolkit may be available in the documentation.
+#
 # More info at http://etetoolkit.org. Contact: huerta@embl.de
 #
-# 
+#
 # #END_LICENSE#############################################################
 
 import re
 import os
-from string import strip
 import six
 from six.moves import map
 
@@ -128,9 +127,9 @@ NW_FORMAT = {
 }
 
 
-def format_node(node, node_type, format, 
-                dist_formatter=None, 
-                support_formatter=None, 
+def format_node(node, node_type, format,
+                dist_formatter=None,
+                support_formatter=None,
                 name_formatter=None):
     if dist_formatter is None: dist_formatter = FLOAT_FORMATTER
     if support_formatter is None: support_formatter = FLOAT_FORMATTER
@@ -139,7 +138,7 @@ def format_node(node, node_type, format,
     if node_type == "leaf":
         container1 = NW_FORMAT[format][0][0] # name
         container2 = NW_FORMAT[format][1][0] # dists
-        converterFn1 = NW_FORMAT[format][0][1] 
+        converterFn1 = NW_FORMAT[format][0][1]
         converterFn2 = NW_FORMAT[format][1][1]
         flexible1 = NW_FORMAT[format][0][2]
     else:
@@ -168,7 +167,7 @@ def format_node(node, node_type, format,
             FIRST_PART = "?"
 
 
-    if converterFn2 == str: 
+    if converterFn2 == str:
         try:
             SECOND_PART = ":"+re.sub("["+_ILEGAL_NEWICK_CHARS+"]", "_", \
                                   str(getattr(node, container2)))
@@ -176,7 +175,7 @@ def format_node(node, node_type, format,
             SECOND_PART = ":?"
     elif converterFn2 is None:
         SECOND_PART = ""
-    else: 
+    else:
         try:
             #SECOND_PART = ":%0.6f" %(converterFn2(getattr(node, container2)))
             SECOND_PART = ":%s" %(dist_formatter %(converterFn2(getattr(node, container2))))
@@ -225,7 +224,7 @@ class NewickError(Exception):
         #import sys
         #print >>sys.stderr, 'error: ' + str(value)
         Exception.__init__(self, value)
-        
+
 def read_newick(newick, root_node=None, format=0):
     """ Reads a newick tree from either a string or a file, and returns
     an ETE tree structure.
@@ -246,7 +245,7 @@ def read_newick(newick, root_node=None, format=0):
     if isinstance(newick, six.string_types):
         if os.path.exists(newick):
             if newick.endswith('.gz'):
-                import gzip 
+                import gzip
                 nw = gzip.open(source).read()
             else:
                 nw = open(newick, 'rU').read()
@@ -255,7 +254,7 @@ def read_newick(newick, root_node=None, format=0):
         nw = nw.strip()
         if not nw.startswith('(') and nw.endswith(';'):
             return _read_node_data(nw[:-1], root_node, "single", format)
-            
+
         elif not nw.startswith('(') or not nw.endswith(';'):
             raise NewickError('Unexisting tree file or Malformed newick tree structure.')
         else:
@@ -285,7 +284,7 @@ def _read_newick_from_string(nw, root_node, format):
         # If no node has been created so far, this is the root, so use the node.
         current_parent = root_node if current_parent is None else current_parent.add_child()
 
-        subchunks = list(map(strip, chunk.split(",")))
+        subchunks = list(map(str.strip, chunk.split(",")))
         # We should expect that the chunk finished with a comma (if next chunk
         # is an internal sister node) or a subchunk containing closing parenthesis until the end of the tree.
         #[leaf, leaf, '']
@@ -301,10 +300,10 @@ def _read_newick_from_string(nw, root_node, format):
             if leaf.strip() == '' and i == len(subchunks) - 1:
                 continue # "blah blah ,( blah blah"
             closing_nodes = leaf.split(")")
-            
+
             # first part after splitting by ) always contain leaf info
             _read_node_data(closing_nodes[0], current_parent, "leaf", format)
-            
+
             # next contain closing nodes and data about the internal nodes.
             if len(closing_nodes)>1:
                 for closing_internal in closing_nodes[1:]:
@@ -330,7 +329,7 @@ def _parse_extra_features(node, NHX_string):
 def _read_node_data(subnw, current_node, node_type, format):
     """ Reads a leaf node from a subpart of the original newick
     tree """
-        
+
     if node_type == "leaf" or node_type == "single":
         if node_type == "leaf":
             node = current_node.add_child()
@@ -375,19 +374,19 @@ def _read_node_data(subnw, current_node, node_type, format):
         raise NewickError('Empty leaf node found')
     elif not subnw:
         return
-    
+
     MATCH = '^\s*%s\s*%s\s*(%s)?\s*$' % (FIRST_MATCH, SECOND_MATCH, _NHX_RE)
     data = re.match(MATCH, subnw)
     #print MATCH
     #print subnw
     #print data
-   
+
     if data:
         data = data.groups()
         # This prevents ignoring errors even in flexible nodes:
         if subnw and data[0] is None and data[1] is None and data[2] is None:
             raise NewickError("Unexpected newick format '%s'" %subnw)
-        
+
         if data[0] is not None and data[0] != '':
             node.add_feature(container1, converterFn1(data[0].strip()))
 
@@ -412,7 +411,7 @@ def _read_node_data(subnw, current_node, node_type, format):
 #         newick += format_node(node, "leaf", format)
 #         newick += _get_features_string(node, features)
 #         #return newick
-        
+
 #     else:
 #         if node.children:
 #             newick+= "("
@@ -427,13 +426,13 @@ def _read_node_data(subnw, current_node, node_type, format):
 #                 newick += _get_features_string(node, features)
 #             else:
 #                 newick += ','
-                
+
 #     if _is_root:
 #         newick += ";"
 #     return newick
 
 def write_newick(rootnode, features=None, format=1, format_root_node=True,
-                 is_leaf_fn=None, dist_formatter=None, support_formatter=None, 
+                 is_leaf_fn=None, dist_formatter=None, support_formatter=None,
                  name_formatter=None):
     """ Iteratively export a tree structure and returns its NHX
     representation. """
@@ -443,21 +442,21 @@ def write_newick(rootnode, features=None, format=1, format_root_node=True,
         if postorder:
             newick.append(")")
             if node.up is not None or format_root_node:
-                newick.append(format_node(node, "internal", format, 
+                newick.append(format_node(node, "internal", format,
                                           dist_formatter=dist_formatter,
-                                          support_formatter=support_formatter, 
+                                          support_formatter=support_formatter,
                                           name_formatter=name_formatter))
                 newick.append(_get_features_string(node, features))
         else:
             if node is not rootnode and node != node.up.children[0]:
                 newick.append(",")
-                
+
             if leaf(node):
                 safe_name = re.sub("["+_ILEGAL_NEWICK_CHARS+"]", "_", \
                                str(getattr(node, "name")))
-                newick.append(format_node(node, "leaf", format, 
+                newick.append(format_node(node, "leaf", format,
                               dist_formatter=dist_formatter,
-                              support_formatter=support_formatter, 
+                              support_formatter=support_formatter,
                               name_formatter=name_formatter))
                 newick.append(_get_features_string(node, features))
             else:
@@ -465,7 +464,7 @@ def write_newick(rootnode, features=None, format=1, format_root_node=True,
 
     newick.append(";")
     return ''.join(newick)
-    
+
 def _get_features_string(self, features=None):
     """ Generates the extended newick string NHX with extra data about
     a node. """
@@ -480,13 +479,13 @@ def _get_features_string(self, features=None):
             raw = getattr(self, pr)
             if type(raw) in ITERABLE_TYPES:
                 raw = '|'.join(map(str, raw))
-            elif type(raw) == dict: 
+            elif type(raw) == dict:
                 raw = '|'.join(map(lambda x,y: "%s-%s" %(x, y), six.iteritems(raw)))
             elif type(raw) == str:
                 pass
             else:
                 raw = str(raw)
-            
+
             value = re.sub("["+_ILEGAL_NEWICK_CHARS+"]", "_", \
                              raw)
             if string != "":

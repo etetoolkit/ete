@@ -4,25 +4,25 @@ from __future__ import absolute_import
 #
 # This file is part of the Environment for Tree Exploration program
 # (ETE).  http://etetoolkit.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 # License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 
+#
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
-# 
-# ETE is distributed under the GPL copyleft license (2008-2015).  
+#
+# ETE is distributed under the GPL copyleft license (2008-2015).
 #
 # If you make use of ETE in published work, please cite:
 #
@@ -30,12 +30,12 @@ from __future__ import absolute_import
 # ETE: a python Environment for Tree Exploration. Jaime BMC
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
-# Note that extra references to the specific methods implemented in 
-# the toolkit may be available in the documentation. 
-# 
+# Note that extra references to the specific methods implemented in
+# the toolkit may be available in the documentation.
+#
 # More info at http://etetoolkit.org. Contact: huerta@embl.de
 #
-# 
+#
 # #END_LICENSE#############################################################
 
 import copy
@@ -151,31 +151,31 @@ def _get_species_on_TOL(name):
     return name
 
 def get_reconciled_tree_zmasek(gtree, sptree, inplace=False):
-    """ 
+    """
     Reconciles the gene tree with the species tree
     using Zmasek and Eddy's algorithm. Details can be
     found in the paper:
-    
-    Christian M. Zmasek, Sean R. Eddy: A simple algorithm 
-    to infer gene duplication and speciation events on a 
+
+    Christian M. Zmasek, Sean R. Eddy: A simple algorithm
+    to infer gene duplication and speciation events on a
     gene tree. Bioinformatics 17(9): 821-828 (2001)
-    
+
     :argument gtree: gene tree (PhyloTree instance)
-    
+
     :argument sptree: species tree (PhyloTree instance)
 
     :argument False inplace: if True, the provided gene tree instance is
        modified. Otherwise a reconciled copy of the gene tree is returned.
-    
+
     :returns: reconciled gene tree
     """
     # some cleanup operations
     def cleanup(tree):
-	for node in tree.traverse(): node.del_feature("M")
+        for node in tree.traverse(): node.del_feature("M")
 
     if not inplace:
         gtree = gtree.copy('deepcopy')
-        
+
     # check for missing species
     missing_sp = gtree.get_species() - sptree.get_species()
     if missing_sp:
@@ -188,7 +188,7 @@ def get_reconciled_tree_zmasek(gtree, sptree, inplace=False):
     # set/compute the mapping function M(g) for the
     # leaf nodes in the gene tree (see paper for details)
     species = sptree.get_species()
-    for node in gtree.get_leaves():		
+    for node in gtree.get_leaves():
         node.add_feature("M",sp2node[node.species])
 
     # visit each internal node in the gene tree
@@ -197,7 +197,7 @@ def get_reconciled_tree_zmasek(gtree, sptree, inplace=False):
         if len(node.children) == 0:
             continue # nothing to do for leaf nodes
 
-        if len(node.children) != 2: 
+        if len(node.children) != 2:
             cleanup(gtree)
             raise ValueError("Algorithm can only work with binary trees.")
 

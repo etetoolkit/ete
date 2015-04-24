@@ -5,25 +5,25 @@ from __future__ import print_function
 #
 # This file is part of the Environment for Tree Exploration program
 # (ETE).  http://etetoolkit.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 # License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 
+#
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
-# 
-# ETE is distributed under the GPL copyleft license (2008-2015).  
+#
+# ETE is distributed under the GPL copyleft license (2008-2015).
 #
 # If you make use of ETE in published work, please cite:
 #
@@ -31,18 +31,17 @@ from __future__ import print_function
 # ETE: a python Environment for Tree Exploration. Jaime BMC
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
-# Note that extra references to the specific methods implemented in 
-# the toolkit may be available in the documentation. 
-# 
+# Note that extra references to the specific methods implemented in
+# the toolkit may be available in the documentation.
+#
 # More info at http://etetoolkit.org. Contact: huerta@embl.de
 #
-# 
+#
 # #END_LICENSE#############################################################
-#!/usr/bin/env python 
+#!/usr/bin/env python
 import sys
 import os
 from collections import defaultdict
-from string import strip
 
 import sqlite3
 import math
@@ -60,9 +59,9 @@ class NCBITaxa(object):
 
     Provides a local transparent connector to the NCBI taxonomy database.
     """
-    
+
     def __init__(self, dbfile=None):
-        
+
         if not dbfile:
             self.dbfile = os.path.join(os.environ.get('HOME', '/'), '.etetoolkit', 'taxa.sqlite')
         else:
@@ -71,10 +70,10 @@ class NCBITaxa(object):
         if dbfile is None and not os.path.exists(self.dbfile):
             print('NCBI database not present yet (first time used?)', file=sys.stderr)
             self.update_taxonomy_database()
-               
+
         if not os.path.exists(self.dbfile):
             raise ValueError("Cannot open taxonomy database: %s" %self.dbfile)
-                            
+
         self.db = None
         self._connect()
 
@@ -88,13 +87,14 @@ class NCBITaxa(object):
             update_db(self.dbfile)
         else:
             update_db(self.dbfile, taxdump_file)
-       
+
     def _connect(self):
         self.db = sqlite3.connect(self.dbfile)
 
     def _translate_merged(self, all_taxids):
         conv_all_taxids = set((list(map(int, all_taxids))))
         cmd = 'select taxid_old, taxid_new FROM merged WHERE taxid_old IN (%s)' %','.join(map(str, all_taxids))
+
         result = self.db.execute(cmd)
         conversion = {}
         for old, new in result.fetchall():
@@ -103,7 +103,7 @@ class NCBITaxa(object):
             conversion[int(old)] = int(new)
         return conv_all_taxids, conversion
 
-    
+
     def get_fuzzy_name_translation(self, name, sim=0.9):
         '''
         Given an inexact species name, returns the best match in the NCBI database of taxa names.
@@ -141,13 +141,13 @@ class NCBITaxa(object):
             taxid = int(taxid)
 
         norm_score = 1 - (float(score)/len(name))
-        if taxid: 
+        if taxid:
             print("FOUND!    %s taxid:%s score:%s (%s)" %(spname, taxid, score, norm_score))
 
         return taxid, spname, norm_score
 
     def get_rank(self, taxids):
-        'return a dictionary converting a list of taxids into their corresponding NCBI taxonomy rank' 
+        'return a dictionary converting a list of taxids into their corresponding NCBI taxonomy rank'
 
         all_ids = set(taxids)
         all_ids.discard(None)
@@ -159,7 +159,7 @@ class NCBITaxa(object):
         for tax, spname in result.fetchall():
             id2rank[tax] = spname
         return id2rank
-    
+
     def get_lineage(self, taxid):
         """Given a valid taxid number, return its corresponding lineage track as a
         hierarchically sorted list of parent taxids.
@@ -173,13 +173,13 @@ class NCBITaxa(object):
             #raise ValueError("%s taxid not found" %taxid)
         track = list(map(int, raw_track[0].split(",")))
         return list(reversed(track))
-    
+
     def get_taxid_translator(self, taxids):
         """Given a list of taxids, returns a dictionary with their corresponding
         scientific names.
 
         """
-       
+
         all_ids = set(map(int, taxids))
         all_ids.discard(None)
         all_ids.discard("")
@@ -195,31 +195,31 @@ class NCBITaxa(object):
             not_found_taxids = all_ids - set(id2name.keys())
             taxids, old2new = self._translate_merged(not_found_taxids)
             new2old = dict([(v,k) for k,v in six.iteritems(old2new)])
-            
-            if old2new:                
+
+            if old2new:
                 query = ','.join(['"%s"' %v for v in new2old])
                 cmd = "select taxid, spname FROM species WHERE taxid IN (%s);" %query
                 result = self.db.execute(cmd)
                 for tax, spname in result.fetchall():
                     id2name[new2old[tax]] = spname
-            
+
         return id2name
 
     def get_name_translator(self, names):
         """
-        Given a list of taxid scientific names, returns a dictionary translating them into their corresponding taxids. 
+        Given a list of taxid scientific names, returns a dictionary translating them into their corresponding taxids.
 
         Exact name match is required for translation.
         """
-        
+
         name2id = {}
         name2realname = {}
         name2origname = {}
         for n in names:
             name2origname[n.lower()] = n
-            
+
         names = set(name2origname.keys())
-        
+
         query = ','.join(['"%s"' %n for n in six.iterkeys(name2origname)])
         cmd = 'select spname, taxid from species where spname IN (%s)' %query
         result = self.db.execute('select spname, taxid from species where spname IN (%s)' %query)
@@ -243,11 +243,11 @@ class NCBITaxa(object):
         """
         id2name = self.get_taxid_translator(taxids)
         names = []
-        for sp in taxids: 
+        for sp in taxids:
             names.append(id2name.get(sp, sp))
         return names
 
-        
+
     def get_topology(self, taxids, intermediate_nodes=False, rank_limit=None, collapse_subspecies=False, annotate=True):
         """Given a list of taxid numbers, return the minimal pruned NCBI taxonomy tree
         containing all of them.
@@ -297,7 +297,7 @@ class NCBITaxa(object):
         #remove onechild-nodes
         if not intermediate_nodes:
             for n in root.get_descendants():
-                if len(n.children) == 1 and int(n.name) not in taxids: 
+                if len(n.children) == 1 and int(n.name) not in taxids:
                     n.delete(prevent_nondicotomic=False)
 
         if collapse_subspecies:
@@ -317,7 +317,7 @@ class NCBITaxa(object):
                         sp_node.add_child(n)
                     sp_node.add_child(connector)
                     sp_node.add_feature("collapse_subspecies", "1")
-                    
+
         if len(root.children) == 1:
             tree = root.children[0].detach()
         else:
@@ -333,7 +333,7 @@ class NCBITaxa(object):
         """Annotate a tree containing taxids as leaf names by adding the  'taxid',
         'sci_name', 'lineage', 'named_lineage' and 'rank' additional attributes.
 
-        :param t: a Tree (or Tree derived) instance. 
+        :param t: a Tree (or Tree derived) instance.
 
         :param name taxid_attr: Allows to set a custom node attribute containing
         the taxid number associated to each node (i.e. species in PhyloTree instances).
@@ -378,27 +378,27 @@ class NCBITaxa(object):
                 node_taxid = int(getattr(n, taxid_attr))
             except (ValueError, AttributeError):
                 node_taxid = None
-                
+
             n.add_features(taxid = node_taxid)
             if node_taxid:
                 if node_taxid in merged_conversion:
                     node_taxid = merged_conversion[node_taxid]
 
                 n.add_features(sci_name = tax2name.get(node_taxid, getattr(n, taxid_attr, 'NA')),
-                               lineage = tax2track[node_taxid], 
+                               lineage = tax2track[node_taxid],
                                rank = tax2rank.get(node_taxid, 'Unknown'),
                                named_lineage = self.translate_to_names(tax2track[node_taxid]))
             elif n.is_leaf():
                 n.add_features(sci_name = getattr(n, taxid_attr, 'NA'),
-                               lineage = [], 
+                               lineage = [],
                                rank = 'Unknown',
                                named_lineage = [])
-            else:                    
+            else:
                 lineage = self._common_lineage([lf.lineage for lf in n2leaves[n]])
                 ancestor = lineage[-1]
                 n.add_features(sci_name = tax2name.get(ancestor, str(ancestor)),
                                taxid = ancestor,
-                               lineage = lineage, 
+                               lineage = lineage,
                                rank = tax2rank.get(ancestor, 'Unknown'),
                                named_lineage = [tax2name.get(tax, str(tax)) for tax in lineage])
 
@@ -407,8 +407,8 @@ class NCBITaxa(object):
     def _common_lineage(self, vectors):
         occurrence = defaultdict(int)
         pos = defaultdict(set)
-        for v in vectors: 
-            for i, taxid in enumerate(v): 
+        for v in vectors:
+            for i, taxid in enumerate(v):
                 occurrence[taxid] += 1
                 pos[taxid].add(i)
 
@@ -418,7 +418,7 @@ class NCBITaxa(object):
         else:
             sorted_lineage = sorted(common, lambda x, y: cmp(min(pos[x]), min(pos[y])))
             return sorted_lineage
-            
+
         # OLD APPROACH:
 
         # visited = defaultdict(int)
@@ -487,7 +487,7 @@ class NCBITaxa(object):
 
 
     # def annotate_tree_with_taxa(self, t, name2taxa_file, tax2name=None, tax2track=None, attr_name="name"):
-    #     if name2taxa_file: 
+    #     if name2taxa_file:
     #         names2taxid = dict([map(strip, line.split("\t"))
     #                             for line in open(name2taxa_file)])
     #     else:
@@ -505,7 +505,7 @@ class NCBITaxa(object):
     #     return self.annotate_tree(t, tax2name, tax2track, attr_name="taxid")
 
 
-  
+
 
 def load_ncbi_tree_from_dump(tar):
     from ete2 import Tree
@@ -517,7 +517,7 @@ def load_ncbi_tree_from_dump(tar):
     name2rank = {}
     print("Loading node names...")
     for line in tar.extractfile("names.dmp"):
-        fields =  list(map(strip, line.split("|")))
+        fields =  list(map(str.strip, line.split("|")))
         nodename = fields[0]
         name_type = fields[3].lower()
         taxname = fields[1]
@@ -582,25 +582,25 @@ def update_db(dbfile, targz_file=None):
 
     print("Updating database: %s ..." %dbfile)
     generate_table(t)
-   
+
     open("syn.tab", "w").write('\n'.join(["%s\t%s" %(v[0],v[1]) for v in synonyms]))
     open("merged.tab", "w").write('\n'.join(['\t'.join(map(strip, line.split('|')[:2])) for line in tar.extractfile("merged.dmp")]))
     try:
         upload_data(dbfile)
     except:
-        raise 
+        raise
     else:
         os.system("rm syn.tab merged.tab taxa.tab taxdump.tar.gz")
-    
+
 def upload_data(dbfile):
     print()
     print('Uploading to', dbfile)
     basepath = os.path.split(dbfile)[0]
     if basepath and not os.path.exists(basepath):
         os.mkdir(basepath)
-        
+
     db = sqlite3.connect(dbfile)
-        
+
     create_cmd = """
     DROP TABLE IF EXISTS species;
     DROP TABLE IF EXISTS synonym;
