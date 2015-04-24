@@ -416,7 +416,7 @@ class NCBITaxa(object):
         if not common:
             return [""]
         else:
-            sorted_lineage = sorted(common, lambda x, y: cmp(min(pos[x]), min(pos[y])))
+            sorted_lineage = sorted(common, key=lambda x: min(pos[x]))
             return sorted_lineage
 
         # OLD APPROACH:
