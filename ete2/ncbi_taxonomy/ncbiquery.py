@@ -571,9 +571,13 @@ def generate_table(t):
 
 def update_db(dbfile, targz_file=None):
     if not targz_file:
-        import urllib
+        try:
+            from urllib import urlretrieve
+        except ImportError:
+            from urllib.request import urlretrieve
+
         print('Downloading taxdump.tar.gz from NCBI FTP site...', file=sys.stderr)
-        urllib.urlretrieve("ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz", "taxdump.tar.gz")
+        urlretrieve("ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz", "taxdump.tar.gz")
         print('Done. Parsing...', file=sys.stderr)
         targz_file = "taxdump.tar.gz"
 
@@ -584,7 +588,7 @@ def update_db(dbfile, targz_file=None):
     generate_table(t)
 
     open("syn.tab", "w").write('\n'.join(["%s\t%s" %(v[0],v[1]) for v in synonyms]))
-    open("merged.tab", "w").write('\n'.join(['\t'.join(map(strip, line.split('|')[:2])) for line in tar.extractfile("merged.dmp")]))
+    open("merged.tab", "w").write('\n'.join(['\t'.join(map(str.strip, line.split('|')[:2])) for line in tar.extractfile("merged.dmp")]))
     try:
         upload_data(dbfile)
     except:
