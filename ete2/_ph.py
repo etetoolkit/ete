@@ -39,8 +39,11 @@
 
 
 ''' I use this module to check for newer versions of ETE '''
+from __future__ import absolute_import
+from __future__ import print_function
 
 import urllib2 as url
+from six.moves import input
 
 try:
     from ete2 import __ETEID__
@@ -53,15 +56,15 @@ except ImportError:
     __VERSION__ = "Unknown"
 
 def call():
-    print "  == Calling home...",
+    print("  == Calling home...", end=' ')
     try:
         f = url.urlopen('http://etetoolkit.org/et_phone_home.php?VERSION=%s&ID=%s' 
                 %(__VERSION__, __ETEID__))
     except:
-        print "No answer :(" 
+        print("No answer :(") 
     else:
-        print "Got answer!" 
-        print f.read()
+        print("Got answer!") 
+        print(f.read())
      
         module_name = __name__.split(".")[0]
         try:
@@ -78,21 +81,21 @@ def call():
             current = None
      
         if not latest:
-            print "I could not find data about your version [%s]" %module_name
-            print "Are you ok?"
+            print("I could not find data about your version [%s]" %module_name)
+            print("Are you ok?")
         elif not current:
-            print "I could not determine your version [%s]" %module_name
-            print "Are you ok?"
-            print "Latest stable ETE version is", latest
+            print("I could not determine your version [%s]" %module_name)
+            print("Are you ok?")
+            print("Latest stable ETE version is", latest)
         elif latest > current:
-            print "You look a bit old."
-            print "A newer version is available: rev%s" %latest
-            print "Use 'easy_install -U %s' to upgrade" %module_name
+            print("You look a bit old.")
+            print("A newer version is available: rev%s" %latest)
+            print("Use 'easy_install -U %s' to upgrade" %module_name)
         else:
-            print "I see you are in shape."
-            print "No updates are available." 
+            print("I see you are in shape.")
+            print("No updates are available.") 
         try:
-            msg = raw_input("\n  == Do you want to leave any message?\n(Press enter to finish)\n\n").strip()
+            msg = input("\n  == Do you want to leave any message?\n(Press enter to finish)\n\n").strip()
         except KeyboardInterrupt: 
             msg = None
 
@@ -102,9 +105,9 @@ def call():
                 f = url.urlopen('http://etetoolkit.org/et_phone_home.php?VERSION=%s&ID=%s&MSG=%s' 
                                 %(__VERSION__, __ETEID__, msg))
             except:
-                print "Message could be delivered :("
+                print("Message could be delivered :(")
             else:
-                print f.read()
+                print(f.read())
 
 def new_version(module_name=None, current=None):
     if not module_name:

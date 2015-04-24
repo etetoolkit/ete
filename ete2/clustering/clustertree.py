@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -38,10 +40,11 @@
 # #END_LICENSE#############################################################
 
 from sys import stderr
-import clustvalidation
+from . import clustvalidation
 from ete2.coretype.tree import _translate_nodes
 from ete2 import TreeNode, ArrayTable
 from ete2 import numpy
+from six.moves import range
 
 __all__ = ["ClusterNode", "ClusterTree"]
 
@@ -60,7 +63,7 @@ class ClusterNode(TreeNode):
     """
 
     def _set_forbidden(self, value):
-        raise ValueError, "This attribute can not be manually set."
+        raise ValueError("This attribute can not be manually set.")
 
     def _get_intra(self):
         if self._silhouette == None:
@@ -167,7 +170,7 @@ class ClusterNode(TreeNode):
             array = ArrayTable(arraytbl)
 
         missing_leaves = []
-        matrix_values = [i for r in xrange(len(array.matrix))\
+        matrix_values = [i for r in range(len(array.matrix))\
                            for i in array.matrix[r] if numpy.isfinite(i)]
 
         array._matrix_min = min(matrix_values)
@@ -183,9 +186,8 @@ class ClusterNode(TreeNode):
 
 
         if len(missing_leaves)>0:
-            print >>stderr, \
-                """[%d] leaf names could not be mapped to the matrix rows.""" %\
-                len(missing_leaves)
+            print("""[%d] leaf names could not be mapped to the matrix rows.""" %\
+                len(missing_leaves), file=stderr)
 
         self.arraytable = array
 

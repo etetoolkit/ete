@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -42,6 +44,7 @@ from PyQt4  import QtCore, QtGui
 from PyQt4.QtGui import QBrush, QPen, QGraphicsRectItem
 from PyQt4.QtGui import QPrinter
 from PyQt4.QtCore import QThread, SIGNAL
+import six
 try:
     from PyQt4 import QtOpenGL
     USE_GL = True
@@ -49,10 +52,10 @@ try:
 except ImportError:
     USE_GL = False
 
-import _mainwindow, _search_dialog, _show_newick, _open_newick, _about
-from main import TreeStyle, save, _leaf
-from svg_colors import random_color
-from qt4_render import render
+from . import _mainwindow, _search_dialog, _show_newick, _open_newick, _about
+from .main import TreeStyle, save, _leaf
+from .svg_colors import random_color
+from .qt4_render import render
 from ete2._ph import new_version
 from ete2 import Tree, TreeStyle
 import time
@@ -97,7 +100,7 @@ def etime(f):
         global TIME
         t1 = time.time()
         f(*args, **kargs)
-        print time.time() - t1 
+        print(time.time() - t1) 
     return a_wrapper_accepting_arguments
 
 class CheckUpdates(QThread):
@@ -289,7 +292,7 @@ class _GUI(QtGui.QMainWindow):
     @QtCore.pyqtSignature("")
     def on_actionClear_search_triggered(self):
         # This could be much more efficient
-        for n in self.view.n2hl.keys():
+        for n in list(self.view.n2hl.keys()):
             self.scene.view.unhighlight_node(n)
 
     @QtCore.pyqtSignature("")
@@ -355,8 +358,8 @@ class _GUI(QtGui.QMainWindow):
                                                  )
         try:
             t = Tree(str(fname))
-        except Exception, e:
-            print e
+        except Exception as e:
+            print(e)
         else:
             self.scene.tree = t
             self.img = TreeStyle()
@@ -370,8 +373,8 @@ class _GUI(QtGui.QMainWindow):
         nw = self.scene.tree.write()
         try:
             OUT = open(fname,"w")
-        except Exception, e:
-            print e
+        except Exception as e:
+            print(e)
         else:
             OUT.write(nw)
             OUT.close()
@@ -408,8 +411,8 @@ class _GUI(QtGui.QMainWindow):
         if ok:
             try:
                 t = Tree(str(text))
-            except Exception,e:
-                print e
+            except Exception as e:
+                print(e)
             else:
                 self.scene.tree = t
                 self.redraw()
@@ -536,7 +539,7 @@ class _PropertiesDialog(QtGui.QWidget):
                     self.prop2nodes.setdefault(pname,[]).append(n)
                     self.prop2values.setdefault(pname,[]).append(pvalue)
 
-            for pname,pvalue in n.img_style.iteritems():
+            for pname,pvalue in six.iteritems(n.img_style):
                 if type(pvalue) == int or \
                    type(pvalue) == float or \
                    type(pvalue) == str :
@@ -551,7 +554,7 @@ class _PropertiesDialog(QtGui.QWidget):
         elif self._mode == 2: # partition
             self.get_props_in_nodes([node]+node.get_descendants())
 
-        total_props = len(self.prop2nodes) + len(self.style2nodes.keys())
+        total_props = len(self.prop2nodes) + len(list(self.style2nodes.keys()))
         self.model = QtGui.QStandardItemModel(total_props, 2)
         self.model.setHeaderData(0, QtCore.Qt.Horizontal, "Feature")
         self.model.setHeaderData(1, QtCore.Qt.Horizontal, "Value")
@@ -560,7 +563,7 @@ class _PropertiesDialog(QtGui.QWidget):
         self.tableView.setItemDelegate(self.delegate)
 
         row = 0
-        items = self.prop2nodes.items()
+        items = list(self.prop2nodes.items())
         for name, nodes in sorted(items):
             value= getattr(nodes[0],name)
 
@@ -573,7 +576,7 @@ class _PropertiesDialog(QtGui.QWidget):
             self._prop_indexes.add( (index1, index2) )
             row +=1
 
-        keys = self.style2nodes.keys()
+        keys = list(self.style2nodes.keys())
         for name in sorted(keys):
             value= self.style2values[name][0]
             index1 = self.model.index(row, 0, QtCore.QModelIndex())
@@ -611,9 +614,9 @@ class _PropertiesDialog(QtGui.QWidget):
             for n in self.prop2nodes[name]:
                 try:
                     setattr(n, name, type(getattr(n,name))(value))
-                except Exception, e:
+                except Exception as e:
                     #logger(-1, "Wrong format for attribute:", name)
-                    print e
+                    print(e)
                     break
         self.update_properties(self.node)
         self.scene.img._scale = None
@@ -663,10 +666,10 @@ class _TreeView(QtGui.QGraphicsView):
         self.init_values()
         
         if USE_GL:
-            print "USING GL"
+            print("USING GL")
             F = QtOpenGL.QGLFormat()
             F.setSampleBuffers(True)
-            print F.sampleBuffers()
+            print(F.sampleBuffers())
             self.setViewport(QtOpenGL.QGLWidget(F))
             self.setRenderHints(QtGui.QPainter.Antialiasing)
         else:
@@ -893,15 +896,15 @@ class _BasicNodeActions(object):
 
     @staticmethod
     def hoverEnterEvent (obj, e):
-        print "HOLA"
+        print("HOLA")
 
     @staticmethod
     def hoverLeaveEvent(obj, e):
-        print "ADIOS"
+        print("ADIOS")
 
     @staticmethod            
     def mousePressEvent(obj, e):
-        print "Click"
+        print("Click")
 
     @staticmethod
     def mouseReleaseEvent(obj, e):

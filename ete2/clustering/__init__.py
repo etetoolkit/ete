@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -37,5 +38,5 @@
 # 
 # #END_LICENSE#############################################################
 
-from clustertree import *
+from .clustertree import *
 __all__ = clustertree.__all__

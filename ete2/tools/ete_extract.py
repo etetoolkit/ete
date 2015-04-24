@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -55,4 +57,4 @@ def run(args):
         if args.orthologs is not None:
             t = PhyloTree(nw)
             for e in t.get_descendant_evol_events():
-                print e.in_seqs, e.out_seqs
+                print(e.in_seqs, e.out_seqs)

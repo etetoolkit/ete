@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -39,6 +40,8 @@
 from os.path import join as pjoin 
 import logging
 from collections import defaultdict
+import six
+from six.moves import zip
 log = logging.getLogger("main")
 
 from ete2.tools.phylobuild_lib.task import Msf
@@ -132,7 +135,7 @@ class ConcatAlg(ConcatAlgTask):
         alg_data = [(self.job2alg[nid],
                      self.job2model.get(nid, self.default_model))
                     for nid in self.job2alg]
-        filenames, models = zip(*alg_data)
+        filenames, models = list(zip(*alg_data))
 
         mainalg, partitions, sp2alg, species, alg_lenghts = get_concatenated_alg(
             filenames,
@@ -181,7 +184,7 @@ def get_concatenated_alg(alg_filenames, models=None,
         # Set best matrix for this alignment
         alg.matrix = matrix
         # Change seq names to contain only species names
-        for i, seq in alg.id2seq.iteritems():
+        for i, seq in six.iteritems(alg.id2seq):
             name = db.get_seq_name(alg.id2name[i])
             taxid = get_species_code(name, splitter=sp_delimiter, field=sp_field)
             if lenseq is not None and len(seq) != lenseq:
@@ -196,7 +199,7 @@ def get_concatenated_alg(alg_filenames, models=None,
             sp2alg[taxid].append(alg) # Records all species seen in all algs.
             alg.sp2seq[taxid] = seq
 
-    valid_species = [sp for sp in sp2alg.iterkeys() \
+    valid_species = [sp for sp in six.iterkeys(sp2alg) \
                          if sp in keep_species or \
                          len(sp2alg[sp])/float(len(alg_objects)) > kill_thr]
 
@@ -243,7 +246,7 @@ def get_concatenated_alg(alg_filenames, models=None,
         partitions.append(part)
 
     # Basic Checks
-    seq_sizes = [len(seq) for seq in concat.id2seq.values()]
+    seq_sizes = [len(seq) for seq in list(concat.id2seq.values())]
     if len(set(seq_sizes)) != 1:
         raise Exception("Concatenated alignment is not consistent: unequal seq length ")
     if seq_sizes[0] != expected_total_length:

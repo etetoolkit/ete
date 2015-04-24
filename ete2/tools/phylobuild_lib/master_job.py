@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -39,9 +40,11 @@
 import os
 import shutil
 import re
-import sge
-import db
+from . import sge
+from . import db
 import logging
+import six
+from six.moves import map
 log = logging.getLogger("main")
 
 from ete2.tools.phylobuild_lib.utils import (md5, basename, strip, pid_up, HOSTNAME,
@@ -89,7 +92,7 @@ class Job(object):
         # recycling the job, so a clean it.
         clean = lambda x: basename(x) if GLOBALS["basedir"] in x or GLOBALS["tasks_dir"] in x else x
         parsed_id_string = ["%s %s" %(clean(str(pair[0])), clean(str(pair[1])))
-                            for pair in self.args.iteritems()]
+                            for pair in six.iteritems(self.args)]
         #print '\n'.join(map(str, self.args.items()))
 
         self.jobid = md5(','.join(sorted([md5(e) for e in
@@ -135,8 +138,8 @@ class Job(object):
 
     def read_pid(self):
         try:
-           host, pid = map(strip,
-                           open(self.pid_file,"rU").readline().split("\t"))
+           host, pid = list(map(strip,
+                           open(self.pid_file,"rU").readline().split("\t")))
         except IOError:
             host, pid = "", ""
         else:
@@ -145,7 +148,7 @@ class Job(object):
         return host, pid
 
     def get_launch_cmd(self):
-        return ' '.join([self.bin] + ["%s %s" %(k,v) for k,v in self.args.iteritems() if v is not None])
+        return ' '.join([self.bin] + ["%s %s" %(k,v) for k,v in six.iteritems(self.args) if v is not None])
     
     def dump_script(self):
         ''' Generates the shell script launching the job. ''' 

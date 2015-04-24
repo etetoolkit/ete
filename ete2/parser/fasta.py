@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -41,6 +43,7 @@ import os
 import string
 import textwrap
 from sys import stderr as STDERR
+from six.moves import map
 
 def read_fasta(source, obj=None, header_delimiter="\t", fix_duplicates=True):
     """ Reads a collection of sequences econded in FASTA format."""
@@ -73,19 +76,19 @@ def read_fasta(source, obj=None, header_delimiter="\t", fix_duplicates=True):
         elif line.startswith('>'):
             # Checks if previous name had seq
             if seq_id>-1 and SC.id2seq[seq_id] == "":
-                raise Exception, "No sequence found for "+seq_name
+                raise Exception("No sequence found for "+seq_name)
 
             seq_id += 1
             # Takes header info
-            seq_header_fields = map(string.strip, line[1:].split(header_delimiter))
+            seq_header_fields = list(map(string.strip, line[1:].split(header_delimiter)))
             seq_name = seq_header_fields[0]
 
             # Checks for duplicated seq names
             if fix_duplicates and seq_name in names:
-                tag = str(len([k for k in SC.name2id.keys() if k.endswith(seq_name)]))
+                tag = str(len([k for k in list(SC.name2id.keys()) if k.endswith(seq_name)]))
                 old_name = seq_name
                 seq_name = tag+"_"+seq_name
-                print >>STDERR, "Duplicated entry [%s] was renamed to [%s]" %(old_name, seq_name)
+                print("Duplicated entry [%s] was renamed to [%s]" %(old_name, seq_name), file=STDERR)
 
             # stores seq_name
             SC.id2seq[seq_id] = ""
@@ -96,7 +99,7 @@ def read_fasta(source, obj=None, header_delimiter="\t", fix_duplicates=True):
 
         else:
             if seq_name is None:
-                raise Exception, "Error reading sequences: Wrong format."
+                raise Exception("Error reading sequences: Wrong format.")
 
             # removes all white spaces in line
             s = line.strip().replace(" ","")
@@ -105,7 +108,7 @@ def read_fasta(source, obj=None, header_delimiter="\t", fix_duplicates=True):
             SC.id2seq[seq_id] += s
 
     if seq_name and SC.id2seq[seq_id] == "":
-        print >>STDERR, seq_name,"has no sequence"
+        print(seq_name,"has no sequence", file=STDERR)
         return None
 
     # Everything ok

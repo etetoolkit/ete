@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -45,6 +47,8 @@ from string import strip
 import sqlite3
 import math
 import tarfile
+import six
+from six.moves import map
 
 c = None
 
@@ -65,7 +69,7 @@ class NCBITaxa(object):
             self.dbfile = dbfile
 
         if dbfile is None and not os.path.exists(self.dbfile):
-            print >>sys.stderr, 'NCBI database not present yet (first time used?)'
+            print('NCBI database not present yet (first time used?)', file=sys.stderr)
             self.update_taxonomy_database()
                
         if not os.path.exists(self.dbfile):
@@ -89,7 +93,7 @@ class NCBITaxa(object):
         self.db = sqlite3.connect(self.dbfile)
 
     def _translate_merged(self, all_taxids):
-        conv_all_taxids = set((map(int, all_taxids)))
+        conv_all_taxids = set((list(map(int, all_taxids))))
         cmd = 'select taxid_old, taxid_new FROM merged WHERE taxid_old IN (%s)' %','.join(map(str, all_taxids))
         result = self.db.execute(cmd)
         conversion = {}
@@ -117,7 +121,7 @@ class NCBITaxa(object):
         _db.execute("select load_extension('%s')" % os.path.join(module_path,
                                                                  "SQLite-Levenshtein/levenshtein.sqlext"))
 
-        print "Trying fuzzy search for %s" % name
+        print("Trying fuzzy search for %s" % name)
         maxdiffs = math.ceil(len(name) * (1-sim))
         cmd = 'SELECT taxid, spname, LEVENSHTEIN(spname, "%s") AS sim  FROM species WHERE sim<=%s ORDER BY sim LIMIT 1;' % (name, maxdiffs)
         taxid, spname, score = None, None, len(name)
@@ -138,7 +142,7 @@ class NCBITaxa(object):
 
         norm_score = 1 - (float(score)/len(name))
         if taxid: 
-            print "FOUND!    %s taxid:%s score:%s (%s)" %(spname, taxid, score, norm_score)
+            print("FOUND!    %s taxid:%s score:%s (%s)" %(spname, taxid, score, norm_score))
 
         return taxid, spname, norm_score
 
@@ -167,7 +171,7 @@ class NCBITaxa(object):
         if not raw_track:
             raw_track = ["1"]
             #raise ValueError("%s taxid not found" %taxid)
-        track = map(int, raw_track[0].split(","))
+        track = list(map(int, raw_track[0].split(",")))
         return list(reversed(track))
     
     def get_taxid_translator(self, taxids):
@@ -190,7 +194,7 @@ class NCBITaxa(object):
         if len(all_ids) != len(id2name):
             not_found_taxids = all_ids - set(id2name.keys())
             taxids, old2new = self._translate_merged(not_found_taxids)
-            new2old = dict([(v,k) for k,v in old2new.iteritems()])
+            new2old = dict([(v,k) for k,v in six.iteritems(old2new)])
             
             if old2new:                
                 query = ','.join(['"%s"' %v for v in new2old])
@@ -216,7 +220,7 @@ class NCBITaxa(object):
             
         names = set(name2origname.keys())
         
-        query = ','.join(['"%s"' %n for n in name2origname.iterkeys()])
+        query = ','.join(['"%s"' %n for n in six.iterkeys(name2origname)])
         cmd = 'select spname, taxid from species where spname IN (%s)' %query
         result = self.db.execute('select spname, taxid from species where spname IN (%s)' %query)
         for sp, taxid in result.fetchall():
@@ -280,7 +284,7 @@ class NCBITaxa(object):
             sp2track[sp] = track
 
         # generate parent child relationships
-        for sp, track in sp2track.iteritems():
+        for sp, track in six.iteritems(sp2track):
             parent = None
             for elem in track:
                 if parent and elem not in parent.children:
@@ -353,19 +357,19 @@ class NCBITaxa(object):
 
         taxids, merged_conversion = self._translate_merged(taxids)
 
-        if not tax2name or taxids - set(map(int, tax2name.keys())):
+        if not tax2name or taxids - set(map(int, list(tax2name.keys()))):
             #print "Querying for tax names"
             tax2name = self.get_taxid_translator([tid for tid in taxids])
-        if not tax2track or taxids - set(map(int, tax2track.keys())):
+        if not tax2track or taxids - set(map(int, list(tax2track.keys()))):
             #print "Querying for tax lineages"
             tax2track = dict([(tid, self.get_lineage(tid)) for tid in taxids])
 
-        all_taxid_codes = set([_tax for _lin in tax2track.values() for _tax in _lin])
+        all_taxid_codes = set([_tax for _lin in list(tax2track.values()) for _tax in _lin])
         extra_tax2name = self.get_taxid_translator(list(all_taxid_codes - set(tax2name.keys())))
         tax2name.update(extra_tax2name)
 
         if not tax2rank:
-            tax2rank = self.get_rank(tax2name.keys())
+            tax2rank = self.get_rank(list(tax2name.keys()))
 
         n2leaves = t.get_cached_content()
 
@@ -408,7 +412,7 @@ class NCBITaxa(object):
                 occurrence[taxid] += 1
                 pos[taxid].add(i)
 
-        common = [taxid for taxid, ocu in occurrence.iteritems() if ocu == len(vectors)]
+        common = [taxid for taxid, ocu in six.iteritems(occurrence) if ocu == len(vectors)]
         if not common:
             return [""]
         else:
@@ -469,7 +473,7 @@ class NCBITaxa(object):
 
         broken_branches = defaultdict(set)
         broken_clades = set()
-        for tax, leaves in tax2node.iteritems():
+        for tax, leaves in six.iteritems(tax2node):
             if len(leaves) > 1:
                 common = t.get_common_ancestor(leaves)
             else:
@@ -511,9 +515,9 @@ def load_ncbi_tree_from_dump(tar):
     node2taxname = {}
     synonyms = set()
     name2rank = {}
-    print "Loading node names..."
+    print("Loading node names...")
     for line in tar.extractfile("names.dmp"):
-        fields =  map(strip, line.split("|"))
+        fields =  list(map(strip, line.split("|")))
         nodename = fields[0]
         name_type = fields[3].lower()
         taxname = fields[1]
@@ -522,10 +526,10 @@ def load_ncbi_tree_from_dump(tar):
         elif name_type in set(["synonym", "equivalent name", "genbank equivalent name",
                                "anamorph", "genbank synonym", "genbank anamorph", "teleomorph"]):
             synonyms.add( (nodename, taxname) )
-    print len(node2taxname), "names loaded."
-    print len(synonyms), "synonyms loaded."
+    print(len(node2taxname), "names loaded.")
+    print(len(synonyms), "synonyms loaded.")
 
-    print "Loading nodes..."
+    print("Loading nodes...")
     for line in tar.extractfile("nodes.dmp"):
         fields =  line.split("|")
         nodename = fields[0].strip()
@@ -536,9 +540,9 @@ def load_ncbi_tree_from_dump(tar):
         n.rank = fields[2].strip()
         parent2child[nodename] = parentname
         name2node[nodename] = n
-    print len(name2node), "nodes loaded."
+    print(len(name2node), "nodes loaded.")
 
-    print "Linking nodes..."
+    print("Linking nodes...")
     for node in name2node:
        if node == "1":
            t = name2node[node]
@@ -546,37 +550,37 @@ def load_ncbi_tree_from_dump(tar):
            parent = parent2child[node]
            parent_node = name2node[parent]
            parent_node.add_child(name2node[node])
-    print "Tree is loaded."
+    print("Tree is loaded.")
     return t, synonyms
 
 def generate_table(t):
     OUT = open("taxa.tab", "w")
     for j, n in enumerate(t.traverse()):
         if j%1000 == 0:
-            print "\r",j,"generating entries...",
+            print("\r",j,"generating entries...", end=' ')
         temp_node = n
         track = []
         while temp_node:
             track.append(temp_node.name)
             temp_node = temp_node.up
         if n.up:
-            print >>OUT, '\t'.join([n.name, n.up.name, n.taxname, n.rank, ','.join(track)])
+            print('\t'.join([n.name, n.up.name, n.taxname, n.rank, ','.join(track)]), file=OUT)
         else:
-            print >>OUT, '\t'.join([n.name, "", n.taxname, n.rank, ','.join(track)])
+            print('\t'.join([n.name, "", n.taxname, n.rank, ','.join(track)]), file=OUT)
     OUT.close()
 
 def update_db(dbfile, targz_file=None):
     if not targz_file:
         import urllib
-        print >>sys.stderr, 'Downloading taxdump.tar.gz from NCBI FTP site...'
+        print('Downloading taxdump.tar.gz from NCBI FTP site...', file=sys.stderr)
         urllib.urlretrieve("ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz", "taxdump.tar.gz")
-        print >>sys.stderr, 'Done. Parsing...'
+        print('Done. Parsing...', file=sys.stderr)
         targz_file = "taxdump.tar.gz"
 
     tar = tarfile.open(targz_file, 'r')
     t, synonyms = load_ncbi_tree_from_dump(tar)
 
-    print "Updating database: %s ..." %dbfile
+    print("Updating database: %s ..." %dbfile)
     generate_table(t)
    
     open("syn.tab", "w").write('\n'.join(["%s\t%s" %(v[0],v[1]) for v in synonyms]))
@@ -589,8 +593,8 @@ def update_db(dbfile, targz_file=None):
         os.system("rm syn.tab merged.tab taxa.tab taxdump.tar.gz")
     
 def upload_data(dbfile):
-    print
-    print 'Uploading to', dbfile
+    print()
+    print('Uploading to', dbfile)
     basepath = os.path.split(dbfile)[0]
     if basepath and not os.path.exists(basepath):
         os.mkdir(basepath)
@@ -609,28 +613,28 @@ def upload_data(dbfile):
     """
     for cmd in create_cmd.split(';'):
         db.execute(cmd)
-    print
+    print()
     for i, line in enumerate(open("syn.tab")):
         if i%5000 == 0 :
-            print >>sys.stderr, '\rInserting synonyms:     % 6d' %i,
+            print('\rInserting synonyms:     % 6d' %i, end=' ', file=sys.stderr)
             sys.stderr.flush()
         taxid, spname = line.strip('\n').split('\t')
         db.execute("INSERT INTO synonym (taxid, spname) VALUES (?, ?);", (taxid, spname))
-    print
+    print()
     db.commit()
     for i, line in enumerate(open("merged.tab")):
         if i%5000 == 0 :
-            print >>sys.stderr, '\rInserting taxid merges: % 6d' %i,
+            print('\rInserting taxid merges: % 6d' %i, end=' ', file=sys.stderr)
             sys.stderr.flush()
         taxid_old, taxid_new = line.strip('\n').split('\t')
         db.execute("INSERT INTO merged (taxid_old, taxid_new) VALUES (?, ?);", (taxid_old, taxid_new))
-    print
+    print()
     db.commit()
     for i, line in enumerate(open("taxa.tab")):
         if i%5000 == 0 :
-            print >>sys.stderr, '\rInserting taxids:      % 6d' %i,
+            print('\rInserting taxids:      % 6d' %i, end=' ', file=sys.stderr)
             sys.stderr.flush()
         taxid, parentid, spname, rank, lineage = line.strip('\n').split('\t')
         db.execute("INSERT INTO species (taxid, parent, spname, rank, track) VALUES (?, ?, ?, ?, ?);", (taxid, parentid, spname, rank, lineage))
-    print
+    print()
     db.commit()

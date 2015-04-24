@@ -41,6 +41,10 @@
 ugly parsers for outfiles of codeml, rst file for sites,
 and main outfile
 """
+from __future__ import absolute_import
+from __future__ import print_function
+from six.moves import map
+from six.moves import range
 
 __author__  = "Francois-Jose Serra"
 __email__   = "francois@barrabin.org"
@@ -97,7 +101,7 @@ def parse_rst (path):
         sites [typ].setdefault ('aa', []).append (line[1])
         # get site class probability
         probs = []
-        for i in xrange (k):
+        for i in range (k):
             probs.append (float (line[2+i]))
             sites [typ].setdefault ('p'+str(i), []).append (float (line[2+i]))
         sites [typ].setdefault ('pv', []).append (max (probs))
@@ -203,11 +207,11 @@ def parse_paml (pamout, model):
         # codon frequency
         if line.startswith('Codon frequencies under model'):
             model.stats ['codonFreq'] = []
-            for j in xrange (16):
-                line = map (float, re.findall ('\d\.\d+', all_lines [i+j+1]))
+            for j in range (16):
+                line = list(map (float, re.findall ('\d\.\d+', all_lines [i+j+1])))
                 model.stats ['codonFreq'] += [line]
             continue
-        if not model.stats.has_key ('codonFreq'):
+        if 'codonFreq' not in model.stats:
             continue
         ######################
         # start serious staff
@@ -270,8 +274,7 @@ def _check_paml_labels (tree, paml_labels, pamout, model):
     Should not be necessary if all codeml is run through ETE.
     '''
     try:
-        relations = sorted (map (lambda x: map( int, x.split('..')),
-                                 paml_labels),
+        relations = sorted ([list(map( int, x.split('..'))) for x in paml_labels],
                             key=lambda x: x[1])
     except IndexError:
         return
@@ -286,7 +289,7 @@ def _check_paml_labels (tree, paml_labels, pamout, model):
                 break
         except IndexError:
             # if unable to find one node, relabel the whole tree
-            print rel
+            print(rel)
             warn ('ERROR: labelling does not correspond!!\n' + \
                   '       Getting them from ' + pamout)
             _get_labels_from_paml(tree, relations, pamout, model)

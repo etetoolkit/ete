@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -36,8 +37,9 @@
 #
 # 
 # #END_LICENSE#############################################################
-from svg_colors import random_color
+from .svg_colors import random_color
 from PyQt4  import QtCore, QtGui
+from six.moves import range
 
 class _NodeActions(object):
     """ Used to extend QGraphicsItem features """
@@ -129,7 +131,7 @@ class _NodeActions(object):
     def add_children(self):
         n,ok = QtGui.QInputDialog.getInteger(None,"Add childs","Number of childs to add:",1,1)
         if ok:
-            for i in xrange(n):
+            for i in range(n):
                 ch = self.node.add_child()
         self.scene().GUI.redraw()
 

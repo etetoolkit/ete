@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -36,7 +37,7 @@
 #
 # 
 # #END_LICENSE#############################################################
-from common import dump
+from .common import dump
 
 DESC = ""
 

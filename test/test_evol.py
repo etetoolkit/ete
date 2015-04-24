@@ -4,6 +4,8 @@
 
 test module
 """
+from __future__ import absolute_import
+from __future__ import print_function
 
 __author__  = "Francois-Jose Serra"
 __email__   = "francois@barrabin.org"
@@ -15,14 +17,14 @@ import unittest
 from ete2.evol             import EvolTree
 from random                   import random as rnd
 from copy                     import deepcopy
-from cPickle                  import load, dump
+from six.moves.cPickle                  import load, dump
 import os
 
 ETEPATH = os.path.abspath(os.path.split(os.path.realpath(__file__))[0]+'/../')
 
 WRKDIR = ETEPATH + '/examples/evol/data/protamine/PRM1/'
 BINDIR = os.getcwd() + '/bin/'
-print BINDIR
+print(BINDIR)
 
 def random_swap(tree):
     '''
@@ -169,7 +171,7 @@ class TestEvolEvolTree(unittest.TestCase):
         tree.mark_tree ([1, 3, 7] + [2, 6], marks=['#1']*3 + ['#2']*2, verbose=True)
         self.assertEqual(tree.write().replace(' ', ''),
                          '((Hylobates_lar#2,(Gorilla_gorilla#1,Pan_troglodytes#1)#1)#2,Papio_cynocephalus);')
-        tree.mark_tree (map (lambda x: x.node_id, tree.get_descendants()),
+        tree.mark_tree ([x.node_id for x in tree.get_descendants()],
                         marks=[''] * len (tree.get_descendants()), verbose=False)
         self.assertEqual(tree.write().replace(' ', ''),
                          '((Hylobates_lar,(Gorilla_gorilla,Pan_troglodytes)),Papio_cynocephalus);')

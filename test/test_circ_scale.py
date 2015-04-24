@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import sys
 import random
 sys.path.insert(0, "./")

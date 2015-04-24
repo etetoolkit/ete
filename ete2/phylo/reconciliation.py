@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -38,7 +39,7 @@
 # #END_LICENSE#############################################################
 
 import copy
-from evolevents import EvolEvent
+from .evolevents import EvolEvent
 
 
 def get_reconciled_tree(node, sptree, events):

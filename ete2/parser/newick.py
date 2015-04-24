@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -40,6 +42,8 @@
 import re
 import os
 from string import strip
+import six
+from six.moves import map
 
 __all__ = ["read_newick", "write_newick", "print_supported_formats"]
 
@@ -211,9 +215,9 @@ def print_supported_formats():
     from ete2.coretype.tree import TreeNode
     t = TreeNode()
     t.populate(4, "ABCDEFGHI")
-    print t
+    print(t)
     for f in NW_FORMAT:
-        print "Format", f,"=", write_newick(t, features=None, format=f)
+        print("Format", f,"=", write_newick(t, features=None, format=f))
 
 class NewickError(Exception):
     """Exception class designed for NewickIO errors."""
@@ -239,7 +243,7 @@ def read_newick(newick, root_node=None, format=0):
         from ete2.coretype.tree import TreeNode
         root_node = TreeNode()
 
-    if isinstance(newick, basestring):
+    if isinstance(newick, six.string_types):
         if os.path.exists(newick):
             if newick.endswith('.gz'):
                 import gzip 
@@ -281,7 +285,7 @@ def _read_newick_from_string(nw, root_node, format):
         # If no node has been created so far, this is the root, so use the node.
         current_parent = root_node if current_parent is None else current_parent.add_child()
 
-        subchunks = map(strip, chunk.split(","))
+        subchunks = list(map(strip, chunk.split(",")))
         # We should expect that the chunk finished with a comma (if next chunk
         # is an internal sister node) or a subchunk containing closing parenthesis until the end of the tree.
         #[leaf, leaf, '']
@@ -318,9 +322,9 @@ def _parse_extra_features(node, NHX_string):
     for field in NHX_string.split(":"):
         try:
             pname, pvalue = field.split("=")
-        except ValueError, e:
-            print NHX_string, field.split("=")
-            raise ValueError, e
+        except ValueError as e:
+            print(NHX_string, field.split("="))
+            raise ValueError(e)
         node.add_feature(pname, pvalue)
 
 def _read_node_data(subnw, current_node, node_type, format):
@@ -477,7 +481,7 @@ def _get_features_string(self, features=None):
             if type(raw) in ITERABLE_TYPES:
                 raw = '|'.join(map(str, raw))
             elif type(raw) == dict: 
-                raw = '|'.join(map(lambda x,y: "%s-%s" %(x, y), raw.iteritems()))
+                raw = '|'.join(map(lambda x,y: "%s-%s" %(x, y), six.iteritems(raw)))
             elif type(raw) == str:
                 pass
             else:

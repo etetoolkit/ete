@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -45,37 +46,37 @@ from warnings import warn
 
 try:
     import numpy
-except ImportError, e:
+except ImportError as e:
     numpy = None
     #warn("Clustering module could not be loaded. Is numpy installed?")
     #warn(e)
 
-from ncbi_taxonomy import *
-from coretype.tree import *
-from coretype.seqgroup import *
-from phylo.phylotree import *
-from evol.evoltree import *
-from webplugin.webapp import *
-from phyloxml import Phyloxml, PhyloxmlTree
-from nexml import Nexml, NexmlTree
-from evol import EvolTree
-from coretype.arraytable import *
-from clustering.clustertree import *
+from .ncbi_taxonomy import *
+from .coretype.tree import *
+from .coretype.seqgroup import *
+from .phylo.phylotree import *
+from .evol.evoltree import *
+from .webplugin.webapp import *
+from .phyloxml import Phyloxml, PhyloxmlTree
+from .nexml import Nexml, NexmlTree
+from .evol import EvolTree
+from .coretype.arraytable import *
+from .clustering.clustertree import *
 
 try:
-    from phylomedb.phylomeDB3 import *
-except ImportError, e:
+    from .phylomedb.phylomeDB3 import *
+except ImportError as e:
     pass
     #warn("MySQLdb module could not be loaded")
     #warn(e)
 
 try:
-    from treeview.svg_colors import *
-    from treeview.main import *
-    from treeview.faces import *
-    from treeview import faces
-    from treeview import layouts
-except ImportError, e:
+    from .treeview.svg_colors import *
+    from .treeview.main import *
+    from .treeview.faces import *
+    from .treeview import faces
+    from .treeview import layouts
+except ImportError as e:
     #print e
     pass
     #warn("Treeview module could not be loaded")

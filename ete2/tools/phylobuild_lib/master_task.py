@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -39,6 +41,7 @@
 import os
 import logging
 import traceback
+import six
 log = logging.getLogger("main")
 from collections import defaultdict
 
@@ -110,14 +113,14 @@ class Task(object):
         return generic_class_repr(self, "Task")
 
     def print_summary(self):
-        print "Type:", self.ttype
-        print "Name:", self.tname
-        print "Id:", self.taskid
-        print "Dir:", self.taskdir
-        print "Jobs", len(self.jobs)
-        print "Status", self.status
-        for tag, value in self.args.iteritems():
-            print tag,":", value
+        print("Type:", self.ttype)
+        print("Name:", self.tname)
+        print("Id:", self.taskid)
+        print("Dir:", self.taskdir)
+        print("Jobs", len(self.jobs))
+        print("Status", self.status)
+        for tag, value in six.iteritems(self.args):
+            print(tag,":", value)
         
     def __init__(self, nodeid, task_type, task_name, base_args=None,
                  extra_args=None):
@@ -162,7 +165,7 @@ class Task(object):
         # extract all internal config values associated to this task
         # and generate its unique id (later used to generate taskid)
         self._config_id = md5(','.join(sorted(["%s %s" %(str(pair[0]),str(pair[1])) for pair in
-                                       extra_args.iteritems() if pair[0].startswith("_")])))
+                                       six.iteritems(extra_args) if pair[0].startswith("_")])))
         self.dependencies = set()
         
     def get_status(self, sge_jobs=None):
@@ -201,8 +204,8 @@ class Task(object):
                 logindent(2)
                 try:
                     self.finish()
-                except Exception, e:
-                    print traceback.print_exc()
+                except Exception as e:
+                    print(traceback.print_exc())
                     raise TaskError(self, e)
                 else:
                     #store in database .......
@@ -318,7 +321,7 @@ class Task(object):
         # easy to check if a task is already done in the working path.
         if not self.taskid:
             args_id = md5(','.join(sorted(["%s %s" %(str(pair[0]), str(pair[1]))
-                                           for pair in self.args.iteritems()])))
+                                           for pair in six.iteritems(self.args)])))
              
             unique_id = md5(','.join([self.nodeid, self._config_id, args_id] +\
                                          sorted([getattr(j, "jobid", "taskid")
@@ -619,7 +622,7 @@ def update_job_status(j):
     if j.status == "D":
         try:
             start, end = read_time_file(j.time_file)
-        except Exception, e:
+        except Exception as e:
             log.warning("Execution time could not be loaded into DB: %s", j.jobid[:6])
             log.warning(e)
     db.update_task(j.jobid, status=j.status, tm_start=start, tm_end=end)

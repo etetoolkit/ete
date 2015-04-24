@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -41,9 +42,11 @@ from PyQt4 import QtCore, QtGui
 from PyQt4.QtGui import QGraphicsSimpleTextItem, QGraphicsPixmapItem, \
     QGraphicsRectItem, QTransform, QBrush, QPen, QColor, QGraphicsItem
 
-from main import FACE_POSITIONS, _leaf
-from node_gui_actions import _NodeActions as _ActionDelegator
+from .main import FACE_POSITIONS, _leaf
+from .node_gui_actions import _NodeActions as _ActionDelegator
 from math import pi, cos, sin
+import six
+from six.moves import range
 
 class _TextFaceItem(QGraphicsSimpleTextItem, _ActionDelegator):
     def __init__(self, face, node, text):
@@ -104,7 +107,7 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
         # column_widths is a dictionary of min column size. Can be
         # used to reserve horizontal space to specific columns
         self.column_widths = column_widths
-        self.columns = sorted(set(self.column2faces.keys() + self.column_widths.keys()))
+        self.columns = sorted(set(list(self.column2faces.keys()) + list(self.column_widths.keys())))
 
     def set_min_column_heights(self, column_heights):
         # column_widths is a dictionary of min column size. Can be
@@ -169,9 +172,9 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
             return 
 
         if self.as_grid:
-            self.h = max( [sum([self.r2max_h[r] for r in rows.iterkeys()]) for c, rows in self.sizes.iteritems()])
+            self.h = max( [sum([self.r2max_h[r] for r in six.iterkeys(rows)]) for c, rows in six.iteritems(self.sizes)])
         else:
-            self.h = max( [self.c2height[c] for c in self.sizes.iterkeys()])
+            self.h = max( [self.c2height[c] for c in six.iterkeys(self.sizes)])
 
         self.w = sum(self.c2max_w.values())
         #self.setRect(0, 0, self.w+random.randint(1,5), self.h)
@@ -188,7 +191,7 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
 
         # complete missing face columns 
         if self.columns:
-            self.columns = range(min(self.c2max_w), max(self.c2max_w)+1)
+            self.columns = list(range(min(self.c2max_w), max(self.c2max_w)+1))
 
         self.as_grid = as_grid
         self.update_columns_size()
@@ -378,7 +381,7 @@ def update_node_faces(node, n2f, img):
 
         # _temp_faces should be initialized by the set_style funcion
         all_faces = getattr(node._temp_faces, position)
-        for column, values in fixed_faces.iteritems():
+        for column, values in six.iteritems(fixed_faces):
             all_faces.setdefault(column, []).extend(values) 
 
         if position == "aligned" and img.draw_aligned_faces_as_table:

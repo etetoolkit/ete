@@ -61,10 +61,13 @@ Methods to perform queries are implemented within the PhylomeDB3Connector class.
       provides the alignments, phylogentic trees and tree-based orthology
       predictions for every single encoded protein.
 """
+from __future__ import absolute_import
 import re
 import MySQLdb
 from string import strip
 from ete2 import PhyloTree
+import six
+from six.moves import map
 
 def extract_species_name(name):
   return name.split("_")[1]
@@ -152,9 +155,9 @@ class Phylome(object):
         return quote(m.groups()[0])
      
     if not seqnames: 
-      seqids =  map(clean_name, self.seed_ids)
+      seqids =  list(map(clean_name, self.seed_ids))
     else:
-      seqids =  map(clean_name, seqnames)
+      seqids =  list(map(clean_name, seqnames))
       
     tree_table = "tree"
     cmd = 'SELECT  temp.protid, temp.method, temp.lk, temp.newick from ' +\
@@ -527,7 +530,7 @@ class PhylomeDB3Connector(object):
     if not tree_db:
       return data
     else:
-      method = tree_db.keys()[0]
+      method = list(tree_db.keys())[0]
 
     ## If it has been required, store the tree in an appropiate data structure.
     if tree:
@@ -586,19 +589,19 @@ class PhylomeDB3Connector(object):
           data["seq"][row["protid"]]["seq"] = row["seq"]
 
     ## Retrieve the external ids for all the unique sequences in the tree
-    for protid, external in self.get_external_ids(ids).iteritems():
+    for protid, external in six.iteritems(self.get_external_ids(ids)):
       data["seq"][protid].setdefault("external", {})
       data["seq"][protid]["external"] = external
 
-    for protid, external in self.get_go_ids(ids).iteritems():
+    for protid, external in six.iteritems(self.get_go_ids(ids)):
       data["seq"][protid].setdefault("external", {})
       data["seq"][protid]["external"].update(external)
 
-    for protid, external in self.get_old_phylomedb_ids(ids).iteritems():
+    for protid, external in six.iteritems(self.get_old_phylomedb_ids(ids)):
       data["seq"][protid].setdefault("external", {})
       data["seq"][protid]["external"].update(external)
 
-    for protid, external in self.get_prot_gene_names(ids).iteritems():
+    for protid, external in six.iteritems(self.get_prot_gene_names(ids)):
       data["seq"][protid].setdefault("external", {})
       data["seq"][protid]["external"].update(external)
 
@@ -709,8 +712,8 @@ class PhylomeDB3Connector(object):
     ## Recover any available translation
     if self.__execute__(cmd):
       for row in self._SQL.fetchall():
-        for sp, proteome in self.get_longest_isoform(row["protid"]).iteritems():
-          for id, proteins in proteome.iteritems():
+        for sp, proteome in six.iteritems(self.get_longest_isoform(row["protid"])):
+          for id, proteins in six.iteritems(proteome):
             ids.setdefault(sp, {}).setdefault(id, [])
             ids[sp][id] += proteins
 
@@ -723,8 +726,8 @@ class PhylomeDB3Connector(object):
     ## Recover any available translation
     if self.__execute__(cmd):
       for row in self._SQL.fetchall():
-        for sp, proteome in self.get_longest_isoform(row["protid"]).iteritems():
-          for id, proteins in proteome.iteritems():
+        for sp, proteome in six.iteritems(self.get_longest_isoform(row["protid"])):
+          for id, proteins in six.iteritems(proteome):
             ids.setdefault(sp, {}).setdefault(id, [])
             ids[sp][id] += proteins
 
@@ -779,19 +782,19 @@ class PhylomeDB3Connector(object):
     ## Look at different external IDs sources and retrieve the available info
     info = self.get_external_ids(id)
     if info:
-      conversion.update(info[info.keys()[0]])
+      conversion.update(info[list(info.keys())[0]])
 
     info = self.get_go_ids(id)
     if info:
-      conversion.update(info[info.keys()[0]])
+      conversion.update(info[list(info.keys())[0]])
 
     info = self.get_old_phylomedb_ids(id)
     if info:
-      conversion.update(info[info.keys()[0]])
+      conversion.update(info[list(info.keys())[0]])
 
     info = self.get_prot_gene_names(id)
     if info:
-      conversion.update(info[info.keys()[0]])
+      conversion.update(info[list(info.keys())[0]])
 
     return conversion
 
@@ -1034,19 +1037,19 @@ class PhylomeDB3Connector(object):
 
     ## Look at different external IDs sources and retrieve the available info
     info = self.get_external_ids(id)
-    data["external"] = info[info.keys()[0]] if info else {}
+    data["external"] = info[list(info.keys())[0]] if info else {}
 
     info = self.get_go_ids(id)
     if info:
-      data["external"].update(info[info.keys()[0]])
+      data["external"].update(info[list(info.keys())[0]])
 
     info = self.get_old_phylomedb_ids(id)
     if info:
-      data["external"].update(info[info.keys()[0]])
+      data["external"].update(info[list(info.keys())[0]])
 
     info = self.get_prot_gene_names(id)
     if info:
-      data["external"].update(info[info.keys()[0]])
+      data["external"].update(info[list(info.keys())[0]])
 
     return data
 
@@ -1471,7 +1474,7 @@ class PhylomeDB3Connector(object):
       return {}
     seqs = self.__fomat_MySQL_to_dict__("protid", self._SQL.fetchall())
 
-    protids = self.__parser_ids__(seqs.keys())
+    protids = self.__parser_ids__(list(seqs.keys()))
     cmd =  'SELECT CONCAT("Phy", p.protid, "_", s.code) AS protid, raw_alg IS '
     cmd += 'NOT NULL AS r, clean_alg IS NOT NULL AS c FROM (protein AS p, speci'
     cmd += 'es AS s) LEFT JOIN (%s AS a) ON (p.protid = a.protid' % (self._algs)
