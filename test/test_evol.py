@@ -33,7 +33,7 @@ def random_swap(tree):
     for node in tree.iter_descendants():
         if int (rnd()*100)%3:
             node.swap_children()
-    
+
 def check_annotation (tree):
     '''
     check each node is labelled with a node_id
@@ -104,7 +104,7 @@ class TestEvolEvolTree(unittest.TestCase):
         random_swap(tree)
         tree.link_to_evol_model (WRKDIR + 'paml/fb/fb.out', 'fb')
         self.assert_(check_annotation (tree))
-        
+
     def test_deep_copy(self):
         tree = EvolTree (WRKDIR + 'tree.nw')
         tree.workdir = 'examples/evol/data/protamine/PRM1/paml/'
@@ -181,17 +181,17 @@ class TestEvolEvolTree(unittest.TestCase):
         tree.workdir = ETEPATH + '/examples/data/protamine/PRM1/paml/'
         tree.link_to_alignment  (WRKDIR + 'alignments.fasta_ali')
         tree.link_to_evol_model (WRKDIR + 'paml/M2/M2.out', 'M2.a')
-        out = open('blip.pik', 'w')
+        out = open('blip.pik', 'wb')
         dump (tree, out)
         out.close()
-        out = open('blip.pik')
+        out = open('blip.pik', 'rb')
         tree2 = load (out)
         out.close()
         os.remove('blip.pik')
-        self.assertEqual(str(tree2.get_evol_model('M2.a')),
-                         str(tree.get_evol_model('M2.a'))
+        self.assertEqual(str(tree2.get_evol_model('M2.a')).split('\n'),
+                         str(tree.get_evol_model('M2.a')).split('\n')
         )
 
-        
+
 if __name__ == '__main__':
     unittest.main()
