@@ -1162,16 +1162,16 @@ class TreeNode(object):
         else:
             root = self
 
-        next = deque([root])
+        next_deq = deque([root])
         for i in range(size-1):
             if random.randint(0, 1):
-                p = next.pop()
+                p = next_deq.pop()
             else:
-                p = next.popleft()
+                p = next_deq.popleft()
 
             c1 = p.add_child()
             c2 = p.add_child()
-            next.extend([c1, c2])
+            next_deq.extend([c1, c2])
             if random_branches:
                 c1.dist = random.uniform(*branch_range)
                 c2.dist = random.uniform(*branch_range)
@@ -1189,14 +1189,14 @@ class TreeNode(object):
             names_library = deque(names_library)
         else:
             avail_names = itertools.combinations_with_replacement(charset, 10)
-        for n in next:
+        for n in next_deq:
             if names_library:
                 if reuse_names:
                     tname = random.sample(names_library, 1)[0]
                 else:
                     tname = names_library.pop()
             else:
-                tname = ''.join(avail_names.next())
+                tname = ''.join(next(avail_names))
             n.name = tname
 
 
