@@ -49,6 +49,7 @@ import itertools
 from ete2.parser.newick import read_newick, write_newick
 from ete2 import utils
 import sys
+from functools import cmp_to_key
 import six
 from six.moves import map
 from six.moves import range
@@ -481,7 +482,7 @@ class TreeNode(object):
                 visitor_key = frozenset(visitors)
                 visitors2nodes.setdefault(visitor_key, set()).add(node)
         for visitors, nodes in six.iteritems(visitors2nodes):
-            s = sorted(nodes, cmp_nodes)
+            s = sorted(nodes, key=cmp_to_key(cmp_nodes))
             to_keep.add(s[0])
 
         # Detach unvisited branches
@@ -1567,7 +1568,7 @@ class TreeNode(object):
                 s = n.ladderize(direction=direction)
                 n2s[n] = s
 
-            self.children.sort(lambda x,y: cmp(n2s[x], n2s[y]))
+            self.children.sort(key=lambda x: n2s[x])
             if direction == 1:
                 self.children.reverse()
             size = sum(n2s.values())
@@ -1592,13 +1593,10 @@ class TreeNode(object):
         """
 
         node2content = self.get_cached_content(store_attr=attr, container_type=list)
-        def sort_by_content(x, y):
-            return cmp(str(sorted(node2content[x])),
-                       str(sorted(node2content[y])))
 
         for n in self.traverse():
             if not n.is_leaf():
-                n.children.sort(sort_by_content)
+                n.children.sort(key=lambda x: str(sorted(node2content[x])))
 
     def get_cached_content(self, store_attr=None, container_type=set, _store=None):
         """
