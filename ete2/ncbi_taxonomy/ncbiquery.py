@@ -517,6 +517,7 @@ def load_ncbi_tree_from_dump(tar):
     name2rank = {}
     print("Loading node names...")
     for line in tar.extractfile("names.dmp"):
+        line = str(line.decode())
         fields =  list(map(str.strip, line.split("|")))
         nodename = fields[0]
         name_type = fields[3].lower()
@@ -531,6 +532,7 @@ def load_ncbi_tree_from_dump(tar):
 
     print("Loading nodes...")
     for line in tar.extractfile("nodes.dmp"):
+        line = str(line.decode())
         fields =  line.split("|")
         nodename = fields[0].strip()
         parentname = fields[1].strip()
@@ -588,7 +590,12 @@ def update_db(dbfile, targz_file=None):
     generate_table(t)
 
     open("syn.tab", "w").write('\n'.join(["%s\t%s" %(v[0],v[1]) for v in synonyms]))
-    open("merged.tab", "w").write('\n'.join(['\t'.join(map(str.strip, line.split('|')[:2])) for line in tar.extractfile("merged.dmp")]))
+
+    with open("merged.tab", "w") as merged:
+        for line in tar.extractfile("merged.dmp"):
+            line = str(line.decode())
+            out_line = '\t'.join(map(str.strip, line.split('|')[:2]))
+            merged.write(out_line+'\n')
     try:
         upload_data(dbfile)
     except:
