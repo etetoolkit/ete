@@ -216,6 +216,14 @@ class TreeNode(object):
     def __nonzero__(self):
         return True
 
+    def __bool__(self):
+        """
+        Python3's equivalent of __nonzero__
+        If this is not defined bool(class_instance) will call
+        __len__ in python3
+        """
+        return True
+
     def __repr__(self):
         return "Tree node '%s' (%s)" %(self.name, hex(self.__hash__()))
 
