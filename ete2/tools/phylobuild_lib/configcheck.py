@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -41,6 +43,8 @@ from ete2.tools.phylobuild_lib.configobj import ConfigObj
 from ete2.tools.phylobuild_lib.errors import ConfigError
 from ete2.tools.phylobuild_lib.utils import colorify
 from ete2.tools.phylobuild_lib.apps import APP2CLASS
+import six
+from six.moves import map
 
 def list_workflows(config):
     wtype_legend = {
@@ -50,48 +54,48 @@ def list_workflows(config):
         }
     for wtype in ['genetree', 'supermatrix']:
         avail_workflows = sorted(['%s %s' %(k.ljust(25), config[k].get('_desc', '')) for k,
-                              v in config.iteritems() if v.get('_app', '') == wtype])
-        print '=' *80
-        print ('Available %s workflows' %wtype).center(80)
-        print ('%s' %wtype_legend[wtype]).center(80)
-        print '=' *80
-        print ('  %s' %'\n  '.join(avail_workflows))
+                              v in six.iteritems(config) if v.get('_app', '') == wtype])
+        print('=' *80)
+        print(('Available %s workflows' %wtype).center(80))
+        print(('%s' %wtype_legend[wtype]).center(80))
+        print('=' *80)
+        print(('  %s' %'\n  '.join(avail_workflows)))
                 
     avail_meta = sorted(["%s (% 3s threads)" %(k.ljust(40), len(v)) for k,
-                         v in config.get('meta_workflow', {}).iteritems()])
+                         v in six.iteritems(config.get('meta_workflow', {}))])
 
-    print '=' *80
-    print 'Available Aliases and Meta-workflows'.center(80)
-    print '=' *80
-    print ('  %s' %'\n  '.join(avail_meta))
+    print('=' *80)
+    print('Available Aliases and Meta-workflows'.center(80))
+    print('=' *80)
+    print(('  %s' %'\n  '.join(avail_meta)))
 
 def list_apps(config, target_apps = None):
     if not target_apps:
-        target_apps = sorted([k for k in APP2CLASS.keys() if k != 'raxml-pthreads'])
+        target_apps = sorted([k for k in list(APP2CLASS.keys()) if k != 'raxml-pthreads'])
     else:
-        valid = set([k for k in APP2CLASS.keys() if k != 'raxml-pthreads'])
+        valid = set([k for k in list(APP2CLASS.keys()) if k != 'raxml-pthreads'])
         if set(target_apps) - valid:
-            print 'ERROR: Unknown application type.'
-            print 'Use one of: [%s]' %' | '.join(valid)
+            print('ERROR: Unknown application type.')
+            print('Use one of: [%s]' %' | '.join(valid))
             return 
     for atype in target_apps:
         avail_apps = sorted(['%s %s' %(k.ljust(25), config[k].get('_desc', '')) for k,
-                              v in config.iteritems() if v.get('_app', '') == atype])
-        print '=' *40
-        print '[%s] config blocks' %atype
-        print '=' *40
-        print ('  %s' %'\n  '.join(avail_apps))
-        print
+                              v in six.iteritems(config) if v.get('_app', '') == atype])
+        print('=' *40)
+        print('[%s] config blocks' %atype)
+        print('=' *40)
+        print(('  %s' %'\n  '.join(avail_apps)))
+        print()
     
 def block_detail(block_name, config, color=True):
     blocks_to_show = {}
     iterable_types = set([set, list, tuple, frozenset])
     if block_name not in config:
         try:
-            next_block = map(lambda x: x.lstrip('@'), config.get('meta_workflow', {})[block_name])
+            next_block = [x.lstrip('@') for x in config.get('meta_workflow', {})[block_name]]
             metaworkflow = True
-        except Exception, e:
-            print e
+        except Exception as e:
+            print(e)
             raise ValueError('block name not found [%s]' %block_name)
     else:
         metaworkflow = False
@@ -101,7 +105,7 @@ def block_detail(block_name, config, color=True):
     while next_block:
         block = next_block.pop()
         blocks_to_show[block] = pos
-        for k1, v1 in config[block].iteritems():
+        for k1, v1 in six.iteritems(config[block]):
             if type(v1) in iterable_types:
                 for v2 in v1:
                     if isinstance(v2, str) and v2.startswith('@'):
@@ -111,36 +115,36 @@ def block_detail(block_name, config, color=True):
         pos += 1
 
     if metaworkflow and color:
-        print colorify('[meta_workflow]', 'yellow')
-        print "%s = %s" %(block_name, ', '.join(config["meta_workflow"][block_name]))
-        print
+        print(colorify('[meta_workflow]', 'yellow'))
+        print("%s = %s" %(block_name, ', '.join(config["meta_workflow"][block_name])))
+        print()
     elif metaworkflow:
-        print '[meta_workflow]'
-        print "%s = %s" %(block_name, ', '.join(config["meta_workflow"][block_name]))
-        print
+        print('[meta_workflow]')
+        print("%s = %s" %(block_name, ', '.join(config["meta_workflow"][block_name])))
+        print()
         
-    for b, pos in sorted(blocks_to_show.items(), key=lambda x: x[1]):
+    for b, pos in sorted(list(blocks_to_show.items()), key=lambda x: x[1]):
         if color:
-            print colorify('[%s]' %b, 'yellow')
+            print(colorify('[%s]' %b, 'yellow'))
         else:
-            print '[%s]' %b
+            print('[%s]' %b)
             
-        for k,v in config[b].iteritems():
+        for k,v in six.iteritems(config[b]):
             if type(v) in iterable_types:
                 v = ', '.join(map(str, v))+','
 
             if color:
                 if k == '_app':
-                    print colorify('% 35s = %s' %(k, v), "lblue")
+                    print(colorify('% 35s = %s' %(k, v), "lblue"))
                 else:
-                    print '%s = %s' %(colorify("% 35s" %k, "orange"), v)
+                    print('%s = %s' %(colorify("% 35s" %k, "orange"), v))
             else:
-                print '% 40s = %s' %(k, v)
-        print
+                print('% 40s = %s' %(k, v))
+        print()
     
 def check_config(fname):
     conf = ConfigObj(fname, list_values=True)
-    for k, v in conf.items():
+    for k, v in list(conf.items()):
         if '_inherits' in v:
             base = v['_inherits']
             try:
@@ -150,24 +154,24 @@ def check_config(fname):
             new_dict.update(v)
             conf[k] = new_dict
             
-    for k in conf.iterkeys():
+    for k in six.iterkeys(conf):
         blocktype = conf[k].get('_app', 'unknown')
-        for attr, v in conf[k].items():
+        for attr, v in list(conf[k].items()):
             conf[k][attr] = check_type(blocktype, attr, v)
             if isinstance(conf[k][attr], list):
                 for i in conf[k][attr]:
                     check_block_link(conf, k, i)
             else:
                 check_block_link(conf, k, conf[k][attr])
-        for tag, tester in CHECKERS.iteritems():
+        for tag, tester in six.iteritems(CHECKERS):
             if tag[0] == blocktype and (tester[2] and tag[1] not in conf[k]):
                 raise ConfigError('[%s] attribute expected in block [%s]' %(tag[1], k))
 
     # Check that the number of columns in main workflow definition is the same in all attributes
-    for flow_name in conf.iterkeys():
+    for flow_name in six.iterkeys(conf):
         if conf[flow_name].get("_app", "") != "main":
             continue
-        npr_config = [len(v) for k, v in conf[flow_name].iteritems()
+        npr_config = [len(v) for k, v in six.iteritems(conf[flow_name])
                       if type(v) == list and k != "target_levels"]
         if len(set(npr_config)) != 1:
             raise ConfigError("List values in [%s] should all have the same length" %flow_name)

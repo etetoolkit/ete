@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -40,6 +41,7 @@ import os
 import re
 import logging
 import shutil
+from six.moves import map
 log = logging.getLogger("main")
 
 from ete2.tools.phylobuild_lib.master_task import ModelTesterTask

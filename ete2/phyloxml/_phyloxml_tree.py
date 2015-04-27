@@ -44,9 +44,10 @@ The PhyloxmlTree class should be use as a substitute for base Clade
 and Phylogeny classes.
 
 """
+from __future__ import absolute_import
 
 import sys
-from _phyloxml import Clade, Phylogeny, Confidence, Tag_pattern_
+from ._phyloxml import Clade, Phylogeny, Confidence, Tag_pattern_
 from ete2 import PhyloTree
 
 class PhyloxmlTree(PhyloTree):

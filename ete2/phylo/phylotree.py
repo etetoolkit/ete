@@ -43,6 +43,8 @@ This module defines the PhyloNode dataytype to manage phylogenetic
 trees. It inheritates the coretype TreeNode and add some special
 features to the the node instances.
 """
+from __future__ import absolute_import
+from __future__ import print_function
 
 import sys
 import os
@@ -50,8 +52,8 @@ import re
 import itertools
 from collections import defaultdict
 from ete2 import TreeNode, SeqGroup, NCBITaxa
-from reconciliation import get_reconciled_tree
-import spoverlap
+from .reconciliation import get_reconciled_tree
+from . import spoverlap
 
 __all__ = ["PhyloNode", "PhyloTree"]
 
@@ -440,9 +442,8 @@ class PhyloNode(TreeNode):
                 else:
                     missing_internal.append(n.name)
         if len(missing_leaves)>0:
-            print >>sys.stderr, \
-                "Warnning: [%d] terminal nodes could not be found in the alignment." %\
-                len(missing_leaves)
+            print("Warnning: [%d] terminal nodes could not be found in the alignment." %\
+                len(missing_leaves), file=sys.stderr)
         # Show warning of not associated internal nodes.
         # if len(missing_internal)>0:
         #     print >>sys.stderr, \
@@ -797,7 +798,7 @@ class PhyloNode(TreeNode):
         cached_species = set([n.species for n in cached_content[self]])
         
         if len(cached_species) != len(cached_content[self]):
-            print cached_species
+            print(cached_species)
             ntrees, ndups, target_trees = self.get_speciation_trees(autodetect_duplications=autodetect_duplications, map_features=["taxid"])
         else:
             target_trees = [self]

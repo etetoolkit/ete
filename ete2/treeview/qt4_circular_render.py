@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -39,8 +40,8 @@
 import math
 import colorsys
 from PyQt4 import QtCore, QtGui
-from main import _leaf, tracktime
-from node_gui_actions import _NodeActions
+from .main import _leaf, tracktime
+from .node_gui_actions import _NodeActions
 
 
 class _LineItem(QtGui.QGraphicsLineItem):

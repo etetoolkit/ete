@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -37,11 +39,13 @@
 # 
 # #END_LICENSE#############################################################
 from StringIO import StringIO
-import cPickle
+import six.moves.cPickle
 from string import strip
 from collections import defaultdict
 import logging
 import os
+import six
+from six.moves import map
 log = logging.getLogger("main")
 
 from ete2.tools.phylobuild_lib.master_task import CogSelectorTask
@@ -118,10 +122,10 @@ class CogSelector(CogSelectorTask):
         sp2cogs = defaultdict(int)
         for cognumber, cog in enumerate(open(GLOBALS["cogs_file"])):
             sp2seqs = defaultdict(list)
-            for sp, seqid in [map(strip, seq.split(GLOBALS["spname_delimiter"], 1)) for seq in cog.split("\t")]:
+            for sp, seqid in [list(map(strip, seq.split(GLOBALS["spname_delimiter"], 1))) for seq in cog.split("\t")]:
                 sp2seqs[sp].append(seqid)
             one2one_cog = set()
-            for sp, seqs in sp2seqs.iteritems():
+            for sp, seqs in six.iteritems(sp2seqs):
                 #if len(seqs) != 1:
                 #    print sp, len(seqs)
                 if sp in all_species and len(seqs) == 1:
@@ -134,7 +138,7 @@ class CogSelector(CogSelectorTask):
             #    valid_cogs.append(one2one_cog)
 
         cognumber += 1 # sets the ammount of cogs in file
-        for sp, ncogs in sorted(sp2cogs.items(), key=lambda x: x[1], reverse=True):
+        for sp, ncogs in sorted(list(sp2cogs.items()), key=lambda x: x[1], reverse=True):
 
             log.log(28, "% 20s  found in single copy in  % 6d (%0.1f%%) COGs " %(sp, ncogs, 100 * ncogs/float(cognumber)))
 
@@ -160,9 +164,9 @@ class CogSelector(CogSelectorTask):
             co_names = ["%s%s%s" %(sp, GLOBALS["spname_delimiter"], seq) for sp, seq in co]
             encoded_names = db.translate_names(co_names)
             if len(encoded_names) != len(co):
-                print set(co) - set(encoded_names.keys())
+                print(set(co) - set(encoded_names.keys()))
                 raise DataError("Some sequence ids could not be translated")
-            self.cogs.append(encoded_names.values())
+            self.cogs.append(list(encoded_names.values()))
 
         # ERROR! COGs selected are not the prioritary cogs sorted out before!!!
         # Sort Cogs according to the md5 hash of its content. Random
@@ -171,7 +175,7 @@ class CogSelector(CogSelectorTask):
         #self.cogs.sort(lambda x,y: cmp(md5(','.join(x)), md5(','.join(y))))
         
         log.log(28, "Analysis of current COG selection:")
-        for sp, ncogs in sorted(sp_repr.items(), key=lambda x:x[1], reverse=True):
+        for sp, ncogs in sorted(list(sp_repr.items()), key=lambda x:x[1], reverse=True):
             log.log(28, " % 30s species present in % 6d COGs (%0.1f%%)" %(sp, ncogs, 100 * ncogs/float(len(self.cogs))))
                 
         log.log(28, " %d COGs selected with at least %d species out of %d" %(len(self.cogs), min_species, len(all_species)))
@@ -182,7 +186,7 @@ class CogSelector(CogSelectorTask):
         if missing_sp:
             log.error("%d missing species or not present in single-copy in any cog:\n%s" %\
                       (len(missing_sp), '\n'.join(missing_sp)))
-            open('etebuild.valid_species_names.tmp', 'w').write('\n'.join(sp_repr.keys()) +'\n')
+            open('etebuild.valid_species_names.tmp', 'w').write('\n'.join(list(sp_repr.keys())) +'\n')
             log.error("All %d valid species have been dumped into etebuild.valid_species_names.tmp."
                       " You can use --spfile to restrict the analysis to those species." %len(sp_repr))
             raise TaskError('missing or not single-copy species under current cog selection')

@@ -98,6 +98,11 @@ All other classes in this module are considered implementation details.
 considered public as object names -- the API of the formatter objects is
 still considered an implementation detail.)
 """
+from __future__ import absolute_import
+import six
+from six.moves import map
+from six.moves import range
+from six.moves import zip
 
 __version__ = '1.2.1'
 __all__ = [
@@ -135,9 +140,9 @@ except NameError:
     from sets import Set as set
 
 try:
-    basestring
+    six.string_types
 except NameError:
-    basestring = str
+    six.string_types = str
 
 try:
     sorted
@@ -1759,7 +1764,7 @@ class ArgumentParser(_AttributeHolder, _ActionsContainer):
                 if not hasattr(namespace, action.dest):
                     if action.default is not SUPPRESS:
                         default = action.default
-                        if isinstance(action.default, basestring):
+                        if isinstance(action.default, six.string_types):
                             default = self._get_value(action, default)
                         setattr(namespace, action.dest, default)
 
@@ -2237,7 +2242,7 @@ class ArgumentParser(_AttributeHolder, _ActionsContainer):
                 value = action.const
             else:
                 value = action.default
-            if isinstance(value, basestring):
+            if isinstance(value, six.string_types):
                 value = self._get_value(action, value)
                 self._check_value(action, value)
 

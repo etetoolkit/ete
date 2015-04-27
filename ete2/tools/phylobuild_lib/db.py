@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -40,12 +42,16 @@ import sys
 import time
 from collections import defaultdict
 import sqlite3
-import cPickle
+import six.moves.cPickle
 import base64
 import zlib
 import gzip
 import logging
 from ete2.tools.phylobuild_lib.utils import md5, pexist, pjoin, GLOBALS
+import six
+from six.moves import map
+from six.moves import range
+from six.moves import zip
 
 log = logging.getLogger("main")
 
@@ -64,10 +70,10 @@ def autocommit(targetconn = conn):
         targetconn.commit()
        
 def encode(x):
-    return base64.encodestring(cPickle.dumps(x, 2))
+    return base64.encodestring(six.moves.cPickle.dumps(x, 2))
 
 def decode(x):
-    return cPickle.loads(base64.decodestring(x))
+    return six.moves.cPickle.loads(base64.decodestring(x))
 
 # SQLITE_MAX_LENGTH issue: files larger than ~1GB cannot be stored. limit cannot
 # be changed at runtime. Big files are then stored in disk instead
@@ -81,11 +87,11 @@ MAX_SQLITE_SIZE = 500000000
 MAX_SQLITE_SIZE = 5
 
 def zencode(x, data_id):
-    pdata = cPickle.dumps(x)
+    pdata = six.moves.cPickle.dumps(x)
     if sys.getsizeof(pdata) > MAX_SQLITE_SIZE:
         # using protocol 2 fails because of the integer overflow python bug
         # i.e. http://bugs.python.org/issue13555
-        cPickle.dump(x, open(pjoin(GLOBALS['db_dir'], data_id+".pkl"), "wb"))
+        six.moves.cPickle.dump(x, open(pjoin(GLOBALS['db_dir'], data_id+".pkl"), "wb"))
         return "__DBDIR__:%s" %data_id
     else: 
         return base64.encodestring(zlib.compress(pdata))
@@ -93,9 +99,9 @@ def zencode(x, data_id):
 def zdecode(x):
     if x.startswith("__DBDIR__:"):
         data_id = x.split(':', 1)[1]
-        data = cPickle.load(open(pjoin(GLOBALS['db_dir'], data_id+".pkl")))
+        data = six.moves.cPickle.load(open(pjoin(GLOBALS['db_dir'], data_id+".pkl")))
     else:
-        data = cPickle.loads(zlib.decompress(base64.decodestring(x)))
+        data = six.moves.cPickle.loads(zlib.decompress(base64.decodestring(x)))
     return data
 
 def prevent_sqlite_umask_bug(fname):
@@ -358,7 +364,7 @@ def get_runid_tasks(runid):
 def update_task(tid, **kargs):
     if kargs:
         values = ', '.join(['%s="%s"' %(k,v) for k,v in
-                       kargs.iteritems()])
+                       six.iteritems(kargs)])
         cmd = 'UPDATE task SET %s where taskid="%s";' %(values, tid)
         execute(cmd)
         autocommit()
@@ -366,7 +372,7 @@ def update_task(tid, **kargs):
 def update_node(nid, runid, **kargs):
     if kargs:
         values = ', '.join(['%s="%s"' %(k,v) for k,v in
-                       kargs.iteritems()])
+                       six.iteritems(kargs)])
         cmd = 'UPDATE node SET %s where nodeid="%s" AND runid="%s";' %\
               (values, nid, runid)
         execute(cmd)
@@ -383,7 +389,7 @@ def get_task_info(tid):
     values = cursor.fetchone()
     if values:
         keys = ["status", "host", "pid"]
-        return dict(zip(keys, values))
+        return dict(list(zip(keys, values)))
     else:
         return {}
 
@@ -434,10 +440,10 @@ def print_node_by_clade(threadid, cladeid):
         targets = decode(targets)
         outgroups = decode(outgroups)
         if newick:
-            print threadid, nodeid, len(targets), len(outgroups),len(decode(newick))
+            print(threadid, nodeid, len(targets), len(outgroups),len(decode(newick)))
             return targets, outgroups
         else:
-            print 
+            print() 
 
 def get_runid_nodes(runid):
     cmd = ('SELECT cladeid, newick, target_size FROM node'
@@ -485,7 +491,7 @@ def get_all_seq_names():
     return [name[0] for name in seqcursor.fetchall()]
 
 def translate_names(names):
-    name_string = ",".join(map(lambda x: '"%s"'%x, names))
+    name_string = ",".join(['"%s"'%x for x in names])
     cmd = 'SELECT name, seqid FROM seqid2name WHERE name in (%s);' %name_string
     execute(cmd, seqcursor)
     return dict(seqcursor.fetchall())
@@ -522,7 +528,7 @@ def update_species_in_ortho_pairs():
         
     cmd = 'INSERT OR REPLACE INTO species (taxid) VALUES (?)'
     orthocursor.executemany(cmd, [[sp] for sp in species])
-    print cmd
+    print(cmd)
     autocommit()
 
 def update_cog_species(species):
@@ -545,7 +551,7 @@ def get_seq_species():
 def add_seq_species(species):
     cmd = 'INSERT OR REPLACE INTO species (taxid, size) VALUES (?, ?)'
     seqcursor.executemany(cmd, [[sp, counter] for sp, counter in
-                                species.iteritems()])
+                                six.iteritems(species)])
     autocommit()
 
 def get_all_ortho_seqs(target_species=None):
@@ -555,13 +561,13 @@ def get_all_ortho_seqs(target_species=None):
         sp_filter = ""
     
     cmd = 'SELECT DISTINCT seqid1,taxid1 FROM ortho_pair ' + sp_filter.replace("NNN","1")
-    print cmd
+    print(cmd)
     execute(cmd, orthocursor)
     seqs = set(["_".join(q) for q in orthocursor.fetchall()])
 
     cmd = 'SELECT DISTINCT seqid2,taxid2 FROM ortho_pair ' + sp_filter.replace("NNN","2")
     execute(cmd, orthocursor)
-    print cmd
+    print(cmd)
     seqs.update(set(["_".join(q) for q in orthocursor.fetchall()]))
     return seqs
     
@@ -573,10 +579,10 @@ def get_all_task_states():
 def execute(cmd, dbcursor=None):
     if not dbcursor:
         dbcursor = cursor
-    for retry in xrange(10):
+    for retry in range(10):
         try:
             s = dbcursor.execute(cmd)
-        except sqlite3.OperationalError, e:
+        except sqlite3.OperationalError as e:
             log.warning(e)
             if retry > 1:
                 raise

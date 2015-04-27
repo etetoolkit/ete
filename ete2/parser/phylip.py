@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -40,6 +42,8 @@
 import os
 import re
 from sys import stderr as STDERR
+import six
+from six.moves import range
 
 def read_phylip(source, interleaved=True, obj=None,
                 relaxed=False, fix_duplicates=True):
@@ -74,8 +78,7 @@ def read_phylip(source, interleaved=True, obj=None,
                 ntax  = int (m.groups()[0])
                 nchar = int (m.groups()[1])
             else:
-                raise Exception, \
-                    "A first line with the alignment dimension is required"
+                raise Exception("A first line with the alignment dimension is required")
         # Reads sequences
         else:
             if not interleaved:
@@ -88,29 +91,26 @@ def read_phylip(source, interleaved=True, obj=None,
                     if m:
                         name = m.groups()[0].strip()
                         if fix_duplicates and name in SG.name2id:
-                            tag = str(len([k for k in SG.name2id.keys() \
+                            tag = str(len([k for k in list(SG.name2id.keys()) \
                                               if k.endswith(name)]))
                             old_name = name
                             # Tag is in the beginning to avoid being
                             # cut it by the 10 chars limit
                             name = tag+"_"+name
-                            print >>STDERR, \
-                                "Duplicated entry [%s] was renamed to [%s]" %\
-                                (old_name, name)
+                            print("Duplicated entry [%s] was renamed to [%s]" %\
+                                (old_name, name), file=STDERR)
                         SG.id2name[id_counter] = name
                         SG.name2id[name] = id_counter
                         SG.id2seq[id_counter] = ""
                         line = m.groups()[1]
                     else:
-                        raise Exception, \
-                            "Wrong phylip sequencial format."
+                        raise Exception("Wrong phylip sequencial format.")
                 SG.id2seq[id_counter] += re.sub("\s","", line)
                 if len(SG.id2seq[id_counter]) == nchar:
                     id_counter += 1
                     name = None
                 elif len(SG.id2seq[id_counter]) > nchar:
-                    raise Exception, \
-                        "Unexpected length of sequence [%s] [%s]." %(name,SG.id2seq[id_counter])
+                    raise Exception("Unexpected length of sequence [%s] [%s]." %(name,SG.id2seq[id_counter]))
             else:
                 if len(SG)<ntax:
                     if relaxed:
@@ -124,18 +124,16 @@ def read_phylip(source, interleaved=True, obj=None,
                         SG.id2seq[id_counter] = seq
                         SG.id2name[id_counter] = name
                         if fix_duplicates and name in SG.name2id:
-                            tag = str(len([k for k in SG.name2id.keys() \
+                            tag = str(len([k for k in list(SG.name2id.keys()) \
                                               if k.endswith(name)]))
                             old_name = name
                             name = tag+"_"+name
-                            print >>STDERR, \
-                                "Duplicated entry [%s] was renamed to [%s]" %\
-                                (old_name, name)
+                            print("Duplicated entry [%s] was renamed to [%s]" %\
+                                (old_name, name), file=STDERR)
                         SG.name2id[name] = id_counter
                         id_counter += 1
                     else:
-                        raise Exception, \
-                            "Unexpected number of sequences."
+                        raise Exception("Unexpected number of sequences.")
                 else:
                     seq = re.sub("\s", "", line)
                     if id_counter == len(SG):
@@ -144,14 +142,12 @@ def read_phylip(source, interleaved=True, obj=None,
                     id_counter += 1
 
     if len(SG) != ntax:
-        raise Exception, \
-            "Unexpected number of sequences."
+        raise Exception("Unexpected number of sequences.")
 
     # Check lenght of all seqs
-    for i in SG.id2seq.keys():
+    for i in list(SG.id2seq.keys()):
         if len(SG.id2seq[i]) != nchar:
-            raise Exception, \
-                "Unexpected lenght of sequence [%s]" %SG.id2name[i]
+            raise Exception("Unexpected lenght of sequence [%s]" %SG.id2name[i])
 
     return SG
 
@@ -160,23 +156,23 @@ def write_phylip(aln, outfile=None, interleaved=True, relaxed=False):
     seq_visited = set([])
 
     show_name_warning = False
-    lenghts = set((len(seq) for seq in aln.id2seq.values()))
+    lenghts = set((len(seq) for seq in list(aln.id2seq.values())))
     if len(lenghts) >1:
-        raise Exception, "Phylip format requires sequences of equal lenght."
+        raise Exception("Phylip format requires sequences of equal lenght.")
     seqlength = lenghts.pop()
 
     if not relaxed:
         name_fix = 10
     else:
-        name_fix = max([len(name) for name in aln.id2name.values()])
+        name_fix = max([len(name) for name in list(aln.id2name.values())])
 
     alg_lines = []
     alg_text = " %d %d" %(len(aln), seqlength)
     alg_lines.append(alg_text)
     if interleaved:
         visited = set([])
-        for i in xrange(0, seqlength, width):
-            for j in aln.id2name.iterkeys(): #xrange(len(aln)):
+        for i in range(0, seqlength, width):
+            for j in six.iterkeys(aln.id2name): #xrange(len(aln)):
                 name =  aln.id2name[j]
                 if not relaxed and len(name)>name_fix:
                     name = name[:name_fix]
@@ -189,7 +185,7 @@ def write_phylip(aln, outfile=None, interleaved=True, relaxed=False):
                 else:
                     name_str = "".ljust(name_fix+3)
 
-                seq_str = ' '.join([seq[k:k+10] for k in xrange(0, len(seq), 10)])
+                seq_str = ' '.join([seq[k:k+10] for k in range(0, len(seq), 10)])
                 line_str = "%s%s" %(name_str, seq_str)
                 alg_lines.append(line_str)
             alg_lines.append("")
@@ -200,13 +196,13 @@ def write_phylip(aln, outfile=None, interleaved=True, relaxed=False):
                 show_name_warning = True
             line_str = "%s   %s\n%s" %\
                 (name.ljust(name_fix), seq[0:width-name_fix-3], '\n'.join([seq[k:k+width]  \
-                                      for k in xrange(width-name_fix-3, len(seq), width)]))
+                                      for k in range(width-name_fix-3, len(seq), width)]))
             alg_lines.append(line_str)
         alg_lines.append("")
             
             
     if show_name_warning:
-        print >>STDERR, "Warning! Some sequence names were cut to 10 characters!!"
+        print("Warning! Some sequence names were cut to 10 characters!!", file=STDERR)
     alg_text = '\n'.join(alg_lines)
     if outfile is not None:
         OUT = open(outfile, "w")

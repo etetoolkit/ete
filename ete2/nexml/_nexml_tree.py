@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -37,7 +39,7 @@
 # 
 # #END_LICENSE#############################################################
 import sys
-from _nexml import MixedContainer, FloatTree, TreeFloatEdge, TreeNode, LiteralMeta
+from ._nexml import MixedContainer, FloatTree, TreeFloatEdge, TreeNode, LiteralMeta
 from ete2 import PhyloTree
 from ete2.phylo.phylotree import _parse_species
 from ete2.parser.newick import read_newick
@@ -88,7 +90,7 @@ class NexmlTree(PhyloTree):
            len(set([type(n)==type(self) for n in value]))<2:
             self._children = value
         else:
-            raise ValueError, "children:wrong type"
+            raise ValueError("children:wrong type")
 
     dist = property(fget=_get_dist, fset=_set_dist)
     support = property(fget=_get_support, fset=_set_support)
@@ -149,7 +151,7 @@ class NexmlTree(PhyloTree):
         for xmlnode in tree.node:
             # just a warning. I don't know if this can occur
             if xmlnode.id not in nodeid2node: 
-                print >>sys.stderr, "Unused node", xmlnode.id
+                print("Unused node", xmlnode.id, file=sys.stderr)
                 continue
 
             ete_node = nodeid2node[xmlnode.id]

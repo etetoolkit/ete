@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -40,6 +42,7 @@ import os
 import re
 import commands
 import logging
+import six
 log = logging.getLogger("main")
 
 APP2CLASS = {
@@ -143,8 +146,8 @@ def get_call(appname, apps_path, exec_path, cores):
     return cmd
   
 def test_apps(apps):
-    for name, cmd in apps.iteritems():
-        print "Checking %20s..." %name,
+    for name, cmd in six.iteritems(apps):
+        print("Checking %20s..." %name, end=' ')
         test_cmd = cmd+" 2>&1 "+app2check.get(name, "")
         out = commands.getoutput(test_cmd)
         try:
@@ -153,8 +156,8 @@ def test_apps(apps):
             response = 0
         
         if response:
-            print "OK."
+            print("OK.")
         else:
-            print "Missing or not functional."
+            print("Missing or not functional.")
             #log.debug(test_cmd)
             #log.debug(commands.getoutput(test_cmd.rstrip("wc -l")))

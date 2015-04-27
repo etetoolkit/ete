@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -40,6 +41,7 @@
 import os
 import sys
 import logging
+from six.moves import map
 log = logging.getLogger("main")
 
 from ete2.tools.phylobuild_lib.master_task import AlgCleanerTask
@@ -102,7 +104,7 @@ class Trimal(AlgCleanerTask):
             for line in open(self.jobs[0].stdout_file):
                 line = line.strip()
                 if line.startswith("#ColumnsMap"):
-                    kept_columns = map(int, line.split("\t")[1].split(","))
+                    kept_columns = list(map(int, line.split("\t")[1].split(",")))
             fasta = alg.write(format="fasta")
             phylip = alg.write(format="iphylip_relaxed")
             AlgCleanerTask.store_data(self, fasta, phylip, kept_columns)

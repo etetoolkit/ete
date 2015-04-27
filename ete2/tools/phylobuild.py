@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
@@ -41,16 +43,19 @@
 # #END_LICENSE#############################################################
 
 import errno
-import __builtin__
+import six.moves.builtins
+import six
+from six.moves import map
+from six.moves import range
 def wrap(method, retries):
     def fn(*args, **kwargs):
-        for i in xrange(retries):
+        for i in range(retries):
             try:
                 return method(*args, **kwargs)
-            except IOError, e:            
+            except IOError as e:            
                 if e.errno == errno.EINTR:
-                    print >>sys.stderr, "A system call interruption was captured"
-                    print >>sys.stderr, "Retrying", i, "of", retries, "until exception is raised"
+                    print("A system call interruption was captured", file=sys.stderr)
+                    print("Retrying", i, "of", retries, "until exception is raised", file=sys.stderr)
                     continue
                 else:
                     raise
@@ -60,30 +65,30 @@ def wrap(method, retries):
 class safefile(file):
     __retries = 2
     def read(self, *args, **kargs):
-        for i in xrange(self.__retries):
+        for i in range(self.__retries):
             try:
                 return file.read(self, *args, **kargs)
-            except IOError, e:            
+            except IOError as e:            
                 if e.errno == errno.EINTR:
-                    print >>sys.stderr, "A system call interruption was captured"
-                    print >>sys.stderr, "Retrying", i, "of", self.__retries, "until exception is raised"
+                    print("A system call interruption was captured", file=sys.stderr)
+                    print("Retrying", i, "of", self.__retries, "until exception is raised", file=sys.stderr)
                     continue
                 else:
                     raise
     def write(self, *args, **kargs):
-        for i in xrange(self.__retries):
+        for i in range(self.__retries):
             try:
                 return file.read(self, *args, **kargs)
-            except IOError, e:            
+            except IOError as e:            
                 if e.errno == errno.EINTR:
-                    print >>sys.stderr, "A system call interruption was captured"
-                    print >>sys.stderr, "Retrying", i, "of", self.__retries, "until exception is raised"
+                    print("A system call interruption was captured", file=sys.stderr)
+                    print("Retrying", i, "of", self.__retries, "until exception is raised", file=sys.stderr)
                     continue
                 else:
                     raise
                 
-__builtin__.file = safefile
-__builtin__.raw_input = wrap(raw_input, 100)
+six.moves.builtins.file = safefile
+six.moves.builtins.raw_input = wrap(raw_input, 100)
  
 import sys
 import os
@@ -242,7 +247,7 @@ def main(args):
         for wkname in names:
             if parse_filters:
                 wfilters = {}    
-                fields = map(strip, wkname.split(","))
+                fields = list(map(strip, wkname.split(",")))
                 if len(fields) == 1:
                     wkname = fields[0]
                 else:
@@ -251,7 +256,7 @@ def main(args):
                         if f.startswith("size-range:"): # size filter
                             f = f.replace("size-range:",'')
                             try:
-                                min_size, max_size = map(int, f.split('-'))
+                                min_size, max_size = list(map(int, f.split('-')))
                                 if min_size < 0 or min_size > max_size:
                                     raise ValueError
         
@@ -262,7 +267,7 @@ def main(args):
                         elif f.startswith("seq-sim-range:"): 
                             f = f.replace("seq-sim-range:",'')
                             try:
-                                min_seq_sim, max_seq_sim  = map(float, f.split('-'))
+                                min_seq_sim, max_seq_sim  = list(map(float, f.split('-')))
                                 if min_seq_sim > 1 or min_seq_sim < 0:
                                     raise ValueError
                                 if max_seq_sim > 1 or max_seq_sim < 0:
@@ -335,7 +340,7 @@ def main(args):
         config['threading'] = {}
         
         apps_to_test = {}
-        for k, (appsrc, cores) in appset.iteritems():
+        for k, (appsrc, cores) in six.iteritems(appset):
             cores = int(cores)
             if appsrc == "built-in":
                 #cores = int(config["threading"].get(k, args.maxcores))
@@ -405,7 +410,7 @@ def main(args):
 
     arch = "64 " if sys.maxsize > 2**32 else "32"
         
-    print __DESCRIPTION__
+    print(__DESCRIPTION__)
     
     # check application binary files
     if not args.nochecks:
@@ -474,16 +479,16 @@ def main(args):
         log.log(24, "Copying previous output files to scratch directory: %s..." %base_dir)
         try:
             shutil.copytree(pjoin(GLOBALS["output_dir"], "db"), db_dir)
-        except IOError, e:
-            print e
+        except IOError as e:
+            print(e)
             pass
 
         try:
             shutil.copytree(pjoin(GLOBALS["output_dir"], "tasks/"), pjoin(base_dir, "tasks/"))
-        except IOError, e:
+        except IOError as e:
             try:
                 shutil.copy(pjoin(GLOBALS["output_dir"], "nprdata.tar.gz"), base_dir)
-            except IOError, e:
+            except IOError as e:
                 pass
             
         # try: os.system("cp -a %s/* %s/" %(GLOBALS["output_dir"],  base_dir))
@@ -568,7 +573,7 @@ def main(args):
              db.init_orthodb(GLOBALS["orthodb_file"])            
              all_species = set()
              for line in open(args.cogs_file):
-                 all_species.update(map(lambda n: n.split(args.spname_delimiter, 1)[0].strip(), line.split("\t")))
+                 all_species.update([n.split(args.spname_delimiter, 1)[0].strip() for n in line.split("\t")])
              db.update_cog_species(all_species)
              db.orthoconn.commit()
         else:
@@ -612,7 +617,7 @@ def main(args):
             sp, lineage = line.split("\t")
             sp = sp.strip()
             if sp in target_species:
-                sp2lin[sp] = map(lambda x: x.strip().lower(), lineage.split(","))
+                sp2lin[sp] = [x.strip().lower() for x in lineage.split(",")]
                 for lin in sp2lin[sp]:
                     if lin not in lin2sp:
                         all_sorted_levels.append(lin)
@@ -624,7 +629,7 @@ def main(args):
             
         # So, the following levels (with at least 2 species) could be optimized     
         avail_levels = [(lin, len(lin2sp[lin])) for lin in all_sorted_levels if len(lin2sp[lin])>=2]
-        log.log(26, "Available levels for NPR optimization:\n%s", '\n'.join(map(lambda x: "% 30s (%d spcs)"%x, avail_levels)))
+        log.log(26, "Available levels for NPR optimization:\n%s", '\n'.join(["% 30s (%d spcs)"%x for x in avail_levels]))
         avail_levels = set([lv[0] for lv in avail_levels])
         GLOBALS["lineages"] = (sp2lin, lin2sp)
     # if we miss lineages file, raise an error
@@ -666,7 +671,7 @@ def main(args):
     # This initialises all pipelines
     pending_tasks = []
     start_time = ctime()
-    for wkname, config in run2config.iteritems():
+    for wkname, config in six.iteritems(run2config):
         # Feeds pending task with the first task of the workflow
         config["_name"] = wkname
         new_tasks = pipeline(None, wkname, config)
@@ -728,7 +733,7 @@ PRAGMA locking_mode = NORMAL;
 
     template_import.flush()
     cmd = "sqlite3 %s < %s" %(GLOBALS["orthodb_file"], template_import.name)
-    print cmd
+    print(cmd)
     os.system(cmd)
     template_import.close()
     
@@ -737,16 +742,16 @@ def load_sequences(target_seqs, name2seq, workflow_type):
     if args.seq_rename:
         name2hash, hash2name = hash_names(target_seqs)
         log.log(28, "Loading %d sequence name translations..." %len(hash2name))
-        db.add_seq_name_table(hash2name.items())
+        db.add_seq_name_table(list(hash2name.items()))
         if workflow_type == "genetree":
-            GLOBALS["target_sequences"] = hash2name.keys()
+            GLOBALS["target_sequences"] = list(hash2name.keys())
     else:
         name2hash, hash2name = {}, {}
 
     for seqtype in GLOBALS["seqtypes"]:
         log.log(28, "Loading %d %s sequences..." %(len(name2seq[seqtype]), seqtype))
         db.add_seq_table([(name2hash.get(k, k), seq) for k,seq in
-                          name2seq[seqtype].iteritems()], seqtype)
+                          six.iteritems(name2seq[seqtype])], seqtype)
     db.seqconn.commit()
 
 def scan_sequences(args, target_seqs):
@@ -764,9 +769,9 @@ def scan_sequences(args, target_seqs):
         log.log(28, "Scanning %s sequence file...", seqtype)
         fix_dups = True if args.rename_dup_seqnames else False
         SEQS = SeqGroup(seqfile, fix_duplicates=fix_dups, format=args.seqformat)
-        for c1, (seqid, seq) in enumerate(SEQS.id2seq.iteritems()):
+        for c1, (seqid, seq) in enumerate(six.iteritems(SEQS.id2seq)):
             if c1%10000 == 0:
-                print >>sys.stderr, c1, "\r",
+                print(c1, "\r", end=' ', file=sys.stderr)
                 sys.stderr.flush()
 
             seqname = SEQS.id2name[seqid]
@@ -817,7 +822,7 @@ def check_seq_integrity(args, target_seqs, visited_seqs, seq2length, seq2unknown
             counter = defaultdict(int)
             for seqname in visited_seqs[source_seqtype]:
                 counter[seqname] += 1
-            duplicates = ["%s\thas %d copies" %(key, value) for key, value in counter.iteritems() if value > 1]
+            duplicates = ["%s\thas %d copies" %(key, value) for key, value in six.iteritems(counter) if value > 1]
             error += "\nDuplicate sequence names.\n"
             error += '\n'.join(duplicates)
 
@@ -833,13 +838,13 @@ def check_seq_integrity(args, target_seqs, visited_seqs, seq2length, seq2unknown
     for seqtype in GLOBALS["seqtypes"]:
         if seq2unknown[seqtype]:
             error += "\nThe following %s sequences contain unknown symbols:\n" %seqtype
-            error += '\n'.join(["%s\tcontains:\t%s" %(k,' '.join(v)) for k,v in seq2unknown[seqtype].iteritems()] )
+            error += '\n'.join(["%s\tcontains:\t%s" %(k,' '.join(v)) for k,v in six.iteritems(seq2unknown[seqtype])] )
 
     # check for aa/cds consistency
     REAL_NT = set('ACTG')
     if GLOBALS["seqtypes"] == set(["aa", "nt"]):
         inconsistent_cds = set()
-        for seqname, ntlen in seq2length["nt"].iteritems():
+        for seqname, ntlen in six.iteritems(seq2length["nt"]):
             if seqname in seq2length["aa"]:
                 aa_len = seq2length["aa"][seqname]
                 if ntlen / 3.0 != aa_len:
@@ -861,7 +866,7 @@ def check_seq_integrity(args, target_seqs, visited_seqs, seq2length, seq2unknown
             error += '\n'.join(inconsistent_cds)
 
     # Show some stats
-    all_len = seq2length[source_seqtype].values()
+    all_len = list(seq2length[source_seqtype].values())
     max_len = _max(all_len)
     min_len = _min(all_len)
     mean_len = _mean(all_len)
@@ -891,12 +896,12 @@ def hash_names(target_names):
     log.log(28, "Generating safe sequence names...")
     hash2name = defaultdict(list)
     for c1, name in enumerate(target_names):
-        print >>sys.stderr, c1, "\r",
+        print(c1, "\r", end=' ', file=sys.stderr)
         sys.stderr.flush()
         hash_name = encode_seqname(name)
         hash2name[hash_name].append(name)
 
-    collisions = [(k,v) for k,v in hash2name.iteritems() if len(v)>1]
+    collisions = [(k,v) for k,v in six.iteritems(hash2name) if len(v)>1]
     #GLOBALS["name_collisions"] = {}
     if collisions:
         visited = set(hash2name.keys())
@@ -913,15 +918,15 @@ def hash_names(target_names):
                     new_hashes[hash_name].append(name)
                 valid = set(new_hashes.keys()).isdisjoint(visited)
                 
-            log.log(20, "Fixed with %d concatenations! %s", niter, ', '.join(['%s=%s' %(e[1][0], e[0]) for e in  new_hashes.iteritems()]))
+            log.log(20, "Fixed with %d concatenations! %s", niter, ', '.join(['%s=%s' %(e[1][0], e[0]) for e in  six.iteritems(new_hashes)]))
             del hash2name[old_hash]
             hash2name.update(new_hashes)
             #GLOBALS["name_collisions"].update([(_name, _code) for _code, _name in new_hashes.iteritems()])
             logindent(-2)
     #collisions = [(k,v) for k,v in hash2name.iteritems() if len(v)>1]
     #log.log(28, "Final collisions %s", collisions )
-    hash2name = dict([(k, v[0]) for  k,v in hash2name.iteritems()])
-    name2hash = dict([(v, k) for  k,v in hash2name.iteritems()])
+    hash2name = dict([(k, v[0]) for  k,v in six.iteritems(hash2name)])
+    name2hash = dict([(v, k) for  k,v in six.iteritems(hash2name)])
     return name2hash, hash2name
 
    
@@ -932,8 +937,8 @@ def _main():
 
     if len(sys.argv) == 1:
         if not pexist(APPSPATH):
-            print >>sys.stderr, colorify('\nWARNING: external applications directory are not found at %s' %APPSPATH, "yellow")
-            print >>sys.stderr, colorify('Use "ete build install_tools" to install or upgrade', "orange")
+            print(colorify('\nWARNING: external applications directory are not found at %s' %APPSPATH, "yellow"), file=sys.stderr)
+            print(colorify('Use "ete build install_tools" to install or upgrade', "orange"), file=sys.stderr)
 
     elif len(sys.argv) > 1:
         _config_path = pjoin(NPRPATH, 'phylobuild.cfg')
@@ -941,17 +946,17 @@ def _main():
         if sys.argv[1] == "install_tools":
             import urllib
             import tarfile
-            print >>sys.stderr, colorify('Downloading latest version of tools...', "green")
+            print(colorify('Downloading latest version of tools...', "green"), file=sys.stderr)
             try:
                 os.mkdir(ETEHOMEDIR)
             except OSError: 
                 pass
             version_file = "latest.tar.gz"
             urllib.urlretrieve("https://github.com/jhcepas/ext_apps/archive/%s" %version_file, pjoin(ETEHOMEDIR, version_file))
-            print >>sys.stderr, colorify('Decompressing...', "green")
+            print(colorify('Decompressing...', "green"), file=sys.stderr)
             tfile = tarfile.open(pjoin(ETEHOMEDIR, version_file), 'r:gz')
             tfile.extractall(ETEHOMEDIR)
-            print >>sys.stderr, colorify('Compiling tools...', "green")
+            print(colorify('Compiling tools...', "green"), file=sys.stderr)
             sys.path.insert(0, APPSPATH)
             import compile_all
             s = compile_all.compile_all()
@@ -959,8 +964,8 @@ def _main():
         
         elif sys.argv[1] == "check":
             if not pexist(APPSPATH):
-                print >>sys.stderr, colorify('\nWARNING: external applications directory are not found at %s' %APPSPATH, "yellow")
-                print >>sys.stderr, colorify('Use "ete build install_tools" to install or upgrade', "orange")
+                print(colorify('\nWARNING: external applications directory are not found at %s' %APPSPATH, "yellow"), file=sys.stderr)
+                print(colorify('Use "ete build install_tools" to install or upgrade', "orange"), file=sys.stderr)
             # setup portable apps
             config = {}
             for k in apps.builtin_apps:
@@ -984,16 +989,16 @@ def _main():
                 base_config = check_config(_config_path)
                 block_detail(sys.argv[2], base_config, color=False)
             else:
-                print open(_config_path).read()
+                print(open(_config_path).read())
             sys.exit(0)
 
         elif sys.argv[1] == "validate":
-            print 'Validating configuration file ', sys.argv[2]
+            print('Validating configuration file ', sys.argv[2])
             if pexist(sys.argv[2]):
                 base_config = check_config(sys.argv[2])
-                print 'Everything ok'
+                print('Everything ok')
             else:
-                print 'File does not exist'
+                print('File does not exist')
                 sys.exit(-1)
             sys.exit(0)
 
@@ -1003,7 +1008,7 @@ def _main():
             sys.exit(0)
             
         elif sys.argv[1] == "version":
-            print __VERSION__, '(%s)' %__DATE__
+            print(__VERSION__, '(%s)' %__DATE__)
             sys.exit(0)
     
     parser = argparse.ArgumentParser(description=__DESCRIPTION__ + __EXAMPLES__,
@@ -1288,9 +1293,9 @@ def _main():
 
     args.enable_ui = False
     if not args.noimg:
-        print 'Testing ETE-NPR graphics support...'
-        print 'X11 DISPLAY = %s' %colorify(os.environ.get('DISPLAY', 'not detected!'), 'yellow')
-        print '(You can use --noimg to disable graphical capabilities)'
+        print('Testing ETE-NPR graphics support...')
+        print('X11 DISPLAY = %s' %colorify(os.environ.get('DISPLAY', 'not detected!'), 'yellow'))
+        print('(You can use --noimg to disable graphical capabilities)')
         try:
             from ete2 import Tree
             Tree().render('/tmp/etenpr_img_test.png')
@@ -1309,7 +1314,7 @@ def _main():
     
     if args.scratch_dir:
         # set paths for scratch folder for sqlite files 
-        print >>sys.stderr, "Creating temporary scratch dir..."
+        print("Creating temporary scratch dir...", file=sys.stderr)
         base_scratch_dir = os.path.abspath(args.scratch_dir)        
         scratch_dir = tempfile.mkdtemp(prefix='npr_tmp', dir=base_scratch_dir)
         GLOBALS["scratch_dir"] = scratch_dir

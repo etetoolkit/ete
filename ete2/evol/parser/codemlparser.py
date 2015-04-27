@@ -3,25 +3,25 @@
 #
 # This file is part of the Environment for Tree Exploration program
 # (ETE).  http://etetoolkit.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 # License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 
+#
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
-# 
-# ETE is distributed under the GPL copyleft license (2008-2015).  
+#
+# ETE is distributed under the GPL copyleft license (2008-2015).
 #
 # If you make use of ETE in published work, please cite:
 #
@@ -29,18 +29,23 @@
 # ETE: a python Environment for Tree Exploration. Jaime BMC
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
-# Note that extra references to the specific methods implemented in 
-# the toolkit may be available in the documentation. 
-# 
+# Note that extra references to the specific methods implemented in
+# the toolkit may be available in the documentation.
+#
 # More info at http://etetoolkit.org. Contact: huerta@embl.de
 #
-# 
+#
 # #END_LICENSE#############################################################
 #!/usr/bin/python
 """
 ugly parsers for outfiles of codeml, rst file for sites,
 and main outfile
 """
+from __future__ import absolute_import
+from __future__ import print_function
+from six.moves import map
+from six.moves import filter
+from six.moves import range
 
 __author__  = "Francois-Jose Serra"
 __email__   = "francois@barrabin.org"
@@ -97,7 +102,7 @@ def parse_rst (path):
         sites [typ].setdefault ('aa', []).append (line[1])
         # get site class probability
         probs = []
-        for i in xrange (k):
+        for i in range (k):
             probs.append (float (line[2+i]))
             sites [typ].setdefault ('p'+str(i), []).append (float (line[2+i]))
         sites [typ].setdefault ('pv', []).append (max (probs))
@@ -154,7 +159,7 @@ def divide_data (pamout, model):
                 if copy == True:
                     rstout.write(line)
             rstout.close()
-            setattr (model, 'data_' + str (num), 
+            setattr (model, 'data_' + str (num),
                      parse_paml (pamout + '_' + str(num), model))
         else:
             setattr (model, 'data_' + str (num),
@@ -203,11 +208,11 @@ def parse_paml (pamout, model):
         # codon frequency
         if line.startswith('Codon frequencies under model'):
             model.stats ['codonFreq'] = []
-            for j in xrange (16):
-                line = map (float, re.findall ('\d\.\d+', all_lines [i+j+1]))
+            for j in range (16):
+                line = list(map (float, re.findall ('\d\.\d+', all_lines [i+j+1])))
                 model.stats ['codonFreq'] += [line]
             continue
-        if not model.stats.has_key ('codonFreq'):
+        if 'codonFreq' not in model.stats:
             continue
         ######################
         # start serious staff
@@ -270,8 +275,7 @@ def _check_paml_labels (tree, paml_labels, pamout, model):
     Should not be necessary if all codeml is run through ETE.
     '''
     try:
-        relations = sorted (map (lambda x: map( int, x.split('..')),
-                                 paml_labels),
+        relations = sorted ([list(map( int, x.split('..'))) for x in paml_labels],
                             key=lambda x: x[1])
     except IndexError:
         return
@@ -286,7 +290,7 @@ def _check_paml_labels (tree, paml_labels, pamout, model):
                 break
         except IndexError:
             # if unable to find one node, relabel the whole tree
-            print rel
+            print(rel)
             warn ('ERROR: labelling does not correspond!!\n' + \
                   '       Getting them from ' + pamout)
             _get_labels_from_paml(tree, relations, pamout, model)
@@ -314,13 +318,13 @@ def _get_labels_from_paml (tree, relations, pamout, model):
     # label other internal nodes
     for node in tree.traverse(strategy='postorder'):
         if node.is_root(): continue
-        paml_id = filter (lambda x: x[1]==node.node_id, relations)[0][0]
+        paml_id = next(filter(lambda x: x[1]==node.node_id, relations))[0]
         old2new[node.up.node_id] = paml_id
         node.up.node_id = paml_id
     ### change keys in branches dict of model
     branches = copy(model.branches)
     for b in model.branches:
         model.branches[b] = branches[old2new[b]]
-                
 
-            
+
+

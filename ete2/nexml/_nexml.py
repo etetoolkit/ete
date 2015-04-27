@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -46,12 +48,14 @@
 import sys
 import getopt
 import re as re_
+import six
+from six.moves import range
 
 etree_ = None
 Verbose_import_ = False
 (   XMLParser_import_none, XMLParser_import_lxml,
     XMLParser_import_elementtree
-    ) = range(3)
+    ) = list(range(3))
 XMLParser_import_library = None
 try:
     # lxml
@@ -108,7 +112,7 @@ def parsexml_(*args, **kwargs):
 
 try:
     from generatedssuper import GeneratedsSuper
-except ImportError, exp:
+except ImportError as exp:
 
     class GeneratedsSuper(object):
         def gds_format_string(self, input_data, input_name=''):
@@ -126,7 +130,7 @@ except ImportError, exp:
             for value in values:
                 try:
                     fvalue = float(value)
-                except (TypeError, ValueError), exp:
+                except (TypeError, ValueError) as exp:
                     raise_parse_error(node, 'Requires sequence of integers')
             return input_data
         def gds_format_float(self, input_data, input_name=''):
@@ -140,7 +144,7 @@ except ImportError, exp:
             for value in values:
                 try:
                     fvalue = float(value)
-                except (TypeError, ValueError), exp:
+                except (TypeError, ValueError) as exp:
                     raise_parse_error(node, 'Requires sequence of floats')
             return input_data
         def gds_format_double(self, input_data, input_name=''):
@@ -154,7 +158,7 @@ except ImportError, exp:
             for value in values:
                 try:
                     fvalue = float(value)
-                except (TypeError, ValueError), exp:
+                except (TypeError, ValueError) as exp:
                     raise_parse_error(node, 'Requires sequence of doubles')
             return input_data
         def gds_format_boolean(self, input_data, input_name=''):
@@ -221,7 +225,7 @@ def showIndent(outfile, level):
 def quote_xml(inStr):
     if not inStr:
         return ''
-    s1 = (isinstance(inStr, basestring) and inStr or
+    s1 = (isinstance(inStr, six.string_types) and inStr or
           '%s' % inStr)
     s1 = s1.replace('&', '&amp;')
     s1 = s1.replace('<', '&lt;')
@@ -229,7 +233,7 @@ def quote_xml(inStr):
     return s1
 
 def quote_attrib(inStr):
-    s1 = (isinstance(inStr, basestring) and inStr or
+    s1 = (isinstance(inStr, six.string_types) and inStr or
           '%s' % inStr)
     s1 = s1.replace('&', '&amp;')
     s1 = s1.replace('<', '&lt;')
@@ -274,7 +278,7 @@ def find_attr_value_(attr_name, node):
     value = attrs.get(attr_name)
     if value is None:
         # Now try the other possible namespaces.
-        namespaces = node.nsmap.itervalues()
+        namespaces = six.itervalues(node.nsmap)
         for namespace in namespaces:
             value = attrs.get('{%s}%s' % (namespace, attr_name, ))
             if value is not None:
@@ -420,7 +424,7 @@ class Base(GeneratedsSuper):
         else:
             outfile.write('/>\n')
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='Base'):
-        for name, value in self.anyAttributes_.items():
+        for name, value in list(self.anyAttributes_.items()):
             xsinamespaceprefix = 'xsi'
             xsinamespace1 = 'http://www.w3.org/2001/XMLSchema-instance'
             xsinamespace2 = '{%s}' % (xsinamespace1, )
@@ -450,7 +454,7 @@ class Base(GeneratedsSuper):
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        for name, value in self.anyAttributes_.items():
+        for name, value in list(self.anyAttributes_.items()):
             showIndent(outfile, level)
             outfile.write('%s = "%s",\n' % (name, value,))
     def exportLiteralChildren(self, outfile, level, name_):
@@ -462,7 +466,7 @@ class Base(GeneratedsSuper):
             self.buildChildren(child, node, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
         self.anyAttributes_ = {}
-        for name, value in attrs.items():
+        for name, value in list(attrs.items()):
             if name not in already_processed:
                 self.anyAttributes_[name] = value
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
@@ -793,7 +797,7 @@ class attrExtensions(GeneratedsSuper):
         else:
             outfile.write('/>\n')
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='attrExtensions'):
-        for name, value in self.anyAttributes_.items():
+        for name, value in list(self.anyAttributes_.items()):
             xsinamespaceprefix = 'xsi'
             xsinamespace1 = 'http://www.w3.org/2001/XMLSchema-instance'
             xsinamespace2 = '{%s}' % (xsinamespace1, )
@@ -823,7 +827,7 @@ class attrExtensions(GeneratedsSuper):
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        for name, value in self.anyAttributes_.items():
+        for name, value in list(self.anyAttributes_.items()):
             showIndent(outfile, level)
             outfile.write('%s = "%s",\n' % (name, value,))
     def exportLiteralChildren(self, outfile, level, name_):
@@ -835,7 +839,7 @@ class attrExtensions(GeneratedsSuper):
             self.buildChildren(child, node, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
         self.anyAttributes_ = {}
-        for name, value in attrs.items():
+        for name, value in list(attrs.items()):
             if name not in already_processed:
                 self.anyAttributes_[name] = value
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
@@ -1418,7 +1422,7 @@ class Nexml(Annotated):
             already_processed.append('version')
             try:
                 self.version = float(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise ValueError('Bad float/double attribute (version): %s' % exp)
             self.validate_Nexml1_0(self.version)    # validate type Nexml1_0
         value = find_attr_value_('generator', node)
@@ -4241,7 +4245,7 @@ class ContinuousObs(AbstractObs):
             already_processed.append('state')
             try:
                 self.state = float(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise ValueError('Bad float/double attribute (state): %s' % exp)
             self.validate_ContinuousToken(self.state)    # validate type ContinuousToken
         super(ContinuousObs, self).buildAttributes(node, attrs, already_processed)
@@ -5709,7 +5713,7 @@ class TreeIntRootEdge(AbstractRootEdge):
             already_processed.append('length')
             try:
                 self.length = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
         super(TreeIntRootEdge, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
@@ -5820,7 +5824,7 @@ class TreeIntEdge(AbstractEdge):
             already_processed.append('length')
             try:
                 self.length = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
         super(TreeIntEdge, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
@@ -5931,7 +5935,7 @@ class TreeFloatRootEdge(AbstractRootEdge):
             already_processed.append('length')
             try:
                 self.length = float(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise ValueError('Bad float/double attribute (length): %s' % exp)
         super(TreeFloatRootEdge, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
@@ -6042,7 +6046,7 @@ class TreeFloatEdge(AbstractEdge):
             already_processed.append('length')
             try:
                 self.length = float(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise ValueError('Bad float/double attribute (length): %s' % exp)
         super(TreeFloatEdge, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
@@ -6780,7 +6784,7 @@ class AbstractChar(IDTagged):
             already_processed.append('tokens')
             try:
                 self.tokens = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             if self.tokens <= 0:
                 raise_parse_error(node, 'Invalid PositiveInteger')
@@ -6794,7 +6798,7 @@ class AbstractChar(IDTagged):
             already_processed.append('codon')
             try:
                 self.codon = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             if self.codon < 0:
                 raise_parse_error(node, 'Invalid NonNegativeInteger')
@@ -7209,7 +7213,7 @@ class ContinuousChar(AbstractChar):
             already_processed.append('tokens')
             try:
                 self.tokens = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             if self.tokens <= 0:
                 raise_parse_error(node, 'Invalid PositiveInteger')
@@ -7219,7 +7223,7 @@ class ContinuousChar(AbstractChar):
             already_processed.append('codon')
             try:
                 self.codon = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             if self.codon < 0:
                 raise_parse_error(node, 'Invalid NonNegativeInteger')
@@ -7891,7 +7895,7 @@ class NetworkIntEdge(AbstractEdge):
             already_processed.append('length')
             try:
                 self.length = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
         super(NetworkIntEdge, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
@@ -8002,7 +8006,7 @@ class NetworkFloatEdge(AbstractEdge):
             already_processed.append('length')
             try:
                 self.length = float(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise ValueError('Bad float/double attribute (length): %s' % exp)
         super(NetworkFloatEdge, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
@@ -8493,7 +8497,7 @@ class StandardChar(AbstractChar):
             already_processed.append('tokens')
             try:
                 self.tokens = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             if self.tokens <= 0:
                 raise_parse_error(node, 'Invalid PositiveInteger')
@@ -8507,7 +8511,7 @@ class StandardChar(AbstractChar):
             already_processed.append('codon')
             try:
                 self.codon = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             if self.codon < 0:
                 raise_parse_error(node, 'Invalid NonNegativeInteger')
@@ -8832,7 +8836,7 @@ class StandardState(AbstractState):
             already_processed.append('symbol')
             try:
                 self.symbol = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             self.validate_StandardToken(self.symbol)    # validate type StandardToken
         super(StandardState, self).buildAttributes(node, attrs, already_processed)
@@ -8981,7 +8985,7 @@ class RNAChar(AbstractChar):
             already_processed.append('tokens')
             try:
                 self.tokens = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             if self.tokens <= 0:
                 raise_parse_error(node, 'Invalid PositiveInteger')
@@ -8995,7 +8999,7 @@ class RNAChar(AbstractChar):
             already_processed.append('codon')
             try:
                 self.codon = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             if self.codon < 0:
                 raise_parse_error(node, 'Invalid NonNegativeInteger')
@@ -9430,7 +9434,7 @@ class RestrictionChar(AbstractChar):
             already_processed.append('tokens')
             try:
                 self.tokens = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             if self.tokens <= 0:
                 raise_parse_error(node, 'Invalid PositiveInteger')
@@ -9444,7 +9448,7 @@ class RestrictionChar(AbstractChar):
             already_processed.append('codon')
             try:
                 self.codon = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             if self.codon < 0:
                 raise_parse_error(node, 'Invalid NonNegativeInteger')
@@ -9693,7 +9697,7 @@ class RestrictionState(AbstractState):
             already_processed.append('symbol')
             try:
                 self.symbol = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             self.validate_RestrictionToken(self.symbol)    # validate type RestrictionToken
         super(RestrictionState, self).buildAttributes(node, attrs, already_processed)
@@ -10105,7 +10109,7 @@ class AAChar(AbstractChar):
             already_processed.append('tokens')
             try:
                 self.tokens = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             if self.tokens <= 0:
                 raise_parse_error(node, 'Invalid PositiveInteger')
@@ -10119,7 +10123,7 @@ class AAChar(AbstractChar):
             already_processed.append('codon')
             try:
                 self.codon = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             if self.codon < 0:
                 raise_parse_error(node, 'Invalid NonNegativeInteger')
@@ -10273,7 +10277,7 @@ class DNAChar(AbstractChar):
             already_processed.append('tokens')
             try:
                 self.tokens = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             if self.tokens <= 0:
                 raise_parse_error(node, 'Invalid PositiveInteger')
@@ -10287,7 +10291,7 @@ class DNAChar(AbstractChar):
             already_processed.append('codon')
             try:
                 self.codon = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             if self.codon < 0:
                 raise_parse_error(node, 'Invalid NonNegativeInteger')
@@ -15940,7 +15944,7 @@ Usage: python <Parser>.py [ -s ] <in_xml_file>
 """
 
 def usage():
-    print USAGE_TEXT
+    print(USAGE_TEXT)
     sys.exit(1)
 
 

@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -45,14 +47,14 @@ from sys import stderr
 from PyQt4.QtGui import *
 from PyQt4 import QtCore
 
-from svg_colors import SVG_COLORS, COLOR_SCHEMES
+from .svg_colors import SVG_COLORS, COLOR_SCHEMES
 
 import time
 def tracktime(f):
     def a_wrapper_accepting_arguments(*args, **kargs):
         t1 = time.time()
         r = f(*args, **kargs)
-        print "                         -> TIME:", f.func_name, time.time() - t1
+        print("                         -> TIME:", f.__name__, time.time() - t1)
         return r
     return a_wrapper_accepting_arguments
 
@@ -219,22 +221,22 @@ class NodeStyle(dict):
     def __setitem__(self, i, v):
         # keeps compatible with ETE 2.0 version
         if i == "line_type":
-            print >>stderr, "WARNING: [%s] keyword is deprecated and it has been replaced by %s." %\
-                (i, "[hz_line_type, vt_line_type]")
-            print >>stderr, "WARNING: Support for this keyword will be removed in next ETE versions."
+            print("WARNING: [%s] keyword is deprecated and it has been replaced by %s." %\
+                (i, "[hz_line_type, vt_line_type]"), file=stderr)
+            print("WARNING: Support for this keyword will be removed in next ETE versions.", file=stderr)
             super(NodeStyle, self).__setitem__("hz_line_type", v)
             i = "vt_line_type"
 
         if i == "vlwidth":
             i = "vt_line_width"
-            print >>stderr, "WARNING: [%s] keyword is deprecated and it has been replaced by %s." %\
-                (i, "[vt_line_width]")
-            print >>stderr, "WARNING: Support for this keyword will be removed in next ETE versions."
+            print("WARNING: [%s] keyword is deprecated and it has been replaced by %s." %\
+                (i, "[vt_line_width]"), file=stderr)
+            print("WARNING: Support for this keyword will be removed in next ETE versions.", file=stderr)
         if i == "hlwidth":
             i = "hz_line_width"
-            print >>stderr, "WARNING: [%s] keyword is deprecated and it has been replaced by %s." %\
-                (i, "[hz_line_width]")
-            print >>stderr, "WARNING: Support for this keyword will be removed in next ETE versions."
+            print("WARNING: [%s] keyword is deprecated and it has been replaced by %s." %\
+                (i, "[hz_line_width]"), file=stderr)
+            print("WARNING: Support for this keyword will be removed in next ETE versions.", file=stderr)
       
         if i not in VALID_NODE_STYLE_KEYS:
             raise ValueError("'%s' is not a valid keyword for a NodeStyle instance" %i)
@@ -404,11 +406,11 @@ class TreeStyle(object):
             if (type(ly) == types.FunctionType or type(ly) == types.MethodType or ly is None):
                 self._layout_handler.append(ly)
             else:
-                import layouts 
+                from . import layouts 
                 try:
                     self._layout_handler.append(getattr(layouts, ly))
-                except Exception, e:
-                    print e
+                except Exception as e:
+                    print(e)
                     raise ValueError ("Required layout is not a function pointer nor a valid layout name.")
  
     def get_layout_fn(self):
@@ -692,7 +694,7 @@ def save(scene, imgName, w=None, h=None, dpi=90,\
         pp.end()
         if imgName == '%%return':
             compatible_code = str(ba)
-            print 'from memory'
+            print('from memory')
         else:
             compatible_code = open(imgName).read()
         # Fix a very annoying problem with Radial gradients in

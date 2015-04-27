@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -48,7 +49,11 @@ from PyQt4.QtCore import Qt,  QPointF, QRect, QRectF
 
 
 import math
-from main import add_face_to_node, _Background, _Border, COLOR_SCHEMES
+from .main import add_face_to_node, _Background, _Border, COLOR_SCHEMES
+import six
+from six.moves import map
+from six.moves import range
+from six.moves import zip
 
 try:
     from numpy import isfinite as _isfinite, ceil
@@ -444,14 +449,14 @@ class ProfileFace(Face):
         colors = []
         if self.colorscheme == 0:
             # Blue and Green
-            for a in xrange(100,0,-1):
+            for a in range(100,0,-1):
                 color=QColor()
                 color.setRgb( 200-2*a,255,200-2*a )
                 colors.append(color)
 
             colors.append(QColor("white"))
 
-            for a in xrange(0,100):
+            for a in range(0,100):
                 color=QColor()
                 color.setRgb( 200-2*a,200-2*a,255 )
                 colors.append(color)
@@ -460,14 +465,14 @@ class ProfileFace(Face):
 #            colors.append(color)
 
         elif self.colorscheme == 1:
-            for a in xrange(100,0,-1):
+            for a in range(100,0,-1):
                 color=QColor()
                 color.setRgb( 200-2*a,255,200-2*a )
                 colors.append(color)
 
             colors.append(QColor("white"))
 
-            for a in xrange(0,100):
+            for a in range(0,100):
                 color=QColor()
                 color.setRgb( 255,200-2*a,200-2*a )
                 colors.append(color)
@@ -477,14 +482,14 @@ class ProfileFace(Face):
 
         else:
             # Blue and Red
-            for a in xrange(100,0,-1):
+            for a in range(100,0,-1):
                 color=QColor()
                 color.setRgb( 200-2*a,200-2*a,255 )
                 colors.append(color)
 
             colors.append(QColor("white"))
 
-            for a in xrange(0,100):
+            for a in range(0,100):
                 color=QColor()
                 color.setRgb( 255,200-2*a,200-2*a )
                 colors.append(color)
@@ -544,7 +549,7 @@ class ProfileFace(Face):
 
 
         # Draw bars
-        for pos in xrange(vlength):
+        for pos in range(vlength):
             # first and second X pixel positions
             x1 = x2
             x2 = x1 + x_alpha
@@ -634,7 +639,7 @@ class ProfileFace(Face):
 
 
         # Draw bars
-        for pos in xrange(vlength):
+        for pos in range(vlength):
             # first and second X pixel positions
             x1 = x2
             x2 = x1 + x_alpha
@@ -738,7 +743,7 @@ class ProfileFace(Face):
         p.drawLine(x2+1, line3_y, profile_width-2, line3_y )
 
         # Draw lines
-        for pos in xrange(0,vlength-1):
+        for pos in range(0,vlength-1):
             dev1 =  self.fit_to_scale(mean_vector[pos] + deviation_vector[pos])
             dev2 =  self.fit_to_scale(mean_vector[pos+1] + deviation_vector[pos+1])
             mean1 = self.fit_to_scale(mean_vector[pos])
@@ -806,7 +811,7 @@ class ProfileFace(Face):
             mean_vector = leaf.profile
             deviation_vector = leaf.deviation
             # Draw heatmap
-            for pos in xrange(vlength):
+            for pos in range(vlength):
                 # first and second X pixel positions
                 x1 = x2
                 x2 = x1 + x_alpha
@@ -934,7 +939,7 @@ class TreeFace(Face):
         self.item = None
 
     def update_items(self):
-        from qt4_render import render, init_tree_style
+        from .qt4_render import render, init_tree_style
         ts = init_tree_style(self.root_node, self.img)
         hide_root = False
         if self.root_node is self.node:
@@ -1380,7 +1385,7 @@ class _BarChartItem(QGraphicsRectItem):
             p.drawLine(x+1, line3_y, real_width - 2, line3_y )
 
         # Draw bars
-        for pos in xrange(len(values)):
+        for pos in range(len(values)):
             # first and second X pixel positions
             x1 = x
             x = x1 + x_alpha + spacer
@@ -1716,7 +1721,7 @@ class SeqMotifFace(StaticItemFace):
             # this loop corrects x-positions for overlaping motifs and takes
             # into account the different scales used for different motif types,
             # i.e. seq
-            for (old_start, old_end), correction in seq_x_correction.iteritems():
+            for (old_start, old_end), correction in six.iteritems(seq_x_correction):
                 seq_range = None
                 if seq_start > old_start:
                     seq_range = min(old_end, seq_start) - old_start
@@ -1876,7 +1881,7 @@ class SequencePlotFace(StaticItemFace):
         elif kind == 'curve':
             self.draw_fun = self.draw_curve
         else:
-            raise('kind %s not yet implemented... ;)'%kind)
+            raise 'kind %s not yet implemented... ;)'
 
         self.hlines = [float(h) for h in hlines] if hlines else [1.0]
         self.hlines_col = hlines_col if hlines_col else ['black']*len(self.hlines)
@@ -1954,7 +1959,7 @@ class SequencePlotFace(StaticItemFace):
                                            parent=self.item)
         lineItem.setPen(QPen(QColor('black')))
         lineItem.setZValue(10)
-        all_vals = range(0, len(self.values), 5)
+        all_vals = list(range(0, len(self.values), 5))
         if (len(self.values)-1)%5:
             all_vals += [len(self.values)-1]
         for x in all_vals:

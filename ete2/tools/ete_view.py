@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -36,8 +38,9 @@
 #
 # 
 # #END_LICENSE#############################################################
-from common import log, POSNAMES, node_matcher
+from .common import log, POSNAMES, node_matcher
 from string import strip
+from six.moves import map
 
 DESC = ""
 FACES = []
@@ -202,8 +205,8 @@ def run(args):
             else:
                 t = Tree(tfile)
             
-            print t.get_ascii(show_internal=args.show_internal_names,
-                              attributes=args.show_attributes)
+            print(t.get_ascii(show_internal=args.show_internal_names,
+                              attributes=args.show_attributes))
         return
         
     import random
@@ -286,7 +289,7 @@ def run(args):
                 def rgb2hex(rgb):
                     return '#%02x%02x%02x' % rgb
                 def hls2hex(h, l, s):
-                    return rgb2hex( tuple(map(lambda x: int(x*255), colorsys.hls_to_rgb(h, l, s))))
+                    return rgb2hex( tuple([int(x*255) for x in colorsys.hls_to_rgb(h, l, s)]))
 
                 lightness = 1 - (value * BASE_LIGHTNESS) / max_value
                 return hls2hex(hue, lightness, DEFAULT_COLOR_SATURATION)
@@ -303,7 +306,7 @@ def run(args):
                     fields = line.split('\t')
                     name = fields[0].strip()
 
-                    values = map(lambda x: float(x) if x else None, fields[1:])
+                    values = [float(x) if x else None for x in fields[1:]]
 
                     maxv = max(values)
                     minv = min(values)
@@ -515,14 +518,14 @@ def parse_faces(face_args):
         }
 
         for clause in map(strip,fargs.split(',')):
-            key, value = map(strip, clause.split(":"))
+            key, value = list(map(strip, clause.split(":")))
             key = key.lower()
             if key == "if":
                 m = re.search("([^=><~!]+)(>=|<=|!=|~=|=|>|<)([^=><~!]+)", value)
                 if not m:
                     raise ValueError("Invalid syntaxis in 'if' clause: %s" %clause)
                 else:
-                    target, op, value = map(strip, m.groups())
+                    target, op, value = list(map(strip, m.groups()))
                     target = target.lstrip('@')
                     try:
                         value = float(value)                        
@@ -556,7 +559,7 @@ def parse_faces(face_args):
                 face[key] = value                
             elif key == "format":
                 if "%" not in value:
-                    print value
+                    print(value)
                     raise ValueError("format attribute should contain one format char: ie. %%s [%s]" %clause)
                 face[key] = value.strip("\"")                
             elif key in face:

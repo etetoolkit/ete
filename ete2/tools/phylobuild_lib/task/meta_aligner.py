@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -48,7 +49,7 @@ from ete2.tools.phylobuild_lib.utils import (SeqGroup, OrderedDict, checksum, pj
 from ete2.tools.phylobuild_lib.apps import APP2CLASS, CLASS2MODULE
 from ete2.tools.phylobuild_lib import db
 
-import __init__ as task
+from . import __init__ as task
 
 __all__ = ["MetaAligner"]
 

@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -41,7 +43,8 @@ import os
 import time
 import cgi
 from hashlib import md5
-import cPickle
+import six.moves.cPickle
+from six.moves import map
 
 ALL = ["WebTreeApplication"]
 
@@ -171,8 +174,8 @@ class WebTreeApplication(object):
     def _load_tree_from_path(self, pkl_path):
         tree_path = os.path.join(self.CONFIG["temp_dir"], pkl_path)
         if os.path.exists(tree_path):
-            print cPickle.load(open(tree_path))
-            t = self._treeid2tree[treeid] = cPickle.load(open(tree_path))
+            print(six.moves.cPickle.load(open(tree_path)))
+            t = self._treeid2tree[treeid] = six.moves.cPickle.load(open(tree_path))
             self._load_tree_index(treeid)
             return True
         else:
@@ -191,7 +194,7 @@ class WebTreeApplication(object):
 
     def _dump_tree_to_file(self, t, treeid):
         tree_path = os.path.join(self.CONFIG["temp_dir"], treeid+".pkl")
-        cPickle.dump(t, open(tree_path, "w"))
+        six.moves.cPickle.dump(t, open(tree_path, "w"))
         #open(tree_path, "w").write(t.write(features=[]))
 
     def _get_tree_img(self, treeid, pre_drawing_action=None):
@@ -334,7 +337,7 @@ class WebTreeApplication(object):
         elif self._external_app_handler:
             return self._external_app_handler(environ, start_response, self.queries)
         else:
-            return  '\n'.join(map(str, environ.items())) + str(self.queries) + '\t\n'.join(environ['wsgi.input'])
+            return  '\n'.join(map(str, list(environ.items()))) + str(self.queries) + '\t\n'.join(environ['wsgi.input'])
 
 def _render_tree(t, img_path, display, layout=None, tree_style=None, 
                  w=None, h=None, units="px"):

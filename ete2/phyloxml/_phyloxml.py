@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -46,12 +48,14 @@
 import sys
 import getopt
 import re as re_
+import six
+from six.moves import range
 
 etree_ = None
 Verbose_import_ = False
 (   XMLParser_import_none, XMLParser_import_lxml,
     XMLParser_import_elementtree
-    ) = range(3)
+    ) = list(range(3))
 XMLParser_import_library = None
 try:
     # lxml
@@ -108,7 +112,7 @@ def parsexml_(*args, **kwargs):
 
 try:
     from generatedssuper import GeneratedsSuper
-except ImportError, exp:
+except ImportError as exp:
 
     class GeneratedsSuper(object):
         def gds_format_string(self, input_data, input_name=''):
@@ -126,7 +130,7 @@ except ImportError, exp:
             for value in values:
                 try:
                     fvalue = float(value)
-                except (TypeError, ValueError), exp:
+                except (TypeError, ValueError) as exp:
                     raise_parse_error(node, 'Requires sequence of integers')
             return input_data
         def gds_format_float(self, input_data, input_name=''):
@@ -140,7 +144,7 @@ except ImportError, exp:
             for value in values:
                 try:
                     fvalue = float(value)
-                except (TypeError, ValueError), exp:
+                except (TypeError, ValueError) as exp:
                     raise_parse_error(node, 'Requires sequence of floats')
             return input_data
         def gds_format_double(self, input_data, input_name=''):
@@ -154,7 +158,7 @@ except ImportError, exp:
             for value in values:
                 try:
                     fvalue = float(value)
-                except (TypeError, ValueError), exp:
+                except (TypeError, ValueError) as exp:
                     raise_parse_error(node, 'Requires sequence of doubles')
             return input_data
         def gds_format_boolean(self, input_data, input_name=''):
@@ -221,7 +225,7 @@ def showIndent(outfile, level):
 def quote_xml(inStr):
     if not inStr:
         return ''
-    s1 = (isinstance(inStr, basestring) and inStr or
+    s1 = (isinstance(inStr, six.string_types) and inStr or
           '%s' % inStr)
     s1 = s1.replace('&', '&amp;')
     s1 = s1.replace('<', '&lt;')
@@ -229,7 +233,7 @@ def quote_xml(inStr):
     return s1
 
 def quote_attrib(inStr):
-    s1 = (isinstance(inStr, basestring) and inStr or
+    s1 = (isinstance(inStr, six.string_types) and inStr or
           '%s' % inStr)
     s1 = s1.replace('&', '&amp;')
     s1 = s1.replace('<', '&lt;')
@@ -274,7 +278,7 @@ def find_attr_value_(attr_name, node):
     value = attrs.get(attr_name)
     if value is None:
         # Now try the other possible namespaces.
-        namespaces = node.nsmap.itervalues()
+        namespaces = six.itervalues(node.nsmap)
         for namespace in namespaces:
             value = attrs.get('{%s}%s' % (namespace, attr_name, ))
             if value is not None:
@@ -1123,7 +1127,7 @@ class Clade(GeneratedsSuper):
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             fval_ = self.gds_validate_float(fval_, node, 'branch_length')
             self.branch_length = fval_
@@ -1135,7 +1139,7 @@ class Clade(GeneratedsSuper):
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             fval_ = self.gds_validate_float(fval_, node, 'width')
             self.width = fval_
@@ -1889,7 +1893,7 @@ class DomainArchitecture(GeneratedsSuper):
             already_processed.append('length')
             try:
                 self.length = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             if self.length < 0:
                 raise_parse_error(node, 'Invalid NonNegativeInteger')
@@ -2001,7 +2005,7 @@ class ProteinDomain(GeneratedsSuper):
             already_processed.append('to')
             try:
                 self.to = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             if self.to < 0:
                 raise_parse_error(node, 'Invalid NonNegativeInteger')
@@ -2010,14 +2014,14 @@ class ProteinDomain(GeneratedsSuper):
             already_processed.append('confidence')
             try:
                 self.confidence = float(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise ValueError('Bad float/double attribute (confidence): %s' % exp)
         value = find_attr_value_('from', node)
         if value is not None and 'from' not in already_processed:
             already_processed.append('from')
             try:
                 self.fromxx = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             if self.fromxx < 0:
                 raise_parse_error(node, 'Invalid NonNegativeInteger')
@@ -2144,7 +2148,7 @@ class Events(GeneratedsSuper):
             sval_ = child_.text
             try:
                 ival_ = int(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires integer: %s' % exp)
             if ival_ < 0:
                 raise_parse_error(child_, 'requires nonNegativeInteger')
@@ -2154,7 +2158,7 @@ class Events(GeneratedsSuper):
             sval_ = child_.text
             try:
                 ival_ = int(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires integer: %s' % exp)
             if ival_ < 0:
                 raise_parse_error(child_, 'requires nonNegativeInteger')
@@ -2164,7 +2168,7 @@ class Events(GeneratedsSuper):
             sval_ = child_.text
             try:
                 ival_ = int(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires integer: %s' % exp)
             if ival_ < 0:
                 raise_parse_error(child_, 'requires nonNegativeInteger')
@@ -2325,7 +2329,7 @@ class BinaryCharacters(GeneratedsSuper):
             already_processed.append('lost_count')
             try:
                 self.lost_count = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             if self.lost_count < 0:
                 raise_parse_error(node, 'Invalid NonNegativeInteger')
@@ -2334,7 +2338,7 @@ class BinaryCharacters(GeneratedsSuper):
             already_processed.append('absent_count')
             try:
                 self.absent_count = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             if self.absent_count < 0:
                 raise_parse_error(node, 'Invalid NonNegativeInteger')
@@ -2343,7 +2347,7 @@ class BinaryCharacters(GeneratedsSuper):
             already_processed.append('present_count')
             try:
                 self.present_count = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             if self.present_count < 0:
                 raise_parse_error(node, 'Invalid NonNegativeInteger')
@@ -2357,7 +2361,7 @@ class BinaryCharacters(GeneratedsSuper):
             already_processed.append('gained_count')
             try:
                 self.gained_count = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             if self.gained_count < 0:
                 raise_parse_error(node, 'Invalid NonNegativeInteger')
@@ -3260,7 +3264,7 @@ class Point(GeneratedsSuper):
         self.geodetic_datum = _cast(None, geodetic_datum)
         self.alt_unit = _cast(None, alt_unit)
         self.lat = lat
-        self.long = long
+        self.long = int
         self.alt = alt
     def factory(*args_, **kwargs_):
         if Point.subclass:
@@ -3271,7 +3275,7 @@ class Point(GeneratedsSuper):
     def get_lat(self): return self.lat
     def set_lat(self, lat): self.lat = lat
     def get_long(self): return self.long
-    def set_long(self, long): self.long = long
+    def set_long(self, long): self.long = int
     def get_alt(self): return self.alt
     def set_alt(self, alt): self.alt = alt
     def get_geodetic_datum(self): return self.geodetic_datum
@@ -3361,7 +3365,7 @@ class Point(GeneratedsSuper):
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             fval_ = self.gds_validate_float(fval_, node, 'lat')
             self.lat = fval_
@@ -3369,7 +3373,7 @@ class Point(GeneratedsSuper):
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             fval_ = self.gds_validate_float(fval_, node, 'long')
             self.long = fval_
@@ -3377,7 +3381,7 @@ class Point(GeneratedsSuper):
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             fval_ = self.gds_validate_float(fval_, node, 'alt')
             self.alt = fval_
@@ -3578,7 +3582,7 @@ class Date(GeneratedsSuper):
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             fval_ = self.gds_validate_float(fval_, node, 'value')
             self.value = fval_
@@ -3586,7 +3590,7 @@ class Date(GeneratedsSuper):
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             fval_ = self.gds_validate_float(fval_, node, 'minimum')
             self.minimum = fval_
@@ -3594,7 +3598,7 @@ class Date(GeneratedsSuper):
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             fval_ = self.gds_validate_float(fval_, node, 'maximum')
             self.maximum = fval_
@@ -3685,7 +3689,7 @@ class BranchColor(GeneratedsSuper):
             sval_ = child_.text
             try:
                 ival_ = int(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires integer: %s' % exp)
             ival_ = self.gds_validate_integer(ival_, node, 'red')
             self.red = ival_
@@ -3693,7 +3697,7 @@ class BranchColor(GeneratedsSuper):
             sval_ = child_.text
             try:
                 ival_ = int(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires integer: %s' % exp)
             ival_ = self.gds_validate_integer(ival_, node, 'green')
             self.green = ival_
@@ -3701,7 +3705,7 @@ class BranchColor(GeneratedsSuper):
             sval_ = child_.text
             try:
                 ival_ = int(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires integer: %s' % exp)
             ival_ = self.gds_validate_integer(ival_, node, 'blue')
             self.blue = ival_
@@ -3823,7 +3827,7 @@ class SequenceRelation(GeneratedsSuper):
             already_processed.append('distance')
             try:
                 self.distance = float(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise ValueError('Bad float/double attribute (distance): %s' % exp)
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'confidence':
@@ -3949,7 +3953,7 @@ class CladeRelation(GeneratedsSuper):
             already_processed.append('distance')
             try:
                 self.distance = float(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise ValueError('Bad float/double attribute (distance): %s' % exp)
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'confidence':
@@ -3964,7 +3968,7 @@ Usage: python <Parser>.py [ -s ] <in_xml_file>
 """
 
 def usage():
-    print USAGE_TEXT
+    print(USAGE_TEXT)
     sys.exit(1)
 
 

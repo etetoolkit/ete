@@ -3,25 +3,25 @@
 #
 # This file is part of the Environment for Tree Exploration program
 # (ETE).  http://etetoolkit.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 # License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 
+#
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
-# 
-# ETE is distributed under the GPL copyleft license (2008-2015).  
+#
+# ETE is distributed under the GPL copyleft license (2008-2015).
 #
 # If you make use of ETE in published work, please cite:
 #
@@ -29,18 +29,21 @@
 # ETE: a python Environment for Tree Exploration. Jaime BMC
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
-# Note that extra references to the specific methods implemented in 
-# the toolkit may be available in the documentation. 
-# 
+# Note that extra references to the specific methods implemented in
+# the toolkit may be available in the documentation.
+#
 # More info at http://etetoolkit.org. Contact: huerta@embl.de
 #
-# 
+#
 # #END_LICENSE#############################################################
 #!/usr/bin/python
 """
 this module defines the evolutionary Model that can be linked
 to phylogeny, and computed by one of codeml, gerp, slr.
 """
+from __future__ import absolute_import
+import six
+from six.moves import range
 
 __author__  = "Francois-Jose Serra"
 __email__   = "francois@barrabin.org"
@@ -69,10 +72,10 @@ class Model:
      * sites   : values at each site.
      * classes : classes of sites and proportions
      * stats   : lnL number of parameters kappa value and codon frequencies stored here.
-    
+
     available models are:
         =========== ============================= ==================
-        Model name  Description                   Model kind       
+        Model name  Description                   Model kind
         =========== ============================= ==================\n%s
         =========== ============================= ==================\n
 
@@ -89,11 +92,11 @@ class Model:
         self.branches   = {}
         self.stats      = {}
         self.properties = {}
-        for a, b in args.items():
+        for a, b in list(args.items()):
             self.properties [a] = b
-        params = dict(PARAMS.items())
-        for key, arg in kwargs.items():
-            if not params.has_key(key):
+        params = dict(list(PARAMS.items()))
+        for key, arg in list(kwargs.items()):
+            if key not in params:
                 warn('WARNING: unknown param %s, can cause problems...'% (key))
             if key == 'gappy':
                 arg = not arg
@@ -110,7 +113,7 @@ class Model:
         str_mark = ''
         str_line = '\n        mark:%-5s, omega: %-10s, node_ids: %-4s, name: %s'
         for i, node in enumerate(self._tree.traverse()):
-            if node.is_root(): 
+            if node.is_root():
                 str_mark += str_line % (self.branches[node.node_id]['mark'],
                                         'None',
                                         node.node_id, node.name or 'ROOT')
@@ -136,7 +139,7 @@ class Model:
         ''' % (self.name,
                self.lnL if 'lnL' in self.stats else 'None',
                self.np  if 'np'  in self.stats else 'None',
-               ', '.join(self.sites.keys())  if self.sites else 'None',
+               ', '.join(list(self.sites.keys()))  if self.sites else 'None',
                str_site if self.classes else 'None',
                str_mark if self.branches else 'None'
            )
@@ -156,7 +159,7 @@ class Model:
                 self.branches[node.node_id] = {'mark': ' #'+str(i)}
             else:
                 self.branches[node.node_id] = {'mark': ''}
-        
+
     def _load(self, path):
         '''
         parse outfiles and load in model object
@@ -166,18 +169,18 @@ class Model:
             # parse rst file if site or branch-site model
             if 'site' in self.properties['typ']:
                 # sites and classes attr
-                for key, val in parse_rst(path).iteritems():
+                for key, val in six.iteritems(parse_rst(path)):
                     setattr(self, key, val)
             if 'ancestor' in self.properties['typ']:
                 get_ancestor(path, self)
             vars(self) ['lnL'] = self.stats ['lnL']
             vars(self) ['np']  = self.stats ['np']
         elif self.properties['exec'] == 'Slr':
-            for key, val in parse_slr (path).iteritems():
+            for key, val in six.iteritems(parse_slr (path)):
                 setattr (self, key, val)
             vars(self) ['lnL'] = 0
             vars(self) ['np']  = 0
-            
+
     def _change_params(self, params):
         '''
         change model specific values
@@ -185,7 +188,7 @@ class Model:
         for key, change in self.properties ['changes']:
             params[key] = change
         self.properties ['params'] = params
-        
+
     def set_histface(self, up=True, hlines=(1.0, 0.3), kind='bar',
                       errors=False, colors=None, **kwargs):
         '''
@@ -209,9 +212,9 @@ class Model:
         if not 'header' in kwargs:
             kwargs['header'] = 'Omega value for sites under %s model' % \
                                (self.name)
-        if self.sites.has_key('BEB'):
+        if 'BEB' in self.sites:
             val = 'BEB'
-        elif self.sites.has_key('NEB'):
+        elif 'NEB' in self.sites:
             val = 'NEB'
         else:
             val = 'SLR'
@@ -220,7 +223,7 @@ class Model:
         if not 'ylim' in kwargs:
             kwargs['ylim'] = (0, 2)
         if errors:
-            errors = self.sites[val]['se'] if self.sites[val].has_key('se')\
+            errors = self.sites[val]['se'] if 'se' in self.sites[val]\
                      else None
         if TREEVIEW:
             hist = SequencePlotFace(self.sites[val]['w'], hlines=hlines,
@@ -235,7 +238,7 @@ class Model:
             hist = None
         self.properties['histface'] = hist
 
-            
+
     def get_ctrl_string(self, outfile=None):
         '''
         generate ctrl string to write to a file, if file is given,
@@ -244,10 +247,10 @@ class Model:
         :argument None outfile: if a path is given here, write control string into it.
 
         :returns: the control string
-        
+
         '''
         string = ''
-        if self.properties.has_key('sep'):
+        if 'sep' in self.properties:
             sep = self.properties ['sep']
         else:
             sep = ' = '
@@ -255,7 +258,7 @@ class Model:
             string += '%15s%s%s\n' % (prm, sep,
                                       str(self.properties['params'][prm]))
         string += '\n'
-        for prm in sorted(self.properties ['params'].keys(), cmp=lambda x, y: \
+        for prm in sorted(list(self.properties ['params'].keys()), cmp=lambda x, y: \
                           cmp(sub('fix_', '', x.lower()),
                               sub('fix_', '', y.lower()))):
             if prm in ['seqfile', 'treefile', 'outfile']:
@@ -276,7 +279,7 @@ def check_name(model):
     '''
     check that model name corresponds to one of the available
     '''
-    if AVAIL.has_key(sub('\..*', '', model)):
+    if sub('\..*', '', model) in AVAIL:
         return model, AVAIL [sub('\..*', '', model)]
 
 
@@ -295,7 +298,7 @@ def colorize_rst(vals, winner, classes, col=None):
                   'PS' : 'orange',
                   'PS+': 'red'}
     colors = []
-    for i in xrange(0, len(vals)):
+    for i in range(0, len(vals)):
         class1 = classes[i] #int(sub('\/.*', '', sub('\(', '', classes[i])))
         class2 = max(classes)# int(sub('.*\/', '', sub('\)', '', classes[i])))
         pval = float(vals[i])
@@ -330,8 +333,7 @@ def colorize_rst(vals, winner, classes, col=None):
 Model.__doc__ = Model.__doc__ % \
                 ('\n'.join([ '          %-8s   %-27s   %-15s  ' % \
                              ('%s' % (x), AVAIL[x]['evol'], AVAIL[x]['typ']) \
-                             for x in sorted(sorted(AVAIL.keys()),
-                                              cmp=lambda x, y: \
-                                              cmp(AVAIL[x]['typ'],
-                                                  AVAIL[y]['typ']),
-                                              reverse=True)]))
+                             for x in sorted(sorted(AVAIL.keys()),key=lambda x: \
+                                AVAIL[x]['typ'],
+                                reverse=True)]))
+

@@ -4,6 +4,8 @@
 
 test module
 """
+from __future__ import absolute_import
+from __future__ import print_function
 
 __author__  = "Francois-Jose Serra"
 __email__   = "francois@barrabin.org"
@@ -15,14 +17,14 @@ import unittest
 from ete2.evol             import EvolTree
 from random                   import random as rnd
 from copy                     import deepcopy
-from cPickle                  import load, dump
+from six.moves.cPickle                  import load, dump
 import os
 
 ETEPATH = os.path.abspath(os.path.split(os.path.realpath(__file__))[0]+'/../')
 
 WRKDIR = ETEPATH + '/examples/evol/data/protamine/PRM1/'
 BINDIR = os.getcwd() + '/bin/'
-print BINDIR
+print(BINDIR)
 
 def random_swap(tree):
     '''
@@ -31,7 +33,7 @@ def random_swap(tree):
     for node in tree.iter_descendants():
         if int (rnd()*100)%3:
             node.swap_children()
-    
+
 def check_annotation (tree):
     '''
     check each node is labelled with a node_id
@@ -102,7 +104,7 @@ class TestEvolEvolTree(unittest.TestCase):
         random_swap(tree)
         tree.link_to_evol_model (WRKDIR + 'paml/fb/fb.out', 'fb')
         self.assert_(check_annotation (tree))
-        
+
     def test_deep_copy(self):
         tree = EvolTree (WRKDIR + 'tree.nw')
         tree.workdir = 'examples/evol/data/protamine/PRM1/paml/'
@@ -169,7 +171,7 @@ class TestEvolEvolTree(unittest.TestCase):
         tree.mark_tree ([1, 3, 7] + [2, 6], marks=['#1']*3 + ['#2']*2, verbose=True)
         self.assertEqual(tree.write().replace(' ', ''),
                          '((Hylobates_lar#2,(Gorilla_gorilla#1,Pan_troglodytes#1)#1)#2,Papio_cynocephalus);')
-        tree.mark_tree (map (lambda x: x.node_id, tree.get_descendants()),
+        tree.mark_tree ([x.node_id for x in tree.get_descendants()],
                         marks=[''] * len (tree.get_descendants()), verbose=False)
         self.assertEqual(tree.write().replace(' ', ''),
                          '((Hylobates_lar,(Gorilla_gorilla,Pan_troglodytes)),Papio_cynocephalus);')
@@ -179,17 +181,17 @@ class TestEvolEvolTree(unittest.TestCase):
         tree.workdir = ETEPATH + '/examples/data/protamine/PRM1/paml/'
         tree.link_to_alignment  (WRKDIR + 'alignments.fasta_ali')
         tree.link_to_evol_model (WRKDIR + 'paml/M2/M2.out', 'M2.a')
-        out = open('blip.pik', 'w')
+        out = open('blip.pik', 'wb')
         dump (tree, out)
         out.close()
-        out = open('blip.pik')
+        out = open('blip.pik', 'rb')
         tree2 = load (out)
         out.close()
         os.remove('blip.pik')
-        self.assertEqual(str(tree2.get_evol_model('M2.a')),
-                         str(tree.get_evol_model('M2.a'))
+        self.assertEqual(str(tree2.get_evol_model('M2.a')).split('\n'),
+                         str(tree.get_evol_model('M2.a')).split('\n')
         )
 
-        
+
 if __name__ == '__main__':
     unittest.main()

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -36,4 +37,4 @@
 #
 # 
 # #END_LICENSE#############################################################
-from _orthoxml import * 
+from ._orthoxml import * 

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -45,6 +46,8 @@ from commands import getoutput as run
 from string import strip, split
 
 import logging
+import six
+from six.moves import map
 log = logging.getLogger("main")
 
 from ete2.tools.phylobuild_lib import db
@@ -61,12 +64,12 @@ def launch_jobs(jobs, conf):
     for j, cmd in jobs:
         job_config = conf["sge"].copy()
         job_config["-pe smp"] = j.cores
-        for k,v in j.sge.iteritems():
+        for k,v in six.iteritems(j.sge):
             job_config[k] = v
         conf_key = tuple(sorted(job_config.items()))
         conf2jobs[conf_key].append((j,cmd))
 
-    for job_config, commands in conf2jobs.iteritems():
+    for job_config, commands in six.iteritems(conf2jobs):
         job_config = dict(job_config)
         job_file = "%s_%d_jobs" %(time.ctime().replace(" ", "_").replace(":","-"),
                                   len(commands))
@@ -74,7 +77,7 @@ def launch_jobs(jobs, conf):
         qsub_file = os.path.join(sge_path, job_file+".qsub")
 
         script =  '''#!/bin/sh\n'''
-        for k,v in job_config.iteritems():
+        for k,v in six.iteritems(job_config):
             if not k.startswith("_"):
                 script += '#$ %s %s\n' %(k,v)
         script += '#$ -f \n'
@@ -127,7 +130,7 @@ def qstat(sge_cell=DEFAULT_SGE_CELL):
     jobs = []
     proc = []
     for line in rawoutput.split("\n")[2:]:
-        fields = map(strip, line.split())
+        fields = list(map(strip, line.split()))
         if len(fields)==9:
             jobs.append(fields)
         elif len(fields)==10:
