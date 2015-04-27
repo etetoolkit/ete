@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -46,6 +48,8 @@ from ete2.tools.phylobuild_lib import task as all_tasks
 from ete2.tools.phylobuild_lib import db
 from ete2.tools.phylobuild_lib.errors import ConfigError, DataError, TaskError
 from ete2.tools.phylobuild_lib.master_task import register_task_recursively, isjob
+import six
+from six.moves import range
 
 log = logging.getLogger("main")
                 
@@ -86,7 +90,7 @@ class IterConfig(dict):
         
         try:
             value = dict.__getitem__(self, "_%s" %v)
-        except KeyError, e:
+        except KeyError as e:
             return dict.__getitem__(self, v)
         else:
             # If list, let's take the correct element
@@ -136,14 +140,14 @@ def get_iternumber(threadid):
 
 def get_identity(fname): 
     s = SeqGroup(fname)
-    seqlen = len(s.id2seq.itervalues().next())
+    seqlen = len(six.itervalues(s.id2seq))
     ident = list()
-    for i in xrange(seqlen):
+    for i in range(seqlen):
         states = defaultdict(int)
-        for seq in s.id2seq.itervalues():
+        for seq in six.itervalues(s.id2seq):
             if seq[i] != "-":
                 states[seq[i]] += 1
-        values = states.values()
+        values = list(states.values())
         if values:
             ident.append(float(max(values))/sum(values))
     return (_max(ident), _min(ident), 
@@ -154,13 +158,13 @@ def get_seqs_identity(alg, seqs):
     ''' Returns alg statistics regarding a set of sequences'''
     seqlen = len(alg.get_seq(seqs[0]))
     ident = list()
-    for i in xrange(seqlen):
+    for i in range(seqlen):
         states = defaultdict(int)
         for seq_id in seqs:
             seq = alg.get_seq(seq_id)
             if seq[i] != "-":
                 states[seq[i]] += 1
-        values = states.values()
+        values = list(states.values())
         if values:
             ident.append(float(max(values))/sum(values))
     return (_max(ident), _min(ident), 
@@ -365,7 +369,7 @@ def select_closest_outgroup(target, n2content, splitterconf):
     n2targetdist = distance_matrix_new(target, leaf_only=False,
                                                topology_only=out_topodist)
 
-    valid_nodes = sorted([(node, ndist) for node, ndist in n2targetdist.iteritems()
+    valid_nodes = sorted([(node, ndist) for node, ndist in six.iteritems(n2targetdist)
                           if not(n2content[node] & n2content[target])
                           and node.support >= out_min_support 
                           and len(n2content[node])<=max_outgroup_size],
@@ -373,9 +377,9 @@ def select_closest_outgroup(target, n2content, splitterconf):
     if valid_nodes:
         best_outgroup = valid_nodes[0][0]
     else:
-        print '\n'.join(sorted(["%s Size:%d Dist:%f Supp:%f" %(node.cladeid, len(n2content[node]), ndist, node.support)
-                                for node, ndist in n2targetdist.iteritems()],
-                               sort_outgroups))
+        print('\n'.join(sorted(["%s Size:%d Dist:%f Supp:%f" %(node.cladeid, len(n2content[node]), ndist, node.support)
+                                for node, ndist in six.iteritems(n2targetdist)],
+                               sort_outgroups)))
         raise TaskError(None, "Could not find a suitable outgroup!")
 
     log.log(20,
@@ -431,7 +435,7 @@ def select_sister_outgroup(target, n2content, splitterconf):
 
     sister_content = n2content[target.get_sisters()[0]]
     
-    valid_nodes = sorted([(node, ndist) for node, ndist in n2targetdist.iteritems()
+    valid_nodes = sorted([(node, ndist) for node, ndist in six.iteritems(n2targetdist)
                           if not(n2content[node] & n2content[target])
                           and n2content[node].issubset(sister_content)
                           and node.support >= out_min_support 
@@ -440,9 +444,9 @@ def select_sister_outgroup(target, n2content, splitterconf):
     if valid_nodes:
         best_outgroup = valid_nodes[0][0]
     else:
-        print '\n'.join(sorted(["%s Size:%d Distance:%f Support:%f" %(node.cladeid, len(n2content[node]), ndist, node.support)
-                                for node, ndist in n2targetdist.iteritems()],
-                               sort_outgroups))
+        print('\n'.join(sorted(["%s Size:%d Distance:%f Support:%f" %(node.cladeid, len(n2content[node]), ndist, node.support)
+                                for node, ndist in six.iteritems(n2targetdist)],
+                               sort_outgroups)))
         raise TaskError(None, "Could not find a suitable outgroup!")
 
     log.log(20,

@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -37,7 +39,9 @@
 # 
 # #END_LICENSE#############################################################
 import sys
-from common import log, dump
+from .common import log, dump
+import six
+from six.moves import map
 
 DESC = ""
 
@@ -112,7 +116,7 @@ def run(args):
             
     # translate names
     name2tax = ncbi.get_name_translator(all_names)
-    all_taxids.update([(v, None) for v in name2tax.values()])
+    all_taxids.update([(v, None) for v in list(name2tax.values())])
 
     not_found_names = all_names - set(name2tax.keys())
     if args.fuzzy and not_found_names:
@@ -128,7 +132,7 @@ def run(args):
                                     
     if args.taxonomy:
         log.info("Dumping NCBI taxonomy of %d taxa..." %(len(all_taxids)))
-        t = ncbi.get_topology(all_taxids.keys(),
+        t = ncbi.get_topology(list(all_taxids.keys()),
                               intermediate_nodes=args.full_lineage,
                               rank_limit=args.rank_limit,
                               collapse_subspecies=args.collapse_subspecies)
@@ -143,11 +147,11 @@ def run(args):
         dump(t, features=["taxid", "name", "rank", "bgcolor", "sci_name",
                           "collapse_subspecies", "named_lineage"])
     elif args.info:
-        print '# ' + '\t'.join(["Taxid", "Sci.Name", "Rank", "Named Lineage", "Taxid Lineage"])
+        print('# ' + '\t'.join(["Taxid", "Sci.Name", "Rank", "Named Lineage", "Taxid Lineage"]))
         translator = ncbi.get_taxid_translator(all_taxids)
         ranks = ncbi.get_rank(all_taxids) 
-        for taxid, name in translator.iteritems():
+        for taxid, name in six.iteritems(translator):
             lineage = ncbi.get_lineage(taxid)            
             named_lineage = ','.join(ncbi.translate_to_names(lineage))
             lineage_string = ','.join(map(str, lineage))
-            print '\t'.join([str(taxid), name, ranks.get(taxid, ''), named_lineage, lineage_string])
+            print('\t'.join([str(taxid), name, ranks.get(taxid, ''), named_lineage, lineage_string]))

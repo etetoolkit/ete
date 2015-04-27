@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -259,4 +260,4 @@ class Ui_MainWindow(object):
         self.actionLeafName.setToolTip(QtGui.QApplication.translate("MainWindow", "show leaf names", None, QtGui.QApplication.UnicodeUTF8))
         self.actionLeafName.setShortcut(QtGui.QApplication.translate("MainWindow", "N", None, QtGui.QApplication.UnicodeUTF8))
 
-import ete_resources_rc
+from . import ete_resources_rc

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -41,12 +42,12 @@ import signal
 
 from PyQt4  import QtGui
 from PyQt4  import QtCore
-from qt4_gui import _GUI, _PropertiesDialog, _BasicNodeActions
+from .qt4_gui import _GUI, _PropertiesDialog, _BasicNodeActions
 
-import layouts
+from . import layouts
 #from ete2 import Tree, PhyloTree, ClusterTree
-from main import save
-from qt4_render import _TreeScene, render, get_tree_img_map, init_tree_style
+from .main import save
+from .qt4_render import _TreeScene, render, get_tree_img_map, init_tree_style
 
 __all__ = ["show_tree", "render_tree"]
 

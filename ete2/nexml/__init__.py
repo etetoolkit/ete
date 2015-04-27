@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -37,9 +38,9 @@
 # 
 # #END_LICENSE#############################################################
 from sys import stdout
-import _nexml
-from _nexml import *
-from _nexml_tree import NexmlTree 
+from . import _nexml
+from ._nexml import *
+from ._nexml_tree import NexmlTree 
 
 #_nexml.AbstractTree.subclass = NexmlTree
 _nexml.FloatTree.subclass = NexmlTree

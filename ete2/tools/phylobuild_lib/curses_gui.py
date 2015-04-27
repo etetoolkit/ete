@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -113,7 +114,7 @@ def main(scr):
 
     
  
-    for w in WIN.values():
+    for w in list(WIN.values()):
         w.keypad(1)
         w.idlok(True)
         w.scrollok(True)

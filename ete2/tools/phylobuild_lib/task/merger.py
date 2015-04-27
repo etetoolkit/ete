@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -38,6 +40,7 @@
 # #END_LICENSE#############################################################
 import logging
 import os
+import six
 log = logging.getLogger("main")
 
 from ete2.tools.phylobuild_lib.master_task import TreeMergeTask
@@ -91,7 +94,7 @@ class TreeMerger(TreeMergeTask):
                     
             partition_pairs = []
             everything = set([_n.name for _n in ttree_content[ttree]])
-            for n, content in ttree_content.iteritems():
+            for n, content in six.iteritems(ttree_content):
                 if n is ttree:
                     continue
                 left = set([_n.name for _n in content])
@@ -170,7 +173,7 @@ class TreeMerger(TreeMergeTask):
                     ttree.set_outgroup(best_outgroup)
                 else:
                     log.warning("Midpoint outgroup could not be set!")
-                    ttree.set_outgroup(ttree.iter_leaves().next())
+                    ttree.set_outgroup(next(ttree.iter_leaves()))
             else:
                 if mainout.startswith("~"):
                     # Lazy defined outgroup. Will trust in the common
@@ -218,7 +221,7 @@ class TreeMerger(TreeMergeTask):
                 
         # Reloads node2content of the rooted tree and generate cladeids
         ttree_content = self.main_tree.get_cached_content()
-        for n, content in ttree_content.iteritems():
+        for n, content in six.iteritems(ttree_content):
             cid = generate_id([_n.name for _n in content])
             n.add_feature("cladeid", cid)
 
@@ -242,12 +245,12 @@ def dump_tree_debug(msg, taskdir, mtree, ttree, target_seqs, out_seqs):
                     n.name = n.name + " [ TARGET ]"
 
         OUT = open(pjoin(taskdir, "__debug__"), "w")
-        print >>OUT, msg
-        print >>OUT, "MainTree:", mtree
-        print >>OUT, "TaskTree:", ttree
-        print >>OUT, "Expected outgroups:", out_seqs
+        print(msg, file=OUT)
+        print("MainTree:", mtree, file=OUT)
+        print("TaskTree:", ttree, file=OUT)
+        print("Expected outgroups:", out_seqs, file=OUT)
         OUT.close()
-    except Exception, e:
-        print e
+    except Exception as e:
+        print(e)
 
       

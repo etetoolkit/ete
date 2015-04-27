@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -38,6 +40,7 @@
 # #END_LICENSE#############################################################
 import random
 import colorsys
+from six.moves import range
 
 all = ["SVG_COLORS", "COLOR_SCHEMES", "random_color"]
 
@@ -531,13 +534,13 @@ def random_color(h=None, l=None, s=None, num=None, sep=None, seed=None):
     def rgb2hex(rgb):
         return '#%02x%02x%02x' % rgb
     def hls2hex(h, l, s):
-        return rgb2hex( tuple(map(lambda x: int(x*255), colorsys.hls_to_rgb(h, l, s))))
+        return rgb2hex( tuple([int(x*255) for x in colorsys.hls_to_rgb(h, l, s)]))
 
     if not h:
         if seed:
             random.seed(seed)
         color = 1.0 / random.randint(1, 360)
-        print color
+        print(color)
     else:
         color = h
         
@@ -548,7 +551,7 @@ def random_color(h=None, l=None, s=None, num=None, sep=None, seed=None):
         n = num
         sep = (1.0/n)
         
-    evenly_separated_colors =  [color + (sep*n) for n in xrange(n)]
+    evenly_separated_colors =  [color + (sep*n) for n in range(n)]
 
     rcolors = []
     for h in evenly_separated_colors:

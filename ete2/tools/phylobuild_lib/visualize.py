@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -37,13 +39,14 @@
 # 
 # #END_LICENSE#############################################################
 import re
+from six.moves import range
 
 def draw_tree(tree, conf, outfile):
     try:
         from ete2 import (add_face_to_node, AttrFace, TextFace, TreeStyle, RectFace, CircleFace,
                              SequenceFace, random_color, SeqMotifFace)
     except ImportError as e:
-        print e
+        print(e)
         return
   
     def ly_basic(node):
@@ -90,7 +93,7 @@ def draw_tree(tree, conf, outfile):
                     add_face_to_node(linF, node, c, position='aligned')
                     c += 1
             
-            for n in xrange(c, len(TRACKED_CLADES)):
+            for n in range(c, len(TRACKED_CLADES)):
                 add_face_to_node(TextFace('', fsize=10, fgcolor='slategrey'), node, c, position='aligned')
                 c+=1
 
@@ -215,5 +218,5 @@ def spname(name):
 
         tax2name = ncbi.get_taxid_translator([taxid])
         if int(taxid) not in tax2name:
-            print 'name', name        , taxid, tax2name
+            print('name', name        , taxid, tax2name)
         return tax2name.get(int(taxid), taxid)

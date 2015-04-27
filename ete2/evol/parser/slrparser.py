@@ -42,6 +42,7 @@
 
 parser for slr outfile
 """
+from __future__ import absolute_import
 
 __author__  = "Francois-Jose Serra"
 __email__   = "francois@barrabin.org"

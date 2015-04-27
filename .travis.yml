@@ -1,10 +1,12 @@
 language: python
 python:
   - 2.7
+  - 3.4
 
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install: 
   - sudo apt-get install python-qt4 python-numpy python-scipy python-mysqldb python-lxml 2>&1 | tail
+  - pip install six
   - /usr/bin/yes | sudo python setup.py install 2>&1 | tail
 
 before_script:

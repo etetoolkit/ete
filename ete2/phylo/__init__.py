@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -38,6 +39,6 @@
 # #END_LICENSE#############################################################
 
 
-from phylotree import *
-from evolevents import * 
+from .phylotree import *
+from .evolevents import * 
 __all__ = phylotree.__all__  + evolevents.__all__ 

@@ -57,10 +57,13 @@ PhylomeDBConnector class.
       provides the alignments, phylogentic trees and tree-based
       orthology predictions for every single encoded protein.
 """
+from __future__ import absolute_import
 import re
 from string import strip
 import MySQLdb
 from ete2 import PhyloTree
+import six
+from six.moves import map
 
 __all__ = ["PhylomeDBConnector", "ROOTED_PHYLOMES"]
 
@@ -203,7 +206,7 @@ class PhylomeDBConnector(object):
             spc_code    = phyID[:3]
             prot_number = int(phyID[3:])
         except ValueError:
-            raise ValueError, "invalid phylome protein ID"
+            raise ValueError("invalid phylome protein ID")
         else:
             cmd = ' SELECT species, IF(gene="" OR gene=NULL,%s,protid) FROM proteins WHERE species="%s" AND (gene,proteome_id)=(SELECT gene, proteome_id FROM proteins WHERE species="%s" AND protid=%s) ORDER BY length(seq) DESC LIMIT 1; ' % (prot_number,spc_code,spc_code,prot_number)
             if self._SQL.execute(cmd):
@@ -307,7 +310,7 @@ class PhylomeDBConnector(object):
         self._SQL.execute(cmd)
         entries = self._SQL.fetchone()
         if entries:
-            proteomes_string = map(strip, entries[0].split(","))
+            proteomes_string = list(map(strip, entries[0].split(",")))
         else:
             proteomes_string = None
         return proteomes_string
@@ -333,7 +336,7 @@ class PhylomeDBConnector(object):
                         largest_isoforms[gene] = (spcs,protid,gene,seq)
                     elif len(seq) > len(largest_isoforms[gene][3]):
                         largest_isoforms[gene] = (spcs,protid,gene,seq)
-                seqids = ["%s%07d"%(v[0], v[1]) for v in largest_isoforms.values()]
+                seqids = ["%s%07d"%(v[0], v[1]) for v in list(largest_isoforms.values())]
         else:
             cmd = 'SELECT species,protid FROM proteins WHERE proteome_id="%s" AND species="%s" ' \
                 % (proteome_id[3:],proteome_id[:3])
@@ -360,7 +363,7 @@ class PhylomeDBConnector(object):
                         largest_isoforms[gene] = (spcs,protid,gene,seq)
                     elif len(seq) > len(largest_isoforms[gene][3]):
                         largest_isoforms[gene] = (spcs,protid,gene,seq)
-                seqs = largest_isoforms.values()
+                seqs = list(largest_isoforms.values())
             else:
                 seqs = entries
         else:
@@ -640,7 +643,7 @@ class PhylomeDBConnector(object):
             seqid = [seqid]
         for sid in seqid:
             avail_trees = self.get_available_trees(sid)
-            for seedid, phylomes in avail_trees.iteritems():
+            for seedid, phylomes in six.iteritems(avail_trees):
                 if seedid != sid:
                     continue # Skips collateral trees!!
                 for phyid in phylomes:
@@ -664,7 +667,7 @@ class PhylomeDBConnector(object):
                     sp2or = {}
                     sp2in = {}
                     or2in = {}
-                    for e in filter(lambda x: x.etype=="S", evol_events):
+                    for e in [x for x in evol_events if x.etype=="S"]:
                         for o in e.orthologs:
                             sp = o[:3]
                             # orthologs sorted by species

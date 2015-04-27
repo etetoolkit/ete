@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -37,7 +38,7 @@
 # 
 # #END_LICENSE#############################################################
 
-from evolevents import EvolEvent
+from .evolevents import EvolEvent
 
 __all__ = ["get_evol_events_from_leaf", "get_evol_events_from_root"]
 
@@ -61,7 +62,7 @@ def get_evol_events_from_leaf(node, sos_thr=0.0):
     # Checks that is actually rooted
     outgroups = root.get_children()
     if len(outgroups) != 2:
-        raise TypeError, "Tree is not rooted"
+        raise TypeError("Tree is not rooted")
 
     # Cautch the smaller outgroup (will be stored as the tree
     # outgroup)
@@ -162,7 +163,7 @@ def get_evol_events_from_root(node, sos_thr):
     # Checks that is actually rooted
     outgroups = root.get_children()
     if len(outgroups) != 2:
-        raise TypeError, "Tree is not rooted"
+        raise TypeError("Tree is not rooted")
 
     # Cautch the smaller outgroup (will be stored as the tree outgroup)
     o1 = set([n.name for n in outgroups[0].get_leaves()])
@@ -190,7 +191,7 @@ def get_evol_events_from_root(node, sos_thr):
         childs = current.get_children()
         to_visit += childs
         if len(childs)>2:
-            raise TypeError, "nodes are expected to have two childs."
+            raise TypeError("nodes are expected to have two childs.")
         elif len(childs)==0:
             pass # leaf
         else:

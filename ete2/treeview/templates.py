@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -38,10 +39,11 @@
 # #END_LICENSE#############################################################
 from ete2 import (PhyloTree, PhyloNode,
                   ClusterTree, ClusterNode, EvolTree, EvolNode)
-import layouts 
+from . import layouts 
+import six
 
 def apply_template(tree_style, template):
-    for k, v in template.iteritems(): 
+    for k, v in six.iteritems(template): 
         setattr(tree_style, k, v)
 
 phylogeny = {

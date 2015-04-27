@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -41,14 +42,15 @@ import re # Used to fix SVG exporting
 
 from PyQt4 import QtCore, QtGui, QtSvg
 
-import qt4_circular_render as crender
-import qt4_rect_render as rrender
+from . import qt4_circular_render as crender
+from . import qt4_rect_render as rrender
 
-from main import _leaf, NodeStyle, _FaceAreas, tracktime, TreeStyle
-from node_gui_actions import _NodeActions as _ActionDelegator
-from qt4_face_render import update_node_faces, _FaceGroupItem, _TextFaceItem
-from templates import _DEFAULT_STYLE, apply_template
-import faces
+from .main import _leaf, NodeStyle, _FaceAreas, tracktime, TreeStyle
+from .node_gui_actions import _NodeActions as _ActionDelegator
+from .qt4_face_render import update_node_faces, _FaceGroupItem, _TextFaceItem
+from .templates import _DEFAULT_STYLE, apply_template
+from . import faces
+import six
 
 ## | General scheme of node content
 ## |==========================================================================================================================|
@@ -278,7 +280,7 @@ def render(root_node, img, hide_root=False):
         init_items(root_node, parent, n2i, n2f, img, rot_step, hide_root)
         if mode == 'r':
             if img.optimal_scale_level == "full":
-                scales = [(i.widths[1]/n.dist) for n,i in n2i.iteritems() if n.dist]
+                scales = [(i.widths[1]/n.dist) for n,i in six.iteritems(n2i) if n.dist]
                 img._scale = max(scales) if scales else 0.0
             else:
                 farthest, dist = root_node.get_farthest_leaf(topology_only=img.force_topology)
@@ -371,8 +373,8 @@ def adjust_faces_to_tranformations(img, mainRect, n2i, n2f, tree_layers):
         for layer in tree_layers:
             layer.setTransform(QtGui.QTransform().translate(0, 0).scale(-1,1).translate(0, 0))
             layer.moveBy(mainRect.width(),0)
-        for faceblock in n2f.itervalues():
-            for pos, fb in faceblock.iteritems():
+        for faceblock in six.itervalues(n2f):
+            for pos, fb in six.iteritems(faceblock):
                 fb.flip_hz()
 
 def add_legend(img, mainRect, parent):
@@ -485,10 +487,10 @@ def add_scale(img, mainRect, parent):
         mainRect.adjust(0, 0, dw, length)
 
 def rotate_inverted_faces(n2i, n2f, img):
-    for node, faceblock in n2f.iteritems():
+    for node, faceblock in six.iteritems(n2f):
         item = n2i[node]
         if item.rotation > 90 and item.rotation < 270:
-            for pos, fb in faceblock.iteritems():
+            for pos, fb in six.iteritems(faceblock):
                 fb.rotate(181)
 
 def render_backgrounds(img, mainRect, bg_layer, n2i, n2f):
@@ -498,7 +500,7 @@ def render_backgrounds(img, mainRect, bg_layer, n2i, n2f):
     else:
         max_r = mainRect.width()
 
-    for node, item in n2i.iteritems():
+    for node, item in six.iteritems(n2i):
         if _leaf(node):
             first_c = n2i[node]
             last_c = n2i[node]
@@ -772,7 +774,7 @@ def set_style(n, layout_func):
 def render_floatings(n2i, n2f, img, float_layer, float_behind_layer):
     #floating_faces = [ [node, fb["float"]] for node, fb in n2f.iteritems() if "float" in fb]
 
-    for node, faces in n2f.iteritems():
+    for node, faces in six.iteritems(n2f):
         face_set = [ [float_layer, faces.get("float", None)],
                      [float_behind_layer, faces.get("float-behind",None)]]
 
@@ -809,7 +811,7 @@ def render_floatings(n2i, n2f, img, float_layer, float_behind_layer):
 def render_aligned_faces(img, mainRect, parent, n2i, n2f):
     # Prepares and renders aligned face headers. Used to later
     # place aligned faces
-    aligned_faces = [ [node, fb["aligned"]] for node, fb in n2f.iteritems()\
+    aligned_faces = [ [node, fb["aligned"]] for node, fb in six.iteritems(n2f)\
                           if fb["aligned"].column2faces and _leaf(node)]
 
     # If no aligned faces, just return an offset of 0 pixels
@@ -839,7 +841,7 @@ def render_aligned_faces(img, mainRect, parent, n2i, n2f):
         if fb.h > maxh:
             maxh = fb.h
             maxh_node = node
-        for c, w in fb.c2max_w.iteritems():
+        for c, w in six.iteritems(fb.c2max_w):
             c2max_w[c] = max(w, c2max_w.get(c,0))
     extra_width = sum(c2max_w.values())
 
@@ -916,7 +918,7 @@ def get_tree_img_map(n2i, x_scale=1, y_scale=1):
     face_list = []
     node_areas = {}
     #nid = 0
-    for n, main_item in n2i.iteritems():
+    for n, main_item in six.iteritems(n2i):
         #n.add_feature("_nid", str(nid))
         nid = n._nid
        
@@ -1121,7 +1123,7 @@ def init_tree_style(t, ts):
         cl = t.__class__
         try:
             ts_template = _DEFAULT_STYLE[cl]
-        except KeyError, e:
+        except KeyError as e:
             pass
         else:
             apply_template(ts, ts_template)

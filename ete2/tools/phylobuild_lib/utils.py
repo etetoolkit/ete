@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 # -*- coding: utf-8 -*-
 
 # #START_LICENSE###########################################################
@@ -48,7 +50,7 @@ import os
 import socket
 import string
 from string import strip
-from getch import Getch
+from .getch import Getch
 import random
 import hashlib
 import logging
@@ -57,6 +59,9 @@ import datetime
 import re
 import shutil
 from glob import glob
+import six
+from six.moves import range
+from six.moves import input
 
 try:
     import numpy
@@ -67,7 +72,7 @@ except ImportError:
 
     def _std(nums):
         avg = _mean(nums)
-        variance = map(lambda x: (x - avg)**2, nums)
+        variance = [(x - avg)**2 for x in nums]
         std = math.sqrt(_mean(variance))
         return std
             
@@ -245,7 +250,7 @@ def ask(string, valid_values, default=-1, case_sensitive=False):
     if not case_sensitive:
         valid_values = [value.lower() for value in valid_values]
     while v not in valid_values:
-        v = raw_input("%s [%s]" % (string,','.join(valid_values) ))
+        v = input("%s [%s]" % (string,','.join(valid_values) ))
         if v == '' and default>=0:
             v = valid_values[default]
         if not case_sensitive:
@@ -259,7 +264,7 @@ def generate_node_ids(target_seqs, out_seqs):
 
     
 def merge_arg_dicts(source, target, parent=""):
-    for k,v in source.iteritems(): 
+    for k,v in six.iteritems(source): 
         if not k.startswith("_"): 
             if k not in target:
                 target[k] = v
@@ -308,7 +313,7 @@ def read_time_file(fname):
         l1 = l1.replace("CEST", "") # TEMP FIX
         l1 = l1.replace("EDT", "") # TEMP FIX
         start = time.mktime(time.strptime(l1, TIME_FORMAT))
-    except Exception, e:
+    except Exception as e:
         start = ""
         log.warning("execution time: %s", e)
         
@@ -317,7 +322,7 @@ def read_time_file(fname):
         l2 = l2.replace("CEST", "") # TEMP FIX
         l2 = l2.replace("EDT", "") # TEMP FIX
         end = time.mktime(time.strptime(l2, TIME_FORMAT))
-    except Exception, e:
+    except Exception as e:
         end = ""
         log.warning("execution time: %s", e)
         
@@ -376,8 +381,8 @@ def clear_tempdir():
             if os.system("cp -a %s/* %s/" %(scratch_dir, out_dir)):
                 log.error("Could not copy data from scratch directory!")
             log.log(20, "Deleting temp directory %s..." %scratch_dir)
-        except Exception, e:
-            print e
+        except Exception as e:
+            print(e)
             log.error("Could not copy data from scratch directory!")
             pass
         # By all means, try to remove temp data
@@ -427,7 +432,7 @@ def print_as_table(rows, header=None, fields=None, print_header=True, stdout=sys
 
         # Get max size of each field
         if not fields:
-            fields = range(v_len)
+            fields = list(range(v_len))
         
         for i,iv in enumerate(fields):
             header_length = 0
@@ -439,37 +444,37 @@ def print_as_table(rows, header=None, fields=None, print_header=True, stdout=sys
 
         if header and print_header:
             # Print >>Stdout, header names
-            for i in xrange(len(fields)):
-                print >>stdout, _str(header[i]).rjust(lengths[i])+" | ",
-            print >>stdout, ""
+            for i in range(len(fields)):
+                print(_str(header[i]).rjust(lengths[i])+" | ", end=' ', file=stdout)
+            print("", file=stdout)
             # Print >>Stdout, underlines
-            for i in xrange(len(fields)):
-                print >>stdout, "".rjust(lengths[i],"-")+" | ",
-            print >>stdout, ""
+            for i in range(len(fields)):
+                print("".rjust(lengths[i],"-")+" | ", end=' ', file=stdout)
+            print("", file=stdout)
         # Print >>Stdout, table lines
         for r in rows:
             for i,iv in enumerate(fields):
                 #print >>stdout, _str(r[iv]).rjust(lengths[i])+" | ",
-                print >>stdout, _safe_rjust(_str(r[iv]), lengths[i])+" | ",
-            print >>stdout, ""
+                print(_safe_rjust(_str(r[iv]), lengths[i])+" | ", end=' ', file=stdout)
+            print("", file=stdout)
 
     elif vtype == dict:
         if header == []:
-            header = rows[0].keys()
+            header = list(rows[0].keys())
         for ppt in header:
             lengths[ppt] = max( [_safe_len(_str(ppt))]+[ _safe_len(_str(p.get(ppt,""))) for p in rows])
         if header:
             for ppt in header:
-                print >>stdout, _safe_rjust(_str(ppt), lengths[ppt])+" | ",
-            print >>stdout, ""
+                print(_safe_rjust(_str(ppt), lengths[ppt])+" | ", end=' ', file=stdout)
+            print("", file=stdout)
             for ppt in header:
-                print >>stdout, "".rjust(lengths[ppt],"-")+" | ",
-            print >>stdout, ""
+                print("".rjust(lengths[ppt],"-")+" | ", end=' ', file=stdout)
+            print("", file=stdout)
 
         for p in rows:
             for ppt in header:
-                print >>stdout, _safe_rjust(_str(p.get(ppt,""), lengths[ppt]))+" | ",
-            print >>stdout, ""
+                print(_safe_rjust(_str(p.get(ppt,""), lengths[ppt]))+" | ", end=' ', file=stdout)
+            print("", file=stdout)
             page_counter +=1
                     
 def get_node2content(node, store=None):
@@ -518,7 +523,7 @@ def send_mail_smtp(toaddrs, subject, msg):
     client = smtplib.SMTP('localhost', 1025)
     client.sendmail(fromaddr, toaddrs, msg)
     client.quit()
-    print "Mail sent to", toaddrs
+    print("Mail sent to", toaddrs)
 
 def send_mail(toaddrs, subject, text):
     try:
@@ -531,8 +536,8 @@ def send_mail(toaddrs, subject, text):
         msg["Subject"] = subject
         p = Popen(["/usr/sbin/sendmail", "-t"], stdin=PIPE)
         p.communicate(msg.as_string())
-    except Exception, e:
-        print e
+    except Exception as e:
+        print(e)
 
 def symlink(target, link_name):
     try:
@@ -556,10 +561,10 @@ def get_latest_nprdp(basedir):
 
     if avail_dbs:
         avail_dbs.sort()
-        print avail_dbs
+        print(avail_dbs)
         if avail_dbs:
             last_db = avail_dbs[-1][1]
-            print "Using latest db file available:", os.path.basename(last_db)
+            print("Using latest db file available:", os.path.basename(last_db))
             return last_db
     else:
         #tries compressed data
@@ -568,10 +573,10 @@ def get_latest_nprdp(basedir):
             import tarfile
             tar = tarfile.open(compressed_path)
             for member in tar:
-                print member.name
+                print(member.name)
                 m = re.search("npr\.([\d\.]+)\.db", member.name)
                 if m:
-                    print member
+                    print(member)
                     avail_dbs.append([float(m.groups()[0]), member])
         
     return None

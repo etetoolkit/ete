@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -45,12 +47,13 @@ from signal import signal, SIGWINCH, SIGKILL, SIGTERM
 from collections import deque
 from textwrap import TextWrapper
 
-import Queue
+import six.moves.queue
 import threading
 
 from ete2.tools.phylobuild_lib.logger import get_main_log
 from ete2.tools.phylobuild_lib.utils import GLOBALS, clear_tempdir, terminate_job_launcher, pjoin, pexist
 from ete2.tools.phylobuild_lib.errors import *
+import six
 
 try:
     import curses
@@ -166,7 +169,7 @@ class Screen(StringIO):
                 self.refresh()
 
     def refresh(self):
-        for windex, (win, dim) in self.windows.iteritems():
+        for windex, (win, dim) in six.iteritems(self.windows):
             h, w, sy, sx = dim
             line, col = self.pos[windex]
             if h is not None: 
@@ -177,7 +180,7 @@ class Screen(StringIO):
         curses.doupdate()
 
     def write(self, text):
-        if isinstance(text, unicode):
+        if isinstance(text, six.text_type):
             #text = text.encode(self.stdout.encoding)
             text = text.encode("UTF-8")
         if NCURSES:
@@ -313,7 +316,7 @@ def init_curses(main_scr):
     #WIN[2], WIN[12] = newwin(h-dbg_h-1, (w/2)-1, 1, (w/2)+2)
     #WIN[3], WIN[13] = newwin(dbg_h-1, (w/2)-1, h-dbg_h+1, (w/2)+2)
 
-    for windex, (w, dim) in WIN.iteritems():
+    for windex, (w, dim) in six.iteritems(WIN):
         #w = WIN[i]
         #w.bkgd(str(windex))
         w.bkgd(" ")
@@ -333,7 +336,7 @@ def clear_env():
     try:
         os.remove(lock_file)
     except Exception:
-        print >>sys.stderr, "could not remove lock file %s" %lock_file
+        print("could not remove lock file %s" %lock_file, file=sys.stderr)
         
     clear_tempdir()
 
@@ -349,7 +352,7 @@ def app_wrapper(func, args):
         open(lock_file, "w").write(time.ctime())
     else:
         clear_env()
-        print >>sys.stderr, '\nThe same process seems to be running. Use --clearall or remove the lock file "alive" within the output dir'
+        print('\nThe same process seems to be running. Use --clearall or remove the lock file "alive" within the output dir', file=sys.stderr)
         sys.exit(-1)
         
     try:
@@ -357,27 +360,27 @@ def app_wrapper(func, args):
             curses.wrapper(main, func, args)
         else:
             main(None, func, args)
-    except ConfigError, e:
+    except ConfigError as e:
         if GLOBALS.get('_background_scheduler', None):
             GLOBALS['_background_scheduler'].terminate()
 
-        print >>sys.stderr, "\nConfiguration Error:", e
+        print("\nConfiguration Error:", e, file=sys.stderr)
         clear_env()
         sys.exit(-1)
-    except DataError, e:
+    except DataError as e:
         if GLOBALS.get('_background_scheduler', None):
             GLOBALS['_background_scheduler'].terminate()
 
-        print >>sys.stderr, "\nData Error:", e
+        print("\nData Error:", e, file=sys.stderr)
         clear_env()
         sys.exit(-1)
     except KeyboardInterrupt:
         # Control-C is also grabbed by the back_launcher, so it is no necessary
         # to terminate from here
-        print >>sys.stderr, "\nProgram was interrupted."
+        print("\nProgram was interrupted.", file=sys.stderr)
         if args.monitor:
-            print >>sys.stderr, ("VERY IMPORTANT !!!: Note that launched"
-                                 " jobs will keep running as you provided the --monitor flag")        
+            print(("VERY IMPORTANT !!!: Note that launched"
+                                 " jobs will keep running as you provided the --monitor flag"), file=sys.stderr)        
         clear_env()
         sys.exit(-1)
     except:
@@ -412,7 +415,7 @@ def main(main_screen, func, args):
     # Call main function as lower thread
     if NCURSES:
         screen.refresh()
-        exceptions = Queue.Queue()
+        exceptions = six.moves.queue.Queue()
         t = ExcThread(bucket=exceptions, target=func, args=[args])
         t.daemon = True
         t.start()
@@ -423,7 +426,7 @@ def main(main_screen, func, args):
             while 1:
                 try:
                     exc = exceptions.get(block=False)
-                except Queue.Empty:
+                except six.moves.queue.Empty:
                     pass
                 else:
                     exc_type, exc_obj, exc_trace = exc
@@ -433,7 +436,7 @@ def main(main_screen, func, args):
      
                 mwin = screen.windows[0][0]
                 key = mwin.getch()
-                mwin.addstr(0, 0, "%s (%s) (%s) (%s)" %(key, screen.pos, ["%s %s" %(i,w[1]) for i,w in screen.windows.items()], screen.lines) + " "*50)
+                mwin.addstr(0, 0, "%s (%s) (%s) (%s)" %(key, screen.pos, ["%s %s" %(i,w[1]) for i,w in list(screen.windows.items())], screen.lines) + " "*50)
                 mwin.refresh()
                 if key == 113:
                     # Fixes the problem of prints without newline char
@@ -465,7 +468,7 @@ def main(main_screen, func, args):
         except:
             # fixes the problem of restoring screen when last print
             # did not contain a newline char. WTF!
-            print "\n"
+            print("\n")
             raise
 
         #while 1: 

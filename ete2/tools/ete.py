@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -45,7 +47,7 @@ sys.path.insert(1, TOOLSPATH.replace("ete2/tools", ''))
 #print sys.path
 
 import argparse
-import ete_split, ete_expand, ete_annotate, ete_ncbiquery, ete_view, ete_generate, ete_mod, ete_extract, ete_compare
+from . import ete_split, ete_expand, ete_annotate, ete_ncbiquery, ete_view, ete_generate, ete_mod, ete_extract, ete_compare
 from ete2.tools import common
 from ete2.tools.common import log
 
@@ -84,11 +86,11 @@ def tree_iterator(args):
 def main():
     if len(sys.argv) > 1 and sys.argv[1] == "version":
        import ete2
-       print ete2.__version__
+       print(ete2.__version__)
        return
        
     elif len(sys.argv) > 1 and sys.argv[1] == "build":
-        import phylobuild
+        from . import phylobuild
         del sys.argv[1]
         phylobuild._main()
         return

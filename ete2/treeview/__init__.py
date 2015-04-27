@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -38,6 +39,6 @@
 # #END_LICENSE#############################################################
 
 
-from main import *
-from faces import *
-from svg_colors import *
+from .main import *
+from .faces import *
+from .svg_colors import *

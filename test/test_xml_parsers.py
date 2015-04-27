@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 import unittest
 import os
 import time
@@ -10,19 +12,19 @@ class Test_PhyloXML(unittest.TestCase):
         for fname in os.listdir(path):
             if fname.endswith(".xml"):
                 W = open("/tmp/test_xml_parser", "w")
-                print fname, "...", 
+                print(fname, "...", end=' ') 
                 fpath = os.path.join(path, fname)
                 p = phyloxml.Phyloxml()
                 t1 = time.time()
                 p.build_from_file(fpath)
                 etime = time.time()-t1
-                print "%0.1f secs" %(etime)
+                print("%0.1f secs" %(etime))
                 p.export(outfile = W)
 
     def test_examples(self):
         path = "../examples/phyloxml/"
         for ex in os.listdir(path):
-            print "testing", ex 
+            print("testing", ex) 
             if ex.endswith(".py"):
                 s = os.system("cd %s && python %s" %(path, ex))
                 if s: 
@@ -36,19 +38,19 @@ class Test_NeXML(unittest.TestCase):
         for fname in os.listdir(path):
             if fname.endswith(".xml"):
                 W = open("/tmp/test_xml_parser", "w")
-                print fname, "...", 
+                print(fname, "...", end=' ') 
                 fpath = os.path.join(path, fname)
                 p = nexml.Nexml()
                 t1 = time.time()
                 p.build_from_file(fpath)
                 etime = time.time()-t1
-                print "%0.1f secs" %(etime)
+                print("%0.1f secs" %(etime))
                 p.export(outfile = W)
 
     def test_examples(self):
         path = "../examples/nexml/"
         for ex in os.listdir(path):
-            print "testing", ex 
+            print("testing", ex) 
             if ex.endswith(".py"):
                 s = os.system("cd %s && python %s" %(path, ex))
                 if s: 

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -49,6 +50,8 @@ from ete2.tools.phylobuild_lib.master_task import register_task_recursively
 from ete2.tools.phylobuild_lib.workflow.common import (IterConfig, get_next_npr_node,
                                     process_new_tasks, get_iternumber)
 from ete2.tools.phylobuild_lib.logger import logindent
+import six
+from six.moves import map
 log = logging.getLogger("main")
 
 def annotate_node(t, final_task):
@@ -66,7 +69,7 @@ def annotate_node(t, final_task):
     n = cladeid2node[t.cladeid]
     n.add_features(size=final_task.size)
     for task in alltasks:
-        params = ["%s %s" %(k,v) for k,v in  task.args.iteritems() 
+        params = ["%s %s" %(k,v) for k,v in  six.iteritems(task.args) 
                   if not k.startswith("_")]
         params = " ".join(params)
 
@@ -117,7 +120,7 @@ def get_trimal_conservation(alg_file, trimal_bin):
                                                     alg_file))
     conservation = []
     for line in output.split("\n")[3:]:
-        a, b = map(float, line.split())
+        a, b = list(map(float, line.split()))
         conservation.append(b)
     mean = _mean(conservation)
     std = _std(conservation)
@@ -235,8 +238,8 @@ def process_task(task, wkname, npr_conf, nodeid2info):
         # Register Tree constrains
         constrain_tree = "(%s, (%s));" %(','.join(sorted(task.out_seqs)), 
                                          ','.join(sorted(task.target_seqs)))
-        _outs = "\n".join(map(lambda name: ">%s\n0" %name, sorted(task.out_seqs)))
-        _tars = "\n".join(map(lambda name: ">%s\n1" %name, sorted(task.target_seqs)))
+        _outs = "\n".join([">%s\n0" %name for name in sorted(task.out_seqs)])
+        _tars = "\n".join([">%s\n1" %name for name in sorted(task.target_seqs)])
         constrain_alg = '\n'.join([_outs, _tars])
         db.add_task_data(nodeid, DATATYPES.constrain_tree, constrain_tree)
         db.add_task_data(nodeid, DATATYPES.constrain_alg, constrain_alg)
@@ -289,7 +292,7 @@ def process_task(task, wkname, npr_conf, nodeid2info):
         if seqtype == "aa" and npr_conf.switch_aa_similarity < 1:
             try:
                 alg_stats = db.get_task_data(taskid, DATATYPES.alg_stats) 
-            except Exception, e:
+            except Exception as e:
                 alg_stats = {}
 
             if ttype == "alg":

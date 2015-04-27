@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -78,4 +79,4 @@ class Ui_About(object):
 "<p align=\"center\" style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.version.setText(QtGui.QApplication.translate("About", "VERSION", None, QtGui.QApplication.UnicodeUTF8))
 
-import ete_resources_rc
+from . import ete_resources_rc

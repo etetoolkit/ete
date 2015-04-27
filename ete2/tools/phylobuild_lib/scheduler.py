@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -41,11 +43,14 @@ import os
 import signal
 import subprocess
 from multiprocessing import Process, Queue
-from Queue import Empty as QueueEmpty
+from six.moves.queue import Empty as QueueEmpty
 from time import sleep, ctime, time
 from collections import defaultdict, deque
 import re
 import logging
+import six
+from six.moves import map
+from six.moves import range
 log = logging.getLogger("main")
 
 from ete2.tools.phylobuild_lib.logger import set_logindent, logindent, get_logindent
@@ -71,11 +76,11 @@ def control_c(_signal, _frame):
     ver = {28: "0", 26: "1", 24: "2", 22: "3", 20: "4", 10: "5"}
     ver_level = log.level
     
-    print '\n\nYou pressed Ctrl+C!'
-    print 'q) quit'
-    print 'v) change verbosity level:', ver.get(ver_level, ver_level)
-    print 'd) enter debug mode'
-    print 'c) continue execution'
+    print('\n\nYou pressed Ctrl+C!')
+    print('q) quit')
+    print('v) change verbosity level:', ver.get(ver_level, ver_level))
+    print('d) enter debug mode')
+    print('c) continue execution')
     key = ask("   Choose:", ["q", "v", "d", "c"])
     if key == "q":
         raise KeyboardInterrupt
@@ -85,7 +90,7 @@ def control_c(_signal, _frame):
         return
     elif key == "v":
         vl = ask("new level", sorted(ver.values()))
-        new_level = sorted(ver.keys(), reverse=True)[int(vl)]
+        new_level = sorted(list(ver.keys()), reverse=True)[int(vl)]
         log.setLevel(new_level)
     elif key == "d":
         import pdb
@@ -189,7 +194,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
             set_logindent(0)
             log.log(28, "@@13: Updating tasks status:@@1: (%s)" % (ctime()))
             info_lines = []
-            for tid, tlist in thread2tasks.iteritems():
+            for tid, tlist in six.iteritems(thread2tasks):
                 threadname = GLOBALS[tid]["_name"]
                 sizelist = ["%s" %getattr(_ts, "size", "?") for _ts in tlist]
                 info = "Thread @@13:%s@@1:: pending tasks: @@8:%s@@1: of sizes: %s" %(
@@ -241,7 +246,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
                                 if j.jobid not in BUG:
                                     if not os.path.exists(j.jobdir):
                                         os.makedirs(j.jobdir)
-                                    for ifile, outpath in j.input_files.iteritems():
+                                    for ifile, outpath in six.iteritems(j.input_files):
                                         try:
                                             _tid, _did = ifile.split(".")
                                             _did = int(_did)
@@ -266,7 +271,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
                         update_task_states_recursively(task)
                         db.commit()
                         checked_tasks.add(task.taskid)
-                    except TaskError, e:
+                    except TaskError as e:
                         log.error("Errors found in %s" %task)
                         import traceback
                         traceback.print_exc()
@@ -298,16 +303,16 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
 
                     cmd_lines =  get_cmd_log(task)
                     CMD_LOG = open(GLOBALS[task.configid]['cmd_log_file'], "a")
-                    print >>CMD_LOG, task
+                    print(task, file=CMD_LOG)
                     for c in cmd_lines:
-                        print >>CMD_LOG, '   '+'\t'.join(map(str, c))
+                        print('   '+'\t'.join(map(str, c)), file=CMD_LOG)
                     CMD_LOG.close()
                     # 
 
                     try:
                         #wkname = GLOBALS[task.configid]['_name']
                         create_tasks = workflow_task_processor(task, task.target_wkname)
-                    except TaskError, e:
+                    except TaskError as e:
                         log.error("Errors found in %s" %task)
                         pending_tasks.discard(task)
                         thread_errors[task.configid].append([task, e.value, e.msg])
@@ -345,7 +350,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
 
             # Dump / show ended threads
             error_lines = []
-            for configid, etasks in thread_errors.iteritems(): 
+            for configid, etasks in six.iteritems(thread_errors): 
                 error_lines.append("Thread @@10:%s@@1: contains errors:" %\
                             (GLOBALS[configid]["_name"]))
                 for error in etasks:
@@ -399,7 +404,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
                         OUT = open(final_tree_file+".fa", "w")
                         for name, seq, comments in alg:
                             realname = db.get_seq_name(name)
-                            print >>OUT, ">%s\n%s" %(realname, seq)
+                            print(">%s\n%s" %(realname, seq), file=OUT)
                         OUT.close()
 
                     if hasattr(main_tree, "clean_alg_path"):
@@ -410,7 +415,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
                         OUT = open(final_tree_file+".trimmed.fa", "w")
                         for name, seq, comments in alg:
                             realname = db.get_seq_name(name)
-                            print >>OUT, ">%s\n%s" %(realname, seq)
+                            print(">%s\n%s" %(realname, seq), file=OUT)
                         OUT.close()
 
                     if norender == False:
@@ -421,7 +426,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
                         try:
                             from ete2.tools.phylobuild_lib.visualize import draw_tree
                             draw_tree(main_tree, GLOBALS[configid], final_tree_file+".png")
-                        except Exception, e:
+                        except Exception as e:
                             log.warning('@@8:something went wrong when generating the tree image. Try manually :(@@1:')
                             if DEBUG:
                                 import traceback, sys
@@ -470,7 +475,7 @@ def background_job_launcher(job_queue, run_detached, schedule_time, max_cores):
             launched = 0
             done_jobs = set()
             cores_used = 0
-            for jid, (cores, cmd, st_file, pid) in running_jobs.iteritems():
+            for jid, (cores, cmd, st_file, pid) in six.iteritems(running_jobs):
                 process_done = pid.poll() if pid else None
                 try:
                     st = open(st_file).read(1)
@@ -481,7 +486,7 @@ def background_job_launcher(job_queue, run_detached, schedule_time, max_cores):
                      done_jobs.add(jid)
                 elif process_done is not None and st == "R":
                     # check if a running job is actually running
-                    print "LOST PROCESS", pid, jid
+                    print("LOST PROCESS", pid, jid)
                     ST=open(st_file, "w"); ST.write("E"); ST.flush(); ST.close()
                     done_jobs.add(jid)
                 else:
@@ -491,7 +496,7 @@ def background_job_launcher(job_queue, run_detached, schedule_time, max_cores):
                 del running_jobs[d]
 
             cores_avail = max_cores - cores_used       
-            for i in xrange(cores_avail):
+            for i in range(cores_avail):
                 try:
                     jid, cores, cmd, st_file = job_queue.get(False)
                 except QueueEmpty:
@@ -503,7 +508,7 @@ def background_job_launcher(job_queue, run_detached, schedule_time, max_cores):
                     jid, cores, cmd, st_file = pending_jobs.popleft()
                     if jid in visited_ids:
                         dups.add(jid)
-                        print "DUPLICATED execution!!!!!!!!!!!! This should not occur!", jid
+                        print("DUPLICATED execution!!!!!!!!!!!! This should not occur!", jid)
                         continue
                 elif pending_jobs:
                     log.log(28, "@@8:waiting for %s cores" %pending_jobs[0][1])
@@ -521,8 +526,8 @@ def background_job_launcher(job_queue, run_detached, schedule_time, max_cores):
                         # create a process group, so I can kill the thread if necessary
                         running_proc = subprocess.Popen(cmd, shell=True, preexec_fn=os.setsid)
                         
-                except Exception, e:
-                    print e
+                except Exception as e:
+                    print(e)
                     ST=open(st_file, "w"); ST.write("E"); ST.flush(); ST.close()
                 else:
                     launched += 1
@@ -535,25 +540,25 @@ def background_job_launcher(job_queue, run_detached, schedule_time, max_cores):
             log.log(28, "@@8:Launched@@1: %s jobs. %d(R), %s(W). Cores usage: %s/%s",
                     launched, len(running_jobs), waiting_jobs, cores_used, max_cores)
             for _d in dups:
-                print "duplicate bug", _d
+                print("duplicate bug", _d)
 
             sleep(schedule_time)
     except:
         if len(running_jobs):
-            print >>sys.stderr, ' Killing %s running jobs...' %len(running_jobs)
-            for jid, (cores, cmd, st_file, pid) in running_jobs.iteritems():
+            print(' Killing %s running jobs...' %len(running_jobs), file=sys.stderr)
+            for jid, (cores, cmd, st_file, pid) in six.iteritems(running_jobs):
                 if pid:
                     #print >>sys.stderr, ".",
                     #sys.stderr.flush()
                     try:
                         os.killpg(pid.pid, signal.SIGTERM)
                     except:
-                        print "Ooops, the process", pid.pid, "could not be terminated!"
+                        print("Ooops, the process", pid.pid, "could not be terminated!")
                         pass
                     try:
                         open(st_file, "w").write("E")
                     except:
-                        print "Ooops,", st_file, "could not be labeled as Error task. Please remove file before resuming the analysis."
+                        print("Ooops,", st_file, "could not be labeled as Error task. Please remove file before resuming the analysis.")
             
     sys.exit(0)
 
@@ -578,7 +583,7 @@ def show_task_info(task):
     log.log(28, "(%s) %s" % (color_status(task.status), task))
     logindent(2)
     st_info = ', '.join(["%d(%s)" % (v, k) for k, v in
-                         task.job_status.iteritems()])
+                         six.iteritems(task.job_status)])
     log.log(26, "%d jobs: %s" %(len(task.jobs), st_info))
     tdir = task.taskid
     tdir = tdir.lstrip("/")

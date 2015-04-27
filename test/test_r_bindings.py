@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 import unittest 
 
 from ete2 import *
@@ -11,7 +13,7 @@ class Test_R_bindings(unittest.TestCase):
         try:
             import rpy2.robjects as robjects
         except ImportError:
-            print "\nNo rpy2 support. Skipping.\n"
+            print("\nNo rpy2 support. Skipping.\n")
             return
 
         # R

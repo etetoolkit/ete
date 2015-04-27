@@ -1,5 +1,7 @@
+from __future__ import absolute_import
 import random
 import sys
+from six.moves import range
 sys.path.insert(0, "./")
 from ete2 import Tree, TreeStyle, faces
 from ete2.treeview.main import random_color
@@ -16,11 +18,11 @@ def layout(node):
         faces.add_face_to_node(f, node, 0, position="branch-right")
     else:
         f = faces.TextFace("uno", fsize=8)
-        for x in xrange(random.randint(1, 5)):
+        for x in range(random.randint(1, 5)):
             faces.add_face_to_node(f, node, 0, position="branch-top")
 
         f = faces.TextFace("otromassssssssssss", fsize=8)
-        for x in xrange(random.randint(1, 5)):
+        for x in range(random.randint(1, 5)):
             faces.add_face_to_node(f, node, 0, position="branch-bottom")
         
     f = faces.CircleFace(20, "red")
@@ -63,7 +65,7 @@ t = Tree()
 t.dist = 0
 
 t.size = 0,0
-for x in xrange(100):
+for x in range(100):
     n = t.add_child()
     n = n.add_child()
     n = n.add_child()
@@ -91,7 +93,7 @@ ts.scale = 1
 sys.exit()
 t.show(tree_style=ts)
 
-for x in xrange(30):
+for x in range(30):
     t = Tree()
     t.dist = 0
     t.populate(100, random_branches=True)

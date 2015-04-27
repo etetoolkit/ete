@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 import unittest
 import random
 import sys
@@ -5,6 +7,7 @@ import time
 import itertools
 
 import sys
+from six.moves import range
 sys.path.insert(0, '../')
 
 from ete2 import *
@@ -46,7 +49,7 @@ class Test_Coretype_Tree(unittest.TestCase):
 
         #TEst export root features
         t = Tree("(((A[&&NHX:name=A],B[&&NHX:name=B])[&&NHX:name=NoName],C[&&NHX:name=C])[&&NHX:name=I],(D[&&NHX:name=D],F[&&NHX:name=F])[&&NHX:name=J])[&&NHX:name=root];")
-        print t.get_ascii()
+        print(t.get_ascii())
         self.assertEqual(t.write(format=9, features=["name"], format_root_node=True),
                          "(((A[&&NHX:name=A],B[&&NHX:name=B])[&&NHX:name=NoName],C[&&NHX:name=C])[&&NHX:name=I],(D[&&NHX:name=D],F[&&NHX:name=F])[&&NHX:name=J])[&&NHX:name=root];")
 
@@ -59,7 +62,7 @@ class Test_Coretype_Tree(unittest.TestCase):
         print_supported_formats()
 
         # Let's stress a bit
-        for i in xrange(10):
+        for i in range(10):
             t = Tree()
             t.populate(4, random_branches=True)
             for f in NW_FORMAT:
@@ -80,10 +83,10 @@ class Test_Coretype_Tree(unittest.TestCase):
         t = Tree()
         t.populate(50, random_branches=True)
         t.sort_descendants()
-        expected_distances = map(lambda x:round(x, 6), [n.dist for n in t.traverse('postorder')])
-        expected_leaf_distances = map(lambda x:round(x, 6), [n.dist for n in t])
-        expected_internal_distances = map(lambda x:round(x, 6), [n.dist for n in t.traverse('postorder') if not n.is_leaf()])
-        expected_supports = map(lambda x:round(x, 6), [n.support for n in t.traverse('postorder') if not n.is_leaf()])
+        expected_distances = [round(x, 6) for x in [n.dist for n in t.traverse('postorder')]]
+        expected_leaf_distances = [round(x, 6) for x in [n.dist for n in t]]
+        expected_internal_distances = [round(x, 6) for x in [n.dist for n in t.traverse('postorder') if not n.is_leaf()]]
+        expected_supports = [round(x, 6) for x in [n.support for n in t.traverse('postorder') if not n.is_leaf()]]
         expected_leaf_names = [n.name for n in t]
 
         # Check that all formats read names correctly 
@@ -97,21 +100,21 @@ class Test_Coretype_Tree(unittest.TestCase):
         for f in [0,1,2,3,5]:
             t2 = Tree(t.write(format=f, dist_formatter="%0.6f", support_formatter="%0.6f", format_root_node=True), format=f)
             t2.sort_descendants()
-            observed_distances = map(lambda x:round(x, 6), [n.dist for n in t2.traverse('postorder')])
+            observed_distances = [round(x, 6) for x in [n.dist for n in t2.traverse('postorder')]]
             self.assertEqual(observed_distances, expected_distances)
             
         # formats reading only leaf distances
         for f in [4,7]:
             t2 = Tree(t.write(format=f, dist_formatter="%0.6f", support_formatter="%0.6f", format_root_node=True), format=f)
             t2.sort_descendants()
-            observed_distances = map(lambda x:round(x, 6), [n.dist for n in t2])
+            observed_distances = [round(x, 6) for x in [n.dist for n in t2]]
             self.assertEqual(observed_distances, expected_leaf_distances)
 
         # formats reading only leaf distances
         for f in [6]:
             t2 = Tree(t.write(format=f, dist_formatter="%0.6f", support_formatter="%0.6f", format_root_node=True), format=f)
             t2.sort_descendants()
-            observed_distances = map(lambda x:round(x, 6), [n.dist for n in t2.traverse('postorder') if not n.is_leaf()])
+            observed_distances = [round(x, 6) for x in [n.dist for n in t2.traverse('postorder') if not n.is_leaf()]]
             self.assertEqual(observed_distances, expected_internal_distances)
 
             
@@ -120,7 +123,7 @@ class Test_Coretype_Tree(unittest.TestCase):
         for f in [0,2]:
             t2 = Tree(t.write(format=f, dist_formatter="%0.6f", support_formatter="%0.6f", format_root_node=True), format=f)
             t2.sort_descendants()
-            observed_supports = map(lambda x:round(x, 6), [n.support for n in t2.traverse('postorder') if not n.is_leaf()])
+            observed_supports = [round(x, 6) for x in [n.support for n in t2.traverse('postorder') if not n.is_leaf()]]
             self.assertEqual(observed_supports, expected_supports)
 
             
@@ -259,7 +262,7 @@ class Test_Coretype_Tree(unittest.TestCase):
         self.assertEqual( t1.write(), "(A:1,B:1);")
 
         # test prune preserving distances
-        for i in xrange(3):
+        for i in range(3):
             t = Tree()
             t.populate(50, random_branches=True)
             distances = {}
@@ -361,7 +364,7 @@ class Test_Coretype_Tree(unittest.TestCase):
         prev_size= len(t)
         t.populate(25)
         self.assertEqual(len(t), prev_size+25)
-        for i in xrange(10):
+        for i in range(10):
             t = Tree()
             t.populate(100, reuse_names=False)
             # Checks that all names are actually unique 
@@ -446,11 +449,11 @@ class Test_Coretype_Tree(unittest.TestCase):
         self.assertEqual(d1, d2)
         # Randomizing outgroup test: Can we recover original state
         # after many manipulations?
-        for i in xrange(10):
-            for j in xrange(1000):
+        for i in range(10):
+            for j in range(1000):
                 n = random.sample(nodes, 1)[0]
                 if n is None:
-                    print "NONE"
+                    print("NONE")
                 t.set_outgroup(n)
             t.set_outgroup(t.get_midpoint_outgroup())
             self.assertEqual(set([t.children[0], t.children[1]]), set([o1, o2]))
@@ -524,7 +527,7 @@ class Test_Coretype_Tree(unittest.TestCase):
             cluster_id2dist[cluster_id2] = n.dist
 
             
-        for i in xrange(100):
+        for i in range(100):
             outgroup = random.sample(t2.get_descendants(), 1)[0]
             t2.set_outgroup(outgroup)
             for n in t2.traverse():
@@ -780,7 +783,7 @@ class Test_Coretype_Tree(unittest.TestCase):
         [24, False, '((((k,(j,(i,(h,g)))),(z,y)),(x,(w,v))),(((u,t),(s,(r,q))),((p,o),(n,(m,l)))));', '(((w,v),(u,(t,s))),(((r,(q,(p,o))),((n,m),(l,(k,(j,(i,(h,g))))))),(z,(y,x))));'],
         [24, True, '((((n,m),((l,(k,j)),(i,(h,g)))),(z,y)),(x,(w,v)),((u,(t,(s,(r,q)))),(p,o)));', '(((r,q),(p,o)),((n,(m,l)),((k,j),((i,(h,g)),z))),((y,x),(w,(v,(u,(t,s))))));']]
 
-        print 'Testing RF...'
+        print('Testing RF...')
         for RF, unrooted, nw1, nw2 in samples:
             t1 = Tree(nw1)
             t2 = Tree(nw2)
@@ -790,7 +793,7 @@ class Test_Coretype_Tree(unittest.TestCase):
             self.assertEqual(rf_max, real_max)
             self.assertEqual(rf, RF)
 
-        print 'Testing RF with auto pruning...'
+        print('Testing RF with auto pruning...')
         # test auto pruned tree topology
         for RF, unrooted, nw1, nw2 in samples:
             # Add fake tips in the newick
@@ -805,7 +808,7 @@ class Test_Coretype_Tree(unittest.TestCase):
             self.assertEqual(rf_max, real_max)
             self.assertEqual(rf, RF)
 
-        print 'Testing RF with branch support thresholds...'
+        print('Testing RF with branch support thresholds...')
         # test discarding lowly supported branches
         for RF, unrooted, nw1, nw2 in samples:
             # Add fake internal nodes with low support
@@ -848,7 +851,7 @@ class Test_Coretype_Tree(unittest.TestCase):
             
         
     def test_monophyly(self):
-        print 'Testing monophyly checks...'
+        print('Testing monophyly checks...')
         t =  Tree("((((((a, e), i), o),h), u), ((f, g), j));")
         is_mono, monotype, extra  = t.check_monophyly(values=["a", "e", "i", "o", "u"], target_attr="name")
         self.assertEqual(is_mono, False)
@@ -861,7 +864,7 @@ class Test_Coretype_Tree(unittest.TestCase):
         self.assertEqual(monotype, "paraphyletic")
 
         # Test examples
-        print 'Testing monophyly check with unrooted trees'
+        print('Testing monophyly check with unrooted trees')
         t = PhyloTree('(aaa1, (aaa3, (aaa4, (bbb1, bbb2))));')
         is_mono, montype, extra = t.check_monophyly(values=set(['aaa']), target_attr='species', unrooted=True)
         self.assertEqual(is_mono, True)
@@ -902,7 +905,7 @@ class Test_Coretype_Tree(unittest.TestCase):
         self.assertEqual(is_mono, False)
         self.assertEqual(extra, set([t&'bbb3']))
                 
-        print 'Check monophyly randomization test'
+        print('Check monophyly randomization test')
         t = PhyloTree()
         t.populate(100)
         ancestor = t.get_common_ancestor(['aaaaaaaaaa', 'aaaaaaaaab', 'aaaaaaaaac'])
@@ -916,7 +919,7 @@ class Test_Coretype_Tree(unittest.TestCase):
             t.set_outgroup(x)
         assert(results, set([True]))
 
-        print 'Testing get_monophyly'
+        print('Testing get_monophyly')
         t =  Tree("((((((4, e), i)M1, o),h), u), ((3, 4), (i, june))M2);", format=1)
         # we annotate the tree using external data
         colors = {"a":"red", "e":"green", "i":"yellow", 

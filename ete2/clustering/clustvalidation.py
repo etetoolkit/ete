@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -39,6 +40,7 @@
 
 from ete2 import numpy
 from math import sqrt 
+from six.moves import range
 
 def safe_mean(values):
     """ Returns mean value discarding non finite values """
@@ -60,7 +62,7 @@ def safe_mean_vector(vectors):
     safe_mean = []
     safe_std  = []
 
-    for pos in xrange(length):
+    for pos in range(length):
         pos_mean = []
         for v in vectors:
             if numpy.isfinite(v[pos]):
@@ -128,7 +130,7 @@ def get_dunn_index(fdist, *clusters):
     """
 
     if len(clusters)<2:
-        raise ValueError, "At least 2 clusters are required"
+        raise ValueError("At least 2 clusters are required")
 
     intra_dist = []
     for c in clusters:
@@ -181,20 +183,20 @@ def square_euclidean_dist(v1,v2):
         return 0.0
     valids  = 0
     distance= 0.0
-    for i in xrange(len(v1)):
+    for i in range(len(v1)):
         if numpy.isfinite(v1[i]) and numpy.isfinite(v2[i]):
             valids += 1
             d = v1[i]-v2[i]
             distance += d*d
     if valids==0:
-        raise ValueError, "Cannot calculate values"
+        raise ValueError("Cannot calculate values")
     return  distance/valids
 
 try: 
    from scipy import stats
 except ImportError: 
     try:
-        import stats
+        from . import stats
         default_dist = spearman_dist
     except ImportError:
         default_dist = euclidean_dist

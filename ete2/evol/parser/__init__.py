@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -40,5 +41,5 @@
 #        Author: Francois-Jose Serra
 # Creation Date: 2010/11/03 21:20:05
 
-from codemlparser import *
-from slrparser import *
+from .codemlparser import *
+from .slrparser import *
