@@ -139,7 +139,7 @@ class Model:
         ''' % (self.name,
                self.lnL if 'lnL' in self.stats else 'None',
                self.np  if 'np'  in self.stats else 'None',
-               ', '.join(list(self.sites.keys()))  if self.sites else 'None',
+               ', '.join(sorted(list(self.sites.keys())))  if self.sites else 'None',
                str_site if self.classes else 'None',
                str_mark if self.branches else 'None'
            )
