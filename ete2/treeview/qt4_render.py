@@ -783,9 +783,9 @@ def render_floatings(n2i, n2f, img, float_layer, float_behind_layer):
             item = n2i[node]
             fb.setParentItem(parent_layer)
 
-            if item.extra_branch_line:
+            try:
                 xtra =  item.extra_branch_line.line().dx()
-            else:
+            except AttributeError:
                 xtra = 0
 
             if img.mode == "c":
