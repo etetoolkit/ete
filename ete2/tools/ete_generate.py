@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -36,7 +37,8 @@
 #
 # 
 # #END_LICENSE#############################################################
-from common import dump
+from .common import dump
+from six.moves import range
 
 DESC = ""
 
@@ -49,7 +51,7 @@ def run(args):
     import random
     from ete2 import Tree
     
-    for n in xrange(args.number):
+    for n in range(args.number):
         t = Tree()
         t.populate(args.size, random_branches=args.random_branches)
         dump(t)

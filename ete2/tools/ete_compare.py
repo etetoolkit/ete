@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -36,7 +38,8 @@
 #
 # 
 # #END_LICENSE#############################################################
-from common import as_str, shorten_str
+from .common import as_str, shorten_str
+from six.moves import map
 
 DESC = """
  - ete compare -
@@ -103,7 +106,7 @@ def run(args):
               "%ref_branches", "subtrees", "treekoD" ]
 
     if args.taboutput:
-        print '# ' + '\t'.join(header)
+        print('# ' + '\t'.join(header))
     elif args.show_mismatches or args.show_matches:
         pass
     else: 
@@ -126,7 +129,7 @@ def run(args):
 
 
             if args.taboutput:
-                print '\t'.join(map(str, [shorten_str(stree_name,25),
+                print('\t'.join(map(str, [shorten_str(stree_name,25),
                                              shorten_str(rtree_name,25),
                                              r['effective_tree_size'],
                                              r['norm_rf'], 
@@ -134,12 +137,12 @@ def run(args):
                                              r["source_edges_in_ref"],
                                              r["ref_edges_in_source"],
                                              r['source_subtrees'],
-                                             r['treeko_dist']]))
+                                             r['treeko_dist']])))
             elif args.show_mismatches:
                 mismatches_src = r['source_edges'] - r['ref_edges']
                 mismatches_ref = r['ref_edges'] - r['source_edges']
                 for tag, part in [("src:", mismatches_src), ("target:", mismatches_ref)]:
-                    print "%s\t%s" %(tag, '|'.join([','.join(p) for p in part]))
+                    print("%s\t%s" %(tag, '|'.join([','.join(p) for p in part])))
             elif 0:
                 # EXPERIMENTAL
                 from pprint import pprint
@@ -151,12 +154,12 @@ def run(args):
                 for part, pairs in iter_differences(mismatches_src,
                                                     mismatches_ref,
                                                     unrooted=args.unrooted):
-                    print part
+                    print(part)
                     for d, r in sorted(pairs):
-                        print "  ", d, r
+                        print("  ", d, r)
 
             else:
-                print_table([map(as_str, [shorten_str(stree_name,25),
+                print_table([list(map(as_str, [shorten_str(stree_name,25),
                                           shorten_str(rtree_name,25),
                                           r['effective_tree_size'],
                                           r['norm_rf'], 
@@ -164,7 +167,7 @@ def run(args):
                                           r["source_edges_in_ref"],
                                           r["ref_edges_in_source"],
                                           r['source_subtrees'],
-                                          r['treeko_dist']])],
+                                          r['treeko_dist']]))],
                             fix_col_width = col_sizes, wrap_style='cut')
                 
 def euc_dist(v1, v2):

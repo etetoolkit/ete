@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 import unittest
 
 from ete2 import *
@@ -183,7 +185,7 @@ class Test_phylo_module(unittest.TestCase):
         
         # Check that duplications are detected
         dup1 = t.get_common_ancestor("Hsa_001", "Hsa_004")
-        print dup1
+        print(dup1)
         self.assertEqual(dup1.evoltype, "D")
 
         # This duplication is not in the seed path

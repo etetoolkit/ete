@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -44,6 +45,7 @@
 # from __future__ import division # unnecessary? 
 from ete2 import Tree
 from math import log, exp
+from six.moves import range
 
 def get_rooting(tol, seed_species, agename = False):
     '''
@@ -158,7 +160,7 @@ def translate(sequence):
         except KeyError:
             newcod = []
             for nt in sequence[n:n+3]:
-                if ambig.has_key(nt):
+                if nt in ambig:
                     newcod.append(ambig[nt])
                 else :
                     newcod.append(list (nt))
@@ -199,9 +201,9 @@ def chi_high(x, df):
     x = fix_rounding_error(x)
     
     if x < 0:
-        raise ValueError, "chi_high: x must be >= 0 (got %s)." % x
+        raise ValueError("chi_high: x must be >= 0 (got %s)." % x)
     if df < 1:
-        raise ValueError, "chi_high: df must be >= 1 (got %s)." % df
+        raise ValueError("chi_high: df must be >= 1 (got %s)." % df)
     return igamc(df/2, x/2)
 
 def fix_rounding_error(x):
@@ -271,7 +273,7 @@ def lgam(x):
         w = lgam(q)
         p = floor(q)
         if p == q:
-            raise OverflowError, "lgam returned infinity."
+            raise OverflowError("lgam returned infinity.")
         i = p
         if i & 1 == 0:
             sgngam = -1
@@ -283,7 +285,7 @@ def lgam(x):
             z = p - q
         z = q * sin(PI * z)
         if z == 0:
-            raise OverflowError, "lgam returned infinity."
+            raise OverflowError("lgam returned infinity.")
         z = LOGPI - log(z) - w
         return z
     if x < 13:
@@ -296,7 +298,7 @@ def lgam(x):
             z *= u
         while u < 2:
             if u == 0:
-                raise OverflowError, "lgam returned infinity."
+                raise OverflowError("lgam returned infinity.")
             z /= u
             p += 1
             u = x + p
@@ -312,7 +314,7 @@ def lgam(x):
         p = x * polevl(x, GB)/polevl(x,GC)
         return log(z) + p
     if x > MAXLGM:
-        raise OverflowError, "Too large a value of x in lgam."
+        raise OverflowError("Too large a value of x in lgam.")
     q = (x - 0.5) * log(x) - x + LS2PI
     if x > 1.0e8:
         return q

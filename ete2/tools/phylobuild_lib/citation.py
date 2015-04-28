@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -52,10 +54,10 @@ class Citator(object):
                               subsequent_indent="      ",
                               replace_whitespace=False)
         citations = sorted(self.citations)
-        print "   ========================================================================"
-        print "         The following published software and/or methods were used.        "
-        print "               *** Please, do not forget to cite them! ***                 "
-        print "   ========================================================================"
+        print("   ========================================================================")
+        print("         The following published software and/or methods were used.        ")
+        print("               *** Please, do not forget to cite them! ***                 ")
+        print("   ========================================================================")
         for ref in citations:
-            print wrapper.fill(ref.replace("\n", " ").strip())
+            print(wrapper.fill(ref.replace("\n", " ").strip()))
          

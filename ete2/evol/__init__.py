@@ -42,6 +42,7 @@
 
 init of evol plugin
 """
+from __future__ import absolute_import
 
 __author__  = "Francois-Jose Serra"
 __email__   = "francois@barrabin.org"
@@ -49,9 +50,9 @@ __licence__ = "GPLv3"
 __version__ = "0.0"
 
 
-from parser.codemlparser import *
-from evoltree            import *
-from model               import Model
+from .parser.codemlparser import *
+from .evoltree            import *
+from .model               import Model
 __all__ = evoltree.__all__
 
 

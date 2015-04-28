@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -37,9 +38,9 @@
 # 
 # #END_LICENSE#############################################################
 from sys import stdout
-import _phyloxml as main
-from _phyloxml import * 
-from _phyloxml_tree import PhyloxmlTree 
+from . import _phyloxml as main
+from ._phyloxml import * 
+from ._phyloxml_tree import PhyloxmlTree 
 
 _phyloxml.Phylogeny.subclass = PhyloxmlTree
 

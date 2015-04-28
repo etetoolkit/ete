@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -37,11 +39,14 @@
 # 
 # #END_LICENSE#############################################################
 from StringIO import StringIO
-import cPickle
+import six.moves.cPickle
 from collections import defaultdict
 import logging
 import os
 import time
+import six
+from six.moves import map
+from six.moves import range
 log = logging.getLogger("main")
 
 from ete2.tools.phylobuild_lib.master_task import CogSelectorTask
@@ -87,13 +92,13 @@ class BrhCogCreator(CogSelectorTask):
             # self.cogs.append(map(encode_seqname, co))
             encoded_names = db.translate_names(co)
             if len(encoded_names) != len(co):
-                print set(co) - set(encoded_names.keys())
+                print(set(co) - set(encoded_names.keys()))
                 raise DataError("Some sequence ids could not be translated")
-            self.cogs.append(encoded_names.values())
+            self.cogs.append(list(encoded_names.values()))
 
         # Sort Cogs according to the md5 hash of its content. Random
         # sorting but kept among runs
-        map(lambda x: x.sort(), self.cogs)
+        list(map(lambda x: x.sort(), self.cogs))
         self.cogs.sort(lambda x,y: cmp(md5(','.join(x)), md5(','.join(y))))
         log.log(28, "%s COGs detected" %len(self.cogs))                
         tm_end = time.ctime()
@@ -132,7 +137,7 @@ def brh_cogs(DB, species, missing_factor=0.0, seed_sp=None, min_score=0):
             if tax in species: 
                 sp2size[tax] = counter
             
-        sorted_sp = sorted(sp2size.items(), lambda x,y: cmp(x[1],y[1]))
+        sorted_sp = sorted(list(sp2size.items()), lambda x,y: cmp(x[1],y[1]))
         log.log(24, sorted_sp[:6])
         largest_sp = sorted_sp[-1][0]
         sp_to_test = [largest_sp]
@@ -179,13 +184,13 @@ def brh_cogs(DB, species, missing_factor=0.0, seed_sp=None, min_score=0):
             s2 = (sp2, seq2)
             cog_candidates[(sp1, seq1)].update([s1, s2])
 
-        all_cogs = [cand for cand in cog_candidates.values() if
+        all_cogs = [cand for cand in list(cog_candidates.values()) if
                     len(cand) >= min_species]
         
         cog_sizes = [len(cog) for cog in all_cogs]
         cog_spsizes = [len(set([e[0] for e in cog])) for cog in all_cogs]
 
-        if [1 for i in xrange(len(cog_sizes)) if cog_sizes[i] != cog_spsizes[i]]:
+        if [1 for i in range(len(cog_sizes)) if cog_sizes[i] != cog_spsizes[i]]:
             # for i in xrange(len(cog_sizes)):
             #     if cog_sizes[i] != cog_spsizes[i]:
             #         print cog_sizes[i], cog_spsizes[i]
@@ -233,7 +238,7 @@ def brh_cogs(DB, species, missing_factor=0.0, seed_sp=None, min_score=0):
 
     recoded_cogs = []
     for cog in best_cogs:
-        named_cog = map(lambda x: "%s%s%s" %(x[0], GLOBALS["spname_delimiter"],x[1]), cog)
+        named_cog = ["%s%s%s" %(x[0], GLOBALS["spname_delimiter"],x[1]) for x in cog]
         recoded_cogs.append(named_cog)
 
     return recoded_cogs, analysis_txt.getvalue()
@@ -274,7 +279,7 @@ def brh_cogs2(DB, species, missing_factor=0.0, seed_sp=None, min_score=0):
             if tax in species: 
                 sp2size[tax] = counter
             
-        sorted_sp = sorted(sp2size.items(), lambda x,y: cmp(x[1],y[1]))
+        sorted_sp = sorted(list(sp2size.items()), lambda x,y: cmp(x[1],y[1]))
         log.log(24, sorted_sp[:6])
         largest_sp = sorted_sp[-1][0]
         sp_to_test = [largest_sp]
@@ -288,7 +293,7 @@ def brh_cogs2(DB, species, missing_factor=0.0, seed_sp=None, min_score=0):
         log.log(26, "Finding best COG selection...")
         seed2size = get_sorted_seeds(seed_sp, species, sp_to_test, min_species, DB)
         size_analysis = []
-        for seedname, content in seed2size.iteritems():
+        for seedname, content in six.iteritems(seed2size):
             cog_sizes = [size for seq, size in content]
             mx, avg = _max(cog_sizes), round(_mean(cog_sizes))
             size_analysis.append([seedname, mx, avg, len(content)])
@@ -298,7 +303,7 @@ def brh_cogs2(DB, species, missing_factor=0.0, seed_sp=None, min_score=0):
         print_as_table(size_analysis[:25], stdout=analysis_txt,
                    header=["Seed","largest COG", "avg COG size", "total COGs"])
         if size_analysis[0][1] < len(species)-1:
-            print size_analysis[0][1]
+            print(size_analysis[0][1])
             raise ValueError("Current COG selection parameters do not permit to cover all species")
        
     log.log(28, analysis_txt.getvalue())
@@ -333,7 +338,7 @@ def brh_cogs2(DB, species, missing_factor=0.0, seed_sp=None, min_score=0):
         s2 = (sp2, seq2)
         cog_candidates[(sp1, seq1)].update([s1, s2])
 
-    all_cogs = [cand for cand in cog_candidates.values() if
+    all_cogs = [cand for cand in list(cog_candidates.values()) if
                 len(cand) >= min_species]
 
     # CHECK CONSISTENCY
@@ -343,13 +348,13 @@ def brh_cogs2(DB, species, missing_factor=0.0, seed_sp=None, min_score=0):
     pre_selected_seqs = set([v[0] for v in seed2size[seed]])
     if len(seqs & pre_selected_seqs) != len(set(seed2size[seed])) or\
             len(seqs & pre_selected_seqs) != len(seqs): 
-        print "old method seqs", len(seqs), "new seqs", len(set(seed2size[seed])), "Common", len(seqs & pre_selected_seqs)
+        print("old method seqs", len(seqs), "new seqs", len(set(seed2size[seed])), "Common", len(seqs & pre_selected_seqs))
         raise ValueError("ooops")
         
     cog_sizes = [len(cog) for cog in all_cogs]
     cog_spsizes = [len(set([e[0] for e in cog])) for cog in all_cogs]
 
-    if [1 for i in xrange(len(cog_sizes)) if cog_sizes[i] != cog_spsizes[i]]:
+    if [1 for i in range(len(cog_sizes)) if cog_sizes[i] != cog_spsizes[i]]:
         raise ValueError("Inconsistent COG found")
             
     if cog_sizes: 
@@ -358,7 +363,7 @@ def brh_cogs2(DB, species, missing_factor=0.0, seed_sp=None, min_score=0):
     
     recoded_cogs = []
     for cog in all_cogs:
-        named_cog = map(lambda x: "%s%s%s" %(x[0], GLOBALS["spname_delimiter"],x[1]), cog)
+        named_cog = ["%s%s%s" %(x[0], GLOBALS["spname_delimiter"],x[1]) for x in cog]
         recoded_cogs.append(named_cog)
 
     return recoded_cogs, analysis_txt.getvalue()
@@ -389,7 +394,7 @@ def get_sorted_seeds(seed, species, sp_to_test, min_species, DB):
             counter[seqid].update(set(targets.split(",")) & species)
             
         # Filter out too small COGs
-        valid_seqs = [(k, len(v)) for k, v in counter.iteritems() if
+        valid_seqs = [(k, len(v)) for k, v in six.iteritems(counter) if
                       len(v)>= min_species-1]
         
         seed2count[seed] = valid_seqs
@@ -488,12 +493,12 @@ def get_best_selection(cogs_selections, species):
             print_as_table([data[1:]], header=header, print_header=False, stdout=cog_analysis)
 
     #raw_input("Press")
-    print cog_analysis.getvalue()
+    print(cog_analysis.getvalue())
     #best_cog_selection = int(raw_input("choose:"))
     return cogs_selections[best_cog_selection], cog_analysis
 
 def _analyze_cog_selection(all_cogs):
-    print "total cogs:", len(all_cogs)
+    print("total cogs:", len(all_cogs))
     sp2cogcount = {}
     size2cogs = {}
     for cog in all_cogs:
@@ -502,24 +507,24 @@ def _analyze_cog_selection(all_cogs):
             sp2cogcount[sp] = sp2cogcount.setdefault(sp, 0)+1
         size2cogs.setdefault(len(cog), []).append(cog)
 
-    sorted_spcs = sorted(sp2cogcount.items(), lambda x,y: cmp(x[1], y[1]))
+    sorted_spcs = sorted(list(sp2cogcount.items()), lambda x,y: cmp(x[1], y[1]))
     # Take only first 20 species 
     coverages = [s[1] for s in sorted_spcs][:20]
     spnames  = [str(s[0])+ s[0] for s in sorted_spcs][:20]
     pylab.subplot(1,2,1)
-    pylab.bar(range(len(coverages)), coverages)
+    pylab.bar(list(range(len(coverages))), coverages)
     labels = pylab.xticks(pylab.arange(len(spnames)), spnames)
     pylab.subplots_adjust(bottom=0.35)
     pylab.title(str(len(all_cogs))+" COGs")
     pylab.setp(labels[1], 'rotation', 90,fontsize=10, horizontalalignment = 'center')
     pylab.subplot(1,2,2)
     pylab.title("Best COG contains "+str(max(size2cogs.values()))+" species" )
-    pylab.bar(range(1,216), [len(size2cogs.get(s, [])) for s in range(1,216)])
+    pylab.bar(list(range(1,216)), [len(size2cogs.get(s, [])) for s in range(1,216)])
     pylab.show()
   
 
 def cog_info(candidates, sp2hits):
-    sp_coverages = [hits/float(len(candidates)) for hits in sp2hits.values()]
+    sp_coverages = [hits/float(len(candidates)) for hits in list(sp2hits.values())]
     species_covered = len(set(sp2hits.keys()))+1
     min_cov = _min(sp_coverages)
     max_cov = _min(sp_coverages)

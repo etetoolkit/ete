@@ -1,27 +1,29 @@
+from __future__ import absolute_import
+from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
 # This file is part of the Environment for Tree Exploration program
 # (ETE).  http://etetoolkit.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 # License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 
+#
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
-# 
-# ETE is distributed under the GPL copyleft license (2008-2015).  
+#
+# ETE is distributed under the GPL copyleft license (2008-2015).
 #
 # If you make use of ETE in published work, please cite:
 #
@@ -29,12 +31,12 @@
 # ETE: a python Environment for Tree Exploration. Jaime BMC
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
-# Note that extra references to the specific methods implemented in 
-# the toolkit may be available in the documentation. 
-# 
+# Note that extra references to the specific methods implemented in
+# the toolkit may be available in the documentation.
+#
 # More info at http://etetoolkit.org. Contact: huerta@embl.de
 #
-# 
+#
 # #END_LICENSE#############################################################
 
 
@@ -42,6 +44,8 @@ import os
 import string
 from sys import stderr as STDERR
 from re import search
+from six.moves import map
+from six.moves import range
 
 def read_paml (source, obj=None, header_delimiter="\t", fix_duplicates=True):
     """ Reads a collection of sequences econded in PAML format... that is, something between PHYLIP and fasta
@@ -72,7 +76,7 @@ def read_paml (source, obj=None, header_delimiter="\t", fix_duplicates=True):
     ATGATG
     >seq3
     ATGATG
-    
+
     """
 
     if obj is None:
@@ -103,19 +107,19 @@ def read_paml (source, obj=None, header_delimiter="\t", fix_duplicates=True):
             line = line.replace('>','')
             # Checks if previous name had seq
             if seq_id>-1 and SC.id2seq[seq_id] == "":
-                raise Exception, "No sequence found for "+seq_name
+                raise Exception("No sequence found for "+seq_name)
 
             seq_id += 1
             # Takes header info
-            seq_header_fields = map(string.strip, line.split(header_delimiter))
+            seq_header_fields = list(map(str.strip, line.split(header_delimiter)))
             seq_name = seq_header_fields[0]
 
             # Checks for duplicated seq names
             if fix_duplicates and seq_name in names:
-                tag = str(len([k for k in SC.name2id.keys() if k.endswith(seq_name)]))
+                tag = str(len([k for k in list(SC.name2id.keys()) if k.endswith(seq_name)]))
                 old_name = seq_name
                 seq_name = tag+"_"+seq_name
-                print >>STDERR, "Duplicated entry [%s] was renamed to [%s]" %(old_name, seq_name)
+                print("Duplicated entry [%s] was renamed to [%s]" %(old_name, seq_name), file=STDERR)
 
             # stores seq_name
             SC.id2seq[seq_id]     = ""
@@ -133,7 +137,7 @@ def read_paml (source, obj=None, header_delimiter="\t", fix_duplicates=True):
                     continue
                 if line.startswith('\n'):
                     continue
-                raise Exception, "Error reading sequences: Wrong format.\n"+line
+                raise Exception("Error reading sequences: Wrong format.\n"+line)
             elif in_seq:
                 # removes all white spaces in line
                 s = line.strip().replace(" ","")
@@ -144,10 +148,10 @@ def read_paml (source, obj=None, header_delimiter="\t", fix_duplicates=True):
                     if len(SC.id2seq[seq_id]) == len_seq:
                         in_seq=False
                     elif len(SC.id2seq[seq_id]) > len_seq:
-                        raise  Exception, "Error reading sequences: Wrong sequence length.\n"+line
+                        raise  Exception("Error reading sequences: Wrong sequence length.\n"+line)
 
     if seq_name and SC.id2seq[seq_id] == "":
-        print >>STDERR, seq_name,"has no sequence"
+        print(seq_name,"has no sequence", file=STDERR)
         return None
 
     # Everything ok
@@ -170,7 +174,7 @@ def write_paml(sequences, outfile = None, seqwidth = 80):
 
 def _seq2str(seq, seqwidth = 80):
     sequence = ""
-    for i in xrange(0,len(seq),seqwidth):
+    for i in range(0,len(seq),seqwidth):
         sequence+= seq[i:i+seqwidth] + "\n"
     return sequence
 

@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -40,6 +42,7 @@ import sys
 import argparse
 from string import strip
 import operator
+from six.moves import map
 
 __CITATION__ = '''#       ** If you use this software for a published work, please cite: **
 #  
@@ -64,19 +67,19 @@ class Logger(object):
     
     def error(self, *args):
         if LOG_LEVEL >=1:
-            print >>self.out, "ERROR - ", ' '.join(map(str, args))
+            print("ERROR - ", ' '.join(map(str, args)), file=self.out)
             
     def warn(self, *args):
         if LOG_LEVEL >=2:
-            print >>self.out, "WARN  - ", ' '.join(map(str, args))
+            print("WARN  - ", ' '.join(map(str, args)), file=self.out)
             
     def info(self, *args):
         if LOG_LEVEL >=3:
-            print >>self.out, "INFO  - ", ' '.join(map(str, args))
+            print("INFO  - ", ' '.join(map(str, args)), file=self.out)
         
     def debug(self, *args):
         if LOG_LEVEL >=4:
-            print >>self.out, "DEBUG - ", ' '.join(map(str, args))
+            print("DEBUG - ", ' '.join(map(str, args)), file=self.out)
     
 log = Logger(sys.stderr)
          
@@ -159,7 +162,7 @@ def dump(t, features=None):
     #if getattr(args, "output", None):
     #    t.write(format=0, features=features)
     #else:
-    print t.write(format=0, features=features)
+    print(t.write(format=0, features=features))
 
 def populate_main_args(main_args_p):
     main_args = main_args_p.add_argument_group('GENERAL OPTIONS')

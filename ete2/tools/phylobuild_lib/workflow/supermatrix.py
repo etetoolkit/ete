@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -48,6 +50,7 @@ from ete2.tools.phylobuild_lib import db
 from ete2.tools.phylobuild_lib.workflow.common import (process_new_tasks, IterConfig,
                                     get_next_npr_node, get_iternumber)
 from ete2.tools.phylobuild_lib.logger import logindent
+import six
 
 log = logging.getLogger("main")
 
@@ -66,7 +69,7 @@ def annotate_node(t, final_task):
     n = cladeid2node[t.cladeid]
     n.add_features(size=final_task.size)
     for task in alltasks:
-        params = ["%s %s" %(k,v) for k,v in  task.args.iteritems() 
+        params = ["%s %s" %(k,v) for k,v in  six.iteritems(task.args) 
                   if not k.startswith("_")]
         params = " ".join(params)
 
@@ -119,7 +122,7 @@ def process_task(task, wkname, npr_conf, nodeid2info):
         # for the concat alg task. If something changes, concat alg will change
         # and the associated tree will be rebuilt
         config_blocks = set([wkname])
-        for key, value in conf[wkname].iteritems():
+        for key, value in six.iteritems(conf[wkname]):
             if isinstance(value, list) or  isinstance(value, tuple) \
                     or isinstance(value, set):
                 for elem in value:
@@ -158,8 +161,8 @@ def process_task(task, wkname, npr_conf, nodeid2info):
         # Register Tree constrains
         constrain_tree = "(%s, (%s));" %(','.join(sorted(outgroups)), 
                                          ','.join(sorted(targets)))
-        _outs = "\n".join(map(lambda name: ">%s\n0" %name, sorted(outgroups)))
-        _tars = "\n".join(map(lambda name: ">%s\n1" %name, sorted(targets)))
+        _outs = "\n".join([">%s\n0" %name for name in sorted(outgroups)])
+        _tars = "\n".join([">%s\n1" %name for name in sorted(targets)])
         constrain_alg = '\n'.join([_outs, _tars])
         db.add_task_data(concat_job.nodeid, DATATYPES.constrain_tree, constrain_tree)
         db.add_task_data(concat_job.nodeid, DATATYPES.constrain_alg, constrain_alg)
@@ -226,11 +229,11 @@ def process_task(task, wkname, npr_conf, nodeid2info):
                     n2content = tcopy.get_cached_content()
                     broken_branches, broken_clades, broken_clade_sizes, tax2name = ncbi.get_broken_branches(tcopy, n2content)
                     log.log(28, 'restricting NPR to broken clades: '+
-                            colorify(', '.join(map(lambda x: "%s"%tax2name[x], broken_clades)), "wr"))
+                            colorify(', '.join(["%s"%tax2name[x] for x in broken_clades]), "wr"))
                     target_cladeids = set()
                     for branch in broken_branches:
-                        print branch.get_ascii(attributes=['spname', 'taxid'], compact=True)
-                        print map(lambda x: "%s"%tax2name[x], broken_branches[branch])
+                        print(branch.get_ascii(attributes=['spname', 'taxid'], compact=True))
+                        print(["%s"%tax2name[x] for x in broken_branches[branch]])
                         target_cladeids.add(branch.cladeid)
 
                 for node, seqs, outs, wkname in get_next_npr_node(task.configid, ttree,

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -37,7 +38,7 @@
 # 
 # #END_LICENSE#############################################################
 from PyQt4 import QtCore, QtGui
-from main import _leaf
+from .main import _leaf
 
 class RectPartition(QtGui.QGraphicsRectItem):
     def __init__(self, *args):

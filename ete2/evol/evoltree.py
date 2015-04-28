@@ -3,25 +3,25 @@
 #
 # This file is part of the Environment for Tree Exploration program
 # (ETE).  http://etetoolkit.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 # License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 
+#
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
-# 
-# ETE is distributed under the GPL copyleft license (2008-2015).  
+#
+# ETE is distributed under the GPL copyleft license (2008-2015).
 #
 # If you make use of ETE in published work, please cite:
 #
@@ -29,12 +29,12 @@
 # ETE: a python Environment for Tree Exploration. Jaime BMC
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
-# Note that extra references to the specific methods implemented in 
-# the toolkit may be available in the documentation. 
-# 
+# Note that extra references to the specific methods implemented in
+# the toolkit may be available in the documentation.
+#
 # More info at http://etetoolkit.org. Contact: huerta@embl.de
 #
-# 
+#
 # #END_LICENSE#############################################################
 #!/usr/bin/python
 """
@@ -43,6 +43,8 @@ variables and integrate them within phylogenetic trees. It inheritates
 the coretype PhyloNode and add some speciall features to the the node
 instances.
 """
+from __future__ import absolute_import
+from six.moves import map
 
 __author__     = "Francois-Jose Serra"
 __email__      = "francois@barrabin.org"
@@ -104,11 +106,11 @@ class EvolNode(PhyloNode):
     :argument sp_naming_function: function to infer species name.
     :argument format: type of newick format
     :argument binpath: path to binaries, in case codeml or SLR are not in global path.
-    
+
     """
 
     def __init__(self, newick=None, alignment=None, alg_format="fasta",
-                 sp_naming_function=_parse_species, format=0, 
+                 sp_naming_function=_parse_species, format=0,
                   binpath=''):
         '''
         freebranch: path to find codeml output of freebranch model.
@@ -126,7 +128,7 @@ class EvolNode(PhyloNode):
         # initialize node marks
         self.mark_tree([])
 
-        
+
     def _label_internal_nodes(self, nid=None):
         """
         nid needs to be a list in order to keep count through recursivity
@@ -156,7 +158,7 @@ class EvolNode(PhyloNode):
             nid += 1
         self.add_feature('node_id', nid)
         self._label_internal_nodes([nid])
-        
+
     def get_descendant_by_node_id(self, idname):
         '''
         returns node list corresponding to a given idname
@@ -170,7 +172,7 @@ class EvolNode(PhyloNode):
         except AttributeError:
             warn('Should be first labelled as paml ' + \
                  '(automatically done when alignemnt is loaded)')
-        
+
     def __write_algn(self, fullpath):
         """
         to write algn in paml format
@@ -182,23 +184,23 @@ class EvolNode(PhyloNode):
             seq_group.name2id [n.name   ] = n.node_id
         seq_group.write(outfile=fullpath, format='paml')
 
-        
+
     def run_model(self, model_name, ctrl_string='', keep=True, **kwargs):
         '''
-        To compute evolutionnary models.     e.g.: b_free_lala.vs.lele, will launch one free branch model, and store 
+        To compute evolutionnary models.     e.g.: b_free_lala.vs.lele, will launch one free branch model, and store
         it in "WORK_DIR/b_free_lala.vs.lele" directory
-        
+
         WARNING: this functionality needs to create a working directory in "rep"
-        
+
         WARNING: you need to have codeml and/or SLR in your path
 
         The models available are:
 
         =========== ============================= ==================
-        Model name  Description                   Model kind       
+        Model name  Description                   Model kind
         =========== ============================= ==================\n%s
         =========== ============================= ==================\n
-        
+
         :argument model_name: a string like "model-name[.some-secondary-name]" (e.g.: "fb.my_first_try", or just "fb")
                               * model-name is compulsory, is the name of the model (see table above for the full list)
                               * the second part is accessory, it is to avoid over-writing models with the same name.
@@ -233,7 +235,7 @@ class EvolNode(PhyloNode):
                              'or wrong path to binary\n').format(bin))
         run, err = proc.communicate()
         if err is not None:
-            warn("ERROR: codeml not found!!!\n" + 
+            warn("ERROR: codeml not found!!!\n" +
                  "       define your variable EvolTree.execpath")
             return 1
         if 'error' in run or 'Error' in run:
@@ -245,20 +247,18 @@ class EvolNode(PhyloNode):
             self.link_to_evol_model(os.path.join(fullpath,'out'), model_obj)
     sep = '\n'
     run_model.__doc__ = run_model.__doc__ % \
-                        (sep.join(map(lambda x: \
-                                      '          %-8s   %-27s   %-15s  ' % \
-                                      ('%s' % (x), AVAIL[x]['evol'], AVAIL[x]['typ']),
-                                      sorted (sorted (AVAIL.keys()), cmp=lambda x, y : \
-                                              cmp(AVAIL[x]['typ'], AVAIL[y]['typ']),
-                                              reverse=True))),
-                         ', '.join(PARAMS.keys()))
+                        (sep.join(['          %-8s   %-27s   %-15s  ' % \
+                                      ('%s' % (x), AVAIL[x]['evol'], AVAIL[x]['typ']) for x in sorted (sorted (AVAIL.keys()), key=lambda x: \
+                                              AVAIL[x]['typ'],
+                                              reverse=True)]),
+                         ', '.join(list(PARAMS.keys())))
 
 
     #def test_codon_model(self):
     #    for c_frq in range(4):
     #        self.run_model('M0.model_test-'+str(c_frq), CodonFreq=c_frq)
     #    if self.get_most_likely('M0.model_test-1', 'M0.model_test-0') > 0.05:
-    #        
+    #
     #    self.get_most_likely('M0.model_test-2', 'M0.model_test-0')
     #    self.get_most_likely('M0.model_test-3', 'M0.model_test-0')
     #    self.get_most_likely('M0.model_test-2', 'M0.model_test-1')
@@ -274,7 +274,7 @@ class EvolNode(PhyloNode):
         :argument alignment: path to alignment or string
         :argument alg_format: one of fasta phylip or paml
         :argument True alignment: set to False in case we want to keep it untranslated
-        
+
         '''
         super(EvolTree, self).link_to_alignment(alignment,
                                                 alg_format=alg_format, **kwargs)
@@ -296,12 +296,12 @@ class EvolNode(PhyloNode):
         :argument layout: a layout function
         :argument None tree_style: tree_style object
         :argument Nonehistface: an histogram face function. This is only to plot selective pressure among sites
-    
+
         '''
         if TREEVIEW:
             if not tree_style:
                 ts = TreeStyle()
-            else: 
+            else:
                 ts = tree_style
             if histfaces:
                 for hist in histfaces:
@@ -323,7 +323,7 @@ class EvolNode(PhyloNode):
             super(EvolTree, self).show(layout=layout, tree_style=ts)
         else:
             raise ValueError("Treeview module is disabled")
-    
+
 
     def render(self, file_name, layout=None, w=None, h=None,
                tree_style=None, header=None, histfaces=None):
@@ -338,7 +338,7 @@ class EvolNode(PhyloNode):
         if TREEVIEW:
             if not tree_style:
                 ts = TreeStyle()
-            else: 
+            else:
                 ts = tree_style
             if histfaces:
                 for hist in histfaces:
@@ -369,17 +369,17 @@ class EvolNode(PhyloNode):
         takes a "marks" argument that should be a list of #1,#1,#2
         e.g.:
         ::
-        
+
           t=Tree.mark_tree([2,3], marks=["#1","#2"])
 
         :argument node_ids: list of node ids (have a look to node.node_id)
         :argument False verbose: warn if marks do not correspond to codeml standard
         :argument kargs: mainly for the marks key-word which needs a list of marks (marks=['#1', '#2'])
-        
+
         '''
         from re import match
-        node_ids = map (int , node_ids)
-        if kargs.has_key('marks'):
+        node_ids = list(map (int , node_ids))
+        if 'marks' in kargs:
             marks = list(kargs['marks'])
         else:
             marks = ['#1']*len (node_ids)
@@ -392,7 +392,7 @@ class EvolNode(PhyloNode):
                              marks[node_ids.index(node.node_id)])==None)\
                              and verbose:
                     warn('WARNING: marks should be "#" sign directly '+\
-                         'followed by integer\n' + self.mark_tree.func_doc)
+                         'followed by integer\n' + self.mark_tree.__doc__)
                 node.add_feature('mark', ' '+marks[node_ids.index(node.node_id)])
             elif not 'mark' in node.features:
                 node.add_feature('mark', '')
@@ -403,17 +403,17 @@ class EvolNode(PhyloNode):
           * free-branch model ('fb') will append evol values to tree
           * Site models (M0, M1, M2, M7, M8) will give evol values by site
             and likelihood
-        
+
         :argument path: path to outfile containing model computation result
         :argument model: either the name of a model, or a Model object (usually empty)
-        
+
         '''
         if type(model) == str :
             model = Model(model, self, path)
         else:
             model._load(path)
         # new entry in _models dict
-        while self._models.has_key(model.name):
+        while model.name in self._models:
             model.name = model.name.split('__')[0] + str(
                 (int(model.name.split('__')[1])
                  +1)  if '__' in model.name else 0)
@@ -427,7 +427,7 @@ class EvolNode(PhyloNode):
     def get_evol_model(self, modelname):
         '''
         returns one precomputed model
-        
+
         :argument modelname: string of the name of a model object stored
         :returns: Model object
         '''
@@ -435,7 +435,7 @@ class EvolNode(PhyloNode):
             return self._models [modelname]
         except KeyError:
             warn("Model %s not found." % (modelname))
-            
+
 
     def write(self, features=None, outfile=None, format=10):
         """
@@ -460,42 +460,42 @@ class EvolNode(PhyloNode):
     write.__doc__ += super(PhyloNode, PhyloNode()).write.__doc__.replace('argument format',
                                                                          'argument 10 format')
 
-    
+
     def get_most_likely(self, altn, null):
         '''
         Returns pvalue of LRT between alternative model and null model.
-        
+
         usual comparison are:
 
-        ============ ======= =========================================== 
-         Alternative  Null    Test                                      
-        ============ ======= =========================================== 
-          M2          M1      PS on sites (M2 prone to miss some sites) 
-                              (Yang 2000)                               
-          M3          M0      test of variability among sites           
-          M8          M7      PS on sites                               
-                              (Yang 2000)                               
-          M8          M8a     RX on sites?? think so....                
-          bsA         bsA1    PS on sites on specific branch            
-                              (Zhang 2005)                              
-          bsA         M1      RX on sites on specific branch            
-                              (Zhang 2005)                              
-          bsC         M1      different omegas on clades branches sites 
-                              ref: Yang Nielsen 2002                    
-          bsD         M3      different omegas on clades branches sites 
-                              (Yang Nielsen 2002, Bielawski 2004)       
-          b_free      b_neut  foreground branch not neutral (w != 1)    
-                               - RX if P<0.05 (means that w on frg=1)   
-                               - PS if P>0.05 and wfrg>1                
-                               - CN if P>0.05 and wfrg>1                
-                               (Yang Nielsen 2002)                      
-          b_free      M0      different ratio on branches               
-                              (Yang Nielsen 2002)                       
-        ============ ======= =========================================== 
+        ============ ======= ===========================================
+         Alternative  Null    Test
+        ============ ======= ===========================================
+          M2          M1      PS on sites (M2 prone to miss some sites)
+                              (Yang 2000)
+          M3          M0      test of variability among sites
+          M8          M7      PS on sites
+                              (Yang 2000)
+          M8          M8a     RX on sites?? think so....
+          bsA         bsA1    PS on sites on specific branch
+                              (Zhang 2005)
+          bsA         M1      RX on sites on specific branch
+                              (Zhang 2005)
+          bsC         M1      different omegas on clades branches sites
+                              ref: Yang Nielsen 2002
+          bsD         M3      different omegas on clades branches sites
+                              (Yang Nielsen 2002, Bielawski 2004)
+          b_free      b_neut  foreground branch not neutral (w != 1)
+                               - RX if P<0.05 (means that w on frg=1)
+                               - PS if P>0.05 and wfrg>1
+                               - CN if P>0.05 and wfrg>1
+                               (Yang Nielsen 2002)
+          b_free      M0      different ratio on branches
+                              (Yang Nielsen 2002)
+        ============ ======= ===========================================
 
         :argument altn: model with higher number of parameters (np)
         :argument null: model with lower number of parameters (np)
-        
+
         '''
         altn = self.get_evol_model(altn)
         null = self.get_evol_model(null)
@@ -512,7 +512,7 @@ class EvolNode(PhyloNode):
         except KeyError:
             warn("at least one of %s or %s, was not calculated" % (altn.name,
                                                                    null.name))
-            exit(self.get_most_likely.func_doc)
+            exit(self.get_most_likely.__doc__)
 
     def change_dist_to_evol(self, evol, model, fill=False):
         '''
