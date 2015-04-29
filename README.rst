@@ -1,3 +1,12 @@
+.. image:: https://travis-ci.org/jhcepas/ete.svg?branch=master
+    :target: https://travis-ci.org/jhcepas/ete
+
+.. image:: https://badges.gitter.im/Join%20Chat.svg
++   :alt: Join the chat at https://gitter.im/jhcepas/ete
++   :target: https://gitter.im/jhcepas/ete?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge 
+
+
+
 The Environment for Tree Exploration (ETE) is a Python programming
 toolkit that assists in the automated manipulation, analysis and
 visualization of phylogenetic trees (although clustering trees or any
@@ -16,7 +25,7 @@ please cite:
 Supported Tree Formats
 ========================
 
-ewick (including several sub-types), Extended Newick / New Hampshire Extended
+Newick (including several sub-types), Extended Newick / New Hampshire Extended
 (NHX), PhyloXML and NeXML
 
 Tree operations 
