@@ -30,20 +30,55 @@ child node can be used independently as a subtree instance.
 
 Available (per node) operations include:
 
-* Iteration over descendant or leaf nodes.
-* Tree traversing: post-order, pre-order, level-order-
-* Search (descendant) nodes by their properties.
-* Root / Unroot
-* Calculate branch-length and topological distances among nodes.
-* Node annotation (add custom features and properties to nodes)
-* Automatic tree pruning 
-* Tree structure manipulation (add/remove parent, children, sister
+- Iteration over descendant or leaf nodes.
+- Tree traversing: post-order, pre-order, level-order-
+- Search (descendant) nodes by their properties.
+- Root / Unroot
+- Calculate branch-length and topological distances among nodes.
+- Node annotation (add custom features and properties to nodes)
+- Automatic tree pruning 
+- Tree structure manipulation (add/remove parent, children, sister
    nodes, etc.).
-* Newick and extended newick (including annotations) writing 
-* shortcuts and checks: "len(Node)", "for leaf in Node", "if node in
+- Newick and extended newick (including annotations) writing 
+- shortcuts and checks: "len(Node)", "for leaf in Node", "if node in
    Tree", etc. 
-* comparison and topology distances
+- comparison and topology distances
    
+
+Phylogenetic Trees
+===================
+
+ETE provides specific methods to load, analyze and manipulate phylogenetic
+results. Thus, a PhyloTree instance is provided, which extends the standard Tree
+functionality with phylogenetics related methods. Most notably:
+
+- Link trees with Multiple Sequence Alignments (MSAs).
+- Automatic detection of species codes within family gene-trees
+- Node monophyly checks.
+- Orthology and paralogy detection based on tree reconciliation or
+  species overlap.
+- Relative dating of speciation and duplication events. 
+- Combined visualization of trees and MSA.
+- Duplication aware tree decomposition 
+
+Command line tools
+====================
+
+ETE 2.3+ provides also a set of command line tools to perform common tasks. Most notably: 
+
+- **ete build**: allows to build phylogenetic tree using a using a number of
+     predefined built-in gene-tree and species-tree workflows. 
+- **ete mod**: modify tree topologies directly from the command line. Allows
+    rooting, sorting leaves, pruning and more
+
+- **ete annotate**: add features to the tree nodes by combining newick and text files.
+- **ete view**: visualize and generate tree images directly form the command
+    line. 
+- **ete compare**: compare tree topologies based on any node's feature
+     (i.e. name, species name, etc) using the Robinson-Foulds distance and
+     edge compatibility scores, even for trees of different size. 
+- **ete ncbiquery**: query the ncbi taxonomy tree directly from the database.
+- **ete generate**: generate random trees, mostly for teaching and testing
 
 Tree Visualization
 ===================
@@ -54,58 +89,16 @@ aspect of nodes, branches and other tree items are fully configurable and can be
 dynamically controlled (this is, certain graphical properties of nodes can be
 linked to internal node values).
 
-![ETE's tree image example]
-(http://etetoolkit.org/static/img/gallery/phylomedb_tree.png =200)
+.. image:: http://etetoolkit.org/static/img/gallery/phylomedb_tree.png
+   :height: 200px
 
-![ETE's tree image example]
-(http://etetoolkit.org/static/img/gallery/piechart400x400.png)
+.. image:: http://etetoolkit.org/static/img/gallery/piechart400x400.png
+   :height: 200px
 
 More examples at http://etetoolkit.org/gallery
 
 Trees can also be visualized interactively using a built-in Graphical User Interface
 (GUI) or exported as PNG images or SVG/PDF vector graphics images.
-
-
-Phylogenetic Trees
-===================
-
-ETE provides specific methods to load, analyze and manipulate phylogenetic
-results. Thus, a PhyloTree instance is provided, which extends the standard Tree
-functionality with phylogenetics related methods. Most notably:
-
-* Link trees with Multiple Sequence Alignments (MSAs).
-* Automatic detection of species codes within family gene-trees
-* Node monophyly checks.
-* Orthology and paralogy detection based on tree reconciliation or
-  species overlap.
-* Relative dating of speciation and duplication events. 
-* Combined visualization of trees and MSA.
-* Duplication aware tree decomposition 
-
-Command line tools
-====================
-
-ETE 2.3+ provides also a set of command line tools to perform common tasks. Most notably: 
-
-* **ete build**: allows to build phylogenetic tree using a using a number of
-     predefined built-in gene-tree and species-tree workflows. 
-
-* **ete mod**: modify tree topologies directly from the command line. Allows
-    rooting, sorting leaves, pruning and more
-
-* **ete annotate**: add features to the tree nodes by combining newick and text files.
-   
-* **ete view**: visualize and generate tree images directly form the command
-    line. 
-
-* **ete compare**: compare tree topologies based on any node's feature
-     (i.e. name, species name, etc) using the Robinson-Foulds distance and
-     edge compatibility scores, even for trees of different size. 
-
-* **ete ncbiquery**: query the ncbi taxonomy tree directly from the database.
-
-* **ete generate**: generate random trees, mostly for teaching and testing
-
 
 
 The official web site of ETE is at  http://etetoolkit.org
