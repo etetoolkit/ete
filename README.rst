@@ -101,3 +101,8 @@ Trees can also be visualized interactively using a built-in Graphical User Inter
 The official web site of ETE is at  http://etetoolkit.org
 
 
+
+
+.. image:: https://badges.gitter.im/Join%20Chat.svg
+   :alt: Join the chat at https://gitter.im/jhcepas/ete
+   :target: https://gitter.im/jhcepas/ete?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
