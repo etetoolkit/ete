@@ -58,7 +58,7 @@ linked to internal node values).
 (http://etetoolkit.org/static/img/gallery/phylomedb_tree.png =200)
 
 ![ETE's tree image example]
-(http://etetoolkit.org/static/img/gallery/piechart400x400.png = 200)
+(http://etetoolkit.org/static/img/gallery/piechart400x400.png)
 
 More examples at http://etetoolkit.org/gallery
 
@@ -73,14 +73,14 @@ ETE provides specific methods to load, analyze and manipulate phylogenetic
 results. Thus, a PhyloTree instance is provided, which extends the standard Tree
 functionality with phylogenetics related methods. Most notably:
 
-- Link trees with Multiple Sequence Alignments (MSAs).
-- Automatic detection of species codes within family gene-trees
-- Node monophyly checks.
-- Orthology and paralogy detection based on tree reconciliation or
+* Link trees with Multiple Sequence Alignments (MSAs).
+* Automatic detection of species codes within family gene-trees
+* Node monophyly checks.
+* Orthology and paralogy detection based on tree reconciliation or
   species overlap.
-- Relative dating of speciation and duplication events. 
-- Combined visualization of trees and MSA.
-- Duplication aware tree decomposition 
+* Relative dating of speciation and duplication events. 
+* Combined visualization of trees and MSA.
+* Duplication aware tree decomposition 
 
 Command line tools
 ====================
