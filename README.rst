@@ -37,11 +37,9 @@ Available (per node) operations include:
 - Calculate branch-length and topological distances among nodes.
 - Node annotation (add custom features and properties to nodes)
 - Automatic tree pruning 
-- Tree structure manipulation (add/remove parent, children, sister
-   nodes, etc.).
+- Tree structure manipulation (add/remove parent, children, sister nodes, etc.).
 - Newick and extended newick (including annotations) writing 
-- shortcuts and checks: "len(Node)", "for leaf in Node", "if node in
-   Tree", etc. 
+- shortcuts and checks: "len(Node)", "for leaf in Node", "if node in Tree", etc.
 - comparison and topology distances
    
 
@@ -67,16 +65,15 @@ Command line tools
 ETE 2.3+ provides also a set of command line tools to perform common tasks. Most notably: 
 
 - **ete build**: allows to build phylogenetic tree using a using a number of
-     predefined built-in gene-tree and species-tree workflows. 
+  predefined built-in gene-tree and species-tree workflows.
 - **ete mod**: modify tree topologies directly from the command line. Allows
-    rooting, sorting leaves, pruning and more
-
+  rooting, sorting leaves, pruning and more
 - **ete annotate**: add features to the tree nodes by combining newick and text files.
 - **ete view**: visualize and generate tree images directly form the command
-    line. 
+  line.
 - **ete compare**: compare tree topologies based on any node's feature
-     (i.e. name, species name, etc) using the Robinson-Foulds distance and
-     edge compatibility scores, even for trees of different size. 
+  (i.e. name, species name, etc) using the Robinson-Foulds distance and edge
+  compatibility scores, even for trees of different size.
 - **ete ncbiquery**: query the ncbi taxonomy tree directly from the database.
 - **ete generate**: generate random trees, mostly for teaching and testing
 
@@ -90,10 +87,10 @@ dynamically controlled (this is, certain graphical properties of nodes can be
 linked to internal node values).
 
 .. image:: http://etetoolkit.org/static/img/gallery/phylomedb_tree.png
-   :height: 200px
+   :scale: 50 %
 
 .. image:: http://etetoolkit.org/static/img/gallery/piechart400x400.png
-   :height: 200px
+   :scale: 50 %
 
 More examples at http://etetoolkit.org/gallery
 
