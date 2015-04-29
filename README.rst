@@ -1,9 +1,9 @@
 .. image:: https://travis-ci.org/jhcepas/ete.svg?branch=master
-    :target: https://travis-ci.org/jhcepas/ete
+   :target: https://travis-ci.org/jhcepas/ete
 
 .. image:: https://badges.gitter.im/Join%20Chat.svg
-+   :alt: Join the chat at https://gitter.im/jhcepas/ete
-+   :target: https://gitter.im/jhcepas/ete?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge 
+   :alt: Join the chat at https://gitter.im/jhcepas/ete
+   :target: https://gitter.im/jhcepas/ete?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge 
 
 
 
