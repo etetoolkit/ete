@@ -13,7 +13,7 @@ before_script:
 
 # command to run tests, e.g. python setup.py test
 script: 
-  - coverage run -m test.test_all
+  - coverage run test/test_all.py
 
 after_success:
   - coveralls
