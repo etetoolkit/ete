@@ -6,6 +6,7 @@
    :target: https://gitter.im/jhcepas/ete?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge 
 
 
+|Build Status| |Coverage Status| |Gitter Badge|
 
 The Environment for Tree Exploration (ETE) is a Python programming
 toolkit that assists in the automated manipulation, analysis and
