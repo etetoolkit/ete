@@ -26,6 +26,14 @@ examples can be found at the `PhylomeDB tree browser
 the `ETE's online treeviewer <http://etetoolkit.org/treeview>`_.
 
 
+NO X system available? 
+============================
+
+Alternatively, a virtual X system such as XVFB `has been reported
+<https://github.com/jhcepas/ete/issues/101>`_ to work in servers without a
+proper X backend. Just install XVFB and preface your ETE commands with xvfb-run.
+
+``xvfb-run python MyETEscript.py``  
 
 Installing a X server
 =========================
@@ -33,7 +41,6 @@ Installing a X server
 All modern linux desktop installations include a graphical interface
 (called X server). However web servers (in which the ETE plugin is
 expected to run) may not count with a X server. 
-
 
 Servers
 ========

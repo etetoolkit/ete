@@ -4,8 +4,8 @@
 
 .. currentmodule:: ete2
 
-Overview
-================
+Dealing with the NCBI Taxonomy database
+=================================================
 
 ETE's `ncbi_taxonomy` module provides utilities to efficiently query a local
 copy of the NCBI Taxonomy database. The class :class:`NCBITaxonomy` offers
@@ -14,7 +14,7 @@ topologies connecting a given set of species, or to download rank, names and
 lineage track information.
  
 It is also fully integrated with :class:`PhyloTree` instances through the
-:func:`tree.annotate_tree` method.
+:func:`PhyloNode.annotate_ncbi_taxa` method.
 
 Setting up a local copy of the NCBI taxonomy database
 -------------------------------------------------------
@@ -43,9 +43,6 @@ overwritten.
    ncbi.update_taxonomy_database()
 
 
-Converting taxid, species names 
-----------------------------------------
-
 Getting taxid information 
 -----------------------------
 
@@ -55,7 +52,6 @@ using the following methods:
  - :func:`NCBITaxa.get_rank`
  - :func:`NCBITaxa.get_lineage`
  - :func:`NCBITaxa.get_taxid_translator`
- - :func:`NCBITaxa.get_taxid_names`
  - :func:`NCBITaxa.get_name_translator`
  - :func:`NCBITaxa.translate_to_names`
 
@@ -213,7 +209,7 @@ from leaf names. The parsing method can be easily adapted to any formatting:
    #                          \-10090|protB, Mus musculus, 10090
 
 
-Alternatively, you can also use the :func:`NCBITaxa.annotate` function to
+Alternatively, you can also use the :func:`NCBITaxa.annotate_tree` function to
 annotate a custom tree instance.
 
 ::

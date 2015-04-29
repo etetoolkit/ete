@@ -14,4 +14,5 @@ Contents:
    tutorial_xml
    tutorial_webplugin
    tutorial_adaptation
+   tutorial_ncbitaxonomy
    tutorial_etree2orthoxml
