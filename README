@@ -12,22 +12,15 @@ please cite:
   Jaime Huerta-Cepas, Joaquín Dopazo and Toni Gabaldón. ETE: a python
   Environment for Tree Exploration. BMC Bioinformatics 2010, 11:24.
 
-DESCRIPTION
-****************
 
-Supported Tree Formats:
+Supported Tree Formats
 ========================
 
-Currently, the following tree data formats are supported, both for
-reading and writing trees:
+ewick (including several sub-types), Extended Newick / New Hampshire Extended
+(NHX), PhyloXML and NeXML
 
- - Newick (including several sub-types)
- - Extended Newick / New Hampshire Extended (NHX) 
- - PhyloXML
- - NeXML
-
-Tree operations: 
-================
+Tree operations 
+==================
 
 With ETE, trees are loaded as a succession of TreeNode objects
 connected in a hierarchical way. Each TreeNode instance contains
@@ -46,31 +39,32 @@ Available (per node) operations include:
  - Automatic tree pruning 
  - Tree structure manipulation (add/remove parent, children, sister
    nodes, etc.).
- - Newick and extended newick (including annotations) conversion
+ - Newick and extended newick (including annotations) writing 
  - shortcuts and checks: "len(Node)", "for leaf in Node", "if node in
    Tree", etc. 
+ - comparison and topology distances
+   
 
-
-Tree Visualization:
+Tree Visualization
 ===================
 
 A programmatic tree rendering engine is fully integrated with the Tree
-objects. It allows to draw trees in both rectangular and circular
-modes. The aspect of nodes, branches and other tree items are fully
-configurable and can be dynamically controlled (this is, certain
-graphical properties of nodes can be linked to internal node values).
-
-Trees can be visualized interactively using a built-in Graphical User
-Interface (GUI) or exported as PNG images or SVG/PDF vector graphics
-images.
+objects. It allows to draw trees in both rectangular and circular modes. The
+aspect of nodes, branches and other tree items are fully configurable and can be
+dynamically controlled (this is, certain graphical properties of nodes can be
+linked to internal node values).
 
 
-Phylogenetic Trees: 
+
+Trees can be visualized interactively using a built-in Graphical User Interface
+(GUI) or exported as PNG images or SVG/PDF vector graphics images.
+
+
+Phylogenetic Trees
 ===================
 
-ETE is not a phylogenetic reconstruction program, as it only provides
-methods to load, analyze and manipulate phylogenetic results. Thus, a
-PhyloTree instance is provided, which extends the standard Tree
+ETE provides specific methods to load, analyze and manipulate phylogenetic
+results. Thus, a PhyloTree instance is provided, which extends the standard Tree
 functionality with phylogenetics related methods. Most notably:
 
 - Link trees with Multiple Sequence Alignments (MSAs).
@@ -80,8 +74,34 @@ functionality with phylogenetics related methods. Most notably:
   species overlap.
 - Relative dating of speciation and duplication events. 
 - Combined visualization of trees and MSA.
-- Integrated with the phylomeDB database
+- Duplication aware tree decomposition 
 
-Full info and documentation can be found at: http://ete.cgenomics.org
+Command line tools
+====================
+
+ETE 2.3+ provides also a set of command line tools to perform common tasks. Most notably: 
+
+* **ete build**: allows to build phylogenetic tree using a using a number of
+     predefined built-in gene-tree and species-tree workflows. 
+
+* **ete mod**: modify tree topologies directly from the command line. Allows
+    rooting, sorting leaves, pruning and more
+
+* **ete annotate**: add features to the tree nodes by combining newick and text files.
+   
+* **ete view**: visualize and generate tree images directly form the command
+    line. 
+
+* **ete compare**: compare tree topologies based on any node's feature
+     (i.e. name, species name, etc) using the Robinson-Foulds distance and
+     edge compatibility scores, even for trees of different size. 
+
+* **ete ncbiquery**: query the ncbi taxonomy tree directly from the database.
+
+* **ete generate**: generate random trees, mostly for teaching and testing
+
+
+
+The official web site of ETE is at  http://etetoolkit.org
 
 
