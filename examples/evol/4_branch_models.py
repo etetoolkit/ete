@@ -14,8 +14,8 @@ __version__ = "0.0"
 
 
 
-from ete2 import EvolTree
-from ete2 import NodeStyle
+from ete3 import EvolTree
+from ete3 import NodeStyle
 
 tree = EvolTree ("data/S_example/measuring_S_tree.nw")
 tree.link_to_alignment ('data/S_example/alignment_S_measuring_evol.fasta')

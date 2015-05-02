@@ -10,22 +10,22 @@ How do I use ETE?
 -----------------------------------------------------------------
 
 From 2.1 version, ETE includes a basic standalone program that can be
-used to quickly visualize your trees. Type ``ete2`` in a terminal to
+used to quickly visualize your trees. Type ``ete3`` in a terminal to
 access the program. For instance:
 
-  ``# ete2 "((A,B),C);"``
+  ``# ete3 "((A,B),C);"``
 
 or 
 
-  ``# ete2 mytreefile.nw``
+  ``# ete3 mytreefile.nw``
 
 
-However, ETE is not a standalone program. The ``ete2`` script is a
+However, ETE is not a standalone program. The ``ete3`` script is a
 very simple implementation and does not allow for fancy
 customization. The main goal of ETE is to provide a Python programming
 library, so you can create your own scripts to manipulate and
 visualize phylogenetic trees. Many examples are available `here
-<http:://etetoolkit.org/releases/ete2/examples-ete2.tar.gz>`_ and
+<http:://etetoolkit.org/releases/ete3/examples-ete3.tar.gz>`_ and
 along with the ETE tutorial.
 
 
@@ -63,7 +63,7 @@ Can I control the order in which nodes are visited?
 
 Yes, currently 3 strategies are implemented: pre-order, post-order and
 level-over. You can check the differences at
-http://packages.python.org/ete2/tutorial/tutorial_trees.html#traversing-browsing-trees
+http://packages.python.org/ete3/tutorial/tutorial_trees.html#traversing-browsing-trees
       
 
 What's the difference between :func:`Tree.get_leaves` and :func:`Tree.iter_leaves`?
@@ -128,7 +128,7 @@ specify format 1:
 
 :: 
    
-   from ete2 import Tree
+   from ete3 import Tree
    t = Tree("myTree.nw", format=1)
 
    t.write(format=1)
@@ -162,8 +162,8 @@ Can ETE draw circular trees?
 
 Yes, starting from version 2.1, ete can render trees in circular
 mode. Install the latest version from
-http://pypi.python.org/pypi/ete2 or by executing ``easy_install -U
-ete2``.
+http://pypi.python.org/pypi/ete3 or by executing ``easy_install -U
+ete3``.
 
 
 What are all these dotted lines that appear in my circular trees?
@@ -218,7 +218,7 @@ A basic example would read as follow:
 
 ::
     
-    from ete2 import Tree, faces, AttrFace, TreeStyle
+    from ete3 import Tree, faces, AttrFace, TreeStyle
      
     def my_layout(node):
         if node.is_leaf():
@@ -251,7 +251,7 @@ branches in your tree to make all nodes to end at the same length.
 
 ::
    
-    from ete2 import Tree, TreeStyle
+    from ete3 import Tree, TreeStyle
 
     t = Tree()
     t.populate(50, random_branches=True)
@@ -266,7 +266,7 @@ are not modified)
 
 ::
    
-    from ete2 import Tree, TreeStyle
+    from ete3 import Tree, TreeStyle
 
     t = Tree()
     t.populate(50, random_branches=True)

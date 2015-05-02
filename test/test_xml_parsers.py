@@ -3,7 +3,7 @@ from __future__ import print_function
 import unittest
 import os
 import time
-from ete2 import nexml, phyloxml
+from ete3 import nexml, phyloxml
 import sys
 
 class Test_PhyloXML(unittest.TestCase):

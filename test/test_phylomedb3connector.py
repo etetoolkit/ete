@@ -6,7 +6,7 @@ import sys, getopt, os, unittest, datetime
 from getpass import getpass
 from six.moves import input
 
-sys.path.append(os.path.join(os.getcwd(), "../ete2/phylomedb/"))
+sys.path.append(os.path.join(os.getcwd(), "../ete3/phylomedb/"))
 from phylomeDB3 import PhylomeDB3Connector
 
 host = "phylomedb.org"

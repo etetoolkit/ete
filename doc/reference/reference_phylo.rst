@@ -1,14 +1,14 @@
-.. module:: ete2.phylo
+.. module:: ete3.phylo
 
 ================
 PhyloTree class
 ================
 
-.. autoclass:: ete2.PhyloNode
+.. autoclass:: ete3.PhyloNode
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: ete2.PhyloTree
+.. autoclass:: ete3.PhyloTree
 
-.. autoclass:: ete2.phylo.EvolEvent
+.. autoclass:: ete3.phylo.EvolEvent

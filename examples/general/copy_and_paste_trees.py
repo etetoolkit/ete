@@ -1,4 +1,4 @@
-from ete2 import Tree
+from ete3 import Tree
 # Loads 3 independent trees
 t1 = Tree('(A,(B,C));')
 t2 = Tree('((D,E), (F,G));')

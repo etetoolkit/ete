@@ -1,6 +1,6 @@
 What's new in ETE 2.2
 *********************************
-.. currentmodule:: ete2
+.. currentmodule:: ete3
 
 BUGFIXES
 ==========
@@ -13,7 +13,7 @@ BUGFIXES
 
 SCRIPTS
 ==========
-* Improvements in the standalone visualization script (a.k.a. ete2) 
+* Improvements in the standalone visualization script (a.k.a. ete3) 
 * Added the :ref:`etree2orthoxml script <etree2orthoxml>`, which
   provides conversion between phylogenetic tree and the orthoXML
   format
@@ -63,7 +63,7 @@ NEW FEATURES
 
     :: 
 
-        from ete2 import Tree
+        from ete3 import Tree
         t = Tree("((A, B)Internal_1:0.7, (C, D)Internal_2:0.5)root:1.3;", format=1)
         t.add_features(size=4)
         print t.get_ascii(attributes=["name", "dist", "size"])
@@ -161,7 +161,7 @@ NEW FEATURES
 
      :: 
      
-       from ete2 import TreeStyle
+       from ete3 import TreeStyle
         
        def color_leaves(node):
            if node.is_leaf():
@@ -184,7 +184,7 @@ NEW FEATURES
 
     :: 
 
-        from ete2 import random_color, COLOR_SCHEMES, SVG_COLORS
+        from ete3 import random_color, COLOR_SCHEMES, SVG_COLORS
 
         # generate 20 random colors
         node_colors = [random_color(s=0.4, l=4) for i in xrange(20)]

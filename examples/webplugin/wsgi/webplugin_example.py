@@ -2,11 +2,11 @@ import sys
 import re
 from string import strip
 
-#sys.path.insert(0, "/home/services/software/ete2-webplugin/")
-sys.path.insert(0, "/home/jhuerta/_Devel/ete/ete21-beta/")
-from ete2 import WebTreeApplication # Required to use the webplugin
+#sys.path.insert(0, "/home/services/software/ete3-webplugin/")
+sys.path.insert(0, "/home/jhuerta/_Devel/ete/ete31-beta/")
+from ete3 import WebTreeApplication # Required to use the webplugin
 
-from ete2 import PhyloTree, TreeStyle, faces # Required by my custom
+from ete3 import PhyloTree, TreeStyle, faces # Required by my custom
                                      # application
 
 # In order to extend the default WebTreeApplication, we define our own

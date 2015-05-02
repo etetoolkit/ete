@@ -2,7 +2,7 @@ import sys
 # Note that we import the nexml module rather than the root Nexml
 #  class.  This module contains a python object for each of the
 #  nexml elements declared in its XML schema.
-from ete2 import nexml
+from ete3 import nexml
 
 # Create an empty Nexml project 
 nexml_project = nexml.Nexml()

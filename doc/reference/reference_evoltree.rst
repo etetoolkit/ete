@@ -1,13 +1,13 @@
-.. module:: ete2.evol
+.. module:: ete3.evol
 
 ====================
 EvolTree class
 ====================
 
-.. autoclass:: ete2.EvolNode
+.. autoclass:: ete3.EvolNode
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: ete2.EvolTree
+.. autoclass:: ete3.EvolTree
 

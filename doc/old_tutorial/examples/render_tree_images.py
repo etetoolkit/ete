@@ -1,4 +1,4 @@
-from ete2 import Tree
+from ete3 import Tree
 t = Tree()
 # Generate a random tree with 50 leaves
 t.populate(50)

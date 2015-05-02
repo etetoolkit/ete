@@ -1,4 +1,4 @@
-from ete2 import Tree
+from ete3 import Tree
 # generates a random tree
 t = Tree();
 t.populate(15);

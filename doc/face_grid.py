@@ -1,4 +1,4 @@
-from ete2 import Tree, TextFace, NodeStyle, TreeStyle
+from ete3 import Tree, TextFace, NodeStyle, TreeStyle
 
 t = Tree("((a,b),c);")
 

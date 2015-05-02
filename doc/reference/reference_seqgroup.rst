@@ -1,9 +1,9 @@
-.. module:: ete2.parser.seqgroup
+.. module:: ete3.parser.seqgroup
 
 Seqgroup class
 ==================
 
-.. autoclass:: ete2.SeqGroup
+.. autoclass:: ete3.SeqGroup
    :members:
    :undoc-members: 
    :inherited-members:

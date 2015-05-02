@@ -2,7 +2,7 @@
 
 .. versionadded:: 2.3
 
-.. currentmodule:: ete2
+.. currentmodule:: ete3
 
 Overview
 ================
@@ -26,7 +26,7 @@ database (~300MB) and will store a parsed version of it in your home directory:
 local database and will skip this step.
 
 ::
-   from ete2 import NCBITaxa
+   from ete3 import NCBITaxa
    ncbi = NCBITaxa()
 
 Upgrading the local database
@@ -38,7 +38,7 @@ overwritten.
 
 ::
 
-   from ete2 import NCBITaxa
+   from ete3 import NCBITaxa
    ncbi = NCBITaxa()
    ncbi.update_taxonomy_database()
 
@@ -65,7 +65,7 @@ accepted as input.
 
 ::
  
-   from ete2 import NCBITaxa
+   from ete3 import NCBITaxa
    ncbi = NCBITaxa()
    taxid2name = ncbi.get_taxid_translator([9606, 9443])
    print taxid2name
@@ -79,7 +79,7 @@ Other functions allow to extract further information using taxid numbers as a qu
 
 ::
 
-   from ete2 import NCBITaxa
+   from ete3 import NCBITaxa
    ncbi = NCBITaxa()
 
    print ncbi.get_rank([9606, 9443])
@@ -97,7 +97,7 @@ And you can combine combine all at once:
 
 ::
 
-   from ete2 import NCBITaxa
+   from ete3 import NCBITaxa
    ncbi = NCBITaxa()
 
    lineage = ncbi.get_lineage(9606) 
@@ -133,7 +133,7 @@ lineage, scientific names, ranks, and so on.
 ::
 
 
-   from ete2 import NCBITaxa
+   from ete3 import NCBITaxa
    ncbi = NCBITaxa()
    
    tree = ncbi.get_topology([9606, 9598, 10090, 7707, 8782])
@@ -155,7 +155,7 @@ If needed, all intermediate nodes connecting the species can also be kept in the
 ::
 
 
-   from ete2 import NCBITaxa
+   from ete3 import NCBITaxa
    ncbi = NCBITaxa()
    
    tree = ncbi.get_topology([2, 33208], intermediate_nodes=True)
@@ -193,7 +193,7 @@ from leaf names. The parsing method can be easily adapted to any formatting:
 ::
 
 
-   from ete2 import PhyloTree
+   from ete3 import PhyloTree
 
    # load the whole leaf name as species taxid
    tree = PhyloTree('((9606, 9598), 10090);', sp_naming_function=lambda name: name)
@@ -218,7 +218,7 @@ annotate a custom tree instance.
 
 ::
 
-   from ete2 import Tree, NCBITaxa
+   from ete3 import Tree, NCBITaxa
    ncbi = NCBITaxa()
    tree = Tree("")
    ncbi.annotate_tree(tree, taxid_attr="name")

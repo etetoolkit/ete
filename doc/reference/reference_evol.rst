@@ -1,18 +1,18 @@
-.. module:: ete2.phylo
+.. module:: ete3.phylo
 
 EvolTree class 
 ===============
 
-.. autoclass:: ete2.EvolNode
+.. autoclass:: ete3.EvolNode
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: ete2.EvolTree
+.. autoclass:: ete3.EvolTree
 
 (evolutionary) Model class	
 =================================
 
-.. autoclass:: ete2.evol.Model
+.. autoclass:: ete3.evol.Model
 
-.. automethod:: ete2.evol.utils.get_rooting
+.. automethod:: ete3.evol.utils.get_rooting

@@ -1,4 +1,4 @@
-.. currentmodule:: ete2
+.. currentmodule:: ete3
                    
 Changelog
 *********************************

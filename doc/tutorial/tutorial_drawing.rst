@@ -1,6 +1,6 @@
 :Author: Jaime Huerta-Cepas
 
-.. currentmodule:: ete2
+.. currentmodule:: ete3
 
 The Programmable Tree Drawing Engine
 ************************************
@@ -54,7 +54,7 @@ does not implement all the possibilities of the programming toolkit.
 
 :: 
 
-  from ete2 import Tree 
+  from ete3 import Tree 
   t = Tree( "((a,b),c);" )
   t.show()
 
@@ -95,7 +95,7 @@ resolution can be adjusted:
 
 :: 
 
-  from ete2 import Tree 
+  from ete3 import Tree 
   t = Tree( "((a,b),c);" )
   t.render("mytree.png", w=183, units="mm")
 
@@ -116,7 +116,7 @@ tree drawing modes.
 
 :: 
 
-  from ete2 import Tree, TreeStyle
+  from ete3 import Tree, TreeStyle
 
   t = Tree( "((a,b),c);" )
   circular_style = TreeStyle()
@@ -140,7 +140,7 @@ Show leaf node names, branch length and branch support
   Automatically adds node names and branch information to the tree image:
   ::
 
-    from ete2 import Tree, TreeStyle
+    from ete3 import Tree, TreeStyle
     t = Tree()
     t.populate(10, random_dist=True)
     ts = TreeStyle()
@@ -158,7 +158,7 @@ Change branch length scale (zoom in X)
 
   ::
    
-    from ete2 import Tree, TreeStyle
+    from ete3 import Tree, TreeStyle
     t = Tree()
     t.populate(10, random_dist=True)
     ts = TreeStyle()
@@ -175,7 +175,7 @@ Change branch separation between nodes (zoom in Y)
   Increases the separation between leaf branches:
   ::
    
-    from ete2 import Tree, TreeStyle
+    from ete3 import Tree, TreeStyle
     t = Tree()
     t.populate(10, random_dist=True)
     ts = TreeStyle()
@@ -192,7 +192,7 @@ Rotate a tree
   Draws a rectangular tree from top to bottom:
   :: 
    
-    from ete2 import Tree, TreeStyle
+    from ete3 import Tree, TreeStyle
     t = Tree()
     t.populate(10)
     ts = TreeStyle()
@@ -208,7 +208,7 @@ circular tree in 180 degrees
    Draws a circular tree using a semi-circumference:
    :: 
     
-     from ete2 import Tree, TreeStyle
+     from ete3 import Tree, TreeStyle
      t = Tree()
      t.populate(30)
      ts = TreeStyle()
@@ -224,7 +224,7 @@ Add legend and title
 
 :: 
 
-  from ete2 import Tree, TreeStyle, TextFace
+  from ete3 import Tree, TreeStyle, TextFace
   t = Tree( "((a,b),c);" )
   ts = TreeStyle()
   ts.show_leaf_name = True
@@ -245,7 +245,7 @@ A node style can be defined statically and attached to several nodes:
   Simple tree in which the same style is applied to all nodes:
   :: 
    
-    from ete2 import Tree, NodeStyle, TreeStyle
+    from ete3 import Tree, NodeStyle, TreeStyle
     t = Tree( "((a,b),c);" )
    
     # Basic tree style
@@ -279,7 +279,7 @@ node styles can be modified at any moment by accessing the
   Simple tree in which the different styles are applied to each node:
   ::
    
-    from ete2 import Tree, NodeStyle, TreeStyle
+    from ete3 import Tree, NodeStyle, TreeStyle
     t = Tree( "((a,b),c);" )
    
     # Basic tree style
@@ -313,18 +313,18 @@ through a :attr:`layout` function (see :ref:`sec:layout_functions`)
 Node faces
 -------------
 
-.. currentmodule:: ete2.treeview.faces
+.. currentmodule:: ete3.treeview.faces
 
 Node faces are small pieces of graphical information that can be
 linked to nodes. For instance, text labels or external images could be
 linked to nodes and they will be plotted within the tree image. 
 
-Several types of node faces are provided by the main :mod:`ete2`
+Several types of node faces are provided by the main :mod:`ete3`
 module, ranging from simple text (:class:`TextFace`) and geometric
 shapes (:class:`CircleFace`), to molecular sequence representations
 (:class:`SequenceFace`), heatmaps and profile plots
 (:class:`ProfileFace`). A complete list of available faces can be
-found at the :mod:`ete2.treeview` reference page..
+found at the :mod:`ete3.treeview` reference page..
 
 Faces position
 ^^^^^^^^^^^^^^^^
@@ -339,7 +339,7 @@ and 1 of the **branch-bottom** area:
 
 :: 
    
-  from ete2 import Tree, TreeStyle, TextFace
+  from ete3 import Tree, TreeStyle, TextFace
   t = Tree( "((a,b),c);" )
 
   # Basic tree style
@@ -382,7 +382,7 @@ class documentation. Here is a very simple example:
 
    :: 
     
-     from ete2 import Tree, TreeStyle, TextFace
+     from ete3 import Tree, TreeStyle, TextFace
     
      t = Tree( "(a,b);" )
     
@@ -424,7 +424,7 @@ collection of rules controlling how different nodes should be drawn.
 
 :: 
 
-  from ete2 import Tree
+  from ete3 import Tree
   t = Tree( "((((a,b),c), d), e);" )
 
   def abc_layout(node):

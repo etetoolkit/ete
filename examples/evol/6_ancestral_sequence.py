@@ -11,9 +11,9 @@ __email__   = "francois@barrabin.org"
 __licence__ = "GPLv3"
 __version__ = "0.0"
 
-from ete2 import TreeStyle
-from ete2 import EvolTree
-from ete2 import faces
+from ete3 import TreeStyle
+from ete3 import EvolTree
+from ete3 import faces
 
 
 tree = EvolTree ("data/S_example/measuring_S_tree.nw")
@@ -24,7 +24,7 @@ print tree
 print '\n Running free-ratio model with calculation of ancestral sequences...'
 
 tree.run_model ('fb_anc')
-#tree.link_to_evol_model('/tmp/ete2-codeml/fb_anc/out', 'fb_anc')
+#tree.link_to_evol_model('/tmp/ete3-codeml/fb_anc/out', 'fb_anc')
 
 I = TreeStyle()
 I.force_topology             = False

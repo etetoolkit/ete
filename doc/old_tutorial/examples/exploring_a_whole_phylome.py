@@ -1,4 +1,4 @@
-from ete2 import PhylomeDBConnector
+from ete3 import PhylomeDBConnector
 # This connects to the main phylomeDB server (default parameters)
 p = PhylomeDBConnector()
 PHYLOME_ID = 1

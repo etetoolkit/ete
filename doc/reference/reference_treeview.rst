@@ -1,4 +1,4 @@
-.. module:: ete2.treeview
+.. module:: ete3.treeview
 
 Treeview module 
 *************************
@@ -8,15 +8,15 @@ Treeview module
 TreeStyle
 ====================
 
-.. autoclass:: ete2.TreeStyle
+.. autoclass:: ete3.TreeStyle
 
-.. autoclass:: ete2.FaceContainer
+.. autoclass:: ete3.FaceContainer
    :members:
 
 NodeStyle
 =====================
 
-.. autoclass:: ete2.NodeStyle
+.. autoclass:: ete3.NodeStyle
 
 
 Faces
@@ -24,55 +24,55 @@ Faces
 
 .. autofunction:: add_face_to_node
 
-.. autoclass:: ete2.Face
+.. autoclass:: ete3.Face
    :members:
    :no-undoc-members:
 
-.. autoclass:: ete2.TextFace
+.. autoclass:: ete3.TextFace
    :members:
    :no-undoc-members:
 
-.. autoclass:: ete2.AttrFace
+.. autoclass:: ete3.AttrFace
    :members:
    :no-undoc-members:
 
-.. autoclass:: ete2.ImgFace
+.. autoclass:: ete3.ImgFace
    :members:
    :no-undoc-members:
 
-.. autoclass:: ete2.CircleFace
+.. autoclass:: ete3.CircleFace
    :members:
    :no-undoc-members:
 
-.. autoclass:: ete2.SequenceFace
+.. autoclass:: ete3.SequenceFace
    :members:
    :no-undoc-members:
 
-.. autoclass:: ete2.SeqMotifFace
+.. autoclass:: ete3.SeqMotifFace
    :members:
    :no-undoc-members:
 
-.. autoclass:: ete2.BarChartFace
+.. autoclass:: ete3.BarChartFace
    :members:
    :no-undoc-members:
 
-.. autoclass:: ete2.PieChartFace
+.. autoclass:: ete3.PieChartFace
    :members:
    :no-undoc-members:
 
-.. autoclass:: ete2.ProfileFace
+.. autoclass:: ete3.ProfileFace
    :members:
    :no-undoc-members:
 
-.. autoclass:: ete2.TreeFace
+.. autoclass:: ete3.TreeFace
    :members:
    :no-undoc-members:
 
-.. autoclass:: ete2.StaticItemFace
+.. autoclass:: ete3.StaticItemFace
    :members:
    :no-undoc-members:
 
-.. autoclass:: ete2.DynamicItemFace
+.. autoclass:: ete3.DynamicItemFace
    :members:
    :no-undoc-members:
 

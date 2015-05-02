@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 import unittest
 
-from ete2 import *
+from ete3 import *
 from datasets import *
 
 class Test_ClusterTree(unittest.TestCase):
@@ -21,7 +21,7 @@ class Test_ClusterTree(unittest.TestCase):
         print(node.intracluster_dist)
         print(node.intercluster_dist)
 
-        from ete2.clustering import clustvalidation
+        from ete3.clustering import clustvalidation
         c1 = t.get_common_ancestor("A", "B")
         c2 = t.get_common_ancestor("C", "D", "E")
         c3 = t.get_common_ancestor("F", "G", "H")

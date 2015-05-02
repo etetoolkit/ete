@@ -2,8 +2,8 @@ from __future__ import absolute_import
 from __future__ import print_function
 import unittest 
 
-from ete2 import *
-from ete2.coretype.tree import asRphylo, asETE
+from ete3 import *
+from ete3.coretype.tree import asRphylo, asETE
 
 class Test_R_bindings(unittest.TestCase):
     """ This is experimental """

@@ -1,5 +1,5 @@
 import random
-from ete2 import Tree
+from ete3 import Tree
 # Creates a normal tree
 t = Tree('((H:0.3,I:0.1):0.5, A:1,(B:0.4,(C:0.5,(J:1.3,(F:1.2, D:0.1):0.5):0.5):0.5):0.5);')
 print t

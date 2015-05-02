@@ -1,4 +1,4 @@
-from ete2 import Phyloxml, phyloxml
+from ete3 import Phyloxml, phyloxml
 import random 
 project = Phyloxml()
 

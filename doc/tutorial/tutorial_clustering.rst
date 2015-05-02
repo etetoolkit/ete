@@ -1,9 +1,9 @@
-.. module:: ete2.clustering
+.. module:: ete3.clustering
   :synopsis: Extends Tree object: link trees to numeric matrices, perform cluster validation analysis, visualize node profiles
 .. moduleauthor:: Jaime Huerta-Cepas
 :Author: Jaime Huerta-Cepas
 
-.. currentmodule:: ete2
+.. currentmodule:: ete3
 
 Clustering Trees
 ****************
@@ -66,7 +66,7 @@ the :attr:`text_array` argument.
 
 ::
 
-  from ete2 import ClusterTree
+  from ete3 import ClusterTree
    
   # Example of a minimalistic numerical matrix. It is encoded as a text
   # string for convenience, but it usally be loaded from a text file.

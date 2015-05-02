@@ -10,8 +10,8 @@ import sys
 from six.moves import range
 sys.path.insert(0, '../')
 
-from ete2 import *
-from ete2.parser.newick import NewickError
+from ete3 import *
+from ete3.parser.newick import NewickError
 from datasets import *
  
 class Test_Coretype_Tree(unittest.TestCase):
@@ -58,7 +58,7 @@ class Test_Coretype_Tree(unittest.TestCase):
         
     def test_newick_formats(self):
         """ tests different newick subformats """
-        from ete2.parser.newick import print_supported_formats, NW_FORMAT
+        from ete3.parser.newick import print_supported_formats, NW_FORMAT
         print_supported_formats()
 
         # Let's stress a bit

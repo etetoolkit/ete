@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 import unittest 
 
-from ete2 import *
+from ete3 import *
 from datasets import *
 
 class Test_Coretype_ArrayTable(unittest.TestCase):

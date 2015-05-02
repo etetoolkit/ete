@@ -1,6 +1,6 @@
 :Author: François Serra
 
-.. currentmodule:: ete2
+.. currentmodule:: ete3
 
 
 Testing Evolutionary Hypothesis
@@ -42,7 +42,7 @@ Evolutionary variables that are used to summary selective pressures are, of cour
 The working directory
 ---------------------
 
-EvolTree works mainly as PhyloTree, thus it needs a tree and an alignment. However as you are going to run external programs over it, **a working directory needs to be defined**. By default tree.workdiris "/tmp/ete2-codeml/", but it is recommended to change it to a more useful path.
+EvolTree works mainly as PhyloTree, thus it needs a tree and an alignment. However as you are going to run external programs over it, **a working directory needs to be defined**. By default tree.workdiris "/tmp/ete3-codeml/", but it is recommended to change it to a more useful path.
 
 Jobs will be stored in the workdir, and you will be able to load precomputed evolutionary models from there.
 
@@ -65,7 +65,7 @@ As for :class:`PhyloTree`, we first load the tree and alignment (and you working
 
 ::
   
-  from ete2 import EvolTree
+  from ete3 import EvolTree
 
   tree = EvolTree("((Hylobates_lar,(Gorilla_gorilla,Pan_troglodytes)),Papio_cynocephalus);")
   
@@ -182,7 +182,7 @@ Node size, and color dependant of the :math:`\omega` value. But other displays a
 
 ::
 
-  from ete2.treeview.layouts import evol_clean_layout
+  from ete3.treeview.layouts import evol_clean_layout
 
   tree.show(layout=evol_clean_layout)
 
@@ -397,7 +397,7 @@ this example shows how to run it over all branches in the tree:
       print tree.write()
       # to organize a bit, we name model with the name of the marked node
       # any character after the dot, in model name, is not taken into account
-      # for computation. (have a look in /tmp/ete2.../bsA.. directory)
+      # for computation. (have a look in /tmp/ete3.../bsA.. directory)
       print 'running model bsA and bsA1'
       tree.run_model ('bsA.'+ leaf.name)
       tree.run_model ('bsA1.' + leaf.name)
@@ -447,7 +447,7 @@ When an evolutionary model is computed, the output is stored in *tree.workdir* a
 
 ::
 
-  from ete2 import EvolTree
+  from ete3 import EvolTree
 
   tree = EvolTree("((Hylobates_lar,(Gorilla_gorilla,Pan_troglodytes)),Papio_cynocephalus);")
   

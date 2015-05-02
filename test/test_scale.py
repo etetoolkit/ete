@@ -3,8 +3,8 @@ import random
 import sys
 from six.moves import range
 sys.path.insert(0, "./")
-from ete2 import Tree, TreeStyle, faces
-from ete2.treeview.main import random_color
+from ete3 import Tree, TreeStyle, faces
+from ete3.treeview.main import random_color
 
 def layout(node):
     node.img_style["size"] = 5

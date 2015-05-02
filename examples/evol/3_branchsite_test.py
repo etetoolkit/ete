@@ -11,7 +11,7 @@ __licence__ = "GPLv3"
 __version__ = "0.0"
 
 
-from ete2 import EvolTree
+from ete3 import EvolTree
 
 
 tree = EvolTree("data/S_example/measuring_S_tree.nw")
@@ -34,7 +34,7 @@ for leaf in tree:
     print tree.write()
     # to organize a bit, we name model with the name of the marked node
     # any character after the dot, in model name, is not taken into account
-    # for computation. (have a look in /tmp/ete2.../bsA.. directory)
+    # for computation. (have a look in /tmp/ete3.../bsA.. directory)
     print 'running model bsA and bsA1'
     tree.run_model('bsA.'+ leaf.name)
     tree.run_model('bsA1.' + leaf.name)

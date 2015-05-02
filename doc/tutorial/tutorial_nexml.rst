@@ -2,7 +2,7 @@
 
 .. versionadded:: 2.1
 
-.. currentmodule:: ete2
+.. currentmodule:: ete3
 
 NeXML 
 ************************
@@ -21,7 +21,7 @@ used.
 
 :: 
 
-  from ete2 import Nexml
+  from ete3 import Nexml
 
   nexml_prj = Nexml()
   nexml_prj.build_from_file("/path/to/nexml_example.xml")
@@ -34,11 +34,11 @@ connected to the Nexml root instance.
 Every NeXML XML element has its own python class. Content and
 attributes can be handled through the "set_" and "get_" methods
 existing in all objects. Nexml classes can be imported from the
-:mod:`ete2.nexml` module.
+:mod:`ete3.nexml` module.
 
 :: 
 
-  from ete2 import Nexml, nexml
+  from ete3 import Nexml, nexml
   nexml_prj = Nexml()
   nexml_meta = nexml.LiteralMeta(datatype="double", property="branch_support", content=1.0)
   nexml_prj.add_meta(nexml_meta)
@@ -85,7 +85,7 @@ Creating Nexml project from scratch
 
 :class:`Nexml` base class can also be used to create projects from
 scratch in a programmatic way. Using the collection of NeXML classes
-provided by the:mod:`ete2.nexml` module, you can populate an empty
+provided by the:mod:`ete3.nexml` module, you can populate an empty
 project and export it as XML.
 
 .. literalinclude:: ../../examples/nexml/nexml_from_scratch.py
@@ -104,7 +104,7 @@ whole project, but individual elements can be exported.
 :: 
 
    import sys
-   from ete2 import Nexml
+   from ete3 import Nexml
    # Create an empty Nexml project 
    nexml_project = Nexml()
 
@@ -130,7 +130,7 @@ kept in the NeXML format.
 
 :: 
 
-   from ete2 import nexml
+   from ete3 import nexml
    nexml_tree = nexml.NexMLTree("((hello, nexml):1.51, project):0.6;")
    tree_collection.add_tree(nexml_tree)
    nexml_tree.show()

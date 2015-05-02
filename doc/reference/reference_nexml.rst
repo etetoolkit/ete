@@ -2,9 +2,9 @@
 
 .. moduleauthor:: Jaime Huerta-Cepas
 
-.. module:: ete2.nexml
+.. module:: ete3.nexml
 
-.. currentmodule:: ete2
+.. currentmodule:: ete3
 
 Nexml module
 ***************
@@ -12,17 +12,17 @@ Nexml module
 Nexml classes linked to ETE
 ===============================
 
-.. autoclass:: ete2.Nexml
+.. autoclass:: ete3.Nexml
    :members:
 
-.. autoclass:: ete2.NexmlTree
+.. autoclass:: ete3.NexmlTree
    :members:
 
 
 Generic Nexml classes
 =======================
 
-.. automodule:: ete2.nexml
+.. automodule:: ete3.nexml
    :members:
    :noindex:
    

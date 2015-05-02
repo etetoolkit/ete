@@ -2,7 +2,7 @@
 #        Author: Francois-Jose Serra
 # Creation Date: 2010/04/26 17:17:06
 
-from ete2 import CodemlTree
+from ete3 import CodemlTree
 import sys, re
 
 typ = None
@@ -12,9 +12,9 @@ while typ != 'L' and typ != 'S':
 TREE_PATH    = "./measuring_%s_tree.nw" % (typ)
 
 ALG_PATH     = "./alignment_%s_measuring_evol.fasta" % (typ)
-WORKING_PATH = "/tmp/ete2-codeml_example/"
+WORKING_PATH = "/tmp/ete3-codeml_example/"
 
-#MY_PATH = '/home/francisco/toolbox/ete2-codeml/doc/tutorial/examples/'
+#MY_PATH = '/home/francisco/toolbox/ete3-codeml/doc/tutorial/examples/'
 MY_PATH = ''
 
 TREE_PATH = MY_PATH + re.sub('\./', '', TREE_PATH)

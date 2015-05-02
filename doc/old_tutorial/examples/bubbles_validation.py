@@ -1,4 +1,4 @@
-from ete2 import ClusterTree,  faces
+from ete3 import ClusterTree,  faces
 
 # To operate with numbersd bub efficiently
 import numpy

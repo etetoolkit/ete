@@ -39,8 +39,8 @@ try:
         _fix_path = True
 
     # Is there a previous ETE installation? If so, use the same id
-    import ete2
-    ETEID = ete2.__get_install_id()
+    import ete3
+    ETEID = ete3.__get_install_id()
 
     if _fix_path:
         sys.path.insert(0, _wd)
@@ -110,28 +110,28 @@ print("\nInstalling ETE (A python Environment for Tree Exploration).\n")
 
 # writes installation id as a variable into the main module. Do not track old
 # installations as new aliens
-init_content = open("ete2/__init__.py").read()
+init_content = open("ete3/__init__.py").read()
 init_content = re.sub('__ETEID__="[\w\d]*"', '__ETEID__="%s"'
                       %ETEID, init_content)
-open("ete2/__init__.py", "w").write(init_content)
+open("ete3/__init__.py", "w").write(init_content)
 open('install.id', "w").write(ETEID)
 
 ete_version = open("VERSION").readline().strip()
 revision = ete_version.split("rev")[-1]
-mod_name = "ete2"
+mod_name = "ete3"
 
 long_description = open("README").read()
 long_description += open("INSTALL").read()
-long_description.replace("ete2", mod_name)
+long_description.replace("ete3", mod_name)
 
 try:
     _s = setup(
-        name = "ete2",
+        name = "ete3",
         version = ete_version,
         packages = find_packages(),
 
         entry_points = {"console_scripts":
-                        ["ete = ete2.tools.ete:main"]},
+                        ["ete = ete3.tools.ete:main"]},
         requires = [],
 
         # Project uses reStructuredText, so ensure that the docutils get
@@ -140,8 +140,8 @@ try:
             ],
         package_data = {
             },
-        data_files = [("ete2/tools/", ["ete2/tools/phylobuild.cfg"]),
-                      ("ete2/", ["install.id"])],
+        data_files = [("ete3/tools/", ["ete3/tools/phylobuild.cfg"]),
+                      ("ete3/", ["install.id"])],
 
 
         # metadata for upload to PyPI
@@ -154,10 +154,10 @@ try:
         description = "A python Environment for (phylogenetic) Tree Exploration",
         long_description = long_description,
         classifiers = TAGS,
-        provides = ["ete2"],
+        provides = ["ete3"],
         keywords = "Tree handling, manipulation, analysis and visualization",
         url = "http://etetoolkit.org",
-        download_url = "http://etetoolkit.org/static/releases/ete2/",
+        download_url = "http://etetoolkit.org/static/releases/ete3/",
     )
 
 except:

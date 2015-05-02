@@ -1,4 +1,4 @@
-from ete2 import Tree
+from ete3 import Tree
 t = Tree('(((A,C),((H,F),(L,M))),((B,(J,K))(E,D)));')
 print "Original tree:"
 print t

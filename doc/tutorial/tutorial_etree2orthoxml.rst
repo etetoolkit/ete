@@ -1,8 +1,8 @@
-.. module:: ete2
+.. module:: ete3
   :synopsis: Converts evolutionary events into OrthoXML format
 
 .. moduleauthor:: Jaime Huerta-Cepas
-.. currentmodule:: ete2
+.. currentmodule:: ete3
 
 .. _etree2orthoxml:
 
@@ -31,7 +31,7 @@ way.
 The following example will create a basic orthoXML document
 :: 
 
-    from ete2 import orthoxml
+    from ete3 import orthoxml
     # Creates an empty orthoXML object
     oxml = orthoxml.orthoXML()
 
@@ -69,7 +69,7 @@ evolutionary events (duplication and speciation events) as an orthoXML
 document. The program is installed along with ETE, so it should be
 found in your path. Alternatively you can found it in the script
 folder of the latest ETE package release
-(http://etetoolkit.org/releases/ete2/).
+(http://etetoolkit.org/releases/ete3/).
 
 To work, :attr:`etree2orthoxml` requires only one argument containing
 the newick representation of a tree or the name of the file that
@@ -203,7 +203,7 @@ requirements of the :attr:`etree2orthoxml` script.
 
 :: 
 
-   from ete2 import Tree
+   from ete3 import Tree
    # Having the followin tree
    t = Tree('((HUMAN_A, HUMAN_B)[&&NHX:speciation=N], MOUSE_B)[&&NHX:speciation=Y];')
 

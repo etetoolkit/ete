@@ -1,5 +1,5 @@
 # Import Tree instance and faces module
-from ete2 import ClusterTree
+from ete3 import ClusterTree
 # Example of a minimalistic numerical matrix. It is encoded as a text
 # string for convenience, but it usally be loaded from a text file.
 matrix = """

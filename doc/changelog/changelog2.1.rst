@@ -1,9 +1,9 @@
 What's new in ETE 2.1
 *********************************
 
-.. currentmodule:: ete2
+.. currentmodule:: ete3
 
-* A basic standalone tree visualization program called "ete2" is now
+* A basic standalone tree visualization program called "ete3" is now
   installed along with the package. 
 
 * The drawing engine has been completely rewritten to provide the
@@ -53,9 +53,9 @@ What's new in ETE 2.1
    * Tree nodes can now be fully exported using cPickle 
    * Newick parser can read and export branch distances and support values using scientific notation
    * :func:`TreeNode.swap_childs` method has changed to :func:`TreeNode.swap_children`
-* Added :mod:`ete2.nexml` module (read and write nexml format)
-* Added :mod:`ete2.phyloxml` module (read and write phyloxml format)
-* Added :mod:`ete2.webplugin` module: Allows to create interactive web tree applications 
+* Added :mod:`ete3.nexml` module (read and write nexml format)
+* Added :mod:`ete3.phyloxml` module (read and write phyloxml format)
+* Added :mod:`ete3.webplugin` module: Allows to create interactive web tree applications 
 * Tree visualization GUI checks now for newer version of the ETE package.
 * Added :class:`PhylomeDB3Connector`
                          
@@ -75,4 +75,4 @@ What's new in ETE 2.1
 * Improved documentation and examples:
    * Online and PDF tutorial 
    * Better library reference 
-   * A set of examples is now provided with the installation package and `here <http://etetoolkit.org/releases/ete2/examples-ete2.tar.gz>`_
+   * A set of examples is now provided with the installation package and `here <http://etetoolkit.org/releases/ete3/examples-ete3.tar.gz>`_

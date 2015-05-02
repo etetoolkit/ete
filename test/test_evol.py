@@ -12,7 +12,7 @@ __version__ = "0.0"
 
 
 import unittest
-from ete2.evol             import EvolTree
+from ete3.evol             import EvolTree
 from random                   import random as rnd
 from copy                     import deepcopy
 from six.moves.cPickle                  import load, dump
@@ -138,7 +138,7 @@ class TestEvolEvolTree(unittest.TestCase):
             M2a.set_histface (up=False, kind='bar', hlines = [1.0, 0.3],
                               hlines_col=['black','grey'],colors=col)
             self.assertEqual(str(type(M2a.properties['histface'])),
-                             "<class 'ete2.treeview.faces.SequencePlotFace'>")
+                             "<class 'ete3.treeview.faces.SequencePlotFace'>")
 
     def test_run_codeml(self):
         if which('codeml'):

@@ -2,8 +2,8 @@ from __future__ import absolute_import
 import os
 import unittest 
 
-from ete2 import PhyloTree, NCBITaxa
-from ete2.ncbi_taxonomy import ncbiquery
+from ete3 import PhyloTree, NCBITaxa
+from ete3.ncbi_taxonomy import ncbiquery
 DATABASE_PATH = "testdb.sqlite" 
 
 class Test_ncbiquery(unittest.TestCase):

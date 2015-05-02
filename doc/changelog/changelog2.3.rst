@@ -1,6 +1,6 @@
 What's new in ETE 2.3 (XX March 2015)
 *********************************
-.. currentmodule:: ete2
+.. currentmodule:: ete3
 
 .. contents::
 

@@ -2,9 +2,9 @@
 
 .. moduleauthor:: Jaime Huerta-Cepas
 
-.. module:: ete2.phyloxml
+.. module:: ete3.phyloxml
 
-.. currentmodule:: ete2
+.. currentmodule:: ete3
 
 Phyloxml Module
 ******************
@@ -21,7 +21,7 @@ Phyloxml classes linked to ETE
 Generic Phyloxml classes
 =======================
 
-.. automodule:: ete2.phyloxml
+.. automodule:: ete3.phyloxml
    :members:
    :noindex:
    

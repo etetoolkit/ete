@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 import unittest
 from datasets import *
-from ete2 import *
+from ete3 import *
 
 class Test_Coretype_SeqGroup(unittest.TestCase):
     """ Tests core functionality of Alignmnets objects """
