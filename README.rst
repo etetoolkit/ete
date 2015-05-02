@@ -5,7 +5,8 @@
    :alt: Join the chat at https://gitter.im/jhcepas/ete
    :target: https://gitter.im/jhcepas/ete?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge 
 
-.. image:: https://coveralls.io/repos/jhcepas/ete/badge.png
+..
+   .. image:: https://coveralls.io/repos/jhcepas/ete/badge.png
 
 
 The Environment for Tree Exploration (ETE) is a Python programming
