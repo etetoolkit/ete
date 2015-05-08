@@ -2,94 +2,37 @@ What's new in ETE 2.3
 *********************************
 .. currentmodule:: ete2
 
-.. contents::
 
-Bug Fixes 
-===========
-
-* `Newick parser <https://github.com/jhcepas/ete/issues/97>`_ is now more strict
-  when reading node names and branch distances, avoiding silent errors when
-  parsing node names containing illegal symbols (i.e. ][)(,: )
-
-* fixes several minor bugs when retrieving extra attributes in
-  :func:`PhyloNode.get_speciation_trees`. 
-
-* Tree viewer `crashes <https://github.com/jhcepas/ete/issues/94>`_ when redrawing after changing node properties. 
-
-* fixed `installation problem <https://github.com/jhcepas/ete/issues/82>`_ using pip. 
-
-* visualizing internal tree nodes as a circular tree `produce crashes <https://github.com/jhcepas/ete/issues/84>`_
-
-* `math domain error <https://github.com/jhcepas/ete/issues/98>`_ in SequencePlotFace. 
 
 New Modules
 =============
-
-ncbi taxonomy
----------------------
-
-It provides the class :class:`NCBITaxa`, which allows to query a locally parsed
-taxonomy database. It provides taxid-name translations, tree annotation tools
-and other handy tools.
-
-A brief tutorial and examples on how to use it is available `here
-<../tutorial/tutorial_ncbitaxonomy.html>`_
 
 
 tools
 --------
 
-Several command line tools, implementing common tree operations have been added
-and are available through the `ete` command, which should become available in
-your path after installation.
+A collection of `command line tools
+<http://etetoolkit.org/documentation/tools/>`_, implementing common tree
+operations has been added to the ETE core package. All tools are wrapped by the
+**ete** command, which should become available in your path after installation.
 
-* **ete build**: allows to build phylogenetic tree using a using a number of
-     predefined built-in gene-tree and species-tree workflows. 
-
-  - gene tree phylogenetic reconstruction. Input file is a single fasta
-        file with homologous sequences.
-
-  - species tree reconstruction using super-matrix (concatenated alignment)
-      methodology. Input file is a list of clusters of orthologous groups,
-      and a fasta file containing all sequences.
-
-  - automatic switch from amino acid to codon alignments if necessary 
-
-  - software support include FastTree, Phyml, Raxml, Muscle, MAFFT,
-      ClustalOmega, Dialign-tx, MCoffee, Trimal, ProtTest
-
-* **ete mod**: modify tree topologies directly from the command line. Allows
-    rooting, sorting leaves, pruning and more
-
+* `ete build <http://etetoolkit.org/documentation/ete-build/>`_: Build phylogenetic tree using a using a number of predefined built-in gene-tree and species-tree workflows.
+* `ete view <http://etetoolkit.org/documentation/ete-view/>`_: visualize and generate tree images directly form the command line. 
+* `ete compare <http://etetoolkit.org/documentation/ete-compare/>`_: compare tree topologies based on any node feature (i.e. name, species name, etc) using the Robinson-Foulds distance and edge compatibility scores. 
+* `ete ncbiquery <http://etetoolkit.org/documentation/ete-ncbiquery/>`_: query the ncbi taxonomy tree directly from the database.
+* **ete mod**: modify tree topologies directly from the command line. Allows rooting, sorting leaves, pruning and more
 * **ete annotate**: add features to the tree nodes by combining newick and text files.
-   
-* **ete view**: visualize and generate tree images directly form the command
-    line. 
-
-  - Many customization options are allowed, from basic size, color and
-    shape options to the possibility of rendering tree annotations over the tree image.
-       
-  - Predefined layouts are provided for phylogenetic tree + alignments and
-      custom heatmaps.
-
-* **ete compare**: compare tree topologies based on any node feature
-     (i.e. name, species name, etc) using the Robinson-Foulds distance and
-     edge compatibility scores. 
-
-  - Automatic handling of trees with different sizes
-        
-  - Automatic handling of trees containing duplicated features
-
-  - Allows to discard edges based on their support values. 
-
-
-* **ete ncbiquery**: query the ncbi taxonomy tree directly from the database.
-
-  - Retrieves annotated tree topology of the selected taxa,
-    translates between taxid and species names, and extract lineage, rank and
-    other taxa information.
-
 * **ete generate**: generate random trees, mostly for teaching and testing
+
+ncbi taxonomy
+---------------------
+
+The new **ncbi_taxonomy** module provides the class :class:`NCBITaxa`, which allows to query a locally parsed
+NCBI taxonomy database. It provides taxid-name translations, tree annotation tools
+and other handy functions. A brief tutorial and examples on how to use it is
+available `here <../tutorial/tutorial_ncbitaxonomy.html>`_
+
+
 
 New features
 =================
@@ -137,6 +80,13 @@ New features
 
 ..
    * Improved heatmap support???
-
-
   
+Highlighted Bug Fixes 
+============================
+
+* `Newick parser <https://github.com/jhcepas/ete/issues/97>`_ is now more strict  when reading node names and branch distances, avoiding silent errors when  parsing node names containing illegal symbols (i.e. ][)(,: )
+* fixes several minor bugs when retrieving extra attributes in  :func:`PhyloNode.get_speciation_trees`. 
+* Tree viewer `crashes <https://github.com/jhcepas/ete/issues/94>`_ when redrawing after changing node properties. 
+* fixed `installation problem <https://github.com/jhcepas/ete/issues/82>`_ using pip. 
+* visualizing internal tree nodes as a circular tree `produce crashes <https://github.com/jhcepas/ete/issues/84>`_
+* `math domain error <https://github.com/jhcepas/ete/issues/98>`_ in SequencePlotFace. 
