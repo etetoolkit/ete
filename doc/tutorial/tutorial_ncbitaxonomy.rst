@@ -8,7 +8,7 @@ Dealing with the NCBI Taxonomy database
 =================================================
 
 ETE's `ncbi_taxonomy` module provides utilities to efficiently query a local
-copy of the NCBI Taxonomy database. The class :class:`NCBITaxonomy` offers
+copy of the NCBI Taxonomy database. The class :class:`NCBITaxa` offers
 methods to convert from taxid to names (and vice versa), to fetch pruned
 topologies connecting a given set of species, or to download rank, names and
 lineage track information.
@@ -22,7 +22,7 @@ Setting up a local copy of the NCBI taxonomy database
 The first time you attempt to use :class:`NCBITaxa`, ETE will detect that your
 local database is empty and it will attempt to download the latest NCBI taxonomy
 database (~300MB) and will store a parsed version of it in your home directory:
-`~/.etetoolkit/taxa.sqlite`. All future imports of `NCBITaxa` will detect the
+`~/.etetoolkit/taxa.sqlite`. All future imports of _`NCBITaxa` will detect the
 local database and will skip this step.
 
 ::

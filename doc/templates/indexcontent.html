@@ -1,66 +1,66 @@
 {% extends "defindex.html" %}
 
 {% block tables %} 
-<p style="padding-right:30px;padding-left:30px;font-size:10.5pt;">
-ETE is a python programming toolkit that assists in the <b>automated
-manipulation, analysis and visualization of phylogenetic trees</b>. It
-provides a wide range of tree handling options, node annotation
-features, programmatic access to the phylomeDB database (containing
-thousands of pre-calculated phylogenetic trees), and automatic
-orthology and paralogy detection. In addition, ETE implements an
-interactive tree visualization system as well as a highly customizable
-tree drawing engine to create <b>PDF and SVG tree images</b>. Note
-that, although ETE is mainly developed as a tool for phylogenetic
-analysis, it can also be used to deal with clustering trees or any
-other data that can be represented as a hierarchical tree.
+
+
+<div style='padding-right:30px;padding-left:30px;font-size:95%;max-width:800px;font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;line-height: 155%;color:#333;'>
+
+<div style='border-left:6px solid #ccc; padding-left:7px;'>
+<p>
+ETE is a Python programming toolkit that assists in the <i>automated
+manipulation, analysis and visualization of phylogenetic trees</i>.
 </p>
-<p style="padding-right:30px;padding-left:30px;font-size:9pt;">
-If you use ETE to analyze or process results which are planned to be
-part of a published work, please do not forget to support ETE's
-development <b>by citing</b>:
-<br>
-<a style="font-size:9pt;" href="http://www.biomedcentral.com/1471-2105/11/24">Jaime
-Huerta-Cepas, Joaquín Dopazo and Toni Gabaldón. ETE: a python
-Environment for Tree Exploration. BMC Bioinformatics 2010, 11:24.</a>
-</li>
+<p> It provides a wide range of tree handling options, node annotation features,
+and specialized features to deal with <i>phylogenetic trees</i> (i.e automatic
+orthology and paralogy detection, phylostratigraphy, tree reconciliation,
+etc). ETE implements also an interactive <i>tree visualization</i> system based on a a
+highly customizable tree drawing engine (PDF and SVG tree images).
 </p>
-  <table class="contentstable" align="center"><tr>
+<p>
+Although ETE is developed as a tool for phylogenetic analysis,
+it is also used to handle  other types of hierarchical trees (i.e. clustering results). 
+</p>
+</div>
+<table class="contentstable" align='center'><tr>
     
     <td width="50%">
-      <p class="biglink"><a class="biglink" href="{{ pathto("changelog/changelog2.3") }}">What's new in ETE {{ version }}?</a><br/>
-        <a href="{{ pathto("changelog/index") }}">Previous changelogs</a></p>
-
-      <p class="biglink"><a class="biglink" href="{{ pathto("tutorial/index") }}">Tutorial</a><br/>
-        <span class="linkdescr">Comprehensive tutorial with examples</span></p>
-
-      <p class="biglink"><a class="biglink" href="{{ pathto("reference/index") }}">Library Reference</a><br/>
+        <p class="biglink"><a class="biglink" href="{{ pathto("tutorial/index") }}">API Tutorial</a><br/>
+            <span class="linkdescr">How to use the different modules of the library</span></p>
+        
+        <p class="biglink"><a class="biglink" href="http://etetoolkit.org/documentation/tools/">Command line tools</a><br/>
+            <span class="linkdescr">Tools to visualize, compare, manipulate and analyze trees</span></p>
+        
+        <p class="biglink"><a class="biglink" href="{{ pathto("reference/index") }}">API Reference</a><br/>
          <span class="linkdescr">An index of all ETE functions</span></p>
-
+        
     </td><td width="50%">
-      <p class="biglink"><a class="biglink" href="{{ pathto("install/index") }}">Setup and Install </a><br/>
-         <span class="linkdescr">ETE install and requirements</span></p>
-
-      <p class="biglink"><a class="biglink" href="{{ pathto("faqs/index") }}">Command line tools</a><br/>
-         <span class="linkdescr">Visualize, compare, manipulate and anlyze trees directly from the command line</span></p>
-
-      <p class="biglink"><a class="biglink" href="{{ pathto("support") }}">Help and FAQ</a><br/>
-         <span class="linkdescr">Frequently Asked Questions and support</span></p>
-
+        <p class="biglink"><a class="biglink" href="{{ pathto("changelog/changelog2.3") }}">What's new in ETE {{ version }}?</a><br/>
+            <a href="{{ pathto("changelog/index") }}">Previous changelogs</a></p>
+        
+        <p class="biglink"><a class="biglink" href="http://etetoolkit.org/download/">Setup and Install </a><br/>
+            <span class="linkdescr">ETE install and requirements</span></p>
+        
+        <p class="biglink"><a class="biglink" href="http://github.org/jhcepas/ete/issues/">Development</a><br/>
+            <span class="linkdescr">Feature requests, bug reports, etc.</span></p>
+        
     </td></tr>
-  </table>
+</table>
 
-  <!-- <table class="contentstable" align="center"><tr> -->
-  <!--   <td width="50%"> -->
-  <!--     <p class="biglink"><a class="biglink" href="{{ pathto("about") }}">About ETE</a><br/> -->
-  <!--       <span class="linkdescr">Behind the scenes</span></p> -->
-  <!--     <p class="biglink"><a class="biglink" href="{{ pathto("bugs") }}">Bugs?</a></p> -->
-  <!--   </td><td width="50%"> -->
-  <!--     <p class="biglink"><a class="biglink" href="{{ pathto("ack") }}">Acknowledgments</a></p> -->
-  <!--     <p class="biglink"><a class="biglink" href="{{ pathto("license") }}">License</a></p> -->
-  <!--   </td></tr> -->
-  <!-- </table> -->
+<div style='font-size:100%;font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;line-height:110%;color:#666;'>
+    <div style='margin:auto;border-top:1px solid blue; border-bottom:1px solid blue; padding-top:10px; padding-bottom:10px; width:70%;font-size:88%;'>
+        If you use ETE to analyze, process or visuallize results in a published
+        work, please do not forget to support the project by citing:
+        <br><br>
+        <span style="font-size:80%;">
+            <i>Jaime Huerta-Cepas, Joaquín Dopazo and Toni Gabaldón.</i> ETE: a python Environment for Tree Exploration. BMC Bioinformatics 2010, 11:24. 
+                <a alt="link to citation reference" title='link to citation reference' target='_black' href='http://www.biomedcentral.com/1471-2105/11/24'>doi:10.1186/1471-2105-11-24</a>
+            
+        </span>
+    </div>
+</div>
 
 
+  
   <div class="note" style="border:0px;text-align:center;background-color:#ffffff">
     <a href="http://etetoolkit.org/releases/ete2/examples-ete2.tar.gz"> Download all examples </a>
     <br>
@@ -75,8 +75,9 @@ Environment for Tree Exploration. BMC Bioinformatics 2010, 11:24.</a>
   <!-- </table> -->
 
   <div class="note" style="text-align:center;background-color:#D0ECa2">
-    For ETE related news and announcements, visit the <a href="http://etetoolkit.org" target="_blank"> main ETE website </a>
+    The official ETE web site is <a href="http://etetoolkit.org" target="_blank">http://etetoolkit.org </a>
   </div>
+</div>
   <!-- <div  style="font-family:courier;text-align:justify;margin-top:10px;font-size:10pt;background-color:#fff;"> -->
   <!--   ETE is free software: you can redistribute it and/or modify it -->
   <!--   under the terms of the GNU General Public License as published by -->
