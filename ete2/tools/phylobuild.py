@@ -927,8 +927,14 @@ def hash_names(target_names):
    
 def _main():
     global NPRPATH, APPSPATH, args
-    APPSPATH = os.path.expanduser("~/.etetoolkit/ext_apps-latest/")
     ETEHOMEDIR = os.path.expanduser("~/.etetoolkit/")
+    
+    if os.path.exists(pjoin(NPRPATH, 'ext_apps-latest')):
+        # if a copy of apps is part of the ete distro, use if by default
+        APPSPATH = pjoin(NPRPATH, 'ext_apps-latest')
+    else:
+        # if not, try a user local copy
+        APPSPATH = pjoin(ETEHOMEDIR, 'ext_apps-latest')
 
     if len(sys.argv) == 1:
         if not pexist(APPSPATH):
@@ -942,17 +948,25 @@ def _main():
             import urllib
             import tarfile
             print >>sys.stderr, colorify('Downloading latest version of tools...', "green")
-            try:
-                os.mkdir(ETEHOMEDIR)
-            except OSError: 
-                pass
+            TARGETDIR = ''
+            while not pexist(TARGETDIR):
+                TARGET_DIR = raw_input('target directory? [%s]:' %ETEHOMEDIR).strip()
+                if TARGET_DIR == '':
+                    TARGET_DIR = ETEHOMEDIR
+                    break
+            if TARGET_DIR == ETEHOMEDIR:
+                try:
+                    os.mkdir(ETEHOMEDIR)
+                except OSError: 
+                    pass
+                
             version_file = "latest.tar.gz"
-            urllib.urlretrieve("https://github.com/jhcepas/ext_apps/archive/%s" %version_file, pjoin(ETEHOMEDIR, version_file))
+            urllib.urlretrieve("https://github.com/jhcepas/ext_apps/archive/%s" %version_file, pjoin(TARGET_DIR, version_file))
             print >>sys.stderr, colorify('Decompressing...', "green")
-            tfile = tarfile.open(pjoin(ETEHOMEDIR, version_file), 'r:gz')
-            tfile.extractall(ETEHOMEDIR)
+            tfile = tarfile.open(pjoin(TARGET_DIR, version_file), 'r:gz')
+            tfile.extractall(TARGET_DIR)
             print >>sys.stderr, colorify('Compiling tools...', "green")
-            sys.path.insert(0, APPSPATH)
+            sys.path.insert(0, pjoin(TARGET_DIR, 'ext_apps-latest'))
             import compile_all
             s = compile_all.compile_all()
             sys.exit(s)                    
