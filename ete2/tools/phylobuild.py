@@ -933,8 +933,8 @@ def _main():
     if len(sys.argv) == 1:
         if not pexist(APPSPATH):
             print >>sys.stderr, colorify('\nWARNING: external applications directory are not found at %s' %APPSPATH, "yellow")
-            print >>sys.stderr, colorify('Use "ete build install_tools" to install or upgrade', "orange")
-
+            print >>sys.stderr, colorify('Use "ete build install_tools" to install or upgrade tools', "orange")
+    
     elif len(sys.argv) > 1:
         _config_path = pjoin(NPRPATH, 'phylobuild.cfg')
 
@@ -1012,7 +1012,7 @@ def _main():
     # Input data related flags
     input_group = parser.add_argument_group('==== Input Options ====')
 
-    input_group.add_argument('[check | wl | show | dump | validate | version]',
+    input_group.add_argument('[check | wl | show | dump | validate | version | install_tools]',
                              nargs='?',
                              help=("Utility commands:\n"
                                    "check: check that external applications are executable.\n"
@@ -1283,9 +1283,13 @@ def _main():
                           " debugging will start from such task on.")
     
     args = parser.parse_args()
-    if  args.tools_dir: 
+    if args.tools_dir: 
         APPSPATH = args.tools_dir
 
+    if not pexist(APPSPATH):
+        print >>sys.stderr, colorify('\nWARNING: external applications directory are not found at %s' %APPSPATH, "yellow")
+        print >>sys.stderr, colorify('Use "ete build install_tools" to install or upgrade tools', "orange")
+        
     args.enable_ui = False
     if not args.noimg:
         print 'Testing ETE-NPR graphics support...'
