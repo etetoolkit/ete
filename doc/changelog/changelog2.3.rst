@@ -3,7 +3,6 @@ What's new in ETE 2.3
 .. currentmodule:: ete2
 
 
-
 New Modules
 =============
 
@@ -23,6 +22,9 @@ operations has been added to the ETE core package. All tools are wrapped by the
 * **ete mod**: modify tree topologies directly from the command line. Allows rooting, sorting leaves, pruning and more
 * **ete annotate**: add features to the tree nodes by combining newick and text files.
 * **ete generate**: generate random trees, mostly for teaching and testing
+
+.. figure:: http://etetoolkit.org/static/img/ete23_demo.gif
+            :scale: 50%
 
 ncbi taxonomy
 ---------------------
