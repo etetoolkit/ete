@@ -41,7 +41,6 @@ def get_example_tree():
 
     ts = TreeStyle()
     ts.layout_fn = layout
-    t.show(tree_style=ts)
     return t, ts
 
 if __name__ == '__main__':

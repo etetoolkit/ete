@@ -74,7 +74,7 @@ def set_float_format(formatter):
     structure (i.e.: ":;,()")
 
     '''
-    global FLOAT_FORMATTER#, DIST_FORMATTER
+    global FLOAT_FORMATTER
     FLOAT_FORMATTER = formatter
     #DIST_FORMATTER = ":"+FLOAT_FORMATTER
 
@@ -181,31 +181,6 @@ def format_node(node, node_type, format,
 
     return "%s%s" %(FIRST_PART, SECOND_PART)
 
-# Used to write into specific formats
-def node2leafformat(node, format):
-    safe_name = re.sub("["+_ILEGAL_NEWICK_CHARS+"]", "_", \
-                             str(getattr(node, "name")))
-
-    if format == 0 or format == 1 or format == 2 or format ==3:
-        return "%s:%0.6f" %(safe_name, node.dist)
-    elif format == 4 or format == 7:
-        return ":%0.6f" %(node.dist)
-    elif format == 5 or format == 6:
-        return "%s" %(safe_name)
-
-def node2internalformat(node, format):
-    safe_name = re.sub("["+_ILEGAL_NEWICK_CHARS+"]", "_", \
-                             str(getattr(node, "name")))
-    if format == 0 or format == 1:
-        return "%0.6f:%0.6f" %(node.support, node.dist)
-    elif format == 2:
-        return "%s:%0.6f" %(safe_name, node.dist)
-    elif format == 3 or format == 4:
-        return ":%0.6f" %(node.dist)
-    elif format == 5:
-        return "%s" %(safe_name)
-    elif format == 6 or format == 7:
-        return ""
 
 def print_supported_formats():
     from ete2.coretype.tree import TreeNode
@@ -319,8 +294,7 @@ def _parse_extra_features(node, NHX_string):
         try:
             pname, pvalue = field.split("=")
         except ValueError, e:
-            print NHX_string, field.split("=")
-            raise ValueError, e
+            raise NewickError('Invalid NHX format %s' %field)
         node.add_feature(pname, pvalue)
 
 def _read_node_data(subnw, current_node, node_type, format):

@@ -932,6 +932,7 @@ def _main():
     if os.path.exists(pjoin(NPRPATH, 'ext_apps-latest')):
         # if a copy of apps is part of the ete distro, use if by default
         APPSPATH = pjoin(NPRPATH, 'ext_apps-latest')
+        ETEHOMEDIR = NPRPATH
     else:
         # if not, try a user local copy
         APPSPATH = pjoin(ETEHOMEDIR, 'ext_apps-latest')

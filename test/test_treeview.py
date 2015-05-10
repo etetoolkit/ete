@@ -151,5 +151,6 @@ n.add_face(temp_tface, 0, "aligned")
 ms = TreeStyle()
 ms.mode = "r"
 ms.show_leaf_name = False
-main_tree.show(tree_style=ms)        
+main_tree.render('test.png', tree_style=ms)
+main_tree.render('test.svg', tree_style=ms)        
 
