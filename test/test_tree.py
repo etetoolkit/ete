@@ -383,7 +383,7 @@ class Test_Coretype_Tree(unittest.TestCase):
         # test prune preserving distances
         for i in xrange(100):
             t = Tree()
-            t.populate(20, random_branches=True)
+            t.populate(40, random_branches=True)
             orig_nw = t.write()
             distances = {}
             for a in t.iter_leaves():
@@ -394,14 +394,7 @@ class Test_Coretype_Tree(unittest.TestCase):
             t.prune(to_keep, preserve_branch_length=True)            
             for a,b in distances:
                 if a in to_keep and b in to_keep:
-                    if distances[(a,b)] != round(a.get_distance(b), 6):
-                        pass
-                        #print distances[(a,b)],  round(a.get_distance(b), 6)
-                        #print 
-                        #import ipdb
-                        #ipdb.set_trace()
-                    # preserve branch length is not sage. Need to get a method
-                    #self.assertEqual(distances[(a,b)], round(a.get_distance(b), 6))
+                    self.assertEqual(distances[(a,b)], round(a.get_distance(b), 6))
 
         # Total number of nodes is correct (no single child nodes)
         for x in xrange(10):
@@ -631,7 +624,12 @@ class Test_Coretype_Tree(unittest.TestCase):
         t.unroot()
         t.sort_descendants()
         self.assertEqual(nw_unrooted, t.write())
-                
+
+        t = Tree('(A:10,B:1,(C:1,D:1)E:1)root;', format=1);
+        t.set_outgroup(t.get_midpoint_outgroup())
+        self.assertEqual(t.children[0].dist, 5.0)
+        self.assertEqual(t.children[1].dist, 5.0)
+        
         
     def test_tree_navigation(self):
         t = Tree("(((A, B)H, C)I, (D, F)J)root;", format=1)
@@ -723,6 +721,17 @@ class Test_Coretype_Tree(unittest.TestCase):
         Tree('(a,(b,c));').describe()
         
 
+    def test_treeid(self):
+        t = Tree()
+        t.populate(50, random_branches=True)
+        orig_id = t.get_topology_id()
+        nodes = t.get_descendants()
+        for i in xrange(20):
+            for n in random.sample(nodes, 10):
+                n.swap_children()
+                self.assertEqual(t.get_topology_id(), orig_id)
+            
+        
     def test_ultrametric(self):
 
         # Convert tree to a ultrametric topology in which distance from

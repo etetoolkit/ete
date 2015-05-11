@@ -382,10 +382,13 @@ class TreeNode(object):
         """
         parent = self.up
         if parent:
+            if preserve_branch_length:
+                if len(self.children) == 1:
+                    self.children[0].dist += self.dist
+                elif len(self.children) > 1:
+                    parent.dist += self.dist
+                
             for ch in self.children:
-                # preserve branch length seems difficult to implement. This approach is not workwing
-                if preserve_branch_length:
-                    ch.dist += self.dist
                 parent.add_child(ch)
             parent.remove_child(self)
 
@@ -539,8 +542,16 @@ class TreeNode(object):
             
         for n in self.get_descendants('postorder'):
             if n not in to_keep: 
-                n.delete(prevent_nondicotomic=False,
-                         preserve_branch_length=preserve_branch_length)
+                if preserve_branch_length:
+                    if len(n.children) == 1:
+                        n.children[0].dist += n.dist
+                    elif len(n.children) > 1 and n.up:
+                        n.up.dist += n.dist
+                        
+                n.delete(prevent_nondicotomic=False)
+
+                #n.delete(prevent_nondicotomic=False,
+                #         preserve_branch_length=preserve_branch_length)
 
     def swap_children(self):
         """
@@ -1307,15 +1318,9 @@ class TreeNode(object):
         structure using provided layout and TreeStyle.
 
         """
-        try:
-            from ete2.treeview import drawer
-        except ImportError, e:
-            print "'treeview' module could not be loaded.\n",e
-            print "\n\n"
-            print e
-        else:
-            drawer.show_tree(self, layout=layout,
-                             tree_style=tree_style, win_name=name)
+        from ete2.treeview import drawer
+        drawer.show_tree(self, layout=layout,
+                         tree_style=tree_style, win_name=name)
 
     def render(self, file_name, layout=None, w=None, h=None, \
                        tree_style=None, units="px", dpi=90):
@@ -1337,20 +1342,16 @@ class TreeNode(object):
 
         """
 
-        try:
-            from ete2.treeview import drawer
-        except ImportError, e:
-            TreeError("'treeview' module could not be loaded")
+        from ete2.treeview import drawer
+        if file_name == '%%return':
+            return drawer.get_img(self, w=w, h=h, 
+                                  layout=layout, tree_style=tree_style, 
+                                  units=units, dpi=dpi)
         else:
-            if file_name == '%%return':
-                return drawer.get_img(self, w=w, h=h, 
-                                      layout=layout, tree_style=tree_style, 
+            return drawer.render_tree(self, file_name, w=w, h=h, 
+                                    layout=layout, tree_style=tree_style, 
                                       units=units, dpi=dpi)
-            else:
-                return drawer.render_tree(self, file_name, w=w, h=h, 
-                                          layout=layout, tree_style=tree_style, 
-                                          units=units, dpi=dpi)
-
+            
     def copy(self, method="cpickle"):
         """.. versionadded: 2.1
 
@@ -1949,7 +1950,8 @@ class TreeNode(object):
         
         for n in self.get_descendants():
             if len(n.children) == 1:
-                n.delete(prevent_nondicotomic=True, preserve_branch_length=preserve_branch_length)
+                n.delete(prevent_nondicotomic=True,
+                         preserve_branch_length=preserve_branch_length)
 
 
     def get_topology_id(self, attr="name"):
