@@ -85,7 +85,7 @@ def populate_args(compare_args_p):
 def run(args):
     from ete2 import Tree
     from ete2.utils import print_table
-    
+
     def iter_differences(set1, set2, unrooted=False):
         for s1 in set1:
             pairs = []
@@ -128,17 +128,7 @@ def run(args):
                               has_duplications=False)
 
 
-            if args.taboutput:
-                print '\t'.join(map(str, [shorten_str(stree_name,25),
-                                             shorten_str(rtree_name,25),
-                                             r['effective_tree_size'],
-                                             r['norm_rf'], 
-                                             r['rf'], r['max_rf'],
-                                             r["source_edges_in_ref"],
-                                             r["ref_edges_in_source"],
-                                             r['source_subtrees'],
-                                             r['treeko_dist']]))
-
+                
             if args.show_mismatches or args.show_matches or args.show_edges:
                 if args.show_mismatches:
                     src = r['source_edges'] - r['ref_edges']
@@ -157,19 +147,23 @@ def run(args):
                 else:
                     for tag, part in [("src: %s"%stree_name, src), ("ref: %s"%rtree_name, ref)]:
                         print "%s\t%s" %(tag, '\t'.join([','.join(p) for p in part]))
+            else:
+                data = [shorten_str(stree_name,25),
+                        shorten_str(rtree_name,25),
+                        r['effective_tree_size'],
+                        r['norm_rf'], 
+                        r['rf'], r['max_rf'],
+                        r["source_edges_in_ref"],
+                        r["ref_edges_in_source"],
+                        r['source_subtrees'],
+                        r['treeko_dist']]
+                if args.taboutput:                    
+                    print '\t'.join(map(str, data))
+                else:    
+                    print_table([map(as_str, data)],
+                                fix_col_width = col_sizes, wrap_style='cut')
                         
 
-            else:
-                print_table([map(as_str, [shorten_str(stree_name,25),
-                                          shorten_str(rtree_name,25),
-                                          r['effective_tree_size'],
-                                          r['norm_rf'], 
-                                          r['rf'], r['max_rf'],
-                                          r["source_edges_in_ref"],
-                                          r["ref_edges_in_source"],
-                                          r['source_subtrees'],
-                                          r['treeko_dist']])],
-                            fix_col_width = col_sizes, wrap_style='cut')
                 
 def euc_dist(v1, v2):
     if type(v1) != set: v1 = set(v1)

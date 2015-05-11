@@ -198,9 +198,9 @@ def populate_source_args(source_args_p):
                              type=str, default="name",
                              help=("attribute in source tree used as leaf name"))
     
-    source_args.add_argument("--src_attr_parser", dest="src_attr_parser", 
-                             type=str, 
-                             help=(""))
+    # source_args.add_argument("--src_attr_parser", dest="src_attr_parser", 
+    #                          type=str, 
+    #                          help=(""))
 
 def populate_ref_args(ref_args_p):
     ref_args = ref_args_p.add_argument_group('REFERENCE TREES')
