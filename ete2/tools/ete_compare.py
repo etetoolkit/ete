@@ -37,6 +37,7 @@
 # 
 # #END_LICENSE#############################################################
 from common import as_str, shorten_str
+import re
 
 DESC = """
  - ete compare -
@@ -85,7 +86,7 @@ def populate_args(compare_args_p):
 def run(args):
     from ete2 import Tree
     from ete2.utils import print_table
-
+    
     def iter_differences(set1, set2, unrooted=False):
         for s1 in set1:
             pairs = []
@@ -117,11 +118,29 @@ def run(args):
 
     for stree_name in args.src_tree_iterator:
         stree = Tree(stree_name)
+
+        # Parses attrs if necessary
+        src_tree_attr = args.src_tree_attr
+        if args.src_attr_parser:
+            for leaf in stree:
+                leaf.add_feature('_tempattr', re.search(
+                    args.src_attr_parser, getattr(leaf, args.src_tree_attr)).groups()[0])
+            src_tree_attr = '_tempattr'
+  
         for rtree_name in args.ref_trees:
             rtree = Tree(rtree_name)
+
+            # Parses attrs if necessary
+            ref_tree_attr = args.ref_tree_attr
+            if args.ref_attr_parser:
+                for leaf in rtree:
+                    leaf.add_feature('_tempattr', re.search(
+                        args.ref_attr_parser, getattr(leaf, args.ref_tree_attr)).groups()[0])
+                ref_tree_attr = '_tempattr'
+
             r = stree.compare(rtree, 
-                              ref_tree_attr=args.ref_tree_attr,
-                              source_tree_attr=args.src_tree_attr,
+                              ref_tree_attr=ref_tree_attr,
+                              source_tree_attr=src_tree_attr,
                               min_support_ref=args.min_support_ref,
                               min_support_source = args.min_support_src,
                               unrooted=args.unrooted,

@@ -40,6 +40,7 @@ import sys
 import argparse
 from string import strip
 import operator
+import re
 
 __CITATION__ = '''#       ** If you use this software for a published work, please cite: **
 #  
@@ -160,7 +161,7 @@ def dump(t, features=None):
     #    t.write(format=0, features=features)
     #else:
     print t.write(format=0, features=features)
-
+    
 def populate_main_args(main_args_p):
     main_args = main_args_p.add_argument_group('GENERAL OPTIONS')
 
@@ -198,9 +199,9 @@ def populate_source_args(source_args_p):
                              type=str, default="name",
                              help=("attribute in source tree used as leaf name"))
     
-    # source_args.add_argument("--src_attr_parser", dest="src_attr_parser", 
-    #                          type=str, 
-    #                          help=(""))
+    source_args.add_argument("--src_attr_parser", dest="src_attr_parser", 
+                             type=str, 
+                           help=("Perl regular expression wrapping the portion of the target attribute that should be used."))
 
 def populate_ref_args(ref_args_p):
     ref_args = ref_args_p.add_argument_group('REFERENCE TREES')
@@ -220,6 +221,6 @@ def populate_ref_args(ref_args_p):
         
     ref_args.add_argument("--ref_attr_parser", dest="ref_attr_parser", 
                            type=str, 
-                           help=(""))
+                           help=("Perl regular expression wrapping the portion of the target attribute that should be used."))
 
 
