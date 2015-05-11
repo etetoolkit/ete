@@ -7,6 +7,11 @@ import time, random
 import re
 import urllib2
 
+TRACKINSTALL=True
+if "--donottrackinstall" in sys.argv:
+    TRACKINSTALL=False
+    sys.argv.remove("--donottrackinstall")
+
 try:
     from setuptools import setup, find_packages
 except ImportError:
@@ -29,7 +34,7 @@ try:
     else:
         _fix_path = True
 
-    # Is there a previous ETE installation? If so, use the same id
+    # Is there is a previous ETE installation? If so, use the same id
     import ete2
     ETEID = ete2.__get_install_id()
     
@@ -43,7 +48,6 @@ if not ETEID:
 
 PYTHON_DEPENDENCIES = [
     ["numpy", "Numpy is required for the ArrayTable and ClusterTree classes.", 0],
-#    ["MySQLdb", "MySQLdb only is required by the PhylomeDB access API.", 0],        #  Only PhylomeDB requires it is now deprecated
     ["PyQt4", "PyQt4 is required for tree visualization and image rendering.", 0],
     ["lxml", "lxml is required from Nexml and Phyloxml support.", 0]
 ]
@@ -156,19 +160,18 @@ except:
     raise
     
 else:
-
     print "\033[92m - Done! - \033[0m"
     missing = False
     for mname, msg, ex in PYTHON_DEPENDENCIES:
         if not can_import(mname):
             print " Warning:\033[93m Optional library [%s] could not be found \033[0m" %mname
             print "  ",msg
-            missing=True
+            missing = True
     
     notwanted = set(["-h", "--help", "-n", "--dry-run"])
     seen = set(_s.script_args)
     wanted = set(["install", "bdist", "bdist_egg"])
-    if (wanted & seen) and not (notwanted & seen):
+    if TRACKINSTALL and (wanted & seen) and not (notwanted & seen):
         try:
             welcome = urllib2.quote("New alien in earth!")
             urllib2.urlopen("http://etetoolkit.org/static/et_phone_home.php?ID=%s&VERSION=%s&MSG=%s"

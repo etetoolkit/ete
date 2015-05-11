@@ -73,6 +73,9 @@ def populate_args(compare_args_p):
     compare_args.add_argument("--show_matches", dest="show_matches", 
                               action = "store_true",
                               help="")
+    compare_args.add_argument("--show_edges", dest="show_edges", 
+                              action = "store_true",
+                              help="")
 
     compare_args.add_argument("--taboutput", dest="taboutput", 
                               action = "store_true",
@@ -104,7 +107,7 @@ def run(args):
 
     if args.taboutput:
         print '# ' + '\t'.join(header)
-    elif args.show_mismatches or args.show_matches:
+    elif args.show_mismatches or args.show_matches or args.show_edges:
         pass
     else: 
         print_table([header,
@@ -135,25 +138,26 @@ def run(args):
                                              r["ref_edges_in_source"],
                                              r['source_subtrees'],
                                              r['treeko_dist']]))
-            elif args.show_mismatches:
-                mismatches_src = r['source_edges'] - r['ref_edges']
-                mismatches_ref = r['ref_edges'] - r['source_edges']
-                for tag, part in [("src:", mismatches_src), ("target:", mismatches_ref)]:
-                    print "%s\t%s" %(tag, '|'.join([','.join(p) for p in part]))
-            elif 0:
-                # EXPERIMENTAL
-                from pprint import pprint
-                import itertools
 
-                mismatches_src = r['source_edges'] - r['ref_edges']
-                mismatches_ref = r['ref_edges'] - r['source_edges']
+            if args.show_mismatches or args.show_matches or args.show_edges:
+                if args.show_mismatches:
+                    src = r['source_edges'] - r['ref_edges']
+                    ref = r['ref_edges'] - r['source_edges']
+                elif args.show_matches:
+                    src = r['source_edges'] & r['ref_edges']
+                    ref = r['ref_edges'] & r['source_edges']
+                elif args.show_edges:
+                    src = r['source_edges']
+                    ref = r['ref_edges']
 
-                for part, pairs in iter_differences(mismatches_src,
-                                                    mismatches_ref,
-                                                    unrooted=args.unrooted):
-                    print part
-                    for d, r in sorted(pairs):
-                        print "  ", d, r
+                if args.unrooted:
+                    for tag, part in [("src: %s"%stree_name, src), ("ref: %s"%rtree_name, ref)]:
+                        print "%s\t%s" %(tag, '\t'.join(
+                            map(lambda x: '%s|%s' %(','.join(x[0]), ','.join(x[1])), part)))
+                else:
+                    for tag, part in [("src: %s"%stree_name, src), ("ref: %s"%rtree_name, ref)]:
+                        print "%s\t%s" %(tag, '\t'.join([','.join(p) for p in part]))
+                        
 
             else:
                 print_table([map(as_str, [shorten_str(stree_name,25),
