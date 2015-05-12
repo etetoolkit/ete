@@ -953,7 +953,10 @@ def _main():
             import urllib
             import tarfile
             print >>sys.stderr, colorify('Downloading latest version of tools...', "green")
-            TARGET_DIR = ''
+            if len(sys.argv) > 2:
+                TARGET_DIR = sys.argv[2]
+            else:
+                TARGET_DIR = ''
             while not pexist(TARGET_DIR):
                 TARGET_DIR = raw_input('target directory? [%s]:' %ETEHOMEDIR).strip()
                 if TARGET_DIR == '':
