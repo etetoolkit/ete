@@ -933,10 +933,10 @@ def _main():
     global NPRPATH, APPSPATH, args
     ETEHOMEDIR = os.path.expanduser("~/.etetoolkit/")
     
-    if os.path.exists(pjoin(NPRPATH, 'ext_apps-latest')):
+    if os.path.exists(pjoin('/etc/etetoolkit/', 'ext_apps-latest')):
         # if a copy of apps is part of the ete distro, use if by default
-        APPSPATH = pjoin(NPRPATH, 'ext_apps-latest')
-        ETEHOMEDIR = NPRPATH
+        APPSPATH = pjoin('/etc/etetoolkit/', 'ext_apps-latest')
+        ETEHOMEDIR = '/etc/etetoolkit/'
     else:
         # if not, try a user local copy
         APPSPATH = pjoin(ETEHOMEDIR, 'ext_apps-latest')
