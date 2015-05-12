@@ -2188,7 +2188,7 @@ class TreeNode(object):
             k1 = sorted([getattr(e, attr) for e in s1])
             k2 = sorted([getattr(e, attr) for e in s2])
             edge_keys.append(sorted([k1, k2]))
-        return md5(str(sorted(edge_keys))).hexdigest()
+        return md5(str(sorted(edge_keys)).encode('utf-8')).hexdigest()
 
     # def get_partitions(self):
     #     """
