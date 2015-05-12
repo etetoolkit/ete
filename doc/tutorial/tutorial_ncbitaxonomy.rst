@@ -26,6 +26,7 @@ database (~300MB) and will store a parsed version of it in your home directory:
 local database and will skip this step.
 
 ::
+
    from ete2 import NCBITaxa
    ncbi = NCBITaxa()
 

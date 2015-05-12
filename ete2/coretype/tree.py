@@ -1813,8 +1813,10 @@ class TreeNode(object):
         result = {}
         if has_duplications:
             orig_target_size = len(source_tree)
-            ntrees, ndups, sp_trees = source_tree.get_speciation_trees(autodetect_duplications=True, newick_only=True)
-
+            ntrees, ndups, sp_trees = source_tree.get_speciation_trees(
+                autodetect_duplications=True, newick_only=True,
+                target_attr=source_tree_attr, map_features=[source_tree_attr])
+            
             if ntrees < max_treeko_splits_to_be_artifact:        
                 all_rf = []
                 ref_found = []
@@ -1839,7 +1841,8 @@ class TreeNode(object):
                                 n.support = source_tree.get_common_ancestor(subtree_content[n]).support
                                 
                     total_rf, max_rf, ncommon, valid_ref_edges, valid_src_edges, common_edges = _compare(subtree, ref_tree)
-
+                    
+                    
                     all_rf.append(total_rf)
                     all_max_rf.append(max_rf)
                     tree_sizes.append(ncommon)

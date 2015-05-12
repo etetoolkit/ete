@@ -10,7 +10,6 @@ Contents:
    tutorial_drawing
    tutorial_phylogeny
    tutorial_clustering
-   tutorial_phylomedb
    tutorial_xml
    tutorial_webplugin
    tutorial_adaptation

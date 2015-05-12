@@ -2,7 +2,7 @@ ETE's Reference Guide
 =======================
 
 .. inheritance-diagram::
-   ete2.phylomedb
+
    ete2.coretype.tree
    ete2.phylo.phylotree
    ete2.evol.evoltree
@@ -23,7 +23,6 @@ Current modules:
    reference_clustering
    reference_nexml
    reference_phyloxml
-   reference_phylomedb
    reference_seqgroup
    reference_webplugin
    reference_evoltree

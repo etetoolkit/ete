@@ -120,7 +120,7 @@ def _get_subtrees(tree, full_copy=False, features=None, newick_only=False):
         fstring = ""
         if features: 
             fstring = "".join(["[&&NHX:",
-                               ','.join(["%s=%s" %(f, getattr(node, f))
+                               ':'.join(["%s=%s" %(f, getattr(node, f))
                                          for f in features if hasattr(node, f)])
                                , "]"])
 
@@ -609,7 +609,7 @@ class PhyloNode(TreeNode):
         return outgroup_node
 
     def get_speciation_trees(self, map_features=None, autodetect_duplications=True,
-                             newick_only=False):
+                             newick_only=False, target_attr='species'):
         """
         .. versionadded: 2.2
         
@@ -636,7 +636,7 @@ class PhyloNode(TreeNode):
         if autodetect_duplications:
             #n2content, n2species = t.get_node2species()
             n2content = t.get_cached_content()
-            n2species = t.get_cached_content(store_attr="species")
+            n2species = t.get_cached_content(store_attr=target_attr)
             for node in n2content:
                 sp_subtotal = sum([len(n2species[_ch]) for _ch in node.children])
                 if len(n2species[node]) > 1 and len(n2species[node]) != sp_subtotal:

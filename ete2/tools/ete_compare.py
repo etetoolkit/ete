@@ -81,6 +81,10 @@ def populate_args(compare_args_p):
     compare_args.add_argument("--taboutput", dest="taboutput", 
                               action = "store_true",
                               help="ouput results in tab delimited format")
+    
+    compare_args.add_argument("--treeko", dest="treeko", 
+                              action = "store_true",
+                              help="activates the TreeKO duplication aware comparison method")
 
 
 def run(args):
@@ -116,27 +120,33 @@ def run(args):
                     fix_col_width=col_sizes, wrap_style="cut")
     
 
+    if args.treeko:
+        from ete2 import PhyloTree
+        tree_class = PhyloTree
+    else:
+        tree_class = Tree
+        
     for stree_name in args.src_tree_iterator:
-        stree = Tree(stree_name)
+        stree = tree_class(stree_name)
 
         # Parses attrs if necessary
         src_tree_attr = args.src_tree_attr
         if args.src_attr_parser:
             for leaf in stree:
-                leaf.add_feature('_tempattr', re.search(
+                leaf.add_feature('tempattr', re.search(
                     args.src_attr_parser, getattr(leaf, args.src_tree_attr)).groups()[0])
-            src_tree_attr = '_tempattr'
+            src_tree_attr = 'tempattr'
   
         for rtree_name in args.ref_trees:
-            rtree = Tree(rtree_name)
+            rtree = tree_class(rtree_name)
 
             # Parses attrs if necessary
             ref_tree_attr = args.ref_tree_attr
             if args.ref_attr_parser:
                 for leaf in rtree:
-                    leaf.add_feature('_tempattr', re.search(
+                    leaf.add_feature('tempattr', re.search(
                         args.ref_attr_parser, getattr(leaf, args.ref_tree_attr)).groups()[0])
-                ref_tree_attr = '_tempattr'
+                ref_tree_attr = 'tempattr'
 
             r = stree.compare(rtree, 
                               ref_tree_attr=ref_tree_attr,
@@ -144,9 +154,8 @@ def run(args):
                               min_support_ref=args.min_support_ref,
                               min_support_source = args.min_support_src,
                               unrooted=args.unrooted,
-                              has_duplications=False)
-
-
+                              has_duplications=args.treeko)
+            
                 
             if args.show_mismatches or args.show_matches or args.show_edges:
                 if args.show_mismatches:
