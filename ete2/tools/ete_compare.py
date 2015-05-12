@@ -156,7 +156,8 @@ def run(args):
                               unrooted=args.unrooted,
                               has_duplications=args.treeko)
             
-                
+            
+            
             if args.show_mismatches or args.show_matches or args.show_edges:
                 if args.show_mismatches:
                     src = r['source_edges'] - r['ref_edges']
@@ -185,6 +186,11 @@ def run(args):
                         r["ref_edges_in_source"],
                         r['source_subtrees'],
                         r['treeko_dist']]
+
+                if r['effective_tree_size'] == 0:
+                    for i in xrange(3, len(data)):
+                        data[i] = -1
+                
                 if args.taboutput:                    
                     print '\t'.join(map(str, data))
                 else:    

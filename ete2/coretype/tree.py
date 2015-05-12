@@ -1796,7 +1796,7 @@ class TreeNode(object):
                 valid_ref_edges = set()
                 valid_src_edges = set()
                 common_edges = set()
-
+                
                 # # % of ref edges found in tree
                 # ref_found.append(float(len(p2 & p1)) / reftree_edges)
 
