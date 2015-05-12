@@ -49,7 +49,7 @@ from ete2.tools import common
 from ete2.tools.common import log
 
 try:
-    import argparse:
+    import argparse
 except ImportError:
     from ete2 import _argparse as argparse
 
