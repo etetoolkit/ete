@@ -48,6 +48,18 @@ from ete2.parser.newick import read_newick, write_newick
 from ete2 import utils
 import sys
 
+try:
+    from itertools import combinations_with_replacement
+except ImportError:
+    # python 2.6 compatibility
+    def combinations_with_replacement(iterable, r):
+        pool = tuple(iterable)
+        n = len(pool)
+        for indices in itertools.product(range(n), repeat=r):
+            if sorted(indices) == list(indices):
+                yield tuple(pool[i] for i in indices)
+    
+
 # the following imports are necessary to set fixed styles and faces
 try:
     from ete2.treeview.main import NodeStyle, _FaceAreas, FaceContainer, FACE_POSITIONS
@@ -1197,7 +1209,7 @@ class TreeNode(object):
         if names_library:
             names_library = deque(names_library)
         else:
-            avail_names = itertools.combinations_with_replacement(charset, 10)
+            avail_names = combinations_with_replacement(charset, 10)
         for n in next:
             if names_library:
                 if reuse_names: 

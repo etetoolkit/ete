@@ -430,7 +430,7 @@ class Test_Coretype_Tree(unittest.TestCase):
         t.prune(sample, preserve_branch_length=True)
         matrix2 = ["%f" %t.get_distance(a, b) for (a,b)in itertools.product(sample, sample)]
        
-        self.assertListEqual(matrix1, matrix2)
+        self.assertEqual(matrix1, matrix2)
         self.assertEqual(len(t.get_descendants()), (sample_size*2)-2 )
 
     def test_resolve_polytomies(self):
@@ -483,9 +483,9 @@ class Test_Coretype_Tree(unittest.TestCase):
         # Iter ancestors
         t = Tree("(((((a,b)A,c)B,d)C,e)D,f)root;", format=1)
         ancestor_names = [n.name for n in (t&"a").get_ancestors()]
-        self.assertListEqual(ancestor_names, ["A", "B", "C", "D", "root"])
+        self.assertEqual(ancestor_names, ["A", "B", "C", "D", "root"])
         ancestor_names = [n.name for n in (t&"B").get_ancestors()]
-        self.assertListEqual(ancestor_names, ["C", "D", "root"])
+        self.assertEqual(ancestor_names, ["C", "D", "root"])
 
         
         # Tree magic python features
@@ -1225,7 +1225,7 @@ class Test_Coretype_Tree(unittest.TestCase):
         
         self.assertEqual((t_nw & "root").name, "root")
         self.assertEqual((t_nwx & "A").label, "custom Value")
-        self.assertListEqual((t_pkl & "A").complex[0], [0,1])
+        self.assertEqual((t_pkl & "A").complex[0], [0,1])
         self.assertEqual((t_deep & "A").testfn(), "YES")
         
 
