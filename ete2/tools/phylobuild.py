@@ -105,7 +105,11 @@ args = None
 
 sys.path.insert(0, NPRPATH)
 
-from ete2.tools.phylobuild_lib import argparse
+try:
+    import argparse
+except ImportError:
+    from ete2 import _argparse as argparse
+
 from ete2.tools.phylobuild_lib.utils import (strip, SeqGroup, generate_runid,  AA, NT,
                                   GLOBALS, encode_seqname, pjoin, pexist,
                                   hascontent, clear_tempdir, ETE_CITE, colorify,

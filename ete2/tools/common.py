@@ -37,7 +37,6 @@
 # 
 # #END_LICENSE#############################################################
 import sys
-import argparse
 from string import strip
 import operator
 import re
