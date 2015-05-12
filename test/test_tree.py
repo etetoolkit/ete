@@ -654,8 +654,8 @@ class Test_Coretype_Tree(unittest.TestCase):
         t.populate(20)
         cache_name = t.get_cached_content(store_attr="name")
         cache_node = t.get_cached_content()
-        self.assertSetEqual(cache_name[t], set(t.get_leaf_names()))
-        self.assertSetEqual(cache_node[t], set(t.get_leaves()))
+        self.assertEqual(cache_name[t], set(t.get_leaf_names()))
+        self.assertEqual(cache_node[t], set(t.get_leaves()))
         
     def test_rooting(self):
         """ Check branch support and distances after rooting """
@@ -1206,7 +1206,7 @@ class Test_Coretype_Tree(unittest.TestCase):
             leaf.add_features(color=colors.get(leaf.name, "none"))
         green_yellow_nodes = set([t&"M1", t&"M2"])
         mono_nodes = t.get_monophyletic(values=["green", "yellow"], target_attr="color")
-        self.assertSetEqual(set(mono_nodes), green_yellow_nodes)
+        self.assertEqual(set(mono_nodes), green_yellow_nodes)
 
         
     def test_copy(self):
