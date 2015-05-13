@@ -10,8 +10,9 @@ CITATION:
 
 FEEDBACK AND CONTRIBUTIONS FROM: 
 
-Shankar Vembu (fast tree reconciliation method)
 François Serra (EvolTree)
+Alexandros Pittis (testing)
 Salvador Capella (phylomedb API)
-Marina Marcet (phylomedb, treeko)
-Ivan Denisov (phylomedb webplugin)
+Marina Marcet (phylomedb, treeko tests)
+Ivan Denisov (phylomedb webplugin feedback)
+Shankar Vembu (fast tree reconciliation method)
