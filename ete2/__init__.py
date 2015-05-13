@@ -92,5 +92,5 @@ def __get_install_id():
 try:
     __version__ = open(os.path.split(__file__)[0]+'/VERSION').readline().strip()
 except Exception:
-    __version__ '2.3dev'
+    __version__ = '2.3dev'
     
