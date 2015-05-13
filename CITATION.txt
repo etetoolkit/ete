@@ -1,0 +1,9 @@
+ETE is currently maintained by Jaime Huerta-Cepas at the Structural and
+Computational Biology Unit of EMBL (Heidelberg, Germany).
+
+CONTACT: huerta@embl.de
+
+CITATION:
+
+  - Jaime Huerta-Cepas, Joaquín Dopazo and Toni Gabaldón. ETE: a python
+  Environment for Tree Exploration. BMC Bioinformatics 2010, 11:2 4.
