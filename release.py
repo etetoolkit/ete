@@ -89,11 +89,9 @@ else:
     
     
 # build docs 
-if not options.nodoc: 
-    _ex('(cd doc/ && make html)')
 
 # build source dist
-_ex('rm release/ -rf && git clone . release/ && cd release/ && python setup.py sdist')
+_ex('rm release/ -rf && git clone . release/ && cd release/ && (cd doc/ && make html) && python setup.py sdist')
 
 # test distribution
 if not options.notest:

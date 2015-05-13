@@ -123,7 +123,7 @@ please cite:
 
 ::
 
-  Jaime Huerta-Cepas, Joaquín Dopazo and Toni Gabaldón. ETE: a python
+  Jaime Huerta-Cepas, Joaquin Dopazo and Toni Gabaldon. ETE: a python
   Environment for Tree Exploration. BMC Bioinformatics 2010, 11:24.
 
 """
