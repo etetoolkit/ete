@@ -24,7 +24,6 @@ except ImportError:
 # about number of users/installations. The id generated is just a
 # random unique text string. This installation script does not collect
 # any personal information about you or your system.
-ETEID = None
 try:
     # Avoids importing a previously generated id
     _wd = os.getcwd()
@@ -36,15 +35,11 @@ try:
         _fix_path = True
 
     # Is there is a previous ETE installation? If so, use the same id
-    import ete2
-    ETEID = ete2.__get_install_id()
+    from ete2 import __installid__ as ETEID
     
     if _fix_path:
         sys.path.insert(0, _wd)
 except Exception:
-    ETEID = None
-    
-if not ETEID:
     ETEID = hashlib.md5(str(time.time()+random.random())).hexdigest()
 
 PYTHON_DEPENDENCIES = [
@@ -81,14 +76,7 @@ def can_import(mname):
             return False
         else:
             return True            
-    elif mname == "MySQLdb":
-        try:
-            import MySQLdb
-        except ImportError:
-            return False
-        else:
-            return True
-    else:
+     else:
         try:
             __import__(mname)
         except ImportError:
@@ -99,14 +87,6 @@ def can_import(mname):
 print
 print "Installing ETE (A python Environment for Tree Exploration)."
 print
-
-# writes installation id as a variable into the main module. Do not track old
-# installations as new aliens
-init_content = open("ete2/__init__.py").read()
-init_content = re.sub('__ETEID__="[\w\d]*"', '__ETEID__="%s"'
-                      %ETEID, init_content)
-open("ete2/__init__.py", "w").write(init_content)
-open('install.id', "w").write(ETEID)
 
 ETE_VERSION = open("VERSION").readline().strip()
 MOD_NAME = "ete2"
@@ -128,6 +108,8 @@ please cite:
 
 """
 
+open("%s/version.py", 'w').write("__version__='%s'\n__installid__='%s'\n" %(ETE_VERSION, ETEID))
+
 try:
     _s = setup(
         include_package_data = True,
@@ -147,10 +129,7 @@ try:
         package_data = {
 
         },
-        data_files = [("%s/tools/" %MOD_NAME, ["%s/tools/phylobuild.cfg" %MOD_NAME]),
-                      ("%s/" %MOD_NAME, ["VERSION"]),
-                      ("%s/" %MOD_NAME, ["install.id"])], 
-        
+        data_files = [("%s/tools/" %MOD_NAME, ["%s/tools/phylobuild.cfg" %MOD_NAME])]
         
         # metadata for upload to PyPI
         author = "Jaime Huerta-Cepas",

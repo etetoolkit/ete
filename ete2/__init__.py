@@ -81,16 +81,9 @@ except ImportError, e:
     #warn("Treeview module could not be loaded")
     #warn(e)
     
-# Do not modify the following line. It will be checked during
-# installation
-def __get_install_id():
-    try:
-        return open(os.path.split(__file__)[0]+'/install.id').readline().strip()
-    except:
-        return ''
-
 try:
-    __version__ = open(os.path.split(__file__)[0]+'/VERSION').readline().strip()
-except Exception:
-    __version__ = '2.3dev'
+    from version import __version__, __installid__
+except ImportError:
+     __version__ = 'dev'
+     __installid__ = None
     
