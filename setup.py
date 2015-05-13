@@ -148,6 +148,7 @@ try:
 
         },
         data_files = [("%s/tools/" %MOD_NAME, ["%s/tools/phylobuild.cfg" %MOD_NAME]),
+                      ("%s/" %MOD_NAME, ["VERSION"]),
                       ("%s/" %MOD_NAME, ["install.id"])], 
         
         

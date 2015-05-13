@@ -49,7 +49,7 @@ except ImportError, e:
     numpy = None
     #warn("Clustering module could not be loaded. Is numpy installed?")
     #warn(e)
-
+    
 from ncbi_taxonomy import *
 from coretype.tree import *
 from coretype.seqgroup import *
@@ -80,8 +80,6 @@ except ImportError, e:
     pass
     #warn("Treeview module could not be loaded")
     #warn(e)
-
-__version__ = '2.3.0beta'
     
 # Do not modify the following line. It will be checked during
 # installation
@@ -90,3 +88,9 @@ def __get_install_id():
         return open(os.path.split(__file__)[0]+'/install.id').readline().strip()
     except:
         return ''
+
+try:
+    __version__ = open(os.path.split(__file__)[0]+'/VERSION').readline().strip()
+except Exception:
+    __version__ '2.3dev'
+    
