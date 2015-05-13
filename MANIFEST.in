@@ -1,6 +1,8 @@
 graft ete2
 graft doc/_build/html
 graft examples 
+graft test
+
 
 global-exclude *.pyc
 global-exclude *.pyo

@@ -94,11 +94,11 @@ if not options.nodoc:
     _ex('(cd doc/ && make html)')
 
 # build source dist
-_ex('rm testclone -rf && git clone . testclone/ && cd testclone/ && python setup.py sdist')
+_ex('rm release/ -rf && git clone . release/ && cd release/ && python setup.py sdist')
 
 # test distribution
 if not options.notest:
-    _ex('cd testclone/dist/ && tar xf ete2-%s.tar.gz && cd ete2-%s/test/ && python test_all.py && python test_treeview.py' %(NEW_VERSION, NEW_VERSION))
+    _ex('cd release/dist/ && tar xf ete2-%s.tar.gz && cd ete2-%s/test/ && python test_all.py && python test_treeview.py' %(NEW_VERSION, NEW_VERSION))
     
 sys.exit(0)
 
