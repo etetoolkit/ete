@@ -87,7 +87,6 @@ if ask('Write "%s" and commit changes?' %NEW_VERSION, ['y', 'n']) == 'y':
 else:
     NEW_VERSION = CURRENT_VERSION
     
-
     
 # build docs 
 if not options.nodoc: 

@@ -1,3 +1,11 @@
+include MANIFEST.in
+include VERSION
+include README.rst
+include CITATION.txt
+include THANKS.txt
+include LICENSE
+include ez_setup.py
+
 graft ete2
 graft doc/_build/html
 graft examples 

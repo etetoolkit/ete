@@ -111,7 +111,22 @@ open('install.id', "w").write(ETEID)
 ETE_VERSION = open("VERSION").readline().strip()
 MOD_NAME = "ete2"
 
-long_description = open("README").read()
+LONG_DESCRIPTION="""
+The Environment for Tree Exploration (ETE) is a Python programming
+toolkit that assists in the automated manipulation, analysis and
+visualization of phylogenetic trees (although clustering trees or any
+other tree-like data structure could be used). 
+
+ETE is currently developed as a tool for researchers working in
+phylogenetics and genomics. If you use ETE for a published work,
+please cite:
+
+::
+
+  Jaime Huerta-Cepas, Joaquín Dopazo and Toni Gabaldón. ETE: a python
+  Environment for Tree Exploration. BMC Bioinformatics 2010, 11:24.
+
+"""
 
 try:
     _s = setup(
@@ -144,7 +159,7 @@ try:
         platforms = "OS Independent",
         license = "GPLv3",
         description = "A Python Environment for (phylogenetic) Tree Exploration",
-        long_description = long_description,
+        long_description = LONG_DESCRIPTION,
         classifiers = CLASSIFIERS,
         provides = [MOD_NAME],
         keywords = "Tree handling, manipulation, analysis and visualization",
