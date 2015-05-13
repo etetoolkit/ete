@@ -1,0 +1,9 @@
+graft ete2
+graft doc/_build/html
+graft examples 
+
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude ~*
+global-exclude *~
+global-exclude #*
