@@ -18,6 +18,7 @@ except ImportError:
     ez_setup.use_setuptools()
     from setuptools import setup, find_packages
 
+    
 # Generates a unique id for ete installation. If this is an upgrade,
 # use the previous id. ETEID is only used to get basic statistics
 # about number of users/installations. The id generated is just a
@@ -52,7 +53,7 @@ PYTHON_DEPENDENCIES = [
     ["lxml", "lxml is required from Nexml and Phyloxml support.", 0]
 ]
 
-TAGS = [
+CLASSIFIERS= [
     "Development Status :: 6 - Mature",
     "Environment :: Console",
     "Environment :: X11 Applications :: Qt",
@@ -77,13 +78,9 @@ def can_import(mname):
             __import__("PyQt4.QtCore")
             __import__("PyQt4.QtGui")
         except ImportError:
-            try:
-                __import__("QtCore")
-                __import__("QtGui")
-            except ImportError:
-                return False
+            return False
         else:
-            return True
+            return True            
     elif mname == "MySQLdb":
         try:
             import MySQLdb
@@ -111,22 +108,21 @@ init_content = re.sub('__ETEID__="[\w\d]*"', '__ETEID__="%s"'
 open("ete2/__init__.py", "w").write(init_content)
 open('install.id', "w").write(ETEID)
 
-ete_version = open("VERSION").readline().strip()
-revision = ete_version.split("rev")[-1]
-mod_name = "ete2"
+ETE_VERSION = open("VERSION").readline().strip()
+MOD_NAME = "ete2"
 
 long_description = open("README").read()
-long_description += open("INSTALL").read()
-long_description.replace("ete2", mod_name)
 
 try:
     _s = setup(
-        name = "ete2",
-        version = ete_version,
+        include_package_data = True,
+        
+        name = MOD_NAME,
+        version = ETE_VERSION,
         packages = find_packages(),
 
         entry_points = {"console_scripts":
-                        ["ete = ete2.tools.ete:main"]}, 
+                        ["ete = %s.tools.ete:main" %MOD_NAME]}, 
         requires = [],
         
         # Project uses reStructuredText, so ensure that the docutils get
@@ -134,9 +130,10 @@ try:
         install_requires = [
             ],
         package_data = {
-            },
-        data_files = [("ete2/tools/", ["ete2/tools/phylobuild.cfg"]),
-                      ("ete2/", ["install.id"])], 
+
+        },
+        data_files = [("%s/tools/" %MOD_NAME, ["%s/tools/phylobuild.cfg" %MOD_NAME]),
+                      ("%s/" %MOD_NAME, ["install.id"])], 
         
         
         # metadata for upload to PyPI
@@ -146,10 +143,10 @@ try:
         maintainer_email = "jhcepas@gmail.com",
         platforms = "OS Independent",
         license = "GPLv3",
-        description = "A python Environment for (phylogenetic) Tree Exploration",
+        description = "A Python Environment for (phylogenetic) Tree Exploration",
         long_description = long_description,
-        classifiers = TAGS,
-        provides = ["ete2"],
+        classifiers = CLASSIFIERS,
+        provides = [MOD_NAME],
         keywords = "Tree handling, manipulation, analysis and visualization",
         url = "http://etetoolkit.org",
         download_url = "http://etetoolkit.org/static/releases/ete2/",
@@ -176,6 +173,6 @@ else:
         try:
             welcome = urllib2.quote("New alien in earth!")
             urllib2.urlopen("http://etetoolkit.org/static/et_phone_home.php?ID=%s&VERSION=%s&MSG=%s"
-                            %(ETEID, ete_version, welcome))
+                            %(ETEID, ETE_VERSION, welcome))
         except urllib2.HTTPError, e: 
             pass

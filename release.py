@@ -7,9 +7,9 @@ from optparse import OptionParser
 
 parser = OptionParser()
 parser.add_option("--notest", dest="notest", action='store_true')
+parser.add_option("--nodoc", dest="nodoc", action='store_true')
 parser.add_option("--simulate", dest="simulate", action='store_true')
 parser.add_option("--verbose", dest="verbose", action='store_true')
-parser.add_option("--nodoc", dest="verbose", action='store_true')
 parser.add_option("--doconly", dest="verbose", action='store_true')
 
 (options, args) = parser.parse_args()
@@ -61,8 +61,8 @@ SERVER="huerta@etetoolkit.embl.de"
 SERVER_RELEASES_PATH = "/var/www/etetoolkit/static/releases/ete2"
 
 TEMP_PATH = "/tmp"
-LAST_VERSION = open('VERSION').readline().strip()
-a, b, c, tag  = re.search("(\d+)\.(\d+)\.(\d+)(.+)?", LAST_VERSION).groups()
+CURRENT_VERSION = open('VERSION').readline().strip()
+a, b, c, tag  = re.search("(\d+)\.(\d+)\.(\d+)(.+)?", CURRENT_VERSION).groups()
 a, b, c = map(int, (a, b, c))
 SERIES_VERSION = "%s.%s" %(a, b) 
 print '===================================================='
@@ -70,10 +70,6 @@ print 'CURRENT VERSION:', a, b, c, tag
 print '===================================================='
 # test examples
 
-# run tests
-if not options.notest:
-    _ex('cd test/ && python test_all.py && python test_treeview.py')
-    
 # commit changes in VERSION
 if tag:
     tag1, tag2 = re.search('(.+?)(\d+)', tag).groups()
@@ -88,12 +84,26 @@ if ask('Increase version to "%s" ?' %NEW_VERSION, ['y', 'n']) == 'n':
 if ask('Write "%s" and commit changes?' %NEW_VERSION, ['y', 'n']) == 'y':
     open('VERSION', 'w').write(NEW_VERSION)
     _ex('git commit -a -m "new release %s " && git tag -f %s && git tag -f %s' %(NEW_VERSION, NEW_VERSION, SERIES_VERSION))
+else:
+    NEW_VERSION = CURRENT_VERSION
     
-# upload doc
 
-# upload pkg
-sys.exit(1)
+    
+# build docs 
+if not options.nodoc: 
+    _ex('(cd doc/ && make html)')
 
+# build source dist
+_ex('rm testclone -rf && git clone . testclone/ && cd testclone/ && python setup.py sdist')
+
+# test distribution
+if not options.notest:
+    _ex('cd testclone/dist/ && tar xf ete2-%s.tar.gz && cd ete2-%s/test/ && python test_all.py && python test_treeview.py' %(NEW_VERSION, NEW_VERSION))
+    
+sys.exit(0)
+
+
+    
 
 if options.doc:
     print "*** Creating reference guide"

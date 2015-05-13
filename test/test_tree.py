@@ -381,7 +381,7 @@ class Test_Coretype_Tree(unittest.TestCase):
                         
     def test_pruninig(self):
         # test prune preserving distances
-        for i in xrange(100):
+        for i in xrange(10):
             t = Tree()
             t.populate(40, random_branches=True)
             orig_nw = t.write()
