@@ -1607,7 +1607,7 @@ class TreeNode(object):
         Returns the Robinson-Foulds symmetric distance between current
         tree and a different tree instance.
      
-        :param t2: target reference tree
+        :param t2: reference tree
         
         :param name attr_t1: Compare trees using a custom node
                               attribute as a node name.
@@ -1637,11 +1637,20 @@ class TreeNode(object):
         if expand_polytomies and unrooted_trees:
             raise TreeError("expand_polytomies and unrooted_trees arguments cannot be enabled at the same time")
 
-
-        attrs_t1 = set([getattr(n, attr_t1, None) for n in ref_t.iter_leaves()])
-        attrs_t2 = set([getattr(n, attr_t2, None) for n in target_t.iter_leaves()])
+           
+        attrs_t1 = set([getattr(n, attr_t1) for n in ref_t.iter_leaves() if hasattr(n, attr_t1)])
+        attrs_t2 = set([getattr(n, attr_t2) for n in target_t.iter_leaves() if hasattr(n, attr_t2)])
         common_attrs = attrs_t1 & attrs_t2
-        common_attrs.discard(None)
+        # release mem
+        attrs_t1, attrs_t2 = None, None
+        
+        # Check for duplicated items (is it necessary? can we optimize? what's the impact in performance?')
+        size1 = len([True for n in ref_t.iter_leaves() if getattr(n, attr_t1, None) in common_attrs])
+        size2 = len([True for n in target_t.iter_leaves() if getattr(n, attr_t2, None) in common_attrs])
+        if size1 > len(common_attrs):
+            raise TreeError('Duplicated items found in source tree')
+        if size2 > len(common_attrs):
+            raise TreeError('Duplicated items found in reference tree')
         
         if expand_polytomies:
             ref_trees = [Tree(nw) for nw in
@@ -1817,7 +1826,7 @@ class TreeNode(object):
                 autodetect_duplications=True, newick_only=True,
                 target_attr=source_tree_attr, map_features=[source_tree_attr])
             
-            if ntrees < max_treeko_splits_to_be_artifact:        
+            if ntrees < max_treeko_splits_to_be_artifact:
                 all_rf = []
                 ref_found = []
                 src_found = []

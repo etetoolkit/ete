@@ -988,10 +988,17 @@ class Test_Coretype_Tree(unittest.TestCase):
         # correct by size when polytomies in both sides
         self.assertRaises(TreeError, t1.robinson_foulds, t2=t1,
                           unrooted_trees=True, correct_by_polytomy_size=True)
+        
         # polytomy larger than deafult limit
         self.assertRaises(TreeError, t2.robinson_foulds, t2=Tree('(a, (b,c,d,e,f,g,h));'),
                           expand_polytomies=True)
 
+        # duplicated items
+        t3 = Tree('(a, (b, (c, c)));')
+        self.assertRaises(TreeError, t3.robinson_foulds, t2=t2)
+        self.assertRaises(TreeError, t2.robinson_foulds, t2=t3)
+
+        
         
         # test RF using a knonw set of results
         for RF, unrooted, nw1, nw2 in samples:
@@ -1193,7 +1200,7 @@ class Test_Coretype_Tree(unittest.TestCase):
             mono, part, extra = t.check_monophyly(values=set(ancestor.get_leaf_names()), target_attr='name', unrooted=True)
             results.add(mono)
             t.set_outgroup(x)
-        self.assertEqual(results, set([True]))
+        self.assertEqual(list(results), [True])
         
         #print 'Testing get_monophyly'
         t =  Tree("((((((4, e), i)M1, o),h), u), ((3, 4), (i, june))M2);", format=1)
