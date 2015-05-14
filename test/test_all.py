@@ -9,7 +9,7 @@ sys.path.insert(0, './')
 sys.path.insert(0, '../')
 
 from datasets import *
-from test_treeview import *
+#from test_treeview import *
 
 from test_tree import *
 from test_seqgroup import *
