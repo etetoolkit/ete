@@ -11,11 +11,10 @@ install:
 
 before_script:
   - python --version
-  - python -c 'from ete2 import TreeStyle, Tree'
 
 # command to run tests, e.g. python setup.py test
 script: 
-  - cd test/ && xvfb-run coverage run test_all.py
+  - cd test/ coverage run test_all.py
   
 after_success:
   - coveralls
