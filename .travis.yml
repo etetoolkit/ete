@@ -11,6 +11,7 @@ install:
 
 before_script:
   - python --version
+  - python -c 'from ete2 import TreeStyle, Tree'
 
 # command to run tests, e.g. python setup.py test
 script: 
