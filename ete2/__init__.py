@@ -76,9 +76,9 @@ try:
     from treeview import faces
     from treeview import layouts
 except ImportError, e:
-    #print e
+    print e
     pass
-    #warn("Treeview module could not be loaded")
+    warn("Treeview module could not be loaded")
     #warn(e)
     
 try:
