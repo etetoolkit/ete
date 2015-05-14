@@ -14,8 +14,8 @@ before_script:
 
 # command to run tests, e.g. python setup.py test
 script: 
-  - xvfb-run coverage run test/test_all.py
-
+  - cd test/ && xvfb-run coverage run test_all.py
+  
 after_success:
   - coveralls
 
