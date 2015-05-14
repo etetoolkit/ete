@@ -5,12 +5,15 @@ python:
 
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install: 
-  - sudo apt-get install python-qt4 python-numpy python-lxml xvfb 2>&1 | tail
+  - sudo apt-get install python-qt4 python-numpy python-lxml 2>&1 | tail
   - pip install coverage coveralls six
   - /usr/bin/yes | sudo python setup.py install 2>&1 | tail
 
 before_script:
   - python --version
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+  - sleep 3 # give xvfb some time to start
 
 # command to run tests, e.g. python setup.py test
 script: 
