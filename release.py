@@ -92,7 +92,7 @@ else:
 _ex('rm release/ -rf && git clone . release/')
 # build docs
 _ex('cd release/sdoc/ && make html && make latex')
-_ex('cd release/sdoc/latex && make all-pdf')
+_ex('cd release/sdoc/_build/latex && make all-pdf')
 # Generates HTML doc (it includes a link to the PDF doc, so it
 # must be executed after PDF commands)
 _ex('cp -a release/sdoc/_build/html/ release/doc/')
