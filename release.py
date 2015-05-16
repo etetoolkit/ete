@@ -109,7 +109,7 @@ if ask('Upload docs?', ['y', 'n']) == 'y':
             (RELEASE_PATH, RELEASE_PATH))
 
 if ask('Upload to pypi?', ['y', 'n']) == 'y':
-    _ex('cd release/ python setup.py upload -r https://testpypi.python.org/pypi')
+    _ex('cd release/ && python setup.py upload -r https://testpypi.python.org/pypi')
 
     
 #_ex('deactivate;  release/dist/ && tar xf ete2-%s.tar.gz && cd ete2-%s/test/ && python test_all.py && python test_treeview.py' %(NEW_VERSION, NEW_VERSION))
@@ -120,24 +120,3 @@ if ask('Upload to pypi?', ['y', 'n']) == 'y':
 sys.exit(0)
 
 
-    
-
-if options.doc:
-    print "*** Creating reference guide"
-    # Generates PDF doc
-    _ex("cd %s/sdoc; make latex" % RELEASE_PATH)
-    _ex("cd %s/sdoc/_build/latex/; make all-pdf" % RELEASE_PATH)
-    _ex(" cp -a %s/sdoc/_build/latex/*.pdf %s/doc/" %(RELEASE_PATH, RELEASE_PATH))
-
-    # Generates HTML doc (it includes a link to the PDF doc, so it
-    # must be executed after PDF commands)
-    _ex("cd %s/sdoc; make html" % RELEASE_PATH)
-    _ex("cp -a %s/sdoc/_build/html/ %s/doc/" %(RELEASE_PATH, RELEASE_PATH))
-
-    copydoc= ask("Update ONLINE PYPI documentation?", ["y","n"])
-    if copydoc=="y":
-        # INSTALL THIS http://pypi.python.org/pypi/Sphinx-PyPI-upload/0.2.1
-        print "Uploading"      
-        _ex("cd %s; python setup.py upload_sphinx --upload-dir %s/doc/html/ --show-response" %\
-                (RELEASE_PATH, RELEASE_PATH))
-        
