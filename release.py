@@ -96,7 +96,7 @@ _ex('cd release/sdoc/_build/latex && make all-pdf')
 # Generates HTML doc (it includes a link to the PDF doc, so it
 # must be executed after PDF commands)
 _ex('cp -a release/sdoc/_build/html/ release/doc/')
-_ex('cp -a release/sdoc/_build/latex/*.pdf %s/doc/')
+_ex('cp -a release/sdoc/_build/latex/*.pdf release/doc/')
 # Build dist
 _ex('cd release/ && python setup.py sdist')
 

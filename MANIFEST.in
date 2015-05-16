@@ -7,7 +7,7 @@ include LICENSE
 include ez_setup.py
 
 graft ete2
-graft doc/_build/html
+graft doc
 graft examples 
 graft test
 
