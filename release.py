@@ -83,19 +83,39 @@ if ask('Increase version to "%s" ?' %NEW_VERSION, ['y', 'n']) == 'n':
 
 if ask('Write "%s" and commit changes?' %NEW_VERSION, ['y', 'n']) == 'y':
     open('VERSION', 'w').write(NEW_VERSION)
-    _ex('git commit -a -m "new release %s " && git tag -f %s && git tag -f %s' %(NEW_VERSION, NEW_VERSION, SERIES_VERSION))
+    _ex('git commit -a -m "release %s " && git tag -f %s' %(NEW_VERSION, NEW_VERSION))
 else:
     NEW_VERSION = CURRENT_VERSION
-    
-    
-# build docs 
 
-# build source dist
-_ex('rm release/ -rf && git clone . release/ && cd release/ && (cd doc/ && make html) && python setup.py sdist')
+    
+# clean files from previous releases 
+_ex('rm release/ -rf && git clone . release/')
+# build docs
+_ex('cd release/sdoc/ && make html && make latex')
+_ex('cd release/sdoc/latex && make all-pdf')
+# Generates HTML doc (it includes a link to the PDF doc, so it
+# must be executed after PDF commands)
+_ex('cp -a release/sdoc/_build/html/ release/doc/')
+_ex('cp -a release/sdoc/_build/latex/*.pdf %s/doc/')
+# Build dist
+_ex('cd release/ && python setup.py sdist')
 
 # test distribution
 if not options.notest:
     _ex('cd release/dist/ && tar xf ete2-%s.tar.gz && cd ete2-%s/test/ && python test_all.py && python test_treeview.py' %(NEW_VERSION, NEW_VERSION))
+    
+if ask('Upload docs?', ['y', 'n']) == 'y':
+        _ex("cd release/; python setup.py upload_sphinx --upload-dir doc/_build/html/ --show-response" %\
+            (RELEASE_PATH, RELEASE_PATH))
+
+if ask('Upload to pypi?', ['y', 'n']) == 'y':
+    _ex('cd release/ python setup.py upload -r https://testpypi.python.org/pypi')
+
+    
+#_ex('deactivate;  release/dist/ && tar xf ete2-%s.tar.gz && cd ete2-%s/test/ && python test_all.py && python test_treeview.py' %(NEW_VERSION, NEW_VERSION))
+    
+
+
     
 sys.exit(0)
 
@@ -107,7 +127,7 @@ if options.doc:
     # Generates PDF doc
     _ex("cd %s/sdoc; make latex" % RELEASE_PATH)
     _ex("cd %s/sdoc/_build/latex/; make all-pdf" % RELEASE_PATH)
-    _ex("cp -a %s/sdoc/_build/latex/*.pdf %s/doc/" %(RELEASE_PATH, RELEASE_PATH))
+    _ex(" cp -a %s/sdoc/_build/latex/*.pdf %s/doc/" %(RELEASE_PATH, RELEASE_PATH))
 
     # Generates HTML doc (it includes a link to the PDF doc, so it
     # must be executed after PDF commands)
@@ -121,16 +141,3 @@ if options.doc:
         _ex("cd %s; python setup.py upload_sphinx --upload-dir %s/doc/html/ --show-response" %\
                 (RELEASE_PATH, RELEASE_PATH))
         
-
-MODULE_RELEASE = "%s.%s" %(a, b)
-
-REVISION = commands.getoutput("git log --pretty=format:'' | wc -l").strip()
-NEW_VERSION = "%s.%s.%s" %(a, b, c+1)
-
-
-VERSION_LOG = commands.getoutput("git log --pretty=format:'%s' | head -n1").strip()
-RELEASE_NAME = MODULE_NAME+"-"+VERSION
-RELEASE_PATH = os.path.join(RELEASES_BASE_PATH, RELEASE_NAME)
-RELEASE_MODULE_PATH = os.path.join(RELEASE_PATH, MODULE_NAME)
-DOC_PATH = os.path.join(RELEASE_PATH, "doc")
-
