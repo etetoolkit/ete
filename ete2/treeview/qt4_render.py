@@ -1114,7 +1114,9 @@ def update_branch_lengths(tree, n2i, n2f, img):
         item.fullRegion.setWidth(item.nodeRegion.width() + child_width)
 
 def init_tree_style(t, ts):
+    custom_ts = True
     if not ts:
+        custom_ts = False
         ts = TreeStyle()
 
     if not ts.layout_fn:
@@ -1124,7 +1126,10 @@ def init_tree_style(t, ts):
         except KeyError, e:
             pass
         else:
-            apply_template(ts, ts_template)
+            if not custom_ts:
+                apply_template(ts, ts_template)
+            else:
+                ts.layout_fn = ts_template.get("layout_fn", None)
 
     return ts
 
