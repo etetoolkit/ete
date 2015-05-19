@@ -505,10 +505,13 @@ class EvolNode(PhyloNode):
         try:
             if hasattr(altn, 'lnL') and hasattr(null, 'lnL'):
                 from ete2.evol.utils import chi_high
-                return chi_high(2*(altn.lnL - null.lnL),
-                                df=(altn.np - null.np))
-            else:
-                return 1
+                if  null.lnL - altn.lnL < 0:
+                    warn("WARNING: Likelihood of the alternative model is " +
+                         "smaller than null's")
+                    return chi_high(2 * abs(altn.lnL - null.lnL),
+                                    df=float(altn.np - null.np))
+                else:
+                    return 1
         except KeyError:
             warn("at least one of %s or %s, was not calculated" % (altn.name,
                                                                    null.name))

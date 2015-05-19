@@ -223,6 +223,9 @@ class Model:
             errors = self.sites[val]['se'] if self.sites[val].has_key('se')\
                      else None
         if TREEVIEW:
+            if self.properties['typ'] != 'site':
+                raise Exception('ERROR: no sites to display, only available ' +
+                                'histfaces for site models\n')
             hist = SequencePlotFace(self.sites[val]['w'], hlines=hlines,
                                     colors=colors, errors=errors,
                                     ylabel=u'Omega (\u03c9)', kind=kind,
