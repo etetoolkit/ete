@@ -5,7 +5,6 @@ import os
 
 ETEPATH = os.path.abspath(os.path.split(os.path.realpath(__file__))[0]+'/../')
 sys.path.insert(0, ETEPATH)
-print sys.path
 
 from ete2 import Tree, TreeStyle, NodeStyle, PhyloTree, faces, random_color
 from ete2.treeview.faces import *

@@ -1,7 +1,7 @@
 language: python
 python:
+  - "2.6"
   - "2.7_with_system_site_packages"
-  - "2.6_with_system_site_packages"
 
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install: 
@@ -19,8 +19,8 @@ before_script:
 
 # command to run tests, e.g. python setup.py test
 script: 
-  - cd test/ && coverage run test_all.py
-  
+  - if [[ $TRAVIS_PYTHON_VERSION == 2.6 ]]; then cd test/ && coverage run test_all.py; else cd test/ && coverage run test_all.py && coverage run -a test_treeview.py; fi
+
 after_success:
   - coveralls
 
