@@ -978,7 +978,7 @@ class _RectItem(QGraphicsRectItem):
 
 class RectFace(Face):
     """
-    .. versionadded:: 2.1
+    .. versionadded:: 2.3
 
     Creates a Rectangular solid face.
 
@@ -1201,7 +1201,7 @@ class _StackedBarItem(QGraphicsRectItem):
 class StackedBarFace(StaticItemFace):
     def __init__(self, percents, width, height, colors=None, line_color=None):
         """
-        .. versionadded:: 2.2
+        .. versionadded:: 2.3
         
         :param percents: a list of values summing up 100.
         :param width: width of the bar

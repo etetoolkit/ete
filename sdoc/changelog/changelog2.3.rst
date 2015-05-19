@@ -6,7 +6,6 @@ What's new in ETE 2.3
 New Modules
 =============
 
-
 tools
 --------
 
@@ -15,7 +14,7 @@ A collection of `command line tools
 operations has been added to the ETE core package. All tools are wrapped by the
 **ete** command, which should become available in your path after installation.
 
-* `ete build <http://etetoolkit.org/documentation/ete-build/>`_: Build phylogenetic tree using a using a number of predefined built-in gene-tree and species-tree workflows.
+* `ete build <http://etetoolkit.org/documentation/ete-build/>`_: Build phylogenetic trees using a using a number of predefined built-in gene-tree and species-tree workflows.
 * `ete view <http://etetoolkit.org/documentation/ete-view/>`_: visualize and generate tree images directly form the command line. 
 * `ete compare <http://etetoolkit.org/documentation/ete-compare/>`_: compare tree topologies based on any node feature (i.e. name, species name, etc) using the Robinson-Foulds distance and edge compatibility scores. 
 * `ete ncbiquery <http://etetoolkit.org/documentation/ete-ncbiquery/>`_: query the ncbi taxonomy tree directly from the database.
@@ -24,7 +23,7 @@ operations has been added to the ETE core package. All tools are wrapped by the
 * **ete generate**: generate random trees, mostly for teaching and testing
 
 .. figure:: http://etetoolkit.org/static/img/ete23_demo.gif
-            :scale: 50%
+   :scale: 50%
 
 ncbi taxonomy
 ---------------------
@@ -33,7 +32,6 @@ The new **ncbi_taxonomy** module provides the class :class:`NCBITaxa`, which all
 NCBI taxonomy database. It provides taxid-name translations, tree annotation tools
 and other handy functions. A brief tutorial and examples on how to use it is
 available `here <../tutorial/tutorial_ncbitaxonomy.html>`_
-
 
 
 New features
@@ -55,13 +53,13 @@ New features
 
 * improved :func:`TreeNode.check_monophyly` function now accepts unrooted trees as input
 
-* Default node is set to blank instead of the "NoName" string, which saves memory in large. 
+* Default node is set to blank instead of the "NoName" string, which saves memory in very large trees. 
 
 * The branch length distance of root nodes is set to 0.0 by default.   
 
-* newick export allows to control the format of branch distance and support values
+* newick export allows to control the format of branch distance and support values. 
 
-* Tree and SeqGroup instances allow to open gziped files transparently. 
+* Tree and SeqGroup instances allow now to open gzipped files transparently. 
 
 ..
    **News in PhyloTree instances**
@@ -70,15 +68,17 @@ New features
 
 **News in the treeview module** 
 
-* improved :func:`random_color` function (a list of colors can be fetch with a single call)
-
 * improved SVG tree rendering 
+
+* improved :func:`random_color` function (a list of colors can be fetch with a single call)
 
 * improved :class:`SeqMotifFace` 
 
 * Added :class:`RectFace`
 
 * Added :class:`StackedBarFace`
+
+
 
 ..
    * Improved heatmap support???
@@ -92,3 +92,6 @@ Highlighted Bug Fixes
 * fixed `installation problem <https://github.com/jhcepas/ete/issues/82>`_ using pip. 
 * visualizing internal tree nodes as a circular tree `produce crashes <https://github.com/jhcepas/ete/issues/84>`_
 * `math domain error <https://github.com/jhcepas/ete/issues/98>`_ in SequencePlotFace. 
+* Fix likelihood calculation bug in EvolTree 
+* Fix `BarChartFace problem with negative numbers <https://github.com/jhcepas/ete/issues/109>`_
+* Fix problem that produced `TreeStyle attributes to be ignored in PhyloTree instances. <https://github.com/jhcepas/ete/issues/75>`_ 
