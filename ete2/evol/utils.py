@@ -202,7 +202,7 @@ def chi_high(x, df):
         raise ValueError, "chi_high: x must be >= 0 (got %s)." % x
     if df < 1:
         raise ValueError, "chi_high: df must be >= 1 (got %s)." % df
-    return igamc(df/2, x/2)
+    return igamc(float(df) / 2, x / 2)
 
 def fix_rounding_error(x):
     """If x is almost in the range 0-1, fixes it.
