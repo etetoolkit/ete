@@ -7,6 +7,8 @@ import time, random
 import re
 import urllib2
 
+HERE = os.path.abspath(os.path.split(os.path.realpath(__file__))[0])
+
 TRACKINSTALL=True
 if "--donottrackinstall" in sys.argv:
     TRACKINSTALL=False
@@ -88,7 +90,11 @@ print
 print "Installing ETE (A python Environment for Tree Exploration)."
 print
 
-ETE_VERSION = open("VERSION").readline().strip()
+try:
+    ETE_VERSION = open(os.path.join(HERE, "VERSION")).readline().strip()
+except IOError:
+    ETE_VERSION = 'unknown'
+    
 MOD_NAME = "ete2"
 
 LONG_DESCRIPTION="""

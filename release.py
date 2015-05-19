@@ -62,13 +62,15 @@ SERVER_RELEASES_PATH = "/var/www/etetoolkit/static/releases/ete2"
 
 TEMP_PATH = "/tmp"
 CURRENT_VERSION = open('VERSION').readline().strip()
-a, b, c, tag  = re.search("(\d+)\.(\d+)\.(\d+)(.+)?", CURRENT_VERSION).groups()
+a, b, c, tag, ncom, hcom  = re.search("(\d+)\.(\d+)\.(\d+)(-?\w+\d+)?-?(\d+)?-?(\w+)?", CURRENT_VERSION).groups()
 a, b, c = map(int, (a, b, c))
 SERIES_VERSION = "%s.%s" %(a, b) 
 print '===================================================='
-print 'CURRENT VERSION:', a, b, c, tag
+print 'CURRENT VERSION:', a, b, c, tag, ncom, hcom
 print '===================================================='
 # test examples
+raw_input()
+
 
 # commit changes in VERSION
 if tag:
@@ -77,7 +79,7 @@ if tag:
     NEW_VERSION = "%s.%s.%s%s%s" %(a, b, c, tag1, tag2+1)
 else:
     NEW_VERSION = "%s.%s.%s%s" %(a, b, c+1)
-
+    
 if ask('Increase version to "%s" ?' %NEW_VERSION, ['y', 'n']) == 'n':
     NEW_VERSION = raw_input('new version string:').strip()
 
@@ -86,7 +88,6 @@ if ask('Write "%s" and commit changes?' %NEW_VERSION, ['y', 'n']) == 'y':
     _ex('git commit -a -m "release %s " && git tag -f %s' %(NEW_VERSION, NEW_VERSION))
 else:
     NEW_VERSION = CURRENT_VERSION
-
     
 # clean files from previous releases 
 _ex('rm release/ -rf && git clone . release/')
