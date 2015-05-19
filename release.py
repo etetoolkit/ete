@@ -109,7 +109,7 @@ if ask('Upload docs?', ['y', 'n']) == 'y':
             (RELEASE_PATH, RELEASE_PATH))
 
 if ask('Upload to pypi?', ['y', 'n']) == 'y':
-    _ex('cd release/ && python setup.py upload -r https://testpypi.python.org/pypi')
+    _ex('cd release/ && python setup.py sdist upload -r https://testpypi.python.org/pypi')
 
     
 #_ex('deactivate;  release/dist/ && tar xf ete2-%s.tar.gz && cd ete2-%s/test/ && python test_all.py && python test_treeview.py' %(NEW_VERSION, NEW_VERSION))
