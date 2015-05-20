@@ -106,12 +106,16 @@ if not options.notest:
     _ex('cd release/dist/ && tar xf ete2-%s.tar.gz && cd ete2-%s/test/ && python test_all.py && python test_treeview.py' %(NEW_VERSION, NEW_VERSION))
     
 if ask('Upload docs?', ['y', 'n']) == 'y':
-        _ex("cd release/; python setup.py upload_sphinx --upload-dir doc/_build/html/ --show-response" %\
+        _ex("cd release/; python setup.py upload_sphinx --upload-dir sdoc/_build/html/ --show-response" %\
             (RELEASE_PATH, RELEASE_PATH))
 
-if ask('Upload to pypi?', ['y', 'n']) == 'y':
+if ask('Upload to TEST pypi?', ['y', 'n']) == 'y':
     _ex('cd release/ && python setup.py sdist upload -r https://testpypi.python.org/pypi')
 
+if ask('Upload to pypi?', ['y', 'n']) == 'y':
+    _ex('cd release/ && python setup.py sdist upload -r https://pypi.python.org/pypi')
+
+    
     
 #_ex('deactivate;  release/dist/ && tar xf ete2-%s.tar.gz && cd ete2-%s/test/ && python test_all.py && python test_treeview.py' %(NEW_VERSION, NEW_VERSION))
     
