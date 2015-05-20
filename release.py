@@ -69,8 +69,7 @@ print '===================================================='
 print 'CURRENT VERSION:', a, b, c, tag, ncom, hcom
 print '===================================================='
 # test examples
-raw_input()
-
+raw_input('continue?')
 
 # commit changes in VERSION
 if tag:
@@ -78,7 +77,7 @@ if tag:
     tag2 = int(tag2)
     NEW_VERSION = "%s.%s.%s%s%s" %(a, b, c, tag1, tag2+1)
 else:
-    NEW_VERSION = "%s.%s.%s%s" %(a, b, c+1)
+    NEW_VERSION = "%s.%s.%s" %(a, b, c+1)
     
 if ask('Increase version to "%s" ?' %NEW_VERSION, ['y', 'n']) == 'n':
     NEW_VERSION = raw_input('new version string:').strip()
