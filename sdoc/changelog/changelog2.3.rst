@@ -14,7 +14,7 @@ A collection of `command line tools
 operations has been added to the ETE core package. All tools are wrapped by the
 **ete** command, which should become available in your path after installation.
 
-* `ete build <http://etetoolkit.org/documentation/ete-build/>`_: Build phylogenetic trees using a using a number of predefined built-in gene-tree and species-tree workflows.
+* `ete build <http://etetoolkit.org/documentation/ete-build/>`_: Build phylogenetic trees using a using a number of predefined built-in gene-tree and species-tree workflows. `Watch example <http://etetoolkit.org/static/img/etebuild.gif>`_
 * `ete view <http://etetoolkit.org/documentation/ete-view/>`_: visualize and generate tree images directly form the command line. 
 * `ete compare <http://etetoolkit.org/documentation/ete-compare/>`_: compare tree topologies based on any node feature (i.e. name, species name, etc) using the Robinson-Foulds distance and edge compatibility scores. 
 * `ete ncbiquery <http://etetoolkit.org/documentation/ete-ncbiquery/>`_: query the ncbi taxonomy tree directly from the database.

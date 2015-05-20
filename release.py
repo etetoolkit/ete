@@ -10,10 +10,9 @@ parser.add_option("--notest", dest="notest", action='store_true')
 parser.add_option("--nodoc", dest="nodoc", action='store_true')
 parser.add_option("--simulate", dest="simulate", action='store_true')
 parser.add_option("--verbose", dest="verbose", action='store_true')
-parser.add_option("--doconly", dest="verbose", action='store_true')
+parser.add_option("--doconly", dest="doconly", action='store_true')
 
 (options, args) = parser.parse_args()
-
 
 def _ex(cmd, interrupt=True):
     if options.verbose or options.simulate:
@@ -71,50 +70,59 @@ print '===================================================='
 # test examples
 raw_input('continue?')
 
-# commit changes in VERSION
-if tag:
-    tag1, tag2 = re.search('(.+?)(\d+)', tag).groups()
-    tag2 = int(tag2)
-    NEW_VERSION = "%s.%s.%s%s%s" %(a, b, c, tag1, tag2+1)
-else:
-    NEW_VERSION = "%s.%s.%s" %(a, b, c+1)
-    
-if ask('Increase version to "%s" ?' %NEW_VERSION, ['y', 'n']) == 'n':
-    NEW_VERSION = raw_input('new version string:').strip()
+if not options.doconly:
+    # commit changes in VERSION
+    if tag:
+        tag1, tag2 = re.search('(.+?)(\d+)', tag).groups()
+        tag2 = int(tag2)
+        NEW_VERSION = "%s.%s.%s%s%s" %(a, b, c, tag1, tag2+1)
+    else:
+        NEW_VERSION = "%s.%s.%s" %(a, b, c+1)
 
-if ask('Write "%s" and commit changes?' %NEW_VERSION, ['y', 'n']) == 'y':
-    open('VERSION', 'w').write(NEW_VERSION)
-    _ex('git commit -a -m "release %s " && git tag -f %s' %(NEW_VERSION, NEW_VERSION))
-else:
-    NEW_VERSION = CURRENT_VERSION
-    
-# clean files from previous releases 
-_ex('rm release/ -rf && git clone . release/')
-# build docs
-_ex('cd release/sdoc/ && make html && make latex')
-_ex('cd release/sdoc/_build/latex && make all-pdf')
-# Generates HTML doc (it includes a link to the PDF doc, so it
-# must be executed after PDF commands)
-_ex('cp -a release/sdoc/_build/html/ release/doc/')
-_ex('cp -a release/sdoc/_build/latex/*.pdf release/doc/')
-# Build dist
-_ex('cd release/ && python setup.py sdist')
+    if ask('Increase version to "%s" ?' %NEW_VERSION, ['y', 'n']) == 'n':
+        NEW_VERSION = raw_input('new version string:').strip()
 
-# test distribution
-if not options.notest:
-    _ex('cd release/dist/ && tar xf ete2-%s.tar.gz && cd ete2-%s/test/ && python test_all.py && python test_treeview.py' %(NEW_VERSION, NEW_VERSION))
+    if ask('Write "%s" and commit changes?' %NEW_VERSION, ['y', 'n']) == 'y':
+        open('VERSION', 'w').write(NEW_VERSION)
+        _ex('git commit -a -m "release %s " && git tag -f %s' %(NEW_VERSION, NEW_VERSION))
+    else:
+        NEW_VERSION = CURRENT_VERSION
+
+    # clean files from previous releases 
+    _ex('rm release/ -rf && git clone . release/')
+    # build docs
+    _ex('cd release/sdoc/ && make html && make latex')
+    _ex('cd release/sdoc/_build/latex && make all-pdf')
+    # Generates HTML doc (it includes a link to the PDF doc, so it
+    # must be executed after PDF commands)
+    _ex('cp -a release/sdoc/_build/html/ release/doc/')
+    _ex('cp -a release/sdoc/_build/latex/*.pdf release/doc/')
+    # Build dist
+    _ex('cd release/ && python setup.py sdist')
+
+    # test distribution
+    if not options.notest:
+        _ex('cd release/dist/ && tar xf ete2-%s.tar.gz && cd ete2-%s/test/ && python test_all.py && python test_treeview.py' %(NEW_VERSION, NEW_VERSION))
+
+    if ask('Upload to TEST pypi?', ['y', 'n']) == 'y':
+        _ex('cd release/ && python setup.py sdist upload -r https://testpypi.python.org/pypi')
+
+    if ask('Upload to pypi?', ['y', 'n']) == 'y':
+        _ex('cd release/ && python setup.py sdist upload -r https://pypi.python.org/pypi')
+
+if options.doconly:
+    SDOC_PATH = '.'
+    # build docs
+    _ex('cd sdoc/ && make html && make latex')
+    _ex('cd sdoc/_build/latex && make all-pdf')
     
+else:
+    SDOC_PATH = 'release/'
+        
 if ask('Upload docs?', ['y', 'n']) == 'y':
-        _ex("cd release/; python setup.py upload_sphinx --upload-dir sdoc/_build/html/ --show-response" %\
-            (RELEASE_PATH, RELEASE_PATH))
+    _ex("cd %s; python setup.py upload_sphinx --upload-dir sdoc/_build/html/ -r https://pypi.python.org/pypi --show-response" %SDOC_PATH)
 
-if ask('Upload to TEST pypi?', ['y', 'n']) == 'y':
-    _ex('cd release/ && python setup.py sdist upload -r https://testpypi.python.org/pypi')
-
-if ask('Upload to pypi?', ['y', 'n']) == 'y':
-    _ex('cd release/ && python setup.py sdist upload -r https://pypi.python.org/pypi')
-
-    
+  
     
 #_ex('deactivate;  release/dist/ && tar xf ete2-%s.tar.gz && cd ete2-%s/test/ && python test_all.py && python test_treeview.py' %(NEW_VERSION, NEW_VERSION))
     
