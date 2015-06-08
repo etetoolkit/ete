@@ -46,9 +46,13 @@ import sqlite3
 import math
 import tarfile
 
+import cPickle
+
 c = None
 
 __all__ = ["NCBITaxa"]
+
+DB_VERSION = 2
 
 class NCBITaxa(object):
     """
@@ -74,6 +78,18 @@ class NCBITaxa(object):
         self.db = None
         self._connect()
 
+        if self.__get_db_version() != DB_VERSION:
+            print >>sys.stderr, 'NCBI database format is outdated. Upgrading'
+            self.update_taxonomy_database()                        
+        
+    def __get_db_version(self):
+        try:
+            r = self.db.execute('select version from stats;')
+        except Exception:
+            return None
+        else:
+            return r.fetchone()[0]
+        
     def update_taxonomy_database(self, taxdump_file=None):
         """Updates the ncbi taxonomy database by downloading and parsing the latest
         taxdump.tar.gz file from the NCBI FTP site.
@@ -169,7 +185,17 @@ class NCBITaxa(object):
             #raise ValueError("%s taxid not found" %taxid)
         track = map(int, raw_track[0].split(","))
         return list(reversed(track))
-    
+
+    def get_common_names(self, taxids):
+        query = ','.join(['"%s"' %v for v in taxids])
+        cmd = "select taxid, common FROM species WHERE taxid IN (%s);" %query
+        result = self.db.execute(cmd)
+        id2name = {}
+        for tax, common_name in result.fetchall():
+            if common_name:
+                id2name[tax] = common_name
+        return id2name
+                
     def get_taxid_translator(self, taxids):
         """Given a list of taxids, returns a dictionary with their corresponding
         scientific names.
@@ -242,7 +268,51 @@ class NCBITaxa(object):
         for sp in taxids: 
             names.append(id2name.get(sp, sp))
         return names
+                                
 
+    def get_descendant_taxa(self, parent, intermediate_nodes=False, rank_limit=None, collapse_subspecies=False):
+        """
+        given a parent taxid or scientific species name, returns a list of all its descendants taxids.
+        If intermediate_nodes is set to True, internal nodes will also be dumped. 
+        
+        """
+        try:
+            taxid = int(parent)
+        except ValueError:
+            try:
+                taxid = self.get_name_translator([parent])[parent]
+            except KeyError:
+                raise ValueError('%s not found!' %parent)
+                    
+        prepostorder = cPickle.load(open(self.dbfile+".traverse.pkl"))
+        descendants = {}
+        found = 0
+        for tid in prepostorder:
+            if tid == taxid:
+                found += 1
+            elif found == 1:
+                descendants[tid] = descendants.get(tid, 0) + 1
+            elif found == 2:
+                break
+
+
+        if rank_limit or collapse_subspecies:
+            tree = self.get_topology(descendants.keys(), intermediate_nodes=intermediate_nodes, collapse_subspecies=collapse_subspecies, rank_limit=rank_limit)
+            if intermediate_nodes:
+                return [n.name for n in tree.get_descendants()]
+            else:
+                return [n.name for n in tree]
+                
+        elif intermediate_nodes:
+            descendant_taxids = [tid for tid, count in descendants.iteritems() if not target_rank or tax2rank.get(tid, None) == target_rank]
+        else:
+            descendant_taxids = [tid for tid, count in descendants.iteritems() if count == 1]
+
+
+
+            
+        return descendant_taxids
+        
         
     def get_topology(self, taxids, intermediate_nodes=False, rank_limit=None, collapse_subspecies=False, annotate=True):
         """Given a list of taxid numbers, return the minimal pruned NCBI taxonomy tree
@@ -295,30 +365,19 @@ class NCBITaxa(object):
             for n in root.get_descendants():
                 if len(n.children) == 1 and int(n.name) not in taxids: 
                     n.delete(prevent_nondicotomic=False)
-
-        if collapse_subspecies:
-            species_nodes = [n for n in t.traverse() if n.rank == "species"
-                             if int(n.name) in all_taxids]
-            for sp_node in species_nodes:
-                bellow = sp_node.get_descendants()
-                if bellow:
-                    # creates a copy of the species node
-                    connector = sp_node.__class__()
-                    for f in sp_node.features:
-                        connector.add_feature(f, getattr(sp_node, f))
-                    connector.name = connector.name + "{species}"
-                    for n in bellow:
-                        n.detach()
-                        n.name = n.name + "{%s}" %n.rank
-                        sp_node.add_child(n)
-                    sp_node.add_child(connector)
-                    sp_node.add_feature("collapse_subspecies", "1")
-                    
+                            
         if len(root.children) == 1:
             tree = root.children[0].detach()
         else:
             tree = root
 
+        if collapse_subspecies:
+            to_detach = []
+            for node in tree.traverse():
+                if node.rank == "species":
+                    to_detach.extend(node.children)
+            for n in to_detach:
+                n.detach()
         if annotate:
             self.annotate_tree(tree)
 
@@ -364,6 +423,8 @@ class NCBITaxa(object):
         extra_tax2name = self.get_taxid_translator(list(all_taxid_codes - set(tax2name.keys())))
         tax2name.update(extra_tax2name)
 
+        tax2common_name = self.get_common_names(tax2name.keys())
+        
         if not tax2rank:
             tax2rank = self.get_rank(tax2name.keys())
 
@@ -380,21 +441,24 @@ class NCBITaxa(object):
                 if node_taxid in merged_conversion:
                     node_taxid = merged_conversion[node_taxid]
 
-                n.add_features(sci_name = tax2name.get(node_taxid, getattr(n, taxid_attr, 'NA')),
-                               lineage = tax2track[node_taxid], 
+                n.add_features(sci_name = tax2name.get(node_taxid, getattr(n, taxid_attr, '')),
+                               common_name = tax2common_name.get(node_taxid, ''),
+                               lineage = tax2track[node_taxid],
                                rank = tax2rank.get(node_taxid, 'Unknown'),
                                named_lineage = self.translate_to_names(tax2track[node_taxid]))
             elif n.is_leaf():
                 n.add_features(sci_name = getattr(n, taxid_attr, 'NA'),
-                               lineage = [], 
+                               common_name = '',
+                               lineage = [],
                                rank = 'Unknown',
                                named_lineage = [])
             else:                    
                 lineage = self._common_lineage([lf.lineage for lf in n2leaves[n]])
                 ancestor = lineage[-1]
                 n.add_features(sci_name = tax2name.get(ancestor, str(ancestor)),
+                               common_name = tax2common_name.get(ancestor, ''),
                                taxid = ancestor,
-                               lineage = lineage, 
+                               lineage = lineage,
                                rank = tax2rank.get(ancestor, 'Unknown'),
                                named_lineage = [tax2name.get(tax, str(tax)) for tax in lineage])
 
@@ -511,6 +575,7 @@ def load_ncbi_tree_from_dump(tar):
     node2taxname = {}
     synonyms = set()
     name2rank = {}
+    node2common = {}
     print "Loading node names..."
     for line in tar.extractfile("names.dmp"):
         fields =  map(strip, line.split("|"))
@@ -519,6 +584,8 @@ def load_ncbi_tree_from_dump(tar):
         taxname = fields[1]
         if name_type == "scientific name":
             node2taxname[nodename] = taxname
+        if name_type == "genbank common name":
+            node2common[nodename] = taxname            
         elif name_type in set(["synonym", "equivalent name", "genbank equivalent name",
                                "anamorph", "genbank synonym", "genbank anamorph", "teleomorph"]):
             synonyms.add( (nodename, taxname) )
@@ -533,6 +600,8 @@ def load_ncbi_tree_from_dump(tar):
         n = Tree()
         n.name = nodename
         n.taxname = node2taxname[nodename]
+        if nodename in node2common: 
+            n.common_name = node2common[nodename]
         n.rank = fields[2].strip()
         parent2child[nodename] = parentname
         name2node[nodename] = n
@@ -560,9 +629,9 @@ def generate_table(t):
             track.append(temp_node.name)
             temp_node = temp_node.up
         if n.up:
-            print >>OUT, '\t'.join([n.name, n.up.name, n.taxname, n.rank, ','.join(track)])
+            print >>OUT, '\t'.join([n.name, n.up.name, n.taxname, getattr(n, "common_name", ""), n.rank, ','.join(track)])
         else:
-            print >>OUT, '\t'.join([n.name, "", n.taxname, n.rank, ','.join(track)])
+            print >>OUT, '\t'.join([n.name, "", n.taxname, getattr(n, "common_name", ""), n.rank, ','.join(track)])
     OUT.close()
 
 def update_db(dbfile, targz_file=None):
@@ -575,6 +644,8 @@ def update_db(dbfile, targz_file=None):
 
     tar = tarfile.open(targz_file, 'r')
     t, synonyms = load_ncbi_tree_from_dump(tar)
+    prepostorder = [int(node.name) for post, node in t.iter_prepostorder()]
+    cPickle.dump(prepostorder, open(dbfile+'.traverse.pkl', "wb"), 2)
 
     print "Updating database: %s ..." %dbfile
     generate_table(t)
@@ -598,10 +669,12 @@ def upload_data(dbfile):
     db = sqlite3.connect(dbfile)
         
     create_cmd = """
+    DROP TABLE IF EXISTS stats;
     DROP TABLE IF EXISTS species;
     DROP TABLE IF EXISTS synonym;
     DROP TABLE IF EXISTS merged;
-    CREATE TABLE species (taxid INT PRIMARY KEY, parent INT, spname VARCHAR(50) COLLATE NOCASE, rank VARCHAR(50), track TEXT);
+    CREATE TABLE stats (version INT PRIMARY KEY);
+    CREATE TABLE species (taxid INT PRIMARY KEY, parent INT, spname VARCHAR(50) COLLATE NOCASE, common VARCHAR(50) COLLATE NOCASE, rank VARCHAR(50), track TEXT);
     CREATE TABLE synonym (taxid INT,spname VARCHAR(50) COLLATE NOCASE, PRIMARY KEY (spname, taxid));
     CREATE TABLE merged (taxid_old INT, taxid_new INT);
     CREATE INDEX spname1 ON species (spname COLLATE NOCASE);
@@ -610,6 +683,10 @@ def upload_data(dbfile):
     for cmd in create_cmd.split(';'):
         db.execute(cmd)
     print
+
+    db.execute("INSERT INTO stats (version) VALUES (%d);" %DB_VERSION)
+    db.commit()
+    
     for i, line in enumerate(open("syn.tab")):
         if i%5000 == 0 :
             print >>sys.stderr, '\rInserting synonyms:     % 6d' %i,
@@ -630,7 +707,21 @@ def upload_data(dbfile):
         if i%5000 == 0 :
             print >>sys.stderr, '\rInserting taxids:      % 6d' %i,
             sys.stderr.flush()
-        taxid, parentid, spname, rank, lineage = line.strip('\n').split('\t')
-        db.execute("INSERT INTO species (taxid, parent, spname, rank, track) VALUES (?, ?, ?, ?, ?);", (taxid, parentid, spname, rank, lineage))
+        taxid, parentid, spname, common, rank, lineage = line.strip('\n').split('\t')
+        db.execute("INSERT INTO species (taxid, parent, spname, common, rank, track) VALUES (?, ?, ?, ?, ?, ?);", (taxid, parentid, spname, common, rank, lineage))
     print
     db.commit()
+
+if __name__ == "__main__":
+    ncbi = NCBITaxa()
+
+    a = ncbi.get_descendant_taxa("hominidae")
+    print a
+    print ncbi.get_common_names(a)
+    print ncbi.get_topology(a)
+    b = ncbi.get_descendant_taxa("homo", intermediate_nodes=True, collapse_subspecies=True)
+    print ncbi.get_taxid_translator(b)
+
+    print ncbi.get_common_names(b)
+    #ncbi.update_taxonomy_database()
+    
