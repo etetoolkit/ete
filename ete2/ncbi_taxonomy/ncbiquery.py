@@ -224,7 +224,6 @@ class NCBITaxa(object):
                 result = self.db.execute(cmd)
                 for tax, spname in result.fetchall():
                     id2name[new2old[tax]] = spname
-            
         return id2name
 
     def get_name_translator(self, names):
@@ -270,7 +269,7 @@ class NCBITaxa(object):
         return names
                                 
 
-    def get_descendant_taxa(self, parent, intermediate_nodes=False, rank_limit=None, collapse_subspecies=False):
+    def get_descendant_taxa(self, parent, intermediate_nodes=False, rank_limit=None, collapse_subspecies=False, return_tree=False):
         """
         given a parent taxid or scientific species name, returns a list of all its descendants taxids.
         If intermediate_nodes is set to True, internal nodes will also be dumped. 
@@ -294,26 +293,21 @@ class NCBITaxa(object):
                 descendants[tid] = descendants.get(tid, 0) + 1
             elif found == 2:
                 break
-
-
-        if rank_limit or collapse_subspecies:
+                
+        if rank_limit or collapse_subspecies or return_tree:
             tree = self.get_topology(descendants.keys(), intermediate_nodes=intermediate_nodes, collapse_subspecies=collapse_subspecies, rank_limit=rank_limit)
-            if intermediate_nodes:
-                return [n.name for n in tree.get_descendants()]
+            if return_tree:
+                return tree
+            elif intermediate_nodes:
+                return map(int, [n.name for n in tree.get_descendants()])
             else:
-                return [n.name for n in tree]
+                return map(int, [n.name for n in tree])
                 
         elif intermediate_nodes:
-            descendant_taxids = [tid for tid, count in descendants.iteritems() if not target_rank or tax2rank.get(tid, None) == target_rank]
+            return [tid for tid, count in descendants.iteritems() if not target_rank or tax2rank.get(tid, None) == target_rank]
         else:
-            descendant_taxids = [tid for tid, count in descendants.iteritems() if count == 1]
-
-
-
-            
-        return descendant_taxids
-        
-        
+            return [tid for tid, count in descendants.iteritems() if count == 1]
+                
     def get_topology(self, taxids, intermediate_nodes=False, rank_limit=None, collapse_subspecies=False, annotate=True):
         """Given a list of taxid numbers, return the minimal pruned NCBI taxonomy tree
         containing all of them.

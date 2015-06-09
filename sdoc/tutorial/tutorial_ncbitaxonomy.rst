@@ -117,6 +117,37 @@ And you can combine combine all at once:
    # u'Hominidae', u'Homininae', u'Homo', u'Homo sapiens']
 
 
+Getting descendant taxa
+-----------------------------
+
+Given a taxid or a taxa name from an internal node in the NCBI taxonomy tree,
+their descendants can be retrieved as follows:
+
+::
+
+   from ete2 import NCBITaxa
+   ncbi = NCBITaxa()
+
+   descendants = ncbi.get_descendant_taxa('Homo')
+   print ncbi.translate_to_names(descendants)
+
+   # [u'Homo heidelbergensis', u'Homo sapiens ssp. Denisova', u'Homo sapiens neanderthalensis']
+
+   # you can easily ignore subspecies, so only taxa labeled as "species" will be reported:
+   descendants = ncbi.get_descendant_taxa('Homo', collapse_subspecies=True)
+   print ncbi.translate_to_names(descendants)
+
+   # [u'Homo sapiens', u'Homo heidelbergensis']
+
+   # or even returned as an annotated tree
+   tree = ncbi.get_descendant_taxa('Homo', collapse_subspecies=True, return_tree=True)
+   print tree.get_ascii(attributes=['sci_name', 'taxid'])
+
+   #           /-Homo sapiens, 9606
+   # -Homo, 9605
+   #           \-Homo heidelbergensis, 1425170
+
+
 Getting NCBI species tree topology
 ---------------------------------------
 

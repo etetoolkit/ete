@@ -45,17 +45,28 @@ ete compare -t "(((A, B),C),(D,E));" "((A,B), C);" -r "(((A, C),B),(D,E));"
 
 # 'ete ncbiquery' allows to query ncbi taxonomy using a local ETE friendly database
 # For example, lets get the tree connecting 4 random taxa (by name or taxid)  
-ete ncbiquery --search 9606 'Mus musculus' 'Gallus gallus' 'Afrotheria' --taxonomy | ete view --text 
+ete ncbiquery --search 9606 'Mus musculus' 'Gallus gallus' 'Afrotheria' --tree | ete view --text 
 
 # the taxonomic tree is actually annotated and plays well with ete visualization
-ete ncbiquery --search 9606 'Mus musculus' 'Gallus gallus' 'Afrotheria' --taxonomy | ete view --ncbi
+ete ncbiquery --search 9606 'Mus musculus' 'Gallus gallus' 'Afrotheria' --tree | ete view --ncbi
  
 # or get extended taxonomy information for taxids and species names
 ete ncbiquery --search 9606 'Mus musculus' 'Gallus gallus' 'Afrotheria' --info 
 
 # ncbiquery also supports piping
 cat species.txt
-cut -f1 species.txt | ete ncbiquery --taxonomy | ete view --ncbi  
+cut -f1 species.txt | ete ncbiquery --tree | ete view --ncbi  
+
+# dump descendants
+ete ncbiquery --search homo pan Drosophila --descendants
+
+# dump descendant as tree
+ete ncbiquery --search Drosophila --tree|ete view --text
+ete ncbiquery --search Drosophila --tree --collapse_subspecies | ete view --text
+
+
+
+ 
 
 # 
 # TREE ANNOTATION
