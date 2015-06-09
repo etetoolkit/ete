@@ -2,6 +2,13 @@ What's new in ETE 2.3
 *********************************
 .. currentmodule:: ete2
 
+Update 2.3.2
+=================
+* added :func:`NCBITaxa.get_descendant_taxa` 
+* added :func:`NCBITaxa.get_common_names` 
+* `ete ncbiquery <http://etetoolkit.org/documentation/ete-ncbiquery/>`_: dump descendant taxa given a taxid or taxa name. new option `--descendants`_; renamed `--taxonomy`_ by `--tree`_ 
+* fixes <misaligned branches <https://github.com/jhcepas/ete/issues/113>`_ in ultrametric tree images using vt_line_width > 0
+* fixes <windows installation problem <https://github.com/jhcepas/ete/issues/114>`_
 
 New Modules
 =============

@@ -51,7 +51,7 @@ def populate_args(ncbi_args_p):
                         help="""NCBI sqlite3 db file.""")
 
     ncbi_args.add_argument("--fuzzy", dest="fuzzy", type=float,
-                        help=("Tries a fuzzy (and SLOW) search for those"
+                        help=("EXPERIMENTAL: Tries a fuzzy (and SLOW) search for those"
                               " species names that could not be translated"
                               " into taxids. A float number must be provided"
                               " indicating the minimum string similarity."))
