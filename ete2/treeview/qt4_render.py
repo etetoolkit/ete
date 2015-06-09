@@ -437,24 +437,7 @@ def add_scale(img, mainRect, parent):
         length=50
         scaleItem = _EmptyItem()
         customPen = QtGui.QPen(QtGui.QColor("black"), 1)
-        line = QtGui.QGraphicsLineItem(scaleItem)
-        line2 = QtGui.QGraphicsLineItem(scaleItem)
-        line3 = QtGui.QGraphicsLineItem(scaleItem)
-        line.setPen(customPen)
-        line2.setPen(customPen)
-        line3.setPen(customPen)
-
-        line.setLine(0, 5, length, 5)
-        line2.setLine(0, 0, 0, 10)
-        line3.setLine(length, 0, length, 10)
-
-        length_text = float(length) / img._scale if img._scale else 0.0
-        #scale_text = "%0.2f\n(1 branch unit = %d pixels)" % (length_text, round(img._scale))
-        scale_text = "%0.2f" % (length_text)
-        scale = QtGui.QGraphicsSimpleTextItem(scale_text)
-        scale.setParentItem(scaleItem)
-        scale.setPos(0, 10)
-
+        
         if img.force_topology:
             wtext = "Force topology is enabled!\nBranch lengths do not represent real values."
             warning_text = QtGui.QGraphicsSimpleTextItem(wtext)
@@ -473,11 +456,12 @@ def add_scale(img, mainRect, parent):
             line.setLine(0, 5, length, 5)
             line2.setLine(0, 0, 0, 10)
             line3.setLine(length, 0, length, 10)
-            #scale_text = "%0.2f" % (float(length) / img._scale)
+            length_text = float(length) / img._scale if img._scale else 0.0
+            scale_text = "%0.2f" % (length_text)
             scale = QtGui.QGraphicsSimpleTextItem(scale_text)
             scale.setParentItem(scaleItem)
             scale.setPos(0, 10)
-
+            
         scaleItem.setParentItem(parent)
         dw = max(0, length-mainRect.width())
         scaleItem.setPos(mainRect.bottomLeft())
@@ -603,8 +587,10 @@ def set_node_size(node, n2i, n2f, img):
                  ),
              faceblock["branch-right"].w]
             )
-    w += node.img_style["vt_line_width"]
 
+    # This breaks ultrametric tree visualization
+    #w += node.img_style["vt_line_width"]
+    
     # rightside faces region
     item.facesRegion.setRect(0, 0, faceblock["branch-right"].w, h)
 
@@ -626,10 +612,12 @@ def render_node_content(node, n2i, n2f, img):
 
     # Node points
     ball_size = style["size"]
-    
+
+
     vlw = style["vt_line_width"] if not _leaf(node) and len(node.children) > 1 else 0.0
-    
-    face_start_x = nodeR.width() - facesR.width() - vlw
+
+    # face_start_x = nodeR.width() - facesR.width() - vlw
+    face_start_x = max(0, nodeR.width() - facesR.width() - vlw)
     ball_start_x = face_start_x - ball_size 
     
     if ball_size:
@@ -664,8 +652,18 @@ def render_node_content(node, n2i, n2f, img):
     hz_line.setPen(pen)
 
     join_fix = 0
-    if node.up and node.up.img_style["vt_line_width"]:
+    if img.mode == "c" and node.up and node.up.img_style["vt_line_width"]:
         join_fix = node.up.img_style["vt_line_width"] 
+        # fix_join_line = _LineItem()
+        # fix_join_line = _NodeLineItem(node)
+        # parent_style = node.up.img_style
+        # pen = QtGui.QPen()
+        # pen.setColor(QtGui.QColor(parent_style["vt_line_color"]))
+        # pen.setWidth(parent_style["hz_line_width"])
+        # pen.setCapStyle(QtCore.Qt.FlatCap)
+        # fix_join_line.setPen(pen)        
+        # fix_join_line.setLine(-join_fix, center, join_fix, center)
+        # fix_join_line.setParentItem(item.content)
 
     hz_line.setLine(-join_fix, center, branch_length, center)
 
@@ -735,17 +733,18 @@ def render_node_content(node, n2i, n2f, img):
     # Items fow which coordinates are exported in the image map
     item.mapped_items = [node_ball, fblock_r, fblock_b, fblock_t]
 
-    for i in [node_ball, fblock_r, fblock_b, fblock_t]:
-        if i:
-            #item.movable_items.addToGroup(i)
-            item.movable_items.append(i)
-            i.setParentItem(item.content)
 
     for i in [vt_line, extra_line, hz_line]:
         if i:
             #item.static_items.addToGroup(i)
             item.static_items.append(i)
             i.setParentItem(item.content)
+    for i in [node_ball, fblock_r, fblock_b, fblock_t]:
+        if i:
+            #item.movable_items.addToGroup(i)
+            item.movable_items.append(i)
+            i.setParentItem(item.content)
+
 
     #item.movable_items.setParentItem(item.content)
     #item.static_items.setParentItem(item.content)
@@ -1067,6 +1066,13 @@ def init_node_dimensions(node, item, faceblock, img):
     h3 = faceblock["branch-right"].h
     h4 = 0
     h5 = aligned_height
+
+    # This fixes the problem of miss-aligned branches in ultrametric trees. If
+    # there is nothing between the hz line and the vt line, then I prevent
+    # vt_line_width to add extra width to the node, so node distances are
+    # preserved in the img.
+    if w2 == 0 and w3 == 0:
+        w4 = 0
     
     # ignore face heights if requested
     if img.mode == "c" and img.allow_face_overlap:
