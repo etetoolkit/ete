@@ -55,6 +55,10 @@ _FLOAT_RE = "\s*[+-]?\d+\.?\d*(?:[eE][-+]\d+)?\s*"
 #_NAME_RE = "[^():,;\[\]]+"
 _NAME_RE = "[^():,;]+?"
 
+"thanks to: http://stackoverflow.com/a/29452781/1006828"
+_QUOTED_TEXT_RE = r"""((?=["'])(?:"[^"\\]*(?:\\[\s\S][^"\\]*)*"|'[^'\\]*(?:\\[\s\S][^'\\]*)*'))"""
+_QUOTED_TEXT_PREFIX='ete2_quotref_'
+
 DEFAULT_DIST = 1.0
 DEFAULT_NAME = ''
 DEFAULT_SUPPORT = 1.0
@@ -224,6 +228,7 @@ def read_newick(newick, root_node=None, format=0):
         else:
             nw = newick
         nw = nw.strip()
+        
         if not nw.startswith('(') and nw.endswith(';'):
             return _read_node_data(nw[:-1], root_node, "single", format)
             
@@ -242,6 +247,21 @@ def _read_newick_from_string(nw, root_node, format):
 
     # white spaces and separators are removed
     nw = re.sub("[\n\r\t]+", "", nw)
+
+    # begin: Quoted text is mapped to references
+    quoteMap={}
+    unquoted_nw=''
+    counter=0
+    for token in re.split(_QUOTED_TEXT_RE, nw):
+        counter+=1
+        if counter % 2 == 1 : #normal newick tree structure data
+            unquoted_nw += token
+        else : #quoted text, add to dictionary and replace with reference
+            refId= _QUOTED_TEXT_PREFIX + str(counter/2)
+            unquoted_nw += refId
+            quoteMap[refId]=token
+
+    nw = unquoted_nw
 
     current_parent = None
     # Each chunk represents the content of a parent node, and it could contain
@@ -283,6 +303,12 @@ def _read_newick_from_string(nw, root_node, format):
                     # read internal node data and go up one level
                     _read_node_data(closing_internal, current_parent, "internal", format)
                     current_parent = current_parent.up
+    
+    # references in node names are replaced with quoted text before returning
+    for node in root_node.iter_descendants():
+        if node.name.startswith(_QUOTED_TEXT_PREFIX):
+            node.name = quoteMap[node.name]
+    
     return root_node
 
 def _parse_extra_features(node, NHX_string):
