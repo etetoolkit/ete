@@ -144,9 +144,8 @@ May;59(3):307-21."""
 FASTTREE_CITE = u"""Price MN, Dehal PS, Arkin AP. FastTree 2 -
 approximately maximum-likelihood trees for large alignments.  PLoS
 One. 2010 Mar 10;5(3):e9490."""
-RAXML_CITE = u"""Stamatakis A. RAxML-VI-HPC: maximum likelihood-based
-phylogenetic analyses with thousands of taxa and mixed models.
-Bioinformatics. 2006 Nov 1;22(21):2688-90."""
+RAXML_CITE = u"""Stamatakis A. RAxML version 8: a tool for phylogenetic analysis and
+post-analysis of large phylogenies Bioinformatics (2014) 30 (9): 1312-1313."""
 MAFFT_CITE = u"""Katoh K, Kuma K, Toh H, Miyata T. MAFFT version 5:
 improvement in accuracy of multiple sequence alignment.  Nucleic Acids
 Res. 2005 Jan 20;33(2):511-8."""

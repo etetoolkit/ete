@@ -1,0 +1,19 @@
+[run]
+omit =
+    */test*
+    */__init__.py
+    */ete2/tools/*
+    
+source = ete2
+branch = True
+include =  */ete2/*
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    raise NotImplementedError
+    if __name__ == .__main__.:
+omit =
+    */test*
+    */__init__.py

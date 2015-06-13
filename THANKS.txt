@@ -1,0 +1,8 @@
+FEEDBACK AND CONTRIBUTIONS FROM: 
+
+François Serra (EvolTree)
+Alexandros Pittis (testing)
+Salvador Capella (phylomedb API)
+Marina Marcet (phylomedb, treeko tests)
+Ivan Denisov (phylomedb webplugin feedback)
+Shankar Vembu (fast tree reconciliation method)

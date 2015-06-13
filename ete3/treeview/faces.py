@@ -983,7 +983,7 @@ class _RectItem(QGraphicsRectItem):
 
 class RectFace(Face):
     """
-    .. versionadded:: 2.1
+    .. versionadded:: 2.3
 
     Creates a Rectangular solid face.
 
@@ -1206,7 +1206,7 @@ class _StackedBarItem(QGraphicsRectItem):
 class StackedBarFace(StaticItemFace):
     def __init__(self, percents, width, height, colors=None, line_color=None):
         """
-        .. versionadded:: 2.2
+        .. versionadded:: 2.3
         
         :param percents: a list of values summing up 100.
         :param width: width of the bar
@@ -1294,8 +1294,8 @@ class _BarChartItem(QGraphicsRectItem):
         QGraphicsRectItem.__init__(self, 0, 0, width, height)
         self.values = values
         self.colors = colors
-        self.width = width
-        self.height = height
+        self.width = float(width)
+        self.height = float(height)
         self.draw_border = True
         self.draw_grid = False
         self.draw_scale = True
@@ -1322,7 +1322,7 @@ class _BarChartItem(QGraphicsRectItem):
         if self.min_value is None:
             min_value = min([v+d for v,d in zip(values, deviations) if isfinite(v)])
         else:
-            min_value = 0
+            min_value = self.min_value
 
         scale_length = 0
         scale_margin = 2
@@ -1354,33 +1354,33 @@ class _BarChartItem(QGraphicsRectItem):
         if x_alpha < 1:
             raise ValueError("BarChartFace is too small")
 
-        full_height = height
+
         height -= label_height
-        y_alpha = float ( (height-1) / float(max_value - min_value) )
+        y_alpha = float ( (height-3) / float(max_value - min_value) )
         x = 0
-        y  = 0
+        y = 0
 
         # Mean and quartiles y positions
-        mean_line_y = y + height / 2
-        line2_y     = mean_line_y  + height/4
-        line3_y     = mean_line_y - height/4
+        mean_line_y = y + (height / 2.0)
+        line2_y     = mean_line_y + (height/4.0)
+        line3_y     = mean_line_y - (height/4.0)
 
         if self.draw_border:
             p.setPen(QColor("black"))
-            p.drawRect(x, y, real_width + scale_margin - 1 , height)
+            p.drawRect(x, y + 1, real_width + scale_margin - 1 , height)
 
         if self.draw_scale:
-            p.drawText(real_width + scale_margin, max_string_metrics.height(), max_string)
+            p.drawText(real_width + scale_margin, max_string_metrics.height()-2, max_string)
             p.drawText(real_width + scale_margin, height - 2, min_string)
-            p.drawLine(real_width + scale_margin - 1, 0, real_width + scale_margin - 1, height)
-            p.drawLine(real_width + scale_margin - 1, 0, real_width + scale_margin + 2, y)
-            p.drawLine(real_width + scale_margin - 1, height, real_width + scale_margin + 2, height)
+            p.drawLine(real_width + scale_margin - 1, 1, real_width + scale_margin - 1, height+1)
+            p.drawLine(real_width + scale_margin - 1, 1, real_width + scale_margin + 2, 1)
+            p.drawLine(real_width + scale_margin - 1, height+1, real_width + scale_margin + 2, height+1)
 
         if self.draw_grid:
             dashedPen = QPen(QBrush(QColor("#ddd")), 0)
             dashedPen.setStyle(Qt.DashLine)
             p.setPen(dashedPen)
-            p.drawLine(x+1, mean_line_y, real_width - 2, mean_line_y )
+            p.drawLine(x+1, mean_line_y, real_width - 2, mean_line_y)
             p.drawLine(x+1, line2_y, real_width - 2, line2_y )
             p.drawLine(x+1, line3_y, real_width - 2, line3_y )
 
@@ -1395,7 +1395,7 @@ class _BarChartItem(QGraphicsRectItem):
 
             if self.labels:
                 p.save()
-                p.translate(x1, height)
+                p.translate(x1+(x_alpha/4.0), height+2)
                 p.rotate(90)
                 p.drawText(0, 0, str(self.labels[pos]))
                 p.restore()
@@ -1411,7 +1411,7 @@ class _BarChartItem(QGraphicsRectItem):
             p.setPen(QColor("black"))
 
             # Fill bar with custom color
-            p.fillRect(x1, height - mean_y1, x_alpha, mean_y1 - 1, QBrush(color))
+            p.fillRect(x1, height - mean_y1, x_alpha, mean_y1, QBrush(color))
 
             # Draw error bars
             if std != 0:

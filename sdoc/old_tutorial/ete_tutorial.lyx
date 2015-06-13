@@ -1,0 +1,5694 @@
+#LyX 1.6.1 created this file. For more info see http://www.lyx.org/
+\lyxformat 345
+\begin_document
+\begin_header
+\textclass book
+\begin_preamble
+\usepackage{color}
+\usepackage{alltt}
+\newcommand{\hlstd}[1]{\scriptsize\textcolor[rgb]{0,0,0}{\tt{#1}}}
+\newcommand{\hlnum}[1]{\scriptsize\textcolor[rgb]{0.16,0.16,1}{\tt{#1}}}
+\newcommand{\hlesc}[1]{\scriptsize\textcolor[rgb]{1,0,1}{\tt{#1}}}
+\newcommand{\hlstr}[1]{\scriptsize\textcolor[rgb]{1,0,0}{\tt{#1}}}
+\newcommand{\hldstr}[1]{\scriptsize\textcolor[rgb]{0.51,0.51,0}{\tt{#1}}}
+\newcommand{\hlslc}[1]{\scriptsize\textcolor[rgb]{0.51,0.51,0.51}{\tt{#1}}}
+\newcommand{\hlcom}[1]{\scriptsize\textcolor[rgb]{0.51,0.51,0.51}{\tt{#1}}}
+\newcommand{\hldir}[1]{\scriptsize\textcolor[rgb]{0,0.51,0}{\tt{#1}}}
+\newcommand{\hlsym}[1]{\scriptsize\textcolor[rgb]{0,0,0}{\tt{#1}}}
+\newcommand{\hlline}[1]{\scriptsize\textcolor[rgb]{0.33,0.33,0.33}{\tt{#1}}}
+\newcommand{\hlkwa}[1]{\scriptsize\textcolor[rgb]{0,0,0}{\tt{\bf{#1}}}}
+\newcommand{\hlkwb}[1]{\scriptsize\textcolor[rgb]{0.51,0,0}{\tt{#1}}}
+\newcommand{\hlkwc}[1]{\scriptsize\textcolor[rgb]{0,0,0}{\tt{\bf{#1}}}}
+\newcommand{\hlkwd}[1]{\scriptsize\textcolor[rgb]{0,0,0.51}\tt{{#1}}}
+
+
+
+\usepackage[scaled=0.92]{helvet}
+ \usepackage{mathptmx}
+\usepackage{courier}
+
+%%%%%%%%%%%%%%%%
+\def\thickhrulefill{\leavevmode \leaders \hrule height 1ex \hfill \kern \z@}
+\def\@makechapterhead#1{%
+  \vspace*{20\p@}%
+          {\parindent \z@ \raggedleft \reset@font
+            \scshape \@chapapp{} \thechapter
+            \par\nobreak
+            \interlinepenalty\@M
+            \Large \bfseries #1\par\nobreak
+            %\vspace*{1\p@}%
+            \hrulefill
+            \par\nobreak
+            \vskip 40\p@
+}}
+
+\def\@makeschapterhead#1{%
+  \vspace*{20\p@}%
+          {\parindent \z@ \raggedleft \reset@font
+            \scshape \vphantom{\@chapapp{} \thechapter}
+            \par\nobreak
+            \interlinepenalty\@M
+            \Large \bfseries #1\par\nobreak
+            %\vspace*{1\p@}%
+            \hrulefill
+            \par\nobreak
+            \vskip 40\p@
+}}
+%%%%%%%%%%%%%
+
+
+% HEADER FORMAT
+
+\renewcommand{\chaptermark}[1]{\markboth{\emph{ #1}}{}} 
+\renewcommand{\sectionmark}[1]{\markright{ \emph{#1}}{}} 
+
+\fancyhf{} 
+\fancyhead[LE,RO]{\small\upshape\thepage} 
+
+\fancyhead[LO]{\scriptsize\upshape\rightmark} 
+\fancyhead[RE]{\scriptsize\upshape\leftmark} 
+\fancypagestyle{plain}{% this is for beginning of chapter: empty
+  \fancyhead{} % get rid of headers 
+  \renewcommand{\headrulewidth}{0.5pt} % and the line 
+}
+
+\fancyhead[LE,RO]{\fontfamily{ppl}\upshape\thepage}  % page number
+
+% % Clear Header Style on the Last Empty Odd pages
+\makeatletter
+\def\cleardoublepage{\clearpage\if@twoside \ifodd\c@page\else%
+  \hbox{}%
+  \thispagestyle{empty}%              % Empty header styles
+  \newpage%
+  \if@twocolumn\hbox{}\newpage\fi\fi\fi}
+\makeatother
+
+
+% Removes header from plain pages
+\fancypagestyle{plain}{
+  \fancyhead{} %get rid of the headers on plain pages
+  \renewcommand{\headrulewidth}{0pt} % and the line
+} 
+\fancypagestyle{empty}{
+  \fancyhead{} %get rid of the headers on plain pages
+  \renewcommand{\headrulewidth}{0pt} % and the line
+} 
+% Code for creating empty pages
+% No headers on empty pages before new chapter
+\makeatletter
+\def\cleardoublepage{\clearpage\if@twoside \ifodd\c@page\else
+  \hbox{}
+  \thispagestyle{plain}
+  \newpage
+  \if@twocolumn\hbox{}\newpage\fi\fi\fi}
+\makeatother \clearpage{\pagestyle{plain}\cleardoublepage}
+
+% END OF HEADER FORMAT
+
+% CAPTION SIZE
+\usepackage[scriptsize,bf]{caption}
+\setlength{\captionmargin}{20pt}
+% END OF CAPTION SIZE
+
+
+
+\newcounter{code}
+\newenvironment{CodeEnv}[1] {% caption as parameter 
+  \stepcounter{code} 
+   \vspace{3ex}    \hrule  \vspace{1ex} 
+   \textbf{Example \thecode } 
+  \vspace{1ex}     \hrule     \vspace{1ex}
+   #1
+  \vspace{1ex} \hrule 
+  \vspace{3ex} 
+} 
+\end_preamble
+\options ,procnames
+\use_default_options true
+\language english
+\inputencoding auto
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_default_family default
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+
+\graphics default
+\float_placement H
+\paperfontsize 12
+\spacing single
+\use_hyperref true
+\pdf_title "HOLA"
+\pdf_bookmarks true
+\pdf_bookmarksnumbered false
+\pdf_bookmarksopen false
+\pdf_bookmarksopenlevel 1
+\pdf_breaklinks false
+\pdf_pdfborder true
+\pdf_colorlinks true
+\pdf_backref false
+\pdf_pdfusetitle true
+\pdf_quoted_options "bookmarksopen, bookmarksopenlevel=1,  linkcolor=blue, citecolor=red, urlcolor=blue, filecolor=blue, pdfnewwindow=true, pdfstartview=XYZ,  pdfpagelabels,"
+\papersize default
+\use_geometry true
+\use_amsmath 1
+\use_esint 1
+\cite_engine basic
+\use_bibtopic false
+\paperorientation portrait
+\leftmargin 3cm
+\topmargin 3cm
+\rightmargin 2cm
+\bottommargin 2cm
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\defskip medskip
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle fancy
+\tracking_changes false
+\output_changes false
+\author "" 
+\author "" 
+\end_header
+
+\begin_body
+
+\begin_layout Title
+An introduction to the python Environment for Tree Exploration (ETE)
+\end_layout
+
+\begin_layout Author
+by Jaime Huerta-Cepas
+\end_layout
+
+\begin_layout Quote
+
+\series bold
+About ETE
+\end_layout
+
+\begin_layout Quote
+ETE is a python programming toolkit that assists in the automated manipulation,
+ analysis and visualization of hierarchical trees.
+ Besides a broad set of tree handling options, ETE’s current version provides
+ specific methods to analyze phylogenetic and clustering trees.
+ It also supports large tree data structures, node annotation, independent
+ editing and analysis of tree partitions, and the association of trees with
+ external data such as multiple sequence alignments or numerical matrices.
+\end_layout
+
+\begin_layout Quote
+ETE is currently developed at the 
+\begin_inset CommandInset href
+LatexCommand href
+name "comparative genomics group"
+target "http://www.crg.es/comparative_genomics"
+
+\end_inset
+
+ in the 
+\begin_inset CommandInset href
+LatexCommand href
+name "Centre for Genomic Regulation (CRG)"
+target "http://www.crg.es"
+
+\end_inset
+
+.
+ Barcelona, Spain.
+ 
+\end_layout
+
+\begin_layout Quote
+You can cite ETE as:
+\end_layout
+
+\begin_layout Quote
+Jaime Huerta-Cepas, Joaquín Dopazo and Toni Gabaldón.
+ 
+\series bold
+ETE: A python Environment for Tree Exploration
+\series default
+.
+ (2009, unpublished) 
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+(check 
+\begin_inset CommandInset href
+LatexCommand href
+target "http://etetoolkit.org"
+
+\end_inset
+
+ for updates)
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Quote
+
+\series bold
+About this tutorial
+\end_layout
+
+\begin_layout Quote
+This document compiles a set of guided examples about general ETE usage.
+ It does not aim to cover exhaustively all available ETE's methods and parameter
+s, but to illustrate most important aspects of each module.
+ A comprehensive reference guide for programmers can also be found at 
+\begin_inset CommandInset href
+LatexCommand href
+target "http://etetoolkit.org/"
+
+\end_inset
+
+.
+ In addition, examples used in this tutorial and documentation updates can
+ be downloaded from the same web site.
+ 
+\end_layout
+
+\begin_layout Chapter
+Working With Tree Data Structures
+\end_layout
+
+\begin_layout Standard
+According to the wikipedia (www.wikipedia.org, 2009), trees are a widely-used
+ type of data structure that emulates a tree design with a set of linked
+ nodes.
+ Formally, a tree is considered an acyclic and connected graph.
+ Each node in a tree has zero or more child nodes, which are below it in
+ the tree (by convention, trees grow down, not up as they do in nature).
+ A node that has a child is called the child's parent node (or ancestor
+ node, or superior).
+ A node has at most one parent.
+\end_layout
+
+\begin_layout Standard
+The height of a node is the length of the longest downward path to a leaf
+ from that node.
+ The height of the root is the height of the tree.
+ The depth of a node is the length of the path to its root (i.e., its root
+ path).
+\end_layout
+
+\begin_layout Itemize
+The topmost node in a tree is called the root node.
+ Being the topmost node, the root node will not have parents.
+ It is the node at which operations on the tree commonly begin (although
+ some algorithms begin with the leaf nodes and work up ending at the root).
+ All other nodes can be reached from it by following edges or links.
+ Every node in a tree can be seen as the root node of the subtree rooted
+ at that node.
+\end_layout
+
+\begin_layout Itemize
+Nodes at the bottommost level of the tree are called leaf nodes.
+ Since they are at the bottommost level, they do not have any children.
+\end_layout
+
+\begin_layout Itemize
+An internal node or inner node is any node of a tree that has child nodes
+ and is thus not a leaf node.
+\end_layout
+
+\begin_layout Itemize
+A subtree is a portion of a tree data structure that can be viewed as a
+ complete tree in itself.
+ Any node in a tree T, together with all the nodes below it, comprise a
+ subtree of T.
+ The subtree corresponding to the root node is the entire tree; the subtree
+ corresponding to any other node is called a proper subtree (in analogy
+ to the term proper subset).
+\end_layout
+
+\begin_layout Standard
+In bioinformatics, trees are the result of many analyses, such as phylogenetics
+ or clustering.
+ Although each case entails specific considerations, many properties remains
+ constant among them.
+ The Environment for Tree Exploration is a python toolkit that assists in
+ the automated manipulation, analysis and visualization of hierarchical
+ trees.
+ Besides general tree handling options, ETE’s current version provides specific
+ methods to analyze phylogenetic and clustering trees.
+ Moreover a programmable tree drawing engine is implemented that can be
+ used to automatize the graphical rendering of trees with customized node-specif
+ic visualizations.
+ 
+\end_layout
+
+\begin_layout Section
+Understanding Tree Topology
+\end_layout
+
+\begin_layout Standard
+A tree is a succession of TreeNodes connected in a hierarchical way.
+ Therefore, the topology of a tree is defined by the connections of its
+ nodes.
+ Each node instance has two basic attributes: 
+\series bold
+node.up
+\series default
+ and 
+\series bold
+node.children
+\series default
+.
+ Up is a pointer to the parent's node, while children is the list of nodes
+ hanging for the current node instance.
+ Although it is possible to modify the structure of a tree by changing these
+ attributes, we strongly recommend not to do it.
+ Several methods are provided to manipulate each node's connections in a
+ safe way (see 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:Modifying-Tree-Topology"
+
+\end_inset
+
+).
+ Other three attributes are always present in a tree node instance: i) 
+\series bold
+node.support
+\series default
+, which stores the branch support of the partition defined by a given node
+ (i.e.
+ bootstrap value) ii) 
+\series bold
+node.dist
+\series default
+, which stores the branch length/distance from a given node to its parent
+ iii) and 
+\series bold
+node.name
+\series default
+, which stores the node's name.
+ Thus, a tree is internally encoded as a succession of node instances connected
+ in a hierarchical way.
+ Given that all nodes in a tree are the same type, any node of the tree
+ contains the same basic methods and attributes.
+ 
+\end_layout
+
+\begin_layout Standard
+When a tree is loaded, a pointer to the top-most node is returned.
+ This is called the tree root, and it exists even if the tree is considered
+ as theoretically unrooted.
+ The root node can be considered as the master tree node, since it represents
+ the whole tree structure.
+ Internal an terminal nodes (all hanging from the master node) represent
+ different partitions of the tree, and therefore can be used to access or
+ manipulate all the possible sub-trees within a general tree structure.
+ Thus, once a tree is loaded, it can be split in different subparts that
+ will function as independent trees instances.
+ 
+\end_layout
+
+\begin_layout Standard
+In order to evaluate the basic attributes of a node, you can use the following
+ methods:
+\series bold
+ tree.is_leaf(), 
+\series default
+returns True if node has no children; 
+\series bold
+tree.is_root()
+\series default
+, returns True if node has no parent; 
+\series bold
+len(node)
+\series default
+, returns the number of terminal nodes (leaves) under a given internal node;
+ and 
+\series bold
+len(node.children)
+\series default
+, returns the number of node's children.
+ Additionally tree node instances can be queried or iterated as normal built-in
+ python objects.
+ For example, the following operations are allowed i)
+\series bold
+ [for leaf in node if leaf.dist>0.5]
+\series default
+ ii)
+\series bold
+ if leaf in node: print 
+\begin_inset Quotes eld
+\end_inset
+
+true
+\begin_inset Quotes erd
+\end_inset
+
+ 
+\series default
+iii)
+\series bold
+ print tree
+\series default
+.
+ The following example illustrates some basic things we can do with trees:
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\begin_inset External
+	template PythonScripts
+	filename examples/tree_basis.py
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Reading and Writing Newick Trees
+\end_layout
+
+\begin_layout Standard
+The Newick format is the standard representation of trees in computer science.
+ It uses nested parentheses to represent hierarchical data structures as
+ text strings.
+ The original newick standard is able to encode information about the tree
+ topology, branch distances and node names.
+ However different variants of this format are used by different programs.
+ ETE supports many of these formats both for reading and writing operations.
+ Currently, this is the list of supported newick formats:
+\end_layout
+
+\begin_layout LyX-Code
+\align center
+\begin_inset Float table
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="12" columns="3">
+<features booktabs="true">
+<column alignment="left" valignment="top" width="0">
+<column alignment="left" valignment="top" width="0">
+<column alignment="left" valignment="top" width="0">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size small
+Example
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size small
+Description
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size small
+Format
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(,(,(,)));
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+topology only
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+100 (strict)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(A,(B,(D,G)));
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+leaf names
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+9 (strict)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(A,(B,(D,G)E)C);
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+all names
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+8 (strict)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(A:0.35,(B:0.72,(D:0.60,G:0.12)E)C);
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+all names, leaf distances
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+7 (strict)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(A,(B,(D,G):0.64):0.56);
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+leaf names, node distances
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+6 (strict)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(A:0.35,(B:0.72,(D:0.60,G:0.12):0.64):0.56);
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+leaf names, all distances
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+5 (strict)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(A:0.35,(B:0.72,(D:0.60,G:0.12)));
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+leaf names, leaf distances
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+4 (strict)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(A:0.35,(B:0.72,(D:0.60,G:0.12)E:0.64)C:0.56);
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+leaf names, all distances
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+3 (strict)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(A:0.35,(B:0.72,(D:0.60,G:0.12)1.0:0.64)1.0:0.56);
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+leaf names, all distances, branch support
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+2 (strict)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(A:0.35,(B:0.72,(D:0.60,G:0.12)E:0.64)C:0.56);
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+all names, all distances
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+1 (flexible)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(A:0.35,(B:0.72,(D:0.60,G:0.12)1.0:0.64)1.0:0.56);
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+leaf names, all distances, branch support
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+0 (flexible) 
+\series bold
+(default)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+List of supported newick formats.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Formats labeled as
+\series bold
+ flexible 
+\series default
+allow missing information.
+ For instance, format 0 will be able to load a newick tree even if they
+ not contain branch support information (it will be initialized with the
+ default value), however, format 2 will rise a parsing error.
+ If you want to control that your newick files strictly follow a given pattern
+ you should use 
+\series bold
+strict
+\series default
+ format definitions.
+ 
+\end_layout
+
+\begin_layout Subsection*
+Reading newick trees
+\end_layout
+
+\begin_layout Standard
+In order to load a tree from a newick text string you can use the constructor
+ 
+\series bold
+Tree()
+\series default
+,
+\series bold
+ 
+\series default
+provided by the main module 
+\series bold
+ete2
+\series default
+.
+ You only need to pass a text string containing the newick structure and
+ the format that should be used to parse it (0 by default).
+ Alternatively, you can pass the path to a text file containing the newick
+ string.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\begin_inset External
+	template PythonScripts
+	filename examples/read_newick.py
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection*
+Writing newick trees
+\end_layout
+
+\begin_layout Standard
+Any ETE tree can be exported to the newick standard.
+ To do it, you must call the method 
+\series bold
+write(),
+\series default
+ present in any Tree node instance, and choose the preferred format (0 by
+ default).
+ This method will return the text string representing a given tree.
+ You can also specify an output file.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\begin_inset External
+	template PythonScripts
+	filename examples/write_newick.py
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Some Basis on ETE's trees
+\end_layout
+
+\begin_layout Standard
+Once loaded into the Environment for Tree Exploration, trees can be manipulated
+ as normal python objects.
+ Given that a tree is actually a collection of nodes connected in a hierarchical
+ way, what you usually see as a tree will be the root node instance from
+ which the tree structure is hanging.
+ However, every node within a ETE's tree structure can be also considered
+ a subtree.
+ This means, for example, that all the operational methods that we will
+ review in the following sections are available at any possible level within
+ a tree.
+ Moreover, this feature will allow you to separate large trees into smaller
+ partitions, or concatenate several trees into a single structure.
+ 
+\end_layout
+
+\begin_layout Section
+Browsing trees
+\end_layout
+
+\begin_layout Standard
+One of the most basic operations related with tree analysis is tree browsing,
+ which is, essentially, the task of visiting nodes within a tree.
+ In order to facilitate this, ETE provides a number of methods to search
+ for specific nodes or to navigate over the hierarchical structure of a
+ tree.
+ 
+\end_layout
+
+\begin_layout Subsection
+Getting leaves, Descendants and Node's Relatives
+\end_layout
+
+\begin_layout Standard
+The list of internal or leaf nodes within a given partition can be obtained
+ by using the 
+\series bold
+get_leaves()
+\series default
+ and 
+\series bold
+get_descendants()
+\series default
+ methods.
+ The former will return the list of terminal nodes (leaves) under a given
+ internal node, while 
+\series bold
+get_descendants()
+\series default
+ will return the list of all nodes (terminal and internal) under a given
+ tree node.
+ You can iterate over the returned list of nodes or filter those meeting
+ certain properties.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\begin_inset External
+	template PythonScripts
+	filename examples/getting_leaves.py
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In addition, other methods are available to find nodes according to their
+ hierarchical relationships, namely: 
+\series bold
+get_sisters() 
+\series default
+,
+\series bold
+ get_children() 
+\series default
+and 
+\series bold
+get_common_ancestor()
+\series default
+.
+ Note that get_children returns an independent list of children rather than
+ the 
+\series bold
+node.children
+\series default
+ attribute.
+ This allows you to operate with such list without affecting the integrity
+ of the tree.
+ The 
+\series bold
+get_common_ancestor()
+\series default
+ method is specially useful for finding internal nodes, since it allows
+ to search for the first internal node that connects several leaf nodes.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\begin_inset External
+	template PythonScripts
+	filename examples/get_common_ancestor.py
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Traversing (browsing) trees
+\end_layout
+
+\begin_layout Standard
+Often, when processing trees, all nodes need to be visited.
+ This is called tree traversing.
+ There are different ways to traverse a tree structure depending on the
+ order in which children nodes are visited.
+ ETE implements the two most common strategies: 
+\series bold
+pre- 
+\series default
+and
+\series bold
+ post-order
+\series default
+.
+ The following scheme shows the differences in the strategy for visiting
+ nodes (note that in both cases the whole tree is browsed):
+\end_layout
+
+\begin_layout Itemize
+preorder
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Visit the root.
+\end_layout
+
+\begin_layout Itemize
+Traverse the left subtree.
+\end_layout
+
+\begin_layout Itemize
+Traverse the right subtree.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+postorder
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Traverse the left subtree.
+\end_layout
+
+\begin_layout Itemize
+Traverse the right subtree.
+\end_layout
+
+\begin_layout Itemize
+Visit the root.
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+Every node in a tree includes a 
+\series bold
+traverse() 
+\series default
+method, which can be used to visit, one by one, every node node under the
+ current partition.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\begin_inset External
+	template PythonScripts
+	filename examples/tree_traverse.py
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Additionally, you can implement your own traversing function using the structura
+l attributes of nodes.
+ In the following example, only nodes between a given leaf and the tree
+ root are visited.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\begin_inset External
+	template PythonScripts
+	filename examples/custom_tree_traversing.py
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Finding Nodes by Their Attributes
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:Finding-Nodes-by"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Both terminal and internal nodes can be located by searching along the tree
+ structure.
+ You can find, for instance, all nodes matching a given name.
+ The 
+\series bold
+search_nodes()
+\series default
+ method is the most direct way to find specific nodes.
+ Given that every node has its own 
+\series bold
+search_nodes
+\series default
+ method, you can start your search from different points of the tree.
+ Any node's attribute can be used as a filter to find nodes.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\begin_inset External
+	template PythonScripts
+	filename examples/search_nodes.py
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+A limitation of this method is that you cannot use complex conditional statement
+s to find specific nodes.
+ However you can user traversing methods to meet your custom filters.
+ A possible general strategy would look like this:
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\begin_inset External
+	template PythonScripts
+	filename examples/custom_search.py
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Finally, ETE implements a built-in method to find the 
+\series bold
+first node matching a given name
+\series default
+, which is one of the most common tasks needed for tree analysis.
+ This can be done through the operator 
+\series bold
+&
+\series default
+ (AND).
+ Thus, 
+\series bold
+MyTree&
+\begin_inset Quotes erd
+\end_inset
+
+A
+\begin_inset Quotes erd
+\end_inset
+
+ 
+\series default
+will always return the first node whose name is 
+\begin_inset Quotes eld
+\end_inset
+
+A
+\begin_inset Quotes erd
+\end_inset
+
+ and that is under the tree 
+\begin_inset Quotes eld
+\end_inset
+
+MyTree
+\begin_inset Quotes erd
+\end_inset
+
+.
+ The syntaxis may seem confusing, but it can be very useful in some situations.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\begin_inset External
+	template PythonScripts
+	filename examples/byoperand_search.py
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Iterating instead of Getting
+\end_layout
+
+\begin_layout Standard
+Methods starting with 
+\series bold
+“get_”
+\series default
+ are all prepared to return results as a closed list of items.
+ This means, for instance, that if you want to process all tree leaves and
+ you ask for them using the 
+\series bold
+get_leaves()
+\series default
+ method, the whole tree structure will be browsed before returning the final
+ list of terminal nodes.
+ This is not a problem in most of the cases, but in large trees, you can
+ speed up the browsing process by using iterators.
+\end_layout
+
+\begin_layout Standard
+Most 
+\series bold
+“get_”-like
+\series default
+ methods have their homologous iterator function.
+ Thus, 
+\series bold
+get_leaves()
+\series default
+ can sometimes be substituted by 
+\series bold
+iter_leaves()
+\series default
+.
+ The same occurs with 
+\series bold
+iter_descendants()
+\series default
+ and 
+\series bold
+iter_search_nodes().
+\end_layout
+
+\begin_layout Standard
+When iterators are used (note that is only applicable for looping), only
+ one step is processed at a time.
+ For example, 
+\series bold
+iter_search_nodes()
+\series default
+ will return one match in each iteration.
+ In practice, this makes no differences in the final result, but it may
+ increase the performance of loop functions (i.e.
+ in case of finding a match which interrupts the loop).
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\begin_inset External
+	template PythonScripts
+	filename examples/iterators.py
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Extending Node's Features 
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Extending-Node's-Features"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Although newick standard was only thought to contain branch lengths and
+ node names information, the truth is that many other features are usually
+ required to be linked to the different tree nodes.
+ ETE allows to associated any kind of extra information to the tree nodes.
+ Extra information can be regarded as a single numeric value, a text label
+ or even as a reference to a more complex python structure (i.e.
+ lists, dictionaries or any other python object).
+ Thus, for example, with ETE it is possible to have fully annotated trees.
+ The methods 
+\series bold
+add feature()
+\series default
+,
+\series bold
+ add_features()
+\series default
+ and
+\series bold
+ del_feature()
+\series default
+ are prepared to handle the task of adding and deleting information to a
+ given node.
+ 
+\end_layout
+
+\begin_layout Standard
+Once extra features are added, you can access their values at any time during
+ the analysis of a tree.
+ To do so, you only need to access to the 
+\series bold
+node.featurename
+\series default
+ attributes.
+ Let's see this with some examples:
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\begin_inset External
+	template PythonScripts
+	filename examples/add_features.py
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Unfortunately, newick format does not support adding extra features to a
+ tree.
+ Because of this drawback, several improved formats haven been (or are being)
+ developed to read and write tree based information.
+ Some of these new formats are based in a completely new standard (PhyloXML,
+ NeXML), while others are extensions of the original newick formar (NHX
+ 
+\begin_inset CommandInset href
+LatexCommand href
+target "http://phylosoft.org/NHX/"
+
+\end_inset
+
+).
+ Currently, ETE includes support for the New Hampshire eXtended format (NHX),
+ which uses the original newick standard and adds the possibility of saving
+ additional date related to each tree node.
+ Here is an example of a extended newick representation in which extra informati
+on is added to an internal node: 
+\end_layout
+
+\begin_layout LyX-Code
+
+\size small
+(A:0.35,(B:0.72,(D:0.60,G:0.12):0.64[&&NHX:conf=0.01:name=INTERNAL]):0.56);
+\end_layout
+
+\begin_layout Standard
+As you can notice, extra node features in the NHX format are enclosed between
+ brackets.
+ ETE is able to read and write features using such format, however, the
+ encoded information is expected to be text-formattable.
+ In the future, support for more advanced formats such as PhyloXML will
+ be included.
+ 
+\end_layout
+
+\begin_layout Standard
+The NHX format is automatically detected when reading a newick file, and
+ the detected node features are added using the 
+\begin_inset Quotes eld
+\end_inset
+
+
+\series bold
+add_feature()
+\series default
+
+\begin_inset Quotes erd
+\end_inset
+
+ method.
+ Consequently, you can access the information by using the normal ETE's
+ feature notation: 
+\series bold
+node.featurename
+\series default
+.
+ Similarly, features added to a tree can be included within the normal newick
+ representation using the NHX notation.
+ For this, you can call the 
+\series bold
+write() 
+\series default
+method using the 
+\series bold
+features 
+\series default
+argument, which is expected to be a list with the features names that you
+ want to include in the newick string.
+ Note that all nodes containing the suplied features will be exposed into
+ the newick string.
+ Use an empty features list (
+\series bold
+features=[ ]
+\series default
+) to include all node's data into the newick string.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\begin_inset External
+	template PythonScripts
+	filename examples/nhx_format.py
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Modifying Tree Topology
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Modifying-Tree-Topology"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Creating Trees from Scratch
+\end_layout
+
+\begin_layout Standard
+If no arguments are passed to the 
+\series bold
+Tree
+\series default
+ class constructor, an empty tree node will be returned.
+ Then, you can use such an orphan node to populate a tree from scratch.
+ For this, you should never manipulate the 
+\series bold
+up
+\series default
+, and
+\series bold
+ children 
+\series default
+attributes of a node (unless it is strictly necessary).
+ Instead, you must use the methods created to this end.
+ 
+\series bold
+add_child()
+\series default
+, 
+\series bold
+add_sister()
+\series default
+, and 
+\series bold
+populate()
+\series default
+ are the most common methods to create a tree structure.
+ While the two first adds one node at a time, populate() is able to create
+ a custom number of random nodes.
+ This is useful to quickly create random trees.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\begin_inset External
+	template PythonScripts
+	filename examples/create_trees_from_scratch.py
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Deleting (eliminating) and Removing (detaching) nodes
+\end_layout
+
+\begin_layout Standard
+As currently implemented, there is a difference between removing or deleting
+ a node.
+ The former (removing) detaches a node's partition from the tree structure,
+ so all its descendants are also disconnected from the tree.
+ There are two methods to perform this action: 
+\series bold
+node.remove_child(ch)
+\series default
+ and 
+\series bold
+child.detach()
+\series default
+.
+ In contrast, deleting a node means eliminating such node without affecting
+ its descendants.
+ Children from the deleted node are automatically connected to the next
+ possible parent.
+ This is better understood with the following example:
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\begin_inset External
+	template PythonScripts
+	filename examples/remove_and_delete_nodes.py
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Pruning trees
+\end_layout
+
+\begin_layout Standard
+Pruning a tree means to obtain the topology that connects a certain group
+ of items by removing the unnecessary edges.
+ To facilitate this task, ETE implements the 
+\series bold
+prune()
+\series default
+ method, which can be used in two different ways: by providing the list
+ of terminal nodes that must be kept in the tree; or by providing a list
+ of nodes that must be removed.
+ In any case, the result is a pruned tree containing the topology that connects
+ a custom set of nodes.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\begin_inset External
+	template PythonScripts
+	filename examples/prune_tree.py
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Concatenating trees
+\end_layout
+
+\begin_layout Standard
+Given that all tree nodes share the same basic properties, they can be connected
+ freely.
+ In fact, any node can add a whole subtree as a child, so we can actually
+ 
+\shape italic
+\size small
+cut & paste
+\shape default
+\size default
+ partitions.
+ To do so, you only need to call the 
+\series bold
+add_child() 
+\series default
+method using another tree node as a first argument.
+ If such a node is the root node of a different tree, you will concatenate
+ two structures.
+ But caution!!, this kind of operations may result into circular tree structures
+ if add an node's ancestor as a new node's child.
+ Some basic checks are internally performed by the ETE topology related
+ methods, however, a fully qualified check of this issue would affect seriously
+ to the performance of the program.
+ For this reason, users should take care about not creating circular structures
+ by mistake.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\begin_inset External
+	template PythonScripts
+	filename examples/copy_and_paste_trees.py
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Tree Rooting
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Tree-Rooting"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Tree rooting is understood as the technique by with a given tree is conceptually
+ polarized from more basal to more terminal nodes.
+ In phylogenetics, for instance, this a crucial step prior to the interpretation
+ of trees, since it will determine the evolutionary relationships among
+ the species involved.
+ The concept of rooted trees is different than just having a root node,
+ which is always necessary to handle a tree data structure.
+ Usually, the way in which a tree is differentiated between rooted and unrooted,
+ is by counting the number of branches of the current root node.
+ Thus, if the root node has more than two child branches, the tree is considered
+ unrooted.
+ By contrast, when only two main branches exist under the root node, the
+ tree is considered rooted.
+ Having an unrooted tree means that any internal branch within the tree
+ could be regarded as the root node, and there is no conceptual reason to
+ place the root node where it is placed at the moment.
+ Therefore, in an unrooted tree, there is no information about which internal
+ nodes are more basal than others.
+ By setting the root node between a given edge/branch of the tree structure
+ the tree is polarized, meaning that the two branches under the root node
+ are the most basal nodes.
+ In practice, this is usually done by setting an 
+\series bold
+outgroup
+\series default
+ 
+\series bold
+node
+\series default
+, which would represent one of these main root branches.
+ The second one will be, obviously, the brother node.
+ When you set an outgroup on unrooted trees, the multifurcations at the
+ current root node are solved.
+ 
+\end_layout
+
+\begin_layout Standard
+In order to root an unrooted tree or re-root a tree structure, ETE implements
+ the 
+\series bold
+set_outgroup()
+\series default
+ method, which is present in any tree node instance.
+ Similarly, the 
+\series bold
+unroot()
+\series default
+ method can be used to perform the opposite action.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\begin_inset External
+	template PythonScripts
+	filename examples/rooting_trees.py
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Note that although 
+\series bold
+rooting
+\series default
+ is usually regarded as a whole-tree operation, ETE allows to root subparts
+ of the tree without affecting to its parent tree structure.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\begin_inset External
+	template PythonScripts
+	filename examples/rooting_subtrees.py
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Working with branch distances
+\end_layout
+
+\begin_layout Standard
+The branch length between one node an its parent is encoded as the 
+\series bold
+node.dist
+\series default
+ attribute.
+ Together with tree topology, branch lengths define the relationships among
+ nodes.
+ 
+\end_layout
+
+\begin_layout Subsection
+Getting distances between nodes
+\end_layout
+
+\begin_layout Standard
+The 
+\series bold
+get_distance()
+\series default
+ method can be used to calculate the distance between two connected nodes.
+ There are two ways of using this method: a) by querying the distance between
+ two descendant nodes (two nodes are passed as arguments) b) by querying
+ the distance between the current node and any other relative node (parental
+ or descendant).
+\end_layout
+
+\begin_layout Standard
+Additionally to this, ETE incorporates two more methods to calculate the
+ most distant node from a given point in a tree.
+ You can use the 
+\series bold
+get_farthest_node()
+\series default
+ method to retrieve the most distant point from a node within the whole
+ tree structure.
+ Alternatively, 
+\series bold
+get_farthest_leaf()
+\series default
+ will return the most distant descendant (always a leaf).
+ If more than one node matches the farthest distance, the first occurrence
+ is returned.
+\end_layout
+
+\begin_layout Standard
+Distance between nodes can also be computed as the number of nodes between
+ them (considering all branch lengths equal to 1.0).
+ To do so, the 
+\series bold
+topology_only
+\series default
+ argument must be set to 
+\series bold
+True 
+\series default
+for all the above mentioned methods.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\begin_inset External
+	template PythonScripts
+	filename examples/get_distances_between_nodes.py
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+getting midpoint outgroup 
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:getting-midpoint-outgroup"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In order to obtain a balanced rooting of the tree, you can set as the tree
+ outgroup that partition which splits the tree in two equally distant clusters
+ (using branch lengths).
+ This is called the midpoint outgroup.
+\end_layout
+
+\begin_layout Standard
+The 
+\series bold
+get_midpoint_outgroup()
+\series default
+ method will return the outgroup partition that splits current node into
+ two balanced branches in terms of node distances.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\begin_inset External
+	template PythonScripts
+	filename examples/get_midpoint_outgroup.py
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Chapter
+The Programmable Tree Drawing Engine
+\begin_inset CommandInset label
+LatexCommand label
+name "cha:The-Programmable-Tree"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+ETE's treeview extension provides a highly programmable drawing system to
+ render any hierarchical tree structure into a custom image.
+ Although a number or predefined visualization layouts are included with
+ the default installation, custom styles can be easily created from scratch.
+ To do so, ETE makes use of there main concepts (node
+\series bold
+ styles
+\series default
+, node
+\series bold
+ faces
+\series default
+ and 
+\series bold
+layout
+\series default
+ functions), which allow the user to define the rules in which trees are
+ rendered.
+ Briefly, a node
+\series bold
+ style
+\series default
+ defines the general aspect of a given tree node (size, color, background,
+ line type, etc.).
+ Node 
+\series bold
+faces
+\series default
+ are small graphical pieces (representing, for instance, any node's extra
+ information) that are added to nodes and that drawn at the same node position.
+ Finally, 
+\series bold
+layouts functions
+\series default
+ are custom python functions that define the rules on how faces and styles
+ are added to nodes when they are going to be drawn.
+ By combining this elements, the aspect of trees can be controlled by custom
+ criteria.
+\end_layout
+
+\begin_layout Standard
+Treeview extension provides an interactive Graphical User Interface (GUI)
+ to visualize trees using custom layouts.
+ Alternatively, images can be directly rendered as PNG or PDF files.
+ Every node within a given tree structure has its own 
+\series bold
+show() 
+\series default
+and
+\series bold
+ render()
+\series default
+ methods, thus allowing to visualize or render its subtree structure.
+ 
+\end_layout
+
+\begin_layout Section
+Interactive visualization of trees
+\end_layout
+
+\begin_layout Standard
+ETE's tree drawing engine is fully integrated with a built-in graphical
+ user interface (GUI).
+ Thus, ETE allows to render tree structures directly on an interactive interface
+ that can be used to explore and manipulate trees node's properties and
+ topology.
+ The GUI is based on Qt4 , a cross platform and open source application
+ and UI framework which allows to handle, virtually, images of any size.
+ Of course, this will depend on you computer and graphical card performance.
+\end_layout
+
+\begin_layout Standard
+To start the visualization of a given tree or subtree, you can simply call
+ the 
+\series bold
+show() 
+\series default
+method present in every node:
+\end_layout
+
+\begin_layout LyX-Code
+from ete2 import Tree
+\end_layout
+
+\begin_layout LyX-Code
+t = Tree(
+\begin_inset Quotes eld
+\end_inset
+
+ ((A,B),C); 
+\begin_inset Quotes erd
+\end_inset
+
+)
+\end_layout
+
+\begin_layout LyX-Code
+t.show()
+\end_layout
+
+\begin_layout LyX-Code
+ancestor = t.get_common_ancestor(
+\begin_inset Quotes eld
+\end_inset
+
+A
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+B
+\begin_inset Quotes erd
+\end_inset
+
+)
+\end_layout
+
+\begin_layout LyX-Code
+ancestor.show()
+\end_layout
+
+\begin_layout Standard
+One of the advantages of this on-line GUI visualization is that you can
+ use it to interrupt a given program/analysis, explore trees, manipulate
+ them, and continuing with the execution thread.
+ Note that 
+\series bold
+changes made using the GUI will be kept in the tree structure after quiting
+ the visualization interface 
+\series default
+(Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:GUI tree manipulation"
+
+\end_inset
+
+).
+ This feature is specially useful for using during python sessions, in which
+ analyses are performed interactively.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename ipython_example.png
+	lyxscale 50
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Interactive manipulation of a tree using the GUI 
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:GUI tree manipulation"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The GUI allow many operations to be performed graphically, however it does
+ not implement all the possibilities of the programming toolkit.
+ These are some of the allowed GUI options: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename gui.png
+	lyxscale 50
+	scale 80
+	noUnzip
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+
+\series bold
+ETE's GUI screenshot showing some of its options.
+
+\series default
+ 
+\series bold
+A)
+\series default
+ Look up and change node's features.
+
+\series bold
+ B)
+\series default
+ Manipulate tree topology (add/remove nodes, populate partitions, cut and
+ paste nodes).
+ Browse tree topology (expand and collapse partitions).
+ 
+\series bold
+C)
+\series default
+ Extract newick representation of any sub part of the tree.
+
+\series bold
+ D) 
+\series default
+Zoom in/out of node tree regions.
+ 
+\series bold
+E)
+\series default
+ Advanced search dialog.
+ Allows to find nodes meeting custom criteria.
+
+\series bold
+ F) 
+\series default
+Show branch lengths, support values and force strict tree topology
+\series bold
+.
+ G) 
+\series default
+Export image as PDF.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Render trees into image files
+\end_layout
+
+\begin_layout Standard
+Alternatively, images can be directly written info a file.
+ PNG and PDF formats are supported.
+ While PNG will store only a normal image, PDF will keep vector graphics
+ format, thus allowing to better edit or resize images using the proper
+ programs (Such as inkscape in GNU/linux).
+\end_layout
+
+\begin_layout Standard
+To generate an image, the 
+\series bold
+render()
+\series default
+ method should be used instead of 
+\series bold
+show()
+\series default
+.
+ The only required argument is the file name, which will determine the final
+ format of the file (.pdf or .png).
+ By default, the resulting image is scaled to 7 inches, approximately the
+ width of an A4 paper.
+ However, you can change this by setting a custom width and height.
+ If only one of this values is provided, the other is imputed to keep the
+ original aspect ratio.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\begin_inset External
+	template PythonScripts
+	filename examples/render_tree_images.py
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Customizing tree aspect
+\end_layout
+
+\begin_layout Standard
+There are three basic elements that control the general aspect of trees:
+ 
+\series bold
+node's style
+\series default
+, 
+\series bold
+node's faces
+\series default
+ and 
+\series bold
+layouts functions
+\series default
+.
+ In brief, layout functions can be used to set the rules that control the
+ way in which certain nodes are drawn (setting its style and adding specific
+ faces).
+ 
+\end_layout
+
+\begin_layout Subsection
+styles
+\end_layout
+
+\begin_layout Standard
+A '
+\series bold
+style
+\series default
+' is a set of special node attributes that are used by the drawing algorithm
+ to set the colours, and general aspect of nodes and branches.
+ Styles are internally encoded as python dictionaries.
+ Each node has its own style dictionary, which is accessible as 
+\series bold
+node.img_style
+\series default
+.
+ A default style is associated to every tree node, but you can modify them
+ at any time.
+ Note that 
+\series bold
+nodes styles must only be modified inside a layout function
+\series default
+.
+ Otherwise, custom settings may be missing or overwritten by default values.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="8" columns="3">
+<features booktabs="true">
+<column alignment="left" valignment="top" width="0">
+<column alignment="left" valignment="top" width="0">
+<column alignment="left" valignment="top" width="0">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\size scriptsize
+Style attribute
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\size scriptsize
+Description
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\size scriptsize
+Valid value
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+node.img_style[“bgcolor”]
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+Color (in RGB format) used to draw the background of node's partition 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+i.e.: ”#FFFFFF”
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+node.img_style[“fgcolor”]
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+ Color (in RGB format) used to draw the node
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+i.e.: ”#FFAA55”
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+node.img_style[“line_color”]
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+Color (in RGB format) used to draw the node's branch
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+i.e.: ”#000000”
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+node.img_style[“line_type”]
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+Line style used to draw node's brach.
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+0=Solid, 1=Dashed 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+node.img_style[“shape”]
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+Shape used to draw the node.
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+“square”, 
+\begin_inset Quotes eld
+\end_inset
+
+sphere
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+circle
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+node.img_style[“size”]
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+Node's size.
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+number>0 (i.e.: 10)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+node.img_style[“draw_descendants”]
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+Flag that controls whether node's descendants must be drawn or hidden.
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+ 1=Draw, 0=Hide
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Supported node's style values
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Faces
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+Node's faces
+\series default
+ are more sophisticated drawing features associated to nodes.
+ They represent independent images that can be linked to nodes, usually
+ representing a given node's feature.
+ Faces can be loaded 
+\series bold
+from external image files
+\series default
+, 
+\series bold
+created from scratch
+\series default
+ using any drawing library, 
+\series bold
+or generated as text labels
+\series default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+The complexity of faces may go from simple text tags to complete plots showing
+ the average expression pattern associated to a given partition in a microarray
+ clustering tree.
+ Given that faces can be loaded from external images and added 
+\shape italic
+on the fly
+\shape default
+, any way of producing external images could be easily connected to the
+ drawing engine.
+ For instance, the statistical framework R could be used to analyze a given
+ node's property, and to generate a plot that can be used as a node's face.
+ 
+\end_layout
+
+\begin_layout Standard
+To create a face, the following general constructors can be used, which
+ are 
+\series bold
+available through the face module
+\series default
+: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="3" columns="2">
+<features booktabs="true">
+<column alignment="left" valignment="top" width="0">
+<column alignment="left" valignment="top" width="0">
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\size scriptsize
+Create a face from an external image file
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+ImgFace(
+\begin_inset Quotes eld
+\end_inset
+
+path_to_image
+\begin_inset Quotes erd
+\end_inset
+
+)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\size scriptsize
+Create a face using a given text string
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+TextFace(
+\begin_inset Quotes eld
+\end_inset
+
+text
+\begin_inset Quotes erd
+\end_inset
+
+, [args] )
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\size scriptsize
+Create a text face based on a given node attribute
+\series default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+AttrFace(
+\begin_inset Quotes eld
+\end_inset
+
+attrName
+\begin_inset Quotes erd
+\end_inset
+
+, [args])
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Basic node's face constructors 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Once a face is created, it can be linked to one or more nodes.
+ To do so, you must use the 
+\series bold
+add_face_to_node() 
+\series default
+method within the
+\series bold
+ faces
+\series default
+ module.
+ By doing this, when a node is drawn, their linked faces will be drawn beside
+ it.
+ Since several faces can be added to the same node, you must specify the
+ relative position in which they will be placed.
+ Each node reserves a virtual space that controls how faces are positioned.
+ The position of each face is determined by an imaginary grid at the right
+ side of each node (Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:faces positions"
+
+\end_inset
+
+).
+ Each column from the grid is internally treated as a stack of faces.
+ Thus, faces can be added to any column and its row position will be determined
+ by insertion order: 
+\series bold
+first inserted is first row
+\series default
+.
+ In the case of trees leaves, nodes can handle an independent list of faces
+ that will be drawn aligned with the farthest leaf in the tree.
+ To add an aligned face you can use the 
+\series bold
+aligned=True 
+\series default
+argument
+\series bold
+ 
+\series default
+when calling the 
+\series bold
+add_face_to_node()
+\series default
+ method.
+ By knowing this rules, you can easily fill virtual node grids with any
+ external image or text label and the algorithm will take care of positioning.
+ Note that
+\series bold
+ add_face_to_node()
+\series default
+ must only be used inside a layout function.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename face_positions.png
+	lyxscale 50
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Scheme of node's faces positioning.
+ Green boxes represent non-aligned faces.
+ Red boxes are aligned faces (only applicable for terminal nodes)
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:faces positions"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+layouts
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+Layout functions
+\series default
+ are the key component of the tree drawing customization.
+ Any python function accepting a node instance as a first argument can be
+ used as a layout function.
+ Essentially, such function will be called just before drawing each tree
+ node, so you can use it perform any operation prior to render nodes.
+ In practice, layout functions are used to define the set of rules that
+ control nodes style attributes and the faces that will be linked to them.
+ Of course, such rules can be based on a previous node analysis.
+ For instance: 
+\family typewriter
+\size small
+if node has more than 5 descendants, then add a text label, set a different
+ background color, perform an analysis on leaves and associate an external
+ image
+\family default
+\size default
+ with node.
+ As you imagine, rules can be are as sophisticated as you want.
+ Thus, the advantage of this method is that you can create your own drawing
+ algorithms to render trees dynamically and fitting very specific needs.
+\end_layout
+
+\begin_layout Standard
+In order to apply your custom layouts functions, function's name (the reference
+ to it) can be passed to both 
+\series bold
+render()
+\series default
+ and 
+\series bold
+show()
+\series default
+ methods: 
+\family typewriter
+node.render(
+\begin_inset Quotes eld
+\end_inset
+
+filename.pdf
+\begin_inset Quotes erd
+\end_inset
+
+, layout=mypythonFn) 
+\family default
+\series bold
+or
+\family typewriter
+\series default
+ node.show(layout=mypythonFn)
+\family default
+.
+\end_layout
+
+\begin_layout Subsection
+Example: combining styles, faces and layouts
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\begin_inset External
+	template PythonScripts
+	filename examples/custom_tree_visualization.py
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename custom_layout_1.png
+	lyxscale 50
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Image resulting from previous example
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Chapter
+Phylogenetic Trees
+\end_layout
+
+\begin_layout Standard
+Phylogenetic trees are the result of most evolutionary analyses.
+ They represent the evolutionary relationships among a set of species or,
+ in molecular biology, a set of homologous sequences.
+\end_layout
+
+\begin_layout Standard
+The 
+\series bold
+PhyloTree
+\series default
+ class provides a proper way to deal with phylogenetic trees.
+ Thus, while leaves are assumed to represent species (or sequences from
+ a given species genome), internal nodes are considered the ancestral states
+ leading to current species.
+ A consequence of this is, for instance, that each bifurcation can be considered
+ as a speciation or a duplication event.
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+PhyloTree
+\series default
+ instances extend the 
+\series bold
+Tree
+\series default
+ class with several specific method that apply only for the analysis of
+ phylogenetic trees.
+ 
+\end_layout
+
+\begin_layout Section
+Linking Phylogenetic Trees and Multiple Sequence Alignments
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+PhyloTree
+\series default
+ instances allow molecular phylogenies to be linked to the Multiple Sequence
+ Alignments (MSA).
+ To associate a MSA with a phylogenetic tree you can use the 
+\series bold
+link_to_alignment()
+\series default
+ method present in any PhyloTree instance, which receives the path of an
+ MSA file as first argument or, alternatively, a text string containing
+ the MSA.
+ Currently, 
+\series bold
+the following sequence file formats are supported: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+
+\size footnotesize
+\begin_inset Tabular
+<lyxtabular version="3" rows="4" columns="2">
+<features booktabs="true">
+<column alignment="left" valignment="top" width="0">
+<column alignment="left" valignment="top" width="0">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\size footnotesize
+format name
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\size footnotesize
+alg_format key
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size footnotesize
+fasta
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size footnotesize
+fasta
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size footnotesize
+interleaved phylip
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size footnotesize
+iphylip
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size footnotesize
+sequential phylip
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size footnotesize
+phylip
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align left
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Supported Multi Sequence File formats
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+Fasta
+\series default
+ format is assumed by default, but you can change this by setting the 
+\series bold
+alg_format
+\series default
+ argument.
+ Given that such formats are not only applicable for MSA but also for 
+\series bold
+Unaligned Sequences
+\series default
+, you may also associate sequences of different lengths with tree nodes.
+ Alternatively to this method, MSAs can be directly passed to the PhyloTree
+ constructor and sequences will be automatically linked with terminal nodes:
+ i.e.) 
+\series bold
+PhyloTree(
+\begin_inset Quotes eld
+\end_inset
+
+mytreeFile
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+myAlginmentFile
+\begin_inset Quotes erd
+\end_inset
+
+, format=0, alg_format=
+\begin_inset Quotes erd
+\end_inset
+
+iphylip
+\begin_inset Quotes erd
+\end_inset
+
+) 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align left
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+tiny 
+\end_layout
+
+\end_inset
+
+
+\series bold
+Fasta format example:
+\series default
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\begin_layout Plain Layout
+
+>sequence_1
+\end_layout
+
+\begin_layout Plain Layout
+
+-----MKVIL LFVLAVFTVFFLEFQDKFNK KY-SHEEYLE
+\end_layout
+
+\begin_layout Plain Layout
+
+>sequence_2
+\end_layout
+
+\begin_layout Plain Layout
+
+MAHARVLLLA LAVLATAAVAFARFAVRYGK SYESAAEVRR
+\end_layout
+
+\begin_layout Plain Layout
+
+>sequence_3
+\end_layout
+
+\begin_layout Plain Layout
+
+------MWAT LPLLCAGAWLFKSWMSKHRK TY-STEEYHH
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align left
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+tiny 
+\end_layout
+
+\end_inset
+
+
+\series bold
+Interleaved phylip format example:
+\series default
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+tiny 
+\backslash
+begin{verbatim}
+\end_layout
+
+\begin_layout Plain Layout
+
+3 20
+\end_layout
+
+\begin_layout Plain Layout
+
+sequence_1   -----MKVIL LFVLAVFTVF
+\end_layout
+
+\begin_layout Plain Layout
+
+sequence_2   MAHARVLLLA LAVLATAAVA
+\end_layout
+
+\begin_layout Plain Layout
+
+sequence_3   ------MWAT LPLLCAGAWL
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+             FLEFQDKFNK KY-SHEEYLE
+\end_layout
+
+\begin_layout Plain Layout
+
+             FARFAVRYGK SYESAAEVRR
+\end_layout
+
+\begin_layout Plain Layout
+
+             FKSWMSKHRK TY-STEEYHH
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+tiny 
+\end_layout
+
+\end_inset
+
+
+\series bold
+Sequential phylip format example:
+\series default
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+tiny 
+\backslash
+begin{verbatim}
+\end_layout
+
+\begin_layout Plain Layout
+
+3 20
+\end_layout
+
+\begin_layout Plain Layout
+
+sequence_1   -----MKVIL LFVLAVFTVFFLEFQDKFNK KY-SHEEYLE
+\end_layout
+
+\begin_layout Plain Layout
+
+sequence_2   MAHARVLLLA LAVLATAAVAFARFAVRYGK SYESAAEVRR
+\end_layout
+
+\begin_layout Plain Layout
+
+sequence_3   ------MWAT LPLLCAGAWLFKSWMSKHRK TY-STEEYHH
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Examples of the supported multi sequence file formats
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+As currently implemented, sequence linking process is not strict, which
+ means that a perfect match between all node names and sequences names is
+ 
+\series bold
+not required
+\series default
+.
+ Thus, if only one match is found between sequences names within the MSA
+ file and tree node names, only one tree node will contain an associated
+ sequence.
+ Also, it is important to note that sequence linking is not limited to terminal
+ nodes.
+ If internal nodes are named, and such names find a match within the provided
+ MSA file, their corresponding sequences will be also loaded into the tree
+ structure.
+ Once a MSA is linked, sequences will be available for every tree node through
+ its
+\series bold
+ node.sequence
+\series default
+ attribute.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\begin_inset External
+	template PythonScripts
+	filename examples/link_sequences_to_phylogenies.py
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Using Taxonomic Data
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Using-Taxonomic-Data"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+PhyloTree instances allow to deal with leaf names and species names separately.
+ This is useful when working with molecular phylogenies, in which leaves
+ are usually encoded using sequence names but species names.
+ You could easily solve this by annotating each terminal node according
+ to its source species.
+ However, PhyloTree instances can automatically deal with this issue.
+ Thus, when a phylogenetic tree is loaded, species names (codes, key names
+ or fingerprints) are automatically derived from the 
+\series bold
+three first letters of leaf names
+\series default
+.
+ Although, you can indeed change this behavior by using a custom parsin
+ function.
+ By doing this, you can easily load taxonomy-aware molecular phylogenies.
+ The attribute 
+\series bold
+node.species
+\series default
+ will be present in every node and stores the inferred species name, while
+ the method 
+\series bold
+get_species()
+\series default
+ can be used to retrieve all species names under a given ancestral node.
+ 
+\end_layout
+
+\begin_layout Standard
+There are two ways of setting the automatic species name generation: 
+\end_layout
+
+\begin_layout Enumerate
+using the
+\series bold
+ 
+\series default
+PhyloTree 
+\series bold
+sp_naming_function
+\series default
+ argument.
+ The whole tree structure will be initialized to use the provided parsing
+ function to obtain species name information.
+\end_layout
+
+\begin_layout Enumerate
+using the 
+\series bold
+set_species_naming_function
+\series default
+ method (present in all tree nodes), which can be used to change the behavior
+ in a previously loaded tree, or to set different parsing function to different
+ 
+\end_layout
+
+\begin_layout Enumerate
+parts of the tree.
+ 
+\end_layout
+
+\begin_layout Standard
+In both cases, possible values are 
+\series bold
+None 
+\series default
+(to disable automatic generation of species names)
+\series bold
+ 
+\series default
+or the 
+\series bold
+reference to a custom python function
+\series default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\begin_inset External
+	template PythonScripts
+	filename examples/species_aware_phylogenies.py
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Dating Phylogenetic Nodes
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Dating-Phylogenetic-Nodes"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Nodes in molecular phylogenies can be interpreted as evolutionary events.
+ They can represent the duplication of an ancestral sequence or the speciation
+ event that separated the evolution of two ancestral sequences.
+ In any case, because nodes represent ancestral events, they can be located
+ at a given moment in the evolution.
+ This is, we can date evolutionary events.
+ 
+\end_layout
+
+\begin_layout Standard
+There are many ways to infer such information.
+ Most approaches are based on the comparison of the sequences affected by
+ a given event.
+ However, these methods suffer from several limitations (REF).
+ An alternative approach that has been shown to overcome some of such limitation
+s is to date evolutionary events according the topology of phylogenetic
+ trees (
+\begin_inset Note Greyedout
+status collapsed
+
+\begin_layout Plain Layout
+Jaime Huerta-Cepas and Toni Gabaldon, 2009, submmited
+\end_layout
+
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Standard
+In brief, the relative age of any evolutionary event can be established
+ by detecting the oldest taxonomic group affected by such event.
+ Given that in phylogenies nodes are events, this is something that can
+ be easily evaluated by looking at the species under each node.
+ Although this task can be done manually, ETE implements a method to automatize
+ the process.
+ Thus, by defining a python dictionary containing the conversion between
+ 
+\series bold
+species names
+\series default
+ and the considered 
+\series bold
+taxonomic levels, 
+\series default
+phylogenetic nodes can be easily dated.
+ The 
+\series bold
+get_age() 
+\series default
+method, found in every node, can be used to this end.
+ Obviously, the more taxonomic levels are defined, the more precise is time
+ estimation.
+ For instance, if we consider a tree in which several vertebrate species
+ are represented, we could define an age dictionary like this: 
+\end_layout
+
+\begin_layout LyX-Code
+# We consider only the following taxonomic levels
+\end_layout
+
+\begin_layout LyX-Code
+# regarding vertebrates: 1: hominids, 2:primates, 
+\end_layout
+
+\begin_layout LyX-Code
+# 3:mammals, 4:amphibians, 5:fishes
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+taxa_levels = { 
+\end_layout
+
+\begin_layout LyX-Code
+  
+\begin_inset Quotes eld
+\end_inset
+
+Human
+\begin_inset Quotes erd
+\end_inset
+
+: 1, # Hominids
+\end_layout
+
+\begin_layout LyX-Code
+  
+\begin_inset Quotes eld
+\end_inset
+
+Chimp
+\begin_inset Quotes erd
+\end_inset
+
+: 2, # Primates
+\end_layout
+
+\begin_layout LyX-Code
+  
+\begin_inset Quotes eld
+\end_inset
+
+Macaca
+\begin_inset Quotes erd
+\end_inset
+
+: 2, # Primates
+\end_layout
+
+\begin_layout LyX-Code
+  
+\begin_inset Quotes eld
+\end_inset
+
+Mouse
+\begin_inset Quotes erd
+\end_inset
+
+: 3, # Mammals 
+\end_layout
+
+\begin_layout LyX-Code
+  
+\begin_inset Quotes eld
+\end_inset
+
+Cow
+\begin_inset Quotes erd
+\end_inset
+
+: 3, # Mammals
+\end_layout
+
+\begin_layout LyX-Code
+  
+\begin_inset Quotes eld
+\end_inset
+
+Frog
+\begin_inset Quotes erd
+\end_inset
+
+: 4, # Amphibians
+\end_layout
+
+\begin_layout LyX-Code
+  
+\begin_inset Quotes eld
+\end_inset
+
+Zebrafish
+\begin_inset Quotes erd
+\end_inset
+
+: 5,  # fishes
+\end_layout
+
+\begin_layout LyX-Code
+  
+\begin_inset Quotes eld
+\end_inset
+
+Takifugu
+\begin_inset Quotes erd
+\end_inset
+
+: 5, #fishes
+\end_layout
+
+\begin_layout LyX-Code
+}
+\end_layout
+
+\begin_layout Standard
+In which each number refers to a taxonomic group, and older taxonomic groups
+ have higher values.
+ Then, any internal node could be easily mapped to an evolutionary period
+ by executing: 
+\series bold
+node.get_date(vertebrates_taxa_levels)
+\series default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\begin_inset External
+	template PythonScripts
+	filename examples/dating_evolutionary_events.py
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Subsection
+Species aware rooting
+\end_layout
+
+\begin_layout Plain Layout
+As commented in section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:Tree-Rooting"
+
+\end_inset
+
+, rooting provides polarity to trees.
+ In phylogenetics, this means establishing which nodes are more ancient
+ than others.
+ Therefore, the 
+\series bold
+set_outgroup() 
+\series default
+method can be used to set the most ancient node in the tree (terminal or
+ ancestral).
+ When non reliable information is available about species ages, finding
+ the midpoint outgroup (see 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:getting-midpoint-outgroup"
+
+\end_inset
+
+) among all edges may be a good alternative.
+ However, better outgroup nodes can be found by knowing the relative species
+ ages.
+ This is, knowing which taxa groups are more ancient than others.
+ Altough this is usually performed by manual analysis, ETE can use the approach
+ presented in section
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:Dating-Phylogenetic-Nodes"
+
+\end_inset
+
+ to automatize the rooting process.
+ 
+\end_layout
+
+\begin_layout Plain Layout
+The 
+\series bold
+get_farthest_oldest_leaf()
+\series default
+ method receives a species age dictionary as first argument, and returns
+ the leaf node 
+\end_layout
+
+\begin_layout Plain Layout
+must be passed as single argument.
+ Age conversion dictionary has only to containing the relative age of species.
+ 
+\end_layout
+
+\begin_layout Plain Layout
+Every node in a PhyloTree instance contains ith ETE using the 
+\series bold
+get_oldest_farthest_node()
+\series default
+ present in every node tree.
+ 
+\end_layout
+
+\begin_layout Plain Layout
+If a conversion between species codes and species ages can be defined, it
+ can be used to date every node in a phylogenetic tree, and therefore use
+ the conversion to detect the oldest node in a tree.
+ ETE is prepared to receive such a conversion as a python dictionary (keys
+ are species codes, values are numeric values representing relative ages).
+ Once this dictionary is created, you can use the get_age() method to known
+ the age of any tree node.
+ Moreover, by providing the species-age conversion to the get_oldest_farthest_no
+de() method, you can easily find the best outgroup for your trees.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Detecting evolutionary events
+\end_layout
+
+\begin_layout Standard
+There are several ways to automatically detect duplication and speciation
+ nodes within molecular phylogenies.
+ ETE provides the two most extended methodologies.
+ One implements the algorithm described in 
+\begin_inset Note Greyedout
+status open
+
+\begin_layout Plain Layout
+[Huerta-Cepas et al, 2007]
+\end_layout
+
+\end_inset
+
+ and is based on the species overlap between partitions and thus does not
+ depend on the availability of a species tree (species overlap).
+ The second one, which requires the comparison between the gene tree and
+ a previously defined species tree, implements a strict tree reconciliation
+ algorithm [Page and Charleston, 1997].
+ By detecting evolutionary events, orthology and paralogy relationships
+ among sequences are also inferred.
+ 
+\end_layout
+
+\begin_layout Standard
+Both methods, species overlap and tree reconciliation, can be used to 
+\series bold
+label each tree node as a duplication or speciation event
+\series default
+.
+
+\series bold
+ 
+\series default
+Thus, after applying any of the algorithms, original tree nodes will contain
+ a new attribute named 
+\series bold
+evoltype
+\series default
+, which can take the following values: 
+\series bold
+
+\begin_inset Quotes eld
+\end_inset
+
+D
+\begin_inset Quotes erd
+\end_inset
+
+ (duplication), 
+\begin_inset Quotes eld
+\end_inset
+
+S
+\begin_inset Quotes erd
+\end_inset
+
+ (speciation), 
+\begin_inset Quotes eld
+\end_inset
+
+L
+\begin_inset Quotes erd
+\end_inset
+
+ (lost linage)
+\series default
+.
+ Additionally, a list of all the detected events is returned.
+ Each event is a python object of type 
+\series bold
+EvolEvent
+\series default
+, containing its basic information:
+\end_layout
+
+\begin_layout Description
+
+\family typewriter
+\size footnotesize
+event.etype:   event type ( 
+\begin_inset Quotes eld
+\end_inset
+
+D
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+S
+\begin_inset Quotes erd
+\end_inset
+
+ or 
+\begin_inset Quotes eld
+\end_inset
+
+L
+\begin_inset Quotes erd
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Description
+
+\family typewriter
+\size footnotesize
+event.in_seqs:  A list of sequences at one side of the event .
+\end_layout
+
+\begin_layout Description
+
+\family typewriter
+\size footnotesize
+event.out_seqs: A list of sequences at the other side of the event.
+ 
+\end_layout
+
+\begin_layout Description
+
+\family typewriter
+\size footnotesize
+event.node: Link to the phylogenetic node that defines the event
+\end_layout
+
+\begin_layout Description
+
+\family typewriter
+\size footnotesize
+event.sos: Species Overlap Score (None if tree reconciliation was used)
+\end_layout
+
+\begin_layout Standard
+Other attributes may be found in events instances, however they are not
+ stable yet.
+\end_layout
+
+\begin_layout Standard
+If an event represents a duplication, 
+\family typewriter
+in_seqs
+\series bold
+ 
+\family default
+are all paralogous 
+\series default
+to
+\family typewriter
+ out_seqs
+\family default
+.
+ Similarly, if an event represents a speciation, 
+\family typewriter
+in_seqs
+\series bold
+ 
+\family default
+are all orthologous 
+\series default
+to
+\family typewriter
+ out_seqs
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+While tree reconciliation must always be used from an internal node, species
+ overlap allows to track only all the evolutionary events involving a specific
+ tree leaf.
+ 
+\end_layout
+
+\begin_layout Subsection
+Species Overlap (SO) algorithm
+\end_layout
+
+\begin_layout Standard
+In order to apply the SO algorithm, you can use the 
+\series bold
+node.get_descendant_evol_events()
+\series default
+ method (it will map all events under the current node) or the
+\series bold
+ node.get_my_evol_events()
+\series default
+ method (it will map only the events involving the current node, usually
+ a leaf node).
+\end_layout
+
+\begin_layout Standard
+By default the 
+\series bold
+species overlap score (SOS) threshold
+\series default
+ is set to 0.0, which means that a single species in common between two node
+ branches will rise a duplication event.
+ This has been shown to preform the best with real data, however you can
+ adjust the threshold using the 
+\series bold
+sos_thr
+\series default
+ argument present in both methods.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\begin_inset External
+	template PythonScripts
+	filename examples/orthology_and_paralogy_prediction.py
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Example2: Tree reconciliation algorithm
+\end_layout
+
+\begin_layout Standard
+Tree reconciliation algorithm uses a predefined species tree to infer the
+ genes losses that explain a given gene tree topology.
+ By doing this, it infers also the duplication and speciation events.
+ To perform a strict tree reconciliation analysis over a given node in a
+ molecular phylogeny you can use the 
+\series bold
+node.reconcile()
+\series default
+ method, which requires a species tree as its first argument.
+ The species tree (another PhyloTree instance) must contain the topology
+ of the species represented in the gene tree.
+ Moreover, leaf names in the species tree must match the species names in
+ the gene tree (by default, the first 3 letters of the gene tree leaf names)
+ (see 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:Using-Taxonomic-Data"
+
+\end_inset
+
+).
+ 
+\end_layout
+
+\begin_layout Standard
+As a result, the 
+\series bold
+reconcile()
+\series default
+ method will label the original gene tree nodes as duplication or speciation,
+ will return the list of inferred events, and will return a new 
+\series bold
+reconcilied tree
+\series default
+, in which inferred gene losses are present and labeled.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\begin_inset External
+	template PythonScripts
+	filename examples/tree_reconciliation.py
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Visualization of phylogenetic trees
+\end_layout
+
+\begin_layout Standard
+A special set of visualization rules (see chapter 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "cha:The-Programmable-Tree"
+
+\end_inset
+
+) are provided with the phylogenetic extension as the 
+\series bold
+phylogeny
+\series default
+ layout function.
+ By default, this layout function will be used to show and render any PhyloTree
+ instance, thus handling the visualization of MSAs, evolutionary events,
+ and taxonomic information.
+ However, you can change/extend this layout by providing a custom layout
+ function.
+ 
+\end_layout
+
+\begin_layout Standard
+The 
+\series bold
+SeqFace()
+\series default
+ class is also provided for convenience.
+ It allows to add nodes faces with the coloured sequence associated to each
+ node.
+\end_layout
+
+\begin_layout Subsection
+Example: A reconciled tree showing inferred evolutionary events, gene losses
+ and node's sequences
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename reconcilied_tree.png
+	lyxscale 50
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+A reconciled tree showing duplication events (blue nodes), speciation (red
+ nodes), gene losses (gray dashed lines) and the original sequences used
+ to reconstruct the phylogeny.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Chapter
+Clustering Trees
+\end_layout
+
+\begin_layout Standard
+Cluster analysis is the assignment of a set of observations into subsets
+ (called clusters) so that observations in the same cluster are similar
+ in some sense.
+ Clustering is a method of unsupervised learning, and a common technique
+ for statistical data analysis used in many fields, including machine learning,
+ data mining, pattern recognition, image analysis and bioinformatics.
+ Hierarchical clustering creates a hierarchy of clusters which may be represente
+d in a tree structure called a dendrogram.
+ The root of the tree consists of a single cluster containing all observations,
+ and the leaves correspond to individual observations.
+ [The Wikipedia porject Jun-2009].
+\end_layout
+
+\begin_layout Standard
+ETE provides the 
+\series bold
+ClusterTree
+\series default
+ instance, which inherits all the basic tree methods and and adds support
+ for linking clustering trees with the numerical matrix that were used to
+ compute the clustering.
+ It also implements several clustering validation techniques that aid in
+ the analysis of cluster quality.
+ Currently, inter and intra-cluster distances, cluster std.deviation, Silhouette
+ analysis and Dunn indexes can be computed with ETE.
+ Indeed, this type of trees can be used, not only as clustering trees, but
+ as any other type requiring numerical vectors to be associated with tree
+ nodes: i.e.) phylogenetic profiles, microarray expression datasets or node
+ fingerprint vectors.
+\end_layout
+
+\begin_layout Standard
+ClusterTrees can be linked to a numerical matrix by using the 
+\series bold
+link_to_arraytable()
+\series default
+ method (in nodes) or by passing the reference to the matrix (filename or
+ text string) as the 
+\series bold
+text_arraytable
+\series default
+ argument of PhyloTree constructor.
+ Once this is done, the 
+\series bold
+node.profile, node.deviation, node.silhouette, node.dunn, node.intracluster_dist
+ and node.intercluster_dist
+\series default
+ attributes will are automatically available.
+ As well as the 
+\series bold
+iter_leaf_profiles()
+\series default
+, 
+\series bold
+get_leaf_profiles()
+\series default
+, 
+\series bold
+get_silhouette()
+\series default
+ and 
+\series bold
+get_dunn()
+\series default
+ methods.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\begin_inset External
+	template PythonScripts
+	filename examples/clustering_tree.py
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Visualization of matrix associated Trees 
+\end_layout
+
+\begin_layout Standard
+Clustering or not, any ClusterTree instance, associated to a numerical matrix,
+ can be visualized together with the graphical representation of its node's
+ numeric profiles.
+ To this end, the 
+\series bold
+ProfileFace
+\series default
+ class is provided.
+ This face type can represent a node's numeric profile in four different
+ ways:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename ProfileFaces.png
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Types of ProfileFaces
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+You can create your own layout functions add one or more ProfileFace instances
+ to any cluster tree node (leaf or internal).
+ Moreover, three basic layouts are provided that use different styles of
+ ProfileFace instances: 
+\series bold
+heatmap
+\series default
+, 
+\series bold
+line_profiles
+\series default
+, 
+\series bold
+bar_profiles
+\series default
+, 
+\series bold
+cbar_profiles
+\series default
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\begin_inset External
+	template PythonScripts
+	filename examples/cluster_visualization.py
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Performing a Cluster Validation Analysis
+\end_layout
+
+\begin_layout Standard
+If associated matrix represents the dataset used to produce a given tree,
+ clustering validation values can be used to assess the quality of partitions.
+ To do so, you will need to set the distance function that was used to calculate
+ distances among items (leaf nodes).
+ ETE implements three common distance methods in bioinformatics : 
+\series bold
+euclidean
+\series default
+, 
+\series bold
+pearson
+\series default
+ correlation and 
+\series bold
+spearman
+\series default
+ correlation distances.
+ 
+\end_layout
+
+\begin_layout Standard
+In the following example, a microarray clustering result is analyzed using
+ ETE.
+\end_layout
+
+\begin_layout Standard
+The following example illustrates how to implement a custom clustering validatio
+n analysis:
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\begin_inset External
+	template PythonScripts
+	filename examples/bubbles_validation.py
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename microarray_validation.png
+	lyxscale 50
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Image resulting from a microarray clustering validation analysis.
+ Red bubbles represent a bad silhouette index (S<0), while green represents
+ good silhouette index (S>0).
+ Size of bubbles is proportional to the Silhouette index.
+ Internal nodes are drawn with the average expression profile grouped by
+ their partitions.
+ Leaf node profiles are shown as a heatmap.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Chapter
+The PhylomeDB API
+\end_layout
+
+\begin_layout Standard
+PhylomeDB is a public database for complete collections of gene phylogenies
+ (phylomes).
+ It allows users to interactively explore the evolutionary history of genes
+ through the visualization of phylogenetic trees and multiple sequence alignment
+s.
+ Moreover, phylomeDB provides genome-wide orthology and paralogy predictions
+ which are based on the analysis of the phylogenetic trees.
+ The automated pipeline used to reconstruct trees aims at providing a high-quali
+ty phylogenetic analysis of different genomes , including Maximum Likelihood
+ or Bayesian tree inference, alignment trimming and evolutionary model testing.
+ PhylomeDB includes also a public download section with the complete set
+ of trees, alignments and orthology predictions.
+\end_layout
+
+\begin_layout Standard
+ETE's phylomeDB extension provides an access API to the main PhylomeDB database,
+ thus allowing to search for and fetch precomputed gene phylogenies.
+\end_layout
+
+\begin_layout Section
+Basis of the phylomeDB API usage
+\end_layout
+
+\begin_layout Standard
+In order to explore the database resources, you have to create a connector
+ to the database, which will be used to query it.
+ To do so, you must use the 
+\series bold
+PhylomeDBConnector
+\series default
+ class and specify the parameters of the DB connection.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\begin_inset External
+	template PythonScripts
+	filename examples/phylomeDB_connections.py
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The PhylomeDBConnector constructor will return a pointer to the DB that
+ you can use to perform queries.
+ All methods starting by 
+\series bold
+get_
+\series default
+ can be used to retrieve information from the database.
+ A complete list of available methods can be found in the ETE's programming
+ guide (available at 
+\begin_inset CommandInset href
+LatexCommand href
+target "etetoolkit.org"
+
+\end_inset
+
+) or explored by executing 
+\series bold
+dir(PhylomeDBConnector)
+\series default
+ in a python console.
+\end_layout
+
+\begin_layout Section
+PhylomeDB structure
+\end_layout
+
+\begin_layout Standard
+A phylome includes thousands of gene trees associated to the different genes/pro
+teins of a given species.
+ Thus, for example, the human phylome includes more than 20.000 phylogenetic
+ trees; on per human gene.
+ Moreover, the same gene may be associated to different trees within the
+ same phylome differing only in the evolutionary model that assumed to reconstru
+ct the phylogeny.
+\end_layout
+
+\begin_layout Standard
+Given that each phylogenetic tree was reconstructed using a a single gene
+ as the seed sequence to find homologous in other species, the tree takes
+ the name from the seed sequence.
+\end_layout
+
+\begin_layout Standard
+You can obtain a full list of phylomes through the 
+\series bold
+get_phylomes()
+\series default
+ and a full list of seed sequence in a phylome using the 
+\series bold
+get_seed_ids()
+\series default
+ method.
+ Phylogenetic trees within a given phylome were reconstructed in a context
+ of a fixed set of species.
+ In order to obtain the list of proteomes included in a phylome, use the
+\series bold
+ get_proteomes_in_phylome()
+\series default
+ method.
+ PhylomeDB uses its own sequence identifiers, but you can use the 
+\series bold
+search_id()
+\series default
+ to find a match from an external sequence ID.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\begin_inset External
+	template PythonScripts
+	filename examples/phylomeDB_connections.py
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Each phylome is the collection of all trees associated to a given species.
+ Thus, the human phylome will contain thousands of phylogenetic trees.
+ Each gene/protein in a phylome may be associated to different trees, testing,
+ for example, different evolutionary models.
+ Thus when you query the database for a gene phylogeny you have to specify
+ from which phylome and which specific tree.
+ Alternatively, you can query for the best tree in a given phylomes, which
+ will basically return the best likelihood tree for the queried gene/protein.
+ The get_tree and get_best_tree methods carry out such operations.
+ When trees are fetched from the phylomeDB database, the are automatically
+ converted to the PhyloTree class, thus allowing to operate with them as
+ phylogenetic trees.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\begin_inset External
+	template PythonScripts
+	filename examples/get_trees_from_phylomeDB.py
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Going phylogenomic scale
+\end_layout
+
+\begin_layout Standard
+Just to show you how to explore a complete phylome:
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\begin_inset External
+	template PythonScripts
+	filename examples/exploring_a_whole_phylome.py
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{CodeEnv}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document

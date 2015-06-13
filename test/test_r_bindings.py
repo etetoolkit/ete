@@ -1,9 +1,34 @@
-from __future__ import absolute_import
-from __future__ import print_function
+'''
+this functionality is deprecated!
+'''
+
 import unittest 
 
-from ete3 import *
-from ete3.coretype.tree import asRphylo, asETE
+from ete2 import *
+
+### R bindings
+def asETE(R_phylo_tree):
+    try:
+        import rpy2.robjects as robjects
+        R = robjects.r
+    except ImportError, e:
+        print e
+        raise Exception ("RPy >= 2.0 is required to connect")
+
+    R.library("ape")
+    return Tree( R["write.tree"](R_phylo_tree)[0])
+
+def asRphylo(ETE_tree):
+    try:
+        import rpy2.robjects as robjects
+        R = robjects.r
+    except ImportError, e:
+        print e
+        raise Exception("RPy >= 2.0 is required to connect")
+
+    R.library("ape")
+    return R['read.tree'](text=ETE_tree.write())
+
 
 class Test_R_bindings(unittest.TestCase):
     """ This is experimental """
@@ -13,7 +38,7 @@ class Test_R_bindings(unittest.TestCase):
         try:
             import rpy2.robjects as robjects
         except ImportError:
-            print("\nNo rpy2 support. Skipping.\n")
+            print "\nNo rpy2 support. Skipping.\n"
             return
 
         # R

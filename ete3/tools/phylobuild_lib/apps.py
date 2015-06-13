@@ -42,6 +42,7 @@ import os
 import re
 import commands
 import logging
+import subprocess
 import six
 log = logging.getLogger("main")
 
@@ -128,6 +129,29 @@ app2check = {
     'statal'              : "-h | grep -i capella |wc -l ",
     }
 
+app2version = {
+    'muscle'              : "-version|grep MUSCLE",
+    'mafft'               : "--noflagavailable 2>&1 |grep MAFFT",
+    'clustalo'            : "--version",
+    'trimal'              : "--version|grep -i trimal",
+    'readal'              : "--version| grep -i readal",
+    'tcoffee'             : "-version|grep -i version",
+    'phyml'               : "--version | grep -i version",
+    'raxml-pthreads'      : "-version| grep -i version",
+    'raxml'               : "-version| grep -i version",
+    'raxml-pthreads-sse3' : "-version| grep -i version",
+    'raxml-sse3'          : "-version| grep -i version",
+    'raxml-pthreads-avx'  : "-version| grep -i version",
+    'raxml-avx'           : "-version| grep -i version",
+    'raxml-pthreads-avx2' : "-version| grep -i version",
+    'raxml-avx2'          : "-version| grep -i version",
+#    'jmodeltest'          : "--help | grep -i posada ",
+    'dialigntx'           : "/bin/sh |grep -i version",
+#    'usearch'             : "",
+    'fasttree'            : "2>&1 | grep version",
+    'statal'              : "--version| grep -i statal",
+    }
+
 
 def get_call(appname, apps_path, exec_path, cores):
     try:
@@ -146,18 +170,18 @@ def get_call(appname, apps_path, exec_path, cores):
     return cmd
   
 def test_apps(apps):
-    for name, cmd in six.iteritems(apps):
-        print("Checking %20s..." %name, end=' ')
-        test_cmd = cmd+" 2>&1 "+app2check.get(name, "")
-        out = commands.getoutput(test_cmd)
-        try:
-            response = int(out)
-        except ValueError:
-            response = 0
+    for name, cmd in sorted(apps.items()):
+        if app2version.get(name):
+            print("Checking %20s..." %name, end=' ')
+            test_cmd = cmd + " " + app2version.get(name, "")
+
+            process = subprocess.Popen(test_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            out, err = process.communicate()
         
-        if response:
-            print("OK.")
-        else:
-            print("Missing or not functional.")
-            #log.debug(test_cmd)
-            #log.debug(commands.getoutput(test_cmd.rstrip("wc -l")))
+            if out:
+                print("OK.\t%s" %out.strip())
+            else:
+                print("Missing or not functional.")
+                #print "** ", test_cmd
+                #log.debug(test_cmd)
+                #log.debug(commands.getoutput(test_cmd.rstrip("wc -l")))

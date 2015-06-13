@@ -1,0 +1,33 @@
+{% extends "!layout.html" %}
+
+{% block extrahead %}
+{{ super() }}
+
+<!-- <div class="warning" align="center"> -->
+<!--   This site is still under construction and refers to -->
+<!--   the new <b>ETE 2.1</b> version (temporary module -->
+<!--   name: <b>ete2a1</b>). Many sections may be incomplete or contain -->
+<!--   errors. -->
+<!-- </div> -->
+
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-783841-12']);
+  _gaq.push(['_setCookiePath', '/ete2/']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+
+
+
+
+
+{% endblock %}

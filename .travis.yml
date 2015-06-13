@@ -1,20 +1,28 @@
 language: python
 python:
-  - 2.7
-  - 3.4
+  - "2.7_with_system_site_packages"
+  - "3.4_with_system_site_packages"
 
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install: 
-  - sudo apt-get install python-qt4 python-numpy python-scipy python-mysqldb python-lxml 2>&1 | tail
-  - pip install six
+  - sudo apt-get install python-qt4 python-numpy python-lxml 2>&1 | tail
+  - sudo pip install coverage coveralls six
   - /usr/bin/yes | sudo python setup.py install 2>&1 | tail
 
 before_script:
   - python --version
-
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+  - sleep 3 # give xvfb some time to start
+  - ete version
+  #- python -c 'import PyQt4.QtGui'
 
 # command to run tests, e.g. python setup.py test
-script:  python test/test_all.py
+script: 
+  - if [[ $TRAVIS_PYTHON_VERSION == 2.6 ]]; then cd test/ && coverage run test_all.py; else cd test/ && coverage run test_all.py && coverage run -a test_treeview.py; fi
+
+after_success:
+  - coveralls
 
 branches:
   only:

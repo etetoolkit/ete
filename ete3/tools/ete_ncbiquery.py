@@ -55,17 +55,21 @@ def populate_args(ncbi_args_p):
                         help="""NCBI sqlite3 db file.""")
 
     ncbi_args.add_argument("--fuzzy", dest="fuzzy", type=float,
-                        help=("Tries a fuzzy (and SLOW) search for those"
+                        help=("EXPERIMENTAL: Tries a fuzzy (and SLOW) search for those"
                               " species names that could not be translated"
                               " into taxids. A float number must be provided"
                               " indicating the minimum string similarity."))
 
     output_args = ncbi_args_p.add_argument_group('NCBI OUTPUT OPTIONS')
     
-    output_args.add_argument("--taxonomy", dest="taxonomy",   
+    output_args.add_argument("--tree", dest="tree",   
                              action='store_true', 
                              help=("dump a pruned version of the NCBI taxonomy"
-                                   " tree containing target species into the specified file"))
+                                   " tree containing target species"))
+
+    output_args.add_argument("--descendants", dest="descendants",   
+                             action='store_true', 
+                             help=("dump the descendant taxa for each of the queries"))
     
     output_args.add_argument("--info", dest="info",   
                              action='store_true', 
@@ -95,8 +99,9 @@ def run(args):
     import re
     from ete3 import PhyloTree, NCBITaxa
 
-    if not args.taxonomy and not args.info:
-        args.taxonomy = True
+    # dump tree by default
+    if not args.tree and not args.info and not args.descendants:
+        args.tree = True
     
     ncbi = NCBITaxa()
 
@@ -129,10 +134,18 @@ def run(args):
                 name2tax[name] = tax
                 name2realname[name] = realname
                 name2score[name] = "Fuzzy:%0.2f" %sim
-                                    
-    if args.taxonomy:
-        log.info("Dumping NCBI taxonomy of %d taxa..." %(len(all_taxids)))
-        t = ncbi.get_topology(list(all_taxids.keys()),
+                
+    if not_found_names:
+        log.warn("[%s] could not be translated into taxids!" %','.join(not_found_names))
+                
+    if args.tree:
+        if len(all_taxids) == 1:
+            target_taxid = next(all_taxids.keys())
+            log.info("Dumping NCBI descendants tree for %s" %(target_taxid))
+            t = ncbi.get_descendant_taxa(target_taxid, collapse_subspecies=args.collapse_subspecies, rank_limit=args.rank_limit, return_tree=True)
+        else:
+            log.info("Dumping NCBI taxonomy of %d taxa..." %(len(all_taxids)))
+            t = ncbi.get_topology(list(all_taxids.keys()),
                               intermediate_nodes=args.full_lineage,
                               rank_limit=args.rank_limit,
                               collapse_subspecies=args.collapse_subspecies)
@@ -146,6 +159,17 @@ def run(args):
             n.add_features(named_lineage = '|'.join(ncbi.translate_to_names(lineage)))
         dump(t, features=["taxid", "name", "rank", "bgcolor", "sci_name",
                           "collapse_subspecies", "named_lineage"])
+    elif args.descendants:
+        log.info("Dumping NCBI taxonomy of %d taxa..." %(len(all_taxids)))
+        print '# ' + '\t'.join(["Taxid", "Sci.Name", "Rank", "descendant_taxids", "descendant_names"])
+        translator = ncbi.get_taxid_translator(all_taxids)
+        ranks = ncbi.get_rank(all_taxids)         
+        for taxid in all_taxids:
+            descendants = ncbi.get_descendant_taxa(taxid, collapse_subspecies=args.collapse_subspecies, rank_limit=args.rank_limit)
+            print '\t'.join([str(taxid), translator.get(taxid, taxid), ranks.get(taxid, ''),
+                             '|'.join(map(str, descendants)),
+                             '|'.join(map(str, ncbi.translate_to_names(descendants)))])
+        
     elif args.info:
         print('# ' + '\t'.join(["Taxid", "Sci.Name", "Rank", "Named Lineage", "Taxid Lineage"]))
         translator = ncbi.get_taxid_translator(all_taxids)

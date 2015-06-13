@@ -39,6 +39,7 @@ from __future__ import print_function
 # 
 # #END_LICENSE#############################################################
 from .common import as_str, shorten_str
+import re
 from six.moves import map
 
 DESC = """
@@ -76,10 +77,17 @@ def populate_args(compare_args_p):
     compare_args.add_argument("--show_matches", dest="show_matches", 
                               action = "store_true",
                               help="")
+    compare_args.add_argument("--show_edges", dest="show_edges", 
+                              action = "store_true",
+                              help="")
 
     compare_args.add_argument("--taboutput", dest="taboutput", 
                               action = "store_true",
                               help="ouput results in tab delimited format")
+    
+    compare_args.add_argument("--treeko", dest="treeko", 
+                              action = "store_true",
+                              help="activates the TreeKO duplication aware comparison method")
 
 
 def run(args):
@@ -115,38 +123,83 @@ def run(args):
                     fix_col_width=col_sizes, wrap_style="cut")
     
 
+    if args.treeko:
+        from ete3 import PhyloTree
+        tree_class = PhyloTree
+    else:
+        tree_class = Tree
+        
     for stree_name in args.src_tree_iterator:
-        stree = Tree(stree_name)
+        stree = tree_class(stree_name)
+
+        # Parses attrs if necessary
+        src_tree_attr = args.src_tree_attr
+        if args.src_attr_parser:
+            for leaf in stree:
+                leaf.add_feature('tempattr', re.search(
+                    args.src_attr_parser, getattr(leaf, args.src_tree_attr)).groups()[0])
+            src_tree_attr = 'tempattr'
+  
         for rtree_name in args.ref_trees:
-            rtree = Tree(rtree_name)
+            rtree = tree_class(rtree_name)
+
+            # Parses attrs if necessary
+            ref_tree_attr = args.ref_tree_attr
+            if args.ref_attr_parser:
+                for leaf in rtree:
+                    leaf.add_feature('tempattr', re.search(
+                        args.ref_attr_parser, getattr(leaf, args.ref_tree_attr)).groups()[0])
+                ref_tree_attr = 'tempattr'
+
             r = stree.compare(rtree, 
-                              ref_tree_attr=args.ref_tree_attr,
-                              source_tree_attr=args.src_tree_attr,
+                              ref_tree_attr=ref_tree_attr,
+                              source_tree_attr=src_tree_attr,
                               min_support_ref=args.min_support_ref,
                               min_support_source = args.min_support_src,
                               unrooted=args.unrooted,
-                              has_duplications=False)
+                              has_duplications=args.treeko)
+            
+            
+            
+            if args.show_mismatches or args.show_matches or args.show_edges:
+                if args.show_mismatches:
+                    src = r['source_edges'] - r['ref_edges']
+                    ref = r['ref_edges'] - r['source_edges']
+                elif args.show_matches:
+                    src = r['source_edges'] & r['ref_edges']
+                    ref = r['ref_edges'] & r['source_edges']
+                elif args.show_edges:
+                    src = r['source_edges']
+                    ref = r['ref_edges']
 
+                if args.unrooted:
+                    for tag, part in [("src: %s"%stree_name, src), ("ref: %s"%rtree_name, ref)]:
+                        print "%s\t%s" %(tag, '\t'.join(
+                            map(lambda x: '%s|%s' %(','.join(x[0]), ','.join(x[1])), part)))
+                else:
+                    for tag, part in [("src: %s"%stree_name, src), ("ref: %s"%rtree_name, ref)]:
+                        print "%s\t%s" %(tag, '\t'.join([','.join(p) for p in part]))
+            else:
+                data = [shorten_str(stree_name,25),
+                        shorten_str(rtree_name,25),
+                        r['effective_tree_size'],
+                        r['norm_rf'], 
+                        r['rf'], r['max_rf'],
+                        r["source_edges_in_ref"],
+                        r["ref_edges_in_source"],
+                        r['source_subtrees'],
+                        r['treeko_dist']]
 
-            if args.taboutput:
-                print('\t'.join(map(str, [shorten_str(stree_name,25),
-                                             shorten_str(rtree_name,25),
-                                             r['effective_tree_size'],
-                                             r['norm_rf'], 
-                                             r['rf'], r['max_rf'],
-                                             r["source_edges_in_ref"],
-                                             r["ref_edges_in_source"],
-                                             r['source_subtrees'],
-                                             r['treeko_dist']])))
-            elif args.show_mismatches:
-                mismatches_src = r['source_edges'] - r['ref_edges']
-                mismatches_ref = r['ref_edges'] - r['source_edges']
-                for tag, part in [("src:", mismatches_src), ("target:", mismatches_ref)]:
-                    print("%s\t%s" %(tag, '|'.join([','.join(p) for p in part])))
-            elif 0:
-                # EXPERIMENTAL
-                from pprint import pprint
-                import itertools
+                if r['effective_tree_size'] == 0:
+                    for i in xrange(3, len(data)):
+                        data[i] = -1
+                
+                if args.taboutput:                    
+                    print '\t'.join(map(str, data))
+                else:    
+                    print_table([map(as_str, data)],
+                                fix_col_width = col_sizes, wrap_style='cut')
+                        
 
                 mismatches_src = r['source_edges'] - r['ref_edges']
                 mismatches_ref = r['ref_edges'] - r['source_edges']
@@ -154,12 +207,12 @@ def run(args):
                 for part, pairs in iter_differences(mismatches_src,
                                                     mismatches_ref,
                                                     unrooted=args.unrooted):
-                    print(part)
+                    print part
                     for d, r in sorted(pairs):
-                        print("  ", d, r)
+                        print "  ", d, r
 
             else:
-                print_table([list(map(as_str, [shorten_str(stree_name,25),
+                print_table([map(as_str, [shorten_str(stree_name,25),
                                           shorten_str(rtree_name,25),
                                           r['effective_tree_size'],
                                           r['norm_rf'], 
@@ -167,7 +220,7 @@ def run(args):
                                           r["source_edges_in_ref"],
                                           r["ref_edges_in_source"],
                                           r['source_subtrees'],
-                                          r['treeko_dist']]))],
+                                          r['treeko_dist']])],
                             fix_col_width = col_sizes, wrap_style='cut')
                 
 def euc_dist(v1, v2):

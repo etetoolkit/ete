@@ -1,8 +1,7 @@
+x#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 from __future__ import absolute_import
 from __future__ import print_function
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 # #START_LICENSE###########################################################
 #
 #
@@ -47,6 +46,7 @@ import six.moves.builtins
 import six
 from six.moves import map
 from six.moves import range
+from six.moves import raw_input
 def wrap(method, retries):
     def fn(*args, **kwargs):
         for i in range(retries):
@@ -110,7 +110,7 @@ args = None
 
 sys.path.insert(0, NPRPATH)
 
-from ete3.tools.phylobuild_lib import argparse
+import argparse
 from ete3.tools.phylobuild_lib.utils import (strip, SeqGroup, generate_runid,  AA, NT,
                                   GLOBALS, encode_seqname, pjoin, pexist,
                                   hascontent, clear_tempdir, ETE_CITE, colorify,
@@ -267,7 +267,7 @@ def main(args):
                         elif f.startswith("seq-sim-range:"): 
                             f = f.replace("seq-sim-range:",'')
                             try:
-                                min_seq_sim, max_seq_sim  = list(map(float, f.split('-')))
+                                min_seq_sim, max_seq_sim  = map(float, f.split('-'))
                                 if min_seq_sim > 1 or min_seq_sim < 0:
                                     raise ValueError
                                 if max_seq_sim > 1 or max_seq_sim < 0:
@@ -934,11 +934,19 @@ def _main():
     global NPRPATH, APPSPATH, args
     APPSPATH = os.path.expanduser("~/.etetoolkit/ext_apps-latest/")
     ETEHOMEDIR = os.path.expanduser("~/.etetoolkit/")
+    
+    if os.path.exists(pjoin('/etc/etetoolkit/', 'ext_apps-latest')):
+        # if a copy of apps is part of the ete distro, use if by default
+        APPSPATH = pjoin('/etc/etetoolkit/', 'ext_apps-latest')
+        ETEHOMEDIR = '/etc/etetoolkit/'
+    else:
+        # if not, try a user local copy
+        APPSPATH = pjoin(ETEHOMEDIR, 'ext_apps-latest')
 
     if len(sys.argv) == 1:
         if not pexist(APPSPATH):
             print(colorify('\nWARNING: external applications directory are not found at %s' %APPSPATH, "yellow"), file=sys.stderr)
-            print(colorify('Use "ete build install_tools" to install or upgrade', "orange"), file=sys.stderr)
+            print(colorify('Use "ete build install_tools" to install or upgrade tools', "orange"), file=sys.stderr)
 
     elif len(sys.argv) > 1:
         _config_path = pjoin(NPRPATH, 'phylobuild.cfg')
@@ -946,18 +954,29 @@ def _main():
         if sys.argv[1] == "install_tools":
             import urllib
             import tarfile
-            print(colorify('Downloading latest version of tools...', "green"), file=sys.stderr)
-            try:
-                os.mkdir(ETEHOMEDIR)
-            except OSError: 
-                pass
+            print (colorify('Downloading latest version of tools...', "green"), file=sys.stderr)
+            if len(sys.argv) > 2:
+                TARGET_DIR = sys.argv[2]
+            else:
+                TARGET_DIR = ''
+            while not pexist(TARGET_DIR):
+                TARGET_DIR = raw_input('target directory? [%s]:' %ETEHOMEDIR).strip()
+                if TARGET_DIR == '':
+                    TARGET_DIR = ETEHOMEDIR
+                    break
+            if TARGET_DIR == ETEHOMEDIR:
+                try:
+                    os.mkdir(ETEHOMEDIR)
+                except OSError: 
+                    pass
+                
             version_file = "latest.tar.gz"
-            urllib.urlretrieve("https://github.com/jhcepas/ext_apps/archive/%s" %version_file, pjoin(ETEHOMEDIR, version_file))
+            urllib.urlretrieve("https://github.com/jhcepas/ext_apps/archive/%s" %version_file, pjoin(TARGET_DIR, version_file))
             print(colorify('Decompressing...', "green"), file=sys.stderr)
-            tfile = tarfile.open(pjoin(ETEHOMEDIR, version_file), 'r:gz')
-            tfile.extractall(ETEHOMEDIR)
+            tfile = tarfile.open(pjoin(TARGET_DIR, version_file), 'r:gz')
+            tfile.extractall(TARGET_DIR)
             print(colorify('Compiling tools...', "green"), file=sys.stderr)
-            sys.path.insert(0, APPSPATH)
+            sys.path.insert(0, pjoin(TARGET_DIR, 'ext_apps-latest'))
             import compile_all
             s = compile_all.compile_all()
             sys.exit(s)                    
@@ -1017,7 +1036,7 @@ def _main():
     # Input data related flags
     input_group = parser.add_argument_group('==== Input Options ====')
 
-    input_group.add_argument('[check | wl | show | dump | validate | version]',
+    input_group.add_argument('[check | wl | show | dump | validate | version | install_tools]',
                              nargs='?',
                              help=("Utility commands:\n"
                                    "check: check that external applications are executable.\n"
@@ -1288,9 +1307,13 @@ def _main():
                           " debugging will start from such task on.")
     
     args = parser.parse_args()
-    if  args.tools_dir: 
+    if args.tools_dir: 
         APPSPATH = args.tools_dir
 
+    if not pexist(APPSPATH):
+        print(colorify('\nWARNING: external applications directory are not found at %s' %APPSPATH, "yellow"), file=sys.stderr)
+        print(colorify('Use "ete build install_tools" to install or upgrade tools', "orange"), file=sys.stderr)
+        
     args.enable_ui = False
     if not args.noimg:
         print('Testing ETE-NPR graphics support...')

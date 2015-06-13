@@ -39,9 +39,9 @@ from __future__ import print_function
 # 
 # #END_LICENSE#############################################################
 import sys
-import argparse
 from string import strip
 import operator
+import re
 from six.moves import map
 
 __CITATION__ = '''#       ** If you use this software for a published work, please cite: **
@@ -203,7 +203,7 @@ def populate_source_args(source_args_p):
     
     source_args.add_argument("--src_attr_parser", dest="src_attr_parser", 
                              type=str, 
-                             help=(""))
+                           help=("Perl regular expression wrapping the portion of the target attribute that should be used."))
 
 def populate_ref_args(ref_args_p):
     ref_args = ref_args_p.add_argument_group('REFERENCE TREES')
@@ -223,6 +223,6 @@ def populate_ref_args(ref_args_p):
         
     ref_args.add_argument("--ref_attr_parser", dest="ref_attr_parser", 
                            type=str, 
-                           help=(""))
+                           help=("Perl regular expression wrapping the portion of the target attribute that should be used."))
 
 

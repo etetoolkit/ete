@@ -20,7 +20,7 @@ def layout(node):
         F.opacity = 0.8
         faces.add_face_to_node(F,node, 0, position="branch-right")
     else:
-        F= faces.BarChartFace([40,20,70,100,30,40,50,40,70,12], min_value=0,
+        F= faces.BarChartFace([40,20,70,100,30,40,50,40,70,-12], min_value=-12,
                               colors=COLOR_SCHEMES["spectral"],
                               labels = "aaa,bbb,cccccc,dd,eeee,ffff,gg,HHH,II,JJJ,KK".split(","))
         faces.add_face_to_node(F,node, 0, position="branch-top")
