@@ -571,7 +571,7 @@ def load_ncbi_tree_from_dump(tar):
     synonyms = set()
     name2rank = {}
     node2common = {}
-    print "Loading node names..."
+    print("Loading node names...")
     for line in tar.extractfile("names.dmp"):
         line = str(line.decode())
         fields =  list(map(str.strip, line.split("|")))
@@ -626,9 +626,9 @@ def generate_table(t):
             track.append(temp_node.name)
             temp_node = temp_node.up
         if n.up:
-            print ('\t'.join([n.name, n.up.name, n.taxname, getattr(n, "common_name", ""), n.rank, ','.join(track)], file=OUT)
+            print('\t'.join([n.name, n.up.name, n.taxname, getattr(n, "common_name", ""), n.rank, ','.join(track)], file=OUT))
         else:
-            print ('\t'.join([n.name, "", n.taxname, getattr(n, "common_name", ""), n.rank, ','.join(track)], file=OUT)
+            print('\t'.join([n.name, "", n.taxname, getattr(n, "common_name", ""), n.rank, ','.join(track)], file=OUT))
     OUT.close()
 
 def update_db(dbfile, targz_file=None):
@@ -722,12 +722,12 @@ if __name__ == "__main__":
     ncbi = NCBITaxa()
 
     a = ncbi.get_descendant_taxa("hominidae")
-    print a
-    print ncbi.get_common_names(a)
-    print ncbi.get_topology(a)
+    print(a)
+    print(ncbi.get_common_names(a))
+    print(ncbi.get_topology(a))
     b = ncbi.get_descendant_taxa("homo", intermediate_nodes=True, collapse_subspecies=True)
-    print ncbi.get_taxid_translator(b)
+    print(ncbi.get_taxid_translator(b))
 
-    print ncbi.get_common_names(b)
+    print(ncbi.get_common_names(b))
     #ncbi.update_taxonomy_database()
     
