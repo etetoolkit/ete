@@ -242,12 +242,6 @@ def read_newick(newick, root_node=None, format=0):
 
 def _read_newick_from_string(nw, root_node, format):
     """ Reads a newick string in the New Hampshire format. """
-    if nw.count('(') != nw.count(')'):
-        raise NewickError('Parentheses do not match. Broken tree structure?')
-
-    # white spaces and separators are removed
-    nw = re.sub("[\n\r\t]+", "", nw)
-
     # begin: Quoted text is mapped to references
     quoteMap={}
     unquoted_nw=''
@@ -262,6 +256,12 @@ def _read_newick_from_string(nw, root_node, format):
             quoteMap[refId]=token
 
     nw = unquoted_nw
+
+    if nw.count('(') != nw.count(')'):
+        raise NewickError('Parentheses do not match. Broken tree structure?')
+
+    # white spaces and separators are removed
+    nw = re.sub("[\n\r\t]+", "", nw)
 
     current_parent = None
     # Each chunk represents the content of a parent node, and it could contain
