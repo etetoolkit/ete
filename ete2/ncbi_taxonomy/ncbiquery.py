@@ -629,6 +629,10 @@ def generate_table(t):
     OUT.close()
 
 def update_db(dbfile, targz_file=None):
+    basepath = os.path.split(dbfile)[0]
+    if basepath and not os.path.exists(basepath):
+        os.mkdir(basepath)
+
     if not targz_file:
         import urllib
         print >>sys.stderr, 'Downloading taxdump.tar.gz from NCBI FTP site...'
