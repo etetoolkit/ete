@@ -21,7 +21,7 @@ class InteractiveItem(QGraphicsRectItem):
         # There are many ways of adding interactive elements. With the
         # following code, I show/hide a text item over my custom
         # DynamicItemFace
-        if not self.label: 
+        if not self.label:
             self.label = QGraphicsRectItem()
             self.label.setParentItem(self)
             # This is to ensure that the label is rendered over the
@@ -36,11 +36,11 @@ class InteractiveItem(QGraphicsRectItem):
         self.label.setVisible(True)
 
     def hoverLeaveEvent(self, e):
-        if self.label: 
+        if self.label:
             self.label.setVisible(False)
 
 def random_color(h=None):
-    """Generates a random color in RGB format.""" 
+    """Generates a random color in RGB format."""
     if not h:
         h = random.random()
     s = 0.5
@@ -48,7 +48,7 @@ def random_color(h=None):
     return _hls2hex(h, l, s)
 
 def _hls2hex(h, l, s):
-    return '#%02x%02x%02x' %tuple(map(lambda x: int(x*255), 
+    return '#%02x%02x%02x' %tuple(map(lambda x: int(x*255),
                                       colorsys.hls_to_rgb(h, l, s)))
 
 def ugly_name_face(node, *args, **kargs):
@@ -64,13 +64,13 @@ def ugly_name_face(node, *args, **kargs):
     ## Creates a main master Item that will contain all other elements
     ## Items can be standard QGraphicsItem
     # masterItem = QGraphicsRectItem(0, 0, width, height)
-    
+
     # Or your custom Items, in which you can re-implement interactive
     # functions, etc. Check QGraphicsItem doc for details.
     masterItem = InteractiveItem(0, 0, width, height)
 
-    # Keep a link within the item to access node info 
-    masterItem.node = node 
+    # Keep a link within the item to access node info
+    masterItem.node = node
 
     # I dont want a border around the masterItem
     masterItem.setPen(QPen(QtCore.Qt.NoPen))
@@ -91,7 +91,7 @@ def ugly_name_face(node, *args, **kargs):
     th = text.boundingRect().height()
     center = masterItem.boundingRect().center()
     text.setPos(center.x()-tw/2, center.y()-th/2)
-    
+
     return masterItem
 
 def master_ly(node):
@@ -102,9 +102,9 @@ def master_ly(node):
         # and they will be forwarded to the constructor Face function.
         F = faces.DynamicItemFace(ugly_name_face, 100, 50)
         faces.add_face_to_node(F, node, 0, position="aligned")
-  
+
 def get_example_tree():
-        
+
     t = Tree()
     t.populate(8, reuse_names=False)
 
@@ -112,10 +112,10 @@ def get_example_tree():
     ts.layout_fn = master_ly
     ts.title.add_face(faces.TextFace("Drawing your own Qt Faces", fsize=15), 0)
     return t, ts
-    
+
 if __name__ == "__main__":
     t, ts = get_example_tree()
-    
+
     #t.render("item_faces.png", h=400, tree_style=ts)
     # The interactive features are only available using the GUI
     t.show(tree_style=ts)

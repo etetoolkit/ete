@@ -24,7 +24,7 @@ def layout(node):
     if node.is_leaf():
         seqFace = SeqMotifFace(seq, motifs, scale_factor=1)
         add_face_to_node(seqFace, node, 0, position="aligned")
-       
+
 
 def get_example_tree():
     # Create a random tree and add to each leaf a random set of motifs
@@ -32,7 +32,7 @@ def get_example_tree():
     t = Tree()
     t.populate(10)
     # for l in t.iter_leaves():
-    #     seq_motifs = [list(m) for m in motifs] #sample(motifs, randint(2, len(motifs))) 
+    #     seq_motifs = [list(m) for m in motifs] #sample(motifs, randint(2, len(motifs)))
 
     #     seqFace = SeqMotifFace(seq, seq_motifs, intermotif_format="line",
     #                            seqtail_format="compactseq", scale_factor=1)

@@ -4,25 +4,25 @@ from __future__ import absolute_import
 #
 # This file is part of the Environment for Tree Exploration program
 # (ETE).  http://etetoolkit.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 # License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 
+#
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
-# 
-# ETE is distributed under the GPL copyleft license (2008-2015).  
+#
+# ETE is distributed under the GPL copyleft license (2008-2015).
 #
 # If you make use of ETE in published work, please cite:
 #
@@ -30,12 +30,12 @@ from __future__ import absolute_import
 # ETE: a python Environment for Tree Exploration. Jaime BMC
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
-# Note that extra references to the specific methods implemented in 
-# the toolkit may be available in the documentation. 
-# 
+# Note that extra references to the specific methods implemented in
+# the toolkit may be available in the documentation.
+#
 # More info at http://etetoolkit.org. Contact: huerta@embl.de
 #
-# 
+#
 # #END_LICENSE#############################################################
 from .common import dump
 from string import strip
@@ -52,17 +52,17 @@ def populate_args(annotate_args_p):
                                help="")
 def run(args):
     from ete3 import Tree, PhyloTree
-        
-    features = set()    
+
+    features = set()
     for nw in args.src_tree_iterator:
         if args.ncbi:
             tree = PhyloTree(nw)
             features.update(["taxid", "name", "rank", "bgcolor", "sci_name",
-                             "collapse_subspecies", "named_lineage", "lineage"])            
+                             "collapse_subspecies", "named_lineage", "lineage"])
             tree.annotate_ncbi_taxa(args.taxid_attr)
         else:
             tree = Tree(nw)
-        
+
         type2cast = {"str":str, "int":int, "float":float, "set":set, "list":list}
 
         for annotation in args.feature:
@@ -72,7 +72,7 @@ def run(args):
                     key, value = list(map(strip, field.split(":")))
                 except Exception:
                     raise ValueError("Invalid feature option [%s]" %field )
-                
+
                 if key == "name":
                     aname = value
                 elif key == "source":
@@ -87,11 +87,11 @@ def run(args):
                         raise ValueError("Invalid feature type [%s]" %field)
                 else:
                     raise ValueError("Unknown feature option [%s]" %field)
-                
+
             if not aname and not asource:
                 ValueError('name and source are required when annotating a new feature [%s]'
                            % annotation)
-                    
+
             features.add(aname)
             for line in open(asource, 'rU'):
                 line = line.strip()
@@ -103,18 +103,18 @@ def run(args):
                 if nodenames[0].startswith('!'):
                     relaxed_grouping = False
                     nodenames[0] = nodenames[0][1:]
-                    
+
                 if len(nodenames) > 1:
                     target_node = tree.get_common_ancestor(nodenames)
                     if not relaxed_grouping:
                         pass
                         # do something
                 else:
-                    target_node = tree & nodenames[0] 
+                    target_node = tree & nodenames[0]
 
                 if hasattr(target_node, aname):
                     log.warning('Overwriting annotation for node" [%s]"' %nodenames)
                 else:
                     target_node.add_feature(aname, acast(attr_value))
-            
+
         dump(tree, features=features)

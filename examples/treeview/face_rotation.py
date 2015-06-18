@@ -20,11 +20,11 @@ def get_example_tree():
     ts.rotation = 45
     ts.show_leaf_name = False
     ts.layout_fn = rotation_layout
-    
+
     return t, ts
 
 if __name__ == "__main__":
     t, ts = get_example_tree()
     t.show(tree_style=ts)
-    
-        
+
+

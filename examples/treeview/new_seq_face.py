@@ -95,7 +95,7 @@ class MySequenceFace(faces.StaticItemFace):
     :argument seqtype: Type of sequence: "nt" or "aa"
     :argument fsize:   Font size,  (default=10)
 
-    You can set custom colors for amino-acids or nucleotides: 
+    You can set custom colors for amino-acids or nucleotides:
 
     :argument None  codon       : a string that corresponds to the reverse translation of the amino-acid sequence
     :argument 11    col_w       : width of the column (if col_w is lower than font size, letter wont be displayed)
@@ -133,7 +133,7 @@ class MySequenceFace(faces.StaticItemFace):
 
         self.fg_col = self.__init_col(fg_colors)
         self.bg_col = self.__init_col(bg_colors)
-            
+
         # for future?
         self.row_h       = 13.0
 
@@ -146,7 +146,7 @@ class MySequenceFace(faces.StaticItemFace):
         for car in color_dic:
             new_color_dic[car] = QBrush(QColor(color_dic[car]))
         return new_color_dic
-        
+
     def update_items(self):
         #self.item = QGraphicsRectItem(0,0,self._total_w, self.row_h)
         seq_width = 0
@@ -189,7 +189,7 @@ class MySequenceFace(faces.StaticItemFace):
             self.codon = None
             self.label = None
             self.setAcceptsHoverEvents(True)
-    
+
         def hoverEnterEvent (self, e):
             """ when mouse is over"""
             if not self.label:
@@ -198,20 +198,20 @@ class MySequenceFace(faces.StaticItemFace):
                 self.label.setX(11)
                 self.label.setBrush(QBrush(QColor("white")))
                 self.label.text = QGraphicsSimpleTextItem(parent=self.label)
-    
+
             self.setZValue(1)
             self.label.text.setText(self.codon)
             self.label.setRect(self.label.text.boundingRect())
             self.label.setVisible(True)
-    
+
         def hoverLeaveEvent(self, e):
             """when mouse leaves area"""
-            if self.label: 
+            if self.label:
                 self.label.setVisible(False)
                 self.setZValue(0)
 
 
-                
+
 def test_layout_evol(node):
     '''
     layout for CodemlTree
@@ -257,7 +257,7 @@ def test_layout_phylo_aa_motif(node):
                                       col_w=11, interactive=True)
             faces.add_face_to_node(seqface, node, 1, aligned=True)
 
-            
+
 def test_layout_phylo_nt(node):
     '''
     layout for CodemlTree
@@ -272,7 +272,7 @@ def test_layout_phylo_nt(node):
                                       col_w=11, interactive=True)
             faces.add_face_to_node(seqface, node, 1, aligned=True)
 
-            
+
 if __name__ == "__main__":
     tree = PhyloTree('(Orangutan,Human,Chimp);')
     tree.link_to_alignment("""
@@ -304,5 +304,5 @@ if __name__ == "__main__":
     ts = TreeStyle()
     ts.title.add_face(TextFace("better not set interactivity if alg is very large", fsize=15), column=0)
     ts.layout_fn = test_layout_phylo_aa
-    
+
     tree.show(tree_style=ts)

@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-import unittest 
+import unittest
 
 from .. import ClusterTree, ArrayTable
 from .datasets import *
@@ -40,7 +40,7 @@ class Test_Coretype_ArrayTable(unittest.TestCase):
                                     "merged2": \
                                     ["col5", "col6"]}, \
                                    "mean")
-        
+
         #self.assert_((Abis.get_column_vector("merged1")==numpy.array([-1.02, -1.35, -1.03, -1.1, -1.15, -1.075, -1.37, -1.39, ])).all()==True )
 
         # Continue this......

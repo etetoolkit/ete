@@ -4,25 +4,25 @@ from __future__ import absolute_import
 #
 # This file is part of the Environment for Tree Exploration program
 # (ETE).  http://etetoolkit.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 # License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 
+#
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
-# 
-# ETE is distributed under the GPL copyleft license (2008-2015).  
+#
+# ETE is distributed under the GPL copyleft license (2008-2015).
 #
 # If you make use of ETE in published work, please cite:
 #
@@ -30,12 +30,12 @@ from __future__ import absolute_import
 # ETE: a python Environment for Tree Exploration. Jaime BMC
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
-# Note that extra references to the specific methods implemented in 
-# the toolkit may be available in the documentation. 
-# 
+# Note that extra references to the specific methods implemented in
+# the toolkit may be available in the documentation.
+#
 # More info at http://etetoolkit.org. Contact: huerta@embl.de
 #
-# 
+#
 # #END_LICENSE#############################################################
 import os
 import sys
@@ -61,21 +61,21 @@ class Raxml(TreeTask):
 
         base_args = OrderedDict()
         self.bootstrap = conf[confname].get("_bootstrap", None)
-        
+
         model = model or conf[confname]["_aa_model"]
-        
+
         self.confname = confname
         self.conf = conf
         self.alg_phylip_file = alg_file
-        
+
         try:
             self.constrain_tree = db.get_dataid(constrain_id, DATATYPES.constrain_tree)
         except ValueError:
             self.constrain_tree = None
 
         self.partitions_file = parts_id
-            
-        TreeTask.__init__(self, nodeid, "tree", "RaxML", 
+
+        TreeTask.__init__(self, nodeid, "tree", "RaxML",
                           base_args, conf[confname])
 
         max_cores = GLOBALS["_max_cores"]
@@ -98,7 +98,7 @@ class Raxml(TreeTask):
         method = conf[confname].get("_method", "GAMMA").upper()
         if seqtype.lower() == "aa":
             self.model_string =  'PROT%s%s' %(method, model.upper())
-            self.model = model 
+            self.model = model
         elif seqtype.lower() == "nt":
             self.model_string =  'GTR%s' %method
             self.model = "GTR"
@@ -108,7 +108,7 @@ class Raxml(TreeTask):
         #freq = conf[confname].get("ebf", "").upper()
 
         self.init()
-        
+
     def load_jobs(self):
         args = OrderedDict(self.args)
         args["-s"] = pjoin(GLOBALS["input_dir"], self.alg_phylip_file)
@@ -120,7 +120,7 @@ class Raxml(TreeTask):
         if self.partitions_file:
             log.log(24, "Using alg partitions %s" %self.partitions_file)
             args['-q'] = pjoin(GLOBALS["input_dir"], self.partitions_file)
-            
+
         tree_job = Job(self.raxml_bin, args, parent_ids=[self.nodeid])
         tree_job.jobname += "-"+self.model_string
         tree_job.cores = self.threads
@@ -130,18 +130,18 @@ class Raxml(TreeTask):
             tree_job.add_input_file(self.constrain_tree)
         if self.partitions_file:
             tree_job.add_input_file(self.partitions_file)
-            
+
         self.jobs.append(tree_job)
         self.out_tree_file = os.path.join(tree_job.jobdir,
                                      "RAxML_bestTree." + self.alg_phylip_file)
-        
+
         if self.bootstrap == "alrt":
             alrt_args = tree_job.args.copy()
             if self.constrain_tree:
                 del alrt_args["-g"]
             if self.partitions_file:
                 alrt_args["-q"] = args['-q']
-                
+
             alrt_args["-f"] =  "J"
             alrt_args["-t"] = self.out_tree_file
             alrt_job = Job(self.raxml_bin, alrt_args,
@@ -154,7 +154,7 @@ class Raxml(TreeTask):
             alrt_job.add_input_file(self.alg_phylip_file)
             if self.partitions_file:
                 alrt_job.add_input_file(self.partitions_file)
-            
+
             self.jobs.append(alrt_job)
             self.alrt_job = alrt_job
 
@@ -171,7 +171,7 @@ class Raxml(TreeTask):
                 }
             #if self.constrain_tree:
             #    alrt_args["--constraint_tree"] = self.constrain_tree
-               
+
             alrt_job = Job(self.conf["app"]["phyml"],
                            alrt_args, parent_ids=[tree_job.jobid])
             alrt_job.add_input_file(self.alg_phylip_file, alrt_job.jobdir)
@@ -180,7 +180,7 @@ class Raxml(TreeTask):
             alrt_job.add_input_file(self.alg_phylip_file)
             self.jobs.append(alrt_job)
             self.alrt_job = alrt_job
-           
+
         else:
             # Bootstrap calculation
             boot_args = tree_job.args.copy()
@@ -199,7 +199,7 @@ class Raxml(TreeTask):
                 boot_job.add_input_file(self.constrain_tree)
             if self.partitions_file:
                 boot_job.add_input_file(self.partitions_file)
-            
+
             self.jobs.append(boot_job)
 
             # Bootstrap drawing on top of best tree
@@ -207,8 +207,8 @@ class Raxml(TreeTask):
             if self.constrain_tree:
                 del bootd_args["-g"]
             if self.partitions_file:
-                del bootd_args["-q"] 
-            
+                del bootd_args["-q"]
+
             bootd_args["-n"] = "bootstrapped."+ tree_job.args["-n"]
             bootd_args["-f"] = "b"
             bootd_args["-t"] = self.out_tree_file
@@ -223,14 +223,14 @@ class Raxml(TreeTask):
 
             self.boot_job = boot_job
             self.bootd_job = bootd_job
-            
+
     def finish(self):
         #first job is the raxml tree
         def parse_alrt(match):
             dist = match.groups()[0]
             support = float(match.groups()[1])/100.0
             return "%g:%s" %(support, dist)
-        
+
         if self.bootstrap == "alrt":
             alrt_tree_file = os.path.join(self.alrt_job.jobdir,
                                                "RAxML_fastTreeSH_Support." + self.alrt_job.args["-n"])
@@ -242,8 +242,8 @@ class Raxml(TreeTask):
                 nw, nsubs = re.subn(":(\d+\.\d+)\[(\d+)\]", parse_alrt, raw_nw)
             if nsubs == 0:
                 log.warning("alrt values were not detected in raxml tree!")
-            tree = Tree(nw)                                   
-            
+            tree = Tree(nw)
+
         elif self.bootstrap == "alrt_phyml":
             alrt_tree_file = os.path.join(self.alrt_job.jobdir,
                                           self.alg_phylip_file +"_phyml_tree.txt")
@@ -260,9 +260,9 @@ class Raxml(TreeTask):
                     n.support /= 100.
                 else:
                     n.support = 0
-            
-        TreeTask.store_data(self, tree.write(), {})
-        
 
-        
-        
+        TreeTask.store_data(self, tree.write(), {})
+
+
+
+

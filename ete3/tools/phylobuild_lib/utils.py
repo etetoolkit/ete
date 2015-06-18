@@ -7,25 +7,25 @@ from __future__ import print_function
 #
 # This file is part of the Environment for Tree Exploration program
 # (ETE).  http://etetoolkit.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 # License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 
+#
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
-# 
-# ETE is distributed under the GPL copyleft license (2008-2015).  
+#
+# ETE is distributed under the GPL copyleft license (2008-2015).
 #
 # If you make use of ETE in published work, please cite:
 #
@@ -33,12 +33,12 @@ from __future__ import print_function
 # ETE: a python Environment for Tree Exploration. Jaime BMC
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
-# Note that extra references to the specific methods implemented in 
-# the toolkit may be available in the documentation. 
-# 
+# Note that extra references to the specific methods implemented in
+# the toolkit may be available in the documentation.
+#
 # More info at http://etetoolkit.org. Contact: huerta@embl.de
 #
-# 
+#
 # #END_LICENSE#############################################################
 
 import sys
@@ -46,7 +46,7 @@ from os import kill
 from os.path import join as pjoin
 from os.path import split as psplit
 from os.path import exists as pexist
-import os 
+import os
 import socket
 import string
 from string import strip
@@ -75,7 +75,7 @@ except ImportError:
         variance = [(x - avg)**2 for x in nums]
         std = math.sqrt(_mean(variance))
         return std
-            
+
     def _median(nums):
         nums.sort()
         size = len(nums)
@@ -128,10 +128,10 @@ class _DataTypes(object):
         self.constrain_alg = 426
         self.cogs = 500
         self.cog_analysis = 550
-        
+
         self.job = 1
         self.task = 2
-        
+
 DATATYPES = _DataTypes()
 
 ETE_CITE =u"""Huerta-Cepas J, Dopazo J, Gabaldón T. ETE: a python
@@ -172,11 +172,11 @@ D. jModelTest 2: more models, new heuristics and parallel computing.Nat
 Methods. 2012 Jul 30;9(8):772."""
 
 
-try: 
+try:
     from collections import OrderedDict
-except ImportError: 
+except ImportError:
     from ete3.tools.phylobuild_lib.ordereddict import OrderedDict
-    
+
 # ete3 should be added to the python path by the npr script
 from ete3.phylo import PhyloTree
 from ete3.coretype.tree import Tree
@@ -186,7 +186,7 @@ from ete3.coretype import tree
 from ete3.ncbi_taxonomy import ncbiquery as ncbi
 
 # This default values in trees are Very important for outgroup
-# selection algorithm to work: 
+# selection algorithm to work:
 tree.DEFAULT_SUPPORT = 1.0
 tree.DEFAULT_DIST = 1.0
 #from ete3.treeview import drawer
@@ -194,7 +194,7 @@ tree.DEFAULT_DIST = 1.0
 
 TIME_FORMAT = '%a %b %d %H:%M:%S %Y'
 
-AA = set('ACEDGFIHKMLNQPSRTWVY*-.UOBZJX') | set('acedgfihkmlnqpsrtwvyuobzjx') 
+AA = set('ACEDGFIHKMLNQPSRTWVY*-.UOBZJX') | set('acedgfihkmlnqpsrtwvyuobzjx')
 NT = set("ACGT*-.URYKMSWBDHVN") | set("acgturykmswbdhvn")
 GAP_CHARS = set(".-")
 
@@ -214,7 +214,7 @@ GENCODE = {
     'TCA':'S', 'TCC':'S', 'TCG':'S', 'TCT':'S',
     'TTC':'F', 'TTT':'F', 'TTA':'L', 'TTG':'L',
     'TAC':'Y', 'TAT':'Y', 'TAA':'*', 'TAG':'*',
-    'TGC':'C', 'TGT':'C', 'TGA':'*', 'TGG':'W', 
+    'TGC':'C', 'TGT':'C', 'TGA':'*', 'TGG':'W',
     '---': '-',
     }
 
@@ -255,16 +255,16 @@ def ask(string, valid_values, default=-1, case_sensitive=False):
         if not case_sensitive:
             v = v.lower()
     return v
-    
+
 def generate_node_ids(target_seqs, out_seqs):
     cladeid = generate_id(target_seqs)
     nodeid = md5(','.join([cladeid, generate_id(out_seqs)]))
     return nodeid, cladeid
 
-    
+
 def merge_arg_dicts(source, target, parent=""):
-    for k,v in six.iteritems(source): 
-        if not k.startswith("_"): 
+    for k,v in six.iteritems(source):
+        if not k.startswith("_"):
             if k not in target:
                 target[k] = v
             else:
@@ -277,13 +277,13 @@ def load_node_size(n):
         size = 1
     else:
         size = 0
-        for ch in n.children: 
+        for ch in n.children:
             size += load_node_size(ch)
     n.add_feature("_size", size)
     return size
 
 def render_tree(tree, fname):
-    # Generates tree snapshot 
+    # Generates tree snapshot
     npr_nodestyle = NodeStyle()
     npr_nodestyle["fgcolor"] = "red"
     for n in tree.traverse():
@@ -303,7 +303,7 @@ def render_tree(tree, fname):
 
 def sec2time(secs):
     return str(datetime.timedelta(seconds=secs))
-    
+
 def read_time_file(fname):
     INFO_TIME = open(fname)
 
@@ -315,7 +315,7 @@ def read_time_file(fname):
     except Exception as e:
         start = ""
         log.warning("execution time: %s", e)
-        
+
     try:
         l2 = INFO_TIME.readline().strip()
         l2 = l2.replace("CEST", "") # TEMP FIX
@@ -324,7 +324,7 @@ def read_time_file(fname):
     except Exception as e:
         end = ""
         log.warning("execution time: %s", e)
-        
+
     INFO_TIME.close()
     return start, end
 
@@ -359,7 +359,7 @@ def checksum(*fnames):
         f.close()
     return hash.hexdigest()
 
-def pid_up(pid):        
+def pid_up(pid):
     """ Check For the existence of a unix pid. """
     try:
         kill(int(pid), 0)
@@ -387,7 +387,7 @@ def clear_tempdir():
         # By all means, try to remove temp data
         try: shutil.rmtree(scratch_dir)
         except OSError: pass
-          
+
 
 def terminate_job_launcher():
     back_launcher = GLOBALS.get("_background_scheduler", None)
@@ -396,13 +396,13 @@ def terminate_job_launcher():
         GLOBALS['_job_queue'].cancel_join_thread()
         back_launcher.join(120) # gives a couple of minutes to finish
         back_launcher.terminate()
-        
+
 def print_as_table(rows, header=None, fields=None, print_header=True, stdout=sys.stdout):
     """ Print >>Stdout, a list matrix as a formated table. row must be a list of
     dicts or lists."""
     if header is None:
         header = []
-        
+
     def _str(i):
         if isinstance(i, float):
             return "%0.2f" %i
@@ -414,7 +414,7 @@ def print_as_table(rows, header=None, fields=None, print_header=True, stdout=sys
 
     def _safe_rjust(s, just):
         return (" " * (just - _safe_len(s))) + s
-        
+
     vtype = None
     for v in rows:
         if vtype != None and type(v)!=vtype:
@@ -425,14 +425,14 @@ def print_as_table(rows, header=None, fields=None, print_header=True, stdout=sys
     lengths  = {}
     if vtype == list or vtype == tuple:
         v_len = len(fields) if fields else len(rows[0])
-        
+
         if header and len(header)!=v_len:
             raise Exception("Bad header length")
 
         # Get max size of each field
         if not fields:
             fields = list(range(v_len))
-        
+
         for i,iv in enumerate(fields):
             header_length = 0
             if header != []:
@@ -475,7 +475,7 @@ def print_as_table(rows, header=None, fields=None, print_header=True, stdout=sys
                 print(_safe_rjust(_str(p.get(ppt,""), lengths[ppt]))+" | ", end=' ', file=stdout)
             print("", file=stdout)
             page_counter +=1
-                    
+
 def get_node2content(node, store=None):
     if not store: store = {}
     for ch in node.children:
@@ -499,7 +499,7 @@ def iter_prepostorder(tree, is_leaf_fn=None):
             _leaf = is_leaf_fn
         else:
             _leaf = tree.__class__.is_leaf
-        
+
         while to_visit:
             node = to_visit.pop(-1)
             try:
@@ -514,10 +514,10 @@ def iter_prepostorder(tree, is_leaf_fn=None):
                 #POSTORDER ACTIONS
                 yield (True, node)
 
-def send_mail_smtp(toaddrs, subject, msg): 
+def send_mail_smtp(toaddrs, subject, msg):
     import smtplib
-  
-    fromaddr = "no-reply@yournprprocess.local" 
+
+    fromaddr = "no-reply@yournprprocess.local"
     # The actual mail send
     client = smtplib.SMTP('localhost', 1025)
     client.sendmail(fromaddr, toaddrs, msg)
@@ -550,7 +550,7 @@ def silent_remove(target):
         os.remove(target)
     except OSError:
         pass
-    
+
 def get_latest_nprdp(basedir):
     avail_dbs = []
     for fname in glob(os.path.join(basedir, "*.db")):
@@ -577,7 +577,7 @@ def get_latest_nprdp(basedir):
                 if m:
                     print(member)
                     avail_dbs.append([float(m.groups()[0]), member])
-        
+
     return None
 
 def npr_layout(node):
@@ -588,7 +588,7 @@ def npr_layout(node):
             seq_face = faces.SeqFace(node.sequence, [])
             faces.add_face_to_node(seq_face, node, 0, position="aligned")
 
-        
+
     if "treemerger_type" in node.features:
         ttype=faces.AttrFace("tree_type", fsize=8, fgcolor="DarkBlue")
         faces.add_face_to_node(ttype, node, 0, position="branch-top")
@@ -598,7 +598,7 @@ def npr_layout(node):
 
     if "alg_type" in node.features:
         faces.add_face_to_node(faces.AttrFace("alg_type", fsize=8), node, 0, position="branch-top")
-        
+
     if "treemerger_rf" in node.features:
         faces.add_face_to_node(faces.AttrFace("treemerger_rf", fsize=8), node, 0, position="branch-bottom")
 
@@ -608,7 +608,7 @@ def npr_layout(node):
         faces.add_face_to_node(support_face, node, 0, position="float-behind")
         support_face.opacity = 0.25
         faces.add_face_to_node(faces.AttrFace("support", fsize=8), node, 0, position="branch-bottom")
-        
+
 
     if "clean_alg_mean_identn" in node.features:
         identity = node.clean_alg_mean_identn
@@ -622,11 +622,11 @@ def npr_layout(node):
         color = "orange" if float(node.improve) < 0 else "green"
         if float(node.improve) == 0:
             color = "blue"
-             
-        support_face = faces.CircleFace(200, color)        
+
+        support_face = faces.CircleFace(200, color)
         faces.add_face_to_node(support_face, node, 0, position="float-behind")
 
-try:        
+try:
     from ete3 import TreeStyle, NodeStyle, faces
     from ete3.treeview import random_color
     NPR_TREE_STYLE = TreeStyle()
@@ -636,7 +636,7 @@ except ImportError:
     TreeStyle, NodeStyle, faces, random_color = [None]*4
     NPR_TREE_STYLE = None
 
-    
+
 
 # CONVERT shell colors to the same curses palette
 COLORS = {
@@ -665,4 +665,4 @@ def colorify(string, color):
 def clear_color(string):
     return re.sub("\\033\[[^m]+m", "", string)
 
-    
+

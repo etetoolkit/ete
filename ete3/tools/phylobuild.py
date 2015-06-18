@@ -7,25 +7,25 @@ from __future__ import print_function
 #
 # This file is part of the Environment for Tree Exploration program
 # (ETE).  http://etetoolkit.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 # License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 
+#
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
-# 
-# ETE is distributed under the GPL copyleft license (2008-2015).  
+#
+# ETE is distributed under the GPL copyleft license (2008-2015).
 #
 # If you make use of ETE in published work, please cite:
 #
@@ -33,12 +33,12 @@ from __future__ import print_function
 # ETE: a python Environment for Tree Exploration. Jaime BMC
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
-# Note that extra references to the specific methods implemented in 
-# the toolkit may be available in the documentation. 
-# 
+# Note that extra references to the specific methods implemented in
+# the toolkit may be available in the documentation.
+#
 # More info at http://etetoolkit.org. Contact: huerta@embl.de
 #
-# 
+#
 # #END_LICENSE#############################################################
 
 import errno
@@ -52,7 +52,7 @@ def wrap(method, retries):
         for i in range(retries):
             try:
                 return method(*args, **kwargs)
-            except IOError as e:            
+            except IOError as e:
                 if e.errno == errno.EINTR:
                     print("A system call interruption was captured", file=sys.stderr)
                     print("Retrying", i, "of", retries, "until exception is raised", file=sys.stderr)
@@ -68,7 +68,7 @@ class safefile(file):
         for i in range(self.__retries):
             try:
                 return file.read(self, *args, **kargs)
-            except IOError as e:            
+            except IOError as e:
                 if e.errno == errno.EINTR:
                     print("A system call interruption was captured", file=sys.stderr)
                     print("Retrying", i, "of", self.__retries, "until exception is raised", file=sys.stderr)
@@ -79,17 +79,17 @@ class safefile(file):
         for i in range(self.__retries):
             try:
                 return file.read(self, *args, **kargs)
-            except IOError as e:            
+            except IOError as e:
                 if e.errno == errno.EINTR:
                     print("A system call interruption was captured", file=sys.stderr)
                     print("Retrying", i, "of", self.__retries, "until exception is raised", file=sys.stderr)
                     continue
                 else:
                     raise
-                
+
 six.moves.builtins.file = safefile
 six.moves.builtins.raw_input = wrap(raw_input, 100)
- 
+
 import sys
 import os
 import shutil
@@ -142,7 +142,7 @@ __DESCRIPTION__ = (
       --------------------------------------------------------------------------------
                   Nested Phylogenetic Reconstruction (NPR) program.
                          ETE-NPR %s (beta), %s.
-    
+
       ETE-NPR is a bioinformatics program providing a complete environment for
       the execution of phylogenomic workflows, including super-matrix
       and family-tree reconstruction approaches. ETE-NPR covers all
@@ -150,11 +150,11 @@ __DESCRIPTION__ = (
       alignment reconstruction and model testing to the generation of
       publication ready images of the produced trees and alignments. ETE-NPR is
       built on top of a bunch of specialized software and comes with a number
-      of predefined workflows. 
+      of predefined workflows.
 
       If you use ETE-NPR in a published work, please cite:
 
-       Jaime Huerta-Cepas, Peer Bork and Toni Gabaldon. In preparation. 
+       Jaime Huerta-Cepas, Peer Bork and Toni Gabaldon. In preparation.
 
       (Note that a list of the external programs used to complete the necessary
       computations will be also shown together with your results. They should
@@ -171,7 +171,7 @@ __EXAMPLES__ = """
 Runs a genetree workflow:
 
   $ npr -a fasta.aa.fa  -w linsi_fasttree -o results/
-      
+
 Runs a genetree workflow in recursive mode (the same workflow is applied for all
 iterations):
 
@@ -197,21 +197,21 @@ def main(args):
     """ Read and parse all configuration and command line options,
     setup global variables and data, and initialize the master task of
     all workflows. """
-    
-    global log 
+
+    global log
     log = logging.getLogger("main")
-    
+
     base_dir = GLOBALS["basedir"]
-        
+
     # -------------------------------------
     # READ CONFIG FILE AND PARSE WORKFLOWS
     # -------------------------------------
-        
+
     # Load and check config file
     base_config = check_config(args.configfile)
-    
+
     # Check for config file overwriting
-    clearname = os.path.basename(args.configfile)        
+    clearname = os.path.basename(args.configfile)
     local_conf_file = pjoin(base_dir, "phylobuild.cfg")
     if pexist(base_dir):
         if hascontent(local_conf_file):
@@ -231,7 +231,7 @@ def main(args):
         '_min_outgroup_support' : 0.9, # avoids fixing labile nodes as monophyletic
         '_outgroup_topology_dist' : False}
 
-                    
+
     # prepare workflow config dictionaries
     workflow_types = defaultdict(list)
     TARGET_CLADES = set()
@@ -246,7 +246,7 @@ def main(args):
 
         for wkname in names:
             if parse_filters:
-                wfilters = {}    
+                wfilters = {}
                 fields = list(map(strip, wkname.split(",")))
                 if len(fields) == 1:
                     wkname = fields[0]
@@ -259,12 +259,12 @@ def main(args):
                                 min_size, max_size = list(map(int, f.split('-')))
                                 if min_size < 0 or min_size > max_size:
                                     raise ValueError
-        
+
                             except ValueError:
                                 raise ConfigError('size filter should consist of two integer numbers (i.e. 50-100). Found [%s] instead' %f)
                             wfilters["max_size"] = max_size
                             wfilters["min_size"] = min_size
-                        elif f.startswith("seq-sim-range:"): 
+                        elif f.startswith("seq-sim-range:"):
                             f = f.replace("seq-sim-range:",'')
                             try:
                                 min_seq_sim, max_seq_sim  = map(float, f.split('-'))
@@ -280,12 +280,12 @@ def main(args):
                             wfilters["max_seq_sim"] = max_seq_sim
                         else:
                             raise ConfigError('Unknown workflow filter [%s]' %f)
-            
+
             if wkname not in base_config and wkname in base_config.get('meta_workflow', {}):
                 temp_workflows = [x.lstrip('@') for x in base_config['meta_workflow'][wkname]]
             else:
                 temp_workflows = [wkname]
-                
+
             for _w in temp_workflows:
                 if _w not in base_config:
                     list_workflows(base_config)
@@ -295,7 +295,7 @@ def main(args):
                     raise ConfigError('[%s] is not a valid workflow: %s?' %(_w, wtype))
                 if wtype != target_wtype:
                     raise ConfigError('[%s] is not a valid %s workflow' %(wkname, target_wtype))
-                    
+
             if parse_filters:
                 if len(temp_workflows) == 1:
                     parsed_workflows.extend([(temp_workflows[0], wfilters)])
@@ -304,13 +304,13 @@ def main(args):
             else:
                 parsed_workflows.extend(temp_workflows)
         return parsed_workflows
-    
+
     genetree_workflows = parse_workflows(args.workflow, "genetree")
     supermatrix_workflows = parse_workflows(args.supermatrix_workflow, "supermatrix")
-                
-    # Stop if mixing types of meta-workflows 
+
+    # Stop if mixing types of meta-workflows
     if supermatrix_workflows and len(genetree_workflows) > 1:
-        raise ConfigError("A single genetree workflow must be specified when used in combination with super-matrix workflows.")                    
+        raise ConfigError("A single genetree workflow must be specified when used in combination with super-matrix workflows.")
 
     # Sets master workflow type
     if supermatrix_workflows:
@@ -319,11 +319,11 @@ def main(args):
     else:
         WORKFLOW_TYPE = "genetree"
         master_workflows = genetree_workflows
-        
+
     # Parse npr workflows and filters
     npr_workflows = []
     use_npr = False
-    if args.npr_workflows is not None:        
+    if args.npr_workflows is not None:
         use_npr = True
         npr_workflows = parse_workflows(args.npr_workflows, WORKFLOW_TYPE, parse_filters=True)
 
@@ -332,13 +332,13 @@ def main(args):
     for wkname in master_workflows:
         config = dict(base_config)
         run2config[wkname] = config
-        
+
         appset = config[config[wkname]['_appset'][1:]]
-        
+
         # Initialized application command line commands for this workflow
         config['app'] = {}
         config['threading'] = {}
-        
+
         apps_to_test = {}
         for k, (appsrc, cores) in six.iteritems(appset):
             cores = int(cores)
@@ -349,21 +349,21 @@ def main(args):
                 cmd = apps.get_call(k, APPSPATH, base_dir, str(cores))
                 config["app"][k] = cmd
                 apps_to_test[k] = cmd
-                
-        # Copy config file                
+
+        # Copy config file
         config["_outpath"] = pjoin(base_dir, wkname)
         config["_nodeinfo"] = defaultdict(dict)
         try:
             os.makedirs(config["_outpath"])
         except OSError:
             pass
-            
+
         # setup genetree workflow as the processor of concat alignment jobs
         if WORKFLOW_TYPE == "supermatrix":
             concatenator = config[wkname]["_alg_concatenator"][1:]
             config[concatenator]["_workflow"] = '@%s' % genetree_workflows[0]
-            
-        # setup npr options for master workflows        
+
+        # setup npr options for master workflows
         if use_npr:
             config['_npr'] = {
                 # register root workflow as the main NPR workflow if the contrary not said
@@ -372,10 +372,10 @@ def main(args):
                 'nt_switch_thr': args.nt_switch_thr,
                 'max_iters': args.max_iters,
                 }
-            
+
             #config[wkname]['_npr'] = '@'+npr_config
             #target_levels = config[npr_config].get('_target_levels', [])
-            #target_dict = config['_optimized_levels'] = {}            
+            #target_dict = config['_optimized_levels'] = {}
             #for tg in target_levels:
                 # If target level name starts with ~, we allow para and
                 # poly-phyletic grouping of the species in such level
@@ -391,9 +391,9 @@ def main(args):
             config['_npr'] = {
                 'nt_switch_thr': args.nt_switch_thr,
             }
-            
-        
-    # dump log config file 
+
+
+    # dump log config file
     open(local_conf_file, "w").write(open(args.configfile).read())
 
     TARGET_CLADES.discard('')
@@ -409,9 +409,9 @@ def main(args):
     #    arch = args.arch
 
     arch = "64 " if sys.maxsize > 2**32 else "32"
-        
+
     print(__DESCRIPTION__)
-    
+
     # check application binary files
     if not args.nochecks:
         log.log(28, "Testing x86-%s portable applications..." % arch)
@@ -419,13 +419,13 @@ def main(args):
 
     log.log(28, "Starting NPR execution at %s" %(ctime()))
     log.log(28, "Output directory %s" %(GLOBALS["output_dir"]))
-    
-        
+
+
     # -------------------------------------
     # PATH CONFIGs
     # -------------------------------------
-    
-    # Set up paths    
+
+    # Set up paths
     gallery_dir = os.path.join(base_dir, "gallery")
     sge_dir = pjoin(base_dir, "sge_jobs")
     tmp_dir = pjoin(base_dir, "tmp")
@@ -439,19 +439,19 @@ def main(args):
     GLOBALS["gallery_dir"] = gallery_dir
     GLOBALS["tasks_dir"] = tasks_dir
     GLOBALS["input_dir"] = input_dir
-    
+
     GLOBALS["nprdb_file"]  = pjoin(db_dir, "npr.db")
     GLOBALS["datadb_file"]  = pjoin(db_dir, "data.db")
     GLOBALS["orthodb_file"]  = pjoin(db_dir, "ortho.db") if not args.orthodb else args.orthodb
     GLOBALS["seqdb_file"]  = pjoin(db_dir, "seq.db") if not args.seqdb else args.seqdb
-    
+
     # Clear databases if necessary
     if args.clearall:
         log.log(28, "Erasing all existing npr data...")
         shutil.rmtree(GLOBALS["tasks_dir"]) if pexist(GLOBALS["tasks_dir"]) else None
         shutil.rmtree(GLOBALS["tmp"]) if pexist(GLOBALS["tmp"]) else None
         shutil.rmtree(GLOBALS["input_dir"]) if pexist(GLOBALS["input_dir"]) else None
-        
+
         if not args.seqdb:
             silent_remove(GLOBALS["seqdb_file"])
         if not args.orthodb:
@@ -461,7 +461,7 @@ def main(args):
         silent_remove(pjoin(base_dir, "nprdata.tar"))
         silent_remove(pjoin(base_dir, "nprdata.tar.gz"))
         #silent_remove(pjoin(base_dir, "npr.log"))
-        silent_remove(pjoin(base_dir, "npr.log.gz"))                    
+        silent_remove(pjoin(base_dir, "npr.log.gz"))
     else:
         if args.softclear:
             log.log(28, "Erasing precomputed data (reusing task directory)")
@@ -490,17 +490,17 @@ def main(args):
                 shutil.copy(pjoin(GLOBALS["output_dir"], "nprdata.tar.gz"), base_dir)
             except IOError as e:
                 pass
-            
+
         # try: os.system("cp -a %s/* %s/" %(GLOBALS["output_dir"],  base_dir))
         # except Exception: pass
 
-        
+
     # UnCompress packed execution data
     if pexist(os.path.join(base_dir,"nprdata.tar.gz")):
         log.warning("Compressed data found. Extracting content to start execution...")
         cmd = "cd %s && gunzip -f nprdata.tar.gz && tar -xf nprdata.tar && rm nprdata.tar" % base_dir
         os.system(cmd)
-            
+
     # Create dir structure
     for dirname in [tmp_dir, tasks_dir, input_dir, db_dir]:
         try:
@@ -508,34 +508,34 @@ def main(args):
         except OSError:
             log.warning("Using existing dir: %s", dirname)
 
-       
+
     # -------------------------------------
     # DATA READING AND CHECKING
     # -------------------------------------
-        
+
     # Set number of CPUs available
-    
+
     if WORKFLOW_TYPE == "supermatrix" and not args.cogs_file:
         raise ConfigError("Species tree workflow requires a list of COGS"
                           " to be supplied through the --cogs"
                           " argument.")
     elif WORKFLOW_TYPE == "supermatrix":
         GLOBALS["cogs_file"] = os.path.abspath(args.cogs_file)
-        
+
     GLOBALS["seqtypes"] = set()
     if args.nt_seed_file:
         GLOBALS["seqtypes"].add("nt")
         GLOBALS["inputname"] = os.path.split(args.nt_seed_file)[-1]
-        
+
     if args.aa_seed_file:
         GLOBALS["seqtypes"].add("aa")
         GLOBALS["inputname"] = os.path.split(args.aa_seed_file)[-1]
 
-        
+
     # Initialize db if necessary, otherwise extract basic info
     db.init_nprdb(GLOBALS["nprdb_file"])
     db.init_datadb(GLOBALS["datadb_file"])
-    
+
     # Check and load data
     ERROR = ""
     if not pexist(GLOBALS["seqdb_file"]):
@@ -547,7 +547,7 @@ def main(args):
             for name in target_seqs:
                 spname = name.split(GLOBALS["spname_delimiter"], 1)[0]
                 sp2counter[spname] += 1
-                #seq_species = set([name.split(GLOBALS["spname_delimiter"])[0] 
+                #seq_species = set([name.split(GLOBALS["spname_delimiter"])[0]
                 #               for name in target_seqs])
             seq_species = set(sp2counter.keys())
         if not ERROR:
@@ -560,17 +560,17 @@ def main(args):
         db.init_seqdb(GLOBALS["seqdb_file"])
         log.warning("Skipping check and load sequences (loading from database...)")
         target_seqs = db.get_all_seq_names()
-        
+
     log.warning("%d sequences in database" %len(target_seqs))
 
     if ERROR:
         open(pjoin(base_dir, "error.log"), "w").write(' '.join(sys.argv) + "\n\n" + ERROR)
         raise DataError("Errors were found while loading data. Please"
                         " check error file for details")
-    
+
     if WORKFLOW_TYPE == "supermatrix":
         if not pexist(GLOBALS["orthodb_file"]):
-             db.init_orthodb(GLOBALS["orthodb_file"])            
+             db.init_orthodb(GLOBALS["orthodb_file"])
              all_species = set()
              for line in open(args.cogs_file):
                  all_species.update([n.split(args.spname_delimiter, 1)[0].strip() for n in line.split("\t")])
@@ -579,35 +579,35 @@ def main(args):
         else:
             db.init_orthodb(GLOBALS["orthodb_file"])
             log.warning("Skipping check and load ortholog pairs (loading from database...)")
-        
+
         # species in ortho pairs
         ortho_species = db.get_ortho_species()
         log.log(28, "Found %d unqiue species codes in ortholog-pairs" %(len(ortho_species)))
         # species in fasta file
         seq_species = db.get_seq_species()
-        log.log(28, "Found %d unqiue species codes in sequence names" %(len(seq_species))) 
-        
+        log.log(28, "Found %d unqiue species codes in sequence names" %(len(seq_species)))
+
         # Species filter
         if args.spfile:
             target_species = set([line.strip() for line in open(args.spfile)])
             target_species.discard("")
             log.log(28, "Enabling NPR for %d species", len(target_species))
-        else: 
+        else:
             target_species = seq_species
 
         # Check that orthologs are available for all species
-        if target_species - seq_species: 
+        if target_species - seq_species:
             ERROR += "The following species have no sequence information: %s" %(target_species - seq_species)
-        if target_species - ortho_species: 
+        if target_species - ortho_species:
             ERROR += "The following species have no orthology information: %s" %(target_species - ortho_species)
-            
+
         GLOBALS["target_species"] = target_species
-        
+
     if ERROR:
         open(pjoin(base_dir, "error.log"), "w").write(' '.join(sys.argv) + "\n\n" + ERROR)
         raise DataError("Errors were found while loading data. Please"
                         " check error file for details")
-    
+
     # Prepare target taxa levels, if any
     if WORKFLOW_TYPE == "supermatrix" and args.lineages_file and TARGET_CLADES:
         sp2lin = {}
@@ -626,8 +626,8 @@ def main(args):
         if target_species - set(sp2lin):
             missing = target_species - set(sp2lin)
             log.warning("%d species not found in lineages file" %len(missing))
-            
-        # So, the following levels (with at least 2 species) could be optimized     
+
+        # So, the following levels (with at least 2 species) could be optimized
         avail_levels = [(lin, len(lin2sp[lin])) for lin in all_sorted_levels if len(lin2sp[lin])>=2]
         log.log(26, "Available levels for NPR optimization:\n%s", '\n'.join(["% 30s (%d spcs)"%x for x in avail_levels]))
         avail_levels = set([lv[0] for lv in avail_levels])
@@ -635,7 +635,7 @@ def main(args):
     # if we miss lineages file, raise an error
     elif WORKFLOW_TYPE == "supermatrix" and TARGET_CLADES:
         raise ConfigError("The use of target_levels requires a species lineage file provided through the --lineages option")
-        
+
     target_seqs = None # release mem
 
     if WORKFLOW_TYPE == "genetree":
@@ -647,13 +647,13 @@ def main(args):
 
 
     # -------------------------------------
-    # MISC 
+    # MISC
     # -------------------------------------
 
     GLOBALS["_max_cores"] = args.maxcores
     log.debug("Enabling %d CPU cores" %args.maxcores)
 
-       
+
     # how task will be executed
     if args.no_execute:
         execution = (None, False)
@@ -664,10 +664,10 @@ def main(args):
             execution =("insitu", True) # True is for run-detached flag
         else:
             execution = ("insitu", False)
-       
+
     # Scheduling starts here
     log.log(28, "NPR starts now!")
-    
+
     # This initialises all pipelines
     pending_tasks = []
     start_time = ctime()
@@ -691,7 +691,7 @@ def main(args):
     thread_errors = schedule(pipeline, pending_tasks, args.schedule_time,
                              execution, args.debug, args.noimg)
     db.close()
-    
+
     if not thread_errors:
         if args.compress:
             log.log(28, "Compressing intermediate data...")
@@ -703,11 +703,11 @@ def main(args):
         os.system(cmd)
         cmd = "cd %s && rm input/ -rf" %GLOBALS["basedir"]
         os.system(cmd)
-        
+
         GLOBALS["citator"].show()
     else:
         raise DataError("Errors found in some tasks")
-        
+
 def check_and_load_orthologs(fname):
     log.log(28, "importing orthologous pairs into database (this may take a while)...")
     template_import = tempfile.NamedTemporaryFile()
@@ -736,7 +736,7 @@ PRAGMA locking_mode = NORMAL;
     print(cmd)
     os.system(cmd)
     template_import.close()
-    
+
 
 def load_sequences(target_seqs, name2seq, workflow_type):
     if args.seq_rename:
@@ -807,7 +807,7 @@ def scan_sequences(args, target_seqs):
     if skipped_seqs:
         log.warning("%d sequences will not be used since they are"
                     "  not present in the aa seed file." %skipped_seqs)
-                             
+
     return target_seqs, visited_seqs, seq2length, seq2unknown, seq2seq
 
 def check_seq_integrity(args, target_seqs, visited_seqs, seq2length, seq2unknown, seq2seq):
@@ -827,7 +827,7 @@ def check_seq_integrity(args, target_seqs, visited_seqs, seq2length, seq2unknown
             error += '\n'.join(duplicates)
 
     # check that the seq of all targets is available
-    if target_seqs: 
+    if target_seqs:
         for seqtype in GLOBALS["seqtypes"]:
             missing_seq = target_seqs - set(seq2seq[seqtype].keys())
             if missing_seq:
@@ -856,7 +856,7 @@ def check_seq_integrity(args, target_seqs, visited_seqs, seq2length, seq2unknown
                     if not args.no_seq_checks:
                         for i, aa in enumerate(seq2seq["aa"][seqname]):
                             codon = seq2seq["nt"][seqname][i*3:(i*3)+3]
-                            if not (set(codon) - REAL_NT): 
+                            if not (set(codon) - REAL_NT):
                                 if GENCODE[codon] != aa:
                                     log.warning('@@2:Unmatching codon in seq:%s, aa pos:%s (%s != %s)@@1: Use --no-seq-checks to skip' %(seqname, i, codon, aa))
                                     inconsistent_cds.add('Unmatching codon in seq:%s, aa pos:%s (%s != %s)' %(seqname, i, codon, aa))
@@ -917,7 +917,7 @@ def hash_names(target_names):
                     hash_name = encode_seqname(name*niter)
                     new_hashes[hash_name].append(name)
                 valid = set(new_hashes.keys()).isdisjoint(visited)
-                
+
             log.log(20, "Fixed with %d concatenations! %s", niter, ', '.join(['%s=%s' %(e[1][0], e[0]) for e in  six.iteritems(new_hashes)]))
             del hash2name[old_hash]
             hash2name.update(new_hashes)
@@ -929,12 +929,12 @@ def hash_names(target_names):
     name2hash = dict([(v, k) for  k,v in six.iteritems(hash2name)])
     return name2hash, hash2name
 
-   
+
 def _main():
     global NPRPATH, APPSPATH, args
     APPSPATH = os.path.expanduser("~/.etetoolkit/ext_apps-latest/")
     ETEHOMEDIR = os.path.expanduser("~/.etetoolkit/")
-    
+
     if os.path.exists(pjoin('/etc/etetoolkit/', 'ext_apps-latest')):
         # if a copy of apps is part of the ete distro, use if by default
         APPSPATH = pjoin('/etc/etetoolkit/', 'ext_apps-latest')
@@ -967,9 +967,9 @@ def _main():
             if TARGET_DIR == ETEHOMEDIR:
                 try:
                     os.mkdir(ETEHOMEDIR)
-                except OSError: 
+                except OSError:
                     pass
-                
+
             version_file = "latest.tar.gz"
             urllib.urlretrieve("https://github.com/jhcepas/ext_apps/archive/%s" %version_file, pjoin(TARGET_DIR, version_file))
             print(colorify('Decompressing...', "green"), file=sys.stderr)
@@ -979,8 +979,8 @@ def _main():
             sys.path.insert(0, pjoin(TARGET_DIR, 'ext_apps-latest'))
             import compile_all
             s = compile_all.compile_all()
-            sys.exit(s)                    
-        
+            sys.exit(s)
+
         elif sys.argv[1] == "check":
             if not pexist(APPSPATH):
                 print(colorify('\nWARNING: external applications directory are not found at %s' %APPSPATH, "yellow"), file=sys.stderr)
@@ -991,13 +991,13 @@ def _main():
                 cmd = apps.get_call(k, APPSPATH, "/tmp", "1")
                 config[k] = cmd
             apps.test_apps(config)
-            sys.exit(0)                    
+            sys.exit(0)
 
         elif sys.argv[1] == "wl":
             base_config = check_config(_config_path)
             list_workflows(base_config)
             sys.exit(0)
-            
+
         elif sys.argv[1] == "show":
             base_config = check_config(_config_path)
             block_detail(sys.argv[2], base_config)
@@ -1025,11 +1025,11 @@ def _main():
             base_config = check_config(_config_path)
             list_apps(base_config, sys.argv[2:])
             sys.exit(0)
-            
+
         elif sys.argv[1] == "version":
             print(__VERSION__, '(%s)' %__DATE__)
             sys.exit(0)
-    
+
     parser = argparse.ArgumentParser(description=__DESCRIPTION__ + __EXAMPLES__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
 
@@ -1050,33 +1050,33 @@ def _main():
     input_group.add_argument("-c", "--config", dest="configfile",
                              type=is_file, default=NPRPATH+'/phylobuild.cfg',
                              help="Custom configuration file.")
-    
+
     input_group.add_argument("--tools-dir", dest="tools_dir",
                              type=str,
                              help="Custom path where external software is avaiable.")
-    
+
     input_group.add_argument("-w", dest="workflow",
                              required=True,
-                             nargs='+', 
+                             nargs='+',
                              help="One or more gene-tree workflow names. All the specified workflows will be executed using the same input data.")
 
     input_group.add_argument("-m", dest="supermatrix_workflow",
                              required=False,
-                             nargs='+', 
+                             nargs='+',
                              help="One or more super-matrix workflow names. All the specified workflows will be executed using the same input data.")
-    
+
     input_group.add_argument("-a", dest="aa_seed_file",
                              type=is_file,
                              help="Initial multi sequence file with"
                              " protein sequences.")
 
-    
+
     input_group.add_argument("-n", dest="nt_seed_file",
                              type=is_file,
                              help="Initial multi sequence file with"
                              " nucleotide sequences")
 
-    
+
     input_group.add_argument("--seqformat", dest="seqformat",
                              choices=["fasta", "phylip", "iphylip", "phylip_relaxed", "iphylip_relaxed"],
                              default="fasta",
@@ -1086,7 +1086,7 @@ def _main():
                              action="store_true",
                              help="when used, gaps in the orginal fasta file will"
                              " be removed, thus allowing to use alignment files as input.")
-    
+
     input_group.add_argument("--no-seq-rename", dest="seq_rename",
                              action="store_false",
                              help="If used, sequence names will NOT be"
@@ -1096,31 +1096,31 @@ def _main():
     input_group.add_argument("--no-seq-checks", dest="no_seq_checks",
                             action="store_true",
                             help="Skip consistency sequence checks for not allowed symbols, etc.")
-    
+
     dup_names_group = input_group.add_mutually_exclusive_group()
-    
+
     dup_names_group.add_argument("--ignore-dup-seqnames", dest="ignore_dup_seqnames",
                                  action = "store_true",
                                  help=("If duplicated sequence names exist in the input"
                                        " fasta file, a single random instance will be used."))
-    
+
     dup_names_group.add_argument("--rename-dup-seqnames", dest="rename_dup_seqnames",
                                  action = "store_true",
                                  help=("If duplicated sequence names exist in the input"
                                        " fasta file, duplicates will be renamed."))
-    
-    
+
+
     input_group.add_argument("--orthodb", dest="orthodb",
                              type=str,
                              help="Uses a custom orthology-pair database file")
-    
+
     input_group.add_argument("--seqdb", dest="seqdb",
                              type=str,
                              help="Uses a custom sequence database file")
 
-    
+
     # supermatrix workflow
-    
+
     input_group.add_argument("--cogs", dest="cogs_file",
                              type=is_file,
                              help="A file defining clusters of orthologous groups."
@@ -1137,7 +1137,7 @@ def _main():
                                   "sorted from deeper to swallower clades "
                                   "(i.e. 9606 [TAB] Eukaryotes,Mammals,Primates)"
                              )
-    
+
     input_group.add_argument("--spname-delimiter", dest="spname_delimiter",
                              type=str, default="_",
                              help="In supermatrix mode, spname_delimiter is used to split"
@@ -1150,7 +1150,7 @@ def _main():
                              help="If specified, only the sequences and ortholog"
                              " pairs matching the group of species in this file"
                              " (one species code per line) will be used. ")
-    
+
     npr_group = parser.add_argument_group('==== NPR options ====')
     npr_group.add_argument("-r", "--recursive", dest="npr_workflows",
                            required=False,
@@ -1174,8 +1174,8 @@ def _main():
                            help=("When used, it overrides first_split option"
                                  " in any tree merger config block in the"
                                  " config file. Default: 'midpoint' "))
-    
-    
+
+
     # Output data related flags
     output_group = parser.add_argument_group('==== Output Options ====')
     output_group.add_argument("-o", "--outdir", dest="outdir",
@@ -1183,36 +1183,36 @@ def _main():
                               help="""Output directory for results.""")
 
     output_group.add_argument("--scratch_dir", dest="scratch_dir",
-                              type=is_dir, 
+                              type=is_dir,
                               help="""If provided, ete-build will run on the scratch folder and all files will be transferred to the output dir when finished. """)
 
     output_group.add_argument("--db_dir", dest="db_dir",
-                              type=is_dir, 
+                              type=is_dir,
                               help="""Alternative location of the database directory""")
-    
+
     output_group.add_argument("--tasks_dir", dest="tasks_dir",
                               type=is_dir,
                               help="""Output directory for the executed processes (intermediate files).""")
-    
+
     output_group.add_argument("--compress", action="store_true",
                               help="Compress all intermediate files when"
                               " a workflow is finished.")
-    
+
     output_group.add_argument("--logfile", action="store_true",
                               help="Log messages will be saved into a file named npr.log within the output directory.")
 
     output_group.add_argument("--noimg", action="store_true",
                               help="Tree images will not be generated when a workflow is finished.")
-        
+
     output_group.add_argument("--email", dest="email",
-                              type=str, 
+                              type=str,
                               help="Send an email when errors occur or a workflow is done.")
-    
+
     output_group.add_argument("--email_report_time", dest="email_report_time",
-                              type=int, default = 0, 
+                              type=int, default = 0,
                               help="How often (in minutes) an email reporting the status of the execution should be sent. 0=No reports")
-    
-    
+
+
     # Task execution related flags
     exec_group = parser.add_argument_group('==== Execution Mode Options ====')
 
@@ -1227,19 +1227,19 @@ def _main():
     exec_group.add_argument("-t", "--schedule_time", dest="schedule_time",
                             type=float, default=2,
                             help="""How often (in secs) tasks should be checked for available results.""")
-    
+
     exec_group.add_argument("--launch_time", dest="launch_time",
                             type=float, default=5,
                             help="""How often (in secs) queued jobs should be checked for launching""")
-    
+
     exec_type_group = exec_group.add_mutually_exclusive_group()
-    
+
     exec_type_group.add_argument("--noexec", dest="no_execute",
                                  action="store_true",
                                  help=("Prevents launching any external application."
                                        " Tasks will be processed and intermediate steps will"
                                        " run, but no real computation will be performed."))
-    
+
     exec_type_group.add_argument("--sge", dest="sge_execute",
                                  action="store_true", help="EXPERIMENTAL!: Jobs will be"
                                  " launched using the Sun Grid Engine"
@@ -1262,11 +1262,11 @@ def _main():
     exec_group.add_argument("--clearall", dest="clearall",
                             action="store_true",
                             help="Erase all previous data in the output directory and start a clean execution.")
-    
+
     exec_group.add_argument("--softclear", dest="softclear",
                             action="store_true",
                             help="Clear all precomputed data (data.db), but keeps task raw data in the directory, so they can be re-processed.")
-    
+
     exec_group.add_argument("--clear_orthodb", dest="clearorthology",
                             action="store_true",
                             help="Reload orthologous group information.")
@@ -1280,11 +1280,11 @@ def _main():
     #                         default="auto", help="Set the architecture of"
     #                         " execution hosts (needed only when using"
     #                         " built-in applications.)")
-    
+
     exec_group.add_argument("--nochecks", dest="nochecks",
                             action="store_true",
                             help="Skip application check when npr starts.")
-    
+
     # Interface related flags
     ui_group = parser.add_argument_group("==== Program Interface Options ====")
     # ui_group.add_argument("-u", dest="enable_ui",
@@ -1305,15 +1305,15 @@ def _main():
                           help="Start debugging"
                           " A taskid can be provided, so"
                           " debugging will start from such task on.")
-    
+
     args = parser.parse_args()
-    if args.tools_dir: 
+    if args.tools_dir:
         APPSPATH = args.tools_dir
 
     if not pexist(APPSPATH):
         print(colorify('\nWARNING: external applications directory are not found at %s' %APPSPATH, "yellow"), file=sys.stderr)
         print(colorify('Use "ete build install_tools" to install or upgrade tools', "orange"), file=sys.stderr)
-        
+
     args.enable_ui = False
     if not args.noimg:
         print('Testing ETE-NPR graphics support...')
@@ -1324,28 +1324,28 @@ def _main():
             Tree().render('/tmp/etenpr_img_test.png')
         except:
             raise ConfigError('img generation not supported')
-    
+
     if not args.aa_seed_file and not args.nt_seed_file:
         parser.error('At least one input file argument (-a, -n) is required')
-        
+
     outdir = os.path.abspath(args.outdir)
     final_dir, runpath = os.path.split(outdir)
     if not runpath:
         raise ValueError("Invalid outdir")
 
     GLOBALS["output_dir"] = os.path.abspath(args.outdir)
-    
+
     if args.scratch_dir:
-        # set paths for scratch folder for sqlite files 
+        # set paths for scratch folder for sqlite files
         print("Creating temporary scratch dir...", file=sys.stderr)
-        base_scratch_dir = os.path.abspath(args.scratch_dir)        
+        base_scratch_dir = os.path.abspath(args.scratch_dir)
         scratch_dir = tempfile.mkdtemp(prefix='npr_tmp', dir=base_scratch_dir)
         GLOBALS["scratch_dir"] = scratch_dir
         GLOBALS["basedir"] = scratch_dir
     else:
         GLOBALS["basedir"] = GLOBALS["output_dir"]
-        
-        
+
+
     GLOBALS["first_split_outgroup"] = args.first_split
 
     GLOBALS["email"] = args.email
@@ -1362,12 +1362,12 @@ def _main():
     GLOBALS["color_shell"] = True
     GLOBALS["citator"] = Citator()
 
-    
+
     GLOBALS["lineages"] = None
-    GLOBALS["cogs_file"] = None 
-   
+    GLOBALS["cogs_file"] = None
+
     GLOBALS["citator"].add(ETE_CITE)
-    
+
     if not pexist(GLOBALS["basedir"]):
         os.makedirs(GLOBALS["basedir"])
 
@@ -1377,7 +1377,7 @@ def _main():
             GLOBALS['_background_scheduler'].terminate()
         raise KeyboardInterrupt
     signal.signal(signal.SIGTERM, raise_control_c)
-    
+
     # Start the application
     app_wrapper(main, args)
 

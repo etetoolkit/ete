@@ -27,7 +27,7 @@ alg = """
 
 def get_example_tree():
 
-    # Performs a tree reconciliation analysis 
+    # Performs a tree reconciliation analysis
     gene_tree_nw = '((Dme_001,Dme_002),(((Cfa_001,Mms_001),((Hsa_001,Ptr_001),Mmu_001)),(Ptr_002,(Hsa_002,Mmu_002))));'
     species_tree_nw = "((((Hsa, Ptr), Mmu), (Mms, Cfa)), Dme);"
     genetree = PhyloTree(gene_tree_nw)

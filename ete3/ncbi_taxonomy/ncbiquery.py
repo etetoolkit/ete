@@ -47,7 +47,7 @@ try:
 except ImportError:
     # python 3 support
     import pickle
-    
+
 from collections import defaultdict
 
 import sqlite3
@@ -89,8 +89,8 @@ class NCBITaxa(object):
 
         if self.__get_db_version() != DB_VERSION:
             print('NCBI database format is outdated. Upgrading', file=sys.stderr)
-            self.update_taxonomy_database()                        
-        
+            self.update_taxonomy_database()
+
     def __get_db_version(self):
         try:
             r = self.db.execute('select version from stats;')
@@ -98,7 +98,7 @@ class NCBITaxa(object):
             return None
         else:
             return r.fetchone()[0]
-        
+
     def update_taxonomy_database(self, taxdump_file=None):
         """Updates the ncbi taxonomy database by downloading and parsing the latest
         taxdump.tar.gz file from the NCBI FTP site.
@@ -205,7 +205,7 @@ class NCBITaxa(object):
             if common_name:
                 id2name[tax] = common_name
         return id2name
-                
+
     def get_taxid_translator(self, taxids):
         """Given a list of taxids, returns a dictionary with their corresponding
         scientific names.
@@ -282,8 +282,8 @@ class NCBITaxa(object):
     def get_descendant_taxa(self, parent, intermediate_nodes=False, rank_limit=None, collapse_subspecies=False, return_tree=False):
         """
         given a parent taxid or scientific species name, returns a list of all its descendants taxids.
-        If intermediate_nodes is set to True, internal nodes will also be dumped. 
-        
+        If intermediate_nodes is set to True, internal nodes will also be dumped.
+
         """
         try:
             taxid = int(parent)
@@ -293,7 +293,7 @@ class NCBITaxa(object):
             except KeyError:
                 raise ValueError('%s not found!' %parent)
 
-            
+
         prepostorder = pickle.load(open(self.dbfile+".traverse.pkl"))
         descendants = {}
         found = 0
@@ -304,7 +304,7 @@ class NCBITaxa(object):
                 descendants[tid] = descendants.get(tid, 0) + 1
             elif found == 2:
                 break
-                
+
         if rank_limit or collapse_subspecies or return_tree:
             tree = self.get_topology(list(descendants.keys()), intermediate_nodes=intermediate_nodes, collapse_subspecies=collapse_subspecies, rank_limit=rank_limit)
             if return_tree:
@@ -313,12 +313,12 @@ class NCBITaxa(object):
                 return list(map(int, [n.name for n in tree.get_descendants()]))
             else:
                 return list(map(int, [n.name for n in tree]))
-                
+
         elif intermediate_nodes:
             return [tid for tid, count in six.iteritems(descendants) if not target_rank or tax2rank.get(tid, None) == target_rank]
         else:
             return [tid for tid, count in six.iteritems(descendants) if count == 1]
-                
+
     def get_topology(self, taxids, intermediate_nodes=False, rank_limit=None, collapse_subspecies=False, annotate=True):
         """Given a list of taxid numbers, return the minimal pruned NCBI taxonomy tree
         containing all of them.
@@ -370,7 +370,7 @@ class NCBITaxa(object):
             for n in root.get_descendants():
                 if len(n.children) == 1 and int(n.name) not in taxids:
                     n.delete(prevent_nondicotomic=False)
-                            
+
         if len(root.children) == 1:
             tree = root.children[0].detach()
         else:
@@ -429,7 +429,7 @@ class NCBITaxa(object):
         tax2name.update(extra_tax2name)
 
         tax2common_name = self.get_common_names(tax2name.keys())
-        
+
         if not tax2rank:
             tax2rank = self.get_rank(list(tax2name.keys()))
 
@@ -457,7 +457,7 @@ class NCBITaxa(object):
                                lineage = [],
                                rank = 'Unknown',
                                named_lineage = [])
-            else:                    
+            else:
                 lineage = self._common_lineage([lf.lineage for lf in n2leaves[n]])
                 ancestor = lineage[-1]
                 n.add_features(sci_name = tax2name.get(ancestor, str(ancestor)),
@@ -483,7 +483,7 @@ class NCBITaxa(object):
         else:
             sorted_lineage = sorted(common, key=lambda x: min(pos[x]))
             return sorted_lineage
-            
+
         # OLD APPROACH:
 
         # visited = defaultdict(int)
@@ -591,7 +591,7 @@ def load_ncbi_tree_from_dump(tar):
         if name_type == "scientific name":
             node2taxname[nodename] = taxname
         if name_type == "genbank common name":
-            node2common[nodename] = taxname            
+            node2common[nodename] = taxname
         elif name_type in set(["synonym", "equivalent name", "genbank equivalent name",
                                "anamorph", "genbank synonym", "genbank anamorph", "teleomorph"]):
             synonyms.add( (nodename, taxname) )
@@ -607,7 +607,7 @@ def load_ncbi_tree_from_dump(tar):
         n = Tree()
         n.name = nodename
         n.taxname = node2taxname[nodename]
-        if nodename in node2common: 
+        if nodename in node2common:
             n.common_name = node2common[nodename]
         n.rank = fields[2].strip()
         parent2child[nodename] = parentname
@@ -687,7 +687,7 @@ def upload_data(dbfile):
         os.mkdir(basepath)
 
     db = sqlite3.connect(dbfile)
-        
+
     create_cmd = """
     DROP TABLE IF EXISTS stats;
     DROP TABLE IF EXISTS species;
@@ -706,7 +706,7 @@ def upload_data(dbfile):
 
     db.execute("INSERT INTO stats (version) VALUES (%d);" %DB_VERSION)
     db.commit()
-    
+
     for i, line in enumerate(open("syn.tab")):
         if i%5000 == 0 :
             print('\rInserting synonyms:     % 6d' %i, end=' ', file=sys.stderr)
@@ -744,4 +744,4 @@ if __name__ == "__main__":
 
     print(ncbi.get_common_names(b))
     #ncbi.update_taxonomy_database()
-    
+

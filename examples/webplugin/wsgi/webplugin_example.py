@@ -301,7 +301,7 @@ def tree_renderer(tree, treeid, application):
     # function uses such variable to add faces to nodes during
     # rendering.
 
-    # Extracts from URL query the features that must be drawn in the tree 
+    # Extracts from URL query the features that must be drawn in the tree
     asked_features = application.queries.get("show_features", ["name"])[0].split(",")
     print >>sys.stderr, asked_features
     def update_features_avail(feature_key, name, col, fsize, fcolor, prefix, suffix):
@@ -342,10 +342,10 @@ def tree_renderer(tree, treeid, application):
 
     text_features_avail = {}
     for l in leaves:
-        for f in l.features: 
+        for f in l.features:
             if not f.startswith("_"):
                 text_features_avail.setdefault(f, 0)
-                text_features_avail[f] = text_features_avail[f] + 1 
+                text_features_avail[f] = text_features_avail[f] + 1
 
     html_features = """
       <div id="tree_features_box">
@@ -370,7 +370,7 @@ def tree_renderer(tree, treeid, application):
  #       html_features += '<td><INPUT size=7 type="text"></td> <td><input size=7 type="text"></td> <td><input size=7 type="text"></td>  <td><input size=1 type="text"></td><br>'
         #html_features += "</tr>"
 
-    html_features += """<input type="submit" value="Refresh" 
+    html_features += """<input type="submit" value="Refresh"
                         onclick='javascript:
                                 // This piece of js code extracts the checked features from menu and redraw the tree sending such information
                                 var allVals = [];
@@ -379,7 +379,7 @@ def tree_renderer(tree, treeid, application):
                                     allVals.push($(this).val());
                                 }});
                                 draw_tree("%s", "", "#img1", {"show_features": allVals.join(",")} );'
-                       > 
+                       >
                        </form></div>""" %(treeid)
 
     features_button = """
@@ -477,7 +477,7 @@ application.CONFIG["DISPLAY"] = ":0" # This is the most common
 application.set_external_app_handler(example_app)
 
 # Lets now apply our custom tree loader function to the main
-# application 
+# application
 application.set_tree_loader(my_tree_loader)
 
 # And our layout as the default one to render trees

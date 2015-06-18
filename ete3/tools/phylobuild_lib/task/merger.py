@@ -5,25 +5,25 @@ from __future__ import print_function
 #
 # This file is part of the Environment for Tree Exploration program
 # (ETE).  http://etetoolkit.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 # License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 
+#
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
-# 
-# ETE is distributed under the GPL copyleft license (2008-2015).  
+#
+# ETE is distributed under the GPL copyleft license (2008-2015).
 #
 # If you make use of ETE in published work, please cite:
 #
@@ -31,12 +31,12 @@ from __future__ import print_function
 # ETE: a python Environment for Tree Exploration. Jaime BMC
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
-# Note that extra references to the specific methods implemented in 
-# the toolkit may be available in the documentation. 
-# 
+# Note that extra references to the specific methods implemented in
+# the toolkit may be available in the documentation.
+#
 # More info at http://etetoolkit.org. Contact: huerta@embl.de
 #
-# 
+#
 # #END_LICENSE#############################################################
 import logging
 import os
@@ -61,7 +61,7 @@ class TreeMerger(TreeMergeTask):
         self.task_tree_file = task_tree
         TreeMergeTask.__init__(self, nodeid, "treemerger", "TreeMerger",
                                None, self.conf[self.confname])
-        
+
         self.main_tree = None
         self.task_tree = None
         self.seqtype = seqtype
@@ -70,7 +70,7 @@ class TreeMerger(TreeMergeTask):
         self.outgroup_match = ""
         self.pre_iter_support = None # support of the node pre-iteration
         self.init()
-        
+
     def finish(self):
         def euc_dist(x, y):
             return len(x.symmetric_difference(y)) / float((len(x) + len(y)))
@@ -88,10 +88,10 @@ class TreeMerger(TreeMergeTask):
             log.log(24, "Finding best scoring outgroup from previous iteration.")
             for _n in mtree_content:
                 if _n.cladeid == cladeid:
-                    orig_target = _n 
+                    orig_target = _n
             target_left = set([_n.name for _n in mtree_content[orig_target.children[0]]])
             target_right = set([_n.name for _n in mtree_content[orig_target.children[1]]])
-                    
+
             partition_pairs = []
             everything = set([_n.name for _n in ttree_content[ttree]])
             for n, content in six.iteritems(ttree_content):
@@ -105,15 +105,15 @@ class TreeMerger(TreeMergeTask):
                 partition_pairs.append([best_match, left, right, n])
 
             partition_pairs.sort()
-            
+
             self.outgroup_match_dist = partition_pairs[0][0]
             #self.outgroup_match = '#'.join( ['|'.join(partition_pairs[0][1]),
             #                      '|'.join(partition_pairs[0][2])] )
 
-            
+
             outgroup = partition_pairs[0][3]
             ttree.set_outgroup(outgroup)
-      
+
             ttree.dist = orig_target.dist
             ttree.support = orig_target.support
 
@@ -127,7 +127,7 @@ class TreeMerger(TreeMergeTask):
                    len(out_seqs))
 
             self.outgroup_match = '|'.join(out_seqs)
-                        
+
             #log.log(22, "Out seqs:    %s", len(out_seqs))
             #log.log(22, "Target seqs: %s", target_seqs)
             if len(out_seqs) > 1:
@@ -157,15 +157,15 @@ class TreeMerger(TreeMergeTask):
             parent = orig_target.up
             orig_target.detach()
             parent.add_child(ttree)
-               
+
         else:
             # ROOTS FIRST ITERATION
             log.log(24, "Getting outgroup for first NPR split")
-            
+
             # if early split is provided in the command line, it
             # overrides config file
             mainout = GLOBALS.get("first_split_outgroup", "midpoint")
-            
+
             if mainout.lower() == "midpoint":
                 log.log(26, "Rooting to midpoint.")
                 best_outgroup = ttree.get_midpoint_outgroup()
@@ -180,7 +180,7 @@ class TreeMerger(TreeMergeTask):
                     # ancestor of two or more OTUs
                     strict_common_ancestor = False
                     outs = set(mainout[1:].split())
-                    if len(outs) < 2:          
+                    if len(outs) < 2:
                         raise TaskError(self, "First split outgroup error: common "
                                         "ancestor calculation requires at least two OTU names")
                 else:
@@ -189,7 +189,7 @@ class TreeMerger(TreeMergeTask):
 
                 if outs - target_seqs:
                     raise TaskError(self, "Unknown seqs cannot be used to set first split rooting:%s" %(outs - target_seqs))
-                    
+
                 if len(outs) > 1:
                     anchor = list(set(target_seqs) - outs)[0]
                     ttree.set_outgroup(ttree & anchor)
@@ -203,14 +203,14 @@ class TreeMerger(TreeMergeTask):
                         msg = "Monophyly of first split outgroup could not be granted:%s" %out_seqs
                         #dump_tree_debug(msg, self.taskdir, mtree, ttree, target_seqs, outs)
                         raise TaskError(self, msg)
-                    
+
                     log.log(26, "@@8:First split rooting to %d seqs@@1:: %s" %(len(out_seqs),out_seqs))
                     ttree.set_outgroup(common)
                 else:
                     single_out = outs.pop()
                     common = ttree.set_outgroup(single_out)
                     log.log(26, "@@8:First split rooting to 1 seq@@1:: %s" %(single_out))
-                    
+
             self.main_tree = ttree
             orig_target = ttree
 
@@ -218,7 +218,7 @@ class TreeMerger(TreeMergeTask):
         self.pre_iter_task_tree = tn
         self.rf = orig_target.robinson_foulds(ttree)
         self.pre_iter_support = orig_target.support
-                
+
         # Reloads node2content of the rooted tree and generate cladeids
         ttree_content = self.main_tree.get_cached_content()
         for n, content in six.iteritems(ttree_content):
@@ -228,16 +228,16 @@ class TreeMerger(TreeMergeTask):
         #ttree.write(outfile=self.pruned_tree)
         self.task_tree = ttree
 
-    
+
 def dump_tree_debug(msg, taskdir, mtree, ttree, target_seqs, out_seqs):
     try:
         if out_seqs is None: out_seqs = set()
-        if target_seqs is None: target_seqs = set()            
-        if ttree: 
+        if target_seqs is None: target_seqs = set()
+        if ttree:
             for n in ttree.get_leaves():
                 if n.name in out_seqs:
                     n.name = n.name + " *__OUTGROUP__*"
-        if mtree: 
+        if mtree:
             for n in mtree.get_leaves():
                 if n.name in out_seqs:
                     n.name = n.name + " *__OUTGROUP__*"
@@ -253,4 +253,4 @@ def dump_tree_debug(msg, taskdir, mtree, ttree, target_seqs, out_seqs):
     except Exception as e:
         print(e)
 
-      
+

@@ -23,7 +23,7 @@ def get_example_tree():
     ts.min_leaf_separation = 15
     t.populate(100)
     return t, ts
-    
+
 if __name__ == '__main__':
     t, ts = get_example_tree()
     t.show(tree_style=ts)

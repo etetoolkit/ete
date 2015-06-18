@@ -55,7 +55,7 @@ def ask_path(string, default_path):
             v = None
     return v
 
-        
+
 SERVER="huerta@etetoolkit.embl.de"
 SERVER_RELEASES_PATH = "/var/www/etetoolkit/static/releases/ete2"
 
@@ -63,7 +63,7 @@ TEMP_PATH = "/tmp"
 CURRENT_VERSION = open('VERSION').readline().strip()
 a, b, c, tag, ncom, hcom  = re.search("(\d+)\.(\d+)\.(\d+)(-?\w+\d+)?-?(\d+)?-?(\w+)?", CURRENT_VERSION).groups()
 a, b, c = map(int, (a, b, c))
-SERIES_VERSION = "%s.%s" %(a, b) 
+SERIES_VERSION = "%s.%s" %(a, b)
 print '===================================================='
 print 'CURRENT VERSION:', a, b, c, tag, ncom, hcom
 print '===================================================='
@@ -88,7 +88,7 @@ if not options.doconly:
     else:
         NEW_VERSION = CURRENT_VERSION
 
-    # clean files from previous releases 
+    # clean files from previous releases
     _ex('rm release/ -rf && git clone . release/')
     # build docs
     _ex('cd release/sdoc/ && make html && make latex')
@@ -115,20 +115,20 @@ if options.doconly:
     # build docs
     _ex('cd sdoc/ && make html && make latex')
     _ex('cd sdoc/_build/latex && make all-pdf')
-    
+
 else:
     SDOC_PATH = 'release/'
-        
+
 if ask('Upload docs?', ['y', 'n']) == 'y':
     _ex("cd %s; python setup.py upload_sphinx --upload-dir sdoc/_build/html/ -r https://pypi.python.org/pypi --show-response" %SDOC_PATH)
 
-  
-    
+
+
 #_ex('deactivate;  release/dist/ && tar xf ete2-%s.tar.gz && cd ete2-%s/test/ && python test_all.py && python test_treeview.py' %(NEW_VERSION, NEW_VERSION))
-    
 
 
-    
+
+
 sys.exit(0)
 
 

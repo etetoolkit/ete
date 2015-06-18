@@ -3,25 +3,25 @@
 #
 # This file is part of the Environment for Tree Exploration program
 # (ETE).  http://etetoolkit.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 # License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 
+#
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
-# 
-# ETE is distributed under the GPL copyleft license (2008-2015).  
+#
+# ETE is distributed under the GPL copyleft license (2008-2015).
 #
 # If you make use of ETE in published work, please cite:
 #
@@ -29,12 +29,12 @@
 # ETE: a python Environment for Tree Exploration. Jaime BMC
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
-# Note that extra references to the specific methods implemented in 
-# the toolkit may be available in the documentation. 
-# 
+# Note that extra references to the specific methods implemented in
+# the toolkit may be available in the documentation.
+#
 # More info at http://etetoolkit.org. Contact: huerta@embl.de
 #
-# 
+#
 # #END_LICENSE#############################################################
 
 
@@ -46,10 +46,10 @@
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in
 # all copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -60,7 +60,7 @@
 #
 # Comments and/or additions are welcome (send e-mail to:
 # strang@nmr.mgh.harvard.edu).
-# 
+#
 """
 stats.py module
 
@@ -174,7 +174,7 @@ PROBABILITY CALCS:  chisqprob
                     ksprob
                     fprob
                     betacf
-                    gammln 
+                    gammln
                     betai
 
 ANOVA FUNCTIONS:  F_oneway
@@ -1009,7 +1009,7 @@ Returns: Kendall's tau, two-tailed p-value
 
 def llinregress(x,y):
     """
-Calculates a regression line on x,y pairs.  
+Calculates a regression line on x,y pairs.
 
 Usage:   llinregress(x,y)      x,y are equal-length lists of x-y coordinates
 Returns: slope, intercept, r, two-tailed prob, sterr-of-estimate
@@ -1304,7 +1304,7 @@ def lkruskalwallish(*args):
 The Kruskal-Wallis H-test is a non-parametric ANOVA for 3 or more
 groups, requiring at least 5 subjects in each group.  This function
 calculates the Kruskal-Wallis H-test for 3 or more independent samples
-and returns the result.  
+and returns the result.
 
 Usage:   lkruskalwallish(*args)
 Returns: H-statistic (corrected for ties), associated p-value
@@ -1443,7 +1443,7 @@ Usage:   lerfcc(x)
 def lzprob(z):
     """
 Returns the area under the normal curve 'to the left of' the given z value.
-Thus, 
+Thus,
     for z<0, zprob(z) = 1-tail probability
     for z>0, 1.0-zprob(z) = 1-tail probability
     for any z, 2.0*(1.0-zprob(abs(z))) = 2-tail probability
@@ -1903,7 +1903,7 @@ def lfindwithin (data):
 Returns an integer representing a binary vector, where 1=within-
 subject factor, 0=between.  Input equals the entire data 2D list (i.e.,
 column 0=random factor, column -1=measured values (those two are skipped).
-Note: input data is in |Stat format ... a list of lists ("2D list") with 
+Note: input data is in |Stat format ... a list of lists ("2D list") with
 one row per measured value, first column=subject identifier, last column=
 score, one in-between column per factor (these columns contain level
 designations on each factor).  See also stats.anova.__doc__.
@@ -2295,7 +2295,7 @@ Usage:   atmean(a,limits=None,inclusive=(1,1))
  def atvar(a,limits=None,inclusive=(1,1)):
      """
 Returns the sample variance of values in an array, (i.e., using N-1),
-ignoring values strictly outside the sequence passed to 'limits'.  
+ignoring values strictly outside the sequence passed to 'limits'.
 Note: either limit in the sequence, or the value of limits itself,
 can be set to None.  The inclusive list/tuple determines whether the lower
 and upper limiting bounds (respectively) are open/exclusive (0) or
@@ -2448,8 +2448,8 @@ Usage:   avariation(a,dimension=None)
     return 100.0*asamplestdev(a,dimension)/amean(a,dimension)
 
 
- def askew(a,dimension=None): 
-    """ 
+ def askew(a,dimension=None):
+    """
 Returns the skewness of a distribution (normal ==> 0.0; >0 means extra
 weight in left tail).  Use askewtest() to see if it's close enough.
 Dimension can equal None (ravel array first), an integer (the
@@ -2765,7 +2765,7 @@ Usage:   asamplevar(inarray,dimension=None,keepdims=0)
         mn = amean(inarray,dimension)[:,N.NewAxis]
     else:
         mn = amean(inarray,dimension,keepdims=1)
-    deviations = inarray - mn 
+    deviations = inarray - mn
     if type(dimension) == ListType:
         n = 1
         for d in dimension:
@@ -3418,7 +3418,7 @@ Returns: t-value, two-tailed p-value
         probs = N.reshape(probs,t.shape)
     if probs.shape == (1,):
         probs = probs[0]
-        
+
     if printit != 0:
         if type(t) == N.ndarray:
             t = t[0]
@@ -3843,7 +3843,7 @@ Usage:   aerfcc(x)
  def azprob(z):
     """
 Returns the area under the normal curve 'to the left of' the given z value.
-Thus, 
+Thus,
     for z<0, zprob(z) = 1-tail probability
     for z>0, 1.0-zprob(z) = 1-tail probability
     for any z, 2.0*(1.0-zprob(abs(z))) = 2-tail probability
@@ -4445,7 +4445,7 @@ Usage:   afindwithin(data)     data in |Stat format
                       (acumfreq, (N.ndarray,)) )
  relfreq = Dispatch ( (lrelfreq, (ListType, TupleType)),
                       (arelfreq, (N.ndarray,)) )
- 
+
 ## VARIABILITY:
  obrientransform = Dispatch ( (lobrientransform, (ListType, TupleType)),
                               (aobrientransform, (N.ndarray,)) )
@@ -4466,14 +4466,14 @@ Usage:   afindwithin(data)     data in |Stat format
                 (az, (N.ndarray,)) )
  zs = Dispatch ( (lzs, (ListType, TupleType)),
                  (azs, (N.ndarray,)) )
- 
+
 ## TRIMMING FCNS:
  threshold = Dispatch( (athreshold, (N.ndarray,)),)
  trimboth = Dispatch ( (ltrimboth, (ListType, TupleType)),
                        (atrimboth, (N.ndarray,)) )
  trim1 = Dispatch ( (ltrim1, (ListType, TupleType)),
                     (atrim1, (N.ndarray,)) )
- 
+
 ## CORRELATION FCNS:
  paired = Dispatch ( (lpaired, (ListType, TupleType)),
                      (apaired, (N.ndarray,)) )
@@ -4489,7 +4489,7 @@ Usage:   afindwithin(data)     data in |Stat format
                          (akendalltau, (N.ndarray,)) )
  linregress = Dispatch ( (llinregress, (ListType, TupleType)),
                          (alinregress, (N.ndarray,)) )
- 
+
 ## INFERENTIAL STATS:
  ttest_1samp = Dispatch ( (lttest_1samp, (ListType, TupleType)),
                           (attest_1samp, (N.ndarray,)) )
@@ -4513,7 +4513,7 @@ Usage:   afindwithin(data)     data in |Stat format
                              (akruskalwallish, (N.ndarray,)) )
  friedmanchisquare = Dispatch ( (lfriedmanchisquare, (ListType, TupleType)),
                                 (afriedmanchisquare, (N.ndarray,)) )
- 
+
 ## PROBABILITY CALCS:
  chisqprob = Dispatch ( (lchisqprob, (IntType, FloatType)),
                         (achisqprob, (N.ndarray,)) )
@@ -4531,7 +4531,7 @@ Usage:   afindwithin(data)     data in |Stat format
                     (aerfcc, (N.ndarray,)) )
  gammln = Dispatch ( (lgammln, (IntType, FloatType)),
                      (agammln, (N.ndarray,)) )
- 
+
 ## ANOVA FUNCTIONS:
  F_oneway = Dispatch ( (lF_oneway, (ListType, TupleType)),
                        (aF_oneway, (N.ndarray,)) )

@@ -5,25 +5,25 @@ from __future__ import print_function
 #
 # This file is part of the Environment for Tree Exploration program
 # (ETE).  http://etetoolkit.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 # License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 
+#
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
-# 
-# ETE is distributed under the GPL copyleft license (2008-2015).  
+#
+# ETE is distributed under the GPL copyleft license (2008-2015).
 #
 # If you make use of ETE in published work, please cite:
 #
@@ -31,12 +31,12 @@ from __future__ import print_function
 # ETE: a python Environment for Tree Exploration. Jaime BMC
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
-# Note that extra references to the specific methods implemented in 
-# the toolkit may be available in the documentation. 
-# 
+# Note that extra references to the specific methods implemented in
+# the toolkit may be available in the documentation.
+#
 # More info at http://etetoolkit.org. Contact: huerta@embl.de
 #
-# 
+#
 # #END_LICENSE#############################################################
 import os
 from ete3.tools.phylobuild_lib.configobj import ConfigObj
@@ -60,7 +60,7 @@ def list_workflows(config):
         print(('%s' %wtype_legend[wtype]).center(80))
         print('=' *80)
         print(('  %s' %'\n  '.join(avail_workflows)))
-                
+
     avail_meta = sorted(["%s (% 3s threads)" %(k.ljust(40), len(v)) for k,
                          v in six.iteritems(config.get('meta_workflow', {}))])
 
@@ -77,7 +77,7 @@ def list_apps(config, target_apps = None):
         if set(target_apps) - valid:
             print('ERROR: Unknown application type.')
             print('Use one of: [%s]' %' | '.join(valid))
-            return 
+            return
     for atype in target_apps:
         avail_apps = sorted(['%s %s' %(k.ljust(25), config[k].get('_desc', '')) for k,
                               v in six.iteritems(config) if v.get('_app', '') == atype])
@@ -86,7 +86,7 @@ def list_apps(config, target_apps = None):
         print('=' *40)
         print(('  %s' %'\n  '.join(avail_apps)))
         print()
-    
+
 def block_detail(block_name, config, color=True):
     blocks_to_show = {}
     iterable_types = set([set, list, tuple, frozenset])
@@ -99,9 +99,9 @@ def block_detail(block_name, config, color=True):
             raise ValueError('block name not found [%s]' %block_name)
     else:
         metaworkflow = False
-        next_block = [block_name]        
-    
-    pos = 0 
+        next_block = [block_name]
+
+    pos = 0
     while next_block:
         block = next_block.pop()
         blocks_to_show[block] = pos
@@ -122,13 +122,13 @@ def block_detail(block_name, config, color=True):
         print('[meta_workflow]')
         print("%s = %s" %(block_name, ', '.join(config["meta_workflow"][block_name])))
         print()
-        
+
     for b, pos in sorted(list(blocks_to_show.items()), key=lambda x: x[1]):
         if color:
             print(colorify('[%s]' %b, 'yellow'))
         else:
             print('[%s]' %b)
-            
+
         for k,v in six.iteritems(config[b]):
             if type(v) in iterable_types:
                 v = ', '.join(map(str, v))+','
@@ -141,7 +141,7 @@ def block_detail(block_name, config, color=True):
             else:
                 print('% 40s = %s' %(k, v))
         print()
-    
+
 def check_config(fname):
     conf = ConfigObj(fname, list_values=True)
     for k, v in list(conf.items()):
@@ -153,7 +153,7 @@ def check_config(fname):
                 raise ConfigError('[%s] config block is referred in [%s] but not present in config file' %(base, k))
             new_dict.update(v)
             conf[k] = new_dict
-            
+
     for k in six.iterkeys(conf):
         blocktype = conf[k].get('_app', 'unknown')
         for attr, v in list(conf[k].items()):
@@ -183,7 +183,7 @@ def check_type(blocktype, attr, v):
         tester, kargs, required = CHECKERS[tag]
         return tester(v, **kargs)
     else:
-        return v 
+        return v
 
 def check_block_link(conf, parent, v):
     if isinstance(v, str) and v.startswith('@') and v[1:] not in conf:
@@ -264,7 +264,7 @@ def is_app_link(value, allow_none=True):
         return value
     else:
         raise ConfigError('[%s] is not a valid block link' %value)
-    
+
 def is_app_list(value, allow_none=True):
     is_list(value)
     for v in value:
@@ -279,7 +279,7 @@ def is_boolean(value):
         return False
     else:
         raise ConfigError('[%s] is not a boolean value' %(value))
-        
+
 def is_integer_list(value, maxv=None, minv=None):
     is_list(value)
     return [is_integer(v, maxv=maxv, minv=minv) for v in value]
@@ -308,7 +308,7 @@ def is_percent(value):
     except ConfigError:
         raise ConfigError('[%s] should a percentage value (i.e. 0.4%%)' %value)
     return value
-    
+
 def is_integer_or_percent(value):
     try:
         return is_integer(value)
@@ -335,13 +335,13 @@ def is_raxml_bootstrap(value):
             raise ConfigError('[%s] bootstrap value should an integer, "alrt" or "phyml_alrt"' %(value))
 
 
-    
+
 CHECKERS = {
     # (app_name, attr_name): (checker_fn, args, required_attr)
     ("main", "_npr"): (is_app_list, {}, True),
     ("main", "_workflow"): (is_app_list, {"allow_none":False}, True),
     ("main", "_appset"): (is_app_link, {"allow_none":False}, True),
-    
+
     ("npr", "_max_iters"): (is_integer, {"minv":1}, True),
     ("npr", "_switch_aa_similarity"): (is_float, {"minv":0, "maxv":1}, True),
     ("npr", "_max_seq_similarity"): (is_float, {"minv":0, "maxv":1}, True),
@@ -349,7 +349,7 @@ CHECKERS = {
     ("npr", "_min_npr_size"): (is_integer, {"minv":3}, True),
     ("npr", "_tree_splitter"): (is_app_link, {}, True),
     ("npr", "_target_levels"): (is_list, {}, False),
-    
+
     ("genetree", "_aa_aligner"): (is_app_link, {}, True),
     ("genetree", "_nt_aligner"): (is_app_link, {}, True),
     ("genetree", "_aa_alg_cleaner"): (is_app_link, {}, True),
@@ -359,7 +359,7 @@ CHECKERS = {
     ("genetree", "_aa_tree_builder"): (is_app_link, {}, True),
     ("genetree", "_nt_tree_builder"): (is_app_link, {}, True),
     ("genetree", "_appset"): (is_app_link, {"allow_none":False}, True),
-    
+
     ("supermatrix", "_cog_selector"): (is_app_link, {}, True),
     ("supermatrix", "_alg_concatenator"): (is_app_link, {}, True),
     ("supermatrix", "_aa_tree_builder"): (is_app_link, {}, True),
@@ -370,7 +370,7 @@ CHECKERS = {
     ("concatalg", "_default_nt_model"): (is_text, {}, True),
 
     #("concatalg", "_workflow"): (is_app_link, {"allow_none":False}, True),
-    
+
     ("cogselector", "_species_missing_factor"): (is_float, {"minv":0, "maxv":1}, True),
     ("cogselector", "_max_cogs"): (is_integer, {"minv":1}, True),
 
@@ -384,7 +384,7 @@ CHECKERS = {
 
     ("prottest", "_lk_mode"): (is_choice, {"choices":set(['phyml', 'raxml'])}, True),
     ("prottest", "_models"): (is_list, {}, True),
-   
+
     ("raxml", "_aa_model"): (is_text, {}, True),
     ("raxml", "_method"): (is_choice, {"choices":set(['GAMMA', 'CAT'])}, True),
     ("raxml", "_bootstrap"): (is_raxml_bootstrap, {}, True),
@@ -392,11 +392,11 @@ CHECKERS = {
     ("raxml-sse", "_aa_model"): (is_text, {}, True),
     ("raxml-sse", "_method"): (is_choice, {"choices":set(['GAMMA', 'CAT'])}, True),
     ("raxml-sse", "_alrt_calculation"): (is_choice, {"choices":set(['phyml', 'raxml'])}, True),
-    
+
     ("raxml-avx", "_aa_model"): (is_text, {}, True),
     ("raxml-avx", "_method"): (is_choice, {"choices":set(['GAMMA', 'CAT'])}, True),
     ("raxml-avx", "_alrt_calculation"): (is_choice, {"choices":set(['phyml', 'raxml'])}, True),
-    
+
     ("appset", "muscle"): (is_appset_entry, {}, True),
     ("appset", "mafft"): (is_appset_entry, {}, True),
     ("appset", "clustalo"): (is_appset_entry, {}, True),
@@ -417,5 +417,5 @@ CHECKERS = {
     ("appset", "statal"): (is_appset_entry, {}, True),
 
 
-    
+
     }

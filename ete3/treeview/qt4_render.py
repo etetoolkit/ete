@@ -4,25 +4,25 @@ from __future__ import absolute_import
 #
 # This file is part of the Environment for Tree Exploration program
 # (ETE).  http://etetoolkit.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 # License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 
+#
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
-# 
-# ETE is distributed under the GPL copyleft license (2008-2015).  
+#
+# ETE is distributed under the GPL copyleft license (2008-2015).
 #
 # If you make use of ETE in published work, please cite:
 #
@@ -30,12 +30,12 @@ from __future__ import absolute_import
 # ETE: a python Environment for Tree Exploration. Jaime BMC
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
-# Note that extra references to the specific methods implemented in 
-# the toolkit may be available in the documentation. 
-# 
+# Note that extra references to the specific methods implemented in
+# the toolkit may be available in the documentation.
+#
 # More info at http://etetoolkit.org. Contact: huerta@embl.de
 #
-# 
+#
 # #END_LICENSE#############################################################
 import math
 import re # Used to fix SVG exporting
@@ -54,12 +54,12 @@ import six
 
 ## | General scheme of node content
 ## |==========================================================================================================================|
-## |                                                fullRegion                                                                |       
+## |                                                fullRegion                                                                |
 ## |             nodeRegion                  |================================================================================|
-## |                                         |                                fullRegion                                     || 
+## |                                         |                                fullRegion                                     ||
 ## |                                         |        nodeRegion                     |=======================================||
 ## |                                         |                                       |         fullRegion                   |||
-## |                                         |                                       |         nodeRegion                   ||| 
+## |                                         |                                       |         nodeRegion                   |||
 ## |                                         |                         |             |branch_length | nodeSize | facesRegion|||
 ## |                                         | branch_length | nodesize|faces-right  |=======================================||
 ## |                                         |                         |(facesRegion)|=======================================||
@@ -153,7 +153,7 @@ class _NodeLineItem(QtGui.QGraphicsLineItem, _ActionDelegator):
 class _LineItem(QtGui.QGraphicsLineItem):
     def paint(self, painter, option, widget):
         QtGui.QGraphicsLineItem.paint(self, painter, option, widget)
-        
+
 class _PointerItem(QtGui.QGraphicsRectItem):
     def __init__(self, parent=None):
         QtGui.QGraphicsRectItem.__init__(self,0,0,0,0, parent)
@@ -251,7 +251,7 @@ def render(root_node, img, hide_root=False):
         su_face = faces.AttrFace("support", fsize=8, ftype="Arial", fgcolor="darkred", formatter = "%0.3g")
     if img.show_leaf_name:
         na_face = faces.AttrFace("name", fsize=10, ftype="Arial", fgcolor="black")
-    
+
     for n in root_node.traverse(is_leaf_fn=_leaf):
         set_style(n, layout_fn)
 
@@ -295,7 +295,7 @@ def render(root_node, img, hide_root=False):
         # create items and calculate node dimensions CONSIDERING branch lengths
         img._scale = img.scale
         init_items(root_node, parent, n2i, n2f, img, rot_step, hide_root)
-        
+
     #print "USING scale", img._scale
     # Draw node content
     for node in root_node.traverse(is_leaf_fn=_leaf):
@@ -323,7 +323,7 @@ def render(root_node, img, hide_root=False):
 
     render_backgrounds(img, mainRect, parent.bg_layer, n2i, n2f)
 
-    # rotate if necessary in circular images. flip and adjust if mirror orientation. 
+    # rotate if necessary in circular images. flip and adjust if mirror orientation.
     adjust_faces_to_tranformations(img, mainRect, n2i, n2f, TREE_LAYERS)
 
     # Rotate main image if necessary
@@ -351,7 +351,7 @@ def render(root_node, img, hide_root=False):
     if _x or _y:
         parent.moveBy(_x, _y)
         mainRect.adjust(_x, _y, _x, _y)
-        
+
     # Add extra components and adjust mainRect to them
     add_legend(img, mainRect, frame)
     add_title(img, mainRect, frame)
@@ -363,7 +363,7 @@ def render(root_node, img, hide_root=False):
         frame.setPen(QtGui.QPen(QtCore.Qt.NoPen))
     else:
         frame.setPen(QtGui.QPen(QtGui.QColor("black")))
-    
+
     return frame, n2i, n2f
 
 def adjust_faces_to_tranformations(img, mainRect, n2i, n2f, tree_layers):
@@ -439,7 +439,7 @@ def add_scale(img, mainRect, parent):
         length=50
         scaleItem = _EmptyItem()
         customPen = QtGui.QPen(QtGui.QColor("black"), 1)
-        
+
         if img.force_topology:
             wtext = "Force topology is enabled!\nBranch lengths do not represent real values."
             warning_text = QtGui.QGraphicsSimpleTextItem(wtext)
@@ -463,7 +463,7 @@ def add_scale(img, mainRect, parent):
             scale = QtGui.QGraphicsSimpleTextItem(scale_text)
             scale.setParentItem(scaleItem)
             scale.setPos(0, 10)
-            
+
         scaleItem.setParentItem(parent)
         dw = max(0, length-mainRect.width())
         scaleItem.setPos(mainRect.bottomLeft())
@@ -592,7 +592,7 @@ def set_node_size(node, n2i, n2f, img):
 
     # This breaks ultrametric tree visualization
     #w += node.img_style["vt_line_width"]
-    
+
     # rightside faces region
     item.facesRegion.setRect(0, 0, faceblock["branch-right"].w, h)
 
@@ -620,8 +620,8 @@ def render_node_content(node, n2i, n2f, img):
 
     # face_start_x = nodeR.width() - facesR.width() - vlw
     face_start_x = max(0, nodeR.width() - facesR.width() - vlw)
-    ball_start_x = face_start_x - ball_size 
-    
+    ball_start_x = face_start_x - ball_size
+
     if ball_size:
         if node.img_style["shape"] == "sphere":
             node_ball = _SphereItem(node)
@@ -655,7 +655,7 @@ def render_node_content(node, n2i, n2f, img):
 
     join_fix = 0
     if img.mode == "c" and node.up and node.up.img_style["vt_line_width"]:
-        join_fix = node.up.img_style["vt_line_width"] 
+        join_fix = node.up.img_style["vt_line_width"]
         # fix_join_line = _LineItem()
         # fix_join_line = _NodeLineItem(node)
         # parent_style = node.up.img_style
@@ -663,7 +663,7 @@ def render_node_content(node, n2i, n2f, img):
         # pen.setColor(QtGui.QColor(parent_style["vt_line_color"]))
         # pen.setWidth(parent_style["hz_line_width"])
         # pen.setCapStyle(QtCore.Qt.FlatCap)
-        # fix_join_line.setPen(pen)        
+        # fix_join_line.setPen(pen)
         # fix_join_line.setLine(-join_fix, center, join_fix, center)
         # fix_join_line.setParentItem(item.content)
 
@@ -764,9 +764,9 @@ def set_style(n, layout_func):
     #    print "Style of", n.name ,"is None"
     #    n.set_style()
     #    n.img_style = NodeStyle()
-       
+
     n._temp_faces = _FaceAreas()
-    
+
     for func in layout_func:
         func(n)
 
@@ -920,21 +920,21 @@ def get_tree_img_map(n2i, x_scale=1, y_scale=1):
     for n, main_item in six.iteritems(n2i):
         #n.add_feature("_nid", str(nid))
         nid = n._nid
-       
+
         rect = main_item.mapToScene(main_item.fullRegion).boundingRect()
-        x1 = x_scale * rect.x()  
+        x1 = x_scale * rect.x()
         y1 = y_scale * rect.y()
         x2 = x_scale * (rect.x() + rect.width())
         y2 = y_scale * (rect.y() + rect.height())
         node_areas[nid] = [x1, y1, x2, y2]
-       
+
         for item in main_item.mapped_items:
             if isinstance(item, _CircleItem) \
                     or isinstance(item, _SphereItem) \
                     or isinstance(item, _RectItem):
                 r = item.boundingRect()
                 rect = item.mapToScene(r).boundingRect()
-                x1 = x_scale * rect.x()  
+                x1 = x_scale * rect.x()
                 y1 = y_scale * rect.y()
                 x2 = x_scale * (rect.x() + rect.width())
                 y2 = y_scale * (rect.y() + rect.height())
@@ -967,7 +967,7 @@ def get_tree_img_map(n2i, x_scale=1, y_scale=1):
                         else:
                             face_list.append([x1, y1, x2, y2, nid, getattr(f, "face_label", None)])
         #nid += 1
-        
+
     return {"nodes": node_list, "faces": face_list, "node_areas": node_areas}
 
 #@tracktime
@@ -1027,7 +1027,7 @@ def init_node_dimensions(node, item, faceblock, img):
     of a given node. Branch lengths are not taken into account, so some
     dimensions must be adjusted after setting a valid scale.
     """
-    
+
     min_separation = img.min_leaf_separation
 
     if _leaf(node):
@@ -1036,21 +1036,21 @@ def init_node_dimensions(node, item, faceblock, img):
     else:
         aligned_height = 0
         aligned_width = 0
-        
+
     ndist =  1.0 if img.force_topology else node.dist
     item.branch_length = (ndist * img._scale) if img._scale else 0
     ## Calculate dimensions of the different node regions
     ##
     ##
-    ##                                |  
-    ##                                |        ------ 
-    ##          b-top       --------- |        |    | 
-    ## xoff-------------- O |b-right| |        |alg | 
-    ##          b-bottom    --------- |        |    | 
-    ##                                |        ------ 
-    ##                                |       
-    ##                                        
-    ##      0     1       2     3     4           5   
+    ##                                |
+    ##                                |        ------
+    ##          b-top       --------- |        |    |
+    ## xoff-------------- O |b-right| |        |alg |
+    ##          b-bottom    --------- |        |    |
+    ##                                |        ------
+    ##                                |
+    ##
+    ##      0     1       2     3     4           5
     ##
 
     item.xoff = 0.0
@@ -1075,11 +1075,11 @@ def init_node_dimensions(node, item, faceblock, img):
     # preserved in the img.
     if w2 == 0 and w3 == 0:
         w4 = 0
-    
+
     # ignore face heights if requested
     if img.mode == "c" and img.allow_face_overlap:
         h1, h3, h5 = 0, 0, 0
-    
+
     item.heights = [h0, h1, h2, h3, h4, h5]
     item.widths = [w0, w1, w2, w3, w4, w5]
 
@@ -1092,12 +1092,12 @@ def init_node_dimensions(node, item, faceblock, img):
         max_h = max(item.heights + [min_separation])
 
     max_h += img.branch_vertical_margin
-        
+
     # correct possible unbalanced block in branch faces
     h_imbalance = abs(faceblock["branch-top"].h - faceblock["branch-bottom"].h)
     if h_imbalance + h1 > max_h:
         max_h += h_imbalance
-        
+
     item.facesRegion.setRect(0, 0, w3, max_h)
     item.nodeRegion.setRect(0, 0, total_w, max_h)
     item.fullRegion.setRect(0, 0, total_w, max_h)
@@ -1108,11 +1108,11 @@ def update_branch_lengths(tree, n2i, n2f, img):
         ndist = 1.0 if img.force_topology else node.dist
         item.branch_length = ndist * img._scale
         w0 = 0
-        
+
         if item.branch_length > item.widths[1]:
             w0 = item.widths[0] = item.branch_length - item.widths[1]
             item.nodeRegion.adjust(0, 0, w0, 0)
-            
+
         child_width = 0
         if not _leaf(node):
             for ch in node.children:

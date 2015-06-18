@@ -1,5 +1,5 @@
 from ete3 import Phyloxml, phyloxml
-import random 
+import random
 project = Phyloxml()
 
 # Creates a random tree

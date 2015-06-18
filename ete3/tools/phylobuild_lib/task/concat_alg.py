@@ -4,25 +4,25 @@ from __future__ import absolute_import
 #
 # This file is part of the Environment for Tree Exploration program
 # (ETE).  http://etetoolkit.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 # License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 
+#
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
-# 
-# ETE is distributed under the GPL copyleft license (2008-2015).  
+#
+# ETE is distributed under the GPL copyleft license (2008-2015).
 #
 # If you make use of ETE in published work, please cite:
 #
@@ -30,14 +30,14 @@ from __future__ import absolute_import
 # ETE: a python Environment for Tree Exploration. Jaime BMC
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
-# Note that extra references to the specific methods implemented in 
-# the toolkit may be available in the documentation. 
-# 
+# Note that extra references to the specific methods implemented in
+# the toolkit may be available in the documentation.
+#
 # More info at http://etetoolkit.org. Contact: huerta@embl.de
 #
-# 
+#
 # #END_LICENSE#############################################################
-from os.path import join as pjoin 
+from os.path import join as pjoin
 import logging
 from collections import defaultdict
 import six
@@ -60,11 +60,11 @@ class ConcatAlg(ConcatAlgTask):
         #self.cogs_hard_limit = int(conf[confname]["_max_cogs"])
         #used_cogs = cogs[:self.cogs_hard_limit]
         used_cogs = cogs
-        
+
         cog_string = '#'.join([','.join(sorted(c)) for c in used_cogs])
         cog_keyid = md5(cog_string) # This will be nodeid
         base_args = {}
-        ConcatAlgTask.__init__(self, cog_keyid, "concat_alg", "ConcatAlg", 
+        ConcatAlgTask.__init__(self, cog_keyid, "concat_alg", "ConcatAlg",
                                workflow_checksum=workflow_checksum,
                                base_args=base_args, extra_args=conf[confname])
         self.avail_cogs = len(cogs)
@@ -72,21 +72,21 @@ class ConcatAlg(ConcatAlgTask):
         self.cogs = used_cogs
         self.seqtype = seqtype
         self.cog_ids = set()
-        
+
         self.job2alg = {}
         self.job2model = {}
         if seqtype == "aa":
             self.default_model = conf[confname]["_default_aa_model"]
         elif seqtype == "nt":
             self.default_model = conf[confname]["_default_nt_model"]
-            
+
         self.genetree_workflow = conf[confname]["_workflow"][1:]
         self.init()
-        
+
     def load_jobs(self):
         # I want a single phylognetic tree for each cog
         from ete3.tools.phylobuild_lib.workflow.genetree import pipeline
-        
+
         for co in self.cogs:
             # Register a new msf task for each COG, using the same
             # config file but opening an new tree reconstruction
@@ -120,7 +120,7 @@ class ConcatAlg(ConcatAlgTask):
                 job2acleaner[job.nodeid] = db.get_data(dataid)
             elif job.ttype == "mchooser":
                 self.job2model[job.nodeid] = job.best_model
-                
+
         if "acleaner" in jobtypes:
             self.job2alg = job2acleaner
         else:
@@ -149,22 +149,22 @@ class ConcatAlg(ConcatAlgTask):
         txt_partitions = '\n'.join(partitions)
         log.log(26, "Modeled regions: \n"+'\n'.join(partitions))
         ConcatAlg.store_data(self, fasta, phylip, txt_partitions)
-        
+
 def get_species_code(name, splitter, field):
     # By default, taxid is the first par of the seqid, separated by
     # underscore
     return map(strip, name.split(splitter, 1))[field]
 
-def get_concatenated_alg(alg_filenames, models=None, 
-                        sp_field=0, sp_delimiter="_", 
-                        kill_thr=0.0, 
+def get_concatenated_alg(alg_filenames, models=None,
+                        sp_field=0, sp_delimiter="_",
+                        kill_thr=0.0,
                         keep_species=set()):
-    # Concat alg container 
+    # Concat alg container
     concat = SeqGroup()
     # Used to store different model partitions
     concat.id2partition = {}
 
-    if not models: 
+    if not models:
         models = ["None"]*len(alg_filenames)
     else:
         if len(models) != len(alg_filenames):
@@ -174,7 +174,7 @@ def get_concatenated_alg(alg_filenames, models=None,
     # Check algs and gets the whole set of species
     alg_objects = []
     sp2alg = defaultdict(list)
-    
+
     for algfile, matrix in zip(alg_filenames, models):
         alg = SeqGroup(algfile, "fasta")
         alg_objects.append(alg)
@@ -213,7 +213,7 @@ def get_concatenated_alg(alg_filenames, models=None,
                        sorted(alg2.id2name.values()))
         else:
             return r
-           
+
     sorted_algs = sorted(alg_objects, sort_single_algs)
     concat_alg_lengths = [alg.seqlength for alg in sorted_algs]
     model2win = {}
@@ -230,7 +230,7 @@ def get_concatenated_alg(alg_filenames, models=None,
             concat.id2seq[sp].append(seq)
             #current_seq = concat.id2seq.get(sp, "")
             #concat.id2seq[sp] = current_seq + seq.strip()
-            concat.id2name[sp] = sp 
+            concat.id2name[sp] = sp
             concat.name2id[sp] = sp
             concat.id2comment[sp] = [""]
         concat.id2seq[sp] = ''.join(concat.id2seq[sp])
@@ -253,4 +253,4 @@ def get_concatenated_alg(alg_filenames, models=None,
         raise Exception("The size of concatenated alg is not what expected")
     return concat, partitions, sp2alg, valid_species, concat_alg_lengths
 
-        
+

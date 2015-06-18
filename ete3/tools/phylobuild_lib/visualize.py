@@ -5,25 +5,25 @@ from __future__ import print_function
 #
 # This file is part of the Environment for Tree Exploration program
 # (ETE).  http://etetoolkit.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 # License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 
+#
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
-# 
-# ETE is distributed under the GPL copyleft license (2008-2015).  
+#
+# ETE is distributed under the GPL copyleft license (2008-2015).
 #
 # If you make use of ETE in published work, please cite:
 #
@@ -31,12 +31,12 @@ from __future__ import print_function
 # ETE: a python Environment for Tree Exploration. Jaime BMC
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
-# Note that extra references to the specific methods implemented in 
-# the toolkit may be available in the documentation. 
-# 
+# Note that extra references to the specific methods implemented in
+# the toolkit may be available in the documentation.
+#
 # More info at http://etetoolkit.org. Contact: huerta@embl.de
 #
-# 
+#
 # #END_LICENSE#############################################################
 import re
 from six.moves import range
@@ -48,7 +48,7 @@ def draw_tree(tree, conf, outfile):
     except ImportError as e:
         print(e)
         return
-  
+
     def ly_basic(node):
         if node.is_leaf():
             node.img_style['size'] = 0
@@ -66,7 +66,7 @@ def draw_tree(tree, conf, outfile):
 
         node.img_style['hz_line_width'] = 1
         node.img_style['vt_line_width'] = 1
-                    
+
     def ly_leaf_names(node):
         if node.is_leaf():
             spF = TextFace(node.species, fsize=10, fgcolor='#444444', fstyle='italic', ftype='Helvetica')
@@ -79,7 +79,7 @@ def draw_tree(tree, conf, outfile):
         if not node.is_leaf() and node.up:
             supFace = TextFace("%0.2g" %(node.support), fsize=7, fgcolor='indianred')
             add_face_to_node(supFace, node, column=0, position='branch-top')
-                
+
     def ly_tax_labels(node):
         if node.is_leaf():
             c = LABEL_START_COL
@@ -92,7 +92,7 @@ def draw_tree(tree, conf, outfile):
                     linF.background.color = lin2color[tname]
                     add_face_to_node(linF, node, c, position='aligned')
                     c += 1
-            
+
             for n in range(c, len(TRACKED_CLADES)):
                 add_face_to_node(TextFace('', fsize=10, fgcolor='slategrey'), node, c, position='aligned')
                 c+=1
@@ -126,20 +126,20 @@ def draw_tree(tree, conf, outfile):
                                        seqtail_format="line", scale_factor=ALG_SCALE)
                 add_face_to_node(seqFace, node, ALG_START_COL, aligned=True)
 
-                
+
     TRACKED_CLADES = ["Eukaryota", "Viridiplantae",  "Fungi",
                       "Alveolata", "Metazoa", "Stramenopiles", "Rhodophyta",
                       "Amoebozoa", "Crypthophyta", "Bacteria",
                       "Alphaproteobacteria", "Betaproteobacteria", "Cyanobacteria",
                       "Gammaproteobacteria",]
-    
+
     # ["Opisthokonta",  "Apicomplexa"]
-    
+
     colors = random_color(num=len(TRACKED_CLADES), s=0.45)
     lin2color = dict([(ln, colors[i]) for i, ln in enumerate(TRACKED_CLADES)])
 
     NAME_FACE = AttrFace('name', fsize=10, fgcolor='#444444')
-        
+
     LABEL_START_COL = 10
     ALG_START_COL = 40
     ts = TreeStyle()
@@ -160,12 +160,12 @@ def draw_tree(tree, conf, outfile):
         if hasattr(n, "tree_type"):
             NPR_TREES.append(n.tree_type)
         seq = getattr(n, "sequence", "")
-        MAX_SEQ_LEN = max(len(seq), MAX_SEQ_LEN) 
+        MAX_SEQ_LEN = max(len(seq), MAX_SEQ_LEN)
 
     if MAX_SEQ_LEN:
         ALG_SCALE = min(1, 1000./MAX_SEQ_LEN)
         ts.layout_fn.append(ly_block_alg)
-        
+
     if len(NPR_TREES) > 1:
         rF = RectFace(4, 4, "steelblue", "steelblue")
         rF.margin_right = 10
@@ -181,7 +181,7 @@ def draw_tree(tree, conf, outfile):
         ts.legend.add_face(rF, 0)
         ts.legend.add_face(TextFace(" Nucleotide based alignment"), 1)
         ts.legend_position = 3
- 
+
 
     try:
         tree.set_species_naming_function(spname)
@@ -190,11 +190,11 @@ def draw_tree(tree, conf, outfile):
         b = tree.search_nodes(species='Chondrus crispus')[0]
         #out = tree.get_common_ancestor([a, b])
         #out = tree.search_nodes(species='Haemophilus parahaemolyticus')[0].up
-        tree.set_outgroup(out)    
+        tree.set_outgroup(out)
         tree.swap_children()
     except Exception:
         pass
-    
+
     tree.render(outfile, tree_style=ts, w=170, units='mm', dpi=150)
     tree.render(outfile+'.svg', tree_style=ts, w=170, units='mm', dpi=150)
     tree.render(outfile+'.pdf', tree_style=ts, w=170, units='mm', dpi=150)
@@ -207,7 +207,7 @@ def annotate_tree_with_ncbi(tree):
         lf.add_features(taxid=name2sp.get(lf.species, 0))
         lf.add_features(genename=re.sub('\{[^}]+\}', '', lf.name).strip())
     ncbi.annotate_tree(tree, attr_name='taxid')
-    
+
 def spname(name):
     m = re.search('\{([^}]+)\}', name)
     if m:

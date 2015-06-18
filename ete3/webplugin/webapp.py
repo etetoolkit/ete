@@ -5,25 +5,25 @@ from __future__ import print_function
 #
 # This file is part of the Environment for Tree Exploration program
 # (ETE).  http://etetoolkit.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 # License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 
+#
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
-# 
-# ETE is distributed under the GPL copyleft license (2008-2015).  
+#
+# ETE is distributed under the GPL copyleft license (2008-2015).
 #
 # If you make use of ETE in published work, please cite:
 #
@@ -31,12 +31,12 @@ from __future__ import print_function
 # ETE: a python Environment for Tree Exploration. Jaime BMC
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
-# Note that extra references to the specific methods implemented in 
-# the toolkit may be available in the documentation. 
-# 
+# Note that extra references to the specific methods implemented in
+# the toolkit may be available in the documentation.
+#
 # More info at http://etetoolkit.org. Contact: huerta@embl.de
 #
-# 
+#
 # #END_LICENSE#############################################################
 import sys
 import os
@@ -57,7 +57,7 @@ class WebTreeApplication(object):
     def __init__(self):
         # Redirects normal output msgs to stderr, since stdout in web
         # application is for the browser
-        sys.stdout = sys.stderr 
+        sys.stdout = sys.stderr
 
         self.TreeConstructor = None
         self.NODE_TARGET_ACTIONS = ["node", "face"]
@@ -67,7 +67,7 @@ class WebTreeApplication(object):
         self._tree_style = None
         self._width = None
         self._height = None
-        self._size_units = "px" 
+        self._size_units = "px"
         self._custom_tree_renderer = None
         self._treeid2layout = {}
         self._external_app_handler = None
@@ -125,7 +125,7 @@ class WebTreeApplication(object):
                     nid2actions.setdefault(int(n._nid), []).append(aindex)
                 elif target == "face" and (not checker or checker(n)):
                     nid2face_actions.setdefault(int(n._nid), []).append(aindex)
-                    
+
         html_map = '<MAP NAME="%s"  class="ete_tree_img">' %(mapid)
         if img_map["nodes"]:
             for x1, y1, x2, y2, nodeid, text in img_map["nodes"]:
@@ -135,7 +135,7 @@ class WebTreeApplication(object):
                     (int(x1), int(y1), int(x2), int(y2),
                      treeid, text, area[0], area[1], area[2]-area[0], area[3]-area[1],
                      treeid, nodeid, ','.join(map(str, nid2actions.get(nodeid,[]))), str(nodeid) )
-                    
+
         if img_map["faces"]:
             for x1, y1, x2, y2, nodeid, text in img_map["faces"]:
                 text = "" if not text else text
@@ -143,11 +143,11 @@ class WebTreeApplication(object):
                 html_map += """ <AREA SHAPE="rect" COORDS="%s,%s,%s,%s" onMouseOut='unhighlight_node(); hide_face_popup();' onMouseOver='highlight_node("#%s", "%s", %s, %s, %s, %s); show_face_popup("%s", "%s", "%s", "%s");' onClick='show_context_menu("%s", "%s", "%s", "%s");' href="javascript:void('%s');">""" %\
                     (int(x1),int(y1),int(x2),int(y2),
                      treeid, text, area[0], area[1], area[2]-area[0], area[3]-area[1],
-                     treeid, nodeid, ','.join(map(str, nid2actions.get(nodeid,[])+nid2face_actions.get(nodeid,[])  )), text, 
+                     treeid, nodeid, ','.join(map(str, nid2actions.get(nodeid,[])+nid2face_actions.get(nodeid,[])  )), text,
                      treeid, nodeid, ','.join(map(str, nid2actions.get(nodeid,[])+nid2face_actions.get(nodeid,[])  )), text,
                      text,
                      )
-                    
+
         html_map += '</MAP>'
         return html_map
 
@@ -160,9 +160,9 @@ class WebTreeApplication(object):
         elif tree:
             self._treeid2tree[treeid] = tree
             self._load_tree_index(treeid)
-            
+
         self._treeid2cache[treeid] = cache_file if cache_file else "%s.pkl" %treeid
-            
+
         # if no tree is given, and not in memmory, it tries to loaded
         # from previous sessions
         if treeid not in self._treeid2tree:
@@ -184,7 +184,7 @@ class WebTreeApplication(object):
     def _load_tree_index(self, treeid):
         if not self._treeid2index.get(treeid, {}):
             tree_index = self._treeid2index[treeid] = {}
-            t = self._treeid2tree[treeid] 
+            t = self._treeid2tree[treeid]
             for n in t.traverse():
                 if hasattr(n, "_nid"):
                     tree_index[str(n._nid)] = n
@@ -219,8 +219,8 @@ class WebTreeApplication(object):
 
         layout_fn = self._treeid2layout.get(treeid, self._layout)
         mapid = "img_map_"+str(time.time())
-        img_map = _render_tree(t, img_path, self.CONFIG["DISPLAY"], layout = layout_fn, 
-                               tree_style = self._tree_style, 
+        img_map = _render_tree(t, img_path, self.CONFIG["DISPLAY"], layout = layout_fn,
+                               tree_style = self._tree_style,
                                w=self._width,
                                h=self._height,
                                units=self._size_units)
@@ -238,7 +238,7 @@ class WebTreeApplication(object):
 
         try:
             version_tag = __VERSION__
-        except NameError: 
+        except NameError:
             version_tag = "ete3"
 
         self._dump_tree_to_file(t, treeid)
@@ -251,7 +251,7 @@ class WebTreeApplication(object):
         tree_div_id = "ETE_tree_"+str(treeid)
         return html_map+ '<div id="%s" >'%tree_div_id + img_html + ete_publi + "</div>"
 
-    # WSGI web application 
+    # WSGI web application
     def __call__(self, environ, start_response):
         """ This function is executed when the application is called
         by the WSGI apache module. It is, therefore, in charge of
@@ -264,7 +264,7 @@ class WebTreeApplication(object):
             self.queries = cgi.parse_qs(environ['wsgi.input'].read())
         else:
             self.queries = {}
-            
+
         method = path[1]
         treeid = self.queries.get("treeid", [None])[0]
         nodeid = self.queries.get("nid", [None])[0]
@@ -275,7 +275,7 @@ class WebTreeApplication(object):
         aindex = self.queries.get("aindex", [None])[0]
 
         if method == "draw":
-            # if not treeid is given, generate one 
+            # if not treeid is given, generate one
             if not treeid:
                 treeid = md5(str(time.time())).hexdigest()
 
@@ -285,30 +285,30 @@ class WebTreeApplication(object):
             if self._custom_tree_renderer:
                 t = self._treeid2tree[treeid]
                 return self._custom_tree_renderer(t, treeid, self)
-            elif t and treeid: 
+            elif t and treeid:
                 return self._get_tree_img(treeid=treeid)
             else:
                 return "No tree to draw"
 
-        elif method == "get_menu": 
+        elif method == "get_menu":
             if not self._load_tree(treeid):
                 return "get_menu: Cannot load the tree: %s" %treeid
-            
+
             if nodeid:
                 tree_index = self._treeid2index[treeid]
                 node = tree_index[nodeid]
             else:
                 node = None
 
-            if textface: 
+            if textface:
                 header = str(textface).strip()
             else:
                 header = "Menu"
             html = """<div id="ete_popup_header"><span id="ete_popup_header_text">%s</span><div id="ete_close_popup" onClick='hide_popup();'></div></div><ul>""" %\
                 (header)
-            for i in map(int, actions.split(",")): 
+            for i in map(int, actions.split(",")):
                 aname, target, handler, checker, html_generator = self.actions[i]
-                if html_generator: 
+                if html_generator:
                     html += html_generator(i, treeid, nodeid, textface, node)
                 else:
                     html += """<li><a  href='javascript:void(0);' onClick='hide_popup(); run_action("%s", "%s", "%s");'> %s </a></li> """ %\
@@ -333,14 +333,14 @@ class WebTreeApplication(object):
             elif target in set(["refresh"]):
                 return self._get_tree_img(treeid=treeid)
             return "Bad guy"
-               
+
         elif self._external_app_handler:
             return self._external_app_handler(environ, start_response, self.queries)
         else:
             return  '\n'.join(map(str, list(environ.items()))) + str(self.queries) + '\t\n'.join(environ['wsgi.input'])
 
-def _render_tree(t, img_path, display, layout=None, tree_style=None, 
+def _render_tree(t, img_path, display, layout=None, tree_style=None,
                  w=None, h=None, units="px"):
     os.environ["DISPLAY"]=display
-    return t.render(img_path, layout = layout, tree_style=tree_style, 
+    return t.render(img_path, layout = layout, tree_style=tree_style,
                     w=w, h=h, units=units)

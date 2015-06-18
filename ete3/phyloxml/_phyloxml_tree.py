@@ -3,25 +3,25 @@
 #
 # This file is part of the Environment for Tree Exploration program
 # (ETE).  http://etetoolkit.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 # License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 
+#
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
-# 
-# ETE is distributed under the GPL copyleft license (2008-2015).  
+#
+# ETE is distributed under the GPL copyleft license (2008-2015).
 #
 # If you make use of ETE in published work, please cite:
 #
@@ -29,12 +29,12 @@
 # ETE: a python Environment for Tree Exploration. Jaime BMC
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
-# Note that extra references to the specific methods implemented in 
-# the toolkit may be available in the documentation. 
-# 
+# Note that extra references to the specific methods implemented in
+# the toolkit may be available in the documentation.
+#
 # More info at http://etetoolkit.org. Contact: huerta@embl.de
 #
-# 
+#
 # #END_LICENSE#############################################################
 """
 This module implements the interoperability between Phylogeny and
@@ -64,7 +64,7 @@ class PhyloxmlTree(PhyloTree):
             self._set_dist(self._dist)
             v = self.phyloxml_clade.get_branch_length_attr()
         return float(v)
-        
+
     def _set_dist(self, value):
         try:
             self.phyloxml_clade.set_branch_length(float(value))
@@ -81,10 +81,10 @@ class PhyloxmlTree(PhyloTree):
     def _set_support(self, value):
         self._get_support()
         self.phyloxml_clade.confidence[0].valueOf_ = float(value)
-        
+
     def _get_name(self):
         return self.phyloxml_clade.get_name()
-    
+
     def _set_name(self, value):
         try:
             self.phyloxml_clade.set_name(value)
@@ -103,7 +103,7 @@ class PhyloxmlTree(PhyloTree):
         if not phyloxml_phylogeny:
             self.phyloxml_phylogeny = Phylogeny()
         else:
-            self.phyloxml_phylogeny = phyloxml_phylogeny 
+            self.phyloxml_phylogeny = phyloxml_phylogeny
         if not phyloxml_clade:
             self.phyloxml_clade = Clade()
             self.phyloxml_clade.set_branch_length(0.0)
@@ -140,7 +140,7 @@ class PhyloxmlTree(PhyloTree):
                 new_node.build(child_)
             else:
                 baseclass.buildChildren(child_, node, nodeName_)
-            
+
     def export(self, outfile=sys.stdout, level=0, namespace_='phy:', name_='Phylogeny', namespacedef_=''):
         if not self.up:
             self.phyloxml_phylogeny.clade = self.phyloxml_clade

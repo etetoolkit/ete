@@ -17,7 +17,7 @@ import face_grid, bubble_map, item_faces, node_style, node_background, face_posi
 sys.path.insert(0, os.path.join(ETEPATH, "examples/phylogenies"))
 import phylotree_visualization
 
-CONT = 0 
+CONT = 0
 class Test_Coretype_Treeview(unittest.TestCase):
     """ Tests tree basics. """
     def test_renderer(self):
@@ -158,8 +158,8 @@ class Test_Coretype_Treeview(unittest.TestCase):
         ms.mode = "r"
         ms.show_leaf_name = False
         main_tree.render('test.png', tree_style=ms)
-        main_tree.render('test.svg', tree_style=ms)        
-        
+        main_tree.render('test.svg', tree_style=ms)
+
 
 if __name__ == '__main__':
     unittest.main()

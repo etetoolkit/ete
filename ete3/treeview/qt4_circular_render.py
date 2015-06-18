@@ -4,25 +4,25 @@ from __future__ import absolute_import
 #
 # This file is part of the Environment for Tree Exploration program
 # (ETE).  http://etetoolkit.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 # License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 
+#
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
-# 
-# ETE is distributed under the GPL copyleft license (2008-2015).  
+#
+# ETE is distributed under the GPL copyleft license (2008-2015).
 #
 # If you make use of ETE in published work, please cite:
 #
@@ -30,12 +30,12 @@ from __future__ import absolute_import
 # ETE: a python Environment for Tree Exploration. Jaime BMC
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
-# Note that extra references to the specific methods implemented in 
-# the toolkit may be available in the documentation. 
-# 
+# Note that extra references to the specific methods implemented in
+# the toolkit may be available in the documentation.
+#
 # More info at http://etetoolkit.org. Contact: huerta@embl.de
 #
-# 
+#
 # #END_LICENSE#############################################################
 import math
 import colorsys
@@ -55,7 +55,7 @@ class ArcPartition(QtGui.QGraphicsPathItem):
         QtGui.QGraphicsPathItem.__init__(self, parent)
         self.setCacheMode(QtGui.QGraphicsItem.DeviceCoordinateCache)
         #self.setCacheMode(QtGui.QGraphicsItem.ItemCoordinateCache)
-        
+
     def set_arc(self, cxdist, cydist, r1, r2, angle_start, angle_end):
         """ Draws a 2D arc with two arc lines of length r1 (inner) and
         r2 (outer) with center in cxdist,cydist. angle_start and
@@ -64,7 +64,7 @@ class ArcPartition(QtGui.QGraphicsPathItem):
 
         #self.data = [cxdist, cydist, r1, r2, angle_start, angle_end]
         d1 = r1 * 2
-        d2 = r2 * 2 
+        d2 = r2 * 2
         r1_xstart = -r1 - cxdist
         r1_ystart = -r1 + cydist
         r2_xstart = -r2 - cxdist
@@ -72,7 +72,7 @@ class ArcPartition(QtGui.QGraphicsPathItem):
         angle_start = angle_start
         angle_end = angle_end
         angle_span = angle_end + angle_start
-        
+
         path = QtGui.QPainterPath()
         # Calculate start and end points of inner arc
         path.arcMoveTo(r1_xstart, r1_ystart, d1, d1, -angle_start)
@@ -87,7 +87,7 @@ class ArcPartition(QtGui.QGraphicsPathItem):
         o2 = path.currentPosition()
         # Draws line to the end point in inner arc (straight line)
         path.lineTo(i2)
-        # Draws inner arc from end point to to start 
+        # Draws inner arc from end point to to start
         path.arcTo(r1_xstart, r1_ystart, d1, d1, angle_end, -angle_span)
         # Draws line to the start point of outer arc (straight line)
         path.lineTo(o1)
@@ -100,7 +100,7 @@ class ArcPartition(QtGui.QGraphicsPathItem):
 class _ArcItem(QtGui.QGraphicsPathItem):
     def __init__(self):
         QtGui.QGraphicsPathItem.__init__(self)
-       
+
     def set_arc(self, cxdist, cydist, r1, r2, angle_start, angle_end):
         """ Draws a 2D arc with two arc lines of length r1 (inner) and
         r2 (outer) with center in cxdist,cydist. angle_start and
@@ -108,7 +108,7 @@ class _ArcItem(QtGui.QGraphicsPathItem):
         degrees """
 
         def clockwise(a):
-            if a<0: 
+            if a<0:
                 return -1 * (a)
             else:
                 return -a
@@ -116,7 +116,7 @@ class _ArcItem(QtGui.QGraphicsPathItem):
 
         #self.data = [cxdist, cydist, r1, r2, angle_start, angle_end]
         d1 = r1 * 2
-        d2 = r2 * 2 
+        d2 = r2 * 2
         r1_xstart = -r1 - cxdist
         r1_ystart = -r1 + cydist
         r2_xstart = -r2 - cxdist
@@ -141,7 +141,7 @@ class _ArcItem(QtGui.QGraphicsPathItem):
         o2 = path.currentPosition()
         # Draws line to the end point in inner arc (straight line)
         path.lineTo(i2)
-        # Draws inner arc from end point to to start 
+        # Draws inner arc from end point to to start
         path.arcTo(r1_xstart, r1_ystart, d1, d1, angle_end, -angle_span)
         # Draws line to the start point of outer arc (straight line)
         #path.lineTo(o1)
@@ -165,15 +165,15 @@ def get_min_radius(w, h, angle, xoffset):
     rectangle (w,h) within and given angle (a)."""
 
     # converts to radians
-    angle = (angle * math.pi) / 180 
+    angle = (angle * math.pi) / 180
     b = xoffset + w
     a = h / 2
     off = 0
     if xoffset:
         effective_angle = math.atan(a / xoffset)
         if effective_angle > angle / 2 and angle / 2 < math.pi:
-            off = a / math.tan(angle / 2) 
-            bb = off + w 
+            off = a / math.tan(angle / 2)
+            bb = off + w
             #r = math.sqrt(a**2 + bb**2)
             r = math.hypot(a, bb)
             off = max (off, xoffset) - xoffset
@@ -188,7 +188,7 @@ def get_min_radius(w, h, angle, xoffset):
         #r2 = w / math.cos(effective_angle)
         #print r1, r2
         r = r1#+r2
-        
+
     return r, off
 
 def render_circular(root_node, n2i, rot_step):
@@ -213,7 +213,7 @@ def render_circular(root_node, n2i, rot_step):
         #    print "Offset detected in node", xoffset
 
         rotate_and_displace(item.content, item.rotation, h, parent_radius)
-        
+
         max_r = max(max_r, r)
 
         if not _leaf(node) and len(node.children) > 1:
@@ -248,12 +248,12 @@ def render_circular(root_node, n2i, rot_step):
                                                item.branch_length + xtra , item.center)
                 item.nodeRegion.setWidth(item.nodeRegion.width()+xtra)
 
-            # And moves elements 
+            # And moves elements
             if xoffset:
                 for i in item.movable_items:
                     i.moveBy(xoffset, 0)
-                
-            
+
+
     n2i[root_node].max_r = max_r
     return max_r
 
@@ -270,11 +270,11 @@ def init_circular_leaf_item(node, n2i, n2f, last_rotation, rot_step):
 
 def init_circular_node_item(node, n2i, n2f):
     item = n2i[node]
-    if len(node.children) > 1: 
+    if len(node.children) > 1:
         first_c = n2i[node.children[0]]
         last_c = n2i[node.children[-1]]
         rot_start = first_c.rotation
-        rot_end = last_c.rotation 
+        rot_end = last_c.rotation
         item.rotation = rot_start + ((rot_end - rot_start) / 2)
         item.full_start = first_c.full_start
         item.full_end = last_c.full_end
@@ -288,7 +288,7 @@ def init_circular_node_item(node, n2i, n2f):
         #item.rotation = rot_start + ((rot_end - rot_start) / 2)
         item.full_start = child.full_start
         item.full_end = child.full_end
-    
+
     item.effective_height = get_effective_height(node, n2i, n2f)
     item.center = item.effective_height/2
 
@@ -302,15 +302,15 @@ def get_effective_height(n, n2i, n2f):
     right_h = n2i[n].nodeRegion.height()/2
     up_h = max(right_h, up_h)
     down_h = max(right_h, down_h)
-        
+
     fullR = n2i[n].fullRegion
     center = fullR.height()/2
     return max(up_h, down_h)*2
-    
+
 #@tracktime
 def calculate_optimal_scale(root_node, n2i, rot_step, img):
-    """ Note: Seems to be fast. 0.5s from a tree of 10.000 leaves""" 
-    
+    """ Note: Seems to be fast. 0.5s from a tree of 10.000 leaves"""
+
     n2minradius = {}
     n2sumdist = {}
     n2sumwidth = {}
@@ -326,10 +326,10 @@ def calculate_optimal_scale(root_node, n2i, rot_step, img):
         h = item.effective_height
         parent_radius = n2minradius.get(node.up, 0)
         angle = rot_step if _leaf(node) else item.angle_span
-            
+
         r, xoffset = get_min_radius(w, h, angle, parent_radius)
-        n2minradius[node] = r 
-        n2sumdist[node] = n2sumdist.get(node.up, 0) + ndist 
+        n2minradius[node] = r
+        n2sumdist[node] = n2sumdist.get(node.up, 0) + ndist
         # versed sine: the little extra line needed to complete the
         # radius.
         #vs = r - (parent_radius + xoffset + w)
@@ -338,7 +338,7 @@ def calculate_optimal_scale(root_node, n2i, rot_step, img):
     root_opening = 0.0
     most_distant = max(n2sumdist.values())
     if most_distant == 0: return 0.0
-    
+
     best_scale = None
     for node in visited_nodes:
         item = n2i[node]
@@ -348,14 +348,14 @@ def calculate_optimal_scale(root_node, n2i, rot_step, img):
         else:
             #Whats the expected radius of this node?
             current_rad = n2sumdist[node] * best_scale + (n2sumwidth[node] + root_opening)
-                    
+
             # If still too small, it means we need to increase scale.
             if current_rad < n2minradius[node]:
                 # This is a simplification of the real ecuacion needed
                 # to calculate the best scale. Given that I'm not
                 # taking into account the versed sine of each parent
                 # node, the equation is actually very simple.
-                if img.root_opening_factor: 
+                if img.root_opening_factor:
                     best_scale = (n2minradius[node] - (n2sumwidth[node])) / (n2sumdist[node] + (most_distant * img.root_opening_factor))
                     root_opening = most_distant * best_scale * img.root_opening_factor
                 else:
@@ -384,7 +384,7 @@ def calculate_optimal_scale(root_node, n2i, rot_step, img):
                 min_alg_scale = min(new_scale, min_alg_scale) if min_alg_scale is not None else new_scale
         if min_alg_scale >  best_scale:
             best_scale = min_alg_scale
-            
+
     if root_opening:
         n2i[root_node].nodeRegion.adjust(root_opening, 0, root_opening, 0)
         n2i[root_node].fullRegion.adjust(root_opening, 0, root_opening, 0)
@@ -394,7 +394,7 @@ def calculate_optimal_scale(root_node, n2i, rot_step, img):
     #for node in visited_nodes:
     #    item = n2i[node]
     #    h = item.effective_height
-    #    a = n2sumdist[node] * best_scale + n2sumwidth.get(node) 
+    #    a = n2sumdist[node] * best_scale + n2sumwidth.get(node)
     #    b = h/2
     #    item.radius = math.sqrt(a**2 + b**2)
     #print "root opening", root_opening

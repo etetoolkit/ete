@@ -13,7 +13,7 @@ class Test_PhyloXML(unittest.TestCase):
         for fname in os.listdir(path):
             if fname.endswith(".xml"):
                 W = open("/tmp/test_xml_parser", "w")
-                print(fname, "...", end=' ') 
+                print(fname, "...", end=' ')
                 fpath = os.path.join(path, fname)
                 p = phyloxml.Phyloxml()
                 t1 = time.time()
@@ -25,10 +25,10 @@ class Test_PhyloXML(unittest.TestCase):
     def test_examples(self):
         path = os.path.join(ETEPATH, "examples/phyloxml/")
         for ex in os.listdir(path):
-            print("testing", ex) 
+            print("testing", ex)
             if ex.endswith(".py"):
                 s = os.system("cd %s && python %s" %(path, ex))
-                if s: 
+                if s:
                     raise Exception("Example crashed!")
 
 
@@ -39,7 +39,7 @@ class Test_NeXML(unittest.TestCase):
         for fname in os.listdir(path):
             if fname.endswith(".xml"):
                 W = open("/tmp/test_xml_parser", "w")
-                print(fname, "...", end=' ') 
+                print(fname, "...", end=' ')
                 fpath = os.path.join(path, fname)
                 p = nexml.Nexml()
                 t1 = time.time()
@@ -51,10 +51,10 @@ class Test_NeXML(unittest.TestCase):
     def test_examples(self):
         path = os.path.join(ETEPATH, "examples/nexml/")
         for ex in os.listdir(path):
-            print("testing", ex) 
+            print("testing", ex)
             if ex.endswith(".py"):
                 s = os.system("cd %s && python %s" %(path, ex))
-                if s: 
+                if s:
                     raise Exception("Example crashed!")
 
 

@@ -10,7 +10,7 @@ def layout(node):
         # Creates a sphere face whose size is proportional to node's
         # feature "weight"
         C = CircleFace(radius=node.weight, color="RoyalBlue", style="sphere")
-        # Let's make the sphere transparent 
+        # Let's make the sphere transparent
         C.opacity = 0.3
         # And place as a float face over the tree
         faces.add_face_to_node(C, node, 0, position="float")
@@ -30,7 +30,7 @@ def get_example_tree():
     # Set our custom layout function
     ts.layout_fn = layout
 
-    # Draw a tree 
+    # Draw a tree
     ts.mode = "c"
 
     # We will add node names manually
@@ -40,10 +40,10 @@ def get_example_tree():
     ts.show_branch_support = True
 
     return t, ts
-    
+
 if __name__ == "__main__":
     t, ts = get_example_tree()
 
     #t.render("bubble_map.png", w=600, dpi=300, tree_style=ts)
     t.show(tree_style=ts)
- 
+

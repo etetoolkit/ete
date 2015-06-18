@@ -4,25 +4,25 @@ from __future__ import absolute_import
 #
 # This file is part of the Environment for Tree Exploration program
 # (ETE).  http://etetoolkit.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 # License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 
+#
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
-# 
-# ETE is distributed under the GPL copyleft license (2008-2015).  
+#
+# ETE is distributed under the GPL copyleft license (2008-2015).
 #
 # If you make use of ETE in published work, please cite:
 #
@@ -30,16 +30,16 @@ from __future__ import absolute_import
 # ETE: a python Environment for Tree Exploration. Jaime BMC
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
-# Note that extra references to the specific methods implemented in 
-# the toolkit may be available in the documentation. 
-# 
+# Note that extra references to the specific methods implemented in
+# the toolkit may be available in the documentation.
+#
 # More info at http://etetoolkit.org. Contact: huerta@embl.de
 #
-# 
+#
 # #END_LICENSE#############################################################
 
 from ete3 import numpy
-from math import sqrt 
+from math import sqrt
 from six.moves import range
 
 def safe_mean(values):
@@ -165,7 +165,7 @@ def pearson_dist(v1, v2):
         return 0.0
     else:
         return 1.0 - stats.pearsonr(list(v1),list(v2))[0]
- 
+
 def spearman_dist(v1, v2):
     if (v1 == v2).all():
         return 0.0
@@ -192,9 +192,9 @@ def square_euclidean_dist(v1,v2):
         raise ValueError("Cannot calculate values")
     return  distance/valids
 
-try: 
+try:
    from scipy import stats
-except ImportError: 
+except ImportError:
     try:
         from . import stats
         default_dist = spearman_dist

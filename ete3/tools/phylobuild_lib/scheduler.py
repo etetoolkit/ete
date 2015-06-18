@@ -5,25 +5,25 @@ from __future__ import print_function
 #
 # This file is part of the Environment for Tree Exploration program
 # (ETE).  http://etetoolkit.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 # License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 
+#
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
-# 
-# ETE is distributed under the GPL copyleft license (2008-2015).  
+#
+# ETE is distributed under the GPL copyleft license (2008-2015).
 #
 # If you make use of ETE in published work, please cite:
 #
@@ -31,12 +31,12 @@ from __future__ import print_function
 # ETE: a python Environment for Tree Exploration. Jaime BMC
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
-# Note that extra references to the specific methods implemented in 
-# the toolkit may be available in the documentation. 
-# 
+# Note that extra references to the specific methods implemented in
+# the toolkit may be available in the documentation.
+#
 # More info at http://etetoolkit.org. Contact: huerta@embl.de
 #
-# 
+#
 # #END_LICENSE#############################################################
 import sys
 import os
@@ -69,13 +69,13 @@ def debug(_signal, _frame):
     import pdb
     pdb.set_trace()
 
-def control_c(_signal, _frame):    
+def control_c(_signal, _frame):
     signal.signal(signal.SIGINT, signal.SIG_IGN)
     db.commit()
-    
+
     ver = {28: "0", 26: "1", 24: "2", 22: "3", 20: "4", 10: "5"}
     ver_level = log.level
-    
+
     print('\n\nYou pressed Ctrl+C!')
     print('q) quit')
     print('v) change verbosity level:', ver.get(ver_level, ver_level))
@@ -96,23 +96,23 @@ def control_c(_signal, _frame):
         import pdb
         pdb.set_trace()
     signal.signal(signal.SIGINT, control_c)
-    
+
 def sort_tasks(x, y):
     priority = {
         "treemerger": 1,
         "tree": 2,
-        "mchooser": 3, 
+        "mchooser": 3,
         "alg": 4,
         "concat_alg": 5,
         "acleaner": 6,
         "msf":7,
         "cog_selector":8}
-    
+
     x_type_prio = priority.get(x.ttype, 100)
     y_type_prio = priority.get(y.ttype, 100)
-        
+
     prio_cmp = cmp(x_type_prio, y_type_prio)
-    if prio_cmp == 0: 
+    if prio_cmp == 0:
         x_size = getattr(x, "size", 0)
         y_size = getattr(y, "size", 0)
         size_cmp = cmp(x_size, y_size) * -1
@@ -127,20 +127,20 @@ def get_stored_data(fileid):
     try:
         _tid, _did = fileid.split(".")
         _did = int(_did)
-    except (IndexError, ValueError): 
+    except (IndexError, ValueError):
         dataid = fileid
     else:
         dataid = db.get_dataid(_tid, _did)
     return db.get_data(dataid)
-    
-def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, debug, norender):    
+
+def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, debug, norender):
     # Adjust debug mode
     if debug == "all":
         log.setLevel(10)
     pending_tasks = set(pending_tasks)
-    
+
     ## ===================================
-    ## INITIALIZE BASIC VARS 
+    ## INITIALIZE BASIC VARS
     execution, run_detached = execution
     thread2tasks = defaultdict(list)
     for task in pending_tasks:
@@ -154,7 +154,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
     cores_total = GLOBALS["_max_cores"]
     if cores_total > 0:
         job_queue = Queue()
-        
+
         back_launcher = Process(target=background_job_launcher,
                                 args=(job_queue, run_detached,
                                       GLOBALS["launch_time"], cores_total))
@@ -166,14 +166,14 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
     GLOBALS["_background_scheduler"] = back_launcher
     GLOBALS["_job_queue"] = job_queue
 
-        
-    # Captures Ctrl-C for debuging DEBUG 
-    #signal.signal(signal.SIGINT, control_c)
-    
 
-    
+    # Captures Ctrl-C for debuging DEBUG
+    #signal.signal(signal.SIGINT, control_c)
+
+
+
     last_report_time = None
-    
+
     BUG = set()
     try:
         # Enters into task scheduling
@@ -228,7 +228,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
 
                 # Enter debuging mode if necessary
                 if debug and log.level > 10 and task.taskid.startswith(debug):
-                    log.setLevel(10) 
+                    log.setLevel(10)
                     log.debug("ENTERING IN DEBUGGING MODE")
                 thread2tasks[task.configid].append(task)
 
@@ -250,7 +250,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
                                         try:
                                             _tid, _did = ifile.split(".")
                                             _did = int(_did)
-                                        except (IndexError, ValueError): 
+                                        except (IndexError, ValueError):
                                             dataid = ifile
                                         else:
                                             dataid = db.get_dataid(_tid, _did)
@@ -260,11 +260,11 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
                                         else:
                                             outfile = pjoin(outpath, ifile)
 
-                                        if not os.path.exists(outfile): 
+                                        if not os.path.exists(outfile):
                                             open(outfile, "w").write(db.get_data(dataid))
-                                            
+
                                     log.log(24, "  @@8:Queueing @@1: %s from %s" %(j, task))
-                                    if execution: 
+                                    if execution:
                                         job_queue.put([j.jobid, j.cores, cmd, j.status_file])
                                 BUG.add(j.jobid)
 
@@ -285,7 +285,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
                 else:
                     # Set temporary Queued state to avoids launching
                     # jobs from clones
-                    task.status = "Q" 
+                    task.status = "Q"
                     if log.level < 24:
                         show_task_info(task)
 
@@ -307,7 +307,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
                     for c in cmd_lines:
                         print('   '+'\t'.join(map(str, c)), file=CMD_LOG)
                     CMD_LOG.close()
-                    # 
+                    #
 
                     try:
                         #wkname = GLOBALS[task.configid]['_name']
@@ -317,7 +317,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
                         pending_tasks.discard(task)
                         thread_errors[task.configid].append([task, e.value, e.msg])
                         continue
-                    else: 
+                    else:
                         logindent(-3)
 
                         to_add_tasks.update(create_tasks)
@@ -330,7 +330,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
                     thread_errors[task.configid].append([task, None, "Found (E) task status"])
 
             #db.commit()
-            #if not back_launcher: 
+            #if not back_launcher:
             #    wtime = launch_jobs(sorted(pending_tasks, sort_tasks),
             #                    execution, run_detached)
 
@@ -350,14 +350,14 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
 
             # Dump / show ended threads
             error_lines = []
-            for configid, etasks in six.iteritems(thread_errors): 
+            for configid, etasks in six.iteritems(thread_errors):
                 error_lines.append("Thread @@10:%s@@1: contains errors:" %\
                             (GLOBALS[configid]["_name"]))
                 for error in etasks:
                     error_lines.append(" ** %s" %error[0])
                     e_obj = error[1] if error[1] else error[0]
                     error_path = e_obj.jobdir if isjob(e_obj) else e_obj.taskid
-                    if e_obj is not error[0]: 
+                    if e_obj is not error[0]:
                         error_lines.append("      -> %s" %e_obj)
                     error_lines.append("      -> %s" %error_path)
                     error_lines.append("        -> %s" %error[2])
@@ -451,8 +451,8 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
 
             log.log(26, "")
     except:
-        raise 
-        
+        raise
+
     if thread_errors:
         log.error("Done with ERRORS")
     else:
@@ -460,7 +460,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
 
     return thread_errors
 
-    
+
 def background_job_launcher(job_queue, run_detached, schedule_time, max_cores):
     running_jobs = {}
     visited_ids = set()
@@ -495,7 +495,7 @@ def background_job_launcher(job_queue, run_detached, schedule_time, max_cores):
             for d in done_jobs:
                 del running_jobs[d]
 
-            cores_avail = max_cores - cores_used       
+            cores_avail = max_cores - cores_used
             for i in range(cores_avail):
                 try:
                     jid, cores, cmd, st_file = job_queue.get(False)
@@ -525,7 +525,7 @@ def background_job_launcher(job_queue, run_detached, schedule_time, max_cores):
                     else:
                         # create a process group, so I can kill the thread if necessary
                         running_proc = subprocess.Popen(cmd, shell=True, preexec_fn=os.setsid)
-                        
+
                 except Exception as e:
                     print(e)
                     ST=open(st_file, "w"); ST.write("E"); ST.flush(); ST.close()
@@ -559,13 +559,13 @@ def background_job_launcher(job_queue, run_detached, schedule_time, max_cores):
                         open(st_file, "w").write("E")
                     except:
                         print("Ooops,", st_file, "could not be labeled as Error task. Please remove file before resuming the analysis.")
-            
+
     sys.exit(0)
 
-        
+
 def launch_detached_process(cmd):
     os.system(cmd)
-    
+
 def color_status(status):
     if status == "D":
         stcolor = "@@06:"
@@ -605,7 +605,7 @@ def show_task_info(task):
             log.log(24, "(%s): %s", j.status, j)
     logindent(-2)
 
-    
+
 def check_cores(j, cores_used, cores_total, execution):
     if j.cores > cores_total:
         raise ConfigError("Job [%s] is trying to be executed using [%d] cores."
@@ -613,17 +613,17 @@ def check_cores(j, cores_used, cores_total, execution):
                           " Use the --multicore option to enable more cores." %
                           (j, j.cores, cores_total))
     elif execution =="insitu" and j.cores > cores_total-cores_used:
-        log.log(22, "Job [%s] awaiting [%d] core(s)" 
+        log.log(22, "Job [%s] awaiting [%d] core(s)"
                  % (j, j.cores))
         return False
     else:
         return True
-    
+
 def launch_detached(cmd):
     pid1 = os.fork()
     if pid1 == 0:
         pid2 = os.fork()
-   
+
         if pid2 == 0:	
             os.setsid()
             pid3 = os.fork()

@@ -5,25 +5,25 @@ from __future__ import print_function
 #
 # This file is part of the Environment for Tree Exploration program
 # (ETE).  http://etetoolkit.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 # License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 
+#
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
-# 
-# ETE is distributed under the GPL copyleft license (2008-2015).  
+#
+# ETE is distributed under the GPL copyleft license (2008-2015).
 #
 # If you make use of ETE in published work, please cite:
 #
@@ -31,12 +31,12 @@ from __future__ import print_function
 # ETE: a python Environment for Tree Exploration. Jaime BMC
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
-# Note that extra references to the specific methods implemented in 
-# the toolkit may be available in the documentation. 
-# 
+# Note that extra references to the specific methods implemented in
+# the toolkit may be available in the documentation.
+#
 # More info at http://etetoolkit.org. Contact: huerta@embl.de
 #
-# 
+#
 # #END_LICENSE#############################################################
 from StringIO import StringIO
 import six.moves.cPickle
@@ -75,14 +75,14 @@ class CogSelector(CogSelectorTask):
         self.size = len(target_sp | out_sp)
         self.cog_analysis = None
         self.cogs = None
-        
+
     def finish(self):
         def sort_cogs_by_size(c1, c2):
             '''
             sort cogs by descending size. If two cogs are the same size, sort
             them keeping first the one with the less represented
             species. Otherwise sort by sequence name sp_seqid.'''
-            
+
             r = -1 * cmp(len(c1), len(c2))
             if r == 0:
                 # finds the cog including the less represented species
@@ -108,15 +108,15 @@ class CogSelector(CogSelectorTask):
                     return r
             else:
                 return r
-            
+
         all_species = self.targets | self.outgroups
         # strict threshold
         #min_species = len(all_species) - int(round(self.missing_factor * len(all_species)))
-        
+
         # Relax threshold for cog selection to ensure sames genes are always included
         min_species = len(all_species) - int(round(self.missing_factor * len(GLOBALS["target_species"])))
         min_species = max(min_species, (1-self.max_missing_factor) * len(all_species))
-        
+
         smallest_cog, largest_cog = len(all_species), 0
         all_singletons = []
         sp2cogs = defaultdict(int)
@@ -173,11 +173,11 @@ class CogSelector(CogSelectorTask):
         # sorting but kept among runs
         #map(lambda x: x.sort(), self.cogs)
         #self.cogs.sort(lambda x,y: cmp(md5(','.join(x)), md5(','.join(y))))
-        
+
         log.log(28, "Analysis of current COG selection:")
         for sp, ncogs in sorted(list(sp_repr.items()), key=lambda x:x[1], reverse=True):
             log.log(28, " % 30s species present in % 6d COGs (%0.1f%%)" %(sp, ncogs, 100 * ncogs/float(len(self.cogs))))
-                
+
         log.log(28, " %d COGs selected with at least %d species out of %d" %(len(self.cogs), min_species, len(all_species)))
         log.log(28, " Average COG size %0.1f/%0.1f +- %0.1f" %(_mean(sizes), _median(sizes), _std(sizes)))
 
@@ -199,7 +199,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     # Input data related flags
-    
+
     parser.add_argument("--cogs_file", dest="cogs_file",
                         required=True,
                         help="Cogs file")
@@ -219,13 +219,13 @@ if __name__ == "__main__":
     parser.add_argument("--max_missing", dest="max_missing_factor",
                              type=float, default = 0.3,
                              help="max missing factor for cog selection")
-    
+
     parser.add_argument("--total_species", dest="total_species",
                              type=int, required=True,
                              help="total number of species in the analysis")
-    
+
     args = parser.parse_args()
-    
+
     GLOBALS["cogs_file"] = args.cogs_file
     GLOBALS["spname_delimiter"] = args.spname_delimiter
     target_sp = args.target_sp
@@ -241,5 +241,5 @@ if __name__ == "__main__":
     C =  CogSelector(set(target_sp), set(), "aa", conf, "user")
 
     db.translate_names = lambda x:  dict([(n,n) for n in x])
-    
+
     C.finish()

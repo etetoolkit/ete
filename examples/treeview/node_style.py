@@ -58,7 +58,7 @@ def get_example_tree():
     ts.show_leaf_name = False
 
     return t, ts
-    
+
 if __name__ == "__main__":
     t, ts = get_example_tree()
     t.show(tree_style=ts)

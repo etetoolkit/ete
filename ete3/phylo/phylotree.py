@@ -3,25 +3,25 @@
 #
 # This file is part of the Environment for Tree Exploration program
 # (ETE).  http://etetoolkit.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 # License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 
+#
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
-# 
-# ETE is distributed under the GPL copyleft license (2008-2015).  
+#
+# ETE is distributed under the GPL copyleft license (2008-2015).
 #
 # If you make use of ETE in published work, please cite:
 #
@@ -29,12 +29,12 @@
 # ETE: a python Environment for Tree Exploration. Jaime BMC
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
-# Note that extra references to the specific methods implemented in 
-# the toolkit may be available in the documentation. 
-# 
+# Note that extra references to the specific methods implemented in
+# the toolkit may be available in the documentation.
+#
 # More info at http://etetoolkit.org. Contact: huerta@embl.de
 #
-# 
+#
 # #END_LICENSE#############################################################
 
 
@@ -81,7 +81,7 @@ def get_subtrees(tree, full_copy=False, features=None, newick_only=False):
     """
     ntrees, ndups = calc_subtrees(tree)
     return ntrees, ndups, _get_subtrees(tree, full_copy, features, newick_only)
-    
+
 def _get_subtrees(tree, full_copy=False, features=None, newick_only=False):
     # First I need to precalculate all the species trees in tuple (newick) format
     nid = 0
@@ -92,10 +92,10 @@ def _get_subtrees(tree, full_copy=False, features=None, newick_only=False):
         n2nid[n] = nid
         nid2node[nid] = n
         nid += 1
-        if n.children: 
+        if n.children:
             if is_dup(n):
                 subtrees = []
-                for ch in n.children: 
+                for ch in n.children:
                     subtrees.extend(n2subtrees[n2nid[ch]])
             else:
                 subtrees = tuple([val for val in
@@ -103,13 +103,13 @@ def _get_subtrees(tree, full_copy=False, features=None, newick_only=False):
                                                     n2subtrees[n2nid[n.children[1]]])])
         else:
             subtrees = tuple([n2nid[n]])
-       
+
         n2subtrees[n2nid[n]] = subtrees
         for ch in n.children:
             del n2subtrees[n2nid[ch]]
-            
+
     sp_trees = n2subtrees[n2nid[tree]]
-    
+
     # Second, I yield a tree per iteration in newick or ETE format
     features = set(features) if features else set()
     features.update(["name"])
@@ -120,14 +120,14 @@ def _get_subtrees(tree, full_copy=False, features=None, newick_only=False):
         post = '' if not post else post
         node = nid2node[int(b)]
         fstring = ""
-        if features: 
+        if features:
             fstring = "".join(["[&&NHX:",
                                ':'.join(["%s=%s" %(f, getattr(node, f))
                                          for f in features if hasattr(node, f)])
                                , "]"])
 
         return ''.join([pre, node.name, fstring, post])
-    
+
     if newick_only:
         id_match = re.compile("([^0-9])?(\d+)([^0-9])?")
         for nw in sp_trees:
@@ -149,15 +149,15 @@ def calc_subtrees(tree):
     Computes the total number of species trees that TreeKO algorithm would produce for a given gene tree
 
     returns: ntrees, ndups
-    ''' 
+    '''
     n2subtrees = {}
     dups = 0
     for n in tree.traverse("postorder"):
-        if n.children: 
+        if n.children:
             if is_dup(n):
                 dups += 1
                 subtrees = 0
-                for ch in n.children: 
+                for ch in n.children:
                     subtrees += n2subtrees[ch]
             else:
                 subtrees = n2subtrees[n.children[0]] * n2subtrees[n.children[1]]
@@ -165,10 +165,10 @@ def calc_subtrees(tree):
             subtrees = 1
         n2subtrees[n] = subtrees
     return n2subtrees[tree], dups
-    
+
 def iter_sptrees(sptrees, nid2node, features=None, newick_only=False):
     """ Loads and map the species trees returned by get_subtrees"""
-    
+
     features = set(features) if features else set()
     features.update(["name"])
 
@@ -176,14 +176,14 @@ def iter_sptrees(sptrees, nid2node, features=None, newick_only=False):
         pre, b, post =  match.groups()
         node = nid2node[int(b)]
         fstring = ""
-        if features: 
+        if features:
             fstring = "".join(["[&&NHX:",
                                ','.join(["%s=%s" %(f, getattr(node, f))
                                          for f in features if hasattr(node, f)])
                                , "]"])
 
         return ''.join([pre, node.name, fstring, post])
-    
+
     if newick_only:
         id_match = re.compile("([^0-9])(\d+)([^0-9])")
         for nw in sptrees:
@@ -199,7 +199,7 @@ def iter_sptrees(sptrees, nid2node, features=None, newick_only=False):
                 for f in features:
                     leaf.add_feature(f, getattr(nid2node[_nid], f))
             yield t
-        
+
 def _get_subtrees_recursive(node, full_copy=True):
     if is_dup(node):
         sp_trees = []
@@ -213,14 +213,14 @@ def _get_subtrees_recursive(node, full_copy=True):
         if is_dup(_n):
             dups.append(_n)
 
-    if dups: 
+    if dups:
         # detach inner duplication nodes and stores their anchor point
         subtrees = []
         for dp in dups:
             # The real node to attach sibling subtress
             anchor = dp.up
             dp.detach()
-            
+
             duptrees = []
             #get all sibling sptrees in each side of the
             #duplication. Each subtree is pointed to its anchor
@@ -233,7 +233,7 @@ def _get_subtrees_recursive(node, full_copy=True):
 
             #all posible sptrees under this duplication are stored
             subtrees.append(duptrees)
-            
+
         # Generates all combinations of subtrees in sibling duplications
         sp_trees = []
         for comb in itertools.product(*subtrees):
@@ -267,13 +267,13 @@ def _get_subtrees_recursive(node, full_copy=True):
             _node = node.write(format=9, features=["name", "evoltype"])
         #node.detach()
         sp_trees = [_node]
-        
+
     return sp_trees
-               
+
 def get_subparts(n):
     def is_dup(n):
         return getattr(n, "evoltype", None) == "D"
-        
+
     subtrees = []
     if is_dup(n):
         for ch in n.get_children():
@@ -297,20 +297,20 @@ def get_subparts(n):
         while len(n.children) == 1:
             n = n.children[0]
             n.detach()
-            
-        if not n.children and not hasattr(n, "_leaf"): 
+
+        if not n.children and not hasattr(n, "_leaf"):
             pass
         else:
             subtrees.append(n)
-            
+
         for _n in to_visit:
             subtrees.extend(get_subparts(_n))
-                
+
     return subtrees
-    
-    
+
+
 class PhyloNode(TreeNode):
-    """ 
+    """
     .. currentmodule:: ete3
     Extends the standard :class:`TreeNode` instance. It adds
     specific attributes and methods to work with phylogentic trees.
@@ -318,29 +318,29 @@ class PhyloNode(TreeNode):
     :argument newick: Path to the file containing the tree or, alternatively,
       the text string containing the same information.
 
-    :argument alignment: file containing a multiple sequence alignment. 
+    :argument alignment: file containing a multiple sequence alignment.
 
     :argument alg_format:  "fasta", "phylip" or "iphylip" (interleaved)
 
-    :argument format: sub-newick format 
+    :argument format: sub-newick format
 
-      .. table::                                               
+      .. table::
 
-          ======  ============================================== 
-          FORMAT  DESCRIPTION                                    
-          ======  ============================================== 
-          0        flexible with support values                  
-          1        flexible with internal node names             
-          2        all branches + leaf names + internal supports 
-          3        all branches + all names                      
-          4        leaf branches + leaf names                    
-          5        internal and leaf branches + leaf names       
-          6        internal branches + leaf names                
-          7        leaf branches + all names                     
-          8        all names                                     
-          9        leaf names                                    
-          100      topology only                                 
-          ======  ============================================== 
+          ======  ==============================================
+          FORMAT  DESCRIPTION
+          ======  ==============================================
+          0        flexible with support values
+          1        flexible with internal node names
+          2        all branches + leaf names + internal supports
+          3        all branches + all names
+          4        leaf branches + leaf names
+          5        internal and leaf branches + leaf names
+          6        internal branches + leaf names
+          7        leaf branches + all names
+          8        all names
+          9        leaf names
+          100      topology only
+          ======  ==============================================
 
     :argument sp_naming_function: Pointer to a parsing python
        function that receives nodename as first argument and returns
@@ -402,15 +402,15 @@ class PhyloNode(TreeNode):
         return "PhyloTree node '%s' (%s)" %(self.name, hex(self.__hash__()))
 
     def set_species_naming_function(self, fn):
-        """ 
+        """
         Sets the parsing function used to extract species name from a
         node's name.
 
         :argument fn: Pointer to a parsing python function that
           receives nodename as first argument and returns the species
           name.
-        
-        :: 
+
+        ::
 
           # Example of a parsing function to extract species names for
           # all nodes in a given tree.
@@ -461,11 +461,11 @@ class PhyloNode(TreeNode):
             if l.species not in spcs:
                 spcs.add(l.species)
                 yield l.species
-    
+
     def get_age(self, species2age):
         """
         Implements the phylostratigrafic method described in:
-        
+
         Huerta-Cepas, J., & Gabaldon, T. (2011). Assigning duplication events to
         relative temporal scales in genome-wide studies. Bioinformatics, 27(1),
         38-45.
@@ -508,7 +508,7 @@ class PhyloNode(TreeNode):
     def get_farthest_oldest_leaf(self, species2age, is_leaf_fn=None):
         """ Returns the farthest oldest leaf to the current
         one. It requires an species2age dictionary with the age
-        estimation for all species. 
+        estimation for all species.
 
         :argument None is_leaf_fn: A pointer to a function that
           receives a node instance as unique argument and returns True
@@ -536,7 +536,7 @@ class PhyloNode(TreeNode):
         return outgroup_node
 
     def get_farthest_oldest_node(self, species2age):
-        """ 
+        """
         .. versionadded:: 2.1
 
         Returns the farthest oldest node (leaf or internal). The
@@ -551,18 +551,18 @@ class PhyloNode(TreeNode):
         return self.get_farthest_oldest_leaf(species2age, is_leaf_fn=is_leaf)
 
     def get_age_balanced_outgroup(self, species2age):
-        """ 
+        """
         .. versionadded:: 2.2
-        
+
         Returns the node better balance current tree structure
         according to the topological age of the different leaves and
         internal node sizes.
 
         :param species2age: A dictionary translating from leaf names
-          into a topological age. 
-                
+          into a topological age.
+
         .. warning: This is currently an experimental method!!
-        
+
         """
         root = self
         all_seqs = set(self.get_leaf_names())
@@ -574,7 +574,7 @@ class PhyloNode(TreeNode):
         for leaf in root.iter_descendants():
             leaf_seqs = set(leaf.get_leaf_names())
             size = len(leaf_seqs)
-            
+
             leaf_species =[self._speciesFunction(s) for s in leaf_seqs]
             out_species = [self._speciesFunction(s) for s in all_seqs-leaf_seqs]
 
@@ -594,14 +594,14 @@ class PhyloNode(TreeNode):
             if age_inbalance < best_balance:
                 update = True
             elif age_inbalance == best_balance:
-                if size > outgroup_size: 
+                if size > outgroup_size:
                     update = True
                 elif size == outgroup_size:
                     dist = self.get_distance(leaf)
                     outgroup_dist = self.get_distance(outgroup_node)
                     if dist > outgroup_dist:
                         update = True
-       
+
             if update:
                 best_balance = age_inbalance
                 outgroup_node = leaf
@@ -613,7 +613,7 @@ class PhyloNode(TreeNode):
                              newick_only=False, target_attr='species'):
         """
         .. versionadded: 2.2
-        
+
         Calculates all possible species trees contained within a
         duplicated gene family tree as described in `Treeko
         <http://treeko.cgenomics.org>`_ (see `Marcet and Gabaldon,
@@ -642,9 +642,9 @@ class PhyloNode(TreeNode):
                 sp_subtotal = sum([len(n2species[_ch]) for _ch in node.children])
                 if len(n2species[node]) > 1 and len(n2species[node]) != sp_subtotal:
                     node.add_features(evoltype="D")
-               
+
         sp_trees = get_subtrees(t, features=map_features, newick_only=newick_only)
-        
+
         return sp_trees
 
     def __get_speciation_trees_recursive(self):
@@ -674,7 +674,7 @@ class PhyloNode(TreeNode):
     def split_by_dups(self, autodetect_duplications=True):
         """
         .. versionadded: 2.2
-        
+
         Returns the list of all subtrees resulting from splitting
         current tree by its duplication nodes.
 
@@ -690,7 +690,7 @@ class PhyloNode(TreeNode):
             t = self.copy()
         except Exception:
             t = self.copy("deepcopy")
-            
+
         if autodetect_duplications:
             dups = 0
             #n2content, n2species = t.get_node2species()
@@ -711,7 +711,7 @@ class PhyloNode(TreeNode):
                 node._leaf = True
         sp_trees = get_subparts(t)
         return sp_trees
-    
+
     def collapse_lineage_specific_expansions(self, species=None, return_copy=True):
         """ Converts lineage specific expansion nodes into a single
         tip node (randomly chosen from tips within the expansion).
@@ -737,9 +737,9 @@ class PhyloNode(TreeNode):
                 n.detach()
             else:
                 return repre
-            
+
         return prunned
-   
+
 
     def annotate_ncbi_taxa(self, taxid_attr='species', tax2name=None, tax2track=None, tax2rank=None, dbfile=None):
         """Add NCBI taxonomy annotation to all descendant nodes. Leaf nodes are
@@ -751,17 +751,17 @@ class PhyloNode(TreeNode):
 
         `Node.spname`: scientific spcies name as encoded in the NCBI taxonomy database
 
-        `Node.named_lineage`: the NCBI lineage track using scientific names 
+        `Node.named_lineage`: the NCBI lineage track using scientific names
 
-        `Node.taxid`: NCBI taxid number 
+        `Node.taxid`: NCBI taxid number
 
-        `Node.lineage`: same as named_lineage but using taxid codes. 
-        
+        `Node.lineage`: same as named_lineage but using taxid codes.
+
 
         Note that for internal nodes, NCBI information will refer to the first
         common lineage of the grouped species.
 
-        :param name taxid_attr: the name of the feature that should be used to access the taxid number associated to each node. 
+        :param name taxid_attr: the name of the feature that should be used to access the taxid number associated to each node.
 
         :param None tax2name: A dictionary where keys are taxid numbers and
         values are their translation into NCBI scientific name. Its use is
@@ -787,8 +787,8 @@ class PhyloNode(TreeNode):
         rank names).
 
         """
-        
-        ncbi = NCBITaxa(dbfile=dbfile)        
+
+        ncbi = NCBITaxa(dbfile=dbfile)
         return ncbi.annotate_tree(self, taxid_attr=taxid_attr, tax2name=tax2name, tax2track=tax2track, tax2rank=tax2rank)
 
 
@@ -796,7 +796,7 @@ class PhyloNode(TreeNode):
         if not cached_content:
             cached_content = self.get_cached_content()
         cached_species = set([n.species for n in cached_content[self]])
-        
+
         if len(cached_species) != len(cached_content[self]):
             print(cached_species)
             ntrees, ndups, target_trees = self.get_speciation_trees(autodetect_duplications=autodetect_duplications, map_features=["taxid"])
@@ -804,10 +804,10 @@ class PhyloNode(TreeNode):
             target_trees = [self]
 
 
-        ncbi = NCBITaxa()        
-        for t in target_trees: 
+        ncbi = NCBITaxa()
+        for t in target_trees:
             ncbi.get_broken_branches(t, cached_content)
-        
+
 
 
 #: .. currentmodule:: ete3

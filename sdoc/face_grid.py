@@ -25,7 +25,7 @@ all_faces = [right_c0_r0, right_c0_r1, right_c1_r0, right_c1_r1, right_c1_r2, to
      aligned_c1_r0, aligned_c1_r1]
 
 # set a border in all faces
-for f in all_faces: 
+for f in all_faces:
     f.margin_border.width = 1
     f.margin_bottom = 5
     f.margin_top = 5
@@ -62,7 +62,7 @@ t.img_style["bgcolor"] = "lavender"
 t.img_style["size"] = 12
 
 for leaf in t.iter_leaves():
-    leaf.img_style["size"] = 12    
+    leaf.img_style["size"] = 12
     leaf.add_face(right_c0_r0, 0, "branch-right")
     leaf.add_face(aligned_c0_r1, 0, "aligned")
     leaf.add_face(aligned_c0_r0, 0, "aligned")

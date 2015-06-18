@@ -5,25 +5,25 @@ from __future__ import print_function
 #
 # This file is part of the Environment for Tree Exploration program
 # (ETE).  http://etetoolkit.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 # License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 
+#
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
-# 
-# ETE is distributed under the GPL copyleft license (2008-2015).  
+#
+# ETE is distributed under the GPL copyleft license (2008-2015).
 #
 # If you make use of ETE in published work, please cite:
 #
@@ -31,12 +31,12 @@ from __future__ import print_function
 # ETE: a python Environment for Tree Exploration. Jaime BMC
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
-# Note that extra references to the specific methods implemented in 
-# the toolkit may be available in the documentation. 
-# 
+# Note that extra references to the specific methods implemented in
+# the toolkit may be available in the documentation.
+#
 # More info at http://etetoolkit.org. Contact: huerta@embl.de
 #
-# 
+#
 # #END_LICENSE#############################################################
 from .common import log, POSNAMES, node_matcher
 from string import strip
@@ -68,129 +68,129 @@ COLOR_RANKS = { "superclass": "#a6cee3", "class": "#a6cee3", "subclass": "#a6cee
 
 
 
-                
+
 
 def populate_args(view_args_p):
     view_args_p.add_argument("--face", action="append",
                              help="adds a face to the selected nodes. In example --face 'value:@dist, pos:b-top, color:red, size:10, if:@dist>0.9' ")
-    
+
     img_gr = view_args_p.add_argument_group("TREE IMAGE GENERAL OPTIONS")
-        
-    img_gr.add_argument("-m", "--mode", dest="mode", 
+
+    img_gr.add_argument("-m", "--mode", dest="mode",
                         choices=["c", "r"], default="r",
                         help="""(r)ectangular or (c)ircular visualization""")
-  
 
-    img_gr.add_argument("-i", "--image", dest="image", 
-                        type=str, 
+
+    img_gr.add_argument("-i", "--image", dest="image",
+                        type=str,
                         help="Render tree image instead of showing it. A filename "
                         " should be provided. PDF, SVG and PNG file extensions are"
                         " supported (i.e. -i tree.svg)"
                         )
 
-    img_gr.add_argument("--text", dest="text_mode", 
+    img_gr.add_argument("--text", dest="text_mode",
                         action="store_true",
                         help="Shows the tree using ASCII characters")
 
-    img_gr.add_argument("--attr", "--show_attributes", dest="show_attributes", 
+    img_gr.add_argument("--attr", "--show_attributes", dest="show_attributes",
                         nargs="+",
-                        help="Display the value of the specified attributes, if available")    
-    
-    img_gr.add_argument("--Iw", "--width", dest="width", 
-                        type=int, default=0, 
+                        help="Display the value of the specified attributes, if available")
+
+    img_gr.add_argument("--Iw", "--width", dest="width",
+                        type=int, default=0,
                         help="width of the rendered image in pixels (see --size-units)."
                         )
 
-    img_gr.add_argument("--Ih", "--height", dest="height", 
+    img_gr.add_argument("--Ih", "--height", dest="height",
                         type=int, default=0,
                         help="height of the rendered image in pixels (see --size-units)."
                         )
 
-    img_gr.add_argument("--Ir", "--resolution", dest="resolution", 
+    img_gr.add_argument("--Ir", "--resolution", dest="resolution",
                         type=int, default=300,
                         help="Resolution if the tree image (DPI)"
                         )
 
-    img_gr.add_argument("--Iu", "--size_units", dest="size_units", 
+    img_gr.add_argument("--Iu", "--size_units", dest="size_units",
                         choices=["px", "mm", "in"], default="px",
                         help="Units used to specify the size of the image."
                         " (px:pixels, mm:millimeters, in:inches). "
                         )
 
-    img_gr.add_argument("-mbs", "--min_branch_separation", dest="branch_separation", 
-                        type=int, default = 3, 
+    img_gr.add_argument("-mbs", "--min_branch_separation", dest="branch_separation",
+                        type=int, default = 3,
                         help="Min number of pixels to separate branches vertically."
                         )
 
-    img_gr.add_argument("--ss", "--show_support", dest="show_support", 
+    img_gr.add_argument("--ss", "--show_support", dest="show_support",
                         action="store_true",
                         help="""Shows branch bootstrap/support values""")
 
-    img_gr.add_argument("--sbl", "--show_branch_length", dest="show_branch_length", 
+    img_gr.add_argument("--sbl", "--show_branch_length", dest="show_branch_length",
                         action="store_true",
                         help="""Show branch lengths.""")
 
-    img_gr.add_argument("--ft", "--force_topology", dest="force_topology", 
+    img_gr.add_argument("--ft", "--force_topology", dest="force_topology",
                         action="store_true",
                         help="""Force branch length to have a minimum length in the image""")
 
-    img_gr.add_argument("--hln", "--hide_leaf_names", dest="hide_leaf_names", 
+    img_gr.add_argument("--hln", "--hide_leaf_names", dest="hide_leaf_names",
                         action="store_true",
                         help="""Hide leaf names.""")
 
-    img_gr.add_argument("--sin", "--show_internal_names", dest="show_internal_names", 
+    img_gr.add_argument("--sin", "--show_internal_names", dest="show_internal_names",
                         action="store_true",
                         help="""Show the name attribute of all internal nodes.""")
 
-    img_gr.add_argument("--tree_width", dest="tree_width", 
+    img_gr.add_argument("--tree_width", dest="tree_width",
                         type=int, default=300,
                         help=("Adjust tree scale so the distance from root to the"
                               " farthest leaf uses a fixed width in pixels."))
 
-    
+
     edit_gr = view_args_p.add_argument_group("TREE EDIT OPTIONS")
-    
-    edit_gr.add_argument("--color_by_rank", dest="color_by_rank", 
+
+    edit_gr.add_argument("--color_by_rank", dest="color_by_rank",
                          type=str, nargs="+",
                          help="""If the attribute rank is present in nodes """)
 
-    edit_gr.add_argument("--raxml", dest="raxml", 
+    edit_gr.add_argument("--raxml", dest="raxml",
                         action="store_true",
                          help=("Parses the newick string and extracts bootstrap values from"
                          " a non-standard RAxML newick file (i.e '((A,B)[100]);'"))
-    
+
     phylo_gr = view_args_p.add_argument_group("PHYLOGENETIC OPTIONS")
-    
-    phylo_gr.add_argument("--alg", dest="alg", 
-                        type=str, 
+
+    phylo_gr.add_argument("--alg", dest="alg",
+                        type=str,
                         help="""Link tree to a multiple sequence alignment.""")
 
-    phylo_gr.add_argument("--alg_type", dest="alg_type", 
+    phylo_gr.add_argument("--alg_type", dest="alg_type",
                           choices=['blockseq', 'compactseq', 'fullseq'], default='blockseq',
                           help="How sequence alignment should be drawn in the tree")
 
 
-    phylo_gr.add_argument("--alg_format", dest="alg_format", 
+    phylo_gr.add_argument("--alg_format", dest="alg_format",
                         type=str, default="fasta",
                         help="fasta, phylip, iphylip, relaxed_iphylip, relaxed_phylip.")
 
-    phylo_gr.add_argument("--ncbi", dest="as_ncbi", 
+    phylo_gr.add_argument("--ncbi", dest="as_ncbi",
                           action="store_true" ,
                           help="""If enabled, default style will be applied to show ncbi taxonomy annotations""")
-    
-    
+
+
     features_gr = view_args_p.add_argument_group("DRAWING FEATURES")
-    
-    phylo_gr.add_argument("--heatmap", dest="heatmap", 
-                        type=str, 
+
+    phylo_gr.add_argument("--heatmap", dest="heatmap",
+                        type=str,
                           help="""attr_name \t v1, v2, v3, v4""")
 
-    phylo_gr.add_argument("--profile", dest="profile", 
-                        type=str, 
+    phylo_gr.add_argument("--profile", dest="profile",
+                        type=str,
                           help="""attr_name \t v1, v2, v3, v4""")
-    
-    phylo_gr.add_argument("--bubbles", dest="bubbles", 
-                        type=str, 
+
+    phylo_gr.add_argument("--bubbles", dest="bubbles",
+                        type=str,
                           help='')
 
 
@@ -204,20 +204,20 @@ def run(args):
                 t = Tree(nw)
             else:
                 t = Tree(tfile)
-            
+
             print(t.get_ascii(show_internal=args.show_internal_names,
                               attributes=args.show_attributes))
         return
-        
+
     import random
     import re
     import colorsys
     from collections import defaultdict
     from ete3 import (Tree, PhyloTree, TextFace, RectFace, faces, TreeStyle,
                          add_face_to_node, random_color)
-    
+
     global FACES
-    
+
     if args.face:
         FACES = parse_faces(args.face)
     else:
@@ -229,7 +229,7 @@ def run(args):
     ts.show_leaf_name = True
     ts.tree_width = args.tree_width
 
-    
+
     for f in FACES:
         if f["value"] == "@name":
             ts.show_leaf_name = False
@@ -254,13 +254,13 @@ def run(args):
         FACES.extend(parse_faces(
             ['value:@name, size:10, pos:aligned, ftype:heatmap']
          ))
-        
+
     if args.bubbles:
         for bubble in args.bubbles:
             FACES.extend(parse_faces(
                 ['value:@%s, pos:float, ftype:bubble, opacity:0.4' %bubble,
              ]))
-                        
+
     ts.branch_vertical_margin = args.branch_separation
     if args.show_support:
         ts.show_branch_support = True
@@ -269,7 +269,7 @@ def run(args):
     if args.force_topology:
         ts.force_topology = True
     ts.layout_fn = lambda x: None
-        
+
     for tindex, tfile in enumerate(args.src_tree_iterator):
         #print tfile
         if args.raxml:
@@ -278,14 +278,14 @@ def run(args):
         else:
             t = PhyloTree(tfile)
 
-            
+
         if args.alg:
             t.link_to_alignment(args.alg, alg_format=args.alg_format)
 
         if args.heatmap:
             DEFAULT_COLOR_SATURATION = 0.3
             BASE_LIGHTNESS = 0.7
-            def gradient_color(value, max_value, saturation=0.5, hue=0.1):    
+            def gradient_color(value, max_value, saturation=0.5, hue=0.1):
                 def rgb2hex(rgb):
                     return '#%02x%02x%02x' % rgb
                 def hls2hex(h, l, s):
@@ -294,7 +294,7 @@ def run(args):
                 lightness = 1 - (value * BASE_LIGHTNESS) / max_value
                 return hls2hex(hue, lightness, DEFAULT_COLOR_SATURATION)
 
-            
+
             heatmap_data = {}
             max_value, min_value = None, None
             for line in open(args.heatmap):
@@ -313,7 +313,7 @@ def run(args):
                     if max_value is None or maxv > max_value:
                         max_value = maxv
                     if min_value is None or minv < min_value:
-                        min_value = minv                        
+                        min_value = minv
                     heatmap_data[name] = values
 
             heatmap_center_value = 0
@@ -321,36 +321,36 @@ def run(args):
             heatmap_color_up = 0.3
             heatmap_color_down = 0.7
             heatmap_color_missing = "black"
-            
+
             heatmap_max_value = abs(heatmap_center_value - max_value)
             heatmap_min_value = abs(heatmap_center_value - min_value)
-                    
+
             if heatmap_center_value <= min_value:
                 heatmap_max_value = heatmap_min_value + heatmap_max_value
             else:
                 heatmap_max_value = max(heatmap_min_value, heatmap_max_value)
 
-                    
-                    
+
+
         # scale the tree
-        if not args.height: 
+        if not args.height:
             args.height = None
-        if not args.width: 
+        if not args.width:
             args.width = None
 
         f2color = {}
         f2last_seed = {}
         for node in t.traverse():
-            node.img_style['size'] = 0                
+            node.img_style['size'] = 0
             if len(node.children) == 1:
-                node.img_style['size'] = 2                
+                node.img_style['size'] = 2
                 node.img_style['shape'] = "square"
                 node.img_style['fgcolor'] = "steelblue"
 
             ftype_pos = defaultdict(int)
 
             for findex, f in enumerate(FACES):
-                if (f['nodetype'] == 'any' or 
+                if (f['nodetype'] == 'any' or
                     (f['nodetype'] == 'leaf' and node.is_leaf()) or
                     (f['nodetype'] == 'internal' and not node.is_leaf())):
 
@@ -461,7 +461,7 @@ def run(args):
                                     else:
                                         color = heatmap_color_center
                                     node.add_face(RectFace(20, 20, color, color), position="aligned", column=col + i)
-                                    # Add header 
+                                    # Add header
                                     # for i, name in enumerate(header):
                                     #    nameF = TextFace(name, fsize=7)
                                     #    nameF.rotation = -90
@@ -488,7 +488,7 @@ def run(args):
 
                                 if not f['column']:
                                     col = ftype_pos[f["pos"]]
-                                    ftype_pos[f["pos"]] += 1    
+                                    ftype_pos[f["pos"]] += 1
                                 else:
                                     col = f["column"]
                                 node.add_face(F, column=col, position=f["pos"])
@@ -499,8 +499,8 @@ def run(args):
         else:
             t.show(None, tree_style=ts)
 
-    
-def parse_faces(face_args):    
+
+def parse_faces(face_args):
     faces = []
     for fargs in face_args:
         face = {"filters":[],
@@ -528,11 +528,11 @@ def parse_faces(face_args):
                     target, op, value = list(map(strip, m.groups()))
                     target = target.lstrip('@')
                     try:
-                        value = float(value)                        
+                        value = float(value)
                     except ValueError:
                         pass
-                        
-                    face["filters"].append([target, op, value])                    
+
+                    face["filters"].append([target, op, value])
             elif key == "pos":
                 try:
                     face["pos"] = POSNAMES[value]
@@ -556,12 +556,12 @@ def parse_faces(face_args):
             elif key == "fstyle":
                 if value != 'italic' and value != 'bold':
                     raise ValueError("valid style formats are: italic, bold [%s]" %clause)
-                face[key] = value                
+                face[key] = value
             elif key == "format":
                 if "%" not in value:
                     print(value)
                     raise ValueError("format attribute should contain one format char: ie. %%s [%s]" %clause)
-                face[key] = value.strip("\"")                
+                face[key] = value.strip("\"")
             elif key in face:
                 face[key] = value
             else:

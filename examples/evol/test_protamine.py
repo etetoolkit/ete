@@ -35,7 +35,7 @@ def main():
     print 'pv of LRT M8 vs M7: ',
     print tree.get_most_likely ('M8','M7')
 
-    
+
     tree.show (histfaces=['M2'])
 
     print 'The End.'
@@ -45,7 +45,7 @@ def random_swap(tree):
     for node in tree.iter_descendants():
         if int (rnd()*100)%3:
             node.swap_children()
-    
+
 def check_annotation (tree):
     for node in tree.iter_descendants():
         if not hasattr (node, 'paml_id'):

@@ -5,25 +5,25 @@ from __future__ import print_function
 #
 # This file is part of the Environment for Tree Exploration program
 # (ETE).  http://etetoolkit.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 # License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 
+#
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
-# 
-# ETE is distributed under the GPL copyleft license (2008-2015).  
+#
+# ETE is distributed under the GPL copyleft license (2008-2015).
 #
 # If you make use of ETE in published work, please cite:
 #
@@ -31,17 +31,17 @@ from __future__ import print_function
 # ETE: a python Environment for Tree Exploration. Jaime BMC
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
-# Note that extra references to the specific methods implemented in 
-# the toolkit may be available in the documentation. 
-# 
+# Note that extra references to the specific methods implemented in
+# the toolkit may be available in the documentation.
+#
 # More info at http://etetoolkit.org. Contact: huerta@embl.de
 #
-# 
+#
 # #END_LICENSE#############################################################
 import colorsys
 import random
 import re
-import types 
+import types
 from sys import stderr
 
 from PyQt4.QtGui import *
@@ -75,13 +75,13 @@ NODE_STYLE_DEFAULT = [
     ["bgcolor",          "#FFFFFF",    _COLOR_CHECKER                           ],
     ["node_bgcolor",     "#FFFFFF",    _COLOR_CHECKER                           ],
     #["partition_bgcolor","#FFFFFF",    _COLOR_CHECKER                           ],
-    ["faces_bgcolor",    "#FFFFFF",    _COLOR_CHECKER                           ],    
+    ["faces_bgcolor",    "#FFFFFF",    _COLOR_CHECKER                           ],
     ["vt_line_color",    "#000000",    _COLOR_CHECKER                           ],
     ["hz_line_color",    "#000000",    _COLOR_CHECKER                           ],
     ["hz_line_type",     0,            _LINE_TYPE_CHECKER                       ], # 0 solid, 1 dashed, 2 dotted
     ["vt_line_type",     0,            _LINE_TYPE_CHECKER                       ], # 0 solid, 1 dashed, 2 dotted
-    ["size",             3,            _SIZE_CHECKER                            ], # node circle size 
-    ["shape",            "circle",     _NODE_TYPE_CHECKER                       ], 
+    ["size",             3,            _SIZE_CHECKER                            ], # node circle size
+    ["shape",            "circle",     _NODE_TYPE_CHECKER                       ],
     ["draw_descendants", True,         _BOOL_CHECKER                            ],
     ["hz_line_width",          0,      _SIZE_CHECKER                            ],
     ["vt_line_width",          0,      _SIZE_CHECKER                            ]
@@ -98,7 +98,7 @@ class _Border(object):
     def __init__(self):
         self.width = None
         self.type = 0
-        self.color = None 
+        self.color = None
 
     def apply(self, item):
         if self.width is not None:
@@ -116,17 +116,17 @@ class _Border(object):
             return None
 
 class _Background(object):
-    """ 
+    """
     Set the background of the object
-    
+
     :param color: RGB color code or :data:`SVG_COLORS`
 
     """
     def __init__(self):
         self.color = None
-        
+
     def apply(self, item):
-        if self.color: 
+        if self.color:
             r = item.boundingRect()
             bg = QGraphicsRectItem(r)
             bg.setParentItem(item)
@@ -141,7 +141,7 @@ class _Background(object):
 
 
 class _ActionDelegator(object):
-    """ Used to associate GUI Functions to nodes and faces """ 
+    """ Used to associate GUI Functions to nodes and faces """
 
     def get_delegate(self):
         return self._delegate
@@ -160,27 +160,27 @@ class _ActionDelegator(object):
 
     def __init__(self):
         self._delegate = None
-      
+
 class NodeStyle(dict):
-    """ 
-    .. versionadded:: 2.1    
+    """
+    .. versionadded:: 2.1
 
     .. currentmodule:: ete3
 
-    A dictionary with all valid node graphical attributes.  
+    A dictionary with all valid node graphical attributes.
 
-    :argument #0030c1 fgcolor: RGB code or name in :data:`SVG_COLORS` 
-    :argument #FFFFFF bgcolor: RGB code or name in :data:`SVG_COLORS` 
-    :argument #FFFFFF node_bgcolor: RGB code or name in :data:`SVG_COLORS` 
-    :argument #FFFFFF partition_bgcolor: RGB code or name in :data:`SVG_COLORS` 
-    :argument #FFFFFF faces_bgcolor: RGB code or name in :data:`SVG_COLORS` 
-    :argument #000000 vt_line_color: RGB code or name in :data:`SVG_COLORS` 
-    :argument #000000 hz_line_color: RGB code or name in :data:`SVG_COLORS` 
+    :argument #0030c1 fgcolor: RGB code or name in :data:`SVG_COLORS`
+    :argument #FFFFFF bgcolor: RGB code or name in :data:`SVG_COLORS`
+    :argument #FFFFFF node_bgcolor: RGB code or name in :data:`SVG_COLORS`
+    :argument #FFFFFF partition_bgcolor: RGB code or name in :data:`SVG_COLORS`
+    :argument #FFFFFF faces_bgcolor: RGB code or name in :data:`SVG_COLORS`
+    :argument #000000 vt_line_color: RGB code or name in :data:`SVG_COLORS`
+    :argument #000000 hz_line_color: RGB code or name in :data:`SVG_COLORS`
     :argument 0 hz_line_type: integer number
     :argument 0 vt_line_type: integer number
     :argument 3 size: integer number
     :argument "circle" shape: "circle", "square" or "sphere"
-    :argument True draw_descendants: Mark an internal node as a leaf. 
+    :argument True draw_descendants: Mark an internal node as a leaf.
 
     :argument 0 hz_line_width: integer number representing the width
                                of the line in pixels.  A line width of
@@ -195,7 +195,7 @@ class NodeStyle(dict):
                                means that the pen width is always
                                drawn one pixel wide, independent of
                                the transformation set on the painter.
-    
+
     """
 
     def __init__(self, *args, **kargs):
@@ -210,9 +210,9 @@ class NodeStyle(dict):
             elif not checker(self[key]):
                 raise ValueError("'%s' attribute in node style has not a valid value: %s" %\
                                      (key, self[key]))
-    # 
+    #
     #    #super(NodeStyle, self).__setitem__("_faces", {})
-    #    # copy fixed faces to the faces dict that will be drawn 
+    #    # copy fixed faces to the faces dict that will be drawn
     #    #for pos, values in self["faces"].iteritems():
     #    #    for col, faces in values.iteritems():
     #    #        self["_faces"].setdefault(pos, {})
@@ -237,7 +237,7 @@ class NodeStyle(dict):
             print("WARNING: [%s] keyword is deprecated and it has been replaced by %s." %\
                 (i, "[hz_line_width]"), file=stderr)
             print("WARNING: Support for this keyword will be removed in next ETE versions.", file=stderr)
-      
+
         if i not in VALID_NODE_STYLE_KEYS:
             raise ValueError("'%s' is not a valid keyword for a NodeStyle instance" %i)
 
@@ -247,7 +247,7 @@ class NodeStyle(dict):
     #    super(NodeStyle, self).__setitem__("_faces", {})
 
 class TreeStyle(object):
-    """ 
+    """
     .. versionadded:: 2.1
 
     .. currentmodule:: ete3
@@ -259,18 +259,18 @@ class TreeStyle(object):
     :param None layout_fn: Layout function used to dynamically control
       the aspect of nodes. Valid values are: None or a pointer to a method,
       function, etc.
-    
+
     **-- About tree shape --**
-        
+
     :param "r" mode: Valid modes are 'c'(ircular)  or 'r'(ectangular).
 
     :param 0 orientation: If 0, tree is drawn from left-to-right. If
        1, tree is drawn from right-to-left. This property only makes
        sense when "r" mode is used.
-    
+
     :param 0 rotation: Tree figure will be rotate X degrees (clock-wise
        rotation).
-    
+
     :param 1 min_leaf_separation: Min separation, in pixels, between
       two adjacent branches
 
@@ -293,8 +293,8 @@ class TreeStyle(object):
 
     **-- About Tree branches --**
 
-    :param None scale: Scale used to draw branch lengths. If None, it will 
-      be automatically calculated. 
+    :param None scale: Scale used to draw branch lengths. If None, it will
+      be automatically calculated.
 
     :param "mid" optimal_scale_level: Two levels of automatic branch
       scale detection are available: :attr:`"mid"` and
@@ -318,24 +318,24 @@ class TreeStyle(object):
       times smaller than the tree width could be used to calculate the
       optimal tree scale. A 0 value would mean that root node should
       always be tightly adjusted to the center of the tree.
-    
+
     :param True complete_branch_lines_when_necessary: True or False.
       Draws an extra line (dotted by default) to complete branch lengths when the space to cover is larger than the branch itself.
-        
+
     :param 2 extra_branch_line_type:  0=solid, 1=dashed, 2=dotted
-    
+
     :param "gray" extra_branch_line_color": RGB code or name in
       :data:`SVG_COLORS`
-    
+
     :param False force_topology: Convert tree branches to a fixed length, thus allowing to
       observe the topology of tight nodes
 
     :param False draw_guiding_lines: Draw guidelines from leaf nodes
       to aligned faces
-    
+
     :param 2 guiding_lines_type: 0=solid, 1=dashed, 2=dotted.
-    
-    :param "gray" guiding_lines_color: RGB code or name in :data:`SVG_COLORS` 
+
+    :param "gray" guiding_lines_color: RGB code or name in :data:`SVG_COLORS`
 
     **-- About node faces --**
 
@@ -345,7 +345,7 @@ class TreeStyle(object):
       as node labels) will be therefore ignored, and tree size
       will be a lot smaller. Note that in most cases, manual setting
       of tree scale will be also necessary.
-    
+
     :param True draw_aligned_faces_as_table: Aligned faces will be
       drawn as a table, considering all columns in all node faces.
 
@@ -371,16 +371,16 @@ class TreeStyle(object):
       support text in the bottom of tree branches
 
     **-- Tree surroundings --**
-    
+
     The following options are actually Face containers, so graphical
     elements can be added just as it is done with nodes. In example,
     to add tree legend:
-    
+
        ::
 
           TreeStyle.legend.add_face(CircleFace(10, "red"), column=0)
           TreeStyle.legend.add_face(TextFace("0.5 support"), column=1)
-    
+
     :param aligned_header: a :class:`FaceContainer` aligned to the end
       of the tree and placed at the top part.
 
@@ -388,14 +388,14 @@ class TreeStyle(object):
       of the tree and placed at the bottom part.
 
     :param legend: a :class:`FaceContainer` with an arbitrary number of faces
-      representing the legend of the figure. 
+      representing the legend of the figure.
     :param 4 legend_position=4: TopLeft corner if 1, TopRight
       if 2, BottomLeft if 3, BottomRight if 4
-    
+
     :param title: A Face container that can be used as tree title
 
     """
-   
+
     def set_layout_fn(self, layout):
         self._layout_handler = []
         if type(layout) not in set([list, set, tuple, frozenset]):
@@ -406,13 +406,13 @@ class TreeStyle(object):
             if (type(ly) == types.FunctionType or type(ly) == types.MethodType or ly is None):
                 self._layout_handler.append(ly)
             else:
-                from . import layouts 
+                from . import layouts
                 try:
                     self._layout_handler.append(getattr(layouts, ly))
                 except Exception as e:
                     print(e)
                     raise ValueError ("Required layout is not a function pointer nor a valid layout name.")
- 
+
     def get_layout_fn(self):
         return self._layout_handler
 
@@ -422,26 +422,26 @@ class TreeStyle(object):
         # :::::::::::::::::::::::::
         # TREE SHAPE AND SIZE
         # :::::::::::::::::::::::::
-        
+
         # Valid modes are : "c" or "r"
         self.mode = "r"
 
         # Applies only for circular mode. It prevents aligned faces to
-        # overlap each other by increasing the radius. 
+        # overlap each other by increasing the radius.
         self.allow_face_overlap = False
 
         # Layout function used to dynamically control the aspect of
         # nodes
         self._layout_handler = []
-        
+
         # 0= tree is drawn from left-to-right 1= tree is drawn from
         # right-to-left. This property only has sense when "r" mode
         # is used.
-        self.orientation = 0 
+        self.orientation = 0
 
         # Tree rotation in degrees (clock-wise rotation)
-        self.rotation = 0 
-       
+        self.rotation = 0
+
         # Scale used to convert branch lengths to pixels. If 'None',
         # the scale will be automatically calculated.
         self.scale = None
@@ -449,12 +449,12 @@ class TreeStyle(object):
         # How much the center of a circular tree can be opened,
         # referred to the total tree length.
         self.root_opening_factor = 0.25
-            
+
         # mid, or full
-        self.optimal_scale_level = "mid" 
-        
+        self.optimal_scale_level = "mid"
+
         # Min separation, in pixels, between to adjacent branches
-        self.min_leaf_separation = 1 
+        self.min_leaf_separation = 1
 
         # Leaf branch separation margin, in pixels. This will add a
         # separation of X pixels between adjacent leaf branches. In
@@ -464,7 +464,7 @@ class TreeStyle(object):
         # When circular trees are drawn, this defines the starting
         # angle (in degrees) from which leaves are distributed
         # (clock-wise) around the total arc. 0 = 3 o'clock
-        self.arc_start = 0 
+        self.arc_start = 0
 
         # Total arc used to draw circular trees (in degrees)
         self.arc_span = 359
@@ -481,10 +481,10 @@ class TreeStyle(object):
 
         # When top-branch and bottom-branch faces are larger than
         # branch length, branch line can be completed. Also, when
-        # circular trees are drawn, 
+        # circular trees are drawn,
         self.complete_branch_lines_when_necessary = True
         self.extra_branch_line_type = 2 # 0 solid, 1 dashed, 2 dotted
-        self.extra_branch_line_color = "gray" 
+        self.extra_branch_line_color = "gray"
 
         # Convert tree branches to a fixed length, thus allowing to
         # observe the topology of tight nodes
@@ -520,7 +520,7 @@ class TreeStyle(object):
         # Draw a border around the whole tree
         self.show_border = False
 
-        # Draw the scale 
+        # Draw the scale
         self.show_scale = True
 
         # Initialize aligned face headers
@@ -539,7 +539,7 @@ class TreeStyle(object):
         self.tree_width = 180
         # PRIVATE values
         self._scale = None
-        
+
         self.__closed__ = 1
 
 
@@ -551,7 +551,7 @@ class TreeStyle(object):
                 raise ValueError("[%s] wrong type" %attr)
         else:
             raise ValueError("[%s] option is not supported" %attr)
-        
+
 class _FaceAreas(object):
     def __init__(self):
         for a in FACE_POSITIONS:
@@ -571,10 +571,10 @@ class FaceContainer(dict):
     """
     .. versionadded:: 2.1
 
-    Use this object to create a grid of faces. You can add faces to different columns. 
+    Use this object to create a grid of faces. You can add faces to different columns.
     """
     def add_face(self, face, column):
-        """ 
+        """
         add the face **face** to the specified **column**
         """
         self.setdefault(int(column), []).append(face)
@@ -584,10 +584,10 @@ def _leaf(node):
     return collapsed or node.is_leaf()
 
 def add_face_to_node(face, node, column, aligned=False, position="branch-right"):
-    """ 
+    """
     .. currentmodule:: ete3.treeview.faces
 
-    Adds a Face to a given node. 
+    Adds a Face to a given node.
 
     :argument face: A :class:`Face` instance
 
@@ -597,11 +597,11 @@ def add_face_to_node(face, node, column, aligned=False, position="branch-right")
     :argument column: An integer number starting from 0
     :argument "branch-right" position: Possible values are
       "branch-right", "branch-top", "branch-bottom", "float", "float-behind" and "aligned".
-    """ 
+    """
 
     ## ADD HERE SOME TYPE CHECK FOR node and face
 
-    # to stay 2.0 compatible 
+    # to stay 2.0 compatible
     if aligned == True:
         position = "aligned"
 
@@ -618,7 +618,7 @@ def set_pen_style(pen, line_style):
         pen.setStyle(QtCore.Qt.DashLine)
     elif line_style == 2:
         pen.setStyle(QtCore.Qt.DotLine)
-     
+
 
 def save(scene, imgName, w=None, h=None, dpi=90,\
              take_region=False, units="px"):
@@ -634,17 +634,17 @@ def save(scene, imgName, w=None, h=None, dpi=90,\
         imgName = '%%return'
     else:
         ext = imgName.split(".")[-1].upper()
-    
+
     main_rect = scene.sceneRect()
     aspect_ratio = main_rect.height() / main_rect.width()
-   
-    # auto adjust size    
+
+    # auto adjust size
     if not w and not h:
         units = "px"
         w = main_rect.width()
         h = main_rect.height()
         ratio_mode = QtCore.Qt.KeepAspectRatio
-    elif w and h: 
+    elif w and h:
         ratio_mode = QtCore.Qt.IgnoreAspectRatio
     elif h is None :
         h = w * aspect_ratio
@@ -652,17 +652,17 @@ def save(scene, imgName, w=None, h=None, dpi=90,\
     elif w is None:
         w = h / aspect_ratio
         ratio_mode = QtCore.Qt.KeepAspectRatio
-    
+
     # Adjust to resolution
     if units == "mm":
-        if w: 
+        if w:
             w = w * 0.0393700787 * dpi
-        if h: 
+        if h:
             h = h * 0.0393700787 * dpi
     elif units == "in":
-        if w: 
+        if w:
             w = w * dpi
-        if h: 
+        if h:
             h = h * dpi
     elif units == "px":
         pass
@@ -670,8 +670,8 @@ def save(scene, imgName, w=None, h=None, dpi=90,\
         raise Exception("wrong unit format")
 
     x_scale, y_scale = w/main_rect.width(), h/main_rect.height()
-    
-    if ext == "SVG": 
+
+    if ext == "SVG":
         from PyQt4 import QtSvg
         svg = QtSvg.QSvgGenerator()
         targetRect = QtCore.QRectF(0, 0, w, h)
@@ -679,7 +679,7 @@ def save(scene, imgName, w=None, h=None, dpi=90,\
         svg.setViewBox(targetRect)
         svg.setTitle("Generated with ETE http://etetoolkit.org")
         svg.setDescription("Generated with ETE http://etetoolkit.org")
-        
+
         if imgName == '%%return':
             ba = QtCore.QByteArray()
             buf = QtCore.QBuffer(ba)
@@ -724,11 +724,11 @@ def save(scene, imgName, w=None, h=None, dpi=90,\
         printer.setOutputFormat(format)
         printer.setPageSize(QPrinter.A4)
         printer.setPaperSize(QtCore.QSizeF(w, h), QPrinter.DevicePixel)
-        printer.setPageMargins(0, 0, 0, 0, QPrinter.DevicePixel) 
+        printer.setPageMargins(0, 0, 0, 0, QPrinter.DevicePixel)
 
         #pageTopLeft = printer.pageRect().topLeft()
         #paperTopLeft = printer.paperRect().topLeft()
-        # For PS -> problems with margins 
+        # For PS -> problems with margins
         #print paperTopLeft.x(), paperTopLeft.y()
         #print pageTopLeft.x(), pageTopLeft.y()
         # print  printer.paperRect().height(),  printer.pageRect().height()
@@ -760,5 +760,5 @@ def save(scene, imgName, w=None, h=None, dpi=90,\
             return x_scale, y_scale, ba.toBase64()
         else:
             ii.save(imgName)
-        
+
     return w/main_rect.width(), h/main_rect.height()

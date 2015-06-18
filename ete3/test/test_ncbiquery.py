@@ -1,15 +1,15 @@
 from __future__ import absolute_import
 import os
-import unittest 
+import unittest
 
 from .. import PhyloTree, NCBITaxa
 from ..ncbi_taxonomy import ncbiquery
 
-DATABASE_PATH = "testdb.sqlite" 
+DATABASE_PATH = "testdb.sqlite"
 
 class Test_ncbiquery(unittest.TestCase):
-  
-  def test_00_update_database(self):   
+
+  def test_00_update_database(self):
     if not os.path.exists(DATABASE_PATH):
       ncbiquery.update_db(DATABASE_PATH)
 
@@ -57,9 +57,9 @@ class Test_ncbiquery(unittest.TestCase):
     self.assertEqual(sorted(t2.get_leaf_names()), ["678", "7507", "9606"])
 
 
-    
-    
-    
+
+
+
 
 if __name__ == '__main__':
   unittest.main()

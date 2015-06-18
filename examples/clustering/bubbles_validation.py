@@ -38,12 +38,12 @@ def mylayout(node):
     else:
         # If silhouette is good, creates a green bubble
         if node.silhouette>0:
-            validationFace = TextFace("Silh=%0.2f" %node.silhouette, 
+            validationFace = TextFace("Silh=%0.2f" %node.silhouette,
                                       "Verdana", 10, "#056600")
             node.img_style["fgcolor"]="#056600"
         # Otherwise, use red bubbles
         else:
-            validationFace = TextFace("Silh=%0.2f" %node.silhouette, 
+            validationFace = TextFace("Silh=%0.2f" %node.silhouette,
                                       "Verdana", 10, "#940000")
             node.img_style["fgcolor"]="#940000"
 

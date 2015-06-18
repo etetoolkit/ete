@@ -5,25 +5,25 @@ from __future__ import print_function
 #
 # This file is part of the Environment for Tree Exploration program
 # (ETE).  http://etetoolkit.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 # License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 
+#
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
-# 
-# ETE is distributed under the GPL copyleft license (2008-2015).  
+#
+# ETE is distributed under the GPL copyleft license (2008-2015).
 #
 # If you make use of ETE in published work, please cite:
 #
@@ -31,12 +31,12 @@ from __future__ import print_function
 # ETE: a python Environment for Tree Exploration. Jaime BMC
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
-# Note that extra references to the specific methods implemented in 
-# the toolkit may be available in the documentation. 
-# 
+# Note that extra references to the specific methods implemented in
+# the toolkit may be available in the documentation.
+#
 # More info at http://etetoolkit.org. Contact: huerta@embl.de
 #
-# 
+#
 # #END_LICENSE#############################################################
 from collections import defaultdict
 import logging
@@ -52,14 +52,14 @@ import six
 from six.moves import range
 
 log = logging.getLogger("main")
-                
+
 class IterConfig(dict):
     def __init__(self, conf, wkname, size, seqtype):
         """Special dict to extract the value of each parameter given
-         the properties of a task: size and seqtype. 
+         the properties of a task: size and seqtype.
         """
         dict.__init__(self, conf[wkname])
-       
+
         self.conf = conf
         self.seqtype = seqtype
         self.size = size
@@ -70,12 +70,12 @@ class IterConfig(dict):
             self['max_iters'] = conf['_npr'].get('max_iters', 1)  # 1 = no npr by default!
         else:
             self['max_iters'] = 1
-            
+
         self['_tree_splitter'] = '@default_tree_splitter'
-        
+
         # if max_outgroup size is 0, means that no rooting is done in child NPR trees
         self['use_outgroup'] = conf['default_tree_splitter']['_max_outgroup_size'] != 0
-        
+
     def __getattr__(self, v):
         try:
             return dict.__getattr__(self, v)
@@ -87,7 +87,7 @@ class IterConfig(dict):
         if v in set(["tree_builder", "aligner", "model_tester",
                      "alg_cleaner"]):
             v = "%s_%s" %(self.seqtype, v)
-        
+
         try:
             value = dict.__getitem__(self, "_%s" %v)
         except KeyError as e:
@@ -96,17 +96,17 @@ class IterConfig(dict):
             # If list, let's take the correct element
             if type(value) == list:
                 raise ValueError('This should not occur. Please report the error!')
-                
+
             if type(value) != str:
                 return value
             elif value.lower() == "none":
                 return None, None
             elif value.startswith("@"):
                 classname = APP2CLASS[self.conf[value[1:]]["_app"]]
-                return value[1:], getattr(all_tasks, classname) 
+                return value[1:], getattr(all_tasks, classname)
             else:
                 return value
-                
+
 def process_new_tasks(task, new_tasks, conf):
     # Basic registration and processing of newly generated tasks
     parent_taskid = task.taskid if task else None
@@ -127,7 +127,7 @@ def process_new_tasks(task, new_tasks, conf):
             # otherwise we assume the same parent workflow
             if not hasattr(ts, "target_wkname"):
                 ts.target_wkname = task.target_wkname
-            
+
         #db.add_runid2task(ts.threadid, ts.taskid)
 
 def inc_iternumber(threadid):
@@ -138,7 +138,7 @@ def inc_iternumber(threadid):
 def get_iternumber(threadid):
     return GLOBALS["threadinfo"][threadid].setdefault("last_iter", 1)
 
-def get_identity(fname): 
+def get_identity(fname):
     s = SeqGroup(fname)
     seqlen = len(six.itervalues(s.id2seq))
     ident = list()
@@ -150,9 +150,9 @@ def get_identity(fname):
         values = list(states.values())
         if values:
             ident.append(float(max(values))/sum(values))
-    return (_max(ident), _min(ident), 
+    return (_max(ident), _min(ident),
             _mean(ident), _std(ident))
-    
+
 
 def get_seqs_identity(alg, seqs):
     ''' Returns alg statistics regarding a set of sequences'''
@@ -167,14 +167,14 @@ def get_seqs_identity(alg, seqs):
         values = list(states.values())
         if values:
             ident.append(float(max(values))/sum(values))
-    return (_max(ident), _min(ident), 
+    return (_max(ident), _min(ident),
             _mean(ident), _std(ident))
 
-    
+
 def split_tree(task_tree_node, task_outgroups, main_tree, alg_path, npr_conf, threadid, target_cladeids):
     """Browses a task tree from root to leaves and yields next
     suitable nodes for NPR iterations. Each yielded node comes with
-    the set of target and outgroup tips. 
+    the set of target and outgroup tips.
     """
 
 
@@ -199,7 +199,7 @@ def split_tree(task_tree_node, task_outgroups, main_tree, alg_path, npr_conf, th
                 continue
 
             # If seq_sim filter used, calculate node stats
-            if ALG and ("min_seq_sim" in wkfilter or "max_seq_sim" in wkfilter): 
+            if ALG and ("min_seq_sim" in wkfilter or "max_seq_sim" in wkfilter):
                 if not hasattr(_n, "seqs_mean_ident"):
                     log.log(20, "Calculating node sequence stats...")
                     mx, mn, avg, std = get_seqs_identity(ALG,
@@ -207,15 +207,15 @@ def split_tree(task_tree_node, task_outgroups, main_tree, alg_path, npr_conf, th
                     _n.add_features(seqs_max_ident=mx, seqs_min_ident=mn,
                                     seqs_mean_ident=avg, seqs_std_ident=std)
                     log.log(20, "mx=%s, mn=%s, avg=%s, std=%s" %(mx, mn, avg, std))
-                    
+
 
                 if _n.seqs_mean_ident < wkfilter["min_seq_sim"]:
                     continue
-                    
+
                 if _n.seqs_mean_ident > wkfilter["max_seq_sim"]:
                     continue
 
-                    
+
             else:
                 _n.add_features(seqs_max_ident=None, seqs_min_ident=None,
                                 seqs_mean_ident=None, seqs_std_ident=None)
@@ -237,9 +237,9 @@ def split_tree(task_tree_node, task_outgroups, main_tree, alg_path, npr_conf, th
             is_leaf = True
             _n._target_wkname = wkname
             break
-                
+
         return is_leaf
-        
+
     log.log(20, "Loading tree content...")
     n2content = main_tree.get_cached_content()
     if alg_path:
@@ -257,7 +257,7 @@ def split_tree(task_tree_node, task_outgroups, main_tree, alg_path, npr_conf, th
     # loads current tree content, so we can check not reconstructing exactly the
     # same tree
     tasktree_content = set([leaf.name for leaf in n2content[task_tree_node]]) | set(task_outgroups)
-    while trees_to_browse: 
+    while trees_to_browse:
         master_node = trees_to_browse.pop()
 
         # if custom taxa levels are defined as targets, find them in this
@@ -284,14 +284,14 @@ def split_tree(task_tree_node, task_outgroups, main_tree, alg_path, npr_conf, th
                             log.log(26, "Discarding not monophyletic level @@11:%s@@1:" %lin)
                     else:
                         log.log(26, "Discarding upper clade @@11:%s@@1:" %lin)
-                        
+
         for node in master_node.iter_leaves(is_leaf_fn=processable_node):
             if opt_levels:
                 log.log(28, "Trying to optimizing custom tree level: @@11:%s@@1:" %_TARGET_NODES[node])
                 for lin in _TARGET_NODES[node]:
                     # Marks the level as optimized, so is not computed again
                     opt_levels[lin][0] = True
-           
+
             log.log(28, "Found possible target node of size %s branch support %f" %(len(n2content[node]), node.support))
             log.log(28, "First suitable workflow: %s" %(node._target_wkname))
 
@@ -305,8 +305,8 @@ def split_tree(task_tree_node, task_outgroups, main_tree, alg_path, npr_conf, th
             else:
                 seqs = set([_i.name for _i in n2content[node]])
                 outs = set()
-                
-                
+
+
             if seqs | outs == tasktree_content:
                 log.log(26, "Discarding target node of size %s, due to identity with its parent node" %len(n2content[node]))
                 #print tasktree_content
@@ -327,7 +327,7 @@ def get_next_npr_node(threadid, ttree, task_outgroups, mtree, alg_path, npr_conf
     if not npr_conf.npr_workflows:
         log.log(26, "NPR is disabled")
         return
-        
+
     for node, seqs, outs, wkname in split_tree(ttree, task_outgroups, mtree, alg_path,
                                                npr_conf, threadid, target_cladeids):
         if npr_conf.max_iters and current_iter < npr_conf.max_iters:
@@ -338,7 +338,7 @@ def get_next_npr_node(threadid, ttree, task_outgroups, mtree, alg_path, npr_conf
             # Yield new iteration
             inc_iternumber(threadid)
             yield node, seqs, outs, wkname
-                     
+
 def select_closest_outgroup(target, n2content, splitterconf):
     def sort_outgroups(x,y):
         r = cmp(x[1], y[1]) # closer node
@@ -354,24 +354,24 @@ def select_closest_outgroup(target, n2content, splitterconf):
                 return r
         else:
             return r
-    
+
     if not target.up:
         raise TaskError(None, "Cannot select outgroups for the root node!")
-        
+
     # Prepare cutoffs
     out_topodist = tobool(splitterconf["_outgroup_topology_dist"])
     max_outgroup_size = max(int(float(splitterconf["_max_outgroup_size"]) * len(n2content[target])), 1)
     out_min_support = float(splitterconf["_min_outgroup_support"])
 
     log.log(26, "Max outgroup size allowed %d" %max_outgroup_size)
-    
+
     # Gets a list of outside nodes an their distance to current target node
     n2targetdist = distance_matrix_new(target, leaf_only=False,
                                                topology_only=out_topodist)
 
     valid_nodes = sorted([(node, ndist) for node, ndist in six.iteritems(n2targetdist)
                           if not(n2content[node] & n2content[target])
-                          and node.support >= out_min_support 
+                          and node.support >= out_min_support
                           and len(n2content[node])<=max_outgroup_size],
                          sort_outgroups)
     if valid_nodes:
@@ -385,21 +385,21 @@ def select_closest_outgroup(target, n2content, splitterconf):
     log.log(20,
             "Found possible outgroup Size:%d Distance:%f Support:%f",
             len(n2content[best_outgroup]), n2targetdist[best_outgroup], best_outgroup.support)
-   
+
     log.log(20, "Supports: %0.2f (children=%s)", best_outgroup.support,
             ','.join(["%0.2f" % ch.support for ch in
                       best_outgroup.children]))
-    
+
     log.log(24, "best outgroup topology:\n%s", best_outgroup)
     #print target
     #print target.get_tree_root()
-   
+
     seqs = [n.name for n in n2content[target]]
     outs = [n.name for n in n2content[best_outgroup]]
-    
+
     return set(seqs), set(outs)
 
-            
+
 def select_sister_outgroup(target, n2content, splitterconf):
     def sort_outgroups(x,y):
         r = cmp(x[1], y[1]) # closer node
@@ -415,10 +415,10 @@ def select_sister_outgroup(target, n2content, splitterconf):
                 return r
         else:
             return r
-    
+
     if not target.up:
         raise TaskError(None, "Cannot select outgroups for the root node!")
-        
+
     # Prepare cutoffs
     out_topodist = tobool(splitterconf["_outgroup_topology_dist"])
     out_min_support = float(splitterconf["_min_outgroup_support"])
@@ -428,17 +428,17 @@ def select_sister_outgroup(target, n2content, splitterconf):
     else:
         max_outgroup_size = max(1, int(splitterconf["_max_outgroup_size"]))
         log.log(26, "Max outgroup size allowed %d" %max_outgroup_size)
-    
+
     # Gets a list of outside nodes an their distance to current target node
     n2targetdist = distance_matrix_new(target, leaf_only=False,
                                                topology_only=out_topodist)
 
     sister_content = n2content[target.get_sisters()[0]]
-    
+
     valid_nodes = sorted([(node, ndist) for node, ndist in six.iteritems(n2targetdist)
                           if not(n2content[node] & n2content[target])
                           and n2content[node].issubset(sister_content)
-                          and node.support >= out_min_support 
+                          and node.support >= out_min_support
                           and len(n2content[node])<=max_outgroup_size],
                          sort_outgroups)
     if valid_nodes:
@@ -452,41 +452,41 @@ def select_sister_outgroup(target, n2content, splitterconf):
     log.log(20,
             "Found possible outgroup Size:%d Dist:%f Supp:%f",
             len(n2content[best_outgroup]), n2targetdist[best_outgroup], best_outgroup.support)
-   
+
     log.log(20, "Supports: %0.2f (children=%s)", best_outgroup.support,
             ','.join(["%0.2f" % ch.support for ch in
                       best_outgroup.children]))
-    
+
     log.log(24, "best outgroup topology:\n%s", best_outgroup)
     #print target
     #print target.get_tree_root()
-   
+
     seqs = [n.name for n in n2content[target]]
     outs = [n.name for n in n2content[best_outgroup]]
-    
+
     return set(seqs), set(outs)
 
-            
 
 
 
-      
+
+
 def select_outgroups(target, n2content, splitterconf):
     """Given a set of target sequences, find the best set of out
     sequences to use. Several ways can be selected to find out
     sequences:
     """
-    
+
     name2dist = {"min": _min, "max": _max,
                  "mean":_mean, "median":_median}
-  
-    
+
+
     #policy = splitterconf["_outgroup_policy"]  # node or leaves
     out_topodist = tobool(splitterconf["_outgroup_topology_dist"])
     optimal_out_size = int(splitterconf["_max_outgroup_size"])
     #out_distfn = splitterconf["_outgroup_dist"]
     out_min_support = float(splitterconf["_outgroup_min_support"])
-    
+
     if not target.up:
         raise TaskError(None, "Cannot select outgroups for the root node!")
     if not optimal_out_size:
@@ -505,13 +505,13 @@ def select_outgroups(target, n2content, splitterconf):
     #        print test[x],  n2targetdist[x]
     #        print x.get_distance(target)
     #        raw_input("ERROR!")
-        
+
     score = lambda _n: (_n.support,
                         #len(n2content[_n])/float(optimal_out_size),
                         1 - (abs(optimal_out_size - len(n2content[_n])) / float(max(optimal_out_size, len(n2content[_n])))), # outgroup size
                         1 - (n2targetdist[_n] / max_dist) #outgroup proximity to target
-                        ) 
-    
+                        )
+
     def sort_outgroups(x,y):
         score_x = set(score(x))
         score_y = set(score(y))
@@ -528,7 +528,7 @@ def select_outgroups(target, n2content, splitterconf):
         if v == 0:
             v = cmp(x.cladeid, y.cladeid)
         return v
-        
+
     #del n2targetdist[target.get_tree_root()]
     max_dist = max(n2targetdist.values())
     valid_nodes = [n for n in n2targetdist if \
@@ -541,15 +541,15 @@ def select_outgroups(target, n2content, splitterconf):
     best_outgroup = valid_nodes[0]
     seqs = [n.name for n in n2content[target]]
     outs = [n.name for n in n2content[best_outgroup]]
-   
+
     log.log(20,
             "Found possible outgroup of size %s: score (support,size,dist)=%s",
             len(outs), score(best_outgroup))
-   
+
     log.log(20, "Supports: %0.2f (children=%s)", best_outgroup.support,
             ','.join(["%0.2f" % ch.support for ch in
                       best_outgroup.children]))
-    
+
     if DEBUG():
         root = target.get_tree_root()
         for _seq in outs:
@@ -565,14 +565,14 @@ def select_outgroups(target, n2content, splitterconf):
         root.show(tree_style=NPR_TREE_STYLE)
         for _n in root.traverse():
             _n.img_style = None
-        
+
     return set(seqs), set(outs)
-        
+
 def distance_matrix_new(target, leaf_only=False, topology_only=False):
     t = target.get_tree_root()
     real_outgroup = t.children[0]
     t.set_outgroup(target)
-        
+
     n2dist = {target:0}
     for n in target.get_descendants("preorder"):
         n2dist[n] = n2dist[n.up] + (topology_only or n.dist)
@@ -584,7 +584,7 @@ def distance_matrix_new(target, leaf_only=False, topology_only=False):
 
     t.set_outgroup(real_outgroup)
 
-    ## Slow Test. 
+    ## Slow Test.
     # for n in t.get_descendants():
     #     if float(str(target.get_distance(n))) != float(str(n2dist[n])):
     #         print n
@@ -596,7 +596,7 @@ def distance_matrix_new(target, leaf_only=False, topology_only=False):
 def assembly_tree(runid):
     task_nodes = db.get_runid_nodes(runid)
     task_nodes.reverse()
-    
+
     main_tree = None
     iternumber = 1
     while task_nodes:
@@ -610,7 +610,7 @@ def assembly_tree(runid):
         for leaf in tree.iter_leaves():
             leaf.add_features(safename=leaf.name)
             leaf.name = leaf.realname
-            
+
         if main_tree:
             # substitute node in main tree by the optimized one
             target_node = main_tree.search_nodes(cladeid=cladeid)[0]
@@ -622,9 +622,9 @@ def assembly_tree(runid):
         iter_name = "Iter_%04d_%dseqs" %(iternumber, size)
         tree.add_features(iternumber=iternumber)
         iternumber += 1
-    return main_tree, iternumber 
-       
-    
+    return main_tree, iternumber
+
+
 def get_cmd_log(task):
     cmd_lines = []
     if getattr(task, 'get_launch_cmd', None):

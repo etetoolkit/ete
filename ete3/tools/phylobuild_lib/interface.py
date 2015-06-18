@@ -5,25 +5,25 @@ from __future__ import print_function
 #
 # This file is part of the Environment for Tree Exploration program
 # (ETE).  http://etetoolkit.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 # License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 
+#
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
-# 
-# ETE is distributed under the GPL copyleft license (2008-2015).  
+#
+# ETE is distributed under the GPL copyleft license (2008-2015).
 #
 # If you make use of ETE in published work, please cite:
 #
@@ -31,12 +31,12 @@ from __future__ import print_function
 # ETE: a python Environment for Tree Exploration. Jaime BMC
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
-# Note that extra references to the specific methods implemented in 
-# the toolkit may be available in the documentation. 
-# 
+# Note that extra references to the specific methods implemented in
+# the toolkit may be available in the documentation.
+#
 # More info at http://etetoolkit.org. Contact: huerta@embl.de
 #
-# 
+#
 # #END_LICENSE#############################################################
 import sys
 import os
@@ -57,11 +57,11 @@ import six
 
 try:
     import curses
-except ImportError: 
+except ImportError:
     NCURSES = False
 else:
     NCURSES = True
-    
+
 # CONVERT shell colors to the same curses palette
 SHELL_COLORS = {
     "10": '\033[1;37;41m', # white on red
@@ -82,7 +82,7 @@ SHELL_COLORS = {
     "1": "\033[0m", # white
     "0": "\033[0m", # end
 }
-    
+
 def safe_int(x):
     try:
         return int(x)
@@ -91,19 +91,19 @@ def safe_int(x):
 
 def shell_colorify_match(match):
     return SHELL_COLORS[match.groups()[2]]
-        
+
 class ExcThread(threading.Thread):
     def __init__(self, bucket, *args, **kargs):
         threading.Thread.__init__(self, *args, **kargs)
         self.bucket = bucket
-          
+
     def run(self):
         try:
             threading.Thread.run(self)
         except Exception:
             self.bucket.put(sys.exc_info())
             raise
-            
+
 class Screen(StringIO):
     # tags used to control color of strings and select buffer
     TAG = re.compile("@@((\d+),)?(\d+):", re.MULTILINE)
@@ -132,7 +132,7 @@ class Screen(StringIO):
         line, col = self.pos[win]
 
         hz_pos = col + hz
-        if hz_pos < 0: 
+        if hz_pos < 0:
             hz_pos = 0
         elif hz_pos >= 1000:
             hz_pos = 999
@@ -152,7 +152,7 @@ class Screen(StringIO):
         line, col = self.pos[win]
 
         hz_pos = hz
-        if hz_pos < 0: 
+        if hz_pos < 0:
             hz_pos = 0
         elif hz_pos >= 1000:
             hz_pos = 999
@@ -172,7 +172,7 @@ class Screen(StringIO):
         for windex, (win, dim) in six.iteritems(self.windows):
             h, w, sy, sx = dim
             line, col = self.pos[windex]
-            if h is not None: 
+            if h is not None:
                 win.touchwin()
                 win.noutrefresh(line, col, sy+1, sx+1, sy+h-2, sx+w-2)
             else:
@@ -189,24 +189,24 @@ class Screen(StringIO):
                 text = re.sub(self.TAG, "", text)
                 self.write_log(text)
         else:
-            if GLOBALS["color_shell"]: 
+            if GLOBALS["color_shell"]:
                 text = re.sub(self.TAG, shell_colorify_match, text)
             else:
                 text = re.sub(self.TAG, "", text)
-                
+
             self.write_normal(text)
             if self.logfile:
                 self.write_log(text)
-            
+
     def write_log(self, text):
         self.logfile.write(text)
         self.logfile.flush()
-            
+
     def write_normal(self, text):
         #_text = '\n'.join(self.wrapper.wrap(text))
         #self.stdout.write(_text+"\n")
         self.stdout.write(text)
-        
+
     def write_curses(self, text):
         formatstr = deque()
         for m in re.finditer(self.TAG, text):
@@ -238,36 +238,36 @@ class Screen(StringIO):
             self.lines[windex] += new_lines
             if self.lines[windex] > self.maxsize[windex]:
                 _y, _x = win.getyx()
-                
+
                 for _i in self.lines[windex]-self.maxsize(windex):
                     win.move(0,0)
                     win.deleteln()
                 win.move(_y, _x)
-                
+
             # Visual scroll
             if self.autoscroll[windex]:
                 scroll = self.lines[windex] - ln - h
                 if scroll > 0:
                     self.scroll(windex, scroll, refresh=False)
-                            
+
             try:
                 win.addstr(text[start:next_stop], face)
-            except curses.error: 
+            except curses.error:
                 win.addstr("???")
-                
+
             start = next_start
             stop = next_stop
             cindex = next_cindex
             if next_windex is not None:
                 windex = next_windex
-        
+
         self.refresh()
 
     def resize_screen(self, s, frame):
 
-        import sys,fcntl,termios,struct 
-        data = fcntl.ioctl(self.stdout.fileno(), termios.TIOCGWINSZ, '1234') 
-        h, w = struct.unpack('hh', data) 
+        import sys,fcntl,termios,struct
+        data = fcntl.ioctl(self.stdout.fileno(), termios.TIOCGWINSZ, '1234')
+        h, w = struct.unpack('hh', data)
 
         win = self.windows
         #main = curses.initscr()
@@ -298,7 +298,7 @@ def init_curses(main_scr):
     curses.init_pair(10, curses.COLOR_WHITE, curses.COLOR_RED)
     curses.init_pair(11, curses.COLOR_WHITE, curses.COLOR_YELLOW)
     curses.init_pair(12, curses.COLOR_WHITE, curses.COLOR_MAGENTA)
-    
+
     WIN = {}
     main = main_scr
     h, w = main.getmaxyx()
@@ -306,11 +306,11 @@ def init_curses(main_scr):
 
     # Creates layout
     info_win, error_win, debug_win = setup_layout(h, w)
-     
+
     WIN[1] = [curses.newpad(5000, 1000), info_win]
     WIN[2] = [curses.newpad(5000, 1000), error_win]
     WIN[3] = [curses.newpad(5000, 1000), debug_win]
-    
+
 
     #WIN[1], WIN[11] = newwin(h-1, w/2, 1,1)
     #WIN[2], WIN[12] = newwin(h-dbg_h-1, (w/2)-1, 1, (w/2)+2)
@@ -330,14 +330,14 @@ def clear_env():
         terminate_job_launcher()
     except:
         pass
-        
+
     base_dir = GLOBALS["basedir"]
     lock_file = pjoin(base_dir, "alive")
     try:
         os.remove(lock_file)
     except Exception:
         print("could not remove lock file %s" %lock_file, file=sys.stderr)
-        
+
     clear_tempdir()
 
 def app_wrapper(func, args):
@@ -347,14 +347,14 @@ def app_wrapper(func, args):
 
     if not args.enable_ui:
         NCURSES = False
-    
+
     if not pexist(lock_file) or args.clearall:
         open(lock_file, "w").write(time.ctime())
     else:
         clear_env()
         print('\nThe same process seems to be running. Use --clearall or remove the lock file "alive" within the output dir', file=sys.stderr)
         sys.exit(-1)
-        
+
     try:
         if NCURSES:
             curses.wrapper(main, func, args)
@@ -380,35 +380,35 @@ def app_wrapper(func, args):
         print("\nProgram was interrupted.", file=sys.stderr)
         if args.monitor:
             print(("VERY IMPORTANT !!!: Note that launched"
-                                 " jobs will keep running as you provided the --monitor flag"), file=sys.stderr)        
+                                 " jobs will keep running as you provided the --monitor flag"), file=sys.stderr)
         clear_env()
         sys.exit(-1)
     except:
         if GLOBALS.get('_background_scheduler', None):
             GLOBALS['_background_scheduler'].terminate()
-            
+
         clear_env()
         raise
     else:
         if GLOBALS.get('_background_scheduler', None):
             GLOBALS['_background_scheduler'].terminate()
-            
+
         clear_env()
 
-    
+
 def main(main_screen, func, args):
     """ Init logging and Screen. Then call main function """
 
-    # Do I use ncurses or basic terminal interface? 
+    # Do I use ncurses or basic terminal interface?
     screen = Screen(init_curses(main_screen))
 
     # prints are handled by my Screen object
     screen.stdout = sys.stdout
-    if args.logfile: 
+    if args.logfile:
         screen.logfile = open(os.path.join(GLOBALS["basedir"], "npr.log"), "w")
     sys.stdout = screen
     sys.stderr = screen
-    
+
     # Start logger, pointing to the selected screen
     log = get_main_log(screen, [28,26,24,22,20,10][args.verbosity])
 
@@ -419,7 +419,7 @@ def main(main_screen, func, args):
         t = ExcThread(bucket=exceptions, target=func, args=[args])
         t.daemon = True
         t.start()
-        ln = 0           
+        ln = 0
         chars = "\\|/-\\|/-"
         cbuff = 1
         try:
@@ -433,7 +433,7 @@ def main(main_screen, func, args):
                     # deal with the exception
                     #print exc_trace, exc_type, exc_obj
                     raise exc_obj
-     
+
                 mwin = screen.windows[0][0]
                 key = mwin.getch()
                 mwin.addstr(0, 0, "%s (%s) (%s) (%s)" %(key, screen.pos, ["%s %s" %(i,w[1]) for i,w in list(screen.windows.items())], screen.lines) + " "*50)
@@ -441,9 +441,9 @@ def main(main_screen, func, args):
                 if key == 113:
                     # Fixes the problem of prints without newline char
                     raise KeyboardInterrupt("Q Pressed")
-                if key == 9: 
+                if key == 9:
                     cbuff += 1
-                    if cbuff>3: 
+                    if cbuff>3:
                         cbuff = 1
                 elif key == curses.KEY_UP:
                     screen.scroll(cbuff, -1)
@@ -471,7 +471,7 @@ def main(main_screen, func, args):
             print("\n")
             raise
 
-        #while 1: 
+        #while 1:
         #    if ln >= len(chars):
         #        ln = 0
         #    #screen.windows[0].addstr(0,0, chars[ln])
@@ -484,20 +484,20 @@ def main(main_screen, func, args):
 def setup_layout(h, w):
     # Creates layout
     header = 4
-    
+
     start_x = 0
     start_y = header
     h -= start_y
     w -= start_x
 
     h1 = h/2 + h%2
-    h2 = h/2 
+    h2 = h/2
     if w > 160:
         #  _______
         # |   |___|
         # |___|___|
         w1 = w/2 + w%2
-        w2 = w/2 
+        w2 = w/2
         info_win = [h, w1, start_y, start_x]
         error_win = [h1, w2, start_y, w1]
         debug_win = [h2, w2, h1, w1]
@@ -506,12 +506,12 @@ def setup_layout(h, w):
         # |___|
         # |___|
         # |___|
-        h2a = h2/2 + h2%2 
+        h2a = h2/2 + h2%2
         h2b = h2/2
         info_win = [h1, w, start_y, start_x]
         error_win = [h2a, w, h1, start_x]
         debug_win = [h2b, w, h1+h2a, start_x]
-   
+
     return info_win, error_win, debug_win
 
 

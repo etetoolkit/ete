@@ -4,25 +4,25 @@ from __future__ import absolute_import
 #
 # This file is part of the Environment for Tree Exploration program
 # (ETE).  http://etetoolkit.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 # License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 
+#
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
-# 
-# ETE is distributed under the GPL copyleft license (2008-2015).  
+#
+# ETE is distributed under the GPL copyleft license (2008-2015).
 #
 # If you make use of ETE in published work, please cite:
 #
@@ -30,12 +30,12 @@ from __future__ import absolute_import
 # ETE: a python Environment for Tree Exploration. Jaime BMC
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
-# Note that extra references to the specific methods implemented in 
-# the toolkit may be available in the documentation. 
-# 
+# Note that extra references to the specific methods implemented in
+# the toolkit may be available in the documentation.
+#
 # More info at http://etetoolkit.org. Contact: huerta@embl.de
 #
-# 
+#
 # #END_LICENSE#############################################################
 import os
 import logging
@@ -70,13 +70,13 @@ class MCoffee(AlgTask):
         # Initialize task
         self.confname = confname
         self.conf = conf
-        AlgTask.__init__(self, nodeid, "alg", "Mcoffee", 
+        AlgTask.__init__(self, nodeid, "alg", "Mcoffee",
                          base_args, self.conf[confname])
         self.all_alg_files = all_alg_files
         self.parent_ids = parent_ids
         self.seqtype = seqtype
         self.init()
-        
+
     def load_jobs(self):
         args = self.args.copy()
         args["-outfile"] = "mcoffee.fasta"
@@ -99,20 +99,20 @@ class MCoffee(AlgTask):
         alg_list_string = '\n'.join([pjoin(GLOBALS["input_dir"],
                                            aname) for aname in self.all_alg_files])
         db.add_task_data(self.taskid, DATATYPES.alg_list, alg_list_string)
-        
+
         AlgTask.store_data(self, fasta, phylip)
-        
+
     def init_output_info(self):
         self.alg_list_file = "%s.%s" %(self.taskid, DATATYPES.alg_list)
         AlgTask.init_output_info(self)
-        
-        
+
+
 class MetaAligner(AlgTask):
     def __init__(self, nodeid, multiseq_file, seqtype, conf, confname):
         self.confname = confname
         self.conf = conf
         # Initialize task
-        AlgTask.__init__(self, nodeid, "alg", "Meta-Alg", 
+        AlgTask.__init__(self, nodeid, "alg", "Meta-Alg",
                          OrderedDict(), self.conf[self.confname])
 
         self.seqtype = seqtype
@@ -129,21 +129,21 @@ class MetaAligner(AlgTask):
         #    trim_job.args["-out"] = pjoin(self.taskdir, "final_trimmed_alg.fasta")
         #    trim_job.alg_fasta_file = trim_job.args["-out"]
         #    trim_job.alg_phylip_file = None
-                        
-        
+
+
     def load_jobs(self):
         readal_bin = self.conf["app"]["readal"]
         trimal_bin = self.conf["app"]["trimal"]
         input_dir = GLOBALS["input_dir"]
         multiseq_file = pjoin(input_dir, self.multiseq_file)
         multiseq_file_r = pjoin(input_dir, self.multiseq_file+"_reversed")
-        
-        first = seq_reverser_job(multiseq_file, multiseq_file_r, 
+
+        first = seq_reverser_job(multiseq_file, multiseq_file_r,
                                  [self.nodeid], readal_bin)
         #print self.multiseq_file
         first.add_input_file(self.multiseq_file)
         self.jobs.append(first)
-        
+
         all_alg_names = []
         mcoffee_parents = []
         for aligner_name in self.conf[self.confname]["_aligners"]:
@@ -159,15 +159,15 @@ class MetaAligner(AlgTask):
             task1.size = self.size
             self.jobs.append(task1)
             all_alg_names.append(task1.alg_fasta_file)
-           
-            
+
+
             # Alg of the reverse
             task2 = _aligner(self.nodeid, self.multiseq_file+"_reversed",
                              self.seqtype, self.conf, aligner_name)
             task2.size = self.size
             task2.dependencies.add(first)
             self.jobs.append(task2)
-            
+
             # Restore reverse alg
             reverse_out = pjoin(input_dir, task2.alg_fasta_file)
             task3 = seq_reverser_job(reverse_out,
@@ -178,13 +178,13 @@ class MetaAligner(AlgTask):
             all_alg_names.append(reverse_out+"_restored")
             self.jobs.append(task3)
             mcoffee_parents.extend([task1.taskid, task2.taskid])
-            
+
         # Combine signal from all algs using Mcoffee
         mcoffee_task = MCoffee(self.nodeid, self.seqtype, all_alg_names,
                                self.conf, self.confname, parent_ids=mcoffee_parents)
         # reversed algs are not actually saved into db, but it should
         # be present since the reverser job is always executed
-        mcoffee_task.dependencies.update(list(self.jobs)) 
+        mcoffee_task.dependencies.update(list(self.jobs))
         self.jobs.append(mcoffee_task)
 
         if self.conf[self.confname]["_alg_trimming"]:
@@ -203,7 +203,7 @@ class MetaAligner(AlgTask):
                 trim_job.add_input_file(key)
             trim_job.add_input_file(mcoffee_task.alg_fasta_file)
             trim_job.add_input_file(mcoffee_task.alg_list_file)
-            self.jobs.append(trim_job)      
+            self.jobs.append(trim_job)
 
     def finish(self):
         if self.conf[self.confname]["_alg_trimming"]:

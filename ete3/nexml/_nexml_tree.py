@@ -5,25 +5,25 @@ from __future__ import print_function
 #
 # This file is part of the Environment for Tree Exploration program
 # (ETE).  http://etetoolkit.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 # License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 
+#
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
-# 
-# ETE is distributed under the GPL copyleft license (2008-2015).  
+#
+# ETE is distributed under the GPL copyleft license (2008-2015).
 #
 # If you make use of ETE in published work, please cite:
 #
@@ -31,12 +31,12 @@ from __future__ import print_function
 # ETE: a python Environment for Tree Exploration. Jaime BMC
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
-# Note that extra references to the specific methods implemented in 
-# the toolkit may be available in the documentation. 
-# 
+# Note that extra references to the specific methods implemented in
+# the toolkit may be available in the documentation.
+#
 # More info at http://etetoolkit.org. Contact: huerta@embl.de
 #
-# 
+#
 # #END_LICENSE#############################################################
 import sys
 from ._nexml import MixedContainer, FloatTree, TreeFloatEdge, TreeNode, LiteralMeta
@@ -51,8 +51,8 @@ class Children(list):
         item.nexml_edge.target = item.nexml_node.id
 
 class NexmlTree(PhyloTree):
-    """ 
-    Special PhyloTree object with nexml support 
+    """
+    Special PhyloTree object with nexml support
     """
 
     def __repr__(self):
@@ -73,7 +73,7 @@ class NexmlTree(PhyloTree):
             self._nexml_support.content = float(value)
         except ValueError:
             raise
-       
+
     def _get_name(self):
         return self.nexml_node.get_label()
 
@@ -124,7 +124,7 @@ class NexmlTree(PhyloTree):
 
     def set_nexml_project(self, nexml_obj):
         self.nexml_project = nexml_obj
-        
+
     def build(self, node):
         self.nexml_tree = FloatTree()
         tree = self.nexml_tree
@@ -150,7 +150,7 @@ class NexmlTree(PhyloTree):
 
         for xmlnode in tree.node:
             # just a warning. I don't know if this can occur
-            if xmlnode.id not in nodeid2node: 
+            if xmlnode.id not in nodeid2node:
                 print("Unused node", xmlnode.id, file=sys.stderr)
                 continue
 
@@ -162,7 +162,7 @@ class NexmlTree(PhyloTree):
             elif xmlnode.id is not None:
                 ete_node.name = xmlnode.id
 
-                
+
     def export(self, outfile=sys.stdout, level=0, namespace_='', name_='FloatTree', namespacedef_=''):
         if self.nexml_tree:
             info = [(n.nexml_edge, n.nexml_node) for n in self.traverse()]
@@ -180,14 +180,14 @@ class NexmlTree(PhyloTree):
             node_obj = self.mixedclass_(MixedContainer.CategoryComplex,
                 MixedContainer.TypeNone, 'node', n.nexml_node)
             sorted_nodes.append(node_obj)
-            
+
             # process edge
-            if n.nexml_edge: 
+            if n.nexml_edge:
                 edge_obj = self.mixedclass_(MixedContainer.CategoryComplex,
                     MixedContainer.TypeNone, 'edge', n.nexml_edge)
                 sorted_edges.append(edge_obj)
 
-        # process the nodes and edges 
+        # process the nodes and edges
         self.tree.content_ = sorted_nodes + sorted_edges
         for item_ in self.tree.content_:
             item_.export(outfile, level, item_.name, namespace_)

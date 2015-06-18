@@ -3,25 +3,25 @@
 #
 # This file is part of the Environment for Tree Exploration program
 # (ETE).  http://etetoolkit.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 # License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 
+#
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
-# 
-# ETE is distributed under the GPL copyleft license (2008-2015).  
+#
+# ETE is distributed under the GPL copyleft license (2008-2015).
 #
 # If you make use of ETE in published work, please cite:
 #
@@ -29,12 +29,12 @@
 # ETE: a python Environment for Tree Exploration. Jaime BMC
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
-# Note that extra references to the specific methods implemented in 
-# the toolkit may be available in the documentation. 
-# 
+# Note that extra references to the specific methods implemented in
+# the toolkit may be available in the documentation.
+#
 # More info at http://etetoolkit.org. Contact: huerta@embl.de
 #
-# 
+#
 # #END_LICENSE#############################################################
 
 
@@ -79,14 +79,14 @@ __all__ = ["PhylomeDB3Connector"]
 
 
 class Phylome(object):
-  def __str__(self): 
+  def __str__(self):
     info = "Phylome %s (%s)\n" %(self.phyid,self.name) +\
         " seed species: %s\n" %(self.tax2name[self.seed_taxid]) +\
         " seed proteome: %s\n" %(self.seed_proteome) +\
         " Species: %d\n" %len(self.species) +\
         " Seed sequences: %d\n" %len(self.seed_ids) +\
         " Trees: %d\n" %len(self.trees) +\
-        " Proteome list: %s\n" %','.join(self.proteomes) 
+        " Proteome list: %s\n" %','.join(self.proteomes)
     return info
 
   def __init__(self, phyid, connector, filter_isoforms=True):
@@ -100,7 +100,7 @@ class Phylome(object):
         ' WHERE phylome_id = %s' % (phyid)
     self._dsql.execute(cmd)
     phyinfo = self._dsql.fetchone()
-    self.phyid = phyid 
+    self.phyid = phyid
     self.seed_taxid = phyinfo["seed_taxid"]
     self.prot_vs = phyinfo["seed_version"]
     self.name = phyinfo["name"]
@@ -110,7 +110,7 @@ class Phylome(object):
         ' WHERE phylome_id = %s' % (phyid)
     self._lsql.execute(cmd)
     phycontent = self._lsql.fetchall()
-    self.species = [int(e[0]) for e in phycontent]    
+    self.species = [int(e[0]) for e in phycontent]
 
     # Species info
     cmd = 'SELECT taxid, code, name FROM species' +\
@@ -124,7 +124,7 @@ class Phylome(object):
       self.tax2name[taxid] = name
       self.tax2code[taxid] = code
       self.code2tax[code] = taxid
-    self.proteomes = [self.tax2code[e[0]]+str(e[1]) for e in phycontent] 
+    self.proteomes = [self.tax2code[e[0]]+str(e[1]) for e in phycontent]
     self.seed_proteome = "%s%d" %(self.tax2code[self.seed_taxid], self.prot_vs)
 
     # Seed ids
@@ -137,7 +137,7 @@ class Phylome(object):
       cmd =  'SELECT DISTINCT CONCAT("Phy", protid, "_", code) AS protid FROM '
       cmd += 'protein AS p, species AS s WHERE p.taxid = %s AND p.' % (self.seed_taxid)
       cmd += 'version = %s AND p.taxid = s.taxid' % (self.prot_vs)
-    
+
     self._lsql.execute(cmd)
     self.seed_ids = [e[0] for e in self._lsql.fetchall()]
     self.load_trees()
@@ -146,19 +146,19 @@ class Phylome(object):
     """
     Returns all newick tree for the given set of seqnames and
     model. If no seqnames are provided, all available trees in the
-    phylome is returned. 
+    phylome is returned.
     """
     def clean_name(name):
       quote = lambda x: '"%s"' %x
       m = re.search("Phy(\w{7})_[\w\d]+", name)
-      if m: 
+      if m:
         return quote(m.groups()[0])
-     
-    if not seqnames: 
+
+    if not seqnames:
       seqids =  list(map(clean_name, self.seed_ids))
     else:
       seqids =  list(map(clean_name, seqnames))
-      
+
     tree_table = "tree"
     cmd = 'SELECT  temp.protid, temp.method, temp.lk, temp.newick from ' +\
         ' (SELECT T.protid , T.method, T.newick, T.lk FROM %s AS T WHERE' %(tree_table) +\
@@ -217,12 +217,12 @@ class PhylomeDB(object):
   def get_seqs(self, seqids=[]):
     'get aa sequence of seqids'
     pass
-  
+
   def search_trees(self, seqid, include_collateral=True):
     'Returns all available trees for seqid'
     pass
 
-  
+
 
 
 

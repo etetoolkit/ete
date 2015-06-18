@@ -16,7 +16,7 @@ def layout(node):
         t.populate(10)
 
         T = TreeFace(t, small_ts)
-        # Let's make the sphere transparent 
+        # Let's make the sphere transparent
         T.opacity = 0.8
         # And place as a float face over the tree
         faces.add_face_to_node(T, node, 1, position="aligned")
@@ -36,7 +36,7 @@ def get_example_tree():
     # Set our custom layout function
     ts.layout_fn = layout
 
-    # Draw a tree 
+    # Draw a tree
     ts.mode = "c"
 
     # We will add node names manually
@@ -50,4 +50,4 @@ if __name__ == "__main__":
     t, ts = get_example_tree()
     #t.render("tree_faces.png", w=600, dpi=300, tree_style=ts)
     t.show(tree_style=ts)
- 
+

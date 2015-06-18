@@ -181,7 +181,7 @@ class Test_phylo_module(unittest.TestCase):
         # Scans the tree using the species overlap algorithm
         seed = t.search_nodes(name="Hsa_001")[0]
         events = seed.get_my_evol_events()
-        
+
         # Check that duplications are detected
         dup1 = t.get_common_ancestor("Hsa_001", "Hsa_004")
         print(dup1)

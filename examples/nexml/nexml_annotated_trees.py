@@ -2,7 +2,7 @@ from ete3 import Nexml
 
 # Creates and empty NeXML project
 p = Nexml()
-# Fill it with the tolweb example 
+# Fill it with the tolweb example
 p.build_from_file("tolweb.xml")
 
 # extract the first collection of trees
@@ -14,22 +14,22 @@ trees = tree_collection.tree
 # meta-properties
 for t in trees:
     print t
-    print 
+    print
     print "Leaf node meta information:\n"
     print
     for meta in  t.children[0].nexml_node.meta:
         print  meta.property, ":", (meta.content)
 
 
-# Output 
+# Output
 # ==========
-# 
+#
 # ---- /-node3(Eurysphindus)
-#  
+#
 # Leaf node meta information:
-#  
-#  
-# dc:description : 
+#
+#
+# dc:description :
 # tbe:AUTHORITY : Leconte
 # tbe:AUTHDATE : 1878
 # tba:ANCESTORWITHPAGE : 117851

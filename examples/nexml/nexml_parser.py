@@ -1,5 +1,5 @@
 from ete3 import Nexml
-# Create an empty Nexml project 
+# Create an empty Nexml project
 nexml_project = Nexml()
 
 # Load content from NeXML file
@@ -17,7 +17,7 @@ tree_collections = nexml_project.get_trees()
 # Select the first collection
 collection_1 = tree_collections[0]
 
-# print the topology of every tree 
+# print the topology of every tree
 for tree in  collection_1.get_tree():
     # trees contain all the nexml information in their "nexml_node",
     # "nexml_tree", and "nexml_edge" attributes.
@@ -36,7 +36,7 @@ for tree in  collection_1.get_tree():
 # OTU: t4
 # OTU: t5
 # Tree id tree1
-#  
+#
 #                /-n5(n5)
 #           /---|
 #          |     \-n6(n6)
@@ -56,7 +56,7 @@ for tree in  collection_1.get_tree():
 # node n8 is associated with t5 OTU
 # node n9 is associated with t4 OTU
 # Tree id tree2
-#  
+#
 #                /-tree2n5(n5)
 #           /---|
 #          |     \-tree2n6(n6)

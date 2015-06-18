@@ -4,25 +4,25 @@ from __future__ import absolute_import
 #
 # This file is part of the Environment for Tree Exploration program
 # (ETE).  http://etetoolkit.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 # License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 
+#
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
-# 
-# ETE is distributed under the GPL copyleft license (2008-2015).  
+#
+# ETE is distributed under the GPL copyleft license (2008-2015).
 #
 # If you make use of ETE in published work, please cite:
 #
@@ -30,19 +30,19 @@ from __future__ import absolute_import
 # ETE: a python Environment for Tree Exploration. Jaime BMC
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
-# Note that extra references to the specific methods implemented in 
-# the toolkit may be available in the documentation. 
-# 
+# Note that extra references to the specific methods implemented in
+# the toolkit may be available in the documentation.
+#
 # More info at http://etetoolkit.org. Contact: huerta@embl.de
 #
-# 
+#
 # #END_LICENSE#############################################################
 #!/usr/bin/python
 #        Author: Francois-Jose Serra
 # Creation Date: 2010/04/22 16:05:46
 
 
-# from __future__ import division # unnecessary? 
+# from __future__ import division # unnecessary?
 from ete3 import Tree
 from math import log, exp
 from six.moves import range
@@ -52,13 +52,13 @@ def get_rooting(tol, seed_species, agename = False):
     returns dict of species age for a given TOL and a given seed
 
     **Example:**
-    
+
     ::
-    
+
       tol  = "((((((((Drosophila melanogaster,(Drosophila simulans,Drosophila secchellia)),(Drosophila yakuba,Drosophila erecta))[&&NHX:name=melanogaster subgroup],Drosophila ananassae)[&&NHX:name=melanogaster group],(Drosophila pseudoobscura,Drosophila persimilis)[&&NHX:name=obscura group])[&&NHX:name=Sophophora Old World],Drosophila willistoni)[&&NHX:name=subgenus Sophophora],(Drosophila grimshawi,(Drosophila virilis,Drosophila mojavensis))[&&NHX:name=subgenus Drosophila])[&&NHX:name=genus Drosophila],(Anopheles gambiae,Aedes aegypti)[&&NHX:name=Culicidae])[&&NHX:name=Arthropoda],Caenorhabditis elegans)[&&NHX:name=Animalia];"
       seed = "Drosophila melanogaster"
       ROOTING, age2name = get_rooting (tol, seed, True)
-      
+
       ROOTING == {"Aedes aegypti"           : 7,
                   "Anopheles gambiae"       : 7,
                   "Caenorhabditis elegans"  : 8,
@@ -74,7 +74,7 @@ def get_rooting(tol, seed_species, agename = False):
                   "Drosophila virilis"      : 6,
                   "Drosophila willistoni"   : 5,
                   "Drosophila yakuba"       : 2}
-      
+
       age2name == {1: "Drosophila melanogaster. Drosophila simulans. Drosophila secchellia",
                    2: "melanogaster subgroup",
                    3: "melanogaster group",
@@ -88,7 +88,7 @@ def get_rooting(tol, seed_species, agename = False):
     :argument False agename: if True, also returns the inverse dictionary
 
     :returns: ROOTING dictionary with age of each species
-    
+
     '''
 
     tol = Tree (tol)
@@ -123,7 +123,7 @@ def translate(sequence):
     TODO : inseqgroup functions?
 
     :argument sequence: string
-    
+
     :returns: translated sequence
     '''
     #dictionary with the genetic code
@@ -132,7 +132,7 @@ def translate(sequence):
     'ACA':'T', 'ACC':'T', 'ACG':'T', 'ACT':'T',
     'AAC':'N', 'AAT':'N', 'AAA':'K', 'AAG':'K',
     'AGC':'S', 'AGT':'S', 'AGA':'R', 'AGG':'R',
-    'CTA':'L', 'CTC':'L', 'CTG':'L', 'CTT':'L', 
+    'CTA':'L', 'CTC':'L', 'CTG':'L', 'CTT':'L',
     'CCA':'P', 'CCC':'P', 'CCG':'P', 'CCT':'P',
     'CAC':'H', 'CAT':'H', 'CAA':'Q', 'CAG':'Q',
     'CGA':'R', 'CGC':'R', 'CGG':'R', 'CGT':'R',
@@ -190,16 +190,16 @@ MACHEP =  1.11022302462515654042E-16
 
 def chi_high(x, df):
     """Returns right-hand tail of chi-square distribution (x to infinity).
-    
+
     df, the degrees of freedom, ranges from 1 to infinity (assume integers).
     Typically, df is (r-1)*(c-1) for a r by c table.
-    
+
     Result ranges from 0 to 1.
-    
+
     See Cephes docs for details.
     """
     x = fix_rounding_error(x)
-    
+
     if x < 0:
         raise ValueError("chi_high: x must be >= 0 (got %s)." % x)
     if df < 1:
@@ -218,7 +218,7 @@ def fix_rounding_error(x):
         return 1
     else:
         return x
-        
+
 def igamc(a,x):
     """Complemented incomplete Gamma integral: see Cephes docs."""
     if x <= 0 or a <= 0:
@@ -329,7 +329,7 @@ def lgam(x):
 
 def polevl(x, coef):
     """evaluates a polynomial y = C_0 + C_1x + C_2x^2 + ... + C_Nx^N
-    
+
     Coefficients are stored in reverse order, i.e. coef[0] = C_N
     """
     result = 0
@@ -409,7 +409,7 @@ def igam(a, x):
         ans += c
         if c/ans <= MACHEP:
             break
-    
+
     return ans * ax / a
 
 #Coefficients for Gamma follow:

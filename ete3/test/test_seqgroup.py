@@ -72,18 +72,18 @@ class Test_Coretype_SeqGroup(unittest.TestCase):
         #    SEQS.set_seq("seq%s" %i, "A"*500000)
         #SEQS.write(outfile="/tmp/iphylip_write_test.phy", format="iphylip")
         #SEQS.write(outfile="/tmp/iphylip_write_test.phy", format="phylip")
-        
+
     def test_alg_from_scratch(self):
 
         alg = SeqGroup(phylip_sequencial, format="phylip")
-     
+
         random_seq = alg.get_seq("CATH_HUMAN")
- 
+
         # Add a new sequence to the alg
         alg.set_seq("randomseq", random_seq.replace("A","X"))
 
         self.assertEqual(alg.get_seq("randomseq"), random_seq.replace("A","X"))
-  
+
         # Exports the alignment to different formats
         alg.write(format ="fasta")
         alg.write(format ="iphylip")

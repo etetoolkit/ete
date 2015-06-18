@@ -5,25 +5,25 @@ from __future__ import print_function
 #
 # This file is part of the Environment for Tree Exploration program
 # (ETE).  http://etetoolkit.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 # License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 
+#
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
-# 
-# ETE is distributed under the GPL copyleft license (2008-2015).  
+#
+# ETE is distributed under the GPL copyleft license (2008-2015).
 #
 # If you make use of ETE in published work, please cite:
 #
@@ -31,12 +31,12 @@ from __future__ import print_function
 # ETE: a python Environment for Tree Exploration. Jaime BMC
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
-# Note that extra references to the specific methods implemented in 
-# the toolkit may be available in the documentation. 
-# 
+# Note that extra references to the specific methods implemented in
+# the toolkit may be available in the documentation.
+#
 # More info at http://etetoolkit.org. Contact: huerta@embl.de
 #
-# 
+#
 # #END_LICENSE#############################################################
 import logging
 from collections import defaultdict
@@ -69,35 +69,35 @@ def annotate_node(t, final_task):
     n = cladeid2node[t.cladeid]
     n.add_features(size=final_task.size)
     for task in alltasks:
-        params = ["%s %s" %(k,v) for k,v in  six.iteritems(task.args) 
+        params = ["%s %s" %(k,v) for k,v in  six.iteritems(task.args)
                   if not k.startswith("_")]
         params = " ".join(params)
 
         if task.ttype == "tree":
-            n.add_features(tree_model=task.model, 
-                           tree_seqtype=task.seqtype, 
-                           tree_type=task.tname, 
+            n.add_features(tree_model=task.model,
+                           tree_seqtype=task.seqtype,
+                           tree_type=task.tname,
                            tree_cmd=params,
                            tree_file=rpath(task.tree_file),
                            tree_constrain=task.constrain_tree,
                            npr_iter=npr_iter)
-            
+
         elif task.ttype == "treemerger":
-            n.add_features(treemerger_type=task.tname, 
+            n.add_features(treemerger_type=task.tname,
                            treemerger_rf="RF=%s [%s]" %(task.rf[0], task.rf[1]),
                            treemerger_out_match_dist = task.outgroup_match_dist,
                            treemerger_out_match = task.outgroup_match)
 
         elif task.ttype == "concat_alg":
             n.add_features(concatalg_cogs="%d"%task.used_cogs,
-                           alg_path=task.alg_fasta_file)                       
+                           alg_path=task.alg_fasta_file)
 
 def process_task(task, wkname, npr_conf, nodeid2info):
     cogconf, cogclass = npr_conf.cog_selector
     concatconf, concatclass = npr_conf.alg_concatenator
     treebuilderconf, treebuilderclass = npr_conf.tree_builder
     splitterconf, splitterclass = npr_conf.tree_splitter
-    
+
     threadid, nodeid, seqtype, ttype = (task.threadid, task.nodeid,
                                         task.seqtype, task.ttype)
     cladeid, targets, outgroups = db.get_node_info(threadid, nodeid)
@@ -107,17 +107,17 @@ def process_task(task, wkname, npr_conf, nodeid2info):
         # inference does not make sense given the number of sequences. DummyTree
         # will produce a fake fully collapsed newick tree.
         treebuilderclass = DummyTree
-    
+
     if outgroups and len(outgroups) > 1:
         constrain_id = nodeid
     else:
         constrain_id = None
-        
+
     node_info = nodeid2info[nodeid]
     conf = GLOBALS[task.configid]
-    new_tasks = []    
+    new_tasks = []
     if ttype == "cog_selector":
-       
+
         # Generates a md5 id based on the genetree configuration workflow used
         # for the concat alg task. If something changes, concat alg will change
         # and the associated tree will be rebuilt
@@ -147,11 +147,11 @@ def process_task(task, wkname, npr_conf, nodeid2info):
         #    log.log(28, "Analysis of current COG selection:")
         #    for sp, ncogs in sorted(sp_repr.items(), key=lambda x:x[1]):
         #        log.log(28, "   % 30s species present in % 6d COGs" %(sp, ncogs))
-                
+
         # register concat alignment task. NodeId associated to concat_alg tasks
         # and all its children jobs should take into account cog information and
         # not only species and outgroups included.
-        
+
         concat_job = concatclass(task.cogs, seqtype, conf, concatconf,
                                  config_checksum)
         db.add_node(threadid,
@@ -159,7 +159,7 @@ def process_task(task, wkname, npr_conf, nodeid2info):
                     targets, outgroups)
 
         # Register Tree constrains
-        constrain_tree = "(%s, (%s));" %(','.join(sorted(outgroups)), 
+        constrain_tree = "(%s, (%s));" %(','.join(sorted(outgroups)),
                                          ','.join(sorted(targets)))
         _outs = "\n".join([">%s\n0" %name for name in sorted(outgroups)])
         _tars = "\n".join([">%s\n1" %name for name in sorted(targets)])
@@ -171,7 +171,7 @@ def process_task(task, wkname, npr_conf, nodeid2info):
                              # right now.
         concat_job.size = task.size
         new_tasks.append(concat_job)
-       
+
     elif ttype == "concat_alg":
         # register tree for concat alignment, using constraint tree if
         # necessary
@@ -184,14 +184,14 @@ def process_task(task, wkname, npr_conf, nodeid2info):
         nodeid2info[nodeid]["size"] = task.size
         nodeid2info[nodeid]["target_seqs"] = targets
         nodeid2info[nodeid]["out_seqs"] = outgroups
-            
+
         tree_task = treebuilderclass(nodeid, alg_id,
                                      constrain_id, None,
                                      seqtype, conf, treebuilderconf,
                                      parts_id=parts_id)
         tree_task.size = task.size
         new_tasks.append(tree_task)
-        
+
     elif ttype == "tree":
         merger_task = splitterclass(nodeid, seqtype, task.tree_file, conf, splitterconf)
         merger_task.size = task.size
@@ -250,11 +250,11 @@ def process_task(task, wkname, npr_conf, nodeid2info):
                                 new_task_node.targets,
                                 new_task_node.outgroups)
     return new_tasks
-     
+
 def pipeline(task, wkname, conf=None):
     logindent(2)
     # Points to npr parameters according to task properties
-    
+
     if not task:
         source_seqtype = "aa" if "aa" in GLOBALS["seqtypes"] else "nt"
         npr_conf = IterConfig(conf, wkname,
@@ -268,11 +268,11 @@ def pipeline(task, wkname, conf=None):
         initial_task.threadid = generate_runid()
         initial_task.configid = initial_task.threadid
         initial_task.target_wkname = wkname
-        # Register node 
+        # Register node
         db.add_node(initial_task.threadid, initial_task.nodeid,
                     initial_task.cladeid, initial_task.targets,
                     initial_task.outgroups)
-        
+
         new_tasks = [initial_task]
     else:
         conf = GLOBALS[task.configid]
@@ -281,6 +281,6 @@ def pipeline(task, wkname, conf=None):
 
     process_new_tasks(task, new_tasks, conf)
     logindent(-2)
-    
+
     return new_tasks
-    
+

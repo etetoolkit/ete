@@ -5,25 +5,25 @@ from __future__ import print_function
 #
 # This file is part of the Environment for Tree Exploration program
 # (ETE).  http://etetoolkit.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 # License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 
+#
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
-# 
-# ETE is distributed under the GPL copyleft license (2008-2015).  
+#
+# ETE is distributed under the GPL copyleft license (2008-2015).
 #
 # If you make use of ETE in published work, please cite:
 #
@@ -31,12 +31,12 @@ from __future__ import print_function
 # ETE: a python Environment for Tree Exploration. Jaime BMC
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
-# Note that extra references to the specific methods implemented in 
-# the toolkit may be available in the documentation. 
-# 
+# Note that extra references to the specific methods implemented in
+# the toolkit may be available in the documentation.
+#
 # More info at http://etetoolkit.org. Contact: huerta@embl.de
 #
-# 
+#
 # #END_LICENSE#############################################################
 import os
 import re
@@ -102,7 +102,7 @@ builtin_apps = {
     'jmodeltest'         : "JMODELTEST_HOME=%BASE%/jmodeltest2; cd $JMODELTEST_HOME; java -jar $JMODELTEST_HOME/jModelTest.jar",
     'dialigntx'          : "%BIN%/dialign-tx %BASE%/DIALIGN-TX_1.0.2/conf",
     'usearch'            : "%BIN%/usearch",
-    'fasttree'           : "export OMP_NUM_THREADS=%CORES%; %BIN%/FastTree",   
+    'fasttree'           : "export OMP_NUM_THREADS=%CORES%; %BIN%/FastTree",
     'statal'             : "%BIN%/statal",
     }
 
@@ -158,7 +158,7 @@ def get_call(appname, apps_path, exec_path, cores):
         cmd = builtin_apps[appname]
     except KeyError:
         return None
-       
+
     bin_path = os.path.join(apps_path, "bin")
     tmp_path = os.path.join(exec_path, "tmp")
     #apps_base = apps_path.rstrip("/x86-64").rstrip("/x86-32")
@@ -168,7 +168,7 @@ def get_call(appname, apps_path, exec_path, cores):
     cmd = re.sub("%CORES%", cores, cmd)
     #cmd = "export NPR_APP_PATH=%s; %s" %(apps_path, cmd)
     return cmd
-  
+
 def test_apps(apps):
     for name, cmd in sorted(apps.items()):
         if app2version.get(name):
@@ -177,7 +177,7 @@ def test_apps(apps):
 
             process = subprocess.Popen(test_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             out, err = process.communicate()
-        
+
             if out:
                 print("OK.\t%s" %out.strip())
             else:

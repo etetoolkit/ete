@@ -14,7 +14,7 @@ def sphere_map(node):
     bubble = faces.CircleFace(random.randint(5,40), random_color(), "sphere")
     bubble.opacity = 0.7
     faces.add_face_to_node(bubble, node, 0, position="float")
-    
+
 def random_background(node):
     # Set a random background color for each node partition
     node.img_style["bgcolor"] = random_color()
@@ -58,7 +58,7 @@ def master_ly(node):
 def tiny_ly(node):
     node.img_style["size"] = 2
     node.img_style["shape"] = "square"
-    
+
 size = 15
 t = Tree()
 t.populate(size, reuse_names=False)
@@ -88,7 +88,7 @@ I.aligned_header.add_face( faces.TextFace("H1"), 1 )
 I.aligned_header.add_face( faces.TextFace("H1"), 2 )
 I.aligned_header.add_face( faces.TextFace("H1111111111111"), 3 )
 I.aligned_header.add_face( faces.TextFace("H1"), 4 )
- 
+
 I.aligned_foot.add_face( faces.TextFace("FO1"), 0 )
 I.aligned_foot.add_face( faces.TextFace("FO1"), 1 )
 I.aligned_foot.add_face( faces.TextFace("FO1"), 2 )
@@ -99,7 +99,7 @@ I.legend.add_face(faces.CircleFace(30, random_color(), "sphere"), 0)
 I.legend.add_face(faces.CircleFace(30, random_color(), "sphere"), 0)
 I.legend.add_face(faces.TextFace("HOLA"), 1)
 I.legend.add_face(faces.TextFace("HOLA"), 1)
- 
+
 # Creates a random tree with 10 leaves
 t2 = Tree()
 t2.populate(10)

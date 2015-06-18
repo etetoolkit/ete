@@ -402,7 +402,7 @@ class TreeNode(object):
                     self.children[0].dist += self.dist
                 elif len(self.children) > 1:
                     parent.dist += self.dist
-                
+
             for ch in self.children:
                 parent.add_child(ch)
 
@@ -438,28 +438,28 @@ class TreeNode(object):
         retained. Root node is always conserved.
 
         :var nodes: a list of node names or node objects that should be retained
-        
+
         :param False preserve_branch_length: If True, branch lengths
         of the deleted nodes are transferred (summed up) to its
         parent's branch, thus keeping original distances among nodes.
-        
+
         **Examples:**
 
         ::
-        
+
           t1 = Tree('(((((A,B)C)D,E)F,G)H,(I,J)K)root;', format=1)
           t1.prune(['A', 'B'])
 
-         
-          #                /-A     
+
+          #                /-A
           #          /D /C|
           #       /F|      \-B
           #      |  |
-          #    /H|   \-E                       
-          #   |  |                        /-A  
-          #-root  \-G                 -root    
-          #   |                           \-B  
-          #   |   /-I                          
+          #    /H|   \-E
+          #   |  |                        /-A
+          #-root  \-G                 -root
+          #   |                           \-B
+          #   |   /-I
           #    \K|
           #       \-J
 
@@ -472,16 +472,16 @@ class TreeNode(object):
           #          /D /C|
           #       /F|      \-B
           #      |  |
-          #    /H|   \-E                      
-          #   |  |                              /-A 
-          #-root  \-G                  -root- C|    
-          #   |                                 \-B 
+          #    /H|   \-E
+          #   |  |                              /-A
+          #-root  \-G                  -root- C|
+          #   |                                 \-B
           #   |   /-I
           #    \K|
           #       \-J
 
-        
-        
+
+
           t1 = Tree('(((((A,B)C)D,E)F,G)H,(I,J)K)root;', format=1)
           t1.prune(['A', 'B', 'I'])
 
@@ -490,26 +490,26 @@ class TreeNode(object):
           #          /D /C|
           #       /F|      \-B
           #      |  |
-          #    /H|   \-E                    /-I     
-          #   |  |                      -root      
-          #-root  \-G                      |   /-A 
-          #   |                             \C|    
-          #   |   /-I                          \-B 
-          #    \K|               
-          #       \-J            
+          #    /H|   \-E                    /-I
+          #   |  |                      -root
+          #-root  \-G                      |   /-A
+          #   |                             \C|
+          #   |   /-I                          \-B
+          #    \K|
+          #       \-J
 
           t1 = Tree('(((((A,B)C)D,E)F,G)H,(I,J)K)root;', format=1)
           t1.prune(['A', 'B', 'F', 'H'])
 
-          #                /-A         
-          #          /D /C|            
-          #       /F|      \-B         
-          #      |  |                  
+          #                /-A
+          #          /D /C|
+          #       /F|      \-B
+          #      |  |
           #    /H|   \-E
-          #   |  |                              /-A   
-          #-root  \-G                -root-H /F|      
-          #   |                                 \-B   
-          #   |   /-I                                
+          #   |  |                              /-A
+          #-root  \-G                -root-H /F|
+          #   |                                 \-B
+          #   |   /-I
           #    \K|
           #       \-J
 
@@ -518,7 +518,7 @@ class TreeNode(object):
             # if several nodes are in the same path of two kept nodes,
             # only one should be maintained. This prioritize internal
             # nodes that are already in the to_keep list and then
-            # deeper nodes (closer to the leaves). 
+            # deeper nodes (closer to the leaves).
             if n2depth[x] > n2depth[y]:
                 return -1
             elif n2depth[x] < n2depth[y]:
@@ -543,30 +543,30 @@ class TreeNode(object):
                     n2count.setdefault(visited_node, set()).add(seed)
 
         # if several internal nodes are in the path of exactly the same kept
-        # nodes, only one (the deepest) should be maintain. 
+        # nodes, only one (the deepest) should be maintain.
         visitors2nodes = {}
         for node, visitors in six.iteritems(n2count):
             # keep nodes connection at least two other nodes
-            if len(visitors)>1: 
+            if len(visitors)>1:
                 visitor_key = frozenset(visitors)
                 visitors2nodes.setdefault(visitor_key, set()).add(node)
-                
+
         for visitors, nodes in six.iteritems(visitors2nodes):
             if not (to_keep & nodes):
                 sorted_nodes = sorted(nodes, key=cmp_to_key(cmp_nodes))
                 to_keep.add(sorted_nodes[0])
-            
+
         for n in self.get_descendants('postorder'):
-            if n not in to_keep: 
+            if n not in to_keep:
                 if preserve_branch_length:
                     if len(n.children) == 1:
                         n.children[0].dist += n.dist
                     elif len(n.children) > 1 and n.up:
                         n.up.dist += n.dist
-                        
+
                 n.delete(prevent_nondicotomic=False)
 
- 
+
     def swap_children(self):
         """
         Swaps current children order.
@@ -685,7 +685,7 @@ class TreeNode(object):
             return self._iter_descendants_levelorder(is_leaf_fn=is_leaf_fn)
         elif strategy=="postorder":
             return self._iter_descendants_postorder(is_leaf_fn=is_leaf_fn)
-                
+
     def iter_prepostorder(self, is_leaf_fn=None):
         """
         Iterate over all nodes in a tree yielding every node in both
@@ -1005,7 +1005,7 @@ class TreeNode(object):
 
         target, target2 = _translate_nodes(root, target, target2)
         ancestor = root.get_common_ancestor(target, target2)
-        
+
         dist = 0.0
         for n in [target2, target]:
             current = n
@@ -1034,7 +1034,7 @@ class TreeNode(object):
         """
         # Init fasthest node to current farthest leaf
         farthest_node, farthest_dist = self.get_farthest_leaf(topology_only=topology_only)
-        
+
         prev = self
         cdist = 0.0 if topology_only else prev.dist
         current = prev.up
@@ -1065,7 +1065,7 @@ class TreeNode(object):
         # if called from a leaf node, no necessary to compute
         if (is_leaf_fn and is_leaf_fn(self)) or self.is_leaf():
             return self, 0.0, self, 0.0
-        
+
         min_dist = None
         min_node = None
         max_dist = None
@@ -1074,11 +1074,11 @@ class TreeNode(object):
         for post, n in self.iter_prepostorder(is_leaf_fn=is_leaf_fn):
             if n is self:
                 continue
-            if post:                
+            if post:
                 d -= n.dist if not topology_only else 1.0
             else:
                 if (is_leaf_fn and is_leaf_fn(n)) or n.is_leaf():
-                    total_d = d + n.dist if not topology_only else d                    
+                    total_d = d + n.dist if not topology_only else d
                     if min_dist is None or total_d < min_dist:
                         min_dist = total_d
                         min_node = n
@@ -1089,7 +1089,7 @@ class TreeNode(object):
                     d += n.dist if not topology_only else 1.0
         return min_node, min_dist, max_node, max_dist
 
-                    
+
     def get_farthest_leaf(self, topology_only=False, is_leaf_fn=None):
         """
         Returns node's farthest descendant node (which is always a leaf), and the
@@ -1125,7 +1125,7 @@ class TreeNode(object):
 
         return min_node, min_dist
 
-            
+
     def get_midpoint_outgroup(self):
         """
         Returns the node that divides the current tree into two distance-balanced
@@ -1358,14 +1358,14 @@ class TreeNode(object):
 
         from ete3.treeview import drawer
         if file_name == '%%return':
-            return drawer.get_img(self, w=w, h=h, 
-                                  layout=layout, tree_style=tree_style, 
+            return drawer.get_img(self, w=w, h=h,
+                                  layout=layout, tree_style=tree_style,
                                   units=units, dpi=dpi)
         else:
-            return drawer.render_tree(self, file_name, w=w, h=h, 
-                                    layout=layout, tree_style=tree_style, 
+            return drawer.render_tree(self, file_name, w=w, h=h,
+                                    layout=layout, tree_style=tree_style,
                                       units=units, dpi=dpi)
-            
+
     def copy(self, method="cpickle"):
         """.. versionadded: 2.1
 
@@ -1460,7 +1460,7 @@ class TreeNode(object):
             return (result, mid)
         else:
             return ([char1 + '-' + node_name], 0)
-            
+
     def get_ascii(self, show_internal=True, compact=False, attributes=None):
         """
         Returns a string containing an ascii drawing of the tree.
@@ -1632,17 +1632,17 @@ class TreeNode(object):
 
         if expand_polytomies and correct_by_polytomy_size:
             raise TreeError("expand_polytomies and correct_by_polytomy_size are mutually exclusive.")
-        
+
         if expand_polytomies and unrooted_trees:
             raise TreeError("expand_polytomies and unrooted_trees arguments cannot be enabled at the same time")
 
-           
+
         attrs_t1 = set([getattr(n, attr_t1) for n in ref_t.iter_leaves() if hasattr(n, attr_t1)])
         attrs_t2 = set([getattr(n, attr_t2) for n in target_t.iter_leaves() if hasattr(n, attr_t2)])
         common_attrs = attrs_t1 & attrs_t2
         # release mem
         attrs_t1, attrs_t2 = None, None
-        
+
         # Check for duplicated items (is it necessary? can we optimize? what's the impact in performance?')
         size1 = len([True for n in ref_t.iter_leaves() if getattr(n, attr_t1, None) in common_attrs])
         size2 = len([True for n in target_t.iter_leaves() if getattr(n, attr_t2, None) in common_attrs])
@@ -1650,7 +1650,7 @@ class TreeNode(object):
             raise TreeError('Duplicated items found in source tree')
         if size2 > len(common_attrs):
             raise TreeError('Duplicated items found in reference tree')
-        
+
         if expand_polytomies:
             ref_trees = [Tree(nw) for nw in
                          ref_t.expand_polytomies(map_attr=attr_t1,
@@ -1689,7 +1689,7 @@ class TreeNode(object):
                         tuple(sorted([getattr(n, attr_t1) for n in content if hasattr(n, attr_t1) and getattr(n, attr_t1) in common_attrs]))
                         for content in six.itervalues(t1_content)])
                 edges1.discard(())
-                
+
             if min_support_t1:
                 support_t1 = dict([
                         (tuple(sorted([getattr(n, attr_t1) for n in content if hasattr(n, attr_t1) and getattr(n, attr_t1) in common_attrs])), branch.support)
@@ -1760,7 +1760,7 @@ class TreeNode(object):
         return min_comparison
 
 
-    
+
     def compare(self, ref_tree, use_collateral=False, min_support_source=0.0, min_support_ref=0.0,
                 has_duplications=False, expand_polytomies=False, unrooted=False,
                 max_treeko_splits_to_be_artifact=1000, ref_tree_attr='name', source_tree_attr='name'):
@@ -1824,7 +1824,7 @@ class TreeNode(object):
             ntrees, ndups, sp_trees = source_tree.get_speciation_trees(
                 autodetect_duplications=True, newick_only=True,
                 target_attr=source_tree_attr, map_features=[source_tree_attr])
-            
+
             if ntrees < max_treeko_splits_to_be_artifact:
                 all_rf = []
                 ref_found = []
@@ -2039,7 +2039,7 @@ class TreeNode(object):
         0.
         """
 
-        # Could something like this replace the old algorithm? 
+        # Could something like this replace the old algorithm?
         #most_distant_leaf, tree_length = self.get_farthest_leaf()
         #for leaf in self:
         #    d = leaf.get_distance(self)

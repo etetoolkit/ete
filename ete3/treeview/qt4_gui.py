@@ -5,25 +5,25 @@ from __future__ import print_function
 #
 # This file is part of the Environment for Tree Exploration program
 # (ETE).  http://etetoolkit.org
-#  
+#
 # ETE is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#  
+#
 # ETE is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 # License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with ETE.  If not, see <http://www.gnu.org/licenses/>.
 #
-# 
+#
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
-# 
-# ETE is distributed under the GPL copyleft license (2008-2015).  
+#
+# ETE is distributed under the GPL copyleft license (2008-2015).
 #
 # If you make use of ETE in published work, please cite:
 #
@@ -31,12 +31,12 @@ from __future__ import print_function
 # ETE: a python Environment for Tree Exploration. Jaime BMC
 # Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
 #
-# Note that extra references to the specific methods implemented in 
-# the toolkit may be available in the documentation. 
-# 
+# Note that extra references to the specific methods implemented in
+# the toolkit may be available in the documentation.
+#
 # More info at http://etetoolkit.org. Contact: huerta@embl.de
 #
-# 
+#
 # #END_LICENSE#############################################################
 import re
 from sys import stderr
@@ -100,14 +100,14 @@ def etime(f):
         global TIME
         t1 = time.time()
         f(*args, **kargs)
-        print(time.time() - t1) 
+        print(time.time() - t1)
     return a_wrapper_accepting_arguments
 
 class CheckUpdates(QThread):
     def run(self):
         try:
             current, latest, tag = new_version()
-            if tag is None: 
+            if tag is None:
                 tag = ""
             msg = ""
             if current and latest:
@@ -119,7 +119,7 @@ class CheckUpdates(QThread):
             self.emit(SIGNAL("output(QString)"), msg)
         except Exception:
             pass
-            
+
 class _GUI(QtGui.QMainWindow):
     def _updatestatus(self, msg):
         self.main.statusbar.showMessage(msg)
@@ -127,13 +127,13 @@ class _GUI(QtGui.QMainWindow):
     def redraw(self):
         self.scene.draw()
         self.view.init_values()
-                
+
     def __init__(self, scene, *args):
         QtGui.QMainWindow.__init__(self, *args)
         self.main = _mainwindow.Ui_MainWindow()
         self.main.setupUi(self)
         self.setWindowTitle("ETE Tree Browser")
-        
+
         self.scene = scene
         self.scene.GUI = self
         self.view = _TreeView(scene)
@@ -142,13 +142,13 @@ class _GUI(QtGui.QMainWindow):
         self.view.prop_table = self.node_properties
 
         #self.view.centerOn(0,0)
-        if scene.img.show_branch_length: 
+        if scene.img.show_branch_length:
             self.main.actionBranchLength.setChecked(True)
-        if scene.img.show_branch_support: 
+        if scene.img.show_branch_support:
             self.main.actionBranchSupport.setChecked(True)
-        if scene.img.show_leaf_name: 
+        if scene.img.show_leaf_name:
             self.main.actionLeafName.setChecked(True)
-        if scene.img.force_topology: 
+        if scene.img.force_topology:
             self.main.actionForceTopology.setChecked(True)
 
         splitter = QtGui.QSplitter()
@@ -168,14 +168,14 @@ class _GUI(QtGui.QMainWindow):
         #self.view.fitInView(self.scene.sceneRect(), QtCore.Qt.KeepAspectRatio)
         splitter.setCollapsible(1, True)
         splitter.setSizes([self.scene.sceneRect().width(), 10])
-        
+
         self.view.fitInView(0, 0, self.scene.sceneRect().width(), 200, QtCore.Qt.KeepAspectRatio)
-        
+
         # Check for updates
         self.check = CheckUpdates()
         #self.check.start()
         #self.connect(self.check, SIGNAL("output(QString)"), self._updatestatus)
-        
+
     @QtCore.pyqtSignature("")
     def on_actionETE_triggered(self):
         try:
@@ -217,8 +217,8 @@ class _GUI(QtGui.QMainWindow):
     @QtCore.pyqtSignature("")
     def on_actionZoomOutY_triggered(self):
         if self.scene.img.branch_vertical_margin > 0:
-            margin = self.scene.img.branch_vertical_margin - 5 
-            if margin > 0: 
+            margin = self.scene.img.branch_vertical_margin - 5
+            if margin > 0:
                 self.scene.img.branch_vertical_margin = margin
             else:
                 self.scene.img.branch_vertical_margin = 0.0
@@ -280,7 +280,7 @@ class _GUI(QtGui.QMainWindow):
                         and cmpFn(getattr(n, aName), aValue ):
                     self.scene.view.highlight_node(n)
                     last_match_node = n
-                    
+
             if last_match_node:
                 item = self.scene.n2i[last_match_node]
                 R = item.mapToScene(item.fullRegion).boundingRect()
@@ -288,7 +288,7 @@ class _GUI(QtGui.QMainWindow):
                 self.view.fitInView(R.x(), R.y(), R.width(),\
                                     R.height(), QtCore.Qt.KeepAspectRatio)
 
-                    
+
     @QtCore.pyqtSignature("")
     def on_actionClear_search_triggered(self):
         # This could be much more efficient
@@ -432,8 +432,8 @@ class _GUI(QtGui.QMainWindow):
             m.reset()
             self.view.setMatrix(m)
             self.view.scale(key, key)
-            
-                
+
+
 # This function should be reviewed. Probably there are better ways to
 # do de same, or at least less messy ways... So far this is what I
 # have
@@ -664,7 +664,7 @@ class _TreeView(QtGui.QGraphicsView):
         QtGui.QGraphicsView.__init__(self,*args)
         self.buffer_node = None
         self.init_values()
-        
+
         if USE_GL:
             print("USING GL")
             F = QtOpenGL.QGLFormat()
@@ -693,7 +693,7 @@ class _TreeView(QtGui.QGraphicsView):
         #self.buffer_node = None
         self.focus_node = None
         self.selector = _SelectorItem(master_item)
-        
+
     def resizeEvent(self, e):
         QtGui.QGraphicsView.resizeEvent(self, e)
 
@@ -732,7 +732,7 @@ class _TreeView(QtGui.QGraphicsView):
         hl.setOpacity(0.2)
         # save info in Scene
         self.n2hl[n] = hl
-        if permanent: 
+        if permanent:
             item.highlighted = True
 
     def unhighlight_node(self, n, reset=False):
@@ -789,12 +789,12 @@ class _TreeView(QtGui.QGraphicsView):
         self.prop_table.update_properties(node)
         #self.focus_highlight.setRect(i.nodeRegion)
         self.focus_node = node
-        self.update()    
+        self.update()
 
     def hide_focus(self):
         return
         #self.focus_highlight.setVisible(False)
-    
+
     def keyPressEvent(self,e):
         key = e.key()
         control = e.modifiers() & QtCore.Qt.ControlModifier
@@ -813,7 +813,7 @@ class _TreeView(QtGui.QGraphicsView):
                 self.verticalScrollBar().setValue(self.verticalScrollBar().value()+20 )
                 self.update()
         else:
-            if not self.focus_node: 
+            if not self.focus_node:
                 self.focus_node = self.scene().tree
 
             if key == QtCore.Qt.Key_Left:
@@ -832,7 +832,7 @@ class _TreeView(QtGui.QGraphicsView):
                         self.set_focus(new_focus_node)
                     elif self.focus_node.up:
                         self.set_focus(self.focus_node.up)
-                        
+
             elif key == QtCore.Qt.Key_Down:
                 if self.focus_node.up:
                     i = self.focus_node.up.children.index(self.focus_node)
@@ -841,15 +841,15 @@ class _TreeView(QtGui.QGraphicsView):
                         self.set_focus(new_focus_node)
                     elif self.focus_node.up:
                         self.set_focus(self.focus_node.up)
-                    
+
             elif key == QtCore.Qt.Key_Escape:
                 self.hide_focus()
             elif key == QtCore.Qt.Key_Enter or\
                     key == QtCore.Qt.Key_Return:
                 self.prop_table.tableView.setFocus()
             elif key == QtCore.Qt.Key_Space:
-                self.highlight_node(self.focus_node, fullRegion=True, 
-                                    bg=random_color(l=0.5, s=0.5), 
+                self.highlight_node(self.focus_node, fullRegion=True,
+                                    bg=random_color(l=0.5, s=0.5),
                                     permanent=True)
         QtGui.QGraphicsView.keyPressEvent(self,e)
 
@@ -884,7 +884,7 @@ class _TreeView(QtGui.QGraphicsView):
             h = max(self.selector.startPoint.y(),curr_pos.y()) - y
             self.selector.setRect(x,y,w,h)
         QtGui.QGraphicsView.mouseMoveEvent(self, e)
-        
+
 
 class _BasicNodeActions(object):
     """ Should be added as ActionDelegator """
@@ -902,7 +902,7 @@ class _BasicNodeActions(object):
     def hoverLeaveEvent(obj, e):
         print("ADIOS")
 
-    @staticmethod            
+    @staticmethod
     def mousePressEvent(obj, e):
         print("Click")
 
@@ -914,7 +914,7 @@ class _BasicNodeActions(object):
             obj.scene().view.set_focus(obj.node)
             #obj.scene().view.prop_table.update_properties(obj.node)
 
-    @staticmethod            
+    @staticmethod
     def hoverEnterEvent (self, e):
         self.scene().view.highlight_node(self.node, fullRegion=True)
 
