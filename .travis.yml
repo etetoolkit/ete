@@ -5,8 +5,9 @@ python:
 
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install: 
-  - sudo apt-get install python-qt4 python-numpy python-lxml 2>&1 | tail
+  - sudo apt-get install python-qt4 python-numpy python-lxml python3-qt4 python3-lxml python3-numpy 2>&1 | tail
   - sudo pip install coverage coveralls six
+   
   - /usr/bin/yes | sudo python setup.py install 2>&1 | tail
 
 before_script:

@@ -42,7 +42,13 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-import urllib2 as url
+try:
+    from urlib2.url import urlopen
+    from urlib2.url import quote as urlquote
+except ImportError:
+    from urllib.request import urlopen
+    from urllib.parse import quote as urquote
+
 from six.moves import input
 
 try:
@@ -58,7 +64,7 @@ except ImportError:
 def call():
     print("  == Calling home...", end=' ')
     try:
-        f = url.urlopen('http://etetoolkit.org/et_phone_home.php?VERSION=%s&ID=%s' 
+        f = urlopen('http://etetoolkit.org/et_phone_home.php?VERSION=%s&ID=%s' 
                 %(__VERSION__, __ETEID__))
     except:
         print("No answer :(") 
@@ -68,7 +74,7 @@ def call():
      
         module_name = __name__.split(".")[0]
         try:
-            f = url.urlopen('http://etetoolkit.org/releases/ete3/%s.latest' 
+            f = urlopen('http://etetoolkit.org/releases/ete3/%s.latest' 
                     %module_name)
         except:
             latest = None
@@ -100,9 +106,9 @@ def call():
             msg = None
 
         if msg:
-            msg = url.quote(msg)
+            msg = urlquote(msg)
             try:
-                f = url.urlopen('http://etetoolkit.org/et_phone_home.php?VERSION=%s&ID=%s&MSG=%s' 
+                f = urlopen('http://etetoolkit.org/et_phone_home.php?VERSION=%s&ID=%s&MSG=%s' 
                                 %(__VERSION__, __ETEID__, msg))
             except:
                 print("Message could be delivered :(")
@@ -113,7 +119,7 @@ def new_version(module_name=None, current=None):
     if not module_name:
         module_name = __name__.split(".")[0]
     try:
-        f = url.urlopen('http://etetoolkit.org/releases/ete3/%s.latest' 
+        f = urlopen('http://etetoolkit.org/releases/ete3/%s.latest' 
                         %module_name)
     except:
         latest = None
@@ -133,7 +139,7 @@ def new_version(module_name=None, current=None):
 
 def read_content(address):
     try:
-        f = url.urlopen(address)
+        f = urlopen(address)
     except:
         return None
     else:

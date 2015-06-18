@@ -1107,7 +1107,7 @@ class TreeNode(object):
         topology_only=topology_only, is_leaf_fn=is_leaf_fn)
         return max_node, max_dist
 
-    def get_closest_leaf(self, topology_only=False):
+    def get_closest_leaf(self, topology_only=False, is_leaf_fn=None):
         """Returns node's closest descendant leaf and the distance to
         it.
 
@@ -1121,7 +1121,7 @@ class TreeNode(object):
 
         """
         min_node, min_dist, max_node, max_dist = self._get_farthest_and_closest_leaves(
-        topology_only=topology_only, is_leaf_fn=is_leaf_fn)
+            topology_only=topology_only, is_leaf_fn=is_leaf_fn)
 
         return min_node, min_dist
 
@@ -1998,7 +1998,7 @@ class TreeNode(object):
             k1 = sorted([getattr(e, attr) for e in s1])
             k2 = sorted([getattr(e, attr) for e in s2])
             edge_keys.append(sorted([k1, k2]))
-        return md5(str(sorted(edge_keys))).hexdigest()
+        return md5(str(sorted(edge_keys)).encode('utf-8')).hexdigest()
 
     # def get_partitions(self):
     #     """

@@ -2,17 +2,18 @@ from __future__ import absolute_import
 import os
 import unittest 
 
+import sys
+sys.path.insert(0, '../')
+
 from ete3 import PhyloTree, NCBITaxa
 from ete3.ncbi_taxonomy import ncbiquery
 DATABASE_PATH = "testdb.sqlite" 
 
 class Test_ncbiquery(unittest.TestCase):
   
-  def test_00_update_database(self):
-    
+  def test_00_update_database(self):   
     if not os.path.exists(DATABASE_PATH):
       ncbiquery.update_db(DATABASE_PATH)
-
 
   def test_01tree_annotation(self):
     t = PhyloTree( "((9598, 9606), 10090);", sp_naming_function=lambda name: name)

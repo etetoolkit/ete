@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -39,16 +37,25 @@ from __future__ import print_function
 #
 # #END_LICENSE#############################################################
 #!/usr/bin/env python
+
+from __future__ import absolute_import
+from __future__ import print_function
 import sys
 import os
+try:
+    import cPickle as pickle
+except ImportError:
+    # python 3 support
+    import pickle
+    
 from collections import defaultdict
-from string import strip
 
 import sqlite3
 import math
 import tarfile
 import six
 from six.moves import map
+
 
 c = None
 
@@ -285,8 +292,9 @@ class NCBITaxa(object):
                 taxid = self.get_name_translator([parent])[parent]
             except KeyError:
                 raise ValueError('%s not found!' %parent)
-                    
-        prepostorder = cPickle.load(open(self.dbfile+".traverse.pkl"))
+
+            
+        prepostorder = pickle.load(open(self.dbfile+".traverse.pkl"))
         descendants = {}
         found = 0
         for tid in prepostorder:
@@ -420,6 +428,8 @@ class NCBITaxa(object):
         extra_tax2name = self.get_taxid_translator(list(all_taxid_codes - set(tax2name.keys())))
         tax2name.update(extra_tax2name)
 
+        tax2common_name = self.get_common_names(tax2name.keys())
+        
         if not tax2rank:
             tax2rank = self.get_rank(list(tax2name.keys()))
 
@@ -626,9 +636,9 @@ def generate_table(t):
             track.append(temp_node.name)
             temp_node = temp_node.up
         if n.up:
-            print('\t'.join([n.name, n.up.name, n.taxname, getattr(n, "common_name", ""), n.rank, ','.join(track)], file=OUT))
+            print('\t'.join([n.name, n.up.name, n.taxname, getattr(n, "common_name", ""), n.rank, ','.join(track)]), file=OUT)
         else:
-            print('\t'.join([n.name, "", n.taxname, getattr(n, "common_name", ""), n.rank, ','.join(track)], file=OUT))
+            print('\t'.join([n.name, "", n.taxname, getattr(n, "common_name", ""), n.rank, ','.join(track)]), file=OUT)
     OUT.close()
 
 def update_db(dbfile, targz_file=None):
@@ -646,7 +656,7 @@ def update_db(dbfile, targz_file=None):
     tar = tarfile.open(targz_file, 'r')
     t, synonyms = load_ncbi_tree_from_dump(tar)
     prepostorder = [int(node.name) for post, node in t.iter_prepostorder()]
-    cPickle.dump(prepostorder, open(dbfile+'.traverse.pkl', "wb"), 2)
+    pickle.dump(prepostorder, open(dbfile+'.traverse.pkl', "wb"), 2)
 
     print("Updating database: %s ..." %dbfile)
     generate_table(t)
@@ -713,8 +723,8 @@ def upload_data(dbfile):
         if i%5000 == 0 :
             print('\rInserting taxids:      % 6d' %i, end=' ', file=sys.stderr)
             sys.stderr.flush()
-        taxid, parentid, spname, rank, lineage = line.strip('\n').split('\t')
-        db.execute("INSERT INTO species (taxid, parent, spname, rank, track) VALUES (?, ?, ?, ?, ?);", (taxid, parentid, spname, rank, lineage))
+        taxid, parentid, spname, common, rank, lineage = line.strip('\n').split('\t')
+        db.execute("INSERT INTO species (taxid, parent, spname, common, rank, track) VALUES (?, ?, ?, ?, ?, ?);", (taxid, parentid, spname, common, rank, lineage))
     print()
     db.commit()
 

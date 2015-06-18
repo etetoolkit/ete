@@ -732,7 +732,7 @@ class Test_Coretype_Tree(unittest.TestCase):
         t.populate(50, random_branches=True)
         orig_id = t.get_topology_id()
         nodes = t.get_descendants()
-        for i in xrange(20):
+        for i in range(20):
             for n in random.sample(nodes, 10):
                 n.swap_children()
                 self.assertEqual(t.get_topology_id(), orig_id)
