@@ -1,6 +1,6 @@
+#! /usr/bin/env python
 from __future__ import absolute_import
 from __future__ import print_function
-#! /usr/bin/env python
 import sys
 import os
 import ez_setup
@@ -102,7 +102,7 @@ try:
 except IOError:
     ETE_VERSION = 'unknown'
     
-MOD_NAME = "ete2"
+MOD_NAME = "ete3"
 
 LONG_DESCRIPTION="""
 The Environment for Tree Exploration (ETE) is a Python programming
