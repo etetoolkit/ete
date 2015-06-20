@@ -15,5 +15,8 @@ from .test_evol import *
 
 #from test_treeview import *
 
-if __name__ == '__main__':
+def run():
     unittest.main()
+
+if __name__ == '__main__':
+    run()
