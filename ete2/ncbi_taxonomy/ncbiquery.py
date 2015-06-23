@@ -248,7 +248,7 @@ class NCBITaxa(object):
             oname = name2origname[sp.lower()]
             name2id[oname] = taxid
             name2realname[oname] = sp
-        missing =  names - set(name2id.keys())
+        missing =  names - set([n.lower() for n in name2id.keys()])
         if missing:
             query = ','.join(['"%s"' %n for n in missing])
             result = self.db.execute('select spname, taxid from synonym where spname IN (%s)' %query)
