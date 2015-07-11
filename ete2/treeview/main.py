@@ -623,7 +623,10 @@ def save(scene, imgName, w=None, h=None, dpi=90,\
     ipython_inline = False
     if imgName == "%%inline":
         ipython_inline = True
-        ext = "SVG"
+        ext = "PNG"
+    elif imgName == "%%inlineSVG":
+        ipython_inline = True
+        ext = "SVG"        
     elif imgName.startswith("%%return"):
         try:
             ext = imgName.split(".")[1].upper()
@@ -705,6 +708,7 @@ def save(scene, imgName, w=None, h=None, dpi=90,\
         if ipython_inline:
             from IPython.core.display import SVG
             return SVG(compatible_code)
+        
         elif imgName == '%%return':
             return x_scale, y_scale, compatible_code
         else:
@@ -750,7 +754,14 @@ def save(scene, imgName, w=None, h=None, dpi=90,\
 
         scene.render(pp, targetRect, scene.sceneRect(), ratio_mode)
         pp.end()
-        if imgName == '%%return':
+        if ipython_inline:
+            ba = QtCore.QByteArray()
+            buf = QtCore.QBuffer(ba)
+            buf.open(QtCore.QIODevice.WriteOnly)
+            ii.save(buf, "PNG")            
+            from IPython.core.display import Image
+            return Image(ba.data())
+        elif imgName == '%%return':
             ba = QtCore.QByteArray()
             buf = QtCore.QBuffer(ba)
             buf.open(QtCore.QIODevice.WriteOnly)
