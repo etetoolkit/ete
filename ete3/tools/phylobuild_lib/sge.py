@@ -43,7 +43,7 @@ import time
 import re
 from collections import defaultdict
 from commands import getoutput as run
-from string import strip, split
+
 
 import logging
 import six
@@ -130,7 +130,7 @@ def qstat(sge_cell=DEFAULT_SGE_CELL):
     jobs = []
     proc = []
     for line in rawoutput.split("\n")[2:]:
-        fields = list(map(strip, line.split()))
+        fields = list(map(str.strip, line.split()))
         if len(fields)==9:
             jobs.append(fields)
         elif len(fields)==10:

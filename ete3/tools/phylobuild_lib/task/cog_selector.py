@@ -40,7 +40,6 @@ from __future__ import print_function
 # #END_LICENSE#############################################################
 from StringIO import StringIO
 import six.moves.cPickle
-from string import strip
 from collections import defaultdict
 import logging
 import os
@@ -122,7 +121,7 @@ class CogSelector(CogSelectorTask):
         sp2cogs = defaultdict(int)
         for cognumber, cog in enumerate(open(GLOBALS["cogs_file"])):
             sp2seqs = defaultdict(list)
-            for sp, seqid in [list(map(strip, seq.split(GLOBALS["spname_delimiter"], 1))) for seq in cog.split("\t")]:
+            for sp, seqid in [list(map(str.strip, seq.split(GLOBALS["spname_delimiter"], 1))) for seq in cog.split("\t")]:
                 sp2seqs[sp].append(seqid)
             one2one_cog = set()
             for sp, seqs in six.iteritems(sp2seqs):

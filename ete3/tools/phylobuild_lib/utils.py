@@ -49,7 +49,6 @@ from os.path import exists as pexist
 import os
 import socket
 import string
-from string import strip
 from .getch import Getch
 import random
 import hashlib

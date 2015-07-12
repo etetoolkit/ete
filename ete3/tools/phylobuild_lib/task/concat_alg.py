@@ -47,7 +47,7 @@ log = logging.getLogger("main")
 from ete3.tools.phylobuild_lib.task import Msf
 from ete3.tools.phylobuild_lib.master_task import ConcatAlgTask
 from ete3.tools.phylobuild_lib.master_job import Job
-from ete3.tools.phylobuild_lib.utils import SeqGroup, GLOBALS, generate_runid, strip, pexist, md5
+from ete3.tools.phylobuild_lib.utils import SeqGroup, GLOBALS, generate_runid, pexist, md5
 from ete3.tools.phylobuild_lib import db
 from ete3.tools.phylobuild_lib.errors import TaskError
 
@@ -153,7 +153,7 @@ class ConcatAlg(ConcatAlgTask):
 def get_species_code(name, splitter, field):
     # By default, taxid is the first par of the seqid, separated by
     # underscore
-    return map(strip, name.split(splitter, 1))[field]
+    return map(str.strip, name.split(splitter, 1))[field]
 
 def get_concatenated_alg(alg_filenames, models=None,
                         sp_field=0, sp_delimiter="_",

@@ -47,6 +47,8 @@ import six.moves.builtins
 import six
 from six.moves import map
 from six.moves import range
+from six import StringIO
+from six.moves import input
 
 def wrap(method, retries):
     def fn(*args, **kwargs):
@@ -63,39 +65,38 @@ def wrap(method, retries):
     fn.retries = retries
     return fn
 
-class safefile(file):
-    __retries = 2
-    def read(self, *args, **kargs):
-        for i in range(self.__retries):
-            try:
-                return file.read(self, *args, **kargs)
-            except IOError as e:
-                if e.errno == errno.EINTR:
-                    print("A system call interruption was captured", file=sys.stderr)
-                    print("Retrying", i, "of", self.__retries, "until exception is raised", file=sys.stderr)
-                    continue
-                else:
-                    raise
-    def write(self, *args, **kargs):
-        for i in range(self.__retries):
-            try:
-                return file.read(self, *args, **kargs)
-            except IOError as e:
-                if e.errno == errno.EINTR:
-                    print("A system call interruption was captured", file=sys.stderr)
-                    print("Retrying", i, "of", self.__retries, "until exception is raised", file=sys.stderr)
-                    continue
-                else:
-                    raise
+# class safefile(file):
+#     __retries = 2
+#     def read(self, *args, **kargs):
+#         for i in range(self.__retries):
+#             try:
+#                 return file.read(self, *args, **kargs)
+#             except IOError as e:
+#                 if e.errno == errno.EINTR:
+#                     print("A system call interruption was captured", file=sys.stderr)
+#                     print("Retrying", i, "of", self.__retries, "until exception is raised", file=sys.stderr)
+#                     continue
+#                 else:
+#                     raise
+#     def write(self, *args, **kargs):
+#         for i in range(self.__retries):
+#             try:
+#                 return file.read(self, *args, **kargs)
+#             except IOError as e:
+#                 if e.errno == errno.EINTR:
+#                     print("A system call interruption was captured", file=sys.stderr)
+#                     print("Retrying", i, "of", self.__retries, "until exception is raised", file=sys.stderr)
+#                     continue
+#                 else:
+#                     raise
 
-six.moves.builtins.file = safefile
-six.moves.builtins.raw_input = wrap(raw_input, 100)
+#six.moves.builtins.file = safefile
+
 
 import sys
 import os
 import shutil
 import signal
-from StringIO import StringIO
 from collections import defaultdict
 import filecmp
 import logging
@@ -112,7 +113,7 @@ args = None
 sys.path.insert(0, NPRPATH)
 
 import argparse
-from ete3.tools.phylobuild_lib.utils import (strip, SeqGroup, generate_runid,  AA, NT,
+from ete3.tools.phylobuild_lib.utils import (SeqGroup, generate_runid,  AA, NT,
                                   GLOBALS, encode_seqname, pjoin, pexist,
                                   hascontent, clear_tempdir, ETE_CITE, colorify,
                                   GENCODE, silent_remove, _max, _min, _std, _mean, _median)
@@ -248,7 +249,7 @@ def main(args):
         for wkname in names:
             if parse_filters:
                 wfilters = {}
-                fields = list(map(strip, wkname.split(",")))
+                fields = list(map(str.strip, wkname.split(",")))
                 if len(fields) == 1:
                     wkname = fields[0]
                 else:
@@ -961,7 +962,7 @@ def _main():
             else:
                 TARGET_DIR = ''
             while not pexist(TARGET_DIR):
-                TARGET_DIR = raw_input('target directory? [%s]:' %ETEHOMEDIR).strip()
+                TARGET_DIR = input('target directory? [%s]:' %ETEHOMEDIR).strip()
                 if TARGET_DIR == '':
                     TARGET_DIR = ETEHOMEDIR
                     break
