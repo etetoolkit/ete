@@ -6,7 +6,7 @@ include THANKS.txt
 include LICENSE
 include ez_setup.py
 
-graft ete2
+graft ete3
 graft doc
 graft examples 
 graft test
