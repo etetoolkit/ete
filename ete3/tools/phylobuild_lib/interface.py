@@ -42,7 +42,7 @@ import sys
 import os
 import re
 import time
-from StringIO import StringIO
+
 from signal import signal, SIGWINCH, SIGKILL, SIGTERM
 from collections import deque
 from textwrap import TextWrapper
@@ -54,6 +54,7 @@ from ete3.tools.phylobuild_lib.logger import get_main_log
 from ete3.tools.phylobuild_lib.utils import GLOBALS, clear_tempdir, terminate_job_launcher, pjoin, pexist
 from ete3.tools.phylobuild_lib.errors import *
 import six
+from six import StringIO
 
 try:
     import curses

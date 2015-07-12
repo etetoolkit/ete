@@ -40,7 +40,6 @@ from __future__ import print_function
 # #END_LICENSE#############################################################
 import os
 import re
-import commands
 import logging
 import subprocess
 import six

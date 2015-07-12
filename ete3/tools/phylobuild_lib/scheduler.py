@@ -58,7 +58,7 @@ from ete3.tools.phylobuild_lib.utils import (generate_id, PhyloTree, NodeStyle, 
                           DEBUG, NPR_TREE_STYLE, faces, GLOBALS,
                           basename, pjoin, ask, send_mail, pid_up, SeqGroup)
 from ete3.tools.phylobuild_lib.errors import ConfigError, TaskError
-from ete3.tools.phylobuild_lib import db, sge
+from ete3.tools.phylobuild_lib import db
 from ete3.tools.phylobuild_lib.master_task import (isjob, update_task_states_recursively,
                                 store_task_data_recursively,
                                 remove_task_dir_recursively,
@@ -182,8 +182,9 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
 
             # ask SGE for running jobs
             if execution == "sge":
-                sgeid2jobs = db.get_sge_tasks()
-                qstat_jobs = sge.qstat()
+                #sgeid2jobs = db.get_sge_tasks()
+                #qstat_jobs = sge.qstat()
+                pass
             else:
                 qstat_jobs = None
 

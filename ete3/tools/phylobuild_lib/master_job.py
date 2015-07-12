@@ -40,14 +40,14 @@ from __future__ import absolute_import
 import os
 import shutil
 import re
-from . import sge
+#from . import sge
 from . import db
 import logging
 import six
 from six.moves import map
 log = logging.getLogger("main")
 
-from ete3.tools.phylobuild_lib.utils import (md5, basename, strip, pid_up, HOSTNAME,
+from ete3.tools.phylobuild_lib.utils import (md5, basename, pid_up, HOSTNAME,
                           GLOBALS, TIME_FORMAT, pjoin)
 
 class Job(object):
@@ -138,7 +138,7 @@ class Job(object):
 
     def read_pid(self):
         try:
-           host, pid = list(map(strip,
+           host, pid = list(map(str.strip,
                            open(self.pid_file,"rU").readline().split("\t")))
         except IOError:
             host, pid = "", ""

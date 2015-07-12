@@ -38,7 +38,7 @@ from __future__ import print_function
 #
 #
 # #END_LICENSE#############################################################
-from StringIO import StringIO
+from six import StringIO
 import six.moves.cPickle
 from collections import defaultdict
 import logging
