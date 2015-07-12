@@ -1,7 +1,8 @@
-x#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 from __future__ import absolute_import
 from __future__ import print_function
+
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 # #START_LICENSE###########################################################
 #
 #
@@ -46,7 +47,7 @@ import six.moves.builtins
 import six
 from six.moves import map
 from six.moves import range
-from six.moves import raw_input
+
 def wrap(method, retries):
     def fn(*args, **kwargs):
         for i in range(retries):

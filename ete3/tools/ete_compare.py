@@ -174,11 +174,11 @@ def run(args):
 
                 if args.unrooted:
                     for tag, part in [("src: %s"%stree_name, src), ("ref: %s"%rtree_name, ref)]:
-                        print "%s\t%s" %(tag, '\t'.join(
-                            map(lambda x: '%s|%s' %(','.join(x[0]), ','.join(x[1])), part)))
+                        print("%s\t%s" %(tag, '\t'.join(
+                            map(lambda x: '%s|%s' %(','.join(x[0]), ','.join(x[1])), part))))
                 else:
                     for tag, part in [("src: %s"%stree_name, src), ("ref: %s"%rtree_name, ref)]:
-                        print "%s\t%s" %(tag, '\t'.join([','.join(p) for p in part]))
+                        print("%s\t%s" %(tag, '\t'.join([','.join(p) for p in part])))
             else:
                 data = [shorten_str(stree_name,25),
                         shorten_str(rtree_name,25),
@@ -195,33 +195,11 @@ def run(args):
                         data[i] = -1
 
                 if args.taboutput:
-                    print '\t'.join(map(str, data))
+                    print('\t'.join(map(str, data)))
                 else:
                     print_table([map(as_str, data)],
                                 fix_col_width = col_sizes, wrap_style='cut')
 
-
-                mismatches_src = r['source_edges'] - r['ref_edges']
-                mismatches_ref = r['ref_edges'] - r['source_edges']
-
-                for part, pairs in iter_differences(mismatches_src,
-                                                    mismatches_ref,
-                                                    unrooted=args.unrooted):
-                    print part
-                    for d, r in sorted(pairs):
-                        print "  ", d, r
-
-            else:
-                print_table([map(as_str, [shorten_str(stree_name,25),
-                                          shorten_str(rtree_name,25),
-                                          r['effective_tree_size'],
-                                          r['norm_rf'],
-                                          r['rf'], r['max_rf'],
-                                          r["source_edges_in_ref"],
-                                          r["ref_edges_in_source"],
-                                          r['source_subtrees'],
-                                          r['treeko_dist']])],
-                            fix_col_width = col_sizes, wrap_style='cut')
 
 def euc_dist(v1, v2):
     if type(v1) != set: v1 = set(v1)

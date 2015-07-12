@@ -161,14 +161,14 @@ def run(args):
                           "collapse_subspecies", "named_lineage"])
     elif args.descendants:
         log.info("Dumping NCBI taxonomy of %d taxa..." %(len(all_taxids)))
-        print '# ' + '\t'.join(["Taxid", "Sci.Name", "Rank", "descendant_taxids", "descendant_names"])
+        print('# ' + '\t'.join(["Taxid", "Sci.Name", "Rank", "descendant_taxids", "descendant_names"]))
         translator = ncbi.get_taxid_translator(all_taxids)
         ranks = ncbi.get_rank(all_taxids)
         for taxid in all_taxids:
             descendants = ncbi.get_descendant_taxa(taxid, collapse_subspecies=args.collapse_subspecies, rank_limit=args.rank_limit)
-            print '\t'.join([str(taxid), translator.get(taxid, taxid), ranks.get(taxid, ''),
+            print('\t'.join([str(taxid), translator.get(taxid, taxid), ranks.get(taxid, ''),
                              '|'.join(map(str, descendants)),
-                             '|'.join(map(str, ncbi.translate_to_names(descendants)))])
+                             '|'.join(map(str, ncbi.translate_to_names(descendants)))]))
 
     elif args.info:
         print('# ' + '\t'.join(["Taxid", "Sci.Name", "Rank", "Named Lineage", "Taxid Lineage"]))

@@ -39,7 +39,6 @@ from __future__ import print_function
 #
 # #END_LICENSE#############################################################
 from .common import log, POSNAMES, node_matcher
-from string import strip
 from six.moves import map
 
 DESC = ""
@@ -517,15 +516,15 @@ def parse_faces(face_args):
                 "opacity":None,
         }
 
-        for clause in map(strip,fargs.split(',')):
-            key, value = list(map(strip, clause.split(":")))
+        for clause in map(str.strip,fargs.split(',')):
+            key, value = list(map(str.strip, clause.split(":")))
             key = key.lower()
             if key == "if":
                 m = re.search("([^=><~!]+)(>=|<=|!=|~=|=|>|<)([^=><~!]+)", value)
                 if not m:
                     raise ValueError("Invalid syntaxis in 'if' clause: %s" %clause)
                 else:
-                    target, op, value = list(map(strip, m.groups()))
+                    target, op, value = list(map(str.strip, m.groups()))
                     target = target.lstrip('@')
                     try:
                         value = float(value)

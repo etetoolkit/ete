@@ -39,7 +39,6 @@ from __future__ import print_function
 #
 # #END_LICENSE#############################################################
 import sys
-from string import strip
 import operator
 import re
 from six.moves import map

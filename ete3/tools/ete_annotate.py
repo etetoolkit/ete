@@ -38,7 +38,6 @@ from __future__ import absolute_import
 #
 # #END_LICENSE#############################################################
 from .common import dump
-from string import strip
 from six.moves import map
 
 DESC = ""
@@ -69,7 +68,7 @@ def run(args):
             aname, asource, amultiple, acast = None, None, False, str
             for field in annotation:
                 try:
-                    key, value = list(map(strip, field.split(":")))
+                    key, value = list(map(str.strip, field.split(":")))
                 except Exception:
                     raise ValueError("Invalid feature option [%s]" %field )
 
@@ -97,8 +96,8 @@ def run(args):
                 line = line.strip()
                 if not line or line.startswith('#'):
                     continue
-                nodenames, attr_value = list(map(strip, line.split('\t')))
-                nodenames = list(map(strip, nodenames.split(',')))
+                nodenames, attr_value = list(map(str.strip, line.split('\t')))
+                nodenames = list(map(str.strip, nodenames.split(',')))
                 relaxed_grouping = True
                 if nodenames[0].startswith('!'):
                     relaxed_grouping = False
