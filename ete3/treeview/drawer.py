@@ -108,7 +108,7 @@ def render_tree(t, imgName, w=None, h=None, layout=None,
     tree_item.setParentItem(scene.master_item)
     scene.master_item.setPos(0,0)
     scene.addItem(scene.master_item)
-    if imgName == "%%inline":
+    if imgName.startswith("%%inline"):
         imgmap = save(scene, imgName, w=w, h=h, units=units, dpi=dpi)
     else:
         x_scale, y_scale = save(scene, imgName, w=w, h=h, units=units, dpi=dpi)
