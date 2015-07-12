@@ -56,7 +56,10 @@ from . import _mainwindow, _search_dialog, _show_newick, _open_newick, _about
 from .main import TreeStyle, save, _leaf
 from .svg_colors import random_color
 from .qt4_render import render
-from ete3._ph import new_version
+try:
+    from ete3._ph import new_version
+except Exception:
+    pass
 from ete3 import Tree, TreeStyle
 import time
 

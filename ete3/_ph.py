@@ -43,8 +43,8 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 try:
-    from urlib2.url import urlopen
-    from urlib2.url import quote as urlquote
+    from urllib2 import urlopen
+    from urllib2 import quote as urlquote
 except ImportError:
     from urllib.request import urlopen
     from urllib.parse import quote as urquote
