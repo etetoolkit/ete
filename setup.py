@@ -183,6 +183,6 @@ else:
         try:
             welcome = quote("New alien in earth!")
             urlopen("http://etetoolkit.org/static/et_phone_home.php?ID=%s&VERSION=%s&MSG=%s"
-                            %(ETEID, ete_version, welcome))
-        except HTTPError as e:
+                            %(ETEID, ETE_VERSION, welcome))
+        except Exception:
             pass
