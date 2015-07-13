@@ -110,4 +110,5 @@ Trees can also be visualized interactively using a built-in Graphical User Inter
 
 The official web site of ETE is at  http://etetoolkit.org
 
-
+.. include:: CONTRIBUTING.rst
+             
