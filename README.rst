@@ -24,7 +24,9 @@ please cite:
   Environment for Tree Exploration. BMC Bioinformatics 2010, 11:24.
 
 
-The official web site of ETE is at  http://etetoolkit.org
+- The official web site of ETE is at  http://etetoolkit.org
+- News and announcements information are usually posted on twitter: http://twitter.com/etetoolkit
+
 
 CURRENT VERSION
 ========================
