@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -41,15 +40,13 @@ from __future__ import absolute_import
 
 # Note that the use of "from x import *" is safe here. Modules include
 # the __all__ variable.
-
+from __future__ import absolute_import
 from warnings import warn
 
 try:
     import numpy
 except ImportError as e:
     numpy = None
-    #warn("Clustering module could not be loaded. Is numpy installed?")
-    #warn(e)
 
 from .ncbi_taxonomy import *
 from .coretype.tree import *
