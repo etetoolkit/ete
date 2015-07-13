@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -38,22 +36,21 @@ from __future__ import print_function
 #
 #
 # #END_LICENSE#############################################################
+from __future__ import absolute_import
+from __future__ import print_function
 
-import os
-import six.moves.cPickle
 import random
 import copy
+import itertools
 from collections import deque
 from hashlib import md5
-import itertools
+from functools import cmp_to_key
+
+import six
+from six.moves import (cPickle, map, range, zip)
+
 from ete3.parser.newick import read_newick, write_newick
 from ete3 import utils
-import sys
-from functools import cmp_to_key
-import six
-from six.moves import map
-from six.moves import range
-from six.moves import zip
 
 # the following imports are necessary to set fixed styles and faces
 try:
@@ -68,7 +65,7 @@ __all__ = ["Tree", "TreeNode"]
 
 DEFAULT_COMPACT = False
 DEFAULT_SHOWINTERNAL = False
-DEFAULT_DIST = 1.0
+DEFAULT_DIST = 0.0
 DEFAULT_SUPPORT = 1.0
 DEFAULT_NAME = ""
 
@@ -1315,9 +1312,6 @@ class TreeNode(object):
         any other internal node. It will convert a split into a
         multifurcation.
         """
-        # if is rooted
-        if not self.is_root():
-            print("Warning - You are unrooting an internal node.!!", file=sys.stderr)
         if len(self.children)==2:
             if not self.children[0].is_leaf():
                 self.children[0].delete()

@@ -135,7 +135,7 @@ try:
 
         entry_points = {"console_scripts":
                         ["ete = %s.tools.ete:main" %MOD_NAME]},
-        requires = [],
+        requires = ["six"],
 
         # Project uses reStructuredText, so ensure that the docutils get
         # installed or upgraded on the target machine
