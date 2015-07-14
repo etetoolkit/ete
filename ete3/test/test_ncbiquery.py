@@ -10,7 +10,6 @@ DATABASE_PATH = "testdb.sqlite"
 class Test_ncbiquery(unittest.TestCase):
 
   def test_00_update_database(self):
-    if not os.path.exists(DATABASE_PATH):
       ncbiquery.update_db(DATABASE_PATH)
 
   def test_01tree_annotation(self):

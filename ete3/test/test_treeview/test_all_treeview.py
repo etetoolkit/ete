@@ -7,15 +7,13 @@ import os
 ETEPATH = os.path.abspath(os.path.split(os.path.realpath(__file__))[0]+'/../')
 sys.path.insert(0, ETEPATH)
 
-from ete3 import Tree, TreeStyle, NodeStyle, PhyloTree, faces, random_color
-from ete3.treeview.faces import *
-from ete3.treeview.main import _NODE_TYPE_CHECKER, FACE_POSITIONS
+from ... import Tree, TreeStyle, NodeStyle, PhyloTree, faces, random_color
+from ...treeview.faces import *
+from ...treeview.main import _NODE_TYPE_CHECKER, FACE_POSITIONS
 
-sys.path.insert(0, os.path.join(ETEPATH, "examples/treeview"))
-import face_grid, bubble_map, item_faces, node_style, node_background, face_positions, face_rotation, seq_motif_faces, barchart_and_piechart_faces
-
-sys.path.insert(0, os.path.join(ETEPATH, "examples/phylogenies"))
-import phylotree_visualization
+from . import (face_grid, bubble_map, item_faces, node_style, node_background,
+               face_positions, face_rotation, seq_motif_faces,
+               barchart_and_piechart_faces, phylotree_visualization)
 
 CONT = 0
 class Test_Coretype_Treeview(unittest.TestCase):
@@ -122,9 +120,6 @@ class Test_Coretype_Treeview(unittest.TestCase):
         temp_tface = TreeFace(Tree(), ts)
         n = main_tree.add_child()
         n.add_face(temp_tface, 0, "aligned")
-
-
-
 
         # TEST TIGHT TEST WRAPPING
         chars = ["." "p", "j", "jJ"]
