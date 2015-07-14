@@ -1,34 +1,48 @@
 language: python
 python:
-  - "2.7_with_system_site_packages"
-  - "3.4_with_system_site_packages"
+  - "2.7"
+  - "3.4"
 
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
-install: 
-  - sudo apt-get install python-qt4 python-numpy python-lxml python3-qt4 python3-lxml python3-numpy 2>&1 | tail
-  - sudo pip install coverage coveralls six
-  - /usr/bin/yes | sudo python setup.py install 2>&1 | tail
 
+install:
+    - sudo apt-get update
+    # We do this conditionally because it saves us some downloading if the
+    # version is the same.
+    - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+      wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
+      else
+      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+      fi
+    - bash miniconda.sh -b -p $HOME/miniconda
+    - export PATH="$HOME/miniconda/bin:$PATH"
+    - hash -r
+    - conda config --set always_yes yes --set changeps1 no
+    - conda update -q conda
+    # Useful for debugging any issues with conda
+    - conda info -a
+    
+    # Replace dep1 dep2 ... with your dependencies
+    - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION pip pyqt numpy six lxml
+    - source activate test-environment
+    - python setup.py install
+      
 before_script:
   - python --version
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
-  - sleep 3 # give xvfb some time to start
+  - sleep 2 # give xvfb some time to start
   - ete version
-  #- python -c 'import PyQt4.QtGui'
 
 # command to run tests, e.g. python setup.py test
 script: 
   #  - if [[ $TRAVIS_PYTHON_VERSION == 2.6 ]]; then cd test/ && coverage run test_all.py; else cd test/ && coverage run test_all.py && coverage run -a test_treeview.py; fi
-  - coverage run python -m ete3.test.test_all;
-
-after_success:
-  - coveralls
+  - python -m ete3.test.test_all;
 
 branches:
   only:
     - master
-    - 3.x
+    - 3.0
     - 2.3
   
 #The email defaults are too talkative while we're getting Travis working nicely.

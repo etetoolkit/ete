@@ -13,7 +13,7 @@ from .test_clustertree import *
 from .test_evol import *
 #from .test_xml_parsers import *
 
-#from test_treeview import *
+from test_treeview import *
 
 def run():
     unittest.main()
