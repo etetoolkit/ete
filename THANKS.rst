@@ -1,15 +1,16 @@
-Main team developers: 
+Core team developers: 
+-----------------------
+- Jaime Huerta-Cepas (jhcepas@gmail.com)
 
-Jaime Huerta-Cepas
+Contributions from:
+----------------------
 
-Contributions from: 
-
-François Serra - EvolTree
-Alexandros Pittis - testing
-Salvador Capella - phylomedb API
-Toni Gabaldon - feedback on species overalp and orthology
-Marina Marcet - Phylomedb, treeko tests
-Ivan Denisov - phylomedb webplugin
-Shankar Vembu - fast tree reconciliation method
-Finlay Maguire - Python3 ports 
-               - Python3 ports  
+- Finlay Maguire - Python3 ports 
+- Keith Hughitt - Python3 ports  
+- Shankar Vembu - fast tree reconciliation method
+- Alexandros Pittis - testing
+- François Serra - EvolTree
+- Marina Marcet - Phylomedb, treeko tests
+- Toni Gabaldon - feedback on species overalp and orthology
+- Salvador Capella - phylomedb API
+- Ivan Denisov - phylomedb webplugin
