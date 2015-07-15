@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -37,12 +36,12 @@ from __future__ import absolute_import
 #
 #
 # #END_LICENSE#############################################################
+from __future__ import absolute_import
 import math
 import colorsys
 from PyQt4 import QtCore, QtGui
 from .main import _leaf, tracktime
 from .node_gui_actions import _NodeActions
-
 
 class _LineItem(QtGui.QGraphicsLineItem):
     def paint(self, painter, option, widget):
@@ -373,7 +372,7 @@ def calculate_optimal_scale(root_node, n2i, rot_step, img):
     # Adjust scale for aligned faces
     if not img.allow_face_overlap:
         aligned_h = [(n2i[node].heights[5], node) for node in visited_nodes]
-        aligned_h.sort(reverse=True)
+        aligned_h.sort(reverse=True, key=lambda x: x[0])
         maxh, maxh_node = aligned_h[0]
         angle = n2i[maxh_node].angle_span
         rad, off = get_min_radius(1, maxh, angle, 0.0001)
@@ -382,7 +381,7 @@ def calculate_optimal_scale(root_node, n2i, rot_step, img):
             if n2i[node].heights[5]:
                 new_scale = (rad - (n2sumwidth[node] + root_opening)) / n2sumdist[node]
                 min_alg_scale = min(new_scale, min_alg_scale) if min_alg_scale is not None else new_scale
-        if min_alg_scale >  best_scale:
+        if min_alg_scale is not None and min_alg_scale > best_scale:
             best_scale = min_alg_scale
 
     if root_opening:

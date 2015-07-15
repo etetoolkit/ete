@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -37,7 +36,7 @@ from __future__ import absolute_import
 #
 #
 # #END_LICENSE#############################################################
-
+from __future__ import absolute_import
 import re
 from PyQt4.QtGui import (QGraphicsRectItem, QGraphicsLineItem,
                          QGraphicsPolygonItem, QGraphicsEllipseItem,
@@ -1345,7 +1344,7 @@ class _BarChartItem(QGraphicsRectItem):
         if self.labels:
             p.setFont(QFont("Verdana", 6))
             fm = QFontMetrics(p.font())
-            longest_label = sorted(self.labels, lambda x,y: cmp(len(x), len(y)))[-1]
+            longest_label = sorted(self.labels, key=lambda x: len(x))[-1]
             label_height = fm.boundingRect(QRect(), Qt.AlignLeft, longest_label).width()
 
 
