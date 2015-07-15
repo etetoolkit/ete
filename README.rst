@@ -25,7 +25,7 @@ please cite:
 
 
 - The official web site of ETE is at  http://etetoolkit.org
-- News and announcements information are usually posted on twitter: http://twitter.com/etetoolkit
+- News and announcements are usually posted on twitter: http://twitter.com/etetoolkit
 
 
 CURRENT VERSION
