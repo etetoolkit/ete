@@ -42,7 +42,7 @@ from PyQt4.QtGui import (QGraphicsRectItem, QGraphicsLineItem,
                          QGraphicsPolygonItem, QGraphicsEllipseItem,
                          QPen, QColor, QBrush, QPolygonF, QFont,
                          QPixmap, QFontMetrics, QPainter,
-                         QRadialGradient, QGraphicsSimpleTextItem,
+                         QRadialGradient, QGraphicsSimpleTextItem, QGraphicsTextItem,
                          QGraphicsItem)
 from PyQt4.QtCore import Qt,  QPointF, QRect, QRectF
 
@@ -952,24 +952,60 @@ class TreeFace(Face):
         return self.item.rect().height()
 
 
+def _label_painter(obj, p, option, widget):
+    """
+    Delegate for graphics objects (RectItem, SphereItem) to
+    add an approximately-centered (gnashing of teeth) label
+
+    :param obj: the object (standard parameter to paint() method)
+    :param p: a QPainter (see paint() method)
+    :param option: (see paint() method)
+    :param widget: (see paint() method)
+    
+    """
+    if not obj.label:
+        return
+    try:
+        lcolor = obj.label['color']
+        llabel = obj.label['text'] if 'text' in obj.label else 'No label text!'
+        lfont = obj.label['font'] if 'font' in obj.label else "Verdana"
+        lsize = 12 if 'fontsize' not in obj.label else int(obj.label['fontsize'])
+        p.setFont(QFont(lfont, lsize))
+        p.setPen(QPen(QColor(lcolor)))
+        fm = QFontMetrics(p.font())
+        metrics = fm.boundingRect(QRect(), Qt.AlignCenter, llabel)
+        rect = obj.boundingRect()
+        p.drawText(int(rect.width()/2-(metrics.width()/2)),
+                   int(rect.height()/2+(metrics.height()/2)),
+                   llabel)
+    except Exception as e:
+        print('Labelling problem: %s' % (e))
+
+
 class _SphereItem(QGraphicsEllipseItem):
-    def __init__(self, radius, color, solid=False):
+    def __init__(self, radius, color, solid=False, label=None):
+        self.label = label
         r = radius
         d = r*2
         QGraphicsEllipseItem.__init__(self, 0, 0, d, d)
-        self.gradient = QRadialGradient(r, r, r,(d)/3,(d)/3)
-        self.gradient.setColorAt(0.05, Qt.white)
-        self.gradient.setColorAt(1, QColor(color))
         if solid:
             self.setBrush(QBrush(QColor(color)))
         else:
+            self.gradient = QRadialGradient(r, r, r,(d)/3,(d)/3)
+            self.gradient.setColorAt(0.05, Qt.white)
+            self.gradient.setColorAt(1, QColor(color))
             self.setBrush(QBrush(self.gradient))
         self.setPen(QPen(QColor(color)))
-        #self.setPen(Qt.NoPen)
+
+    def paint(self, p, option, widget):
+        super(_SphereItem, self).paint(p, option, widget)
+        _label_painter(self, p, option, widget)
+
 
 class _RectItem(QGraphicsRectItem):
-    def __init__(self, w, h, bgcolor, fgcolor):
+    def __init__(self, w, h, bgcolor, fgcolor, label=None):
         QGraphicsRectItem.__init__(self)
+        self.label = label
         self.setRect(0, 0, w, h)
         if bgcolor:
             self.setBrush(QBrush(QColor(bgcolor)))
@@ -980,14 +1016,22 @@ class _RectItem(QGraphicsRectItem):
         else:
             self.setPen(QPen(Qt.NoPen))
 
+    def paint(self, p, option, widget):
+        super(_RectItem, self).paint(p, option, widget)
+        _label_painter(self, p, option, widget)
+
+
 class RectFace(Face):
     """
     .. versionadded:: 2.3
 
     Creates a Rectangular solid face.
 
+    :param label: optional text string to annotate the face: Default value is None;
+    label can also be a dict with attributes text, font, color, and fontsize
+    color defaults to background color, font to Verdana, fontsize to 12
     """
-    def __init__(self, width, height, fgcolor, bgcolor):
+    def __init__(self, width, height, fgcolor, bgcolor, label=None):
         Face.__init__(self)
         self.width = width
         self.height = height
@@ -995,9 +1039,15 @@ class RectFace(Face):
         self.bgcolor = bgcolor
         self.type = "item"
         self.rotable = True
+        self.label = label
+        if label:
+            if not isinstance(label, dict):
+                self.label = {'text' : label}
+            if 'color' not in self.label:
+                self.label['color'] = bgcolor
 
     def update_items(self):
-        self.item = _RectItem(self.width, self.height, self.bgcolor, self.fgcolor)
+        self.item = _RectItem(self.width, self.height, self.bgcolor, self.fgcolor, label=self.label)
 
     def _width(self):
         return self.width
@@ -1015,21 +1065,31 @@ class CircleFace(Face):
     :param radius: integer number defining the radius of the face
     :param color: Color used to fill the circle. RGB code or name in :data:`SVG_COLORS`
     :param "circle" style: Valid values are "circle" or "sphere"
+    :param label: optional text string to annotate the face: Default value is None;
+    label can also be a dict with attributes text, font, color, and fontsize
+    color defaults to circle color (because it looks nice with "sphere"),
+    font to Verdana, fontsize to 12
     """
 
-    def __init__(self, radius, color, style="circle"):
+    def __init__(self, radius, color, style="circle", label=None):
         Face.__init__(self)
         self.radius = radius
         self.style = style
         self.color = color
         self.type = "item"
         self.rotable = False
+        self.label = label
+        if label:
+            if not isinstance(label, dict):
+                self.label = {'text' : label}
+            if 'color' not in self.label:
+                self.label['color'] = color
 
     def update_items(self):
         if self.style == "circle":
-            self.item = _SphereItem(self.radius, self.color, solid=True)
+            self.item = _SphereItem(self.radius, self.color, solid=True, label=self.label)
         elif self.style == "sphere":
-            self.item = _SphereItem(self.radius, self.color)
+            self.item = _SphereItem(self.radius, self.color, label=self.label)
 
     def _width(self):
         return self.item.rect().width()
