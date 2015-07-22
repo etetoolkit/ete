@@ -115,7 +115,8 @@ if options.doconly:
     # build docs
     _ex('cd sdoc/ && make html && make latex')
     _ex('cd sdoc/_build/latex && make all-pdf')
-
+    _ex('cp -a sdoc/_build/latex/*.pdf sdoc/_build/html/_downloads/')
+    
 else:
     SDOC_PATH = 'release/'
 
@@ -125,6 +126,7 @@ if ask('Upload docs?', ['y', 'n']) == 'y':
 
 
 #_ex('deactivate;  release/dist/ && tar xf ete2-%s.tar.gz && cd ete2-%s/test/ && python test_all.py && python test_treeview.py' %(NEW_VERSION, NEW_VERSION))
+    
 
 
 
