@@ -136,8 +136,8 @@ class NCBITaxa(object):
         '''
 
 
-        import pysqlite2.dbapi2 as sqlite2
-        _db = sqlite2.connect(self.dbfile)
+        import sqlite3.dbapi2 as dbapi2
+        _db = dbapi2.connect(self.dbfile)
         _db.enable_load_extension(True)
         module_path = os.path.split(os.path.realpath(__file__))[0]
         _db.execute("select load_extension('%s')" % os.path.join(module_path,
