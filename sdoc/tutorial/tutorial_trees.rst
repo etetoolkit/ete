@@ -251,7 +251,7 @@ as trees in which master root node has more than two children.
 
   from ete3 import Tree
   unrooted_tree = Tree( "(A,B,(C,D));" )
-  print unrooted_tree
+  print(unrooted_tree)
   #
   #     /-A      
   #    |         
@@ -261,8 +261,8 @@ as trees in which master root node has more than two children.
   #     \---|      
   #          \-D 
 
-  rooted_tree = Tree( "((A,B).(C,D));" )
-  print rooted_tree                     
+  rooted_tree = Tree( "((A,B),(C,D));" )
+  print(rooted_tree)
   #
   #          /-A
   #     /---|
