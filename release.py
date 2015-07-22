@@ -96,7 +96,7 @@ if not options.doconly:
     # Generates HTML doc (it includes a link to the PDF doc, so it
     # must be executed after PDF commands)
     _ex('cp -a release/sdoc/_build/html/ release/doc/')
-    _ex('cp -a release/sdoc/_build/latex/*.pdf release/doc/')
+    _ex('cp -a release/sdoc/_build/latex/*.pdf release/doc/_downloads/')
     # Build dist
     _ex('cd release/ && python setup.py sdist')
 
@@ -115,6 +115,7 @@ if options.doconly:
     # build docs
     _ex('cd sdoc/ && make html && make latex')
     _ex('cd sdoc/_build/latex && make all-pdf')
+    _ex('cp -a sdoc/_build/latex/*.pdf sdoc/_build/html/_downloads/')
     
 else:
     SDOC_PATH = 'release/'
