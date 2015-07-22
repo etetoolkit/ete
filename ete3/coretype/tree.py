@@ -1345,7 +1345,7 @@ class TreeNode(object):
 
         :var px units: "px": pixels, "mm": millimeters, "in": inches
         :var None h: height of the image in :attr:`units`
-        :var None w: weight of the image in :attr:`units`
+        :var None w: width of the image in :attr:`units`
         :var 300 dpi: dots per inches.
 
         """
