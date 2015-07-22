@@ -146,7 +146,7 @@ GETTING SUPPORT
 ------------------
 
 - There is a mailing list providing user technical support at
-  http://googlegroups.com/etetoolkit. In order to avoid spam, messages from new
+  https://groups.google.com/d/forum/etetoolkit . In order to avoid spam, messages from new
   users are moderated. Expect some delay until your first message and account is
   validated.
 
