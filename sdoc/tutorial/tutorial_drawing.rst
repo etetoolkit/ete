@@ -127,7 +127,7 @@ tree drawing modes.
 .. warning:: 
 
    A number of parameters can be controlled through custom
-   tree style objetcs, check :class:`TreeStyle` documentation for a
+   tree style objects, check :class:`TreeStyle` documentation for a
    complete list of accepted values.
 
 Some common uses include:
