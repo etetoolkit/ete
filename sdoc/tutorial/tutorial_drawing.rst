@@ -80,7 +80,7 @@ resolution can be adjusted:
    ================= ==============================================================
    :attr:`units`     "**px**": pixels, "**mm**": millimeters, "**in**": inches
    :attr:`h`         height of the image in :attr:`units`.       
-   :attr:`w`         weight of the image in :attr:`units`.
+   :attr:`w`         width of the image in :attr:`units`.
    :attr:`dpi`       dots per inches.
    ================= ==============================================================
 
