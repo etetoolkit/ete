@@ -1193,7 +1193,7 @@ class _StackedBarItem(QGraphicsRectItem):
         x = 0
         for i, p in enumerate(self.percents):
             col = self.colors[i]
-            w = (p * total_w) / 100 # assuming p is between 0 and 100
+            w = round((p * total_w) / 100.) # assuming p is between 0 and 100
             painter.fillRect(x, 0, w, total_h, QColor(col))
             painter.drawRect(x, 0, w, total_h)
             x += w

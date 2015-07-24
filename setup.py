@@ -152,7 +152,7 @@ try:
         provides = [MOD_NAME],
         keywords = "Tree handling, manipulation, analysis and visualization",
         url = "http://etetoolkit.org",
-#        download_url = "http://etetoolkit.org/static/releases/ete2/",
+        download_url = "http://etetoolkit.org/static/releases/ete2/",
         
     )
     
