@@ -29,6 +29,7 @@ except ImportError:
     ez_setup.use_setuptools()
     from setuptools import setup, find_packages
 
+    
 # Generates a unique id for ete installation. If this is an upgrade,
 # use the previous id. ETEID is only used to get basic statistics
 # about number of users/installations. The id generated is just a
@@ -159,7 +160,8 @@ try:
         provides = [MOD_NAME],
         keywords = "Tree handling, manipulation, analysis and visualization",
         url = "http://etetoolkit.org",
-#        download_url = "http://etetoolkit.org/static/releases/ete3/",
+        download_url = "http://etetoolkit.org/static/releases/ete2/",
+        
     )
 
 except:

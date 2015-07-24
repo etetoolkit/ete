@@ -48,3 +48,9 @@ branches:
 #The email defaults are too talkative while we're getting Travis working nicely.
 notifications:
   email: false
+  
+branches:
+  only:
+    - master
+    - 3.0
+    - 2.3
