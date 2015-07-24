@@ -80,7 +80,7 @@ resolution can be adjusted:
    ================= ==============================================================
    :attr:`units`     "**px**": pixels, "**mm**": millimeters, "**in**": inches
    :attr:`h`         height of the image in :attr:`units`.       
-   :attr:`w`         weight of the image in :attr:`units`.
+   :attr:`w`         width of the image in :attr:`units`.
    :attr:`dpi`       dots per inches.
    ================= ==============================================================
 
@@ -127,7 +127,7 @@ tree drawing modes.
 .. warning:: 
 
    A number of parameters can be controlled through custom
-   tree style objetcs, check :class:`TreeStyle` documentation for a
+   tree style objects, check :class:`TreeStyle` documentation for a
    complete list of accepted values.
 
 Some common uses include:
