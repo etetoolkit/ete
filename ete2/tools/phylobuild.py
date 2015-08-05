@@ -698,9 +698,9 @@ def main(args):
               GLOBALS["basedir"]
             os.system(cmd)
         log.log(28, "Deleting temporal data...")
-        cmd = "cd %s && rm tmp/ -rf" %GLOBALS["basedir"]
+        cmd = "cd %s && rm -rf tmp/" %GLOBALS["basedir"]
         os.system(cmd)
-        cmd = "cd %s && rm input/ -rf" %GLOBALS["basedir"]
+        cmd = "cd %s && rm -rf input/" %GLOBALS["basedir"]
         os.system(cmd)
         
         GLOBALS["citator"].show()
