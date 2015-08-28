@@ -117,7 +117,9 @@ def run(args):
             
     # translate names
     name2tax = ncbi.get_name_translator(all_names)
-    all_taxids.update([(v, None) for v in name2tax.values()])
+    for tids in name2tax.values():
+        for tid in tids:
+            all_taxids[tid] = None
 
     not_found_names = all_names - set(name2tax.keys())
     if args.fuzzy and not_found_names:
@@ -127,7 +129,7 @@ def run(args):
             tax, realname, sim = ncbi.get_fuzzy_name_translation(name, args.fuzzy)
             if tax:
                 all_taxids[tax] = None
-                name2tax[name] = tax
+                name2tax[name] = [tax]
                 name2realname[name] = realname
                 name2score[name] = "Fuzzy:%0.2f" %sim
                 
