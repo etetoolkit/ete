@@ -46,5 +46,5 @@ notifications:
 branches:
   only:
     - master
-    - 3.0
-    - 2.3
+    - "3.0"
+    - "2.3"
