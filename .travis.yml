@@ -39,12 +39,6 @@ script:
   #  - if [[ $TRAVIS_PYTHON_VERSION == 2.6 ]]; then cd test/ && coverage run test_all.py; else cd test/ && coverage run test_all.py && coverage run -a test_treeview.py; fi
   - python -m ete3.test.test_all;
 
-branches:
-  only:
-    - master
-    - 3.0
-    - 2.3
-  
 #The email defaults are too talkative while we're getting Travis working nicely.
 notifications:
   email: false
