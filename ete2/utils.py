@@ -38,7 +38,7 @@
 # #END_LICENSE#############################################################
 import re
 import time
-import readline
+#import readline # cause bugs on ete tools (ie. in PIPEs) 
 import os
 
 try:
@@ -185,7 +185,7 @@ def print_table(items, header=None, wrap=True, max_col_width=20,
                 print ' | '.join(['='*c2maxw[col] for col in xrange(len(extra_line)) ])
  
 def ask_filename(text):
-    readline.set_completer(None)
+    #readline.set_completer(None)
     fname = ""
     while not os.path.exists(fname):
 	fname = raw_input(text)
