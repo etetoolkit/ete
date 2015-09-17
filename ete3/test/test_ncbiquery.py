@@ -10,7 +10,10 @@ DATABASE_PATH = "testdb.sqlite"
 class Test_ncbiquery(unittest.TestCase):
 
   def test_00_update_database(self):
+    
+    if not os.path.exists(DATABASE_PATH):
       ncbiquery.update_db(DATABASE_PATH)
+
 
   def test_01tree_annotation(self):
     t = PhyloTree( "((9598, 9606), 10090);", sp_naming_function=lambda name: name)
@@ -44,9 +47,13 @@ class Test_ncbiquery(unittest.TestCase):
     self.assertEqual(id2name[9606], 'Homo sapiens')
 
     name2id = ncbi.get_name_translator(['Mantis religiosa', 'homo sapiens'])
-    self.assertEqual(name2id['Mantis religiosa'], 7507)
-    self.assertEqual(name2id['homo sapiens'], 9606)
+    self.assertEqual(name2id['Mantis religiosa'], [7507])
+    self.assertEqual(name2id['homo sapiens'], [9606])
 
+    name2id = ncbi.get_name_translator(['Bacteria'])
+    self.assertEqual(set(name2id['Bacteria']), set([2, 629395]))
+
+    
   def test_get_topology(self):
     ncbi = NCBITaxa(dbfile=DATABASE_PATH)
     t1 = ncbi.get_topology([9606, 7507, 9604])

@@ -536,8 +536,11 @@ def background_job_launcher(job_queue, run_detached, schedule_time, max_cores):
                     cores_avail -= cores
                     cores_used += cores
                     visited_ids.add(jid)
-
-            waiting_jobs = job_queue.qsize() + len(pending_jobs)
+            try:
+                waiting_jobs = job_queue.qsize() + len(pending_jobs)
+            except NotImplementedError: # OSX does not support qsize
+                waiting_jobs = len(pending_jobs)
+                
             log.log(28, "@@8:Launched@@1: %s jobs. %d(R), %s(W). Cores usage: %s/%s",
                     launched, len(running_jobs), waiting_jobs, cores_used, max_cores)
             for _d in dups:

@@ -67,10 +67,16 @@ accepted as input.
    print taxid2name
    # {9443: u'Primates', 9606: u'Homo sapiens'}
    
-   name2taxid = ncbi.get_name_translator(["Homo sapiens", "primates"])
+   name2taxid = ncbi.get_name_translator(['Homo sapiens', 'primates'])
    print name2taxid
-   # {'Homo sapiens': 9606, 'primates': 9443}
+   # {'Homo sapiens': [9606], 'primates': [9443]}
 
+   # when the same name points to several taxa, all taxids are returned
+   name2taxid = ncbi.get_name_translator(['Bacteria'])
+   print name2taxid
+   # {'Bacteria': [2, 629395]}
+
+   
 Other functions allow to extract further information using taxid numbers as a query. 
 
 ::

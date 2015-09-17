@@ -245,7 +245,7 @@ class NCBITaxa(object):
         """
 
         name2id = {}
-        name2realname = {}
+        #name2realname = {}
         name2origname = {}
         for n in names:
             name2origname[n.lower()] = n
@@ -257,16 +257,16 @@ class NCBITaxa(object):
         result = self.db.execute('select spname, taxid from species where spname IN (%s)' %query)
         for sp, taxid in result.fetchall():
             oname = name2origname[sp.lower()]
-            name2id[oname] = taxid
-            name2realname[oname] = sp
+            name2id.setdefault(oname, []).append(taxid)
+            #name2realname[oname] = sp
         missing =  names - set([n.lower() for n in name2id.keys()])
         if missing:
             query = ','.join(['"%s"' %n for n in missing])
             result = self.db.execute('select spname, taxid from synonym where spname IN (%s)' %query)
             for sp, taxid in result.fetchall():
                 oname = name2origname[sp.lower()]
-                name2id[oname] = taxid
-                name2realname[oname] = sp
+                name2id.setdefault(oname, []).append(taxid)
+                #name2realname[oname] = sp
         return name2id
 
     def translate_to_names(self, taxids):
@@ -278,6 +278,7 @@ class NCBITaxa(object):
         for sp in taxids:
             names.append(id2name.get(sp, sp))
         return names
+                                
 
     def get_descendant_taxa(self, parent, intermediate_nodes=False, rank_limit=None, collapse_subspecies=False, return_tree=False):
         """
@@ -289,7 +290,7 @@ class NCBITaxa(object):
             taxid = int(parent)
         except ValueError:
             try:
-                taxid = self.get_name_translator([parent])[parent]
+                taxid = self.get_name_translator([parent])[parent][0]
             except KeyError:
                 raise ValueError('%s not found!' %parent)
 
