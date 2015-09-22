@@ -135,7 +135,7 @@ try:
         packages = find_packages(),
 
         entry_points = {"console_scripts":
-                        ["ete = %s.tools.ete:main" %MOD_NAME]},
+                        ["ete3 = %s.tools.ete:main" %MOD_NAME]},
         requires = ["six"],
 
         # Project uses reStructuredText, so ensure that the docutils get
