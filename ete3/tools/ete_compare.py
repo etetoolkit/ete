@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -38,6 +36,8 @@ from __future__ import print_function
 #
 #
 # #END_LICENSE#############################################################
+from __future__ import absolute_import
+from __future__ import print_function
 from .common import as_str, shorten_str
 import re
 from six.moves import map
@@ -91,8 +91,8 @@ def populate_args(compare_args_p):
 
 
 def run(args):
-    from ete3 import Tree
-    from ete3.utils import print_table
+    from .. import Tree
+    from .utils import print_table
 
     def iter_differences(set1, set2, unrooted=False):
         for s1 in set1:
@@ -124,7 +124,7 @@ def run(args):
 
 
     if args.treeko:
-        from ete3 import PhyloTree
+        from .. import PhyloTree
         tree_class = PhyloTree
     else:
         tree_class = Tree

@@ -45,18 +45,33 @@ import subprocess
 import six
 log = logging.getLogger("main")
 
-APPTYPES = {
-    "_aa_aligner": set(["muscle", "mafft", "clustalo", "metaligner", "dialingtx"]),
-    "_nt_aligner": set(["muscle", "mafft", "clustalo", "metaligner", "dialingtx"]),
 
-    "_aa_alg_cleaner": set(["trimal"]),
-    "_nt_alg_cleaner": set(["trimal"]),
+APPTYPES = {
+    "aligners": set(["muscle", "mafft", "clustalo", "metaligner", "dialingtx"]),
+    "model testers": set(["prottest"]),
+    "alg cleaners": set(["trimal"]),
+    "tree builders": set(["fasttree", "phyml", "raxml"]),
+    "COG selectors": set(["cogselector"]),
+    "alg concatenators": set(["concatalg"]),
+    }
+  
+
+OPTION2APPTYPE = {
+    "_aa_aligner": APPTYPES["aligners"],
+    "_nt_aligner": APPTYPES["aligners"],
+
+    "_aa_alg_cleaner": APPTYPES["alg cleaners"],
+    "_nt_alg_cleaner": APPTYPES["alg cleaners"],
     
-    "_aa_tree_builder": set(["fasttree", "raxml", "phyml"]),
-    "_nt_tree_builder": set(["fasttree", "raxml", "phyml"]),
+    "_aa_tree_builder": APPTYPES["tree builders"],
+    "_nt_tree_builder": APPTYPES["tree builders"],
     
-    "_aa_model_tester": set(["prottest"]),
+    "_aa_model_tester": APPTYPES["model testers"],
     "_nt_model_tester": set([]),
+
+    "_cog_selector": APPTYPES["COG selectors"],
+    "_alg_concatenator": APPTYPES["alg concatenators"], 
+    
 }
 
 APP2CLASS = {

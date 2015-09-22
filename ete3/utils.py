@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -38,9 +36,11 @@ from __future__ import print_function
 #
 #
 # #END_LICENSE#############################################################
+from __future__ import absolute_import
+from __future__ import print_function
 import re
 import time
-#import readline # cause bugs on ete tools (ie. in PIPEs) 
+
 import os
 import six
 from six.moves import range
@@ -82,7 +82,7 @@ def clear_color(string):
     return re.sub("\\033\[[^m]+m", "", string)
 
 def print_table(items, header=None, wrap=True, max_col_width=20,
-                wrap_style="wrap", row_line=False, fix_col_width=False):
+                wrap_style="wrap", row_line=False, fix_col_width=False, title=None):
     ''' Prints a matrix of data as a human readable table. Matrix
     should be a list of lists containing any type of values that can
     be converted into text strings.
@@ -136,6 +136,7 @@ def print_table(items, header=None, wrap=True, max_col_width=20,
     else:
         c2maxw = dict([(i, min(max_col_width, max([safelen(str(e[i])) for e in items])))
                         for i in range(len(items[0]))])
+        
     if header:
         current_item = -1
         row = header
@@ -147,6 +148,13 @@ def print_table(items, header=None, wrap=True, max_col_width=20,
     else:
         current_item = 0
         row = items[current_item]
+
+    if title:
+        table_width = sum(c2maxw.values()) + (3*(len(c2maxw)-1))
+        print("-" *table_width)
+        print(title.center(table_width))
+        print("-" *table_width)
+        
     while row:
         is_extra = False
         values = []
@@ -190,7 +198,6 @@ def print_table(items, header=None, wrap=True, max_col_width=20,
                 print(' | '.join(['='*c2maxw[col] for col in range(len(extra_line)) ]))
 
 def ask_filename(text):
-    #readline.set_completer(None)
     fname = ""
     while not os.path.exists(fname):
         fname = input(text)

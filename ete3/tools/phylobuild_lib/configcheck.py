@@ -40,14 +40,30 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import os
+from ...utils import print_table
 from .configobj import ConfigObj
 from .errors import ConfigError
 from .utils import colorify
-from .apps import APP2CLASS, APPTYPES
+from .apps import APP2CLASS, OPTION2APPTYPE, APPTYPES
 
 import six
 from six.moves import map
 
+def build_supermatrix_workflow(wname):
+    try:
+        cog_selector, alg_concatenator, treebuilder = map(lambda x: "@%s" %x, wname.split("-"))
+    except ValueError:
+        raise ConfigError("Invalid supermatrix workflow: %s" %wname)
+    
+    workflow = {wname: {
+        "_app": "supermatrix",
+        "_cog_selector": cog_selector,
+        "_alg_concatenator": alg_concatenator, 
+        "_aa_tree_builder": treebuilder,
+        "_nt_tree_builder": treebuilder, 
+        "_appset":"@builtin_apps"}
+    }
+    return workflow
 
 def build_genetree_workflow(wname):
     try:
@@ -72,43 +88,38 @@ def build_genetree_workflow(wname):
 
 def list_workflows(config):
     wtype_legend = {
-        'genetree': '(aligner-trimmer-modeltester-treebuilder)',
-        'supermatrix': '(sptree-treebuilder-cogselector)',
-        'npr': 'Nested Phylogenetic Reconstruction options',
         }
-    for wtype in ['genetree', 'supermatrix']:
-        avail_workflows = sorted(['%s %s' %(k.ljust(25), config[k].get('_desc', '')) for k,
-                              v in six.iteritems(config) if v.get('_app', '') == wtype])
-        print('=' *80)
-        print(('Available %s workflows' %wtype).center(80))
-        print(('%s' %wtype_legend[wtype]).center(80))
-        print('=' *80)
-        print(('  %s' %'\n  '.join(avail_workflows)))
 
     avail_meta = sorted(["%s (% 3s threads)" %(k.ljust(40), len(v)) for k,
-                         v in six.iteritems(config.get('meta_workflow', {}))])
+                         v in six.iteritems(config.get('supermatrix_meta_workflow', {}))])
 
     print('=' *80)
-    print('Available Aliases and Meta-workflows'.center(80))
+    print('Available supermatrix (meta)-workflows'.center(80))
     print('=' *80)
     print(('  %s' %'\n  '.join(avail_meta)))
 
+    
+    avail_meta = sorted(["%s (% 3s threads)" %(k.ljust(40), len(v)) for k,
+                         v in six.iteritems(config.get('genetree_meta_workflow', {}))])
+
+    print('=' *80)
+    print('Available genetree (meta)-workflows'.center(80))
+    print('=' *80)
+    print(('  %s' %'\n  '.join(avail_meta)))
+
+
 def list_apps(config, target_apps = None):
-    if not target_apps:
-        target_apps = sorted([k for k in list(APP2CLASS.keys()) if k != 'raxml-pthreads'])
-    else:
-        valid = set([k for k in list(APP2CLASS.keys()) if k != 'raxml-pthreads'])
-        if set(target_apps) - valid:
-            print('ERROR: Unknown application type.')
-            print('Use one of: [%s]' %' | '.join(valid))
-            return
-    for atype in target_apps:
-        avail_apps = sorted(['%s %s' %(k.ljust(25), config[k].get('_desc', '')) for k,
-                              v in six.iteritems(config) if v.get('_app', '') == atype])
-        print('=' *40)
-        print('[%s] config blocks' %atype)
-        print('=' *40)
-        print(('  %s' %'\n  '.join(avail_apps)))
+    for appname, validapps in APPTYPES.items():
+        if target_apps:
+            if appname not in target_apps and target_apps & validapps:
+                validapps = target_apps & validapps
+            elif appname in target_apps:
+                pass
+            else:
+                continue
+                        
+        avail_blocks = [[blockname, block["_app"], block.get("_desc", "")] for blockname, block in config.items() if block.get("_app") in validapps]
+        print_table(avail_blocks, header=["name", "app type", "desc."], max_col_width=60, title=appname)
         print()
 
 def block_detail(block_name, config, color=True):
@@ -116,7 +127,7 @@ def block_detail(block_name, config, color=True):
     iterable_types = set([set, list, tuple, frozenset])
     if block_name not in config:
         try:
-            next_block = [x.lstrip('@') for x in config.get('meta_workflow', {})[block_name]]
+            next_block = [x.lstrip('@') for x in config.get('genetree_meta_workflow', {})[block_name]]
             metaworkflow = True
         except Exception as e:
             print(e)
@@ -139,12 +150,12 @@ def block_detail(block_name, config, color=True):
         pos += 1
 
     if metaworkflow and color:
-        print(colorify('[meta_workflow]', 'yellow'))
-        print("%s = %s" %(block_name, ', '.join(config["meta_workflow"][block_name])))
+        print(colorify('[genetree_meta_workflow]', 'yellow'))
+        print("%s = %s" %(block_name, ', '.join(config["genetree_meta_workflow"][block_name])))
         print()
     elif metaworkflow:
-        print('[meta_workflow]')
-        print("%s = %s" %(block_name, ', '.join(config["meta_workflow"][block_name])))
+        print('[genetree_meta_workflow]')
+        print("%s = %s" %(block_name, ', '.join(config["genetree_meta_workflow"][block_name])))
         print()
 
     for b, pos in sorted(list(blocks_to_show.items()), key=lambda x: x[1]):
@@ -184,9 +195,12 @@ def parse_block(blockname, conf):
 def check_config(fname):
     conf = ConfigObj(fname, list_values=True)
     # expand meta_workflows
-    for meta_name, meta_wf in conf["meta_workflow"].items():
-        for wkname in meta_wf:
+    for meta_name, meta_wf in conf["genetree_meta_workflow"].items():
+        for wkname in meta_wf:        
             conf.update(build_genetree_workflow(wkname.lstrip("@")))
+    for meta_name, meta_wf in conf["supermatrix_meta_workflow"].items():
+        for wkname in meta_wf:        
+            conf.update(build_supermatrix_workflow(wkname.lstrip("@")))
             
     # expand inherits options 
     for k, v in list(conf.items()):
@@ -225,7 +239,7 @@ def check_block_link(conf, parent, v, attr_name):
     if isinstance(v, str) and v.startswith('@'):
         if v[1:] not in conf:
             raise ConfigError('[%s] config block referred in [%s] but not found in config' %(v, parent))
-        if attr_name in APPTYPES and conf[v[1:]]["_app"] not in APPTYPES[attr_name]:
+        if attr_name in OPTION2APPTYPE and conf[v[1:]]["_app"] not in OPTION2APPTYPE[attr_name]:
             raise ConfigError('[%s] is not valid [%s] application block' %(v, attr_name))
 
 def is_file(value):

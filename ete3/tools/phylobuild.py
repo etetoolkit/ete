@@ -99,9 +99,10 @@ from .phylobuild_lib import apps
 from .phylobuild_lib.logger import logindent
 from .phylobuild_lib.citation import Citator
 from .phylobuild_lib.configcheck import (is_file, is_dir, check_config,
-                                         build_genetree_workflow, parse_block,
-                                         list_workflows, block_detail,
-                                         list_apps)
+                                         build_genetree_workflow,
+                                         build_supermatrix_workflow,
+                                         parse_block, list_workflows,
+                                         block_detail, list_apps)
 
 try:
     __VERSION__ = open(os.path.join(BASEPATH, "VERSION")).read().strip()
@@ -233,8 +234,10 @@ def main(args):
                         else:
                             raise ConfigError('Unknown workflow filter [%s]' %f)
 
-            if wkname in base_config.get('meta_workflow', {}):
-                temp_workflows = [x.lstrip('@') for x in base_config['meta_workflow'][wkname]]
+            if target_wtype == "genetree" and wkname in base_config.get('genetree_meta_workflow', {}):
+                temp_workflows = [x.lstrip('@') for x in base_config['genetree_meta_workflow'][wkname]]
+            elif target_wtype == "supermatrix" and wkname in base_config.get('supermatrix_meta_workflow', {}):
+                temp_workflows = [x.lstrip('@') for x in base_config['supermatrix_meta_workflow'][wkname]]
             else:
                 temp_workflows = [wkname]
 
@@ -244,12 +247,15 @@ def main(args):
             #     temp_workflows = [wkname]
 
             for _w in temp_workflows:
-                base_config.update(build_genetree_workflow(_w))
+                if target_wtype == "genetree":
+                    base_config.update(build_genetree_workflow(_w))
+                elif target_wtype == "supermatrix":
+                    base_config.update(build_supermatrix_workflow(_w))
                 parse_block(_w, base_config)
                 
                 if _w not in base_config:
                     list_workflows(base_config)
-                    raise ConfigError('[%s] workflow or meta_workflow name is not found in the config file.' %_w)
+                    raise ConfigError('[%s] workflow or meta-workflow name is not found in the config file.' %_w)
                 wtype = base_config[_w]['_app']
                 if wtype not in VALID_WORKFLOW_TYPES:
                     raise ConfigError('[%s] is not a valid workflow: %s?' %(_w, wtype))
@@ -959,11 +965,16 @@ def _main():
             apps.test_apps(config)
             sys.exit(0)
 
-        elif sys.argv[1] == "wl":
+        elif sys.argv[1] == "workflows":
             base_config = check_config(_config_path)
             list_workflows(base_config)
             sys.exit(0)
 
+        elif sys.argv[1] == "apps":
+            base_config = check_config(_config_path)
+            list_apps(base_config, set(sys.argv[2:]))
+            sys.exit(0)
+            
         elif sys.argv[1] == "show":
             base_config = check_config(_config_path)
             block_detail(sys.argv[2], base_config)
@@ -987,11 +998,6 @@ def _main():
                 sys.exit(-1)
             sys.exit(0)
 
-        elif sys.argv[1] == "apps":
-            base_config = check_config(_config_path)
-            list_apps(base_config, sys.argv[2:])
-            sys.exit(0)
-
         elif sys.argv[1] == "version":
             print(__VERSION__, '(%s)' %__DATE__)
             sys.exit(0)
@@ -1002,7 +1008,7 @@ def _main():
     # Input data related flags
     input_group = parser.add_argument_group('==== Input Options ====')
 
-    input_group.add_argument('[check | wl | show | dump | validate | version | install_tools]',
+    input_group.add_argument('[check | workflows| apps | show | dump | validate | version | install_tools]',
                              nargs='?',
                              help=("Utility commands:\n"
                                    "check: check that external applications are executable.\n"
