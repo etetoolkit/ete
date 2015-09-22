@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -38,6 +36,9 @@ from __future__ import print_function
 #
 #
 # #END_LICENSE#############################################################
+from __future__ import absolute_import
+from __future__ import print_function
+
 import sys
 import operator
 import re
@@ -182,7 +183,6 @@ def populate_main_args(main_args_p):
                            type=int, choices= [0, 1, 2, 3, 4], default=2,
                            help=("Verbosity level: 0=totally quite, 1=errors only,"
                            " 2=warning+errors, 3=info,warnings and errors 4=debug "))
-
 
 def populate_source_args(source_args_p):
     source_args = source_args_p.add_argument_group('SOURCE TREES')

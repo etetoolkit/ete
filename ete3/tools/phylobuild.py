@@ -1,6 +1,3 @@
-from __future__ import absolute_import
-from __future__ import print_function
-
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # #START_LICENSE###########################################################
@@ -41,7 +38,10 @@ from __future__ import print_function
 #
 #
 # #END_LICENSE#############################################################
+from __future__ import absolute_import
+from __future__ import print_function
 
+import re
 import errno
 import six.moves.builtins
 import six
@@ -65,34 +65,6 @@ def wrap(method, retries):
     fn.retries = retries
     return fn
 
-# class safefile(file):
-#     __retries = 2
-#     def read(self, *args, **kargs):
-#         for i in range(self.__retries):
-#             try:
-#                 return file.read(self, *args, **kargs)
-#             except IOError as e:
-#                 if e.errno == errno.EINTR:
-#                     print("A system call interruption was captured", file=sys.stderr)
-#                     print("Retrying", i, "of", self.__retries, "until exception is raised", file=sys.stderr)
-#                     continue
-#                 else:
-#                     raise
-#     def write(self, *args, **kargs):
-#         for i in range(self.__retries):
-#             try:
-#                 return file.read(self, *args, **kargs)
-#             except IOError as e:
-#                 if e.errno == errno.EINTR:
-#                     print("A system call interruption was captured", file=sys.stderr)
-#                     print("Retrying", i, "of", self.__retries, "until exception is raised", file=sys.stderr)
-#                     continue
-#                 else:
-#                     raise
-
-#six.moves.builtins.file = safefile
-
-
 import sys
 import os
 import shutil
@@ -106,57 +78,61 @@ from time import ctime, time
 
 # This avoids installing phylobuild_lib module. npr script will find it in the
 # same directory in which it is
-NPRPATH = os.path.split(os.path.realpath(__file__))[0]
+BASEPATH = os.path.split(os.path.realpath(__file__))[0]
 APPSPATH = None
 args = None
 
-sys.path.insert(0, NPRPATH)
+sys.path.insert(0, BASEPATH)
 
 import argparse
-from ete3.tools.phylobuild_lib.utils import (SeqGroup, generate_runid,  AA, NT,
-                                  GLOBALS, encode_seqname, pjoin, pexist,
-                                  hascontent, clear_tempdir, ETE_CITE, colorify,
-                                  GENCODE, silent_remove, _max, _min, _std, _mean, _median)
-from ete3.tools.phylobuild_lib.errors import ConfigError, DataError
-from ete3.tools.phylobuild_lib.master_task import Task
-from ete3.tools.phylobuild_lib.interface import app_wrapper
-from ete3.tools.phylobuild_lib.scheduler import schedule
-from ete3.tools.phylobuild_lib import db
-from ete3.tools.phylobuild_lib import apps
-from ete3.tools.phylobuild_lib.logger import logindent
-from ete3.tools.phylobuild_lib.citation import Citator
-from ete3.tools.phylobuild_lib.configcheck import is_file, is_dir, check_config, list_workflows, block_detail, list_apps
-
-#APPSPATH =  pjoin(NPRPATH, "ext_apps/")
+from .phylobuild_lib.utils import (SeqGroup, generate_runid, AA, NT, GLOBALS,
+                                   encode_seqname, pjoin, pexist, hascontent,
+                                   clear_tempdir, ETE_CITE, colorify, GENCODE,
+                                   silent_remove, _max, _min, _std, _mean,
+                                   _median)
+from .phylobuild_lib.errors import ConfigError, DataError
+from .phylobuild_lib.master_task import Task
+from .phylobuild_lib.interface import app_wrapper
+from .phylobuild_lib.scheduler import schedule
+from .phylobuild_lib import db
+from .phylobuild_lib import apps
+from .phylobuild_lib.logger import logindent
+from .phylobuild_lib.citation import Citator
+from .phylobuild_lib.configcheck import (is_file, is_dir, check_config,
+                                         build_genetree_workflow, parse_block,
+                                         list_workflows, block_detail,
+                                         list_apps)
 
 try:
-    __VERSION__ = open(os.path.join(NPRPATH, "VERSION")).read().strip()
+    __VERSION__ = open(os.path.join(BASEPATH, "VERSION")).read().strip()
 except:
     __VERSION__ = "unknown"
 
 try:
-    __DATE__ = open(os.path.join(NPRPATH, "DATE")).read().strip()
+    __DATE__ = open(os.path.join(BASEPATH, "DATE")).read().strip()
 except:
     __DATE__ = "unknown"
 
 __DESCRIPTION__ = (
 """
       --------------------------------------------------------------------------------
-                  Nested Phylogenetic Reconstruction (NPR) program.
-                         ETE-NPR %s (beta), %s.
+                  ETE build - reproducible phylogenetic workflows 
+                                %s (beta), %s.
 
-      ETE-NPR is a bioinformatics program providing a complete environment for
+      ETE build is a bioinformatics program providing a complete environment for
       the execution of phylogenomic workflows, including super-matrix
-      and family-tree reconstruction approaches. ETE-NPR covers all
-      necessary steps for high quality phylogenetic reconstruction, from
+      and family-tree reconstruction approaches. ETE build covers all
+      necessary steps for phylogenetic reconstruction, from
       alignment reconstruction and model testing to the generation of
-      publication ready images of the produced trees and alignments. ETE-NPR is
+      publication ready images of the produced trees and alignments. ETE build is
       built on top of a bunch of specialized software and comes with a number
       of predefined workflows.
 
-      If you use ETE-NPR in a published work, please cite:
+      If you use ETE in a published work, please cite:
 
-       Jaime Huerta-Cepas, Peer Bork and Toni Gabaldon. In preparation.
+        Jaime Huerta-Cepas, Joaquín Dopazo and Toni Gabaldón. ETE: a python
+        Environment for Tree Exploration. BMC Bioinformatics 2010,
+        11:24. doi:10.1186/1471-2105-11-24
 
       (Note that a list of the external programs used to complete the necessary
       computations will be also shown together with your results. They should
@@ -166,33 +142,6 @@ __DESCRIPTION__ = (
     """ %(__VERSION__, __DATE__))
 
 __EXAMPLES__ = """
-===============================
-++++ COMMAND LINE EXAMPLES ++++
-===============================
-
-Runs a genetree workflow:
-
-  $ npr -a fasta.aa.fa  -w linsi_fasttree -o results/
-
-Runs a genetree workflow in recursive mode (the same workflow is applied for all
-iterations):
-
-  $ npr -a fasta.aa.fa  -w linsi_fasttree -o results/ --recursive
-
-Runs a genetree workflow in recursive mode using dynamic workflow adjustment
-depending on subtree size:
-
-  $ npr -a fasta.aa.fa -w linsi_fasttree -o results/  \\
-        --recursive  “size-range:500-1000,linsi_fasttree” \\
-                     “size-range:0-499,linsi_phyml”
-
-Runs a genetree workflow in recursive mode using dynamic workflow adjustment
-depending on subtree size and combining amino-acids and nucleotide alignments:
-
-  $ npr -a fasta.aa.fa -w linsi_fasttree -o results/ \\
-        --recursive  “size-range:500-1000,linsi_fasttree” \\
-                     “size-range:0-499,linsi_phyml” \\
-        -nt_switch_thr 0.95
 """
 
 def main(args):
@@ -218,12 +167,13 @@ def main(args):
     if pexist(base_dir):
         if hascontent(local_conf_file):
             if not filecmp.cmp(args.configfile, local_conf_file):
-                if not args.override:
-                    raise ConfigError("Output directory seem to contain"
-                                      " a NPR execution using a different"
-                                      " config file [workflow.cfg]. Use"
-                                      " --override option or change the"
-                                      " output path.")
+                if not args.override and not args.clearall:
+                    raise ConfigError("Output directory seems to contain"
+                                      " data generated using a different"
+                                      " config file. Use the"
+                                      " --override option to ignore this"
+                                      " warning and reuse previous data or"
+                                      " --clearall for a full data wipe.")
 
     # Creates a tree splitter config block on the fly. In the future this
     # options should be more accessible by users.
@@ -283,12 +233,20 @@ def main(args):
                         else:
                             raise ConfigError('Unknown workflow filter [%s]' %f)
 
-            if wkname not in base_config and wkname in base_config.get('meta_workflow', {}):
+            if wkname in base_config.get('meta_workflow', {}):
                 temp_workflows = [x.lstrip('@') for x in base_config['meta_workflow'][wkname]]
             else:
                 temp_workflows = [wkname]
 
+            # if wkname not in base_config and wkname in base_config.get('meta_workflow', {}):
+            #     temp_workflows = [x.lstrip('@') for x in base_config['meta_workflow'][wkname]]
+            # else:
+            #     temp_workflows = [wkname]
+
             for _w in temp_workflows:
+                base_config.update(build_genetree_workflow(_w))
+                parse_block(_w, base_config)
+                
                 if _w not in base_config:
                     list_workflows(base_config)
                     raise ConfigError('[%s] workflow or meta_workflow name is not found in the config file.' %_w)
@@ -368,7 +326,7 @@ def main(args):
         # setup npr options for master workflows
         if use_npr:
             config['_npr'] = {
-                # register root workflow as the main NPR workflow if the contrary not said
+                # register root workflow as the main workflow if the contrary not said
                 "wf_type": WORKFLOW_TYPE,
                 "workflows": npr_workflows if npr_workflows else [(wkname, {})],
                 'nt_switch_thr': args.nt_switch_thr,
@@ -419,7 +377,7 @@ def main(args):
         log.log(28, "Testing x86-%s portable applications..." % arch)
         apps.test_apps(apps_to_test)
 
-    log.log(28, "Starting NPR execution at %s" %(ctime()))
+    log.log(28, "Starting ETE-build execution at %s" %(ctime()))
     log.log(28, "Output directory %s" %(GLOBALS["output_dir"]))
 
 
@@ -593,7 +551,7 @@ def main(args):
         if args.spfile:
             target_species = set([line.strip() for line in open(args.spfile)])
             target_species.discard("")
-            log.log(28, "Enabling NPR for %d species", len(target_species))
+            log.log(28, "Enabling %d species", len(target_species))
         else:
             target_species = seq_species
 
@@ -668,7 +626,7 @@ def main(args):
             execution = ("insitu", False)
 
     # Scheduling starts here
-    log.log(28, "NPR starts now!")
+    log.log(28, "ETE build starts now!")
 
     # This initialises all pipelines
     pending_tasks = []
@@ -776,7 +734,13 @@ def scan_sequences(args, target_seqs):
                 print(c1, "\r", end=' ', file=sys.stderr)
                 sys.stderr.flush()
 
-            seqname = SEQS.id2name[seqid]
+            
+            name_match = re.search(args.seq_name_parser, SEQS.id2name[seqid])
+            if name_match:
+                seqname = name_match.groups()[0]
+            else:
+                raise ConfigError("Could not parse sequence name: %s" %SEQS.id2name[seqid])
+            
             if target_seqs and seqname not in target_seqs:
                 skipped_seqs += 1
                 continue
@@ -933,7 +897,7 @@ def hash_names(target_names):
 
 
 def _main():
-    global NPRPATH, APPSPATH, args
+    global BASEPATH, APPSPATH, args
     APPSPATH = os.path.expanduser("~/.etetoolkit/ext_apps-latest/")
     ETEHOMEDIR = os.path.expanduser("~/.etetoolkit/")
 
@@ -951,7 +915,7 @@ def _main():
             print(colorify('Use "ete build install_tools" to install or upgrade tools', "orange"), file=sys.stderr)
 
     elif len(sys.argv) > 1:
-        _config_path = pjoin(NPRPATH, 'phylobuild.cfg')
+        _config_path = pjoin(BASEPATH, 'phylobuild.cfg')
 
         if sys.argv[1] == "install_tools":
             import urllib
@@ -1050,7 +1014,7 @@ def _main():
                                    ))
 
     input_group.add_argument("-c", "--config", dest="configfile",
-                             type=is_file, default=NPRPATH+'/phylobuild.cfg',
+                             type=is_file, default=BASEPATH+'/phylobuild.cfg',
                              help="Custom configuration file.")
 
     input_group.add_argument("--tools-dir", dest="tools_dir",
@@ -1089,6 +1053,17 @@ def _main():
                              help="when used, gaps in the orginal fasta file will"
                              " be removed, thus allowing to use alignment files as input.")
 
+    input_group.add_argument("--seq-name-parser", dest="seq_name_parser",
+                             type=str, 
+                             help=("A Perl regular expression containing a matching group, which is"
+                                   " used to parse sequence names from the input files. Use this option to"
+                                   " customize the names that should be shown in the output files."
+                                   " The matching group (the two parentheses) in the provided regular"
+                                   " expression will be assumed as sequence name. By default, all "
+                                   " characthers until the first blank space or tab delimiter are "
+                                   " used as the sequence names."),
+                             default='^([^\s]+)')
+                                 
     input_group.add_argument("--no-seq-rename", dest="seq_rename",
                              action="store_false",
                              help="If used, sequence names will NOT be"
@@ -1165,7 +1140,7 @@ def _main():
                            default = 0.95,
                            help="Sequence similarity at which nucleotide based alignments should be used"
                            " instead of amino-acids. ")
-    npr_group.add_argument("--max_iters", dest="max_iters",
+    npr_group.add_argument("--max-iters", dest="max_iters",
                            required=False,
                            type=int,
                            default=99999999,
@@ -1184,15 +1159,15 @@ def _main():
                               type=str, required=True,
                               help="""Output directory for results.""")
 
-    output_group.add_argument("--scratch_dir", dest="scratch_dir",
+    output_group.add_argument("--scratch-dir", dest="scratch_dir",
                               type=is_dir,
                               help="""If provided, ete-build will run on the scratch folder and all files will be transferred to the output dir when finished. """)
 
-    output_group.add_argument("--db_dir", dest="db_dir",
+    output_group.add_argument("--db-dir", dest="db_dir",
                               type=is_dir,
                               help="""Alternative location of the database directory""")
 
-    output_group.add_argument("--tasks_dir", dest="tasks_dir",
+    output_group.add_argument("--tasks-dir", dest="tasks_dir",
                               type=is_dir,
                               help="""Output directory for the executed processes (intermediate files).""")
 
@@ -1226,11 +1201,11 @@ def _main():
                             " number will work as a hard limit for all applications,"
                             "regardless of their specific configuration.")
 
-    exec_group.add_argument("-t", "--schedule_time", dest="schedule_time",
+    exec_group.add_argument("-t", "--schedule-time", dest="schedule_time",
                             type=float, default=2,
                             help="""How often (in secs) tasks should be checked for available results.""")
 
-    exec_group.add_argument("--launch_time", dest="launch_time",
+    exec_group.add_argument("--launch-time", dest="launch_time",
                             type=float, default=5,
                             help="""How often (in secs) queued jobs should be checked for launching""")
 
@@ -1250,10 +1225,10 @@ def _main():
     exec_group.add_argument("--monitor", dest="monitor",
                             action="store_true",
                             help="Monitor mode: pipeline jobs will be"
-                            " detached from the main NPR process. This means that"
+                            " detached from the main process. This means that"
                             " when npr execution is interrupted, all currently"
                             " running jobs will keep running. Use this option if you"
-                            " want to stop and recover an NPR execution thread or"
+                            " want to stop and recover an execution thread or"
                             " if jobs are expected to be executed remotely."
                             )
 
@@ -1269,11 +1244,11 @@ def _main():
                             action="store_true",
                             help="Clear all precomputed data (data.db), but keeps task raw data in the directory, so they can be re-processed.")
 
-    exec_group.add_argument("--clear_orthodb", dest="clearorthology",
+    exec_group.add_argument("--clear-orthodb", dest="clearorthology",
                             action="store_true",
                             help="Reload orthologous group information.")
 
-    exec_group.add_argument("--clear_seqdb", dest="clearseqs",
+    exec_group.add_argument("--clear-seqdb", dest="clearseqs",
                             action="store_true",
                             help="Reload sequences deleting previous database if necessary.")
 
@@ -1285,7 +1260,7 @@ def _main():
 
     exec_group.add_argument("--nochecks", dest="nochecks",
                             action="store_true",
-                            help="Skip application check when npr starts.")
+                            help="Skip basic checks (i.e. tools available) everytime the application starts.")
 
     # Interface related flags
     ui_group = parser.add_argument_group("==== Program Interface Options ====")
@@ -1318,7 +1293,7 @@ def _main():
 
     args.enable_ui = False
     if not args.noimg:
-        print('Testing ETE-NPR graphics support...')
+        print('Testing ETE-build graphics support...')
         print('X11 DISPLAY = %s' %colorify(os.environ.get('DISPLAY', 'not detected!'), 'yellow'))
         print('(You can use --noimg to disable graphical capabilities)')
         try:

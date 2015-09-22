@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -38,12 +36,28 @@ from __future__ import print_function
 #
 #
 # #END_LICENSE#############################################################
+from __future__ import absolute_import
+from __future__ import print_function
 import os
 import re
 import logging
 import subprocess
 import six
 log = logging.getLogger("main")
+
+APPTYPES = {
+    "_aa_aligner": set(["muscle", "mafft", "clustalo", "metaligner", "dialingtx"]),
+    "_nt_aligner": set(["muscle", "mafft", "clustalo", "metaligner", "dialingtx"]),
+
+    "_aa_alg_cleaner": set(["trimal"]),
+    "_nt_alg_cleaner": set(["trimal"]),
+    
+    "_aa_tree_builder": set(["fasttree", "raxml", "phyml"]),
+    "_nt_tree_builder": set(["fasttree", "raxml", "phyml"]),
+    
+    "_aa_model_tester": set(["prottest"]),
+    "_nt_model_tester": set([]),
+}
 
 APP2CLASS = {
     "muscle"              : "Muscle",

@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -38,13 +36,39 @@ from __future__ import print_function
 #
 #
 # #END_LICENSE#############################################################
+from __future__ import absolute_import
+from __future__ import print_function
+
 import os
-from ete3.tools.phylobuild_lib.configobj import ConfigObj
-from ete3.tools.phylobuild_lib.errors import ConfigError
-from ete3.tools.phylobuild_lib.utils import colorify
-from ete3.tools.phylobuild_lib.apps import APP2CLASS
+from .configobj import ConfigObj
+from .errors import ConfigError
+from .utils import colorify
+from .apps import APP2CLASS, APPTYPES
+
 import six
 from six.moves import map
+
+
+def build_genetree_workflow(wname):
+    try:
+        aligner, trimmer, modeltester, treebuilder = map(lambda x: "none" if x.lower() == "none" else "@%s"%x,
+                                                         wname.split("-"))
+    except ValueError:
+        raise ConfigError("Invalid genetree workflow: %s" %wname)
+    
+    workflow = {wname: {
+        "_app": "genetree",
+        "_aa_aligner": aligner,
+        "_aa_alg_cleaner": trimmer, 
+        "_aa_model_tester": modeltester,
+        "_aa_tree_builder": treebuilder,
+        "_nt_aligner": aligner,
+        "_nt_alg_cleaner": trimmer,
+        "_nt_model_tester": "none",
+        "_nt_tree_builder": treebuilder, 
+        "_appset":"@builtin_apps"}
+    }
+    return workflow
 
 def list_workflows(config):
     wtype_legend = {
@@ -142,8 +166,29 @@ def block_detail(block_name, config, color=True):
                 print('% 40s = %s' %(k, v))
         print()
 
+def parse_block(blockname, conf):
+    blocktype = conf[blockname].get('_app', 'unknown')
+    for attr, v in list(conf[blockname].items()):
+        conf[blockname][attr] = check_type(blocktype, attr, v)
+        if isinstance(conf[blockname][attr], list):
+            for i in conf[blockname][attr]:
+                check_block_link(conf, blockname, i, attr)
+        else:
+            check_block_link(conf, blockname, conf[blockname][attr], attr)
+            
+    # Check for missing attributes     
+    for tag, tester in six.iteritems(CHECKERS):
+        if tag[0] == blocktype and (tester[2] and tag[1] not in conf[blockname]):
+            raise ConfigError('[%s] attribute expected in block [%s]' %(tag[1], blockname))
+            
 def check_config(fname):
     conf = ConfigObj(fname, list_values=True)
+    # expand meta_workflows
+    for meta_name, meta_wf in conf["meta_workflow"].items():
+        for wkname in meta_wf:
+            conf.update(build_genetree_workflow(wkname.lstrip("@")))
+            
+    # expand inherits options 
     for k, v in list(conf.items()):
         if '_inherits' in v:
             base = v['_inherits']
@@ -154,18 +199,9 @@ def check_config(fname):
             new_dict.update(v)
             conf[k] = new_dict
 
-    for k in six.iterkeys(conf):
-        blocktype = conf[k].get('_app', 'unknown')
-        for attr, v in list(conf[k].items()):
-            conf[k][attr] = check_type(blocktype, attr, v)
-            if isinstance(conf[k][attr], list):
-                for i in conf[k][attr]:
-                    check_block_link(conf, k, i)
-            else:
-                check_block_link(conf, k, conf[k][attr])
-        for tag, tester in six.iteritems(CHECKERS):
-            if tag[0] == blocktype and (tester[2] and tag[1] not in conf[k]):
-                raise ConfigError('[%s] attribute expected in block [%s]' %(tag[1], k))
+    # check blocks
+    for blockname in list(conf.keys()):
+        parse_block(blockname, conf)
 
     # Check that the number of columns in main workflow definition is the same in all attributes
     for flow_name in six.iterkeys(conf):
@@ -185,10 +221,12 @@ def check_type(blocktype, attr, v):
     else:
         return v
 
-def check_block_link(conf, parent, v):
-    if isinstance(v, str) and v.startswith('@') and v[1:] not in conf:
-        raise ConfigError('[%s] config block referred in [%s] but not found in config' %(v, parent))
-
+def check_block_link(conf, parent, v, attr_name):
+    if isinstance(v, str) and v.startswith('@'):
+        if v[1:] not in conf:
+            raise ConfigError('[%s] config block referred in [%s] but not found in config' %(v, parent))
+        if attr_name in APPTYPES and conf[v[1:]]["_app"] not in APPTYPES[attr_name]:
+            raise ConfigError('[%s] is not valid [%s] application block' %(v, attr_name))
 
 def is_file(value):
     if os.path.isfile(value):

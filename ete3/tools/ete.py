@@ -1,5 +1,5 @@
-from __future__ import absolute_import
-from __future__ import print_function
+#!/usr/bin/env python
+
 # #START_LICENSE###########################################################
 #
 #
@@ -38,7 +38,10 @@ from __future__ import print_function
 #
 #
 # #END_LICENSE#############################################################
-#!/usr/bin/env python
+
+
+from __future__ import absolute_import
+from __future__ import print_function
 import sys
 import os
 TOOLSPATH = os.path.realpath(os.path.split(os.path.realpath(__file__))[0])
