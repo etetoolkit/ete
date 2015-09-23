@@ -11,8 +11,8 @@
 
 The Environment for Tree Exploration (ETE) is a Python programming
 toolkit that assists in the automated manipulation, analysis and
-visualization of phylogenetic trees (although clustering trees or any
-other tree-like data structure are supported). 
+visualization of phylogenetic trees. Clustering trees or any
+other tree-like data structure are also supported. 
 
 ETE is currently developed as a tool for researchers working in
 phylogenetics and genomics. If you use ETE for a published work,
@@ -31,16 +31,61 @@ please cite:
 CURRENT VERSION
 ========================
 
-This branch of code refers to ETE v3.0, which is currently in BETA state. Latest
-stable release is 2.3 (repository in branch 2.3: https://github.com/jhcepas/ete/tree/2.3)
+Current stable version is ETE v2.3, which supports Python 2 only. Source code is in
+the following branch: https://github.com/jhcepas/ete/tree/2.3
 
-Note that ETE v3 has changed the name of the module from `ete2` to `ete3`, so
-both versions can coexist. The main different between both is that the later is
-a Python 2.7/3.4 compatible.
+ETE v3.0 is the development branch and should support Python 2.7 and Python
+3.4. Although mostly functional, this version is currently under active
+development, so problems are still expected. The module name for ETE v3.0 has
+changed to "ete3", so both versions (ETE v2.3 and ETE 3.0) can co-exist.
 
 
-FEATURES
-===========
+CONTRIBUTING
+=========================
+
+BUGS and FEATURE REQUESTS
+---------------------------------
+
+The preferred way to report a problem or request/disccuss new features is by
+opening a new issue at http://github.com/jhcepas/ete/issues.  (Please, make sure
+there is no other issues pointing to the same topic)
+
+PULL REQUESTS (either code or documentation)
+------------------------------------------------
+
+Contributions to the main code, unit-tests and documentation are very
+welcome. ETE's main source code is hosted at http://github.com/jhcepas/ete.
+There are currently 2 active branches:
+
+- "2.3" is the latest stable. Only bug fixes are accepted.
+- "master" is the development branch, currently focused on the upcoming version
+  3.0. Bug fixes, new features, tests and documentation are accepted and highly
+  appreciated.
+  
+Getting in touch: 
+- There is no mailing list for developers, but you can open a new github issue for
+  discussion or send me an email (jhcepas|gmail.com).
+- There is also chat room for developers:
+
+.. image:: https://badges.gitter.im/Join%20Chat.svg
+   :alt: Join the chat at https://gitter.im/jhcepas/ete
+   :target: https://gitter.im/jhcepas/ete?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge 
+
+GETTING SUPPORT
+====================
+
+- There is a mailing list providing user support at
+  https://groups.google.com/d/forum/etetoolkit. In order to avoid spam,
+  messages from new users are moderated. Expect some delay until your first
+  message and account is validated.
+
+- For general questions on how to use ETE in bioinformatic projects, the
+  BioStars community (http://biostars.org) provides an excellent and broader
+  help desk. Please feel free to raise any question there and tag it with the
+  "etetoolkit" label.
+
+MAIN ETE FEATURES
+==================================
 
 Python support
 ---------------
@@ -131,41 +176,5 @@ More examples at http://etetoolkit.org/gallery
 Trees can also be visualized interactively using a built-in Graphical User Interface
 (GUI) or exported as PNG images or SVG/PDF vector graphics images.
 
-
-CONTRIBUTING
-=========================
-
-BUGS and FEATURE REQUESTS
-----------------------------
-
-The preferred way to report a problem or request/disccuss new features is by
-opening a new issue at http://github.com/jhcepas/ete/issues.  (Please, make sure
-there is no other issues pointing to the same topic)
-
-GETTING SUPPORT
-------------------
-
-- There is a mailing list providing user technical support at
-  https://groups.google.com/d/forum/etetoolkit . In order to avoid spam, messages from new
-  users are moderated. Expect some delay until your first message and account is
-  validated.
-
-- For general questions on how to use ETE in bioinformatic projects, the
-  BioStars community (http://biostars.org) provides an excellent and broader
-  help desk. Please feel free to raise any question there and tag it with the
-  "etetoolkit" label.
-
-CONTRIBUTING
-------------------
-
-- Contributions to the main code, unittests and documentation are very
-welcome. ETE's main source code is hosted at http://github.com/jhcepas/ete.
-Feel free to clone the repo and make pull requests.
-
-- There is also a chat room for developers
-
-.. image:: https://badges.gitter.im/Join%20Chat.svg
-   :alt: Join the chat at https://gitter.im/jhcepas/ete
-   :target: https://gitter.im/jhcepas/ete?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge 
 
 
