@@ -62,9 +62,11 @@ There are currently 2 active branches:
   3.0. Bug fixes, new features, tests and documentation are accepted and highly
   appreciated.
   
-Getting in touch: 
+**Getting in touch:**
+
 - There is no mailing list for developers, but you can open a new github issue for
   discussion or send me an email (jhcepas|gmail.com).
+  
 - There is also chat room for developers:
 
 .. image:: https://badges.gitter.im/Join%20Chat.svg
