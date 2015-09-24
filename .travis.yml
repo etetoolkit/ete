@@ -25,7 +25,7 @@ install:
     # Replace dep1 dep2 ... with your dependencies
     - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION pip pyqt numpy six lxml
     - source activate test-environment
-    - python setup.py install
+    - python setup.py install --donottrackinstall
       
 before_script:
   - python --version
