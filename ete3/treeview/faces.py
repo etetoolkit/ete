@@ -46,7 +46,6 @@ from PyQt4.QtGui import (QGraphicsRectItem, QGraphicsLineItem,
                          QGraphicsItem)
 from PyQt4.QtCore import Qt,  QPointF, QRect, QRectF
 
-
 import math
 from .main import add_face_to_node, _Background, _Border, COLOR_SCHEMES
 import six

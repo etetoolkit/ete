@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -38,7 +36,17 @@ from __future__ import print_function
 #
 #
 # #END_LICENSE#############################################################
+from __future__ import absolute_import
+from __future__ import print_function
+
+import random
+import re
+import colorsys
+from collections import defaultdict
+
 from .common import log, POSNAMES, node_matcher
+from .. import (Tree, PhyloTree, TextFace, RectFace, faces, TreeStyle,
+                add_face_to_node, random_color)
 from six.moves import map
 
 DESC = ""
@@ -195,25 +203,17 @@ def populate_args(view_args_p):
 
 def run(args):
     if args.text_mode:
-        from ete3 import Tree
         for tindex, tfile in enumerate(args.src_tree_iterator):
             #print tfile
             if args.raxml:
                 nw = re.sub(":(\d+\.\d+)\[(\d+)\]", ":\\1[&&NHX:support=\\2]", open(tfile).read())
-                t = Tree(nw)
+                t = Tree(nw, format=args.newick_format)
             else:
-                t = Tree(tfile)
+                t = Tree(tfile, format=args.newick_format)
 
             print(t.get_ascii(show_internal=args.show_internal_names,
                               attributes=args.show_attributes))
         return
-
-    import random
-    import re
-    import colorsys
-    from collections import defaultdict
-    from ete3 import (Tree, PhyloTree, TextFace, RectFace, faces, TreeStyle,
-                         add_face_to_node, random_color)
 
     global FACES
 
@@ -273,9 +273,9 @@ def run(args):
         #print tfile
         if args.raxml:
             nw = re.sub(":(\d+\.\d+)\[(\d+)\]", ":\\1[&&NHX:support=\\2]", open(tfile).read())
-            t = PhyloTree(nw)
+            t = PhyloTree(nw, format=args.newick_format)
         else:
-            t = PhyloTree(tfile)
+            t = PhyloTree(tfile, format=args.newick_format)
 
 
         if args.alg:

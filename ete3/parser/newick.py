@@ -220,7 +220,7 @@ def read_newick(newick, root_node=None, format=0):
         if os.path.exists(newick):
             if newick.endswith('.gz'):
                 import gzip
-                nw = gzip.open(source).read()
+                nw = gzip.open(newick).read()
             else:
                 nw = open(newick, 'rU').read()
         else:

@@ -37,7 +37,7 @@ the following branch: https://github.com/jhcepas/ete/tree/2.3
 ETE v3.0 is the development branch and should support Python 2.7 and Python
 3.4. Although mostly functional, this version is currently under active
 development, so problems are still expected. The module name for ETE v3.0 has
-changed to "ete3", so both versions (ETE v2.3 and ETE 3.0) can co-exist.
+changed to "ete3", so both versions (ETE v2.3 and ETE v3.0) can co-exist.
 
 
 CONTRIBUTING
