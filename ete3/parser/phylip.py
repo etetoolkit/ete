@@ -48,7 +48,7 @@ from six.moves import range
 def read_phylip(source, interleaved=True, obj=None,
                 relaxed=False, fix_duplicates=True):
     if obj is None:
-        from ete3.coretype import SeqGroup
+        from ..coretype import SeqGroup
         SG = SeqGroup()
     else:
         SG = obj

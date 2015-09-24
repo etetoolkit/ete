@@ -41,9 +41,9 @@ from __future__ import print_function
 
 from sys import stderr
 from . import clustvalidation
-from ete3.coretype.tree import _translate_nodes
-from ete3 import TreeNode, ArrayTable
-from ete3 import numpy
+from ..coretype.tree import _translate_nodes
+from .. import TreeNode, ArrayTable
+from .. import numpy
 from six.moves import range
 
 __all__ = ["ClusterNode", "ClusterTree"]

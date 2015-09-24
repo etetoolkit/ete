@@ -65,7 +65,7 @@ from __future__ import absolute_import
 import re
 import MySQLdb
 from string import strip
-from ete3 import PhyloTree
+from .. import PhyloTree
 import six
 from six.moves import map
 

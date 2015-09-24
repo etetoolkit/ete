@@ -49,11 +49,11 @@ from six.moves import map
 from six.moves import range
 log = logging.getLogger("main")
 
-from ete3.tools.phylobuild_lib.master_task import CogSelectorTask
-from ete3.tools.phylobuild_lib.errors import DataError
-from ete3.tools.phylobuild_lib.utils import (GLOBALS, print_as_table, generate_node_ids,
-                                  encode_seqname, md5, pjoin, _mean, _median, _max, _min, _std)
-from ete3.tools.phylobuild_lib import db
+from ..master_task import CogSelectorTask
+from ..errors import DataError
+from ..utils import (GLOBALS, print_as_table, generate_node_ids,
+                     encode_seqname, md5, pjoin, _mean, _median, _max, _min, _std)
+from .. import db
 
 __all__ = ["BrhCogCreator"]
 

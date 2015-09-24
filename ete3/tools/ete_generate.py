@@ -49,7 +49,7 @@ def populate_args(generate_args_p):
 
 def run(args):
     import random
-    from ete3 import Tree
+    from .. import Tree
 
     for n in range(args.number):
         t = Tree()

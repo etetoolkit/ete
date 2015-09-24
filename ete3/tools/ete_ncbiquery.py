@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -38,8 +36,12 @@ from __future__ import print_function
 #
 #
 # #END_LICENSE#############################################################
+from __future__ import absolute_import
+from __future__ import print_function
 import sys
+
 from .common import log, dump
+
 import six
 from six.moves import map
 
@@ -97,7 +99,7 @@ def run(args):
     # add lineage profiles/stats
 
     import re
-    from ete3 import PhyloTree, NCBITaxa
+    from .. import PhyloTree, NCBITaxa
 
     # dump tree by default
     if not args.tree and not args.info and not args.descendants:
@@ -142,7 +144,7 @@ def run(args):
 
     if args.tree:
         if len(all_taxids) == 1:
-            target_taxid = next(all_taxids.keys())
+            target_taxid = list(all_taxids.keys())[0]
             log.info("Dumping NCBI descendants tree for %s" %(target_taxid))
             t = ncbi.get_descendant_taxa(target_taxid, collapse_subspecies=args.collapse_subspecies, rank_limit=args.rank_limit, return_tree=True)
         else:

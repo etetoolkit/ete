@@ -47,8 +47,8 @@ import six
 from six.moves import map
 log = logging.getLogger("main")
 
-from ete3.tools.phylobuild_lib.utils import (md5, basename, pid_up, HOSTNAME,
-                          GLOBALS, TIME_FORMAT, pjoin)
+from .utils import (md5, basename, pid_up, HOSTNAME,
+                    GLOBALS, TIME_FORMAT, pjoin)
 
 class Job(object):
     ''' A generic program launcher.

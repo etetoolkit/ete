@@ -336,7 +336,7 @@ class NCBITaxa(object):
         rank will be collapsed into the species upper node.
 
         """
-        from ete3 import PhyloTree
+        from .. import PhyloTree
         sp2track = {}
         elem2node = {}
         for sp in taxids:
@@ -571,10 +571,8 @@ class NCBITaxa(object):
     #     return self.annotate_tree(t, tax2name, tax2track, attr_name="taxid")
 
 
-
-
 def load_ncbi_tree_from_dump(tar):
-    from ete3 import Tree
+    from .. import Tree
     # Download: ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz
     parent2child = {}
     name2node = {}

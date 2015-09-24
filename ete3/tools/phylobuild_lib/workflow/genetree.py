@@ -41,15 +41,15 @@ import re
 import commands
 import logging
 
-from ete3.tools.phylobuild_lib.task import TreeMerger, Msf, DummyTree
-from ete3.tools.phylobuild_lib.errors import DataError
-from ete3.tools.phylobuild_lib.utils import (GLOBALS, rpath, pjoin, pexist, generate_runid,
+from ..task import TreeMerger, Msf, DummyTree
+from ..errors import DataError
+from ..utils import (GLOBALS, rpath, pjoin, pexist, generate_runid,
                                   DATATYPES, GAP_CHARS, DEBUG, SeqGroup, _min, _max, _std, _mean, _median)
-from ete3.tools.phylobuild_lib import db
-from ete3.tools.phylobuild_lib.master_task import register_task_recursively
-from ete3.tools.phylobuild_lib.workflow.common import (IterConfig, get_next_npr_node,
-                                    process_new_tasks, get_iternumber)
-from ete3.tools.phylobuild_lib.logger import logindent
+from .. import db
+from ..master_task import register_task_recursively
+from ..workflow.common import (IterConfig, get_next_npr_node,
+                               process_new_tasks, get_iternumber)
+from ..logger import logindent
 import six
 from six.moves import map
 log = logging.getLogger("main")

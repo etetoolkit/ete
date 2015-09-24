@@ -170,19 +170,15 @@ JMODELTEST_CITE = u"""Darriba D, Taboada GL, Doallo R, Posada
 D. jModelTest 2: more models, new heuristics and parallel computing.Nat
 Methods. 2012 Jul 30;9(8):772."""
 
-
-try:
-    from collections import OrderedDict
-except ImportError:
-    from ete3.tools.phylobuild_lib.ordereddict import OrderedDict
+from collections import OrderedDict
 
 # ete3 should be added to the python path by the npr script
-from ete3.phylo import PhyloTree
-from ete3.coretype.tree import Tree
-from ete3.coretype.seqgroup import SeqGroup
-from ete3.parser.fasta import read_fasta
-from ete3.coretype import tree
-from ete3.ncbi_taxonomy import ncbiquery as ncbi
+from ...phylo import PhyloTree
+from ...coretype.tree import Tree
+from ...coretype.seqgroup import SeqGroup
+from ...parser.fasta import read_fasta
+from ...coretype import tree
+from ...ncbi_taxonomy import ncbiquery as ncbi
 
 # This default values in trees are Very important for outgroup
 # selection algorithm to work:
@@ -626,12 +622,13 @@ def npr_layout(node):
         faces.add_face_to_node(support_face, node, 0, position="float-behind")
 
 try:
-    from ete3 import TreeStyle, NodeStyle, faces
-    from ete3.treeview import random_color
+    from ... import TreeStyle, NodeStyle, faces
+    from ...treeview import random_color
     NPR_TREE_STYLE = TreeStyle()
     NPR_TREE_STYLE.layout_fn = npr_layout
     NPR_TREE_STYLE.show_leaf_name = False
 except ImportError:
+
     TreeStyle, NodeStyle, faces, random_color = [None]*4
     NPR_TREE_STYLE = None
 

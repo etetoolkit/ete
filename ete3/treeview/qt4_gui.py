@@ -57,10 +57,10 @@ from .main import TreeStyle, save, _leaf
 from .svg_colors import random_color
 from .qt4_render import render
 try:
-    from ete3._ph import new_version
+    from .._ph import new_version
 except Exception:
     pass
-from ete3 import Tree, TreeStyle
+from .. import Tree, TreeStyle
 import time
 
 class _SelectorItem(QtGui.QGraphicsRectItem):

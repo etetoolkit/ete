@@ -1,4 +1,4 @@
-from ete3 import PhyloTree, TreeStyle
+from ... import PhyloTree, TreeStyle
 
 alg = """
  >Dme_001

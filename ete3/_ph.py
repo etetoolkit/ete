@@ -52,12 +52,12 @@ except ImportError:
 from six.moves import input
 
 try:
-    from ete3 import __ETEID__
+    from . import __ETEID__
 except ImportError:
     __ETEID__ = "Unknown"
 
 try:
-    from ete3 import __VERSION__
+    from . import __VERSION__
 except ImportError:
     __VERSION__ = "Unknown"
 

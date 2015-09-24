@@ -37,7 +37,7 @@ from __future__ import absolute_import
 #
 #
 # #END_LICENSE#############################################################
-from ete3 import (PhyloTree, PhyloNode,
+from .. import (PhyloTree, PhyloNode,
                   ClusterTree, ClusterNode, EvolTree, EvolNode)
 from . import layouts
 import six

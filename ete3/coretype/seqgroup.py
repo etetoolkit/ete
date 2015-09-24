@@ -46,9 +46,9 @@ supported.
 """
 from __future__ import absolute_import
 
-from ete3.parser.fasta import read_fasta, write_fasta
-from ete3.parser.paml import read_paml, write_paml
-from ete3.parser.phylip import read_phylip, write_phylip
+from ..parser.fasta import read_fasta, write_fasta
+from ..parser.paml import read_paml, write_paml
+from ..parser.phylip import read_phylip, write_phylip
 import six
 from six.moves import zip
 

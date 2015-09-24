@@ -90,7 +90,7 @@ def populate_args(mod_args_p):
 
 
 def run(args):
-    from ete3 import Tree
+    from .. import Tree
 
     for nw in args.src_tree_iterator:
         t = Tree(nw)

@@ -46,13 +46,13 @@ import sys
 import os
 TOOLSPATH = os.path.realpath(os.path.split(os.path.realpath(__file__))[0])
 #sys.path.insert(0, TOOLSPATH)
-sys.path.insert(1, TOOLSPATH.replace("ete3/tools", ''))
+#sys.path.insert(1, TOOLSPATH.replace("ete3/tools", ''))
 #print sys.path
 
 import argparse
 from . import ete_split, ete_expand, ete_annotate, ete_ncbiquery, ete_view, ete_generate, ete_mod, ete_extract, ete_compare
-from ete3.tools import common
-from ete3.tools.common import log
+from . import common
+from .common import log
 
 
 """
@@ -88,8 +88,8 @@ def tree_iterator(args):
 
 def main():
     if len(sys.argv) > 1 and sys.argv[1] == "version":
-       import ete3
-       print(ete3.__version__)
+       from .. import __version__
+       print(__version__)
        return
 
     elif len(sys.argv) > 1 and sys.argv[1] == "build":

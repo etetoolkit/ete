@@ -41,9 +41,9 @@ import os
 import logging
 log = logging.getLogger("main")
 
-from ete3.tools.phylobuild_lib.master_task import ModelTesterTask
-from ete3.tools.phylobuild_lib.master_job import Job
-from ete3.tools.phylobuild_lib.utils import basename, PhyloTree, JMODELTEST_CITE
+from ..master_task import ModelTesterTask
+from ..master_job import Job
+from ..utils import basename, PhyloTree, JMODELTEST_CITE
 
 __all__ = ["JModeltest"]
 

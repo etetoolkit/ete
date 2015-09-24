@@ -44,10 +44,10 @@ import logging
 from six.moves import map
 log = logging.getLogger("main")
 
-from ete3.tools.phylobuild_lib.master_task import AlgCleanerTask
-from ete3.tools.phylobuild_lib.master_job import Job
-from ete3.tools.phylobuild_lib.utils import SeqGroup, GLOBALS, TRIMAL_CITE, hascontent, DATATYPES, pjoin
-from ete3.tools.phylobuild_lib import db
+from ..master_task import AlgCleanerTask
+from ..master_job import Job
+from ..utils import SeqGroup, GLOBALS, TRIMAL_CITE, hascontent, DATATYPES, pjoin
+from .. import db
 
 __all__ = ["Trimal"]
 

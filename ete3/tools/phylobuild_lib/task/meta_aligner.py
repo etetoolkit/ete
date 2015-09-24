@@ -42,14 +42,14 @@ import logging
 import shutil
 log = logging.getLogger("main")
 
-from ete3.tools.phylobuild_lib.master_task import AlgTask, Task
-from ete3.tools.phylobuild_lib.master_job import Job
-from ete3.tools.phylobuild_lib.utils import (SeqGroup, OrderedDict, checksum, pjoin,
+from ..master_task import AlgTask, Task
+from ..master_job import Job
+from ..utils import (SeqGroup, OrderedDict, checksum, pjoin,
                           GLOBALS, MCOFFEE_CITE, DATATYPES)
-from ete3.tools.phylobuild_lib.apps import APP2CLASS, CLASS2MODULE
-from ete3.tools.phylobuild_lib import db
+from ..apps import APP2CLASS, CLASS2MODULE
+from .. import db
 
-from . import __init__ as task
+#from . import __init__ as task
 
 __all__ = ["MetaAligner"]
 

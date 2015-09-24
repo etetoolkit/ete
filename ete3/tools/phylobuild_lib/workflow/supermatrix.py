@@ -41,15 +41,15 @@ from __future__ import print_function
 import logging
 from collections import defaultdict
 
-from ete3.tools.phylobuild_lib.task import TreeMerger, DummyTree
-from ete3.tools.phylobuild_lib.utils import (GLOBALS, tobool, generate_runid, pjoin, rpath, DATATYPES, md5,
+from ..task import TreeMerger, DummyTree
+from ..utils import (GLOBALS, tobool, generate_runid, pjoin, rpath, DATATYPES, md5,
                           dict_string, ncbi, colorify)
 
-from ete3.tools.phylobuild_lib.errors import DataError, TaskError
-from ete3.tools.phylobuild_lib import db
-from ete3.tools.phylobuild_lib.workflow.common import (process_new_tasks, IterConfig,
-                                    get_next_npr_node, get_iternumber)
-from ete3.tools.phylobuild_lib.logger import logindent
+from ..errors import DataError, TaskError
+from .. import db
+from ..workflow.common import (process_new_tasks, IterConfig,
+                               get_next_npr_node, get_iternumber)
+from ..logger import logindent
 import six
 
 log = logging.getLogger("main")

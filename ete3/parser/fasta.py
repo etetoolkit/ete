@@ -49,7 +49,7 @@ def read_fasta(source, obj=None, header_delimiter="\t", fix_duplicates=True):
     """ Reads a collection of sequences econded in FASTA format."""
 
     if obj is None:
-        from ete3.coretype import seqgroup
+        from ..coretype import seqgroup
         SC = seqgroup.SeqGroup()
     else:
         SC = obj

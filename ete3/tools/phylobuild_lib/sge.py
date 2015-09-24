@@ -50,9 +50,9 @@ import six
 from six.moves import map
 log = logging.getLogger("main")
 
-from ete3.tools.phylobuild_lib import db
-from ete3.tools.phylobuild_lib.errors import SgeError
-from ete3.tools.phylobuild_lib.utils import GLOBALS
+from . import db
+from .errors import SgeError
+from .utils import GLOBALS
 OK_PATTERN = 'Your job-array ([\d]+).\d+\-\d+:\d+ \("[^"]*"\) has been submitted'
 DEFAULT_SGE_CELL = "cgenomics"
 

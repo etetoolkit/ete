@@ -198,7 +198,7 @@ def parse_paml (pamout, model):
     all_lines = open (pamout).readlines()
     # if we do not have tree, load it
     if model._tree == None:
-        from ete3.evol import EvolTree
+        from ..evol import EvolTree
         model._tree = EvolTree (re.findall ('\(.*\);', ''.join(all_lines))[2])
         model._tree._label_as_paml()
     # starts parsing

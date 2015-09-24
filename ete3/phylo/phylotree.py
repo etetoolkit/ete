@@ -51,7 +51,7 @@ import os
 import re
 import itertools
 from collections import defaultdict
-from ete3 import TreeNode, SeqGroup, NCBITaxa
+from .. import TreeNode, SeqGroup, NCBITaxa
 from .reconciliation import get_reconciled_tree
 from . import spoverlap
 

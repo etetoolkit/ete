@@ -50,7 +50,7 @@ def populate_args(annotate_args_p):
     annotate_args.add_argument("--feature", dest="feature", nargs="+", action='append', default=[],
                                help="")
 def run(args):
-    from ete3 import Tree, PhyloTree
+    from .. import Tree, PhyloTree
 
     features = set()
     for nw in args.src_tree_iterator:

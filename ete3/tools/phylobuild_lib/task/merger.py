@@ -43,13 +43,13 @@ import os
 import six
 log = logging.getLogger("main")
 
-from ete3.tools.phylobuild_lib.master_task import TreeMergeTask
-from ete3.tools.phylobuild_lib.master_job import Job
-from ete3.tools.phylobuild_lib.utils import (load_node_size, PhyloTree, SeqGroup, generate_id,
+from ..master_task import TreeMergeTask
+from ..master_job import Job
+from ..utils import (load_node_size, PhyloTree, SeqGroup, generate_id,
                           NPR_TREE_STYLE, NodeStyle, DEBUG,
                           faces, pjoin, GLOBALS)
-from ete3.tools.phylobuild_lib import db
-from ete3.tools.phylobuild_lib.errors import TaskError
+from ..errors import ConfigError, TaskError
+from .. import db
 
 __all__ = ["TreeMerger"]
 

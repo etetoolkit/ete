@@ -41,13 +41,13 @@ from __future__ import print_function
 from collections import defaultdict
 import logging
 
-from ete3.tools.phylobuild_lib.utils import (DEBUG, GLOBALS, SeqGroup, tobool, sec2time, read_time_file,
+from ..utils import (DEBUG, GLOBALS, SeqGroup, tobool, sec2time, read_time_file,
                                   _max, _min, _mean, _std, _median)
-from ete3.tools.phylobuild_lib.apps import APP2CLASS
-from ete3.tools.phylobuild_lib import task as all_tasks
-from ete3.tools.phylobuild_lib import db
-from ete3.tools.phylobuild_lib.errors import ConfigError, DataError, TaskError
-from ete3.tools.phylobuild_lib.master_task import register_task_recursively, isjob
+from ..apps import APP2CLASS
+from .. import task as all_tasks
+from .. import db
+from ..errors import ConfigError, DataError, TaskError
+from ..master_task import register_task_recursively, isjob
 import six
 from six.moves import range
 

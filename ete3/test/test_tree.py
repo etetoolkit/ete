@@ -112,7 +112,7 @@ class Test_Coretype_Tree(unittest.TestCase):
 
     def test_newick_formats(self):
         """ tests different newick subformats """
-        from ete3.parser.newick import print_supported_formats, NW_FORMAT
+        from ..parser.newick import print_supported_formats, NW_FORMAT
         print_supported_formats()
 
         # Let's stress a bit

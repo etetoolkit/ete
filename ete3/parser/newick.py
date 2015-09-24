@@ -185,7 +185,7 @@ def format_node(node, node_type, format,
 
 
 def print_supported_formats():
-    from ete3.coretype.tree import TreeNode
+    from ..coretype.tree import TreeNode
     t = TreeNode()
     t.populate(4, "ABCDEFGHI")
     print(t)
@@ -213,7 +213,7 @@ def read_newick(newick, root_node=None, format=0):
     """
    
     if root_node is None:
-        from ete3.coretype.tree import TreeNode
+        from ..coretype.tree import TreeNode
         root_node = TreeNode()
 
     if isinstance(newick, six.string_types):   

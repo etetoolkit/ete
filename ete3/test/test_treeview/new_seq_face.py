@@ -3,7 +3,7 @@ from PyQt4       import QtCore
 from PyQt4.QtGui import QGraphicsRectItem, QColor, QPen, QBrush
 from PyQt4.QtGui import QGraphicsSimpleTextItem, QFont
 
-from ete3 import faces, TreeStyle, PhyloTree, TextFace
+from ... import faces, TreeStyle, PhyloTree, TextFace
 from random import random
 
 _aafgcolors = {

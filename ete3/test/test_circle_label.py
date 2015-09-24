@@ -5,7 +5,7 @@ import sys
 import math
 
 try:
-    import ete3 as ete
+    import .. as ete
 except ImportError as i:
     print('Expected PYTHONPATH to include the path to the repository where git@github.com:<yourid>/ete.git was cloned')
     sys.exit(1)

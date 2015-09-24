@@ -53,17 +53,17 @@ from six.moves import map
 from six.moves import range
 log = logging.getLogger("main")
 
-from ete3.tools.phylobuild_lib.logger import set_logindent, logindent, get_logindent
-from ete3.tools.phylobuild_lib.utils import (generate_id, PhyloTree, NodeStyle, Tree,
-                          DEBUG, NPR_TREE_STYLE, faces, GLOBALS,
-                          basename, pjoin, ask, send_mail, pid_up, SeqGroup)
-from ete3.tools.phylobuild_lib.errors import ConfigError, TaskError
-from ete3.tools.phylobuild_lib import db
-from ete3.tools.phylobuild_lib.master_task import (isjob, update_task_states_recursively,
-                                store_task_data_recursively,
-                                remove_task_dir_recursively,
-                                update_job_status)
-from ete3.tools.phylobuild_lib.workflow.common import assembly_tree, get_cmd_log
+from . import db
+from .errors import ConfigError, TaskError
+from .logger import set_logindent, logindent, get_logindent
+from .utils import (generate_id, PhyloTree, NodeStyle, Tree,
+                    DEBUG, NPR_TREE_STYLE, faces, GLOBALS,
+                    basename, pjoin, ask, send_mail, pid_up, SeqGroup)
+from .master_task import (isjob, update_task_states_recursively,
+                          store_task_data_recursively,
+                          remove_task_dir_recursively,
+                          update_job_status)
+from .workflow.common import assembly_tree, get_cmd_log
 
 def debug(_signal, _frame):
     import pdb
@@ -425,7 +425,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
                         for lf in main_tree:
                             lf.add_feature("sequence", alg.get_seq(lf.safename))
                         try:
-                            from ete3.tools.phylobuild_lib.visualize import draw_tree
+                            from .visualize import draw_tree
                             draw_tree(main_tree, GLOBALS[configid], final_tree_file+".png")
                         except Exception as e:
                             log.warning('@@8:something went wrong when generating the tree image. Try manually :(@@1:')

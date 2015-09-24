@@ -47,7 +47,7 @@ import base64
 import zlib
 import gzip
 import logging
-from ete3.tools.phylobuild_lib.utils import md5, pexist, pjoin, GLOBALS
+from .utils import md5, pexist, pjoin, GLOBALS
 import six
 from six.moves import map
 from six.moves import range

@@ -92,7 +92,7 @@ def populate_args(compare_args_p):
 
 def run(args):
     from .. import Tree
-    from .utils import print_table
+    from ..utils import print_table
 
     def iter_differences(set1, set2, unrooted=False):
         for s1 in set1:

@@ -40,9 +40,9 @@ from __future__ import print_function
 # #END_LICENSE#############################################################
 import sys
 from ._nexml import MixedContainer, FloatTree, TreeFloatEdge, TreeNode, LiteralMeta
-from ete3 import PhyloTree
-from ete3.phylo.phylotree import _parse_species
-from ete3.parser.newick import read_newick
+from .. import PhyloTree
+from ..phylo.phylotree import _parse_species
+from ..parser.newick import read_newick
 
 class Children(list):
     def append(self, item):

@@ -43,7 +43,7 @@ from __future__ import absolute_import
 
 
 # from __future__ import division # unnecessary?
-from ete3 import Tree
+from .. import Tree
 from math import log, exp
 from six.moves import range
 

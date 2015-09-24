@@ -52,7 +52,7 @@ def populate_args(extract_args_p):
                               help="")
 
 def run(args):
-    from ete3 import Tree, PhyloTree
+    from .. import Tree, PhyloTree
     for nw in args.src_tree_iterator:
         if args.orthologs is not None:
             t = PhyloTree(nw)

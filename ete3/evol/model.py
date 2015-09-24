@@ -53,10 +53,10 @@ __version__ = "0.0"
 from re       import sub
 from warnings import warn
 
-from ete3.evol.control import PARAMS, AVAIL
-from ete3.evol.parser  import parse_paml, parse_rst, get_ancestor, parse_slr
+from ..evol.control import PARAMS, AVAIL
+from ..evol.parser  import parse_paml, parse_rst, get_ancestor, parse_slr
 try:
-    from ete3.treeview.faces import SequencePlotFace
+    from ..treeview.faces import SequencePlotFace
 except ImportError:
     TREEVIEW = False
 else:

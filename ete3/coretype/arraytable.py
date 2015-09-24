@@ -44,8 +44,8 @@ import re
 import math
 from os import path
 
-from ete3 import numpy
-from ete3.parser.text_arraytable import write_arraytable, read_arraytable
+from .. import numpy
+from ..parser.text_arraytable import write_arraytable, read_arraytable
 import six
 from six.moves import range
 

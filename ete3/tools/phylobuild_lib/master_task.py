@@ -45,13 +45,13 @@ import six
 log = logging.getLogger("main")
 from collections import defaultdict
 
-from ete3.tools.phylobuild_lib.logger import logindent
-from ete3.tools.phylobuild_lib.utils import (md5, merge_arg_dicts, PhyloTree, SeqGroup,
+from .logger import logindent
+from .utils import (md5, merge_arg_dicts, PhyloTree, SeqGroup,
                           checksum, read_time_file, generate_runid,
                           GLOBALS, DATATYPES)
-from ete3.tools.phylobuild_lib.master_job import Job
-from ete3.tools.phylobuild_lib.errors import TaskError
-from ete3.tools.phylobuild_lib import db
+from .master_job import Job
+from .errors import TaskError
+from . import db
 import shutil
 
 isjob = lambda j: isinstance(j, Job)

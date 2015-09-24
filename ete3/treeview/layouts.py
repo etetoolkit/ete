@@ -40,7 +40,7 @@ from __future__ import print_function
 # #END_LICENSE#############################################################
 
 
-from ete3 import numpy
+from .. import numpy
 from . import faces
 
 def basic(node):

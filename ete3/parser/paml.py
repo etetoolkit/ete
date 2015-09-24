@@ -80,7 +80,7 @@ def read_paml (source, obj=None, header_delimiter="\t", fix_duplicates=True):
     """
 
     if obj is None:
-        from ete3.coretype import seqgroup
+        from ..coretype import seqgroup
         SC = seqgroup.SeqGroup()
     else:
         SC = obj

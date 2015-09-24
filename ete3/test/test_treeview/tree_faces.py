@@ -1,5 +1,5 @@
 import random
-from ete3 import Tree, TreeStyle, NodeStyle, faces, AttrFace, TreeFace
+from ... import Tree, TreeStyle, NodeStyle, faces, AttrFace, TreeFace
 
 # Tree Style used to render small trees used as leaf faces
 small_ts = TreeStyle()

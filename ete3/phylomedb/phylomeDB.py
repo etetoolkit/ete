@@ -60,8 +60,11 @@ PhylomeDBConnector class.
 from __future__ import absolute_import
 import re
 from string import strip
+
 import MySQLdb
-from ete3 import PhyloTree
+
+from .. import PhyloTree
+
 import six
 from six.moves import map
 

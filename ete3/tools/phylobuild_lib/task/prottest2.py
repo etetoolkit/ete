@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -37,14 +36,15 @@ from __future__ import absolute_import
 #
 #
 # #END_LICENSE#############################################################
+from __future__ import absolute_import
 import os
 import re
 import logging
 log = logging.getLogger("main")
 
-from ete3.tools.phylobuild_lib.master_task import ModelTesterTask
-from ete3.tools.phylobuild_lib.master_job import Job
-from ete3.tools.phylobuild_lib.utils import basename, PhyloTree, GLOBALS
+from ..master_task import ModelTesterTask
+from ..master_job import Job
+from ..utils import basename, PhyloTree, GLOBALS
 
 __all__ = ["Prottest"]
 

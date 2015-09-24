@@ -43,7 +43,7 @@ from six.moves import range
 
 def draw_tree(tree, conf, outfile):
     try:
-        from ete3 import (add_face_to_node, AttrFace, TextFace, TreeStyle, RectFace, CircleFace,
+        from ... import (add_face_to_node, AttrFace, TextFace, TreeStyle, RectFace, CircleFace,
                              SequenceFace, random_color, SeqMotifFace)
     except ImportError as e:
         print(e)
@@ -200,7 +200,7 @@ def draw_tree(tree, conf, outfile):
     tree.render(outfile+'.pdf', tree_style=ts, w=170, units='mm', dpi=150)
 
 def annotate_tree_with_ncbi(tree):
-    from ete3.ncbi_taxonomy import ncbiquery as ncbi
+    from ...ncbi_taxonomy import ncbiquery as ncbi
     ncbi.connect_database()
     name2sp = ncbi.get_name_translator(tree.get_species())
     for lf in tree.iter_leaves():

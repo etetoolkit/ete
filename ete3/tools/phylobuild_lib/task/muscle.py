@@ -41,9 +41,9 @@ import os
 import logging
 log = logging.getLogger("main")
 
-from ete3.tools.phylobuild_lib.master_task import AlgTask
-from ete3.tools.phylobuild_lib.master_job import Job
-from ete3.tools.phylobuild_lib.utils import (SeqGroup, OrderedDict, GLOBALS, MUSCLE_CITE,
+from ..master_task import AlgTask
+from ..master_job import Job
+from ..utils import (SeqGroup, OrderedDict, GLOBALS, MUSCLE_CITE,
                           hascontent, pjoin)
 
 __all__ = ["Muscle"]

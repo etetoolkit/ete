@@ -38,7 +38,7 @@ from __future__ import absolute_import
 #
 # #END_LICENSE#############################################################
 
-from ete3 import numpy
+from .. import numpy
 from math import sqrt
 from six.moves import range
 

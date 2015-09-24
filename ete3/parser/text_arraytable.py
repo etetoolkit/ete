@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -38,12 +36,14 @@ from __future__ import print_function
 #
 #
 # #END_LICENSE#############################################################
-
-#! /usr/bin/env python
+from __future__ import absolute_import
+from __future__ import print_function
 
 import re
 from sys import stderr
-from ete3 import numpy
+
+from .. import numpy
+
 from six.moves import map
 
 __all__ = ['read_arraytable', 'write_arraytable']
@@ -52,7 +52,7 @@ def read_arraytable(matrix_file, mtype="float", arraytable_object = None):
     """ Reads a text tab-delimited matrix from file """
 
     if arraytable_object is None:
-        from ete3.coretype import arraytable
+        from ..coretype import arraytable
         A = arraytable.ArrayTable()
     else:
         A = arraytable_object

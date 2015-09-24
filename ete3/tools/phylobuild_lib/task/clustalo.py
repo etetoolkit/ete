@@ -42,10 +42,10 @@ import sys
 import logging
 log = logging.getLogger("main")
 
-from ete3.tools.phylobuild_lib.master_task import AlgTask
-from ete3.tools.phylobuild_lib.master_job import Job
+from ..master_task import AlgTask
+from ..master_job import Job
 
-from ete3.tools.phylobuild_lib.utils import (read_fasta, OrderedDict, GLOBALS, CLUSTALO_CITE, pjoin)
+from ..utils import (read_fasta, OrderedDict, GLOBALS, CLUSTALO_CITE, pjoin)
 
 __all__ = ["Clustalo"]
 

@@ -44,12 +44,12 @@ import six
 from six.moves import zip
 log = logging.getLogger("main")
 
-from ete3.tools.phylobuild_lib.task import Msf
-from ete3.tools.phylobuild_lib.master_task import ConcatAlgTask
-from ete3.tools.phylobuild_lib.master_job import Job
-from ete3.tools.phylobuild_lib.utils import SeqGroup, GLOBALS, generate_runid, pexist, md5
-from ete3.tools.phylobuild_lib import db
-from ete3.tools.phylobuild_lib.errors import TaskError
+from . import Msf
+from ..master_task import ConcatAlgTask
+from ..master_job import Job
+from ..utils import SeqGroup, GLOBALS, generate_runid, pexist, md5
+from .. import db
+from ..errors import TaskError
 
 __all__ = ["ConcatAlg"]
 
@@ -85,7 +85,7 @@ class ConcatAlg(ConcatAlgTask):
 
     def load_jobs(self):
         # I want a single phylognetic tree for each cog
-        from ete3.tools.phylobuild_lib.workflow.genetree import pipeline
+        from ..workflow.genetree import pipeline
 
         for co in self.cogs:
             # Register a new msf task for each COG, using the same

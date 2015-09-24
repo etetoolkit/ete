@@ -41,10 +41,10 @@ import os
 import logging
 log = logging.getLogger("main")
 
-from ete3.tools.phylobuild_lib.master_task import AlgTask
-from ete3.tools.phylobuild_lib.master_job import Job
-from ete3.tools.phylobuild_lib.utils import SeqGroup, OrderedDict, GLOBALS, MAFFT_CITE, pjoin
-from ete3.tools.phylobuild_lib import db
+from ..master_task import AlgTask
+from ..master_job import Job
+from ..utils import SeqGroup, OrderedDict, GLOBALS, MAFFT_CITE, pjoin
+from .. import db
 
 __all__ = ["Mafft"]
 

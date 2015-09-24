@@ -365,9 +365,9 @@ def main(args):
     TARGET_CLADES.discard('')
 
     if WORKFLOW_TYPE == 'genetree':
-        from ete3.tools.phylobuild_lib.workflow.genetree import pipeline
+        from .phylobuild_lib.workflow.genetree import pipeline
     elif WORKFLOW_TYPE == 'supermatrix':
-        from ete3.tools.phylobuild_lib.workflow.supermatrix import pipeline
+        from .phylobuild_lib.workflow.supermatrix import pipeline
 
     #if args.arch == "auto":
     #    arch = "64 " if sys.maxsize > 2**32 else "32"
@@ -1303,7 +1303,7 @@ def _main():
         print('X11 DISPLAY = %s' %colorify(os.environ.get('DISPLAY', 'not detected!'), 'yellow'))
         print('(You can use --noimg to disable graphical capabilities)')
         try:
-            from ete3 import Tree
+            from .. import Tree
             Tree().render('/tmp/etenpr_img_test.png')
         except:
             raise ConfigError('img generation not supported')

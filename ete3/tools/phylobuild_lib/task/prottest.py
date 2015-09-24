@@ -44,9 +44,9 @@ import shutil
 from six.moves import map
 log = logging.getLogger("main")
 
-from ete3.tools.phylobuild_lib.master_task import ModelTesterTask
-from ete3.tools.phylobuild_lib.master_job import Job
-from ete3.tools.phylobuild_lib.utils import basename, PhyloTree, GLOBALS, PHYML_CITE, pjoin
+from ..master_task import ModelTesterTask
+from ..master_job import Job
+from ..utils import basename, PhyloTree, GLOBALS, PHYML_CITE, pjoin
 
 __all__ = ["Prottest"]
 

@@ -49,13 +49,13 @@ from functools import cmp_to_key
 import six
 from six.moves import (cPickle, map, range, zip)
 
-from ete3.parser.newick import read_newick, write_newick
-from ete3 import utils
+from ..parser.newick import read_newick, write_newick
+from .. import utils
 
 # the following imports are necessary to set fixed styles and faces
 try:
-    from ete3.treeview.main import NodeStyle, _FaceAreas, FaceContainer, FACE_POSITIONS
-    from ete3.treeview.faces import Face
+    from ..treeview.main import NodeStyle, _FaceAreas, FaceContainer, FACE_POSITIONS
+    from ..treeview.faces import Face
 except ImportError:
     TREEVIEW = False
 else:
@@ -1326,7 +1326,7 @@ class TreeNode(object):
         structure using provided layout and TreeStyle.
 
         """
-        from ete3.treeview import drawer
+        from ..treeview import drawer
         drawer.show_tree(self, layout=layout,
                          tree_style=tree_style, win_name=name)
 
@@ -1350,7 +1350,7 @@ class TreeNode(object):
 
         """
 
-        from ete3.treeview import drawer
+        from ..treeview import drawer
         if file_name == '%%return':
             return drawer.get_img(self, w=w, h=h,
                                   layout=layout, tree_style=tree_style,
@@ -1913,7 +1913,7 @@ class TreeNode(object):
         :param [raw|table|topology|diffs|diffs_tab] output: Output type
 
         """
-        from ete3.tools import ete_diff
+        from ..tools import ete_diff
         difftable = ete_diff.treediff(self, t2, attr1=attr_t1, attr2=attr_t2)
         if output == "topology":
             ete_diff.show_difftable_topo(difftable, attr_t1, attr_t2, usecolor=color)
@@ -2341,7 +2341,7 @@ class TreeNode(object):
             raise ValueError("Treeview module is disabled")
 
     def phonehome(self):
-        from ete3 import _ph
+        from .. import _ph
         _ph.call()
         
 

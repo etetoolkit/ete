@@ -50,9 +50,9 @@ from textwrap import TextWrapper
 import six.moves.queue
 import threading
 
-from ete3.tools.phylobuild_lib.logger import get_main_log
-from ete3.tools.phylobuild_lib.utils import GLOBALS, clear_tempdir, terminate_job_launcher, pjoin, pexist
-from ete3.tools.phylobuild_lib.errors import *
+from .logger import get_main_log
+from .utils import GLOBALS, clear_tempdir, terminate_job_launcher, pjoin, pexist
+from .errors import *
 import six
 from six import StringIO
 

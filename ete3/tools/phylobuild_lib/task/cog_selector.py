@@ -47,11 +47,11 @@ import six
 from six.moves import map
 log = logging.getLogger("main")
 
-from ete3.tools.phylobuild_lib.master_task import CogSelectorTask
-from ete3.tools.phylobuild_lib.errors import DataError, TaskError
-from ete3.tools.phylobuild_lib.utils import (GLOBALS, print_as_table, generate_node_ids,
+from ..master_task import CogSelectorTask
+from ..errors import DataError, TaskError
+from ..utils import (GLOBALS, print_as_table, generate_node_ids,
                                              encode_seqname, md5, pjoin, _min, _max, _mean, _median, _std)
-from ete3.tools.phylobuild_lib import db
+from .. import db
 
 __all__ = ["CogSelector"]
 

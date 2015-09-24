@@ -76,13 +76,14 @@ Yang, Z. 2007.
 import os
 from warnings import warn
 
-from ete3                  import PhyloNode
-from ete3                  import SeqGroup
-from ete3.evol.model       import Model, PARAMS, AVAIL
-from ete3.evol.utils       import translate
-from ete3.parser.newick    import write_newick
+from .. import PhyloNode, SeqGroup, PhyloTree
+from ..parser.newick import write_newick
+from .model import Model, PARAMS, AVAIL
+from .utils import translate, chi_high
+
+
 try:
-    from ete3.treeview         import TreeStyle
+    from ..treeview import TreeStyle
 except ImportError:
     TREEVIEW = False
 else:
@@ -504,7 +505,6 @@ class EvolNode(PhyloNode):
             return 1.0
         try:
             if hasattr(altn, 'lnL') and hasattr(null, 'lnL'):
-                from ete3.evol.utils import chi_high
                 if  null.lnL - altn.lnL < 0:
                     warn("WARNING: Likelihood of the alternative model is " +
                          "smaller than null's")

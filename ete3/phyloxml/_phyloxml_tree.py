@@ -48,7 +48,7 @@ from __future__ import absolute_import
 
 import sys
 from ._phyloxml import Clade, Phylogeny, Confidence, Tag_pattern_
-from ete3 import PhyloTree
+from .. import PhyloTree
 
 class PhyloxmlTree(PhyloTree):
     ''' PhyloTree object supporting phyloXML format. '''
