@@ -64,8 +64,6 @@ try:
     from .phylomedb.phylomeDB3 import *
 except ImportError as e:
     pass
-    #warn("MySQLdb module could not be loaded")
-    #warn(e)
 
 try:
     from .treeview.svg_colors import *
@@ -74,14 +72,11 @@ try:
     from .treeview import faces
     from .treeview import layouts
 except ImportError as e:
-    #print e
     pass
-    #warn("Treeview module could not be loaded")
-    #warn(e)
 
 try:
-    from version import __version__, __installid__
+    from .version import __version__, __installid__
 except ImportError:
-     __version__ = 'dev'
+     __version__ = 'unknown'
      __installid__ = None
 
