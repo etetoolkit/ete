@@ -89,7 +89,7 @@ if not options.doconly:
         NEW_VERSION = CURRENT_VERSION
 
     # clean files from previous releases
-    _ex('rm release/ -rf && git clone . release/')
+    _ex('rm release/ -rf && git clone .. release/')
     # build docs
     _ex('cd release/sdoc/ && make html && make latex')
     _ex('cd release/sdoc/_build/latex && make all-pdf')
@@ -111,26 +111,19 @@ if not options.doconly:
         _ex('cd release/ && python setup.py sdist upload -r https://pypi.python.org/pypi')
 
 if options.doconly:
-    SDOC_PATH = '.'
+    SDOC_PATH = '..'
     # build docs
-    _ex('cd sdoc/ && make html && make latex')
-    _ex('cd sdoc/_build/latex && make all-pdf')
-    _ex('cp -a sdoc/_build/latex/*.pdf sdoc/_build/html/_downloads/')
-    
+    _ex('cd ../sdoc/ && make html && make latex')
+    _ex('cd ../sdoc/_build/latex && make all-pdf')
+    _ex('cp -a ../sdoc/_build/latex/*.pdf sdoc/_build/html/_downloads/')
 else:
     SDOC_PATH = 'release/'
 
-if ask('Upload docs?', ['y', 'n']) == 'y':
-    _ex("cd %s; python setup.py upload_sphinx --upload-dir sdoc/_build/html/ -r https://pypi.python.org/pypi --show-response" %SDOC_PATH)
-
-
+#if ask('Upload docs?', ['y', 'n']) == 'y':
+#    _ex("cd %s; python setup.py upload_sphinx --upload-dir sdoc/_build/html/ -r https://pypi.python.org/pypi --show-response" %SDOC_PATH)
 
 #_ex('deactivate;  release/dist/ && tar xf ete2-%s.tar.gz && cd ete2-%s/test/ && python test_all.py && python test_treeview.py' %(NEW_VERSION, NEW_VERSION))
     
-
-
-
-
 sys.exit(0)
 
 
