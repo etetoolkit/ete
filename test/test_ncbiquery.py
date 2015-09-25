@@ -50,6 +50,17 @@ class Test_ncbiquery(unittest.TestCase):
     name2id = ncbi.get_name_translator(['Bacteria'])
     self.assertEqual(set(name2id['Bacteria']), set([2, 629395]))
 
+    out = ncbi.get_descendant_taxa("9605", intermediate_nodes=True)
+    #Out[9]: [1425170, 741158, 63221, 9606]
+    self.assertEqual(set(out), set([1425170, 741158, 63221, 9606]))
+    
+    out = ncbi.get_descendant_taxa("9605", intermediate_nodes=False)
+    #Out[10]: [1425170, 741158, 63221]
+    self.assertEqual(set(out), set([1425170, 741158, 63221]))
+    
+    out = ncbi.get_descendant_taxa("9605", intermediate_nodes=False, rank_limit="species")
+    #Out[11]: [9606, 1425170]
+    self.assertEqual(set(out), set([9606, 1425170]))
     
   def test_get_topology(self):
     ncbi = NCBITaxa(dbfile=DATABASE_PATH)
