@@ -1312,7 +1312,9 @@ class BarChartFace(Face):
     :param None max_value: max value to set the scale of the chart.
 
     """
-    def __init__(self, values, deviations=None, width=200, height=100, colors=None, labels=None, min_value=0, max_value=None):
+    def __init__(self, values, deviations=None, width=200, height=100,
+                 colors=None, labels=None, min_value=0, max_value=None,
+                 label_fsize=6, scale_fsize=6):
         Face.__init__(self)
         self.type = "item"
         self.item = None
@@ -1335,11 +1337,14 @@ class BarChartFace(Face):
         self.margin_right = 1
         self.margin_top = 2
         self.margin_bottom = 2
+        self.label_fsize = label_fsize
+        self.scale_fsize = scale_fsize
 
     def update_items(self):
         self.item = _BarChartItem(self.values, self.deviations, self.width,
                                   self.height, self.colors, self.labels,
-                                  self.min_value, self.max_value)
+                                  self.min_value, self.max_value,
+                                  self.label_fsize, self.scale_fsize)
     def _width(self):
         return self.item.rect().width()
 
@@ -1348,7 +1353,8 @@ class BarChartFace(Face):
 
 
 class _BarChartItem(QGraphicsRectItem):
-    def __init__(self, values, deviations, width, height, colors, labels, min_value, max_value):
+    def __init__(self, values, deviations, width, height, colors, labels,
+                 min_value, max_value, label_fsize, scale_fsize):
         QGraphicsRectItem.__init__(self, 0, 0, width, height)
         self.values = values
         self.colors = colors
@@ -1361,13 +1367,57 @@ class _BarChartItem(QGraphicsRectItem):
         self.max_value = max_value
         self.min_value = min_value
         self.deviations = deviations
+        self.label_fsize = label_fsize
+        self.scale_fsize = scale_fsize
+        
+        self.set_real_size()
+        
+    def set_real_size(self):
+        label_height = 0
+        scale_width = 0
+        margin = 2
 
+        if self.max_value is None:
+            max_value = max([v+d for v,d in zip(self.values, self.deviations) if isfinite(v)])
+        else:
+            max_value = self.max_value
+
+        if self.min_value is None:
+            min_value = min([v+d for v,d in zip(self.values, self.deviations) if isfinite(v)])
+        else:
+            min_value = self.min_value
+        
+        if self.draw_scale:
+            max_string = "% 7.2f" %max_value
+            min_string = "% 7.2f" %min_value
+            fm = QFontMetrics(QFont("Verdana", self.scale_fsize))
+            max_string_metrics = fm.boundingRect(QRect(), \
+                                                 Qt.AlignLeft, \
+                                                 max_string)
+            min_string_metrics = fm.boundingRect(QRect(), \
+                                                 Qt.AlignLeft, \
+                                                 min_string)
+            scale_width = margin + max(max_string_metrics.width(),
+                                             min_string_metrics.width())
+
+        if self.labels:
+            fm = QFontMetrics(QFont("Verdana", self.label_fsize))
+            longest_label = sorted(self.labels, lambda x,y: cmp(len(x), len(y)))[-1]
+            label_height = fm.boundingRect(QRect(), Qt.AlignLeft, longest_label).width() + margin
+            label_width = fm.height() * len(self.labels)
+            self.width = max(label_width, self.width)
+            
+        
+            
+        self.setRect(0, 0, self.width + scale_width, self.height + label_height)
+                
+        
     def paint(self, p, option, widget):
         colors = self.colors
         values = self.values
         deviations = self.deviations
         p.setBrush(Qt.NoBrush)
-
+        margin = 2
         spacer = 3
         spacing_length = (spacer*(len(values)-1))
         height = self.height
@@ -1382,67 +1432,49 @@ class _BarChartItem(QGraphicsRectItem):
         else:
             min_value = self.min_value
 
-        scale_length = 0
-        scale_margin = 2
-        if self.draw_scale:
-            p.setFont(QFont("Verdana", 6))
-            max_string = "% 7.2f" %max_value
-            min_string = "% 7.2f" %min_value
-            fm = QFontMetrics(p.font())
-            max_string_metrics = fm.boundingRect(QRect(), \
-                                                 Qt.AlignLeft, \
-                                                 max_string)
-            min_string_metrics = fm.boundingRect(QRect(), \
-                                                 Qt.AlignLeft, \
-                                                 min_string)
-            scale_length = scale_margin + max(max_string_metrics.width(),
-                              min_string_metrics.width())
-
-
-        label_height = 0
-        if self.labels:
-            p.setFont(QFont("Verdana", 6))
-            fm = QFontMetrics(p.font())
-            longest_label = sorted(self.labels, key=lambda x: len(x))[-1]
-            label_height = fm.boundingRect(QRect(), Qt.AlignLeft, longest_label).width()
-
-
-        real_width = self.width - scale_length
-        x_alpha = float((real_width - spacing_length) / (len(values)))
+        plot_width = self.width
+        plot_height = self.height
+        
+        x_alpha = float((plot_width - spacing_length) / (len(values)))
         if x_alpha < 1:
             raise ValueError("BarChartFace is too small")
-
-
-        height -= label_height
-        y_alpha = float ( (height-3) / float(max_value - min_value) )
+                
+        y_alpha = float ( (plot_height-3) / float(max_value - min_value) )
         x = 0
         y = 0
 
         # Mean and quartiles y positions
-        mean_line_y = y + (height / 2.0)
-        line2_y     = mean_line_y + (height/4.0)
-        line3_y     = mean_line_y - (height/4.0)
+        mean_line_y = y + (plot_height / 2.0)
+        line2_y = mean_line_y + (plot_height/4.0)
+        line3_y = mean_line_y - (plot_height/4.0)
 
         if self.draw_border:
             p.setPen(QColor("black"))
-            p.drawRect(x, y + 1, real_width + scale_margin - 1 , height)
+            p.drawRect(x, y + 1, plot_width, plot_height)
 
         if self.draw_scale:
-            p.drawText(real_width + scale_margin, max_string_metrics.height()-2, max_string)
-            p.drawText(real_width + scale_margin, height - 2, min_string)
-            p.drawLine(real_width + scale_margin - 1, 1, real_width + scale_margin - 1, height+1)
-            p.drawLine(real_width + scale_margin - 1, 1, real_width + scale_margin + 2, 1)
-            p.drawLine(real_width + scale_margin - 1, height+1, real_width + scale_margin + 2, height+1)
+            p.setFont(QFont("Verdana", self.scale_fsize))
+            font_height = QFontMetrics(p.font()).height()
+            max_string = "% 7.2f" %max_value
+            min_string = "% 7.2f" %min_value
+            p.drawText(plot_width + margin, font_height-2, max_string)
+            p.drawText(plot_width + margin, plot_height - 2, min_string)
+            p.drawLine(plot_width + margin - 1, 1, plot_width + margin - 1, plot_height+1)
+            p.drawLine(plot_width + margin - 1, 1, plot_width + margin + 2, 1)
+            p.drawLine(plot_width + margin - 1, plot_height+1, plot_width + margin + 2, plot_height+1)
 
         if self.draw_grid:
             dashedPen = QPen(QBrush(QColor("#ddd")), 0)
             dashedPen.setStyle(Qt.DashLine)
             p.setPen(dashedPen)
-            p.drawLine(x+1, mean_line_y, real_width - 2, mean_line_y)
-            p.drawLine(x+1, line2_y, real_width - 2, line2_y )
-            p.drawLine(x+1, line3_y, real_width - 2, line3_y )
+            p.drawLine(x+1, mean_line_y, plot_width - 2, mean_line_y)
+            p.drawLine(x+1, line2_y, plot_width - 2, line2_y )
+            p.drawLine(x+1, line3_y, plot_width - 2, line3_y )
 
         # Draw bars
+        p.setFont(QFont("Verdana", self.label_fsize))
+        label_height = self.rect().height() - self.height
+        label_width = QFontMetrics(p.font()).height()
         for pos in range(len(values)):
             # first and second X pixel positions
             x1 = x
@@ -1453,9 +1485,10 @@ class _BarChartItem(QGraphicsRectItem):
 
             if self.labels:
                 p.save()
-                p.translate(x1+(x_alpha/4.0), height+2)
+                p.translate(x1, plot_height+2)
                 p.rotate(90)
-                p.drawText(0, 0, str(self.labels[pos]))
+                p.drawText(0, -x_alpha, label_height, x_alpha, Qt.AlignVCenter, str(self.labels[pos]))
+                #p.drawRect(0, -x_alpha, label_height, x_alpha)
                 p.restore()
 
             # If nan value, skip
@@ -1476,9 +1509,9 @@ class _BarChartItem(QGraphicsRectItem):
                 dev_up_y1   = int((val + std - min_value) * y_alpha)
                 dev_down_y1 = int((val - std - min_value) * y_alpha)
                 center_x = x1 + (x_alpha / 2)
-                p.drawLine(center_x, height - dev_up_y1, center_x, height - dev_down_y1)
-                p.drawLine(center_x + 1, height - dev_up_y1, center_x -1, height - dev_up_y1)
-                p.drawLine(center_x + 1, height - dev_down_y1, center_x -1, height - dev_down_y1)
+                p.drawLine(center_x, plot_height - dev_up_y1, center_x, plot_height - dev_down_y1)
+                p.drawLine(center_x + 1, plot_height - dev_up_y1, center_x -1, plot_height - dev_up_y1)
+                p.drawLine(center_x + 1, plot_height - dev_down_y1, center_x -1, plot_height - dev_down_y1)
 
 
 
