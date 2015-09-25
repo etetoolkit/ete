@@ -303,9 +303,8 @@ class NCBITaxa(object):
                 return map(int, [n.name for n in tree.get_descendants()])
             else:
                 return map(int, [n.name for n in tree])
-                
         elif intermediate_nodes:
-            return [tid for tid, count in descendants.iteritems() if not target_rank or tax2rank.get(tid, None) == target_rank]
+            return [tid for tid, count in descendants.iteritems()]
         else:
             return [tid for tid, count in descendants.iteritems() if count == 1]
                 
