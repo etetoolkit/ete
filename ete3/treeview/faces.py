@@ -1402,12 +1402,10 @@ class _BarChartItem(QGraphicsRectItem):
 
         if self.labels:
             fm = QFontMetrics(QFont("Verdana", self.label_fsize))
-            longest_label = sorted(self.labels, lambda x,y: cmp(len(x), len(y)))[-1]
+            longest_label = sorted(self.labels, key=lambda x: len(x))[-1]
             label_height = fm.boundingRect(QRect(), Qt.AlignLeft, longest_label).width() + margin
             label_width = fm.height() * len(self.labels)
             self.width = max(label_width, self.width)
-            
-        
             
         self.setRect(0, 0, self.width + scale_width, self.height + label_height)
                 
