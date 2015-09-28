@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 # #START_LICENSE###########################################################
 #
 #
@@ -36,7 +39,7 @@
 #
 #
 # #END_LICENSE#############################################################
-#!/usr/bin/env python
+
 
 from __future__ import absolute_import
 from __future__ import print_function
@@ -294,8 +297,8 @@ class NCBITaxa(object):
             except KeyError:
                 raise ValueError('%s not found!' %parent)
 
-
-        prepostorder = pickle.load(open(self.dbfile+".traverse.pkl"))
+        with open(self.dbfile+".traverse.pkl", "rb") as CACHED_TRAVERSE:
+            prepostorder = pickle.load(CACHED_TRAVERSE)
         descendants = {}
         found = 0
         for tid in prepostorder:
