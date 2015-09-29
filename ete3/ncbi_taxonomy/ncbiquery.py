@@ -586,7 +586,7 @@ def load_ncbi_tree_from_dump(tar):
     print("Loading node names...")
     for line in tar.extractfile("names.dmp"):
         line = str(line.decode())
-        fields =  list(map(str.strip, line.split("|")))
+        fields =  [_f.strip() for _f in line.split("|")]
         nodename = fields[0]
         name_type = fields[3].lower()
         taxname = fields[1]
@@ -672,7 +672,7 @@ def update_db(dbfile, targz_file=None):
     with open("merged.tab", "w") as merged:
         for line in tar.extractfile("merged.dmp"):
             line = str(line.decode())
-            out_line = '\t'.join(map(str.strip, line.split('|')[:2]))
+            out_line = '\t'.join([_f.strip() for _f in line.split('|')[:2]])
             merged.write(out_line+'\n')
     try:
         upload_data(dbfile)

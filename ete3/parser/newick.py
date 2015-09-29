@@ -256,11 +256,12 @@ def _read_newick_from_string(nw, root_node, matcher, formatcode):
     # leaf)), leaf, leaf))
     # leaf))
     # ) only if formatcode == 100
+
     for chunk in nw.split("(")[1:]:
         # If no node has been created so far, this is the root, so use the node.
         current_parent = root_node if current_parent is None else current_parent.add_child()
 
-        subchunks = list(map(str.strip, chunk.split(",")))
+        subchunks = [ch.strip() for ch in chunk.split(",")]
         # We should expect that the chunk finished with a comma (if next chunk
         # is an internal sister node) or a subchunk containing closing parenthesis until the end of the tree.
         #[leaf, leaf, '']

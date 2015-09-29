@@ -138,8 +138,8 @@ class Job(object):
 
     def read_pid(self):
         try:
-           host, pid = list(map(str.strip,
-                           open(self.pid_file,"rU").readline().split("\t")))
+           host, pid = [_f.strip() for _f in 
+                        open(self.pid_file,"rU").readline().split("\t")]
         except IOError:
             host, pid = "", ""
         else:

@@ -50,21 +50,6 @@ from six.moves import range
 from six import StringIO
 from six.moves import input
 
-def wrap(method, retries):
-    def fn(*args, **kwargs):
-        for i in range(retries):
-            try:
-                return method(*args, **kwargs)
-            except IOError as e:
-                if e.errno == errno.EINTR:
-                    print("A system call interruption was captured", file=sys.stderr)
-                    print("Retrying", i, "of", retries, "until exception is raised", file=sys.stderr)
-                    continue
-                else:
-                    raise
-    fn.retries = retries
-    return fn
-
 import sys
 import os
 import shutil
@@ -89,7 +74,7 @@ from .phylobuild_lib.utils import (SeqGroup, generate_runid, AA, NT, GLOBALS,
                                    encode_seqname, pjoin, pexist, hascontent,
                                    clear_tempdir, ETE_CITE, colorify, GENCODE,
                                    silent_remove, _max, _min, _std, _mean,
-                                   _median)
+                                   _median, iter_cog_seqs)
 from .phylobuild_lib.errors import ConfigError, DataError
 from .phylobuild_lib.master_task import Task
 from .phylobuild_lib.interface import app_wrapper
@@ -103,6 +88,8 @@ from .phylobuild_lib.configcheck import (is_file, is_dir, check_config,
                                          build_supermatrix_workflow,
                                          parse_block, list_workflows,
                                          block_detail, list_apps)
+from .phylobuild_lib import seqio
+
 
 try:
     __VERSION__ = open(os.path.join(BASEPATH, "VERSION")).read().strip()
@@ -200,7 +187,7 @@ def main(args):
         for wkname in names:
             if parse_filters:
                 wfilters = {}
-                fields = list(map(str.strip, wkname.split(",")))
+                fields = [_f.strip() for _f in wkname.split(",")]
                 if len(fields) == 1:
                     wkname = fields[0]
                 else:
@@ -408,7 +395,7 @@ def main(args):
 
     GLOBALS["nprdb_file"]  = pjoin(db_dir, "npr.db")
     GLOBALS["datadb_file"]  = pjoin(db_dir, "data.db")
-    GLOBALS["orthodb_file"]  = pjoin(db_dir, "ortho.db") if not args.orthodb else args.orthodb
+    
     GLOBALS["seqdb_file"]  = pjoin(db_dir, "seq.db") if not args.seqdb else args.seqdb
 
     # Clear databases if necessary
@@ -420,8 +407,6 @@ def main(args):
 
         if not args.seqdb:
             silent_remove(GLOBALS["seqdb_file"])
-        if not args.orthodb:
-            silent_remove(GLOBALS["orthodb_file"])
 
         silent_remove(GLOBALS["datadb_file"])
         silent_remove(pjoin(base_dir, "nprdata.tar"))
@@ -437,9 +422,6 @@ def main(args):
         if args.clearseqs and pexist(GLOBALS["seqdb_file"]) and not args.seqdb:
             log.log(28, "Erasing existing sequence database...")
             os.remove(GLOBALS["seqdb_file"])
-        if args.clearorthology and pexist(GLOBALS["orthodb_file"]) and not args.orthodb:
-            log.log(28, "Erasing existing orthologs database...")
-            os.remove(GLOBALS["orthodb_file"])
 
     if not args.clearall and base_dir != GLOBALS["output_dir"]:
         log.log(24, "Copying previous output files to scratch directory: %s..." %base_dir)
@@ -497,78 +479,69 @@ def main(args):
         GLOBALS["seqtypes"].add("aa")
         GLOBALS["inputname"] = os.path.split(args.aa_seed_file)[-1]
 
-
     # Initialize db if necessary, otherwise extract basic info
     db.init_nprdb(GLOBALS["nprdb_file"])
     db.init_datadb(GLOBALS["datadb_file"])
 
+    # Species filter
+    if args.spfile:
+        target_species = set([line.strip() for line in open(args.spfile)])
+        target_species.discard("")
+        log.log(28, "Enabling %d species", len(target_species))
+    else:
+        target_species = None
+    
+    # Load supermatrix data
+    if WORKFLOW_TYPE == "supermatrix":
+        observed_species= set()
+        target_seqs = set()
+        for cog_number, seq_cogs in iter_cog_seqs(args.cogs_file, args.spname_delimiter):
+            for seqname, spcode, seqcode in seq_cogs:
+                if target_species is None or spcode in target_species:
+                    observed_species.add(spcode)
+                    target_seqs.add(seqname)            
+                
+        if target_species is not None:
+            if target_species - observed_species:
+                raise DataError("The following target_species could not be found in COGs file: %s" %(','.join(target_species-observed_species)))
+        else:
+            target_species = observed_species
+        log.warning("COG file restriction: %d sequences from %s species " %(len(target_seqs), len(target_species)))
+    else:
+        target_seqs = None
+
+    GLOBALS["target_species"] = target_species
+    
     # Check and load data
     ERROR = ""
     if not pexist(GLOBALS["seqdb_file"]):
-        target_seqs = None
-        target_seqs, seqnames, name2len, name2unk, name2seq = scan_sequences(args, target_seqs)
-        ERROR = check_seq_integrity(args, target_seqs, seqnames, name2len, name2unk, name2seq)
-        sp2counter = defaultdict(int)
-        if WORKFLOW_TYPE == "supermatrix":
-            for name in target_seqs:
-                spname = name.split(GLOBALS["spname_delimiter"], 1)[0]
-                sp2counter[spname] += 1
-                #seq_species = set([name.split(GLOBALS["spname_delimiter"])[0]
-                #               for name in target_seqs])
-            seq_species = set(sp2counter.keys())
-        if not ERROR:
-            db.init_seqdb(GLOBALS["seqdb_file"])
-            if WORKFLOW_TYPE == "supermatrix":
-                db.add_seq_species(sp2counter)
-            load_sequences(target_seqs, name2seq, WORKFLOW_TYPE)
-        seqnames, name2len, name2unk, name2seq = [None] * 4 # Release mem?
+        db.init_seqdb(GLOBALS["seqdb_file"])
+        seqname2seqid = None
+        if args.aa_seed_file:
+            seqname2seqid = seqio.load_sequences(args, "aa", target_seqs, target_species, seqname2seqid)
+            if not target_seqs:
+                target_seqs = list(seqname2seqid.keys())
+                
+        if args.nt_seed_file:
+            seqname2seqid = seqio.load_sequences(args, "nt", target_seqs, target_species, seqname2seqid)
+        # Integrity checks?
+        pass
+            
     else:
         db.init_seqdb(GLOBALS["seqdb_file"])
-        log.warning("Skipping check and load sequences (loading from database...)")
-        target_seqs = db.get_all_seq_names()
-
-    log.warning("%d sequences in database" %len(target_seqs))
-
-    if ERROR:
-        open(pjoin(base_dir, "error.log"), "w").write(' '.join(sys.argv) + "\n\n" + ERROR)
-        raise DataError("Errors were found while loading data. Please"
-                        " check error file for details")
-
-    if WORKFLOW_TYPE == "supermatrix":
-        if not pexist(GLOBALS["orthodb_file"]):
-             db.init_orthodb(GLOBALS["orthodb_file"])
-             all_species = set()
-             for line in open(args.cogs_file):
-                 all_species.update([n.split(args.spname_delimiter, 1)[0].strip() for n in line.split("\t")])
-             db.update_cog_species(all_species)
-             db.orthoconn.commit()
+        log.warning("Reusing sequences from existing database!")
+        if target_seqs is None:
+            seqname2seqid = db.get_seq_name_dict()
         else:
-            db.init_orthodb(GLOBALS["orthodb_file"])
-            log.warning("Skipping check and load ortholog pairs (loading from database...)")
-
-        # species in ortho pairs
-        ortho_species = db.get_ortho_species()
-        log.log(28, "Found %d unqiue species codes in ortholog-pairs" %(len(ortho_species)))
-        # species in fasta file
-        seq_species = db.get_seq_species()
-        log.log(28, "Found %d unqiue species codes in sequence names" %(len(seq_species)))
-
-        # Species filter
-        if args.spfile:
-            target_species = set([line.strip() for line in open(args.spfile)])
-            target_species.discard("")
-            log.log(28, "Enabling %d species", len(target_species))
-        else:
-            target_species = seq_species
-
-        # Check that orthologs are available for all species
-        if target_species - seq_species:
-            ERROR += "The following species have no sequence information: %s" %(target_species - seq_species)
-        if target_species - ortho_species:
-            ERROR += "The following species have no orthology information: %s" %(target_species - ortho_species)
-
-        GLOBALS["target_species"] = target_species
-
+            seqname2seqid = db.get_seq_name_dict()
+            if target_seqs - set(seqname2seqid.keys()):
+                raise DataError("The following sequence names in COGs file"
+                                " are not found in current database: %s" %(
+                                    ','.join(target_seqs - db_seqs)))
+                      
+    log.warning("%d target sequences" %len(seqname2seqid))
+    GLOBALS["target_sequences"] = seqname2seqid.values()
+        
     if ERROR:
         open(pjoin(base_dir, "error.log"), "w").write(' '.join(sys.argv) + "\n\n" + ERROR)
         raise DataError("Errors were found while loading data. Please"
@@ -598,19 +571,10 @@ def main(args):
         log.log(26, "Available levels for NPR optimization:\n%s", '\n'.join(["% 30s (%d spcs)"%x for x in avail_levels]))
         avail_levels = set([lv[0] for lv in avail_levels])
         GLOBALS["lineages"] = (sp2lin, lin2sp)
-    # if we miss lineages file, raise an error
+        
+    # if no lineages file, raise an error
     elif WORKFLOW_TYPE == "supermatrix" and TARGET_CLADES:
         raise ConfigError("The use of target_levels requires a species lineage file provided through the --lineages option")
-
-    target_seqs = None # release mem
-
-    if WORKFLOW_TYPE == "genetree":
-        if "aa" in GLOBALS["seqtypes"]:
-            GLOBALS["target_sequences"] = db.get_all_seqids("aa")
-        else:
-            GLOBALS["target_sequences"] = db.get_all_seqids("nt")
-        log.log(28, "Working on %d ids whose sequences are available", len(GLOBALS["target_sequences"]))
-
 
     # -------------------------------------
     # MISC
@@ -659,6 +623,9 @@ def main(args):
     db.close()
 
     if not thread_errors:
+        if GLOBALS.get('_background_scheduler', None):
+            GLOBALS['_background_scheduler'].terminate()
+
         if args.compress:
             log.log(28, "Compressing intermediate data...")
             cmd = "cd %s && tar --remove-files -cf nprdata.tar tasks/ && gzip -f nprdata.tar; if [ -e npr.log ]; then gzip -f npr.log; fi;" %\
@@ -669,237 +636,10 @@ def main(args):
         os.system(cmd)
         cmd = "cd %s && rm -rf input/" %GLOBALS["basedir"]
         os.system(cmd)
-
         GLOBALS["citator"].show()
     else:
         raise DataError("Errors found in some tasks")
 
-def check_and_load_orthologs(fname):
-    log.log(28, "importing orthologous pairs into database (this may take a while)...")
-    template_import = tempfile.NamedTemporaryFile()
-    template_import.write('''
-PRAGMA cache_size = 1000000;
-PRAGMA synchronous = OFF;
-PRAGMA journal_mode = OFF;
-PRAGMA locking_mode = EXCLUSIVE;
-PRAGMA temp_store = MEMORY;
-PRAGMA auto_vacuum = NONE;
-.separator "\\t"
-.import %s ortho_pair
-PRAGMA locking_mode = EXCLUSIVE;
-
-CREATE INDEX IF NOT EXISTS i7 ON ortho_pair (taxid2, seqid2, taxid1);
-CREATE INDEX IF NOT EXISTS i10 ON ortho_pair (taxid1, taxid2);
-
-PRAGMA synchronous = NORMAL;
-PRAGMA journal_mode = DELETE;
-PRAGMA locking_mode = NORMAL;
-
-''' %  fname)
-
-    template_import.flush()
-    cmd = "sqlite3 %s < %s" %(GLOBALS["orthodb_file"], template_import.name)
-    print(cmd)
-    os.system(cmd)
-    template_import.close()
-
-
-def load_sequences(target_seqs, name2seq, workflow_type):
-    if args.seq_rename:
-        name2hash, hash2name = hash_names(target_seqs)
-        log.log(28, "Loading %d sequence name translations..." %len(hash2name))
-        db.add_seq_name_table(list(hash2name.items()))
-        if workflow_type == "genetree":
-            GLOBALS["target_sequences"] = list(hash2name.keys())
-    else:
-        name2hash, hash2name = {}, {}
-
-    for seqtype in GLOBALS["seqtypes"]:
-        log.log(28, "Loading %d %s sequences..." %(len(name2seq[seqtype]), seqtype))
-        db.add_seq_table([(name2hash.get(k, k), seq) for k,seq in
-                          six.iteritems(name2seq[seqtype])], seqtype)
-    db.seqconn.commit()
-
-def scan_sequences(args, target_seqs):
-    source_seqtype = "aa" if "aa" in GLOBALS["seqtypes"] else "nt"
-    visited_seqs = {"aa":[], "nt":[]}
-    seq2length = {"aa":{}, "nt":{}}
-    seq2unknown = {"aa":{}, "nt":{}}
-    seq2seq = {"aa":{}, "nt":{}}
-    skipped_seqs = 0
-    for seqtype in ["aa", "nt"]:
-        seqfile = getattr(args, "%s_seed_file" %seqtype)
-        if not seqfile:
-            continue
-        GLOBALS["seqtypes"].add(seqtype)
-        log.log(28, "Scanning %s sequence file...", seqtype)
-        fix_dups = True if args.rename_dup_seqnames else False
-        SEQS = SeqGroup(seqfile, fix_duplicates=fix_dups, format=args.seqformat)
-        for c1, (seqid, seq) in enumerate(six.iteritems(SEQS.id2seq)):
-            if c1%10000 == 0:
-                print(c1, "\r", end=' ', file=sys.stderr)
-                sys.stderr.flush()
-
-            
-            name_match = re.search(args.seq_name_parser, SEQS.id2name[seqid])
-            if name_match:
-                seqname = name_match.groups()[0]
-            else:
-                raise ConfigError("Could not parse sequence name: %s" %SEQS.id2name[seqid])
-            
-            if target_seqs and seqname not in target_seqs:
-                skipped_seqs += 1
-                continue
-            visited_seqs[seqtype].append(seqname)
-
-            # Clear problematic symbols
-            if not args.no_seq_checks:
-                seq = seq.replace(".", "-")
-                seq = seq.replace("*", "X")
-                if seqtype == "aa":
-                    seq = seq.upper()
-                    seq = seq.replace("J", "X") # phyml fails with J
-                    seq = seq.replace("O", "X") # mafft fails with O
-                    seq = seq.replace("U", "X") # selenocysteines
-            if args.dealign:
-                seq = seq.replace("-", "").replace(".", "")
-            seq2seq[seqtype][seqname] = seq
-            seq2length[seqtype][seqname] = len(seq)
-            if not args.no_seq_checks:
-                # Load unknown symbol inconsistencies
-                if seqtype == "nt" and set(seq) - NT:
-                    seq2unknown[seqtype][seqname] = set(seq) - NT
-                elif seqtype == "aa" and set(seq) - AA:
-                    seq2unknown[seqtype][seqname] = set(seq) - AA
-
-        # Initialize target sets using aa as source
-        if not target_seqs: # and seqtype == "aa":
-            target_seqs = set(visited_seqs[source_seqtype])
-
-    if skipped_seqs:
-        log.warning("%d sequences will not be used since they are"
-                    "  not present in the aa seed file." %skipped_seqs)
-
-    return target_seqs, visited_seqs, seq2length, seq2unknown, seq2seq
-
-def check_seq_integrity(args, target_seqs, visited_seqs, seq2length, seq2unknown, seq2seq):
-    log.log(28, "Checking data consistency ...")
-    source_seqtype = "aa" if "aa" in GLOBALS["seqtypes"] else "nt"
-    error = ""
-
-    # Check for duplicate ids
-    if not args.ignore_dup_seqnames:
-        seq_number = len(set(visited_seqs[source_seqtype]))
-        if len(visited_seqs[source_seqtype]) != seq_number:
-            counter = defaultdict(int)
-            for seqname in visited_seqs[source_seqtype]:
-                counter[seqname] += 1
-            duplicates = ["%s\thas %d copies" %(key, value) for key, value in six.iteritems(counter) if value > 1]
-            error += "\nDuplicate sequence names.\n"
-            error += '\n'.join(duplicates)
-
-    # check that the seq of all targets is available
-    if target_seqs:
-        for seqtype in GLOBALS["seqtypes"]:
-            missing_seq = target_seqs - set(seq2seq[seqtype].keys())
-            if missing_seq:
-                error += "\nThe following %s sequences are missing:\n" %seqtype
-                error += '\n'.join(missing_seq)
-
-    # check for unknown characters
-    for seqtype in GLOBALS["seqtypes"]:
-        if seq2unknown[seqtype]:
-            error += "\nThe following %s sequences contain unknown symbols:\n" %seqtype
-            error += '\n'.join(["%s\tcontains:\t%s" %(k,' '.join(v)) for k,v in six.iteritems(seq2unknown[seqtype])] )
-
-    # check for aa/cds consistency
-    REAL_NT = set('ACTG')
-    if GLOBALS["seqtypes"] == set(["aa", "nt"]):
-        inconsistent_cds = set()
-        for seqname, ntlen in six.iteritems(seq2length["nt"]):
-            if seqname in seq2length["aa"]:
-                aa_len = seq2length["aa"][seqname]
-                if ntlen / 3.0 != aa_len:
-                    inconsistent_cds.add("%s\tExpected:%d\tFound:%d" %\
-                                         (seqname,
-                                         aa_len*3,
-                                         ntlen))
-                else:
-                    if not args.no_seq_checks:
-                        for i, aa in enumerate(seq2seq["aa"][seqname]):
-                            codon = seq2seq["nt"][seqname][i*3:(i*3)+3]
-                            if not (set(codon) - REAL_NT):
-                                if GENCODE[codon] != aa:
-                                    log.warning('@@2:Unmatching codon in seq:%s, aa pos:%s (%s != %s)@@1: Use --no-seq-checks to skip' %(seqname, i, codon, aa))
-                                    inconsistent_cds.add('Unmatching codon in seq:%s, aa pos:%s (%s != %s)' %(seqname, i, codon, aa))
-
-        if inconsistent_cds:
-            error += "\nUnexpected coding sequence length for the following ids:\n"
-            error += '\n'.join(inconsistent_cds)
-
-    # Show some stats
-    all_len = list(seq2length[source_seqtype].values())
-    max_len = _max(all_len)
-    min_len = _min(all_len)
-    mean_len = _mean(all_len)
-    std_len = _std(all_len)
-    outliers = []
-    for v in all_len:
-        if abs(mean_len - v) >  (3 * std_len):
-            outliers.append(v)
-    log.log(28, "Total sequences:  %d" %len(all_len))
-    log.log(28, "Average sequence length: %d +- %0.1f " %(mean_len, std_len))
-    log.log(28, "Max sequence length:  %d" %max_len)
-    log.log(28, "Min sequence length:  %d" %min_len)
-
-    if outliers:
-        log.warning("%d sequence lengths look like outliers" %len(outliers))
-
-    return error
-
-def hash_names(target_names):
-    """Given a set of strings of variable lengths, it returns their
-    conversion to fixed and safe hash-strings.
-    """
-    # An example of hash name collision
-    #test= ['4558_15418', '9600_21104', '7222_13002', '3847_37647', '412133_16266']
-    #hash_names(test)
-
-    log.log(28, "Generating safe sequence names...")
-    hash2name = defaultdict(list)
-    for c1, name in enumerate(target_names):
-        print(c1, "\r", end=' ', file=sys.stderr)
-        sys.stderr.flush()
-        hash_name = encode_seqname(name)
-        hash2name[hash_name].append(name)
-
-    collisions = [(k,v) for k,v in six.iteritems(hash2name) if len(v)>1]
-    #GLOBALS["name_collisions"] = {}
-    if collisions:
-        visited = set(hash2name.keys())
-        for old_hash, coliding_names in collisions:
-            logindent(2)
-            log.log(20, "Collision found when hash-encoding the following gene names: %s", coliding_names)
-            niter = 1
-            valid = False
-            while not valid or len(new_hashes) < len(coliding_names):
-                niter += 1
-                new_hashes = defaultdict(list)
-                for name in coliding_names:
-                    hash_name = encode_seqname(name*niter)
-                    new_hashes[hash_name].append(name)
-                valid = set(new_hashes.keys()).isdisjoint(visited)
-
-            log.log(20, "Fixed with %d concatenations! %s", niter, ', '.join(['%s=%s' %(e[1][0], e[0]) for e in  six.iteritems(new_hashes)]))
-            del hash2name[old_hash]
-            hash2name.update(new_hashes)
-            #GLOBALS["name_collisions"].update([(_name, _code) for _code, _name in new_hashes.iteritems()])
-            logindent(-2)
-    #collisions = [(k,v) for k,v in hash2name.iteritems() if len(v)>1]
-    #log.log(28, "Final collisions %s", collisions )
-    hash2name = dict([(k, v[0]) for  k,v in six.iteritems(hash2name)])
-    name2hash = dict([(v, k) for  k,v in six.iteritems(hash2name)])
-    return name2hash, hash2name
 
 
 def _main():
@@ -1048,11 +788,10 @@ def _main():
                              help="Initial multi sequence file with"
                              " nucleotide sequences")
 
-
-    input_group.add_argument("--seqformat", dest="seqformat",
-                             choices=["fasta", "phylip", "iphylip", "phylip_relaxed", "iphylip_relaxed"],
-                             default="fasta",
-                             help="")
+    # input_group.add_argument("--seqformat", dest="seqformat",
+    #                          choices=["fasta", "phylip", "iphylip", "phylip_relaxed", "iphylip_relaxed"],
+    #                          default="fasta",
+    #                          help="")
 
     input_group.add_argument("--dealign", dest="dealign",
                              action="store_true",
@@ -1079,6 +818,9 @@ def _main():
     input_group.add_argument("--no-seq-checks", dest="no_seq_checks",
                             action="store_true",
                             help="Skip consistency sequence checks for not allowed symbols, etc.")
+    input_group.add_argument("--no-seq-correct", dest="no_seq_correct",
+                            action="store_true",
+                            help="Skip sequence compatibility changes: i.e. U, J and O symbols are converted into X by default.")
 
     dup_names_group = input_group.add_mutually_exclusive_group()
 
@@ -1093,9 +835,6 @@ def _main():
                                        " fasta file, duplicates will be renamed."))
 
 
-    input_group.add_argument("--orthodb", dest="orthodb",
-                             type=str,
-                             help="Uses a custom orthology-pair database file")
 
     input_group.add_argument("--seqdb", dest="seqdb",
                              type=str,
@@ -1123,7 +862,7 @@ def _main():
 
     input_group.add_argument("--spname-delimiter", dest="spname_delimiter",
                              type=str, default="_",
-                             help="In supermatrix mode, spname_delimiter is used to split"
+                             help="spname_delimiter is used to split"
                              " the name of sequences into species code and"
                              " sequence identifier (i.e. HUMAN_p53 = HUMAN, p53)."
                              " Note that species name must always precede seq.identifier.")
@@ -1212,7 +951,7 @@ def _main():
                             help="""How often (in secs) tasks should be checked for available results.""")
 
     exec_group.add_argument("--launch-time", dest="launch_time",
-                            type=float, default=5,
+                            type=float, default=3,
                             help="""How often (in secs) queued jobs should be checked for launching""")
 
     exec_type_group = exec_group.add_mutually_exclusive_group()
@@ -1250,9 +989,6 @@ def _main():
                             action="store_true",
                             help="Clear all precomputed data (data.db), but keeps task raw data in the directory, so they can be re-processed.")
 
-    exec_group.add_argument("--clear-orthodb", dest="clearorthology",
-                            action="store_true",
-                            help="Reload orthologous group information.")
 
     exec_group.add_argument("--clear-seqdb", dest="clearseqs",
                             action="store_true",

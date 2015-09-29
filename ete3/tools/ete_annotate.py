@@ -68,7 +68,7 @@ def run(args):
             aname, asource, amultiple, acast = None, None, False, str
             for field in annotation:
                 try:
-                    key, value = list(map(str.strip, field.split(":")))
+                    key, value = [_f.strip() for _f in field.split(":")]
                 except Exception:
                     raise ValueError("Invalid feature option [%s]" %field )
 
@@ -96,7 +96,7 @@ def run(args):
                 line = line.strip()
                 if not line or line.startswith('#'):
                     continue
-                nodenames, attr_value = list(map(str.strip, line.split('\t')))
+                nodenames, attr_value = [_ln.strip() for _ln in line.split('\t')]
                 nodenames = list(map(str.strip, nodenames.split(',')))
                 relaxed_grouping = True
                 if nodenames[0].startswith('!'):

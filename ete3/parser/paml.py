@@ -111,7 +111,7 @@ def read_paml (source, obj=None, header_delimiter="\t", fix_duplicates=True):
 
             seq_id += 1
             # Takes header info
-            seq_header_fields = list(map(str.strip, line.split(header_delimiter)))
+            seq_header_fields = [_f.strip() for _f in line.split(header_delimiter)]
             seq_name = seq_header_fields[0]
 
             # Checks for duplicated seq names

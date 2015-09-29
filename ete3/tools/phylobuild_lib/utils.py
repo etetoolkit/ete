@@ -49,7 +49,7 @@ from os.path import exists as pexist
 import os
 import socket
 import string
-from .getch import Getch
+
 import random
 import hashlib
 import logging
@@ -61,6 +61,9 @@ from glob import glob
 import six
 from six.moves import range
 from six.moves import input
+
+from .getch import Getch
+from .errors import DataError
 
 try:
     import numpy
@@ -661,4 +664,20 @@ def colorify(string, color):
 def clear_color(string):
     return re.sub("\\033\[[^m]+m", "", string)
 
-
+    
+def iter_cog_seqs(cogs_file, spname_delimiter):
+    cog_id = 0
+    for line in open(cogs_file):
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        cog_id += 1
+        seq_cogs = []
+        for seqname in [_ln.strip() for _ln in line.split('\t')]:
+            try:
+                spcode, seqcode = [_f.strip() for _f in seqname.split(spname_delimiter, 1)]
+            except ValueError:
+                raise DataError("Invalid sequence name in COGs file: %s" %seqname)
+            else:
+                seq_cogs.append((seqname, spcode, seqcode))
+        yield cog_id, seq_cogs

@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -38,6 +36,9 @@ from __future__ import print_function
 #
 #
 # #END_LICENSE#############################################################
+from __future__ import absolute_import
+from __future__ import print_function
+
 from six import StringIO
 import six.moves.cPickle
 from collections import defaultdict
@@ -49,8 +50,8 @@ log = logging.getLogger("main")
 
 from ..master_task import CogSelectorTask
 from ..errors import DataError, TaskError
-from ..utils import (GLOBALS, print_as_table, generate_node_ids,
-                                             encode_seqname, md5, pjoin, _min, _max, _mean, _median, _std)
+from ..utils import (GLOBALS, print_as_table, generate_node_ids, encode_seqname,
+                     md5, pjoin, _min, _max, _mean, _median, _std, iter_cog_seqs)
 from .. import db
 
 __all__ = ["CogSelector"]
@@ -119,10 +120,12 @@ class CogSelector(CogSelectorTask):
         smallest_cog, largest_cog = len(all_species), 0
         all_singletons = []
         sp2cogs = defaultdict(int)
-        for cognumber, cog in enumerate(open(GLOBALS["cogs_file"])):
+
+        for cognumber, seq_cogs in iter_cog_seqs(GLOBALS["cogs_file"], GLOBALS["spname_delimiter"]):
             sp2seqs = defaultdict(list)
-            for sp, seqid in [list(map(str.strip, seq.split(GLOBALS["spname_delimiter"], 1))) for seq in cog.split("\t")]:
-                sp2seqs[sp].append(seqid)
+            for seqname, spcode, seqcode in seq_cogs:
+                sp2seqs[spcode].append(seqcode)
+                
             one2one_cog = set()
             for sp, seqs in six.iteritems(sp2seqs):
                 #if len(seqs) != 1:
@@ -130,6 +133,7 @@ class CogSelector(CogSelectorTask):
                 if sp in all_species and len(seqs) == 1:
                     sp2cogs[sp] += 1
                     one2one_cog.add((sp, seqs[0]))
+                    
             smallest_cog = min(smallest_cog, len(one2one_cog))
             largest_cog = max(largest_cog, len(one2one_cog))
             all_singletons.append(one2one_cog)
@@ -138,7 +142,6 @@ class CogSelector(CogSelectorTask):
 
         cognumber += 1 # sets the ammount of cogs in file
         for sp, ncogs in sorted(list(sp2cogs.items()), key=lambda x: x[1], reverse=True):
-
             log.log(28, "% 20s  found in single copy in  % 6d (%0.1f%%) COGs " %(sp, ncogs, 100 * ncogs/float(cognumber)))
 
         valid_cogs = sorted([sing for sing in all_singletons if len(sing) >= min_species],
@@ -163,7 +166,7 @@ class CogSelector(CogSelectorTask):
             co_names = ["%s%s%s" %(sp, GLOBALS["spname_delimiter"], seq) for sp, seq in co]
             encoded_names = db.translate_names(co_names)
             if len(encoded_names) != len(co):
-                print(set(co) - set(encoded_names.keys()))
+                print(set(co_names) - set(encoded_names.keys()))
                 raise DataError("Some sequence ids could not be translated")
             self.cogs.append(list(encoded_names.values()))
 

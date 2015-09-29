@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -38,6 +36,8 @@ from __future__ import print_function
 #
 #
 # #END_LICENSE#############################################################
+from __future__ import absolute_import
+from __future__ import print_function
 
 import os
 import string
@@ -77,10 +77,10 @@ def read_fasta(source, obj=None, header_delimiter="\t", fix_duplicates=True):
             # Checks if previous name had seq
             if seq_id>-1 and SC.id2seq[seq_id] == "":
                 raise Exception("No sequence found for "+seq_name)
-
+            
             seq_id += 1
             # Takes header info
-            seq_header_fields = list(map(str.strip, line[1:].split(header_delimiter)))
+            seq_header_fields = [_f.strip() for _f in line[1:].split(header_delimiter)]
             seq_name = seq_header_fields[0]
 
             # Checks for duplicated seq names
