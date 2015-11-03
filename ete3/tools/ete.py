@@ -101,6 +101,14 @@ def main():
             print(__version__)
             return
         elif subcommand == "upgrade-external-tools":
+            import tarfile
+            try:
+                from urllib import urlretrieve
+            except ImportError:
+                # python 3
+                from urllib.request import urlretrieve
+
+            
             APPSPATH = os.path.expanduser("~/.etetoolkit/ext_apps-latest/")
             ETEHOMEDIR = os.path.expanduser("~/.etetoolkit/")
             
@@ -112,8 +120,6 @@ def main():
                 # if not, try a user local copy
                 APPSPATH = pjoin(ETEHOMEDIR, 'ext_apps-latest')
 
-            import urllib
-            import tarfile
             print (colorify('Downloading latest version of tools...', "green"), file=sys.stderr)
 
             if len(sys.argv) > 2:
@@ -134,7 +140,7 @@ def main():
                     pass
 
             version_file = "latest.tar.gz"
-            urllib.urlretrieve("https://github.com/jhcepas/ext_apps/archive/%s" %version_file, pjoin(TARGET_DIR, version_file))
+            urlretrieve("https://github.com/jhcepas/ext_apps/archive/%s" %version_file, pjoin(TARGET_DIR, version_file))
             print(colorify('Decompressing...', "green"), file=sys.stderr)
             tfile = tarfile.open(pjoin(TARGET_DIR, version_file), 'r:gz')
             tfile.extractall(TARGET_DIR)
