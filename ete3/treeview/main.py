@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -38,6 +36,9 @@ from __future__ import print_function
 #
 #
 # #END_LICENSE#############################################################
+from __future__ import absolute_import
+from __future__ import print_function
+
 import colorsys
 import random
 import re
@@ -105,11 +106,10 @@ class _Border(object):
             r = item.boundingRect()
             border = QGraphicsRectItem(r)
             border.setParentItem(item)
-            pen = QPen()
+            pen = QPen(QColor(self.color))
             set_pen_style(pen, self.type)
             pen.setWidth(self.width)
             pen.setCapStyle(QtCore.Qt.FlatCap)
-            pen.setColor(QColor(self.color))
             border.setPen(pen)
             return border
         else:
