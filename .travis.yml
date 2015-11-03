@@ -34,6 +34,7 @@ before_script:
   - "sh -e /etc/init.d/xvfb start"
   - sleep 2 # give xvfb some time to start
   - ete3 version
+  - mkdir -p ~/.etetoolkit/
   - ete3 upgrade-external-tools ~/.etetoolkit/
   
 # command to run tests, e.g. python setup.py test
