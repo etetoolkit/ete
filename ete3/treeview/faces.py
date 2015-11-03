@@ -1580,7 +1580,7 @@ class SequenceItem(QGraphicsRectItem):
         x, y = 0, 0
         qfont = QFont("Courier")
         current_pixel = 0
-        blackPen = QPen("black")
+        blackPen = QPen(QColor("black"))
         for letter in self.seq:
             if x >= current_pixel:
                 if self.draw_text and self.poswidth >= 8:
