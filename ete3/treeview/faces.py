@@ -244,7 +244,7 @@ class TextFace(Face):
     worse aligned text faces but improving the performance of tree
     visualization in scenes with a lot of text faces.
     """
-    __slots__ = ["fgcolor", "fstyle", "fsize", "text", "ftype", "penwidth",
+    __slots__ = ["fgcolor", "fstyle", "fsize", "ftype", "penwidth",
                  "tight_text", "_text", "_bounding_rect", "_real_rect"]
     
     def __init__(self, text, ftype="Verdana", fsize=10,
