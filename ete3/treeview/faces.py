@@ -178,7 +178,11 @@ class Face(object):
     See also specific options for each face type.
 
     """
-
+    __slots__ = ["margin_left", "margin_right", "margin_top", "margin_bottom",
+                 "pixmap", "opacity", "rotable", "rotable", "hz_align",
+                 "vt_align", "background", "border", "inner_border",
+                 "inner_background", "rotation", "node", "type"]
+    
     def __init__(self):
         self.node        = None
         self.type = "pixmap" # pixmap, text or item
@@ -240,7 +244,27 @@ class TextFace(Face):
     worse aligned text faces but improving the performance of tree
     visualization in scenes with a lot of text faces.
     """
+    __slots__ = ["fgcolor", "fstyle", "fsize", "text", "ftype", "penwidth",
+                 "tight_text", "_text", "_bounding_rect", "_real_rect"]
+    
+    def __init__(self, text, ftype="Verdana", fsize=10,
+                 fgcolor="black", penwidth=0, fstyle="normal",
+                 tight_text=False):
+        self._text = str(text)
+        self._bounding_rect = None
+        self._real_rect = None
 
+        Face.__init__(self)
+        self.pixmap = None
+        self.type = "text"
+        self.fgcolor = fgcolor
+        self.ftype = ftype
+        self.fsize = fsize
+        self.fstyle = fstyle
+        self.penwidth = penwidth
+        self.tight_text = tight_text
+
+    
     def __repr__(self):
         return "Text Face [%s] (%s)" %(self._text, hex(self.__hash__()))
 
@@ -281,22 +305,6 @@ class TextFace(Face):
         return self._bounding_rect
 
     text = property(_get_text, _set_text)
-    def __init__(self, text, ftype="Verdana", fsize=10,
-                 fgcolor="black", penwidth=0, fstyle="normal",
-                 tight_text=False):
-        self._text = str(text)
-        self._bounding_rect = None
-        self._real_rect = None
-
-        Face.__init__(self)
-        self.pixmap = None
-        self.type = "text"
-        self.fgcolor = fgcolor
-        self.ftype = ftype
-        self.fsize = fsize
-        self.fstyle = fstyle
-        self.penwidth = penwidth
-        self.tight_text = tight_text
 
     def _get_font(self):
         font = QFont(self.ftype, self.fsize)
@@ -333,6 +341,8 @@ class AttrFace(TextFace):
     :param fstyle: "normal" or "italic"
     """
 
+    __slots__ = ["attr", "text_suffix", "text_prefix", "attr_formatter", "_bounding_rect_text"]
+    
     def __repr__(self):
         return "Attribute Face [%s] (%s)" %(self.attr, hex(self.__hash__()))
 
