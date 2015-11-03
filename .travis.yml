@@ -34,12 +34,13 @@ before_script:
   - "sh -e /etc/init.d/xvfb start"
   - sleep 2 # give xvfb some time to start
   - ete3 version
-
+  - ete3 upgrade-external-tools ~/.etetoolkit/
+  
 # command to run tests, e.g. python setup.py test
 script: 
   #  - if [[ $TRAVIS_PYTHON_VERSION == 2.6 ]]; then cd test/ && coverage run test_all.py; else cd test/ && coverage run test_all.py && coverage run -a test_treeview.py; fi
   - python -m ete3.test.test_all;
-
+  
 #The email defaults are too talkative while we're getting Travis working nicely.
 notifications:
   email: false
