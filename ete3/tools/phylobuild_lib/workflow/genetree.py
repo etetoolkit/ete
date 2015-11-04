@@ -346,7 +346,7 @@ def process_task(task, wkname, npr_conf, nodeid2info):
                 alg_phylip_file = "%s.%s" %(taskid, DATATYPES.alg_nt_phylip)
                 try:
                     alg_fasta_file = db.get_dataid(taskid, DATATYPES.alg_nt_fasta)
-                    alg_fasta_file = db.get_dataid(taskid, DATATYPES.alg_nt_phylip)
+                    alg_phylip_file = db.get_dataid(taskid, DATATYPES.alg_nt_phylip)
                 except ValueError:
                     log.log(22, "Calculating codon alignment...")
 
