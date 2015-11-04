@@ -101,6 +101,7 @@ def annotate_node(t, final_task):
                            tree_cmd=params,
                            tree_path=task.tree_file,
                            tree_constrain=task.constrain_tree,
+                           tree_phylip_alg=task.alg_phylip_file,
                            npr_iter=npr_iter)
         elif task.ttype == "mchooser":
             n.add_features(modeltester_models=task.models,
@@ -386,12 +387,14 @@ def process_task(task, wkname, npr_conf, nodeid2info):
         if treebuilderclass:
             alg_fasta_file = task.alg_fasta_file
             alg_phylip_file = task.alg_phylip_file
-            model = task.best_model
+            model = task.best_model            
             tree_task = treebuilderclass(nodeid, alg_phylip_file,
                                          constrain_id,
                                          model, seqtype,
                                          conf, treebuilderconf)
             tree_task.size = task.size
+            if task.seqtype != seqtype:
+                tree_task.alg_phylip_file = task.alg_phylip_file
             new_tasks.append(tree_task)
 
     elif ttype == "tree":
@@ -401,7 +404,7 @@ def process_task(task, wkname, npr_conf, nodeid2info):
             #    treemerge_task = TreeSplitterWithOutgroups(nodeid, seqtype, task.tree_file, main_tree, conf)
             #else:
             #    treemerge_task = TreeSplitter(nodeid, seqtype, task.tree_file, main_tree, conf)
-
+            
         treemerge_task.size = task.size
         new_tasks.append(treemerge_task)
 

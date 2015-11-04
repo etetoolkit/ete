@@ -397,6 +397,18 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
                     main_tree.write(outfile=final_tree_file+ ".nwx", features=[],
                                     format_root_node=True)
 
+                    if hasattr(main_tree, "tree_phylip_alg"):
+                        log.log(28, "Writing final tree alignment @@13:%s@@1:\n   %s",
+                                threadname, final_tree_file+".used_alg.fa")
+
+                        alg = SeqGroup(get_stored_data(main_tree.tree_phylip_alg), format="iphylip_relaxed")
+                        OUT = open(final_tree_file+".used_alg.fa", "w")
+                        for name, seq, comments in alg:
+                            realname = db.get_seq_name(name)
+                            print(">%s\n%s" %(realname, seq), file=OUT)
+                        OUT.close()
+
+                    
                     if hasattr(main_tree, "alg_path"):
                         log.log(28, "Writing root node alignment @@13:%s@@1:\n   %s",
                                 threadname, final_tree_file+".fa")
