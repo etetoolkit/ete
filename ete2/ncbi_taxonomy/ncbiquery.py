@@ -294,7 +294,12 @@ class NCBITaxa(object):
                 descendants[tid] = descendants.get(tid, 0) + 1
             elif found == 2:
                 break
-                
+            
+        if not found:
+            raise ValueError("taxid not found: %s" %taxid)
+        elif found == 1:
+            return [tid]
+        
         if rank_limit or collapse_subspecies or return_tree:
             tree = self.get_topology(descendants.keys(), intermediate_nodes=intermediate_nodes, collapse_subspecies=collapse_subspecies, rank_limit=rank_limit)
             if return_tree:
