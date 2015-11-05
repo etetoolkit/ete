@@ -103,11 +103,14 @@ class _Border(object):
             r = item.boundingRect()
             border = QGraphicsRectItem(r)
             border.setParentItem(item)
-            pen = QPen()
+            if self.color:
+                pen = QPen(QColor(self.color))
+            else:
+                pen = QPen(QtCore.Qt.NoPen)
+
             set_pen_style(pen, self.type)
             pen.setWidth(self.width)
             pen.setCapStyle(QtCore.Qt.FlatCap)
-            pen.setColor(QColor(self.color))
             border.setPen(pen)
             return border
         else:

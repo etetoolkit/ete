@@ -814,7 +814,7 @@ class ProfileFace(Face):
                 mean1 = self.fit_to_scale( mean_vector[pos]        )
                 # Set heatmap color
                 if not isfinite(mean1):
-                    customColor = QColor("black")
+                    customColor = QColor(QColor("black"))
                 elif mean1>self.center_v:
                     color_index = abs(int(ceil(((self.center_v-mean1)*100)/(self.max_value-self.center_v))))
                     customColor = colors[100 + color_index]
