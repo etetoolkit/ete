@@ -1860,8 +1860,8 @@ class TreeNode(object):
                         # in rooted trees, we want to discount the root edge
                         # from the percentage of congruence. Otherwise we will never see a 0%
                         # congruence for totally different trees
-                        ref_found_in_src = (len(common_edges)-1)/float(len(valid_ref_edges)-1) if valid_ref_edges else None
-                        src_found_in_ref = (len(common_edges)-1)/float(len(valid_src_edges)-1) if valid_src_edges else None
+                        ref_found_in_src = (len(common_edges)-1)/float(len(valid_ref_edges)-1) if len(valid_ref_edges)>1 else None
+                        src_found_in_ref = (len(common_edges)-1)/float(len(valid_src_edges)-1) if len(valid_src_edges)>1 else None
                         
                     if ref_found_in_src is not None:
                         ref_found.append(ref_found_in_src)
@@ -1901,8 +1901,8 @@ class TreeNode(object):
                 # in rooted trees, we want to discount the root edge from the
                 # percentage of congruence. Otherwise we will never see a 0%
                 # congruence for totally different trees
-                result["ref_edges_in_source"] = (len(common_edges)-1)/float(len(valid_ref_edges)-1) if valid_ref_edges else "NA"
-                result["source_edges_in_ref"] = (len(common_edges)-1)/float(len(valid_src_edges)-1) if valid_src_edges else "NA"
+                result["ref_edges_in_source"] = (len(common_edges)-1)/float(len(valid_ref_edges)-1) if len(valid_ref_edges)>1 else "NA"
+                result["source_edges_in_ref"] = (len(common_edges)-1)/float(len(valid_src_edges)-1) if len(valid_src_edges)>1 else "NA"
 
             result["effective_tree_size"] = ncommon
             result["norm_rf"] = total_rf/float(max_rf) if max_rf else "NA"

@@ -812,6 +812,21 @@ class Test_Coretype_Tree(unittest.TestCase):
         s1 = Tree('(((A, B)0.9, (C, D))0.9, (E,F)0.9);')
 
 
+        small = Tree("((A, B), C);")
+        # RF unrooted in too small trees for rf, but with at least one internal node
+        self.assertEqual(_astuple(small.compare(ref1, unrooted=True)),
+                         ("NA", "NA", 0.0, 1.0, 1.0, 3, 1, "NA"))
+
+        small = Tree("(A, B);")
+        # RF unrooted in too small trees
+        self.assertEqual(_astuple(small.compare(ref1, unrooted=True)),
+                         ("NA", "NA", 0.0, "NA", "NA", 2, 1, "NA"))
+        
+        small = Tree("(A, B);")
+        # RF unrooted in too small trees
+        self.assertEqual(_astuple(small.compare(ref1, unrooted=False)),
+                         ("NA", "NA", 0.0, "NA", "NA", 2, 1, "NA"))
+        
         # identical trees, 8 rooted partitions in total (4 an 4), and 6 unrooted
         self.assertEqual(_astuple(s1.compare(ref1)),
                          (0.0, 0.0, 8, 1.0, 1.0, 6, 1, "NA"))

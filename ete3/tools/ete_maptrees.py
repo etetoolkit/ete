@@ -65,9 +65,7 @@ def populate_args(maptrees_args_p):
                               action = "store_true",
                               help="activates the TreeKO mode: duplication aware comparisons")
 
-    # Output options
-    
-    
+    # Output options    
     maptrees_args.add_argument("--image", dest="image",
                               type=str,
                               help="activates the TreeKO duplication aware comparison method")
@@ -92,7 +90,6 @@ def populate_args(maptrees_args_p):
                               help=("min support for branches to be considered from the source tree"))
 
     
-
 def get_branches(tree, min_support=None, target_attr="name"):
     branches = []
     node2content = tree.get_cached_content()
