@@ -97,8 +97,7 @@ def get_branches(tree, min_support=None, target_attr="name"):
     for node in tree.traverse("preorder"):
         if not node.is_leaf():
             if len(node.children) != 2:
-                raise ValueError('multifurcations and single child branches not supported')
-                
+                raise ValueError('multifurcations and single child branches not supported')                
             b1 = set([getattr(_c, target_attr) for _c in node2content[node.children[0]]])
             b2 = set([getattr(_c, target_attr) for _c in node2content[node.children[1]]])
             branches.append([node, b1, b2])
@@ -268,7 +267,7 @@ def run(args):
         if args.taboutput:
             print('#'+'\t'.join(header))
             for row in data:
-                print('\t'.join([str(v) for v in row]))
+                print('\t'.join([str(v) for v in row]))               
         else:
             print()
             print_table(data, header=header)

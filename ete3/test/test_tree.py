@@ -867,7 +867,6 @@ class Test_Coretype_Tree(unittest.TestCase):
         self.assertEqual(_astuple(s2.compare(ref1, unrooted=True)),
                          (4/6., 4, 6, 6/8., 6/8., 6, 1, "NA"))
 
-
         # lets discard one branch from source tree.  there are 4 valid edges in
         # ref, 3 in source there is only 2 edges in common, CD and root (which
         # should be discounted for % of found branches)

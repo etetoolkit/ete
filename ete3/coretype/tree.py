@@ -1784,7 +1784,7 @@ class TreeNode(object):
                                                                                             min_support_t1=min_support_ref)
 
             # if trees share leaves, count their distances
-            if common > 0 and src_p and ref_p:
+            if len(common) > 0 and src_p and ref_p:
 
                 if unrooted:
                     valid_ref_edges = set([p for p in (ref_p - ref_disc) if len(p[0])>1 and len(p[1])>0])
