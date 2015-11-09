@@ -75,20 +75,6 @@ def ete_codeml(args):
 
 """
 
-def tree_iterator(args):
-    print (1)
-    if not args.src_trees and not sys.stdin.isatty():
-        log.debug("Reading trees from standard input...")
-        args.src_trees = sys.stdin
-    elif args.src_trees:
-        for stree in args.src_trees:
-            # CHECK WHAT is needed before process the main command, allows mods before analyses
-            yield stree.strip()
-    elif args.src_tree_list:
-        for line in open(args.src_tree_list):
-            yield line.strip()
-            
-
 def main():
 
     if len(sys.argv) > 1:
@@ -217,10 +203,9 @@ def main():
     args = parser.parse_args()
 
     LOG_LEVEL = args.verbosity
-    if hasattr(args, "src_trees") or hasattr(args, "src_tree_list"):
-        args.src_tree_iterator = tree_iterator(args)
+  
 
-    elif args.func==ete_ncbiquery.run and not getattr(args, "search", None):
+    if args.func==ete_ncbiquery.run and not getattr(args, "search", None):
         if not args.search and not sys.stdin.isatty():
             log.debug("Reading taxa from standard input...")
             args.search = sys.stdin
