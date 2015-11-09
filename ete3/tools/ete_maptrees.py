@@ -58,32 +58,40 @@ DESC = """
 
 """
 
-def populate_args(compare_args_p):
-    compare_args = compare_args_p.add_argument_group("COMPARE GENERAL OPTIONS")
+def populate_args(maptrees_args_p):
+    maptrees_args = maptrees_args_p.add_argument_group("COMPARE GENERAL OPTIONS")
 
-    compare_args.add_argument("--treeko", dest="treeko",
+    maptrees_args.add_argument("--treeko", dest="treeko",
                               action = "store_true",
                               help="activates the TreeKO mode: duplication aware comparisons")
 
     # Output options
     
     
-    compare_args.add_argument("--image", dest="image",
+    maptrees_args.add_argument("--image", dest="image",
                               type=str,
                               help="activates the TreeKO duplication aware comparison method")
 
-    compare_args.add_argument("--outtree", dest="outtree",
+    maptrees_args.add_argument("--outtree", dest="outtree",
                               type=str, 
                               help="output results as an annotated reference tree ")
 
-    compare_args.add_argument("--tab", dest="taboutput",
+    maptrees_args.add_argument("--tab", dest="taboutput",
                               action = "store_true",
                               help="output results in tab delimited format")
     
-    compare_args.add_argument("--dump_matches", dest="dump_matches",
+    maptrees_args.add_argument("--dump_matches", dest="dump_matches",
                               type=str,
                               help="dump the branches from source trees matching each branch in the reference trees")
 
+    maptrees_args.add_argument("--min_support_ref",
+                              type=float, default=0.0,
+                              help=("min support for branches to be considered from the ref tree"))
+    maptrees_args.add_argument("--min_support_src",
+                              type=float, default=0.0,
+                              help=("min support for branches to be considered from the source tree"))
+
+    
 
 def get_branches(tree, min_support=None, target_attr="name"):
     branches = []
@@ -188,11 +196,9 @@ def run(args):
                     for rbranch, matches in map_branches(reftree_branches,
                                                        srctree_branches, reftree_species, srctree_species):
                         
-                        refnodes[rbranch].append(len(matches))
-                        
+                        refnodes[rbranch].append(len(matches))                        
                         if args.dump_matches and len(matches):
                             refnode2matches[rbranch].extend(matches)
-                        
                         
                 for rbranch, support in refnodes.items():
                     refnode2supports[rbranch].append(numpy.mean(support))

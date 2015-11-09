@@ -814,60 +814,60 @@ class Test_Coretype_Tree(unittest.TestCase):
 
         # identical trees, 8 rooted partitions in total (4 an 4), and 6 unrooted
         self.assertEqual(_astuple(s1.compare(ref1)),
-                         (0.0, 0.0, 8, 1.0, 1.0, 6, 1, -1))
+                         (0.0, 0.0, 8, 1.0, 1.0, 6, 1, "NA"))
 
         self.assertEqual(_astuple(s1.compare(ref1, unrooted=True)),
-                         (0.0, 0.0, 6, 1.0, 1.0, 6, 1, -1))
+                         (0.0, 0.0, 6, 1.0, 1.0, 6, 1, "NA"))
 
         # The same stats should be return discarding branches, as the topology
         # is still identical, but branches used should be different
         self.assertEqual(_astuple(s1.compare(ref1, min_support_source=0.99, min_support_ref=.99)),
-                         (0.0, 0.0, 2, 1.0, 1.0, 6, 1, -1))
+                         (0.0, 0.0, 2, 1.0, 1.0, 6, 1, "NA"))
 
         self.assertEqual(_astuple(s1.compare(ref1, min_support_source=0.99, min_support_ref=.99, unrooted=True)),
-                         (0.0, 0.0, 2, 1.0, 1.0, 6, 1, -1))
+                         (0.0, 0.0, 2, 1.0, 1.0, 6, 1, "NA"))
 
 
         self.assertEqual(_astuple(s1.compare(ref1, min_support_source=0.99)),
-                         (0.0, 0.0, 5, 1/4., 1.0, 6, 1, -1))
+                         (0.0, 0.0, 5, 1/4., 1.0, 6, 1, "NA"))
 
 
         self.assertEqual(_astuple(s1.compare(ref1, min_support_source=0.99, unrooted=True)),
-                         (0.0, 0.0, 4, 6/8., 1.0, 6, 1, -1))
+                         (0.0, 0.0, 4, 6/8., 1.0, 6, 1, "NA"))
 
 
         self.assertEqual(_astuple(s1.compare(ref1, min_support_ref=0.99)),
-                         (0.0, 0.0, 5, 1.0, 1/4., 6, 1, -1))
+                         (0.0, 0.0, 5, 1.0, 1/4., 6, 1, "NA"))
 
 
         self.assertEqual(_astuple(s1.compare(ref1, min_support_ref=0.99, unrooted=True)),
-                         (0.0, 0.0, 4, 1.0, 6/8., 6, 1, -1))
+                         (0.0, 0.0, 4, 1.0, 6/8., 6, 1, "NA"))
 
 
         # Three partitions different
         s2 = Tree('(((A, E)0.9, (C, D))0.98, (B,F)0.95);')
         self.assertEqual(_astuple(s2.compare(ref1)),
-                         (6/8., 6, 8, 1/4., 1/4., 6, 1, -1))
+                         (6/8., 6, 8, 1/4., 1/4., 6, 1, "NA"))
 
         self.assertEqual(_astuple(s2.compare(ref1, unrooted=True)),
-                         (4/6., 4, 6, 6/8., 6/8., 6, 1, -1))
+                         (4/6., 4, 6, 6/8., 6/8., 6, 1, "NA"))
 
 
         # lets discard one branch from source tree.  there are 4 valid edges in
         # ref, 3 in source there is only 2 edges in common, CD and root (which
         # should be discounted for % of found branches)
         self.assertEqual(_astuple(s2.compare(ref1, min_support_source=0.95)),
-                         (5/7., 5, 7, 1/4., 1/3., 6, 1, -1))
+                         (5/7., 5, 7, 1/4., 1/3., 6, 1, "NA"))
 
         # similar in unrooted, but we don not need to discount root edges
         self.assertEqual(_astuple(s2.compare(ref1, min_support_source=0.95, unrooted=True)),
-                         (3/5., 3, 5, 6/8., 6/7., 6, 1, -1))
+                         (3/5., 3, 5, 6/8., 6/7., 6, 1, "NA"))
 
 
         # totally different trees
         s3 = Tree('(((A, C)0.9, (E, D))0.98, (B,F)0.95);')
         self.assertEqual(_astuple(s3.compare(ref1)),
-                         (1.0, 8, 8, 0.0, 0.0, 6, 1, -1))
+                         (1.0, 8, 8, 0.0, 0.0, 6, 1, "NA"))
 
 
     def test_tree_diff(self):

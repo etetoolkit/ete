@@ -1836,7 +1836,7 @@ class TreeNode(object):
                     subtree = source_tree.__class__(subtree_nw, sp_naming_function = source_tree._speciesFunction)
                     if not subtree.children:
                         continue
-                    print (subtree)
+
                     # only necessary if rf function is going to filter by support
                     # value.  It slows downs the analysis, obviously, as it has to
                     # find the support for each node in the treeko tree from the
@@ -1848,7 +1848,7 @@ class TreeNode(object):
                                 n.support = source_tree.get_common_ancestor(subtree_content[n]).support
 
                     total_rf, max_rf, ncommon, valid_ref_edges, valid_src_edges, common_edges = _compare(subtree, ref_tree)
-                    print (total_rf, max_rf, ncommon, valid_ref_edges, valid_src_edges, common_edges)
+
                     all_rf.append(total_rf)
                     all_max_rf.append(max_rf)
                     tree_sizes.append(ncommon)
