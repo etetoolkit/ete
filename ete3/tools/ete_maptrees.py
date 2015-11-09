@@ -269,7 +269,9 @@ def run(args):
             rtree.render(args.image, tree_style=ts)
                         
         if args.taboutput:
-            print('\n'.join(['\t'.join(str(d)) for d in data]))
+            print('#'+'\t'.join(header))
+            for row in data:
+                print('\t'.join([str(v) for v in row]))
         else:
             print()
             print_table(data, header=header)
