@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -37,7 +36,10 @@ from __future__ import absolute_import
 #
 #
 # #END_LICENSE#############################################################
-from .common import dump
+from __future__ import absolute_import
+from __future__ import print_function
+
+from .common import dump, src_tree_iterator
 
 DESC = ""
 
@@ -92,7 +94,7 @@ def populate_args(mod_args_p):
 def run(args):
     from .. import Tree
 
-    for nw in args.src_tree_iterator:
+    for nw in src_tree_iterator(args):
         t = Tree(nw)
         mod_tree(t, args)
         dump(t)

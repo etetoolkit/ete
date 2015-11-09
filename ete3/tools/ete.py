@@ -51,7 +51,8 @@ TOOLSPATH = os.path.realpath(os.path.split(os.path.realpath(__file__))[0])
 #print sys.path
 
 import argparse
-from . import ete_split, ete_expand, ete_annotate, ete_ncbiquery, ete_view, ete_generate, ete_mod, ete_extract, ete_compare, ete_codeml
+from . import (ete_split, ete_expand, ete_annotate, ete_ncbiquery, ete_view,
+               ete_generate, ete_mod, ete_extract, ete_compare, ete_codeml, ete_maptrees)
 from . import common
 from .common import log
 from .utils import colorify
@@ -75,17 +76,18 @@ def ete_codeml(args):
 """
 
 def tree_iterator(args):
+    print (1)
     if not args.src_trees and not sys.stdin.isatty():
         log.debug("Reading trees from standard input...")
         args.src_trees = sys.stdin
-    elif not args.src_trees:
-        log.error("At least one tree is required as input (i.e --src_trees ) ")
-        sys.exit(-1)
-
-    for stree in args.src_trees:
-        # CHECK WHAT is needed before process the main command, allows mods before analyses
-        yield stree.strip()
-
+    elif args.src_trees:
+        for stree in args.src_trees:
+            # CHECK WHAT is needed before process the main command, allows mods before analyses
+            yield stree.strip()
+    elif args.src_tree_list:
+        for line in open(args.src_tree_list):
+            yield line.strip()
+            
 
 def main():
 
@@ -192,6 +194,13 @@ def main():
                                        description=ete_codeml.DESC)
     codeml_args_p.set_defaults(func=ete_codeml.run)
     ete_codeml.populate_args(codeml_args_p)
+
+    # - MAPTREES -
+    maptrees_args_p = subparser.add_parser("maptrees", parents=[source_args_p, ref_args_p, main_args_p],
+                                       description=ete_maptrees.DESC)
+    maptrees_args_p.set_defaults(func=ete_maptrees.run)
+    ete_maptrees.populate_args(maptrees_args_p)
+
     
     # - build -
     generate_args_p = subparser.add_parser("build")
@@ -208,7 +217,7 @@ def main():
     args = parser.parse_args()
 
     LOG_LEVEL = args.verbosity
-    if hasattr(args, "src_trees"):
+    if hasattr(args, "src_trees") or hasattr(args, "src_tree_list"):
         args.src_tree_iterator = tree_iterator(args)
 
     elif args.func==ete_ncbiquery.run and not getattr(args, "search", None):

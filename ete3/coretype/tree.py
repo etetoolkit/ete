@@ -1862,7 +1862,6 @@ class TreeNode(object):
                     src_found.append(src_found_in_ref)
 
                 if all_rf:
-
                     # Treeko speciation distance
                     alld = [_safe_div(all_rf[i], float(all_max_rf[i])) for i in range(len(all_rf))]
                     a = sum([alld[i] * tree_sizes[i] for i in range(len(all_rf))])

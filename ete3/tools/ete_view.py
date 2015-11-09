@@ -44,7 +44,7 @@ import re
 import colorsys
 from collections import defaultdict
 
-from .common import log, POSNAMES, node_matcher
+from .common import log, POSNAMES, node_matcher, src_tree_iterator
 from .. import (Tree, PhyloTree, TextFace, RectFace, faces, TreeStyle,
                 add_face_to_node, random_color)
 from six.moves import map
@@ -203,13 +203,13 @@ def populate_args(view_args_p):
 
 def run(args):
     if args.text_mode:
-        for tindex, tfile in enumerate(args.src_tree_iterator):
+        for tindex, tfile in enumerate(src_tree_iterator(args)):
             #print tfile
             if args.raxml:
                 nw = re.sub(":(\d+\.\d+)\[(\d+)\]", ":\\1[&&NHX:support=\\2]", open(tfile).read())
-                t = Tree(nw, format=args.newick_format)
+                t = Tree(nw, format=args.src_newick_format)
             else:
-                t = Tree(tfile, format=args.newick_format)
+                t = Tree(tfile, format=args.src_newick_format)
 
             print(t.get_ascii(show_internal=args.show_internal_names,
                               attributes=args.show_attributes))
@@ -269,13 +269,13 @@ def run(args):
         ts.force_topology = True
     ts.layout_fn = lambda x: None
 
-    for tindex, tfile in enumerate(args.src_tree_iterator):
+    for tindex, tfile in enumerate(src_tree_iterator(args)):
         #print tfile
         if args.raxml:
             nw = re.sub(":(\d+\.\d+)\[(\d+)\]", ":\\1[&&NHX:support=\\2]", open(tfile).read())
-            t = PhyloTree(nw, format=args.newick_format)
+            t = PhyloTree(nw, format=args.src_newick_format)
         else:
-            t = PhyloTree(tfile, format=args.newick_format)
+            t = PhyloTree(tfile, format=args.src_newick_format)
 
 
         if args.alg:
