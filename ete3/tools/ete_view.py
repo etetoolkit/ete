@@ -45,7 +45,7 @@ import colorsys
 from collections import defaultdict
 
 from .common import log, POSNAMES, node_matcher, src_tree_iterator
-from .. import (Tree, PhyloTree, TextFace, RectFace, faces, TreeStyle,
+from .. import (Tree, PhyloTree, TextFace, RectFace, faces, TreeStyle, CircleFace, AttrFace,
                 add_face_to_node, random_color)
 from six.moves import map
 
@@ -567,3 +567,19 @@ def parse_faces(face_args):
                 raise ValueError("unknown keyword in face options: %s" %clause )
         faces.append(face)
     return faces
+
+def maptrees_layout(node):
+    node.img_style["size"] = 0
+    if getattr(node, "maptrees_support", "NA") != "NA":
+        f = CircleFace(radius=float(node.maptrees_support)/10, color="blue", style="sphere")        
+        f.opacity = 0.5
+        add_face_to_node(f, node, column=1, position="float")       
+        add_face_to_node(AttrFace("maptrees_support"), node, column=1, position="branch-top")
+        
+    if getattr(node, "maptrees_treeko_support", "NA") != "NA":
+        add_face_to_node(f, node, column=1, position="float")       
+        add_face_to_node(AttrFace("maptrees_treeko_support"), node, column=1, position="branch-bottom")
+
+
+
+
