@@ -89,8 +89,11 @@ def populate_args(maptrees_args_p):
                               type=float, default=0.0,
                               help=("min support for branches to be considered from the source tree"))
 
+    maptrees_args.add_argument("--consensus",
+                              type=float, default=0.0,
+                              help=(""))
     
-def get_branches(tree, min_support=None, target_attr="name"):
+def get_splits(tree, min_support=None, target_attr="name"):
     branches = []
     node2content = tree.get_cached_content()
     all_species = set([_n.name for _n in node2content[tree]])
@@ -141,7 +144,7 @@ def map_branches(ref_branches, source_branches, ref_species, src_species):
                 pass
 
         yield refnode, matches
-                
+               
     
 def run(args):
     if args.treeko:
@@ -164,7 +167,7 @@ def run(args):
             ref_tree_attr = 'name'                        
 
         refnode2supports = defaultdict(list)
-        reftree_species, reftree_branches = get_branches(rtree, target_attr=ref_tree_attr)    
+        reftree_species, reftree_branches = get_splits(rtree, target_attr=ref_tree_attr)    
 
         for stree_name in src_tree_iterator(args):
             refnode2matches = defaultdict(list)
@@ -188,7 +191,7 @@ def run(args):
                 refnodes = defaultdict(list)
                 for subnw in sp_trees:                   
                     subtree = tree_class(subnw)
-                    srctree_species, srctree_branches = get_branches(subtree, target_attr=src_tree_attr)
+                    srctree_species, srctree_branches = get_splits(subtree, target_attr=src_tree_attr)
                     for rbranch, matches in map_branches(reftree_branches,
                                                        srctree_branches, reftree_species, srctree_species):
                         
@@ -200,11 +203,10 @@ def run(args):
                     refnode2supports[rbranch].append(numpy.mean(support))
                         
             else:
-                stree_branches = get_branches(stree, target_attr=src_tree_attr)
-                srctree_species, srctree_branches = get_branches(stree)    
+                stree_branches = get_splits(stree, target_attr=src_tree_attr)
+                srctree_species, srctree_branches = get_splits(stree)    
                 for rbranch, matches in map_branches(reftree_branches, srctree_branches, reftree_species, srctree_species):
-                    refnode2supports[rbranch].append(len(matches))
-                    
+                    refnode2supports[rbranch].append(len(matches))                    
                     if args.dump_matches and len(matches):
                         refnode2matches[rbranch].extend(matches)
 

@@ -1785,7 +1785,6 @@ class TreeNode(object):
 
             # if trees share leaves, count their distances
             if len(common) > 0 and src_p and ref_p:
-
                 if unrooted:
                     valid_ref_edges = set([p for p in (ref_p - ref_disc) if len(p[0])>1 and len(p[1])>0])
                     valid_src_edges = set([p for p in (src_p - src_disc) if len(p[0])>1 and len(p[1])>0])
