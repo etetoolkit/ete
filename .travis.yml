@@ -43,7 +43,7 @@ script:
   - coverage run -m ete3.test.test_all
 
 after_success:
-    coveralls
+  - coveralls
   
 #The email defaults are too talkative while we're getting Travis working nicely.
 notifications:
