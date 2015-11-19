@@ -5,3 +5,6 @@ build
 doc/_build/
 dist/
 *.egg-info
+ete3/version.py
+test.png
+test.svg
