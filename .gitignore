@@ -8,3 +8,4 @@ dist/
 ete3/version.py
 test.png
 test.svg
+testdb.sqlite*
