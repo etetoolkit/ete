@@ -51,7 +51,7 @@ TOOLSPATH = os.path.realpath(os.path.split(os.path.realpath(__file__))[0])
 #print sys.path
 
 import argparse
-from . import ete_split, ete_expand, ete_annotate, ete_ncbiquery, ete_view, ete_generate, ete_mod, ete_extract, ete_compare, ete_codeml
+from . import ete_split, ete_expand, ete_annotate, ete_ncbiquery, ete_view, ete_generate, ete_mod, ete_extract, ete_compare, ete_evol
 from . import common
 from .common import log
 from .utils import colorify
@@ -70,7 +70,7 @@ def ete_reconcile(args):
 def ete_consense(args):
     # all observed splits
 def ete_fetch(args):
-def ete_codeml(args):
+def ete_evol(args):
 
 """
 
@@ -187,11 +187,11 @@ def main():
     generate_args_p.set_defaults(func=ete_generate.run)
     ete_generate.populate_args(generate_args_p)
 
-    # - CODEML -
-    codeml_args_p = subparser.add_parser("codeml", parents=[main_args_p],
-                                       description=ete_codeml.DESC)
-    codeml_args_p.set_defaults(func=ete_codeml.run)
-    ete_codeml.populate_args(codeml_args_p)
+    # - EVOL -
+    evol_args_p = subparser.add_parser("evol", parents=[source_args_p, main_args_p],
+                                       description=ete_evol.DESC)
+    evol_args_p.set_defaults(func=ete_evol.run)
+    ete_evol.populate_args(evol_args_p)
     
     # - build -
     generate_args_p = subparser.add_parser("build")
