@@ -1621,7 +1621,7 @@ class TreeNode(object):
         """
         ref_t = self
         target_t = t2
-        if not unrooted_trees and (len(ref_t.children) != 2 or len(target_t.children) != 2):
+        if not unrooted_trees and (len(ref_t.children) > 2 or len(target_t.children) > 2):
             raise TreeError("Unrooted tree found! You may want to activate the unrooted_trees flag.")
 
         if expand_polytomies and correct_by_polytomy_size:
@@ -1784,16 +1784,17 @@ class TreeNode(object):
                                                                                             min_support_t1=min_support_ref)
 
             # if trees share leaves, count their distances
-            if maxrf > 0 and src_p and ref_p:
+            if len(common) > 0 and src_p and ref_p:
                 if unrooted:
                     valid_ref_edges = set([p for p in (ref_p - ref_disc) if len(p[0])>1 and len(p[1])>0])
                     valid_src_edges = set([p for p in (src_p - src_disc) if len(p[0])>1 and len(p[1])>0])
                     common_edges = valid_ref_edges & valid_src_edges
                 else:
+                    
                     valid_ref_edges = set([p for p in (ref_p - ref_disc) if len(p)>1])
                     valid_src_edges = set([p for p in (src_p - src_disc) if len(p)>1])
                     common_edges = valid_ref_edges & valid_src_edges
-
+                    
             else:
                 valid_ref_edges = set()
                 valid_src_edges = set()
@@ -1817,7 +1818,7 @@ class TreeNode(object):
             orig_target_size = len(source_tree)
             ntrees, ndups, sp_trees = source_tree.get_speciation_trees(
                 autodetect_duplications=True, newick_only=True,
-                target_attr=source_tree_attr, map_features=[source_tree_attr])
+                target_attr=source_tree_attr, map_features=[source_tree_attr, "support"])
 
             if ntrees < max_treeko_splits_to_be_artifact:
                 all_rf = []
@@ -1828,9 +1829,12 @@ class TreeNode(object):
                 common_names = 0
 
                 for subtree_nw in sp_trees:
+
                     #if seedid and not use_collateral and (seedid not in subtree_nw):
                     #    continue
                     subtree = source_tree.__class__(subtree_nw, sp_naming_function = source_tree._speciesFunction)
+                    if not subtree.children:
+                        continue
 
                     # only necessary if rf function is going to filter by support
                     # value.  It slows downs the analysis, obviously, as it has to
@@ -1849,20 +1853,22 @@ class TreeNode(object):
                     tree_sizes.append(ncommon)
 
                     if unrooted:
-                        ref_found_in_src = len(common_edges)/float(len(valid_ref_edges)) if valid_ref_edges else -1
-                        src_found_in_ref = len(common_edges)/float(len(valid_src_edges)) if valid_src_edges else -1
+                        ref_found_in_src = len(common_edges)/float(len(valid_ref_edges)) if valid_ref_edges else None
+                        src_found_in_ref = len(common_edges)/float(len(valid_src_edges)) if valid_src_edges else None
                     else:
                         # in rooted trees, we want to discount the root edge
                         # from the percentage of congruence. Otherwise we will never see a 0%
                         # congruence for totally different trees
-                        ref_found_in_src = (len(common_edges)-1)/float(len(valid_ref_edges)-1) if valid_ref_edges else -1
-                        src_found_in_ref = (len(common_edges)-1)/float(len(valid_src_edges)-1) if valid_src_edges else -1
-
-                    ref_found.append(ref_found_in_src)
-                    src_found.append(src_found_in_ref)
+                        ref_found_in_src = (len(common_edges)-1)/float(len(valid_ref_edges)-1) if len(valid_ref_edges)>1 else None
+                        src_found_in_ref = (len(common_edges)-1)/float(len(valid_src_edges)-1) if len(valid_src_edges)>1 else None
+                        
+                    if ref_found_in_src is not None:
+                        ref_found.append(ref_found_in_src)
+                        
+                    if src_found_in_ref is not None:
+                        src_found.append(src_found_in_ref)
 
                 if all_rf:
-
                     # Treeko speciation distance
                     alld = [_safe_div(all_rf[i], float(all_max_rf[i])) for i in range(len(all_rf))]
                     a = sum([alld[i] * tree_sizes[i] for i in range(len(all_rf))])
@@ -1874,8 +1880,10 @@ class TreeNode(object):
                     result["max_rf"] = max(all_max_rf)
                     result["effective_tree_size"] = utils.mean(tree_sizes)
                     result["norm_rf"] = utils.mean([_safe_div(all_rf[i], float(all_max_rf[i])) for i in range(len(all_rf))])
+
                     result["ref_edges_in_source"] = utils.mean(ref_found)
                     result["source_edges_in_ref"] = utils.mean(src_found)
+                    
                     result["source_subtrees"] = len(all_rf)
                     result["common_edges"] = set()
                     result["source_edges"] = set()
@@ -1883,21 +1891,21 @@ class TreeNode(object):
         else:
             total_rf, max_rf, ncommon, valid_ref_edges, valid_src_edges, common_edges = _compare(source_tree, ref_tree)
 
-            result["rf"] = float(total_rf)
+            result["rf"] = float(total_rf) if max_rf else "NA"
             result["max_rf"] = float(max_rf)
             if unrooted:
-                result["ref_edges_in_source"] = len(common_edges)/float(len(valid_ref_edges)) if valid_ref_edges else -1
-                result["source_edges_in_ref"] = len(common_edges)/float(len(valid_src_edges)) if valid_src_edges else -1
+                result["ref_edges_in_source"] = len(common_edges)/float(len(valid_ref_edges)) if valid_ref_edges else "NA"
+                result["source_edges_in_ref"] = len(common_edges)/float(len(valid_src_edges)) if valid_src_edges else "NA"
             else:
                 # in rooted trees, we want to discount the root edge from the
                 # percentage of congruence. Otherwise we will never see a 0%
                 # congruence for totally different trees
-                result["ref_edges_in_source"] = (len(common_edges)-1)/float(len(valid_ref_edges)-1) if valid_ref_edges else -1
-                result["source_edges_in_ref"] = (len(common_edges)-1)/float(len(valid_src_edges)-1) if valid_src_edges else -1
+                result["ref_edges_in_source"] = (len(common_edges)-1)/float(len(valid_ref_edges)-1) if len(valid_ref_edges)>1 else "NA"
+                result["source_edges_in_ref"] = (len(common_edges)-1)/float(len(valid_src_edges)-1) if len(valid_src_edges)>1 else "NA"
 
             result["effective_tree_size"] = ncommon
-            result["norm_rf"] = total_rf/float(max_rf) if max_rf else -1
-            result["treeko_dist"] = -1
+            result["norm_rf"] = total_rf/float(max_rf) if max_rf else "NA"
+            result["treeko_dist"] = "NA"
             result["source_subtrees"] = 1
             result["common_edges"] = common_edges
             result["source_edges"] = valid_src_edges

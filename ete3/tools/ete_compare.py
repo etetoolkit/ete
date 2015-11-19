@@ -38,7 +38,9 @@
 # #END_LICENSE#############################################################
 from __future__ import absolute_import
 from __future__ import print_function
-from .common import as_str, shorten_str
+
+from .common import as_str, shorten_str, src_tree_iterator, ref_tree_iterator
+
 import re
 from six.moves import map
 
@@ -129,8 +131,8 @@ def run(args):
     else:
         tree_class = Tree
 
-    for stree_name in args.src_tree_iterator:
-        stree = tree_class(stree_name, format=args.newick_format)
+    for stree_name in src_tree_iterator(args):
+        stree = tree_class(stree_name, format=args.src_newick_format)
 
         # Parses attrs if necessary
         src_tree_attr = args.src_tree_attr
@@ -140,8 +142,8 @@ def run(args):
                     args.src_attr_parser, getattr(leaf, args.src_tree_attr)).groups()[0])
             src_tree_attr = 'tempattr'
 
-        for rtree_name in args.ref_trees:
-            rtree = tree_class(rtree_name, format=args.newick_format)
+        for rtree_name in ref_tree_iterator(args):
+            rtree = tree_class(rtree_name, format=args.ref_newick_format)
 
             # Parses attrs if necessary
             ref_tree_attr = args.ref_tree_attr
@@ -180,8 +182,8 @@ def run(args):
                     for tag, part in [("src: %s"%stree_name, src), ("ref: %s"%rtree_name, ref)]:
                         print("%s\t%s" %(tag, '\t'.join([','.join(p) for p in part])))
             else:
-                data = [shorten_str(stree_name,25),
-                        shorten_str(rtree_name,25),
+                data = [shorten_str(stree_name, 25),
+                        shorten_str(rtree_name, 25),
                         r['effective_tree_size'],
                         r['norm_rf'],
                         r['rf'], r['max_rf'],
@@ -197,7 +199,7 @@ def run(args):
                 if args.taboutput:
                     print('\t'.join(map(str, data)))
                 else:
-                    print_table([map(as_str, data)],
+                    print_table([list(map(as_str, data))],
                                 fix_col_width = col_sizes, wrap_style='cut')
 
 

@@ -24,10 +24,11 @@ install:
     - conda info -a
     
     # Replace dep1 dep2 ... with your dependencies
-    - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION pip pyqt numpy six lxml
+    - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION pip pyqt numpy six lxml coverage
+    #- pip install coveralls
     - source activate test-environment
     - python setup.py install --donottrackinstall
-      
+        
 before_script:
   - python --version
   - "export DISPLAY=:99.0"
@@ -39,8 +40,10 @@ before_script:
   
 # command to run tests, e.g. python setup.py test
 script: 
-  #  - if [[ $TRAVIS_PYTHON_VERSION == 2.6 ]]; then cd test/ && coverage run test_all.py; else cd test/ && coverage run test_all.py && coverage run -a test_treeview.py; fi
-  - python -m ete3.test.test_all
+  - coverage run -m ete3.test.test_all
+
+after_success:
+  - coveralls
   
 #The email defaults are too talkative while we're getting Travis working nicely.
 notifications:

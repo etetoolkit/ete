@@ -37,7 +37,7 @@ from __future__ import absolute_import
 #
 #
 # #END_LICENSE#############################################################
-from .common import dump
+from .common import dump, src_tree_iterator
 from six.moves import map
 
 DESC = ""
@@ -53,7 +53,7 @@ def run(args):
     from .. import Tree, PhyloTree
 
     features = set()
-    for nw in args.src_tree_iterator:
+    for nw in src_tree_iterator(args):
         if args.ncbi:
             tree = PhyloTree(nw)
             features.update(["taxid", "name", "rank", "bgcolor", "sci_name",

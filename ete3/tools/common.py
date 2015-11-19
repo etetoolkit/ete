@@ -171,18 +171,18 @@ def populate_main_args(main_args_p):
                             type=str,
                             help="""Base output file name""")
 
-    main_args.add_argument('--format', dest='newick_format', type=int, default=0)
 
-    main_args.add_argument('--features', dest='output_features', type=str, nargs="+", default=[])
 
-    main_args.add_argument("--nocolor", dest="nocolor",
-                           action="store_true",
-                           help="If enabled, it will NOT use colors when logging")
+    #main_args.add_argument('--features', dest='output_features', type=str, nargs="+", default=[])
+
+    #main_args.add_argument("--nocolor", dest="nocolor",
+    #                       action="store_true",
+    #                       help="If enabled, it will NOT use colors when logging")
 
     main_args.add_argument("-v", dest="verbosity",
                            type=int, choices= [0, 1, 2, 3, 4], default=2,
                            help=("Verbosity level: 0=totally quite, 1=errors only,"
-                           " 2=warning+errors, 3=info,warnings and errors 4=debug "))
+                           " 2=warning+errors, 3=info+warnings+errors 4=debug "))
 
 def populate_source_args(source_args_p):
     source_args = source_args_p.add_argument_group('SOURCE TREES')
@@ -192,7 +192,7 @@ def populate_source_args(source_args_p):
                              help=("a list of trees in newick format (filenames or"
                              " quoted strings)"))
 
-    source_args.add_argument("--src_file", dest="src_file",
+    source_args.add_argument("--src_tree_list", dest="src_tree_list",
                              type=str,
                              help=("path to a file containing many source trees, one per line"))
 
@@ -202,8 +202,10 @@ def populate_source_args(source_args_p):
 
     source_args.add_argument("--src_attr_parser", dest="src_attr_parser",
                              type=str,
-                           help=("Perl regular expression wrapping the portion of the target attribute that should be used."))
+                             help=("Perl regular expression wrapping the portion of the target attribute that should be used."))
 
+    source_args.add_argument('--src_tree_format', dest='src_newick_format', type=int, default=0)
+    
 def populate_ref_args(ref_args_p):
     ref_args = ref_args_p.add_argument_group('REFERENCE TREES')
 
@@ -224,4 +226,28 @@ def populate_ref_args(ref_args_p):
                            type=str,
                            help=("Perl regular expression wrapping the portion of the target attribute that should be used."))
 
+    ref_args.add_argument('--ref_tree_format', dest='ref_newick_format', type=int, default=0)
+    
 
+def src_tree_iterator(args):
+    if not args.src_trees and not sys.stdin.isatty():
+        log.debug("Reading trees from standard input...")
+        args.src_trees = sys.stdin
+    elif args.src_trees:
+        for stree in args.src_trees:
+            yield stree.strip()
+    elif args.src_tree_list:
+        for line in open(args.src_tree_list):
+            line = line.strip()
+            if line: 
+                yield line
+
+def ref_tree_iterator(args):
+    if args.ref_trees:
+        for stree in args.ref_trees:            
+            yield stree
+    elif args.ref_tree_list:
+        for line in open(args.ref_tree_list):
+            line = line.strip()
+            if line: 
+                yield line

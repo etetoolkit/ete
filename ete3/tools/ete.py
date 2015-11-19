@@ -51,7 +51,8 @@ TOOLSPATH = os.path.realpath(os.path.split(os.path.realpath(__file__))[0])
 #print sys.path
 
 import argparse
-from . import ete_split, ete_expand, ete_annotate, ete_ncbiquery, ete_view, ete_generate, ete_mod, ete_extract, ete_compare, ete_evol
+from . import (ete_split, ete_expand, ete_annotate, ete_ncbiquery, ete_view,
+               ete_generate, ete_mod, ete_extract, ete_compare, ete_codeml, ete_maptrees)
 from . import common
 from .common import log
 from .utils import colorify
@@ -192,6 +193,13 @@ def main():
                                        description=ete_evol.DESC)
     evol_args_p.set_defaults(func=ete_evol.run)
     ete_evol.populate_args(evol_args_p)
+
+    # - MAPTREES -
+    maptrees_args_p = subparser.add_parser("maptrees", parents=[source_args_p, ref_args_p, main_args_p],
+                                       description=ete_maptrees.DESC)
+    maptrees_args_p.set_defaults(func=ete_maptrees.run)
+    ete_maptrees.populate_args(maptrees_args_p)
+
     
     # - build -
     generate_args_p = subparser.add_parser("build")

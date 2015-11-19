@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -38,7 +36,15 @@ from __future__ import print_function
 #
 #
 # #END_LICENSE#############################################################
+
+from __future__ import absolute_import
+from __future__ import print_function
+
+from .common import src_tree_iterator
+
 DESC = ""
+
+
 
 def populate_args(extract_args_p):
     extract_args = extract_args_p.add_argument_group('TREE EDIT OPTIONS')
@@ -53,7 +59,7 @@ def populate_args(extract_args_p):
 
 def run(args):
     from .. import Tree, PhyloTree
-    for nw in args.src_tree_iterator:
+    for nw in src_tree_iterator(args):
         if args.orthologs is not None:
             t = PhyloTree(nw)
             for e in t.get_descendant_evol_events():
