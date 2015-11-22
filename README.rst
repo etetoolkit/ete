@@ -18,7 +18,7 @@ visualization of phylogenetic trees. Clustering trees or any
 other tree-like data structure are also supported. 
 
 ETE is currently developed as a tool for researchers working in phylogenetics
-and genomics. ETE offers specialized tools to reconstruct, compare and visualize
+and genomics. ETE provides specialized tools to reconstruct, compare and visualize
 phylogenetic trees. If you use ETE for a published work, please cite:
 
 ::
