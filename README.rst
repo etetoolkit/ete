@@ -1,7 +1,6 @@
 README
 =======
 
-
 .. image:: https://travis-ci.org/jhcepas/ete.svg?branch=master
    :target: https://travis-ci.org/jhcepas/ete
 
@@ -31,12 +30,11 @@ phylogenetic trees. If you use ETE for a published work, please cite:
 - The official web site of ETE is http://etetoolkit.org
 - News and announcements are usually posted on twitter: http://twitter.com/etetoolkit
 
-Examples
+Gallery
 -----------
   
-..
-   .. image:: https://raw.githubusercontent.com/jhcepas/ete/master/sdoc/gallery.png
-              
+.. image:: https://raw.githubusercontent.com/jhcepas/ete/master/sdoc/gallery.png
+   :width: 600
   
 
 Contributing and BUG report

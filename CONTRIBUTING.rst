@@ -1,8 +1,8 @@
 CONTRIBUTING
 =========================
 
-CURRENT VERSION
-========================
+Development status
+---------------------
 
 Current stable version is ETE v2.3, which supports Python 2 only. Source code is in
 the following branch: https://github.com/jhcepas/ete/tree/2.3
@@ -12,14 +12,14 @@ ETE v3.0 is the development branch and should support Python 2.7 and Python
 development. Problems are still expected. The module name for ETE v3.0 has
 changed form "ete2" to "ete3". Both versions (ETE v2.3 and ETE v3.0) can co-exist.
 
-BUGS and FEATURE REQUESTS
+BUGs and Feature Request
 ---------------------------------
 
 The preferred way to report a problem or request/disccuss new features is by
 opening a new issue at http://github.com/jhcepas/ete/issues.  (Please, make sure
 there is no other issues pointing to the same topic)
 
-PULL REQUESTS (either code or documentation)
+Pull Requests (either code or documentation)
 ------------------------------------------------
 
 Contributions to the main code, unit-tests and documentation are very
