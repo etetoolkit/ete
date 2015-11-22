@@ -1,4 +1,4 @@
-CONTRIBUTING
+Contributing to ETE
 =========================
 
 Development status

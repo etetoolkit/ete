@@ -26,8 +26,12 @@ phylogenetic trees. If you use ETE for a published work, please cite:
   Jaime Huerta-Cepas, Joaquín Dopazo and Toni Gabaldón. ETE: a python
   Environment for Tree Exploration. BMC Bioinformatics 2010, 11:24.
 
+Install and Documentation
+-----------------------------
 
-- The official web site of ETE is http://etetoolkit.org
+- The official web site of ETE is http://etetoolkit.org. Download instructions and
+documentation can be found there.
+
 - News and announcements are usually posted on twitter: http://twitter.com/etetoolkit
 
 Gallery
@@ -37,8 +41,8 @@ Gallery
    :width: 600
   
 
-Contributing and BUG report
-------------------------------
+Contributing and BUG reporting
+---------------------------------
 https://github.com/jhcepas/ete/blob/master/CONTRIBUTING.rst
 
 
