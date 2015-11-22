@@ -39,6 +39,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+import sys
 import re
 from collections import defaultdict 
 import numpy
@@ -82,28 +83,39 @@ def populate_args(maptrees_args_p):
                               type=str,
                               help="dump the branches from source trees matching each branch in the reference trees")
 
-    maptrees_args.add_argument("--min_support_ref",
-                              type=float, default=0.0,
-                              help=("min support for branches to be considered from the ref tree"))
     maptrees_args.add_argument("--min_support_src",
                               type=float, default=0.0,
                               help=("min support for branches to be considered from the source tree"))
 
-    maptrees_args.add_argument("--consensus",
-                              type=float, default=0.0,
-                              help=(""))
-    
-def get_splits(tree, min_support=None, target_attr="name"):
+    maptrees_args.add_argument("--discard_incomplete", dest="discard_incomplete",
+                               action="store_true",
+                               help=("discard source trees missing any reference species"))
+
+    maptrees_args.add_argument("--discard-root", dest="discard_root",
+                               action="store_true",
+                               help=(""))
+
+def get_splits(tree, min_support=None, target_attr="name", discard_root=False, ignore_multifurcations=False, target_species=None):
     branches = []
     node2content = tree.get_cached_content()
-    all_species = set([_n.name for _n in node2content[tree]])
+    all_species = set([getattr(_n, target_attr) for _n in node2content[tree]])
     for node in tree.traverse("preorder"):
+        if discard_root and node is tree:
+            continue
         if not node.is_leaf():
             if len(node.children) != 2:
-                raise ValueError('multifurcations and single child branches not supported')                
+                if ignore_multifurcations:
+                    continue
+                else:
+                    raise ValueError('multifurcations and single child branches not supported')
+
             b1 = set([getattr(_c, target_attr) for _c in node2content[node.children[0]]])
             b2 = set([getattr(_c, target_attr) for _c in node2content[node.children[1]]])
-            branches.append([node, b1, b2])
+            if target_species:
+                b1 = b1 & target_species
+                b2 = b2 & target_species
+            if b1 and b2:
+                branches.append([node, b1, b2])
     return all_species, branches
 
 def map_branches(ref_branches, source_branches, ref_species, src_species):   
@@ -113,8 +125,8 @@ def map_branches(ref_branches, source_branches, ref_species, src_species):
         if not (r1 & src_species) or not (r2 & src_species):
             continue
         
-        # Now we scan branches from the sources trees and we add one
-        # supporting point to every observed split that coincides with a
+        # Now we scan branches from the source trees and we add one
+        # supporting point for every observed split that coincides with a
         # reference tree split. This is, that seqs in one side and seqs on
         # the other side of the observed split matches a ref_tree branch
         # without having extra seqs in any of the sides. However, we allow
@@ -144,8 +156,21 @@ def map_branches(ref_branches, source_branches, ref_species, src_species):
                 pass
 
         yield refnode, matches
-               
-    
+              
+
+def map_dup_and_losses(reftree, source_branches, ref_leaves):    
+    for srcnode, s1, s2 in source_branches:
+        all_sp = s1 | s2
+        if len(all_sp) == 1: 
+            refnode = ref_leaves[list(all_sp)[0]]
+        else:
+            refnode = reftree.get_common_ancestor([ref_leaves[sp] for sp in all_sp])
+        isdup = 1 if s1 & s2 else 0
+        # if isdup:
+        #     print(isdup, srcnode, refnode)
+        #     raw_input()
+        yield srcnode, refnode, isdup
+        
 def run(args):
     if args.treeko:
         from .. import PhyloTree
@@ -160,18 +185,25 @@ def run(args):
         # Parses attrs if necessary
         ref_tree_attr = args.ref_tree_attr
         if args.ref_attr_parser:
-            for leaf in rtree:
+            for leaf in rtree:                
                 leaf.add_feature('_tempattr', re.search(args.ref_attr_parser, getattr(leaf, args.ref_tree_attr)).groups()[0])
             ref_tree_attr = '_tempattr'
         else:
-            ref_tree_attr = 'name'                        
-
+            ref_tree_attr = args.ref_tree_attr                        
+        
+        ref_leaves = dict([(getattr(_n, ref_tree_attr), _n) for _n in rtree])
         refnode2supports = defaultdict(list)
-        reftree_species, reftree_branches = get_splits(rtree, target_attr=ref_tree_attr)    
+        reftree_species, reftree_branches = get_splits(rtree, target_attr=ref_tree_attr, ignore_multifurcations=True)
 
-        for stree_name in src_tree_iterator(args):
+        refnode2visited = defaultdict(int)
+        refnode2dups = defaultdict(list)
+        refnode2losses = defaultdict(list)
+        trees_scanned = 0
+        for stree_count, stree_name in enumerate(src_tree_iterator(args)):
+            print ("\r%s" %stree_count, end="", file=sys.stderr)
+            sys.stderr.flush()
             refnode2matches = defaultdict(list)
-                    
+
             stree = tree_class(stree_name, format=args.ref_newick_format)
             # Parses attrs if necessary
             src_tree_attr = args.src_tree_attr
@@ -180,36 +212,64 @@ def run(args):
                     leaf.add_feature('name', re.search(
                         args.src_attr_parser, getattr(leaf, args.src_tree_attr)).groups()[0])
                 src_tree_attr = 'name'
-            else:
-                src_tree_attr = 'name'                        
+            elif args.src_tree_attr:
+                for leaf in stree:
+                    leaf.name = getattr(leaf, args.src_tree_attr)
+                src_tree_attr = 'name'
 
+            # Computes dup and gene losses (treeko independent)
+            srctree_species, srctree_branches = get_splits(stree, target_attr=src_tree_attr, discard_root=args.discard_root, target_species=reftree_species)
+
+            if args.discard_incomplete:
+                if reftree_species - srctree_species:
+                    #print(reftree_species - srctree_species)
+                    continue
+
+            trees_scanned += 1 
+            # intialized visited nodes with the observed leaves, as they are not
+            # taken into account when processing splits
+            visited_refnodes = set([_rnode for _rnode in rtree if getattr(_rnode, ref_tree_attr) in srctree_species])
+            ref2dups = defaultdict(int)
+            for srcnode, refnode, isdup in map_dup_and_losses(rtree, srctree_branches, ref_leaves):
+                visited_refnodes.add(refnode)
+                if isdup:
+                    ref2dups[refnode] += 1
+                    
+            for refnode in visited_refnodes:
+                refnode2visited[refnode] += 1
+                refnode2dups[refnode].append(ref2dups[refnode])
+                
             if args.treeko:
+                # Count matches (treeko)
                 ntrees, ndups, sp_trees = stree.get_speciation_trees(
                     autodetect_duplications=True, newick_only=True,
                     target_attr=src_tree_attr, map_features=["support"])
 
                 refnodes = defaultdict(list)
-                for subnw in sp_trees:                   
+                for i, subnw in enumerate(sp_trees):
+                    if i>100:
+                        break
                     subtree = tree_class(subnw)
-                    srctree_species, srctree_branches = get_splits(subtree, target_attr=src_tree_attr)
+                    treeko_srctree_species, treeko_srctree_branches = get_splits(subtree, target_attr=src_tree_attr)
                     for rbranch, matches in map_branches(reftree_branches,
-                                                       srctree_branches, reftree_species, srctree_species):
-                        
-                        refnodes[rbranch].append(len(matches))                        
+                                                         treeko_srctree_branches,
+                                                         reftree_species,
+                                                         treeko_srctree_species):                        
+                        refnodes[rbranch].append(len(matches))
                         if args.dump_matches and len(matches):
                             refnode2matches[rbranch].extend(matches)
                         
                 for rbranch, support in refnodes.items():
                     refnode2supports[rbranch].append(numpy.mean(support))
-                        
+
             else:
-                stree_branches = get_splits(stree, target_attr=src_tree_attr)
-                srctree_species, srctree_branches = get_splits(stree)    
+                # Count matches (flat)
                 for rbranch, matches in map_branches(reftree_branches, srctree_branches, reftree_species, srctree_species):
                     refnode2supports[rbranch].append(len(matches))                    
                     if args.dump_matches and len(matches):
                         refnode2matches[rbranch].extend(matches)
-
+            
+                        
             if refnode2matches:
                 print('# %s\t%s' %("refbranch", "match"))
                 for refbranch in rtree.traverse():
@@ -218,42 +278,53 @@ def run(args):
                         print('\t'.join([ref_nw, m.write(format=9)]))
                     
         data = []
-        header=["ref branch", "data trees", "matches", "support (%)", "treeko matches", "treeko support (%)"]
-        for node in rtree.traverse():
-            if node.is_leaf():
-                continue
-            
-            if node not in refnode2supports:
-                nw = node.write(format=9)
-                row = [nw] + ["NA"] * (len(header)-1)
-                data.append(row)
+        header=["ref branch", "data trees", "matches", "support (%)", "treeko matches", "treeko support (%)", "visited_trees", "duplications", "dup/tree", "dup/tree dev."]
+        for node in rtree.traverse("levelorder"):
+
+            has_support_data = node in refnode2supports 
+            supports = refnode2supports[node] if has_support_data else "NA"
+            observed = float(len([s for s in supports if s>0])) if has_support_data else "NA"
+            total = float(len(supports)) if has_support_data else "NA"
+            avg_observed = ((observed / total) * 100) if has_support_data else "NA"
+            if args.treeko and has_support_data:
+                treeko_observed = sum(supports)
+                avg_treeko_observed = (treeko_observed / total) * 100
             else:
-                supports = refnode2supports[node]
-                observed = float(len([s for s in supports if s>0]))
-                total = float(len(supports))                
-                avg_observed = (observed / total) * 100
-                if args.treeko:
-                    treeko_observed = sum(supports)
-                    avg_treeko_observed = (treeko_observed / total) * 100
-                else:
-                    treeko_observed = "NA"
-                    avg_treeko_observed = "NA"
-                    
-                node.add_features(
-                    maptrees_total = total,
-                    maptrees_observerd = observed,
-                    maptrees_support = avg_observed,
-                    maptrees_treeko_observerd = treeko_observed,
-                    maptrees_treeko_support = avg_treeko_observed,                                        
-                )
-                
-                data.append([node.write(format=9),
-                             total,
-                             observed,
-                             avg_observed,
-                             treeko_observed,
-                             avg_treeko_observed,
-                             ])
+                treeko_observed = "NA"
+                avg_treeko_observed = "NA"
+
+            has_dup_data = node in refnode2visited
+            #trees_visited = refnode2visited[node] if has_dup_data else "NA"
+            trees_visited = len(refnode2dups[node])
+            
+            dups_observed = sum(refnode2dups[node]) if has_dup_data else "NA"
+            #dup_rate = dups_observed/float(times_visited) if has_dup_data else "NA"
+            dup_rate = numpy.mean(refnode2dups[node]) if has_dup_data else "NA"
+            dup_dev = numpy.std(refnode2dups[node]) if has_dup_data else "NA"
+
+            node.add_features(
+                maptrees_total = total,
+                maptrees_observerd = observed,
+                maptrees_support = avg_observed,
+                maptrees_treeko_observerd = treeko_observed,
+                maptrees_treeko_support = avg_treeko_observed,
+                maptrees_observed_dups = dups_observed,
+                maptrees_visited = trees_visited,
+                maptrees_dup_rate = dup_rate,
+
+            )                
+            data.append([node.write(format=9),
+                         #str(node),
+                         total,
+                         observed,
+                         avg_observed,
+                         treeko_observed,
+                         avg_treeko_observed,
+                         trees_visited,
+                         dups_observed,
+                         dup_rate,
+                         dup_dev,
+                         ])
 
         if args.outtree:
             t.write(outfile=args.outtree, features=[])
@@ -272,6 +343,7 @@ def run(args):
                 print('\t'.join([str(v) for v in row]))               
         else:
             print()
-            print_table(data, header=header)
-            
+            print_table(data, header=header, wrap_style="cut")
+            rtree.write(features=[], outfile="outtree")
           
+        print("Source trees used: %d" %trees_scanned)
