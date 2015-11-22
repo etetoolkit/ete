@@ -9,14 +9,14 @@
    .. image:: https://coveralls.io/repos/jhcepas/ete/badge.png
 
 
-The Environment for Tree Exploration (ETE) is a Python programming
+ETE (Environment for Tree Exploration is a Python programming
 toolkit that assists in the automated manipulation, analysis and
 visualization of phylogenetic trees. Clustering trees or any
 other tree-like data structure are also supported. 
 
-ETE is currently developed as a tool for researchers working in
-phylogenetics and genomics. If you use ETE for a published work,
-please cite:
+ETE is currently developed as a tool for researchers working in phylogenetics
+and genomics. ETE offers specialized tools to reconstruct, compare and visualize
+phylogenetic trees. If you use ETE for a published work, please cite:
 
 ::
 
@@ -24,57 +24,21 @@ please cite:
   Environment for Tree Exploration. BMC Bioinformatics 2010, 11:24.
 
 
-- The official web site of ETE is at  http://etetoolkit.org
+- The official web site of ETE is http://etetoolkit.org
 - News and announcements are usually posted on twitter: http://twitter.com/etetoolkit
 
-
-CURRENT VERSION
-========================
-
-Current stable version is ETE v2.3, which supports Python 2 only. Source code is in
-the following branch: https://github.com/jhcepas/ete/tree/2.3
-
-ETE v3.0 is the development branch and should support Python 2.7 and Python
-3.4. Although mostly functional, this version is currently under active
-development, so problems are still expected. The module name for ETE v3.0 has
-changed to "ete3", so both versions (ETE v2.3 and ETE v3.0) can co-exist.
-
-
-CONTRIBUTING
-=========================
-
-BUGS and FEATURE REQUESTS
----------------------------------
-
-The preferred way to report a problem or request/disccuss new features is by
-opening a new issue at http://github.com/jhcepas/ete/issues.  (Please, make sure
-there is no other issues pointing to the same topic)
-
-PULL REQUESTS (either code or documentation)
-------------------------------------------------
-
-Contributions to the main code, unit-tests and documentation are very
-welcome. ETE's main source code is hosted at http://github.com/jhcepas/ete.
-There are currently 2 active branches:
-
-- "2.3" is the latest stable. Only bug fixes are accepted.
-- "master" is the development branch, currently focused on the upcoming version
-  3.0. Bug fixes, new features, tests and documentation are accepted and highly
-  appreciated.
+..
+   .. image:: https://raw.githubusercontent.com/jhcepas/ete/master/sdoc/gallery.png
+              
   
-**Getting in touch:**
 
-- There is no mailing list for developers, but you can open a new github issue for
-  discussion or send me an email (jhcepas|gmail.com).
-  
-- There is also chat room for developers:
+CONTRIBUTING AND BUG REPORTS
+------------------------------
+https://github.com/jhcepas/ete/blob/master/CONTRIBUTING.rst
 
-.. image:: https://badges.gitter.im/Join%20Chat.svg
-   :alt: Join the chat at https://gitter.im/jhcepas/ete
-   :target: https://gitter.im/jhcepas/ete?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge 
 
 GETTING SUPPORT
-====================
+------------------
 
 - There is a mailing list providing user support at
   https://groups.google.com/d/forum/etetoolkit. In order to avoid spam,
@@ -85,98 +49,5 @@ GETTING SUPPORT
   BioStars community (http://biostars.org) provides an excellent and broader
   help desk. Please feel free to raise any question there and tag it with the
   "etetoolkit" label.
-
-MAIN ETE FEATURES
-==================================
-
-Python support
----------------
-ETE v3 support python 2.7+ and 3.4+
-
-
-Supported Tree Formats
--------------------------
-
-Newick (including several sub-types), Extended Newick / New Hampshire Extended
-(NHX), PhyloXML and NeXML
-
-Tree operations 
-------------------
-
-Trees are loaded as a succession of TreeNode objects connected in a hierarchical
-way. Each TreeNode instance contains methods to operate with it
-independently. This is, although the top-most Tree node instance represents the
-whole tree structure, any child node can be used independently as a subtree
-instance.
-
-Available (per node) operations include:
-
-- Iteration over descendant or leaf nodes.
-- Tree traversing: post-order, pre-order, level-order-
-- Search (descendant) nodes by their properties.
-- Root / Unroot
-- Calculate branch-length and topological distances among nodes.
-- Node annotation (add custom features and properties to nodes)
-- Automatic tree pruning 
-- Tree structure manipulation (add/remove parent, children, sister nodes, etc.).
-- Newick and extended newick (including annotations) writing 
-- shortcuts and checks: "len(Node)", "for leaf in Node", "if node in Tree", etc.
-- comparison and topology distances
-   
-
-Phylogenetic Trees
--------------------------
-
-ETE provides specific methods to load, analyze and manipulate phylogenetic
-results. Thus, a PhyloTree instance is provided, which extends the standard Tree
-functionality with phylogenetics related methods. Most notably:
-
-- Link trees with Multiple Sequence Alignments (MSAs).
-- Automatic detection of species codes within family gene-trees
-- Node monophyly checks.
-- Orthology and paralogy detection based on tree reconciliation or
-  species overlap.
-- Relative dating of speciation and duplication events. 
-- Combined visualization of trees and MSA.
-- Duplication aware tree decomposition 
-
-Command line tools
----------------------------
-
-ETE 2.3+ provides also a set of command line tools to perform common tasks. Most notably: 
-
-- **ete build**: allows to build phylogenetic tree using a using a number of
-  predefined built-in gene-tree and species-tree workflows.
-- **ete mod**: modify tree topologies directly from the command line. Allows
-  rooting, sorting leaves, pruning and more
-- **ete annotate**: add features to the tree nodes by combining newick and text files.
-- **ete view**: visualize and generate tree images directly form the command
-  line.
-- **ete compare**: compare tree topologies based on any node's feature
-  (i.e. name, species name, etc) using the Robinson-Foulds distance and edge
-  compatibility scores, even for trees of different size.
-- **ete ncbiquery**: query the ncbi taxonomy tree directly from the database.
-- **ete generate**: generate random trees, mostly for teaching and testing
-
-Tree Visualization
--------------------------
-
-A programmatic tree rendering engine is fully integrated with the Tree
-objects. It allows to draw trees in both rectangular and circular modes. The
-aspect of nodes, branches and other tree items are fully configurable and can be
-dynamically controlled (this is, certain graphical properties of nodes can be
-linked to internal node values).
-
-.. image:: http://etetoolkit.org/static/img/gallery/phylomedb_tree.png
-   :scale: 50 %
-
-.. image:: http://etetoolkit.org/static/img/gallery/piechart400x400.png
-   :scale: 50 %
-
-More examples at http://etetoolkit.org/gallery
-
-Trees can also be visualized interactively using a built-in Graphical User Interface
-(GUI) or exported as PNG images or SVG/PDF vector graphics images.
-
 
 
