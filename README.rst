@@ -34,8 +34,8 @@ Install/Documentation
 
 - News and announcements are usually posted on twitter: http://twitter.com/etetoolkit
 
-Gallery
------------
+Gallery of examples
+--------------------
   
 .. image:: https://raw.githubusercontent.com/jhcepas/ete/master/sdoc/gallery.png
    :width: 600
