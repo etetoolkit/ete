@@ -717,7 +717,13 @@ def _main():
             
         elif sys.argv[1] == "show":
             base_config = check_config(_config_path)
-            block_detail(sys.argv[2], base_config)
+            try:
+                block = sys.argv[2]
+            except IndexError:
+                print("Expected a block name, found none")
+                sys.exit(1)
+
+            block_detail(block, base_config)
             sys.exit(0)
 
         elif sys.argv[1] == "dump":
