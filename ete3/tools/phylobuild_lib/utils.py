@@ -169,6 +169,11 @@ multiple sequence alignment. Algorithms Mol Biol. 2008 May 27;3:6."""
 MCOFFEE_CITE = u"""Wallace IM, O'Sullivan O, Higgins DG, Notredame C.
 M-Coffee: combining multiple sequence alignment methods with T-Coffee.
 Nucleic Acids Res. 2006 Mar 23;34(6):1692-9. """
+
+TCOFFEE_CITE = u"""Magis C, Taly JF, Bussotti G, Chang JM, Di Tommaso P, Erb I,
+Espinosa-Carrasco J, Notredame C. T-Coffee: Tree-based consistency objective
+function for alignment evaluation. Methods Mol Biol. 2014;1079:117-29."""
+
 JMODELTEST_CITE = u"""Darriba D, Taboada GL, Doallo R, Posada
 D. jModelTest 2: more models, new heuristics and parallel computing.Nat
 Methods. 2012 Jul 30;9(8):772."""

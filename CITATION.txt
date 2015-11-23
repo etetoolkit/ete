@@ -1,7 +1,7 @@
 ETE is currently maintained by Jaime Huerta-Cepas at the Structural and
 Computational Biology Unit of EMBL (Heidelberg, Germany).
 
-CONTACT: huerta@embl.de
+CONTACT: jhcepas@gmail.com
 
 CITATION:
 

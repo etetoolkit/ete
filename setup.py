@@ -109,7 +109,7 @@ LONG_DESCRIPTION="""
 The Environment for Tree Exploration (ETE) is a Python programming
 toolkit that assists in the automated manipulation, analysis and
 visualization of phylogenetic trees (although clustering trees or any
-other tree-like data structure could be used).
+other tree-like data structure are also supported).
 
 ETE is currently developed as a tool for researchers working in
 phylogenetics and genomics. If you use ETE for a published work,
@@ -119,7 +119,6 @@ please cite:
 
   Jaime Huerta-Cepas, Joaquin Dopazo and Toni Gabaldon. ETE: a python
   Environment for Tree Exploration. BMC Bioinformatics 2010, 11:24.
-
 
 Visit http://etetoolkit.org for more info.
 """
@@ -158,9 +157,9 @@ try:
         long_description = LONG_DESCRIPTION,
         classifiers = CLASSIFIERS,
         provides = [MOD_NAME],
-        keywords = "Tree handling, manipulation, analysis and visualization",
+        keywords = "tree, tree reconstruction, tree visualization, tree comparison, phylogeny, phylogenetics, phylogenomics",
         url = "http://etetoolkit.org",
-        download_url = "http://etetoolkit.org/static/releases/ete2/",
+        download_url = "http://etetoolkit.org/static/releases/ete3/",
         
     )
 
