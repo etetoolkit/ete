@@ -705,7 +705,10 @@ def _main():
             apps.test_apps(config)
             sys.exit(0)
 
-        elif sys.argv[1] == "workflows":
+        elif sys.argv[1] in ("workflows", "wl"):
+            if sys.argv[1] == "wl":
+                print(colorify("WARNING: 'wl' is obsolete and will be removed in the future, use 'workflows' instead", "orange"), file=sys.stderr)
+
             base_config = check_config(_config_path)
             list_workflows(base_config)
             sys.exit(0)
@@ -754,7 +757,7 @@ def _main():
     # Input data related flags
     input_group = parser.add_argument_group('==== Input Options ====')
 
-    input_group.add_argument('[check | workflows| apps | show | dump | validate | version | install_tools]',
+    input_group.add_argument('[check | workflows | apps | show | dump | validate | version | install_tools]',
                              nargs='?',
                              help=("Utility commands:\n"
                                    "check: check that external applications are executable.\n"
