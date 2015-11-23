@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -37,6 +36,7 @@ from __future__ import absolute_import
 #
 #
 # #END_LICENSE#############################################################
+from __future__ import absolute_import
 import os
 import re
 import logging
@@ -52,7 +52,7 @@ __all__ = ["Prottest"]
 
 class Prottest(ModelTesterTask):
     def __init__(self, nodeid, alg_fasta_file, alg_phylip_file,
-                 constrain_tree, conf, confname):
+                 constrain_tree, seqtype, conf, confname):
         GLOBALS["citator"].add(PHYML_CITE)
 
         self.alg_phylip_file = alg_phylip_file

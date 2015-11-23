@@ -437,6 +437,10 @@ CHECKERS = {
     ("prottest", "_lk_mode"): (is_choice, {"choices":set(['phyml', 'raxml'])}, True),
     ("prottest", "_models"): (is_list, {}, True),
 
+
+    ("pmodeltest", "_aa_models"): (is_text, {}, True),
+    ("pmodeltest", "_nt_models"): (is_text, {}, True),
+        
     ("raxml", "_aa_model"): (is_text, {}, True),
     ("raxml", "_method"): (is_choice, {"choices":set(['GAMMA', 'CAT'])}, True),
     ("raxml", "_bootstrap"): (is_raxml_bootstrap, {}, True),

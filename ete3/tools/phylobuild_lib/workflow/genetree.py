@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -37,6 +36,7 @@ from __future__ import absolute_import
 #
 #
 # #END_LICENSE#############################################################
+from __future__ import absolute_import
 import re
 import commands
 import logging
@@ -372,7 +372,7 @@ def process_task(task, wkname, npr_conf, nodeid2info):
             if mtesterclass:
                 next_task = mtesterclass(nodeid, alg_fasta_file,
                                          alg_phylip_file,
-                                         constrain_id,
+                                         constrain_id, seqtype,
                                          conf, mtesterconf)
             elif treebuilderclass:
                 next_task = treebuilderclass(nodeid, alg_phylip_file,

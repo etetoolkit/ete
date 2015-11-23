@@ -45,10 +45,9 @@ import subprocess
 import six
 log = logging.getLogger("main")
 
-
 APPTYPES = {
     "aligners": set(["muscle", "mafft", "clustalo", "metaligner", "dialingtx"]),
-    "model testers": set(["prottest"]),
+    "model testers": set(["prottest", "pmodeltest"]),
     "alg cleaners": set(["trimal"]),
     "tree builders": set(["fasttree", "phyml", "raxml"]),
     "COG selectors": set(["cogselector"]),
@@ -93,7 +92,8 @@ APP2CLASS = {
     "fasttree"            : "FastTree",
     "trimal"              : "Trimal",
     "prottest"            : "Prottest",
-    "jmodeltest"          : "JModeltest",
+    "pmodeltest"          : "PModelTest",
+#    "jmodeltest"          : "JModeltest",
     "treesplitter"        : "TreeMerger",
     "concatalg"           : "ConcatAlg",
     "cogselector"         : "CogSelector",
@@ -106,9 +106,10 @@ CLASS2MODULE = {
     "Clustalo"      : "clustalo",
     "MetaAligner"   : "meta_aligner",
     "Phyml"         : "phyml",
-    "JModeltest"    : "jmodeltest",
+#    "JModeltest"    : "jmodeltest",
     "Dialigntx"     : "dialigntx",
     "FastTree"      : "fasttree",
+    "PModelTest"    : "pmodeltest",
     }
 
 builtin_apps = {
@@ -127,7 +128,8 @@ builtin_apps = {
     'raxml-avx'          : "%BIN%/raxmlHPC-AVX",
     'raxml-pthreads-avx2': "%BIN%/raxmlHPC-PTHREADS-AVX2 -T%CORES%",
     'raxml-avx2'         : "%BIN%/raxmlHPC-AVX2",
-    'jmodeltest'         : "JMODELTEST_HOME=%BASE%/jmodeltest2; cd $JMODELTEST_HOME; java -jar $JMODELTEST_HOME/jModelTest.jar",
+#    'jmodeltest'        : "JMODELTEST_HOME=%BASE%/jmodeltest2; cd $JMODELTEST_HOME; java -jar $JMODELTEST_HOME/jModelTest.jar",
+    'pmodeltest'         : "python %BASE%/pmodeltest/pmodeltest.py --nprocs %CORES% --phyml %BIN%/phyml",
     'dialigntx'          : "%BIN%/dialign-tx %BASE%/DIALIGN-TX_1.0.2/conf",
     'usearch'            : "%BIN%/usearch",
     'fasttree'           : "export OMP_NUM_THREADS=%CORES%; %BIN%/FastTree",
@@ -155,6 +157,7 @@ app2check = {
     'usearch'             : "| grep -i Edgar|wc -l",
     'fasttree'            : "| grep 'FastTree ver'|wc -l",
     'statal'              : "-h | grep -i capella |wc -l ",
+    'pmodeltest'          : "--version|wc -l",
     }
 
 app2version = {
@@ -178,6 +181,7 @@ app2version = {
 #    'usearch'             : "",
     'fasttree'            : "2>&1 | grep version",
     'statal'              : "--version| grep -i statal",
+    'pmodeltest'          : " --version 2>&1|head -n1",
     }
 
 
@@ -209,7 +213,7 @@ def test_apps(apps):
             if out:
                 print("OK.\t%s" %out.strip())
             else:
-                print("Missing or not functional.")
-                #print "** ", test_cmd
+                print("ERROR")
+                #print("** ", test_cmd)
                 #log.debug(test_cmd)
                 #log.debug(commands.getoutput(test_cmd.rstrip("wc -l")))

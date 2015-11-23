@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -37,6 +36,7 @@ from __future__ import absolute_import
 #
 #
 # #END_LICENSE#############################################################
+from __future__ import absolute_import
 import os
 import shutil
 import sys
@@ -57,7 +57,9 @@ class Phyml(TreeTask):
                  seqtype, conf, confname, parts_id=None):
 
         GLOBALS["citator"].add(PHYML_CITE)
-
+        if model:
+            model = model.split("+")[0]
+            
         base_args = OrderedDict({
                 "--model": "",
                 "--no_memory_check": "",

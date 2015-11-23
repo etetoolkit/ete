@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -37,6 +36,7 @@ from __future__ import absolute_import
 #
 #
 # #END_LICENSE#############################################################
+from __future__ import absolute_import
 import os
 import sys
 import logging
@@ -58,7 +58,9 @@ class Raxml(TreeTask):
     def __init__(self, nodeid, alg_file, constrain_id, model,
                  seqtype, conf, confname, parts_id=None):
         GLOBALS["citator"].add(RAXML_CITE)
-
+        if model:
+            model = model.split("+")[0]
+       
         base_args = OrderedDict()
         self.bootstrap = conf[confname].get("_bootstrap", None)
 
