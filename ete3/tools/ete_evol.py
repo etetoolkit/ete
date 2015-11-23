@@ -78,6 +78,8 @@ Model name  Description                   Model kind
                                      "%-12s parameter for selected model" % param),
                                default=PARAMS[param])
 
+    
+
 
 def run(args):
     from .. import EvolTree
@@ -85,9 +87,11 @@ def run(args):
     print args.models
 
     for nw in args.src_tree_iterator:
+        print 'AVANT'
         t = EvolTree(nw)
+        print 'APRES'
         print args.alg
-        t.link_to_alignment(args.alg)
+        #t.link_to_alignment(args.alg)
         print t
         t.show()
         
