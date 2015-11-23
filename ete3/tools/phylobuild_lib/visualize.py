@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -38,13 +36,16 @@ from __future__ import print_function
 #
 #
 # #END_LICENSE#############################################################
+from __future__ import absolute_import
+from __future__ import print_function
+
 import re
 from six.moves import range
 
 def draw_tree(tree, conf, outfile):
     try:
         from ... import (add_face_to_node, AttrFace, TextFace, TreeStyle, RectFace, CircleFace,
-                             SequenceFace, random_color, SeqMotifFace)
+                         random_color, SeqMotifFace)
     except ImportError as e:
         print(e)
         return
@@ -186,18 +187,14 @@ def draw_tree(tree, conf, outfile):
     try:
         tree.set_species_naming_function(spname)
         annotate_tree_with_ncbi(tree)
-        a = tree.search_nodes(species='Dictyostelium discoideum')[0]
-        b = tree.search_nodes(species='Chondrus crispus')[0]
-        #out = tree.get_common_ancestor([a, b])
-        #out = tree.search_nodes(species='Haemophilus parahaemolyticus')[0].up
         tree.set_outgroup(out)
         tree.swap_children()
     except Exception:
         pass
 
-    tree.render(outfile, tree_style=ts, w=170, units='mm', dpi=150)
-    tree.render(outfile+'.svg', tree_style=ts, w=170, units='mm', dpi=150)
-    tree.render(outfile+'.pdf', tree_style=ts, w=170, units='mm', dpi=150)
+    tree.render(outfile, tree_style=ts, w=170, units='mm', dpi=300)
+    tree.render(outfile+'.svg', tree_style=ts, w=170, units='mm', dpi=300)
+    tree.render(outfile+'.pdf', tree_style=ts, w=170, units='mm', dpi=300)
 
 def annotate_tree_with_ncbi(tree):
     from ...ncbi_taxonomy import ncbiquery as ncbi
@@ -218,5 +215,5 @@ def spname(name):
 
         tax2name = ncbi.get_taxid_translator([taxid])
         if int(taxid) not in tax2name:
-            print('name', name        , taxid, tax2name)
+            print('name', name, taxid, tax2name)
         return tax2name.get(int(taxid), taxid)

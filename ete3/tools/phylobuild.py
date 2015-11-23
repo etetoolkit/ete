@@ -105,16 +105,7 @@ __DESCRIPTION__ = (
 """
       --------------------------------------------------------------------------------
                   ETE build - reproducible phylogenetic workflows 
-                                %s (beta), %s.
-
-      ETE build is a bioinformatics program providing a complete environment for
-      the execution of phylogenomic workflows, including super-matrix
-      and family-tree reconstruction approaches. ETE build covers all
-      necessary steps for phylogenetic reconstruction, from
-      alignment reconstruction and model testing to the generation of
-      publication ready images of the produced trees and alignments. ETE build is
-      built on top of a bunch of specialized software and comes with a number
-      of predefined workflows.
+                                    %s, %s.
 
       If you use ETE in a published work, please cite:
 
