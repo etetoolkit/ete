@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from functools import partial
 # #START_LICENSE###########################################################
 #
 #
@@ -104,6 +105,13 @@ class _NodeActions(object):
             contextMenu.addAction( "Back to parent", self.back_to_parent_node)
         else:
             contextMenu.addAction( "Extract", self.set_start_node)
+
+        try:
+            for action in self.node.node_actions:
+                contextMenu.addAction(action, partial(self.node.node_actions[action],
+                                      self.scene().GUI))
+        except AttributeError:
+            pass
 
         contextMenu.addAction( "Show newick", self.show_newick)
         contextMenu.exec_(QtGui.QCursor.pos())
