@@ -112,7 +112,7 @@ class EvolNode(PhyloNode):
 
     def __init__(self, newick=None, alignment=None, alg_format="fasta",
                  sp_naming_function=_parse_species, format=0,
-                  binpath=''):
+                  binpath='', **kwargs):
         '''
         freebranch: path to find codeml output of freebranch model.
         '''
@@ -122,13 +122,12 @@ class EvolNode(PhyloNode):
         self._models = {}
 
         PhyloNode.__init__(self, newick=newick, format=format,
-                           sp_naming_function=sp_naming_function)
+                           sp_naming_function=sp_naming_function, **kwargs)
 
         if newick:
             self._label_as_paml()
         # initialize node marks
         self.mark_tree([])
-
 
     def _label_internal_nodes(self, nid=None):
         """
@@ -239,7 +238,7 @@ class EvolNode(PhyloNode):
             warn("ERROR: codeml not found!!!\n" +
                  "       define your variable EvolTree.execpath")
             return 1
-        if 'error' in run or 'Error' in run:
+        if b'error' in run or b'Error' in run:
             warn("ERROR: inside codeml!!\n" + run)
             return 1
         os.chdir(hlddir)
@@ -364,6 +363,7 @@ class EvolNode(PhyloNode):
         else:
             raise ValueError("Treeview module is disabled")
 
+
     def mark_tree(self, node_ids, verbose=False, **kargs):
         '''
         function to mark branches on tree in order that paml could interpret it.
@@ -388,15 +388,15 @@ class EvolNode(PhyloNode):
             if not hasattr(node, 'node_id'):
                 continue
             if node.node_id in node_ids:
-                if ('.' in marks[node_ids.index(node.node_id)] or \
-                       match('#[0-9]+', \
-                             marks[node_ids.index(node.node_id)])==None)\
-                             and verbose:
-                    warn('WARNING: marks should be "#" sign directly '+\
+                if ('.' in marks[node_ids.index(node.node_id)] or
+                    match('#[0-9]+',
+                          marks[node_ids.index(node.node_id)]) == None) and verbose:
+                    warn('WARNING: marks should be "#" sign directly ' +
                          'followed by integer\n' + self.mark_tree.__doc__)
                 node.add_feature('mark', ' '+marks[node_ids.index(node.node_id)])
             elif not 'mark' in node.features:
                 node.add_feature('mark', '')
+                
 
     def link_to_evol_model(self, path, model):
         '''

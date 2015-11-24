@@ -52,7 +52,8 @@ TOOLSPATH = os.path.realpath(os.path.split(os.path.realpath(__file__))[0])
 
 import argparse
 from . import (ete_split, ete_expand, ete_annotate, ete_ncbiquery, ete_view,
-               ete_generate, ete_mod, ete_extract, ete_compare, ete_codeml, ete_maptrees)
+               ete_generate, ete_mod, ete_extract, ete_compare, ete_evol,
+               ete_codeml_mark, ete_maptrees)
 from . import common
 from .common import log
 from .utils import colorify
@@ -71,9 +72,23 @@ def ete_reconcile(args):
 def ete_consense(args):
     # all observed splits
 def ete_fetch(args):
-def ete_codeml(args):
+def ete_evol(args):
+def ete_codeml_mark(args):
 
 """
+
+def tree_iterator(args):
+    if not args.src_trees and not sys.stdin.isatty():
+        log.debug("Reading trees from standard input...")
+        args.src_trees = sys.stdin
+    elif not args.src_trees:
+        log.error("At least one tree is required as input (i.e --src_trees ) ")
+        sys.exit(-1)
+
+    for stree in args.src_trees:
+        # CHECK WHAT is needed before process the main command, allows mods before analyses
+        yield stree.strip()
+
 
 def main():
 
@@ -175,11 +190,17 @@ def main():
     generate_args_p.set_defaults(func=ete_generate.run)
     ete_generate.populate_args(generate_args_p)
 
-    # - CODEML -
-    codeml_args_p = subparser.add_parser("codeml", parents=[main_args_p],
-                                       description=ete_codeml.DESC)
-    codeml_args_p.set_defaults(func=ete_codeml.run)
-    ete_codeml.populate_args(codeml_args_p)
+    # - EVOL -
+    evol_args_p = subparser.add_parser("evol", parents=[source_args_p, main_args_p],
+                                       description=ete_evol.DESC)
+    evol_args_p.set_defaults(func=ete_evol.run)
+    ete_evol.populate_args(evol_args_p)
+
+    # - MARK -
+    mark_args_p = subparser.add_parser("codeml_mark", parents=[source_args_p, main_args_p],
+                                       description=ete_codeml_mark.DESC)
+    mark_args_p.set_defaults(func=ete_codeml_mark.run)
+    ete_codeml_mark.populate_args(mark_args_p)
 
     # - MAPTREES -
     maptrees_args_p = subparser.add_parser("maptrees", parents=[source_args_p, ref_args_p, main_args_p],
@@ -203,9 +224,10 @@ def main():
     args = parser.parse_args()
 
     LOG_LEVEL = args.verbosity
-  
+    if hasattr(args, "src_trees"):
+        args.src_tree_iterator = tree_iterator(args)
 
-    if args.func==ete_ncbiquery.run and not getattr(args, "search", None):
+    elif args.func==ete_ncbiquery.run and not getattr(args, "search", None):
         if not args.search and not sys.stdin.isatty():
             log.debug("Reading taxa from standard input...")
             args.search = sys.stdin

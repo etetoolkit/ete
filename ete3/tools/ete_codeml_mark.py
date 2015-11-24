@@ -37,19 +37,35 @@
 #
 # #END_LICENSE#############################################################
 from __future__ import absolute_import
+from ..evol.model import AVAIL, PARAMS
+from argparse import RawTextHelpFormatter
 
-DESC = "Run codeml tests... "
+DESC = "Interactively mark tree for CodeML tests... "
 
-def populate_args(codeml_args_p):
-    codeml_args = codeml_args_p.add_argument_group('ETE-CODEML OPTIONS')
+def marking_layout(node):
+    '''
+    layout for interactively marking CodemlTree
+    '''
+    if hasattr(node, "collapsed"):
+        if node.collapsed == 1:
+            node.img_style["draw_descendants"]= False
+    color_cycle = [u'#E24A33', u'#348ABD', u'#988ED5',
+                   u'#777777', u'#FBC15E', u'#8EBA42',
+                   u'#FFB5B8']
+    node.img_style["size"] = 15
+    if hasattr(node, 'mark') and node.mark != '':
+        node.img_style["fgcolor"] = color_cycle[(int(node.mark.replace('#', '')) - 1) % 7]
+    else:
+        node.img_style["fgcolor"] = '#000000'
 
-    codeml_args.add_argument("--models", dest="models",
-                             choices=['A', 'B'], nargs = "+", required=True,
-                             help=("choose test models"))
+        
+def populate_args(mark_args_p):
+    mark_args = mark_args_p.add_argument_group('ETE-MARK OPTIONS')
 
 def run(args):
     from .. import EvolTree
-    
+
     for nw in args.src_tree_iterator:
         t = EvolTree(nw)
-        # do your stuff here
+        t.show(layout=marking_layout)
+        print(t.write())
