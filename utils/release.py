@@ -110,17 +110,17 @@ if not options.doconly:
     if ask('Upload to pypi?', ['y', 'n']) == 'y':
         _ex('cd release/ && python setup.py sdist upload -r https://pypi.python.org/pypi')
 
+    SDOC_PATH = "release/doc/"
+        
 if options.doconly:
-    SDOC_PATH = '..'
+    SDOC_PATH = 'sdoc/_build/html/'
     # build docs
-    _ex('cd ../sdoc/ && make html && make latex')
-    _ex('cd ../sdoc/_build/latex && make all-pdf')
-    _ex('cp -a ../sdoc/_build/latex/*.pdf sdoc/_build/html/_downloads/')
-else:
-    SDOC_PATH = 'release/'
+    _ex('cd sdoc/ && make html && make latex')
+    _ex('cd sdoc/_build/latex && make all-pdf')
+    _ex('cp -a sdoc/_build/latex/*.pdf sdoc/_build/html/_downloads/')
 
-#if ask('Upload docs?', ['y', 'n']) == 'y':
-#    _ex("cd %s; python setup.py upload_sphinx --upload-dir sdoc/_build/html/ -r https://pypi.python.org/pypi --show-response" %SDOC_PATH)
+if ask('copy docs to ete server from %s?' %SDOC_PATH, ['y', 'n']) == 'y':
+    _ex("scp -r %s/* ete:web/static/docs/3.0/" %SDOC_PATH)
 
 #_ex('deactivate;  release/dist/ && tar xf ete2-%s.tar.gz && cd ete2-%s/test/ && python test_all.py && python test_treeview.py' %(NEW_VERSION, NEW_VERSION))
     
