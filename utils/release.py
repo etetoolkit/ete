@@ -58,7 +58,6 @@ def ask_path(string, default_path):
             v = None
     return v
 
-
 SERVER="huerta@etetoolkit.embl.de"
 SERVER_RELEASES_PATH = "/var/www/etetoolkit/static/releases/ete3"
 
