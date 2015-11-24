@@ -128,10 +128,6 @@ class EvolNode(PhyloNode):
             self._label_as_paml()
         # initialize node marks
         self.mark_tree([])
-        self.node_actions = {
-            "Mark node #1"     : lambda x=None: self._gui_mark_node("#1", x),
-            "Mark from node #1": lambda x=None: self._gui_mark_from("#1", x)
-            }
 
     def _label_internal_nodes(self, nid=None):
         """
@@ -242,7 +238,7 @@ class EvolNode(PhyloNode):
             warn("ERROR: codeml not found!!!\n" +
                  "       define your variable EvolTree.execpath")
             return 1
-        if 'error' in run or 'Error' in run:
+        if b'error' in run or b'Error' in run:
             warn("ERROR: inside codeml!!\n" + run)
             return 1
         os.chdir(hlddir)
@@ -392,50 +388,15 @@ class EvolNode(PhyloNode):
             if not hasattr(node, 'node_id'):
                 continue
             if node.node_id in node_ids:
-                if ('.' in marks[node_ids.index(node.node_id)] or \
-                       match('#[0-9]+', \
-                             marks[node_ids.index(node.node_id)])==None)\
-                             and verbose:
-                    warn('WARNING: marks should be "#" sign directly '+\
+                if ('.' in marks[node_ids.index(node.node_id)] or
+                    match('#[0-9]+',
+                          marks[node_ids.index(node.node_id)]) == None) and verbose:
+                    warn('WARNING: marks should be "#" sign directly ' +
                          'followed by integer\n' + self.mark_tree.__doc__)
                 node.add_feature('mark', ' '+marks[node_ids.index(node.node_id)])
             elif not 'mark' in node.features:
                 node.add_feature('mark', '')
                 
-    def _gui_mark_node(self, mark, gui=None):
-        self.mark_tree([self.node_id], marks=[mark])
-        new_mark = '#' + str(int(mark.replace('#', '')) + 1)
-        self.node_actions = {
-            "Mark node " + new_mark     : lambda x=None: self._gui_mark_node(new_mark, x),
-            "UnMark node"               : lambda x=None: self._gui_unmark_node(x),
-            "Mark from node " + new_mark: lambda x=None: self._gui_mark_from(new_mark, x),
-            "Unmark from node"          : lambda x=None: self._gui_unmark_from(x)
-            }
-        if gui:
-            gui.redraw()
-
-    def _gui_unmark_node(self, gui=None):
-        self.mark = ""
-        self.node_actions = {
-            "Mark node #1"     : lambda x=None: self._gui_mark_node("#1", x),
-            "Mark from node #1": lambda x=None: self._gui_mark_from("#1", x)
-            }
-        if gui:
-            gui.redraw()
-
-    def _gui_mark_from(self, mark, gui=None):
-        self._gui_mark_node(mark)
-        for leaf in self.iter_descendants():
-            leaf._gui_mark_node(mark)
-        if gui:
-            gui.redraw()
-
-    def _gui_unmark_from(self, gui=None):
-        self._gui_unmark_node()
-        for leaf in self.iter_descendants():
-            leaf._gui_unmark_node()
-        if gui:
-            gui.redraw()
 
     def link_to_evol_model(self, path, model):
         '''

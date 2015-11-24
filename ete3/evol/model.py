@@ -261,9 +261,8 @@ class Model:
             string += '%15s%s%s\n' % (prm, sep,
                                       str(self.properties['params'][prm]))
         string += '\n'
-        for prm in sorted(list(self.properties ['params'].keys()), cmp=lambda x, y: \
-                          cmp(sub('fix_', '', x.lower()),
-                              sub('fix_', '', y.lower()))):
+        for prm in sorted(list(self.properties ['params'].keys()), key=lambda x:
+                          sub('fix_', '', x.lower())):
             if prm in ['seqfile', 'treefile', 'outfile']:
                 continue
             if str(self.properties ['params'][prm]).startswith('*'):

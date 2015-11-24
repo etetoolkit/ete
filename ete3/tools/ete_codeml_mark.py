@@ -68,4 +68,4 @@ def run(args):
     for nw in args.src_tree_iterator:
         t = EvolTree(nw)
         t.show(layout=marking_layout)
-        print t.write()
+        print(t.write())

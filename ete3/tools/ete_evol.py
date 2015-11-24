@@ -84,15 +84,11 @@ Model name  Description                   Model kind
 def run(args):
     from .. import EvolTree
 
-    print args.models
+    print(args.models)
 
     for nw in args.src_tree_iterator:
-        print 'AVANT'
         t = EvolTree(nw)
-        print 'APRES'
-        print args.alg
         #t.link_to_alignment(args.alg)
-        print t
         t.show()
         
 

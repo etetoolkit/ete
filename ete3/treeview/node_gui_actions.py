@@ -1,5 +1,4 @@
 from __future__ import absolute_import
-from functools import partial
 # #START_LICENSE###########################################################
 #
 #
@@ -41,6 +40,8 @@ from functools import partial
 from .svg_colors import random_color
 from PyQt4  import QtCore, QtGui
 from six.moves import range
+from functools import partial
+from ..evol import EvolTree
 
 class _NodeActions(object):
     """ Used to extend QGraphicsItem features """
@@ -106,15 +107,50 @@ class _NodeActions(object):
         else:
             contextMenu.addAction( "Extract", self.set_start_node)
 
-        try:
-            for action in self.node.node_actions:
-                contextMenu.addAction(action, partial(self.node.node_actions[action],
-                                      self.scene().GUI))
-        except AttributeError:
-            pass
+        if isinstance(self.node, EvolTree):
+            if hasattr(self.node, 'mark') and self.node.mark:
+                mark = '#' + str(int(self.node.mark.replace('#', '')) + 1)
+            else:
+                mark = '#1'
+            contextMenu.addAction("MARK node " + mark, partial(
+                self._gui_mark_node, mark))
+            contextMenu.addAction("MARK group " + mark, partial(
+                self._gui_mark_group, mark))
+            if mark != '#1':
+                contextMenu.addAction("UNMARK node " + mark, partial(
+                    self._gui_unmark_node))
+                contextMenu.addAction("UNMARK group " + mark, partial(
+                    self._gui_unmark_group))
+        
 
         contextMenu.addAction( "Show newick", self.show_newick)
         contextMenu.exec_(QtGui.QCursor.pos())
+
+    def _gui_mark_node(self, mark=None):
+        if not mark:
+            if self.node.mark:
+                mark = '#' + str(int(self.node.mark.replace('#', '')) + 1)
+            else:
+                mark = '#1'
+        self.node.mark_tree([self.node.node_id], marks=[mark])
+        self.scene().GUI.redraw()
+            
+
+    def _gui_unmark_node(self):
+        self.node.mark = ""
+        self.scene().GUI.redraw()
+
+    def _gui_mark_group(self, mark=None):
+        self.node.mark_tree([self.node.node_id], marks=[mark])
+        for leaf in self.node.iter_descendants():
+            leaf.mark_tree([leaf.node_id], marks=[mark])
+        self.scene().GUI.redraw()
+
+    def _gui_unmark_group(self):
+        self.node.mark = ""
+        for leaf in self.node.iter_descendants():
+            leaf.mark = ""
+        self.scene().GUI.redraw()
 
     def show_newick(self):
         d = NewickDialog(self.node)
