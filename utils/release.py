@@ -104,7 +104,7 @@ if not options.doconly:
 
     # test distribution
     if not options.notest:
-        _ex('cd release/dist/ && tar xf ete3-%s.tar.gz && cd ete3-%s/test/ && python test_all.py && python test_treeview.py' %(NEW_VERSION, NEW_VERSION))
+        _ex('cd release/dist/ && tar xf ete3-%s.tar.gz && cd ete3-%s/ && PYHTONPATH="./" python -m "ete3.test.test_all"' %(NEW_VERSION, NEW_VERSION))
 
     if ask('Upload to TEST pypi?', ['y', 'n']) == 'y':
         _ex('cd release/ && python setup.py sdist upload -r https://testpypi.python.org/pypi')
