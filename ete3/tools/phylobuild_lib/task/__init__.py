@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -37,14 +36,17 @@ from __future__ import absolute_import
 #
 #
 # #END_LICENSE#############################################################
+from __future__ import absolute_import
+
 from .msf import *
 from .clustalo import *
 from .muscle import *
 from .trimal import *
 from .raxml import *
 from .prottest import *
+from .pmodeltest import *
 from .merger import *
-from .jmodeltest import *
+#from .jmodeltest import *
 from .phyml import *
 from .mafft import *
 from .meta_aligner import *

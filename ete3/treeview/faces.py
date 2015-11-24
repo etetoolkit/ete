@@ -1692,13 +1692,12 @@ class SeqMotifFace(StaticItemFace):
          * **bgcolor:** motif background color. Color code or name can be preceded with the "rgradient:" tag to create a radial gradient effect.
 
     :param line intermotif_format: How should spaces among motifs be filled. Available values are: "line", "blank", "none" and "seq", "compactseq".
-    :param none seqtail_format: How should remaining tail sequence be drawn. Available values are: "line", "seq", "compactseq" or "none"
     :param compactseq seq_format: How should sequence be rendered in case no motif regions are provided. Available values are: "seq" and "compactseq"
     """
 
     def __init__(self, seq=None, motifs=None, seqtype="aa",
-                 intermotif_format="line", seqtail_format="blockseq",
-                 seq_format="blockseq", scale_factor=1, shape="()", height=10, width=10,
+                 intermotif_format="line", 
+                 seq_format="compactseq", scale_factor=1, shape="()", height=10, width=10,
                  fgcolor='slategrey', bgcolor='slategrey', gapcolor='black'):
 
         StaticItemFace.__init__(self, None)
@@ -1707,11 +1706,14 @@ class SeqMotifFace(StaticItemFace):
         self.motifs = motifs
         self.overlaping_motif_opacity = 0.5
         self.adjust_to_text = False
+        
         if intermotif_format == 'line':
             self.intermotif_format = '-'
-        else:
+        elif intermotif_format == 'blank':
             self.intermotif_format = ' '
-        self.seqtail_format = seqtail_format
+        else:
+            self.intermotif_format = intermotif_format
+            
         self.seq_format = seq_format
         if seqtype == "aa":
             self.fg = _aafgcolors
@@ -1873,6 +1875,7 @@ class SeqMotifFace(StaticItemFace):
                 w = i.rect().width()
                 h = i.rect().height()
             else:
+                print typ
                 i = QGraphicsSimpleTextItem("?")
 
             if name and i:

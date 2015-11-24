@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -38,6 +36,9 @@ from __future__ import print_function
 #
 #
 # #END_LICENSE#############################################################
+from __future__ import absolute_import
+from __future__ import print_function
+
 import sys
 import os
 import signal
@@ -169,8 +170,6 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
 
     # Captures Ctrl-C for debuging DEBUG
     #signal.signal(signal.SIGINT, control_c)
-
-
 
     last_report_time = None
 

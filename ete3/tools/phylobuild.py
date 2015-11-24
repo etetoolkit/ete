@@ -105,16 +105,7 @@ __DESCRIPTION__ = (
 """
       --------------------------------------------------------------------------------
                   ETE build - reproducible phylogenetic workflows 
-                                %s (beta), %s.
-
-      ETE build is a bioinformatics program providing a complete environment for
-      the execution of phylogenomic workflows, including super-matrix
-      and family-tree reconstruction approaches. ETE build covers all
-      necessary steps for phylogenetic reconstruction, from
-      alignment reconstruction and model testing to the generation of
-      publication ready images of the produced trees and alignments. ETE build is
-      built on top of a bunch of specialized software and comes with a number
-      of predefined workflows.
+                                    %s, %s.
 
       If you use ETE in a published work, please cite:
 
@@ -705,7 +696,10 @@ def _main():
             apps.test_apps(config)
             sys.exit(0)
 
-        elif sys.argv[1] == "workflows":
+        elif sys.argv[1] in ("workflows", "wl"):
+            if sys.argv[1] == "wl":
+                print(colorify("WARNING: 'wl' is obsolete and will be removed in the future, use 'workflows' instead", "orange"), file=sys.stderr)
+
             base_config = check_config(_config_path)
             list_workflows(base_config)
             sys.exit(0)
@@ -717,7 +711,13 @@ def _main():
             
         elif sys.argv[1] == "show":
             base_config = check_config(_config_path)
-            block_detail(sys.argv[2], base_config)
+            try:
+                block = sys.argv[2]
+            except IndexError:
+                print("Expected a block name, found none")
+                sys.exit(1)
+
+            block_detail(block, base_config)
             sys.exit(0)
 
         elif sys.argv[1] == "dump":
@@ -748,7 +748,7 @@ def _main():
     # Input data related flags
     input_group = parser.add_argument_group('==== Input Options ====')
 
-    input_group.add_argument('[check | workflows| apps | show | dump | validate | version | install_tools]',
+    input_group.add_argument('[check | workflows | apps | show | dump | validate | version | install_tools]',
                              nargs='?',
                              help=("Utility commands:\n"
                                    "check: check that external applications are executable.\n"

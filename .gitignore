@@ -5,7 +5,13 @@ build
 doc/_build/
 dist/
 *.egg-info
-ete3/version.py
+ete3/version.py*
+
+# Test files
 test.png
 test.svg
 testdb.sqlite*
+
+# Coverage files
+.coverage
+htmlcov/
