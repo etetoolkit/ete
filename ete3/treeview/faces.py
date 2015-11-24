@@ -37,6 +37,7 @@
 #
 # #END_LICENSE#############################################################
 from __future__ import absolute_import
+from __future__ import print_function
 import re
 from PyQt4.QtGui import (QGraphicsRectItem, QGraphicsLineItem,
                          QGraphicsPolygonItem, QGraphicsEllipseItem,
@@ -1664,15 +1665,15 @@ class SeqMotifFace(StaticItemFace):
 
         ::
 
-          motifs = [[seq.start, seq.end, shape, width, height, fgcolor, bgcolor],
-                   [seq.start, seq.end, shape, width, height, fgcolor, bgcolor],
+          motifs = [[seq.start, seq.end, shape, width, height, fgcolor, bgcolor, text_label],
+                   [seq.start, seq.end, shape, width, height, fgcolor, bgcolor, text_label],
                    ...
                   ]
 
         Where:
 
-         * **seq.start:** Motif start position referred to the full sequence
-         * **seq.end:** Motif end position referred to the full sequence
+         * **seq.start:** Motif start position referred to the full sequence (1-based)
+         * **seq.end:** Motif end position referred to the full sequence (1-based)
          * **shape:** Shape used to draw the motif. Available values are:
 
             * ``o`` = circle or ellipse
@@ -1683,38 +1684,41 @@ class SeqMotifFace(StaticItemFace):
             * ``<>`` = diamond
             * ``[]`` = rectangle
             * ``()`` = round corner rectangle
+            * ``line`` = horizontal line
+            * ``blank`` = blank space 
+
             * ``seq`` = Show a color and the corresponding letter of each sequence position
-            * ``compactseq`` = Show a color for each sequence position
+            * ``compactseq`` = Show a thinh vertical color line for each sequence position
 
          * **width:** total width of the motif (or sequence position width if seq motif type)
          * **height:** total height of the motif (or sequence position height if seq motif type)
          * **fgcolor:** color for the motif shape border
          * **bgcolor:** motif background color. Color code or name can be preceded with the "rgradient:" tag to create a radial gradient effect.
+         * **text_label:** a text label in the format 'FontType|FontSize|FontColor|Text', for instance, arial|8|white|MotifName"" 
 
-    :param line intermotif_format: How should spaces among motifs be filled. Available values are: "line", "blank", "none" and "seq", "compactseq".
-    :param compactseq seq_format: How should sequence be rendered in case no motif regions are provided. Available values are: "seq" and "compactseq"
+    :param line gap_format: default shape for the gaps between motifs
+    :param blockseq seq_format: default shape for the seq regions not covered in motifs 
     """
 
     def __init__(self, seq=None, motifs=None, seqtype="aa",
-                 intermotif_format="line", 
-                 seq_format="compactseq", scale_factor=1, shape="()", height=10, width=10,
+                 gap_format="line", seq_format="()",
+                 scale_factor=1, height=10, width=10,
                  fgcolor='slategrey', bgcolor='slategrey', gapcolor='black'):
 
+        if not motifs and not seq:
+            raise ValueError("At least one argument (seq or motifs) should be provided. ")
+        
         StaticItemFace.__init__(self, None)
-        self.seq  = seq or []
-        self.scale_factor = scale_factor
+        self.seq = seq
         self.motifs = motifs
+        
+        self.scale_factor = scale_factor
         self.overlaping_motif_opacity = 0.5
         self.adjust_to_text = False
         
-        if intermotif_format == 'line':
-            self.intermotif_format = '-'
-        elif intermotif_format == 'blank':
-            self.intermotif_format = ' '
-        else:
-            self.intermotif_format = intermotif_format
-            
+        self.gap_format = gap_format
         self.seq_format = seq_format
+        
         if seqtype == "aa":
             self.fg = _aafgcolors
             self.bg = _aabgcolors
@@ -1724,7 +1728,6 @@ class SeqMotifFace(StaticItemFace):
 
         self.h = height
         self.w = width
-        self.shape = shape
         self.fgcolor = fgcolor
         self.bgcolor = bgcolor
         self.gapcolor = gapcolor
@@ -1735,21 +1738,27 @@ class SeqMotifFace(StaticItemFace):
     def build_regions(self):
         # Build and sort regions
         motifs = self.motifs
-        seq = self.seq
+        if self.seq: 
+            seq = self.seq
+        else:
+            seq = "-" * max([m[1] for m in motifs])
 
         # if only sequence is provided, build regions out of gap spaces
         if not motifs:
             if self.seq_format == "seq":
                 motifs = [[0, len(seq), "seq", 10, self.h, None, None, None]]
-            elif self.seq_format == "compactseq":
-                motifs = [[0, len(seq), "compactseq", 1, self.h, None, None, None]]
-            elif self.seq_format == "blockseq":
+            else:
                 motifs = []
                 pos = 0
                 for reg in re.split('([^-]+)', seq):
                     if reg:
                         if not reg.startswith("-"):
-                            motifs.append([pos, pos+len(reg)-1, self.shape, None, self.h, self.fgcolor, self.bgcolor, None])
+                            if self.seq_format == "compactseq":
+                                motifs.append([pos, pos+len(reg)-1, "compactseq", 1, self.h, None, None, None])
+                            elif self.seq_format == "line":
+                                motifs.append([pos, pos+len(reg)-1, "-", 1, 1, self.fgcolor, None, None])
+                            else:
+                                motifs.append([pos, pos+len(reg)-1, self.seq_format, None, self.h, self.fgcolor, self.bgcolor, None])
                         pos += len(reg)
 
         motifs.sort()
@@ -1762,8 +1771,8 @@ class SeqMotifFace(StaticItemFace):
                 pos = current_seq_pos
                 for reg in re.split('([^-]+)', seq[current_seq_pos:start]):
                     if reg:
-                        if reg.startswith("-"):# and self.seq_format != "seq":
-                            self.regions.append([pos, pos+len(reg)-1, self.intermotif_format, 1, 1, None, None, None])
+                        if reg.startswith("-") and self.seq_format != "seq":
+                            self.regions.append([pos, pos+len(reg)-1, self.gap_format, 1, 1, self.gapcolor, None, None])
                         else:
                             self.regions.append([pos, pos+len(reg)-1, self.seq_format,
                                                  self.w, self.h,
@@ -1778,16 +1787,16 @@ class SeqMotifFace(StaticItemFace):
             pos = current_seq_pos
             for reg in re.split('([^-]+)', seq[current_seq_pos:]):
                 if reg:
-                    if reg.startswith("-"):# and self.seq_format != "seq":
-                        self.regions.append([pos, pos+len(reg)-1, "-", 1, 1, self.gapcolor, None, None])
+                    if reg.startswith("-") and self.seq_format != "seq":
+                        self.regions.append([pos, pos+len(reg)-1, self.gap_format, 1, 1, self.gapcolor, None, None])
                     else:
                         self.regions.append([pos, pos+len(reg)-1, self.seq_format,
                                              self.w, self.h,
                                              self.fgcolor, self.bgcolor, None])
                     pos += len(reg)
 
-        #print '\n'.join(map(str, self.regions))
-
+        #print ('\n'.join(map(str, self.regions)))
+        
     def update_items(self):
         # master item, all object should have this as parent
         self.item = SeqMotifRectItem()
@@ -1842,9 +1851,9 @@ class SeqMotifFace(StaticItemFace):
             # expected width of the object to be drawn
             ystart = y_center - (h/2)
 
-            if typ == "-":
+            if typ == "-" or typ == "line":
                 i = QGraphicsLineItem(0, h/2, w, h/2)
-            elif typ == " ":
+            elif typ == " " or typ == "blank":
                 i = None
             elif typ == "o":
                 i = QGraphicsEllipseItem(0, 0, w, h)
@@ -1875,7 +1884,6 @@ class SeqMotifFace(StaticItemFace):
                 w = i.rect().width()
                 h = i.rect().height()
             else:
-                print typ
                 i = QGraphicsSimpleTextItem("?")
 
             if name and i:
@@ -1899,30 +1907,30 @@ class SeqMotifFace(StaticItemFace):
                 i.setParentItem(self.item)
                 i.setPos(xstart, ystart)
 
-            if bg:
-                if bg.startswith("rgradient:"):
-                    bg = bg.replace("rgradient:", "")
+                if bg:
+                    if bg.startswith("rgradient:"):
+                        bg = bg.replace("rgradient:", "")
+                        try:
+                            c1, c2 = bg.split("|")
+                        except ValueError:
+                            c1, c2 = bg, "white"
+                        rect = i.boundingRect()
+                        gr = QRadialGradient(rect.center(), rect.width()/2)
+                        gr.setColorAt(0, QColor(c2))
+                        gr.setColorAt(1, QColor(c1))
+                        color = gr
+                    else:
+                        color = QColor(bg)
                     try:
-                        c1, c2 = bg.split("|")
-                    except ValueError:
-                        c1, c2 = bg, "white"
-                    rect = i.boundingRect()
-                    gr = QRadialGradient(rect.center(), rect.width()/2)
-                    gr.setColorAt(0, QColor(c2))
-                    gr.setColorAt(1, QColor(c1))
-                    color = gr
-                else:
-                    color = QColor(bg)
-                try:
-                    i.setBrush(color)
-                except:
-                    pass
+                        i.setBrush(color)
+                    except:
+                        pass
 
-            if fg:
-                i.setPen(QColor(fg))
+                if fg:
+                    i.setPen(QColor(fg))
 
-            if opacity < 1:
-                i.setOpacity(opacity)
+                if opacity < 1:
+                    i.setOpacity(opacity)
 
             max_x_pos = max(max_x_pos, xstart + w)
             current_seq_end = max(seq_end, current_seq_end)
