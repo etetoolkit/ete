@@ -122,7 +122,6 @@ if options.doconly:
 if ask('copy docs to ete server from %s?' %SDOC_PATH, ['y', 'n']) == 'y':
     _ex("scp -r %s/* ete:web/static/docs/3.0/" %SDOC_PATH)
 
-#_ex('deactivate;  release/dist/ && tar xf ete2-%s.tar.gz && cd ete2-%s/test/ && python test_all.py && python test_treeview.py' %(NEW_VERSION, NEW_VERSION))
     
 sys.exit(0)
 
