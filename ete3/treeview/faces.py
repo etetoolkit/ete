@@ -1875,7 +1875,6 @@ class SeqMotifFace(StaticItemFace):
                 w = i.rect().width()
                 h = i.rect().height()
             else:
-                print typ
                 i = QGraphicsSimpleTextItem("?")
 
             if name and i:
