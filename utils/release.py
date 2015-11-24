@@ -89,7 +89,7 @@ if not options.doconly:
         NEW_VERSION = CURRENT_VERSION
 
     # clean files from previous releases
-    _ex('rm release/ -rf && git clone .. release/')
+    _ex('rm -rf release/  && git clone .. release/')
     # build docs
     _ex('cd release/sdoc/ && make html && make latex')
     _ex('cd release/sdoc/_build/latex && make all-pdf')
