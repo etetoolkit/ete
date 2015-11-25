@@ -58,7 +58,6 @@ def marking_layout(node):
     else:
         node.img_style["fgcolor"] = '#000000'
 
-        
 def populate_args(mark_args_p):
     mark_args = mark_args_p.add_argument_group('ETE-MARK OPTIONS')
 
@@ -68,4 +67,5 @@ def run(args):
     for nw in args.src_tree_iterator:
         t = EvolTree(nw)
         t.show(layout=marking_layout)
-        print(t.write())
+        print(t.write(format=9, features=['mark']))
+
