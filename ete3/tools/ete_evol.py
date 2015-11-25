@@ -38,9 +38,13 @@
 # #END_LICENSE#############################################################
 from __future__ import absolute_import
 from ..evol.control import PARAMS, AVAIL, PARAMS_DESCRIPTION
+from .. import EvolTree
+from ..evol import Model
 from argparse import RawTextHelpFormatter
 from multiprocessing import Pool
-from os import system
+import os
+from warnings import warn
+
 
 DESC = "Run evolutionary tests... "
 
@@ -77,6 +81,12 @@ Model name  Description                   Model kind
                            help=("Mark successively all the leaves of the input "
                                  "tree and run branch models on each of them."))
 
+    codeml_mk.add_argument('--internals', dest="mark_internals",
+                           action="store_true",
+                           help=("Mark successively all the internal node of "
+                                 "the input tree (but the root) and run branch "
+                                 "models on each of them."))
+
     codeml_gr = evol_args_p.add_argument_group("CODEML MODEL CONFIGURATION OPTIONS")
     for param in PARAMS:
         codeml_gr.add_argument("--" + param, dest=param, metavar="",
@@ -96,8 +106,57 @@ Model name  Description                   Model kind
                             "cores will be used")
         
 
+
+def clean_tree(tree):
+    for n in tree.get_descendants() + [tree]:
+        n.mark = ''
+
+def local_run_model(tree, model_name, ctrl_string='', keep=True, **kwargs):
+    '''
+    '''
+    from subprocess import Popen, PIPE
+    model_obj = Model(model_name, tree, **kwargs)
+    fullpath = os.path.join (tree.workdir, model_obj.name)
+    os.system("mkdir -p %s" %fullpath)
+    # write tree file
+    tree._write_algn(fullpath + '/algn')
+    if model_obj.properties['exec'] == 'Slr':
+        tree.write(outfile=fullpath+'/tree', format = (11))
+    else:
+        tree.write(outfile=fullpath+'/tree',
+                   format = (10 if model_obj.properties['allow_mark'] else 9))
+    # write algn file
+    ## MODEL MODEL MDE
+    if ctrl_string == '':
+        ctrl_string = model_obj.get_ctrl_string(fullpath+'/tmp.ctl')
+    else:
+        open(fullpath+'/tmp.ctl', 'w').write(ctrl_string)
+    hlddir = os.getcwd()
+    os.chdir(fullpath)
+    binary = os.path.join(tree.execpath, model_obj.properties['exec'])
+    try:
+        proc = Popen([binary, 'tmp.ctl'], stdout=PIPE)
+    except OSError:
+        raise Exception(('ERROR: {} not installed, ' +
+                         'or wrong path to binary\n').format(binary))
+    run, err = proc.communicate()
+    if err is not None:
+        warn("ERROR: codeml not found!!!\n" +
+             "       define your variable EvolTree.execpath")
+        return 1
+    if b'error' in run or b'Error' in run:
+        warn("ERROR: inside codeml!!\n" + run)
+        return 1
+    os.chdir(hlddir)
+    return os.path.join(fullpath,'out'), model_obj
+
+def run_one_model(tree, model_name):
+    """
+    needed for multiprocessing
+    """
+    tree.run_model(model_name)
+
 def run(args):
-    from .. import EvolTree
 
     # more help
     if args.super_help:
@@ -107,7 +166,7 @@ def run(args):
             help_str += ('  - %-12s: %s\n' % (key, ''.join([
                 PARAMS_DESCRIPTION[key][i:i + 70] + '\n' + ' ' * 18
                 for i in range(0, len(PARAMS_DESCRIPTION[key]), 70)])))
-        system('echo "%s" | less' % help_str)
+        os.system('echo "%s" | less' % help_str)
         exit()
 
     # in case we only got 1 model :(
@@ -115,14 +174,44 @@ def run(args):
         args.models = [args.models]
 
     for nw in args.src_tree_iterator:
-        t = EvolTree(nw, format=1)
-        t.link_to_alignment(args.alg)
-        
-        procs = Pool(args.maxcores or None)
+        tree = EvolTree(nw, format=1)
+        tree.link_to_alignment(args.alg)
+
+        marks = []
+        if args.mark_leaves:
+            marks.extend([[n.node_id] for n in tree.iter_leaves()])
+        if args.mark_internals:
+            marks.extend([n.node_id for s in tree.iter_leaves() if not s.is_leaf()
+                          for n in s.iter_descendants()])
+            marks.extend([s.node_id for s in tree.iter_leaves() if not s.is_leaf()])
+
+        ########################################################################
+        ## TO BE IMPROVED: multiprocessing should be called in a simpler way
+        pool = Pool(args.maxcores or None)
+        results = []
         for model in args.models:
-            procs.apply_async(t.run_model, args=(model, ))
-        t.show()
-        
+            for nmark, mark in enumerate(marks):
+                if AVAIL[model]['allow_mark'] or not nmark:
+                    clean_tree(tree)
+                    tree.mark_tree(mark , marks=['#1'])
+                    print model, mark
+                    results.append(pool.apply_async(local_run_model, args=(tree, model)))
+        pool.close()
+        pool.join()
+        # join back results to tree
+        for result in results:
+            path, model_obj = result.get()
+            setattr(model_obj, 'run', run)
+            tree.link_to_evol_model(path, model_obj)
+        ########################################################################
+
+        # find cleaver way to test all null models versus alternative models
+        # print ('\n\n comparison of models M1 and M2, p-value: ' + str(tree.get_most_likely ('M2','M1')))
+
+        site_models = [m.name for m in tree._models]
+
+        tree.show(histfaces=site_models)
+
 
 
 

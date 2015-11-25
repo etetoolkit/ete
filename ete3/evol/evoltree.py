@@ -173,7 +173,7 @@ class EvolNode(PhyloNode):
             warn('Should be first labelled as paml ' + \
                  '(automatically done when alignemnt is loaded)')
 
-    def __write_algn(self, fullpath):
+    def _write_algn(self, fullpath):
         """
         to write algn in paml format
         """
@@ -212,7 +212,7 @@ class EvolNode(PhyloNode):
         fullpath = os.path.join (self.workdir, model_obj.name)
         os.system("mkdir -p %s" %fullpath)
         # write tree file
-        self.__write_algn(fullpath + '/algn')
+        self._write_algn(fullpath + '/algn')
         if model_obj.properties['exec'] == 'Slr':
             self.write(outfile=fullpath+'/tree', format = (11))
         else:
