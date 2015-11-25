@@ -2348,6 +2348,89 @@ class TreeNode(object):
         else:
             raise ValueError("Treeview module is disabled")
 
+    @staticmethod
+    def from_parent_child_table(parent_child_table):
+        """Converts a parent-child table into an ETE Tree instance. 
+        
+        :argument parent_child_table: a list of tuples containing parent-child
+           relationsships. For example: [("A", "B", 0.1), ("A", "C", 0.2), ("C",
+           "D", 1), ("C", "E", 1.5)]. Where each tuple represents: [parent, child,
+           child-parent-dist]
+        
+        :returns: A new Tree instance 
+
+        :example:
+
+        >>> tree = Tree.from_parent_child_table([("A", "B", 0.1), ("A", "C", 0.2), ("C", "D", 1), ("C", "E", 1.5)])
+        >>> print tree
+
+        """
+
+        
+        def get_node(nodename, dist=None):
+            if nodename not in nodes_by_name:
+                nodes_by_name[nodename] = Tree(name=nodename, dist=dist)
+            node = nodes_by_name[nodename]
+            if dist is not None:
+                node.dist = dist
+            node.name = nodename
+            return nodes_by_name[nodename]
+    
+        nodes_by_name = {}
+        for columns in parent_child_table:
+            if len(columns) == 3:
+                parent_name, child_name, distance = columns
+                dist = float(distance)
+            else:
+                parent_name, child_name = columns
+                dist = None
+            parent = get_node(parent_name)
+            parent.add_child(get_node(child_name, dist=dist))
+    
+        root = parent.get_tree_root()
+        return root
+        
+    @staticmethod
+    def from_skbio(skbio_tree, map_attributes=None):
+        """Converts a scikit-bio TreeNode object into ETE Tree object. 
+        
+        :argument skbio_tree: a scikit bio TreeNode instance 
+
+        :argument None map_attributes: A list of attribute nanes in the
+           scikit-bio tree that should be mapped into the ETE tree
+           instance. (name, id and branch length are always mapped)
+
+        :returns: A new Tree instance 
+
+        :example:
+
+        >>> tree = Tree.from_skibio(skbioTree, map_attributes=["value"])
+        
+        """        
+        from skbio import TreeNode as skbioTreeNode
+        
+        def get_ete_node(skbio_node):
+            ete_node = all_nodes.get(skbio_node, Tree())
+            if skbio_node.length is not None:
+                ete_node.dist = float(skbio_node.length)
+            ete_node.name = skbio_node.name            
+            ete_node.add_features(id=skbio_node.id)
+            if map_attributes:
+                for a in map_attributes:
+                    ete_node.add_feature(a, getattr(skbio_node, a, None))
+            return ete_node
+        
+        all_nodes = {}
+        if isinstance(skbio_tree, skbioTreeNode):
+            for node in skbio_tree.preorder(include_self=True):
+                all_nodes[node] = get_ete_node(node)
+                ete_node = all_nodes[node]
+                for ch in node.children:
+                    ete_ch = get_ete_node(ch)
+                    ete_node.add_child(ete_ch)
+                    all_nodes[ch] = ete_ch
+            return ete_ch.get_tree_root()
+        
     def phonehome(self):
         from .. import _ph
         _ph.call()
