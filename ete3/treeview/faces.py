@@ -39,6 +39,12 @@
 from __future__ import absolute_import
 from __future__ import print_function
 import re
+
+try:
+    from urllib2 import urlopen
+except ImportError:
+    from urllib.request import urlopen
+
 from PyQt4.QtGui import (QGraphicsRectItem, QGraphicsLineItem,
                          QGraphicsPolygonItem, QGraphicsEllipseItem,
                          QPen, QColor, QBrush, QPolygonF, QFont,
@@ -392,21 +398,27 @@ class ImgFace(Face):
     :param img_file: path to the image file.
     :param None width: if provided, image will be scaled to this width (in pixels)
     :param None height: if provided, image will be scaled to this height (in pixels)
+    :param False is_url: if True, img_file is considered a URL and the image is automatically downloaded 
 
     If only one dimension value (width or height) is provided, the other
     will be calculated to keep aspect ratio.
 
     """
 
-    def __init__(self, img_file, width=None, height=None):
+    def __init__(self, img_file, width=None, height=None, is_url=False):                
         Face.__init__(self)
         self.img_file = img_file
         self.width = width
         self.height = height
+        self.is_url = is_url
 
     def update_pixmap(self):
-        self.pixmap = QPixmap(self.img_file)# flags=Qt.DiffuseAlphaDither)
-
+        if self.is_url:
+            self.pixmap = QPixmap()
+            self.pixmap.loadFromData(urlopen(self.img_file).read())
+        else:
+            self.pixmap = QPixmap(self.img_file)
+        
         if self.width or self.height:
             w, h = self.width, self.height
             ratio = self.pixmap.width() / float(self.pixmap.height())
