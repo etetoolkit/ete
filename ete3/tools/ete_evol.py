@@ -87,7 +87,8 @@ def run(args):
     print(args.models)
 
     for nw in args.src_tree_iterator:
-        t = EvolTree(nw)
+        print(nw)
+        t = EvolTree(nw, format=1)
         #t.link_to_alignment(args.alg)
         t.show()
         

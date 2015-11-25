@@ -214,8 +214,7 @@ class EvolNode(PhyloNode):
         # write tree file
         self.__write_algn(fullpath + '/algn')
         if model_obj.properties['exec'] == 'Slr':
-            self.write(outfile=fullpath+'/tree',
-                       format = (11))
+            self.write(outfile=fullpath+'/tree', format = (11))
         else:
             self.write(outfile=fullpath+'/tree',
                        format = (10 if model_obj.properties['allow_mark'] else 9))
@@ -458,8 +457,8 @@ class EvolNode(PhyloNode):
             return nwk
         else:
             return nwk
-    write.__doc__ += super(PhyloNode, PhyloNode()).write.__doc__.replace('argument format',
-                                                                         'argument 10 format')
+    write.__doc__ += super(PhyloNode, PhyloNode()).write.__doc__.replace(
+        'argument format', 'argument 10 format')
 
 
     def get_most_likely(self, altn, null):
