@@ -37,8 +37,10 @@
 #
 # #END_LICENSE#############################################################
 from __future__ import absolute_import
-from ..evol.model import AVAIL, PARAMS
+from ..evol.control import PARAMS, AVAIL, PARAMS_DESCRIPTION
 from argparse import RawTextHelpFormatter
+from multiprocessing import Pool
+from os import system
 
 DESC = "Run evolutionary tests... "
 
@@ -48,7 +50,7 @@ def populate_args(evol_args_p):
     evol_args.add_argument("--models", dest="models",
                            choices=AVAIL.keys(),
                            nargs="+", default="fb",
-                           help="""choose evolutionary models among:
+                           help="""choose evolutionary models (Model name) among:
 =========== ============================= ==================
 Model name  Description                   Model kind
 =========== ============================= ==================\n%s
@@ -70,28 +72,55 @@ Model name  Description                   Model kind
 
     codeml_mk.add_argument('--mark', dest="mark", nargs='+',
                            help=("mark specific branch of the input tree"))
-    
+
+    codeml_mk.add_argument('--leaves', dest="mark_leaves", action="store_true",
+                           help=("Mark successively all the leaves of the input "
+                                 "tree and run branch models on each of them."))
+
     codeml_gr = evol_args_p.add_argument_group("CODEML MODEL CONFIGURATION OPTIONS")
     for param in PARAMS:
         codeml_gr.add_argument("--" + param, dest=param, metavar="",
                                help=("[%(default)4s] overrides CodeML " +
                                      "%-12s parameter for selected model" % param),
                                default=PARAMS[param])
+    codeml_gr.add_argument('--codeml_help', action='store_true', dest='super_help', 
+                           help=('show detailed description on model configuration '
+                                 'options, and exit.'))
 
-
-
-    
-
+    exec_group = evol_args_p.add_argument_group('EXECUTION MDE OPTIONS')
+    exec_group.add_argument("-C", "--cpu", dest="maxcores", type=int,
+                            default=1, help="Maximum number of CPU cores"
+                            " available in the execution host. If higher"
+                            " than 1, tasks with multi-threading"
+                            " capabilities will enabled (if 0 all available)"
+                            "cores will be used")
+        
 
 def run(args):
     from .. import EvolTree
 
-    print(args.models)
+    # more help
+    if args.super_help:
+        help_str = ('Description of CodeML parameters, see PAML manual for more '
+                    'information\n\n')
+        for key in PARAMS_DESCRIPTION:
+            help_str += ('  - %-12s: %s\n' % (key, ''.join([
+                PARAMS_DESCRIPTION[key][i:i + 70] + '\n' + ' ' * 18
+                for i in range(0, len(PARAMS_DESCRIPTION[key]), 70)])))
+        system('echo "%s" | less' % help_str)
+        exit()
+
+    # in case we only got 1 model :(
+    if isinstance(args.models, str):
+        args.models = [args.models]
 
     for nw in args.src_tree_iterator:
-        print(nw)
         t = EvolTree(nw, format=1)
-        #t.link_to_alignment(args.alg)
+        t.link_to_alignment(args.alg)
+        
+        procs = Pool(args.maxcores or None)
+        for model in args.models:
+            procs.apply_async(t.run_model, args=(model, ))
         t.show()
         
 
