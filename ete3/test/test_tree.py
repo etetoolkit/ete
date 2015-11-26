@@ -1254,8 +1254,7 @@ class Test_Coretype_Tree(unittest.TestCase):
         self.assertEqual((t_pkl & "A").complex[0], [0,1])
         self.assertEqual((t_deep & "A").testfn(), "YES")
 
-
-
+      
 
     # def test_traversing_speed(self):
     #     return

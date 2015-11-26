@@ -5,6 +5,9 @@ import sys
 import readline
 from optparse import OptionParser
 
+WD = os.path.abspath(os.path.split(__file__)[0])
+os.chdir(WD)
+
 parser = OptionParser()
 parser.add_option("--notest", dest="notest", action='store_true')
 parser.add_option("--nodoc", dest="nodoc", action='store_true')
@@ -55,12 +58,11 @@ def ask_path(string, default_path):
             v = None
     return v
 
-
 SERVER="huerta@etetoolkit.embl.de"
 SERVER_RELEASES_PATH = "/var/www/etetoolkit/static/releases/ete3"
 
 TEMP_PATH = "/tmp"
-CURRENT_VERSION = open('VERSION').readline().strip()
+CURRENT_VERSION = open('../VERSION').readline().strip()
 a, b, c, tag, ncom, hcom  = re.search("(\d+)\.(\d+)\.(\d+)(-?\w+\d+)?-?(\d+)?-?(\w+)?", CURRENT_VERSION).groups()
 a, b, c = map(int, (a, b, c))
 SERIES_VERSION = "%s.%s" %(a, b)
@@ -83,13 +85,13 @@ if not options.doconly:
         NEW_VERSION = raw_input('new version string:').strip()
 
     if ask('Write "%s" and commit changes?' %NEW_VERSION, ['y', 'n']) == 'y':
-        open('VERSION', 'w').write(NEW_VERSION)
+        open('../VERSION', 'w').write(NEW_VERSION)
         _ex('git commit -a -m "release %s " && git tag -f %s' %(NEW_VERSION, NEW_VERSION))
     else:
         NEW_VERSION = CURRENT_VERSION
 
     # clean files from previous releases
-    _ex('rm release/ -rf && git clone .. release/')
+    _ex('rm -rf release/  && git clone .. release/')
     # build docs
     _ex('cd release/sdoc/ && make html && make latex')
     _ex('cd release/sdoc/_build/latex && make all-pdf')
@@ -102,7 +104,7 @@ if not options.doconly:
 
     # test distribution
     if not options.notest:
-        _ex('cd release/dist/ && tar xf ete3-%s.tar.gz && cd ete3-%s/test/ && python test_all.py && python test_treeview.py' %(NEW_VERSION, NEW_VERSION))
+        _ex('cd release/dist/ && tar xf ete3-%s.tar.gz && cd ete3-%s/ && PYHTONPATH="./" python -m "ete3.test.test_all"' %(NEW_VERSION, NEW_VERSION))
 
     if ask('Upload to TEST pypi?', ['y', 'n']) == 'y':
         _ex('cd release/ && python setup.py sdist upload -r https://testpypi.python.org/pypi')
@@ -110,19 +112,18 @@ if not options.doconly:
     if ask('Upload to pypi?', ['y', 'n']) == 'y':
         _ex('cd release/ && python setup.py sdist upload -r https://pypi.python.org/pypi')
 
+    SDOC_PATH = "release/doc/"
+        
 if options.doconly:
-    SDOC_PATH = '..'
+    SDOC_PATH = '../sdoc/_build/html/'
     # build docs
     _ex('cd ../sdoc/ && make html && make latex')
     _ex('cd ../sdoc/_build/latex && make all-pdf')
-    _ex('cp -a ../sdoc/_build/latex/*.pdf sdoc/_build/html/_downloads/')
-else:
-    SDOC_PATH = 'release/'
+    _ex('cp -a ../sdoc/_build/latex/*.pdf ../sdoc/_build/html/_downloads/')
 
-#if ask('Upload docs?', ['y', 'n']) == 'y':
-#    _ex("cd %s; python setup.py upload_sphinx --upload-dir sdoc/_build/html/ -r https://pypi.python.org/pypi --show-response" %SDOC_PATH)
+if ask('copy docs to ete server from %s?' %SDOC_PATH, ['y', 'n']) == 'y':
+    _ex("scp -r %s/* ete:web/static/docs/3.0/" %SDOC_PATH)
 
-#_ex('deactivate;  release/dist/ && tar xf ete2-%s.tar.gz && cd ete2-%s/test/ && python test_all.py && python test_treeview.py' %(NEW_VERSION, NEW_VERSION))
     
 sys.exit(0)
 
