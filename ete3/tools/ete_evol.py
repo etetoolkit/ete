@@ -162,6 +162,8 @@ def marking_layout(node):
     
     if node.is_leaf():
         add_face_to_node(TextFace(" %s" %node.name, ftype="courier", fgcolor="#666666"), node, column=10, position="branch-right")
+    else:
+        add_face_to_node(TextFace(" %s" %node.name, fsize=8, ftype="courier", fgcolor="#666666"), node, column=0, position="branch-top")        
     
 def clean_tree(tree):
     """
