@@ -162,6 +162,8 @@ def marking_layout(node):
     
     if node.is_leaf():
         add_face_to_node(TextFace(" %s" %node.name, ftype="courier", fgcolor="#666666"), node, column=10, position="branch-right")
+    else:
+        add_face_to_node(TextFace(" %s" %node.name, fsize=8, ftype="courier", fgcolor="#666666"), node, column=0, position="branch-top")        
     
 def clean_tree(tree):
     """
@@ -195,7 +197,9 @@ def local_run_model(tree, model_name, ctrl_string='', **kwargs):
         open(fullpath+'/tmp.ctl', 'w').write(ctrl_string)
     hlddir = os.getcwd()
     os.chdir(fullpath)
+    
     binary = os.path.join(tree.execpath, model_obj.properties['exec'])
+    
     try:
         proc = Popen([binary, 'tmp.ctl'], stdout=PIPE)
     except OSError:

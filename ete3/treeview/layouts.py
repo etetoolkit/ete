@@ -93,7 +93,7 @@ def heatmap(node):
 
     matrix_max = numpy.max(node.arraytable._matrix_max)
     matrix_min = numpy.min(node.arraytable._matrix_min)
-    print(matrix_max)
+    
     matrix_avg = matrix_min+((matrix_max-matrix_min)/2)
 
     ProfileFace = faces.ProfileFace(\

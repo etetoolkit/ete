@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -37,6 +36,7 @@ from __future__ import absolute_import
 #
 #
 # #END_LICENSE#############################################################
+from __future__ import absolute_import
 from .svg_colors import random_color
 from PyQt4  import QtCore, QtGui
 from six.moves import range
@@ -52,10 +52,32 @@ class _NodeActions(object):
     def mouseReleaseEvent(self, e):
         if not self.node:
             return
+     
         if e.button() == QtCore.Qt.RightButton:
             self.showActionPopup()
         elif e.button() == QtCore.Qt.LeftButton:
             self.scene().view.set_focus(self.node)
+            
+            if isinstance(self.node, EvolTree):
+                root = self.node.get_tree_root()
+                all_marks = set([getattr(n, "mark", '').replace('#', '').strip()
+                                 for n in root.traverse() if n is not self.node])                
+                all_marks.discard('')
+                
+                max_value = max(map(int, all_marks)) if all_marks else 0
+               
+                current_mark = getattr(self.node, "mark", "")
+                try:
+                    current_mark = int(current_mark.replace('#', ''))
+                except:
+                    current_mark = 0
+                    
+                if current_mark > max_value:
+                    self._gui_unmark_node()
+                else:
+                    self._gui_mark_node('#%d'% (current_mark + 1))
+                    
+            
             #self.scene().view.prop_table.update_properties(self.node)
 
 
@@ -83,6 +105,8 @@ class _NodeActions(object):
                 self.scene().view.highlight_node(self.node, fullRegion=True,
                                                  bg=random_color(l=0.5, s=0.5), permanent=True)
 
+                    
+
     def showActionPopup(self):
         contextMenu = QtGui.QMenu()
         contextMenu.addAction( "Set as outgroup", self.set_as_outgroup)
@@ -108,18 +132,26 @@ class _NodeActions(object):
             contextMenu.addAction( "Extract", self.set_start_node)
 
         if isinstance(self.node, EvolTree):
-            if hasattr(self.node, 'mark') and self.node.mark:
-                mark = '#' + str(int(self.node.mark.replace('#', '')) + 1)
-            else:
-                mark = '#1'
-            contextMenu.addAction("MARK node " + mark, partial(
-                self._gui_mark_node, mark))
-            contextMenu.addAction("MARK group " + mark, partial(
-                self._gui_mark_group, mark))
-            if mark != '#1':
-                contextMenu.addAction("UNMARK node " + mark, partial(
+            root = self.node.get_tree_root()
+            all_marks = set([getattr(n, "mark", '').replace('#', '').strip()
+                             for n in root.traverse() if n is not self.node])
+            all_marks.discard('')
+            max_value = max(map(int, all_marks)) if all_marks else 1
+            
+            current_mark = getattr(self.node, "mark", '').replace('#', '').strip()
+            current_mark = int(current_mark) if current_mark != '' else 0
+            
+            if current_mark <= max_value:
+                mark = "#%d" %(current_mark + 1)
+                contextMenu.addAction("ETE-evol: mark node as " + mark, partial(
+                    self._gui_mark_node, mark))
+                contextMenu.addAction("ETE-evol: mark group as " + mark, partial(
+                    self._gui_mark_group, mark))
+                
+            if getattr(self.node, "mark", None):
+                contextMenu.addAction("ETE-evol: clear mark in node", partial(
                     self._gui_unmark_node))
-                contextMenu.addAction("UNMARK group " + mark, partial(
+                contextMenu.addAction("ETE-evol: clear mark in group", partial(
                     self._gui_unmark_group))
         
 
