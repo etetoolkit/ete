@@ -862,14 +862,14 @@ class _TreeView(QtGui.QGraphicsView):
     def mouseReleaseEvent(self, e):
         self.scene().view.hide_focus()
         curr_pos = self.mapToScene(e.pos())
-
-        x = min(self.selector.startPoint.x(),curr_pos.x())
-        y = min(self.selector.startPoint.y(),curr_pos.y())
-        w = max(self.selector.startPoint.x(),curr_pos.x()) - x
-        h = max(self.selector.startPoint.y(),curr_pos.y()) - y
-        if self.selector.startPoint == curr_pos:
-            self.selector.setVisible(False)
-        self.selector.setActive(False)
+        if hasattr(self.selector, "startPoint"): 
+            x = min(self.selector.startPoint.x(),curr_pos.x())
+            y = min(self.selector.startPoint.y(),curr_pos.y())
+            w = max(self.selector.startPoint.x(),curr_pos.x()) - x
+            h = max(self.selector.startPoint.y(),curr_pos.y()) - y
+            if self.selector.startPoint == curr_pos:
+                self.selector.setVisible(False)
+            self.selector.setActive(False)
         QtGui.QGraphicsView.mouseReleaseEvent(self,e)
 
     def mousePressEvent(self,e):
