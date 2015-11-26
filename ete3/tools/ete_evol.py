@@ -111,6 +111,17 @@ Model name  Description                   Model kind
                                  "the input tree (but the root) and run branch "
                                  "models on each of them."))
 
+    codeml_ts = evol_args_p.add_argument_group("CODEML TEST OPTIONS")
+
+    codeml_ts.add_argument('--tests', dest="tests", nargs='+', default='auto',
+                           type=str,
+                           help=("Defines the set of tests to perform.\n"
+                                 " example: --test M1,M2 b_neut,b_free\n"
+                                 "Will do a likelihood ratio tests between "
+                                 "M1 and M2, and between any b_neut and b_free"
+                                 "computed\n(only trees with identical marks "
+                                 "will be caompared)."))
+
     codeml_gr = evol_args_p.add_argument_group("CODEML MODEL CONFIGURATION OPTIONS")
     for param in PARAMS:
         codeml_gr.add_argument("--" + param, dest=param, metavar="",
@@ -347,28 +358,40 @@ def run(args):
 
         
         tests = "\nLRT\n\n"
-        tests += ('%20s |%20s | %s\n' % ('Null model', 'Alternative model',
+        tests += ('%25s |%25s | %s\n' % ('Null model', 'Alternative model',
                                        'p-value'))
         tests += ('-' * 55)
         tests += ('\n')
         at_least_one_come_on = False
         results = {}
+        if args.tests != 'auto':
+            wanted = [t.split(',') for t in args.tests]
+        else:
+            wanted = []
+        bests = []
         for null in tree._models:
             for altn in tree._models:
                 if tree._models[null].np >= tree._models[altn].np:
                     continue
                 # we usually want to compare models of the same kind
-                if ((AVAIL[null.split('.')[0]]['typ']=='site' and
-                     AVAIL[altn.split('.')[0]]['typ']=='branch') or
-                    (AVAIL[altn.split('.')[0]]['typ']=='site' and
-                     AVAIL[null.split('.')[0]]['typ']=='branch')):
+                if (((AVAIL[null.split('.')[0]]['typ']=='site' and
+                      AVAIL[altn.split('.')[0]]['typ']=='branch') or
+                     (AVAIL[altn.split('.')[0]]['typ']=='site' and
+                      AVAIL[null.split('.')[0]]['typ']=='branch'))
+                    and args.tests == 'auto'):
                     continue
                 # we usually want to compare models marked in the same way
                 if (('.' in altn and '.' in null) and
                     (altn.split('.')[1] != null.split('.')[1])):
                     continue
+                if args.tests != 'auto':
+                    if not any([(null.split('.')[0] in test and
+                                 altn.split('.')[0] in test)
+                                for test in wanted]):
+                        continue
                 results[(null, altn)] = tree.get_most_likely(altn, null)
-                tests += ('%20s |%20s | %f%s\n' % (
+                
+                tests += ('%25s |%25s | %f%s\n' % (
                     null, altn, results[(null, altn)],
                     '**' if results[(null, altn)] < 0.01 else '*'
                     if results[(null, altn)] < 0.05 else ''))
