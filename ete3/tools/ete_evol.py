@@ -177,8 +177,6 @@ def local_run_model(tree, model_name, ctrl_string='', **kwargs):
     local verison of model runner. Needed for multiprocessing pickling...
     '''
     from subprocess import Popen, PIPE
-    print tree.write()
-    print model_name
     model_obj = Model(model_name, tree, **kwargs)
     fullpath = os.path.join (tree.workdir, model_obj.name)
     os.system("mkdir -p %s" %fullpath)
@@ -337,9 +335,11 @@ def run(args):
         for result in results:
             path, model_obj = result.get()
             setattr(model_obj, 'run', run)
-            print model_obj.name
-            print path
-            tree.link_to_evol_model(path, model_obj)
+            try:
+                tree.link_to_evol_model(path, model_obj)
+            except KeyError:
+                warn('ERROR: model %s failed' % (model_obj.name))
+                
         ########################################################################
 
         # find cleaver way to test all null models versus alternative models
@@ -382,7 +382,7 @@ def run(args):
         best = max([m for m in tree._models
                     if AVAIL[m.split('.')[0]]['typ']=='branch'],
                    key=lambda x: tree._models[x].lnL)
-        print (best)
+        print(best)
         tree.change_dist_to_evol('bL', tree._models[best], fill=True)
 
         # get all site models for display
