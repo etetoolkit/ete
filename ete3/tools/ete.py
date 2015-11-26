@@ -53,7 +53,7 @@ TOOLSPATH = os.path.realpath(os.path.split(os.path.realpath(__file__))[0])
 import argparse
 from . import (ete_split, ete_expand, ete_annotate, ete_ncbiquery, ete_view,
                ete_generate, ete_mod, ete_extract, ete_compare, ete_evol,
-               ete_codeml_mark, ete_maptrees)
+               ete_maptrees)
 from . import common
 from .common import log
 from .utils import colorify
@@ -73,7 +73,6 @@ def ete_consense(args):
     # all observed splits
 def ete_fetch(args):
 def ete_evol(args):
-def ete_codeml_mark(args):
 
 """
 
@@ -195,12 +194,6 @@ def main():
                                        description=ete_evol.DESC)
     evol_args_p.set_defaults(func=ete_evol.run)
     ete_evol.populate_args(evol_args_p)
-
-    # - MARK -
-    mark_args_p = subparser.add_parser("codeml_mark", parents=[source_args_p, main_args_p],
-                                       description=ete_codeml_mark.DESC)
-    mark_args_p.set_defaults(func=ete_codeml_mark.run)
-    ete_codeml_mark.populate_args(mark_args_p)
 
     # - MAPTREES -
     maptrees_args_p = subparser.add_parser("maptrees", parents=[source_args_p, ref_args_p, main_args_p],
