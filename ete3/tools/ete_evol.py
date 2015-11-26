@@ -37,12 +37,16 @@
 #
 # #END_LICENSE#############################################################
 from __future__ import absolute_import
+from __future__ import print_function
+
 from ..evol.control import PARAMS, AVAIL, PARAMS_DESCRIPTION
-from .. import EvolTree, random_color, add_face_to_node, TextFace, TreeStyle, AttrFace
+from .. import EvolTree, random_color, add_face_to_node, TextFace, TreeStyle
 from ..evol import Model
 from argparse import RawTextHelpFormatter
 from multiprocessing import Pool
+import sys
 import os
+
 from warnings import warn
 
 
@@ -70,6 +74,14 @@ Model name  Description                   Model kind
     evol_args.add_argument("--alg", dest="alg",
                            type=str,
                            help=("Link tree to a multiple sequence alignment (codons)."))
+
+    evol_args.add_argument("--dir", dest="dir",
+                           type=str, nargs='+',
+                           help=("directory where precalculated models are "
+                                 "stored, followed by coma model-name.\n"
+                                 "example: --dir /path1/,M2 /path2/,M1\n"
+                                 "will load models from path1 under the name "
+                                 "'M2', and from path2 into 'M1'"))
 
     evol_args.add_argument("--model_folder", dest="model_folder",
                            type=str, nargs='+', 
@@ -139,7 +151,10 @@ Model name  Description                   Model kind
                             " than 1, tasks with multi-threading"
                             " capabilities will enabled (if 0 all available)"
                             "cores will be used")
-
+    exec_group.add_argument("--codeml_binary", dest="codeml_binary",
+                            default="~/.etetoolkit/ext_apps-latest/bin/codeml")
+                            
+    
 def marking_layout(node):
     '''
     layout for interactively marking CodemlTree
@@ -183,7 +198,7 @@ def clean_tree(tree):
     for n in tree.get_descendants() + [tree]:
         n.mark = ''
 
-def local_run_model(tree, model_name, ctrl_string='', **kwargs):
+def local_run_model(tree, model_name, codeml_binary, ctrl_string='', **kwargs):
     '''
     local verison of model runner. Needed for multiprocessing pickling...
     '''
@@ -206,22 +221,14 @@ def local_run_model(tree, model_name, ctrl_string='', **kwargs):
         open(fullpath+'/tmp.ctl', 'w').write(ctrl_string)
     hlddir = os.getcwd()
     os.chdir(fullpath)
-    
-    binary = os.path.join(tree.execpath, model_obj.properties['exec'])
-    
-    try:
-        proc = Popen([binary, 'tmp.ctl'], stdout=PIPE)
-    except OSError:
-        raise Exception(('ERROR: {} not installed, ' +
-                         'or wrong path to binary\n').format(binary))
+        
+    proc = Popen([codeml_binary, 'tmp.ctl'], stdout=PIPE)
+
     run, err = proc.communicate()
-    if err is not None:
-        warn("ERROR: codeml not found!!!\n" +
-             "       define your variable EvolTree.execpath")
-        return 1
-    if b'error' in run or b'Error' in run:
+    if err is not None or b'error' in run or b'Error' in run:
         warn("ERROR: inside codeml!!\n" + run)
         return 1
+    
     os.chdir(hlddir)
     return os.path.join(fullpath,'out'), model_obj
 
@@ -243,6 +250,12 @@ def get_node(tree, node):
     return res[0]
 
 def run(args):
+
+    codeml_binary = os.path.expanduser(args.codeml_binary)
+    if not os.path.exists(codeml_binary):        
+        print("ERROR: Codeml binary does not exist at %s"%args.codeml_binary, file=sys.stderr)
+        print("       provide another route with --codeml_binary, or install it by executing 'ete3 install-external-tools paml'", file=sys.stderr)
+        exit(-1)
 
     # more help
     if args.super_help:
@@ -320,6 +333,7 @@ def run(args):
 
         ########################################################################
         ## TO BE IMPROVED: multiprocessing should be called in a simpler way
+
         print("\nRUNNING CODEML")
         pool = Pool(args.maxcores or None)
         results = []
@@ -334,11 +348,12 @@ def run(args):
                     modmodel = model + '.' + '_'.join([str(n) for n in node])
                     print('          %s\n' % (
                         tree.write()))
-                    results.append(pool.apply_async(local_run_model,
-                                                    args=(tree, modmodel)))
+                    results.append(pool.apply_async(
+                        local_run_model,
+                        args=(tree, modmodel, codeml_binary)))
             else:
-                results.append(pool.apply_async(local_run_model,
-                                                args=(tree, model)))
+                results.append(pool.apply_async(
+                    local_run_model, args=(tree, model, codeml_binary)))
 
         pool.close()
         pool.join()
@@ -359,8 +374,8 @@ def run(args):
         
         tests = "\nLRT\n\n"
         tests += ('%25s |%25s | %s\n' % ('Null model', 'Alternative model',
-                                       'p-value'))
-        tests += ('-' * 55)
+                                         'p-value'))
+        tests += (' ''-' * 65)
         tests += ('\n')
         at_least_one_come_on = False
         results = {}
@@ -390,6 +405,7 @@ def run(args):
                                 for test in wanted]):
                         continue
                 results[(null, altn)] = tree.get_most_likely(altn, null)
+                bests.append(null if results[(null, altn)] > 0.05 else altn)
                 
                 tests += ('%25s |%25s | %f%s\n' % (
                     null, altn, results[(null, altn)],
@@ -399,6 +415,8 @@ def run(args):
 
         if at_least_one_come_on:
             print(tests)
+
+        print(bests)
             
         # apply evol model (best branch model?) to tree for display
         # TODO: best needs to be guessed from LRT
@@ -413,5 +431,4 @@ def run(args):
                        if AVAIL[m.split('.')[0]]['typ']=='site']
 
         tree.show(histfaces=site_models)
-
 
