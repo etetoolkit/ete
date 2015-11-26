@@ -19,9 +19,9 @@ from ete3 import faces
 tree = EvolTree ("data/S_example/measuring_S_tree.nw")
 tree.link_to_alignment ('data/S_example/alignment_S_measuring_evol.fasta')
 
-print tree
+print(tree)
 
-print '\n Running free-ratio model with calculation of ancestral sequences...'
+print('\n Running free-ratio model with calculation of ancestral sequences...')
 
 tree.run_model ('fb_anc')
 #tree.link_to_evol_model('/tmp/ete3-codeml/fb_anc/out', 'fb_anc')
@@ -39,7 +39,7 @@ for n in sorted (tree.get_descendants()+[tree],
     I.aligned_foot.add_face(anc_face, 1)
     I.aligned_foot.add_face(faces.TextFace('node_id: #%d '%(n.node_id),
                                            fsize=8), 0)
-print 'display result of bs_anc model, with ancestral amino acid sequences.'
+print('display result of bs_anc model, with ancestral amino acid sequences.')
 tree.show(tree_style=I)
 
-print '\nThe End.'
+print('\nThe End.')

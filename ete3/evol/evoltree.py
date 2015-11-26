@@ -173,7 +173,7 @@ class EvolNode(PhyloNode):
             warn('Should be first labelled as paml ' + \
                  '(automatically done when alignemnt is loaded)')
 
-    def __write_algn(self, fullpath):
+    def _write_algn(self, fullpath):
         """
         to write algn in paml format
         """
@@ -212,10 +212,9 @@ class EvolNode(PhyloNode):
         fullpath = os.path.join (self.workdir, model_obj.name)
         os.system("mkdir -p %s" %fullpath)
         # write tree file
-        self.__write_algn(fullpath + '/algn')
+        self._write_algn(fullpath + '/algn')
         if model_obj.properties['exec'] == 'Slr':
-            self.write(outfile=fullpath+'/tree',
-                       format = (11))
+            self.write(outfile=fullpath+'/tree', format = (11))
         else:
             self.write(outfile=fullpath+'/tree',
                        format = (10 if model_obj.properties['allow_mark'] else 9))
@@ -401,7 +400,7 @@ class EvolNode(PhyloNode):
     def link_to_evol_model(self, path, model):
         '''
         link EvolTree to evolutionary model
-          * free-branch model ('fb') will append evol values to tree
+          * free-branch model ("fb") will append evol values to tree
           * Site models (M0, M1, M2, M7, M8) will give evol values by site
             and likelihood
 
@@ -458,8 +457,8 @@ class EvolNode(PhyloNode):
             return nwk
         else:
             return nwk
-    write.__doc__ += super(PhyloNode, PhyloNode()).write.__doc__.replace('argument format',
-                                                                         'argument 10 format')
+    write.__doc__ += super(PhyloNode, PhyloNode()).write.__doc__.replace(
+        'argument format', 'argument 10 format')
 
 
     def get_most_likely(self, altn, null):
