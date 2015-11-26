@@ -48,8 +48,8 @@ log = logging.getLogger("main")
 
 from ..master_task import TreeTask
 from ..master_job import Job
-from ..utils import (basename, Tree, OrderedDict,
-                          GLOBALS, RAXML_CITE, pjoin, DATATYPES, md5)
+from ..utils import (basename, Tree, OrderedDict, GLOBALS, pjoin, DATATYPES,
+                     md5)
 from .. import db
 
 __all__ = ["Raxml"]
@@ -57,7 +57,7 @@ __all__ = ["Raxml"]
 class Raxml(TreeTask):
     def __init__(self, nodeid, alg_file, constrain_id, model,
                  seqtype, conf, confname, parts_id=None):
-        GLOBALS["citator"].add(RAXML_CITE)
+        GLOBALS["citator"].add('raxml')
         if model:
             model = model.split("+")[0]
        

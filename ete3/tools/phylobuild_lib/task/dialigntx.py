@@ -43,13 +43,13 @@ log = logging.getLogger("main")
 
 from ..master_task import AlgTask
 from ..master_job import Job
-from ..utils import SeqGroup, OrderedDict, GLOBALS, DIALIGN_CITE, pjoin
+from ..utils import SeqGroup, OrderedDict, GLOBALS, pjoin
 
 __all__ = ["Dialigntx"]
 
 class Dialigntx(AlgTask):
     def __init__(self, nodeid, multiseq_file, seqtype, conf, confname):
-        GLOBALS["citator"].add(DIALIGN_CITE)
+        GLOBALS["citator"].add('dialigntx')
 
         # fixed options for running this task
         base_args = OrderedDict({

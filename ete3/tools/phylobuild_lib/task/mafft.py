@@ -43,14 +43,14 @@ log = logging.getLogger("main")
 
 from ..master_task import AlgTask
 from ..master_job import Job
-from ..utils import SeqGroup, OrderedDict, GLOBALS, MAFFT_CITE, pjoin
+from ..utils import SeqGroup, OrderedDict, GLOBALS, pjoin
 from .. import db
 
 __all__ = ["Mafft"]
 
 class Mafft(AlgTask):
     def __init__(self, nodeid, multiseq_file, seqtype, conf, confname):
-        GLOBALS["citator"].add(MAFFT_CITE)
+        GLOBALS["citator"].add('mafft')
 
         self.confname = confname
         self.conf = conf

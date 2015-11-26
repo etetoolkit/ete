@@ -46,7 +46,7 @@ log = logging.getLogger("main")
 
 from ..master_task import AlgCleanerTask
 from ..master_job import Job
-from ..utils import SeqGroup, GLOBALS, TRIMAL_CITE, hascontent, DATATYPES, pjoin
+from ..utils import SeqGroup, GLOBALS, hascontent, DATATYPES, pjoin
 from .. import db
 
 __all__ = ["Trimal"]
@@ -54,7 +54,7 @@ __all__ = ["Trimal"]
 class Trimal(AlgCleanerTask):
     def __init__(self, nodeid, seqtype, alg_fasta_file, alg_phylip_file,
                  conf, confname):
-        GLOBALS["citator"].add(TRIMAL_CITE)
+        GLOBALS["citator"].add('trimal')
 
         self.confname = confname
         self.conf = conf

@@ -70,9 +70,11 @@ args = None
 sys.path.insert(0, BASEPATH)
 
 import argparse
+from ..citation import Citator
+
 from .phylobuild_lib.utils import (SeqGroup, generate_runid, AA, NT, GLOBALS,
                                    encode_seqname, pjoin, pexist, hascontent,
-                                   clear_tempdir, ETE_CITE, colorify, GENCODE,
+                                   clear_tempdir, colorify, GENCODE,
                                    silent_remove, _max, _min, _std, _mean,
                                    _median, iter_cog_seqs)
 from .phylobuild_lib.errors import ConfigError, DataError
@@ -82,7 +84,7 @@ from .phylobuild_lib.scheduler import schedule
 from .phylobuild_lib import db
 from .phylobuild_lib import apps
 from .phylobuild_lib.logger import logindent
-from .phylobuild_lib.citation import Citator
+
 from .phylobuild_lib.configcheck import (is_file, is_dir, check_config,
                                          build_genetree_workflow,
                                          build_supermatrix_workflow,
@@ -1085,7 +1087,7 @@ def _main():
     GLOBALS["lineages"] = None
     GLOBALS["cogs_file"] = None
 
-    GLOBALS["citator"].add(ETE_CITE)
+    GLOBALS["citator"].add("ETE")
 
     if not pexist(GLOBALS["basedir"]):
         os.makedirs(GLOBALS["basedir"])

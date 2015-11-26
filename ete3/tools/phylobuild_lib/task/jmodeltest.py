@@ -43,13 +43,13 @@ log = logging.getLogger("main")
 
 from ..master_task import ModelTesterTask
 from ..master_job import Job
-from ..utils import basename, PhyloTree, JMODELTEST_CITE
+from ..utils import basename, PhyloTree
 
 __all__ = ["JModeltest"]
 
 class JModeltest(ModelTesterTask):
     def __init__(self, nodeid, alg_fasta_file, alg_phylip_file, conf):
-        GLOBALS["citator"].add(JMODELTEST_CITE)
+        GLOBALS["citator"].add('jmodeltest')
 
         self.conf = conf
         base_args = {

@@ -45,7 +45,7 @@ log = logging.getLogger("main")
 from ..master_task import AlgTask, Task
 from ..master_job import Job
 from ..utils import (SeqGroup, OrderedDict, checksum, pjoin,
-                          GLOBALS, MCOFFEE_CITE, DATATYPES)
+                          GLOBALS, DATATYPES)
 from ..apps import APP2CLASS, CLASS2MODULE
 from .. import db
 
@@ -63,7 +63,7 @@ def seq_reverser_job(multiseq_file, outfile, parent_ids, trimal_bin):
 
 class MCoffee(AlgTask):
     def __init__(self, nodeid, seqtype, all_alg_files, conf, confname, parent_ids):
-        GLOBALS["citator"].add(MCOFFEE_CITE)
+        GLOBALS["citator"].add('mcoffee')
         base_args = OrderedDict({
                 "-output": "fasta",
                 })

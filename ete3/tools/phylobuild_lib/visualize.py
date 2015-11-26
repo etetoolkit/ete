@@ -123,8 +123,8 @@ def draw_tree(tree, conf, outfile):
                             last_lt = None
 
                 seqFace = SeqMotifFace(node.sequence, motifs,
-                                       intermotif_format="line",
-                                       seqtail_format="line", scale_factor=ALG_SCALE)
+                                       gap_format="line",
+                                       scale_factor=ALG_SCALE)
                 add_face_to_node(seqFace, node, ALG_START_COL, aligned=True)
 
 
@@ -133,8 +133,6 @@ def draw_tree(tree, conf, outfile):
                       "Amoebozoa", "Crypthophyta", "Bacteria",
                       "Alphaproteobacteria", "Betaproteobacteria", "Cyanobacteria",
                       "Gammaproteobacteria",]
-
-    # ["Opisthokonta",  "Apicomplexa"]
 
     colors = random_color(num=len(TRACKED_CLADES), s=0.45)
     lin2color = dict([(ln, colors[i]) for i, ln in enumerate(TRACKED_CLADES)])
@@ -148,8 +146,6 @@ def draw_tree(tree, conf, outfile):
     ts.draw_guiding_lines = False
     ts.show_leaf_name = False
     ts.show_branch_support = False
-    ts.scale = 160
-
     ts.layout_fn = [ly_basic, ly_leaf_names, ly_supports, ly_tax_labels]
 
     MIXED_RES = set()

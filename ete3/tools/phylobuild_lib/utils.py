@@ -136,47 +136,6 @@ class _DataTypes(object):
 
 DATATYPES = _DataTypes()
 
-ETE_CITE =u"""Huerta-Cepas J, Dopazo J, Gabaldón T. ETE: a python
-Environment for Tree Exploration. BMC Bioinformatics. 2010 Jan
-13;11:24."""
-PHYML_CITE = u"""Guindon S, Dufayard JF, Lefort V, Anisimova M, Hordijk W, Gascuel O.
-New algorithms and methods to estimate maximum-likelihood phylogenies:
-assessing the performance of PhyML 3.0. Syst Biol. 2010
-May;59(3):307-21."""
-FASTTREE_CITE = u"""Price MN, Dehal PS, Arkin AP. FastTree 2 -
-approximately maximum-likelihood trees for large alignments.  PLoS
-One. 2010 Mar 10;5(3):e9490."""
-RAXML_CITE = u"""Stamatakis A. RAxML version 8: a tool for phylogenetic analysis and
-post-analysis of large phylogenies Bioinformatics (2014) 30 (9): 1312-1313."""
-MAFFT_CITE = u"""Katoh K, Kuma K, Toh H, Miyata T. MAFFT version 5:
-improvement in accuracy of multiple sequence alignment.  Nucleic Acids
-Res. 2005 Jan 20;33(2):511-8."""
-TRIMAL_CITE = u"""Capella-Gutiérrez S, Silla-Martínez JM, Gabaldón T.
-trimAl: a tool for automated alignment trimming in large-scale
-phylogenetic analyses.  Bioinformatics. 2009 Aug 1;25(15):1972-3."""
-MUSCLE_CITE = u"""Edgar RC. MUSCLE: multiple sequence alignment with
-high accuracy and high throughput.", Nucleic Acids Res. 2004 Mar
-19;32(5):1792-7."""
-CLUSTALO_CITE = u""" Sievers F, Wilm A, Dineen D, Gibson TJ, Karplus
-K, Li W, Lopez R, McWilliam H, Remmert M, Söding J, Thompson JD,
-Higgins DG.  Fast, scalable generation of high-quality protein
-multiple sequence alignments using Clustal Omega.  Mol Syst Biol. 2011
-Oct 11;7:539. doi: 10.1038/msb.2011.75."""
-DIALIGN_CITE = u"""Subramanian AR, Kaufmann M, Morgenstern B.
-DIALIGN-TX: greedy and progressive approaches for segment-based
-multiple sequence alignment. Algorithms Mol Biol. 2008 May 27;3:6."""
-
-MCOFFEE_CITE = u"""Wallace IM, O'Sullivan O, Higgins DG, Notredame C.
-M-Coffee: combining multiple sequence alignment methods with T-Coffee.
-Nucleic Acids Res. 2006 Mar 23;34(6):1692-9. """
-
-TCOFFEE_CITE = u"""Magis C, Taly JF, Bussotti G, Chang JM, Di Tommaso P, Erb I,
-Espinosa-Carrasco J, Notredame C. T-Coffee: Tree-based consistency objective
-function for alignment evaluation. Methods Mol Biol. 2014;1079:117-29."""
-
-JMODELTEST_CITE = u"""Darriba D, Taboada GL, Doallo R, Posada
-D. jModelTest 2: more models, new heuristics and parallel computing.Nat
-Methods. 2012 Jul 30;9(8):772."""
 
 from collections import OrderedDict
 

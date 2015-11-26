@@ -45,15 +45,13 @@ log = logging.getLogger("main")
 from ..master_task import AlgTask
 from ..master_job import Job
 
-from ..utils import (read_fasta, OrderedDict, GLOBALS, CLUSTALO_CITE, pjoin)
+from ..utils import (read_fasta, OrderedDict, GLOBALS, pjoin)
 
 __all__ = ["Clustalo"]
 
 class Clustalo(AlgTask):
     def __init__(self, nodeid, multiseq_file, seqtype, conf, confname):
-
-        GLOBALS["citator"].add(CLUSTALO_CITE)
-
+        GLOBALS["citator"].add('clustalo')
 
         base_args = OrderedDict({
                 '-i': None,

@@ -47,7 +47,7 @@ log = logging.getLogger("main")
 
 from ..master_task import TreeTask
 from ..master_job import Job
-from ..utils import basename, PhyloTree, OrderedDict, GLOBALS, PHYML_CITE, DATATYPES
+from ..utils import basename, PhyloTree, OrderedDict, GLOBALS,  DATATYPES
 from .. import db
 
 __all__ = ["Phyml"]
@@ -56,7 +56,7 @@ class Phyml(TreeTask):
     def __init__(self, nodeid, alg_phylip_file, constrain_id, model,
                  seqtype, conf, confname, parts_id=None):
 
-        GLOBALS["citator"].add(PHYML_CITE)
+        GLOBALS["citator"].add('phyml')
         if model:
             model = model.split("+")[0]
             

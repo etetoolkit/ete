@@ -8,14 +8,14 @@ log = logging.getLogger("main")
 
 from ..master_task import ModelTesterTask
 from ..master_job import Job
-from ..utils import basename, PhyloTree, GLOBALS, PHYML_CITE, pjoin
+from ..utils import basename, PhyloTree, GLOBALS, pjoin
 
 __all__ = ["PModelTest"]
 
 class PModelTest(ModelTesterTask):
     def __init__(self, nodeid, alg_fasta_file, alg_phylip_file,
                  constrain_tree, seqtype, conf, confname):
-        GLOBALS["citator"].add(PHYML_CITE)
+        GLOBALS["citator"].add('phyml')
 
         self.alg_phylip_file = alg_phylip_file
         self.alg_fasta_file = alg_fasta_file

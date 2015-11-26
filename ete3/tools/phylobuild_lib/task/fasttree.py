@@ -47,15 +47,14 @@ log = logging.getLogger("main")
 
 from ..master_task import TreeTask
 from ..master_job import Job
-from ..utils import (basename, Tree, OrderedDict, GLOBALS,
-                          FASTTREE_CITE, DATATYPES, pjoin)
+from ..utils import (basename, Tree, OrderedDict, GLOBALS, DATATYPES, pjoin)
 from .. import db
 __all__ = ["FastTree"]
 
 class FastTree(TreeTask):
     def __init__(self, nodeid, alg_file, constrain_id, model, seqtype,
                  conf, confname, parts_id=None):
-        GLOBALS["citator"].add(FASTTREE_CITE)
+        GLOBALS["citator"].add('fasttree')
 
         self.confname = confname
         self.conf = conf

@@ -43,14 +43,13 @@ log = logging.getLogger("main")
 
 from ..master_task import AlgTask
 from ..master_job import Job
-from ..utils import (SeqGroup, OrderedDict, GLOBALS, MUSCLE_CITE,
-                          hascontent, pjoin)
+from ..utils import (SeqGroup, OrderedDict, GLOBALS, hascontent, pjoin)
 
 __all__ = ["Muscle"]
 
 class Muscle(AlgTask):
     def __init__(self, nodeid, multiseq_file, seqtype, conf, confname):
-        GLOBALS["citator"].add(MUSCLE_CITE)
+        GLOBALS["citator"].add('muscle')
 
         # fixed Muscle options
         base_args = OrderedDict({
