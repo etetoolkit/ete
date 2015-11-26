@@ -44,12 +44,6 @@ to phylogeny, and computed by one of codeml, gerp, slr.
 from __future__ import absolute_import
 import six
 from six.moves import range
-
-__author__  = "Francois-Jose Serra"
-__email__   = "francois@barrabin.org"
-__licence__ = "GPLv3"
-__version__ = "0.0"
-
 from re       import sub
 from warnings import warn
 
