@@ -175,6 +175,8 @@ def local_run_model(tree, model_name, ctrl_string='', **kwargs):
     local verison of model runner. Needed for multiprocessing pickling...
     '''
     from subprocess import Popen, PIPE
+    print tree.write()
+    print model_name
     model_obj = Model(model_name, tree, **kwargs)
     fullpath = os.path.join (tree.workdir, model_obj.name)
     os.system("mkdir -p %s" %fullpath)
@@ -247,7 +249,7 @@ def run(args):
     for nw in args.src_tree_iterator:
         tree = EvolTree(nw, format=1)
         marks = []
-        marked = False
+        nodes = []
         if args.mark_gui:
             if args.mark_leaves or args.mark_internals or args.mark:
                 exit('ERROR: incompatible marking options')
@@ -256,14 +258,15 @@ def run(args):
             ts.show_leaf_name = False
             tree.show(tree_style=ts)
         if args.mark:
-            marked = True
             if args.mark_leaves or args.mark_internals:
                 exit('ERROR: incompatible marking options')
-            for mark, group in enumerate(args.mark, 1):
+            for group in args.mark:
+                marks.append([])
+                nodes.append([])
                 group = group.replace(',,,', '@;;;@')
                 group = group.replace(',,', '@;;@')
                 group = group.replace(',', '@;@')
-                for subgroup in group.split('@;@'):
+                for mark, subgroup in enumerate(group.split('@;@'), 1):
                     if '@;;' in subgroup:
                         node1, node2 = subgroup.split('@;;;@' if '@;;;@' in
                                                       subgroup else '@;;@')
@@ -273,29 +276,35 @@ def run(args):
                         # mark from ancestor
                         if '@;;;@' in subgroup:
                             for node in anc.get_descendants() + [anc]:
-                                node.mark = ' #' + str(mark)
+                                marks[-1].append('#' + str(mark))
+                                nodes[-1].append(node.node_id)
                         # mark at ancestor
                         elif '@;;@' in subgroup:
-                            anc.mark = ' #' + str(mark)
+                            marks[-1].append('#' + str(mark))
+                            nodes[-1].append(anc.node_id)
                     # mark in single node
                     else:
                         node = get_node(tree, subgroup)
-                        node.mark = ' #' + str(mark)
+                        marks[-1].append('#' + str(mark))
+                        nodes[-1].append(node.node_id)
             
         tree.link_to_alignment(args.alg)
 
         if args.mark_leaves:
             if args.mark:
                 exit('ERROR: incompatible marking options')
-            marks.extend([[n.node_id] for n in tree.iter_leaves()])
+            marks.extend([['#1'] for n in tree.iter_leaves()])
+            nodes.extend([[n.node_id] for n in tree.iter_leaves()])
         if args.mark_internals:
             if args.mark:
                 exit('ERROR: incompatible marking options')
-            marks.extend([n.node_id for s in tree.iter_leaves() if not s.is_leaf()
+            marks.extend(['#1' for s in tree.iter_leaves() if not s.is_leaf()
                           for n in s.iter_descendants()])
-            marks.extend([s.node_id for s in tree.iter_leaves() if not s.is_leaf()])
+            nodes.extend([n.node_id for s in tree.iter_leaves() if not s.is_leaf()
+                          for n in s.iter_descendants()])
+            marks.extend(['#1' for s in tree.iter_leaves() if not s.is_leaf()])
+            nodes.extend([s.node_id for s in tree.iter_leaves() if not s.is_leaf()])
 
-        print('\nMARKED TREE: ' + tree.write())
         ########################################################################
         ## TO BE IMPROVED: multiprocessing should be called in a simpler way
         print("\nRUNNING CODEML")
@@ -304,17 +313,16 @@ def run(args):
         for model in args.models:
             print('  - processing model %s' % model)
             if AVAIL[model.split('.')[0]]['allow_mark']:
-                if marked:
-                    results.append(pool.apply_async(local_run_model,
-                                                    args=(tree, model)))
-                for mark in marks:
-                    print('       marking branches %s' %
-                          ', '.join([str(m) for m in mark]))
+                for mark, node in zip(marks, nodes):
+                    print('       marking branches %s\n' %
+                          ', '.join([str(m) for m in node]))
                     clean_tree(tree)
-                    tree.mark_tree(mark , marks=['#1'] * len(mark))
-                    model = model + '.' +'_'.join([str(m) for m in mark])
+                    tree.mark_tree(node , marks=mark)
+                    modmodel = model + '.' + '_'.join([str(n) for n in node])
+                    print('          %s\n' % (
+                        tree.write()))
                     results.append(pool.apply_async(local_run_model,
-                                                    args=(tree, model)))
+                                                    args=(tree, modmodel)))
             else:
                 results.append(pool.apply_async(local_run_model,
                                                 args=(tree, model)))
@@ -325,6 +333,8 @@ def run(args):
         for result in results:
             path, model_obj = result.get()
             setattr(model_obj, 'run', run)
+            print model_obj.name
+            print path
             tree.link_to_evol_model(path, model_obj)
         ########################################################################
 
@@ -343,10 +353,15 @@ def run(args):
             for altn in tree._models:
                 if tree._models[null].np >= tree._models[altn].np:
                     continue
+                # we usually want to compare models of the same kind
                 if ((AVAIL[null.split('.')[0]]['typ']=='site' and
                      AVAIL[altn.split('.')[0]]['typ']=='branch') or
                     (AVAIL[altn.split('.')[0]]['typ']=='site' and
                      AVAIL[null.split('.')[0]]['typ']=='branch')):
+                    continue
+                # we usually want to compare models marked in the same way
+                if (('.' in altn and '.' in null) and
+                    (altn.split('.')[1] != null.split('.')[1])):
                     continue
                 results[(null, altn)] = tree.get_most_likely(altn, null)
                 tests += ('%20s |%20s | %f%s\n' % (
