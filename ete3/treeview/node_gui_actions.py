@@ -138,7 +138,7 @@ class _NodeActions(object):
             all_marks.discard('')
             max_value = max(map(int, all_marks)) if all_marks else 1
             
-            current_mark = getattr(n, "mark", '').replace('#', '').strip()
+            current_mark = getattr(self.node, "mark", '').replace('#', '').strip()
             current_mark = int(current_mark) if current_mark != '' else 0
             
             if current_mark <= max_value:
