@@ -37,12 +37,16 @@
 #
 # #END_LICENSE#############################################################
 from __future__ import absolute_import
+from __future__ import print_function
+
 from ..evol.control import PARAMS, AVAIL, PARAMS_DESCRIPTION
 from .. import EvolTree, random_color, add_face_to_node, TextFace, TreeStyle, AttrFace
 from ..evol import Model
 from argparse import RawTextHelpFormatter
 from multiprocessing import Pool
+import sys
 import os
+
 from warnings import warn
 
 
@@ -128,7 +132,10 @@ Model name  Description                   Model kind
                             " than 1, tasks with multi-threading"
                             " capabilities will enabled (if 0 all available)"
                             "cores will be used")
-
+    exec_group.add_argument("--codeml_binary", dest="codeml_binary",
+                            default="~/.etetoolkit/ext_apps-latest/bin/codeml")
+                            
+    
 def marking_layout(node):
     '''
     layout for interactively marking CodemlTree
@@ -172,7 +179,7 @@ def clean_tree(tree):
     for n in tree.get_descendants() + [tree]:
         n.mark = ''
 
-def local_run_model(tree, model_name, ctrl_string='', **kwargs):
+def local_run_model(tree, model_name, codeml_binary, ctrl_string='', **kwargs):
     '''
     local verison of model runner. Needed for multiprocessing pickling...
     '''
@@ -195,22 +202,14 @@ def local_run_model(tree, model_name, ctrl_string='', **kwargs):
         open(fullpath+'/tmp.ctl', 'w').write(ctrl_string)
     hlddir = os.getcwd()
     os.chdir(fullpath)
-    
-    binary = os.path.join(tree.execpath, model_obj.properties['exec'])
-    
-    try:
-        proc = Popen([binary, 'tmp.ctl'], stdout=PIPE)
-    except OSError:
-        raise Exception(('ERROR: {} not installed, ' +
-                         'or wrong path to binary\n').format(binary))
+        
+    proc = Popen([codeml_binary, 'tmp.ctl'], stdout=PIPE)
+
     run, err = proc.communicate()
-    if err is not None:
-        warn("ERROR: codeml not found!!!\n" +
-             "       define your variable EvolTree.execpath")
-        return 1
-    if b'error' in run or b'Error' in run:
+    if err is not None or b'error' in run or b'Error' in run:
         warn("ERROR: inside codeml!!\n" + run)
         return 1
+    
     os.chdir(hlddir)
     return os.path.join(fullpath,'out'), model_obj
 
@@ -232,7 +231,7 @@ def get_node(tree, node):
     return res[0]
 
 def run(args):
-
+   
     # more help
     if args.super_help:
         help_str = ('Description of CodeML parameters, see PAML manual for more '
@@ -302,6 +301,13 @@ def run(args):
         print('\nMARKED TREE: ' + tree.write())
         ########################################################################
         ## TO BE IMPROVED: multiprocessing should be called in a simpler way
+
+        codeml_binary = os.path.abspath(args.codeml_binary)
+        if not os.path.exists(codeml_binary):        
+            print("ERROR: Codeml binary does not exist at %s"%args.codeml_binary, file=sys.stderr)
+            print("       provide another route with --codeml_binary, or install it by executing 'ete3 install-external-tools paml'", file=sys.stderr)
+            exit(-1)
+        
         print("\nRUNNING CODEML")
         pool = Pool(args.maxcores or None)
         results = []
@@ -310,7 +316,7 @@ def run(args):
             if AVAIL[model.split('.')[0]]['allow_mark']:
                 if marked:
                     results.append(pool.apply_async(local_run_model,
-                                                    args=(tree, model)))
+                                                    args=(tree, model, codeml_binary)))
                 for mark in marks:
                     print('       marking branches %s' %
                           ', '.join([str(m) for m in mark]))
@@ -318,10 +324,10 @@ def run(args):
                     tree.mark_tree(mark , marks=['#1'] * len(mark))
                     model = model + '.' +'_'.join([str(m) for m in mark])
                     results.append(pool.apply_async(local_run_model,
-                                                    args=(tree, model)))
+                                                    args=(tree, model, codeml_binary)))
             else:
                 results.append(pool.apply_async(local_run_model,
-                                                args=(tree, model)))
+                                                args=(tree, model, codeml_binary)))
 
         pool.close()
         pool.join()
