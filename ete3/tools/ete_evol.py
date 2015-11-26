@@ -335,7 +335,7 @@ def run(args):
                 at_least_one_come_on = True
 
         if at_least_one_come_on:
-            print tests
+            print(tests)
             
         # apply evol model (best branch model?) to tree for display
         # TODO: best needs to be guessed from LRT
