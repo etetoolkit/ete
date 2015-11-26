@@ -38,7 +38,7 @@
 # #END_LICENSE#############################################################
 from __future__ import absolute_import
 from ..evol.control import PARAMS, AVAIL, PARAMS_DESCRIPTION
-from .. import EvolTree
+from .. import EvolTree, random_color, add_face_to_node, TextFace, TreeStyle, AttrFace
 from ..evol import Model
 from argparse import RawTextHelpFormatter
 from multiprocessing import Pool
@@ -133,18 +133,36 @@ def marking_layout(node):
     '''
     layout for interactively marking CodemlTree
     '''
+    color_cycle = random_color(num=10, h=0.5)
+    # [u'#E24A33', u'#348ABD', u'#988ED5',
+    #                u'#777777', u'#FBC15E', u'#8EBA42',
+    #                u'#FFB5B8']
+    node.img_style["size"] = 0
+    
     if hasattr(node, "collapsed"):
         if node.collapsed == 1:
             node.img_style["draw_descendants"]= False
-    color_cycle = [u'#E24A33', u'#348ABD', u'#988ED5',
-                   u'#777777', u'#FBC15E', u'#8EBA42',
-                   u'#FFB5B8']
-    node.img_style["size"] = 15
+            
     if hasattr(node, 'mark') and node.mark != '':
-        node.img_style["fgcolor"] = color_cycle[(int(node.mark.replace('#', '')) - 1) % 7]
+        mark = int(node.mark.replace('#', ''))        
+        node_color = color_cycle[(mark - 1)]
+        node.img_style["fgcolor"] = node_color
+        label_face = TextFace(str(mark).center(3), fsize=12, fgcolor="white", ftype="courier")
+        label_face.inner_background.color = node_color              
     else:
-        node.img_style["fgcolor"] = '#000000'
-
+        node_color = 'slateGrey'
+        label_face = TextFace("   ", fsize=12, fgcolor="white", ftype="courier")
+        label_face.inner_background.color = node_color
+        
+    label_face.inner_border.width = 1
+    label_face.margin_top = 2
+    label_face.margin_bottom = 2
+    
+    add_face_to_node(label_face, node, column=0, position="branch-right")
+    
+    if node.is_leaf():
+        add_face_to_node(TextFace(" %s" %node.name, ftype="courier", fgcolor="#666666"), node, column=10, position="branch-right")
+    
 def clean_tree(tree):
     """
     remove marks from tree
@@ -233,7 +251,10 @@ def run(args):
         if args.mark_gui:
             if args.mark_leaves or args.mark_internals or args.mark:
                 exit('ERROR: incompatible marking options')
-            tree.show(layout=marking_layout)
+            ts = TreeStyle()
+            ts.layout_fn = marking_layout
+            ts.show_leaf_name = False
+            tree.show(tree_style=ts)
         if args.mark:
             marked = True
             if args.mark_leaves or args.mark_internals:
