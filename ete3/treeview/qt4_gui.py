@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -38,6 +36,9 @@ from __future__ import print_function
 #
 #
 # #END_LICENSE#############################################################
+from __future__ import absolute_import
+from __future__ import print_function
+
 import re
 from sys import stderr
 from PyQt4  import QtCore, QtGui
@@ -466,7 +467,8 @@ class _TableItem(QtGui.QItemDelegate):
             color = QtGui.QColorDialog.getColor(origc)
             if color.isValid():
                 self.propdialog._edited_indexes.add( (index.row(), index.column()) )
-                index.model().setData(index,QtCore.QVariant(color.name()))
+                #index.model().setData(index, QtCore.QVariant(color.name())
+                index.model().setData(index, color.name)
                 self.propdialog.apply_changes()
 
             return None
@@ -572,8 +574,8 @@ class _PropertiesDialog(QtGui.QWidget):
 
             index1 = self.model.index(row, 0, QtCore.QModelIndex())
             index2 = self.model.index(row, 1, QtCore.QModelIndex())
-            f = QtCore.QVariant(name)
-            v = QtCore.QVariant(value)
+            f = name#QtCore.QVariant(str(name))
+            v = value#QtCore.QVariant(value)
             self.model.setData(index1, f)
             self.model.setData(index2, v)
             self._prop_indexes.add( (index1, index2) )
@@ -585,8 +587,9 @@ class _PropertiesDialog(QtGui.QWidget):
             index1 = self.model.index(row, 0, QtCore.QModelIndex())
             index2 = self.model.index(row, 1, QtCore.QModelIndex())
 
-            self.model.setData(index1, QtCore.QVariant(name))
-            v = QtCore.QVariant(value)
+            #self.model.setData(index1, QtCore.QVariant(name))
+            self.model.setData(index1, name)
+            v = value #QtCore.QVariant(value)
             self.model.setData(index2, v)
             # Creates a variant element
             self._style_indexes.add( (index1, index2) )

@@ -193,7 +193,9 @@ def local_run_model(tree, model_name, ctrl_string='', **kwargs):
         open(fullpath+'/tmp.ctl', 'w').write(ctrl_string)
     hlddir = os.getcwd()
     os.chdir(fullpath)
+    
     binary = os.path.join(tree.execpath, model_obj.properties['exec'])
+    
     try:
         proc = Popen([binary, 'tmp.ctl'], stdout=PIPE)
     except OSError:
