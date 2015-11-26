@@ -400,7 +400,7 @@ class EvolNode(PhyloNode):
     def link_to_evol_model(self, path, model):
         '''
         link EvolTree to evolutionary model
-          * free-branch model ('fb') will append evol values to tree
+          * free-branch model ("fb") will append evol values to tree
           * Site models (M0, M1, M2, M7, M8) will give evol values by site
             and likelihood
 
