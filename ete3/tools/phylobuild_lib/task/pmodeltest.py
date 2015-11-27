@@ -53,7 +53,7 @@ class PModelTest(ModelTesterTask):
         main_job = self.jobs[0]
         aic_table = pjoin(main_job.jobdir, "pmodeltest.txt")        
         best = open(aic_table).readline().split('\t')
-        best_model = best[0].strip()
+        best_model = "pmodeltest-%s" %(best[0].strip())
         log.log(22, "%s model selection output:\n%s" %(best_model, open(aic_table).read()))
         ModelTesterTask.store_data(self, best_model, aic_table)
 

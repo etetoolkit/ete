@@ -80,7 +80,7 @@ def build_genetree_workflow(wname):
         "_aa_tree_builder": treebuilder,
         "_nt_aligner": aligner,
         "_nt_alg_cleaner": trimmer,
-        "_nt_model_tester": "none",
+        "_nt_model_tester": modeltester,
         "_nt_tree_builder": treebuilder, 
         "_appset":"@builtin_apps"}
     }

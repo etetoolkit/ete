@@ -57,8 +57,6 @@ class Phyml(TreeTask):
                  seqtype, conf, confname, parts_id=None):
 
         GLOBALS["citator"].add('phyml')
-        if model:
-            model = model.split("+")[0]
             
         base_args = OrderedDict({
                 "--model": "",
@@ -66,20 +64,45 @@ class Phyml(TreeTask):
                 "--quiet": "",
                 "--constraint_tree": ""})
 
+        if model and model.startswith('pmodeltest-'):
+            model = model.replace('pmodeltest-', '')
+            
+            for opt in ["-v", "-f", "--pinv", "--nclasses", "-c", "-a", "--alpha"]:
+                conf[confname].pop(opt, None)
+            
+            if "+F" in model:
+                conf[confname]["-v"]=" e"
+            else:
+                conf[confname]["-v"]=" 0"
+                            
+            if "+G" in model:
+                conf[confname]["-c"]=" 4"
+                conf[confname]["-a"]=" e"
+            else:
+                conf[confname]["-c"]=" 1"
+                
+            if "+I" in model:
+                conf[confname]["-f"] = " m" if seqtype == "nt" else " e"                
+            else:
+                conf[confname]["-f"] = '0.25,0.25,0.25,0.25' if seqtype == "nt" else " m"
+                
+            model = model.split("+")[0]
+        elif not model:
+            model = conf[confname]["_aa_model"] if seqtype == "aa" else conf[confname]["_nt_model"]
+        else:
+            pass
+                    
+        self.model = model
         self.confname = confname
         self.conf = conf
         self.constrain_tree = None
         if constrain_id:
             self.constrain_tree = db.get_dataid(constrain_id, DATATYPES.constrain_tree)
+            
         self.alg_phylip_file = alg_phylip_file
-
         TreeTask.__init__(self, nodeid, "tree", "Phyml",
                           base_args, conf[confname])
-
-        if seqtype == "aa":
-            self.model = model or conf[confname]["_aa_model"]
-        elif seqtype == "nt":
-            self.model = model or conf[confname]["_nt_model"]
+            
         self.seqtype = seqtype
         self.lk = None
 
