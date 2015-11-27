@@ -336,6 +336,19 @@ class _GUI(QtGui.QMainWindow):
         d.exec_()
 
     @QtCore.pyqtSignature("")
+    def on_actionSwitchModel_triggered(self):
+        try:
+            models = self.scene.tree._models.keys()
+        except AttributeError:
+            return
+        if self.scene.tree._displayed_model:
+            nmodel = models.index(self.scene.tree._displayed_model)
+            model = models[(nmodel + 1) % len(models)]
+            self.scene.tree.change_dist_to_evol(
+                'bL', self.scene.tree._models[model], fill=True)
+            self.redraw()
+
+    @QtCore.pyqtSignature("")
     def on_actionChange_orientation_triggered(self):
         self.scene.props.orientation ^= 1
         self.redraw()
@@ -511,7 +524,28 @@ class _PropertiesDialog(QtGui.QWidget):
         self.scene = scene
         self._mode = 0
         self.layout =  QtGui.QVBoxLayout()
+
+        # Display an estimated bL, w, dN and dS for a given evolutionary model
+        if hasattr(self.scene.tree, '_models'):
+            self.model_lbl = QtGui.QLabel('Models: ', self)
+            self.layout.addWidget(self.model_lbl)
+            self.combo = QtGui.QComboBox()
+            self.layout.addWidget(self.combo)
+            try:
+                models = sorted(list(self.scene.tree._models.keys()))
+            except AttributeError:
+                return
+            list1 = []
+            for model in self.scene.tree._models:
+                list1.append(self.tr(model))
+            self.combo.clear()
+            self.combo.addItems(list1)
+            self.modelButton = QtGui.QPushButton('refresh', self)
+            self.modelButton.clicked.connect(self.handleModelButton)
+            self.layout.addWidget(self.modelButton)
+
         self.tableView = QtGui.QTableView()
+        self.tableView.move(5,60)
         self.tableView.verticalHeader().setVisible(False)
         #self.tableView.horizontalHeader().setVisible(True)
         #self.tableView.setVerticalHeader(None)
@@ -519,6 +553,11 @@ class _PropertiesDialog(QtGui.QWidget):
         self.setLayout(self.layout)
         self.tableView.setGeometry (0, 0, 200,200)
 
+    def handleModelButton(self):
+        model = sorted(list(self.scene.tree._models.keys()))[self.combo.currentIndex()]
+        self.scene.tree.change_dist_to_evol(
+            'bL', self.scene.tree._models[model], fill=True)
+        self.scene.GUI.redraw()
 
     def update_properties(self, node):
         self.node = node

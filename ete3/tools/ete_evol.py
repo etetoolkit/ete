@@ -40,7 +40,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 from ..evol.control import PARAMS, AVAIL, PARAMS_DESCRIPTION
-from .. import EvolTree, random_color, add_face_to_node, TextFace, TreeStyle, AttrFace
+from .. import EvolTree, random_color, add_face_to_node, TextFace, TreeStyle
 from ..evol import Model
 from argparse import RawTextHelpFormatter
 from multiprocessing import Pool
@@ -74,6 +74,14 @@ Model name  Description                   Model kind
     evol_args.add_argument("--alg", dest="alg",
                            type=str,
                            help=("Link tree to a multiple sequence alignment (codons)."))
+
+    evol_args.add_argument("--dir", dest="dir",
+                           type=str, nargs='+',
+                           help=("directory where precalculated models are "
+                                 "stored, followed by coma model-name.\n"
+                                 "example: --dir /path1/,M2 /path2/,M1\n"
+                                 "will load models from path1 under the name "
+                                 "'M2', and from path2 into 'M1'"))
 
     evol_args.add_argument("--model_folder", dest="model_folder",
                            type=str, nargs='+', 
@@ -114,6 +122,17 @@ Model name  Description                   Model kind
                            help=("Mark successively all the internal node of "
                                  "the input tree (but the root) and run branch "
                                  "models on each of them."))
+
+    codeml_ts = evol_args_p.add_argument_group("CODEML TEST OPTIONS")
+
+    codeml_ts.add_argument('--tests', dest="tests", nargs='+', default='auto',
+                           type=str,
+                           help=("Defines the set of tests to perform.\n"
+                                 " example: --test M1,M2 b_neut,b_free\n"
+                                 "Will do a likelihood ratio tests between "
+                                 "M1 and M2, and between any b_neut and b_free"
+                                 "computed\n(only trees with identical marks "
+                                 "will be caompared)."))
 
     codeml_gr = evol_args_p.add_argument_group("CODEML MODEL CONFIGURATION OPTIONS")
     for param in PARAMS:
@@ -231,7 +250,13 @@ def get_node(tree, node):
     return res[0]
 
 def run(args):
-   
+
+    codeml_binary = os.path.expanduser(args.codeml_binary)
+    if not os.path.exists(codeml_binary):        
+        print("ERROR: Codeml binary does not exist at %s"%args.codeml_binary, file=sys.stderr)
+        print("       provide another route with --codeml_binary, or install it by executing 'ete3 install-external-tools paml'", file=sys.stderr)
+        exit(-1)
+
     # more help
     if args.super_help:
         help_str = ('Description of CodeML parameters, see PAML manual for more '
@@ -250,7 +275,7 @@ def run(args):
     for nw in args.src_tree_iterator:
         tree = EvolTree(nw, format=1)
         marks = []
-        marked = False
+        nodes = []
         if args.mark_gui:
             if args.mark_leaves or args.mark_internals or args.mark:
                 exit('ERROR: incompatible marking options')
@@ -259,14 +284,15 @@ def run(args):
             ts.show_leaf_name = False
             tree.show(tree_style=ts)
         if args.mark:
-            marked = True
             if args.mark_leaves or args.mark_internals:
                 exit('ERROR: incompatible marking options')
-            for mark, group in enumerate(args.mark, 1):
+            for group in args.mark:
+                marks.append([])
+                nodes.append([])
                 group = group.replace(',,,', '@;;;@')
                 group = group.replace(',,', '@;;@')
                 group = group.replace(',', '@;@')
-                for subgroup in group.split('@;@'):
+                for mark, subgroup in enumerate(group.split('@;@'), 1):
                     if '@;;' in subgroup:
                         node1, node2 = subgroup.split('@;;;@' if '@;;;@' in
                                                       subgroup else '@;;@')
@@ -276,58 +302,58 @@ def run(args):
                         # mark from ancestor
                         if '@;;;@' in subgroup:
                             for node in anc.get_descendants() + [anc]:
-                                node.mark = ' #' + str(mark)
+                                marks[-1].append('#' + str(mark))
+                                nodes[-1].append(node.node_id)
                         # mark at ancestor
                         elif '@;;@' in subgroup:
-                            anc.mark = ' #' + str(mark)
+                            marks[-1].append('#' + str(mark))
+                            nodes[-1].append(anc.node_id)
                     # mark in single node
                     else:
                         node = get_node(tree, subgroup)
-                        node.mark = ' #' + str(mark)
+                        marks[-1].append('#' + str(mark))
+                        nodes[-1].append(node.node_id)
             
         tree.link_to_alignment(args.alg)
 
         if args.mark_leaves:
             if args.mark:
                 exit('ERROR: incompatible marking options')
-            marks.extend([[n.node_id] for n in tree.iter_leaves()])
+            marks.extend([['#1'] for n in tree.iter_leaves()])
+            nodes.extend([[n.node_id] for n in tree.iter_leaves()])
         if args.mark_internals:
             if args.mark:
                 exit('ERROR: incompatible marking options')
-            marks.extend([n.node_id for s in tree.iter_leaves() if not s.is_leaf()
+            marks.extend(['#1' for s in tree.iter_leaves() if not s.is_leaf()
                           for n in s.iter_descendants()])
-            marks.extend([s.node_id for s in tree.iter_leaves() if not s.is_leaf()])
+            nodes.extend([n.node_id for s in tree.iter_leaves() if not s.is_leaf()
+                          for n in s.iter_descendants()])
+            marks.extend(['#1' for s in tree.iter_leaves() if not s.is_leaf()])
+            nodes.extend([s.node_id for s in tree.iter_leaves() if not s.is_leaf()])
 
-        print('\nMARKED TREE: ' + tree.write())
         ########################################################################
         ## TO BE IMPROVED: multiprocessing should be called in a simpler way
 
-        codeml_binary = os.path.abspath(args.codeml_binary)
-        if not os.path.exists(codeml_binary):        
-            print("ERROR: Codeml binary does not exist at %s"%args.codeml_binary, file=sys.stderr)
-            print("       provide another route with --codeml_binary, or install it by executing 'ete3 install-external-tools paml'", file=sys.stderr)
-            exit(-1)
-        
         print("\nRUNNING CODEML")
         pool = Pool(args.maxcores or None)
         results = []
         for model in args.models:
             print('  - processing model %s' % model)
             if AVAIL[model.split('.')[0]]['allow_mark']:
-                if marked:
-                    results.append(pool.apply_async(local_run_model,
-                                                    args=(tree, model, codeml_binary)))
-                for mark in marks:
-                    print('       marking branches %s' %
-                          ', '.join([str(m) for m in mark]))
+                for mark, node in zip(marks, nodes):
+                    print('       marking branches %s\n' %
+                          ', '.join([str(m) for m in node]))
                     clean_tree(tree)
-                    tree.mark_tree(mark , marks=['#1'] * len(mark))
-                    model = model + '.' +'_'.join([str(m) for m in mark])
-                    results.append(pool.apply_async(local_run_model,
-                                                    args=(tree, model, codeml_binary)))
+                    tree.mark_tree(node , marks=mark)
+                    modmodel = model + '.' + '_'.join([str(n) for n in node])
+                    print('          %s\n' % (
+                        tree.write()))
+                    results.append(pool.apply_async(
+                        local_run_model,
+                        args=(tree, modmodel, codeml_binary)))
             else:
-                results.append(pool.apply_async(local_run_model,
-                                                args=(tree, model, codeml_binary)))
+                results.append(pool.apply_async(
+                    local_run_model, args=(tree, model, codeml_binary)))
 
         pool.close()
         pool.join()
@@ -335,7 +361,11 @@ def run(args):
         for result in results:
             path, model_obj = result.get()
             setattr(model_obj, 'run', run)
-            tree.link_to_evol_model(path, model_obj)
+            try:
+                tree.link_to_evol_model(path, model_obj)
+            except KeyError:
+                warn('ERROR: model %s failed' % (model_obj.name))
+                
         ########################################################################
 
         # find cleaver way to test all null models versus alternative models
@@ -343,23 +373,41 @@ def run(args):
 
         
         tests = "\nLRT\n\n"
-        tests += ('%20s |%20s | %s\n' % ('Null model', 'Alternative model',
-                                       'p-value'))
-        tests += ('-' * 55)
+        tests += ('%25s |%25s | %s\n' % ('Null model', 'Alternative model',
+                                         'p-value'))
+        tests += (' ' * 5 + ('-' * 60))
         tests += ('\n')
         at_least_one_come_on = False
         results = {}
+        if args.tests != 'auto':
+            wanted = [t.split(',') for t in args.tests]
+        else:
+            wanted = []
+        bests = []
         for null in tree._models:
             for altn in tree._models:
                 if tree._models[null].np >= tree._models[altn].np:
                     continue
-                if ((AVAIL[null.split('.')[0]]['typ']=='site' and
-                     AVAIL[altn.split('.')[0]]['typ']=='branch') or
-                    (AVAIL[altn.split('.')[0]]['typ']=='site' and
-                     AVAIL[null.split('.')[0]]['typ']=='branch')):
+                # we usually want to compare models of the same kind
+                if (((AVAIL[null.split('.')[0]]['typ']=='site' and
+                      AVAIL[altn.split('.')[0]]['typ']=='branch') or
+                     (AVAIL[altn.split('.')[0]]['typ']=='site' and
+                      AVAIL[null.split('.')[0]]['typ']=='branch'))
+                    and args.tests == 'auto'):
                     continue
+                # we usually want to compare models marked in the same way
+                if (('.' in altn and '.' in null) and
+                    (altn.split('.')[1] != null.split('.')[1])):
+                    continue
+                if args.tests != 'auto':
+                    if not any([(null.split('.')[0] in test and
+                                 altn.split('.')[0] in test)
+                                for test in wanted]):
+                        continue
                 results[(null, altn)] = tree.get_most_likely(altn, null)
-                tests += ('%20s |%20s | %f%s\n' % (
+                bests.append(null if results[(null, altn)] > 0.05 else altn)
+                
+                tests += ('%25s |%25s | %f%s\n' % (
                     null, altn, results[(null, altn)],
                     '**' if results[(null, altn)] < 0.01 else '*'
                     if results[(null, altn)] < 0.05 else ''))
@@ -367,13 +415,15 @@ def run(args):
 
         if at_least_one_come_on:
             print(tests)
+
+        print(bests)
             
         # apply evol model (best branch model?) to tree for display
         # TODO: best needs to be guessed from LRT
         best = max([m for m in tree._models
                     if AVAIL[m.split('.')[0]]['typ']=='branch'],
                    key=lambda x: tree._models[x].lnL)
-        print (best)
+        print(best)
         tree.change_dist_to_evol('bL', tree._models[best], fill=True)
 
         # get all site models for display
@@ -381,5 +431,4 @@ def run(args):
                        if AVAIL[m.split('.')[0]]['typ']=='site']
 
         tree.show(histfaces=site_models)
-
 
