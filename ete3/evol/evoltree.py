@@ -120,6 +120,7 @@ class EvolNode(PhyloNode):
         self.workdir = '/tmp/ete3-tmp/'
         self.execpath = binpath
         self._models = {}
+        self.__gui_mark_mode = False
 
         PhyloNode.__init__(self, newick=newick, format=format,
                            sp_naming_function=sp_naming_function, **kwargs)
@@ -128,6 +129,12 @@ class EvolNode(PhyloNode):
             self._label_as_paml()
         # initialize node marks
         self.mark_tree([])
+
+    def _set_mark_mode(self, val):
+        self.__gui_mark_mode = val
+
+    def _is_mark_mode(self):
+        return self.__gui_mark_mode
 
     def _label_internal_nodes(self, nid=None):
         """

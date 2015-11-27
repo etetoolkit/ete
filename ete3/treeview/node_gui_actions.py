@@ -58,7 +58,7 @@ class _NodeActions(object):
         elif e.button() == QtCore.Qt.LeftButton:
             self.scene().view.set_focus(self.node)
             
-            if isinstance(self.node, EvolTree):
+            if isinstance(self.node, EvolTree) and self.node._is_mark_mode():
                 root = self.node.get_tree_root()
                 all_marks = set([getattr(n, "mark", '').replace('#', '').strip()
                                  for n in root.traverse() if n is not self.node])                

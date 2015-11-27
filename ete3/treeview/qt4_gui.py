@@ -336,19 +336,6 @@ class _GUI(QtGui.QMainWindow):
         d.exec_()
 
     @QtCore.pyqtSignature("")
-    def on_actionSwitchModel_triggered(self):
-        try:
-            models = self.scene.tree._models.keys()
-        except AttributeError:
-            return
-        if self.scene.tree._displayed_model:
-            nmodel = models.index(self.scene.tree._displayed_model)
-            model = models[(nmodel + 1) % len(models)]
-            self.scene.tree.change_dist_to_evol(
-                'bL', self.scene.tree._models[model], fill=True)
-            self.redraw()
-
-    @QtCore.pyqtSignature("")
     def on_actionChange_orientation_triggered(self):
         self.scene.props.orientation ^= 1
         self.redraw()

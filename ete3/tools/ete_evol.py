@@ -282,7 +282,9 @@ def run(args):
             ts = TreeStyle()
             ts.layout_fn = marking_layout
             ts.show_leaf_name = False
+            tree._set_mark_mode(True)
             tree.show(tree_style=ts)
+            tree._set_mark_mode(False)
         if args.mark:
             if args.mark_leaves or args.mark_internals:
                 exit('ERROR: incompatible marking options')
