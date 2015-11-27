@@ -375,7 +375,7 @@ def run(args):
         tests = "\nLRT\n\n"
         tests += ('%25s |%25s | %s\n' % ('Null model', 'Alternative model',
                                          'p-value'))
-        tests += (' ''-' * 65)
+        tests += (' ' * 5 + ('-' * 60))
         tests += ('\n')
         at_least_one_come_on = False
         results = {}

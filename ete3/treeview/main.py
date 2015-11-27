@@ -327,7 +327,7 @@ class TreeStyle(object):
 
     :param 2 extra_branch_line_type:  0=solid, 1=dashed, 2=dotted
 
-    :param "gray" extra_branch_line_color": RGB code or name in
+    :param "gray" extra_branch_line_color: RGB code or name in
       :data:`SVG_COLORS`
 
     :param False force_topology: Convert tree branches to a fixed length, thus allowing to
