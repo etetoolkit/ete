@@ -532,7 +532,7 @@ class _PropertiesDialog(QtGui.QWidget):
             self.combo = QtGui.QComboBox()
             self.layout.addWidget(self.combo)
             try:
-                models = self.scene.tree._models.keys()
+                models = sorted(list(self.scene.tree._models.keys()))
             except AttributeError:
                 return
             list1 = []
@@ -554,7 +554,7 @@ class _PropertiesDialog(QtGui.QWidget):
         self.tableView.setGeometry (0, 0, 200,200)
 
     def handleModelButton(self):
-        model = self.scene.tree._models.keys()[self.combo.currentIndex()]
+        model = sorted(list(self.scene.tree._models.keys()))[self.combo.currentIndex()]
         self.scene.tree.change_dist_to_evol(
             'bL', self.scene.tree._models[model], fill=True)
         self.scene.GUI.redraw()
