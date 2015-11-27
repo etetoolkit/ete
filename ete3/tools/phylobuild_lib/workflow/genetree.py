@@ -227,6 +227,8 @@ def process_task(task, wkname, npr_conf, nodeid2info):
         # inference does not make sense given the number of sequences. DummyTree
         # will produce a fake fully collapsed newick tree.
         treebuilderclass = DummyTree
+        mtesterclass = None
+
 
     # If more than one outgroup are used, enable the use of constrain
     if out_seqs and len(out_seqs) > 1:
@@ -387,7 +389,7 @@ def process_task(task, wkname, npr_conf, nodeid2info):
         if treebuilderclass:
             alg_fasta_file = task.alg_fasta_file
             alg_phylip_file = task.alg_phylip_file
-            model = task.best_model            
+            model = task.best_model
             tree_task = treebuilderclass(nodeid, alg_phylip_file,
                                          constrain_id,
                                          model, seqtype,
@@ -404,7 +406,7 @@ def process_task(task, wkname, npr_conf, nodeid2info):
             #    treemerge_task = TreeSplitterWithOutgroups(nodeid, seqtype, task.tree_file, main_tree, conf)
             #else:
             #    treemerge_task = TreeSplitter(nodeid, seqtype, task.tree_file, main_tree, conf)
-            
+
         treemerge_task.size = task.size
         new_tasks.append(treemerge_task)
 
@@ -468,4 +470,3 @@ def pipeline(task, wkname, conf=None):
     logindent(-2)
 
     return new_tasks
-
