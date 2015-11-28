@@ -135,6 +135,8 @@ def get_stored_data(fileid):
     return db.get_data(dataid)
 
 def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, debug, norender):
+
+    
     # Adjust debug mode
     if debug == "all":
         log.setLevel(10)
@@ -166,8 +168,6 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
 
     GLOBALS["_background_scheduler"] = back_launcher
     GLOBALS["_job_queue"] = job_queue
-
-
     # Captures Ctrl-C for debuging DEBUG
     #signal.signal(signal.SIGINT, control_c)
 
@@ -265,6 +265,9 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
 
                                     log.log(24, "  @@8:Queueing @@1: %s from %s" %(j, task))
                                     if execution:
+                                        with open(pjoin(GLOBALS[task.configid]["_outpath"], "commands.log"), "a") as CMD_LOGGER:
+                                            print('\t'.join([task.tname, task.taskid, j.jobname, j.jobid, j.get_launch_cmd()]), file=CMD_LOGGER)
+                                            
                                         job_queue.put([j.jobid, j.cores, cmd, j.status_file])
                                 BUG.add(j.jobid)
 
@@ -296,17 +299,17 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
 
 
                     # Log commands of every task
-                    if 'cmd_log_file' not in GLOBALS[task.configid]:
-                         GLOBALS[task.configid]['cmd_log_file'] = pjoin(GLOBALS[task.configid]["_outpath"], "cmd.log")
-                         O = open(GLOBALS[task.configid]['cmd_log_file'], "w")
-                         O.close()
+                    # if 'cmd_log_file' not in GLOBALS[task.configid]:
+                    #      GLOBALS[task.configid]['cmd_log_file'] = pjoin(GLOBALS[task.configid]["_outpath"], "cmd.log")
+                    #      O = open(GLOBALS[task.configid]['cmd_log_file'], "w")
+                    #      O.close()
 
-                    cmd_lines =  get_cmd_log(task)
-                    CMD_LOG = open(GLOBALS[task.configid]['cmd_log_file'], "a")
-                    print(task, file=CMD_LOG)
-                    for c in cmd_lines:
-                        print('   '+'\t'.join(map(str, c)), file=CMD_LOG)
-                    CMD_LOG.close()
+                    # cmd_lines =  get_cmd_log(task)
+                    # CMD_LOG = open(GLOBALS[task.configid]['cmd_log_file'], "a")
+                    # print(task, file=CMD_LOG)
+                    # for c in cmd_lines:
+                    #     print('   '+'\t'.join(map(str, c)), file=CMD_LOG)
+                    # CMD_LOG.close()
                     #
 
                     try:
