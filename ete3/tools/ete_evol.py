@@ -144,7 +144,7 @@ Model name  Description                   Model kind
                      for i, p in enumerate(sorted(PARAMS, key=lambda x: x.lower()), 1))
     
     codeml_gr.add_argument('--codeml_param', dest="params", metavar="",
-                           nargs='+',
+                           nargs='+', default=[],
                            help=("extra parameter to be interpreted by CodeML "
                                  "and modify the default settings of models.\n"
                                  "available keywords are accepted [default "
@@ -340,7 +340,7 @@ def run_all_models(tree, nodes, marks, codeml_binary, args, **kwargs):
                     tree.write()))
                 results.append(pool.apply_async(
                     local_run_model,
-                    args=(tree, modmodel, codeml_binary)))
+                    args=(tree, modmodel, codeml_binary), kwds=kwargs))
         else:
             results.append(pool.apply_async(
                 local_run_model, args=(tree, model, codeml_binary), kwds=kwargs))
@@ -441,7 +441,7 @@ def run(args):
         # link to alignment
         tree.link_to_alignment(args.alg)
         # load models
-        models = []
+        models = {}
         if args.prev_models:
             models = dict([(m.split(',')[1], m.split(',')[0] + '/out')
                            for m in args.prev_models])
