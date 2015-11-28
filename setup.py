@@ -29,6 +29,10 @@ else:
         sys.path.remove(_wd)
     except ValueError:
         pass
+    try:
+        sys.path.remove("")
+    except ValueError:
+        pass
 
     # Is this and upgrade or a new install?
     try:
