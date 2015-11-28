@@ -10,7 +10,6 @@ os.chdir(WD)
 
 parser = OptionParser()
 parser.add_option("--notest", dest="notest", action='store_true')
-parser.add_option("--nodoc", dest="nodoc", action='store_true')
 parser.add_option("--simulate", dest="simulate", action='store_true')
 parser.add_option("--verbose", dest="verbose", action='store_true')
 parser.add_option("--doconly", dest="doconly", action='store_true')
@@ -93,6 +92,7 @@ if not options.doconly:
         
     # clean files from previous releases
     _ex('rm -rf release/  && git clone .. release/')
+    
     # build docs
     _ex('cd release/sdoc/ && make html && make latex')
     _ex('cd release/sdoc/_build/latex && make all-pdf')
