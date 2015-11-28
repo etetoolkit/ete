@@ -281,7 +281,6 @@ def local_run_model(tree, model_name, codeml_binary, ctrl_string='', **kwargs):
     model_obj = Model(model_name, tree, **kwargs)
     fullpath = os.path.join (tree.workdir, model_obj.name)
     os.system("mkdir -p %s" % fullpath)
-    print (fullpath)
     # write tree file
     tree._write_algn(fullpath + '/algn')
     if model_obj.properties['exec'] == 'Slr':
@@ -296,7 +295,9 @@ def local_run_model(tree, model_name, codeml_binary, ctrl_string='', **kwargs):
         open(fullpath+'/tmp.ctl', 'w').write(ctrl_string)
     hlddir = os.getcwd()
     os.chdir(fullpath)
+        
     proc = Popen([codeml_binary, 'tmp.ctl'], stdout=PIPE)
+
     run, err = proc.communicate()
     if err is not None or b'error' in run or b'Error' in run:
         warn("ERROR: inside codeml!!\n" + run)
