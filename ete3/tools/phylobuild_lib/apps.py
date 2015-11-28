@@ -63,7 +63,7 @@ OPTION2APPTYPE = {
     "_nt_alg_cleaner": APPTYPES["alg cleaners"],
     
     "_aa_tree_builder": APPTYPES["tree builders"],
-    "_nt_tree_builder": APPTYPES["tree builders"],
+    "_nt_tree_builder": APPTYPES["tree builders"], 
     
     "_aa_model_tester": APPTYPES["model testers"],
     "_nt_model_tester": set([]),

@@ -56,7 +56,7 @@ def populate_args(evol_args_p):
     evol_args_p.formatter_class = RawTextHelpFormatter
     evol_args = evol_args_p.add_argument_group('ETE-EVOL OPTIONS')
     evol_args.add_argument("--models", dest="models",
-                           nargs="+", default="fb",
+                           nargs="+",
                            help="""choose evolutionary models (Model name) among:
 =========== ============================= ==================
 Model name  Description                   Model kind
@@ -75,18 +75,13 @@ Model name  Description                   Model kind
                            type=str,
                            help=("Link tree to a multiple sequence alignment (codons)."))
 
-    evol_args.add_argument("--dir", dest="dir",
+    evol_args.add_argument("--prev_models", dest="prev_models",
                            type=str, nargs='+',
                            help=("directory where precalculated models are "
                                  "stored, followed by coma model-name.\n"
-                                 "example: --dir /path1/,M2 /path2/,M1\n"
+                                 "example: --prev_models /path1/,M2 /path2/,M1\n"
                                  "will load models from path1 under the name "
                                  "'M2', and from path2 into 'M1'"))
-
-    evol_args.add_argument("--model_folder", dest="model_folder",
-                           type=str, nargs='+', 
-                           help=("Link tree to a CodeML models previously run "
-                                 "in the input directory"))
 
     codeml_mk = evol_args_p.add_argument_group("CODEML TREE CONFIGURATION OPTIONS")
 
@@ -198,40 +193,6 @@ def clean_tree(tree):
     for n in tree.get_descendants() + [tree]:
         n.mark = ''
 
-def local_run_model(tree, model_name, codeml_binary, ctrl_string='', **kwargs):
-    '''
-    local verison of model runner. Needed for multiprocessing pickling...
-    '''
-    from subprocess import Popen, PIPE
-    model_obj = Model(model_name, tree, **kwargs)
-    fullpath = os.path.join (tree.workdir, model_obj.name)
-    os.system("mkdir -p %s" %fullpath)
-    # write tree file
-    tree._write_algn(fullpath + '/algn')
-    if model_obj.properties['exec'] == 'Slr':
-        tree.write(outfile=fullpath+'/tree', format = (11))
-    else:
-        tree.write(outfile=fullpath+'/tree',
-                   format = (10 if model_obj.properties['allow_mark'] else 9))
-    # write algn file
-    ## MODEL MODEL MDE
-    if ctrl_string == '':
-        ctrl_string = model_obj.get_ctrl_string(fullpath+'/tmp.ctl')
-    else:
-        open(fullpath+'/tmp.ctl', 'w').write(ctrl_string)
-    hlddir = os.getcwd()
-    os.chdir(fullpath)
-        
-    proc = Popen([codeml_binary, 'tmp.ctl'], stdout=PIPE)
-
-    run, err = proc.communicate()
-    if err is not None or b'error' in run or b'Error' in run:
-        warn("ERROR: inside codeml!!\n" + run)
-        return 1
-    
-    os.chdir(hlddir)
-    return os.path.join(fullpath,'out'), model_obj
-
 def run_one_model(tree, model_name):
     """
     needed for multiprocessing
@@ -249,8 +210,141 @@ def get_node(tree, node):
             exit('ERROR: node %s not found' % node)
     return res[0]
 
-def run(args):
 
+def get_marks_from_args(tree, args):
+    marks = []
+    nodes = []
+    # use the GUI
+    if args.mark_gui:
+        if args.mark_leaves or args.mark_internals or args.mark:
+            exit('ERROR: incompatible marking options')
+        ts = TreeStyle()
+        ts.layout_fn = marking_layout
+        ts.show_leaf_name = False
+        tree._set_mark_mode(True)
+        tree.show(tree_style=ts)
+        tree._set_mark_mode(False)
+    # use the command line
+    if args.mark:
+        if args.mark_leaves or args.mark_internals:
+            exit('ERROR: incompatible marking options')
+        for group in args.mark:
+            marks.append([])
+            nodes.append([])
+            group = group.replace(',,,', '@;;;@')
+            group = group.replace(',,', '@;;@')
+            group = group.replace(',', '@;@')
+            for mark, subgroup in enumerate(group.split('@;@'), 1):
+                if '@;;' in subgroup:
+                    node1, node2 = subgroup.split('@;;;@' if '@;;;@' in
+                                                  subgroup else '@;;@')
+                    node1 = get_node(tree, node1)
+                    node2 = get_node(tree, node2)
+                    anc = tree.get_common_ancestor(node1, node2)
+                    # mark from ancestor
+                    if '@;;;@' in subgroup:
+                        for node in anc.get_descendants() + [anc]:
+                            marks[-1].append('#' + str(mark))
+                            nodes[-1].append(node.node_id)
+                    # mark at ancestor
+                    elif '@;;@' in subgroup:
+                        marks[-1].append('#' + str(mark))
+                        nodes[-1].append(anc.node_id)
+                # mark in single node
+                else:
+                    node = get_node(tree, subgroup)
+                    marks[-1].append('#' + str(mark))
+                    nodes[-1].append(node.node_id)
+    # mark all leaves successively
+    if args.mark_leaves:
+        if args.mark:
+            exit('ERROR: incompatible marking options')
+        marks.extend([['#1'] for n in tree.iter_leaves()])
+        nodes.extend([[n.node_id] for n in tree.iter_leaves()])
+    # mark all internal branches successively
+    if args.mark_internals:
+        if args.mark:
+            exit('ERROR: incompatible marking options')
+        marks.extend(['#1' for s in tree.iter_leaves() if not s.is_leaf()
+                      for n in s.iter_descendants()])
+        nodes.extend([n.node_id for s in tree.iter_leaves() if not s.is_leaf()
+                      for n in s.iter_descendants()])
+        marks.extend(['#1' for s in tree.iter_leaves() if not s.is_leaf()])
+        nodes.extend([s.node_id for s in tree.iter_leaves() if not s.is_leaf()])
+    return nodes, marks
+
+def local_run_model(tree, model_name, codeml_binary, ctrl_string='', **kwargs):
+    '''
+    local verison of model runner. Needed for multiprocessing pickling...
+    '''
+    from subprocess import Popen, PIPE
+    model_obj = Model(model_name, tree, **kwargs)
+    fullpath = os.path.join (tree.workdir, model_obj.name)
+    os.system("mkdir -p %s" % fullpath)
+    print (fullpath)
+    # write tree file
+    tree._write_algn(fullpath + '/algn')
+    if model_obj.properties['exec'] == 'Slr':
+        tree.write(outfile=fullpath+'/tree', format = (11))
+    else:
+        tree.write(outfile=fullpath+'/tree',
+                   format = (10 if model_obj.properties['allow_mark'] else 9))
+    # write algn file
+    if ctrl_string == '':
+        ctrl_string = model_obj.get_ctrl_string(fullpath+'/tmp.ctl')
+    else:
+        open(fullpath+'/tmp.ctl', 'w').write(ctrl_string)
+    hlddir = os.getcwd()
+    os.chdir(fullpath)
+    proc = Popen([codeml_binary, 'tmp.ctl'], stdout=PIPE)
+    run, err = proc.communicate()
+    if err is not None or b'error' in run or b'Error' in run:
+        warn("ERROR: inside codeml!!\n" + run)
+        return (None, None)    
+    os.chdir(hlddir)
+    return os.path.join(fullpath,'out'), model_obj
+
+def run_all_models(tree, nodes, marks, codeml_binary, args):
+    ## TO BE IMPROVED: multiprocessing should be called in a simpler way
+    print("\nRUNNING CODEML")
+    pool = Pool(args.maxcores or None)
+    results = []
+    for model in args.models:
+        print('  - processing model %s' % model)
+        if AVAIL[model.split('.')[0]]['allow_mark']:
+            for mark, node in zip(marks, nodes):
+                print('       marking branches %s\n' %
+                      ', '.join([str(m) for m in node]))
+                clean_tree(tree)
+                tree.mark_tree(node , marks=mark)
+                modmodel = model + '.' + '_'.join([str(n) for n in node])
+                print('          %s\n' % (
+                    tree.write()))
+                results.append(pool.apply_async(
+                    local_run_model,
+                    args=(tree, modmodel, codeml_binary)))
+        else:
+            results.append(pool.apply_async(
+                local_run_model, args=(tree, model, codeml_binary)))
+    pool.close()
+    pool.join()
+    
+    models = {}    
+    # join back results to tree
+    for result in results:
+        path, model_obj = result.get()
+        models[model_obj.name] = path
+    return models
+
+def load_model(model_name, tree, path, **kwargs):
+    model_obj = Model(model_name, tree, **kwargs)
+    setattr(model_obj, 'run', run)
+    try:
+        tree.link_to_evol_model(path, model_obj)
+    except KeyError:
+        warn('ERROR: model %s failed' % (model_obj.name))
+
+def run(args):
     codeml_binary = os.path.expanduser(args.codeml_binary)
     if not os.path.exists(codeml_binary):        
         print("ERROR: Codeml binary does not exist at %s"%args.codeml_binary, file=sys.stderr)
@@ -258,6 +352,7 @@ def run(args):
         exit(-1)
 
     # more help
+    # TODO: move this to help section
     if args.super_help:
         help_str = ('Description of CodeML parameters, see PAML manual for more '
                     'information\n\n')
@@ -274,103 +369,28 @@ def run(args):
 
     for nw in args.src_tree_iterator:
         tree = EvolTree(nw, format=1)
-        marks = []
-        nodes = []
-        if args.mark_gui:
-            if args.mark_leaves or args.mark_internals or args.mark:
-                exit('ERROR: incompatible marking options')
-            ts = TreeStyle()
-            ts.layout_fn = marking_layout
-            ts.show_leaf_name = False
-            tree.show(tree_style=ts)
-        if args.mark:
-            if args.mark_leaves or args.mark_internals:
-                exit('ERROR: incompatible marking options')
-            for group in args.mark:
-                marks.append([])
-                nodes.append([])
-                group = group.replace(',,,', '@;;;@')
-                group = group.replace(',,', '@;;@')
-                group = group.replace(',', '@;@')
-                for mark, subgroup in enumerate(group.split('@;@'), 1):
-                    if '@;;' in subgroup:
-                        node1, node2 = subgroup.split('@;;;@' if '@;;;@' in
-                                                      subgroup else '@;;@')
-                        node1 = get_node(tree, node1)
-                        node2 = get_node(tree, node2)
-                        anc = tree.get_common_ancestor(node1, node2)
-                        # mark from ancestor
-                        if '@;;;@' in subgroup:
-                            for node in anc.get_descendants() + [anc]:
-                                marks[-1].append('#' + str(mark))
-                                nodes[-1].append(node.node_id)
-                        # mark at ancestor
-                        elif '@;;@' in subgroup:
-                            marks[-1].append('#' + str(mark))
-                            nodes[-1].append(anc.node_id)
-                    # mark in single node
-                    else:
-                        node = get_node(tree, subgroup)
-                        marks[-1].append('#' + str(mark))
-                        nodes[-1].append(node.node_id)
-            
+
+        # get the marks we will apply to different runs
+        nodes, marks = get_marks_from_args(tree, args)
+
+        # link to alignment
         tree.link_to_alignment(args.alg)
 
-        if args.mark_leaves:
-            if args.mark:
-                exit('ERROR: incompatible marking options')
-            marks.extend([['#1'] for n in tree.iter_leaves()])
-            nodes.extend([[n.node_id] for n in tree.iter_leaves()])
-        if args.mark_internals:
-            if args.mark:
-                exit('ERROR: incompatible marking options')
-            marks.extend(['#1' for s in tree.iter_leaves() if not s.is_leaf()
-                          for n in s.iter_descendants()])
-            nodes.extend([n.node_id for s in tree.iter_leaves() if not s.is_leaf()
-                          for n in s.iter_descendants()])
-            marks.extend(['#1' for s in tree.iter_leaves() if not s.is_leaf()])
-            nodes.extend([s.node_id for s in tree.iter_leaves() if not s.is_leaf()])
+        # load models
+        if args.prev_models:
+            models = dict([(m.split(',')[1], m.split(',')[0] + '/out')
+                           for m in args.prev_models])
+        # run models
+        if args.models:
+            models.update(run_all_models(tree, nodes, marks, codeml_binary, args))
 
-        ########################################################################
-        ## TO BE IMPROVED: multiprocessing should be called in a simpler way
-
-        print("\nRUNNING CODEML")
-        pool = Pool(args.maxcores or None)
-        results = []
-        for model in args.models:
-            print('  - processing model %s' % model)
-            if AVAIL[model.split('.')[0]]['allow_mark']:
-                for mark, node in zip(marks, nodes):
-                    print('       marking branches %s\n' %
-                          ', '.join([str(m) for m in node]))
-                    clean_tree(tree)
-                    tree.mark_tree(node , marks=mark)
-                    modmodel = model + '.' + '_'.join([str(n) for n in node])
-                    print('          %s\n' % (
-                        tree.write()))
-                    results.append(pool.apply_async(
-                        local_run_model,
-                        args=(tree, modmodel, codeml_binary)))
-            else:
-                results.append(pool.apply_async(
-                    local_run_model, args=(tree, model, codeml_binary)))
-
-        pool.close()
-        pool.join()
-        # join back results to tree
-        for result in results:
-            path, model_obj = result.get()
-            setattr(model_obj, 'run', run)
-            try:
-                tree.link_to_evol_model(path, model_obj)
-            except KeyError:
-                warn('ERROR: model %s failed' % (model_obj.name))
-                
-        ########################################################################
-
+        # link models to tree
+        params = {}
+        for model in models:
+            load_model(model, tree, models[model], **params)
+        
         # find cleaver way to test all null models versus alternative models
         # print ('\n\n comparison of models M1 and M2, p-value: ' + str(tree.get_most_likely ('M2','M1')))
-
         
         tests = "\nLRT\n\n"
         tests += ('%25s |%25s | %s\n' % ('Null model', 'Alternative model',
