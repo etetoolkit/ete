@@ -64,34 +64,37 @@ class Phyml(TreeTask):
                 "--quiet": "",
                 "--constraint_tree": ""})
 
+
         if model and model.startswith('pmodeltest-'):
             model = model.replace('pmodeltest-', '')
-            
-            for opt in ["-v", "-f", "--pinv", "--nclasses", "-c", "-a", "--alpha"]:
-                conf[confname].pop(opt, None)
-            
+            self.fullmodel = model
+
+            # overwrites default options if model selection says so            
             if "+F" in model:
                 conf[confname]["-v"]=" e"
-            else:
+            elif "!F" in model:
                 conf[confname]["-v"]=" 0"
                             
             if "+G" in model:
-                conf[confname]["-c"]=" 4"
+                #conf[confname]["-c"]=" 4"
                 conf[confname]["-a"]=" e"
-            else:
+            elif "!G" in model:
                 conf[confname]["-c"]=" 1"
+                conf[confname].pop("-a", None)
                 
             if "+I" in model:
                 conf[confname]["-f"] = " m" if seqtype == "nt" else " e"                
-            else:
+            elif "!I" in model:
                 conf[confname]["-f"] = '0.25,0.25,0.25,0.25' if seqtype == "nt" else " m"
                 
-            model = model.split("+")[0]
+            model = model.split("+")[0].split("!")[0]
         elif not model:
             model = conf[confname]["_aa_model"] if seqtype == "aa" else conf[confname]["_nt_model"]
+            self.fullmodel = ""
         else:
-            pass
-                    
+            self.fullmode = model+"-prottest"
+            model= model # use the model as provided by prottest (older, simpler approach)  
+
         self.model = model
         self.confname = confname
         self.conf = conf
@@ -123,7 +126,7 @@ class Phyml(TreeTask):
         job.add_input_file(self.alg_phylip_file, job.jobdir)
         if self.constrain_tree:
             job.add_input_file(self.constrain_tree, job.jobdir)
-        job.jobname += "-"+self.model
+        job.jobname += "-"+self.fullmodel
         self.jobs.append(job)
 
     def finish(self):

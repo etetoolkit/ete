@@ -444,6 +444,7 @@ CHECKERS = {
     ("raxml", "_aa_model"): (is_text, {}, True),
     ("raxml", "_method"): (is_choice, {"choices":set(['GAMMA', 'CAT'])}, True),
     ("raxml", "_bootstrap"): (is_raxml_bootstrap, {}, True),
+    ("raxml", "_model_suffix"): (is_text, {}, True),
 
     ("raxml-sse", "_aa_model"): (is_text, {}, True),
     ("raxml-sse", "_method"): (is_choice, {"choices":set(['GAMMA', 'CAT'])}, True),

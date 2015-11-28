@@ -58,13 +58,56 @@ class Raxml(TreeTask):
     def __init__(self, nodeid, alg_file, constrain_id, model,
                  seqtype, conf, confname, parts_id=None):
         GLOBALS["citator"].add('raxml')
-        if model:
-            model = model.split("+")[0]
-       
+
+        model_string = "PROT" if seqtype == "aa" else "GTR" 
+        if model and model.startswith('pmodeltest-'):
+            fullmodel = model.replace('pmodeltest-', '')
+            basemodel = fullmodel.split("+")[0].split("!")[0]
+            if seqtype == "nt" and basemodel != "GTR":
+                log.warning("Raxml supports only the GTR model, but model selection chose %s. Consider using Phyml if this is important." %basemodel)
+                
+            # overwrites default options if model selection says so
+            
+            if "+G" in fullmodel:
+                model_string += "GAMMA"
+            elif "!G" in fullmodel:
+                model_string += "CAT"
+                conf[confname]['-c'] = 1
+            else:
+                if seqtype == "aa":
+                    model_string += conf[confname]["_aa_model"]
+                
+            if seqtype == "aa":
+                model_string += basemodel
+                
+            if "+I" in fullmodel:
+                model_string += "I"
+            elif "!I" in fullmodel:
+                pass
+            else:
+                if "I" in conf[confname]["_model_suffix"]:
+                    model_string += "I" 
+
+            if "+F" in fullmodel:
+                if seqtype == "aa":
+                    model_string += "F"
+            if "!F" in fullmodel:                
+                pass
+            else:
+                if "F" in conf[confname]["_model_suffix"] and seqtype == "aa":
+                    model_string += "F"
+        else:
+            # in case of using older, simpler prottest or no model selection step
+            model_string += conf[confname]["_method"]
+            if seqtype == "aa":
+                model_string += model if model else conf[confname]["_aa_model"]
+            model_sting += conf[confname]["_model_suffix"]                        
+
+        self.model_string = model_string
+        self.model = model_string
+        
         base_args = OrderedDict()
         self.bootstrap = conf[confname].get("_bootstrap", None)
-
-        model = model or conf[confname]["_aa_model"]
 
         self.confname = confname
         self.conf = conf
@@ -95,19 +138,6 @@ class Raxml(TreeTask):
         self.raxml_bin = raxml_bin
         self.threads = threads
         self.seqtype = seqtype
-
-        # Process raxml options
-        method = conf[confname].get("_method", "GAMMA").upper()
-        if seqtype.lower() == "aa":
-            self.model_string =  'PROT%s%s' %(method, model.upper())
-            self.model = model
-        elif seqtype.lower() == "nt":
-            self.model_string =  'GTR%s' %method
-            self.model = "GTR"
-        else:
-            raise ValueError("Unknown seqtype %s", seqtype)
-        #inv = conf[confname].get("pinv", "").upper()
-        #freq = conf[confname].get("ebf", "").upper()
 
         self.init()
 
