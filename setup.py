@@ -177,7 +177,7 @@ else:
     wanted = set(["install", "bdist", "bdist_egg"])
     if TRACKINSTALL is not None and (wanted & seen) and not (notwanted & seen):
         try:
-            welcome = quote("New alien in earth! %s" %time.ctime())
+            welcome = quote("New alien in earth! (%s %s)" %(TRACKINSTALL, time.ctime()))
             urlopen("http://etetoolkit.org/static/et_phone_home.php?ID=%s&VERSION=%s&MSG=%s"
                             %(TRACKINSTALL, ETE_VERSION, welcome))
         except Exception:
