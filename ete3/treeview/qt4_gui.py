@@ -336,19 +336,6 @@ class _GUI(QtGui.QMainWindow):
         d.exec_()
 
     @QtCore.pyqtSignature("")
-    def on_actionSwitchModel_triggered(self):
-        try:
-            models = self.scene.tree._models.keys()
-        except AttributeError:
-            return
-        if self.scene.tree._displayed_model:
-            nmodel = models.index(self.scene.tree._displayed_model)
-            model = models[(nmodel + 1) % len(models)]
-            self.scene.tree.change_dist_to_evol(
-                'bL', self.scene.tree._models[model], fill=True)
-            self.redraw()
-
-    @QtCore.pyqtSignature("")
     def on_actionChange_orientation_triggered(self):
         self.scene.props.orientation ^= 1
         self.redraw()
@@ -480,7 +467,7 @@ class _TableItem(QtGui.QItemDelegate):
             color = QtGui.QColorDialog.getColor(origc)
             if color.isValid():
                 self.propdialog._edited_indexes.add( (index.row(), index.column()) )
-                #index.model().setData(index, QtCore.QVariant(color.name())
+                #index.model().setData(index, QtCore.QVariant(color.name()))
                 index.model().setData(index, color.name)
                 self.propdialog.apply_changes()
 
@@ -527,7 +514,10 @@ class _PropertiesDialog(QtGui.QWidget):
 
         # Display an estimated bL, w, dN and dS for a given evolutionary model
         if hasattr(self.scene.tree, '_models'):
-            self.model_lbl = QtGui.QLabel('Models: ', self)
+            from ..evol.control import AVAIL
+            global AVAIL
+            
+            self.model_lbl = QtGui.QLabel('Showing model: ', self)
             self.layout.addWidget(self.model_lbl)
             self.combo = QtGui.QComboBox()
             self.layout.addWidget(self.combo)
@@ -535,13 +525,27 @@ class _PropertiesDialog(QtGui.QWidget):
                 models = sorted(list(self.scene.tree._models.keys()))
             except AttributeError:
                 return
-            list1 = []
-            for model in self.scene.tree._models:
-                list1.append(self.tr(model))
+            models = []
+            for model in sorted(list(self.scene.tree._models.keys())):
+                models.append(self.tr(model))
             self.combo.clear()
-            self.combo.addItems(list1)
-            self.modelButton = QtGui.QPushButton('refresh', self)
-            self.modelButton.clicked.connect(self.handleModelButton)
+            if models:
+                self.combo.addItems(models)
+            else:
+                self.combo.addItems([self.tr('None')])
+            self.connect(self.combo, QtCore.SIGNAL(
+                "currentIndexChanged(const QString&)"), self.handleModelButton)
+            self.model_lbl = QtGui.QLabel('Available models: ', self)
+            self.layout.addWidget(self.model_lbl)
+            
+            self.combo_run = QtGui.QComboBox()
+            self.layout.addWidget(self.combo_run)
+            avail_models = sorted(list(AVAIL.keys()))
+            self.combo_run.clear()
+            self.combo_run.addItems(['%s (%s)' % (m, AVAIL[m]['typ'])
+                                     for m in avail_models])
+            self.modelButton = QtGui.QPushButton('Run', self)
+            self.modelButton.clicked.connect(self.runModelButton)
             self.layout.addWidget(self.modelButton)
 
         self.tableView = QtGui.QTableView()
@@ -558,6 +562,35 @@ class _PropertiesDialog(QtGui.QWidget):
         self.scene.tree.change_dist_to_evol(
             'bL', self.scene.tree._models[model], fill=True)
         self.scene.GUI.redraw()
+
+    def runModelButton(self):
+        model = sorted(list(AVAIL.keys()))[self.combo_run.currentIndex()]
+        print('Running model %s from GUI...' % model)
+        if AVAIL[model]['allow_mark']:
+            # TODO if allow mark model and no mark => popup window
+            marks = [str(n.node_id) for n in self.scene.tree.iter_descendants()
+                     if n.mark]
+            if not marks:
+                QtGui.QMessageBox.information(
+                    self, "ERROR",
+                    "This model requires tree to be marked\nUse right click on "
+                    "nodes to mark branches")
+                return
+            model += '.' + '_'.join(marks)
+        self.scene.tree.run_model(model)
+        print('Done.')
+        try:
+            models = sorted(list(self.scene.tree._models.keys()))
+        except AttributeError:
+            return
+        models = []
+        for model in sorted(list(self.scene.tree._models.keys())):
+            models.append(self.tr(model))
+        self.combo.clear()
+        if models:
+            self.combo.addItems(models)
+        else:
+            self.combo.addItems([self.tr('None')])
 
     def update_properties(self, node):
         self.node = node
