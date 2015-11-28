@@ -50,7 +50,8 @@ import os
 from warnings import warn
 
 
-DESC = "Run evolutionary tests... "
+DESC = ("Run/Load evolutionary tests, store results in a given oputput folder\n"
+        "********************************************************************")
 
 def populate_args(evol_args_p):
     evol_args_p.formatter_class = RawTextHelpFormatter
@@ -82,6 +83,14 @@ Model name  Description                   Model kind
                                  "example: --prev_models /path1/,M2 /path2/,M1\n"
                                  "will load models from path1 under the name "
                                  "'M2', and from path2 into 'M1'"))
+    evol_args.add_argument("--view", dest="show", action='store_true',
+                           help=("Opens ETE interactive GUI to visualize tree and "
+                                 "select model(s) to render."))
+
+    # evol_args.add_argument("-o", "--output_dir", dest="outdir",
+    #                        type=str, default='/tmp/ete3-tmp/',
+    #                        help=("directory where to store computed models."
+    #                              "subderectories with model names will be created"))
 
     codeml_mk = evol_args_p.add_argument_group("CODEML TREE CONFIGURATION OPTIONS")
 
@@ -115,8 +124,8 @@ Model name  Description                   Model kind
     codeml_mk.add_argument('--internals', dest="mark_internals",
                            action="store_true",
                            help=("Mark successively all the internal node of "
-                                 "the input tree (but the root) and run branch "
-                                 "models on each of them."))
+                                 "the input tree (but the root) and run\n"
+                                 "branch models on each of them."))
 
     codeml_ts = evol_args_p.add_argument_group("CODEML TEST OPTIONS")
 
@@ -130,14 +139,22 @@ Model name  Description                   Model kind
                                  "will be caompared)."))
 
     codeml_gr = evol_args_p.add_argument_group("CODEML MODEL CONFIGURATION OPTIONS")
-    for param in PARAMS:
-        codeml_gr.add_argument("--" + param, dest=param, metavar="",
-                               help=("[%(default)4s] overrides CodeML " +
-                                     "%-12s parameter for selected model" % param),
-                               default=PARAMS[param])
+
+    params = "".join('[%4s] %-13s' % (PARAMS[p], p) + ('' if i % 4 else '\n')
+                     for i, p in enumerate(sorted(PARAMS, key=lambda x: x.lower()), 1))
+    
+    codeml_gr.add_argument('--codeml_param', dest="params", metavar="",
+                           nargs='+',
+                           help=("extra parameter to be interpreted by CodeML "
+                                 "and modify the default settings of models.\n"
+                                 "available keywords are accepted [default "
+                                 "values]:\n" + params +
+                                 "\nexample: verbose,2 omega,1"))
+
     codeml_gr.add_argument('--codeml_help', action='store_true', dest='super_help', 
-                           help=('show detailed description on model configuration '
-                                 'options, and exit.'))
+                           help=("show detailed description on codeml "
+                                 "paramters for model configuration "
+                                 "and exit."))
 
     exec_group = evol_args_p.add_argument_group('EXECUTION MDE OPTIONS')
     exec_group.add_argument("-C", "--cpu", dest="maxcores", type=int,
@@ -305,7 +322,7 @@ def local_run_model(tree, model_name, codeml_binary, ctrl_string='', **kwargs):
     os.chdir(hlddir)
     return os.path.join(fullpath,'out'), model_obj
 
-def run_all_models(tree, nodes, marks, codeml_binary, args):
+def run_all_models(tree, nodes, marks, codeml_binary, args, **kwargs):
     ## TO BE IMPROVED: multiprocessing should be called in a simpler way
     print("\nRUNNING CODEML")
     pool = Pool(args.maxcores or None)
@@ -326,7 +343,7 @@ def run_all_models(tree, nodes, marks, codeml_binary, args):
                     args=(tree, modmodel, codeml_binary)))
         else:
             results.append(pool.apply_async(
-                local_run_model, args=(tree, model, codeml_binary)))
+                local_run_model, args=(tree, model, codeml_binary), kwds=kwargs))
     pool.close()
     pool.join()
     
@@ -344,6 +361,52 @@ def load_model(model_name, tree, path, **kwargs):
         tree.link_to_evol_model(path, model_obj)
     except KeyError:
         warn('ERROR: model %s failed' % (model_obj.name))
+
+def write_results(tree, args):
+    tests = "\nLRT\n\n"
+    tests += ('%25s |%25s | %s\n' % ('Null model', 'Alternative model',
+                                     'p-value'))
+    tests += (' ' * 5 + ('-' * 60))
+    tests += ('\n')
+    at_least_one_come_on = False
+    results = {}
+    if args.tests != 'auto':
+        wanted = [t.split(',') for t in args.tests]
+    else:
+        wanted = []
+    bests = []
+    for null in tree._models:
+        for altn in tree._models:
+            if tree._models[null].np >= tree._models[altn].np:
+                continue
+            # we usually want to compare models of the same kind
+            if (((AVAIL[null.split('.')[0]]['typ']=='site' and
+                  AVAIL[altn.split('.')[0]]['typ']=='branch') or
+                 (AVAIL[altn.split('.')[0]]['typ']=='site' and
+                  AVAIL[null.split('.')[0]]['typ']=='branch'))
+                and args.tests == 'auto'):
+                continue
+            # we usually want to compare models marked in the same way
+            if (('.' in altn and '.' in null) and
+                (altn.split('.')[1] != null.split('.')[1])):
+                continue
+            if args.tests != 'auto':
+                if not any([(null.split('.')[0] in test and
+                             altn.split('.')[0] in test)
+                            for test in wanted]):
+                    continue
+            results[(null, altn)] = tree.get_most_likely(altn, null)
+            bests.append(null if results[(null, altn)] > 0.05 else altn)
+            
+            tests += ('%25s |%25s | %f%s\n' % (
+                null, altn, results[(null, altn)],
+                '**' if results[(null, altn)] < 0.01 else '*'
+                if results[(null, altn)] < 0.05 else ''))
+            at_least_one_come_on = True
+
+    if at_least_one_come_on:
+        print(tests)
+    return bests
 
 def run(args):
     codeml_binary = os.path.expanduser(args.codeml_binary)
@@ -370,86 +433,57 @@ def run(args):
 
     for nw in args.src_tree_iterator:
         tree = EvolTree(nw, format=1)
+        if args.output:
+            tree.workdir = args.output
 
         # get the marks we will apply to different runs
         nodes, marks = get_marks_from_args(tree, args)
-
         # link to alignment
         tree.link_to_alignment(args.alg)
-
         # load models
+        models = []
         if args.prev_models:
             models = dict([(m.split(',')[1], m.split(',')[0] + '/out')
                            for m in args.prev_models])
         # run models
         if args.models:
-            models.update(run_all_models(tree, nodes, marks, codeml_binary, args))
-
+            params = {}
+            for p in args.params:
+                p, v = p.split(',')
+                try:
+                    v = int(v)
+                except ValueError:
+                    try:
+                        v = float(v)
+                    except ValueError:
+                        pass
+                params[p] = v
+            models.update(run_all_models(tree, nodes, marks, codeml_binary, args,
+                                         **params))
         # link models to tree
         params = {}
         for model in models:
-            load_model(model, tree, models[model], **params)
-        
-        # find cleaver way to test all null models versus alternative models
-        # print ('\n\n comparison of models M1 and M2, p-value: ' + str(tree.get_most_likely ('M2','M1')))
-        
-        tests = "\nLRT\n\n"
-        tests += ('%25s |%25s | %s\n' % ('Null model', 'Alternative model',
-                                         'p-value'))
-        tests += (' ' * 5 + ('-' * 60))
-        tests += ('\n')
-        at_least_one_come_on = False
-        results = {}
-        if args.tests != 'auto':
-            wanted = [t.split(',') for t in args.tests]
-        else:
-            wanted = []
-        bests = []
-        for null in tree._models:
-            for altn in tree._models:
-                if tree._models[null].np >= tree._models[altn].np:
-                    continue
-                # we usually want to compare models of the same kind
-                if (((AVAIL[null.split('.')[0]]['typ']=='site' and
-                      AVAIL[altn.split('.')[0]]['typ']=='branch') or
-                     (AVAIL[altn.split('.')[0]]['typ']=='site' and
-                      AVAIL[null.split('.')[0]]['typ']=='branch'))
-                    and args.tests == 'auto'):
-                    continue
-                # we usually want to compare models marked in the same way
-                if (('.' in altn and '.' in null) and
-                    (altn.split('.')[1] != null.split('.')[1])):
-                    continue
-                if args.tests != 'auto':
-                    if not any([(null.split('.')[0] in test and
-                                 altn.split('.')[0] in test)
-                                for test in wanted]):
-                        continue
-                results[(null, altn)] = tree.get_most_likely(altn, null)
-                bests.append(null if results[(null, altn)] > 0.05 else altn)
-                
-                tests += ('%25s |%25s | %f%s\n' % (
-                    null, altn, results[(null, altn)],
-                    '**' if results[(null, altn)] < 0.01 else '*'
-                    if results[(null, altn)] < 0.05 else ''))
-                at_least_one_come_on = True
-
-        if at_least_one_come_on:
-            print(tests)
-
-        print(bests)
-            
+            load_model(model, tree, models[model], **params)        
+        # print results
+        bests = write_results(tree, args)            
         # apply evol model (best branch model?) to tree for display
         # TODO: best needs to be guessed from LRT
-        best = max([m for m in tree._models
-                    if AVAIL[m.split('.')[0]]['typ']=='branch'],
-                   key=lambda x: tree._models[x].lnL)
-        print(best)
-        tree.change_dist_to_evol('bL', tree._models[best], fill=True)
+        try:
+            best = max([m for m in bests
+                        if AVAIL[m.split('.')[0]]['typ']=='branch'],
+                       key=lambda x: tree._models[x].lnL)
+            tree.change_dist_to_evol('bL', tree._models[best], fill=True)
+        except ValueError:
+            best = None
 
         # get all site models for display
         site_models = [m for m in tree._models
                        if AVAIL[m.split('.')[0]]['typ']=='site']
 
-        tree.show(histfaces=site_models)
+        if args.show:
+            tree.show(histfaces=site_models)
+        else:
+            tree.render(os.path.join(tree.workdir, 'tree_%s%s.pdf' % (
+                'hist-%s_' % ('-'.join(site_models)) if site_models else '',
+                best)), histfaces=site_models)
 

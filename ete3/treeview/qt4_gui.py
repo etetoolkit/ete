@@ -467,7 +467,7 @@ class _TableItem(QtGui.QItemDelegate):
             color = QtGui.QColorDialog.getColor(origc)
             if color.isValid():
                 self.propdialog._edited_indexes.add( (index.row(), index.column()) )
-                #index.model().setData(index, QtCore.QVariant(color.name())
+                #index.model().setData(index, QtCore.QVariant(color.name()))
                 index.model().setData(index, color.name)
                 self.propdialog.apply_changes()
 
@@ -514,7 +514,7 @@ class _PropertiesDialog(QtGui.QWidget):
 
         # Display an estimated bL, w, dN and dS for a given evolutionary model
         if hasattr(self.scene.tree, '_models'):
-            self.model_lbl = QtGui.QLabel('Models: ', self)
+            self.model_lbl = QtGui.QLabel('Showing model: ', self)
             self.layout.addWidget(self.model_lbl)
             self.combo = QtGui.QComboBox()
             self.layout.addWidget(self.combo)
@@ -522,14 +522,19 @@ class _PropertiesDialog(QtGui.QWidget):
                 models = sorted(list(self.scene.tree._models.keys()))
             except AttributeError:
                 return
-            list1 = []
-            for model in self.scene.tree._models:
-                list1.append(self.tr(model))
+            models = []
+            for model in sorted(list(self.scene.tree._models.keys())):
+                models.append(self.tr(model))
             self.combo.clear()
-            self.combo.addItems(list1)
-            self.modelButton = QtGui.QPushButton('refresh', self)
-            self.modelButton.clicked.connect(self.handleModelButton)
-            self.layout.addWidget(self.modelButton)
+            if models:
+                self.combo.addItems(models)
+            else:
+                self.combo.addItems([self.tr('None')])
+            self.connect(self.combo, QtCore.SIGNAL(
+                "currentIndexChanged(const QString&)"), self.handleModelButton)
+            # self.modelButton = QtGui.QPushButton('refresh', self)
+            # self.modelButton.clicked.connect(self.handleModelButton)
+            # self.layout.addWidget(self.modelButton)
 
         self.tableView = QtGui.QTableView()
         self.tableView.move(5,60)
