@@ -22,7 +22,6 @@ class PModelTest(ModelTesterTask):
         self.confname = confname
         self.conf = conf
         self.seqtype = seqtype
-        
         base_args = {}
         if seqtype == "aa":
             base_args["--protein"] = ""

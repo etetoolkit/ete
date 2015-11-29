@@ -92,7 +92,7 @@ class Phyml(TreeTask):
             model = conf[confname]["_aa_model"] if seqtype == "aa" else conf[confname]["_nt_model"]
             self.fullmodel = ""
         else:
-            self.fullmode = model+"-prottest"
+            self.fullmodel = model+"-prottest"
             model= model # use the model as provided by prottest (older, simpler approach)  
 
         self.model = model
@@ -114,8 +114,8 @@ class Phyml(TreeTask):
     def load_jobs(self):
         appname = self.conf[self.confname]["_app"]
         args = OrderedDict(self.args)
-        args["--model"] = self.model
         args["--datatype"] = self.seqtype
+        args["--model"] = self.model
         args["--input"] = self.alg_phylip_file
         if self.constrain_tree:
             args["--constraint_tree"] = self.constrain_tree
