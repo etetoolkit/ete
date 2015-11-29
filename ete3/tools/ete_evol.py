@@ -175,8 +175,7 @@ Model name  Description                   Model kind
                             
     exec_group.add_argument("--slr_binary", dest="slr_binary",
                             default="~/.etetoolkit/ext_apps-latest/bin/Slr")
-                            
-    
+                                
 def marking_layout(node):
     '''
     layout for interactively marking CodemlTree
@@ -226,7 +225,6 @@ def run_one_model(tree, model_name):
     """
     tree.run_model(model_name)
 
-
 def get_node(tree, node):
     res = tree.search_nodes(name=node)
     if len(res) > 1:
@@ -236,7 +234,6 @@ def get_node(tree, node):
         if len(res) < 1:
             exit('ERROR: node %s not found' % node)
     return res[0]
-
 
 def get_marks_from_args(tree, args):
     marks = []
