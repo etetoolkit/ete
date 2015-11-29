@@ -84,7 +84,7 @@ Model name  Description                   Model kind
 
     evol_args.add_argument("--prev_models", dest="prev_models",
                            type=str, nargs='+',
-                           help=("directory where precalculated models are "
+                           help=("directory where pre-calculated models are "
                                  "stored, followed by coma model-name.\n"
                                  "example: --prev_models /path1/,M2 /path2/,M1\n"
                                  "will load models from path1 under the name "
@@ -98,6 +98,13 @@ Model name  Description                   Model kind
                            action='store_true',
                            help=("Other visualization option, with omega values "
                                  "written on branches"))
+    evol_args.add_argument("--histface", dest="histface",
+                           type=str, nargs='+',
+                           choices=['bar', 'stick', 'curve',
+                                    '+-bar', '+-stick', '+-curve'],
+                           help=("Type of histogram face to be used for site "
+                                 "models. If preceded by '+-' error bars are "
+                                 "also drawn."))
 
     # evol_args.add_argument("-o", "--output_dir", dest="outdir",
     #                        type=str, default='/tmp/ete3-tmp/',
@@ -522,7 +529,20 @@ def run(args):
 
         if args.noimg:
             return
-        
+
+        if len(args.histface) != len(site_models):
+            if len(args.histface) == 1:
+                args.histface = args.histface * len(site_models)
+            elif len(args.histface) <= len(site_models):
+                args.histface.extend([args.histface[-1]] * (len(site_models) -
+                                                            len(args.histface)))
+            else:
+                warn('WARNING: not using last histfaces, not enough models')
+                args.histface = args.histface[:len(site_models)]
+        for num, (hist, model) in enumerate(zip(args.histface, site_models)):
+            model = tree.get_evol_model(model)
+            model.set_histface(up=not bool(num), kind=hist.replace('+-', ''),
+                               errors='+-' in hist)
         if args.show:
             tree.show(histfaces=site_models,
                       layout=evol_clean_layout if args.clean_layout else None)
