@@ -135,8 +135,6 @@ def get_stored_data(fileid):
     return db.get_data(dataid)
 
 def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, debug, norender):
-
-    
     # Adjust debug mode
     if debug == "all":
         log.setLevel(10)

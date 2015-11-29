@@ -1289,9 +1289,10 @@ class ConfigObj(Section):
         if isinstance(infile, six.string_types):
             self.filename = infile
             if os.path.isfile(infile):
-                h = open(infile, 'rb')
-                infile = h.read() or []
+                h = open(infile, 'r') # before it was 'rb' for handling encodings. This is Py3 safe
+                infile = str(h.read()).splitlines() or []
                 h.close()
+                
             elif self.file_error:
                 # raise an error if the file doesn't exist
                 raise IOError('Config file not found: "%s".' % self.filename)
@@ -1342,7 +1343,13 @@ class ConfigObj(Section):
 
         if infile:
             # don't do it for the empty ConfigObj
-            infile = self._handle_bom(infile)
+
+            # WATCH OUT: I have commented this line to ensure Py2/Py3 compatibility,
+            #as ete build always expect a text file as config does not require
+            #further checking or conversion (Jaime)
+            #
+            #infile = self._handle_bom(infile)
+            
             # infile is now *always* a list
             #
             # Set the newlines attribute (first line ending it finds)
@@ -1358,6 +1365,7 @@ class ConfigObj(Section):
 
             infile = [line.rstrip('\r\n') for line in infile]
 
+            
         self._parse(infile)
         # if we had any errors, now is the time to raise them
         if self._errors:
@@ -1497,6 +1505,7 @@ class ConfigObj(Section):
 
         # No encoding specified - so we need to check for UTF8/UTF16
         for BOM, (encoding, final_encoding) in list(BOMS.items()):
+            print(BOM, type(line))
             if not line.startswith(BOM):
                 continue
             else:
@@ -1520,9 +1529,13 @@ class ConfigObj(Section):
                 return self._decode(infile, encoding)
 
         # No BOM discovered and no encoding specified, just return
-        if isinstance(infile, six.string_types):
+        #if isinstance(infile, six.string_types):
             # infile read from a file will be a single string
-            return infile.splitlines(True)
+        #    return infile.splitlines(True)
+        
+        infile = infile.splitlines(True)
+        print( infile)
+        print(len(infile), type(infile), type(infile[0]))
         return infile
 
 

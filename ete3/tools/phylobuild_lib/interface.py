@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -38,6 +36,9 @@ from __future__ import print_function
 #
 #
 # #END_LICENSE#############################################################
+from __future__ import absolute_import
+from __future__ import print_function
+
 import sys
 import os
 import re
@@ -56,12 +57,13 @@ from .errors import *
 import six
 from six import StringIO
 
-try:
-    import curses
-except ImportError:
-    NCURSES = False
-else:
-    NCURSES = True
+# try:
+#     import curses
+# except ImportError:
+#     NCURSES = False
+# else:
+#     NCURSES = True
+NCURSES = False
 
 # CONVERT shell colors to the same curses palette
 SHELL_COLORS = {
@@ -120,6 +122,7 @@ class Screen(StringIO):
         self.wrapper = TextWrapper(width=80, initial_indent="",
                                    subsequent_indent="         ",
                                    replace_whitespace=False)
+
 
         if NCURSES:
             for windex in windows:
@@ -181,9 +184,13 @@ class Screen(StringIO):
         curses.doupdate()
 
     def write(self, text):
-        if isinstance(text, six.text_type):
-            #text = text.encode(self.stdout.encoding)
-            text = text.encode("UTF-8")
+        if six.PY3:
+            text = str(text)
+        else:
+            if isinstance(text, six.text_type):
+                #text = text.encode(self.stdout.encoding)
+                text = text.encode("UTF-8")
+        
         if NCURSES:
             self.write_curses(text)
             if self.logfile:
@@ -404,7 +411,7 @@ def main(main_screen, func, args):
     screen = Screen(init_curses(main_screen))
 
     # prints are handled by my Screen object
-    screen.stdout = sys.stdout
+    screen.stdout = sys.stdout    
     if args.logfile:
         screen.logfile = open(os.path.join(GLOBALS["basedir"], "npr.log"), "w")
     sys.stdout = screen

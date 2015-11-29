@@ -194,6 +194,7 @@ def parse_block(blockname, conf):
             
 def check_config(fname):
     conf = ConfigObj(fname, list_values=True)
+
     # expand meta_workflows
     for meta_name, meta_wf in conf["genetree_meta_workflow"].items():
         for wkname in meta_wf:        
