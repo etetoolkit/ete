@@ -284,8 +284,8 @@ def _check_paml_labels (tree, paml_labels, pamout, model):
         try:
             node = tree.get_descendant_by_node_id(rel[1])
             if int (node.up.node_id) != int (rel[0]):
-                warn ('WARNING: labelling does not correspond!!\n' + \
-                      '         Getting them from ' + pamout)
+                warn('WARNING: labelling does not correspond (bad tree?)!!\n' + \
+                     '         Getting them from ' + pamout)
                 _get_labels_from_paml(tree, relations, pamout, model)
                 break
         except IndexError:

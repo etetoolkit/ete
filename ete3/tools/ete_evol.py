@@ -44,6 +44,7 @@ from .. import EvolTree, random_color, add_face_to_node, TextFace, TreeStyle
 from ..evol import Model
 from argparse import RawTextHelpFormatter
 from multiprocessing import Pool
+from subprocess import Popen, PIPE
 import sys
 import os
 
@@ -76,6 +77,10 @@ Model name  Description                   Model kind
                            type=str,
                            help=("Link tree to a multiple sequence alignment (codons)."))
 
+    evol_args.add_argument("--clear_all", dest="clear_all",
+                           action='store_true',
+                           help=("Clear any data present in the output directory."))
+
     evol_args.add_argument("--prev_models", dest="prev_models",
                            type=str, nargs='+',
                            help=("directory where precalculated models are "
@@ -86,6 +91,8 @@ Model name  Description                   Model kind
     evol_args.add_argument("--view", dest="show", action='store_true',
                            help=("Opens ETE interactive GUI to visualize tree and "
                                  "select model(s) to render."))
+    evol_args.add_argument("--noimg", dest="noimg", action='store_true',
+                           help=("Do not generate images."))
 
     # evol_args.add_argument("-o", "--output_dir", dest="outdir",
     #                        type=str, default='/tmp/ete3-tmp/',
@@ -294,7 +301,6 @@ def local_run_model(tree, model_name, codeml_binary, ctrl_string='', **kwargs):
     '''
     local verison of model runner. Needed for multiprocessing pickling...
     '''
-    from subprocess import Popen, PIPE
     model_obj = Model(model_name, tree, **kwargs)
     fullpath = os.path.join (tree.workdir, model_obj.name)
     os.system("mkdir -p %s" % fullpath)
@@ -334,14 +340,24 @@ def run_all_models(tree, nodes, marks, codeml_binary, args, **kwargs):
                 print('       marking branches %s\n' %
                       ', '.join([str(m) for m in node]))
                 clean_tree(tree)
-                tree.mark_tree(node , marks=mark)
+                tree.mark_tree(node, marks=mark)
                 modmodel = model + '.' + '_'.join([str(n) for n in node])
+                if os.path.isdir(os.path.join(tree.workdir, modmodel)):
+                    warn('Model %s already runned... skipping' % modmodel)
+                    results.append((os.path.join(tree.workdir, modmodel),
+                                    modmodel))
+                    continue
                 print('          %s\n' % (
                     tree.write()))
                 results.append(pool.apply_async(
                     local_run_model,
                     args=(tree, modmodel, codeml_binary), kwds=kwargs))
         else:
+            if os.path.isdir(os.path.join(tree.workdir, model)):
+                warn('Model %s already runned... skipping' % model)
+                results.append((os.path.join(tree.workdir, model),
+                                model))
+                continue
             results.append(pool.apply_async(
                 local_run_model, args=(tree, model, codeml_binary), kwds=kwargs))
     pool.close()
@@ -350,8 +366,12 @@ def run_all_models(tree, nodes, marks, codeml_binary, args, **kwargs):
     models = {}    
     # join back results to tree
     for result in results:
-        path, model_obj = result.get()
-        models[model_obj.name] = path
+        try:
+            path, model_obj = result.get()
+            models[model_obj.name] = path
+        except AttributeError:
+            path, model = result
+            models[result[1]] = os.path.join(result[0], 'out')
     return models
 
 def load_model(model_name, tree, path, **kwargs):
@@ -435,6 +455,8 @@ def run(args):
         tree = EvolTree(nw, format=1)
         if args.output:
             tree.workdir = args.output
+        if args.clear_all:
+            Popen('rm -rf %s' % tree.workdir, shell=True).communicate()
 
         # get the marks we will apply to different runs
         nodes, marks = get_marks_from_args(tree, args)
@@ -480,6 +502,9 @@ def run(args):
         site_models = [m for m in tree._models
                        if AVAIL[m.split('.')[0]]['typ']=='site']
 
+        if args.noimg:
+            return
+        
         if args.show:
             tree.show(histfaces=site_models)
         else:
