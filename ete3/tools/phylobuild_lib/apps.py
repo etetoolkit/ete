@@ -66,7 +66,7 @@ OPTION2APPTYPE = {
     "_nt_tree_builder": APPTYPES["tree builders"], 
     
     "_aa_model_tester": APPTYPES["model testers"],
-    "_nt_model_tester": set([]),
+    "_nt_model_tester": APPTYPES["model testers"],
 
     "_cog_selector": APPTYPES["COG selectors"],
     "_alg_concatenator": APPTYPES["alg concatenators"], 
@@ -211,9 +211,9 @@ def test_apps(apps):
             out, err = process.communicate()
 
             if out:
-                print("OK.\t%s" %out.strip())
+                print("OK.\t%s" %str(out).strip())
             else:
                 print("ERROR")
                 #print("** ", test_cmd)
                 #log.debug(test_cmd)
-                #log.debug(commands.getoutput(test_cmd.rstrip("wc -l")))
+                #log.debug(subprocess.check_output(test_cmd.rstrip("wc -l")), shell=True)

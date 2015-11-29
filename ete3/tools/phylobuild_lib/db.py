@@ -69,9 +69,12 @@ def autocommit(targetconn = conn):
         targetconn.commit()
 
 def encode(x):
-    return base64.encodestring(six.moves.cPickle.dumps(x, 2))
+    return bytes.decode(base64.encodestring(six.moves.cPickle.dumps(x, 2)))
 
 def decode(x):
+    if six.PY3:
+        x = str.encode(x)
+        
     return six.moves.cPickle.loads(base64.decodestring(x))
 
 # SQLITE_MAX_LENGTH issue: files larger than ~1GB cannot be stored. limit cannot
@@ -90,7 +93,7 @@ def zencode(x, data_id):
     if sys.getsizeof(pdata) > MAX_SQLITE_SIZE:
         # using protocol 2 fails because of the integer overflow python bug
         # i.e. http://bugs.python.org/issue13555
-        six.moves.cPickle.dump(x, open(pjoin(GLOBALS['db_dir'], data_id+".pkl"), "wb"))
+        six.moves.cPickle.dump(x, open(pjoin(GLOBALS['db_dir'], data_id+".pkl"), "wb"), protocol=1)
         return "__DBDIR__:%s" %data_id
     else:
         return base64.encodestring(zlib.compress(pdata))
@@ -98,7 +101,7 @@ def zencode(x, data_id):
 def zdecode(x):
     if x.startswith("__DBDIR__:"):
         data_id = x.split(':', 1)[1]
-        data = six.moves.cPickle.load(open(pjoin(GLOBALS['db_dir'], data_id+".pkl")))
+        data = six.moves.cPickle.load(open(pjoin(GLOBALS['db_dir'], data_id+".pkl"), "rb"))
     else:
         data = six.moves.cPickle.loads(zlib.decompress(base64.decodestring(x)))
     return data

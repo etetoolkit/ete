@@ -46,6 +46,7 @@ log = logging.getLogger("main")
 
 from ..master_task import ModelTesterTask
 from ..master_job import Job
+from ..errors import TaskError
 from ..utils import basename, PhyloTree, GLOBALS, pjoin
 
 __all__ = ["Prottest"]
@@ -54,7 +55,7 @@ class Prottest(ModelTesterTask):
     def __init__(self, nodeid, alg_fasta_file, alg_phylip_file,
                  constrain_tree, seqtype, conf, confname):
         GLOBALS["citator"].add('phyml')
-
+       
         self.alg_phylip_file = alg_phylip_file
         self.alg_fasta_file = alg_fasta_file
         self.confname = confname
@@ -81,10 +82,16 @@ class Prottest(ModelTesterTask):
         ModelTesterTask.__init__(self, nodeid, "mchooser", task_name,
                       base_args, conf[confname])
 
+        if seqtype == "nt":
+            log.error('Prottest can only be used with amino-acid alignments!')
+            raise TaskError(self, 'Prottest can only be used with amino-acid alignments!')
+ 
+        
         self.best_model = None
         self.seqtype = "aa"
         self.init()
 
+        
     def load_jobs(self):
         conf = self.conf
         for m in self.models:

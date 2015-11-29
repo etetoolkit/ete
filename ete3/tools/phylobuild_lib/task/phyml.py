@@ -57,8 +57,6 @@ class Phyml(TreeTask):
                  seqtype, conf, confname, parts_id=None):
 
         GLOBALS["citator"].add('phyml')
-        if model:
-            model = model.split("+")[0]
             
         base_args = OrderedDict({
                 "--model": "",
@@ -66,20 +64,48 @@ class Phyml(TreeTask):
                 "--quiet": "",
                 "--constraint_tree": ""})
 
+
+        if model and model.startswith('pmodeltest-'):
+            model = model.replace('pmodeltest-', '')
+            self.fullmodel = model
+
+            # overwrites default options if model selection says so            
+            if "+F" in model:
+                conf[confname]["-v"]=" e"
+            elif "!F" in model:
+                conf[confname]["-v"]=" 0"
+                            
+            if "+G" in model:
+                #conf[confname]["-c"]=" 4"
+                conf[confname]["-a"]=" e"
+            elif "!G" in model:
+                conf[confname]["-c"]=" 1"
+                conf[confname].pop("-a", None)
+                
+            if "+I" in model:
+                conf[confname]["-f"] = " m" if seqtype == "nt" else " e"                
+            elif "!I" in model:
+                conf[confname]["-f"] = '0.25,0.25,0.25,0.25' if seqtype == "nt" else " m"
+                
+            model = model.split("+")[0].split("!")[0]
+        elif not model:
+            model = conf[confname]["_aa_model"] if seqtype == "aa" else conf[confname]["_nt_model"]
+            self.fullmodel = ""
+        else:
+            self.fullmodel = model+"-prottest"
+            model= model # use the model as provided by prottest (older, simpler approach)  
+
+        self.model = model
         self.confname = confname
         self.conf = conf
         self.constrain_tree = None
         if constrain_id:
             self.constrain_tree = db.get_dataid(constrain_id, DATATYPES.constrain_tree)
+            
         self.alg_phylip_file = alg_phylip_file
-
         TreeTask.__init__(self, nodeid, "tree", "Phyml",
                           base_args, conf[confname])
-
-        if seqtype == "aa":
-            self.model = model or conf[confname]["_aa_model"]
-        elif seqtype == "nt":
-            self.model = model or conf[confname]["_nt_model"]
+            
         self.seqtype = seqtype
         self.lk = None
 
@@ -88,8 +114,8 @@ class Phyml(TreeTask):
     def load_jobs(self):
         appname = self.conf[self.confname]["_app"]
         args = OrderedDict(self.args)
-        args["--model"] = self.model
         args["--datatype"] = self.seqtype
+        args["--model"] = self.model
         args["--input"] = self.alg_phylip_file
         if self.constrain_tree:
             args["--constraint_tree"] = self.constrain_tree
@@ -100,7 +126,7 @@ class Phyml(TreeTask):
         job.add_input_file(self.alg_phylip_file, job.jobdir)
         if self.constrain_tree:
             job.add_input_file(self.constrain_tree, job.jobdir)
-        job.jobname += "-"+self.model
+        job.jobname += "-"+self.fullmodel
         self.jobs.append(job)
 
     def finish(self):

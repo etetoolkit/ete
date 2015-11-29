@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-from __future__ import print_function
 # #START_LICENSE###########################################################
 #
 #
@@ -38,6 +36,9 @@ from __future__ import print_function
 #
 #
 # #END_LICENSE#############################################################
+from __future__ import absolute_import
+from __future__ import print_function
+
 import os
 import logging
 import traceback
@@ -592,8 +593,9 @@ def update_task_states_recursively(task):
             start, end = update_job_status(j)
         else:
             start, end = update_task_states_recursively(j)
-        task_start = min(task_start, start) if task_start > 0 else start
-        task_end = max(task_end, end)
+        if start is not None:
+            task_start = min(task_start, start) if task_start >0 else start
+        task_end = max(task_end, end) if end is not None else task_end
 
     db.update_task(task.taskid, status=task.status, tm_start=task_start, tm_end=task_end)
     return task_start, task_end

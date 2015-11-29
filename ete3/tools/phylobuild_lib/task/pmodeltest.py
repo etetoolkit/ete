@@ -22,15 +22,14 @@ class PModelTest(ModelTesterTask):
         self.confname = confname
         self.conf = conf
         self.seqtype = seqtype
-        
         base_args = {}
         if seqtype == "aa":
             base_args["--protein"] = ""
             base_args["-m"] = conf[confname]["_aa_models"]
+            self.models = conf[confname]["_aa_models"]
         else:
             base_args["-m"] = conf[confname]["_nt_models"]
-        
-        self.models = conf[confname]["_aa_models"]        
+            self.models = conf[confname]["_nt_models"]
         task_name = "PModelTest-[%s]" %self.models
         
         ModelTesterTask.__init__(self, nodeid, "mchooser", task_name,
@@ -52,8 +51,15 @@ class PModelTest(ModelTesterTask):
     def finish(self):
         main_job = self.jobs[0]
         aic_table = pjoin(main_job.jobdir, "pmodeltest.txt")        
-        best = open(aic_table).readline().split('\t')
-        best_model = best[0].strip()
+        best = open(aic_table).readline().split('\t')        
+        best_model = "pmodeltest-%s" %(best[0].strip())
+        if "--nogam" not in self.args and "+G" not in best_model:
+            best_model += "!G"
+        if "--nofrq" not in self.args and "+F" not in best_model:
+            best_model += "!F"            
+        if "--noinv" not in self.args and "+I" not in best_model:
+            best_model += "!I"
+                
         log.log(22, "%s model selection output:\n%s" %(best_model, open(aic_table).read()))
         ModelTesterTask.store_data(self, best_model, aic_table)
 

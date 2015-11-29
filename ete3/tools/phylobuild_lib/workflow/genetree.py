@@ -38,7 +38,7 @@
 # #END_LICENSE#############################################################
 from __future__ import absolute_import
 import re
-import commands
+from subprocess import check_output
 import logging
 
 from ..task import TreeMerger, Msf, DummyTree
@@ -117,8 +117,8 @@ def annotate_node(t, final_task):
             )
 
 def get_trimal_conservation(alg_file, trimal_bin):
-    output = commands.getoutput("%s -ssc -in %s" % (trimal_bin,
-                                                    alg_file))
+    output = bytes.decode(check_output("%s -ssc -in %s" % (trimal_bin,
+                                                    alg_file), shell=True))
     conservation = []
     for line in output.split("\n")[3:]:
         a, b = list(map(float, line.split()))
@@ -129,8 +129,8 @@ def get_trimal_conservation(alg_file, trimal_bin):
 
 
 def get_statal_identity(alg_file, statal_bin):
-    output = commands.getoutput("%s -scolidentt -in %s" % (statal_bin,
-                                                           alg_file))
+    output = bytes.decode(check_output("%s -scolidentt -in %s" % (statal_bin, alg_file), shell=True))
+
     ## Columns Identity Descriptive Statistics
     #maxColIdentity	1
     #minColIdentity	0.428571
@@ -139,7 +139,7 @@ def get_statal_identity(alg_file, statal_bin):
     #print output
 
     maxi, mini, avgi, stdi = [None] * 4
-    for line in output.split("\n"):
+    for line in output.splitlines():
         if line.startswith("#maxColIdentity"):
             maxi = float(line.split()[1])
         elif line.startswith("#minColIdentity"):
@@ -155,8 +155,8 @@ def get_statal_identity(alg_file, statal_bin):
 def get_trimal_identity(alg_file, trimal_bin):
     #print "%s -sident -in %s" %\
     #    (trimal_bin, alg_file)
-    output = commands.getoutput("%s -sident -in %s" %\
-                                    (trimal_bin, alg_file))
+    output = byets.decode(check_output("%s -sident -in %s" %\
+                                    (trimal_bin, alg_file), shell=True))
     #print output
     conservation = []
     for line in output.split("\n"):
@@ -227,6 +227,8 @@ def process_task(task, wkname, npr_conf, nodeid2info):
         # inference does not make sense given the number of sequences. DummyTree
         # will produce a fake fully collapsed newick tree.
         treebuilderclass = DummyTree
+        mtesterclass = None
+
 
     # If more than one outgroup are used, enable the use of constrain
     if out_seqs and len(out_seqs) > 1:
@@ -387,7 +389,7 @@ def process_task(task, wkname, npr_conf, nodeid2info):
         if treebuilderclass:
             alg_fasta_file = task.alg_fasta_file
             alg_phylip_file = task.alg_phylip_file
-            model = task.best_model            
+            model = task.best_model
             tree_task = treebuilderclass(nodeid, alg_phylip_file,
                                          constrain_id,
                                          model, seqtype,
@@ -404,7 +406,7 @@ def process_task(task, wkname, npr_conf, nodeid2info):
             #    treemerge_task = TreeSplitterWithOutgroups(nodeid, seqtype, task.tree_file, main_tree, conf)
             #else:
             #    treemerge_task = TreeSplitter(nodeid, seqtype, task.tree_file, main_tree, conf)
-            
+
         treemerge_task.size = task.size
         new_tasks.append(treemerge_task)
 
@@ -468,4 +470,3 @@ def pipeline(task, wkname, conf=None):
     logindent(-2)
 
     return new_tasks
-

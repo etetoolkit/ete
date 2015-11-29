@@ -80,7 +80,7 @@ def build_genetree_workflow(wname):
         "_aa_tree_builder": treebuilder,
         "_nt_aligner": aligner,
         "_nt_alg_cleaner": trimmer,
-        "_nt_model_tester": "none",
+        "_nt_model_tester": modeltester,
         "_nt_tree_builder": treebuilder, 
         "_appset":"@builtin_apps"}
     }
@@ -194,6 +194,7 @@ def parse_block(blockname, conf):
             
 def check_config(fname):
     conf = ConfigObj(fname, list_values=True)
+
     # expand meta_workflows
     for meta_name, meta_wf in conf["genetree_meta_workflow"].items():
         for wkname in meta_wf:        
@@ -444,6 +445,7 @@ CHECKERS = {
     ("raxml", "_aa_model"): (is_text, {}, True),
     ("raxml", "_method"): (is_choice, {"choices":set(['GAMMA', 'CAT'])}, True),
     ("raxml", "_bootstrap"): (is_raxml_bootstrap, {}, True),
+    ("raxml", "_model_suffix"): (is_text, {}, True),
 
     ("raxml-sse", "_aa_model"): (is_text, {}, True),
     ("raxml-sse", "_method"): (is_choice, {"choices":set(['GAMMA', 'CAT'])}, True),

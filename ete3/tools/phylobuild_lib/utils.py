@@ -181,7 +181,7 @@ GENCODE = {
     }
 
 # Aux functions (general)
-md5 = lambda x: hashlib.md5(x).hexdigest()
+md5 = lambda x: hashlib.md5(x.encode("utf-8")).hexdigest()
 encode_seqname = lambda x: md5(x)[:10]
 basename = lambda path: psplit(path)[-1]
 # Aux functions (task specific)
