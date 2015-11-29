@@ -27,10 +27,10 @@ class PModelTest(ModelTesterTask):
         if seqtype == "aa":
             base_args["--protein"] = ""
             base_args["-m"] = conf[confname]["_aa_models"]
+            self.models = conf[confname]["_aa_models"]
         else:
             base_args["-m"] = conf[confname]["_nt_models"]
-        
-        self.models = conf[confname]["_aa_models"]        
+            self.models = conf[confname]["_nt_models"]
         task_name = "PModelTest-[%s]" %self.models
         
         ModelTesterTask.__init__(self, nodeid, "mchooser", task_name,
