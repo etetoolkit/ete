@@ -66,6 +66,25 @@ from .master_task import (isjob, update_task_states_recursively,
                           update_job_status)
 from .workflow.common import assembly_tree, get_cmd_log
 
+def cmp_to_key(mycmp):
+    'Convert a cmp= function into a key= function'
+    class K:
+        def __init__(self, obj, *args):
+            self.obj = obj
+        def __lt__(self, other):
+            return mycmp(self.obj, other.obj) < 0
+        def __gt__(self, other):
+            return mycmp(self.obj, other.obj) > 0
+        def __eq__(self, other):
+            return mycmp(self.obj, other.obj) == 0
+        def __le__(self, other):
+            return mycmp(self.obj, other.obj) <= 0
+        def __ge__(self, other):
+            return mycmp(self.obj, other.obj) >= 0
+        def __ne__(self, other):
+            return mycmp(self.obj, other.obj) != 0
+    return K
+    
 def debug(_signal, _frame):
     import pdb
     pdb.set_trace()
@@ -213,7 +232,7 @@ def schedule(workflow_task_processor, pending_tasks, schedule_time, execution, d
             to_add_tasks = set()
 
             GLOBALS["cached_status"] = {}
-            for task in sorted(pending_tasks, sort_tasks):
+            for task in sorted(pending_tasks, key=cmp_to_key(sort_tasks)):
                 # Avoids endless periods without new job submissions
                 elapsed_time = time() - check_start_time
                 #if not back_launcher and pending_tasks and \

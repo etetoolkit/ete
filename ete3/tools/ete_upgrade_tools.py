@@ -39,7 +39,6 @@ def _main():
         # if not, try a user local copy
         APPSPATH = pjoin(ETEHOMEDIR, 'ext_apps-latest')
 
-    print (colorify('Downloading latest version of tools...', "green"), file=sys.stderr)
     
     TARGET_DIR = args.directory
     
@@ -56,6 +55,9 @@ def _main():
             pass
 
     version_file = "latest.tar.gz"
+    print (colorify('Downloading latest version of tools...', "green"), file=sys.stderr)
+    sys.stderr.flush()
+
     urlretrieve("https://github.com/jhcepas/ext_apps/archive/%s" %version_file, pjoin(TARGET_DIR, version_file))
     print(colorify('Decompressing...', "green"), file=sys.stderr)
     tfile = tarfile.open(pjoin(TARGET_DIR, version_file), 'r:gz')
