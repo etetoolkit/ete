@@ -5,9 +5,12 @@ import re
 import os
 import sys
 import time
+from collections import defaultdict
 
 from .utils import log
 from . import db
+from .errors import ConfigError, DataError
+
 
 def iter_fasta_seqs(source):
     """Iter records in a FASTA file"""
@@ -74,6 +77,7 @@ def load_sequences(args, seqtype, target_seqs, target_species, cached_seqs):
         SEQ_PARSER = re.compile("(%s)" %('|'.join(map(re.escape,seq_repl.keys()))))
 
     start_time = time.time()
+    dupnames = defaultdict(int)
     for c1, (raw_seqname, seq) in enumerate(iter_fasta_seqs(seqfile)):
         if c1 and c1 % 10000 == 0:
             if loaded_seqs:
@@ -114,7 +118,12 @@ def load_sequences(args, seqtype, target_seqs, target_species, cached_seqs):
             seqid = "S%09d" %(len(loaded_seqs)+1)
 
         if seqname in loaded_seqs:
-            raise DataError("duplicated sequence in %s sequence file" %(seqname, seqtype))
+            if fix_dups:
+                dupnames[seqname] += 1
+                seqname = seqname + "_%d"%dupnames[seqname]
+            else:
+                raise DataError("duplicated sequence in %s sequence file" %(seqname))
+            
             
         loaded_seqs[seqname] = seqid
         db.add_seq(seqid, seq, seqtype)

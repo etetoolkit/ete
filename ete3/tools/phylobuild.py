@@ -580,8 +580,8 @@ def main(args):
     # how task will be executed
     if args.no_execute:
         execution = (None, False)
-    elif args.sge_execute:
-        execution = ("sge", False)
+    # elif args.sge_execute:
+    #     execution = ("sge", False)
     else:
         if args.monitor:
             execution =("insitu", True) # True is for run-detached flag
@@ -835,7 +835,7 @@ def _main():
                                  action = "store_true",
                                  help=("If duplicated sequence names exist in the input"
                                        " fasta file, duplicates will be renamed."))
-
+ 
 
 
     input_group.add_argument("--seqdb", dest="seqdb",
@@ -964,10 +964,10 @@ def _main():
                                        " Tasks will be processed and intermediate steps will"
                                        " run, but no real computation will be performed."))
 
-    exec_type_group.add_argument("--sge", dest="sge_execute",
-                                 action="store_true", help="EXPERIMENTAL!: Jobs will be"
-                                 " launched using the Sun Grid Engine"
-                                 " queue system.")
+    # exec_type_group.add_argument("--sge", dest="sge_execute",
+    #                              action="store_true", help="EXPERIMENTAL!: Jobs will be"
+    #                              " launched using the Sun Grid Engine"
+    #                              " queue system.")
 
     exec_group.add_argument("--monitor", dest="monitor",
                             action="store_true",
