@@ -76,11 +76,10 @@ Yang, Z. 2007.
 import os
 from warnings import warn
 
-from .. import PhyloNode, SeqGroup, PhyloTree
+from .. import PhyloNode, SeqGroup
 from ..parser.newick import write_newick
 from .model import Model, PARAMS, AVAIL
 from .utils import translate, chi_high
-
 
 try:
     from ..treeview import TreeStyle

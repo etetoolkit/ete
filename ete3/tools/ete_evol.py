@@ -41,6 +41,7 @@ from __future__ import print_function
 
 from ..evol.control import PARAMS, AVAIL, PARAMS_DESCRIPTION
 from .. import EvolTree, random_color, add_face_to_node, TextFace, TreeStyle
+from ..treeview.layouts import evol_clean_layout
 from ..evol import Model
 from argparse import RawTextHelpFormatter
 from multiprocessing import Pool
@@ -93,6 +94,10 @@ Model name  Description                   Model kind
                                  "select model(s) to render."))
     evol_args.add_argument("--noimg", dest="noimg", action='store_true',
                            help=("Do not generate images."))
+    evol_args.add_argument("--clean_layout", dest="clean_layout",
+                           action='store_true',
+                           help=("Other visualization option, with omega values "
+                                 "written on branches"))
 
     # evol_args.add_argument("-o", "--output_dir", dest="outdir",
     #                        type=str, default='/tmp/ete3-tmp/',
@@ -170,11 +175,17 @@ Model name  Description                   Model kind
                             " than 1, tasks with multi-threading"
                             " capabilities will enabled (if 0 all available)"
                             "cores will be used")
+    
+    codeml_binary = Popen(['which', 'codeml'], stdout=PIPE).communicate()[0]
+    codeml_binary = codeml_binary or "~/.etetoolkit/ext_apps-latest/bin/codeml"
     exec_group.add_argument("--codeml_binary", dest="codeml_binary",
-                            default="~/.etetoolkit/ext_apps-latest/bin/codeml")
-                            
+                            default=codeml_binary.strip(),
+                            help="[%(default)s] path to CodeML binary")
+    slr_binary = Popen(['which', 'Slr'], stdout=PIPE).communicate()[0]
+    slr_binary = slr_binary or "~/.etetoolkit/ext_apps-latest/bin/Slr"
     exec_group.add_argument("--slr_binary", dest="slr_binary",
-                            default="~/.etetoolkit/ext_apps-latest/bin/Slr")
+                            default=slr_binary.strip(),
+                            help="[%(default)s] path to Slr binary")
                                 
 def marking_layout(node):
     '''
@@ -513,9 +524,11 @@ def run(args):
             return
         
         if args.show:
-            tree.show(histfaces=site_models)
+            tree.show(histfaces=site_models,
+                      layout=evol_clean_layout if args.clean_layout else None)
         else:
             tree.render(os.path.join(tree.workdir, 'tree_%s%s.pdf' % (
                 'hist-%s_' % ('-'.join(site_models)) if site_models else '',
-                best)), histfaces=site_models)
+                best)), histfaces=site_models,
+                        layout=evol_clean_layout if args.clean_layout else None)
 
