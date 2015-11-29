@@ -173,6 +173,9 @@ Model name  Description                   Model kind
     exec_group.add_argument("--codeml_binary", dest="codeml_binary",
                             default="~/.etetoolkit/ext_apps-latest/bin/codeml")
                             
+    exec_group.add_argument("--slr_binary", dest="slr_binary",
+                            default="~/.etetoolkit/ext_apps-latest/bin/Slr")
+                            
     
 def marking_layout(node):
     '''
@@ -297,7 +300,7 @@ def get_marks_from_args(tree, args):
         nodes.extend([s.node_id for s in tree.iter_leaves() if not s.is_leaf()])
     return nodes, marks
 
-def local_run_model(tree, model_name, codeml_binary, ctrl_string='', **kwargs):
+def local_run_model(tree, model_name, binary, ctrl_string='', **kwargs):
     '''
     local verison of model runner. Needed for multiprocessing pickling...
     '''
@@ -319,7 +322,7 @@ def local_run_model(tree, model_name, codeml_binary, ctrl_string='', **kwargs):
     hlddir = os.getcwd()
     os.chdir(fullpath)
         
-    proc = Popen([codeml_binary, 'tmp.ctl'], stdout=PIPE)
+    proc = Popen([binary, 'tmp.ctl'], stdout=PIPE)
 
     run, err = proc.communicate()
     if err is not None or b'error' in run or b'Error' in run:
@@ -328,12 +331,14 @@ def local_run_model(tree, model_name, codeml_binary, ctrl_string='', **kwargs):
     os.chdir(hlddir)
     return os.path.join(fullpath,'out'), model_obj
 
-def run_all_models(tree, nodes, marks, codeml_binary, args, **kwargs):
+def run_all_models(tree, nodes, marks, args, **kwargs):
     ## TO BE IMPROVED: multiprocessing should be called in a simpler way
-    print("\nRUNNING CODEML")
+    print("\nRUNNING CODEML/SLR")
     pool = Pool(args.maxcores or None)
     results = []
     for model in args.models:
+        binary = (os.path.expanduser(args.slr_binary) if model == 'SLR'
+                  else os.path.expanduser(args.codeml_binary))
         print('  - processing model %s' % model)
         if AVAIL[model.split('.')[0]]['allow_mark']:
             for mark, node in zip(marks, nodes):
@@ -342,7 +347,8 @@ def run_all_models(tree, nodes, marks, codeml_binary, args, **kwargs):
                 clean_tree(tree)
                 tree.mark_tree(node, marks=mark)
                 modmodel = model + '.' + '_'.join([str(n) for n in node])
-                if os.path.isdir(os.path.join(tree.workdir, modmodel)):
+                if (os.path.isdir(os.path.join(tree.workdir, modmodel)) and
+                    os.path.exists(os.path.join(tree.workdir, modmodel, 'out'))):
                     warn('Model %s already runned... skipping' % modmodel)
                     results.append((os.path.join(tree.workdir, modmodel),
                                     modmodel))
@@ -351,7 +357,7 @@ def run_all_models(tree, nodes, marks, codeml_binary, args, **kwargs):
                     tree.write()))
                 results.append(pool.apply_async(
                     local_run_model,
-                    args=(tree, modmodel, codeml_binary), kwds=kwargs))
+                    args=(tree, modmodel, binary), kwds=kwargs))
         else:
             if os.path.isdir(os.path.join(tree.workdir, model)):
                 warn('Model %s already runned... skipping' % model)
@@ -359,7 +365,7 @@ def run_all_models(tree, nodes, marks, codeml_binary, args, **kwargs):
                                 model))
                 continue
             results.append(pool.apply_async(
-                local_run_model, args=(tree, model, codeml_binary), kwds=kwargs))
+                local_run_model, args=(tree, model, binary), kwds=kwargs))
     pool.close()
     pool.join()
     
@@ -399,6 +405,8 @@ def write_results(tree, args):
         for altn in tree._models:
             if tree._models[null].np >= tree._models[altn].np:
                 continue
+            if null == 'SLR' or altn == 'SLR':
+                continue
             # we usually want to compare models of the same kind
             if (((AVAIL[null.split('.')[0]]['typ']=='site' and
                   AVAIL[altn.split('.')[0]]['typ']=='branch') or
@@ -429,11 +437,14 @@ def write_results(tree, args):
     return bests
 
 def run(args):
-    codeml_binary = os.path.expanduser(args.codeml_binary)
-    if not os.path.exists(codeml_binary):        
-        print("ERROR: Codeml binary does not exist at %s"%args.codeml_binary, file=sys.stderr)
-        print("       provide another route with --codeml_binary, or install it by executing 'ete3 install-external-tools paml'", file=sys.stderr)
-        exit(-1)
+    binary  = os.path.expanduser(args.slr_binary)
+    if not os.path.exists(binary):        
+        print("Warning: SLR binary does not exist at %s"%args.binary, file=sys.stderr)
+        print("         provide another route with --slr_binary, or install it by executing 'ete3 install-external-tools paml'", file=sys.stderr)
+    binary  = os.path.expanduser(args.codeml_binary)
+    if not os.path.exists(binary):        
+        print("Warning: CodeML binary does not exist at %s"%args.binary, file=sys.stderr)
+        print("         provide another route with --codeml_binary, or install it by executing 'ete3 install-external-tools paml'", file=sys.stderr)
 
     # more help
     # TODO: move this to help section
@@ -480,8 +491,7 @@ def run(args):
                     except ValueError:
                         pass
                 params[p] = v
-            models.update(run_all_models(tree, nodes, marks, codeml_binary, args,
-                                         **params))
+            models.update(run_all_models(tree, nodes, marks, args, **params))
         # link models to tree
         params = {}
         for model in models:
