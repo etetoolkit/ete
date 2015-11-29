@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -37,6 +36,7 @@ from __future__ import absolute_import
 #
 #
 # #END_LICENSE#############################################################
+from __future__ import absolute_import
 from os.path import join as pjoin
 import logging
 from collections import defaultdict
@@ -119,7 +119,9 @@ class ConcatAlg(ConcatAlgTask):
                 dataid = db.get_dataid(*job.clean_alg_fasta_file.split("."))
                 job2acleaner[job.nodeid] = db.get_data(dataid)
             elif job.ttype == "mchooser":
-                self.job2model[job.nodeid] = job.best_model
+                # clean model comming from pmodeltest
+                clean_model = job.best_model.replace('pmodeltest-', '').split("+")[0].split("!")[0]
+                self.job2model[job.nodeid] = clean_model
 
         if "acleaner" in jobtypes:
             self.job2alg = job2acleaner

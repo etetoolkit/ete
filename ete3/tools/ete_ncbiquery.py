@@ -60,7 +60,8 @@ def populate_args(ncbi_args_p):
                         help=("EXPERIMENTAL: Tries a fuzzy (and SLOW) search for those"
                               " species names that could not be translated"
                               " into taxids. A float number must be provided"
-                              " indicating the minimum string similarity."))
+                              " indicating the minimum string similarity."
+                              " Special sqlite compilation is necessary."))
 
     output_args = ncbi_args_p.add_argument_group('NCBI OUTPUT OPTIONS')
 
