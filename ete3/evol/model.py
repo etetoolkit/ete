@@ -189,8 +189,8 @@ class Model:
         To add histogram face for a given site mdl (M1, M2, M7, M8)
         can choose to put it up or down the tree.
         2 types are available:
-           * hist: to draw histogram.
-           * line: to draw plot.
+           * stick: to draw histogram.
+           * curve: to draw plot.
         You can define color scheme by passing a diccionary, default is:
             col = {'NS' : 'grey'  ,
                    'RX' : 'green' ,
