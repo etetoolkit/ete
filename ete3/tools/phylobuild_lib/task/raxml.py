@@ -101,7 +101,7 @@ class Raxml(TreeTask):
             model_string += conf[confname]["_method"]
             if seqtype == "aa":
                 model_string += model if model else conf[confname]["_aa_model"]
-            model_sting += conf[confname]["_model_suffix"]                        
+            model_string += conf[confname]["_model_suffix"]                        
 
         self.model_string = model_string
         self.model = model_string
