@@ -41,6 +41,7 @@ from __future__ import print_function
 
 from ..evol.control import PARAMS, AVAIL, PARAMS_DESCRIPTION
 from .. import EvolTree, random_color, add_face_to_node, TextFace, TreeStyle
+from ..treeview.layouts import evol_clean_layout
 from ..evol import Model
 from argparse import RawTextHelpFormatter
 from multiprocessing import Pool
@@ -83,7 +84,7 @@ Model name  Description                   Model kind
 
     evol_args.add_argument("--prev_models", dest="prev_models",
                            type=str, nargs='+',
-                           help=("directory where precalculated models are "
+                           help=("directory where pre-calculated models are "
                                  "stored, followed by coma model-name.\n"
                                  "example: --prev_models /path1/,M2 /path2/,M1\n"
                                  "will load models from path1 under the name "
@@ -93,6 +94,17 @@ Model name  Description                   Model kind
                                  "select model(s) to render."))
     evol_args.add_argument("--noimg", dest="noimg", action='store_true',
                            help=("Do not generate images."))
+    evol_args.add_argument("--clean_layout", dest="clean_layout",
+                           action='store_true',
+                           help=("Other visualization option, with omega values "
+                                 "written on branches"))
+    evol_args.add_argument("--histface", dest="histface",
+                           type=str, nargs='+',
+                           choices=['bar', 'stick', 'curve',
+                                    '+-bar', '+-stick', '+-curve'],
+                           help=("Type of histogram face to be used for site "
+                                 "models. If preceded by '+-' error bars are "
+                                 "also drawn."))
 
     # evol_args.add_argument("-o", "--output_dir", dest="outdir",
     #                        type=str, default='/tmp/ete3-tmp/',
@@ -170,10 +182,18 @@ Model name  Description                   Model kind
                             " than 1, tasks with multi-threading"
                             " capabilities will enabled (if 0 all available)"
                             "cores will be used")
-    exec_group.add_argument("--codeml_binary", dest="codeml_binary",
-                            default="~/.etetoolkit/ext_apps-latest/bin/codeml")
-                            
     
+    codeml_binary = Popen(['which', 'codeml'], stdout=PIPE).communicate()[0]
+    codeml_binary = codeml_binary or "~/.etetoolkit/ext_apps-latest/bin/codeml"
+    exec_group.add_argument("--codeml_binary", dest="codeml_binary",
+                            default=codeml_binary.strip(),
+                            help="[%(default)s] path to CodeML binary")
+    slr_binary = Popen(['which', 'Slr'], stdout=PIPE).communicate()[0]
+    slr_binary = slr_binary or "~/.etetoolkit/ext_apps-latest/bin/Slr"
+    exec_group.add_argument("--slr_binary", dest="slr_binary",
+                            default=slr_binary.strip(),
+                            help="[%(default)s] path to Slr binary")
+                                
 def marking_layout(node):
     '''
     layout for interactively marking CodemlTree
@@ -223,7 +243,6 @@ def run_one_model(tree, model_name):
     """
     tree.run_model(model_name)
 
-
 def get_node(tree, node):
     res = tree.search_nodes(name=node)
     if len(res) > 1:
@@ -233,7 +252,6 @@ def get_node(tree, node):
         if len(res) < 1:
             exit('ERROR: node %s not found' % node)
     return res[0]
-
 
 def get_marks_from_args(tree, args):
     marks = []
@@ -297,7 +315,7 @@ def get_marks_from_args(tree, args):
         nodes.extend([s.node_id for s in tree.iter_leaves() if not s.is_leaf()])
     return nodes, marks
 
-def local_run_model(tree, model_name, codeml_binary, ctrl_string='', **kwargs):
+def local_run_model(tree, model_name, binary, ctrl_string='', **kwargs):
     '''
     local verison of model runner. Needed for multiprocessing pickling...
     '''
@@ -319,7 +337,7 @@ def local_run_model(tree, model_name, codeml_binary, ctrl_string='', **kwargs):
     hlddir = os.getcwd()
     os.chdir(fullpath)
         
-    proc = Popen([codeml_binary, 'tmp.ctl'], stdout=PIPE)
+    proc = Popen([binary, 'tmp.ctl'], stdout=PIPE)
 
     run, err = proc.communicate()
     if err is not None or b'error' in run or b'Error' in run:
@@ -328,12 +346,14 @@ def local_run_model(tree, model_name, codeml_binary, ctrl_string='', **kwargs):
     os.chdir(hlddir)
     return os.path.join(fullpath,'out'), model_obj
 
-def run_all_models(tree, nodes, marks, codeml_binary, args, **kwargs):
+def run_all_models(tree, nodes, marks, args, **kwargs):
     ## TO BE IMPROVED: multiprocessing should be called in a simpler way
-    print("\nRUNNING CODEML")
+    print("\nRUNNING CODEML/SLR")
     pool = Pool(args.maxcores or None)
     results = []
     for model in args.models:
+        binary = (os.path.expanduser(args.slr_binary) if model == 'SLR'
+                  else os.path.expanduser(args.codeml_binary))
         print('  - processing model %s' % model)
         if AVAIL[model.split('.')[0]]['allow_mark']:
             for mark, node in zip(marks, nodes):
@@ -342,7 +362,8 @@ def run_all_models(tree, nodes, marks, codeml_binary, args, **kwargs):
                 clean_tree(tree)
                 tree.mark_tree(node, marks=mark)
                 modmodel = model + '.' + '_'.join([str(n) for n in node])
-                if os.path.isdir(os.path.join(tree.workdir, modmodel)):
+                if (os.path.isdir(os.path.join(tree.workdir, modmodel)) and
+                    os.path.exists(os.path.join(tree.workdir, modmodel, 'out'))):
                     warn('Model %s already runned... skipping' % modmodel)
                     results.append((os.path.join(tree.workdir, modmodel),
                                     modmodel))
@@ -351,7 +372,7 @@ def run_all_models(tree, nodes, marks, codeml_binary, args, **kwargs):
                     tree.write()))
                 results.append(pool.apply_async(
                     local_run_model,
-                    args=(tree, modmodel, codeml_binary), kwds=kwargs))
+                    args=(tree, modmodel, binary), kwds=kwargs))
         else:
             if os.path.isdir(os.path.join(tree.workdir, model)):
                 warn('Model %s already runned... skipping' % model)
@@ -359,7 +380,7 @@ def run_all_models(tree, nodes, marks, codeml_binary, args, **kwargs):
                                 model))
                 continue
             results.append(pool.apply_async(
-                local_run_model, args=(tree, model, codeml_binary), kwds=kwargs))
+                local_run_model, args=(tree, model, binary), kwds=kwargs))
     pool.close()
     pool.join()
     
@@ -399,6 +420,8 @@ def write_results(tree, args):
         for altn in tree._models:
             if tree._models[null].np >= tree._models[altn].np:
                 continue
+            if null == 'SLR' or altn == 'SLR':
+                continue
             # we usually want to compare models of the same kind
             if (((AVAIL[null.split('.')[0]]['typ']=='site' and
                   AVAIL[altn.split('.')[0]]['typ']=='branch') or
@@ -429,11 +452,14 @@ def write_results(tree, args):
     return bests
 
 def run(args):
-    codeml_binary = os.path.expanduser(args.codeml_binary)
-    if not os.path.exists(codeml_binary):        
-        print("ERROR: Codeml binary does not exist at %s"%args.codeml_binary, file=sys.stderr)
-        print("       provide another route with --codeml_binary, or install it by executing 'ete3 install-external-tools paml'", file=sys.stderr)
-        exit(-1)
+    binary  = os.path.expanduser(args.slr_binary)
+    if not os.path.exists(binary):        
+        print("Warning: SLR binary does not exist at %s"%args.binary, file=sys.stderr)
+        print("         provide another route with --slr_binary, or install it by executing 'ete3 install-external-tools paml'", file=sys.stderr)
+    binary  = os.path.expanduser(args.codeml_binary)
+    if not os.path.exists(binary):        
+        print("Warning: CodeML binary does not exist at %s"%args.binary, file=sys.stderr)
+        print("         provide another route with --codeml_binary, or install it by executing 'ete3 install-external-tools paml'", file=sys.stderr)
 
     # more help
     # TODO: move this to help section
@@ -480,8 +506,7 @@ def run(args):
                     except ValueError:
                         pass
                 params[p] = v
-            models.update(run_all_models(tree, nodes, marks, codeml_binary, args,
-                                         **params))
+            models.update(run_all_models(tree, nodes, marks, args, **params))
         # link models to tree
         params = {}
         for model in models:
@@ -504,11 +529,26 @@ def run(args):
 
         if args.noimg:
             return
-        
+
+        if len(args.histface) != len(site_models):
+            if len(args.histface) == 1:
+                args.histface = args.histface * len(site_models)
+            elif len(args.histface) <= len(site_models):
+                args.histface.extend([args.histface[-1]] * (len(site_models) -
+                                                            len(args.histface)))
+            else:
+                warn('WARNING: not using last histfaces, not enough models')
+                args.histface = args.histface[:len(site_models)]
+        for num, (hist, model) in enumerate(zip(args.histface, site_models)):
+            model = tree.get_evol_model(model)
+            model.set_histface(up=not bool(num), kind=hist.replace('+-', ''),
+                               errors='+-' in hist)
         if args.show:
-            tree.show(histfaces=site_models)
+            tree.show(histfaces=site_models,
+                      layout=evol_clean_layout if args.clean_layout else None)
         else:
             tree.render(os.path.join(tree.workdir, 'tree_%s%s.pdf' % (
                 'hist-%s_' % ('-'.join(site_models)) if site_models else '',
-                best)), histfaces=site_models)
+                best)), histfaces=site_models,
+                        layout=evol_clean_layout if args.clean_layout else None)
 

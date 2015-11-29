@@ -89,24 +89,24 @@ def tree_iterator(args):
         yield stree.strip()
 
 def main():
-    _main(sys.argv)
+    _main(sys.argv[1:])
         
 def _main(arguments):
-    if len(arguments) > 1:
-        subcommand = arguments[1]
+    if len(arguments) > 0:
+        subcommand = arguments[0]
         if  subcommand == "version":
             from .. import __version__
             print(__version__)
             return
         elif subcommand == "upgrade-external-tools":
             from . import ete_upgrade_tools
-            del arguments[1]
+            del arguments[0]
             status = ete_upgrade_tools._main()
             sys.exit(status)
             
         elif subcommand == "build":
             from . import phylobuild
-            del arguments[1]
+            del arguments[0]
             phylobuild._main(arguments)
             return
 
