@@ -88,25 +88,26 @@ def tree_iterator(args):
         # CHECK WHAT is needed before process the main command, allows mods before analyses
         yield stree.strip()
 
-
 def main():
-
-    if len(sys.argv) > 1:
-        subcommand = sys.argv[1]
+    _main(sys.argv)
+        
+def _main(arguments):
+    if len(arguments) > 1:
+        subcommand = arguments[1]
         if  subcommand == "version":
             from .. import __version__
             print(__version__)
             return
         elif subcommand == "upgrade-external-tools":
             from . import ete_upgrade_tools
-            del sys.argv[1]
+            del arguments[1]
             status = ete_upgrade_tools._main()
             sys.exit(status)
             
         elif subcommand == "build":
             from . import phylobuild
-            del sys.argv[1]
-            phylobuild._main()
+            del arguments[1]
+            phylobuild._main(arguments)
             return
 
     # CREATE REUSABLE PARSER OPTIONS
@@ -213,8 +214,7 @@ def main():
     # ===================
     #  EXECUTE PROGRAM
     # ===================
-
-    args = parser.parse_args()
+    args = parser.parse_args(arguments)
 
     LOG_LEVEL = args.verbosity
     if hasattr(args, "src_trees"):

@@ -57,6 +57,8 @@ from .errors import *
 import six
 from six import StringIO
 
+MAIN_LOG = False
+
 # try:
 #     import curses
 # except ImportError:
@@ -406,7 +408,7 @@ def app_wrapper(func, args):
 
 def main(main_screen, func, args):
     """ Init logging and Screen. Then call main function """
-
+    global MAIN_LOG
     # Do I use ncurses or basic terminal interface?
     screen = Screen(init_curses(main_screen))
 
@@ -418,7 +420,9 @@ def main(main_screen, func, args):
     sys.stderr = screen
 
     # Start logger, pointing to the selected screen
-    log = get_main_log(screen, [28,26,24,22,20,10][args.verbosity])
+    if not MAIN_LOG:
+        MAIN_LOG = True
+        log = get_main_log(screen, [28,26,24,22,20,10][args.verbosity])
 
     # Call main function as lower thread
     if NCURSES:

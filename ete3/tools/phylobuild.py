@@ -536,7 +536,7 @@ def main(args):
     GLOBALS["target_sequences"] = seqname2seqid.values()
         
     if ERROR:
-        open(pjoin(base_dir, "error.log"), "w").write(' '.join(sys.argv) + "\n\n" + ERROR)
+        open(pjoin(base_dir, "error.log"), "w").write(' '.join(arguments) + "\n\n" + ERROR)
         raise DataError("Errors were found while loading data. Please"
                         " check error file for details")
 
@@ -634,8 +634,7 @@ def main(args):
         raise DataError("Errors found in some tasks")
 
 
-
-def _main():
+def _main(arguments):
     global BASEPATH, APPSPATH, args
     APPSPATH = os.path.expanduser("~/.etetoolkit/ext_apps-latest/")
     ETEHOMEDIR = os.path.expanduser("~/.etetoolkit/")
@@ -648,20 +647,20 @@ def _main():
         # if not, try a user local copy
         APPSPATH = pjoin(ETEHOMEDIR, 'ext_apps-latest')
 
-    if len(sys.argv) == 1:
+    if len(arguments) == 1:
         if not pexist(APPSPATH):
             print(colorify('\nWARNING: external applications directory are not found at %s' %APPSPATH, "yellow"), file=sys.stderr)
             print(colorify('Use "ete build install_tools" to install or upgrade tools', "orange"), file=sys.stderr)
 
-    elif len(sys.argv) > 1:
+    elif len(arguments) > 1:
         _config_path = pjoin(BASEPATH, 'phylobuild.cfg')
 
-        if sys.argv[1] == "install_tools":
+        if arguments[1] == "install_tools":
             import urllib
             import tarfile
             print (colorify('Downloading latest version of tools...', "green"), file=sys.stderr)
-            if len(sys.argv) > 2:
-                TARGET_DIR = sys.argv[2]
+            if len(arguments) > 2:
+                TARGET_DIR = arguments[2]
             else:
                 TARGET_DIR = ''
             while not pexist(TARGET_DIR):
@@ -686,7 +685,7 @@ def _main():
             s = compile_all.compile_all()
             sys.exit(s)
 
-        elif sys.argv[1] == "check":
+        elif arguments[1] == "check":
             if not pexist(APPSPATH):
                 print(colorify('\nWARNING: external applications directory are not found at %s' %APPSPATH, "yellow"), file=sys.stderr)
                 print(colorify('Use "ete build install_tools" to install or upgrade', "orange"), file=sys.stderr)
@@ -698,23 +697,23 @@ def _main():
             apps.test_apps(config)
             sys.exit(0)
 
-        elif sys.argv[1] in ("workflows", "wl"):
-            if sys.argv[1] == "wl":
+        elif arguments[1] in ("workflows", "wl"):
+            if arguments[1] == "wl":
                 print(colorify("WARNING: 'wl' is obsolete and will be removed in the future, use 'workflows' instead", "orange"), file=sys.stderr)
 
             base_config = check_config(_config_path)
             list_workflows(base_config)
             sys.exit(0)
 
-        elif sys.argv[1] == "apps":
+        elif arguments[1] == "apps":
             base_config = check_config(_config_path)
-            list_apps(base_config, set(sys.argv[2:]))
+            list_apps(base_config, set(arguments[2:]))
             sys.exit(0)
             
-        elif sys.argv[1] == "show":
+        elif arguments[1] == "show":
             base_config = check_config(_config_path)
             try:
-                block = sys.argv[2]
+                block = arguments[2]
             except IndexError:
                 print("Expected a block name, found none")
                 sys.exit(1)
@@ -722,25 +721,25 @@ def _main():
             block_detail(block, base_config)
             sys.exit(0)
 
-        elif sys.argv[1] == "dump":
-            if len(sys.argv) > 2:
+        elif arguments[1] == "dump":
+            if len(arguments) > 2:
                 base_config = check_config(_config_path)
-                block_detail(sys.argv[2], base_config, color=False)
+                block_detail(arguments[2], base_config, color=False)
             else:
                 print(open(_config_path).read())
             sys.exit(0)
 
-        elif sys.argv[1] == "validate":
-            print('Validating configuration file ', sys.argv[2])
-            if pexist(sys.argv[2]):
-                base_config = check_config(sys.argv[2])
+        elif arguments[1] == "validate":
+            print('Validating configuration file ', arguments[2])
+            if pexist(arguments[2]):
+                base_config = check_config(arguments[2])
                 print('Everything ok')
             else:
                 print('File does not exist')
                 sys.exit(-1)
             sys.exit(0)
 
-        elif sys.argv[1] == "version":
+        elif arguments[1] == "version":
             print(__VERSION__, '(%s)' %__DATE__)
             sys.exit(0)
 
@@ -1027,7 +1026,7 @@ def _main():
                           " A taskid can be provided, so"
                           " debugging will start from such task on.")
 
-    args = parser.parse_args()
+    args = parser.parse_args(arguments)
     if args.tools_dir:
         APPSPATH = args.tools_dir
 
@@ -1073,7 +1072,7 @@ def _main():
     GLOBALS["verbosity"] = args.verbosity
     GLOBALS["email_report_time"] = args.email_report_time * 60
     GLOBALS["launch_time"] = args.launch_time
-    GLOBALS["cmdline"] = ' '.join(sys.argv)
+    GLOBALS["cmdline"] = ' '.join(arguments)
 
     GLOBALS["threadinfo"] = defaultdict(dict)
     GLOBALS["seqtypes"] = set()
@@ -1103,4 +1102,4 @@ def _main():
     app_wrapper(main, args)
 
 if __name__ == "__main__":
-    _main()
+    _main(sys.argv)

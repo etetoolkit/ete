@@ -72,20 +72,20 @@ class Raxml(TreeTask):
                 model_string += "GAMMA"
             elif "!G" in fullmodel:
                 model_string += "CAT"
-                conf[confname]['-c'] = 1
+                #conf[confname]['-c'] = 1
             else:
                 if seqtype == "aa":
                     model_string += conf[confname]["_aa_model"]
                 
             if seqtype == "aa":
-                model_string += basemodel
+                model_string += basemodel.upper()
                 
-            if "+I" in fullmodel:
+            if "+I" in fullmodel and "GAMMA" in model_string:
                 model_string += "I"
             elif "!I" in fullmodel:
                 pass
             else:
-                if "I" in conf[confname]["_model_suffix"]:
+                if "I" in conf[confname]["_model_suffix"] and "GAMMA" in model_string:
                     model_string += "I" 
 
             if "+F" in fullmodel:
