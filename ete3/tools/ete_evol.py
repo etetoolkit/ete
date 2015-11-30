@@ -274,6 +274,13 @@ def get_marks_from_args(tree, args):
         tree._set_mark_mode(True)
         tree.show(tree_style=ts)
         tree._set_mark_mode(False)
+        for n in tree.iter_descendants():
+            if n.mark:
+                marks.append(n.mark)
+                nodes.append(n.node_id)
+        if marks:
+            marks = [marks]
+            nodes = [nodes]
     # use the command line
     if args.mark:
         if args.mark_leaves or args.mark_internals:
