@@ -92,7 +92,7 @@ def main():
     _main(sys.argv)
         
 def _main(arguments):
-    if len(arguments) > 0:
+    if len(arguments) > 1:
         subcommand = arguments[1]
         if  subcommand == "version":
             from .. import __version__

@@ -67,7 +67,7 @@ AAAAAAAAAPPPPPPPPPEEEEEEEEPPPPPPPPPPPP
                         wkname = "%s-%s-%s-%s" %(_aligner, _trimmer, _tester, _builder)
                         expected_nw = '(30611.ENSOGAP00000015106:0.083369,(30608.ENSMICP00000013539:0.106942,(9483.ENSCJAP00000027663:0.085039,(9544.ENSMMUP00000035274:0.0303988,(9601.ENSPPYP00000008923:0.0177729,(61853.ENSNLEP00000011861:0.0492628,(9593.ENSGGOP00000009561:0.00332396,(9598.ENSPTRP00000014836:1e-08,9606.ENSP00000269305:1e-08)0:3.9e-07)0.99985:0.0110212)0.762815:0.00326138)0.99985:0.0130264)0.99985:0.0323286)0.99985:0.0373752)1:0.083369);'
                         expected_tree = Tree(expected_nw)        
-                        cmd = 'ete3 build -a %s/P53.fa -w %s -o /tmp/etebuild_test1  -t0.3 --launch 0.5 --cpu 6' %(DIR, wkname)
+                        cmd = 'ete3 build -a %s/P53.fa -w %s -o /tmp/etebuild_test1  -t0.3 --launch 0.5 --clearall' %(DIR, wkname)
                         args = cmd.split()
                         ete._main(args)                        
                         ctree, xtree, alg_used, alg, alg_trimmed, img, cmd = get_out_files("/tmp/etebuild_test1", wkname, "P53.fa")
@@ -87,9 +87,6 @@ AAAAAAAAAPPPPPPPPPEEEEEEEEPPPPPPPPPPPP
                             
                         if _trimmer:
                             SeqGroup(alg_trimmed)
-
-
-
                             
 if __name__ == "__main__":
     unittest.main()
