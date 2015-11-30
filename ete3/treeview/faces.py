@@ -2003,7 +2003,7 @@ class SequencePlotFace(StaticItemFace):
         elif kind == 'curve':
             self.draw_fun = self.draw_curve
         else:
-            raise 'kind %s not yet implemented... ;)'
+            raise 'kind %s not yet implemented... ;)' % (kind)
 
         self.hlines = [float(h) for h in hlines] if hlines else [1.0]
         self.hlines_col = hlines_col if hlines_col else ['black']*len(self.hlines)

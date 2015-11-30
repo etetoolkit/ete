@@ -92,7 +92,7 @@ def main():
     _main(sys.argv)
         
 def _main(arguments):
-    if len(arguments) > 1:
+    if len(arguments) > 0:
         subcommand = arguments[1]
         if  subcommand == "version":
             from .. import __version__
@@ -214,7 +214,7 @@ def _main(arguments):
     # ===================
     #  EXECUTE PROGRAM
     # ===================
-    args = parser.parse_args(arguments)
+    args = parser.parse_args(arguments[1:])
 
     LOG_LEVEL = args.verbosity
     if hasattr(args, "src_trees"):
