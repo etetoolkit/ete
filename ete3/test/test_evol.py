@@ -44,6 +44,7 @@ from random import random as rnd
 from copy import deepcopy
 import os
 from six.moves.cPickle import load, dump
+import hashlib
 
 ETEPATH = os.path.abspath(os.path.split(os.path.realpath(__file__))[0]+'/../../')
 
@@ -213,9 +214,10 @@ class TestEvolEvolTree(unittest.TestCase):
         tree2 = load (out)
         out.close()
         os.remove('blip.pik')
-        self.assertEqual(str(tree2.get_evol_model('M2.a')).split('\n'),
-                         str(tree.get_evol_model('M2.a')).split('\n')
-        )
+
+        tree2_output = hashlib.md5(str(tree2.get_evol_model('M2.a')).encode()).hexdigest()
+        tree_output = hashlib.md5(str(tree.get_evol_model('M2.a')).encode()).hexdigest()
+        self.assertEqual(tree_output, tree2_output)
 
 
 if __name__ == '__main__':
