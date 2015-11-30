@@ -214,8 +214,11 @@ def _main(arguments):
     # ===================
     #  EXECUTE PROGRAM
     # ===================
+    if len(arguments) == 1:
+        parser.print_help()
+        return
+    
     args = parser.parse_args(arguments[1:])
-
     LOG_LEVEL = args.verbosity
     if hasattr(args, "src_trees"):
         args.src_tree_iterator = tree_iterator(args)
