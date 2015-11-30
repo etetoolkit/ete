@@ -76,7 +76,14 @@ Model name  Description                   Model kind
 
     evol_args.add_argument("--alg", dest="alg",
                            type=str,
-                           help=("Link tree to a multiple sequence alignment (codons)."))
+                           help=("Link tree to a multiple sequence alignment"
+                                 " (codons)."))
+
+    evol_args.add_argument("--node_ids", dest="node_ids",
+                           action='store_true',
+                           help=("Prints the correspondance between PAML "
+                                 "node IDs and node names (ancestors will be "
+                                 "displayed as list of descendants), and exit"))
 
     evol_args.add_argument("--clear_all", dest="clear_all",
                            action='store_true',
@@ -190,6 +197,7 @@ Model name  Description                   Model kind
                             help="[%(default)s] path to CodeML binary")
     slr_binary = Popen(['which', 'Slr'], stdout=PIPE).communicate()[0]
     slr_binary = slr_binary or "~/.etetoolkit/ext_apps-latest/bin/Slr"
+
     exec_group.add_argument("--slr_binary", dest="slr_binary",
                             default=slr_binary.strip(),
                             help="[%(default)s] path to Slr binary")
@@ -452,13 +460,14 @@ def write_results(tree, args):
     return bests
 
 def run(args):
+
     binary  = os.path.expanduser(args.slr_binary)
     if not os.path.exists(binary):        
-        print("Warning: SLR binary does not exist at %s"%args.binary, file=sys.stderr)
+        print("Warning: SLR binary does not exist at %s"%args.slr_binary, file=sys.stderr)
         print("         provide another route with --slr_binary, or install it by executing 'ete3 install-external-tools paml'", file=sys.stderr)
     binary  = os.path.expanduser(args.codeml_binary)
     if not os.path.exists(binary):        
-        print("Warning: CodeML binary does not exist at %s"%args.binary, file=sys.stderr)
+        print("Warning: CodeML binary does not exist at %s"%args.codeml_binary, file=sys.stderr)
         print("         provide another route with --codeml_binary, or install it by executing 'ete3 install-external-tools paml'", file=sys.stderr)
 
     # more help
@@ -483,6 +492,21 @@ def run(args):
             tree.workdir = args.output
         if args.clear_all:
             Popen('rm -rf %s' % tree.workdir, shell=True).communicate()
+
+        if args.node_ids:
+            print('\n%-7s : %s' % ("Node ID", "Leaf name"))
+            print('-'*50)
+            for n in tree.iter_leaves():
+                print('   %-4s : %s' % (n.node_id, n.name))
+            print('\n%-7s : %s' % ("Node ID", "Descendant leaves names"))
+            print('-'*50)
+            for n in tree.iter_descendants():
+                if n.is_leaf():
+                    continue
+                print('   %-4s : %s' % (n.node_id, ', '.join(
+                    [l.name for l in n.iter_leaves()])))
+            print('\n   %-4s : %s' % (tree.node_id, 'ROOT'))
+            return
 
         # get the marks we will apply to different runs
         nodes, marks = get_marks_from_args(tree, args)
@@ -530,19 +554,22 @@ def run(args):
         if args.noimg:
             return
 
-        if len(args.histface) != len(site_models):
-            if len(args.histface) == 1:
-                args.histface = args.histface * len(site_models)
-            elif len(args.histface) <= len(site_models):
-                args.histface.extend([args.histface[-1]] * (len(site_models) -
-                                                            len(args.histface)))
-            else:
-                warn('WARNING: not using last histfaces, not enough models')
-                args.histface = args.histface[:len(site_models)]
-        for num, (hist, model) in enumerate(zip(args.histface, site_models)):
-            model = tree.get_evol_model(model)
-            model.set_histface(up=not bool(num), kind=hist.replace('+-', ''),
-                               errors='+-' in hist)
+        if args.histface:
+            if len(args.histface) != len(site_models):
+                if len(args.histface) == 1:
+                    args.histface = args.histface * len(site_models)
+                elif len(args.histface) <= len(site_models):
+                    args.histface.extend([args.histface[-1]] * (
+                        len(site_models) - len(args.histface)))
+                else:
+                    warn('WARNING: not using last histfaces, not enough models')
+                    args.histface = args.histface[:len(site_models)]
+            for num, (hist, model) in enumerate(
+                zip(args.histface, site_models)):
+                model = tree.get_evol_model(model)
+                model.set_histface(up=not bool(num),
+                                   kind=hist.replace('+-', ''),
+                                   errors='+-' in hist)
         if args.show:
             tree.show(histfaces=site_models,
                       layout=evol_clean_layout if args.clean_layout else None)
