@@ -55,7 +55,7 @@ __version__ = "0.0"
 import re
 from warnings import warn
 
-def parse_rst (path):
+def parse_rst(path):
     '''
     parse rst files from codeml, all site, branch-site models.
     return 2 dicts "classes" of sites, and values at each site "sites"
@@ -107,22 +107,25 @@ def parse_rst (path):
             sites [typ].setdefault ('p'+str(i), []).append (float (line[2+i]))
         sites [typ].setdefault ('pv', []).append (max (probs))
         # get most likely site class
-        sites [typ].setdefault ('class', []).append (int (line [3 + i]))
+        classe = int (line [3 + i])
+        sites [typ].setdefault ('class', []).append (classe)
         # if there, get omega and error
         try:
             sites [typ].setdefault ('w' , []).append (float (line [4 + i]))
         except IndexError:
-            del (sites [typ]['w'])
+            try:
+                sites [typ].setdefault ('w' , []).append (classes['foreground w'][classe - 1])
+            except KeyError: # clade models
+                del (sites [typ]['w'])
         try:
             sites [typ].setdefault ('se', []).append (float (line [5 + i]))
         except IndexError:
             del (sites [typ]['se'])
-
     return {'classes': classes,
             'sites' :sites}
 
 
-def divide_data (pamout, model):
+def divide_data(pamout, model):
     '''
     for multiple dataset, divide outfile.
     '''
