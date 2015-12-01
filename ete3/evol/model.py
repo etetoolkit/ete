@@ -185,7 +185,7 @@ class Model:
 
     def set_histface(self, up=True, hlines=(1.0, 0.3), kind='bar',
                       errors=False, colors=None, **kwargs):
-        '''
+        """
         To add histogram face for a given site mdl (M1, M2, M7, M8)
         can choose to put it up or down the tree.
         2 types are available:
@@ -199,7 +199,7 @@ class Model:
                    'CN+': 'blue'  ,
                    'PS' : 'orange',
                    'PS+': 'red'    }
-        '''
+        """
         if self.sites == None:
             warn("WARNING: model %s not computed." % (self.name))
             return None
@@ -220,7 +220,7 @@ class Model:
             errors = self.sites[val]['se'] if 'se' in self.sites[val]\
                      else None
         if TREEVIEW:
-            if self.properties['typ'] != 'site':
+            if not 'site' in self.properties['typ']:
                 raise Exception('ERROR: no sites to display, only available ' +
                                 'histfaces for site models\n')
             hist = SequencePlotFace(self.sites[val]['w'], hlines=hlines,

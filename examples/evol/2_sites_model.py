@@ -17,24 +17,29 @@ from ete3 import EvolTree
 tree = EvolTree ("data/S_example/measuring_S_tree.nw")
 tree.link_to_alignment ('data/S_example/alignment_S_measuring_evol.fasta')
 
-print tree
+print (tree)
 
-raw_input ('\n   tree and alignment loaded\n Hit some key, to start computation of site models M1 and M2.\n')
+try:
+    input = raw_input
+except NameError:
+    pass
 
-print 'running model M1'
+input ('\n   tree and alignment loaded\n Hit some key, to start computation of site models M1 and M2.\n')
+
+print ('running model M1')
 tree.run_model ('M1')
-print 'running model M2'
+print ('running model M2')
 tree.run_model ('M2')
 
-print '\n\n comparison of models M1 and M2, p-value: ' + str(tree.get_most_likely ('M2','M1'))
+print ('\n\n comparison of models M1 and M2, p-value: ' + str(tree.get_most_likely ('M2','M1')))
 
 #tree.show()
 
-print 'by default the hist represented is this one:'
+print ('by default the hist represented is this one:')
 
 tree.show (histfaces=['M2'])
 
-print 'but we can choose between many others...'
+print ('but we can choose between many others...')
 
 model2 = tree.get_evol_model ('M2')
 
@@ -59,17 +64,17 @@ model2.set_histface (up=False, kind='bar', colors=col, hlines=[1.0,0.3], hlines_
 tree.show(histfaces=['M2'])
 
 
-print 'running model M7'
+print ('running model M7')
 tree.run_model ('M7')
-print 'running positive selection model M8'
+print ('running positive selection model M8')
 tree.run_model ('M8')
-print 'running relaxation model M8a'
+print ('running relaxation model M8a')
 tree.run_model ('M8a')
-print 'running model M3'
+print ('running model M3')
 tree.run_model ('M3')
 
-print '\n\n comparison of models M7 and M8, p-value: ' + str(tree.get_most_likely ('M8','M7'))
-print '\n\n comparison of models M8a and M8, p-value: ' + str(tree.get_most_likely ('M8','M8a'))
+print ('\n\n comparison of models M7 and M8, p-value: ' + str(tree.get_most_likely ('M8','M7')))
+print ('\n\n comparison of models M8a and M8, p-value: ' + str(tree.get_most_likely ('M8','M8a')))
 
 
-print 'The End.'
+print ('The End.')

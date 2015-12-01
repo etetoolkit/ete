@@ -413,10 +413,10 @@ def run_all_models(tree, nodes, marks, args, **kwargs):
 def load_model(model_name, tree, path, **kwargs):
     model_obj = Model(model_name, tree, **kwargs)
     setattr(model_obj, 'run', run)
-    try:
-        tree.link_to_evol_model(path, model_obj)
-    except KeyError:
-        warn('ERROR: model %s failed' % (model_obj.name))
+    #try:
+    tree.link_to_evol_model(path, model_obj)
+    #except KeyError:
+    #    warn('ERROR: model %s failed' % (model_obj.name))
 
 def write_results(tree, args):
     tests = "\nLRT\n\n"
@@ -556,7 +556,7 @@ def run(args):
 
         # get all site models for display
         site_models = [m for m in tree._models
-                       if AVAIL[m.split('.')[0]]['typ']=='site']
+                       if 'site' in AVAIL[m.split('.')[0]]['typ']]
 
         if args.noimg:
             return
