@@ -2258,7 +2258,6 @@ class SequenceFace(StaticItemFace, Face):
               self).__init__(QGraphicsRectItem(0, 0, self.width,
                                                self.row_h))
 
-
     def update_items(self):
         #self.item = QGraphicsRectItem(0,0,self._total_w, self.row_h)
         seq_width = 0
