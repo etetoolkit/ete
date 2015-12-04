@@ -209,7 +209,7 @@ def test_apps(apps):
 
             process = subprocess.Popen(test_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             out, err = process.communicate()
-
+            out = bytes.decode(out)
             if out:
                 print("OK.\t%s" %str(out).strip())
             else:

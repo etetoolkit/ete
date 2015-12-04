@@ -140,21 +140,24 @@ def main(args):
     # -------------------------------------
 
     # Load and check config file
-    base_config = check_config(args.configfile)
 
+
+    if args.custom_config:
+        concat_config = open(args.base_config).readlines()
+        concat_config += open(args.custom_config).readlines()
+        base_config = check_config(concat_config)
+    else:
+        base_config = check_config(args.base_config)
+        
     # Check for config file overwriting
-    clearname = os.path.basename(args.configfile)
-    local_conf_file = pjoin(base_dir, "phylobuild.cfg")
+    clearname = os.path.basename(args.base_config)
+    local_conf_file = pjoin(base_dir, "ete_build.cfg")
     if pexist(base_dir):
         if hascontent(local_conf_file):
-            if not filecmp.cmp(args.configfile, local_conf_file):
-                if not args.override and not args.clearall:
-                    raise ConfigError("Output directory seems to contain"
-                                      " data generated using a different"
-                                      " config file. Use the"
-                                      " --override option to ignore this"
-                                      " warning and reuse previous data or"
-                                      " --clearall for a full data wipe.")
+            if not args.clearall and not args.resume:
+                raise ConfigError("Output directory seems to contain"
+                                  " data from a previous run."
+                                  " Use --clearall to restart the analysis or --resume to continue.")
 
     # Creates a tree splitter config block on the fly. In the future this
     # options should be more accessible by users.
@@ -340,7 +343,9 @@ def main(args):
 
 
     # dump log config file
-    open(local_conf_file, "w").write(open(args.configfile).read())
+    with open(local_conf_file, "w") as OUTPUT:
+        with open(args.base_config) as INPUT:
+            OUTPUT.write(INPUT.read()) # replace by simple copy?
 
     TARGET_CLADES.discard('')
 
@@ -536,7 +541,8 @@ def main(args):
     GLOBALS["target_sequences"] = seqname2seqid.values()
         
     if ERROR:
-        open(pjoin(base_dir, "error.log"), "w").write(' '.join(arguments) + "\n\n" + ERROR)
+        with open(pjoin(base_dir, "error.log"), "w") as OUTPUT:
+            OUTPUT.write(' '.join(arguments) + "\n\n" + ERROR)
         raise DataError("Errors were found while loading data. Please"
                         " check error file for details")
 
@@ -760,9 +766,13 @@ def _main(arguments):
                                    "version: Show current version.\n"
                                    ))
 
-    input_group.add_argument("-c", "--config", dest="configfile",
-                             type=is_file, default=BASEPATH+'/phylobuild.cfg',
+    input_group.add_argument("-c", "--custom-config", dest="custom_config",
+                             type=is_file, 
                              help="Custom configuration file.")
+
+    input_group.add_argument("--base-config", dest="base_config",
+                             type=is_file, default=BASEPATH+'/phylobuild.cfg',
+                             help="Base configuration file.")
 
     input_group.add_argument("--tools-dir", dest="tools_dir",
                              type=str,
@@ -880,7 +890,7 @@ def _main(arguments):
                            nargs="*",
                            help="Enables recursive NPR capabilities (Nested Phylogenetic Reconstruction)"
                            " and specifies custom workflows and filters for each NPR iteration.")
-    npr_group.add_argument("--nt_switch_thr", dest="nt_switch_thr",
+    npr_group.add_argument("--nt-switch-threshold", dest="nt_switch_thr",
                            required=False,
                            type=float,
                            default = 0.95,
@@ -978,18 +988,18 @@ def _main(arguments):
                             " if jobs are expected to be executed remotely."
                             )
 
-    exec_group.add_argument("--override", dest="override",
+    exec_group.add_argument("--resume", dest="resume",
                             action="store_true",
-                            help="Override workflow configuration file if a previous version exists." )
+                            help="If output directory exists, reuse data from it if possible. ")
 
     exec_group.add_argument("--clearall", dest="clearall",
                             action="store_true",
-                            help="Erase all previous data in the output directory and start a clean execution.")
+                            help="If output directory exists, erase all previous data and start a clean execution.")
 
+    
     exec_group.add_argument("--softclear", dest="softclear",
                             action="store_true",
                             help="Clear all precomputed data (data.db), but keeps task raw data in the directory, so they can be re-processed.")
-
 
     exec_group.add_argument("--clear-seqdb", dest="clearseqs",
                             action="store_true",
