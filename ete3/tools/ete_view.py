@@ -201,7 +201,7 @@ def populate_args(view_args_p):
                           help='')
 
 
-def run(args):
+def run(args):    
     if args.text_mode:
         for tindex, tfile in enumerate(src_tree_iterator(args)):
             #print tfile
@@ -418,15 +418,14 @@ def run(args):
 
                             elif f["ftype"] == "fullseq":
                                 F = faces.SeqMotifFace(seq=fvalue, seq_format="seq",
-                                                       seqtail_format="seq",
+                                                       gap_format="line",
                                                        height=fsize)
                             elif f["ftype"] == "compactseq":
                                 F = faces.SeqMotifFace(seq=fvalue, seq_format="compactseq",
-                                                       seqtail_format="compactseq",
+                                                       gap_format="compactseq",
                                                        height=fsize)
                             elif f["ftype"] == "blockseq":
-                                F = faces.SeqMotifFace(seq=fvalue, seq_format="blockseq",
-                                                   seqtail_format="blockseq",
+                                F = faces.SeqMotifFace(seq=fvalue, 
                                                        height=fsize,
                                                        fgcolor=fcolor or "slategrey",
                                                        bgcolor=fbgcolor or "slategrey",
