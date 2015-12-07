@@ -844,8 +844,6 @@ def _main(arguments):
                                  action = "store_true",
                                  help=("If duplicated sequence names exist in the input"
                                        " fasta file, duplicates will be renamed."))
- 
-
 
     input_group.add_argument("--seqdb", dest="seqdb",
                              type=str,
@@ -861,7 +859,7 @@ def _main(arguments):
 
     input_group.add_argument("--lineages", dest="lineages_file",
                              type=is_file,
-                             help="A file containing the (sorted) lineage "
+                             help="EXPERIMENTAL:A file containing the (sorted) lineage "
                                   "track of each species. It enables "
                                   "NPR algorithm to fix what taxonomic "
                                   "levels should be optimized."
@@ -888,7 +886,7 @@ def _main(arguments):
     npr_group.add_argument("-r", "--recursive", dest="npr_workflows",
                            required=False,
                            nargs="*",
-                           help="Enables recursive NPR capabilities (Nested Phylogenetic Reconstruction)"
+                           help="EXPERIMENTAL:Enables recursive NPR capabilities (Nested Phylogenetic Reconstruction)"
                            " and specifies custom workflows and filters for each NPR iteration.")
     npr_group.add_argument("--nt-switch-threshold", dest="nt_switch_thr",
                            required=False,
@@ -900,11 +898,11 @@ def _main(arguments):
                            required=False,
                            type=int,
                            default=99999999,
-                           help="Set a maximum number of NPR iterations allowed.")
+                           help="EXPERIMENTAL:Set a maximum number of NPR iterations allowed.")
     npr_group.add_argument("--first-split-outgroup", dest="first_split",
                            type=str,
                            default='midpoint',
-                           help=("When used, it overrides first_split option"
+                           help=("EXPERIMENTAL:When used, it overrides first_split option"
                                  " in any tree merger config block in the"
                                  " config file. Default: 'midpoint' "))
 
@@ -939,11 +937,11 @@ def _main(arguments):
 
     output_group.add_argument("--email", dest="email",
                               type=str,
-                              help="Send an email when errors occur or a workflow is done.")
+                              help="EXPERIMENTAL:Send an email when errors occur or a workflow is done.")
 
-    output_group.add_argument("--email_report_time", dest="email_report_time",
+    output_group.add_argument("--email-report-time", dest="email_report_time",
                               type=int, default = 0,
-                              help="How often (in minutes) an email reporting the status of the execution should be sent. 0=No reports")
+                              help="EXPERIMENTAL:How often (in minutes) an email reporting the status of the execution should be sent. 0=No reports")
 
 
     # Task execution related flags
