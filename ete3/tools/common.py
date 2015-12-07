@@ -233,7 +233,8 @@ def src_tree_iterator(args):
     if not args.src_trees and not sys.stdin.isatty():
         log.debug("Reading trees from standard input...")
         args.src_trees = sys.stdin
-    elif args.src_trees:
+        
+    if args.src_trees:
         for stree in args.src_trees:
             yield stree.strip()
     elif args.src_tree_list:
