@@ -179,7 +179,7 @@ Model name  Description                   Model kind
 
     codeml_gr.add_argument('--codeml_help', action='store_true', dest='super_help', 
                            help=("show detailed description on codeml "
-                                 "paramters for model configuration "
+                                 "parameters for model configuration "
                                  "and exit."))
 
     exec_group = evol_args_p.add_argument_group('EXECUTION MDE OPTIONS')
@@ -188,7 +188,7 @@ Model name  Description                   Model kind
                             " available in the execution host. If higher"
                             " than 1, tasks with multi-threading"
                             " capabilities will enabled (if 0 all available)"
-                            "cores will be used")
+                            " cores will be used")
     
     codeml_binary = Popen(['which', 'codeml'], stdout=PIPE).communicate()[0]
     codeml_binary = codeml_binary or "~/.etetoolkit/ext_apps-latest/bin/codeml"
