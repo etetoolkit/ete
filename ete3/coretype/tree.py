@@ -841,7 +841,8 @@ class TreeNode(object):
                           name_formatter=name_formatter)
 
         if outfile is not None:
-            open(outfile, "w").write(nw)
+            with open(outfile, "w") as OUT:
+                OUT.write(nw)
         else:
             return nw
 
