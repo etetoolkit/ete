@@ -122,7 +122,7 @@ def load_sequences(args, seqtype, target_seqs, target_species, cached_seqs):
                 dupnames[seqname] += 1
                 seqname = seqname + "_%d"%dupnames[seqname]
             else:
-                raise DataError("duplicated sequence in %s sequence file" %(seqname))
+                raise DataError("Duplicated sequence name [%s] found. Fix manually or use --rename-dup-seqnames to continue" %(seqname))
             
             
         loaded_seqs[seqname] = seqid
