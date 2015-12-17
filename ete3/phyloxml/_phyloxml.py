@@ -1,5 +1,5 @@
-from __future__ import absolute_import
-from __future__ import print_function
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 # #START_LICENSE###########################################################
 #
 #
@@ -38,8 +38,8 @@ from __future__ import print_function
 #
 #
 # #END_LICENSE#############################################################
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+from __future__ import absolute_import
+from __future__ import print_function
 
 #
 # Generated Mon Jun 27 10:13:44 2011 by generateDS.py version 2.5b.
@@ -2789,6 +2789,8 @@ class Property(GeneratedsSuper):
         already_processed = []
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='Property')
         outfile.write('>')
+        if self.valueOf_ is not None:
+            outfile.write('%s' % (self.valueOf_,))
         self.exportChildren(outfile, level + 1, namespace_, name_)
         outfile.write('</%s%s>\n' % (namespace_, name_))
     def exportAttributes(self, outfile, level, already_processed, namespace_='phy:', name_='Property'):
