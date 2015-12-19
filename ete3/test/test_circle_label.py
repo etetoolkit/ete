@@ -1,14 +1,11 @@
-#!/usr/bin/env python
+from __future__ import absolute_import
+from __future__ import print_function
 import os
 import sys
 
 import math
 
-try:
-    import .. as ete
-except ImportError as i:
-    print('Expected PYTHONPATH to include the path to the repository where git@github.com:<yourid>/ete.git was cloned')
-    sys.exit(1)
+from .. import Tree, CircleFace, RectFace, TextFace, add_face_to_node, TreeStyle
 
 NEWLINE = '\n'
 TAB = '\t'
@@ -48,19 +45,19 @@ def node_layout(annotation):
                 _circle_tested = True
                 clabel['text'] = 'Ly'
             clabel['size'] = 12
-            thisFace = ete.CircleFace(dimension/2, "steelblue",  "circle", label=clabel)
+            thisFace = CircleFace(dimension/2, "steelblue",  "circle", label=clabel)
         elif size == 43:
             clabel['size'] = 6
             del clabel['color']
-            thisFace = ete.CircleFace(dimension/2, "steelblue",  "sphere", label=clabel)
+            thisFace = CircleFace(dimension/2, "steelblue",  "sphere", label=clabel)
         else:
-            thisFace = ete.CircleFace(dimension/2, "steelblue",  "sphere", label="%d" % (size))
+            thisFace = CircleFace(dimension/2, "steelblue",  "sphere", label="%d" % (size))
     else:
-        thisFace = ete.RectFace(dimension, dimension, 'green', 'blue', label=labeld)
+        thisFace = RectFace(dimension, dimension, 'green', 'blue', label=labeld)
     thisFace.opacity = 0.7
-    ete.add_face_to_node(thisFace, node, column=0, position="float")
-    textF = ete.TextFace(str(size), fsize=12, fgcolor="steelblue")
-    ete.add_face_to_node(textF, node, column=0, position="aligned")
+    add_face_to_node(thisFace, node, column=0, position="float")
+    textF = TextFace(str(size), fsize=12, fgcolor="steelblue")
+    add_face_to_node(textF, node, column=0, position="aligned")
 
   return _node_layout
 
@@ -115,8 +112,8 @@ for s in treesets:
     num, namelist = s.strip().split(TAB)
     thesets[namelist.replace(UNDERBAR, SPACE)] = int(num)
 
-t = ete.Tree(TREE)
-ts = ete.TreeStyle()
+t = Tree(TREE)
+ts = TreeStyle()
 ts.layout_fn = node_layout(thesets)
 ts.show_leaf_name = True
 ts.show_branch_length = True
