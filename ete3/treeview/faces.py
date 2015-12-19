@@ -252,11 +252,11 @@ class TextFace(Face):
     visualization in scenes with a lot of text faces.
     """
     __slots__ = ["fgcolor", "fstyle", "fsize", "ftype", "penwidth",
-                 "tight_text", "_text", "_bounding_rect", "_real_rect"]
+                 "tight_text", "bold", "_text", "_bounding_rect", "_real_rect"]
     
     def __init__(self, text, ftype="Verdana", fsize=10,
                  fgcolor="black", penwidth=0, fstyle="normal",
-                 tight_text=False):
+                 tight_text=False, bold=False):
         self._text = str(text)
         self._bounding_rect = None
         self._real_rect = None
@@ -270,6 +270,7 @@ class TextFace(Face):
         self.fstyle = fstyle
         self.penwidth = penwidth
         self.tight_text = tight_text
+        self.bold = bold
 
     
     def __repr__(self):
@@ -315,6 +316,7 @@ class TextFace(Face):
 
     def _get_font(self):
         font = QFont(self.ftype, self.fsize)
+        font.setBold(self.bold)
         if self.fstyle == "italic":
             font.setStyle(QFont.StyleItalic)
         elif self.fstyle == "oblique":
