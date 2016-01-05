@@ -5,8 +5,8 @@ log = logging.getLogger("main")
 
 from ..master_task import AlgTask
 from ..master_job import Job
-from ..utils import (SeqGroup, OrderedDict,
-                          GLOBALS, DATATYPES)
+from ..utils import (SeqGroup, OrderedDict, pjoin,
+                     GLOBALS, DATATYPES)
 from .. import db
 
 __all__ = ["TCoffee"]
@@ -25,10 +25,16 @@ class TCoffee(AlgTask):
         self.init()
 
     def load_jobs(self):
-        args = self.args.copy()
+        args = OrderedDict()
+        args[""] = pjoin(GLOBALS["input_dir"], self.multiseq_file)
+        for k, v in self.args.items():
+            args[k] = v
         args["-outfile"] = "mcoffee.fasta"
-        job = Job(self.conf["app"]["tcoffee"], args, parent_ids=self.parent_ids)
-
+        job = Job(self.conf["app"]["tcoffee"], args, parent_ids=[self.nodeid])
+        job.add_input_file(self.multiseq_file)
+        job.cores = self.conf["threading"]["tcoffee"]
+        self.jobs.append(job)
+        
     def finish(self):
         alg = SeqGroup(os.path.join(self.jobs[0].jobdir, "mcoffee.fasta"))
         fasta = alg.write(format="fasta")

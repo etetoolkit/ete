@@ -46,7 +46,7 @@ import six
 log = logging.getLogger("main")
 
 APPTYPES = {
-    "aligners": set(["muscle", "mafft", "clustalo", "metaligner", "dialingtx"]),
+    "aligners": set(["muscle", "mafft", "clustalo", "metaligner", "dialingtx", "tcoffee"]),
     "model testers": set(["prottest", "pmodeltest"]),
     "alg cleaners": set(["trimal"]),
     "tree builders": set(["fasttree", "phyml", "raxml"]),

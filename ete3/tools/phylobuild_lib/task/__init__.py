@@ -50,6 +50,7 @@ from .merger import *
 from .phyml import *
 from .mafft import *
 from .meta_aligner import *
+from .tcoffee import *
 from .dialigntx import *
 from .fasttree import *
 
