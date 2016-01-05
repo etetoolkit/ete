@@ -74,6 +74,7 @@ OPTION2APPTYPE = {
 }
 
 APP2CLASS = {
+    "tcoffee"             : "TCoffee",
     "muscle"              : "Muscle",
     "mafft"               : "Mafft",
     "clustalo"            : "Clustalo",
@@ -105,6 +106,7 @@ CLASS2MODULE = {
     "Mafft"         : "mafft",
     "Clustalo"      : "clustalo",
     "MetaAligner"   : "meta_aligner",
+    "TCoffee"       : "tcoffee",
     "Phyml"         : "phyml",
 #    "JModeltest"    : "jmodeltest",
     "Dialigntx"     : "dialigntx",

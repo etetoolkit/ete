@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -37,6 +36,7 @@ from __future__ import absolute_import
 #
 #
 # #END_LICENSE#############################################################
+from __future__ import absolute_import
 import os
 import logging
 log = logging.getLogger("main")
@@ -71,13 +71,13 @@ class Muscle(AlgTask):
         appname = self.conf[self.confname]["_app"]
         args = OrderedDict(self.args)
         args["-in"] = pjoin(GLOBALS["input_dir"], self.multiseq_file)
-        args["-out"] = "alg.fasta"
+        args["-out"] = "muscle_alg.fasta"
         job = Job(self.conf["app"][appname], args, parent_ids=[self.nodeid])
         job.add_input_file(self.multiseq_file)
         self.jobs.append(job)
 
     def finish(self):
-        alg = SeqGroup(os.path.join(self.jobs[0].jobdir, "alg.fasta"))
+        alg = SeqGroup(os.path.join(self.jobs[0].jobdir, "muscle_alg.fasta"))
         fasta = alg.write(format="fasta")
         phylip = alg.write(format="iphylip_relaxed")
         AlgTask.store_data(self, fasta, phylip)

@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -37,6 +36,7 @@ from __future__ import absolute_import
 #
 #
 # #END_LICENSE#############################################################
+from __future__ import absolute_import
 import os
 import logging
 import shutil

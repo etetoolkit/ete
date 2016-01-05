@@ -447,9 +447,11 @@ class ProfileFace(Face):
       and transition color (values=center) is white.
     """
 
-    def __init__(self,max_v,min_v,center_v,width=200,height=40,style="lines", colorscheme=2):
+    def __init__(self,max_v,min_v,center_v,width=200,height=40,style="lines", colorscheme=2, values_vector=None, deviations_vector=None):
         Face.__init__(self)
-
+        self.profile = values_vector
+        self.deviations = deviations_vector
+        
         self.width  = width
         self.height = height
         self.max_value = max_v
