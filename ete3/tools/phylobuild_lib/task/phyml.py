@@ -52,6 +52,33 @@ from .. import db
 
 __all__ = ["Phyml"]
 
+
+modelcodes = {
+ 'JC'   :'000000',  
+ 'K80'   :'010010' ,
+ 'TrNef' :'010020' ,
+ 'TPM1'  :'012210' ,
+ 'TPM2'  :'010212' ,
+ 'TPM3'  :'012012' ,
+ 'TIM1ef':'012230' ,
+ 'TIM2ef':'010232' ,
+ 'TIM3ef':'012032' ,
+ 'TVMef' :'012314' ,
+ 'SYM'   :'012345' ,
+ 'F81'   :'000000' ,
+ 'HKY'   :'010010' ,
+ 'TrN'   :'010020' ,
+ 'TPM1uf':'012210' ,
+ 'TPM2uf':'010212' ,
+ 'TPM3uf':'012012' ,
+ 'TIM1'  :'012230' ,
+ 'TIM2'  :'010232' ,
+ 'TIM3'  :'012032' ,
+ 'TVM'   :'012314' ,
+ 'GTR'   :'012345',
+}
+
+
 class Phyml(TreeTask):
     def __init__(self, nodeid, alg_phylip_file, constrain_id, model,
                  seqtype, conf, confname, parts_id=None):
@@ -88,6 +115,9 @@ class Phyml(TreeTask):
                 conf[confname]["-f"] = '0.25,0.25,0.25,0.25' if seqtype == "nt" else " m"
                 
             model = model.split("+")[0].split("!")[0]
+            if seqtype == "nt":
+                model = modelcodes[model]
+
         elif not model:
             model = conf[confname]["_aa_model"] if seqtype == "aa" else conf[confname]["_nt_model"]
             self.fullmodel = ""
