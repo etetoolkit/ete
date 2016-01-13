@@ -365,11 +365,17 @@ def process_task(task, wkname, npr_conf, nodeid2info):
                         open(source_alg, "w").write(db.get_task_data(taskid, DATATYPES.alg_fasta))
 
                     nt_alg = switch_to_codon(source_alg, kept_columns=kept_columns)
+                    
                     db.add_task_data(taskid, DATATYPES.alg_nt_fasta, nt_alg.write())
                     db.add_task_data(taskid, DATATYPES.alg_nt_phylip, nt_alg.write(format='iphylip_relaxed'))
 
                 npr_conf = IterConfig(conf, wkname, task.size, "nt")
                 seqtype = "nt"
+                
+                # This is necessary for connecting to supermatrix workflows
+                task.alg_nt_fasta_file = alg_fasta_file
+                task.alg_nt_phylip_file = alg_phylip_file
+                    
 
             if mtesterclass:
                 next_task = mtesterclass(nodeid, alg_fasta_file,

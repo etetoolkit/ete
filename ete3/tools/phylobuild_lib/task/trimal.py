@@ -1,4 +1,4 @@
-from __future__ import absolute_import
+# -*- coding: utf-8 -*-
 # #START_LICENSE###########################################################
 #
 #
@@ -37,7 +37,8 @@ from __future__ import absolute_import
 #
 #
 # #END_LICENSE#############################################################
-# -*- coding: utf-8 -*-
+from __future__ import absolute_import
+
 import os
 import sys
 import logging

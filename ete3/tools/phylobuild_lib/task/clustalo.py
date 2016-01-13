@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -37,6 +36,7 @@ from __future__ import absolute_import
 #
 #
 # #END_LICENSE#############################################################
+from __future__ import absolute_import
 import os
 import sys
 import logging
@@ -74,7 +74,7 @@ class Clustalo(AlgTask):
         # Only one Muscle job is necessary to run this task
         args = OrderedDict(self.args)
         args["-i"] = pjoin(GLOBALS["input_dir"], self.multiseq_file)
-        args["-o"] = "alg.fasta"
+        args["-o"] = "clustalo_alg.fasta"
         job = Job(self.conf["app"][appname], args, parent_ids=[self.nodeid])
         job.cores = self.conf["threading"].get(appname, 1)
         job.add_input_file(self.multiseq_file)
@@ -83,7 +83,7 @@ class Clustalo(AlgTask):
     def finish(self):
         # Once executed, alignment is converted into relaxed
         # interleaved phylip format.
-        alg_file = os.path.join(self.jobs[0].jobdir, "alg.fasta")
+        alg_file = os.path.join(self.jobs[0].jobdir, "clustalo_alg.fasta")
         # ClustalO returns a tricky fasta file
         alg = read_fasta(alg_file, header_delimiter=" ")
         fasta = alg.write(format="fasta")

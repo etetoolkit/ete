@@ -75,8 +75,7 @@ except ImportError as e:
     pass
 
 try:
-    from .version import __version__, __installid__
+    from .version import __version__
 except ImportError:
      __version__ = 'unknown'
-     __installid__ = None
 
