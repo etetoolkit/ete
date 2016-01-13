@@ -97,9 +97,9 @@ class Phyml(TreeTask):
             self.fullmodel = model
 
             # overwrites default options if model selection says so            
-            if "+F" in model:
+            if "+I" in model:
                 conf[confname]["-v"]=" e"
-            elif "!F" in model:
+            elif "!I" in model:
                 conf[confname]["-v"]=" 0"
                             
             if "+G" in model:
@@ -109,9 +109,9 @@ class Phyml(TreeTask):
                 conf[confname]["-c"]=" 1"
                 conf[confname].pop("-a", None)
                 
-            if "+I" in model:
-                conf[confname]["-f"] = " m" if seqtype == "nt" else " e"                
-            elif "!I" in model:
+            if "+F" in model:
+                conf[confname]["-f"] = "m" if seqtype == "nt" else " e"                
+            elif "!F" in model:
                 conf[confname]["-f"] = '0.25,0.25,0.25,0.25' if seqtype == "nt" else " m"
                 
             model = model.split("+")[0].split("!")[0]
