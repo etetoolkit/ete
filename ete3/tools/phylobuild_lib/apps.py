@@ -120,22 +120,23 @@ builtin_apps = {
     'clustalo'           : "%BIN%/clustalo --threads %CORES%",
     'trimal'             : "%BIN%/trimal",
     'readal'             : "%BIN%/readal",
-    'tcoffee'            : "export HOME=/tmp MAFFT_BINARIES=%BIN% TMP_4_TCOFFEE=%TMP% LOCKDIR_4_TCOFFEE=%TMP%  && %BIN%/t_coffee",
+    'tcoffee'            : "export HOME=/tmp MAFFT_BINARIES=%BIN% TMP_4_TCOFFEE=%TMP% LOCKDIR_4_TCOFFEE=%TMP% PLUGINS_4_TCOFFEE=%BIN%/ && %BIN%/t_coffee",
     'phyml'              : "%BIN%/phyml",
     'raxml-pthreads'     : "%BIN%/raxmlHPC-PTHREADS-SSE3 -T%CORES%", # defaults to SSE3
     'raxml'              : "%BIN%/raxmlHPC-SSE3",                    # defaults to SSE3
-    'raxml-pthreads-sse3': "%BIN%/raxmlHPC-PTHREADS-SSE3 -T%CORES%",
-    'raxml-sse3'         : "%BIN%/raxmlHPC-SSE3",
-    'raxml-pthreads-avx' : "%BIN%/raxmlHPC-PTHREADS-AVX -T%CORES%",
-    'raxml-avx'          : "%BIN%/raxmlHPC-AVX",
-    'raxml-pthreads-avx2': "%BIN%/raxmlHPC-PTHREADS-AVX2 -T%CORES%",
-    'raxml-avx2'         : "%BIN%/raxmlHPC-AVX2",
-#    'jmodeltest'        : "JMODELTEST_HOME=%BASE%/jmodeltest2; cd $JMODELTEST_HOME; java -jar $JMODELTEST_HOME/jModelTest.jar",
-    'pmodeltest'         : "python %BASE%/pmodeltest/pmodeltest.py --nprocs %CORES% --phyml %BIN%/phyml",
-    'dialigntx'          : "%BIN%/dialign-tx %BASE%/DIALIGN-TX_1.0.2/conf",
-    'usearch'            : "%BIN%/usearch",
+    #'raxml-pthreads-sse3': "%BIN%/raxmlHPC-PTHREADS-SSE3 -T%CORES%",
+    #'raxml-sse3'         : "%BIN%/raxmlHPC-SSE3",
+    #'raxml-pthreads-avx' : "%BIN%/raxmlHPC-PTHREADS-AVX -T%CORES%",
+    #'raxml-avx'          : "%BIN%/raxmlHPC-AVX",
+    #'raxml-pthreads-avx2': "%BIN%/raxmlHPC-PTHREADS-AVX2 -T%CORES%",
+    #'raxml-avx2'         : "%BIN%/raxmlHPC-AVX2",
+    'pmodeltest'         : "python %BIN%/pmodeltest.py --nprocs %CORES% --phyml %BIN%/phyml",
+    'dialigntx'          : "%BIN%/dialign-tx %BIN%/dialigntx_conf",
     'fasttree'           : "export OMP_NUM_THREADS=%CORES%; %BIN%/FastTree",
     'statal'             : "%BIN%/statal",
+    'prank'              : "%BIN%/prank",
+    'probcons'           : "%BIN%/probcons",
+    'kalign'             : "%BIN%/kalign",
     }
 
 app2check = {
@@ -148,18 +149,20 @@ app2check = {
     'phyml'               : "--help |grep -i Guindon|wc -l",
     'raxml-pthreads'      : "-help |grep -i stamatakis|wc -l",
     'raxml'               : "-help |grep -i stamatakis|wc -l",
-    'raxml-pthreads-sse3' : "-help |grep -i stamatakis|wc -l",
-    'raxml-sse3'          : "-help |grep -i stamatakis|wc -l",
-    'raxml-pthreads-avx'  : "-help |grep -i stamatakis|wc -l",
-    'raxml-avx'           : "-help |grep -i stamatakis|wc -l",
-    'raxml-pthreads-avx2' : "-help |grep -i stamatakis|wc -l",
-    'raxml-avx2'          : "-help |grep -i stamatakis|wc -l",
-    'jmodeltest'          : "--help | grep -i posada |wc -l",
+    #'raxml-pthreads-sse3' : "-help |grep -i stamatakis|wc -l",
+    #'raxml-sse3'          : "-help |grep -i stamatakis|wc -l",
+    #'raxml-pthreads-avx'  : "-help |grep -i stamatakis|wc -l",
+    #'raxml-avx'           : "-help |grep -i stamatakis|wc -l",
+    #'raxml-pthreads-avx2' : "-help |grep -i stamatakis|wc -l",
+    #'raxml-avx2'          : "-help |grep -i stamatakis|wc -l",
+    #'jmodeltest'          : "--help | grep -i posada |wc -l",
     'dialigntx'           : "| grep alignment |wc -l",
-    'usearch'             : "| grep -i Edgar|wc -l",
     'fasttree'            : "| grep 'FastTree ver'|wc -l",
     'statal'              : "-h | grep -i capella |wc -l ",
-    'pmodeltest'          : "--version|wc -l",
+    'pmodeltest'          : "--version 2>&1|grep 'pmodeltest.py v'",
+    'prank'              : "|grep 'prank v'", 
+    'probcons'           : " 2>&1 |grep version",
+    'kalign'             : " 2>&1 |grep Version",   
     }
 
 app2version = {
@@ -172,18 +175,19 @@ app2version = {
     'phyml'               : "--version | grep -i version",
     'raxml-pthreads'      : "-version| grep -i version",
     'raxml'               : "-version| grep -i version",
-    'raxml-pthreads-sse3' : "-version| grep -i version",
-    'raxml-sse3'          : "-version| grep -i version",
-    'raxml-pthreads-avx'  : "-version| grep -i version",
-    'raxml-avx'           : "-version| grep -i version",
-    'raxml-pthreads-avx2' : "-version| grep -i version",
-    'raxml-avx2'          : "-version| grep -i version",
-#    'jmodeltest'          : "--help | grep -i posada ",
+    #'raxml-pthreads-sse3' : "-version| grep -i version",
+    #'raxml-sse3'          : "-version| grep -i version",
+    #'raxml-pthreads-avx'  : "-version| grep -i version",
+    #'raxml-avx'           : "-version| grep -i version",
+    #'raxml-pthreads-avx2' : "-version| grep -i version",
+    #'raxml-avx2'          : "-version| grep -i version",
     'dialigntx'           : "/bin/sh |grep -i version",
-#    'usearch'             : "",
     'fasttree'            : "2>&1 | grep version",
     'statal'              : "--version| grep -i statal",
-    'pmodeltest'          : " --version 2>&1|head -n1",
+    'pmodeltest'          : "--version 2>&1|grep 'pmodeltest.py v'",
+    'prank'              : "|grep 'prank v'", 
+    'probcons'           : "2>&1 |grep version",
+    'kalign'             : "2>&1 |grep Version",   
     }
 
 
@@ -192,7 +196,7 @@ def get_call(appname, apps_path, exec_path, cores):
         cmd = builtin_apps[appname]
     except KeyError:
         return None
-
+    
     bin_path = os.path.join(apps_path, "bin")
     tmp_path = os.path.join(exec_path, "tmp")
     #apps_base = apps_path.rstrip("/x86-64").rstrip("/x86-32")
@@ -212,6 +216,8 @@ def test_apps(apps):
             process = subprocess.Popen(test_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             out, err = process.communicate()
             out = bytes.decode(out)
+            #print (process.returncode)
+            #print (test_cmd)
             if out:
                 print("OK.\t%s" %str(out).strip())
             else:

@@ -642,23 +642,18 @@ def main(args):
 
 def _main(arguments):
     global BASEPATH, APPSPATH, args
-    APPSPATH = os.path.expanduser("~/.etetoolkit/ext_apps-latest/")
+    APPSPATH = BASEPATH
+    if not pexist(pjoin(APPSPATH, "bin")):
+        APPSPATH = os.path.expanduser("~/.etetoolkit/ext_apps-latest/")
+        
     ETEHOMEDIR = os.path.expanduser("~/.etetoolkit/")
-
-    if os.path.exists(pjoin('/etc/etetoolkit/', 'ext_apps-latest')):
-        # if a copy of apps is part of the ete distro, use if by default
-        APPSPATH = pjoin('/etc/etetoolkit/', 'ext_apps-latest')
-        ETEHOMEDIR = '/etc/etetoolkit/'
-    else:
-        # if not, try a user local copy
-        APPSPATH = pjoin(ETEHOMEDIR, 'ext_apps-latest')
 
     if len(arguments) == 1:
         if not pexist(APPSPATH):
-            print(colorify('\nWARNING: external applications directory are not found at %s' %APPSPATH, "yellow"), file=sys.stderr)
-            print(colorify('Use "ete build install_tools" to install or upgrade tools', "orange"), file=sys.stderr)
+            print(colorify('\nWARNING: external applications directory could not be found at %s' %APPSPATH, "yellow"), file=sys.stderr)
+            print(colorify('Use "ete upgrade-external-tools" to install or upgrade tools', "orange"), file=sys.stderr)
 
-    elif len(arguments) > 1:
+    if len(arguments) > 1:
         _config_path = pjoin(BASEPATH, 'phylobuild.cfg')
 
         if arguments[1] == "install_tools":
