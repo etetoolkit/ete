@@ -56,7 +56,7 @@ from . import (ete_split, ete_expand, ete_annotate, ete_ncbiquery, ete_view,
                ete_maptrees)
 from . import common
 from .common import log
-from .utils import colorify
+from .utils import colorify, which
 
 """
 def ete_split(args):
