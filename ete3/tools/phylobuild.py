@@ -691,8 +691,19 @@ def _main(arguments, builtin_apps_path=None):
 
         elif arguments[1] == "check":
             if not pexist(APPSPATH):
-                print(colorify('\nWARNING: external applications directory are not found at %s' %APPSPATH, "yellow"), file=sys.stderr)
-                print(colorify('Use "ete build install_tools" to install or upgrade', "orange"), file=sys.stderr)
+                print(colorify('\nWARNING: external applications not found', "yellow"), file=sys.stderr)
+                print(colorify('Install using conda:\n  conda install -c https://conda.anaconda.org/etetoolkit ete3_external_tools', "lgreen"), file=sys.stderr)
+                print(colorify('or manually compile running:\n  ete3 upgrade-external-tools', "lgreen"), file=sys.stderr)
+                sys.exit(0)
+            
+            try:
+                toolchain_version = open(pjoin(APPSPATH, "__version__")).readline()
+            except IOError:
+                toolchain_version = "unknown"
+                
+            print("Current Toolchain path: %s " %APPSPATH)
+            print("Current Toolchain version: %s" %toolchain_version)
+                
             # setup portable apps
             config = {}
             for k in apps.builtin_apps:
