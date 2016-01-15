@@ -645,7 +645,6 @@ def _main(arguments, builtin_apps_path=None):
     
     if builtin_apps_path:
         APPSPATH = builtin_apps_path
-        print(pjoin(APPSPATH, "bin"))
         
     if not pexist(pjoin(APPSPATH, "bin")):
         APPSPATH = os.path.expanduser("~/.etetoolkit/ext_apps-latest/")
@@ -654,54 +653,32 @@ def _main(arguments, builtin_apps_path=None):
 
     if len(arguments) == 1:
         if not pexist(APPSPATH):
-            print(colorify('\nWARNING: external applications directory could not be found at %s' %APPSPATH, "yellow"), file=sys.stderr)
-            print(colorify('Use "ete upgrade-external-tools" to install or upgrade tools', "orange"), file=sys.stderr)
+            print(colorify('\nWARNING: external applications not found', "yellow"), file=sys.stderr)
+            print(colorify('Install using conda (recomended):', "lgreen"), file=sys.stderr)
+            print(colorify(' conda install -c etetoolkit ete3_external_tools', "white"), file=sys.stderr)
+            print(colorify('or manually compile by running:', "lgreen"), file=sys.stderr)
+            print(colorify(' ete3 upgrade-external-tools', "white"), file=sys.stderr)
+            print()
+
 
     if len(arguments) > 1:
         _config_path = pjoin(BASEPATH, 'phylobuild.cfg')
 
-        if arguments[1] == "install_tools":
-            import urllib
-            import tarfile
-            print (colorify('Downloading latest version of tools...', "green"), file=sys.stderr)
-            if len(arguments) > 2:
-                TARGET_DIR = arguments[2]
-            else:
-                TARGET_DIR = ''
-            while not pexist(TARGET_DIR):
-                TARGET_DIR = input('target directory? [%s]:' %ETEHOMEDIR).strip()
-                if TARGET_DIR == '':
-                    TARGET_DIR = ETEHOMEDIR
-                    break
-            if TARGET_DIR == ETEHOMEDIR:
-                try:
-                    os.mkdir(ETEHOMEDIR)
-                except OSError:
-                    pass
 
-            version_file = "latest.tar.gz"
-            urllib.urlretrieve("https://github.com/jhcepas/ext_apps/archive/%s" %version_file, pjoin(TARGET_DIR, version_file))
-            print(colorify('Decompressing...', "green"), file=sys.stderr)
-            tfile = tarfile.open(pjoin(TARGET_DIR, version_file), 'r:gz')
-            tfile.extractall(TARGET_DIR)
-            print(colorify('Compiling tools...', "green"), file=sys.stderr)
-            sys.path.insert(0, pjoin(TARGET_DIR, 'ext_apps-latest'))
-            import compile_all
-            s = compile_all.compile_all()
-            sys.exit(s)
-
-        elif arguments[1] == "check":
+        if arguments[1] == "check":
             if not pexist(APPSPATH):
                 print(colorify('\nWARNING: external applications not found', "yellow"), file=sys.stderr)
-                print(colorify('Install using conda:\n  conda install -c https://conda.anaconda.org/etetoolkit ete3_external_tools', "lgreen"), file=sys.stderr)
-                print(colorify('or manually compile running:\n  ete3 upgrade-external-tools', "lgreen"), file=sys.stderr)
+                print(colorify('Install using conda (recomended):', "lgreen"), file=sys.stderr)
+                print(colorify(' conda install -c etetoolkit ete3_external_tools', "white"), file=sys.stderr)
+                print(colorify('or manually compile by running:', "lgreen"), file=sys.stderr)
+                print(colorify(' ete3 upgrade-external-tools', "white"), file=sys.stderr)
                 sys.exit(0)
             
             try:
                 toolchain_version = open(pjoin(APPSPATH, "__version__")).readline()
             except IOError:
                 toolchain_version = "unknown"
-                
+
             print("Current Toolchain path: %s " %APPSPATH)
             print("Current Toolchain version: %s" %toolchain_version)
                 
@@ -1061,12 +1038,12 @@ def _main(arguments, builtin_apps_path=None):
 
     args.enable_ui = False
     if not args.noimg:
-        print('X11 DISPLAY = %s' %colorify(os.environ.get('DISPLAY', 'not detected!'), 'yellow'))
-        print('(You can use --noimg to disable graphical capabilities)')
         try:
             from .. import Tree
             Tree().render('/tmp/etenpr_img_test.png')
-        except:
+        except:            
+            print('X11 DISPLAY = %s' %colorify(os.environ.get('DISPLAY', 'not detected!'), 'yellow'))            
+            print('(You can use --noimg to disable graphical capabilities)')
             raise ConfigError('img generation not supported')
 
     if not args.aa_seed_file and not args.nt_seed_file:

@@ -38,11 +38,15 @@
 # #END_LICENSE#############################################################
 from __future__ import absolute_import
 from __future__ import print_function
+import sys
 import os
 import re
 import logging
 import subprocess
 import six
+
+from .utils import colorify
+
 log = logging.getLogger("main")
 
 APPTYPES = {
@@ -208,7 +212,11 @@ def get_call(appname, apps_path, exec_path, cores):
     return cmd
 
 def test_apps(apps):
+    errors = 0
     for name, cmd in sorted(apps.items()):
+        if name == "dialigntx" and sys.platform == "darwin":
+            print(colorify('Dialign-tx not supported in OS X', "orange"), file=sys.stderr)
+            continue
         if app2version.get(name):
             print("Checking %20s..." %name, end=' ')
             test_cmd = cmd + " " + app2version.get(name, "")
@@ -221,7 +229,15 @@ def test_apps(apps):
             if out:
                 print("OK.\t%s" %str(out).strip())
             else:
-                print("ERROR")
+                print(colorify("ERROR", "red"))
+                errors += 1
                 #print("** ", test_cmd)
                 #log.debug(test_cmd)
                 #log.debug(subprocess.check_output(test_cmd.rstrip("wc -l")), shell=True)
+    if errors:
+        print(colorify('\nWARNING: %d external tools seem to be missing or unfunctional' %errors, "yellow"), file=sys.stderr)
+        print(colorify('Install using conda (recomended):', "lgreen"), file=sys.stderr)
+        print(colorify(' conda install -c etetoolkit ete3_external_tools', "white"), file=sys.stderr)
+        print(colorify('or manually compile by running:', "lgreen"), file=sys.stderr)
+        print(colorify(' ete3 upgrade-external-tools', "white"), file=sys.stderr)
+        print()

@@ -1,10 +1,13 @@
 package:
   name: ete3_external_apps
-  version: %VERSION%-dev
+  version: %VERSION%
   
 source:
   git_url: https://github.com/jhcepas/ete.git
-    
+
+build:
+   noarch_python: True
+
 requirements:
   build:
     - python

@@ -39,6 +39,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+from .utils import which, colorify
 from ..evol.control import PARAMS, AVAIL, PARAMS_DESCRIPTION
 from .. import EvolTree, random_color, add_face_to_node, TextFace, TreeStyle
 from ..treeview.layouts import evol_clean_layout
@@ -190,18 +191,26 @@ Model name  Description                   Model kind
                             " capabilities will enabled (if 0 all available)"
                             "cores will be used")
     
-    codeml_binary = Popen(['which', 'codeml'], stdout=PIPE).communicate()[0]
-    codeml_binary = codeml_binary or "~/.etetoolkit/ext_apps-latest/bin/codeml"
     exec_group.add_argument("--codeml_binary", dest="codeml_binary",
-                            default=codeml_binary.strip(),
                             help="[%(default)s] path to CodeML binary")
-    slr_binary = Popen(['which', 'Slr'], stdout=PIPE).communicate()[0]
-    slr_binary = slr_binary or "~/.etetoolkit/ext_apps-latest/bin/Slr"
-
     exec_group.add_argument("--slr_binary", dest="slr_binary",
-                            default=slr_binary.strip(),
                             help="[%(default)s] path to Slr binary")
-                                
+
+def find_binary(binary):
+    bin_path = os.path.join(os.path.split(which("ete3"))[0], "ete3_apps", "bin", binary)
+
+    if not os.path.exists(bin_path):
+        bin_path = os.path.expanduser("~/.etetoolkit/ext_apps-latest/bin/"+binary)
+        
+    if not os.path.exists(bin_path):
+        bin_path = which(binary)
+
+    if not os.path.exists(bin_path):
+        print(colorfy("%s binary not found!" %binary))
+        bin_path = binary
+    print(bin_path)
+    return bin_path
+    
 def marking_layout(node):
     '''
     layout for interactively marking CodemlTree
@@ -467,7 +476,11 @@ def write_results(tree, args):
     return bests
 
 def run(args):
-
+    if not args.slr_binary:
+        args.slr_binary = find_binary("Slr")
+    if not args.codeml_binary:
+        args.codeml_binary = find_binary("codeml")
+    
     binary  = os.path.expanduser(args.slr_binary)
     if not os.path.exists(binary):        
         print("Warning: SLR binary does not exist at %s"%args.slr_binary, file=sys.stderr)
