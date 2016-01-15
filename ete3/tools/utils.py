@@ -1,3 +1,5 @@
+import os
+
 # CONVERT shell colors to the same curses palette
 COLORS = {
     "wr": '\033[1;37;41m', # white on red
@@ -25,3 +27,18 @@ def colorify(string, color):
 def clear_color(string):
     return re.sub("\\033\[[^m]+m", "", string)
 
+def which(program):
+    def is_exe(fpath):
+        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+    fpath, fname = os.path.split(program)
+    if fpath:
+        if is_exe(program):
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            path = path.strip('"')
+            exe_file = os.path.join(path, program)
+            if is_exe(exe_file):
+                return exe_file
+    return ""
