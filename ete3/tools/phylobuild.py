@@ -640,10 +640,13 @@ def main(args):
         raise DataError("Errors found in some tasks")
 
 
-def _main(arguments):
+def _main(arguments, builtin_apps_path=None):
     global BASEPATH, APPSPATH, args
-    APPSPATH = BASEPATH
-    if not pexist(pjoin(APPSPATH, "bin")):
+    
+    if builtin_apps_path:
+        APPSPATH = os.abspath(builtin_apps_path)
+
+    if not pexist(APPSPATH, "bin"):
         APPSPATH = os.path.expanduser("~/.etetoolkit/ext_apps-latest/")
         
     ETEHOMEDIR = os.path.expanduser("~/.etetoolkit/")
@@ -1033,13 +1036,19 @@ def _main(arguments):
     if args.tools_dir:
         APPSPATH = args.tools_dir
 
+    try:
+        toolchain_version = open(pjoin(APPSPATH, "__version__")).readline()
+    except IOError:
+        toolchain_version = "unknown"       
+    print("Toolchain path: %s " %APPSPATH)
+    print("Toolchain version: %s" %toolchain_version)
+        
     if not pexist(APPSPATH):
         print(colorify('\nWARNING: external applications directory are not found at %s' %APPSPATH, "yellow"), file=sys.stderr)
         print(colorify('Use "ete build install_tools" to install or upgrade tools', "orange"), file=sys.stderr)
 
     args.enable_ui = False
     if not args.noimg:
-        print('Testing ETE-build graphics support...')
         print('X11 DISPLAY = %s' %colorify(os.environ.get('DISPLAY', 'not detected!'), 'yellow'))
         print('(You can use --noimg to disable graphical capabilities)')
         try:

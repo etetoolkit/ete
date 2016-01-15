@@ -107,7 +107,8 @@ def _main(arguments):
         elif subcommand == "build":
             from . import phylobuild
             del arguments[1]
-            phylobuild._main(arguments)
+            builtin_apps_path = os.path.join(os.path.split(__file__)[0], "ete3_apps")
+            phylobuild._main(arguments, builtin_apps_path)
             return
 
     # CREATE REUSABLE PARSER OPTIONS
