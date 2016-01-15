@@ -646,7 +646,7 @@ def _main(arguments, builtin_apps_path=None):
     if builtin_apps_path:
         APPSPATH = builtin_apps_path
 
-    if not pexist(APPSPATH, "bin"):
+    if not pexist(pjoin(APPSPATH, "bin")):
         APPSPATH = os.path.expanduser("~/.etetoolkit/ext_apps-latest/")
         
     ETEHOMEDIR = os.path.expanduser("~/.etetoolkit/")
