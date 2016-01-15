@@ -111,7 +111,7 @@ def _main(arguments):
             builtin_apps_path = None
             ete3_path = which("ete3")
             if ete3_path: 
-                builtin_apps_path = os.path.join(os.path.split(ete3_path), "ete3_apps")
+                builtin_apps_path = os.path.join(os.path.split(ete3_path)[0], "ete3_apps")
             phylobuild._main(arguments, builtin_apps_path)
             
             return
