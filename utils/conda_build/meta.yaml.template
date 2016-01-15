@@ -1,0 +1,39 @@
+package:
+  name: ete3_external_apps
+  version: %VERSION%-dev
+  
+source:
+  git_url: https://github.com/jhcepas/ete.git
+    
+requirements:
+  build:
+    - python
+    - six
+    - ete3_external_tools
+    
+  run:
+    - python
+    - six
+    - lxml
+    - numpy
+    - pyqt 
+    
+test:
+  requires:
+    - python
+    - six
+    - lxml
+    - numpy
+    - pyqt 
+    - ete3_external_tools
+    
+  commands:
+    - ete3 version
+    - ete3 build check
+    - python -m 'ete3.test.test_all'
+    
+about:
+  home: http://etetoolkit.org
+  license: GPL
+  summary: "A Framework for reconstruction, analysis and visualization of phylogenetic trees and multiple sequence alignments. Includes Python API and phylogenomic tools"
+
