@@ -161,8 +161,8 @@ app2check = {
     'statal'              : "-h | grep -i capella |wc -l ",
     'pmodeltest'          : "--version 2>&1|grep 'pmodeltest.py v'",
     'prank'              : "|grep 'prank v'", 
-    'probcons'           : " 2>&1 |grep version",
-    'kalign'             : " 2>&1 |grep Version",   
+    'probcons'           : " 2>&1 |grep -i version",
+    'kalign'             : " 2>&1 |grep -i version",   
     }
 
 app2version = {
@@ -186,8 +186,8 @@ app2version = {
     'statal'              : "--version| grep -i statal",
     'pmodeltest'          : "--version 2>&1|grep 'pmodeltest.py v'",
     'prank'              : "|grep 'prank v'", 
-    'probcons'           : "2>&1 |grep version",
-    'kalign'             : "2>&1 |grep Version",   
+    'probcons'           : "2>&1 |grep -i version",
+    'kalign'             : "2>&1 |grep -i version",   
     }
 
 
