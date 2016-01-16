@@ -18,7 +18,7 @@ requirements:
     - six
     - lxml
     - numpy
-    - pyqt 
+    - pyqt
     
 test:
   requires:
@@ -27,7 +27,7 @@ test:
     - lxml
     - numpy
     - pyqt 
-    - etetoolkit/ete3_external_apps # [not linux]
+    - ete3_external_apps # [not linux]
     
   commands:
     - ete3 version
