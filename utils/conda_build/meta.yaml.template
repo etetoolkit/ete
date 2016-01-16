@@ -3,8 +3,9 @@ package:
   version: %VERSION%
   
 source:
-  url: https://github.com/jhcepas/ete/releases/tag/%VERSION%.tar.gz
-  
+    fn: ete3-%VERSION%.tar.gz
+    url: https://github.com/jhcepas/ete/archive/%VERSION%.tar.gz
+
 build:
    noarch_python: True
 
@@ -12,7 +13,10 @@ requirements:
   build:
     - python
     - six
-    
+    - lxml
+    - numpy
+    - pyqt
+        
   run:
     - python
     - six
@@ -26,8 +30,10 @@ test:
     - six
     - lxml
     - numpy
-    - pyqt 
-    - ete3_external_apps # [not linux]
+    - pyqt
+    - scikit-bio
+    - biopython
+    - ete3_external_apps
     
   commands:
     - ete3 version
@@ -37,5 +43,5 @@ test:
 about:
   home: http://etetoolkit.org
   license: GPL
-  summary: "A Framework for reconstruction, analysis and visualization of phylogenetic trees and multiple sequence alignments. Includes Python API and phylogenomic tools"
+  summary: "A Framework for reconstructing, analysing and visualizing phylogenetic trees and multiple sequence alignments. Includes the Python API and Phylogenomic tools"
 
