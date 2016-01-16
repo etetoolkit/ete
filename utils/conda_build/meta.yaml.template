@@ -1,10 +1,10 @@
 package:
-  name: ete3_external_apps
+  name: ete3
   version: %VERSION%
   
 source:
-  git_url: https://github.com/jhcepas/ete.git
-
+  url: https://github.com/jhcepas/ete/releases/tag/%VERSION%.tar.gz
+  
 build:
    noarch_python: True
 
@@ -12,7 +12,6 @@ requirements:
   build:
     - python
     - six
-    - ete3_external_tools
     
   run:
     - python
@@ -28,7 +27,7 @@ test:
     - lxml
     - numpy
     - pyqt 
-    - ete3_external_tools
+    - etetoolkit/ete3_external_apps # [not linux]
     
   commands:
     - ete3 version
