@@ -65,5 +65,5 @@ def _main():
     print(colorify('Compiling tools...', "green"), file=sys.stderr)
     sys.path.insert(0, pjoin(TARGET_DIR, 'ext_apps-latest'))
     import compile_all
-    s = compile_all.compile_all(targets=args.targets, verbose=args.verbose, cores=args.cores)
-    return s
+    errors = compile_all.compile_all(targets=args.targets, verbose=args.verbose, cores=args.cores)
+
