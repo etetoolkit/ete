@@ -366,7 +366,7 @@ def main(args):
     # check application binary files
     if not args.nochecks:
         log.log(28, "Testing x86-%s portable applications..." % arch)
-        apps.test_apps()
+        apps.test_apps(apps_to_test)
 
     log.log(28, "Starting ETE-build execution at %s" %(ctime()))
     log.log(28, "Output directory %s" %(GLOBALS["output_dir"]))

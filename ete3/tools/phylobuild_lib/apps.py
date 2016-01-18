@@ -171,8 +171,6 @@ app2check = {
     'kalign'             : " 2>&1 |grep -i version",
     'codeml'             : " /dev/null 2>&1 |grep -i version",
     'slr'                : " 2>&1 |grep -i version",   
-
-    
     }
 
 app2version = {
@@ -219,9 +217,7 @@ def get_call(appname, apps_path, exec_path, cores):
     #cmd = "export NPR_APP_PATH=%s; %s" %(apps_path, cmd)
     return cmd
 
-def test_apps(apps=None):
-    if not apps:
-        apps = app2version
+def test_apps(apps):
     errors = 0
     for name, cmd in sorted(apps.items()):
         if name == "dialigntx" and sys.platform == "darwin":
