@@ -109,14 +109,35 @@ class ConcatAlg(ConcatAlgTask):
         log.log(26, "Collecting supermatrix data")
         jobtypes = set()
         job2alg, job2acleaner = {}, {}
+        alg_seqtypes = set()
+        clean_alg_seqtypes = set()
         for job in self.jobs:
             jobtypes.add(job.ttype)
             if job.ttype == "alg" and job.nodeid not in self.job2alg:
-                dataid = db.get_dataid(*job.alg_fasta_file.split("."))
+                try:
+                    tid, datatype = job.alg_nt_fasta_file.split(".")
+                except:
+                    tid, datatype = job.alg_fasta_file.split(".")
+                    alg_seqtypes.add(job.seqtype)
+                    log.warning("Concatenating aa alignment")
+                else:
+                    log.warning("Concatenating nt alignment")
+                    alg_seqtypes.add("nt")
+                    
+                dataid = db.get_dataid(tid, datatype)
                 job2alg[job.nodeid] = db.get_data(dataid)
             elif job.ttype == "acleaner":
-                a, b =  job.clean_alg_fasta_file.split(".")
-                dataid = db.get_dataid(*job.clean_alg_fasta_file.split("."))
+                try:
+                    tid, datatype = job.alg_nt_fasta_file.split(".")
+                except:
+                    tid, datatype = job.clean_alg_fasta_file.split(".")
+                    clean_alg_seqtypes.add(job.seqtype)
+                    log.warning("Concatenating aa trimmed alignment")
+                else:
+                    log.warning("Concatenating trimmed nt alignment")
+                    clean_alg_seqtypes.add("nt")
+                    
+                dataid = db.get_dataid(tid, datatype)
                 job2acleaner[job.nodeid] = db.get_data(dataid)
             elif job.ttype == "mchooser":
                 # clean model comming from pmodeltest
@@ -125,15 +146,29 @@ class ConcatAlg(ConcatAlgTask):
 
         if "acleaner" in jobtypes:
             self.job2alg = job2acleaner
+            seqtypes = clean_alg_seqtypes
         else:
             self.job2alg = job2alg
+            seqtypes = alg_seqtypes
+                
+        if len(seqtypes) > 1:
+            raise TaskError("Mixed nt/aa concatenated alignments not yet supported")
+        else:
+            seqtype = seqtypes.pop()
+
+
+        if seqtype == "aa":
+            self.default_model = self.conf[self.confname]["_default_aa_model"]
+        elif seqtype == "nt":
+            self.default_model = self.conf[self.confname]["_default_nt_model"]            
+        self.seqtype = seqtype            
 
         if self.cog_ids - set(self.job2alg):
             log.error("Missing %s algs", len(self.cog_ids -
                                              set(self.job2alg)))
             missing = self.cog_ids - set(self.job2alg)
             raise TaskError(self, "Missing algs (%d): i.e. %s" %(len(missing),missing[:10]))
-
+        
         alg_data = [(self.job2alg[nid],
                      self.job2model.get(nid, self.default_model))
                     for nid in self.job2alg]

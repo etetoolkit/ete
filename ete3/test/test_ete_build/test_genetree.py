@@ -2,6 +2,8 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import os
+import multiprocessing
+CPUS = min(20, max(1, multiprocessing.cpu_count()-1))
 import unittest
 
 from ...tools import ete
@@ -25,7 +27,7 @@ class Test_ete_build(unittest.TestCase):
         gene_wkname = 'clustalo_default-trimal01-none-none'
         for wkname in "brh_cog_all-alg_concat_default-raxml_default", "brh_cog_all-alg_concat_default-fasttree":
             wkname = "brh_cog_all-alg_concat_default-raxml_default"
-            cmd = 'ete3 build -a %s/cog_seqs.fa --cogs %s/fake_cogs.tsv -w %s -m %s -o /tmp/etebuild_test2  -t0.5 --launch 0.5 --clearall' %(DIR, DIR, gene_wkname, wkname)
+            cmd = 'ete3 build -a %s/cog_seqs.fa --cogs %s/fake_cogs.tsv -w %s -m %s -o /tmp/etebuild_test2  -t0.5 --launch 0.5 --clearall --cpu %d' %(DIR, DIR, gene_wkname, wkname, CPUS)
             args = cmd.split()
             ete._main(args)                        
             ctree, xtree, alg_used, alg, alg_trimmed, img, cmd = get_out_files("/tmp/etebuild_test2", wkname, "cog_seqs.fa")
@@ -65,9 +67,9 @@ AAAAAAAAAPPPPPPPPPEEEEEEEEPPPPPPPPPPPP
                 for _tester in testers:
                     for _builder in builders:
                         wkname = "%s-%s-%s-%s" %(_aligner, _trimmer, _tester, _builder)
-                        expected_nw = '(30611.ENSOGAP00000015106:0.083369,(30608.ENSMICP00000013539:0.106942,(9483.ENSCJAP00000027663:0.085039,(9544.ENSMMUP00000035274:0.0303988,(9601.ENSPPYP00000008923:0.0177729,(61853.ENSNLEP00000011861:0.0492628,(9593.ENSGGOP00000009561:0.00332396,(9598.ENSPTRP00000014836:1e-08,9606.ENSP00000269305:1e-08)0:3.9e-07)0.99985:0.0110212)0.762815:0.00326138)0.99985:0.0130264)0.99985:0.0323286)0.99985:0.0373752)1:0.083369);'
+                        expected_nw = '(30611.ENSOGAP00000015106:0.0794915,(30608.ENSMICP00000013539:0.0917718,(9483.ENSCJAP00000027663:0.081188,(9544.ENSMMUP00000035274:0.0293646,(9601.ENSPPYP00000008923:0.017464,(61853.ENSNLEP00000011861:0.0460495,(9593.ENSGGOP00000009561:0.00324716,9606.ENSP00000269305:2.4e-07)0.99985:0.0108707)0.725327:0.0031931)0.99985:0.0125782)0.99985:0.0309675)0.99985:0.0348935)1:0.0794915);'
                         expected_tree = Tree(expected_nw)        
-                        cmd = 'ete3 build -a %s/P53.fa -w %s -o /tmp/etebuild_test1  -t0.3 --launch 0.5 --clearall' %(DIR, wkname)
+                        cmd = 'ete3 build -a %s/P53.fa -w %s -o /tmp/etebuild_test1  -t0.3 --launch 0.5 --clearall --cpu %d' %(DIR, wkname, CPUS)
                         args = cmd.split()
                         ete._main(args)                        
                         ctree, xtree, alg_used, alg, alg_trimmed, img, cmd = get_out_files("/tmp/etebuild_test1", wkname, "P53.fa")
@@ -75,8 +77,8 @@ AAAAAAAAAPPPPPPPPPEEEEEEEEPPPPPPPPPPPP
                         t2 = Tree(xtree)
                         a1 = SeqGroup(alg_used)
                         a2 = SeqGroup(alg)
-                        self.assertEqual(t1.robinson_foulds(expected_tree)[:2], [0, 14])
-                        self.assertEqual(t2.robinson_foulds(expected_tree)[:2], [0, 14])
+                        self.assertEqual(t1.robinson_foulds(expected_tree)[:2], [0, 12])
+                        self.assertEqual(t2.robinson_foulds(expected_tree)[:2], [0, 12])
                         if _tester != "none":
                             # This are the expected winner models given the corresponding algs (tested with the online version of prottest)
                             if wkname.startswith('mafft_default-'):

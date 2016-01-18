@@ -56,7 +56,7 @@ from . import (ete_split, ete_expand, ete_annotate, ete_ncbiquery, ete_view,
                ete_maptrees)
 from . import common
 from .common import log
-from .utils import colorify
+from .utils import colorify, which
 
 """
 def ete_split(args):
@@ -107,7 +107,13 @@ def _main(arguments):
         elif subcommand == "build":
             from . import phylobuild
             del arguments[1]
-            phylobuild._main(arguments)
+
+            builtin_apps_path = None
+            ete3_path = which("ete3")
+            if ete3_path: 
+                builtin_apps_path = os.path.join(os.path.split(ete3_path)[0], "ete3_apps")
+            phylobuild._main(arguments, builtin_apps_path)
+            
             return
 
     # CREATE REUSABLE PARSER OPTIONS

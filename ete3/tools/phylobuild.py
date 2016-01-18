@@ -640,61 +640,48 @@ def main(args):
         raise DataError("Errors found in some tasks")
 
 
-def _main(arguments):
+def _main(arguments, builtin_apps_path=None):
     global BASEPATH, APPSPATH, args
-    APPSPATH = os.path.expanduser("~/.etetoolkit/ext_apps-latest/")
+    
+    if builtin_apps_path:
+        APPSPATH = builtin_apps_path
+        
+    if not pexist(pjoin(APPSPATH, "bin")):
+        APPSPATH = os.path.expanduser("~/.etetoolkit/ext_apps-latest/")
+        
     ETEHOMEDIR = os.path.expanduser("~/.etetoolkit/")
-
-    if os.path.exists(pjoin('/etc/etetoolkit/', 'ext_apps-latest')):
-        # if a copy of apps is part of the ete distro, use if by default
-        APPSPATH = pjoin('/etc/etetoolkit/', 'ext_apps-latest')
-        ETEHOMEDIR = '/etc/etetoolkit/'
-    else:
-        # if not, try a user local copy
-        APPSPATH = pjoin(ETEHOMEDIR, 'ext_apps-latest')
 
     if len(arguments) == 1:
         if not pexist(APPSPATH):
-            print(colorify('\nWARNING: external applications directory are not found at %s' %APPSPATH, "yellow"), file=sys.stderr)
-            print(colorify('Use "ete build install_tools" to install or upgrade tools', "orange"), file=sys.stderr)
+            print(colorify('\nWARNING: external applications not found', "yellow"), file=sys.stderr)
+            print(colorify('Install using conda (recomended):', "lgreen"), file=sys.stderr)
+            print(colorify(' conda install -c etetoolkit ete3_external_tools', "white"), file=sys.stderr)
+            print(colorify('or manually compile by running:', "lgreen"), file=sys.stderr)
+            print(colorify(' ete3 upgrade-external-tools', "white"), file=sys.stderr)
+            print()
 
-    elif len(arguments) > 1:
+
+    if len(arguments) > 1:
         _config_path = pjoin(BASEPATH, 'phylobuild.cfg')
 
-        if arguments[1] == "install_tools":
-            import urllib
-            import tarfile
-            print (colorify('Downloading latest version of tools...', "green"), file=sys.stderr)
-            if len(arguments) > 2:
-                TARGET_DIR = arguments[2]
-            else:
-                TARGET_DIR = ''
-            while not pexist(TARGET_DIR):
-                TARGET_DIR = input('target directory? [%s]:' %ETEHOMEDIR).strip()
-                if TARGET_DIR == '':
-                    TARGET_DIR = ETEHOMEDIR
-                    break
-            if TARGET_DIR == ETEHOMEDIR:
-                try:
-                    os.mkdir(ETEHOMEDIR)
-                except OSError:
-                    pass
 
-            version_file = "latest.tar.gz"
-            urllib.urlretrieve("https://github.com/jhcepas/ext_apps/archive/%s" %version_file, pjoin(TARGET_DIR, version_file))
-            print(colorify('Decompressing...', "green"), file=sys.stderr)
-            tfile = tarfile.open(pjoin(TARGET_DIR, version_file), 'r:gz')
-            tfile.extractall(TARGET_DIR)
-            print(colorify('Compiling tools...', "green"), file=sys.stderr)
-            sys.path.insert(0, pjoin(TARGET_DIR, 'ext_apps-latest'))
-            import compile_all
-            s = compile_all.compile_all()
-            sys.exit(s)
-
-        elif arguments[1] == "check":
+        if arguments[1] == "check":
             if not pexist(APPSPATH):
-                print(colorify('\nWARNING: external applications directory are not found at %s' %APPSPATH, "yellow"), file=sys.stderr)
-                print(colorify('Use "ete build install_tools" to install or upgrade', "orange"), file=sys.stderr)
+                print(colorify('\nWARNING: external applications not found', "yellow"), file=sys.stderr)
+                print(colorify('Install using conda (recomended):', "lgreen"), file=sys.stderr)
+                print(colorify(' conda install -c etetoolkit ete3_external_tools', "white"), file=sys.stderr)
+                print(colorify('or manually compile by running:', "lgreen"), file=sys.stderr)
+                print(colorify(' ete3 upgrade-external-tools', "white"), file=sys.stderr)
+                sys.exit(0)
+            
+            try:
+                toolchain_version = open(pjoin(APPSPATH, "__version__")).readline()
+            except IOError:
+                toolchain_version = "unknown"
+
+            print("Current Toolchain path: %s " %APPSPATH)
+            print("Current Toolchain version: %s" %toolchain_version)
+                
             # setup portable apps
             config = {}
             for k in apps.builtin_apps:
@@ -1038,19 +1025,25 @@ def _main(arguments):
     if args.tools_dir:
         APPSPATH = args.tools_dir
 
+    try:
+        toolchain_version = open(pjoin(APPSPATH, "__version__")).readline()
+    except IOError:
+        toolchain_version = "unknown"       
+    print("Toolchain path: %s " %APPSPATH)
+    print("Toolchain version: %s" %toolchain_version)
+        
     if not pexist(APPSPATH):
         print(colorify('\nWARNING: external applications directory are not found at %s' %APPSPATH, "yellow"), file=sys.stderr)
         print(colorify('Use "ete build install_tools" to install or upgrade tools', "orange"), file=sys.stderr)
 
     args.enable_ui = False
     if not args.noimg:
-        print('Testing ETE-build graphics support...')
-        print('X11 DISPLAY = %s' %colorify(os.environ.get('DISPLAY', 'not detected!'), 'yellow'))
-        print('(You can use --noimg to disable graphical capabilities)')
         try:
             from .. import Tree
             Tree().render('/tmp/etenpr_img_test.png')
-        except:
+        except:            
+            print('X11 DISPLAY = %s' %colorify(os.environ.get('DISPLAY', 'not detected!'), 'yellow'))            
+            print('(You can use --noimg to disable graphical capabilities)')
             raise ConfigError('img generation not supported')
 
     if not args.aa_seed_file and not args.nt_seed_file:

@@ -46,9 +46,9 @@ import os
 from six.moves.cPickle import load, dump
 import hashlib
 
-ETEPATH = os.path.abspath(os.path.split(os.path.realpath(__file__))[0]+'/../../')
+DATAPATH = os.path.abspath(os.path.split(os.path.realpath(__file__))[0])+"/ete_evol_data/"
 
-WRKDIR = ETEPATH + '/examples/evol/data/protamine/PRM1/'
+WRKDIR = DATAPATH + '/protamine/PRM1/'
 BINDIR = os.getcwd() + '/bin/'
 print(BINDIR)
 
@@ -100,7 +100,7 @@ class TestEvolEvolTree(unittest.TestCase):
 
     def test_load_model(self):
         tree = EvolTree (WRKDIR + 'tree.nw')
-        tree.workdir = 'examples/evol/data/protamine/PRM1/paml/'
+        tree.workdir = 'protamine/PRM1/paml/'
         tree.link_to_evol_model (WRKDIR + 'paml/fb/fb.out', 'fb')
         tree.link_to_evol_model (WRKDIR + 'paml/M1/M1.out', 'M1')
         tree.link_to_evol_model (WRKDIR + 'paml/M2/M2.out', 'M2')
@@ -118,7 +118,7 @@ class TestEvolEvolTree(unittest.TestCase):
 
     def test_get_most_likely(self):
         tree = EvolTree (WRKDIR + 'tree.nw')
-        tree.workdir = 'examples/evol/data/protamine/PRM1/paml/'
+        tree.workdir = 'protamine/PRM1/paml/'
         tree.link_to_evol_model (WRKDIR + 'paml/M1/M1.out', 'M1')
         tree.link_to_evol_model (WRKDIR + 'paml/M2/M2.out', 'M2')
         self.assertEqual(round(tree.get_most_likely ('M2','M1'),16),
@@ -126,14 +126,14 @@ class TestEvolEvolTree(unittest.TestCase):
 
     def test_labelling_tree(self):
         tree = EvolTree (WRKDIR + 'tree.nw')
-        tree.workdir = 'examples/evol/data/protamine/PRM1/paml/'
+        tree.workdir = 'protamine/PRM1/paml/'
         random_swap(tree)
         tree.link_to_evol_model (WRKDIR + 'paml/fb/fb.out', 'fb')
         self.assert_(check_annotation (tree))
 
     def test_deep_copy(self):
         tree = EvolTree (WRKDIR + 'tree.nw')
-        tree.workdir = 'examples/evol/data/protamine/PRM1/paml/'
+        tree.workdir = 'protamine/PRM1/paml/'
         tree.link_to_evol_model (WRKDIR + 'paml/fb/fb.out', 'fb')
         fba = deepcopy (tree.get_evol_model('fb'))
         tree._models['fb.a'] = fba
@@ -142,7 +142,7 @@ class TestEvolEvolTree(unittest.TestCase):
                      )
     def test_call_histface(self):
         tree = EvolTree (WRKDIR + 'tree.nw')
-        tree.workdir = 'examples/evol/data/protamine/PRM1/paml/'
+        tree.workdir = 'protamine/PRM1/paml/'
         tree.link_to_alignment  (WRKDIR + 'alignments.fasta_ali')
         tree.link_to_evol_model (WRKDIR + 'paml/M2/M2.out', 'M2.a')
         col =  {'NS' : 'grey', 'RX' : 'black',
@@ -190,7 +190,7 @@ class TestEvolEvolTree(unittest.TestCase):
             self.assert_(b'lnL' in tree.get_evol_model('SLR').run)
 
     def test_marking_trees(self):
-        TREE_PATH = ETEPATH + '/examples/evol/data/S_example/'
+        TREE_PATH = DATAPATH + '/S_example/'
         tree = EvolTree (TREE_PATH + 'measuring_S_tree.nw')
         self.assertEqual(tree.write(),
                          '((Hylobates_lar,(Gorilla_gorilla,Pan_troglodytes)),Papio_cynocephalus);')
@@ -204,7 +204,7 @@ class TestEvolEvolTree(unittest.TestCase):
 
     def test_pickling(self):
         tree = EvolTree (WRKDIR + 'tree.nw')
-        tree.workdir = ETEPATH + '/examples/data/protamine/PRM1/paml/'
+        tree.workdir = DATAPATH + '/protamine/PRM1/paml/'
         tree.link_to_alignment  (WRKDIR + 'alignments.fasta_ali')
         tree.link_to_evol_model (WRKDIR + 'paml/M2/M2.out', 'M2.a')
         out = open('blip.pik', 'wb')
