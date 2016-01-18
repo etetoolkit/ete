@@ -206,7 +206,7 @@ def find_binary(binary):
         bin_path = which(binary)
 
     if not os.path.exists(bin_path):
-        print(colorfiy("%s binary not found!" %binary))
+        print(colorify("%s binary not found!" %binary))
         bin_path = binary
     print(bin_path)
     return bin_path
