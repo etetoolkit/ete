@@ -141,6 +141,8 @@ builtin_apps = {
     'prank'              : "%BIN%/prank",
     'probcons'           : "%BIN%/probcons",
     'kalign'             : "%BIN%/kalign",
+    'codeml'             : "%BIN%/codeml",
+    'slr'                : "%BIN%/Slr",
     }
 
 app2check = {
@@ -166,7 +168,11 @@ app2check = {
     'pmodeltest'          : "--version 2>&1|grep 'pmodeltest.py v'",
     'prank'              : "|grep 'prank v'", 
     'probcons'           : " 2>&1 |grep -i version",
-    'kalign'             : " 2>&1 |grep -i version",   
+    'kalign'             : " 2>&1 |grep -i version",
+    'codeml'             : " /dev/null 2>&1 |grep -i version",
+    'slr'                : " 2>&1 |grep -i version",   
+
+    
     }
 
 app2version = {
@@ -192,7 +198,9 @@ app2version = {
     'prank'              : "|grep 'prank v'", 
     'probcons'           : "2>&1 |grep -i version",
     'kalign'             : "2>&1 |grep -i version",   
-    }
+    'codeml'             : " /dev/null 2>&1 |grep -i version",
+    'slr'                : " 2>&1 |grep -i version",   
+}
 
 
 def get_call(appname, apps_path, exec_path, cores):
@@ -211,7 +219,9 @@ def get_call(appname, apps_path, exec_path, cores):
     #cmd = "export NPR_APP_PATH=%s; %s" %(apps_path, cmd)
     return cmd
 
-def test_apps(apps):
+def test_apps(apps=None):
+    if not apps:
+        apps = app2version
     errors = 0
     for name, cmd in sorted(apps.items()):
         if name == "dialigntx" and sys.platform == "darwin":
