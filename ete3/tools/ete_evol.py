@@ -379,10 +379,13 @@ def run_all_models(tree, nodes, marks, args, **kwargs):
                 modmodel = model + '.' + '_'.join([str(n) for n in node])
                 if (os.path.isdir(os.path.join(tree.workdir, modmodel)) and
                     os.path.exists(os.path.join(tree.workdir, modmodel, 'out'))):
-                    warn('Model %s already runned... skipping' % modmodel)
-                    results.append((os.path.join(tree.workdir, modmodel),
-                                    modmodel))
-                    continue
+                    fhandler = open(os.path.join(tree.workdir, modmodel, 'out'))
+                    fhandler.seek(-50, 2)
+                    if 'Time used' in fhandler.read():
+                        warn('Model %s already runned... skipping' % modmodel)
+                        results.append((os.path.join(tree.workdir, modmodel),
+                                        modmodel))
+                        continue
                 print('          %s\n' % (
                     tree.write()))
                 results.append(pool.apply_async(
