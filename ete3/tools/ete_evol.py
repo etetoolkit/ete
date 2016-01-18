@@ -180,7 +180,7 @@ Model name  Description                   Model kind
 
     codeml_gr.add_argument('--codeml_help', action='store_true', dest='super_help', 
                            help=("show detailed description on codeml "
-                                 "paramters for model configuration "
+                                 "parameters for model configuration "
                                  "and exit."))
 
     exec_group = evol_args_p.add_argument_group('EXECUTION MDE OPTIONS')
@@ -189,7 +189,7 @@ Model name  Description                   Model kind
                             " available in the execution host. If higher"
                             " than 1, tasks with multi-threading"
                             " capabilities will enabled (if 0 all available)"
-                            "cores will be used")
+                            " cores will be used")
     
     exec_group.add_argument("--codeml_binary", dest="codeml_binary",
                             help="[%(default)s] path to CodeML binary")
@@ -388,10 +388,13 @@ def run_all_models(tree, nodes, marks, args, **kwargs):
                 modmodel = model + '.' + '_'.join([str(n) for n in node])
                 if (os.path.isdir(os.path.join(tree.workdir, modmodel)) and
                     os.path.exists(os.path.join(tree.workdir, modmodel, 'out'))):
-                    warn('Model %s already runned... skipping' % modmodel)
-                    results.append((os.path.join(tree.workdir, modmodel),
-                                    modmodel))
-                    continue
+                    fhandler = open(os.path.join(tree.workdir, modmodel, 'out'))
+                    fhandler.seek(-50, 2)
+                    if 'Time used' in fhandler.read():
+                        warn('Model %s already runned... skipping' % modmodel)
+                        results.append((os.path.join(tree.workdir, modmodel),
+                                        modmodel))
+                        continue
                 print('          %s\n' % (
                     tree.write()))
                 results.append(pool.apply_async(
