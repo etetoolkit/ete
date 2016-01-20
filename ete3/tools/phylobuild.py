@@ -115,8 +115,8 @@ __DESCRIPTION__ = (
         Environment for Tree Exploration. BMC Bioinformatics 2010,
         11:24. doi:10.1186/1471-2105-11-24
 
-      (Note that a list of the external programs used to complete the necessary
-      computations will be also shown together with your results. They should
+      (Note that a list of the external programs used to complete all necessary
+      computations will be also shown after execution. Those programs should
       also be cited.)
       --------------------------------------------------------------------------------
 
