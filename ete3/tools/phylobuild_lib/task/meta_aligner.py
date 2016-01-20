@@ -40,6 +40,8 @@ from __future__ import absolute_import
 import os
 import logging
 import shutil
+import importlib
+
 log = logging.getLogger("main")
 
 from ..master_task import AlgTask, Task
@@ -150,7 +152,8 @@ class MetaAligner(AlgTask):
             aligner_name = aligner_name[1:]
             _classname = APP2CLASS[self.conf[aligner_name]["_app"]]
 
-            _module = __import__(CLASS2MODULE[_classname], globals(), locals(), [], -1)
+            _module = importlib.import_module("ete3.tools.phylobuild_lib.task", "ete3")
+            #_module = __import__(CLASS2MODULE[_classname], globals(), locals(), [], 0)
             _aligner = getattr(_module, _classname)
 
             # Normal alg
