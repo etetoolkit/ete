@@ -370,6 +370,18 @@ def local_run_model(tree, model_name, binary, ctrl_string='', **kwargs):
     os.chdir(hlddir)
     return os.path.join(fullpath,'out'), model_obj
 
+def check_done(tree, modmodel, results):
+    if (os.path.isdir(os.path.join(tree.workdir, modmodel)) and
+        os.path.exists(os.path.join(tree.workdir, modmodel, 'out'))):
+        fhandler = open(os.path.join(tree.workdir, modmodel, 'out'))
+        fhandler.seek(-50, 2)
+        if 'Time used' in fhandler.read():
+            warn('Model %s already runned... skipping' % modmodel)
+            results.append((os.path.join(tree.workdir, modmodel),
+                            modmodel))
+            return True
+    return False
+
 def run_all_models(tree, nodes, marks, args, **kwargs):
     ## TO BE IMPROVED: multiprocessing should be called in a simpler way
     print("\nRUNNING CODEML/SLR")
@@ -386,25 +398,15 @@ def run_all_models(tree, nodes, marks, args, **kwargs):
                 clean_tree(tree)
                 tree.mark_tree(node, marks=mark)
                 modmodel = model + '.' + '_'.join([str(n) for n in node])
-                if (os.path.isdir(os.path.join(tree.workdir, modmodel)) and
-                    os.path.exists(os.path.join(tree.workdir, modmodel, 'out'))):
-                    fhandler = open(os.path.join(tree.workdir, modmodel, 'out'))
-                    fhandler.seek(-50, 2)
-                    if 'Time used' in fhandler.read():
-                        warn('Model %s already runned... skipping' % modmodel)
-                        results.append((os.path.join(tree.workdir, modmodel),
-                                        modmodel))
-                        continue
+                if check_done(tree, modmodel, results):
+                    continue
                 print('          %s\n' % (
                     tree.write()))
                 results.append(pool.apply_async(
                     local_run_model,
                     args=(tree, modmodel, binary), kwds=kwargs))
         else:
-            if os.path.isdir(os.path.join(tree.workdir, model)):
-                warn('Model %s already runned... skipping' % model)
-                results.append((os.path.join(tree.workdir, model),
-                                model))
+            if check_done(tree, modmodel, results):
                 continue
             results.append(pool.apply_async(
                 local_run_model, args=(tree, model, binary), kwds=kwargs))
