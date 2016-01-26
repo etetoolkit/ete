@@ -60,16 +60,17 @@ def parse_rst(path):
     parse rst files from codeml, all site, branch-site models.
     return 2 dicts "classes" of sites, and values at each site "sites"
     '''
-    typ     = None
-    classes = {}
-    sites   = {}
-    k       = 0
-    i       = 0
-    path = '/'.join (path.split('/')[:-1]) + '/rst'
-    for line in open (path):
+    typ       = None
+    classes   = {}
+    sites     = {}
+    n_classes = {}
+    k         = 0
+    i         = 0
+    path = '/'.join(path.split('/')[:-1]) + '/rst'
+    for line in open(path):
         # get number of classes of sites
         if line.startswith ('dN/dS '):
-            k = int (re.sub ('.* \(K=([0-9]+)\)\n', '\\1', line))
+            k = int(re.sub ('.* \(K=([0-9]+)\)\n', '\\1', line))
             continue
         # get values of omega and proportions
         if typ is None and \
@@ -77,17 +78,20 @@ def parse_rst(path):
             var = re.sub (':', '', line.split('  ')[0])
             if var.startswith ('p'):
                 var = 'proportions'
-            classes [var] = re.findall ('\d+\.\d{5}', line)
+            classes[var] = [float(v) for v in re.findall('\d+\.\d{5}', line)]
             continue
         # parse NEB and BEB tables
         if '(BEB)' in line :
-            k = int (re.sub ('.*for (\d+) classes .*\n', '\\1', line))
+            k = int(re.sub('.*for (\d+) classes.*\n', '\\1', line))
             typ = 'BEB'
-            sites [typ] = {}
+            sites[typ] = {}
+            n_classes[typ] = k
             continue
         if '(NEB)' in line :
+            k = int(re.sub('.*for (\d+) classes.*\n', '\\1', line))
             typ = 'NEB'
-            sites [typ] = {}
+            sites[typ] = {}
+            n_classes[typ] = k
             continue
         # at the end of some BEB/NEB tables:
         if line.startswith ('Positively '):
@@ -99,7 +103,7 @@ def parse_rst(path):
         line = line.replace(' +- ', ' ')
         line = re.sub ('[()]', '', line.strip()).split()
         # get amino-acid
-        sites [typ].setdefault ('aa', []).append (line[1])
+        sites[typ].setdefault ('aa', []).append (line[1])
         # get site class probability
         probs = []
         for i in range (k):
@@ -108,13 +112,19 @@ def parse_rst(path):
         sites [typ].setdefault ('pv', []).append (max (probs))
         # get most likely site class
         classe = int (line [3 + i])
-        sites [typ].setdefault ('class', []).append (classe)
+        sites[typ].setdefault ('class', []).append (classe)
         # if there, get omega and error
         try:
             sites [typ].setdefault ('w' , []).append (float (line [4 + i]))
         except IndexError:
+            # in this case we are with branch-site A or A1 and we should sum
+            # probabilities of categories 2a and 2b
+            probs = probs[:-2] + [sum(probs[-2:])]
+            sites[typ]['pv'][-1] = max(probs)
+            n_classes[typ] -= 1
             try:
-                sites [typ].setdefault ('w' , []).append (classes['foreground w'][classe - 1])
+                sites[typ].setdefault('w' , []).append(
+                    classes['foreground w'][classe - 1])
             except KeyError: # clade models
                 del (sites [typ]['w'])
         try:
@@ -122,7 +132,8 @@ def parse_rst(path):
         except IndexError:
             del (sites [typ]['se'])
     return {'classes': classes,
-            'sites' :sites}
+            'sites' :sites,
+            'n_classes': k}
 
 
 def divide_data(pamout, model):

@@ -83,6 +83,7 @@ class Model:
         self.name, args = check_name(model_name)
         self.sites      = None
         self.classes    = None
+        self.n_classes  = None
         self.branches   = {}
         self.stats      = {}
         self.properties = {}
@@ -212,21 +213,21 @@ class Model:
             val = 'NEB'
         else:
             val = 'SLR'
-        colors = colorize_rst(self.sites [val]['pv'], self.name,
-                              self.sites[val]['class'], col=colors)
+        colors = self.colorize_rst(val, col=colors)
         if not 'ylim' in kwargs:
             kwargs['ylim'] = (0, 2)
         if errors:
             errors = self.sites[val]['se'] if 'se' in self.sites[val]\
                      else None
         if TREEVIEW:
-            if not 'site' in self.properties['typ']:
+            try:
+                hist = SequencePlotFace(self.sites[val]['w'], hlines=hlines,
+                                        colors=colors, errors=errors,
+                                        ylabel=u'Omega (\u03c9)', kind=kind,
+                                        **kwargs)
+            except KeyError:
                 raise Exception('ERROR: no sites to display, only available ' +
                                 'histfaces for site models\n')
-            hist = SequencePlotFace(self.sites[val]['w'], hlines=hlines,
-                                    colors=colors, errors=errors,
-                                    ylabel=u'Omega (\u03c9)', kind=kind,
-                                    **kwargs)
             if up:
                 setattr(hist, 'up', True)
             else:
@@ -271,58 +272,58 @@ class Model:
         else:
             open(outfile, 'w').write(string)
 
+    def colorize_rst(self, val, col=None):
+        '''
+        Colorize function, that take in argument a list of values
+        corresponding to a list of classes and returns a list of
+        colors to paint histogram.
+        '''
+        col = col or {'NS' : 'grey',
+                      'RX' : 'green',
+                      'RX+': 'green',
+                      'CN' : 'cyan',
+                      'CN+': 'blue',
+                      'PS' : 'orange',
+                      'PS+': 'red'}
+        if not 'site' in self.properties['typ']:
+            raise Exception('ERROR: histogram are only for sit and '
+                            'branch-site models.')
+        ps_model = self.properties['evol'] == 'positive-selection'
+        colors = []
+        for pval, curr_class in zip(self.sites[val]['pv'],
+                                    self.sites[val]['class']):
+            if pval < 0.95:
+                colors.append(col['NS'])
+            elif curr_class != self.n_classes and not ps_model:
+                if pval < 0.99:
+                    colors.append(col['RX'])
+                else:
+                    colors.append(col['RX+'])
+            elif curr_class == 1:
+                if pval < 0.99:
+                    colors.append(col['CN'])
+                else:
+                    colors.append(col['CN+'])
+            elif curr_class == self.n_classes and ps_model:
+                if pval < 0.99:
+                    colors.append(col['PS'])
+                else:
+                    colors.append(col['PS+'])
+            elif curr_class == self.n_classes:
+                if pval < 0.99:
+                    colors.append(col['RX'])
+                else:
+                    colors.append(col['RX+'])
+            else:
+                colors.append(col['NS'])
+        return colors
+
 def check_name(model):
     '''
     check that model name corresponds to one of the available
     '''
     if sub('\..*', '', model) in AVAIL:
         return model, AVAIL [sub('\..*', '', model)]
-
-
-
-def colorize_rst(vals, winner, classes, col=None):
-    '''
-    Colorize function, that take in argument a list of values
-    corresponding to a list of classes and returns a list of
-    colors to paint histogram.
-    '''
-    col = col or {'NS' : 'grey',
-                  'RX' : 'green',
-                  'RX+': 'green',
-                  'CN' : 'cyan',
-                  'CN+': 'blue',
-                  'PS' : 'orange',
-                  'PS+': 'red'}
-    colors = []
-    for i in range(0, len(vals)):
-        class1 = classes[i] #int(sub('\/.*', '', sub('\(', '', classes[i])))
-        class2 = max(classes)# int(sub('.*\/', '', sub('\)', '', classes[i])))
-        pval = float(vals[i])
-        if pval < 0.95:
-            colors.append(col['NS'])
-        elif (class1 not in [class2, 1]) and (winner in ['M2', 'M8', 'SLR']):
-            if pval < 0.99:
-                colors.append(col['RX'])
-            else:
-                colors.append(col['RX+'])
-        elif class1 == 1:
-            if pval < 0.99:
-                colors.append(col['CN'])
-            else:
-                colors.append(col['CN+'])
-        elif class1 == class2 and (winner in ['M2', 'M8', 'SLR']):
-            if pval < 0.99:
-                colors.append(col['PS'])
-            else:
-                colors.append(col['PS+'])
-        elif class1 == class2:
-            if pval < 0.99:
-                colors.append(col['RX'])
-            else:
-                colors.append(col['RX+'])
-        else:
-            colors.append(col['NS'])
-    return colors
 
 
 
