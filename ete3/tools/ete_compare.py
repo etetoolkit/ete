@@ -193,7 +193,7 @@ def run(args):
                         r['treeko_dist']]
 
                 if r['effective_tree_size'] == 0:
-                    for i in xrange(3, len(data)):
+                    for i in range(3, len(data)):
                         data[i] = -1
 
                 if args.taboutput:

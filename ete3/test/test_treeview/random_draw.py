@@ -28,7 +28,7 @@ def leaf_name(node):
 
 def aligned_faces(node):
     if node.is_leaf():
-        for i in xrange(3):
+        for i in range(3):
             F = faces.TextFace("ABCDEFGHIJK"[0:random.randint(1,11)])
             F.border.width = 1
             F.border.line_style = 1

@@ -39,7 +39,7 @@ test:
   commands:
     - ete3 version
     - ete3 build check
-    - python -m 'ete3.test.test_all'
+    #- python -m 'ete3.test.test_all'
     
 about:
   home: http://etetoolkit.org

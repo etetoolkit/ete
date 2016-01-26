@@ -297,9 +297,9 @@ if __name__ == "__main__":
 
     # Show very large algs
     tree = PhyloTree('(Orangutan,Human,Chimp);')
-    tree.link_to_alignment(">Human\n"       + ''.join([_aabgcolors.keys()[int(random() * len (_aabgcolors))] for _ in xrange (5000)]) + \
-                           "\n>Chimp\n"     + ''.join([_aabgcolors.keys()[int(random() * len (_aabgcolors))] for _ in xrange (5000)]) + \
-                           "\n>Orangutan\n" + ''.join([_aabgcolors.keys()[int(random() * len (_aabgcolors))] for _ in xrange (5000)]))
+    tree.link_to_alignment(">Human\n"       + ''.join([_aabgcolors.keys()[int(random() * len (_aabgcolors))] for _ in range(5000)]) + \
+                           "\n>Chimp\n"     + ''.join([_aabgcolors.keys()[int(random() * len (_aabgcolors))] for _ in range(5000)]) + \
+                           "\n>Orangutan\n" + ''.join([_aabgcolors.keys()[int(random() * len (_aabgcolors))] for _ in range(5000)]))
     tree.dist = 0
     ts = TreeStyle()
     ts.title.add_face(TextFace("better not set interactivity if alg is very large", fsize=15), column=0)

@@ -115,8 +115,8 @@ __DESCRIPTION__ = (
         Environment for Tree Exploration. BMC Bioinformatics 2010,
         11:24. doi:10.1186/1471-2105-11-24
 
-      (Note that a list of the external programs used to complete the necessary
-      computations will be also shown together with your results. They should
+      (Note that a list of the external programs used to complete all necessary
+      computations will be also shown after execution. Those programs should
       also be cited.)
       --------------------------------------------------------------------------------
 
@@ -366,7 +366,7 @@ def main(args):
     # check application binary files
     if not args.nochecks:
         log.log(28, "Testing x86-%s portable applications..." % arch)
-        apps.test_apps()
+        apps.test_apps(apps_to_test)
 
     log.log(28, "Starting ETE-build execution at %s" %(ctime()))
     log.log(28, "Output directory %s" %(GLOBALS["output_dir"]))
