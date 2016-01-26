@@ -49,6 +49,7 @@ from multiprocessing import Pool
 from subprocess import Popen, PIPE
 import sys
 import os
+import signal
 
 from warnings import warn
 
@@ -406,7 +407,7 @@ def run_all_models(tree, nodes, marks, args, **kwargs):
                     local_run_model,
                     args=(tree, modmodel, binary), kwds=kwargs))
         else:
-            if check_done(tree, modmodel, results):
+            if check_done(tree, model, results):
                 continue
             results.append(pool.apply_async(
                 local_run_model, args=(tree, model, binary), kwds=kwargs))
@@ -604,3 +605,7 @@ def run(args):
                 best)), histfaces=site_models,
                         layout=evol_clean_layout if args.clean_layout else None)
 
+    
+    def raise_control_c(_signal, _frame):
+        raise KeyboardInterrupt
+    signal.signal(signal.SIGTERM, raise_control_c)
