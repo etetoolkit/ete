@@ -19,12 +19,12 @@ try:
 except NameError:
     pass
 
-tree = EvolTree("data/S_example/measuring_S_tree.nw")
-tree.link_to_alignment('data/S_example/alignment_S_measuring_evol.fasta')
+tree = EvolTree("data/L_example/measuring_L_tree.nw")
+tree.link_to_alignment('data/L_example/alignment_L_measuring_evol.fasta')
 
 print (tree)
 
-input('\n   tree and alignment loaded\nHit some key, to start computation of branch site models A and A1 on each branch.\n')
+# input('\n   tree and alignment loaded\nHit some key, to start computation of branch site models A and A1 on each branch.\n')
 
 print ('running model M0, for comparison with branch-site models...')
 tree.run_model('M0')
@@ -49,8 +49,10 @@ for leaf in tree:
     print (str(ps))
     print ('p-value of relaxation for sites on this branch is: ')
     print (str(rx))
-    if ps < 0.05 and float(tree.get_model("bsA." + leaf.name).wfrg2a) > 1:
+    model = tree.get_evol_model("bsA." + leaf.name)
+    if ps < 0.05 and float(model.classes['foreground w'][2]) > 1:
         print ('we have positive selection on sites on this branch')
+        tree.show(histfaces=['bsA.' + leaf.name])
     elif rx<0.05 and ps>=0.05:
         print ('we have relaxation on sites on this branch')
     else:
@@ -63,4 +65,3 @@ for leaf in tree:
 # have to look at the main outfile or rst outfile
 
 print ('The End.')
-
