@@ -104,15 +104,15 @@ class Phyml(TreeTask):
                             
             if "+G" in model:
                 #conf[confname]["-c"]=" 4"
-                conf[confname]["-a"]=" e"
+                conf[confname]["-a"]="e"
             elif "!G" in model:
                 conf[confname]["-c"]=" 1"
                 conf[confname].pop("-a", None)
                 
             if "+F" in model:
-                conf[confname]["-f"] = "m" if seqtype == "nt" else " e"                
+                conf[confname]["-f"] = "m" if seqtype == "nt" else "e"
             elif "!F" in model:
-                conf[confname]["-f"] = '0.25,0.25,0.25,0.25' if seqtype == "nt" else " m"
+                conf[confname]["-f"] = '0.25,0.25,0.25,0.25' if seqtype == "nt" else "m"
                 
             model = model.split("+")[0].split("!")[0]
             if seqtype == "nt":
