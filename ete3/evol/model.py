@@ -294,7 +294,7 @@ class Model:
                                     self.sites[val]['class']):
             if pval < 0.95:
                 colors.append(col['NS'])
-            elif curr_class != self.n_classes and not ps_model:
+            elif curr_class != self.n_classes[val] and not ps_model:
                 if pval < 0.99:
                     colors.append(col['RX'])
                 else:
@@ -304,12 +304,12 @@ class Model:
                     colors.append(col['CN'])
                 else:
                     colors.append(col['CN+'])
-            elif curr_class == self.n_classes and ps_model:
+            elif curr_class >= self.n_classes[val] and ps_model:
                 if pval < 0.99:
                     colors.append(col['PS'])
                 else:
                     colors.append(col['PS+'])
-            elif curr_class == self.n_classes:
+            elif curr_class == self.n_classes[val]:
                 if pval < 0.99:
                     colors.append(col['RX'])
                 else:

@@ -66,6 +66,7 @@ def parse_rst(path):
     n_classes = {}
     k         = 0
     i         = 0
+    bsa       = False
     path = '/'.join(path.split('/')[:-1]) + '/rst'
     for line in open(path):
         # get number of classes of sites
@@ -121,7 +122,7 @@ def parse_rst(path):
             # probabilities of categories 2a and 2b
             probs = probs[:-2] + [sum(probs[-2:])]
             sites[typ]['pv'][-1] = max(probs)
-            n_classes[typ] -= 1
+            bsa = True
             try:
                 sites[typ].setdefault('w' , []).append(
                     classes['foreground w'][classe - 1])
@@ -133,7 +134,7 @@ def parse_rst(path):
             del (sites [typ]['se'])
     return {'classes': classes,
             'sites' :sites,
-            'n_classes': k}
+            'n_classes': dict([(k, n_classes[k] - bsa) for k in n_classes])}
 
 
 def divide_data(pamout, model):
