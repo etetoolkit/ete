@@ -50,12 +50,16 @@ from subprocess import Popen, PIPE
 import sys
 import os
 import signal
+import time
 
 from warnings import warn
 
 
 DESC = ("Run/Load evolutionary tests, store results in a given oputput folder\n"
         "********************************************************************")
+
+def init_worker():
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
 
 def populate_args(evol_args_p):
     evol_args_p.formatter_class = RawTextHelpFormatter
@@ -386,8 +390,9 @@ def check_done(tree, modmodel, results):
 def run_all_models(tree, nodes, marks, args, **kwargs):
     ## TO BE IMPROVED: multiprocessing should be called in a simpler way
     print("\nRUNNING CODEML/SLR")
-    pool = Pool(args.maxcores or None)
+    pool = Pool(args.maxcores or None, init_worker)
     results = []
+    done = []
     for model in args.models:
         binary = (os.path.expanduser(args.slr_binary) if model == 'SLR'
                   else os.path.expanduser(args.codeml_binary))
@@ -404,16 +409,29 @@ def run_all_models(tree, nodes, marks, args, **kwargs):
                 print('          %s\n' % (
                     tree.write()))
                 results.append(pool.apply_async(
-                    local_run_model,
+                    local_run_model, callback=done.append,
                     args=(tree, modmodel, binary), kwds=kwargs))
         else:
             if check_done(tree, model, results):
                 continue
             results.append(pool.apply_async(
                 local_run_model, args=(tree, model, binary), kwds=kwargs))
+
+    # this is to catch keyboard interruption during the multiprocessing
+    while True:
+        try:
+            if len(done) == len(results) - 1:
+                break # all done
+            time.sleep(0.2)
+        except KeyboardInterrupt:
+            print("Caught KeyboardInterrupt, terminating workers")
+            pool.terminate()
+            pool.join()
+            exit()
+
     pool.close()
     pool.join()
-    
+
     models = {}    
     # join back results to tree
     for result in results:
@@ -604,8 +622,4 @@ def run(args):
                 'hist-%s_' % ('-'.join(site_models)) if site_models else '',
                 best)), histfaces=site_models,
                         layout=evol_clean_layout if args.clean_layout else None)
-
     
-    def raise_control_c(_signal, _frame):
-        raise KeyboardInterrupt
-    signal.signal(signal.SIGTERM, raise_control_c)
