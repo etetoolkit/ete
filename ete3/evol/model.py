@@ -120,7 +120,7 @@ class Model:
         str_site = ''
         str_line = '\n        %-12s: %s '
         if self.classes:
-            for t in [t for t in self.classes]:
+            for t in [t for t in sorted(self.classes)]:
                 str_site += str_line % (t, ' '.join(['%s%s=%-9s' % (t[0], j, i)\
                                                      for j, i in \
                                                      enumerate(self.classes[t])]

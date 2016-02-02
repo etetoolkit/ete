@@ -438,7 +438,7 @@ class EvolNode(PhyloNode):
         :returns: Model object
         '''
         try:
-            return self._models [modelname]
+            return self._models[modelname]
         except KeyError:
             warn("Model %s not found." % (modelname))
 

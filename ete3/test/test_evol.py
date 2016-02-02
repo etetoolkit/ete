@@ -203,20 +203,20 @@ class TestEvolEvolTree(unittest.TestCase):
                          '((Hylobates_lar,(Gorilla_gorilla,Pan_troglodytes)),Papio_cynocephalus);')
 
     def test_pickling(self):
-        tree = EvolTree (WRKDIR + 'tree.nw')
+        tree = EvolTree(WRKDIR + 'tree.nw')
         tree.workdir = DATAPATH + '/protamine/PRM1/paml/'
-        tree.link_to_alignment  (WRKDIR + 'alignments.fasta_ali')
-        tree.link_to_evol_model (WRKDIR + 'paml/M2/M2.out', 'M2.a')
+        tree.link_to_alignment (WRKDIR + 'alignments.fasta_ali')
+        tree.link_to_evol_model(WRKDIR + 'paml/M2/M2.out', 'M2.a')
         out = open('blip.pik', 'wb')
-        dump (tree, out)
+        dump(tree, out)
         out.close()
         out = open('blip.pik', 'rb')
-        tree2 = load (out)
+        tree2 = load(out)
         out.close()
         os.remove('blip.pik')
 
         tree2_output = hashlib.md5(str(tree2.get_evol_model('M2.a')).encode()).hexdigest()
-        tree_output = hashlib.md5(str(tree.get_evol_model('M2.a')).encode()).hexdigest()
+        tree_output  = hashlib.md5(str(tree.get_evol_model ('M2.a')).encode()).hexdigest()
         self.assertEqual(tree_output, tree2_output)
 
 
