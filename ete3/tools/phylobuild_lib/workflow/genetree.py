@@ -41,7 +41,7 @@ import re
 from subprocess import check_output
 import logging
 
-from ..task import TreeMerger, Msf, DummyTree
+from ..task import TreeMerger, Msf, DummyTree, ManualAlg
 from ..errors import DataError
 from ..utils import (GLOBALS, rpath, pjoin, pexist, generate_runid,
                                   DATATYPES, GAP_CHARS, DEBUG, SeqGroup, _min, _max, _std, _mean, _median)
@@ -259,8 +259,15 @@ def process_task(task, wkname, npr_conf, nodeid2info):
         nodeid2info[nodeid]["size"] = task.size
         nodeid2info[nodeid]["target_seqs"] = task.target_seqs
         nodeid2info[nodeid]["out_seqs"] = task.out_seqs
-        alg_task = alignerclass(nodeid, task.multiseq_file,
-                                seqtype, conf, alignerconf)
+        
+        if alignerclass:
+            alg_task = alignerclass(nodeid, task.multiseq_file,
+                                    seqtype, conf, alignerconf)
+        else:
+            log.warning("Skipping alignment phase, using original sequences")
+            alg_task = ManualAlg(nodeid, task.multiseq_file,
+                                 seqtype, conf, alignerconf)
+            
         alg_task.size = task.size
         new_tasks.append(alg_task)
 
