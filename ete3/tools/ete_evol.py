@@ -427,17 +427,19 @@ def run_all_models(tree, nodes, marks, args, **kwargs):
             results.append(pool.apply_async(
                 local_run_model, args=(tree, model, binary), kwds=kwargs))
 
-    # this is to catch keyboard interruption during the multiprocessing
-    while True:
-        try:
-            if len(done) == len(results) - 1:
-                break # all done
-            time.sleep(0.2)
-        except KeyboardInterrupt:
-            print("Caught KeyboardInterrupt, terminating workers")
-            pool.terminate()
-            pool.join()
-            exit(-1)
+
+    # # this is to catch keyboard interruption during the multiprocessing
+    # while True:
+    #     print (done, results)
+    #     try:
+    #         if len(done) == len(results):
+    #             break # all done
+    #         time.sleep(0.2)
+    #     except KeyboardInterrupt:
+    #         print("Caught KeyboardInterrupt, terminating workers")
+    #         pool.terminate()
+    #         pool.join()
+    #         exit(-1)
 
     pool.close()
     pool.join()
@@ -450,7 +452,7 @@ def run_all_models(tree, nodes, marks, args, **kwargs):
             models[model_obj.name] = path
         except AttributeError:
             path, model = result
-            models[result[1]] = os.path.join(result[0], 'out')
+            models[result[1]] = result[0]
     return models
 
 
