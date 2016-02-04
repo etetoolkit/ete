@@ -113,6 +113,10 @@ PARAMS_DESCRIPTION = {
     }
 
 AVAIL = {
+    'XX'    :  {'typ': 'Unknown'       , 'evol': 'User defined',
+                'exec': 'codeml',
+                'allow_mark': True,
+                'changes': []},
     'M0'    :  {'typ': 'null'       , 'evol': 'negative-selection',
                 'exec': 'codeml',
                 'allow_mark': False,

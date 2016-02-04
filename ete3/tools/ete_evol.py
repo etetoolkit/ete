@@ -48,7 +48,7 @@ from argparse import RawTextHelpFormatter
 from multiprocessing import Pool
 from subprocess import Popen, PIPE
 import sys
-import os
+import os, re
 import signal
 import time
 
@@ -175,6 +175,11 @@ Model name  Description                   Model kind
     params = "".join('[%4s] %-13s' % (PARAMS[p], p) + ('' if i % 4 else '\n')
                      for i, p in enumerate(sorted(PARAMS, key=lambda x: x.lower()), 1))
     
+    codeml_gr.add_argument('--codeml_config_file', dest="config_file", metavar="",
+                           default=None,
+                           help=("CodeML configuration file to be used instead"
+                                 "of default models provided\n"))
+
     codeml_gr.add_argument('--codeml_param', dest="params", metavar="",
                            nargs='+', default=[],
                            help=("extra parameter to be interpreted by CodeML "
@@ -201,6 +206,16 @@ Model name  Description                   Model kind
     exec_group.add_argument("--slr_binary", dest="slr_binary",
                             help="[%(default)s] path to Slr binary")
 
+def parse_config_file(fpath):
+    params = {}
+    for line in open(fpath):
+        try:
+            k, v = [i.strip() for i in line.split('*')[0].split('=')]
+        except ValueError:
+            continue
+        params[k] = v
+    return params
+
 def find_binary(binary):
     bin_path = os.path.join(os.path.split(which("ete3"))[0], "ete3_apps", "bin", binary)
 
@@ -213,7 +228,6 @@ def find_binary(binary):
     if not os.path.exists(bin_path):
         print(colorify("%s binary not found!" %binary, "lred"))
         bin_path = binary
-    print(bin_path)
     return bin_path
     
 def marking_layout(node):
@@ -398,6 +412,13 @@ def run_all_models(tree, nodes, marks, args, **kwargs):
                   else os.path.expanduser(args.codeml_binary))
         print('  - processing model %s' % model)
         if AVAIL[model.split('.')[0]]['allow_mark']:
+            if not marks:
+                if check_done(tree, model, results):
+                    continue
+                results.append(pool.apply_async(
+                    local_run_model, callback=done.append,
+                    args=(tree, model, binary), kwds=kwargs))
+                continue
             for mark, node in zip(marks, nodes):
                 print('       marking branches %s\n' %
                       ', '.join([str(m) for m in node]))
@@ -442,6 +463,20 @@ def run_all_models(tree, nodes, marks, args, **kwargs):
             path, model = result
             models[result[1]] = os.path.join(result[0], 'out')
     return models
+
+def reformat_nw(nw_path):
+    """
+    Clean tree file in order to make it look more like standard newick.
+    Replaces PAML marks to match NHX format
+    """
+    if os.path.exists(nw_path):
+        file_string = open(nw_path).read()
+        beg = file_string.index('(')
+        end = file_string.index(';')
+        file_string = re.sub("'(#[0-9]+)'", "[&&NHX:mark=\\1]",
+                             file_string[beg:end + 1])
+        return file_string
+    return nw_path
 
 def load_model(model_name, tree, path, **kwargs):
     model_obj = Model(model_name, tree, **kwargs)
@@ -530,8 +565,34 @@ def run(args):
     if isinstance(args.models, str):
         args.models = [args.models]
 
+    params = {}
+    if args.config_file:
+        if args.params:
+            warn('WARNING: Input codeml params will override '
+                 'the ones in the config file')
+        params = parse_config_file(args.config_file)
+        if 'seqfile' in params:
+            args.alg = os.path.join(os.path.split(args.config_file)[0],
+                                    params['seqfile'])
+            del(params['seqfile'])
+        if 'outfile' in params:
+            args.output = os.path.join(os.path.split(args.config_file)[0],
+                                       params['outfile'])
+            del(params['outfile'])
+        if 'treefile' in params:
+            # if args.src_tree_iterator:
+            #     warn('')
+            args.src_tree_iterator = [os.path.join(os.path.split(args.config_file)[0],
+                                                   params['treefile'])]
+            del(params['treefile'])
+        try:
+            if len(args.models) > 1:
+                raise Exception('ERROR: only 1 model name starting with XX. can be '
+                                'used with a configuration file.')
+        except TypeError:
+            args.models = ['XX.' + os.path.split(args.config_file)[1]]
     for nw in args.src_tree_iterator:
-        tree = EvolTree(nw, format=1)
+        tree = EvolTree(reformat_nw(nw), format=1)
         if args.output:
             tree.workdir = args.output
         if args.clear_all:
@@ -555,7 +616,7 @@ def run(args):
         # get the marks we will apply to different runs
         nodes, marks = get_marks_from_args(tree, args)
         # link to alignment
-        tree.link_to_alignment(args.alg)
+        tree.link_to_alignment(args.alg, alg_format='paml')
         # load models
         models = {}
         if args.prev_models:
@@ -563,7 +624,6 @@ def run(args):
                            for m in args.prev_models])
         # run models
         if args.models:
-            params = {}
             for p in args.params:
                 p, v = p.split(',')
                 try:
