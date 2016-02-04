@@ -48,7 +48,7 @@ from argparse import RawTextHelpFormatter
 from multiprocessing import Pool, Queue
 from subprocess import Popen, PIPE
 import sys
-import os
+import os, re
 import signal
 import time
 
@@ -86,7 +86,7 @@ Model name  Description                   Model kind
 
     evol_args.add_argument("--node_ids", dest="node_ids",
                            action='store_true',
-                           help=("Prints the correspondance between PAML "
+                           help=("Prints the correspondence between PAML "
                                  "node IDs and node names (ancestors will be "
                                  "displayed as list of descendants), and exit"))
 
@@ -129,7 +129,7 @@ Model name  Description                   Model kind
                            help=(
                                "mark branches of the input tree. PAML node IDs "
                                "or names can be used. \n - Names separated by "
-                               "single coma will be marked individualy. \n - "
+                               "single coma will be marked individually. \n - "
                                "Names separated by double comas will mark the "
                                "tree at the common ancestor. \n - Names "
                                "separated by "
@@ -167,12 +167,17 @@ Model name  Description                   Model kind
                                  "Will do a likelihood ratio tests between "
                                  "M1 and M2, and between any b_neut and b_free"
                                  "computed\n(only trees with identical marks "
-                                 "will be caompared)."))
+                                 "will be compared)."))
 
     codeml_gr = evol_args_p.add_argument_group("CODEML MODEL CONFIGURATION OPTIONS")
 
     params = "".join('[%4s] %-13s' % (PARAMS[p], p) + ('' if i % 4 else '\n')
                      for i, p in enumerate(sorted(PARAMS, key=lambda x: x.lower()), 1))
+    
+    codeml_gr.add_argument('--codeml_config_file', dest="config_file", metavar="",
+                           default=None,
+                           help=("CodeML configuration file to be used instead"
+                                 "of default models provided\n"))
 
     codeml_gr.add_argument('--codeml_param', dest="params", metavar="",
                            nargs='+', default=[],
@@ -199,6 +204,16 @@ Model name  Description                   Model kind
                             help="[%(default)s] path to CodeML binary")
     exec_group.add_argument("--slr_binary", dest="slr_binary",
                             help="[%(default)s] path to Slr binary")
+
+def parse_config_file(fpath):
+    params = {}
+    for line in open(fpath):
+        try:
+            k, v = [i.strip() for i in line.split('*')[0].split('=')]
+        except ValueError:
+            continue
+        params[k] = v
+    return params
 
 def find_binary(binary):
     bin_path = os.path.join(os.path.split(which("ete3"))[0], "ete3_apps", "bin", binary)
@@ -233,7 +248,8 @@ def marking_layout(node):
         mark = int(node.mark.replace('#', ''))
         node_color = color_cycle[(mark - 1)]
         node.img_style["fgcolor"] = node_color
-        label_face = TextFace(str(mark).center(3), fsize=12, fgcolor="white", ftype="courier")
+        label_face = TextFace(str(mark).center(3), fsize=12, fgcolor="white",
+                              ftype="courier")
         label_face.inner_background.color = node_color
     else:
         node_color = 'slateGrey'
@@ -247,9 +263,13 @@ def marking_layout(node):
     add_face_to_node(label_face, node, column=0, position="branch-right")
 
     if node.is_leaf():
-        add_face_to_node(TextFace(" %s" %node.name, ftype="courier", fgcolor="#666666"), node, column=10, position="branch-right")
+        add_face_to_node(TextFace(" %s" %node.name, ftype="courier",
+                                  fgcolor="#666666"), node, column=10,
+                         position="branch-right")
     else:
-        add_face_to_node(TextFace(" %s" %node.name, fsize=8, ftype="courier", fgcolor="#666666"), node, column=0, position="branch-top")
+        add_face_to_node(TextFace(" %s" %node.name, fsize=8, ftype="courier",
+                                  fgcolor="#666666"), node, column=0,
+                         position="branch-top")
 
 def clean_tree(tree):
     """
@@ -377,14 +397,15 @@ def local_run_model(tree, model_name, binary, ctrl_string='', **kwargs):
 
     proc = Popen("%s tmp.ctl" %binary, stdout=PIPE, shell=True)
 
-    run, err = proc.communicate()
-    if err is not None or b'error' in run or b'Error' in run:
-        warn("ERROR: inside codeml!!\n" + run)
+    job, err = proc.communicate()
+    if err is not None or b'error' in job or b'Error' in job:
+        warn("ERROR: inside CodeML!!\n" + job)
         return (None, None)
     os.chdir(hlddir)
     return os.path.join(fullpath,'out'), model_obj
 
-def check_done(tree, modmodel, results, done):
+
+def check_done(tree, modmodel, results):
     if os.path.exists(os.path.join(tree.workdir, modmodel, 'out')):
         if modmodel != "SLR":
             fhandler = open(os.path.join(tree.workdir, modmodel, 'out'))
@@ -393,15 +414,11 @@ def check_done(tree, modmodel, results, done):
                 print('Model %s already executed... SKIPPING' % modmodel)
                 results.append((os.path.join(tree.workdir, modmodel, "out"),
                                 modmodel))
-                done.append(True)
                 return True
         else:
             if os.path.getsize(os.path.join(tree.workdir, modmodel, 'out')) > 0:
                 print('Model %s already executed... SKIPPING' % modmodel)
-                done.append(True)
                 return True
-
-
     return False
 
 def run_all_models(tree, nodes, marks, args, **kwargs):
@@ -409,44 +426,35 @@ def run_all_models(tree, nodes, marks, args, **kwargs):
     print("\nRunning CodeML/Slr (%s CPUs)" %args.maxcores)
     pool = Pool(args.maxcores or None, init_worker)
     results = []
-    done = []
-
     for model in args.models:
         binary = (os.path.expanduser(args.slr_binary) if model == 'SLR'
                   else os.path.expanduser(args.codeml_binary))
         print('  - processing model %s' % model)
         if AVAIL[model.split('.')[0]]['allow_mark']:
+            if not marks:
+                if check_done(tree, model, results):
+                    continue
+                results.append(pool.apply_async(
+                    local_run_model, args=(tree, model, binary), kwds=kwargs))
+                continue
             for mark, node in zip(marks, nodes):
                 print('       marking branches %s\n' %
                       ', '.join([str(m) for m in node]))
                 clean_tree(tree)
                 tree.mark_tree(node, marks=mark)
                 modmodel = model + '.' + '_'.join([str(n) for n in node])
-                if check_done(tree, modmodel, results, done):
+                if check_done(tree, modmodel, results):
                     continue
                 print('          %s\n' % (
                     tree.write()))
                 results.append(pool.apply_async(
-                    local_run_model, callback=done.append,
-                    args=(tree, modmodel, binary), kwds=kwargs))
+                    local_run_model, args=(tree, modmodel, binary), kwds=kwargs))
         else:
-            if check_done(tree, model, results, done):
+            if check_done(tree, model, results):
                 continue
             results.append(pool.apply_async(
                 local_run_model, args=(tree, model, binary), kwds=kwargs))
 
-    # this is to catch keyboard interruption during the multiprocessing
-    # while True:
-    #     print (done, results)
-    #     try:
-    #         if len(done) == len(results) -1:
-    #             break # all done
-    #         time.sleep(0.2)
-    #     except KeyboardInterrupt:
-    #         print("Caught KeyboardInterrupt, terminating workers")
-    #         pool.terminate()
-    #         pool.join()
-    #         exit(-1)
     pool.close()
     pool.join()
 
@@ -461,15 +469,25 @@ def run_all_models(tree, nodes, marks, args, **kwargs):
             models[result[1]] = result[0]
     return models
 
+def reformat_nw(nw_path):
+    """
+    Clean tree file in order to make it look more like standard newick.
+    Replaces PAML marks to match NHX format
+    """
+    if os.path.exists(nw_path):
+        file_string = open(nw_path).read()
+        beg = file_string.index('(')
+        end = file_string.index(';')
+        file_string = re.sub("'(#[0-9]+)'", "[&&NHX:mark=\\1]",
+                             file_string[beg:end + 1])
+        return file_string
+    return nw_path
 
 ####### PROPOSAL FOR A BETTER MULTIPROCESSING ############
 results_queue = Queue()
 def run_all_models_new(tree, nodes, marks, args, **kwargs):
-    ## TO BE IMPROVED: multiprocessing should be called in a simpler way
-
     pool = Pool(args.maxcores or None)
     results = []
-    done = []
     commands = []
     for model in args.models:
         binary = args.slr_binary if model == 'SLR' else args.codeml_binary
@@ -478,12 +496,12 @@ def run_all_models_new(tree, nodes, marks, args, **kwargs):
                 clean_tree(tree)
                 tree.mark_tree(node, marks=mark)
                 modmodel = model + '.' + '_'.join([str(n) for n in node])
-                if check_done(tree, modmodel, results, done):
+                if check_done(tree, modmodel, results):
                     continue
                 else:
                     commands.append((tree, modmodel, binary, kwargs))
         else:
-            if check_done(tree, model, results, done):
+            if check_done(tree, model, results):
                 continue
             else:
                 commands.append((tree, model, binary, kwargs))
@@ -532,11 +550,11 @@ def local_run_model_new(arguments,  ctrl_string=''):
     hlddir = os.getcwd()
     os.chdir(fullpath)
 
-    proc = Popen([binary, 'tmp.ctl'], stdout=PIPE, shell=True)
+    proc = Popen("%s tmp.ctl" %binary, stdout=PIPE, shell=True)
 
-    run, err = proc.communicate()
-    if err is not None or b'error' in run or b'Error' in run:
-        raise ValueError("ERROR: inside codeml!!\n" + run)
+    job, err = proc.communicate()
+    if err is not None or b'error' in job or b'Error' in job:
+        raise ValueError("ERROR: inside codeml!!\n" + job)
 
     results_queue.put((os.path.join(fullpath,'out'), model_obj.name))
 #############
@@ -605,12 +623,18 @@ def run(args):
 
     binary  = os.path.expanduser(args.slr_binary)
     if not os.path.exists(binary):
-        print("Warning: SLR binary does not exist at %s"%args.slr_binary, file=sys.stderr)
-        print("         provide another route with --slr_binary, or install it by executing 'ete3 install-external-tools paml'", file=sys.stderr)
+        print("Warning: SLR binary does not exist at %s" % args.slr_binary,
+              file=sys.stderr)
+        print("         provide another route with --slr_binary, or install "
+              "it by executing 'ete3 install-external-tools paml'",
+              file=sys.stderr)
     binary  = os.path.expanduser(args.codeml_binary)
     if not os.path.exists(binary):
-        print("Warning: CodeML binary does not exist at %s"%args.codeml_binary, file=sys.stderr)
-        print("         provide another route with --codeml_binary, or install it by executing 'ete3 install-external-tools paml'", file=sys.stderr)
+        print("Warning: CodeML binary does not exist at %s" % args.codeml_binary,
+              file=sys.stderr)
+        print("         provide another route with --codeml_binary, or install "
+              "it by executing 'ete3 install-external-tools paml'",
+              file=sys.stderr)
 
     # more help
     # TODO: move this to help section
@@ -628,8 +652,42 @@ def run(args):
     if isinstance(args.models, str):
         args.models = [args.models]
 
+    params = {}
+    if args.config_file:
+        if args.params:
+            warn('WARNING: input CodeML parameters from configuration file will'
+                 ' be overridden by the ones in the command line')
+        params = parse_config_file(args.config_file)
+        if 'seqfile' in params:
+            args.alg = os.path.join(os.path.split(args.config_file)[0],
+                                    params['seqfile'])
+            del(params['seqfile'])
+        if 'outfile' in params:
+            if not args.output:
+                args.output = os.path.join(os.path.split(args.config_file)[0],
+                                           params['outfile'])
+            else:
+                warn('WARNING: input CodeML output file from configuration file'
+                     ' will be overridden by the one in the command line')
+            del(params['outfile'])
+        if 'treefile' in params:
+            if not args.src_trees:
+                args.src_tree_iterator = [os.path.join(
+                    os.path.split(args.config_file)[0],
+                    params['treefile'])]
+            else:
+                args.src_tree_iterator = list(args.src_tree_iterator)
+                warn('WARNING: input CodeML tree file from configuration file'
+                     ' will be overridden by the one in the command line')
+            del(params['treefile'])
+        try:
+            if len(args.models) > 1 or not args.models[0].startswith('XX.'):
+                raise Exception('ERROR: only 1 model name starting with "XX." '
+                                'can be used with a configuration file.')
+        except TypeError:
+            args.models = ['XX.' + os.path.split(args.config_file)[1]]
     for nw in args.src_tree_iterator:
-        tree = EvolTree(nw, format=1)
+        tree = EvolTree(reformat_nw(nw), format=1)
         if args.output:
             tree.workdir = args.output
         if args.clear_all:
@@ -653,7 +711,7 @@ def run(args):
         # get the marks we will apply to different runs
         nodes, marks = get_marks_from_args(tree, args)
         # link to alignment
-        tree.link_to_alignment(args.alg)
+        tree.link_to_alignment(args.alg, alg_format='paml')
         # load models
         models = {}
         if args.prev_models:
@@ -661,7 +719,6 @@ def run(args):
                            for m in args.prev_models])
         # run models
         if args.models:
-            params = {}
             for p in args.params:
                 p, v = p.split(',')
                 try:

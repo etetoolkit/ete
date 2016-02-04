@@ -90,4 +90,5 @@ def parse_slr (slrout):
         if not seN == '':
             SLR['se'].append ([float (SLR['w'][-1]) - float (line.split()[seN]),
                                float (line.split()[seP]) - float (SLR['w'][-1])])
-    return {'sites': {'SLR': SLR}}
+    return {'sites': {'SLR': SLR},
+            'n_classes': {'SLR': 8}}

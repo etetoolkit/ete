@@ -288,7 +288,7 @@ class Model:
         if not 'site' in self.properties['typ']:
             raise Exception('ERROR: histogram are only for sit and '
                             'branch-site models.')
-        ps_model = self.properties['evol'] == 'positive-selection'
+        ps_model = 'positive' in self.properties['evol']
         colors = []
         for pval, curr_class in zip(self.sites[val]['pv'],
                                     self.sites[val]['class']):
