@@ -356,7 +356,7 @@ def local_run_model(tree, model_name, binary, ctrl_string='', **kwargs):
     proc = None
     signal.signal(signal.SIGINT, clean_exit)
 
-    
+
     model_obj = Model(model_name, tree, **kwargs)
     fullpath = os.path.join (tree.workdir, model_obj.name)
     os.system("mkdir -p %s" % fullpath)
@@ -385,16 +385,23 @@ def local_run_model(tree, model_name, binary, ctrl_string='', **kwargs):
     return os.path.join(fullpath,'out'), model_obj
 
 def check_done(tree, modmodel, results, done):
-    if (os.path.isdir(os.path.join(tree.workdir, modmodel)) and
-        os.path.exists(os.path.join(tree.workdir, modmodel, 'out'))):
-        fhandler = open(os.path.join(tree.workdir, modmodel, 'out'))
-        fhandler.seek(-50, 2)
-        if 'Time used' in fhandler.read():
-            warn('Model %s already executed... skipping' % modmodel)
-            results.append((os.path.join(tree.workdir, modmodel, "out"),
-                            modmodel))
-            done.append(True)
-            return True
+    if os.path.exists(os.path.join(tree.workdir, modmodel, 'out')):
+        if modmodel != "SLR":
+            fhandler = open(os.path.join(tree.workdir, modmodel, 'out'))
+            fhandler.seek(-50, 2)
+            if 'Time used' in fhandler.read():
+                print('Model %s already executed... SKIPPING' % modmodel)
+                results.append((os.path.join(tree.workdir, modmodel, "out"),
+                                modmodel))
+                done.append(True)
+                return True
+        else:
+            if os.path.getsize(os.path.join(tree.workdir, modmodel, 'out')) > 0:
+                print('Model %s already executed... SKIPPING' % modmodel)
+                done.append(True)
+                return True
+
+
     return False
 
 def run_all_models(tree, nodes, marks, args, **kwargs):
@@ -403,6 +410,7 @@ def run_all_models(tree, nodes, marks, args, **kwargs):
     pool = Pool(args.maxcores or None, init_worker)
     results = []
     done = []
+
     for model in args.models:
         binary = (os.path.expanduser(args.slr_binary) if model == 'SLR'
                   else os.path.expanduser(args.codeml_binary))
@@ -427,12 +435,11 @@ def run_all_models(tree, nodes, marks, args, **kwargs):
             results.append(pool.apply_async(
                 local_run_model, args=(tree, model, binary), kwds=kwargs))
 
-
-    # # this is to catch keyboard interruption during the multiprocessing
+    # this is to catch keyboard interruption during the multiprocessing
     # while True:
     #     print (done, results)
     #     try:
-    #         if len(done) == len(results):
+    #         if len(done) == len(results) -1:
     #             break # all done
     #         time.sleep(0.2)
     #     except KeyboardInterrupt:
@@ -440,7 +447,6 @@ def run_all_models(tree, nodes, marks, args, **kwargs):
     #         pool.terminate()
     #         pool.join()
     #         exit(-1)
-
     pool.close()
     pool.join()
 
