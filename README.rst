@@ -1,8 +1,8 @@
 README
 =======
 
-.. image:: https://travis-ci.org/jhcepas/ete.svg?branch=master
-   :target: https://travis-ci.org/jhcepas/ete
+.. image:: https://travis-ci.org/etetoolkit/ete.svg?branch=master
+   :target: https://travis-ci.org/etetoolkit/ete
 
 .. image:: https://badges.gitter.im/Join%20Chat.svg
    :alt: Join the chat at https://gitter.im/jhcepas/ete

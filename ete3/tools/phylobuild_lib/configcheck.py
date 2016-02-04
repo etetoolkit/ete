@@ -87,25 +87,14 @@ def build_genetree_workflow(wname):
     return workflow
 
 def list_workflows(config):
-    wtype_legend = {
-        }
 
-    avail_meta = sorted(["%s (% 3s threads)" %(k.ljust(40), len(v)) for k,
-                         v in six.iteritems(config.get('supermatrix_meta_workflow', {}))])
+    print()
+    avail_meta = [(k, config["workflow_desc"].get(k, ""), len(v)) for k,v in six.iteritems(config.get('supermatrix_meta_workflow', {}))]
+    print_table(avail_meta, max_col_width=120, header=["Worflow name", "Description", "Thread(s)"], title="Supermatrix Workflows")
+    print()
+    avail_meta = [(k, config["workflow_desc"].get(k, ""), len(v)) for k,v in six.iteritems(config.get('genetree_meta_workflow', {}))]
+    print_table(avail_meta, max_col_width=120, header=["Worflow name", "Description", "Thread(s)"], title="GeneTree Workflows")
 
-    print('=' *80)
-    print('Available supermatrix (meta)-workflows'.center(80))
-    print('=' *80)
-    print(('  %s' %'\n  '.join(avail_meta)))
-
-    
-    avail_meta = sorted(["%s (% 3s threads)" %(k.ljust(40), len(v)) for k,
-                         v in six.iteritems(config.get('genetree_meta_workflow', {}))])
-
-    print('=' *80)
-    print('Available genetree (meta)-workflows'.center(80))
-    print('=' *80)
-    print(('  %s' %'\n  '.join(avail_meta)))
 
 
 def list_apps(config, target_apps = None):
@@ -119,7 +108,7 @@ def list_apps(config, target_apps = None):
                 continue
                         
         avail_blocks = [[blockname, block["_app"], block.get("_desc", "")] for blockname, block in config.items() if block.get("_app") in validapps]
-        print_table(avail_blocks, header=["name", "app type", "desc."], max_col_width=60, title=appname)
+        print_table(avail_blocks, header=["name", "app type", "desc."], max_col_width=120, title=appname)
         print()
 
 def block_detail(block_name, config, color=True):
