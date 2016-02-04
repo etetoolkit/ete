@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 # #START_LICENSE###########################################################
 #
 #
@@ -37,6 +36,7 @@ from __future__ import absolute_import
 #
 #
 # #END_LICENSE#############################################################
+from __future__ import absolute_import
 import os
 import sys
 import re
@@ -49,6 +49,7 @@ from ..master_task import TreeTask
 from ..master_job import Job
 from ..utils import (basename, GLOBALS, DATATYPES)
 from .. import db
+
 
 __all__ = ["DummyTree"]
 
