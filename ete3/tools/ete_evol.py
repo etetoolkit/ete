@@ -682,9 +682,9 @@ def run(args):
                      ' will be overridden by the one in the command line')
             del(params['treefile'])
         try:
-            if len(args.models) > 1:
-                raise Exception('ERROR: only 1 model name starting with XX. can be '
-                                'used with a configuration file.')
+            if len(args.models) > 1 or not args.models[0].startswith('XX.'):
+                raise Exception('ERROR: only 1 model name starting with "XX." '
+                                'can be used with a configuration file.')
         except TypeError:
             args.models = ['XX.' + os.path.split(args.config_file)[1]]
     for nw in args.src_tree_iterator:
