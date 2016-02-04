@@ -444,7 +444,7 @@ def run_all_models(tree, nodes, marks, args, **kwargs):
 
     models = {}
     # join back results to tree
-    for path, model_name in results:
+    for result in results:
         try:
             path, model_obj = result.get()
             models[model_obj.name] = path
