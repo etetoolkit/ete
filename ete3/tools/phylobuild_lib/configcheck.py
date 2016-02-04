@@ -96,7 +96,6 @@ def list_workflows(config):
     print_table(avail_meta, fix_col_width=[40, 50, 10], header=["Worflow name", "Description", "Thread(s)"], title="GeneTree Workflows")
 
 
-
 def list_apps(config, target_apps = None):
     for appname, validapps in APPTYPES.items():
         if target_apps:

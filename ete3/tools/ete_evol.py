@@ -45,7 +45,7 @@ from .. import EvolTree, random_color, add_face_to_node, TextFace, TreeStyle
 from ..treeview.layouts import evol_clean_layout
 from ..evol import Model
 from argparse import RawTextHelpFormatter
-from multiprocessing import Pool
+from multiprocessing import Pool, Queue
 from subprocess import Popen, PIPE
 import sys
 import os
@@ -53,7 +53,6 @@ import signal
 import time
 
 from warnings import warn
-
 
 DESC = ("Run/Load evolutionary tests, store results in a given oputput folder\n"
         "********************************************************************")
@@ -174,7 +173,7 @@ Model name  Description                   Model kind
 
     params = "".join('[%4s] %-13s' % (PARAMS[p], p) + ('' if i % 4 else '\n')
                      for i, p in enumerate(sorted(PARAMS, key=lambda x: x.lower()), 1))
-    
+
     codeml_gr.add_argument('--codeml_param', dest="params", metavar="",
                            nargs='+', default=[],
                            help=("extra parameter to be interpreted by CodeML "
@@ -183,7 +182,7 @@ Model name  Description                   Model kind
                                  "values]:\n" + params +
                                  "\nexample: verbose,2 omega,1"))
 
-    codeml_gr.add_argument('--codeml_help', action='store_true', dest='super_help', 
+    codeml_gr.add_argument('--codeml_help', action='store_true', dest='super_help',
                            help=("show detailed description on codeml "
                                  "parameters for model configuration "
                                  "and exit."))
@@ -195,7 +194,7 @@ Model name  Description                   Model kind
                             " than 1, tasks with multi-threading"
                             " capabilities will enabled (if 0 all available)"
                             " cores will be used")
-    
+
     exec_group.add_argument("--codeml_binary", dest="codeml_binary",
                             help="[%(default)s] path to CodeML binary")
     exec_group.add_argument("--slr_binary", dest="slr_binary",
@@ -206,16 +205,16 @@ def find_binary(binary):
 
     if not os.path.exists(bin_path):
         bin_path = os.path.expanduser("~/.etetoolkit/ext_apps-latest/bin/"+binary)
-        
+
     if not os.path.exists(bin_path):
         bin_path = which(binary)
 
     if not os.path.exists(bin_path):
         print(colorify("%s binary not found!" %binary, "lred"))
         bin_path = binary
-    print(bin_path)
+    print("Using: %s" %bin_path)
     return bin_path
-    
+
 def marking_layout(node):
     '''
     layout for interactively marking CodemlTree
@@ -225,33 +224,33 @@ def marking_layout(node):
     #                u'#777777', u'#FBC15E', u'#8EBA42',
     #                u'#FFB5B8']
     node.img_style["size"] = 0
-    
+
     if hasattr(node, "collapsed"):
         if node.collapsed == 1:
             node.img_style["draw_descendants"]= False
-            
+
     if hasattr(node, 'mark') and node.mark != '':
-        mark = int(node.mark.replace('#', ''))        
+        mark = int(node.mark.replace('#', ''))
         node_color = color_cycle[(mark - 1)]
         node.img_style["fgcolor"] = node_color
         label_face = TextFace(str(mark).center(3), fsize=12, fgcolor="white", ftype="courier")
-        label_face.inner_background.color = node_color              
+        label_face.inner_background.color = node_color
     else:
         node_color = 'slateGrey'
         label_face = TextFace("   ", fsize=12, fgcolor="white", ftype="courier")
         label_face.inner_background.color = node_color
-        
+
     label_face.inner_border.width = 1
     label_face.margin_top = 2
     label_face.margin_bottom = 2
-    
+
     add_face_to_node(label_face, node, column=0, position="branch-right")
-    
+
     if node.is_leaf():
         add_face_to_node(TextFace(" %s" %node.name, ftype="courier", fgcolor="#666666"), node, column=10, position="branch-right")
     else:
-        add_face_to_node(TextFace(" %s" %node.name, fsize=8, ftype="courier", fgcolor="#666666"), node, column=0, position="branch-top")        
-    
+        add_face_to_node(TextFace(" %s" %node.name, fsize=8, ftype="courier", fgcolor="#666666"), node, column=0, position="branch-top")
+
 def clean_tree(tree):
     """
     remove marks from tree
@@ -365,25 +364,26 @@ def local_run_model(tree, model_name, binary, ctrl_string='', **kwargs):
         open(fullpath+'/tmp.ctl', 'w').write(ctrl_string)
     hlddir = os.getcwd()
     os.chdir(fullpath)
-        
-    proc = Popen([binary, 'tmp.ctl'], stdout=PIPE)
+
+    proc = Popen([binary, 'tmp.ctl'], stdout=PIPE, shell=True)
 
     run, err = proc.communicate()
     if err is not None or b'error' in run or b'Error' in run:
         warn("ERROR: inside codeml!!\n" + run)
-        return (None, None)    
+        return (None, None)
     os.chdir(hlddir)
     return os.path.join(fullpath,'out'), model_obj
 
-def check_done(tree, modmodel, results):
+def check_done(tree, modmodel, results, done):
     if (os.path.isdir(os.path.join(tree.workdir, modmodel)) and
         os.path.exists(os.path.join(tree.workdir, modmodel, 'out'))):
         fhandler = open(os.path.join(tree.workdir, modmodel, 'out'))
         fhandler.seek(-50, 2)
         if 'Time used' in fhandler.read():
-            warn('Model %s already runned... skipping' % modmodel)
-            results.append((os.path.join(tree.workdir, modmodel),
+            warn('Model %s already executed... skipping' % modmodel)
+            results.append((os.path.join(tree.workdir, modmodel, "out"),
                             modmodel))
+            done.append(True)
             return True
     return False
 
@@ -404,7 +404,7 @@ def run_all_models(tree, nodes, marks, args, **kwargs):
                 clean_tree(tree)
                 tree.mark_tree(node, marks=mark)
                 modmodel = model + '.' + '_'.join([str(n) for n in node])
-                if check_done(tree, modmodel, results):
+                if check_done(tree, modmodel, results, done):
                     continue
                 print('          %s\n' % (
                     tree.write()))
@@ -412,7 +412,7 @@ def run_all_models(tree, nodes, marks, args, **kwargs):
                     local_run_model, callback=done.append,
                     args=(tree, modmodel, binary), kwds=kwargs))
         else:
-            if check_done(tree, model, results):
+            if check_done(tree, model, results, done):
                 continue
             results.append(pool.apply_async(
                 local_run_model, args=(tree, model, binary), kwds=kwargs))
@@ -427,14 +427,14 @@ def run_all_models(tree, nodes, marks, args, **kwargs):
             print("Caught KeyboardInterrupt, terminating workers")
             pool.terminate()
             pool.join()
-            exit()
+            exit(-1)
 
     pool.close()
     pool.join()
 
-    models = {}    
+    models = {}
     # join back results to tree
-    for result in results:
+    for path, model_name in results:
         try:
             path, model_obj = result.get()
             models[model_obj.name] = path
@@ -442,6 +442,86 @@ def run_all_models(tree, nodes, marks, args, **kwargs):
             path, model = result
             models[result[1]] = os.path.join(result[0], 'out')
     return models
+
+
+####### PROPOSAL FOR A BETTER MULTIPROCESSING ############
+results_queue = Queue()
+def run_all_models_new(tree, nodes, marks, args, **kwargs):
+    ## TO BE IMPROVED: multiprocessing should be called in a simpler way
+
+    pool = Pool(args.maxcores or None)
+    results = []
+    done = []
+    commands = []
+    for model in args.models:
+        binary = args.slr_binary if model == 'SLR' else args.codeml_binary
+        if AVAIL[model.split('.')[0]]['allow_mark']:
+            for mark, node in zip(marks, nodes):
+                clean_tree(tree)
+                tree.mark_tree(node, marks=mark)
+                modmodel = model + '.' + '_'.join([str(n) for n in node])
+                if check_done(tree, modmodel, results, done):
+                    continue
+                else:
+                    commands.append((tree, modmodel, binary, kwargs))
+        else:
+            if check_done(tree, model, results, done):
+                continue
+            else:
+                commands.append((tree, model, binary, kwargs))
+    print("Running CODEML/SLR (%s CPUs)" %(args.maxcores))
+    for c in commands:
+        print("  %s, %s" %(c[1], kwargs))
+
+    pool.map(local_run_model_new, commands)
+    models = {}
+    while not results_queue.empty():
+        path, model_name = results_queue.get()
+        models[model_name] = path
+    return models
+
+def local_run_model_new(arguments,  ctrl_string=''):
+    def clean_exit(a, b):
+        print(a, b)
+        if proc:
+            print("Killing %s" %proc)
+            proc.kill(-9)
+        sys.exit(a, b)
+    proc = None
+    signal.signal(signal.SIGINT, clean_exit)
+
+    tree, model_name, binary, kwargs = arguments
+
+    model_obj = Model(model_name, tree, **kwargs)
+
+    fullpath = os.path.join (tree.workdir, model_obj.name)
+
+    os.system("mkdir -p %s" % fullpath)
+
+    # write tree file
+    tree._write_algn(fullpath + '/algn')
+    if model_obj.properties['exec'] == 'Slr':
+        tree.write(outfile=fullpath+'/tree', format = (11))
+    else:
+        tree.write(outfile=fullpath+'/tree',
+                   format = (10 if model_obj.properties['allow_mark'] else 9))
+
+    # write algn file
+    if ctrl_string == '':
+        ctrl_string = model_obj.get_ctrl_string(fullpath+'/tmp.ctl')
+    else:
+        open(fullpath+'/tmp.ctl', 'w').write(ctrl_string)
+    hlddir = os.getcwd()
+    os.chdir(fullpath)
+
+    proc = Popen([binary, 'tmp.ctl'], stdout=PIPE, shell=True)
+
+    run, err = proc.communicate()
+    if err is not None or b'error' in run or b'Error' in run:
+        raise ValueError("ERROR: inside codeml!!\n" + run)
+
+    results_queue.put((os.path.join(fullpath,'out'), model_obj.name))
+#############
 
 def load_model(model_name, tree, path, **kwargs):
     model_obj = Model(model_name, tree, **kwargs)
@@ -488,7 +568,7 @@ def write_results(tree, args):
                     continue
             results[(null, altn)] = tree.get_most_likely(altn, null)
             bests.append(null if results[(null, altn)] > 0.05 else altn)
-            
+
             tests += ('%25s |%25s | %f%s\n' % (
                 null, altn, results[(null, altn)],
                 '**' if results[(null, altn)] < 0.01 else '*'
@@ -504,13 +584,13 @@ def run(args):
         args.slr_binary = find_binary("Slr")
     if not args.codeml_binary:
         args.codeml_binary = find_binary("codeml")
-    
+
     binary  = os.path.expanduser(args.slr_binary)
-    if not os.path.exists(binary):        
+    if not os.path.exists(binary):
         print("Warning: SLR binary does not exist at %s"%args.slr_binary, file=sys.stderr)
         print("         provide another route with --slr_binary, or install it by executing 'ete3 install-external-tools paml'", file=sys.stderr)
     binary  = os.path.expanduser(args.codeml_binary)
-    if not os.path.exists(binary):        
+    if not os.path.exists(binary):
         print("Warning: CodeML binary does not exist at %s"%args.codeml_binary, file=sys.stderr)
         print("         provide another route with --codeml_binary, or install it by executing 'ete3 install-external-tools paml'", file=sys.stderr)
 
@@ -524,7 +604,7 @@ def run(args):
                 PARAMS_DESCRIPTION[key][i:i + 70] + '\n' + ' ' * 18
                 for i in range(0, len(PARAMS_DESCRIPTION[key]), 70)])))
         os.system('echo "%s" | less' % help_str)
-        exit()
+        return
 
     # in case we only got 1 model :(
     if isinstance(args.models, str):
@@ -578,9 +658,9 @@ def run(args):
         # link models to tree
         params = {}
         for model in models:
-            load_model(model, tree, models[model], **params)        
+            load_model(model, tree, models[model], **params)
         # print results
-        bests = write_results(tree, args)            
+        bests = write_results(tree, args)
         # apply evol model (best branch model?) to tree for display
         # TODO: best needs to be guessed from LRT
         try:
@@ -622,4 +702,4 @@ def run(args):
                 'hist-%s_' % ('-'.join(site_models)) if site_models else '',
                 best)), histfaces=site_models,
                         layout=evol_clean_layout if args.clean_layout else None)
-    
+
