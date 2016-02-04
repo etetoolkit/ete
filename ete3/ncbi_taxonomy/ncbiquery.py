@@ -58,6 +58,7 @@ import math
 import tarfile
 import six
 from six.moves import map
+import warnings
 
 
 c = None
@@ -194,8 +195,18 @@ class NCBITaxa(object):
         result = self.db.execute('SELECT track FROM species WHERE taxid=%s' %taxid)
         raw_track = result.fetchone()
         if not raw_track:
-            raw_track = ["1"]
-            #raise ValueError("%s taxid not found" %taxid)
+            #perhaps is an obsolete taxid
+            _, merged_conversion = self._translate_merged([taxid])
+            if taxid in merged_conversion:
+                result = self.db.execute('SELECT track FROM species WHERE taxid=%s' %merged_conversion[taxid])
+                raw_track = result.fetchone()
+            # if not raise error
+            if not raw_track:
+                #raw_track = ["1"]
+                raise ValueError("%s taxid not found" %taxid)
+            else:
+                warnings.warn("taxid %s was translated into %s" %(taxid, merged_conversion[taxid]))
+                
         track = list(map(int, raw_track[0].split(",")))
         return list(reversed(track))
 
