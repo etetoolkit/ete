@@ -424,7 +424,7 @@ def run_all_models(tree, nodes, marks, args, **kwargs):
         print('  - processing model %s' % model)
         if AVAIL[model.split('.')[0]]['allow_mark']:
             if not marks:
-                if check_done(tree, model, results):
+                if check_done(tree, model, results, done):
                     continue
                 results.append(pool.apply_async(
                     local_run_model, callback=done.append,
@@ -660,22 +660,30 @@ def run(args):
     params = {}
     if args.config_file:
         if args.params:
-            warn('WARNING: Input codeml params will override '
-                 'the ones in the config file')
+            warn('WARNING: input CodeML parameters from configuration file will'
+                 ' be overridden by the ones in the command line')
         params = parse_config_file(args.config_file)
         if 'seqfile' in params:
             args.alg = os.path.join(os.path.split(args.config_file)[0],
                                     params['seqfile'])
             del(params['seqfile'])
         if 'outfile' in params:
-            args.output = os.path.join(os.path.split(args.config_file)[0],
-                                       params['outfile'])
+            if not args.output:
+                args.output = os.path.join(os.path.split(args.config_file)[0],
+                                           params['outfile'])
+            else:
+                warn('WARNING: input CodeML output file from configuration file'
+                     ' will be overridden by the one in the command line')
             del(params['outfile'])
         if 'treefile' in params:
-            # if args.src_tree_iterator:
-            #     warn('')
-            args.src_tree_iterator = [os.path.join(os.path.split(args.config_file)[0],
-                                                   params['treefile'])]
+            if not args.src_trees:
+                args.src_tree_iterator = [os.path.join(
+                    os.path.split(args.config_file)[0],
+                    params['treefile'])]
+            else:
+                args.src_tree_iterator = list(args.src_tree_iterator)
+                warn('WARNING: input CodeML tree file from configuration file'
+                     ' will be overridden by the one in the command line')
             del(params['treefile'])
         try:
             if len(args.models) > 1:
@@ -716,7 +724,6 @@ def run(args):
                            for m in args.prev_models])
         # run models
         if args.models:
-            params = {}
             for p in args.params:
                 p, v = p.split(',')
                 try:
