@@ -22,7 +22,7 @@ def get_out_files(outdir, workflow, fasta):
     return clean_tree, extended_tree, alg_used, alg, alg_trimmed, img, cmd    
     
 
-class Test_ete_build(unittest.TestCase):
+class Test_ete_build_manual_alg(unittest.TestCase):
     def test_01_sptree_worflow(self):
         gene_wkname = 'clustalo_default-trimal01-none-none'
         for wkname in "brh_cog_all-alg_concat_default-raxml_default", "brh_cog_all-alg_concat_default-fasttree":
