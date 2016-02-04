@@ -347,6 +347,16 @@ def local_run_model(tree, model_name, binary, ctrl_string='', **kwargs):
     '''
     local verison of model runner. Needed for multiprocessing pickling...
     '''
+    def clean_exit(a, b):
+        if proc:
+            print("Killing process %s" %proc)
+            proc.terminate()
+            proc.kill(-9)
+        sys.exit(a, b)
+    proc = None
+    signal.signal(signal.SIGINT, clean_exit)
+
+    
     model_obj = Model(model_name, tree, **kwargs)
     fullpath = os.path.join (tree.workdir, model_obj.name)
     os.system("mkdir -p %s" % fullpath)
@@ -365,7 +375,7 @@ def local_run_model(tree, model_name, binary, ctrl_string='', **kwargs):
     hlddir = os.getcwd()
     os.chdir(fullpath)
 
-    proc = Popen([binary, 'tmp.ctl'], stdout=PIPE, shell=True)
+    proc = Popen("%s tmp.ctl" %binary, stdout=PIPE, shell=True)
 
     run, err = proc.communicate()
     if err is not None or b'error' in run or b'Error' in run:
@@ -389,7 +399,7 @@ def check_done(tree, modmodel, results, done):
 
 def run_all_models(tree, nodes, marks, args, **kwargs):
     ## TO BE IMPROVED: multiprocessing should be called in a simpler way
-    print("\nRUNNING CODEML/SLR")
+    print("\nRunning CodeML/Slr (%s CPUs)" %args.maxcores)
     pool = Pool(args.maxcores or None, init_worker)
     results = []
     done = []
