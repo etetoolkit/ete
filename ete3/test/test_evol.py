@@ -184,6 +184,7 @@ class TestEvolEvolTree(unittest.TestCase):
             tree = EvolTree('((seq1,seq2),seq3);')
             tree.link_to_alignment('>seq1\nCTGATTCTT\n>seq2\nCTGATTCTT\n>seq3\nATGATTCTT\n')
             tree.run_model('SLR')
+            print(tree.get_evol_model('SLR').run)
             self.assert_(b'Sitewise Likelihood R' in tree.get_evol_model('SLR').run)
             self.assert_(b'Positively selected s' in tree.get_evol_model('SLR').run)
             self.assert_(b'Conserved sites' in tree.get_evol_model('SLR').run)
@@ -191,7 +192,7 @@ class TestEvolEvolTree(unittest.TestCase):
 
     def test_marking_trees(self):
         TREE_PATH = DATAPATH + '/S_example/'
-        tree = EvolTree (TREE_PATH + 'measuring_S_tree.nw')
+        tree = EvolTree (TREE_PATH + 'tree.nw')
         self.assertEqual(tree.write(),
                          '((Hylobates_lar,(Gorilla_gorilla,Pan_troglodytes)),Papio_cynocephalus);')
         tree.mark_tree ([1, 3, 7] + [2, 6], marks=['#1']*3 + ['#2']*2, verbose=True)

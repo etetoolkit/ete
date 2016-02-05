@@ -47,10 +47,10 @@ from ..evol import Model
 from argparse import RawTextHelpFormatter
 from multiprocessing import Pool, Queue
 from subprocess import Popen, PIPE
-import sys
-import os, re
-import signal
-import time
+from sys import stderr
+import os
+from re import sub
+from signal import signal, SIGINT, SIG_IGN
 
 from warnings import warn
 
@@ -58,7 +58,7 @@ DESC = ("Run/Load evolutionary tests, store results in a given oputput folder\n"
         "********************************************************************")
 
 def init_worker():
-    signal.signal(signal.SIGINT, signal.SIG_IGN)
+    signal(SIGINT, SIG_IGN)
 
 def populate_args(evol_args_p):
     evol_args_p.formatter_class = RawTextHelpFormatter
@@ -93,6 +93,11 @@ Model name  Description                   Model kind
     evol_args.add_argument("--clear_all", dest="clear_all",
                            action='store_true',
                            help=("Clear any data present in the output directory."))
+
+    evol_args.add_argument("--resume", dest="resume",
+                           action='store_true',
+                           help=("Skip model if previous results are found in "
+                                 "the output directory."))
 
     evol_args.add_argument("--prev_models", dest="prev_models",
                            type=str, nargs='+',
@@ -283,6 +288,7 @@ def run_one_model(tree, model_name):
     needed for multiprocessing
     """
     tree.run_model(model_name)
+    print('done ' + model_name)
 
 def get_node(tree, node):
     res = tree.search_nodes(name=node)
@@ -372,9 +378,9 @@ def local_run_model(tree, model_name, binary, ctrl_string='', **kwargs):
             print("Killing process %s" %proc)
             proc.terminate()
             proc.kill(-9)
-        sys.exit(a, b)
+        exit(a, b)
     proc = None
-    signal.signal(signal.SIGINT, clean_exit)
+    signal(SIGINT, clean_exit)
 
 
     model_obj = Model(model_name, tree, **kwargs)
@@ -411,13 +417,11 @@ def check_done(tree, modmodel, results):
             fhandler = open(os.path.join(tree.workdir, modmodel, 'out'))
             fhandler.seek(-50, 2)
             if 'Time used' in fhandler.read():
-                print('Model %s already executed... SKIPPING' % modmodel)
                 results.append((os.path.join(tree.workdir, modmodel, "out"),
                                 modmodel))
                 return True
         else:
             if os.path.getsize(os.path.join(tree.workdir, modmodel, 'out')) > 0:
-                print('Model %s already executed... SKIPPING' % modmodel)
                 return True
     return False
 
@@ -433,7 +437,14 @@ def run_all_models(tree, nodes, marks, args, **kwargs):
         if AVAIL[model.split('.')[0]]['allow_mark']:
             if not marks:
                 if check_done(tree, model, results):
-                    continue
+                    if args.resume:
+                        print('Model %s already executed... SKIPPING' % model)
+                        continue
+                    else:
+                        raise Exception(
+                            'ERROR: output files already exists, use "--resume"'
+                            ' option to skip computation or "--clear_all" '
+                            'to overwrite.')
                 results.append(pool.apply_async(
                     local_run_model, args=(tree, model, binary), kwds=kwargs))
                 continue
@@ -444,14 +455,28 @@ def run_all_models(tree, nodes, marks, args, **kwargs):
                 tree.mark_tree(node, marks=mark)
                 modmodel = model + '.' + '_'.join([str(n) for n in node])
                 if check_done(tree, modmodel, results):
-                    continue
+                    if args.resume:
+                        print('Model %s already executed... SKIPPING' % modmodel)
+                        continue
+                    else:
+                        raise Exception(
+                            'ERROR: output files already exists, use "--resume"'
+                            ' option to skip computation or "--clear_all" '
+                            'to overwrite.')
                 print('          %s\n' % (
                     tree.write()))
                 results.append(pool.apply_async(
                     local_run_model, args=(tree, modmodel, binary), kwds=kwargs))
         else:
             if check_done(tree, model, results):
-                continue
+                if args.resume:
+                    print('Model %s already executed... SKIPPING' % model)
+                    continue
+                else:
+                    raise Exception(
+                        'ERROR: output files already exists, use "--resume"'
+                        ' option to skip computation or "--clear_all" '
+                        'to overwrite.')
             results.append(pool.apply_async(
                 local_run_model, args=(tree, model, binary), kwds=kwargs))
 
@@ -478,8 +503,8 @@ def reformat_nw(nw_path):
         file_string = open(nw_path).read()
         beg = file_string.index('(')
         end = file_string.index(';')
-        file_string = re.sub("'(#[0-9]+)'", "[&&NHX:mark=\\1]",
-                             file_string[beg:end + 1])
+        file_string = sub("'(#[0-9]+)'", "[&&NHX:mark=\\1]",
+                          file_string[beg:end + 1])
         return file_string
     return nw_path
 
@@ -522,9 +547,9 @@ def local_run_model_new(arguments,  ctrl_string=''):
         if proc:
             print("Killing %s" %proc)
             proc.kill(-9)
-        sys.exit(a, b)
+        exit(a, b)
     proc = None
-    signal.signal(signal.SIGINT, clean_exit)
+    signal(SIGINT, clean_exit)
 
     tree, model_name, binary, kwargs = arguments
 
@@ -624,17 +649,17 @@ def run(args):
     binary  = os.path.expanduser(args.slr_binary)
     if not os.path.exists(binary):
         print("Warning: SLR binary does not exist at %s" % args.slr_binary,
-              file=sys.stderr)
+              file=stderr)
         print("         provide another route with --slr_binary, or install "
               "it by executing 'ete3 install-external-tools paml'",
               file=sys.stderr)
     binary  = os.path.expanduser(args.codeml_binary)
     if not os.path.exists(binary):
         print("Warning: CodeML binary does not exist at %s" % args.codeml_binary,
-              file=sys.stderr)
+              file=stderr)
         print("         provide another route with --codeml_binary, or install "
               "it by executing 'ete3 install-external-tools paml'",
-              file=sys.stderr)
+              file=stderr)
 
     # more help
     # TODO: move this to help section
@@ -748,7 +773,8 @@ def run(args):
 
         # get all site models for display
         site_models = [m for m in tree._models
-                       if 'site' in AVAIL[m.split('.')[0]]['typ']]
+                       if ('site' in AVAIL[m.split('.')[0]]['typ']
+                           and not AVAIL[m.split('.')[0]]['evol'] == 'different-ratios')]
 
         if args.noimg:
             return
