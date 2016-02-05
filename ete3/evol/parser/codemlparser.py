@@ -227,6 +227,8 @@ def parse_paml (pamout, model):
                 line = list(map (float, re.findall ('\d\.\d+', all_lines [i+j+1])))
                 model.stats ['codonFreq'] += [line]
             continue
+        if line.startswith('Nei & Gojobori 1986'):
+            model.stats ['codonFreq'] = []
         if 'codonFreq' not in model.stats:
             continue
         ######################

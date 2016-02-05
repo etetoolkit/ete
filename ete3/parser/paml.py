@@ -102,8 +102,11 @@ def read_paml (source, obj=None, header_delimiter="\t", fix_duplicates=True):
         line = line.strip()
         if line.startswith('#') or not line:
             continue
+        if line.startswith('// end of file'):
+            break
         # Reads seq number
         elif line.startswith('>') or ((num_seq and len_seq) and not in_seq):
+            fasta = line.startswith('>')
             line = line.replace('>','')
             # Checks if previous name had seq
             if seq_id>-1 and SC.id2seq[seq_id] == "":
@@ -112,8 +115,19 @@ def read_paml (source, obj=None, header_delimiter="\t", fix_duplicates=True):
             seq_id += 1
             # Takes header info
             seq_header_fields = [_f.strip() for _f in line.split(header_delimiter)]
+            in_seq = True
+            if (not fasta) and '   ' in seq_header_fields[0].strip():
+                seq_header_fields = seq_header_fields[0].split('   ')[0]
+                seq_header_fields = [seq_header_fields]
+                SC.id2seq[seq_id] = line.split('   ')[-1].strip().replace(' ', '')
+                if len_seq:
+                    if len(SC.id2seq[seq_id]) == len_seq:
+                        in_seq=False
+                    elif len(SC.id2seq[seq_id]) > len_seq:
+                        raise  Exception("Error reading sequences: Wrong sequence length.\n"+line)
+            else:
+                SC.id2seq[seq_id]     = ""
             seq_name = seq_header_fields[0]
-
             # Checks for duplicated seq names
             if fix_duplicates and seq_name in names:
                 tag = str(len([k for k in list(SC.name2id.keys()) if k.endswith(seq_name)]))
@@ -122,16 +136,17 @@ def read_paml (source, obj=None, header_delimiter="\t", fix_duplicates=True):
                 print("Duplicated entry [%s] was renamed to [%s]" %(old_name, seq_name), file=STDERR)
 
             # stores seq_name
-            SC.id2seq[seq_id]     = ""
             SC.id2name[seq_id]    = seq_name
             SC.name2id[seq_name]  = seq_id
             SC.id2comment[seq_id] = seq_header_fields[1:]
             names.add(seq_name)
-            in_seq = True
         else:
             if seq_name is None:
-                if search ('^[0-9]+  *[0-9]+$', line):
-                    num_seq, len_seq = line.strip().split()
+                if search ('^[0-9]+  *[0-9]+ *[A-Z]*', line):
+                    try:
+                        num_seq, len_seq = line.strip().split()
+                    except ValueError:
+                        num_seq, len_seq, _ = line.strip().split()
                     num_seq = int(num_seq)
                     len_seq = int(len_seq)
                     continue

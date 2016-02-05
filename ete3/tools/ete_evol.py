@@ -503,7 +503,7 @@ def reformat_nw(nw_path):
         file_string = open(nw_path).read()
         beg = file_string.index('(')
         end = file_string.index(';')
-        file_string = sub("'(#[0-9]+)'", "[&&NHX:mark=\\1]",
+        file_string = sub("'?(#[0-9]+)'?", "[&&NHX:mark=\\1]",
                           file_string[beg:end + 1])
         return file_string
     return nw_path
@@ -640,6 +640,17 @@ def write_results(tree, args):
         print(tests)
     return bests
 
+def get_marks_from_tree(tree):
+    """
+    traverse the tree and returns the paml_ids of the nodes harboring marks
+    """
+    marks = []
+    for n in tree.traverse():
+        mark = getattr(n, 'mark')
+        if mark:
+            marks.append((n.node_id, mark))
+    return marks
+
 def run(args):
     if not args.slr_binary:
         args.slr_binary = find_binary("Slr")
@@ -713,6 +724,7 @@ def run(args):
             args.models = ['XX.' + os.path.split(args.config_file)[1]]
     for nw in args.src_tree_iterator:
         tree = EvolTree(reformat_nw(nw), format=1)
+        marks = get_marks_from_tree(tree)
         if args.output:
             tree.workdir = args.output
         if args.clear_all:
@@ -769,7 +781,7 @@ def run(args):
                        key=lambda x: tree._models[x].lnL)
             tree.change_dist_to_evol('bL', tree._models[best], fill=True)
         except ValueError:
-            best = None
+            best = ''
 
         # get all site models for display
         site_models = [m for m in tree._models
