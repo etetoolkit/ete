@@ -305,6 +305,8 @@ def get_node(tree, node):
 
 def update_marks_from_args(nodes, marks, tree, args):
     # use the GUI
+    submarks = []
+    subnodes = []
     if args.mark_gui:
         if args.mark_leaves or args.mark_internals or args.mark:
             exit('ERROR: incompatible marking options')
@@ -316,11 +318,11 @@ def update_marks_from_args(nodes, marks, tree, args):
         tree._set_mark_mode(False)
         for n in tree.iter_descendants():
             if n.mark:
-                marks.append(n.mark)
-                nodes.append(n.node_id)
+                submarks.append(n.mark)
+                subnodes.append(n.node_id)
         if marks:
-            marks = [marks]
-            nodes = [nodes]
+            marks.append(submarks)
+            nodes.append(subnodes)
     # use the command line
     if args.mark:
         if args.mark_leaves or args.mark_internals:
@@ -368,6 +370,16 @@ def update_marks_from_args(nodes, marks, tree, args):
                       for n in s.iter_descendants()])
         marks.extend(['#1' for s in tree.iter_leaves() if not s.is_leaf()])
         nodes.extend([s.node_id for s in tree.iter_leaves() if not s.is_leaf()])
+    # remove duplicated marks
+    things = {}
+    bads = []
+    for pos, (node, mark) in enumerate(zip(nodes, marks)):
+        if (node, mark) in things.values():
+            bads.append(pos)
+        things[pos] = (node, mark)
+    for bad in bads[::-1]:
+        del(marks[bad])
+        del(nodes[bad])
 
 def local_run_model(tree, model_name, binary, ctrl_string='', **kwargs):
     '''
@@ -651,7 +663,9 @@ def get_marks_from_tree(tree):
         if mark:
             marks.append(mark)
             nodes.append(n.node_id)
-    return [nodes], [marks]
+    if nodes:
+        return [nodes], [marks]
+    return [], []
 
 def run(args):
     if not args.slr_binary:
