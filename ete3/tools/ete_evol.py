@@ -399,7 +399,7 @@ def local_run_model(tree, model_name, binary, ctrl_string='', **kwargs):
 
     job, err = proc.communicate()
     if err is not None or b'error' in job or b'Error' in job:
-        warn("ERROR: inside CodeML!!\n" + job)
+        print("ERROR: inside CodeML!!\n" + job)
         return (None, None)
     os.chdir(hlddir)
     return os.path.join(fullpath,'out'), model_obj
@@ -655,7 +655,7 @@ def run(args):
     params = {}
     if args.config_file:
         if args.params:
-            warn('WARNING: input CodeML parameters from configuration file will'
+            print('WARNING: input CodeML parameters from configuration file will'
                  ' be overridden by the ones in the command line')
         params = parse_config_file(args.config_file)
         if 'seqfile' in params:
@@ -667,7 +667,7 @@ def run(args):
                 args.output = os.path.join(os.path.split(args.config_file)[0],
                                            params['outfile'])
             else:
-                warn('WARNING: input CodeML output file from configuration file'
+                print('WARNING: input CodeML output file from configuration file'
                      ' will be overridden by the one in the command line')
             del(params['outfile'])
         if 'treefile' in params:
@@ -677,7 +677,7 @@ def run(args):
                     params['treefile'])]
             else:
                 args.src_tree_iterator = list(args.src_tree_iterator)
-                warn('WARNING: input CodeML tree file from configuration file'
+                print('WARNING: input CodeML tree file from configuration file'
                      ' will be overridden by the one in the command line')
             del(params['treefile'])
         try:
@@ -761,7 +761,7 @@ def run(args):
                     args.histface.extend([args.histface[-1]] * (
                         len(site_models) - len(args.histface)))
                 else:
-                    warn('WARNING: not using last histfaces, not enough models')
+                    print('WARNING: not using last histfaces, not enough models')
                     args.histface = args.histface[:len(site_models)]
             for num, (hist, model) in enumerate(
                 zip(args.histface, site_models)):
