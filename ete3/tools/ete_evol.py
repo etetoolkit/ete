@@ -300,9 +300,7 @@ def get_node(tree, node):
             exit('ERROR: node %s not found' % node)
     return res[0]
 
-def get_marks_from_args(tree, args):
-    marks = []
-    nodes = []
+def update_marks_from_args(nodes, marks, tree, args):
     # use the GUI
     if args.mark_gui:
         if args.mark_leaves or args.mark_internals or args.mark:
@@ -367,7 +365,6 @@ def get_marks_from_args(tree, args):
                       for n in s.iter_descendants()])
         marks.extend(['#1' for s in tree.iter_leaves() if not s.is_leaf()])
         nodes.extend([s.node_id for s in tree.iter_leaves() if not s.is_leaf()])
-    return nodes, marks
 
 def local_run_model(tree, model_name, binary, ctrl_string='', **kwargs):
     '''
@@ -645,11 +642,13 @@ def get_marks_from_tree(tree):
     traverse the tree and returns the paml_ids of the nodes harboring marks
     """
     marks = []
+    nodes = []
     for n in tree.traverse():
         mark = getattr(n, 'mark')
         if mark:
-            marks.append((n.node_id, mark))
-    return marks
+            marks.append(mark)
+            nodes.append(n.node_id)
+    return [nodes], [marks]
 
 def run(args):
     if not args.slr_binary:
@@ -724,7 +723,7 @@ def run(args):
             args.models = ['XX.' + os.path.split(args.config_file)[1]]
     for nw in args.src_tree_iterator:
         tree = EvolTree(reformat_nw(nw), format=1)
-        marks = get_marks_from_tree(tree)
+        nodes, marks = get_marks_from_tree(tree)
         if args.output:
             tree.workdir = args.output
         if args.clear_all:
@@ -746,7 +745,7 @@ def run(args):
             return
 
         # get the marks we will apply to different runs
-        nodes, marks = get_marks_from_args(tree, args)
+        update_marks_from_args(nodes, marks, tree, args)
         # link to alignment
         tree.link_to_alignment(args.alg, alg_format='paml')
         # load models
