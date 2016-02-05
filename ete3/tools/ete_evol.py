@@ -295,7 +295,10 @@ def get_node(tree, node):
     if len(res) > 1:
         exit('ERROR: more than 1 node with name: %s' % node)
     elif len(res) < 1:
-        res = tree.search_nodes(node_id=int(node))
+        try:
+            res = tree.search_nodes(node_id=int(node))
+        except ValueError:
+            exit('ERROR: node %s not found' % node)
         if len(res) < 1:
             exit('ERROR: node %s not found' % node)
     return res[0]
