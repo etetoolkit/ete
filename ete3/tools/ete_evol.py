@@ -723,7 +723,7 @@ def run(args):
               file=stderr)
         print("         provide another route with --slr_binary, or install "
               "it by executing 'ete3 install-external-tools paml'",
-              file=sys.stderr)
+              file=stderr)
     binary  = os.path.expanduser(args.codeml_binary)
     if not os.path.exists(binary):
         print("Warning: CodeML binary does not exist at %s" % args.codeml_binary,
