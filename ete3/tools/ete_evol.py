@@ -309,25 +309,6 @@ def get_node(tree, node):
     return res[0]
 
 def update_marks_from_args(nodes, marks, tree, args):
-    # use the GUI
-    submarks = []
-    subnodes = []
-    if args.mark_gui:
-        if args.mark_leaves or args.mark_internals or args.mark:
-            exit('ERROR: incompatible marking options')
-        ts = TreeStyle()
-        ts.layout_fn = marking_layout
-        ts.show_leaf_name = False
-        tree._set_mark_mode(True)
-        tree.show(tree_style=ts)
-        tree._set_mark_mode(False)
-        for n in tree.iter_descendants():
-            if n.mark:
-                submarks.append(n.mark)
-                subnodes.append(n.node_id)
-        if marks:
-            marks.append(submarks)
-            nodes.append(subnodes)
     # use the command line
     if args.mark:
         if args.mark_leaves or args.mark_internals:
@@ -377,6 +358,30 @@ def update_marks_from_args(nodes, marks, tree, args):
         marks.extend(['#1' for s in tree.iter_leaves() if not s.is_leaf()])
         nodes.extend([s.node_id for s in tree.iter_leaves() if not s.is_leaf()])
     # remove duplicated marks
+    remove_duplicated_marks(nodes, marks, tree)
+    # use the GUI
+    submarks = []
+    subnodes = []
+    if args.mark_gui:
+        if args.mark_leaves or args.mark_internals or args.mark:
+            exit('ERROR: incompatible marking options')
+        ts = TreeStyle()
+        ts.layout_fn = marking_layout
+        ts.show_leaf_name = False
+        tree._set_mark_mode(True)
+        tree.show(tree_style=ts)
+        tree._set_mark_mode(False)
+        for n in tree.iter_descendants():
+            if n.mark:
+                submarks.append(n.mark)
+                subnodes.append(n.node_id)
+        if marks:
+            marks.append(submarks)
+            nodes.append(subnodes)
+    # remove duplicated marks
+    remove_duplicated_marks(nodes, marks, tree)
+
+def remove_duplicated_marks(nodes, marks, tree):
     things = {}
     bads = []
     for pos, (node, mark) in enumerate(zip(nodes, marks)):
@@ -384,6 +389,11 @@ def update_marks_from_args(nodes, marks, tree, args):
             bads.append(pos)
         things[pos] = (node, mark)
     for bad in bads[::-1]:
+        warn('WARNING: removing duplicated mark %s' % (
+            ' '.join(['%s%s' % (
+                tree.get_descendant_by_node_id(nodes[bad][n]).write(format=9),
+                marks[bad][n])
+                      for n in range(len(nodes[bad]))])))
         del(marks[bad])
         del(nodes[bad])
 
