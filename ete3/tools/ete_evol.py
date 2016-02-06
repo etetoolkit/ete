@@ -360,26 +360,54 @@ def update_marks_from_args(nodes, marks, tree, args):
     # remove duplicated marks
     remove_duplicated_marks(nodes, marks, tree)
     # use the GUI
-    submarks = []
-    subnodes = []
     if args.mark_gui:
-        if args.mark_leaves or args.mark_internals or args.mark:
-            exit('ERROR: incompatible marking options')
-        ts = TreeStyle()
-        ts.layout_fn = marking_layout
-        ts.show_leaf_name = False
-        tree._set_mark_mode(True)
-        tree.show(tree_style=ts)
-        tree._set_mark_mode(False)
-        for n in tree.iter_descendants():
-            if n.mark:
-                submarks.append(n.mark)
-                subnodes.append(n.node_id)
-        if marks:
-            marks.append(submarks)
-            nodes.append(subnodes)
+        for node, mark in zip(nodes, marks):
+            tree.mark_tree(node, marks=mark)
+            interactive_mark(tree, mode='check')
+        while not False:
+            subnodes, submarks = interactive_mark(
+                tree, mode='last' if marks else 'new')
+            if not submarks:
+                break
+            if marks:
+                marks.append(submarks)
+                nodes.append(subnodes)
     # remove duplicated marks
     remove_duplicated_marks(nodes, marks, tree)
+
+def interactive_mark(tree, mode='new'):
+    submarks = []
+    subnodes = []
+    ts = TreeStyle()
+    ts.layout_fn = marking_layout
+    ts.show_leaf_name = False
+    if mode == 'new':
+        ts.title.add_face(TextFace("  Mark tree by clicking on nodes",
+                                   fsize=14), column=0)
+        ts.title.add_face(TextFace("      close window to start the analysis",
+                                   fsize=12), column=0)
+    elif mode == 'check':
+        ts.title.add_face(TextFace("  Check/change marks by clicking on nodes",
+                                   fsize=14), column=0)
+        ts.title.add_face(TextFace("      close window to start the analysis",
+                                   fsize=12), column=0)
+    else:
+        ts.title.add_face(TextFace("  Continue marking for new analysis",
+                                   fsize=14), column=0)
+        ts.title.add_face(TextFace("      if the tree is not marked, the analysis will start after",
+                                   fsize=12), column=0)
+        ts.title.add_face(TextFace("      closing window (new marking proposed otherwise).",
+                                   fsize=12), column=0)
+    ts.title.add_face(TextFace(" ", fsize=14), column=0)
+    tree._set_mark_mode(True)
+    tree.show(tree_style=ts)
+    tree._set_mark_mode(False)
+    for n in tree.iter_descendants():
+        if n.mark:
+            submarks.append(n.mark)
+            subnodes.append(n.node_id)
+    clean_tree(tree)
+    return subnodes, submarks
 
 def remove_duplicated_marks(nodes, marks, tree):
     things = {}
@@ -760,6 +788,7 @@ def run(args):
             nodes, marks = [], []
         else:
             nodes, marks = get_marks_from_tree(tree)
+        clean_tree(tree)
         if args.output:
             tree.workdir = args.output
         if args.clear_all:
