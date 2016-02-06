@@ -134,12 +134,14 @@ Model name  Description                   Model kind
                            help=(
                                "mark branches of the input tree. PAML node IDs "
                                "or names can be used. \n - Names separated by "
-                               "single coma will be marked individually. \n - "
+                               "single coma will be marked differently. \n - "
                                "Names separated by double comas will mark the "
                                "tree at the common ancestor. \n - Names "
                                "separated by "
                                "triple comas will mark the tree from the common"
-                               "ancestor.\nSpaces will be used between these "
+                               "ancestor.\n - Names separated by equal sign will"
+                               "be marked individually with the same mark.\n"
+                               "Spaces will be used between these "
                                "elements for new marks. \n"
                                "Example: '--mark "
                                "Homo,,,Chimp Orang,Gorilla Mouse,,Rat' \n"
@@ -152,6 +154,9 @@ Model name  Description                   Model kind
     codeml_mk.add_argument('--interactive', dest="mark_gui", action="store_true",
                            help=("open the input tree in GUI to allow to "
                                  "interactive marking of branches for CodeML."))
+
+    codeml_mk.add_argument('--clear_tree', dest="clear_tree", action="store_true",
+                           help=("Remove any mark present in the input tree."))
 
     codeml_mk.add_argument('--leaves', dest="mark_leaves", action="store_true",
                            help=("Mark successively all the leaves of the input "
@@ -333,27 +338,28 @@ def update_marks_from_args(nodes, marks, tree, args):
             group = group.replace(',,,', '@;;;@')
             group = group.replace(',,', '@;;@')
             group = group.replace(',', '@;@')
-            for mark, subgroup in enumerate(group.split('@;@'), 1):
-                if '@;;' in subgroup:
-                    node1, node2 = subgroup.split('@;;;@' if '@;;;@' in
-                                                  subgroup else '@;;@')
-                    node1 = get_node(tree, node1)
-                    node2 = get_node(tree, node2)
-                    anc = tree.get_common_ancestor(node1, node2)
-                    # mark from ancestor
-                    if '@;;;@' in subgroup:
-                        for node in anc.get_descendants() + [anc]:
+            for mark, pregroup in enumerate(group.split('@;@'), 1):
+                for subgroup in pregroup.split('='):
+                    if '@;;' in subgroup:
+                        node1, node2 = subgroup.split('@;;;@' if '@;;;@' in
+                                                      subgroup else '@;;@')
+                        node1 = get_node(tree, node1)
+                        node2 = get_node(tree, node2)
+                        anc = tree.get_common_ancestor(node1, node2)
+                        # mark from ancestor
+                        if '@;;;@' in subgroup:
+                            for node in anc.get_descendants() + [anc]:
+                                marks[-1].append('#' + str(mark))
+                                nodes[-1].append(node.node_id)
+                        # mark at ancestor
+                        elif '@;;@' in subgroup:
                             marks[-1].append('#' + str(mark))
-                            nodes[-1].append(node.node_id)
-                    # mark at ancestor
-                    elif '@;;@' in subgroup:
+                            nodes[-1].append(anc.node_id)
+                    # mark in single node
+                    else:
+                        node = get_node(tree, subgroup)
                         marks[-1].append('#' + str(mark))
-                        nodes[-1].append(anc.node_id)
-                # mark in single node
-                else:
-                    node = get_node(tree, subgroup)
-                    marks[-1].append('#' + str(mark))
-                    nodes[-1].append(node.node_id)
+                        nodes[-1].append(node.node_id)
     # mark all leaves successively
     if args.mark_leaves:
         if args.mark:
@@ -740,7 +746,10 @@ def run(args):
             args.models = ['XX.' + os.path.split(args.config_file)[1]]
     for nw in args.src_tree_iterator:
         tree = EvolTree(reformat_nw(nw), format=1)
-        nodes, marks = get_marks_from_tree(tree)
+        if args.clear_tree:
+            nodes, marks = [], []
+        else:
+            nodes, marks = get_marks_from_tree(tree)
         if args.output:
             tree.workdir = args.output
         if args.clear_all:
