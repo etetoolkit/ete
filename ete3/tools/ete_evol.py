@@ -377,9 +377,8 @@ def update_marks_from_args(nodes, marks, tree, args):
                 tree, mode='last' if marks else 'new')
             if not submarks:
                 break
-            if marks:
-                marks.append(submarks)
-                nodes.append(subnodes)
+            marks.append(submarks)
+            nodes.append(subnodes)
     # remove duplicated marks
     remove_duplicated_marks(nodes, marks, tree)
 
