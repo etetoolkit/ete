@@ -15,7 +15,7 @@ OUTPATH = '/tmp/ete3_evol-test/'
 
 class Test_ete_evol(unittest.TestCase):
     def test_01_all_models(self):
-        models = [k for k in AVAIL.keys() if not k.startswith('XX.')]
+        models = [k for k in AVAIL.keys() if not k.startswith('XX.') and not k == 'SLR']
 
         cmd = 'ete3 evol --mark Pan_troglodytes --noimg --alg %s/ali.fasta -t %s/tree.nw --clear_all -o %s --cpu %d --model ' %(
             SDATAPATH, SDATAPATH, OUTPATH, CPUS)

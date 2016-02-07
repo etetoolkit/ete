@@ -57,6 +57,14 @@ from warnings import warn
 DESC = ("Run/Load evolutionary tests, store results in a given oputput folder\n"
         "********************************************************************")
 
+CATEGORIES =  {"NS" : "Not significant",
+               "RX" : "Relaxed (probability > 0.95)",
+               "RX+": "Relaxed (probability > 0.99)",
+               "CN" : "Conserved (probability > 0.95)",
+               "CN+": "Conserved (probability > 0.99)",
+               "PS" : "Positively-selected (probability > 0.95)",
+               "PS+": "Positively-selected (probability > 0.99)"}
+
 def init_worker():
     signal(SIGINT, SIG_IGN)
 
@@ -847,10 +855,44 @@ def run(args):
         except ValueError:
             best = ''
 
-        # get all site models for display
+        # get all site models
         site_models = [m for m in tree._models
                        if ('site' in AVAIL[m.split('.')[0]]['typ']
-                           and not AVAIL[m.split('.')[0]]['evol'] == 'different-ratios')]
+                           and not
+                           AVAIL[m.split('.')[0]]['evol'] == 'different-ratios')
+                       ]
+        # print summary by models
+        for model in tree._models.values():
+            if (AVAIL[model.name.split('.')[0]]['typ' ] == 'site'):
+                try:
+                    categories = model.significance_by_site('BEB')
+                except KeyError:
+                    categories = model.significance_by_site('NEB')
+                
+                sign_sites = [(i, CATEGORIES[cat]) for i, cat in
+                              enumerate(categories, 1) if cat != 'NS']
+
+                if sign_sites:
+                    print('Sites significantly caracterized in model: ' + model.name)
+                    print('    codon position |   category')
+                    print('   -----------------------------------------------------------')
+                    first = prev = sign_sites[0]
+                    for cat in sign_sites[1:]:
+                        #print(str(prev) + str(cat) + str(first))
+                        if prev[1] != cat[1] or prev[0] != cat[0] - 1:
+                            if first[0] != prev[0]:
+                                begend = '       %4d-%4d   |   ' % (first[0], prev[0])
+                            else:
+                                begend = '       %9d   |   '     % (prev[0])
+                            print(begend + cat[1])
+                            first = cat
+                        prev = cat
+                    if first[0] != prev[0]:
+                        begend = '       %4d-%4d   |   ' % (first[0], prev[0])
+                    else:
+                        begend = '       %9d   |   '     % (prev[0])
+                    print(begend + cat[1])
+
 
         if args.noimg:
             return
