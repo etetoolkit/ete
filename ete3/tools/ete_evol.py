@@ -877,11 +877,11 @@ def run(args):
                            and not
                            AVAIL[m.split('.')[0]]['evol'] == 'different-ratios')
                        ]
-        
+
         # print summary by models
         print('SUMMARY BY MODEL')
         for model in tree._models.values():
-            print(' - Model ' + model.name)
+            print('\n - Model ' + model.name)
             if any([model.branches[b]['mark'] for b in model.branches]):
                 node, mark = zip(*[(b, model.branches[b]['mark'].strip())
                                    for b in model.branches
@@ -897,8 +897,10 @@ def run(args):
                     for omega, mark in set(omega_mark):
                         print('      %10s  => %7.3f' % (mark.replace('#0', 'background'),
                                                          omega))
-                    print('')
                 clean_tree(tree)
+            elif all([model.branches[1]['w'] == model.branches[b]['w']
+                      for b in model.branches if 'w' in model.branches[b]]):
+                print('   * Average omega for all tree: %.3f' % model.branches[1]['w'])
             if 'site' in AVAIL[model.name.split('.')[0]]['typ' ]:
                 try:
                     categories = model.significance_by_site('BEB')
