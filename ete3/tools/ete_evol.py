@@ -446,7 +446,6 @@ def local_run_model(tree, model_name, binary, ctrl_string='', **kwargs):
     proc = None
     signal(SIGINT, clean_exit)
 
-
     model_obj = Model(model_name, tree, **kwargs)
     fullpath = os.path.join (tree.workdir, model_obj.name)
     os.system("mkdir -p %s" % fullpath)
@@ -472,7 +471,7 @@ def local_run_model(tree, model_name, binary, ctrl_string='', **kwargs):
         warn("ERROR: inside CodeML!!\n" + job)
         return (None, None)
     os.chdir(hlddir)
-    return os.path.join(fullpath,'out'), model_obj
+    return os.path.join(fullpath,'out'), model_obj.name
 
 
 def check_done(tree, modmodel, results):
@@ -510,7 +509,8 @@ def run_all_models(tree, nodes, marks, args, **kwargs):
                             ' option to skip computation or "--clear_all" '
                             'to overwrite.')
                 results.append(pool.apply_async(
-                    local_run_model, args=(tree, model, binary), kwds=kwargs))
+                    local_run_model, args=(tree.copy(), model, binary),
+                    kwds=kwargs))
                 continue
             for mark, node in zip(marks, nodes):
                 print('       marking branches %s\n' %
@@ -520,7 +520,8 @@ def run_all_models(tree, nodes, marks, args, **kwargs):
                     continue
                 clean_tree(tree)
                 tree.mark_tree(node, marks=mark)
-                modmodel = model + '.' + '_'.join([str(n) for n in node])
+                modmodel = (model + '.' + '_'.join([str(n) for n in node]) + '-' +
+                            '_'.join([n.split('#')[1] for n in mark]))
                 if check_done(tree, modmodel, results):
                     if args.resume:
                         print('Model %s already executed... SKIPPING' % modmodel)
@@ -533,7 +534,7 @@ def run_all_models(tree, nodes, marks, args, **kwargs):
                 print('          %s\n' % (
                     tree.write()))
                 results.append(pool.apply_async(
-                    local_run_model, args=(tree, modmodel, binary), kwds=kwargs))
+                    local_run_model, args=(tree.copy(), modmodel, binary), kwds=kwargs))
         else:
             if check_done(tree, model, results):
                 if args.resume:
@@ -545,7 +546,7 @@ def run_all_models(tree, nodes, marks, args, **kwargs):
                         ' option to skip computation or "--clear_all" '
                         'to overwrite.')
             results.append(pool.apply_async(
-                local_run_model, args=(tree, model, binary), kwds=kwargs))
+                local_run_model, args=(tree.copy(), model, binary), kwds=kwargs))
 
     pool.close()
     pool.join()
@@ -554,8 +555,8 @@ def run_all_models(tree, nodes, marks, args, **kwargs):
     # join back results to tree
     for result in results:
         try:
-            path, model_obj = result.get()
-            models[model_obj.name] = path
+            path, model = result.get()
+            models[model] = path
         except AttributeError:
             path, model = result
             models[result[1]] = result[0]
@@ -587,7 +588,7 @@ def run_all_models_new(tree, nodes, marks, args, **kwargs):
             for mark, node in zip(marks, nodes):
                 clean_tree(tree)
                 tree.mark_tree(node, marks=mark)
-                modmodel = model + '.' + '_'.join([str(n) for n in node])
+                modmodel = model + '.' + '_'.join([str(n) for n in node]) # check out changes in other function
                 if check_done(tree, modmodel, results):
                     continue
                 else:
@@ -707,6 +708,14 @@ def write_results(tree, args):
     if at_least_one_come_on:
         print(tests)
     return bests
+
+def mark_tree_as_in(path_tree, tree):
+    clean_tree(tree)
+    other_tree = EvolTree(reformat_nw(path_tree[:-3] + 'tree'))
+    for other_n in other_tree.traverse():
+        if other_n.mark:
+            n = tree.get_descendant_by_node_id(other_n.node_id)
+            n.mark = other_n.mark
 
 def get_marks_from_tree(tree):
     """
@@ -844,9 +853,12 @@ def run(args):
                 params[p] = v
             models.update(run_all_models(tree, nodes, marks, args, **params))
         # link models to tree
+        clean_tree(tree)
         params = {}
         for model in models:
+            mark_tree_as_in(models[model], tree)
             load_model(model, tree, models[model], **params)
+            clean_tree(tree)
         # print results
         bests = write_results(tree, args)
         # apply evol model (best branch model?) to tree for display
@@ -871,7 +883,6 @@ def run(args):
         for model in tree._models.values():
             print(' - Model ' + model.name)
             if any([model.branches[b]['mark'] for b in model.branches]):
-                #print(model.branches)
                 node, mark = zip(*[(b, model.branches[b]['mark'].strip())
                                    for b in model.branches
                                    if model.branches[b]['mark']])
@@ -887,7 +898,7 @@ def run(args):
                         print('      %10s  => %7.3f' % (mark.replace('#0', 'background'),
                                                          omega))
                     print('')
-                
+                clean_tree(tree)
             if 'site' in AVAIL[model.name.split('.')[0]]['typ' ]:
                 try:
                     categories = model.significance_by_site('BEB')
