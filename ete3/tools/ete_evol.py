@@ -515,6 +515,9 @@ def run_all_models(tree, nodes, marks, args, **kwargs):
             for mark, node in zip(marks, nodes):
                 print('       marking branches %s\n' %
                       ', '.join([str(m) for m in node]))
+                # Branch-site models only allow one type of mark
+                if len(set(mark)) > 1 and model.startswith('bsA'):
+                    continue
                 clean_tree(tree)
                 tree.mark_tree(node, marks=mark)
                 modmodel = model + '.' + '_'.join([str(n) for n in node])
@@ -651,10 +654,11 @@ def local_run_model_new(arguments,  ctrl_string=''):
 def load_model(model_name, tree, path, **kwargs):
     model_obj = Model(model_name, tree, **kwargs)
     setattr(model_obj, 'run', run)
-    #try:
-    tree.link_to_evol_model(path, model_obj)
-    #except KeyError:
-    #    warn('ERROR: model %s failed' % (model_obj.name))
+    try:
+        tree.link_to_evol_model(path, model_obj)
+    except KeyError:
+        raise(Exception('ERROR: model %s failed, problem with outfile:\n%s' % (
+            model_obj.name, path)))
 
 def write_results(tree, args):
     tests = "\nLRT\n\n"
@@ -861,9 +865,30 @@ def run(args):
                            and not
                            AVAIL[m.split('.')[0]]['evol'] == 'different-ratios')
                        ]
+        
         # print summary by models
+        print('SUMMARY BY MODEL')
         for model in tree._models.values():
-            if (AVAIL[model.name.split('.')[0]]['typ' ] == 'site'):
+            print(' - Model ' + model.name)
+            if any([model.branches[b]['mark'] for b in model.branches]):
+                #print(model.branches)
+                node, mark = zip(*[(b, model.branches[b]['mark'].strip())
+                                   for b in model.branches
+                                   if model.branches[b]['mark']])
+                tree.mark_tree(node, marks=mark)
+                print('   * Marked branches')
+                print('      ' + tree.write().replace(' #0', ''))
+                omega_mark = [(model.branches[b]['w'], model.branches[b]['mark'].strip())
+                               for b in model.branches
+                               if model.branches[b]['mark'] and 'w' in model.branches[b]]
+                if omega_mark:
+                    print('\n        Branches  =>   omega')
+                    for omega, mark in set(omega_mark):
+                        print('      %10s  => %7.3f' % (mark.replace('#0', 'background'),
+                                                         omega))
+                    print('')
+                
+            if 'site' in AVAIL[model.name.split('.')[0]]['typ' ]:
                 try:
                     categories = model.significance_by_site('BEB')
                 except KeyError:
@@ -873,26 +898,25 @@ def run(args):
                               enumerate(categories, 1) if cat != 'NS']
 
                 if sign_sites:
-                    print('Sites significantly caracterized in model: ' + model.name)
-                    print('    codon position |   category')
-                    print('   -----------------------------------------------------------')
+                    print('   * Sites significantly caracterized')
+                    print('      codon position |   category')
+                    print('     -----------------------------------------------------------')
                     first = prev = sign_sites[0]
                     for cat in sign_sites[1:]:
                         #print(str(prev) + str(cat) + str(first))
                         if prev[1] != cat[1] or prev[0] != cat[0] - 1:
                             if first[0] != prev[0]:
-                                begend = '       %4d-%4d   |   ' % (first[0], prev[0])
+                                begend = '         %4d-%4d   |   ' % (first[0], prev[0])
                             else:
-                                begend = '       %9d   |   '     % (prev[0])
+                                begend = '         %9d   |   '     % (prev[0])
                             print(begend + cat[1])
                             first = cat
                         prev = cat
                     if first[0] != prev[0]:
-                        begend = '       %4d-%4d   |   ' % (first[0], prev[0])
+                        begend = '         %4d-%4d   |   ' % (first[0], prev[0])
                     else:
-                        begend = '       %9d   |   '     % (prev[0])
+                        begend = '         %9d   |   '     % (prev[0])
                     print(begend + cat[1])
-
 
         if args.noimg:
             return

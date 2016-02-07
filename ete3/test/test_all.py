@@ -12,7 +12,7 @@ from .test_arraytable import *
 from .test_clustertree import *
 
 from .test_evol import *
-from .test_ete_evol import *
+#from .test_ete_evol import *
 #from .test_xml_parsers import *
 
 from .test_treeview.test_all_treeview import *
