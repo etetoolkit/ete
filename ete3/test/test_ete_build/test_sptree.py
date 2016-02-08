@@ -25,8 +25,8 @@ def get_out_files(outdir, workflow, fasta):
 class Test_ete_build_sptree(unittest.TestCase):
     def test_01_sptree_worflow(self):
         gene_wkname = 'clustalo_default-trimal01-none-none'
-        for wkname in "brh_cog_all-alg_concat_default-raxml_default", "brh_cog_all-alg_concat_default-fasttree":
-            wkname = "brh_cog_all-alg_concat_default-raxml_default"
+        for wkname in "cog_all-alg_concat_default-raxml_default", "cog_all-alg_concat_default-fasttree":
+            wkname = "cog_all-alg_concat_default-raxml_default"
             cmd = 'ete3 build -a %s/cog_seqs.fa --cogs %s/fake_cogs.tsv -w %s -m %s -o ete_test_tmp/etebuild_test2  -t0.5 --launch 0.5 --clearall --cpu %d' %(DIR, DIR, gene_wkname, wkname, CPUS)
             args = cmd.split()
             ete._main(args)                        
