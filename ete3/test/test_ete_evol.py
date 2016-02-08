@@ -15,12 +15,14 @@ OUTPATH = '/tmp/ete3_evol-test/'
 
 class Test_ete_evol(unittest.TestCase):
     def test_01_all_models(self):
-        models = [k for k in AVAIL.keys() if not k.startswith('XX.') and not k == 'SLR']
+        models = [k for k in AVAIL.keys() if not k.startswith('XX.')]
 
         cmd = 'ete3 evol --mark Pan_troglodytes --noimg --alg %s/ali.fasta -t %s/tree.nw --clear_all -o %s --cpu %d --model ' %(
             SDATAPATH, SDATAPATH, OUTPATH, CPUS)
         args = cmd.split()
         args.extend([model for model in models if not 'XX' in model])
+        print(cmd)
+        print(args)
         ete._main(args)
 
     def test_02_next_test_to_be_defined(self):
