@@ -511,11 +511,11 @@ class EvolNode(PhyloNode):
         try:
             if hasattr(altn, 'lnL') and hasattr(null, 'lnL'):
                 if  null.lnL - altn.lnL < 0:
-                    warn("WARNING: Likelihood of the alternative model is " +
-                         "smaller than null's")
                     return chi_high(2 * abs(altn.lnL - null.lnL),
                                     df=float(altn.np - null.np))
                 else:
+                    warn("WARNING: Likelihood of the alternative model is " +
+                         "smaller than null's")
                     return 1
         except KeyError:
             warn("at least one of %s or %s, was not calculated" % (altn.name,

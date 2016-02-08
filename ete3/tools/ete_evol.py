@@ -47,18 +47,26 @@ from ..evol import Model
 from argparse import RawTextHelpFormatter
 from multiprocessing import Pool, Queue
 from subprocess import Popen, PIPE
-import sys
-import os, re
-import signal
-import time
+from sys import stderr
+import os
+from re import sub
+from signal import signal, SIGINT, SIG_IGN
 
 from warnings import warn
 
 DESC = ("Run/Load evolutionary tests, store results in a given oputput folder\n"
         "********************************************************************")
 
+CATEGORIES =  {"NS" : "Not significant",
+               "RX" : "Relaxed (probability > 0.95)",
+               "RX+": "Relaxed (probability > 0.99)",
+               "CN" : "Conserved (probability > 0.95)",
+               "CN+": "Conserved (probability > 0.99)",
+               "PS" : "Positively-selected (probability > 0.95)",
+               "PS+": "Positively-selected (probability > 0.99)"}
+
 def init_worker():
-    signal.signal(signal.SIGINT, signal.SIG_IGN)
+    signal(SIGINT, SIG_IGN)
 
 def populate_args(evol_args_p):
     evol_args_p.formatter_class = RawTextHelpFormatter
@@ -93,6 +101,11 @@ Model name  Description                   Model kind
     evol_args.add_argument("--clear_all", dest="clear_all",
                            action='store_true',
                            help=("Clear any data present in the output directory."))
+
+    evol_args.add_argument("--resume", dest="resume",
+                           action='store_true',
+                           help=("Skip model if previous results are found in "
+                                 "the output directory."))
 
     evol_args.add_argument("--prev_models", dest="prev_models",
                            type=str, nargs='+',
@@ -129,12 +142,14 @@ Model name  Description                   Model kind
                            help=(
                                "mark branches of the input tree. PAML node IDs "
                                "or names can be used. \n - Names separated by "
-                               "single coma will be marked individually. \n - "
+                               "single coma will be marked differently. \n - "
                                "Names separated by double comas will mark the "
                                "tree at the common ancestor. \n - Names "
                                "separated by "
                                "triple comas will mark the tree from the common"
-                               "ancestor.\nSpaces will be used between these "
+                               "ancestor.\n - Names separated by equal sign will"
+                               "be marked individually with the same mark.\n"
+                               "Spaces will be used between these "
                                "elements for new marks. \n"
                                "Example: '--mark "
                                "Homo,,,Chimp Orang,Gorilla Mouse,,Rat' \n"
@@ -147,6 +162,9 @@ Model name  Description                   Model kind
     codeml_mk.add_argument('--interactive', dest="mark_gui", action="store_true",
                            help=("open the input tree in GUI to allow to "
                                  "interactive marking of branches for CodeML."))
+
+    codeml_mk.add_argument('--clear_tree', dest="clear_tree", action="store_true",
+                           help=("Remove any mark present in the input tree."))
 
     codeml_mk.add_argument('--leaves', dest="mark_leaves", action="store_true",
                            help=("Mark successively all the leaves of the input "
@@ -283,37 +301,22 @@ def run_one_model(tree, model_name):
     needed for multiprocessing
     """
     tree.run_model(model_name)
+    print('done ' + model_name)
 
 def get_node(tree, node):
     res = tree.search_nodes(name=node)
     if len(res) > 1:
         exit('ERROR: more than 1 node with name: %s' % node)
     elif len(res) < 1:
-        res = tree.search_nodes(node_id=int(node))
+        try:
+            res = tree.search_nodes(node_id=int(node))
+        except ValueError:
+            exit('ERROR: node %s not found' % node)
         if len(res) < 1:
             exit('ERROR: node %s not found' % node)
     return res[0]
 
-def get_marks_from_args(tree, args):
-    marks = []
-    nodes = []
-    # use the GUI
-    if args.mark_gui:
-        if args.mark_leaves or args.mark_internals or args.mark:
-            exit('ERROR: incompatible marking options')
-        ts = TreeStyle()
-        ts.layout_fn = marking_layout
-        ts.show_leaf_name = False
-        tree._set_mark_mode(True)
-        tree.show(tree_style=ts)
-        tree._set_mark_mode(False)
-        for n in tree.iter_descendants():
-            if n.mark:
-                marks.append(n.mark)
-                nodes.append(n.node_id)
-        if marks:
-            marks = [marks]
-            nodes = [nodes]
+def update_marks_from_args(nodes, marks, tree, args):
     # use the command line
     if args.mark:
         if args.mark_leaves or args.mark_internals:
@@ -324,27 +327,28 @@ def get_marks_from_args(tree, args):
             group = group.replace(',,,', '@;;;@')
             group = group.replace(',,', '@;;@')
             group = group.replace(',', '@;@')
-            for mark, subgroup in enumerate(group.split('@;@'), 1):
-                if '@;;' in subgroup:
-                    node1, node2 = subgroup.split('@;;;@' if '@;;;@' in
-                                                  subgroup else '@;;@')
-                    node1 = get_node(tree, node1)
-                    node2 = get_node(tree, node2)
-                    anc = tree.get_common_ancestor(node1, node2)
-                    # mark from ancestor
-                    if '@;;;@' in subgroup:
-                        for node in anc.get_descendants() + [anc]:
+            for mark, pregroup in enumerate(group.split('@;@'), 1):
+                for subgroup in pregroup.split('='):
+                    if '@;;' in subgroup:
+                        node1, node2 = subgroup.split('@;;;@' if '@;;;@' in
+                                                      subgroup else '@;;@')
+                        node1 = get_node(tree, node1)
+                        node2 = get_node(tree, node2)
+                        anc = tree.get_common_ancestor(node1, node2)
+                        # mark from ancestor
+                        if '@;;;@' in subgroup:
+                            for node in anc.get_descendants() + [anc]:
+                                marks[-1].append('#' + str(mark))
+                                nodes[-1].append(node.node_id)
+                        # mark at ancestor
+                        elif '@;;@' in subgroup:
                             marks[-1].append('#' + str(mark))
-                            nodes[-1].append(node.node_id)
-                    # mark at ancestor
-                    elif '@;;@' in subgroup:
+                            nodes[-1].append(anc.node_id)
+                    # mark in single node
+                    else:
+                        node = get_node(tree, subgroup)
                         marks[-1].append('#' + str(mark))
-                        nodes[-1].append(anc.node_id)
-                # mark in single node
-                else:
-                    node = get_node(tree, subgroup)
-                    marks[-1].append('#' + str(mark))
-                    nodes[-1].append(node.node_id)
+                        nodes[-1].append(node.node_id)
     # mark all leaves successively
     if args.mark_leaves:
         if args.mark:
@@ -361,7 +365,72 @@ def get_marks_from_args(tree, args):
                       for n in s.iter_descendants()])
         marks.extend(['#1' for s in tree.iter_leaves() if not s.is_leaf()])
         nodes.extend([s.node_id for s in tree.iter_leaves() if not s.is_leaf()])
-    return nodes, marks
+    # remove duplicated marks
+    remove_duplicated_marks(nodes, marks, tree)
+    # use the GUI
+    if args.mark_gui:
+        for node, mark in zip(nodes, marks):
+            tree.mark_tree(node, marks=mark)
+            interactive_mark(tree, mode='check')
+        while not False:
+            subnodes, submarks = interactive_mark(
+                tree, mode='last' if marks else 'new')
+            if not submarks:
+                break
+            marks.append(submarks)
+            nodes.append(subnodes)
+    # remove duplicated marks
+    remove_duplicated_marks(nodes, marks, tree)
+
+def interactive_mark(tree, mode='new'):
+    submarks = []
+    subnodes = []
+    ts = TreeStyle()
+    ts.layout_fn = marking_layout
+    ts.show_leaf_name = False
+    if mode == 'new':
+        ts.title.add_face(TextFace("  Mark tree by clicking on nodes",
+                                   fsize=14), column=0)
+        ts.title.add_face(TextFace("      close window to start the analysis",
+                                   fsize=12), column=0)
+    elif mode == 'check':
+        ts.title.add_face(TextFace("  Check/change marks by clicking on nodes",
+                                   fsize=14), column=0)
+        ts.title.add_face(TextFace("      close window to start the analysis",
+                                   fsize=12), column=0)
+    else:
+        ts.title.add_face(TextFace("  Continue marking for new analysis",
+                                   fsize=14), column=0)
+        ts.title.add_face(TextFace("      if the tree is not marked, the analysis will start after",
+                                   fsize=12), column=0)
+        ts.title.add_face(TextFace("      closing window (new marking proposed otherwise).",
+                                   fsize=12), column=0)
+    ts.title.add_face(TextFace(" ", fsize=14), column=0)
+    tree._set_mark_mode(True)
+    tree.show(tree_style=ts)
+    tree._set_mark_mode(False)
+    for n in tree.iter_descendants():
+        if n.mark:
+            submarks.append(n.mark)
+            subnodes.append(n.node_id)
+    clean_tree(tree)
+    return subnodes, submarks
+
+def remove_duplicated_marks(nodes, marks, tree):
+    things = {}
+    bads = []
+    for pos, (node, mark) in enumerate(zip(nodes, marks)):
+        if (node, mark) in things.values():
+            bads.append(pos)
+        things[pos] = (node, mark)
+    for bad in bads[::-1]:
+        warn('WARNING: removing duplicated mark %s' % (
+            ' '.join(['%s%s' % (
+                tree.get_descendant_by_node_id(nodes[bad][n]).write(format=9),
+                marks[bad][n])
+                      for n in range(len(nodes[bad]))])))
+        del(marks[bad])
+        del(nodes[bad])
 
 def local_run_model(tree, model_name, binary, ctrl_string='', **kwargs):
     '''
@@ -372,10 +441,9 @@ def local_run_model(tree, model_name, binary, ctrl_string='', **kwargs):
             print("Killing process %s" %proc)
             proc.terminate()
             proc.kill(-9)
-        sys.exit(a, b)
+        exit(a, b)
     proc = None
-    signal.signal(signal.SIGINT, clean_exit)
-
+    signal(SIGINT, clean_exit)
 
     model_obj = Model(model_name, tree, **kwargs)
     fullpath = os.path.join (tree.workdir, model_obj.name)
@@ -402,7 +470,7 @@ def local_run_model(tree, model_name, binary, ctrl_string='', **kwargs):
         print("ERROR: inside CodeML!!\n" + job)
         return (None, None)
     os.chdir(hlddir)
-    return os.path.join(fullpath,'out'), model_obj
+    return os.path.join(fullpath,'out'), model_obj.name
 
 
 def check_done(tree, modmodel, results):
@@ -411,13 +479,11 @@ def check_done(tree, modmodel, results):
             fhandler = open(os.path.join(tree.workdir, modmodel, 'out'))
             fhandler.seek(-50, 2)
             if 'Time used' in fhandler.read():
-                print('Model %s already executed... SKIPPING' % modmodel)
                 results.append((os.path.join(tree.workdir, modmodel, "out"),
                                 modmodel))
                 return True
         else:
             if os.path.getsize(os.path.join(tree.workdir, modmodel, 'out')) > 0:
-                print('Model %s already executed... SKIPPING' % modmodel)
                 return True
     return False
 
@@ -433,27 +499,53 @@ def run_all_models(tree, nodes, marks, args, **kwargs):
         if AVAIL[model.split('.')[0]]['allow_mark']:
             if not marks:
                 if check_done(tree, model, results):
-                    continue
+                    if args.resume:
+                        print('Model %s already executed... SKIPPING' % model)
+                        continue
+                    else:
+                        raise Exception(
+                            'ERROR: output files already exists, use "--resume"'
+                            ' option to skip computation or "--clear_all" '
+                            'to overwrite.')
                 results.append(pool.apply_async(
-                    local_run_model, args=(tree, model, binary), kwds=kwargs))
+                    local_run_model, args=(tree.copy(), model, binary),
+                    kwds=kwargs))
                 continue
             for mark, node in zip(marks, nodes):
                 print('       marking branches %s\n' %
                       ', '.join([str(m) for m in node]))
+                # Branch-site models only allow one type of mark
+                if len(set(mark)) > 1 and model.startswith('bsA'):
+                    continue
                 clean_tree(tree)
                 tree.mark_tree(node, marks=mark)
-                modmodel = model + '.' + '_'.join([str(n) for n in node])
+                modmodel = (model + '.' + '_'.join([str(n) for n in node]) + '-' +
+                            '_'.join([n.split('#')[1] for n in mark]))
                 if check_done(tree, modmodel, results):
-                    continue
+                    if args.resume:
+                        print('Model %s already executed... SKIPPING' % modmodel)
+                        continue
+                    else:
+                        raise Exception(
+                            'ERROR: output files already exists, use "--resume"'
+                            ' option to skip computation or "--clear_all" '
+                            'to overwrite.')
                 print('          %s\n' % (
                     tree.write()))
                 results.append(pool.apply_async(
-                    local_run_model, args=(tree, modmodel, binary), kwds=kwargs))
+                    local_run_model, args=(tree.copy(), modmodel, binary), kwds=kwargs))
         else:
             if check_done(tree, model, results):
-                continue
+                if args.resume:
+                    print('Model %s already executed... SKIPPING' % model)
+                    continue
+                else:
+                    raise Exception(
+                        'ERROR: output files already exists, use "--resume"'
+                        ' option to skip computation or "--clear_all" '
+                        'to overwrite.')
             results.append(pool.apply_async(
-                local_run_model, args=(tree, model, binary), kwds=kwargs))
+                local_run_model, args=(tree.copy(), model, binary), kwds=kwargs))
 
     pool.close()
     pool.join()
@@ -462,8 +554,8 @@ def run_all_models(tree, nodes, marks, args, **kwargs):
     # join back results to tree
     for result in results:
         try:
-            path, model_obj = result.get()
-            models[model_obj.name] = path
+            path, model = result.get()
+            models[model] = path
         except AttributeError:
             path, model = result
             models[result[1]] = result[0]
@@ -478,8 +570,8 @@ def reformat_nw(nw_path):
         file_string = open(nw_path).read()
         beg = file_string.index('(')
         end = file_string.index(';')
-        file_string = re.sub("'(#[0-9]+)'", "[&&NHX:mark=\\1]",
-                             file_string[beg:end + 1])
+        file_string = sub("'?(#[0-9]+)'?", "[&&NHX:mark=\\1]",
+                          file_string[beg:end + 1])
         return file_string
     return nw_path
 
@@ -495,7 +587,7 @@ def run_all_models_new(tree, nodes, marks, args, **kwargs):
             for mark, node in zip(marks, nodes):
                 clean_tree(tree)
                 tree.mark_tree(node, marks=mark)
-                modmodel = model + '.' + '_'.join([str(n) for n in node])
+                modmodel = model + '.' + '_'.join([str(n) for n in node]) # check out changes in other function
                 if check_done(tree, modmodel, results):
                     continue
                 else:
@@ -522,9 +614,9 @@ def local_run_model_new(arguments,  ctrl_string=''):
         if proc:
             print("Killing %s" %proc)
             proc.kill(-9)
-        sys.exit(a, b)
+        exit(a, b)
     proc = None
-    signal.signal(signal.SIGINT, clean_exit)
+    signal(SIGINT, clean_exit)
 
     tree, model_name, binary, kwargs = arguments
 
@@ -562,10 +654,11 @@ def local_run_model_new(arguments,  ctrl_string=''):
 def load_model(model_name, tree, path, **kwargs):
     model_obj = Model(model_name, tree, **kwargs)
     setattr(model_obj, 'run', run)
-    #try:
-    tree.link_to_evol_model(path, model_obj)
-    #except KeyError:
-    #    warn('ERROR: model %s failed' % (model_obj.name))
+    try:
+        tree.link_to_evol_model(path, model_obj)
+    except KeyError:
+        raise(Exception('ERROR: model %s failed, problem with outfile:\n%s' % (
+            model_obj.name, path)))
 
 def write_results(tree, args):
     tests = "\nLRT\n\n"
@@ -615,6 +708,29 @@ def write_results(tree, args):
         print(tests)
     return bests
 
+def mark_tree_as_in(path_tree, tree):
+    clean_tree(tree)
+    other_tree = EvolTree(reformat_nw(path_tree[:-3] + 'tree'))
+    for other_n in other_tree.traverse():
+        if other_n.mark:
+            n = tree.get_descendant_by_node_id(other_n.node_id)
+            n.mark = other_n.mark
+
+def get_marks_from_tree(tree):
+    """
+    traverse the tree and returns the paml_ids of the nodes harboring marks
+    """
+    marks = []
+    nodes = []
+    for n in tree.traverse():
+        mark = getattr(n, 'mark')
+        if mark:
+            marks.append(mark)
+            nodes.append(n.node_id)
+    if nodes:
+        return [nodes], [marks]
+    return [], []
+
 def run(args):
     if not args.slr_binary:
         args.slr_binary = find_binary("Slr")
@@ -624,17 +740,17 @@ def run(args):
     binary  = os.path.expanduser(args.slr_binary)
     if not os.path.exists(binary):
         print("Warning: SLR binary does not exist at %s" % args.slr_binary,
-              file=sys.stderr)
+              file=stderr)
         print("         provide another route with --slr_binary, or install "
               "it by executing 'ete3 install-external-tools paml'",
-              file=sys.stderr)
+              file=stderr)
     binary  = os.path.expanduser(args.codeml_binary)
     if not os.path.exists(binary):
         print("Warning: CodeML binary does not exist at %s" % args.codeml_binary,
-              file=sys.stderr)
+              file=stderr)
         print("         provide another route with --codeml_binary, or install "
               "it by executing 'ete3 install-external-tools paml'",
-              file=sys.stderr)
+              file=stderr)
 
     # more help
     # TODO: move this to help section
@@ -688,6 +804,11 @@ def run(args):
             args.models = ['XX.' + os.path.split(args.config_file)[1]]
     for nw in args.src_tree_iterator:
         tree = EvolTree(reformat_nw(nw), format=1)
+        if args.clear_tree:
+            nodes, marks = [], []
+        else:
+            nodes, marks = get_marks_from_tree(tree)
+        clean_tree(tree)
         if args.output:
             tree.workdir = args.output
         if args.clear_all:
@@ -709,7 +830,7 @@ def run(args):
             return
 
         # get the marks we will apply to different runs
-        nodes, marks = get_marks_from_args(tree, args)
+        update_marks_from_args(nodes, marks, tree, args)
         # link to alignment
         tree.link_to_alignment(args.alg, alg_format='paml')
         # load models
@@ -731,9 +852,12 @@ def run(args):
                 params[p] = v
             models.update(run_all_models(tree, nodes, marks, args, **params))
         # link models to tree
+        clean_tree(tree)
         params = {}
         for model in models:
+            mark_tree_as_in(models[model], tree)
             load_model(model, tree, models[model], **params)
+            clean_tree(tree)
         # print results
         bests = write_results(tree, args)
         # apply evol model (best branch model?) to tree for display
@@ -744,11 +868,67 @@ def run(args):
                        key=lambda x: tree._models[x].lnL)
             tree.change_dist_to_evol('bL', tree._models[best], fill=True)
         except ValueError:
-            best = None
+            best = ''
 
-        # get all site models for display
+        # get all site models
         site_models = [m for m in tree._models
-                       if 'site' in AVAIL[m.split('.')[0]]['typ']]
+                       if ('site' in AVAIL[m.split('.')[0]]['typ']
+                           and not
+                           AVAIL[m.split('.')[0]]['evol'] == 'different-ratios')
+                       ]
+
+        # print summary by models
+        print('SUMMARY BY MODEL')
+        for model in tree._models.values():
+            print('\n - Model ' + model.name)
+            if any([model.branches[b]['mark'] for b in model.branches]):
+                node, mark = zip(*[(b, model.branches[b]['mark'].strip())
+                                   for b in model.branches
+                                   if model.branches[b]['mark']])
+                tree.mark_tree(node, marks=mark)
+                print('   * Marked branches')
+                print('      ' + tree.write().replace(' #0', ''))
+                omega_mark = [(model.branches[b]['w'], model.branches[b]['mark'].strip())
+                               for b in model.branches
+                               if model.branches[b]['mark'] and 'w' in model.branches[b]]
+                if omega_mark:
+                    print('\n        Branches  =>   omega')
+                    for omega, mark in set(omega_mark):
+                        print('      %10s  => %7.3f' % (mark.replace('#0', 'background'),
+                                                         omega))
+                clean_tree(tree)
+            elif all([model.branches[1]['w'] == model.branches[b]['w']
+                      for b in model.branches if 'w' in model.branches[b]]):
+                print('   * Average omega for all tree: %.3f' % model.branches[1]['w'])
+            if 'site' in AVAIL[model.name.split('.')[0]]['typ' ]:
+                try:
+                    categories = model.significance_by_site('BEB')
+                except KeyError:
+                    categories = model.significance_by_site('NEB')
+                
+                sign_sites = [(i, CATEGORIES[cat]) for i, cat in
+                              enumerate(categories, 1) if cat != 'NS']
+
+                if sign_sites:
+                    print('   * Sites significantly caracterized')
+                    print('      codon position |   category')
+                    print('     -----------------------------------------------------------')
+                    first = prev = sign_sites[0]
+                    for cat in sign_sites[1:]:
+                        #print(str(prev) + str(cat) + str(first))
+                        if prev[1] != cat[1] or prev[0] != cat[0] - 1:
+                            if first[0] != prev[0]:
+                                begend = '         %4d-%4d   |   ' % (first[0], prev[0])
+                            else:
+                                begend = '         %9d   |   '     % (prev[0])
+                            print(begend + cat[1])
+                            first = cat
+                        prev = cat
+                    if first[0] != prev[0]:
+                        begend = '         %4d-%4d   |   ' % (first[0], prev[0])
+                    else:
+                        begend = '         %9d   |   '     % (prev[0])
+                    print(begend + cat[1])
 
         if args.noimg:
             return

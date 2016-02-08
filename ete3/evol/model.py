@@ -277,6 +277,26 @@ class Model:
         Colorize function, that take in argument a list of values
         corresponding to a list of classes and returns a list of
         colors to paint histogram.
+
+        :param val: type of estimation, can be BEB or NEB (only
+           positive-selection models have BEB)
+        :param None col: a dictionary of colors that by default is:
+           {"NS" : "grey",
+            "RX" : "green",
+            "RX+": "green",
+            "CN" : "cyan",
+            "CN+": "blue",
+            "PS" : "orange",
+            "PS+": "red"}
+        
+        :returns: a list of colors dependending categories of sites that are among:
+          - CN+ > 0.99 probabylity of beloging to conserved class of site
+          - CN  > 0.95 probabylity of beloging to conserved class of site
+          - NS  not significant
+          - RX+ > 0.99 probabylity of beloging to relaxed class of site
+          - RX  > 0.95 probabylity of beloging to relaxed class of site
+          - PS+ > 0.99 probabylity of beloging to positively-selected class of site
+          - PS  > 0.95 probabylity of beloging to positively-selected class of site
         '''
         col = col or {'NS' : 'grey',
                       'RX' : 'green',
@@ -286,37 +306,60 @@ class Model:
                       'PS' : 'orange',
                       'PS+': 'red'}
         if not 'site' in self.properties['typ']:
-            raise Exception('ERROR: histogram are only for sit and '
+            raise Exception('ERROR: histogram are only for site and '
+                            'branch-site models.')
+        categories = self.significance_by_site(val)
+        return [col[cat] for cat in categories]
+
+    def significance_by_site(self, val):
+        '''
+        Summarize significance of site models.
+
+        :param val: type of estimation, can be BEB or NEB (only
+           positive-selection models have BEB)
+        
+        :returns: a list of categories among:
+          - CN+ > 0.99 probabylity of beloging to conserved class of site
+          - CN  > 0.95 probabylity of beloging to conserved class of site
+          - NS  not significant
+          - RX+ > 0.99 probabylity of beloging to relaxed class of site
+          - RX  > 0.95 probabylity of beloging to relaxed class of site
+          - PS+ > 0.99 probabylity of beloging to positively-selected class of site
+          - PS  > 0.95 probabylity of beloging to positively-selected class of site
+        '''
+        if not 'site' in self.properties['typ']:
+            raise Exception('ERROR: only for site and '
                             'branch-site models.')
         ps_model = 'positive' in self.properties['evol']
-        colors = []
+        categories = []
         for pval, curr_class in zip(self.sites[val]['pv'],
                                     self.sites[val]['class']):
             if pval < 0.95:
-                colors.append(col['NS'])
+                categories.append('NS')
             elif curr_class != self.n_classes[val] and not ps_model:
                 if pval < 0.99:
-                    colors.append(col['RX'])
+                    categories.append('RX')
                 else:
-                    colors.append(col['RX+'])
+                    categories.append('RX+')
             elif curr_class == 1:
                 if pval < 0.99:
-                    colors.append(col['CN'])
+                    categories.append('CN')
                 else:
-                    colors.append(col['CN+'])
+                    categories.append('CN+')
             elif curr_class >= self.n_classes[val] and ps_model:
                 if pval < 0.99:
-                    colors.append(col['PS'])
+                    categories.append('PS')
                 else:
-                    colors.append(col['PS+'])
+                    categories.append('PS+')
             elif curr_class == self.n_classes[val]:
                 if pval < 0.99:
-                    colors.append(col['RX'])
+                    categories.append('RX')
                 else:
-                    colors.append(col['RX+'])
+                    categories.append('RX+')
             else:
-                colors.append(col['NS'])
-        return colors
+                categories.append('NS')
+        return categories
+
 
 def check_name(model):
     '''
