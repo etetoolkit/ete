@@ -27,6 +27,7 @@ install:
     - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION pip pyqt numpy six lxml coverage scikit-bio biopython
     #- pip install coveralls
     - source activate test-environment
+    - conda install -c etetoolkit ete3_external_apps
     - python setup.py install --donottrackinstall
         
 before_script:
@@ -36,7 +37,7 @@ before_script:
   - sleep 2 # give xvfb some time to start
   - ete3 version
   - mkdir -p ~/.etetoolkit/
-  - ete3 upgrade-external-tools --dir ~/.etetoolkit/ -v  
+  #- ete3 upgrade-external-tools --dir ~/.etetoolkit/ -v  
   
 # command to run tests, e.g. python setup.py test
 script: 
