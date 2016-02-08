@@ -21,8 +21,6 @@ class Test_ete_evol(unittest.TestCase):
             SDATAPATH, SDATAPATH, OUTPATH, CPUS)
         args = cmd.split()
         args.extend([model for model in models if not 'XX' in model])
-        print(cmd)
-        print(args)
         ete._main(args)
 
     def test_02_next_test_to_be_defined(self):

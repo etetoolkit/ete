@@ -234,7 +234,8 @@ class EvolNode(PhyloNode):
         os.chdir(fullpath)
         bin = os.path.join(self.execpath, model_obj.properties['exec'])
         try:
-            proc = Popen([bin, 'tmp.ctl'], stdout=PIPE)
+            proc = Popen([bin, 'tmp.ctl'], stdout=PIPE, stdin=PIPE)
+            proc.stdin.write('\n') # in case codeml/slr asks something
         except OSError:
             raise Exception(('ERROR: {} not installed, ' +
                              'or wrong path to binary\n').format(bin))
