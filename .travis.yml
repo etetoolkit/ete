@@ -41,8 +41,10 @@ before_script:
   
 # command to run tests, e.g. python setup.py test
 script: 
-  - coverage run -m ete3.test.test_all
-
+  - coverage run -m ete3.test.test_api
+  - coverage run -a -m ete3.test.test_ete_evol
+  - coverage run -a -m ete3.test.test_ete_build
+  
 after_success:
   - coveralls
   
