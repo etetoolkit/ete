@@ -296,13 +296,6 @@ def clean_tree(tree):
     for n in tree.get_descendants() + [tree]:
         n.mark = ''
 
-def run_one_model(tree, model_name):
-    """
-    needed for multiprocessing
-    """
-    tree.run_model(model_name)
-    print('done ' + model_name)
-
 def get_node(tree, node):
     res = tree.search_nodes(name=node)
     if len(res) > 1:
@@ -463,8 +456,8 @@ def local_run_model(tree, model_name, binary, ctrl_string='', **kwargs):
     hlddir = os.getcwd()
     os.chdir(fullpath)
 
-    proc = Popen("%s tmp.ctl" %binary, stdout=PIPE, shell=True)
-
+    proc = Popen("%s tmp.ctl" %binary, stdout=PIPE, stdin=PIPE, shell=True)
+    proc.stdin.write('\n') # in case codeml/slr asks something
     job, err = proc.communicate()
     if err is not None or b'error' in job or b'Error' in job:
         print("ERROR: inside CodeML!!\n" + job)
@@ -897,15 +890,16 @@ def run(args):
                         print('      %10s  => %7.3f' % (mark.replace('#0', 'background'),
                                                          omega))
                 clean_tree(tree)
-            elif all([model.branches[1]['w'] == model.branches[b]['w']
-                      for b in model.branches if 'w' in model.branches[b]]):
+            elif 'w' in model.branches[1]:
                 print('   * Average omega for all tree: %.3f' % model.branches[1]['w'])
             if 'site' in AVAIL[model.name.split('.')[0]]['typ' ]:
                 try:
                     categories = model.significance_by_site('BEB')
                 except KeyError:
-                    categories = model.significance_by_site('NEB')
-                
+                    try:
+                        categories = model.significance_by_site('NEB')
+                    except KeyError:    
+                        categories = model.significance_by_site('SLR')
                 sign_sites = [(i, CATEGORIES[cat]) for i, cat in
                               enumerate(categories, 1) if cat != 'NS']
 
