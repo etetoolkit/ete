@@ -109,11 +109,11 @@ def run(args):
             yield s1, pairs
 
 
-    col_sizes = [25, 25] + [8] * 8
+    col_sizes = [15, 15] + [7] * 8
 
-    header = ['source', 'ref', 'eff.size', 'nRF',
-              'RF', 'maxRF', "%src_branches",
-              "%ref_branches", "subtrees", "treekoD" ]
+    header = ['source', 'ref', 'E.size', 'nRF',
+              'RF', 'maxRF', "src-branches",
+              "ref-branches", "subtrees", "treekoD" ]
 
     if args.taboutput:
         print('# ' + '\t'.join(header))
@@ -182,8 +182,8 @@ def run(args):
                     for tag, part in [("src: %s"%stree_name, src), ("ref: %s"%rtree_name, ref)]:
                         print("%s\t%s" %(tag, '\t'.join([','.join(p) for p in part])))
             else:
-                data = [shorten_str(stree_name, 25),
-                        shorten_str(rtree_name, 25),
+                data = [shorten_str(stree_name, 15, reverse=True),
+                        shorten_str(rtree_name, 15, reverse=True),
                         r['effective_tree_size'],
                         r['norm_rf'],
                         r['rf'], r['max_rf'],

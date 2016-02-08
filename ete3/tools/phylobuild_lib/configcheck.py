@@ -107,7 +107,7 @@ def list_apps(config, target_apps = None):
                 continue
                         
         avail_blocks = [[blockname, block["_app"], block.get("_desc", "")] for blockname, block in config.items() if block.get("_app") in validapps]
-        print_table(avail_blocks, header=["name", "app type", "desc."], max_col_width=80, title=appname)
+        print_table(avail_blocks, header=["name", "app type", "desc."], max_col_width=70, title=appname)
         print()
 
 def block_detail(block_name, config, color=True):

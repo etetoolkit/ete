@@ -163,7 +163,7 @@ app2check = {
     #'raxml-avx2'          : "-help |grep -i stamatakis|wc -l",
     #'jmodeltest'          : "--help | grep -i posada |wc -l",
     'dialigntx'           : "| grep alignment |wc -l",
-    'fasttree'            : "| grep 'FastTree ver'|wc -l",
+    'fasttree'            : "| grep -i 'FastTree ver'|wc -l",
     'statal'              : "-h | grep -i capella |wc -l ",
     'pmodeltest'          : "--version 2>&1|grep 'pmodeltest.py v'",
     'prank'              : "|grep 'prank v'", 
@@ -190,7 +190,7 @@ app2version = {
     #'raxml-pthreads-avx2' : "-version| grep -i version",
     #'raxml-avx2'          : "-version| grep -i version",
     'dialigntx'           : "/bin/sh |grep -i version",
-    'fasttree'            : "2>&1 | grep version",
+    'fasttree'            : "2>&1 | grep -i version",
     'statal'              : "--version| grep -i statal",
     'pmodeltest'          : "--version 2>&1|grep 'pmodeltest.py v'",
     'prank'              : "|grep 'prank v'", 
@@ -224,7 +224,7 @@ def test_apps(apps):
             print(colorify('Dialign-tx not supported in OS X', "orange"), file=sys.stderr)
             continue
         if app2version.get(name):
-            print("Checking %20s..." %name, end=' ')
+            print(" %14s:" %name, end=' ')
             test_cmd = cmd + " " + app2version.get(name, "")
 
             process = subprocess.Popen(test_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -233,7 +233,7 @@ def test_apps(apps):
             #print (process.returncode)
             #print (test_cmd)
             if out:
-                print("OK.\t%s" %str(out).strip())
+                print("%s - %s" %(colorify("OK", "green"), str(out).strip()))
             else:
                 print(colorify("ERROR", "red"))
                 errors += 1

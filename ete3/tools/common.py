@@ -145,9 +145,12 @@ def as_str(v):
     else:
         return str(v)
 
-def shorten_str(string, l):
+def shorten_str(string, l, reverse=False):
     if len(string) > l:
-        return "%s(...)" % string[:l-5]
+        if reverse:
+            return "(..)%s" % string[l+4:]
+        else:
+            return "%s(..)" % string[:l-4]
     else:
         return string
 

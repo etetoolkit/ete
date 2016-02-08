@@ -64,7 +64,7 @@ class Raxml(TreeTask):
             fullmodel = model.replace('pmodeltest-', '')
             basemodel = fullmodel.split("+")[0].split("!")[0]
             if seqtype == "nt" and basemodel != "GTR":
-                log.warning("Raxml supports only the GTR model, but model selection chose %s. Consider using Phyml if this is important." %basemodel)
+                log.warning("Raxml supports only the GTR model, but model selection returned %s. Consider using Phyml if this is important." %basemodel)
                 
             # overwrites default options if model selection says so
             
@@ -75,7 +75,7 @@ class Raxml(TreeTask):
                 #conf[confname]['-c'] = 1
             else:
                 if seqtype == "aa":
-                    model_string += conf[confname]["_aa_model"]
+                    model_string += conf[confname]["_method"]
                 
             if seqtype == "aa":
                 model_string += basemodel.upper()
