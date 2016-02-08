@@ -12,7 +12,7 @@ from ..evol.control import AVAIL
 BASEPATH = os.path.abspath(os.path.split(os.path.realpath(__file__))[0])
 DATAPATH = os.path.join(BASEPATH, "ete_evol_data", "S_example")
 SDATAPATH = os.path.join(BASEPATH,"ete_evol_data", "XS_example")
-OUTPATH = 'tmp/ete3_evol-test/'
+OUTPATH = 'ete_test_tmp/ete3_evol-test/'
 
 class Test_ete_evol(unittest.TestCase):
     def test_01_all_models(self):
@@ -27,11 +27,11 @@ class Test_ete_evol(unittest.TestCase):
 
     def test_02_web_examples(self):
         commands = [
-            'ete3 evol -t ECP_EDN_15.nw --alg ECP_EDN_15.fasta -o tmp/results1/ --models fb M2 SLR --cpu $$CPU',
-            'ete3 evol -t ECP_EDN_15.nw --alg ECP_EDN_15.fasta --models b_neut b_free --mark Papio_EDN,,,Orang_EDN -o tmp/results2/ --cpu $$CPU',
-            'ete3 evol -t ECP_EDN_15.nw --alg ECP_EDN_15.fasta --models b_neut b_free --mark Human_EDN,,,Hylobates_EDN,Macaq_EDN,,,Papio_EDN Macaq_ECP,,Macaq2_ECP,Human_ECP,,Goril_ECP -o tmp/results3/ --cpu $$CPU',
-            'ete3 evol -t ECP_EDN_15.nw --alg ECP_EDN_15.fasta --models b_neut b_free --mark Papio_EDN,,,Orang_EDN -o tmp/results3/ --cpu $$CPU',
-            'ete3 evol -t ECP_EDN_15.nw --alg ECP_EDN_15.fasta --models M2 M1 b_free b_neut --leaves --tests b_free,b_neut -o tmp/results4/ --cpu $$CPU',
+            'ete3 evol -t ECP_EDN_15.nw --alg ECP_EDN_15.fasta -o ete_test_tmp/results1/ --models fb M2 SLR --cpu $$CPU',
+            'ete3 evol -t ECP_EDN_15.nw --alg ECP_EDN_15.fasta --models b_neut b_free --mark Papio_EDN,,,Orang_EDN -o ete_test_tmp/results2/ --cpu $$CPU',
+            'ete3 evol -t ECP_EDN_15.nw --alg ECP_EDN_15.fasta --models b_neut b_free --mark Human_EDN,,,Hylobates_EDN,Macaq_EDN,,,Papio_EDN Macaq_ECP,,Macaq2_ECP,Human_ECP,,Goril_ECP -o ete_test_tmp/results3/ --cpu $$CPU',
+            'ete3 evol -t ECP_EDN_15.nw --alg ECP_EDN_15.fasta --models b_neut b_free --mark Papio_EDN,,,Orang_EDN -o ete_test_tmp/results3/ --cpu $$CPU',
+            'ete3 evol -t ECP_EDN_15.nw --alg ECP_EDN_15.fasta --models M2 M1 b_free b_neut --leaves --tests b_free,b_neut -o ete_test_tmp/results4/ --cpu $$CPU',
             ]
         for cmd in commands:
             cmd = cmd.replace("ECP_EDN_15", "%s/ete_evol_data/CladeModelCD/ECP_EDN_15" %BASEPATH)

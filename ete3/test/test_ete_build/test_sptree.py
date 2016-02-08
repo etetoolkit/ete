@@ -27,10 +27,10 @@ class Test_ete_build_sptree(unittest.TestCase):
         gene_wkname = 'clustalo_default-trimal01-none-none'
         for wkname in "brh_cog_all-alg_concat_default-raxml_default", "brh_cog_all-alg_concat_default-fasttree":
             wkname = "brh_cog_all-alg_concat_default-raxml_default"
-            cmd = 'ete3 build -a %s/cog_seqs.fa --cogs %s/fake_cogs.tsv -w %s -m %s -o tmp/etebuild_test2  -t0.5 --launch 0.5 --clearall --cpu %d' %(DIR, DIR, gene_wkname, wkname, CPUS)
+            cmd = 'ete3 build -a %s/cog_seqs.fa --cogs %s/fake_cogs.tsv -w %s -m %s -o ete_test_tmp/etebuild_test2  -t0.5 --launch 0.5 --clearall --cpu %d' %(DIR, DIR, gene_wkname, wkname, CPUS)
             args = cmd.split()
             ete._main(args)                        
-            ctree, xtree, alg_used, alg, alg_trimmed, img, cmd = get_out_files("tmp/etebuild_test2", wkname, "cog_seqs.fa")
+            ctree, xtree, alg_used, alg, alg_trimmed, img, cmd = get_out_files("ete_test_tmp/etebuild_test2", wkname, "cog_seqs.fa")
             t1 = Tree(ctree)
             t2 = Tree(xtree)
         
