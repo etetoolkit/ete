@@ -10,8 +10,8 @@ from ..tools import ete
 from ..evol.control import AVAIL
 
 BASEPATH = os.path.abspath(os.path.split(os.path.realpath(__file__))[0])
-DATAPATH = os.path.join(BASEPATH, "/ete_evol_data/S_example")
-SDATAPATH = os.path.join(BASEPATH, "/ete_evol_data/XS_example")
+DATAPATH = os.path.join(BASEPATH, "ete_evol_data", "S_example")
+SDATAPATH = os.path.join(BASEPATH,"ete_evol_data", "XS_example")
 OUTPATH = 'tmp/ete3_evol-test/'
 
 class Test_ete_evol(unittest.TestCase):
