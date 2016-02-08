@@ -9,8 +9,9 @@ import unittest
 from ..tools import ete
 from ..evol.control import AVAIL
 
-DATAPATH = os.path.abspath(os.path.split(os.path.realpath(__file__))[0])+"/ete_evol_data/S_example"
-SDATAPATH = os.path.abspath(os.path.split(os.path.realpath(__file__))[0])+"/ete_evol_data/XS_example"
+BASEPATH = os.path.abspath(os.path.split(os.path.realpath(__file__))[0])
+DATAPATH = os.path.join(BASEPATH, "/ete_evol_data/S_example")
+SDATAPATH = os.path.join(BASEPATH, "/ete_evol_data/XS_example")
 OUTPATH = 'tmp/ete3_evol-test/'
 
 class Test_ete_evol(unittest.TestCase):
@@ -24,8 +25,20 @@ class Test_ete_evol(unittest.TestCase):
         print(' '.join(args))
         ete._main(args)
 
-    def test_02_next_test_to_be_defined(self):
-        pass
-
+    def test_02_web_examples(self):
+        commands = [
+            'ete3 evol -t ECP_EDN_15.nw --alg ECP_EDN_15.fasta -o results1/ --models fb M2 SLR --cpu $$CPU',
+            'ete3 evol -t ECP_EDN_15.nw --alg ECP_EDN_15.fasta --models b_neut b_free --mark Papio_EDN,,,Orang_EDN -o results2/ --cpu $$CPU',
+            'ete3 evol -t ECP_EDN_15.nw --alg ECP_EDN_15.fasta --models b_neut b_free --mark Human_EDN,,,Hylobates_EDN,Macaq_EDN,,,Papio_EDN Macaq_ECP,,Macaq2_ECP,Human_ECP,,Goril_ECP -o results3/ --cpu $$CPU',
+            'ete3 evol -t ECP_EDN_15.nw --alg ECP_EDN_15.fasta --models b_neut b_free --mark Papio_EDN,,,Orang_EDN -o results3/ --cpu $$CPU',
+            'ete3 evol -t ECP_EDN_15.nw --alg ECP_EDN_15.fasta --models M2 M1 b_free b_neut --leaves --tests b_free,b_neut -o results4/ --cpu $$CPU',
+            ]
+        for cmd in commands:
+            cmd = cmd.replace("ECP_EDN_15", "%s/ete_evol_data/CladeModelCD/ECP_EDN_15" %BASEPATH)
+            cmd = cmd.replace("$$CPU", str(CPUS))
+            print(cmd)
+            args = cmd.split()
+            ete._main(args)  
+        
 if __name__ == "__main__":
     unittest.main()
