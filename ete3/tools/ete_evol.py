@@ -114,9 +114,17 @@ Model name  Description                   Model kind
                                  "example: --prev_models /path1/,M2 /path2/,M1\n"
                                  "will load models from path1 under the name "
                                  "'M2', and from path2 into 'M1'"))
+
     evol_args.add_argument("--view", dest="show", action='store_true',
                            help=("Opens ETE interactive GUI to visualize tree and "
                                  "select model(s) to render."))
+
+    evol_args.add_argument("-i", "--image", dest="image",
+                           type=str,
+                           help="Render tree image instead of showing it. A filename "
+                           " should be provided. PDF, SVG and PNG file extensions are"
+                           " supported (i.e. -i tree.svg)"
+                        )
     evol_args.add_argument("--noimg", dest="noimg", action='store_true',
                            help=("Do not generate images."))
     evol_args.add_argument("--clean_layout", dest="clean_layout",
@@ -948,9 +956,7 @@ def run(args):
         if args.show:
             tree.show(histfaces=site_models,
                       layout=evol_clean_layout if args.clean_layout else None)
-        else:
-            tree.render(os.path.join(tree.workdir, 'tree_%s%s.pdf' % (
-                'hist-%s_' % ('-'.join(site_models)) if site_models else '',
-                best)), histfaces=site_models,
+        if args.image:
+            tree.render(args.image, histfaces=site_models,
                         layout=evol_clean_layout if args.clean_layout else None)
 
