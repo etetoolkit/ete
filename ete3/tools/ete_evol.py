@@ -477,6 +477,8 @@ def check_done(tree, modmodel, results):
                 return True
         else:
             if os.path.getsize(os.path.join(tree.workdir, modmodel, 'out')) > 0:
+                results.append((os.path.join(tree.workdir, modmodel, "out"),
+                                modmodel))
                 return True
     return False
 
