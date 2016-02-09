@@ -902,7 +902,7 @@ a tree.  Because of this drawback, several improved formats haven been
 (or are being) developed to read and write tree based
 information. Some of these new formats are based in a completely new
 standard (:doc:`tutorial_xml`), while others are extensions of the
-original newick formar (NHX
+original newick format (NHX
 http://phylosoft.org/NHX/http://phylosoft.org/NHX/).
 
 Currently, ETE
