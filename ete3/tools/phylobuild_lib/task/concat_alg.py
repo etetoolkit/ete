@@ -119,9 +119,7 @@ class ConcatAlg(ConcatAlgTask):
                 except:
                     tid, datatype = job.alg_fasta_file.split(".")
                     alg_seqtypes.add(job.seqtype)
-                    log.warning("Concatenating aa alignment")
                 else:
-                    log.warning("Concatenating nt alignment")
                     alg_seqtypes.add("nt")
                     
                 dataid = db.get_dataid(tid, datatype)
@@ -132,9 +130,7 @@ class ConcatAlg(ConcatAlgTask):
                 except:
                     tid, datatype = job.clean_alg_fasta_file.split(".")
                     clean_alg_seqtypes.add(job.seqtype)
-                    log.warning("Concatenating aa trimmed alignment")
                 else:
-                    log.warning("Concatenating trimmed nt alignment")
                     clean_alg_seqtypes.add("nt")
                     
                 dataid = db.get_dataid(tid, datatype)
@@ -145,9 +141,11 @@ class ConcatAlg(ConcatAlgTask):
                 self.job2model[job.nodeid] = clean_model
 
         if "acleaner" in jobtypes:
+            log.warning("Concatenating trimmed alignments")
             self.job2alg = job2acleaner
             seqtypes = clean_alg_seqtypes
         else:
+            log.warning("Concatenating alignments")
             self.job2alg = job2alg
             seqtypes = alg_seqtypes
                 
@@ -156,7 +154,8 @@ class ConcatAlg(ConcatAlgTask):
         else:
             seqtype = seqtypes.pop()
 
-
+        log.warning("Using %s concatenated alignment" %seqtype)
+            
         if seqtype == "aa":
             self.default_model = self.conf[self.confname]["_default_aa_model"]
         elif seqtype == "nt":

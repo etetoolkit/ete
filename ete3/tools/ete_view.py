@@ -492,8 +492,12 @@ def run(args):
                                 node.add_face(F, column=col, position=f["pos"])
 
         if args.image:
-            t.render("t%d.%s" %(tindex, args.image),
-                     tree_style=ts, w=args.width, h=args.height, units=args.size_units)
+            if tindex > 0: 
+                t.render("t%d.%s" %(tindex, args.image),
+                         tree_style=ts, w=args.width, h=args.height, units=args.size_units)
+            else:
+                t.render("%s" %(args.image),
+                         tree_style=ts, w=args.width, h=args.height, units=args.size_units)                
         else:
             t.show(None, tree_style=ts)
 
