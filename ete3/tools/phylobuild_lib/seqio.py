@@ -82,12 +82,13 @@ def load_sequences(args, seqtype, target_seqs, target_species, cached_seqs):
         if c1 and c1 % 10000 == 0:
             if loaded_seqs:
                 estimated_time = ((len(target_seqs)-len(loaded_seqs)) * (time.time()-start_time)) / float(c1)
+                percent = (len(loaded_seqs)/float(len(target_seqs))) * 100.0
             else:
+                percent = 0
                 estimated_time = -1            
-            print("loaded:%07d skipped:%07d scanned:%07d - Approx. time to finish: %0.1fsecs" %\
-                  (len(loaded_seqs), skipped_seqs, c1, estimated_time), end='\n', file=sys.stderr)
-        sys.stderr.flush()
-
+            print("loaded:%07d skipped:%07d scanned:%07d %0.1f%%" %\
+                  (len(loaded_seqs), skipped_seqs, c1, percent), end='\n', file=sys.stderr)
+        
         if args.seq_name_parser:
             name_match = re.search(NAME_PARSER, raw_seqname)
             if name_match:
@@ -129,7 +130,7 @@ def load_sequences(args, seqtype, target_seqs, target_species, cached_seqs):
         db.add_seq(seqid, seq, seqtype)
         if not cached_seqs:            
             db.add_seq_name(seqid, seqname)
-            
+    print('\n', file=sys.stderr)
     db.seqconn.commit()
     return loaded_seqs
 
