@@ -385,14 +385,14 @@ class NCBITaxa(object):
             end = prepostorder.index(root_taxid, start+1)
             subtree = prepostorder[start:end+1]
             leaves = set([v for v, count in Counter(subtree).items() if count == 1])
-            nodes[root_taxid] = PhyloTree(name=root_taxid)
+            nodes[root_taxid] = PhyloTree(name=str(root_taxid))
             current_parent = nodes[root_taxid]
             for tid in subtree:
                 if tid in visited:
                     current_parent = nodes[tid].up
                 else:
                     visited.add(tid)
-                    nodes[tid] = PhyloTree(name=tid)
+                    nodes[tid] = PhyloTree(name=str(tid))
                     current_parent.add_child(nodes[tid])
                     if tid not in leaves:
                         current_parent = nodes[tid]
