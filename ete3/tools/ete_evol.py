@@ -71,13 +71,18 @@ def init_worker():
 def populate_args(evol_args_p):
     evol_args_p.formatter_class = RawTextHelpFormatter
     evol_args = evol_args_p.add_argument_group('ETE-EVOL OPTIONS')
+    evol_args.add_argument("--alg", dest="alg",
+                           type=str,
+                           help=("Link tree to a multiple sequence alignment"
+                                 " (codons)."))
+
     evol_args.add_argument("--models", dest="models",
                            nargs="+",
                            help="""choose evolutionary models (Model name) among:
 =========== ============================= ==================
 Model name  Description                   Model kind
 =========== ============================= ==================\n%s
-=========== ============================= ==================\n
+=========== ============================= ==================
                            """ % (
                                '\n'.join([' %-8s    %-27s   %-15s' % \
                                           ('%s' % (x), AVAIL[x]['evol'],
@@ -87,25 +92,11 @@ Model name  Description                   Model kind
                                               reverse=True)])),
                            metavar='[...]')
 
-    evol_args.add_argument("--alg", dest="alg",
-                           type=str,
-                           help=("Link tree to a multiple sequence alignment"
-                                 " (codons)."))
-
     evol_args.add_argument("--node_ids", dest="node_ids",
                            action='store_true',
                            help=("Prints the correspondence between PAML "
                                  "node IDs and node names (ancestors will be "
                                  "displayed as list of descendants), and exit"))
-
-    evol_args.add_argument("--clear_all", dest="clear_all",
-                           action='store_true',
-                           help=("Clear any data present in the output directory."))
-
-    evol_args.add_argument("--resume", dest="resume",
-                           action='store_true',
-                           help=("Skip model if previous results are found in "
-                                 "the output directory."))
 
     evol_args.add_argument("--prev_models", dest="prev_models",
                            type=str, nargs='+',
@@ -115,36 +106,12 @@ Model name  Description                   Model kind
                                  "will load models from path1 under the name "
                                  "'M2', and from path2 into 'M1'"))
 
-    evol_args.add_argument("--view", dest="show", action='store_true',
-                           help=("Opens ETE interactive GUI to visualize tree and "
-                                 "select model(s) to render."))
-
-    evol_args.add_argument("-i", "--image", dest="image",
-                           type=str,
-                           help="Render tree image instead of showing it. A filename "
-                           " should be provided. PDF, SVG and PNG file extensions are"
-                           " supported (i.e. -i tree.svg)"
-                        )
-    evol_args.add_argument("--noimg", dest="noimg", action='store_true',
-                           help=("Do not generate images."))
-    evol_args.add_argument("--clean_layout", dest="clean_layout",
-                           action='store_true',
-                           help=("Other visualization option, with omega values "
-                                 "written on branches"))
-    evol_args.add_argument("--histface", dest="histface",
-                           type=str, nargs='+',
-                           choices=['bar', 'stick', 'curve',
-                                    '+-bar', '+-stick', '+-curve'],
-                           help=("Type of histogram face to be used for site "
-                                 "models. If preceded by '+-' error bars are "
-                                 "also drawn."))
-
     # evol_args.add_argument("-o", "--output_dir", dest="outdir",
     #                        type=str, default='/tmp/ete3-tmp/',
     #                        help=("directory where to store computed models."
     #                              "subderectories with model names will be created"))
 
-    codeml_mk = evol_args_p.add_argument_group("CODEML TREE CONFIGURATION OPTIONS")
+    codeml_mk = evol_args_p.add_argument_group("CODEML TREE MARKING OPTIONS")
 
     codeml_mk.add_argument('--mark', dest="mark", nargs='+',
                            help=(
@@ -218,7 +185,35 @@ Model name  Description                   Model kind
                                  "parameters for model configuration "
                                  "and exit."))
 
-    exec_group = evol_args_p.add_argument_group('EXECUTION MDE OPTIONS')
+    img_gr = evol_args_p.add_argument_group("TREE IMAGE GENERAL OPTIONS")
+    
+    img_gr.add_argument("--view", dest="show", action='store_true',
+                        help=("Opens ETE interactive GUI to visualize tree and "
+                              "select model(s) to render."))
+
+    img_gr.add_argument("-i", "--image", dest="image",
+                           type=str,
+                           help="Render tree image instead of showing it. A filename "
+                           " should be provided. PDF, SVG and PNG file extensions are"
+                           " supported (i.e. -i tree.svg)")
+    
+    img_gr.add_argument("--noimg", dest="noimg", action='store_true',
+                           help=("Do not generate images."))
+    
+    img_gr.add_argument("--clean_layout", dest="clean_layout",
+                           action='store_true',
+                           help=("Other visualization option, with omega values "
+                                 "written on branches"))
+
+    img_gr.add_argument("--histface", dest="histface",
+                           type=str, nargs='+',
+                           choices=['bar', 'stick', 'curve',
+                                    '+-bar', '+-stick', '+-curve'],
+                           help=("Type of histogram face to be used for site "
+                                 "models. If preceded by '+-' error bars are "
+                                 "also drawn."))
+
+    exec_group = evol_args_p.add_argument_group('EXECUTION MODE OPTIONS')
     exec_group.add_argument("-C", "--cpu", dest="maxcores", type=int,
                             default=1, help="Maximum number of CPU cores"
                             " available in the execution host. If higher"
@@ -228,8 +223,19 @@ Model name  Description                   Model kind
 
     exec_group.add_argument("--codeml_binary", dest="codeml_binary",
                             help="[%(default)s] path to CodeML binary")
+
     exec_group.add_argument("--slr_binary", dest="slr_binary",
                             help="[%(default)s] path to Slr binary")
+
+    exec_group.add_argument("--clear_all", dest="clear_all",
+                           action='store_true',
+                           help=("Clear any data present in the output directory."))
+
+    exec_group.add_argument("--resume", dest="resume",
+                           action='store_true',
+                           help=("Skip model if previous results are found in "
+                                 "the output directory."))
+
 
 def parse_config_file(fpath):
     params = {}
