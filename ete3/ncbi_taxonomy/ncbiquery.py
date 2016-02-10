@@ -508,12 +508,11 @@ class NCBITaxa(object):
             if node_taxid:
                 if node_taxid in merged_conversion:
                     node_taxid = merged_conversion[node_taxid]
-
                 n.add_features(sci_name = tax2name.get(node_taxid, getattr(n, taxid_attr, '')),
                                common_name = tax2common_name.get(node_taxid, ''),
                                lineage = tax2track[node_taxid],
-                               rank = tax2rank.get(node_taxid, 'Unknown'),
-                               named_lineage = self.translate_to_names(tax2track[node_taxid]))
+                               rank = tax2rank.get(node_taxid, 'Unknown'),                               
+                               named_lineage = [tax2name.get(tax, str(tax)) for tax in tax2track[node_taxid]])
             elif n.is_leaf():
                 n.add_features(sci_name = getattr(n, taxid_attr, 'NA'),
                                common_name = '',
