@@ -51,7 +51,7 @@ except ImportError:
     # python 3 support
     import pickle
 
-from collections import defaultdict
+from collections import defaultdict, Counter
 
 import sqlite3
 import math
@@ -186,6 +186,22 @@ class NCBITaxa(object):
             id2rank[tax] = spname
         return id2rank
 
+    def get_lineage_translator(self, taxids):
+        """Given a valid taxid number, return its corresponding lineage track as a
+        hierarchically sorted list of parent taxids.
+        """
+        all_ids = set(taxids)
+        all_ids.discard(None)
+        all_ids.discard("")
+        query = ','.join(['"%s"' %v for v in all_ids])
+        result = self.db.execute('SELECT taxid, track FROM species WHERE taxid IN (%s);' %query)
+        id2lineages = {}
+        for tax, track in result.fetchall():
+            id2lineages[tax] = list(map(int, reversed(track.split(","))))
+
+        return id2lineages
+
+    
     def get_lineage(self, taxid):
         """Given a valid taxid number, return its corresponding lineage track as a
         hierarchically sorted list of parent taxids.
@@ -220,10 +236,9 @@ class NCBITaxa(object):
                 id2name[tax] = common_name
         return id2name
 
-    def get_taxid_translator(self, taxids):
+    def get_taxid_translator(self, taxids, try_synonyms=True):
         """Given a list of taxids, returns a dictionary with their corresponding
         scientific names.
-
         """
 
         all_ids = set(map(int, taxids))
@@ -237,7 +252,7 @@ class NCBITaxa(object):
             id2name[tax] = spname
 
         # any taxid without translation? lets tray in the merged table
-        if len(all_ids) != len(id2name):
+        if len(all_ids) != len(id2name) and try_synonyms:
             not_found_taxids = all_ids - set(id2name.keys())
             taxids, old2new = self._translate_merged(not_found_taxids)
             new2old = dict([(v,k) for k,v in six.iteritems(old2new)])
@@ -356,34 +371,66 @@ class NCBITaxa(object):
 
         """
         from .. import PhyloTree
-        sp2track = {}
-        elem2node = {}
-        for sp in taxids:
-            track = []
-            lineage = self.get_lineage(sp)
-            id2rank = self.get_rank(lineage)
-
-            for elem in lineage:
-                if elem not in elem2node:
-                    node = elem2node.setdefault(elem, PhyloTree())
-                    node.name = str(elem)
-                    node.taxid = elem
-                    node.add_feature("rank", str(id2rank.get(int(elem), "no rank")))
+        
+        if len(taxids) == 1:
+            root_taxid = taxids[0]
+            with open(self.dbfile+".traverse.pkl", "rb") as CACHED_TRAVERSE:
+                prepostorder = pickle.load(CACHED_TRAVERSE)
+            descendants = {}
+            found = 0
+            nodes = {}
+            hit = 0
+            visited = set()            
+            start = prepostorder.index(root_taxid)
+            end = prepostorder.index(root_taxid, start+1)
+            subtree = prepostorder[start:end+1]
+            leaves = set([v for v, count in Counter(subtree).items() if count == 1])
+            nodes[root_taxid] = PhyloTree(name=root_taxid)
+            current_parent = nodes[root_taxid]
+            for tid in subtree:
+                if tid in visited:
+                    current_parent = nodes[tid].up
                 else:
-                    node = elem2node[elem]
-                track.append(node)
-            sp2track[sp] = track
+                    visited.add(tid)
+                    nodes[tid] = PhyloTree(name=tid)
+                    current_parent.add_child(nodes[tid])
+                    if tid not in leaves:
+                        current_parent = nodes[tid]
+            root = nodes[root_taxid]
+        else:            
+            sp2track = {}
+            elem2node = {}
+            id2lineage = self.get_lineage_translator(taxids)
+            all_taxids = set()
+            for lineage in id2lineage.values():
+                all_taxids.update(lineage)                
+            id2rank = self.get_rank(all_taxids)
+            for sp in taxids:
+                track = []
+                lineage = id2lineage[sp]
+                #lineage = self.get_lineage(sp)
+                #id2rank = self.get_rank(lineage)
 
-        # generate parent child relationships
-        for sp, track in six.iteritems(sp2track):
-            parent = None
-            for elem in track:
-                if parent and elem not in parent.children:
-                    parent.add_child(elem)
-                if rank_limit and elem.rank == rank_limit:
-                    break
-                parent = elem
-        root = elem2node[1]
+                for elem in lineage:
+                    if elem not in elem2node:
+                        node = elem2node.setdefault(elem, PhyloTree())
+                        node.name = str(elem)
+                        node.taxid = elem
+                        node.add_feature("rank", str(id2rank.get(int(elem), "no rank")))
+                    else:
+                        node = elem2node[elem]
+                    track.append(node)
+                sp2track[sp] = track
+            # generate parent child relationships
+            for sp, track in six.iteritems(sp2track):
+                parent = None
+                for elem in track:
+                    if parent and elem not in parent.children:
+                        parent.add_child(elem)
+                    if rank_limit and elem.rank == rank_limit:
+                        break
+                    parent = elem
+            root = elem2node[1]
 
         #remove onechild-nodes
         if not intermediate_nodes:
@@ -421,10 +468,8 @@ class NCBITaxa(object):
         :param tax2name,tax2track,tax2rank: Use these arguments to provide
         pre-calculated dictionaries providing translation from taxid number and
         names,track lineages and ranks.
-
         """
 
-        #leaves = t.get_leaves()
         taxids = set()
         for n in t.traverse():
             try:
@@ -436,13 +481,11 @@ class NCBITaxa(object):
         merged_conversion = {}
 
         taxids, merged_conversion = self._translate_merged(taxids)
-
+        
         if not tax2name or taxids - set(map(int, list(tax2name.keys()))):
-            #print "Querying for tax names"
-            tax2name = self.get_taxid_translator([tid for tid in taxids])
+            tax2name = self.get_taxid_translator(taxids)
         if not tax2track or taxids - set(map(int, list(tax2track.keys()))):
-            #print "Querying for tax lineages"
-            tax2track = dict([(tid, self.get_lineage(tid)) for tid in taxids])
+            tax2track = self.get_lineage_translator(taxids)
 
         all_taxid_codes = set([_tax for _lin in list(tax2track.values()) for _tax in _lin])
         extra_tax2name = self.get_taxid_translator(list(all_taxid_codes - set(tax2name.keys())))
