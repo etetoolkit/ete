@@ -136,9 +136,9 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
             total_height = 0
             for r, f in enumerate(faces):
                 f.node = self.node
-                if f.type == "pixmap" and norender:
+                if f.type == "pixmap" and not norender:
                     f.update_pixmap()
-                elif f.type == "item" and norender:
+                elif f.type == "item" and not norender:
                     f.update_items()
                 elif f.type == "text" and f.rotation:
                     f.tight_text = False
