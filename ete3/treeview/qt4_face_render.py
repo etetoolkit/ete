@@ -126,7 +126,7 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
     def get_size(self):
         return self.w, self.h
 
-    def update_columns_size(self):
+    def update_columns_size(self, norender=False):
         self.sizes = {}
         self.c2height = {}
 
@@ -136,12 +136,10 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
             total_height = 0
             for r, f in enumerate(faces):
                 f.node = self.node
-                if f.type == "pixmap":
-                    if not getattr(f, "pixmap", None):
-                        f.update_pixmap()
-                elif f.type == "item":
-                    if not getattr(f, "item", None):
-                        f.update_items()
+                if f.type == "pixmap" and norender:
+                    f.update_pixmap()
+                elif f.type == "item" and norender:
+                    f.update_items()
                 elif f.type == "text" and f.rotation:
                     f.tight_text = False
 
@@ -196,7 +194,7 @@ class _FaceGroupItem(QGraphicsRectItem): # I was about to name this FaceBookItem
             self.columns = list(range(min(self.c2max_w), max(self.c2max_w)+1))
 
         self.as_grid = as_grid
-        self.update_columns_size()
+        self.update_columns_size(norender=True)
         return self.c2max_w, self.r2max_h
 
 
