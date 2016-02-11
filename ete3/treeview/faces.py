@@ -189,7 +189,7 @@ class Face(object):
                  "pixmap", "opacity", "rotable", "rotable", "hz_align",
                  "vt_align", "background", "border", "inner_border",
                  "inner_background", "rotation", "node", "type"]
-    
+
     def __init__(self):
         self.node        = None
         self.type = "pixmap" # pixmap, text or item
@@ -253,7 +253,7 @@ class TextFace(Face):
     """
     __slots__ = ["fgcolor", "fstyle", "fsize", "ftype", "penwidth",
                  "tight_text", "bold", "_text", "_bounding_rect", "_real_rect"]
-    
+
     def __init__(self, text, ftype="Verdana", fsize=10,
                  fgcolor="black", penwidth=0, fstyle="normal",
                  tight_text=False, bold=False):
@@ -272,7 +272,7 @@ class TextFace(Face):
         self.tight_text = tight_text
         self.bold = bold
 
-    
+
     def __repr__(self):
         return "Text Face [%s] (%s)" %(self._text, hex(self.__hash__()))
 
@@ -351,7 +351,7 @@ class AttrFace(TextFace):
     """
 
     __slots__ = ["attr", "text_suffix", "text_prefix", "attr_formatter", "_bounding_rect_text"]
-    
+
     def __repr__(self):
         return "Attribute Face [%s] (%s)" %(self.attr, hex(self.__hash__()))
 
@@ -400,14 +400,14 @@ class ImgFace(Face):
     :param img_file: path to the image file.
     :param None width: if provided, image will be scaled to this width (in pixels)
     :param None height: if provided, image will be scaled to this height (in pixels)
-    :param False is_url: if True, img_file is considered a URL and the image is automatically downloaded 
+    :param False is_url: if True, img_file is considered a URL and the image is automatically downloaded
 
     If only one dimension value (width or height) is provided, the other
     will be calculated to keep aspect ratio.
 
     """
 
-    def __init__(self, img_file, width=None, height=None, is_url=False):                
+    def __init__(self, img_file, width=None, height=None, is_url=False):
         Face.__init__(self)
         self.img_file = img_file
         self.width = width
@@ -420,7 +420,7 @@ class ImgFace(Face):
             self.pixmap.loadFromData(urlopen(self.img_file).read())
         else:
             self.pixmap = QPixmap(self.img_file)
-        
+
         if self.width or self.height:
             w, h = self.width, self.height
             ratio = self.pixmap.width() / float(self.pixmap.height())
@@ -451,7 +451,7 @@ class ProfileFace(Face):
         Face.__init__(self)
         self.profile = values_vector
         self.deviations = deviations_vector
-        
+
         self.width  = width
         self.height = height
         self.max_value = max_v
@@ -987,7 +987,7 @@ def _label_painter(obj, p, option, widget):
     :param p: a QPainter (see paint() method)
     :param option: (see paint() method)
     :param widget: (see paint() method)
-    
+
     """
     if not obj.label:
         return
@@ -1396,9 +1396,9 @@ class _BarChartItem(QGraphicsRectItem):
         self.deviations = deviations
         self.label_fsize = label_fsize
         self.scale_fsize = scale_fsize
-        
+
         self.set_real_size()
-        
+
     def set_real_size(self):
         label_height = 0
         scale_width = 0
@@ -1413,7 +1413,7 @@ class _BarChartItem(QGraphicsRectItem):
             min_value = min([v+d for v,d in zip(self.values, self.deviations) if isfinite(v)])
         else:
             min_value = self.min_value
-        
+
         if self.draw_scale:
             max_string = "% 7.2f" %max_value
             min_string = "% 7.2f" %min_value
@@ -1433,10 +1433,10 @@ class _BarChartItem(QGraphicsRectItem):
             label_height = fm.boundingRect(QRect(), Qt.AlignLeft, longest_label).width() + margin
             label_width = fm.height() * len(self.labels)
             self.width = max(label_width, self.width)
-            
+
         self.setRect(0, 0, self.width + scale_width, self.height + label_height)
-                
-        
+
+
     def paint(self, p, option, widget):
         colors = self.colors
         values = self.values
@@ -1459,11 +1459,11 @@ class _BarChartItem(QGraphicsRectItem):
 
         plot_width = self.width
         plot_height = self.height
-        
+
         x_alpha = float((plot_width - spacing_length) / (len(values)))
         if x_alpha < 1:
             raise ValueError("BarChartFace is too small")
-                
+
         y_alpha = float ( (plot_height-3) / float(max_value - min_value) )
         x = 0
         y = 0
@@ -1701,7 +1701,7 @@ class SeqMotifFace(StaticItemFace):
             * ``[]`` = rectangle
             * ``()`` = round corner rectangle
             * ``line`` = horizontal line
-            * ``blank`` = blank space 
+            * ``blank`` = blank space
 
             * ``seq`` = Show a color and the corresponding letter of each sequence position
             * ``compactseq`` = Show a thinh vertical color line for each sequence position
@@ -1710,10 +1710,10 @@ class SeqMotifFace(StaticItemFace):
          * **height:** total height of the motif (or sequence position height if seq motif type)
          * **fgcolor:** color for the motif shape border
          * **bgcolor:** motif background color. Color code or name can be preceded with the "rgradient:" tag to create a radial gradient effect.
-         * **text_label:** a text label in the format 'FontType|FontSize|FontColor|Text', for instance, arial|8|white|MotifName"" 
+         * **text_label:** a text label in the format 'FontType|FontSize|FontColor|Text', for instance, arial|8|white|MotifName""
 
     :param line gap_format: default shape for the gaps between motifs
-    :param blockseq seq_format: default shape for the seq regions not covered in motifs 
+    :param blockseq seq_format: default shape for the seq regions not covered in motifs
     """
 
     def __init__(self, seq=None, motifs=None, seqtype="aa",
@@ -1723,18 +1723,18 @@ class SeqMotifFace(StaticItemFace):
 
         if not motifs and not seq:
             raise ValueError("At least one argument (seq or motifs) should be provided. ")
-        
+
         StaticItemFace.__init__(self, None)
         self.seq = seq
         self.motifs = motifs
-        
+
         self.scale_factor = scale_factor
         self.overlaping_motif_opacity = 0.5
         self.adjust_to_text = False
-        
+
         self.gap_format = gap_format
         self.seq_format = seq_format
-        
+
         if seqtype == "aa":
             self.fg = _aafgcolors
             self.bg = _aabgcolors
@@ -1754,7 +1754,7 @@ class SeqMotifFace(StaticItemFace):
     def build_regions(self):
         # Build and sort regions
         motifs = self.motifs
-        if self.seq: 
+        if self.seq:
             seq = self.seq
         else:
             seq = "-" * max([m[1] for m in motifs])
@@ -1812,7 +1812,7 @@ class SeqMotifFace(StaticItemFace):
                     pos += len(reg)
 
         #print ('\n'.join(map(str, self.regions)))
-        
+
     def update_items(self):
         # master item, all object should have this as parent
         self.item = SeqMotifRectItem()
@@ -2016,12 +2016,11 @@ class SequencePlotFace(StaticItemFace):
         if len (self.extras) != len (self.values):
             self.extras = ['']
 
-        super(SequencePlotFace,
-              self).__init__(QGraphicsRectItem(-40, 0, self.width+40,
-                                                     self.height+50))
-        self.item.setPen(QPen(QColor('white')))
+        super(SequencePlotFace, self).__init__(None)
 
     def update_items(self):
+        self.item =  QGraphicsRectItem(-40, 0, self.width+40, self.height+50)
+        self.item.setPen(QPen(QColor('white')))
         # draw lines
         for line, col in zip(self.hlines, self.hlines_col):
             self.draw_hlines(line, col)
@@ -2257,13 +2256,11 @@ class SequenceFace(StaticItemFace, Face):
 
         # for future?
         self.row_h = 13.0
+        super(SequenceFace, self).__init__(None)
 
-        super(SequenceFace,
-              self).__init__(QGraphicsRectItem(0, 0, self.width,
-                                               self.row_h))
 
     def update_items(self):
-        #self.item = QGraphicsRectItem(0,0,self._total_w, self.row_h)
+        self.item = QGraphicsRectItem(0, 0, self.width, self.row_h)
         seq_width = 0
         nopen = QPen(Qt.NoPen)
         font = QFont("Courier", self.fsize)

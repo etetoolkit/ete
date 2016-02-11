@@ -154,6 +154,7 @@ class Test_Coretype_Treeview(unittest.TestCase):
         ms.show_leaf_name = False
         main_tree.render('test.png', tree_style=ms)
         main_tree.render('test.svg', tree_style=ms)
+        main_tree.render('test.pdf', tree_style=ms)
 
 
 if __name__ == '__main__':
