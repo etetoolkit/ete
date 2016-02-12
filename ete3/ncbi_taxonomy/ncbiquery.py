@@ -371,9 +371,9 @@ class NCBITaxa(object):
 
         """
         from .. import PhyloTree
-        
+        taxids, merged_conversion = self._translate_merged(taxids)        
         if len(taxids) == 1:
-            root_taxid = int(taxids[0])
+            root_taxid = int(list(taxids)[0])
             with open(self.dbfile+".traverse.pkl", "rb") as CACHED_TRAVERSE:
                 prepostorder = pickle.load(CACHED_TRAVERSE)
             descendants = {}

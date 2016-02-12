@@ -73,6 +73,10 @@ class Test_ncbiquery(unittest.TestCase):
     self.assertEqual(sorted(t1.get_leaf_names()), ["7507", "9606"])
     self.assertEqual(sorted(t2.get_leaf_names()), ["678", "7507", "9606"])
 
+    # Test taxid synonyms
+    self.assertEqual(ncbi.get_topology(["42099"]).write(format=5), "1223560:1;")
+
+    
     for target in [9604, 9443, "9443"]:
       t1 = ncbi.get_descendant_taxa(target, return_tree=True)
       t2 = ncbi.get_topology([target])
