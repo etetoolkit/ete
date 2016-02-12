@@ -741,6 +741,12 @@ def get_marks_from_tree(tree):
     return [], []
 
 def run(args):
+
+    # in case we only got 1 model :(
+    if isinstance(args.models, str):
+        args.models = [args.models]
+
+    # check for binaries
     if not args.slr_binary:
         args.slr_binary = find_binary("Slr")
     if not args.codeml_binary:
@@ -753,6 +759,8 @@ def run(args):
         print("         provide another route with --slr_binary, or install "
               "it by executing 'ete3 install-external-tools paml'",
               file=stderr)
+        if any([model.startswith('SLR') for model in args.models]):
+            return
     binary  = os.path.expanduser(args.codeml_binary)
     if not os.path.exists(binary):
         print("Warning: CodeML binary does not exist at %s" % args.codeml_binary,
@@ -760,6 +768,8 @@ def run(args):
         print("         provide another route with --codeml_binary, or install "
               "it by executing 'ete3 install-external-tools paml'",
               file=stderr)
+        if not all([model.startswith('SLR') for model in args.models]):
+            return
 
     # more help
     # TODO: move this to help section
@@ -772,10 +782,6 @@ def run(args):
                 for i in range(0, len(PARAMS_DESCRIPTION[key]), 70)])))
         os.system('echo "%s" | less' % help_str)
         return
-
-    # in case we only got 1 model :(
-    if isinstance(args.models, str):
-        args.models = [args.models]
 
     params = {}
     if args.config_file:
