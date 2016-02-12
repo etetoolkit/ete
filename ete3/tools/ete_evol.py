@@ -759,7 +759,7 @@ def run(args):
         print("         provide another route with --slr_binary, or install "
               "it by executing 'ete3 install-external-tools paml'",
               file=stderr)
-        if any([model.startswith('SLR') for model in args.models]):
+        if any([AVAIL[m.split('.')[0]]['exec']=='Slr' for m in args.models]):
             return
     binary  = os.path.expanduser(args.codeml_binary)
     if not os.path.exists(binary):
@@ -768,7 +768,7 @@ def run(args):
         print("         provide another route with --codeml_binary, or install "
               "it by executing 'ete3 install-external-tools paml'",
               file=stderr)
-        if not all([model.startswith('SLR') for model in args.models]):
+        if any([AVAIL[m.split('.')[0]]['exec']=='codeml' for m in args.models]):
             return
 
     # more help
