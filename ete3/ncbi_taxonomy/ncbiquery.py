@@ -373,7 +373,7 @@ class NCBITaxa(object):
         from .. import PhyloTree
         
         if len(taxids) == 1:
-            root_taxid = taxids[0]
+            root_taxid = int(taxids[0])
             with open(self.dbfile+".traverse.pkl", "rb") as CACHED_TRAVERSE:
                 prepostorder = pickle.load(CACHED_TRAVERSE)
             descendants = {}
@@ -397,7 +397,8 @@ class NCBITaxa(object):
                     if tid not in leaves:
                         current_parent = nodes[tid]
             root = nodes[root_taxid]
-        else:            
+        else:
+            taxids = set(map(int, taxids))
             sp2track = {}
             elem2node = {}
             id2lineage = self.get_lineage_translator(taxids)

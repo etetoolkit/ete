@@ -73,16 +73,21 @@ class Test_ncbiquery(unittest.TestCase):
     self.assertEqual(sorted(t1.get_leaf_names()), ["7507", "9606"])
     self.assertEqual(sorted(t2.get_leaf_names()), ["678", "7507", "9606"])
 
-    for target in [9604, 9443]:
+    for target in [9604, 9443, "9443"]:
       t1 = ncbi.get_descendant_taxa(target, return_tree=True)
       t2 = ncbi.get_topology([target])
       t3 = ncbi.get_topology(ncbi.get_descendant_taxa(target))
+      t4 = ncbi.get_topology(list(map(str, ncbi.get_descendant_taxa(target))))
+      
       self.assertEqual(set(t1.get_leaf_names()), set(t2.get_leaf_names()))
       self.assertEqual(set(t2.get_leaf_names()), set(t3.get_leaf_names()))
+      self.assertEqual(set(t3.get_leaf_names()), set(t4.get_leaf_names()))
       diffs1 = t1.compare(t2, unrooted=True)
       diffs2 = t2.compare(t3, unrooted=True)
+      diffs3 = t3.compare(t4, unrooted=True)      
       self.assertEqual(diffs1["rf"], 0.0)
       self.assertEqual(diffs2["rf"], 0.0)
+      self.assertEqual(diffs3["rf"], 0.0)
 
 
 if __name__ == '__main__':
