@@ -86,14 +86,17 @@ def build_genetree_workflow(wname):
     }
     return workflow
 
-def list_workflows(config):
+def list_workflows(config, target_type=None):
 
-    print()
-    avail_meta = [(k, config["workflow_desc"].get(k, ""), len(v)) for k,v in six.iteritems(config.get('supermatrix_meta_workflow', {}))]
-    print_table(avail_meta, fix_col_width=[40, 50, 10], header=["Worflow name", "Description", "Thread(s)"], title="Supermatrix Workflows")
-    print()
-    avail_meta = [(k, config["workflow_desc"].get(k, ""), len(v)) for k,v in six.iteritems(config.get('genetree_meta_workflow', {}))]
-    print_table(avail_meta, fix_col_width=[40, 50, 10], header=["Worflow name", "Description", "Thread(s)"], title="GeneTree Workflows")
+    if not target_type or target_type == 'supermatrix':
+        print()
+        avail_meta = [(k, config["workflow_desc"].get(k, ""), len(v)) for k,v in six.iteritems(config.get('supermatrix_meta_workflow', {}))]
+        print_table(avail_meta, fix_col_width=[45, 60, 10], header=["Worflow name", "Description", "threads"], title="Supermatrix Workflows", row_line=True)
+        
+    if not target_type or target_type == 'genetree':        
+        print()
+        avail_meta = [(k, config["workflow_desc"].get(k, ""), len(v)) for k,v in six.iteritems(config.get('genetree_meta_workflow', {}))]
+        print_table(avail_meta, fix_col_width=[45, 60, 10], header=["Worflow name", "Description", "threads"], title="GeneTree Workflows", row_line=True)
 
 
 def list_apps(config, target_apps = None):
@@ -107,7 +110,7 @@ def list_apps(config, target_apps = None):
                 continue
                         
         avail_blocks = [[blockname, block["_app"], block.get("_desc", "")] for blockname, block in config.items() if block.get("_app") in validapps]
-        print_table(avail_blocks, header=["name", "app type", "desc."], max_col_width=70, title=appname)
+        print_table(avail_blocks, header=["name", "app type", "desc."], max_col_width=70, title=appname, row_line=True)
         print()
 
 def block_detail(block_name, config, color=True):
@@ -147,8 +150,10 @@ def block_detail(block_name, config, color=True):
         print()
 
     for b, pos in sorted(list(blocks_to_show.items()), key=lambda x: x[1]):
+        if b == "builtin_apps":
+            continue
         if color:
-            print(colorify('[%s]' %b, 'yellow'))
+            print(colorify('[%s]' %b, 'green'))
         else:
             print('[%s]' %b)
 

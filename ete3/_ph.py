@@ -57,48 +57,43 @@ except ImportError:
     __ETEID__ = "Unknown"
 
 try:
-    from . import __VERSION__
+    from .version import __version__
 except ImportError:
-    __VERSION__ = "Unknown"
+     __version__ = 'unknown'
 
 def call():
     print("  == Calling home...", end=' ')
     try:
-        f = urlopen('http://etetoolkit.org/et_phone_home.php?VERSION=%s&ID=%s'
-                %(__VERSION__, __ETEID__))
-    except:
+        f = urlopen('http://etetoolkit.org/static/et_phone_home.php?VERSION=%s&ID=%s'
+                %(__version__, __ETEID__))
+    except Exception, e:
         print("No answer :(")
     else:
         print("Got answer!")
-        print(f.read())
-
-        module_name = __name__.split(".")[0]
         try:
-            f = urlopen('http://etetoolkit.org/releases/ete3/%s.latest'
-                    %module_name)
+            f = urlopen('http://pypi.python.org/pypi/ete3/')
         except:
             latest = None
         else:
             latest = int(f.read())
 
         try:
-            current = int(__VERSION__.split("rev")[1])
+            current = int(__version__.split("rev")[1])
         except (IndexError, ValueError):
             current = None
 
         if not latest:
-            print("I could not find data about your version [%s]" %module_name)
+            print("I could not find data about your version [%s]" %__version__)
             print("Are you ok?")
         elif not current:
-            print("I could not determine your version [%s]" %module_name)
+            print("I could not determine your version [%s]" %__version__)
             print("Are you ok?")
             print("Latest stable ETE version is", latest)
         elif latest > current:
             print("You look a bit old.")
             print("A newer version is available: rev%s" %latest)
-            print("Use 'easy_install -U %s' to upgrade" %module_name)
         else:
-            print("I see you are in shape.")
+            print("I see you are in good shape.")
             print("No updates are available.")
         try:
             msg = input("\n  == Do you want to leave any message?\n(Press enter to finish)\n\n").strip()
@@ -108,12 +103,12 @@ def call():
         if msg:
             msg = urlquote(msg)
             try:
-                f = urlopen('http://etetoolkit.org/et_phone_home.php?VERSION=%s&ID=%s&MSG=%s'
-                                %(__VERSION__, __ETEID__, msg))
+                f = urlopen('http://etetoolkit.org/static/et_phone_home.php?VERSION=%s&ID=%s&MSG=%s'
+                                %(__version__, __ETEID__, msg))
             except:
                 print("Message could be delivered :(")
             else:
-                print(f.read())
+                print("Message delivered")
 
 def new_version(module_name=None, current=None):
     if not module_name:
@@ -131,7 +126,7 @@ def new_version(module_name=None, current=None):
 
     if not current:
         try:
-            current = int(__VERSION__.split("rev")[1])
+            current = int(__version__.split("rev")[1])
         except (IndexError, ValueError):
             current = None
 

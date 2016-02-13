@@ -94,22 +94,14 @@ from .phylobuild_lib import seqio
 
 
 try:
-    __VERSION__ = open(os.path.join(BASEPATH, "VERSION")).read().strip()
-except:
-    __VERSION__ = "unknown"
-
-try:
-    __DATE__ = open(os.path.join(BASEPATH, "DATE")).read().strip()
-except:
-    __DATE__ = "unknown"
+    from ..version import __version__
+except ImportError:
+     __version__ = 'unknown'
 
 __DESCRIPTION__ = (
 """
       --------------------------------------------------------------------------------
-                  ETE build - reproducible phylogenetic workflows 
-                                    %s, %s.
-
-      If you use ETE in a published work, please cite:
+                  ETE build (%s) - reproducible phylogenetic workflows 
 
         Jaime Huerta-Cepas, Joaquín Dopazo and Toni Gabaldón. ETE: a python
         Environment for Tree Exploration. BMC Bioinformatics 2010,
@@ -119,8 +111,7 @@ __DESCRIPTION__ = (
       computations will be also shown after execution. Those programs should
       also be cited.)
       --------------------------------------------------------------------------------
-
-    """ %(__VERSION__, __DATE__))
+    """ %(__version__))
 
 __EXAMPLES__ = """
 """
@@ -695,7 +686,11 @@ def _main(arguments, builtin_apps_path=None):
                 print(colorify("WARNING: 'wl' is obsolete and will be removed in the future, use 'workflows' instead", "orange"), file=sys.stderr)
 
             base_config = check_config(_config_path)
-            list_workflows(base_config)
+            try:
+                wf_type = arguments[2]
+            except IndexError:
+                wf_type = None
+            list_workflows(base_config, wf_type)
             sys.exit(0)
 
         elif arguments[1] == "apps":
@@ -733,7 +728,7 @@ def _main(arguments, builtin_apps_path=None):
             sys.exit(0)
 
         elif arguments[1] == "version":
-            print(__VERSION__, '(%s)' %__DATE__)
+            print(__version__)
             sys.exit(0)
 
     parser = argparse.ArgumentParser(description=__DESCRIPTION__ + __EXAMPLES__,

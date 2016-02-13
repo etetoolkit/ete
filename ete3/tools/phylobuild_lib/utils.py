@@ -359,7 +359,7 @@ def terminate_job_launcher():
         back_launcher.join(120) # gives a couple of minutes to finish
         back_launcher.terminate()
 
-def print_as_table(rows, header=None, fields=None, print_header=True, stdout=sys.stdout):
+def print_as_table(rows, header=None, fields=None, print_header=True, stdout=sys.stdout, wide=True):
     """ Print >>Stdout, a list matrix as a formated table. row must be a list of
     dicts or lists."""
     if header is None:
@@ -417,7 +417,7 @@ def print_as_table(rows, header=None, fields=None, print_header=True, stdout=sys
             for i,iv in enumerate(fields):
                 #print >>stdout, _str(r[iv]).rjust(lengths[i])+" | ",
                 print(_safe_rjust(_str(r[iv]), lengths[i])+" | ", end=' ', file=stdout)
-            print("", file=stdout)
+            print("", file=stdout)                
 
     elif vtype == dict:
         if header == []:
