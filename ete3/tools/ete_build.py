@@ -61,7 +61,7 @@ import tempfile
 log = None
 from time import ctime, time
 
-# This avoids installing phylobuild_lib module. npr script will find it in the
+# This avoids installing ete_build_lib module. npr script will find it in the
 # same directory in which it is
 BASEPATH = os.path.split(os.path.realpath(__file__))[0]
 APPSPATH = None
@@ -72,25 +72,25 @@ sys.path.insert(0, BASEPATH)
 import argparse
 from ..citation import Citator
 
-from .phylobuild_lib.utils import (SeqGroup, generate_runid, AA, NT, GLOBALS,
+from .ete_build_lib.utils import (SeqGroup, generate_runid, AA, NT, GLOBALS,
                                    encode_seqname, pjoin, pexist, hascontent,
                                    clear_tempdir, colorify, GENCODE,
                                    silent_remove, _max, _min, _std, _mean,
                                    _median, iter_cog_seqs)
-from .phylobuild_lib.errors import ConfigError, DataError
-from .phylobuild_lib.master_task import Task
-from .phylobuild_lib.interface import app_wrapper
-from .phylobuild_lib.scheduler import schedule
-from .phylobuild_lib import db
-from .phylobuild_lib import apps
-from .phylobuild_lib.logger import logindent
+from .ete_build_lib.errors import ConfigError, DataError
+from .ete_build_lib.master_task import Task
+from .ete_build_lib.interface import app_wrapper
+from .ete_build_lib.scheduler import schedule
+from .ete_build_lib import db
+from .ete_build_lib import apps
+from .ete_build_lib.logger import logindent
 
-from .phylobuild_lib.configcheck import (is_file, is_dir, check_config,
+from .ete_build_lib.configcheck import (is_file, is_dir, check_config,
                                          build_genetree_workflow,
                                          build_supermatrix_workflow,
                                          parse_block, list_workflows,
                                          block_detail, list_apps)
-from .phylobuild_lib import seqio
+from .ete_build_lib import seqio
 
 
 try:
@@ -341,9 +341,9 @@ def main(args):
     TARGET_CLADES.discard('')
 
     if WORKFLOW_TYPE == 'genetree':
-        from .phylobuild_lib.workflow.genetree import pipeline
+        from .ete_build_lib.workflow.genetree import pipeline
     elif WORKFLOW_TYPE == 'supermatrix':
-        from .phylobuild_lib.workflow.supermatrix import pipeline
+        from .ete_build_lib.workflow.supermatrix import pipeline
 
     #if args.arch == "auto":
     #    arch = "64 " if sys.maxsize > 2**32 else "32"
@@ -653,7 +653,7 @@ def _main(arguments, builtin_apps_path=None):
 
 
     if len(arguments) > 1:
-        _config_path = pjoin(BASEPATH, 'phylobuild.cfg')
+        _config_path = pjoin(BASEPATH, 'ete_build.cfg')
 
 
         if arguments[1] == "check":
@@ -753,7 +753,7 @@ def _main(arguments, builtin_apps_path=None):
                              help="Custom configuration file.")
 
     input_group.add_argument("--base-config", dest="base_config",
-                             type=is_file, default=BASEPATH+'/phylobuild.cfg',
+                             type=is_file, default=BASEPATH+'/ete_build.cfg',
                              help="Base configuration file.")
 
     input_group.add_argument("--tools-dir", dest="tools_dir",
