@@ -304,6 +304,9 @@ def main(args):
         # Copy config file
         config["_outpath"] = pjoin(base_dir, wkname)
         config["_nodeinfo"] = defaultdict(dict)
+        if pexist(config["_outpath"]) and args.clearall:
+            log.log(20, "Cleaning result directory %s" %config["_outpath"])
+            shutil.rmtree(config["_outpath"])
         try:
             os.makedirs(config["_outpath"])
         except OSError:
@@ -412,7 +415,8 @@ def main(args):
         silent_remove(pjoin(base_dir, "nprdata.tar"))
         silent_remove(pjoin(base_dir, "nprdata.tar.gz"))
         #silent_remove(pjoin(base_dir, "npr.log"))
-        silent_remove(pjoin(base_dir, "npr.log.gz"))
+        silent_remove(pjoin(base_dir, "npr.log.gz"))        
+
     else:
         if args.softclear:
             log.log(28, "Erasing precomputed data (reusing task directory)")
