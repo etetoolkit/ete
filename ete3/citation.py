@@ -101,7 +101,7 @@ class Citator(object):
         comparison of phylogenetic trees. Nucleic Acids Res. 2011 May;39(10):e66. doi:
         10.1093/nar/gkr087.""",
 
-        'iqtree': u"""L.-T. Nguyen, H.A. Schmidt, A. von Haeseler, and B.Q. Minh (2015) IQ-TREE: A
+        'iqtree': u"""L.T. Nguyen, H.A. Schmidt, A. von Haeseler, and B.Q. Minh (2015) IQ-TREE: A
         fast and effective stochastic algorithm for estimating maximum likelihood
         phylogenies. Mol. Biol. Evol., 32, 268-274.""",
 
