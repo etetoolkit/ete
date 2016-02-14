@@ -105,7 +105,7 @@ def _main(arguments):
             sys.exit(status)
             
         elif subcommand == "build":
-            from . import ete_build_lib
+            from . import ete_build
             del arguments[1]
 
             builtin_apps_path = None

@@ -42,6 +42,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import re
+import itertools
 import errno
 import six.moves.builtins
 import six
@@ -213,8 +214,18 @@ def main(args):
             elif target_wtype == "supermatrix" and wkname in base_config.get('supermatrix_meta_workflow', {}):
                 temp_workflows = [x.lstrip('@') for x in base_config['supermatrix_meta_workflow'][wkname]]
             else:
-                temp_workflows = [wkname]
-
+                temp_workflows = [wkname]                
+                
+            for index, _w in enumerate(list(temp_workflows)):
+                if ',' in _w:
+                    words = [elem.split(',') for elem in _w.split('-')]
+                    for comb in itertools.product(*words):
+                        real_wname = '-'.join(comb)
+                        temp_workflows.append(real_wname)
+                    temp_workflows.pop(index)
+            print(temp_workflows)
+                    
+                
             # if wkname not in base_config and wkname in base_config.get('meta_workflow', {}):
             #     temp_workflows = [x.lstrip('@') for x in base_config['meta_workflow'][wkname]]
             # else:

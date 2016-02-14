@@ -91,12 +91,12 @@ def list_workflows(config, target_type=None):
     if not target_type or target_type == 'supermatrix':
         print()
         avail_meta = [(k, config["workflow_desc"].get(k, ""), len(v)) for k,v in six.iteritems(config.get('supermatrix_meta_workflow', {}))]
-        print_table(avail_meta, fix_col_width=[45, 60, 10], header=["Worflow name", "Description", "threads"], title="Supermatrix Workflows", row_line=True)
+        print_table(avail_meta, fix_col_width=[45, 60, 10], header=["Worflow name", "Description", "threads"], title="Supermatrix shortcut workflow names", row_line=True)
         
     if not target_type or target_type == 'genetree':        
         print()
         avail_meta = [(k, config["workflow_desc"].get(k, ""), len(v)) for k,v in six.iteritems(config.get('genetree_meta_workflow', {}))]
-        print_table(avail_meta, fix_col_width=[45, 60, 10], header=["Worflow name", "Description", "threads"], title="GeneTree Workflows", row_line=True)
+        print_table(avail_meta, fix_col_width=[45, 60, 10], header=["Worflow name", "Description", "threads"], title="GeneTree shortcut workflow names", row_line=True)
 
 
 def list_apps(config, target_apps = None):
