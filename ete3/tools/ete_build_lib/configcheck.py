@@ -157,7 +157,9 @@ def block_detail(block_name, config, color=True):
         else:
             print('[%s]' %b)
 
-        for k,v in six.iteritems(config[b]):
+        for k,v in sorted(config[b].items()):
+            if k == "_inherits":
+                continue
             if type(v) in iterable_types:
                 v = ', '.join(map(str, v))+','
 

@@ -752,7 +752,7 @@ def _main(arguments, builtin_apps_path=None):
     # Input data related flags
     input_group = parser.add_argument_group('==== Input Options ====')
 
-    input_group.add_argument('[check | workflows | apps | show | dump | validate | version | install_tools]',
+    input_group.add_argument('[check | workflows | apps | show | dump | validate]',
                              nargs='?',
                              help=("Utility commands:\n"
                                    "check: check that external applications are executable.\n"
@@ -968,11 +968,6 @@ def _main(arguments, builtin_apps_path=None):
                                        " Tasks will be processed and intermediate steps will"
                                        " run, but no real computation will be performed."))
 
-    # exec_type_group.add_argument("--sge", dest="sge_execute",
-    #                              action="store_true", help="EXPERIMENTAL!: Jobs will be"
-    #                              " launched using the Sun Grid Engine"
-    #                              " queue system.")
-
     exec_group.add_argument("--monitor", dest="monitor",
                             action="store_true",
                             help="Monitor mode: pipeline jobs will be"
@@ -999,12 +994,6 @@ def _main(arguments, builtin_apps_path=None):
     exec_group.add_argument("--clear-seqdb", dest="clearseqs",
                             action="store_true",
                             help="Reload sequences deleting previous database if necessary.")
-
-    # exec_group.add_argument("--arch", dest="arch",
-    #                         choices=["auto", "32", "64"],
-    #                         default="auto", help="Set the architecture of"
-    #                         " execution hosts (needed only when using"
-    #                         " built-in applications.)")
 
     exec_group.add_argument("--nochecks", dest="nochecks",
                             action="store_true",
