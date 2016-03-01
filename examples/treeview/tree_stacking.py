@@ -67,6 +67,6 @@ if __name__ == "__main__":
     # add t4 below t2
     ts2.aligned_treeface_vt.add_face(TreeFace(t4, ts4), column=0)
     
-    t1.render("tree_stacking.png", w=600, dpi=300, tree_style=ts1)
+    #t1.render("tree_stacking.png", w=600, dpi=300, tree_style=ts1)
     t1.show(tree_style=ts1)
     
