@@ -4,7 +4,7 @@ from ete3 import Tree
 # distance info is provided in the newick, it will be initialized with
 # the default dist value = 1.0
 nw = """(((A:0.1, B:0.01):0.001, C:0.0001):1.0,
-(((((D:0.00001:0,I:0):0,F:0):0,G:0):0,H:0):0,
+(((((D:0.00001,I:0):0,F:0):0,G:0):0,H:0):0,
 E:0.000001):0.0000001):2.0;"""
 t = Tree(nw)
 print t
@@ -47,7 +47,7 @@ print "The farthest (topologically) node from E is", \
     farthest.name, "with", dist, "nodes in between"
 # Calculate farthest node from an internal node
 farthest, dist = t.get_farthest_node()
-print "The farthest node from root is is", farthest.name, "with dist=", dist
+print "The farthest node from root is", farthest.name, "with dist=", dist
 #
 # The program results in the following information:
 #
@@ -56,4 +56,4 @@ print "The farthest node from root is is", farthest.name, "with dist=", dist
 # The number of nodes between A and D is  8.0
 # The farthest node from E is A with dist= 1.1010011
 # The farthest (topologically) node from E is I with 5.0 nodes in between
-# The farthest node from root is is A with dist= 1.101
+# The farthest node from root is A with dist= 1.101

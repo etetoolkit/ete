@@ -2,7 +2,7 @@ from ete3 import Tree
 # Load an unrooted tree. Note that three branches hang from the root
 # node. This usually means that no information is available about
 # which of nodes is more basal.
-t = Tree('(A,(H,F)(B,(E,D)));')
+t = Tree('(A,(H,F),(B,(E,D)));')
 print "Unrooted tree"
 print t
 #          /-A

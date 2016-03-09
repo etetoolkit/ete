@@ -261,7 +261,7 @@ as trees in which master root node has more than two children.
   #     \---|      
   #          \-D 
 
-  rooted_tree = Tree( "((A,B).(C,D));" )
+  rooted_tree = Tree( "((A,B),(C,D));" )
   print rooted_tree                     
   #
   #          /-A
@@ -616,12 +616,12 @@ strategy would look like this:
   # assess if they meet our custom conditions and will return a list of
   # matches.
   matches = filter(conditional_function, t.traverse())
-  print len(matches), "nodes have ditance >0.3"
+  print len(matches), "nodes have distance >0.3"
    
   # depending on the complexity of your conditions you can do the same
   # in just one line with the help of lambda functions:
   matches = filter(lambda n: n.dist>0.3 and n.is_leaf(), t.traverse() )
-  print len(matches), "nodes have ditance >0.3 and are leaves"
+  print len(matches), "nodes have distance >0.3 and are leaves"
 
 
 Shortcuts 
@@ -1267,7 +1267,7 @@ tree while keeping original distances among remaining nodes.
 
   from ete3 import Tree
   # Let's create simple tree
-  t = Tree('((((H,K),(F,I)G),E),((L,(N,Q)O),(P,S)));')
+  t = Tree('((((H,K),(F,I)G),E),((L,(N,Q)O),(P,S)));', format=1)
   print "Original tree looks like this:"
   print t
   #
@@ -1616,7 +1616,7 @@ method can be used to perform the opposite action.
   # Load an unrooted tree. Note that three branches hang from the root
   # node. This usually means that no information is available about
   # which of nodes is more basal.
-  t = Tree('(A,(H,F)(B,(E,D)));')
+  t = Tree('(A,(H,F),(B,(E,D)));')
   print "Unrooted tree"
   print t
   #          /-A
@@ -1675,7 +1675,7 @@ to its parent tree structure.
 ::
 
   from ete3 import Tree
-  t = Tree('(((A,C),((H,F),(L,M))),((B,(J,K))(E,D)));')
+  t = Tree('(((A,C),((H,F),(L,M))),((B,(J,K)),(E,D)));')
   print "Original tree:"
   print t
   #                              /-A
@@ -1757,7 +1757,7 @@ current node and any other relative node (parental or descendant).
   # distance info is provided in the newick, it will be initialized with
   # the default dist value = 1.0
   nw = """(((A:0.1, B:0.01):0.001, C:0.0001):1.0,
-  (((((D:0.00001:0,I:0):0,F:0):0,G:0):0,H:0):0,
+  (((((D:0.00001,I:0):0,F:0):0,G:0):0,H:0):0,
   E:0.000001):0.0000001):2.0;"""
   t = Tree(nw)
   print t
@@ -1819,7 +1819,7 @@ above mentioned methods.
       farthest.name, "with", dist, "nodes in between"
   # Calculate farthest node from an internal node
   farthest, dist = t.get_farthest_node()
-  print "The farthest node from root is is", farthest.name, "with dist=", dist
+  print "The farthest node from root is", farthest.name, "with dist=", dist
   #
   # The program results in the following information:
   #
@@ -1828,7 +1828,7 @@ above mentioned methods.
   # The number of nodes between A and D is  8.0
   # The farthest node from E is A with dist= 1.1010011
   # The farthest (topologically) node from E is I with 5.0 nodes in between
-  # The farthest node from root is is A with dist= 1.101
+  # The farthest node from root is A with dist= 1.101
 
 
 .. _sub:getting-midpoint-outgroup:
