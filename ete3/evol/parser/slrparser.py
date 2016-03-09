@@ -53,7 +53,6 @@ from re import match
 
 def parse_slr (slrout):
     SLR = {'pv':[],'w':[],'se':[], 'class':[],'note':[]}
-    i   = 0
     w   = ''
     apv = ''
     seP = ''

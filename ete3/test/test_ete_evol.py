@@ -38,7 +38,8 @@ class Test_ete_evol(unittest.TestCase):
             cmd = cmd.replace("$$CPU", str(CPUS))
             print(cmd)
             args = cmd.split()
-            ete._main(args)  
+            ete._main(args)
+        os.system('rm -rf ete_test_tmp')
         
 if __name__ == "__main__":
     unittest.main()
