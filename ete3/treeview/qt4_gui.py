@@ -183,14 +183,14 @@ class _GUI(QtGui.QMainWindow):
     @QtCore.pyqtSignature("")
     def on_actionETE_triggered(self):
         try:
-            __VERSION__
+            __version__
         except:
-            __VERSION__= "development branch"
+            __version__= "development branch"
 
         d = QtGui.QDialog()
         d._conf = _about.Ui_About()
         d._conf.setupUi(d)
-        d._conf.version.setText("Version: %s" %__VERSION__)
+        d._conf.version.setText("Version: %s" %__version__)
         d._conf.version.setAlignment(QtCore.Qt.AlignHCenter)
         d.exec_()
 

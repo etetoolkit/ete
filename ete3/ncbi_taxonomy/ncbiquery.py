@@ -409,8 +409,6 @@ class NCBITaxa(object):
             for sp in taxids:
                 track = []
                 lineage = id2lineage[sp]
-                #lineage = self.get_lineage(sp)
-                #id2rank = self.get_rank(lineage)
 
                 for elem in lineage:
                     if elem not in elem2node:
@@ -451,6 +449,7 @@ class NCBITaxa(object):
                     to_detach.extend(node.children)
             for n in to_detach:
                 n.detach()
+
         if annotate:
             self.annotate_tree(tree)
 

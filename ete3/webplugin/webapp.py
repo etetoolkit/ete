@@ -237,7 +237,7 @@ class WebTreeApplication(object):
                 tree_actions.append(aindex)
 
         try:
-            version_tag = __VERSION__
+            version_tag = __version__
         except NameError:
             version_tag = "ete3"
 
