@@ -937,14 +937,14 @@ def run(args):
                                 begend = '         %4d-%4d   |   ' % (first[0], prev[0])
                             else:
                                 begend = '         %9d   |   '     % (prev[0])
-                            print(begend + cat[1])
+                            print(begend + first[1])
                             first = cat
                         prev = cat
                     if first[0] != prev[0]:
                         begend = '         %4d-%4d   |   ' % (first[0], prev[0])
                     else:
                         begend = '         %9d   |   '     % (prev[0])
-                    print(begend + cat[1])
+                    print(begend + prev[1])
 
         if args.noimg:
             return
