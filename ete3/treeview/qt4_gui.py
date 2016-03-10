@@ -57,6 +57,7 @@ from . import _mainwindow, _search_dialog, _show_newick, _open_newick, _about
 from .main import TreeStyle, save, _leaf
 from .svg_colors import random_color
 from .qt4_render import render
+from .node_gui_actions import NewickDialog
 try:
     from .._ph import new_version
 except Exception:
@@ -701,42 +702,6 @@ class _PropertiesDialog(QtGui.QWidget):
         self.scene.img._scale = None
         self.scene.GUI.redraw()
         return
-
-class NewickDialog(QtGui.QDialog):
-    def __init__(self, node, *args):
-        QtGui.QDialog.__init__(self, *args)
-        self.node = node
-
-    def update_newick(self):
-        f= int(self._conf.nwFormat.currentText())
-        self._conf.features_list.selectAll()
-        if self._conf.useAllFeatures.isChecked():
-            features = []
-        elif self._conf.features_list.count()==0:
-            features = None
-        else:
-            features = set()
-            for i in self._conf.features_list.selectedItems():
-                features.add(str(i.text()))
-
-        nw = self.node.write(format=f, features=features)
-        self._conf.newickBox.setText(nw)
-
-    def add_feature(self):
-        aName = str(self._conf.attrName.text()).strip()
-        if aName != '':
-            self._conf.features_list.addItem(aName)
-            self.update_newick()
-    def del_feature(self):
-        r = self._conf.features_list.currentRow()
-        self._conf.features_list.takeItem(r)
-        self.update_newick()
-
-    def set_custom_features(self):
-        state = self._conf.useAllFeatures.isChecked()
-        self._conf.features_list.setDisabled(state)
-        self._conf.attrName.setDisabled(state)
-        self.update_newick()
 
 class _TreeView(QtGui.QGraphicsView):
     def __init__(self,*args):

@@ -1,5 +1,5 @@
 from ete3 import Tree
-t = Tree('(((A,C),((H,F),(L,M))),((B,(J,K))(E,D)));')
+t = Tree('(((A,C),((H,F),(L,M))),((B,(J,K)),(E,D)));')
 print "Original tree:"
 print t
 #                              /-A

@@ -11,8 +11,8 @@ def conditional_function(node):
 # assess if they meet our custom conditions and will return a list of
 # matches.
 matches = filter(conditional_function, t.traverse())
-print len(matches), "nodes have ditance >0.3"
+print len(matches), "nodes have distance >0.3"
 # depending on the complexity of your conditions you can do the same
 # in just one line with the help of lambda functions:
 matches = filter(lambda n: n.dist>0.3 and n.is_leaf(), t.traverse() )
-print len(matches), "nodes have ditance >0.3 and are leaves"
+print len(matches), "nodes have distance >0.3 and are leaves"
