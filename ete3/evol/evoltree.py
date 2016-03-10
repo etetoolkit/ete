@@ -515,8 +515,11 @@ class EvolNode(PhyloNode):
                     return chi_high(2 * abs(altn.lnL - null.lnL),
                                     df=float(altn.np - null.np))
                 else:
-                    warn("WARNING: Likelihood of the alternative model is " +
-                         "smaller than null's")
+                    warn("\nWARNING: Likelihood of the alternative model is "
+                         "smaller than null's (%f - %f = %f)" % (
+                             null.lnL, altn.lnL, null.lnL - altn.lnL) +
+                         "\nLarge differences (> 0.1) may indicate mistaken "
+                         "assigantion of null and alternative models")
                     return 1
         except KeyError:
             warn("at least one of %s or %s, was not calculated" % (altn.name,
