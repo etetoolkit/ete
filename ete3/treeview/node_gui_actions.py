@@ -37,11 +37,52 @@
 #
 # #END_LICENSE#############################################################
 from __future__ import absolute_import
+
 from .svg_colors import random_color
 from PyQt4  import QtCore, QtGui
 from six.moves import range
 from functools import partial
+
+from . import  _show_newick
 from ..evol import EvolTree
+
+class NewickDialog(QtGui.QDialog):
+    def __init__(self, node, *args):
+        QtGui.QDialog.__init__(self, *args)
+        self.node = node
+
+    def update_newick(self):
+        f= int(self._conf.nwFormat.currentText())
+        self._conf.features_list.selectAll()
+        if self._conf.useAllFeatures.isChecked():
+            features = []
+        elif self._conf.features_list.count()==0:
+            features = None
+        else:
+            features = set()
+            for i in self._conf.features_list.selectedItems():
+                features.add(str(i.text()))
+
+        nw = self.node.write(format=f, features=features)
+        self._conf.newickBox.setText(nw)
+
+    def add_feature(self):
+        aName = str(self._conf.attrName.text()).strip()
+        if aName != '':
+            self._conf.features_list.addItem(aName)
+            self.update_newick()
+    def del_feature(self):
+        r = self._conf.features_list.currentRow()
+        self._conf.features_list.takeItem(r)
+        self.update_newick()
+
+    def set_custom_features(self):
+        state = self._conf.useAllFeatures.isChecked()
+        self._conf.features_list.setDisabled(state)
+        self._conf.attrName.setDisabled(state)
+        self.update_newick()
+
+
 
 class _NodeActions(object):
     """ Used to extend QGraphicsItem features """
