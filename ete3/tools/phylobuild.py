@@ -103,15 +103,16 @@ __DESCRIPTION__ = (
       --------------------------------------------------------------------------------
                   ETE build (%s) - reproducible phylogenetic workflows 
 
-        Jaime Huerta-Cepas, Joaquín Dopazo and Toni Gabaldón. ETE: a python
-        Environment for Tree Exploration. BMC Bioinformatics 2010,
-        11:24. doi:10.1186/1471-2105-11-24
+      Citation:
+           Jaime Huerta-Cepas, François Serra, and Peer Bork. "ETE 3:
+           Reconstruction, analysis and visualization of phylogenomic data."
+           Mol Biol Evol (2016) doi: 10.1093/molbev/msw046
 
       (Note that a list of the external programs used to complete all necessary
-      computations will be also shown after execution. Those programs should
+      computations will be shown after workflow execution. Those programs should
       also be cited.)
       --------------------------------------------------------------------------------
-    """ %(__version__))
+      """ %(__version__))
 
 __EXAMPLES__ = """
 """

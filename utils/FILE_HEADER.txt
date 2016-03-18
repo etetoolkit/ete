@@ -21,13 +21,13 @@
 #                     ABOUT THE ETE PACKAGE
 #                     =====================
 #
-# ETE is distributed under the GPL copyleft license (2008-2015).
+# ETE is distributed under the GPL copyleft license (2008-2016).
 #
 # If you make use of ETE in published work, please cite:
 #
-# Jaime Huerta-Cepas, Joaquin Dopazo and Toni Gabaldon.
-# ETE: a python Environment for Tree Exploration. Jaime BMC
-# Bioinformatics 2010,:24doi:10.1186/1471-2105-11-24
+#  Jaime Huerta-Cepas, François Serra and Peer Bork. ETE 3: Reconstruction,
+#  analysis and visualization of phylogenomic data. Mol Biol Evol (2016) doi:
+#  10.1093/molbev/msw046
 #
 # Note that extra references to the specific methods implemented in
 # the toolkit may be available in the documentation.
