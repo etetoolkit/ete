@@ -103,14 +103,16 @@ __DESCRIPTION__ = (
       --------------------------------------------------------------------------------
                   ETE build (%s) - reproducible phylogenetic workflows 
 
-      Citation:
-           Jaime Huerta-Cepas, François Serra, and Peer Bork. "ETE 3:
-           Reconstruction, analysis and visualization of phylogenomic data."
-           Mol Biol Evol (2016) doi: 10.1093/molbev/msw046
+      Citation: 
+
+       Huerta-Cepas J, Serra F and Bork P. ETE 3: Reconstruction, analysis and
+       visualization of phylogenomic data. Mol Biol Evol (2016)
+       doi:10.1093/molbev/msw046
 
       (Note that a list of the external programs used to complete all necessary
       computations will be shown after workflow execution. Those programs should
       also be cited.)
+
       --------------------------------------------------------------------------------
       """ %(__version__))
 
