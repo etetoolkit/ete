@@ -66,7 +66,7 @@ def call():
     try:
         f = urlopen('http://etetoolkit.org/static/et_phone_home.php?VERSION=%s&ID=%s'
                 %(__version__, __ETEID__))
-    except Exception, e:
+    except:
         print("No answer :(")
     else:
         print("Got answer!")

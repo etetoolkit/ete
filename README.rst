@@ -23,8 +23,9 @@ phylogenetic trees. If you use ETE for a published work, please cite:
 
 ::
 
-  Jaime Huerta-Cepas, Joaquín Dopazo and Toni Gabaldón. ETE: a python
-  Environment for Tree Exploration. BMC Bioinformatics 2010, 11:24.
+   Jaime Huerta-Cepas, François Serra and Peer Bork. "ETE 3: Reconstruction,
+   analysis and visualization of phylogenomic data."  Mol Biol Evol (2016) doi:
+   10.1093/molbev/msw046
 
 Install/Documentation
 -----------------------------

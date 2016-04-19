@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 #! /usr/bin/env python
 from __future__ import absolute_import
 from __future__ import print_function
@@ -118,8 +120,9 @@ please cite:
 
 ::
 
-  Jaime Huerta-Cepas, Joaquin Dopazo and Toni Gabaldon. ETE: a python
-  Environment for Tree Exploration. BMC Bioinformatics 2010, 11:24.
+   Jaime Huerta-Cepas, François Serra and Peer Bork. "ETE 3: Reconstruction,
+   analysis and visualization of phylogenomic data."  Mol Biol Evol (2016) doi:
+   10.1093/molbev/msw046
 
 Visit http://etetoolkit.org for more info.
 """

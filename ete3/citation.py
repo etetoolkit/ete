@@ -48,9 +48,9 @@ __all__ = ["Citator"]
 
 class Citator(object):
     REFERENCES = {
-        'ETE': u"""Huerta-Cepas J, Dopazo J, Gabaldón T. ETE: a python
-        Environment for Tree Exploration. BMC Bioinformatics. 2010 Jan
-        13;11:24.""",
+        'ETE': u"""Huerta-Cepas J, Serra F, Bork P. ETE 3: Reconstruction, analysis and
+        visualization of phylogenomic data. Mol Biol Evol (2016) doi:
+        10.1093/molbev/msw046""",
         
         'phyml': u"""Guindon S, Dufayard JF, Lefort V, Anisimova M, Hordijk W, Gascuel O.
         New algorithms and methods to estimate maximum-likelihood phylogenies:
@@ -58,7 +58,7 @@ class Citator(object):
         May;59(3):307-21.""",
         
         'fasttree': u"""Price MN, Dehal PS, Arkin AP. FastTree 2 -
-        approximately maximum-likelihood trees for large alignments.  PLoS
+        approximately maximum-likelihood trees for large alignments. PLoS
         One. 2010 Mar 10;5(3):e9490.""",
         
         'raxml': u"""Stamatakis A. RAxML version 8: a tool for phylogenetic analysis and
