@@ -145,7 +145,7 @@ class Model:
         checks if tree is marked and if model allows marks.
         fill up branches dict with marks
         """
-        has_mark = any([n.mark for n in self._tree.iter_descendants()])
+        has_mark = any(n.mark for n in self._tree.iter_descendants())
         for i, node in enumerate(self._tree.traverse()):
             #if node.is_root(): continue
             if has_mark and self.properties['allow_mark']:
@@ -201,7 +201,7 @@ class Model:
                    'PS' : 'orange',
                    'PS+': 'red'    }
         """
-        if self.sites == None:
+        if self.sites is None:
             warn("WARNING: model %s not computed." % (self.name))
             return None
         if not 'header' in kwargs:
@@ -267,7 +267,7 @@ class Model:
             else:
                 string += '%15s%s%s\n' % (prm, sep,
                                           str(self.properties ['params'][prm]))
-        if outfile == None:
+        if outfile is None:
             return string
         else:
             open(outfile, 'w').write(string)

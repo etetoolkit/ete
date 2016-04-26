@@ -540,7 +540,7 @@ class PhylomeDBConnector(object):
             nw,m,lk = r
             if lk < 0:
                 likelihoods[m] = lk
-                if  winner_lk==None or lk > winner_lk:
+                if  winner_lk is None or lk > winner_lk:
                     winner_lk     = lk
                     winner_model  = m
                     winner_newick = nw

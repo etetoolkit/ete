@@ -335,7 +335,7 @@ class TreeNode(object):
         as an argument, a new TreeNode instance will be created and
         returned.
         """
-        if self.up == None:
+        if self.up is None:
             raise TreeError("A parent node is required to add a sister")
         else:
             return self.up.add_child(child=sister, name=name, dist=dist)
@@ -587,7 +587,7 @@ class TreeNode(object):
         """
         Returns an indepent list of sister nodes.
         """
-        if self.up!=None:
+        if self.up is not None:
             return [ch for ch in self.up.children if ch!=self]
         else:
             return []

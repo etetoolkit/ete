@@ -211,11 +211,15 @@ class PhylomeDB(object):
   def get_phylome(self, phyid):
     pass
 
-  def get_proteomes(self, protids=[]):
+  def get_proteomes(self, protids=None):
+    if protids is None:
+      protids = []
     pass
 
-  def get_seqs(self, seqids=[]):
+  def get_seqs(self, seqids=None):
     'get aa sequence of seqids'
+    if seqids is None:
+      seqids = []
     pass
 
   def search_trees(self, seqid, include_collateral=True):
@@ -517,7 +521,7 @@ class PhylomeDB3Connector(object):
     ## will try to recover the tree reconstructed under the model specific
     data = {}
 
-    if tree == None:
+    if tree is None:
       tree_db = self.get_tree(protid, phylome_id, best_tree = True)
 
     elif tree and not tree_method:
