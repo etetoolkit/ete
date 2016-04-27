@@ -161,18 +161,30 @@ def get_dunn_index(fdist, *clusters):
 # ####################
 
 def pearson_dist(v1, v2):
+    try:
+        from scipy.stats import pearsonr
+    except ImportError:
+        raise RuntimeError("scipy is required to execute this function. Please install it an try again")
+
     if (v1 == v2).all():
         return 0.0
     else:
-        return 1.0 - stats.pearsonr(list(v1),list(v2))[0]
+        return 1.0 - pearsonr(list(v1), list(v2))[0]
+
 
 def spearman_dist(v1, v2):
+    try:
+        from scipy.stats import spearmanr
+    except ImportError:
+        raise RuntimeError("scipy is required to execute this function. Please install it an try again")
+
     if (v1 == v2).all():
         return 0.0
     else:
-        return 1.0 - stats.spearmanr(list(v1),list(v2))[0]
+        return 1.0 - spearmanr(list(v1), list(v2))[0]
 
-def euclidean_dist(v1,v2):
+
+def euclidean_dist(v1, v2):
     if (v1 == v2).all():
         return 0.0
     else:
@@ -192,13 +204,4 @@ def square_euclidean_dist(v1,v2):
         raise ValueError("Cannot calculate values")
     return  distance/valids
 
-try:
-   from scipy import stats
-except ImportError:
-    try:
-        from . import stats
-        default_dist = spearman_dist
-    except ImportError:
-        default_dist = euclidean_dist
-else:
-    default_dist = spearman_dist
+default_dist = spearman_dist
