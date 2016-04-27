@@ -43,7 +43,7 @@ import random
 import colorsys
 from six.moves import range
 
-all = ["SVG_COLORS", "COLOR_SCHEMES", "random_color"]
+__all__ = ["SVG_COLORS", "COLOR_SCHEMES", "random_color"]
 
 SVG_COLORS = set([
     "indianred", # 	CD5C5C 	2059292
