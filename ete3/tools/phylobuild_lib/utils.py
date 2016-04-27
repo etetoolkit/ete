@@ -379,7 +379,7 @@ def print_as_table(rows, header=None, fields=None, print_header=True, stdout=sys
 
     vtype = None
     for v in rows:
-        if vtype != None and type(v)!=vtype:
+        if vtype is not None and type(v) != vtype:
             raise ValueError("Mixed row types in input")
         else:
             vtype = type(v)

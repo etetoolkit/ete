@@ -194,8 +194,10 @@ def get_species_code(name, splitter, field):
 def get_concatenated_alg(alg_filenames, models=None,
                         sp_field=0, sp_delimiter="_",
                         kill_thr=0.0,
-                        keep_species=set()):
+                        keep_species=None):
     # Concat alg container
+    if keep_species is None:
+        keep_species = set()
     concat = SeqGroup()
     # Used to store different model partitions
     concat.id2partition = {}

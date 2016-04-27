@@ -396,7 +396,7 @@ class EvolNode(PhyloNode):
             if node.node_id in node_ids:
                 if ('.' in marks[node_ids.index(node.node_id)] or
                     match('#[0-9]+',
-                          marks[node_ids.index(node.node_id)]) == None) and verbose:
+                          marks[node_ids.index(node.node_id)]) is None) and verbose:
                     warn('WARNING: marks should be "#" sign directly ' +
                          'followed by integer\n' + self.mark_tree.__doc__)
                 node.add_feature('mark', ' '+marks[node_ids.index(node.node_id)])

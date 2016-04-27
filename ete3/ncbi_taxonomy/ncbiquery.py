@@ -255,7 +255,7 @@ class NCBITaxa(object):
         if len(all_ids) != len(id2name) and try_synonyms:
             not_found_taxids = all_ids - set(id2name.keys())
             taxids, old2new = self._translate_merged(not_found_taxids)
-            new2old = dict([(v,k) for k,v in six.iteritems(old2new)])
+            new2old = {v: k for k,v in six.iteritems(old2new)}
 
             if old2new:
                 query = ','.join(['"%s"' %v for v in new2old])

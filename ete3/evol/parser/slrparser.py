@@ -75,7 +75,7 @@ def parse_slr (slrout):
         SLR['w'  ].append(line.split()[w])
         corr = 0
         try:
-            if not match('[-+]',line.split()[res]) == None:
+            if not match('[-+]',line.split()[res]) is None:
                 SLR['class'  ].append (5 - line.split()[res].count ('-') + line.split()[res].count ('+'))
             else:
                 SLR['class'  ].append(5)

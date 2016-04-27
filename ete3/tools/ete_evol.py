@@ -700,9 +700,9 @@ def write_results(tree, args):
                 (altn.split('.')[1] != null.split('.')[1])):
                 continue
             if args.tests != 'auto':
-                if not any([(null.split('.')[0] in test and
+                if not any((null.split('.')[0] in test and
                              altn.split('.')[0] in test)
-                            for test in wanted]):
+                            for test in wanted):
                     continue
             results[(null, altn)] = tree.get_most_likely(altn, null)
             bests.append(null if results[(null, altn)] > 0.05 else altn)
@@ -759,7 +759,7 @@ def run(args):
         print("         provide another route with --slr_binary, or install "
               "it by executing 'ete3 install-external-tools paml'",
               file=stderr)
-        if any([AVAIL[m.split('.')[0]]['exec']=='Slr' for m in args.models]):
+        if any(AVAIL[m.split('.')[0]]['exec']=='Slr' for m in args.models):
             return
     binary  = os.path.expanduser(args.codeml_binary)
     if not os.path.exists(binary):
@@ -768,7 +768,7 @@ def run(args):
         print("         provide another route with --codeml_binary, or install "
               "it by executing 'ete3 install-external-tools paml'",
               file=stderr)
-        if any([AVAIL[m.split('.')[0]]['exec']=='codeml' for m in args.models]):
+        if any(AVAIL[m.split('.')[0]]['exec']=='codeml' for m in args.models):
             return
 
     # more help
@@ -851,8 +851,8 @@ def run(args):
         # load models
         models = {}
         if args.prev_models:
-            models = dict([(m.split(',')[1], m.split(',')[0] + '/out')
-                           for m in args.prev_models])
+            models = {m.split(',')[1]: m.split(',')[0] + '/out'
+                           for m in args.prev_models}
         # run models
         if args.models:
             for p in args.params:
@@ -896,7 +896,7 @@ def run(args):
         print('SUMMARY BY MODEL')
         for model in tree._models.values():
             print('\n - Model ' + model.name)
-            if any([model.branches[b]['mark'] for b in model.branches]):
+            if any(model.branches[b]['mark'] for b in model.branches):
                 node, mark = zip(*[(b, model.branches[b]['mark'].strip())
                                    for b in model.branches
                                    if model.branches[b]['mark']])

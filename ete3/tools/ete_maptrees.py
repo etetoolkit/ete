@@ -191,7 +191,7 @@ def run(args):
         else:
             ref_tree_attr = args.ref_tree_attr                        
         
-        ref_leaves = dict([(getattr(_n, ref_tree_attr), _n) for _n in rtree])
+        ref_leaves = {getattr(_n, ref_tree_attr): _n for _n in rtree}
         refnode2supports = defaultdict(list)
         reftree_species, reftree_branches = get_splits(rtree, target_attr=ref_tree_attr, ignore_multifurcations=True)
 

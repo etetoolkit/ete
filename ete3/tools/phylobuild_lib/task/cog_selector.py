@@ -242,6 +242,6 @@ if __name__ == "__main__":
     CogSelectorTask.store_data=lambda a,b,c: True
     C =  CogSelector(set(target_sp), set(), "aa", conf, "user")
 
-    db.translate_names = lambda x:  dict([(n,n) for n in x])
+    db.translate_names = lambda x: {n: n for n in x}
 
     C.finish()

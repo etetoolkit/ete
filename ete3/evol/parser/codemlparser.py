@@ -98,7 +98,7 @@ def parse_rst(path):
         if line.startswith ('Positively '):
             typ = None
         # continue if we are not in table
-        if not re.match ('^ *[0-9]+ [A-Z*-] ', line) or typ == None:
+        if not re.match ('^ *[0-9]+ [A-Z*-] ', line) or typ is None:
             continue
         # line to list
         line = line.replace(' +- ', ' ')
@@ -134,7 +134,7 @@ def parse_rst(path):
             del (sites [typ]['se'])
     return {'classes': classes,
             'sites' :sites,
-            'n_classes': dict([(k, n_classes[k] - bsa) for k in n_classes])}
+            'n_classes': {k: n_classes[k] - bsa for k in n_classes}}
 
 
 def divide_data(pamout, model):
@@ -165,11 +165,11 @@ def divide_data(pamout, model):
             copy = False
             for line in open(rst):
                 if copy == False and \
-                       re.match('\t' + str (num)+'\n', line) != None:
+                       re.match('\t' + str (num)+'\n', line) is not None:
                     copy = True
                     continue
                 if copy == True and \
-                       re.match('\t' + str (num + 1)+'\n', line) != None:
+                       re.match('\t' + str (num + 1)+'\n', line) is not None:
                     copy = False
                 if copy == True:
                     rstout.write(line)
@@ -212,7 +212,7 @@ def parse_paml (pamout, model):
         return
     all_lines = open (pamout).readlines()
     # if we do not have tree, load it
-    if model._tree == None:
+    if model._tree is None:
         from ..evol import EvolTree
         model._tree = EvolTree (re.findall ('\(.*\);', ''.join(all_lines))[2])
         model._tree._label_as_paml()
