@@ -66,17 +66,17 @@ class ClusterNode(TreeNode):
         raise ValueError("This attribute can not be manually set.")
 
     def _get_intra(self):
-        if self._silhouette == None:
+        if self._silhouette is None:
             self.get_silhouette()
         return self._intracluster_dist
 
     def _get_inter(self):
-        if self._silhouette == None:
+        if self._silhouette is None:
             self.get_silhouette()
         return self._intercluster_dist
 
     def _get_silh(self):
-        if self._silhouette == None:
+        if self._silhouette is None:
             self.get_silhouette()
         return self._silhouette
 

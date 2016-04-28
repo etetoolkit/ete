@@ -99,7 +99,7 @@ class ArrayTable(object):
     def remove_column(self,colname):
         """Removes the given column form the current dataset """
         col_value = self.colValues.pop(colname, None)
-        if col_value != None:
+        if col_value is not None:
             new_indexes = list(range(len(self.colNames)))
             index = self.colNames.index(colname)
             self.colNames.pop(index)

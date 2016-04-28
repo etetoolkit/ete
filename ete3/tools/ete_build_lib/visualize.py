@@ -135,7 +135,7 @@ def draw_tree(tree, conf, outfile):
                       "Gammaproteobacteria",]
 
     colors = random_color(num=len(TRACKED_CLADES), s=0.45)
-    lin2color = dict([(ln, colors[i]) for i, ln in enumerate(TRACKED_CLADES)])
+    lin2color = {ln: colors[i] for i, ln in enumerate(TRACKED_CLADES)}
 
     NAME_FACE = AttrFace('name', fsize=10, fgcolor='#444444')
 

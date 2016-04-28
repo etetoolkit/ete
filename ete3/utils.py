@@ -126,16 +126,16 @@ def print_table(items, header=None, wrap=True, max_col_width=20,
         return len(clear_color(string))
 
     if isinstance(fix_col_width, list):
-        c2maxw = dict([(i, fix_col_width[i]) for i in range(len(items[0]))])
+        c2maxw = {i: fix_col_width[i] for i in range(len(items[0]))}
         wrap = True
     elif fix_col_width == True:
-        c2maxw = dict([(i, max_col_width) for i in range(len(items[0]))])
+        c2maxw = {i: max_col_width for i in range(len(items[0]))}
         wrap = True
     elif not wrap:
-        c2maxw = dict([(i, max([safelen(str(e[i])) for e in items])) for i in range(len(items[0]))])
+        c2maxw = {i: max([safelen(str(e[i])) for e in items]) for i in range(len(items[0]))}
     else:
-        c2maxw = dict([(i, min(max_col_width, max([safelen(str(e[i])) for e in items])))
-                        for i in range(len(items[0]))])
+        c2maxw = {i: min(max_col_width, max([safelen(str(e[i])) for e in items]))
+                        for i in range(len(items[0]))}
         
     if header:
         current_item = -1

@@ -281,7 +281,7 @@ def hash_names(target_names):
             logindent(-2)
     #collisions = [(k,v) for k,v in hash2name.iteritems() if len(v)>1]
     #log.log(28, "Final collisions %s", collisions )
-    hash2name = dict([(k, v[0]) for  k,v in six.iteritems(hash2name)])
-    name2hash = dict([(v, k) for  k,v in six.iteritems(hash2name)])
+    hash2name = {k: v[0] for k,v in six.iteritems(hash2name)}
+    name2hash = {v: k for k,v in six.iteritems(hash2name)}
     return name2hash, hash2name
 
