@@ -415,10 +415,10 @@ def main(args):
             silent_remove(GLOBALS["seqdb_file"])
 
         silent_remove(GLOBALS["datadb_file"])
-        silent_remove(pjoin(base_dir, "nprdata.tar"))
-        silent_remove(pjoin(base_dir, "nprdata.tar.gz"))
-        #silent_remove(pjoin(base_dir, "npr.log"))
-        silent_remove(pjoin(base_dir, "npr.log.gz"))        
+        silent_remove(pjoin(base_dir, "etebuild_data.tar"))
+        silent_remove(pjoin(base_dir, "etebuild_data.tar.gz"))
+        silent_remove(pjoin(base_dir, "etebuild.log"))        
+        silent_remove(pjoin(base_dir, "etebuild.log.gz"))        
 
     else:
         if args.softclear:
@@ -442,7 +442,7 @@ def main(args):
             shutil.copytree(pjoin(GLOBALS["output_dir"], "tasks/"), pjoin(base_dir, "tasks/"))
         except IOError as e:
             try:
-                shutil.copy(pjoin(GLOBALS["output_dir"], "nprdata.tar.gz"), base_dir)
+                shutil.copy(pjoin(GLOBALS["output_dir"], "etebuild_data.tar.gz"), base_dir)
             except IOError as e:
                 pass
 
@@ -451,9 +451,9 @@ def main(args):
 
 
     # UnCompress packed execution data
-    if pexist(os.path.join(base_dir,"nprdata.tar.gz")):
+    if pexist(os.path.join(base_dir,"etebuild_data.tar.gz")):
         log.warning("Compressed data found. Extracting content to start execution...")
-        cmd = "cd %s && gunzip -f nprdata.tar.gz && tar -xf nprdata.tar && rm nprdata.tar" % base_dir
+        cmd = "cd %s && gunzip -f etebuild_data.tar.gz && tar -xf etebuild_data.tar && rm etebuild_data.tar" % base_dir
         os.system(cmd)
 
     # Create dir structure
@@ -636,7 +636,7 @@ def main(args):
 
         if args.compress:
             log.log(28, "Compressing intermediate data...")
-            cmd = "cd %s && tar --remove-files -cf nprdata.tar tasks/ && gzip -f nprdata.tar; if [ -e npr.log ]; then gzip -f npr.log; fi;" %\
+            cmd = "cd %s && tar --remove-files -cf etebuild_data.tar tasks/ && gzip -f etebuild_data.tar; if [ -e etebuild.log ]; then gzip -f etebuild.log; fi;" %\
               GLOBALS["basedir"]
             os.system(cmd)
         log.log(28, "Deleting temporal data...")
@@ -930,7 +930,7 @@ def _main(arguments, builtin_apps_path=None):
                               " a workflow is finished.")
 
     output_group.add_argument("--logfile", action="store_true",
-                              help="Log messages will be saved into a file named npr.log within the output directory.")
+                              help="Log messages will be saved into a file named 'etebuild.log' a the root of the output directory.")
 
     output_group.add_argument("--noimg", action="store_true",
                               help="Tree images will not be generated when a workflow is finished.")
