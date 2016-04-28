@@ -146,7 +146,7 @@ try:
         package_data = {
 
         },
-        data_files = [("%s/tools" %MOD_NAME, ["%s/tools/etebuild.cfg" %MOD_NAME])],
+        data_files = [("%s/tools" %MOD_NAME, ["%s/tools/ete_build.cfg" %MOD_NAME])],
 
         # metadata for upload to PyPI
         author = "Jaime Huerta-Cepas",
