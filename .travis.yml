@@ -54,6 +54,9 @@ notifications:
   
 branches:
   only:
+    - develop
     - master
     - "3.0"
     - "2.3"
+    - /^feature\/.+$/
+    
