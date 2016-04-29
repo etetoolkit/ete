@@ -53,10 +53,6 @@ class Test_Coretype_Tree(unittest.TestCase):
         t.del_feature('testf4')
         self.assertTrue('testf4' not in t.features)
 
-
-
-
-
     def test_tree_read_and_write(self):
         """ Tests newick support """
         # Read and write newick tree from file (and support for NHX
@@ -230,9 +226,24 @@ class Test_Coretype_Tree(unittest.TestCase):
         # unsupported newick stream
         self.assertRaises(NewickError, Tree, [1,2,3])
 
+    def test_quoted_names(self):
+        complex_name = "((A:0.0001[&&NHX:hello=true], B:0.011)90:0.01[&&NHX:hello=true], (C:0.01, D:0.001)hello:0.01);"
+        # A quoted tree within a tree
+        nw1 = '(("A:0.1":1.111111, "%s":2.222222)"C:0.00":3.33333, D:4.44444);' %complex_name
+        #escaped quotes
+        nw2 = '''(("A:\\"0.1\\"":1.111111, "%s":2.222222)"C:'0.00'":3.33333, 'D"sd"""\\'"':4.44444);''' %complex_name
 
+        for nw in [nw1, nw2]:
+            self.assertRaises(NewickError, Tree, newick=nw)
+            self.assertRaises(NewickError, Tree, newick=nw, quoted_node_names=True, format=0)
+            t = Tree(newick=nw, format=1, quoted_node_names=True)
+            #print(complex_name)
+            #print(t)
+            #print([n for n in t if n.name == '"%s"'%complex_name])
+            self.assertTrue(any(n for n in t if n.name == '"%s"'%complex_name))
+            
 
-
+        
     def test_custom_formatting_formats(self):
         """ test to change dist, name and support formatters """
         t = Tree('((A:1.111111, B:2.222222)C:3.33333, D:4.44444);', format=1)

@@ -57,9 +57,12 @@ _FLOAT_RE = "\s*[+-]?\d+\.?\d*(?:[eE][-+]\d+)?\s*"
 #_NAME_RE = "[^():,;\[\]]+"
 _NAME_RE = "[^():,;]+?"
 
-"thanks to: http://stackoverflow.com/a/29452781/1006828"
+# thanks to: http://stackoverflow.com/a/29452781/1006828
 _QUOTED_TEXT_RE = r"""((?=["'])(?:"[^"\\]*(?:\\[\s\S][^"\\]*)*"|'[^'\\]*(?:\\[\s\S][^'\\]*)*'))"""
-_QUOTED_TEXT_PREFIX='ete2_quotref_'
+#_QUOTED_TEXT_RE = r"""["'](?:(?<=")[^"\\]*(?s:\\.[^"\\]*)*"|(?<=')[^'\\]*(?s:\\.[^'\\]*)*')""]"]"""
+#_QUOTED_TEXT_RE = r"""(?=["'])(?:"[^"\\]*(?:\\[\s\S][^"\\]*)*"|'[^'\\]*(?:\\[\s\S][^'\\]*)*')]"]")"]"""
+
+_QUOTED_TEXT_PREFIX='ete3_quotref_'
 
 DEFAULT_DIST = 1.0
 DEFAULT_NAME = ''
@@ -199,11 +202,12 @@ def print_supported_formats():
 class NewickError(Exception):
     """Exception class designed for NewickIO errors."""
     def __init__(self, value):
-        #import sys
-        #print >>sys.stderr, 'error: ' + str(value)
+        if value is None:
+            value = ''
+        value += "\nYou may want to check other newick loading flags like 'format' or 'quoted_node_names'."
         Exception.__init__(self, value)
 
-def read_newick(newick, root_node=None, format=0):
+def read_newick(newick, root_node=None, format=0, quoted_names=False):
     """ Reads a newick tree from either a string or a file, and returns
     an ETE tree structure.
 
@@ -238,27 +242,28 @@ def read_newick(newick, root_node=None, format=0):
         elif not nw.startswith('(') or not nw.endswith(';'):
             raise NewickError('Unexisting tree file or Malformed newick tree structure.')
         else:
-            return _read_newick_from_string(nw, root_node, matcher, format)
+            return _read_newick_from_string(nw, root_node, matcher, format, quoted_names)
 
     else:
         raise NewickError("'newick' argument must be either a filename or a newick string.")
 
-def _read_newick_from_string(nw, root_node, matcher, formatcode):
+def _read_newick_from_string(nw, root_node, matcher, formatcode, quoted_names):
     """ Reads a newick string in the New Hampshire format. """
-    # begin: Quoted text is mapped to references
-    quoteMap={}
-    unquoted_nw=''
-    counter=0
-    for token in re.split(_QUOTED_TEXT_RE, nw):
-        counter+=1
-        if counter % 2 == 1 : #normal newick tree structure data
-            unquoted_nw += token
-        else : #quoted text, add to dictionary and replace with reference
-            refId= _QUOTED_TEXT_PREFIX + str(counter/2)
-            unquoted_nw += refId
-            quoteMap[refId]=token
 
-    nw = unquoted_nw
+    if quoted_names: 
+        # Quoted text is mapped to references
+        quoted_map = {}
+        unquoted_nw = ''
+        counter = 0
+        for token in re.split(_QUOTED_TEXT_RE, nw):
+            counter += 1
+            if counter % 2 == 1 : # normal newick tree structure data
+                unquoted_nw += token
+            else : # quoted text, add to dictionary and replace with reference
+                quoted_ref_id= _QUOTED_TEXT_PREFIX + str(counter/2)
+                unquoted_nw += quoted_ref_id
+                quoted_map[quoted_ref_id]=token
+        nw = unquoted_nw
 
     if nw.count('(') != nw.count(')'):
         raise NewickError('Parentheses do not match. Broken tree structure?')
@@ -309,9 +314,10 @@ def _read_newick_from_string(nw, root_node, matcher, formatcode):
                     current_parent = current_parent.up
     
     # references in node names are replaced with quoted text before returning
-    for node in root_node.iter_descendants():
-        if node.name.startswith(_QUOTED_TEXT_PREFIX):
-            node.name = quoteMap[node.name]
+    if quoted_names:
+        for node in root_node.iter_descendants():
+            if node.name.startswith(_QUOTED_TEXT_PREFIX):
+                node.name = quoted_map[node.name]
     
     return root_node
 

@@ -188,7 +188,7 @@ class TreeNode(object):
                          fset=_set_face_areas)
 
     def __init__(self, newick=None, format=0, dist=None, support=None,
-                 name=None):
+                 name=None, quoted_node_names=False):
         self._children = []
         self._up = None
         self._dist = DEFAULT_DIST
@@ -207,7 +207,8 @@ class TreeNode(object):
         # Initialize tree
         if newick is not None:
             self._dist = 0.0
-            read_newick(newick, root_node = self, format=format)
+            read_newick(newick, root_node = self, format=format,
+                        quoted_names=quoted_node_names)
 
 
     def __nonzero__(self):
