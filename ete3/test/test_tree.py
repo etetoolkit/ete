@@ -232,16 +232,11 @@ class Test_Coretype_Tree(unittest.TestCase):
         nw1 = '(("A:0.1":1.111111, "%s":2.222222)"C:0.00":3.33333, D:4.44444);' %complex_name
         #escaped quotes
         nw2 = '''(("A:\\"0.1\\"":1.111111, "%s":2.222222)"C:'0.00'":3.33333, 'D"sd"""\\'"':4.44444);''' %complex_name
-
         for nw in [nw1, nw2]:
             self.assertRaises(NewickError, Tree, newick=nw)
             self.assertRaises(NewickError, Tree, newick=nw, quoted_node_names=True, format=0)
             t = Tree(newick=nw, format=1, quoted_node_names=True)
-            #print(complex_name)
-            #print(t)
-            #print([n for n in t if n.name == '"%s"'%complex_name])
             self.assertTrue(any(n for n in t if n.name == '"%s"'%complex_name))
-            
 
         
     def test_custom_formatting_formats(self):
