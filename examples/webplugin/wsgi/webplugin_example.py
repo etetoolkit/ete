@@ -194,7 +194,7 @@ def search_by_feature(tree, search_term):
                 n.del_feature("bsize")
                 n.del_feature("shape")
                 n.del_feature("fgcolor")
-            except:
+            except (KeyError, AttributeError):
                 pass
     else:
         for n in tree.traverse():
