@@ -46,7 +46,7 @@ try:
     from urllib2 import urlopen, URLError
     from urllib2 import quote as urlquote
 except ImportError:
-    from urllib.request import urlopen
+    from urllib.request import urlopen, URLError
     from urllib.parse import quote as urquote
 
 from six.moves import input
