@@ -17,6 +17,7 @@ test.pdf
 test.svg
 testdb.sqlite*
 ete_test_tmp/
+test_tmp/
 
 # Coverage files
 .coverage
