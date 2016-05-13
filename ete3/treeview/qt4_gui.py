@@ -54,7 +54,7 @@ except ImportError:
     USE_GL = False
 
 from . import _mainwindow, _search_dialog, _show_newick, _open_newick, _about
-from .main import TreeStyle, save, _leaf
+from .main import save, _leaf
 from .svg_colors import random_color
 from .qt4_render import render
 from .node_gui_actions import NewickDialog
