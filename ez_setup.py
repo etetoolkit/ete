@@ -64,7 +64,7 @@ md5_data = {
     'setuptools-0.6c9-py2.6.egg': 'ca37b1ff16fa2ede6e19383e7b59245a',
 }
 
-import sys, os
+import os
 try: from hashlib import md5
 except ImportError: from md5 import md5
 
