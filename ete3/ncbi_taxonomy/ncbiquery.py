@@ -105,7 +105,7 @@ class NCBITaxa(object):
 
     def update_taxonomy_database(self, taxdump_file=None):
         """Updates the ncbi taxonomy database by downloading and parsing the latest
-        taxdump.tar.gz file from the NCBI FTP site.
+        taxdump.tar.gz file from the NCBI FTP site (via HTTP).
 
         :param None taxdump_file: an alternative location of the taxdump.tax.gz file.
         """
@@ -638,7 +638,7 @@ class NCBITaxa(object):
 
 def load_ncbi_tree_from_dump(tar):
     from .. import Tree
-    # Download: ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz
+    # Download: http://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz
     parent2child = {}
     name2node = {}
     node2taxname = {}
@@ -716,8 +716,8 @@ def update_db(dbfile, targz_file=None):
         except ImportError:
             from urllib.request import urlretrieve
 
-        print('Downloading taxdump.tar.gz from NCBI FTP site...', file=sys.stderr)
-        urlretrieve("ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz", "taxdump.tar.gz")
+        print('Downloading taxdump.tar.gz from NCBI FTP site (via HTTP)...', file=sys.stderr)
+        urlretrieve("http://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz", "taxdump.tar.gz")
         print('Done. Parsing...', file=sys.stderr)
         targz_file = "taxdump.tar.gz"
 
