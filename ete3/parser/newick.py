@@ -264,7 +264,6 @@ def _read_newick_from_string(nw, root_node, matcher, formatcode, quoted_names):
                 unquoted_nw += quoted_ref_id
                 quoted_map[quoted_ref_id]=token[1:-1]  # without the quotes
         nw = unquoted_nw
-        print(nw)
 
     if nw.count('(') != nw.count(')'):
         raise NewickError('Parentheses do not match. Broken tree structure?')
