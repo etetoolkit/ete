@@ -262,7 +262,7 @@ def _read_newick_from_string(nw, root_node, matcher, formatcode, quoted_names):
             else : # quoted text, add to dictionary and replace with reference
                 quoted_ref_id= _QUOTED_TEXT_PREFIX + str(counter/2)
                 unquoted_nw += quoted_ref_id
-                quoted_map[quoted_ref_id]=token
+                quoted_map[quoted_ref_id]=token[1:-1]  # without the quotes
         nw = unquoted_nw
 
     if nw.count('(') != nw.count(')'):
