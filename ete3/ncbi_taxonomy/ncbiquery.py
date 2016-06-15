@@ -74,18 +74,21 @@ class NCBITaxa(object):
     Provides a local transparent connector to the NCBI taxonomy database.
     """
 
-    def __init__(self, dbfile=None):
+    def __init__(self, dbfile=None, taxdump_file=None):
 
         if not dbfile:
             self.dbfile = os.path.join(os.environ.get('HOME', '/'), '.etetoolkit', 'taxa.sqlite')
         else:
             self.dbfile = dbfile
 
+        if taxdump_file:
+            self.update_taxonomy_database(taxdump_file)
+
         if dbfile is None and not os.path.exists(self.dbfile):
             print('NCBI database not present yet (first time used?)', file=sys.stderr)
-            self.update_taxonomy_database()
+            self.update_taxonomy_database(taxdump_file)
 
-        if not os.path.exists(self.dbfile):
+        if not os.path.exists(self.dbfile): 
             raise ValueError("Cannot open taxonomy database: %s" %self.dbfile)
 
         self.db = None
@@ -93,7 +96,7 @@ class NCBITaxa(object):
 
         if self.__get_db_version() != DB_VERSION:
             print('NCBI database format is outdated. Upgrading', file=sys.stderr)
-            self.update_taxonomy_database()
+            self.update_taxonomy_database(taxdump_file)
 
     def __get_db_version(self):
         try:
@@ -741,7 +744,10 @@ def update_db(dbfile, targz_file=None):
     except:
         raise
     else:
-        os.system("rm syn.tab merged.tab taxa.tab taxdump.tar.gz")
+        os.system("rm syn.tab merged.tab taxa.tab")
+        # remove only downloaded taxdump file 
+        if not targz_file:
+            os.system("rm taxdump.tar.gz")
 
 def upload_data(dbfile):
     print()
