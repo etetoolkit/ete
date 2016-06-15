@@ -106,7 +106,7 @@ def run(args):
     if not args.tree and not args.info and not args.descendants:
         args.tree = True
 
-    ncbi = NCBITaxa()
+    ncbi = NCBITaxa(args.dbfile)
 
     all_taxids = {}
     all_names = set()
