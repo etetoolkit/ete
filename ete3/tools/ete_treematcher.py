@@ -20,8 +20,8 @@ def populate_args(extract_args_p):
 
 
 def run(args):
-    #from .. import Tree, PhyloTree, treematcher
-    from ete3 import Tree, PhyloTree
+    from .. import Tree, PhyloTree, treematcher
+    #from ete3 import Tree, PhyloTree
     import treematcher
 
     if args.pattern is not None:
