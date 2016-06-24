@@ -1585,10 +1585,13 @@ class TreeNode(object):
             _store[self] = val
         else:
             if store_attr is None:
-                val = self
+                val = [self]
             else:
-                val = getattr(self, store_attr)
-            _store[self] = container_type([val])
+                try:
+                    val = [getattr(self, store_attr)]
+                except AttributeError:
+                    val = []
+            _store[self] = container_type(val)
         return _store
 
     def robinson_foulds(self, t2, attr_t1="name", attr_t2="name",
