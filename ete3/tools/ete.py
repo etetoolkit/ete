@@ -53,7 +53,7 @@ TOOLSPATH = os.path.realpath(os.path.split(os.path.realpath(__file__))[0])
 import argparse
 from . import (ete_split, ete_expand, ete_annotate, ete_ncbiquery, ete_view,
                ete_generate, ete_mod, ete_extract, ete_compare, ete_evol,
-               ete_maptrees)
+               ete_maptrees, ete_treematcher)
 from . import common
 from .common import log
 from .utils import colorify, which
@@ -207,6 +207,12 @@ def _main(arguments):
                                        description=ete_maptrees.DESC)
     maptrees_args_p.set_defaults(func=ete_maptrees.run)
     ete_maptrees.populate_args(maptrees_args_p)
+
+    # -treematcher-
+    treematcher_args_p = subparser.add_parser("treematcher", parents=[source_args_p, ref_args_p, main_args_p],
+                                           description=ete_treematcher.DESC)
+    treematcher_args_p.set_defaults(func=ete_treematcher.run)
+    ete_treematcher.populate_args(treematcher_args_p)
 
     
     # - build -
