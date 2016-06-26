@@ -6,11 +6,18 @@ doc/_build/
 dist/
 *.egg-info
 
+# Conda testing environment
+miniconda.sh
+miniconda/
 
 # Test files
+tests.log
 test.png
+test.pdf
 test.svg
 testdb.sqlite*
+ete_test_tmp/
+test_tmp/
 
 # Coverage files
 .coverage

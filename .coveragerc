@@ -5,10 +5,6 @@ omit =
     # unmaintained 
     */ete3/phylomedb/*
     
-    # non-ete modules
-    */ete3/clustering/pstats.py
-    */ete3/clustering/stats.py
-    
     # There are no GUI tests
     */ete3/treeview/qt4_gui.py
     */ete3/treeview/node_gui_actions.py

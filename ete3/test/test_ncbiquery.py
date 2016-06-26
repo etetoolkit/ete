@@ -5,7 +5,7 @@ import unittest
 from .. import PhyloTree, NCBITaxa
 from ..ncbi_taxonomy import ncbiquery
 
-DATABASE_PATH = "testdb.sqlite"
+DATABASE_PATH = "test_tmp/testdb.sqlite"
 
 class Test_ncbiquery(unittest.TestCase):
 
