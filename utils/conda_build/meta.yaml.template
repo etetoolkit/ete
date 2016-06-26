@@ -16,13 +16,15 @@ requirements:
     - six
     - lxml
     - numpy
+    - scipy
     - pyqt
         
   run:
     - python
     - six
     - lxml
-    - numpy
+    - numpy 
+    - scipy
     - pyqt
     
 test:
@@ -31,6 +33,7 @@ test:
     - six
     - lxml
     - numpy
+    - scipy
     - pyqt
     - scikit-bio
     - biopython
