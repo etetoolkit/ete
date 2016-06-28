@@ -1575,7 +1575,7 @@ class TreeNode(object):
         for ch in self.children:
             ch.get_cached_content(store_attr=store_attr,
                                   container_type=container_type,
-                                  _store=_store, leaves_only=leaves_only)
+                                  _store=_store, descendant_leaves=descendant_leaves)
         if descendant_leaves:
             if self.children:
                 val = container_type()
