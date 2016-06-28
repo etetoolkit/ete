@@ -1552,7 +1552,7 @@ class TreeNode(object):
             if not n.is_leaf():
                 n.children.sort(key=lambda x: str(sorted(node2content[x])))
 
-    def get_cached_content(self, store_attr=None, container_type=set, _store=None):
+    def get_cached_content(self, store_attr=None, container_type=set, _store=None, descendant_leaves=True):
         """
         .. versionadded: 2.2
 
@@ -1568,30 +1568,42 @@ class TreeNode(object):
         :param _store: (internal use)
 
         """
+
         if _store is None:
             _store = {}
 
         for ch in self.children:
             ch.get_cached_content(store_attr=store_attr,
                                   container_type=container_type,
-                                  _store=_store)
-        if self.children:
-            val = container_type()
-            for ch in self.children:
-                if type(val) == list:
-                    val.extend(_store[ch])
-                if type(val) == set:
-                    val.update(_store[ch])
-            _store[self] = val
+                                  _store=_store, leaves_only=leaves_only)
+        if descendant_leaves:
+            if self.children:
+                val = container_type()
+                for ch in self.chil
+                    if type(val) == list:
+                        val.extend(_store[ch])
+                    if type(val) == set:
+                        val.update(_store[ch])
+                _store[self] = val
+            else:
+                if store_attr is None:
+                    val = [self]
+                else:
+                    if not isinstance(store_attr, six.string_types):
+                        val = [tuple(getattr(self, attr, None) for attr in store_attr)]
+                    else:
+                        val = [getattr(self, store_attr, None)]
+                _store[self] = container_type(val)
         else:
             if store_attr is None:
-                val = [self]
+                val = self
             else:
-                try:
-                    val = [getattr(self, store_attr)]
-                except AttributeError:
-                    val = []
-            _store[self] = container_type(val)
+                if not isinstance(store_attr, six.string_types):
+                    val = [tuple(getattr(self, attr, None) for attr in store_attr)]
+                else:
+                    val = [getattr(self, store_attr, None)]
+            _store[self] = val
+
         return _store
 
     def robinson_foulds(self, t2, attr_t1="name", attr_t2="name",
