@@ -1579,7 +1579,7 @@ class TreeNode(object):
         if descendant_leaves:
             if self.children:
                 val = container_type()
-                for ch in self.chil
+                for ch in self.children:
                     if type(val) == list:
                         val.extend(_store[ch])
                     if type(val) == set:
