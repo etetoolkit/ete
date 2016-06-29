@@ -43,10 +43,10 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 try:
-    from urllib2 import urlopen
+    from urllib2 import urlopen, URLError
     from urllib2 import quote as urlquote
 except ImportError:
-    from urllib.request import urlopen
+    from urllib.request import urlopen, URLError
     from urllib.parse import quote as urquote
 
 from six.moves import input
@@ -66,13 +66,13 @@ def call():
     try:
         f = urlopen('http://etetoolkit.org/static/et_phone_home.php?VERSION=%s&ID=%s'
                 %(__version__, __ETEID__))
-    except:
+    except URLError:
         print("No answer :(")
     else:
         print("Got answer!")
         try:
             f = urlopen('http://pypi.python.org/pypi/ete3/')
-        except:
+        except URLError:
             latest = None
         else:
             latest = int(f.read())
@@ -105,7 +105,7 @@ def call():
             try:
                 f = urlopen('http://etetoolkit.org/static/et_phone_home.php?VERSION=%s&ID=%s&MSG=%s'
                                 %(__version__, __ETEID__, msg))
-            except:
+            except URLError:
                 print("Message could be delivered :(")
             else:
                 print("Message delivered")
@@ -116,7 +116,7 @@ def new_version(module_name=None, current=None):
     try:
         f = urlopen('http://etetoolkit.org/releases/ete3/%s.latest'
                         %module_name)
-    except:
+    except URLError:
         latest = None
     else:
         latest = int(f.read())
@@ -135,7 +135,7 @@ def new_version(module_name=None, current=None):
 def read_content(address):
     try:
         f = urlopen(address)
-    except:
+    except URLError:
         return None
     else:
         return f.read()
