@@ -663,10 +663,25 @@ class Test_Coretype_Tree(unittest.TestCase):
         # Test cached content
         t = Tree()
         t.populate(20)
-        cache_name = t.get_cached_content(store_attr="name")
+
         cache_node = t.get_cached_content()
-        self.assertEqual(cache_name[t], set(t.get_leaf_names()))
+        cache_node_leaves_only_false = t.get_cached_content(leaves_only=False)
         self.assertEqual(cache_node[t], set(t.get_leaves()))
+        self.assertEqual(cache_node_leaves_only_false[t], t)
+
+        cache_name = t.get_cached_content(store_attr="name")
+        cache_name_leaves_only_false = t.get_cached_content(store_attr="name", leaves_only=False)
+        self.assertEqual(cache_name[t], set(t.get_leaf_names()))
+        self.assertEqual(cache_name_leaves_only_false[t], [t.name])
+
+        cache_many = t.get_cached_content(store_attr=["name", "dist", "support"])
+        cache_many_lof = t.get_cached_content(store_attr=["name", "dist", "support"], leaves_only=False)
+        self.assertEqual(cache_many[t], set([(leaf.name, leaf.dist, leaf.support) for leaf in t.get_leaves()]))
+        self.assertEqual(cache_many_lof[t], [(t.name, t.dist, t.support)])
+
+
+        #self.assertEqual(cache_name_lof[t], [t.name])
+
 
     def test_rooting(self):
         """ Check branch support and distances after rooting """

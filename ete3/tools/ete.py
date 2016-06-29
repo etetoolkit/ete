@@ -208,7 +208,6 @@ def _main(arguments):
     maptrees_args_p.set_defaults(func=ete_maptrees.run)
     ete_maptrees.populate_args(maptrees_args_p)
 
-    
     # - build -
     generate_args_p = subparser.add_parser("build")
 

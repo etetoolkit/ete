@@ -1552,7 +1552,7 @@ class TreeNode(object):
             if not n.is_leaf():
                 n.children.sort(key=lambda x: str(sorted(node2content[x])))
 
-    def get_cached_content(self, store_attr=None, container_type=set, _store=None):
+    def get_cached_content(self, store_attr=None, container_type=set, leaves_only=True, _store=None):
         """
         .. versionadded: 2.2
 
@@ -1568,27 +1568,44 @@ class TreeNode(object):
         :param _store: (internal use)
 
         """
+
         if _store is None:
             _store = {}
 
         for ch in self.children:
             ch.get_cached_content(store_attr=store_attr,
                                   container_type=container_type,
+                                  leaves_only=leaves_only,
                                   _store=_store)
-        if self.children:
-            val = container_type()
-            for ch in self.children:
-                if type(val) == list:
-                    val.extend(_store[ch])
-                if type(val) == set:
-                    val.update(_store[ch])
-            _store[self] = val
+        if leaves_only:
+            if self.children:
+                val = container_type()
+                for ch in self.children:
+                    if type(val) == list:
+                        val.extend(_store[ch])
+                    if type(val) == set:
+                        val.update(_store[ch])
+                _store[self] = val
+            else:
+                if store_attr is None:
+                    val = [self]
+                else:
+                    if not isinstance(store_attr, six.string_types):
+                        val = [tuple(getattr(self, attr, None) for attr in store_attr)]
+
+                    else:
+                        val = [getattr(self, store_attr, None)]
+                _store[self] = container_type(val)
         else:
             if store_attr is None:
                 val = self
             else:
-                val = getattr(self, store_attr)
-            _store[self] = container_type([val])
+                if not isinstance(store_attr, six.string_types):
+                    val = [tuple(getattr(self, attr, None) for attr in store_attr)]
+                else:
+                    val = [getattr(self, store_attr, None)]
+            _store[self] = val
+
         return _store
 
     def robinson_foulds(self, t2, attr_t1="name", attr_t2="name",
@@ -1792,11 +1809,11 @@ class TreeNode(object):
                     valid_src_edges = set([p for p in (src_p - src_disc) if len(p[0])>1 and len(p[1])>0])
                     common_edges = valid_ref_edges & valid_src_edges
                 else:
-                    
+
                     valid_ref_edges = set([p for p in (ref_p - ref_disc) if len(p)>1])
                     valid_src_edges = set([p for p in (src_p - src_disc) if len(p)>1])
                     common_edges = valid_ref_edges & valid_src_edges
-                    
+
             else:
                 valid_ref_edges = set()
                 valid_src_edges = set()
@@ -1863,10 +1880,10 @@ class TreeNode(object):
                         # congruence for totally different trees
                         ref_found_in_src = (len(common_edges)-1)/float(len(valid_ref_edges)-1) if len(valid_ref_edges)>1 else None
                         src_found_in_ref = (len(common_edges)-1)/float(len(valid_src_edges)-1) if len(valid_src_edges)>1 else None
-                        
+
                     if ref_found_in_src is not None:
                         ref_found.append(ref_found_in_src)
-                        
+
                     if src_found_in_ref is not None:
                         src_found.append(src_found_in_ref)
 
@@ -1885,7 +1902,7 @@ class TreeNode(object):
 
                     result["ref_edges_in_source"] = utils.mean(ref_found)
                     result["source_edges_in_ref"] = utils.mean(src_found)
-                    
+
                     result["source_subtrees"] = len(all_rf)
                     result["common_edges"] = set()
                     result["source_edges"] = set()
@@ -2368,7 +2385,7 @@ class TreeNode(object):
 
         """
 
-        
+
         def get_node(nodename, dist=None):
             if nodename not in nodes_by_name:
                 nodes_by_name[nodename] = Tree(name=nodename, dist=dist)
@@ -2377,7 +2394,7 @@ class TreeNode(object):
                 node.dist = dist
             node.name = nodename
             return nodes_by_name[nodename]
-    
+
         nodes_by_name = {}
         for columns in parent_child_table:
             if len(columns) == 3:
@@ -2388,10 +2405,10 @@ class TreeNode(object):
                 dist = None
             parent = get_node(parent_name)
             parent.add_child(get_node(child_name, dist=dist))
-    
+
         root = parent.get_tree_root()
         return root
-        
+
     @staticmethod
     def from_skbio(skbio_tree, map_attributes=None):
         """Converts a scikit-bio TreeNode object into ETE Tree object. 
@@ -2408,20 +2425,20 @@ class TreeNode(object):
 
         >>> tree = Tree.from_skibio(skbioTree, map_attributes=["value"])
         
-        """        
+        """
         from skbio import TreeNode as skbioTreeNode
-        
+
         def get_ete_node(skbio_node):
             ete_node = all_nodes.get(skbio_node, Tree())
             if skbio_node.length is not None:
                 ete_node.dist = float(skbio_node.length)
-            ete_node.name = skbio_node.name            
+            ete_node.name = skbio_node.name
             ete_node.add_features(id=skbio_node.id)
             if map_attributes:
                 for a in map_attributes:
                     ete_node.add_feature(a, getattr(skbio_node, a, None))
             return ete_node
-        
+
         all_nodes = {}
         if isinstance(skbio_tree, skbioTreeNode):
             for node in skbio_tree.preorder(include_self=True):
@@ -2432,11 +2449,11 @@ class TreeNode(object):
                     ete_node.add_child(ete_ch)
                     all_nodes[ch] = ete_ch
             return ete_ch.get_tree_root()
-        
+
     def phonehome(self):
         from .. import _ph
         _ph.call()
-        
+
 
 def _translate_nodes(root, *nodes):
     name2node = dict([ [n, None] for n in nodes if type(n) is str])
