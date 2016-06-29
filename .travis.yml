@@ -4,44 +4,24 @@ sudo: false
 python:
   - "2.7"
   - "3.4"
+  - "3.5"
 
-# command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
+cache:
+  directories:
+  - test_tmp
 
 install:
-    # We do this conditionally because it saves us some downloading if the
-    # version is the same.
-    - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
-      else
-      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-      fi
-    - bash miniconda.sh -b -p $HOME/miniconda
-    - export PATH="$HOME/miniconda/bin:$PATH"
-    - hash -r
-    - conda config --set always_yes yes --set changeps1 no
-    - conda update -q conda
-    # Useful for debugging any issues with conda
-    - conda info -a
-    
-    # Replace dep1 dep2 ... with your dependencies
-    - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION pip pyqt numpy six lxml coverage scikit-bio biopython scipy
-    #- pip install coveralls
-    - source activate test-environment
-    - conda install -c etetoolkit ete3_external_apps
-    - python setup.py install --donottrackinstall
+  - ./run_tests.sh --setup-only -sv "$TRAVIS_PYTHON_VERSION"
         
 before_script:
-  - python --version
-  - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start"
-  - sleep 2 # give xvfb some time to start
-  - ete3 version
-  - mkdir -p ~/.etetoolkit/
-  #- ete3 upgrade-external-tools --dir ~/.etetoolkit/ -v  
+  # Ensure tags are available on the cloned repository
+  - git fetch --tags --depth=50
+#  - mkdir -p ~/.etetoolkit/
+#  - ete3 upgrade-external-tools --dir ~/.etetoolkit/ -v
   
-# command to run tests, e.g. python setup.py test
 script: 
-  - coverage run -m ete3.test.test_api
+  - ./run_tests.sh --test-only -sv "$TRAVIS_PYTHON_VERSION"
+  #- coverage run -m ete3.test.test_api
   #- coverage run -a -m ete3.test.test_ete_evol   # too heavy for travis
   #- coverage run -a -m ete3.test.test_ete_build  # too heavy for travis
   
@@ -51,10 +31,3 @@ after_success:
 #The email defaults are too talkative while we're getting Travis working nicely.
 notifications:
   email: false
-  
-branches:
-  only:
-    - master
-    - "3.0"
-    - "2.3"
-    - /^feature\/.+$/

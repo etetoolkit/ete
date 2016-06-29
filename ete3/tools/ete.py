@@ -44,6 +44,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 import sys
 import os
+import errno
 
 TOOLSPATH = os.path.realpath(os.path.split(os.path.realpath(__file__))[0])
 #sys.path.insert(0, TOOLSPATH)
@@ -57,6 +58,8 @@ from . import (ete_split, ete_expand, ete_annotate, ete_ncbiquery, ete_view,
 from . import common
 from .common import log
 from .utils import colorify, which
+
+from subprocess import Popen, PIPE
 
 """
 def ete_split(args):
@@ -94,9 +97,35 @@ def main():
 def _main(arguments):
     if len(arguments) > 1:
         subcommand = arguments[1]
-        if  subcommand == "version":
+        if subcommand == "version":
             from .. import __version__
-            print(__version__)
+
+            _version = __version__
+
+            try:
+                # If on a git repository and tags are available
+                # Use a tag based code (e.g. 3.1.1b2-8-gb2d12f4)
+                p = Popen(["git", "describe", "--tags"], stdout=PIPE, stderr=PIPE)
+                out, err = p.communicate()
+            except OSError as e:
+                if e.errno == errno.ENOENT:
+                    # Git not installed
+                    pass
+                else:
+                    raise
+            else:
+                if p.returncode == 0:
+                    _version += " (git-{})".format(bytes.decode(out).rstrip())
+                else:
+                    # If tags were not available
+                    # Use a short hash for the current commit (e.g. b2d12f4)
+                    p = Popen(["git", "rev-parse", "--short", "HEAD"], stdout=PIPE, stderr=PIPE)
+                    out, err = p.communicate()
+
+                    if p.returncode == 0:
+                        _version += " (git-{})".format(bytes.decode(out).rstrip())
+
+            print(_version)
             return
         elif subcommand == "upgrade-external-tools":
             from . import ete_upgrade_tools
