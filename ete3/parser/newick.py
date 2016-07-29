@@ -237,8 +237,8 @@ def read_newick(newick, root_node=None, format=0, quoted_names=False):
         matcher = compile_matchers(formatcode=format)
         nw = nw.strip()        
         if not nw.startswith('(') and nw.endswith(';'):
-            return _read_node_data(nw[:-1], root_node, "single", matcher, format)
-
+            #return _read_node_data(nw[:-1], root_node, "single", matcher, format)
+            return _read_newick_from_string(nw, root_node, matcher, format, quoted_names)
         elif not nw.startswith('(') or not nw.endswith(';'):
             raise NewickError('Unexisting tree file or Malformed newick tree structure.')
         else:
@@ -249,7 +249,7 @@ def read_newick(newick, root_node=None, format=0, quoted_names=False):
 
 def _read_newick_from_string(nw, root_node, matcher, formatcode, quoted_names):
     """ Reads a newick string in the New Hampshire format. """
-
+    
     if quoted_names: 
         # Quoted text is mapped to references
         quoted_map = {}
@@ -265,6 +265,14 @@ def _read_newick_from_string(nw, root_node, matcher, formatcode, quoted_names):
                 quoted_map[quoted_ref_id]=token[1:-1]  # without the quotes
         nw = unquoted_nw
 
+
+    if not nw.startswith('(') and nw.endswith(';'):
+        _read_node_data(nw[:-1], root_node, "single", matcher, format)
+        if quoted_names:
+            if root_node.name.startswith(_QUOTED_TEXT_PREFIX):
+                root_node.name = quoted_map[root_node.name]
+        return root_node
+                                
     if nw.count('(') != nw.count(')'):
         raise NewickError('Parentheses do not match. Broken tree structure?')
 
