@@ -56,6 +56,15 @@ def populate_args(ncbi_args_p):
                         type=str,
                         help="""NCBI sqlite3 db file.""")
 
+    ncbi_args.add_argument("--taxdump_file",  dest="taxdumpfile",
+                        type=str,
+                        help="""Use local NCBI taxdump file instead of downloading from NCBI.""")
+
+    ncbi_args.add_argument("--create",  dest="create",
+                        action='store_true', 
+                        default=False,
+                        help="""Create taxdump file and exit.""")
+
     ncbi_args.add_argument("--fuzzy", dest="fuzzy", type=float,
                         help=("EXPERIMENTAL: Tries a fuzzy (and SLOW) search for those"
                               " species names that could not be translated"
@@ -106,8 +115,11 @@ def run(args):
     if not args.tree and not args.info and not args.descendants:
         args.tree = True
 
-    ncbi = NCBITaxa(args.dbfile)
+        
+    ncbi = NCBITaxa(args.dbfile, args.taxdumpfile)
 
+    if args.create:
+        sys.exit(0)
     all_taxids = {}
     all_names = set()
     queries = []
