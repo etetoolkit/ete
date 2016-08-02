@@ -116,7 +116,7 @@ def render_tree(t, imgName, w=None, h=None, layout=None,
 
 
 def get_img(t, w=None, h=None, layout=None, tree_style = None,
-            header=None, units="px", dpi=90):
+            header=None, units="px", dpi=90, return_format="%%return"):
     global _QApp
     scene, img = init_scene(t, layout, tree_style)
     tree_item, n2i, n2f = render(t, img)
@@ -125,10 +125,15 @@ def get_img(t, w=None, h=None, layout=None, tree_style = None,
     tree_item.setParentItem(scene.master_item)
     scene.master_item.setPos(0,0)
     scene.addItem(scene.master_item)
-    x_scale, y_scale, imgdata = save(scene, "%%return", w=w, h=h, units=units, dpi=dpi)
+    x_scale, y_scale, imgdata = save(scene, return_format, w=w, h=h, units=units, dpi=dpi)
+    if 'PNG' in return_format:
+        img_map = get_tree_img_map(n2i, x_scale, y_scale)
+    else:
+        img_map = {}
+
     _QApp.quit()
     _QApp = None
-    return imgdata, {}
+    return imgdata, img_map
 
 
 

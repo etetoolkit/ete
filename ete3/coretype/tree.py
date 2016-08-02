@@ -1352,10 +1352,10 @@ class TreeNode(object):
         """
 
         from ..treeview import drawer
-        if file_name == '%%return':
+        if file_name.startswith('%%return'):
             return drawer.get_img(self, w=w, h=h,
                                   layout=layout, tree_style=tree_style,
-                                  units=units, dpi=dpi)
+                                  units=units, dpi=dpi, return_format=file_name)
         else:
             return drawer.render_tree(self, file_name, w=w, h=h,
                                     layout=layout, tree_style=tree_style,
