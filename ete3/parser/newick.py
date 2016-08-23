@@ -52,7 +52,7 @@ _ILEGAL_NEWICK_CHARS = ":;(),\[\]\t\n\r="
 _NON_PRINTABLE_CHARS_RE = "[\x00-\x1f]+"
 
 _NHX_RE = "\[&&NHX:[^\]]*\]"
-_FLOAT_RE = "\s*[+-]?\d+\.?\d*(?:[eE][-+]\d+)?\s*"
+_FLOAT_RE = "\s*[+-]?\d+\.?\d*(?:[eE][-+]?\d+)?\s*"
 #_FLOAT_RE = "[+-]?\d+\.?\d*"
 #_NAME_RE = "[^():,;\[\]]+"
 _NAME_RE = "[^():,;]+?"
