@@ -207,6 +207,10 @@ class EvolNode(PhyloNode):
         =========== ============================= ==================\n%s
         =========== ============================= ==================\n
 
+        **Note that M1 and M2 models are making reference to the new versions
+        of these models, with continuous omega rates (namely M1a and M2a in the
+        PAML user guide).**
+
         :argument model_name: a string like "model-name[.some-secondary-name]" (e.g.: "fb.my_first_try", or just "fb")
                               * model-name is compulsory, is the name of the model (see table above for the full list)
                               * the second part is accessory, it is to avoid over-writing models with the same name.
@@ -478,7 +482,7 @@ class EvolNode(PhyloNode):
          Alternative  Null    Test
         ============ ======= ===========================================
           M2          M1      PS on sites (M2 prone to miss some sites)
-                              (Yang 2000)
+                              (Yang 2000).
           M3          M0      test of variability among sites
           M8          M7      PS on sites
                               (Yang 2000)
@@ -499,6 +503,10 @@ class EvolNode(PhyloNode):
           b_free      M0      different ratio on branches
                               (Yang Nielsen 2002)
         ============ ======= ===========================================
+
+        **Note that M1 and M2 models are making reference to the new versions
+        of these models, with continuous omega rates (namely M1a and M2a in the
+        PAML user guide).**
 
         :argument altn: model with higher number of parameters (np)
         :argument null: model with lower number of parameters (np)
