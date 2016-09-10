@@ -448,12 +448,12 @@ def remove_duplicated_marks(nodes, marks, tree):
         del(nodes[bad])
 
 
-def name_model(base_name):
+def name_model(tree, base_name):
     """
     transform the name string into summary of its name and a digestion of the
     full name
     """
-    return base_name[:12] + '__' + md5(base_name).hexdigest()
+    return base_name[:12] + '__' + md5(tree.write() + base_name).hexdigest()
 
 
 def local_run_model(tree, model_name, binary, ctrl_string='', **kwargs):
@@ -471,7 +471,7 @@ def local_run_model(tree, model_name, binary, ctrl_string='', **kwargs):
 
     model_obj = Model(model_name, tree, **kwargs)
     # dir_name = model_obj.name
-    fullpath = os.path.join (tree.workdir, name_model(model_obj.name))
+    fullpath = os.path.join (tree.workdir, name_model(tree, model_obj.name))
     os.system("mkdir -p %s" % fullpath)
     # write tree file
     tree._write_algn(fullpath + '/algn')
@@ -499,7 +499,7 @@ def local_run_model(tree, model_name, binary, ctrl_string='', **kwargs):
 
 
 def check_done(tree, modmodel, results):
-    dir_name = name_model(modmodel)
+    dir_name = name_model(tree, modmodel)
     if os.path.exists(os.path.join(tree.workdir, dir_name, 'out')):
         if modmodel != "SLR":
             fhandler = open(os.path.join(tree.workdir, dir_name, 'out'))
@@ -524,13 +524,13 @@ def run_all_models(tree, nodes, marks, args, **kwargs):
     for model in args.models:
         binary = (os.path.expanduser(args.slr_binary) if model == 'SLR'
                   else os.path.expanduser(args.codeml_binary))
-        print('  - processing model %s (%s)' % (model, name_model(model)))
+        print('  - processing model %s (%s)' % (model, name_model(tree, model)))
         if AVAIL[model.split('.')[0]]['allow_mark']:
             if not marks:
                 if check_done(tree, model, results):
                     if args.resume:
                         print('Model %s (%s) already executed... SKIPPING' % (
-                            model, name_model(model)))
+                            model, name_model(tree, model)))
                         continue
                     else:
                         raise Exception(
@@ -554,7 +554,7 @@ def run_all_models(tree, nodes, marks, args, **kwargs):
                 if check_done(tree, modmodel, results):
                     if args.resume:
                         print('Model %s (%s) already executed... SKIPPING' % (
-                            modmodel, name_model(modmodel)))
+                            modmodel, name_model(tree, modmodel)))
                         continue
                     else:
                         raise Exception(
@@ -569,7 +569,7 @@ def run_all_models(tree, nodes, marks, args, **kwargs):
             if check_done(tree, model, results):
                 if args.resume:
                     print('Model %s (%s) already executed... SKIPPING' % (
-                        model, name_model(model)))
+                        model, name_model(tree, model)))
                     continue
                 else:
                     raise Exception(
@@ -736,7 +736,7 @@ def write_results(tree, args):
             bests.append(null if results[(null, altn)] > 0.05 else altn)
 
             tests += ('     %46s |%46s | %f%s\n' % (
-                name_model(null), name_model(altn), results[(null, altn)],
+                name_model(tree, null), name_model(tree, altn), results[(null, altn)],
                 '**' if results[(null, altn)] < 0.01 else '*'
                 if results[(null, altn)] < 0.05 else ''))
             at_least_one_come_on = True
