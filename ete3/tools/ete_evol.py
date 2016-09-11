@@ -453,7 +453,8 @@ def name_model(tree, base_name):
     transform the name string into summary of its name and a digestion of the
     full name
     """
-    return base_name[:12] + '__' + md5(tree.write() + base_name).hexdigest()
+    return base_name[:12] + '~' + md5(tree.get_topology_id(attr="name") +
+                                      base_name).hexdigest()
 
 
 def local_run_model(tree, model_name, binary, ctrl_string='', **kwargs):
