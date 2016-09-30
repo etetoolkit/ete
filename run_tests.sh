@@ -97,7 +97,7 @@ create_env() {
     fi
 
     echo -n ">>> Creating test environment for version ${VERSION}... "
-    create_output=$(${CONDA}/bin/conda create -q -y -n test_${VERSION} python=${VERSION} pip pyqt numpy six lxml coverage scikit-bio biopython scipy 2>&1 | tee -a ${LOG})
+    create_output=$(${CONDA}/bin/conda create -q -y -n test_${VERSION} python=${VERSION} pip pyqt=4 numpy six lxml coverage scikit-bio biopython scipy 2>&1 | tee -a ${LOG})
     handle_error "$?" "ERROR: Failed to create a new conda environment for python ${VERSION}" "$create_output"
     echo "DONE"
 }
