@@ -50,6 +50,7 @@ from subprocess import Popen, PIPE
 from sys import stderr
 import os
 from re import sub
+from hashlib import md5
 from signal import signal, SIGINT, SIG_IGN
 
 from warnings import warn
@@ -247,6 +248,7 @@ def parse_config_file(fpath):
         params[k] = v
     return params
 
+
 def find_binary(binary):
     bin_path = os.path.join(os.path.split(which("ete3"))[0], "ete3_apps", "bin", binary)
 
@@ -261,6 +263,7 @@ def find_binary(binary):
         bin_path = binary
     print("Using: %s" %bin_path)
     return bin_path
+
 
 def marking_layout(node):
     '''
@@ -303,12 +306,14 @@ def marking_layout(node):
                                   fgcolor="#666666"), node, column=0,
                          position="branch-top")
 
+
 def clean_tree(tree):
     """
     remove marks from tree
     """
     for n in tree.get_descendants() + [tree]:
         n.mark = ''
+
 
 def get_node(tree, node):
     res = tree.search_nodes(name=node)
@@ -322,6 +327,7 @@ def get_node(tree, node):
         if len(res) < 1:
             exit('ERROR: node %s not found' % node)
     return res[0]
+
 
 def update_marks_from_args(nodes, marks, tree, args):
     # use the command line
@@ -389,6 +395,7 @@ def update_marks_from_args(nodes, marks, tree, args):
     # remove duplicated marks
     remove_duplicated_marks(nodes, marks, tree)
 
+
 def interactive_mark(tree, mode='new'):
     submarks = []
     subnodes = []
@@ -423,6 +430,7 @@ def interactive_mark(tree, mode='new'):
     clean_tree(tree)
     return subnodes, submarks
 
+
 def remove_duplicated_marks(nodes, marks, tree):
     things = {}
     bads = []
@@ -439,6 +447,16 @@ def remove_duplicated_marks(nodes, marks, tree):
         del(marks[bad])
         del(nodes[bad])
 
+
+def name_model(tree, base_name):
+    """
+    transform the name string into summary of its name and a digestion of the
+    full name
+    """
+    return base_name[:12] + '~' + md5(tree.get_topology_id(attr="name") +
+                                      base_name).hexdigest()
+
+
 def local_run_model(tree, model_name, binary, ctrl_string='', **kwargs):
     '''
     local verison of model runner. Needed for multiprocessing pickling...
@@ -453,12 +471,13 @@ def local_run_model(tree, model_name, binary, ctrl_string='', **kwargs):
     signal(SIGINT, clean_exit)
 
     model_obj = Model(model_name, tree, **kwargs)
-    fullpath = os.path.join (tree.workdir, model_obj.name)
+    # dir_name = model_obj.name
+    fullpath = os.path.join (tree.workdir, name_model(tree, model_obj.name))
     os.system("mkdir -p %s" % fullpath)
     # write tree file
     tree._write_algn(fullpath + '/algn')
     if model_obj.properties['exec'] == 'Slr':
-        tree.write(outfile=fullpath+'/tree', format = (11))
+        tree.write(outfile=fullpath+'/tree', format=11)
     else:
         tree.write(outfile=fullpath+'/tree',
                    format = (10 if model_obj.properties['allow_mark'] else 9))
@@ -481,20 +500,22 @@ def local_run_model(tree, model_name, binary, ctrl_string='', **kwargs):
 
 
 def check_done(tree, modmodel, results):
-    if os.path.exists(os.path.join(tree.workdir, modmodel, 'out')):
+    dir_name = name_model(tree, modmodel)
+    if os.path.exists(os.path.join(tree.workdir, dir_name, 'out')):
         if modmodel != "SLR":
-            fhandler = open(os.path.join(tree.workdir, modmodel, 'out'))
+            fhandler = open(os.path.join(tree.workdir, dir_name, 'out'))
             fhandler.seek(-50, 2)
             if 'Time used' in fhandler.read():
-                results.append((os.path.join(tree.workdir, modmodel, "out"),
+                results.append((os.path.join(tree.workdir, dir_name, "out"),
                                 modmodel))
                 return True
         else:
-            if os.path.getsize(os.path.join(tree.workdir, modmodel, 'out')) > 0:
-                results.append((os.path.join(tree.workdir, modmodel, "out"),
+            if os.path.getsize(os.path.join(tree.workdir, dir_name, 'out')) > 0:
+                results.append((os.path.join(tree.workdir, dir_name, "out"),
                                 modmodel))
                 return True
     return False
+
 
 def run_all_models(tree, nodes, marks, args, **kwargs):
     ## TO BE IMPROVED: multiprocessing should be called in a simpler way
@@ -504,12 +525,13 @@ def run_all_models(tree, nodes, marks, args, **kwargs):
     for model in args.models:
         binary = (os.path.expanduser(args.slr_binary) if model == 'SLR'
                   else os.path.expanduser(args.codeml_binary))
-        print('  - processing model %s' % model)
+        print('  - processing model %s (%s)' % (model, name_model(tree, model)))
         if AVAIL[model.split('.')[0]]['allow_mark']:
             if not marks:
                 if check_done(tree, model, results):
                     if args.resume:
-                        print('Model %s already executed... SKIPPING' % model)
+                        print('Model %s (%s) already executed... SKIPPING' % (
+                            model, name_model(tree, model)))
                         continue
                     else:
                         raise Exception(
@@ -532,7 +554,8 @@ def run_all_models(tree, nodes, marks, args, **kwargs):
                             '_'.join([n.split('#')[1] for n in mark]))
                 if check_done(tree, modmodel, results):
                     if args.resume:
-                        print('Model %s already executed... SKIPPING' % modmodel)
+                        print('Model %s (%s) already executed... SKIPPING' % (
+                            modmodel, name_model(tree, modmodel)))
                         continue
                     else:
                         raise Exception(
@@ -546,7 +569,8 @@ def run_all_models(tree, nodes, marks, args, **kwargs):
         else:
             if check_done(tree, model, results):
                 if args.resume:
-                    print('Model %s already executed... SKIPPING' % model)
+                    print('Model %s (%s) already executed... SKIPPING' % (
+                        model, name_model(tree, model)))
                     continue
                 else:
                     raise Exception(
@@ -570,6 +594,7 @@ def run_all_models(tree, nodes, marks, args, **kwargs):
             models[result[1]] = result[0]
     return models
 
+
 def reformat_nw(nw_path):
     """
     Clean tree file in order to make it look more like standard newick.
@@ -583,6 +608,7 @@ def reformat_nw(nw_path):
                           file_string[beg:end + 1])
         return file_string
     return nw_path
+
 
 ####### PROPOSAL FOR A BETTER MULTIPROCESSING ############
 results_queue = Queue()
@@ -617,6 +643,7 @@ def run_all_models_new(tree, nodes, marks, args, **kwargs):
         models[model_name] = path
     return models
 
+
 def local_run_model_new(arguments,  ctrl_string=''):
     def clean_exit(a, b):
         print(a, b)
@@ -638,20 +665,20 @@ def local_run_model_new(arguments,  ctrl_string=''):
     # write tree file
     tree._write_algn(fullpath + '/algn')
     if model_obj.properties['exec'] == 'Slr':
-        tree.write(outfile=fullpath+'/tree', format = (11))
+        tree.write(outfile=fullpath + '/tree', format = (11))
     else:
-        tree.write(outfile=fullpath+'/tree',
+        tree.write(outfile=fullpath + '/tree',
                    format = (10 if model_obj.properties['allow_mark'] else 9))
 
     # write algn file
     if ctrl_string == '':
         ctrl_string = model_obj.get_ctrl_string(fullpath+'/tmp.ctl')
     else:
-        open(fullpath+'/tmp.ctl', 'w').write(ctrl_string)
+        open(fullpath + '/tmp.ctl', 'w').write(ctrl_string)
     hlddir = os.getcwd()
     os.chdir(fullpath)
 
-    proc = Popen("%s tmp.ctl" %binary, stdout=PIPE, shell=True)
+    proc = Popen("%s tmp.ctl" % binary, stdout=PIPE, shell=True)
 
     job, err = proc.communicate()
     if err is not None or b'error' in job or b'Error' in job:
@@ -659,6 +686,7 @@ def local_run_model_new(arguments,  ctrl_string=''):
 
     results_queue.put((os.path.join(fullpath,'out'), model_obj.name))
 #############
+
 
 def load_model(model_name, tree, path, **kwargs):
     model_obj = Model(model_name, tree, **kwargs)
@@ -669,11 +697,12 @@ def load_model(model_name, tree, path, **kwargs):
         raise(Exception('ERROR: model %s failed, problem with outfile:\n%s' % (
             model_obj.name, path)))
 
+
 def write_results(tree, args):
     tests = "\nLRT\n\n"
-    tests += ('%25s |%25s | %s\n' % ('Null model', 'Alternative model',
-                                     'p-value'))
-    tests += (' ' * 5 + ('-' * 60))
+    tests += ('     %46s |%46s | %s\n' % ('Null model', 'Alternative model',
+                                          'p-value'))
+    tests += (' ' * 3 + ('=' * 49) + '|' + ('=' * 47) + '|' + ('=' * 12))
     tests += ('\n')
     at_least_one_come_on = False
     results = {}
@@ -707,8 +736,8 @@ def write_results(tree, args):
             results[(null, altn)] = tree.get_most_likely(altn, null)
             bests.append(null if results[(null, altn)] > 0.05 else altn)
 
-            tests += ('%25s |%25s | %f%s\n' % (
-                null, altn, results[(null, altn)],
+            tests += ('     %46s |%46s | %f%s\n' % (
+                name_model(tree, null), name_model(tree, altn), results[(null, altn)],
                 '**' if results[(null, altn)] < 0.01 else '*'
                 if results[(null, altn)] < 0.05 else ''))
             at_least_one_come_on = True
@@ -717,6 +746,7 @@ def write_results(tree, args):
         print(tests)
     return bests
 
+
 def mark_tree_as_in(path_tree, tree):
     clean_tree(tree)
     other_tree = EvolTree(reformat_nw(path_tree[:-3] + 'tree'))
@@ -724,6 +754,7 @@ def mark_tree_as_in(path_tree, tree):
         if other_n.mark:
             n = tree.get_descendant_by_node_id(other_n.node_id)
             n.mark = other_n.mark
+
 
 def get_marks_from_tree(tree):
     """
@@ -739,6 +770,7 @@ def get_marks_from_tree(tree):
     if nodes:
         return [nodes], [marks]
     return [], []
+
 
 def run(args):
 

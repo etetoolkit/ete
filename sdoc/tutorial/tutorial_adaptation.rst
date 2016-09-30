@@ -314,6 +314,8 @@ The most usual comparison, and perhaps the most robust, is the comparison of mod
 
 Each sites model, contains a dictionary 'model.sites' in which are stored the results of CodeML. These are displayed through the histface, but they are still accessible by digging a bit. 'site' dictionary usually contains the result of the NEB and BEB analysis (prefer the BEB when available). For each of BEB and NEB, the probability of belonging from one category of site is summarized by 'p0', 'p1' and 'p2' in the case of M2 model that have only 3 class of sites (p0, the probability of belonging to the first class of sites with :math:`\omega < 1`; p1, the probability of belonging to the second class of sites with :math:`\omega = 1`; p2, the probability of belonging to the third class of sites with :math:`\omega > 1`). *For details on the models and outputs, it is recommended to read PAML documentation.*
 
+*Note that M1 and M2 models are making reference to the new versions of these models, with continuous omega rates (namely M1a and M2a in the PAML user guide).*
+
 
 Test on branches
 ------------------
