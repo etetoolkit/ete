@@ -11,10 +11,10 @@ install:
     # We do this conditionally because it saves us some downloading if the
     # version is the same.
     - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-    wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
-    else
-    wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-    fi
+      wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
+      else
+      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+      fi
     - bash miniconda.sh -b -p $HOME/miniconda
     - export PATH="$HOME/miniconda/bin:$PATH"
     - hash -r
@@ -23,16 +23,16 @@ install:
     # Useful for debugging any issues with conda
     - conda info -a
     
-# Replace dep1 dep2 ... with your dependencies
-- conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION pip pyqt=4.11.4 numpy six lxml coverage scikit-bio biopython scipy
-#- pip install coveralls
-- source activate test-environment
-- conda install -c etetoolkit ete3_external_apps
-- python setup.py install --donottrackinstall
+    # Replace dep1 dep2 ... with your dependencies
+    - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION pip pyqt=4.11.4 numpy six lxml coverage scikit-bio biopython scipy
+    #- pip install coveralls
+    - source activate test-environment
+    - conda install -c etetoolkit ete3_external_apps
+    - python setup.py install --donottrackinstall
 
 before_script:
-- python --version
-- "export DISPLAY=:99.0"
+  - python --version
+  - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
   - sleep 2 # give xvfb some time to start
   - ete3 version
