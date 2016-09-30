@@ -16,14 +16,14 @@ requirements:
     - six
     - lxml
     - numpy
-    - pyqt
+    - pyqt=4
         
   run:
     - python
     - six
     - lxml
     - numpy
-    - pyqt
+    - pyqt=4
     
 test:
   requires:
@@ -31,7 +31,7 @@ test:
     - six
     - lxml
     - numpy
-    - pyqt
+    - pyqt=4
     - scikit-bio
     - biopython
     - ete3_external_apps
