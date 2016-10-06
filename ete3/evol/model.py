@@ -90,13 +90,13 @@ class Model:
         for a, b in list(args.items()):
             self.properties [a] = b
         params = dict(list(PARAMS.items()))
+        self._change_params(params)
         for key, arg in list(kwargs.items()):
             if key not in params:
                 warn('WARNING: unknown param %s, can cause problems...'% (key))
             if key == 'gappy':
                 arg = not arg
             params[key] = arg
-        self._change_params(params)
         self.__check_marks()
         if path:
             self._load(path)
@@ -145,7 +145,7 @@ class Model:
         checks if tree is marked and if model allows marks.
         fill up branches dict with marks
         """
-        has_mark = any(n.mark for n in self._tree.iter_descendants())
+        has_mark = any([n.mark for n in self._tree.iter_descendants()])
         for i, node in enumerate(self._tree.traverse()):
             #if node.is_root(): continue
             if has_mark and self.properties['allow_mark']:
