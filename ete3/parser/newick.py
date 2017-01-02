@@ -57,6 +57,13 @@ _FLOAT_RE = "\s*[+-]?\d+\.?\d*(?:[eE][-+]?\d+)?\s*"
 #_NAME_RE = "[^():,;\[\]]+"
 _NAME_RE = "[^():,;]+?"
 
+# thanks to: http://stackoverflow.com/a/29452781/1006828
+_QUOTED_TEXT_RE = r"""((?=["'])(?:"[^"\\]*(?:\\[\s\S][^"\\]*)*"|'[^'\\]*(?:\\[\s\S][^'\\]*)*'))"""
+#_QUOTED_TEXT_RE = r"""["'](?:(?<=")[^"\\]*(?s:\\.[^"\\]*)*"|(?<=')[^'\\]*(?s:\\.[^'\\]*)*')""]"]"""
+#_QUOTED_TEXT_RE = r"""(?=["'])(?:"[^"\\]*(?:\\[\s\S][^"\\]*)*"|'[^'\\]*(?:\\[\s\S][^'\\]*)*')]"]")"]"""
+
+_QUOTED_TEXT_PREFIX='ete3_quotref_'
+
 DEFAULT_DIST = 1.0
 DEFAULT_NAME = ''
 DEFAULT_SUPPORT = 1.0
@@ -126,10 +133,9 @@ NW_FORMAT = {
 }
 
 
-def format_node(node, node_type, format,
-                dist_formatter=None,
-                support_formatter=None,
-                name_formatter=None):
+def format_node(node, node_type, format, dist_formatter=None,
+                support_formatter=None, name_formatter=None,
+                quoted_names=False):
     if dist_formatter is None: dist_formatter = FLOAT_FORMATTER
     if support_formatter is None: support_formatter = FLOAT_FORMATTER
     if name_formatter is None: name_formatter = NAME_FORMATTER
@@ -149,22 +155,28 @@ def format_node(node, node_type, format,
 
     if converterFn1 == str:
         try:
-            FIRST_PART = re.sub("["+_ILEGAL_NEWICK_CHARS+"]", "_", \
-                                  str(getattr(node, container1)))
+            if not quoted_names:
+                FIRST_PART = re.sub("["+_ILEGAL_NEWICK_CHARS+"]", "_", \
+                                    str(getattr(node, container1)))
+            else:
+                FIRST_PART = str(getattr(node, container1))
             if not FIRST_PART and container1 == 'name' and not flexible1:
                 FIRST_PART = "NoName"
+
         except (AttributeError, TypeError):
             FIRST_PART = "?"
+
         FIRST_PART = name_formatter %FIRST_PART
+        if quoted_names:
+            FIRST_PART = '"%s"' %FIRST_PART.decode('string_escape').replace('"', '\\"')
+
     elif converterFn1 is None:
         FIRST_PART = ""
     else:
         try:
-            #FIRST_PART =  "%0.6f" %(converterFn2(getattr(node, container1)))
             FIRST_PART = support_formatter %(converterFn2(getattr(node, container1)))
         except (ValueError, TypeError):
             FIRST_PART = "?"
-
 
     if converterFn2 == str:
         try:
@@ -195,11 +207,12 @@ def print_supported_formats():
 class NewickError(Exception):
     """Exception class designed for NewickIO errors."""
     def __init__(self, value):
-        #import sys
-        #print >>sys.stderr, 'error: ' + str(value)
+        if value is None:
+            value = ''
+        value += "\nYou may want to check other newick loading flags like 'format' or 'quoted_node_names'."
         Exception.__init__(self, value)
 
-def read_newick(newick, root_node=None, format=0):
+def read_newick(newick, root_node=None, format=0, quoted_names=False):
     """ Reads a newick tree from either a string or a file, and returns
     an ETE tree structure.
 
@@ -227,20 +240,43 @@ def read_newick(newick, root_node=None, format=0):
             nw = newick
 
         matcher = compile_matchers(formatcode=format)
-        nw = nw.strip()        
+        nw = nw.strip()
         if not nw.startswith('(') and nw.endswith(';'):
-            return _read_node_data(nw[:-1], root_node, "single", matcher, format)
-
+            #return _read_node_data(nw[:-1], root_node, "single", matcher, format)
+            return _read_newick_from_string(nw, root_node, matcher, format, quoted_names)
         elif not nw.startswith('(') or not nw.endswith(';'):
             raise NewickError('Unexisting tree file or Malformed newick tree structure.')
         else:
-            return _read_newick_from_string(nw, root_node, matcher, format)
+            return _read_newick_from_string(nw, root_node, matcher, format, quoted_names)
 
     else:
         raise NewickError("'newick' argument must be either a filename or a newick string.")
 
-def _read_newick_from_string(nw, root_node, matcher, formatcode):
+def _read_newick_from_string(nw, root_node, matcher, formatcode, quoted_names):
     """ Reads a newick string in the New Hampshire format. """
+
+    if quoted_names: 
+        # Quoted text is mapped to references
+        quoted_map = {}
+        unquoted_nw = ''
+        counter = 0
+        for token in re.split(_QUOTED_TEXT_RE, nw):
+            counter += 1
+            if counter % 2 == 1 : # normal newick tree structure data
+                unquoted_nw += token
+            else: # quoted text, add to dictionary and replace with reference
+                quoted_ref_id= _QUOTED_TEXT_PREFIX + str(int(counter/2))
+                unquoted_nw += quoted_ref_id
+                quoted_map[quoted_ref_id]=token[1:-1]  # without the quotes
+        nw = unquoted_nw
+
+    if not nw.startswith('(') and nw.endswith(';'):
+        _read_node_data(nw[:-1], root_node, "single", matcher, format)
+        if quoted_names:
+            if root_node.name.startswith(_QUOTED_TEXT_PREFIX):
+                root_node.name = quoted_map[root_node.name]
+        return root_node
+
     if nw.count('(') != nw.count(')'):
         raise NewickError('Parentheses do not match. Broken tree structure?')
 
@@ -288,6 +324,13 @@ def _read_newick_from_string(nw, root_node, matcher, formatcode):
                     # read internal node data and go up one level
                     _read_node_data(closing_internal, current_parent, "internal", matcher, formatcode)
                     current_parent = current_parent.up
+
+    # references in node names are replaced with quoted text before returning
+    if quoted_names:
+        for node in root_node.traverse():
+            if node.name.startswith(_QUOTED_TEXT_PREFIX):
+                node.name = quoted_map[node.name]
+
     return root_node
 
 def _parse_extra_features(node, NHX_string):
@@ -388,7 +431,7 @@ def _read_node_data(subnw, current_node, node_type, matcher, formatcode):
 
 def write_newick(rootnode, features=None, format=1, format_root_node=True,
                  is_leaf_fn=None, dist_formatter=None, support_formatter=None,
-                 name_formatter=None):
+                 name_formatter=None, quoted_names=False):
     """ Iteratively export a tree structure and returns its NHX
     representation. """
     newick = []
@@ -400,19 +443,19 @@ def write_newick(rootnode, features=None, format=1, format_root_node=True,
                 newick.append(format_node(node, "internal", format,
                                           dist_formatter=dist_formatter,
                                           support_formatter=support_formatter,
-                                          name_formatter=name_formatter))
+                                          name_formatter=name_formatter,
+                                          quoted_names=quoted_names))
                 newick.append(_get_features_string(node, features))
         else:
             if node is not rootnode and node != node.up.children[0]:
                 newick.append(",")
 
             if leaf(node):
-                safe_name = re.sub("["+_ILEGAL_NEWICK_CHARS+"]", "_", \
-                               str(getattr(node, "name")))
                 newick.append(format_node(node, "leaf", format,
-                              dist_formatter=dist_formatter,
-                              support_formatter=support_formatter,
-                              name_formatter=name_formatter))
+                                          dist_formatter=dist_formatter,
+                                          support_formatter=support_formatter,
+                                          name_formatter=name_formatter,
+                                          quoted_names=quoted_names))
                 newick.append(_get_features_string(node, features))
             else:
                 newick.append("(")
