@@ -52,6 +52,10 @@ from PyQt4.QtGui import (QGraphicsRectItem, QGraphicsLineItem,
                          QRadialGradient, QGraphicsSimpleTextItem, QGraphicsTextItem,
                          QGraphicsItem)
 from PyQt4.QtCore import Qt,  QPointF, QRect, QRectF
+try:
+    from PyQt4.QtSvg import QGraphicsSvgItem
+except ImportError:
+    warning('QtSvg support not found')
 
 import math
 from .main import add_face_to_node, _Background, _Border, COLOR_SCHEMES
@@ -151,7 +155,7 @@ __all__ = ["Face", "TextFace", "AttrFace", "ImgFace",
            "ProfileFace", "SequenceFace", "TreeFace",
            "RandomFace", "DynamicItemFace", "StaticItemFace",
            "CircleFace", "PieChartFace", "BarChartFace", "SeqMotifFace",
-           "RectFace", "StackedBarFace"]
+           "RectFace", "StackedBarFace", "SVGFace"]
 
 class Face(object):
     """Base Face object. All Face types (i.e. TextFace, SeqMotifFace,
@@ -2190,7 +2194,50 @@ class SequencePlotFace(StaticItemFace):
             lineItem.setX(x - self.col_w+2)
             lineItem.setPen(QPen(QColor(self.colors[i]),2))
 
+class SVGFace(Face):
+    """Creates a node Face using an external SVG file.
 
+    :param img_file: path to the image file.
+    :param None width: if provided, image will be scaled to this width (in pixels)
+    :param None height: if provided, image will be scaled to this height (in pixels)
+
+    If only one dimension value (width or height) is provided, the other
+    will be calculated to keep original aspect ratio.
+
+    (Known limitations: The same SVGFace cannot be used in several nodes)
+
+    .. versionadded:: 3.1
+    """
+
+    def __init__(self, img_file, width=None, height=None):
+        Face.__init__(self)
+        self.img_file = img_file
+        self.width = float(width) if width else None
+        self.height = float(height) if height else None
+        self.xscale = 1.0
+        self.yscale = 1.0
+        self.type = "item"
+        self.item = None
+
+    def update_items(self):
+        if not self.item:
+            self.item = QGraphicsSvgItem(self.img_file)
+
+            if self.width:
+                self.xscale = self.width / self._width()
+                if not self.height:
+                    self.yscale = self.xscale
+            if self.height:
+                self.yscale = self.height / self._height()
+                if not self.width:
+                    self.xscale = self.yscale
+            self.item.scale(self.xscale, self.yscale)
+
+    def _width(self):
+        return self.item.boundingRect().width() * self.xscale
+
+    def _height(self):
+        return self.item.boundingRect().height() * self.yscale
 
 class SequenceFace(StaticItemFace, Face):
     """
@@ -2322,4 +2369,3 @@ class SequenceFace(StaticItemFace, Face):
             if self.label:
                 self.label.setVisible(False)
                 self.setZValue(0)
-
