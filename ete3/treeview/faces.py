@@ -1613,6 +1613,7 @@ class SequenceItem(QGraphicsRectItem):
         current_pixel = 0
         blackPen = QPen(QColor("black"))
         for letter in self.seq:
+            letter = letter.upper()
             if x >= current_pixel:
                 if self.draw_text and self.poswidth >= 8:
                     br = QBrush(QColor(self.bg.get(letter, "white")))
@@ -2314,6 +2315,7 @@ class SequenceFace(StaticItemFace, Face):
         rect_cls = self.InteractiveLetterItem if self.interact \
                    else QGraphicsRectItem
         for i, letter in enumerate(self.seq):
+            letter = letter.upper()
             width = self.col_w
             for reg in self.special_col:
                 if reg[0] < i <= reg[1]:
